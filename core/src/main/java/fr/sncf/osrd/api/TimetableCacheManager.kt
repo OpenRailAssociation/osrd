@@ -6,6 +6,7 @@ import com.google.common.collect.RangeSet
 import com.google.common.collect.TreeRangeSet
 import fr.sncf.osrd.sim_infra.api.ZoneId
 import io.lettuce.core.api.StatefulRedisConnection
+import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.nio.file.Files
@@ -25,6 +26,8 @@ import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromHexString
 import kotlinx.serialization.encodeToHexString
 import org.slf4j.LoggerFactory
+import software.amazon.awssdk.core.sync.RequestBody
+import software.amazon.awssdk.services.s3.model.PutObjectRequest
 
 typealias TimetableId = Int
 
@@ -79,6 +82,7 @@ class TimetableCacheManager(
     val valkeyConnection: StatefulRedisConnection<String, String>? = null,
     val disableAllCaching: Boolean = false,
     val osrdGitDescribe: String,
+    val s3Context: S3Context? = null,
 ) {
     private val cache = ConcurrentHashMap<String, STDCMTimetableData>()
     private val mutexes = ConcurrentHashMap<String, Mutex>()
@@ -95,6 +99,7 @@ class TimetableCacheManager(
     suspend fun get(infra: FullInfra, timetableId: TimetableId): STDCMTimetableData =
         coroutineScope {
             val cacheKey = getCacheKey(infra, timetableId)
+            Span.current()?.setAttribute("timetable-cache-key", cacheKey)
             if (disableAllCaching) {
                 logger.info("Cache disabled")
                 return@coroutineScope withContext(fetchDispatcher) {
@@ -161,6 +166,10 @@ class TimetableCacheManager(
                     )
                 }
             }
+
+        // Once the requirements are loaded, we save them to s3 as well for reproducibility
+        saveToS3(cacheKey, requirements)
+
         return requirements
     }
 
@@ -259,5 +268,23 @@ class TimetableCacheManager(
         val data = generateData()
         writeCacheToValkey(valkeyConnection, key, data)
         return data
+    }
+
+    /** If there's no file yet with the given cache key, save the timetable in the s3 storage. */
+    private fun saveToS3(cacheKey: String, requirements: STDCMTimetableData) {
+        if (s3Context == null) return
+
+        val objectPath = "stdcm/saved_timetables/$cacheKey.cbor"
+        if (s3Context.fileExists(objectPath)) return
+
+        val putObjectRequest =
+            PutObjectRequest.builder().bucket(s3Context.bucketName).key(objectPath).build()
+
+        val serializable = requirements.toSerializable()
+        val cbor = Cbor {}
+        val serializer = STDCMTimetableData.SerializableMap.serializer()
+        val bytes = cbor.encodeToByteArray(serializer, serializable)
+
+        s3Context.s3Client.putObject(putObjectRequest, RequestBody.fromBytes(bytes))
     }
 }
