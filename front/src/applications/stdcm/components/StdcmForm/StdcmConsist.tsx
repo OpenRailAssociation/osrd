@@ -169,7 +169,7 @@ const StdcmConsist = ({
     });
   };
 
-  const onSpeedLimitByTagChange = (newTag: string | null) => {
+  const onSpeedLimitTagChange = (newTag: string | null) => {
     dispatch(
       updateMaxSpeed(
         calculateConsistMaxSpeed(
@@ -344,9 +344,9 @@ const StdcmConsist = ({
       <div className="stdcm-consist__properties">
         <SpeedLimitTagSelector
           disabled={disabled}
-          selectedSpeedLimitByTag={speedLimitByTag}
+          selectedSpeedLimitTag={speedLimitByTag}
           speedLimitTags={speedLimitTags}
-          dispatchUpdateSpeedLimitByTag={onSpeedLimitByTagChange}
+          updateSpeedLimitTag={onSpeedLimitTagChange}
           showPlaceHolder={isDebugMode}
           narrow
         />

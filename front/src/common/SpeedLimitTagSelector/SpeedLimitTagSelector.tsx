@@ -10,9 +10,9 @@ import { createStandardSelectOptions } from 'utils/uiCoreHelpers';
 type SpeedLimitTagSelectorProps = {
   condensed?: boolean;
   disabled?: boolean;
-  selectedSpeedLimitByTag?: string;
+  selectedSpeedLimitTag?: string;
   speedLimitTags: string[];
-  dispatchUpdateSpeedLimitByTag: (newTag: string | null) => void;
+  updateSpeedLimitTag: (newTag: string | null) => void;
   className?: string;
   showPlaceHolder?: boolean;
   narrow?: boolean;
@@ -21,9 +21,9 @@ type SpeedLimitTagSelectorProps = {
 const SpeedLimitTagSelector = ({
   condensed = false,
   disabled = false,
-  selectedSpeedLimitByTag: speedLimitByTag,
+  selectedSpeedLimitTag: speedLimitTag,
   speedLimitTags,
-  dispatchUpdateSpeedLimitByTag,
+  updateSpeedLimitTag,
   className = '',
   showPlaceHolder = false,
   narrow = false,
@@ -49,15 +49,15 @@ const SpeedLimitTagSelector = ({
         <Select
           disabled={disabled}
           id="speed-limit-by-tag-selector"
-          value={speedLimitByTag || ''}
+          value={speedLimitTag || ''}
           label={t('speedLimitByTagAbbrev')}
           // The placeHolder is only displayed in operationalStudies and in debug mode in stdcm
           placeholder={showPlaceHolder ? t('noSpeedLimitByTag') : undefined}
           onChange={(e) => {
             if (e) {
-              dispatchUpdateSpeedLimitByTag(e);
+              updateSpeedLimitTag(e);
             } else {
-              dispatchUpdateSpeedLimitByTag(null);
+              updateSpeedLimitTag(null);
             }
           }}
           {...createStandardSelectOptions(speedLimitsTagsList)}
