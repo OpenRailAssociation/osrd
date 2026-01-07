@@ -141,9 +141,10 @@ const SimulationResults = ({
     const pacedTrain = timetableItemsWithDetails.find(
       (timetableItem) => timetableItem.id === extractPacedTrainIdFromOccurrenceId(selectedTrainId)
     );
-    // WARNING TODO: race condition here, to fix
-    // When turning a train into a service, then pacedTrain and selectedTrainId may be desynchronized.
-    if (!pacedTrain || !isPacedTrainWithDetails(pacedTrain) || !pacedTrain.paced) return undefined;
+    if (!pacedTrain || !isPacedTrainWithDetails(pacedTrain)) return undefined;
+    if (!pacedTrain.paced) {
+      throw new Error(`Paced train ${pacedTrain.id} should have a paced field.`);
+    }
 
     const exception = findExceptionWithOccurrenceId(pacedTrain.paced.exceptions, selectedTrainId);
     return exception?.summary ?? pacedTrain.summary;

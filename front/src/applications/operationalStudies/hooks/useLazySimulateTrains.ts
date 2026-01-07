@@ -91,6 +91,17 @@ export default function useLazySimulateTrains({
       timetableItemsByIdRef.current.set(timetableItem.id, timetableItem);
     }
 
+    setSimulatedTrainsById((prev) => {
+      const result = new Map([...prev.entries()]);
+      for (const timetableItem of timetableItems) {
+        const currentSimulatedItem = result.get(timetableItem.id);
+        if (currentSimulatedItem) {
+          result.set(timetableItem.id, { ...currentSimulatedItem, summary: undefined });
+        }
+      }
+      return result;
+    });
+
     loaderRef.current?.simulateTimetableItems(timetableItems.map(({ id }) => id));
   }, []);
 
