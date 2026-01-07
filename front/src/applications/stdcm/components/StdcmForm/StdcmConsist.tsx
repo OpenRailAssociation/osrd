@@ -345,7 +345,7 @@ const StdcmConsist = ({
         <SpeedLimitByTagSelector
           disabled={disabled}
           selectedSpeedLimitByTag={speedLimitByTag}
-          speedLimitsByTags={speedLimitTags}
+          speedLimitTags={speedLimitTags}
           dispatchUpdateSpeedLimitByTag={onSpeedLimitByTagChange}
           showPlaceHolder={isDebugMode}
           narrow
