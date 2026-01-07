@@ -216,7 +216,7 @@ const ManageTimetableItem = () => {
         <SimulationSettings
           selectedSpeedLimitByTag={speedLimitByTag}
           speedLimitTags={speedLimitTags}
-          dispatchUpdateSpeedLimitByTag={onSelectSpeedLimitTag}
+          updateSpeedLimitTag={onSelectSpeedLimitTag}
           constraintDistribution={constraintDistribution}
         />
         {rollingStock && isElectric(rollingStock.effort_curves.modes) && pathProperties && (
