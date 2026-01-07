@@ -25,7 +25,7 @@ import type { ExtendedEditorContextType, PartialOrReducer } from 'applications/e
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import { useInfraID } from 'common/osrdContext';
-import useSpeedLimitTags from 'common/SpeedLimitByTagSelector/useSpeedLimitTags';
+import useSpeedLimitTags from 'common/SpeedLimitTagSelector/useSpeedLimitTags';
 import { isEmptyArray, toggleElement } from 'utils/array';
 
 import SwitchList from './SwitchList';

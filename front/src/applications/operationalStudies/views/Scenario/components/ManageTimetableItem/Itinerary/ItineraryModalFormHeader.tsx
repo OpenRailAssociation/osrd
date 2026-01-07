@@ -12,7 +12,7 @@ import type {
   TrainCategory,
 } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions } from 'common/osrdContext';
-import useSpeedLimitTags from 'common/SpeedLimitByTagSelector/useSpeedLimitTags';
+import useSpeedLimitTags from 'common/SpeedLimitTagSelector/useSpeedLimitTags';
 import useStoreDataForRollingStockSelector from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import useCategoryOptions from 'modules/rollingStock/hooks/useCategoryOptions';

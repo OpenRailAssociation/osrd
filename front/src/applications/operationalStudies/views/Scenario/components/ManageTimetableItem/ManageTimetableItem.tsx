@@ -12,7 +12,7 @@ import simulationSettings from 'assets/pictures/components/simulationSettings.sv
 import rollingStockPic from 'assets/pictures/components/train.svg';
 import { type Comfort } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions } from 'common/osrdContext';
-import useSpeedLimitTags from 'common/SpeedLimitByTagSelector/useSpeedLimitTags';
+import useSpeedLimitTags from 'common/SpeedLimitTagSelector/useSpeedLimitTags';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import Tabs from 'common/Tabs';
 import IncompatibleConstraints from 'modules/pathfinding/components/IncompatibleConstraints';

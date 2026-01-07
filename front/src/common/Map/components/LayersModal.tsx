@@ -18,7 +18,7 @@ import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 import MapSettingsBackgroundSwitches from 'common/Map/Settings/MapSettingsBackgroundSwitches';
 import { Icon2SVG } from 'common/Map/Settings/MapSettingsLayers';
 import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';
-import useSpeedLimitTags from 'common/SpeedLimitByTagSelector/useSpeedLimitTags';
+import useSpeedLimitTags from 'common/SpeedLimitTagSelector/useSpeedLimitTags';
 import type { LayersSettings } from 'reducers/commonMap/types';
 
 import { useMapContext } from '../useMapContext';

@@ -1,5 +1,5 @@
 import type { Distribution } from 'common/api/osrdEditoastApi';
-import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector';
+import SpeedLimitTagSelector from 'common/SpeedLimitTagSelector';
 
 import ConstraintDistributionSwitch from './ConstraintDistributionSwitch';
 import ElectricalProfiles from './ElectricalProfiles';
@@ -23,7 +23,7 @@ const SimulationSettings = ({
       <ConstraintDistributionSwitch constraintDistribution={constraintDistribution} />
     </div>
     <div className="second-row">
-      <SpeedLimitByTagSelector
+      <SpeedLimitTagSelector
         selectedSpeedLimitByTag={speedLimitByTag}
         speedLimitTags={speedLimitTags}
         dispatchUpdateSpeedLimitByTag={dispatchUpdateSpeedLimitByTag}
