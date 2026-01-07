@@ -2472,6 +2472,7 @@ paths:
               - paced_train_ids
               - operational_point_id
               - infra_id
+              - use_simulation
               properties:
                 electrical_profile_set_id:
                   type:
@@ -2488,6 +2489,8 @@ paths:
                   items:
                     type: integer
                     format: int64
+                use_simulation:
+                  type: boolean
         required: true
       responses:
         '200':

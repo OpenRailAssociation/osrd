@@ -2024,6 +2024,7 @@ export type PostPacedTrainTrackOccupancyApiArg = {
     infra_id: number;
     operational_point_id: string;
     paced_train_ids: number[];
+    use_simulation: boolean;
   };
 };
 export type GetPacedTrainByIdApiResponse =

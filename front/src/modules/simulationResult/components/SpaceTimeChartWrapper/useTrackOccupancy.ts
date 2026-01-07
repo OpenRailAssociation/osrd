@@ -169,6 +169,7 @@ const useTrackOccupancy = ({
               operational_point_id: opId,
               infra_id: infraId,
               paced_train_ids: pacedTrainIds.map(extractEditoastIdFromPacedTrainId),
+              use_simulation: true,
             }
           : null;
 
