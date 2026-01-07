@@ -87,7 +87,6 @@ body {
 .mastnav,
 .mastcontainer,
 .actionbar,
-.table-filters,
 .sideBar-container {
   transition: 0.4s ease-in-out;
 }
@@ -126,10 +125,6 @@ body {
 .mastcontainer.fullscreen {
   padding-top: 72px;
   padding-left: 0 !important;
-}
-
-.table-filters.fullscreen {
-  top: 80px !important;
 }
 
 .sideBar-container.fullscreen {
