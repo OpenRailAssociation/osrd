@@ -249,22 +249,6 @@ $btn-rounded-colors: map-merge(
   $btn-rounded-colors
 );
 
-$sami-grey: $gray-600 !default;
-
-$sami-colors: ();
-$sami-colors: map-merge(
-  (
-    'green': $green,
-    'blue': $blue,
-    'yellow': $yellow,
-    'red': $red,
-    'gray': $sami-grey,
-  ),
-  $sami-colors
-);
-$sami-bg: $gray-300 !default;
-$sami-color: $white !default;
-
 // stylelint-enable
 
 // Set a specific jump point for requesting color jumps
@@ -613,14 +597,6 @@ $table-border-level: -6 !default;
 
 $table-scroll-max-to-right: linear-gradient(to right, #fff 2%, rgba(255, 255, 255, 0) 98%);
 $table-scroll-max-to-left: linear-gradient(to left, #fff 2%, rgba(255, 255, 255, 0) 98%);
-
-// Table Filters
-
-$table-filters-color: $body-color;
-$table-filters-title-color: $gray-600 !default;
-$table-filters-item-color: $gray-500 !default;
-$table-filters-group-title-color: $gray-500 !default;
-$table-filters-bg: $white !default;
 
 // Buttons + Forms
 //
@@ -1162,9 +1138,6 @@ $anchor-gradient-color: $gray-200 !default;
 $anchor-item-color: $gray-400 !default;
 $anchor-item-bg: $white !default;
 
-// Accordion
-$accordion-bg: $gray-100 !default;
-
 // Proof
 $proof-gray-bg: $gray-100 !default;
 $proof-strip-color: $gray-200 !default;
@@ -1572,26 +1545,6 @@ $positions: static, relative, absolute, fixed, sticky !default;
 
 $print-page-size: a3;
 $print-body-min-width: map-get($grid-breakpoints, 'lg');
-
-//
-// Flatpickr
-//
-$flatpickr-bg: $white !default;
-$flatpickr-day-color: $body-color !default;
-$flatpickr-day-othermonth-color: $carbon !default;
-$flatpickr-weekday-color: $gray-600 !default;
-$flatpickr-today-color: $white !default;
-$flatpickr-today-bg: $gray-500 !default;
-$flatpickr-day-focus-color: $white !default;
-$flatpickr-day-focus-bg: $primary !default;
-$flatpickr-day-hover-color: $white !default;
-$flatpickr-day-hover-bg: $primary-dark !default;
-
-$flatpickr-time-color: $gray-400 !default;
-$flatpickr-time-input-bg: $gray-100 !default;
-$flatpickr-time-focus-bg: $gray-200 !default;
-
-$flatpickr-range-bg: #e5f3fa !default;
 
 //
 // Charts

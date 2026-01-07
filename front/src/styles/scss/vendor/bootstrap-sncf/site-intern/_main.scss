@@ -7,7 +7,6 @@
 @import '../site-common/tools/colors';
 
 // vendors
-@import 'flatpickr/dist/flatpickr';
 @import 'ion-rangeslider/css/ion.rangeSlider';
 
 // generic
@@ -50,47 +49,28 @@
 // @import "bootstrap/scss/nav";
 // @import "bootstrap/scss/navbar";
 @import 'bootstrap/scss/card';
-@import 'bootstrap/scss/breadcrumb';
-@import '../site-common/components/breadcrumb';
-@import 'bootstrap/scss/pagination';
-@import '../site-common/components/pagination';
 @import 'bootstrap/scss/badge';
-@import '../site-common/components/sami';
 @import 'bootstrap/scss/jumbotron';
 @import 'bootstrap/scss/alert';
-@import '../site-common/components/progress';
 @import 'bootstrap/scss/media';
 @import '../site-common/components/lists';
 @import 'bootstrap/scss/list-group';
-@import '../site-common/components/list-group';
 @import 'bootstrap/scss/close';
 @import '../site-common/components/close';
 @import 'bootstrap/scss/toasts';
 @import 'bootstrap/scss/modal';
 @import '../site-common/components/modal';
 @import 'bootstrap/scss/tooltip';
-@import 'bootstrap/scss/popover';
-@import '../site-common/components/popover';
 @import 'bootstrap/scss/carousel';
 @import 'bootstrap/scss/spinners';
 @import '../site-common/components/management-item';
 @import '../site-common/components/chips';
-@import '../site-common/components/accordion';
 @import '../site-common/components/toolbar';
-@import '../site-common/components/navtabs';
-@import '../site-common/components/flatpickr';
 @import '../site-common/components/form-toolbar';
 @import '../site-common/components/range-slider';
-@import '../site-common/components/advanced-search';
 @import '../site-common/components/tables';
-@import '../site-common/components/table-filters';
-@import '../site-common/components/schedule';
-@import '../site-common/components/schedule-filters';
-@import '../site-common/components/schedule-planning-menu';
 @import 'components/options-menu';
 @import 'components/mobile-menu';
-@import '../site-common/components/chart-tooltip';
-@import '../site-common/components/charts';
 
 // trumps
 @import 'bootstrap/scss/utilities';
