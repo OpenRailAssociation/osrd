@@ -394,29 +394,112 @@
   },
   {
     "train_name": "Train11",
-    "labels": [],
-    "rolling_stock_name": "",
-    "start_time": "2024-10-17T09:45:43Z",
+    "labels": ["Tag-11", "NWS-NES"],
+    "rolling_stock_name": "DUAL-MODE_RS_E2E",
+    "start_time": "2024-10-17T09:45:43.000Z",
     "path": [
-      { "id": "id3807", "location": { "track": "TA6", "offset": 8058000 } },
-      { "id": "id3822", "location": { "track": "TD0", "offset": 10809000 } },
-      { "id": "id3855", "location": { "track": "TG2", "offset": 1686000 } }
+      {
+        "id": "b4df37d0-ffe2-4166-b7b6-8c0c5a47e9b0",
+        "location": {
+          "operational_point": {
+            "uic": 8777,
+            "secondary_code": "BV",
+            "type": "uic"
+          },
+          "track_reference": null
+        }
+      },
+      {
+        "id": "b29c5a41-37cc-49cc-90f7-9ddc9ebc5e0c",
+        "location": {
+          "track": "TF1",
+          "offset": 1435
+        }
+      },
+      {
+        "id": "id2659",
+        "location": {
+          "operational_point": {
+            "uic": 8744,
+            "secondary_code": "BV",
+            "type": "uic"
+          },
+          "track_reference": null
+        }
+      },
+      {
+        "id": "id2492",
+        "location": {
+          "track": "TD0",
+          "offset": 11080000
+        }
+      },
+      {
+        "id": "id2570",
+        "location": {
+          "operational_point": {
+            "uic": 8733,
+            "secondary_code": "BV",
+            "type": "uic"
+          },
+          "track_reference": null
+        }
+      },
+      {
+        "id": "01074160-42ec-4354-986d-338fd2d9d77b",
+        "location": {
+          "track": "TI3",
+          "offset": 240000
+        }
+      },
+      {
+        "id": "dbc7c80b-aee0-4835-8857-63863dae2ff1",
+        "location": {
+          "operational_point": {
+            "uic": 8799,
+            "secondary_code": "BC",
+            "type": "uic"
+          },
+          "track_reference": null
+        }
+      }
     ],
     "schedule": [
       {
-        "at": "id3855",
-        "arrival": null,
-        "stop_for": "P0D",
-        "reception_signal": "OPEN"
+        "at": "id2659",
+        "reception_signal": "SHORT_SLIP_STOP",
+        "stop_for": "PT2M4S"
+      },
+      {
+        "at": "id2570",
+        "arrival": "PT2H55M54S",
+        "reception_signal": "OPEN",
+        "stop_for": "PT10M"
+      },
+      {
+        "at": "dbc7c80b-aee0-4835-8857-63863dae2ff1",
+        "reception_signal": "OPEN",
+        "stop_for": "P0D"
       }
     ],
-    "margins": { "boundaries": [], "values": ["0%"] },
-    "initial_speed": 0,
     "comfort": "STANDARD",
     "constraint_distribution": "MARECO",
     "speed_limit_tag": "MA100",
     "power_restrictions": [],
-    "options": { "use_electrical_profiles": true }
+    "category": {
+      "main_category": "FREIGHT_TRAIN"
+    },
+
+    "initial_speed": 27.777777777777779,
+    "margins": {
+      "boundaries": ["dbc7c80b-aee0-4835-8857-63863dae2ff1"],
+      "values": ["5%", "0%"]
+    },
+    "options": {
+      "use_electrical_profiles": false,
+      "use_speed_limits_for_simulation": true,
+      "stops_at_end_of_block": false
+    }
   },
   {
     "train_name": "Train12",

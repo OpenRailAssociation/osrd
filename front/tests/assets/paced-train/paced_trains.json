@@ -131,39 +131,204 @@
     }
   },
   {
-    "train_name": "Paced Train - Updated exception (Speed limit tag)",
-    "labels": ["Invalid"],
+    "timetable_id": 428,
+    "train_name": "Paced Train - All exceptions",
+    "labels": ["NWS-NES", "Invalid"],
     "rolling_stock_name": "",
     "start_time": "2024-10-15T09:45:43Z",
     "path": [
-      { "id": "id3807", "location": { "track": "TA6", "offset": 8058000 } },
-      { "id": "id3822", "location": { "track": "TD0", "offset": 10809000 } },
-      { "id": "id3855", "location": { "track": "TG2", "offset": 1686000 } }
+      {
+        "id": "8bf52569-50a5-46a5-8e62-b5626460cfba",
+        "location": {
+          "operational_point": { "uic": 8777, "secondary_code": "BV", "type": "uic" },
+          "track_reference": null
+        }
+      },
+      {
+        "id": "id2492",
+        "location": { "track": "TD0", "offset": 11080000 }
+      },
+      {
+        "id": "3cbdab53-120e-460b-8f4b-e0ecc7cae836",
+        "location": { "track": "TI0", "offset": 246000 }
+      }
     ],
     "schedule": [
       {
-        "at": "id3855",
+        "at": "id2492",
+        "arrival": null,
+        "stop_for": "PT300S",
+        "reception_signal": "STOP"
+      },
+      {
+        "at": "3cbdab53-120e-460b-8f4b-e0ecc7cae836",
         "arrival": null,
         "stop_for": "P0D",
         "reception_signal": "OPEN"
       }
     ],
-    "margins": { "boundaries": [], "values": ["0%"] },
+    "margins": {
+      "boundaries": [],
+      "values": ["0%"]
+    },
     "initial_speed": 0,
     "comfort": "STANDARD",
     "constraint_distribution": "MARECO",
-    "speed_limit_tag": "MA100",
+    "speed_limit_tag": null,
     "power_restrictions": [],
-    "options": { "use_electrical_profiles": true },
+    "options": {
+      "use_electrical_profiles": false,
+      "use_speed_limits_for_simulation": true
+    },
+    "category": {
+      "main_category": "FREIGHT_TRAIN"
+    },
     "paced": {
-      "time_window": "PT2H",
-      "interval": "PT1H",
+      "time_window": "PT15000S",
+      "interval": "PT3900S",
       "exceptions": [
         {
+          "key": "0d03f1d8-6791-4380-87f1-3bf14e2f12d8",
+          "occurrence_index": 1,
           "disabled": false,
-          "key": "e05qs3b19-d957-47ac-9a96-834f44ab842a",
-          "occurrence_index": 0,
-          "speed_limit_tag": { "value": "HLP" }
+          "train_name": {
+            "value": "Paced Train - All exceptions 31"
+          },
+          "speed_limit_tag": {
+            "value": "MA100"
+          },
+          "path_and_schedule": {
+            "path": [
+              {
+                "id": "id2458",
+                "location": { "track": "TG4", "offset": 1549000 }
+              },
+              {
+                "id": "id2570",
+                "location": {
+                  "operational_point": { "uic": 8733, "secondary_code": "BV", "type": "uic" },
+                  "track_reference": null
+                }
+              },
+              {
+                "id": "8369cfc6-e667-4b6b-965a-79795c94dd18",
+                "location": {
+                  "operational_point": { "uic": 8799, "secondary_code": "BV", "type": "uic" },
+                  "track_reference": null
+                }
+              }
+            ],
+            "schedule": [
+              {
+                "at": "8369cfc6-e667-4b6b-965a-79795c94dd18",
+                "arrival": null,
+                "stop_for": "P0D",
+                "reception_signal": "OPEN"
+              }
+            ],
+            "margins": {
+              "boundaries": ["8369cfc6-e667-4b6b-965a-79795c94dd18"],
+              "values": ["5%", "0%"]
+            },
+            "power_restrictions": []
+          }
+        },
+        {
+          "key": "1ed321cd-984a-4b3e-9764-ca70fcc95bbc",
+          "occurrence_index": 2,
+          "disabled": false,
+          "rolling_stock": {
+            "rolling_stock_name": "IME_RS_E2E",
+            "comfort": "STANDARD"
+          },
+          "labels": {
+            "value": []
+          },
+          "start_time": {
+            "value": "2024-10-15T14:10:42Z"
+          },
+          "path_and_schedule": {
+            "path": [
+              {
+                "id": "id2458",
+                "location": { "track": "TG4", "offset": 1549000 }
+              },
+              {
+                "id": "id2659",
+                "location": {
+                  "operational_point": { "uic": 8744, "secondary_code": "BV", "type": "uic" },
+                  "track_reference": null
+                }
+              },
+              {
+                "id": "id2492",
+                "location": { "track": "TD0", "offset": 11080000 }
+              },
+              {
+                "id": "id2570",
+                "location": {
+                  "operational_point": { "uic": 8733, "secondary_code": "BV", "type": "uic" },
+                  "track_reference": null
+                }
+              },
+              {
+                "id": "b174dfa7-f6e7-45d9-9545-469a64e675b9",
+                "location": {
+                  "operational_point": { "uic": 8799, "secondary_code": "BC", "type": "uic" },
+                  "track_reference": null
+                }
+              }
+            ],
+            "schedule": [
+              {
+                "at": "id2659",
+                "arrival": null,
+                "stop_for": "PT124S",
+                "reception_signal": "SHORT_SLIP_STOP"
+              },
+              {
+                "at": "id2570",
+                "arrival": "PT10554S",
+                "stop_for": "PT600S",
+                "reception_signal": "OPEN"
+              },
+              {
+                "at": "b174dfa7-f6e7-45d9-9545-469a64e675b9",
+                "arrival": null,
+                "stop_for": "P0D",
+                "reception_signal": "OPEN"
+              }
+            ],
+            "margins": {
+              "boundaries": [],
+              "values": ["0%"]
+            },
+            "power_restrictions": []
+          }
+        },
+        {
+          "key": "c929f87a-7872-44c8-ae07-17f9872e0e94",
+          "occurrence_index": 3,
+          "disabled": false,
+          "rolling_stock_category": {
+            "value": null
+          },
+          "start_time": {
+            "value": "2024-10-15T18:22:11Z"
+          },
+          "initial_speed": {
+            "value": 41.666666666666664
+          }
+        },
+        {
+          "key": "1cadb9cb-645f-47c0-88b1-2715d4b469ed",
+          "disabled": false,
+          "speed_limit_tag": {
+            "value": "MA100"
+          },
+          "start_time": {
+            "value": "2024-10-15T20:30:16Z"
+          }
         }
       ]
     }

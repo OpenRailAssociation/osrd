@@ -13,9 +13,9 @@ export type Waypoint = {
   checked?: boolean;
 };
 
-const requestedDestination = frScenarioTranslations.requestedDestination;
+export const requestedDestination = frScenarioTranslations.requestedDestination;
 
-function requestedPoint(number: string): string {
+export function requestedPoint(number: string): string {
   return frScenarioTranslations.requestedPoint.replaceAll('{{ count }}', number);
 }
 
