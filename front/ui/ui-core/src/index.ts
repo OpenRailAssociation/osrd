@@ -33,6 +33,6 @@ export {
   type ToleranceValues,
 } from './components/TolerancePicker/TolerancePicker';
 export { default as TokenInput, TokenInputProps } from './components/TokenInput';
-export { default as Table } from './components/Table';
+export { default as Table } from './components/Table/Table';
 export { default as Dialog } from './components/Dialog';
 export { default as SegmentedControl, SegmentedControlProps } from './components/SegmentedControl';
