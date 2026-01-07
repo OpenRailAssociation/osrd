@@ -39,7 +39,7 @@ const StcdmResultsTable = ({
   };
 
   return (
-    <div className="table-container">
+    <div className="stdcm-result-table-container">
       <table data-testid="table-results" className="table-results">
         <thead>
           <tr>
