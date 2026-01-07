@@ -52,6 +52,7 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
                 train_ids: editoastIds,
                 operational_points_refs: this.opRefs,
                 operational_points_distances: this.opDistances,
+                use_simulation: true,
               },
             },
 

@@ -1980,6 +1980,7 @@ export type PostPacedTrainProjectPathOpApiArg = {
         }
     )[];
     train_ids: number[];
+    use_simulation: boolean;
   };
 };
 export type PostPacedTrainSimulationSummaryApiResponse =

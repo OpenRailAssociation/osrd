@@ -2318,6 +2318,7 @@ paths:
               - train_ids
               - operational_points_refs
               - operational_points_distances
+              - use_simulation
               properties:
                 electrical_profile_set_id:
                   type:
@@ -2400,6 +2401,8 @@ paths:
                     type: integer
                     format: int64
                   uniqueItems: true
+                use_simulation:
+                  type: boolean
         required: true
       responses:
         '200':
