@@ -215,7 +215,7 @@ const ManageTimetableItem = () => {
       <div>
         <SimulationSettings
           selectedSpeedLimitByTag={speedLimitByTag}
-          speedLimitsByTags={speedLimitTags}
+          speedLimitTags={speedLimitTags}
           dispatchUpdateSpeedLimitByTag={onSelectSpeedLimitTag}
           constraintDistribution={constraintDistribution}
         />

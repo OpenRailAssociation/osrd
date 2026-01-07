@@ -11,7 +11,7 @@ type SpeedLimitByTagSelectorProps = {
   condensed?: boolean;
   disabled?: boolean;
   selectedSpeedLimitByTag?: string;
-  speedLimitsByTags: string[];
+  speedLimitTags: string[];
   dispatchUpdateSpeedLimitByTag: (newTag: string | null) => void;
   className?: string;
   showPlaceHolder?: boolean;
@@ -22,7 +22,7 @@ export default function SpeedLimitByTagSelector({
   condensed = false,
   disabled = false,
   selectedSpeedLimitByTag: speedLimitByTag,
-  speedLimitsByTags,
+  speedLimitTags,
   dispatchUpdateSpeedLimitByTag,
   className = '',
   showPlaceHolder = false,
@@ -31,8 +31,8 @@ export default function SpeedLimitByTagSelector({
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
 
   const speedLimitsTagsList = useMemo(
-    () => (!isEmpty(speedLimitsByTags) ? speedLimitsByTags : []),
-    [speedLimitsByTags]
+    () => (!isEmpty(speedLimitTags) ? speedLimitTags : []),
+    [speedLimitTags]
   );
 
   if (!speedLimitsTagsList.length) return null;
