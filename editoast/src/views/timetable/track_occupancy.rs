@@ -259,10 +259,10 @@ pub mod tests {
 
         let report_train = ReportTrain {
             positions: vec![0, 50, 100, 150],
-            times: vec![0, expected_time, 2000, 3000],
+            times: vec![0, expected_time, 2000, 5000],
             speeds: vec![10.0; 4],
             energy_consumption: 0.0,
-            path_item_times: vec![0, expected_time, 2000],
+            path_item_times: vec![0, expected_time, 5000],
         };
 
         // Create a train schedule with path items and schedule items
