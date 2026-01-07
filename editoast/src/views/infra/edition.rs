@@ -33,7 +33,6 @@ use crate::error::Result;
 use crate::generated_data;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
-use crate::infra_cache::object_cache::OperationalPointPartCache;
 use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::operation::DeleteOperation;
 use crate::infra_cache::operation::Operation;
@@ -597,11 +596,12 @@ fn get_split_operations_for_impacted(
                             }));
                         } else {
                             patch_operations.push(PatchOperation::Replace(ReplaceOperation {
-                                path: format!("/parts/{index}").parse().unwrap(),
-                                value: json!(OperationalPointPartCache {
-                                    track: Identifier::from(right_tracksection_id),
-                                    position: part.position - distance,
-                                }),
+                                path: format!("/parts/{index}/track").parse().unwrap(),
+                                value: json!(Identifier::from(right_tracksection_id)),
+                            }));
+                            patch_operations.push(PatchOperation::Replace(ReplaceOperation {
+                                path: format!("/parts/{index}/position").parse().unwrap(),
+                                value: json!(part.position - distance),
                             }));
                         }
                     }

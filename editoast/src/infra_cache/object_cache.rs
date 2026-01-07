@@ -18,6 +18,7 @@ pub use level_crossing_cache::LevelCrossingCache;
 #[cfg(test)]
 pub use level_crossing_cache::LevelCrossingPartCache;
 pub use operational_point_cache::OperationalPointCache;
+#[cfg(test)]
 pub use operational_point_cache::OperationalPointPartCache;
 pub use signal_cache::SignalCache;
 pub use switch_cache::SwitchCache;
