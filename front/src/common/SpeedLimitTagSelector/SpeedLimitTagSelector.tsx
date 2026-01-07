@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 
 import { createStandardSelectOptions } from 'utils/uiCoreHelpers';
 
-type SpeedLimitByTagSelectorProps = {
+type SpeedLimitTagSelectorProps = {
   condensed?: boolean;
   disabled?: boolean;
   selectedSpeedLimitByTag?: string;
@@ -18,7 +18,7 @@ type SpeedLimitByTagSelectorProps = {
   narrow?: boolean;
 };
 
-export default function SpeedLimitByTagSelector({
+const SpeedLimitTagSelector = ({
   condensed = false,
   disabled = false,
   selectedSpeedLimitByTag: speedLimitByTag,
@@ -27,7 +27,7 @@ export default function SpeedLimitByTagSelector({
   className = '',
   showPlaceHolder = false,
   narrow = false,
-}: SpeedLimitByTagSelectorProps) {
+}: SpeedLimitTagSelectorProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
 
   const speedLimitsTagsList = useMemo(
@@ -66,4 +66,6 @@ export default function SpeedLimitByTagSelector({
       </div>
     </div>
   );
-}
+};
+
+export default SpeedLimitTagSelector;

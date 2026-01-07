@@ -21,7 +21,7 @@ import type {
   LoadingGaugeType,
 } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions } from 'common/osrdContext';
-import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector';
+import SpeedLimitTagSelector from 'common/SpeedLimitTagSelector';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
@@ -342,7 +342,7 @@ const StdcmConsist = ({
         />
       </div>
       <div className="stdcm-consist__properties">
-        <SpeedLimitByTagSelector
+        <SpeedLimitTagSelector
           disabled={disabled}
           selectedSpeedLimitByTag={speedLimitByTag}
           speedLimitTags={speedLimitTags}
