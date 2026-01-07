@@ -66,6 +66,22 @@ fn extract_occupancy_context<'a>(
         _ => None,
     };
 
+    OccupancyContext {
+        report_train,
+        pathfinding_success,
+        ..extract_occupancy_context_without_simulation(
+            operational_point_id,
+            path_item_cache,
+            train_schedule,
+        )
+    }
+}
+
+fn extract_occupancy_context_without_simulation<'a>(
+    operational_point_id: &str,
+    path_item_cache: &PathItemCache,
+    train_schedule: &'a schemas::TrainSchedule,
+) -> OccupancyContext<'a> {
     let matching_index =
         find_matching_path_item_index(&train_schedule.path, operational_point_id, path_item_cache);
 
@@ -77,8 +93,8 @@ fn extract_occupancy_context<'a>(
     });
 
     OccupancyContext {
-        report_train,
-        pathfinding_success,
+        report_train: None,
+        pathfinding_success: None,
         matching_index,
         schedule_item,
     }
@@ -170,7 +186,39 @@ pub fn find_track_occupancy_for_operational_point(
         pathfinding,
         train_schedule,
     );
+    find_track_occupancy_for_operational_point_with_context(
+        context,
+        operational_point_track_offsets,
+        path_item_cache,
+        train_schedule,
+    )
+}
 
+pub fn find_track_occupancy_for_operational_point_without_simulation(
+    operational_point_id: &str,
+    operational_point_track_offsets: &[TrackOffset],
+    path_item_cache: &PathItemCache,
+    train_schedule: &schemas::TrainSchedule,
+) -> Vec<TrackOccupancy> {
+    let context = extract_occupancy_context_without_simulation(
+        operational_point_id,
+        path_item_cache,
+        train_schedule,
+    );
+    find_track_occupancy_for_operational_point_with_context(
+        context,
+        operational_point_track_offsets,
+        path_item_cache,
+        train_schedule,
+    )
+}
+
+fn find_track_occupancy_for_operational_point_with_context<'a>(
+    context: OccupancyContext<'a>,
+    operational_point_track_offsets: &[TrackOffset],
+    path_item_cache: &PathItemCache,
+    train_schedule: &schemas::TrainSchedule,
+) -> Vec<TrackOccupancy> {
     let arrival_time = match get_arrival_time(&context, operational_point_track_offsets) {
         Some(time) => time,
         None => return vec![],

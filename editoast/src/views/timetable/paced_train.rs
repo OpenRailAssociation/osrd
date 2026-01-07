@@ -1162,6 +1162,7 @@ pub(in crate::views) struct TrackOccupancyForm {
     operational_point_id: String,
     infra_id: i64,
     electrical_profile_set_id: Option<i64>,
+    use_simulation: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
@@ -1199,6 +1200,7 @@ pub(in crate::views) async fn track_occupancy(
         operational_point_id,
         infra_id,
         electrical_profile_set_id,
+        use_simulation,
     }): Json<TrackOccupancyForm>,
 ) -> Result<Json<HashMap<String, Vec<TrackOccupancy>>>> {
     let authorized = auth
@@ -1248,17 +1250,6 @@ pub(in crate::views) async fn track_occupancy(
         .flat_map(|paced_train| paced_train.iter_occurrences())
         .unzip();
 
-    let simulations_result = train_simulation_batch(
-        conn,
-        valkey_client,
-        core_client,
-        &trains,
-        &infra,
-        electrical_profile_set_id,
-        config.app_version.as_deref(),
-    )
-    .await?;
-
     // Get track positions at the operational point
     let operational_point_track_offsets = operational_point.schema.track_offset();
 
@@ -1271,7 +1262,18 @@ pub(in crate::views) async fn track_occupancy(
     let path_item_cache = PathItemCache::load(db_pool.get().await?, infra_id, &path_items).await?;
 
     // For each occurrence + simulation result, compute track occupancies
-    let all_occupancies: Vec<(String, TrackOccupancy)> =
+    let all_occupancies = if use_simulation {
+        let simulations_result = train_simulation_batch(
+            conn,
+            valkey_client,
+            core_client,
+            &trains,
+            &infra,
+            electrical_profile_set_id,
+            config.app_version.as_deref(),
+        )
+        .await?;
+
         izip!(train_ids, trains, simulations_result)
             .flat_map(|(train_id, train, (simulation, pathfinding))| {
                 track_occupancy::find_track_occupancy_for_operational_point(
@@ -1299,7 +1301,35 @@ pub(in crate::views) async fn track_occupancy(
                 )
                 .collect_vec()
             })
-            .collect();
+            .collect_vec()
+    } else {
+        izip!(train_ids, trains)
+            .flat_map(|(train_id, train_schedule)| {
+                track_occupancy::find_track_occupancy_for_operational_point_without_simulation(
+                    &operational_point_id,
+                    &operational_point_track_offsets,
+                    &path_item_cache,
+                    &train_schedule,
+                )
+                .into_iter()
+                .map(
+                    |track_occupancy::TrackOccupancy {
+                         track_section,
+                         time_window,
+                     }| {
+                        (
+                            track_section,
+                            TrackOccupancy {
+                                train_id: train_id.clone(),
+                                time_window,
+                            },
+                        )
+                    },
+                )
+                .collect_vec()
+            })
+            .collect_vec()
+    };
 
     // Group occupancies by track section
     let results: HashMap<String, Vec<TrackOccupancy>> =
@@ -2363,6 +2393,7 @@ mod tests {
                 operational_point_id,
                 infra_id: small_infra.id,
                 electrical_profile_set_id: None,
+                use_simulation: true,
             });
 
         app.fetch(request).await
