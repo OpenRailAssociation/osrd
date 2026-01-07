@@ -675,8 +675,34 @@ fn get_split_operations_for_impacted(
                     railjson_patch: Patch(patch_operations),
                 }));
             }
-            //TODO: implement logic
-            ObjectType::LevelCrossing => (),
+            ObjectType::LevelCrossing => {
+                let level_crossing = infra_cache.get_level_crossing(&obj.obj_id).unwrap();
+                let mut patch_operations: Vec<PatchOperation> = Vec::<PatchOperation>::new();
+                for (index, part) in level_crossing.parts.iter().enumerate() {
+                    if part.track == tracksection.id {
+                        if part.position <= distance {
+                            patch_operations.push(PatchOperation::Replace(ReplaceOperation {
+                                path: format!("/parts/{index}/track").parse().unwrap(),
+                                value: json!(Identifier::from(left_tracksection_id)),
+                            }));
+                        } else {
+                            patch_operations.push(PatchOperation::Replace(ReplaceOperation {
+                                path: format!("/parts/{index}/track").parse().unwrap(),
+                                value: json!(Identifier::from(right_tracksection_id)),
+                            }));
+                            patch_operations.push(PatchOperation::Replace(ReplaceOperation {
+                                path: format!("/parts/{index}/position").parse().unwrap(),
+                                value: json!(part.position - distance),
+                            }));
+                        }
+                    }
+                }
+                operations.push(Operation::Update(UpdateOperation {
+                    obj_type: obj.obj_type,
+                    obj_id: obj.obj_id.to_string(),
+                    railjson_patch: Patch(patch_operations),
+                }));
+            }
             // TODO: route
             ObjectType::Route => (),
             // TrackSection doesn't depend on track
@@ -1464,5 +1490,54 @@ pub mod tests {
         let sa6_2 = infra_cache.get_signal("SA6_2").unwrap();
         assert_eq!(sa6_2.track.as_str(), right_track_id);
         assert_eq!(sa6_2.position, 1380.0);
+    }
+
+    #[rstest::rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    #[case("TC0", 500_000, "lc2", 125.0, 0)] // part at 125m on TC0, split at 500m -> stays on left at 125m
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    #[case("TC1", 100_000, "lc2", 20.0, 1)] // part at 120m on TC1, split at 100m -> goes to right at 20m
+    async fn split_track_section_with_level_crossings(
+        #[case] track: &str,
+        #[case] offset: u64,
+        #[case] lc_id: &str,
+        #[case] expected_position: f64,
+        #[case] expected_track_index: usize, // 0 for left, 1 for right
+    ) {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+
+        let req_refresh =
+            app.post(format!("/infra/refresh/?infras={}&force=true", small_infra.id).as_str());
+        app.fetch(req_refresh).await.assert_status(StatusCode::OK);
+
+        let request = app
+            .post(format!("/infra/{}/split_track_section", small_infra.id).as_str())
+            .json(&json!({
+                "track": track,
+                "offset": offset,
+            }));
+        let res: Vec<String> = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
+
+        assert_eq!(res.len(), 2);
+        let expected_track_id = &res[expected_track_index];
+
+        let infra_cache = InfraCache::load(&mut db_pool.get_ok(), &small_infra)
+            .await
+            .unwrap();
+        let lc = infra_cache.get_level_crossing(lc_id).unwrap();
+        let parts_on_track: Vec<_> = lc
+            .parts
+            .iter()
+            .filter(|p| p.track.as_str() == expected_track_id)
+            .collect();
+
+        assert_eq!(parts_on_track.len(), 1);
+        assert_eq!(parts_on_track[0].position, expected_position);
     }
 }
