@@ -80,15 +80,17 @@ const TrainScheduleSetTab = ({
               : computeTrainScheduleSetName(trainScheduleSet.name!, catalogName)}
           </span>
         </div>
-        <MenuTriggerButton
-          buttonProps={{
-            // TODO Package : adapt when back ready
-            disabled: isSandbox(trainScheduleSet) || true,
-          }}
-          menuProps={{
-            items: [],
-          }}
-        />
+        {!isSandbox(trainScheduleSet) && (
+          <MenuTriggerButton
+            buttonProps={{
+              // TODO Package : adapt when back ready
+              disabled: isSandbox(trainScheduleSet) || true,
+            }}
+            menuProps={{
+              items: [],
+            }}
+          />
+        )}
       </div>
       {isTrainListOpen && children}
     </>
