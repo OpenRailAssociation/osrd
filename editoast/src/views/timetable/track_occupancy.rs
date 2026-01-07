@@ -12,7 +12,6 @@ use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::projection::PathProjection;
 use crate::views::projection::interpolate_arrival_time;
 use crate::views::timetable::simulation;
-use crate::views::timetable::simulation::SimulationResponseSuccess;
 
 #[derive(Debug, Clone)]
 pub(super) struct TrackOccupancy {
@@ -54,9 +53,11 @@ fn extract_occupancy_context<'a>(
     train_schedule: &'a schemas::TrainSchedule,
 ) -> OccupancyContext<'a> {
     let report_train = match simulation {
-        simulation::Response::Success(SimulationResponseSuccess { final_output, .. }) => {
-            Some(&final_output.report_train)
-        }
+        simulation::Response::Success(simulation) => simulation
+            .path_item_respect_times(train_schedule)
+            .into_iter()
+            .all(|path_item| path_item)
+            .then_some(&simulation.final_output.report_train),
         _ => None,
     };
 
@@ -201,6 +202,7 @@ pub fn find_track_occupancy_for_operational_point(
 pub mod tests {
     use crate::error::InternalError;
     use crate::views::path::pathfinding::PathfindingFailure;
+    use crate::views::timetable::simulation::SimulationResponseSuccess;
     use chrono::DateTime;
     use core_client::pathfinding::PathfindingNotFound;
     use core_client::pathfinding::TrackRange;
