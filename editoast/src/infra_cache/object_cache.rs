@@ -14,7 +14,6 @@ mod track_section_cache;
 pub use buffer_stop_cache::BufferStopCache;
 pub use detector_cache::DetectorCache;
 pub use level_crossing_cache::LevelCrossingCache;
-// TODO : update once it is used for edition (use only in test for now)
 #[cfg(test)]
 pub use level_crossing_cache::LevelCrossingPartCache;
 pub use operational_point_cache::OperationalPointCache;
