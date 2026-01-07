@@ -38,8 +38,10 @@ const TrainScheduleSetDialog = ({ onCancel }: TrainScheduleSetDialogProps) => {
     { skip: !!MOCK_CATALOG }
   );
 
-  const [postTrainScheduleSet] = osrdEditoastApi.endpoints.postTrainScheduleSet.useMutation();
-  const [postCatalogEntry] = osrdEditoastApi.endpoints.postCatalogEntry.useMutation();
+  const [postTrainScheduleSet, { isLoading: isPostTrainScheduleSetLoading }] =
+    osrdEditoastApi.endpoints.postTrainScheduleSet.useMutation();
+  const [postCatalogEntry, { isLoading: isPostCatalogEntryLoading }] =
+    osrdEditoastApi.endpoints.postCatalogEntry.useMutation();
 
   const catalogEntries = useMemo(() => {
     // TODO Package : return [] when back ready
@@ -110,13 +112,19 @@ const TrainScheduleSetDialog = ({ onCancel }: TrainScheduleSetDialogProps) => {
       header={<h5>{t('newLocalTrainScheduleSet')}</h5>}
       footer={
         <>
-          <Button variant="Cancel" label={t('cancel')} onClick={onCancel} />
+          <Button
+            variant="Cancel"
+            label={t('cancel')}
+            onClick={onCancel}
+            isDisabled={isPostTrainScheduleSetLoading || isPostCatalogEntryLoading}
+          />
           <Button
             label={t('addTrainScheduleSet')}
             className={cx('submit-button', {
               'wizz-effect': catalogEntryError !== 'none' || isNameMissing,
             })}
             onClick={handleSubmit}
+            isLoading={isPostTrainScheduleSetLoading || isPostCatalogEntryLoading}
           />
         </>
       }
