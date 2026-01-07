@@ -306,7 +306,7 @@ const SimulationResults = ({
           {/* TIME STOPS TABLE */}
           <BoardWrapper
             hidden={!activeBoards.has('tables')}
-            name={t('simulationResults.timetableOutput')}
+            name={simulationResults.train.train_name}
             items={[
               {
                 title: displayOnlyPathSteps

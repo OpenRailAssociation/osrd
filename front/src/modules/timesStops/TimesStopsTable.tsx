@@ -27,46 +27,68 @@ const TimesStopsTable = ({ rows, dataIsLoading }: TimesStopsTableProps) => {
     () => [
       columnHelper.display({
         id: 'index',
-        header: '#',
         cell: (info) => info.row.original.index + 1,
+        meta: {
+          className: 'col-index',
+        },
       }),
       columnHelper.accessor('name', {
-        header: () => t('name'),
+        header: () => t('operational_point'),
         cell: (info) => {
-          const name = info.getValue();
-          const secondaryCode = info.row.original.secondaryCode;
-          const displayName = secondaryCode ? `${name} ${secondaryCode}` : name;
+          const { name, secondaryCode } = info.row.original;
+
           return (
-            <span title={displayName}>
+            <div title={`${name}${secondaryCode ? ` ${secondaryCode}` : ''}`}>
               <span>{name}</span>
-              {secondaryCode && <span>{secondaryCode}</span>}
-            </span>
+              {secondaryCode && <span className="secondary-code"> {secondaryCode}</span>}
+            </div>
           );
+        },
+        meta: {
+          className: 'col-name',
         },
       }),
       columnHelper.accessor('track', {
         header: () => t('trackName'),
         cell: (info) => info.getValue() ?? '',
+        meta: {
+          className: 'col-track',
+        },
       }),
       columnHelper.accessor('requestedArrival', {
         header: () => t('arrivalTime'),
         cell: (info) => (info.getValue() ? formatLocalTime(info.getValue()!) : ''),
+        meta: {
+          className: 'col-arrivalTime',
+        },
       }),
       columnHelper.accessor('computedArrival', {
         header: () => t('calculatedArrivalTime'),
         cell: (info) => (info.getValue() ? formatLocalTime(info.getValue()!) : ''),
+        meta: {
+          className: 'col-computedArrival',
+        },
       }),
       columnHelper.accessor('stopDuration', {
         header: () => t('stopTime'),
         cell: (info) => info.getValue()?.total('second') ?? '',
+        meta: {
+          className: 'col-stopDuration',
+        },
       }),
       columnHelper.accessor('requestedDeparture', {
         header: () => t('departureTime'),
         cell: (info) => (info.getValue() ? formatLocalTime(info.getValue()!) : ''),
+        meta: {
+          className: 'col-requestedDeparture',
+        },
       }),
       columnHelper.accessor('computedDeparture', {
         header: () => t('calculatedDepartureTime'),
         cell: (info) => (info.getValue() ? formatLocalTime(info.getValue()!) : ''),
+        meta: {
+          className: 'col-computedDeparture',
+        },
       }),
     ],
     [t]
@@ -97,15 +119,16 @@ const TimesStopsTable = ({ rows, dataIsLoading }: TimesStopsTableProps) => {
 
   return (
     <div className="times-stops-table-new">
-      <table>
+      <table className="table-container">
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
-                <th key={header.id}>
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(header.column.columnDef.header, header.getContext())}
+                <th
+                  key={header.id}
+                  className={(header.column.columnDef.meta as { className?: string })?.className}
+                >
+                  {flexRender(header.column.columnDef.header, header.getContext())}
                 </th>
               ))}
             </tr>
@@ -115,7 +138,12 @@ const TimesStopsTable = ({ rows, dataIsLoading }: TimesStopsTableProps) => {
           {table.getRowModel().rows.map((row) => (
             <tr key={row.id}>
               {row.getVisibleCells().map((cell) => (
-                <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                <td
+                  key={cell.id}
+                  className={(cell.column.columnDef.meta as { className?: string })?.className}
+                >
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </td>
               ))}
             </tr>
           ))}

@@ -824,6 +824,7 @@
     "diffMarginsFull": "margins difference (s)",
     "name": "CI",
     "noPathLoaded": "No path loaded",
+    "operational_point": "operational point",
     "realMargin": "real margin (s)",
     "receptionOnClosedSignal": "r. closed signal",
     "receptionOnClosedSignalFull": "reception on closed signal",

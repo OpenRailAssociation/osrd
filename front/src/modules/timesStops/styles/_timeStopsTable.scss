@@ -1,0 +1,109 @@
+.table-container {
+  width: 100%;
+  border-collapse: collapse;
+  border: none;
+
+  /* =========================
+   * Common cells
+   * ========================= */
+  th,
+  td {
+    height: 40px;
+    font-weight: 400;
+    border: 1px solid rgba(182, 178, 175, 1);
+  }
+
+  /* =========================
+   * Header
+   * ========================= */
+  thead {
+    th {
+      background: rgba(0, 0, 0, 0.05);
+      padding-inline: 8px;
+      padding-top: 4px;
+      font-size: 12px;
+      line-height: 14px;
+      color: #797171;
+      text-align: left;
+      vertical-align: top;
+    }
+  }
+
+  /* =========================
+   * Table body
+   * ========================= */
+  tbody {
+    tr {
+      &:nth-child(odd) {
+        background: rgba(247, 246, 238, 1);
+      }
+
+      &:nth-child(even) {
+        background: rgba(242, 240, 228, 1);
+      }
+    }
+  }
+
+  /* =========================
+   * Common columns
+   * ========================= */
+  td[class^='col-'] {
+    color: rgba(49, 46, 43, 1);
+    text-align: center;
+    vertical-align: middle;
+    padding-left: 0;
+    font-size: 16px;
+    line-height: 24px;
+    box-shadow: inset 0 1px 0 rgb(250, 245, 245);
+  }
+
+  /* =========================
+   * Specific columns
+   * ========================= */
+  td.col-index {
+    width: 40px;
+    font-size: 10px;
+    line-height: 16px;
+    color: rgba(121, 118, 113, 1);
+  }
+
+  td.col-name {
+    text-align: left;
+    padding-left: 16px;
+
+    .secondary-code {
+      float: right;
+      padding-right: 16px;
+      font-size: 14px;
+      color: rgba(121, 118, 113, 1);
+    }
+  }
+
+  td.col-track {
+    font-size: 12px;
+  }
+
+  /* =========================
+   * Removal of external borders
+   * ========================= */
+  tr:first-child th {
+    border-top: none;
+  }
+
+  tr:last-child {
+    th,
+    td {
+      border-bottom: none;
+    }
+  }
+
+  th:first-child,
+  td:first-child {
+    border-left: none;
+  }
+
+  th:last-child,
+  td:last-child {
+    border-right: none;
+  }
+}
