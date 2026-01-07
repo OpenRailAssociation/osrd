@@ -163,11 +163,11 @@
         display: flex;
         flex-direction: column;
 
-        .table-container::-webkit-scrollbar {
+        .stdcm-result-table-container::-webkit-scrollbar {
           display: none; /* Safari and Chrome */
         }
 
-        .table-container {
+        .stdcm-result-table-container {
           max-height: calc(100vh - 180px);
           overflow-y: auto;
           scrollbar-width: none;
