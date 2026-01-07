@@ -896,6 +896,7 @@ jobs:
           docker load --input ./osrd-osrdyne.tar
       - name: Start the stack
         run: |
+          export TAG='${{ needs.build.outputs.stable_version }}'
           docker compose up --no-build -d editoast osrdyne core jaeger openfga wait-healthy
       - name: "Check the getting started commands"
         # Note: any change below should also be reflected in the README.md getting started section
