@@ -66,6 +66,16 @@ class OpSimulationResultPage extends ScenarioPage {
     ]);
   }
 
+  async verifyInvalidTrainSimulationResultsVisibility(): Promise<void> {
+    await Promise.all([
+      expect(this.manchetteSpaceTimeChart).toBeVisible(),
+      expect(this.spaceTimeChart).toBeVisible(),
+      expect(this.timesStopsDataSheet).toBeVisible(),
+      expect(this.speedSpaceChart).toBeHidden(),
+      expect(this.simulationMap).toBeHidden(),
+    ]);
+  }
+
   async verifyTimesStopsDataSheetVisibility(): Promise<void> {
     await expect(this.timesStopsDataSheet).toBeVisible();
     await this.timesStopsDataSheet.scrollIntoViewIfNeeded();
