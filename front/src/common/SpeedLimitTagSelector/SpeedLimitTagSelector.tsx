@@ -1,8 +1,5 @@
-import { useMemo } from 'react';
-
 import { Select } from '@osrd-project/ui-core';
 import cx from 'classnames';
-import { isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import { createStandardSelectOptions } from 'utils/uiCoreHelpers';
@@ -30,12 +27,7 @@ const SpeedLimitTagSelector = ({
 }: SpeedLimitTagSelectorProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
 
-  const speedLimitsTagsList = useMemo(
-    () => (!isEmpty(speedLimitTags) ? speedLimitTags : []),
-    [speedLimitTags]
-  );
-
-  if (!speedLimitsTagsList.length) return null;
+  if (!speedLimitTags.length) return null;
   return (
     <div className="osrd-config-item">
       <div
@@ -60,7 +52,7 @@ const SpeedLimitTagSelector = ({
               updateSpeedLimitTag(null);
             }
           }}
-          {...createStandardSelectOptions(speedLimitsTagsList)}
+          {...createStandardSelectOptions(speedLimitTags)}
           narrow={narrow}
         />
       </div>
