@@ -45,6 +45,7 @@ use crate::views::projection::ProjectPathForm;
 use crate::views::projection::ProjectPathOperationalPointForm;
 use crate::views::projection::SpaceTimeCurve;
 use crate::views::projection::compute_projected_train_path_op;
+use crate::views::projection::compute_projected_train_path_op_without_simulation;
 use crate::views::projection::compute_projected_train_paths;
 use crate::views::timetable::PhysicsConsistParameters;
 use crate::views::timetable::occupancy_blocks::OccupancyBlockForm;
@@ -881,6 +882,7 @@ pub(in crate::views) async fn project_path_op(
         electrical_profile_set_id,
         operational_points_refs,
         operational_points_distances,
+        use_simulation,
     }): Json<ProjectPathOperationalPointForm>,
 ) -> Result<Json<HashMap<i64, ProjectPathPacedTrainResult>>> {
     let infra = &Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
@@ -960,18 +962,26 @@ pub(in crate::views) async fn project_path_op(
         &path_item_cache,
     )?;
 
-    let projected_trains = compute_projected_train_path_op(
-        conn,
-        valkey_client,
-        core_client,
-        &train_schedules,
-        &path_item_cache,
-        operational_points_projection,
-        infra,
-        electrical_profile_set_id,
-        config.app_version.as_deref(),
-    )
-    .await?;
+    let projected_trains = if use_simulation {
+        compute_projected_train_path_op(
+            conn,
+            valkey_client,
+            core_client,
+            &train_schedules,
+            &path_item_cache,
+            operational_points_projection,
+            infra,
+            electrical_profile_set_id,
+            config.app_version.as_deref(),
+        )
+        .await?
+    } else {
+        compute_projected_train_path_op_without_simulation(
+            &train_schedules,
+            &path_item_cache,
+            operational_points_projection,
+        )
+    };
 
     let mut base_project_path = Default::default();
 

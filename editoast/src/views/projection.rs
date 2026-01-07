@@ -51,6 +51,7 @@ pub struct ProjectPathOperationalPointForm {
     pub operational_points_refs: Vec<OperationalPointReference>,
     /// Distances between operational points in mm
     pub operational_points_distances: Vec<u64>,
+    pub use_simulation: bool,
 }
 
 #[derive(Default, Debug, Clone, Deserialize, Serialize, ToSchema)]
@@ -467,7 +468,7 @@ pub struct TrainToProjectOnOperationalPoint {
 }
 
 impl TrainToProjectOnOperationalPoint {
-    fn new<T: TrainScheduleLike>(ts: &T, sim: simulation::Response) -> Self {
+    fn new<T: TrainScheduleLike>(ts: &T) -> Self {
         let stops_input: HashMap<_, _> = ts
             .schedule()
             .iter()
@@ -479,55 +480,69 @@ impl TrainToProjectOnOperationalPoint {
             })
             .collect();
 
+        // Handle non-simulated trains
+        let arrival_inputs = ts
+            .schedule()
+            .iter()
+            .filter_map(|schedule| {
+                schedule
+                    .arrival
+                    .as_ref()
+                    .map(|arrival| (&schedule.at, arrival.num_milliseconds() as u64))
+            })
+            .collect::<HashMap<_, _>>();
+
+        let mut refs = ts.path().iter().map(|path_item| match &path_item.location {
+            PathItemLocation::OperationalPointPartReference(op_ref) => {
+                Some((&op_ref.operational_point, &path_item.id))
+            }
+            PathItemLocation::TrackOffset(_) => None,
+        });
+
+        let first_path_item = refs.next().flatten();
+
+        let refs = refs.flatten().map(|(op_ref, id)| {
+            arrival_inputs
+                .get(&id)
+                .map(|&arrival_time| OperationalPointRefAndTime {
+                    arrival_time,
+                    stop_for: stops_input.get(&id).copied().unwrap_or_default(),
+                    op_ref: op_ref.clone(),
+                })
+        });
+
+        let first_op_ref = first_path_item.map(|(op_ref, id)| OperationalPointRefAndTime {
+            arrival_time: 0,
+            stop_for: stops_input.get(&id).copied().unwrap_or_default(),
+            op_ref: op_ref.clone(),
+        });
+
+        let refs = std::iter::once(first_op_ref)
+            .chain(refs)
+            .flatten()
+            .collect();
+
+        TrainToProjectOnOperationalPoint {
+            space_time_curve: None,
+            refs,
+        }
+    }
+
+    fn new_from_simulation<T: TrainScheduleLike>(ts: &T, sim: simulation::Response) -> Self {
         let simulation::Response::Success(SimulationResponseSuccess { final_output, .. }) = sim
         else {
-            // Handle non-simulated trains
-            let arrival_inputs = ts
-                .schedule()
-                .iter()
-                .filter_map(|schedule| {
-                    schedule
-                        .arrival
-                        .as_ref()
-                        .map(|arrival| (&schedule.at, arrival.num_milliseconds() as u64))
-                })
-                .collect::<HashMap<_, _>>();
-
-            let mut refs = ts.path().iter().map(|path_item| match &path_item.location {
-                PathItemLocation::OperationalPointPartReference(op_ref) => {
-                    Some((&op_ref.operational_point, &path_item.id))
-                }
-                PathItemLocation::TrackOffset(_) => None,
-            });
-
-            let first_path_item = refs.next().flatten();
-
-            let refs = refs.flatten().map(|(op_ref, id)| {
-                arrival_inputs
-                    .get(&id)
-                    .map(|&arrival_time| OperationalPointRefAndTime {
-                        arrival_time,
-                        stop_for: stops_input.get(&id).copied().unwrap_or_default(),
-                        op_ref: op_ref.clone(),
-                    })
-            });
-
-            let first_op_ref = first_path_item.map(|(op_ref, id)| OperationalPointRefAndTime {
-                arrival_time: 0,
-                stop_for: stops_input.get(&id).copied().unwrap_or_default(),
-                op_ref: op_ref.clone(),
-            });
-
-            let refs = std::iter::once(first_op_ref)
-                .chain(refs)
-                .flatten()
-                .collect();
-
-            return TrainToProjectOnOperationalPoint {
-                space_time_curve: None,
-                refs,
-            };
+            return TrainToProjectOnOperationalPoint::new(ts);
         };
+        let stops_input: HashMap<_, _> = ts
+            .schedule()
+            .iter()
+            .filter_map(|schedule| {
+                schedule
+                    .stop_for
+                    .as_ref()
+                    .map(|stop_for| (&schedule.at, stop_for.num_milliseconds() as u64))
+            })
+            .collect();
         let CompleteReportTrain { report_train, .. } = final_output;
         let space_time_curve = Some(SpaceTimeCurve {
             positions: report_train.positions,
@@ -667,7 +682,7 @@ pub async fn compute_projected_train_path_op<T: TrainScheduleLike>(
 
     let mut results = vec![Arc::default(); train_schedules.len()];
     for (indexes, ts, sim) in to_compute.into_values() {
-        let train_to_project = TrainToProjectOnOperationalPoint::new(ts, sim);
+        let train_to_project = TrainToProjectOnOperationalPoint::new_from_simulation(ts, sim);
         let curves = Arc::new(project_train_path_op(
             &train_to_project,
             path_item_cache,
@@ -742,6 +757,24 @@ fn project_train_path_op(
         }
     }
     projection_curves
+}
+
+pub fn compute_projected_train_path_op_without_simulation<T: TrainScheduleLike>(
+    train_schedules: &[T],
+    path_item_cache: &PathItemCache,
+    operational_points_projection: OperationalPointProjection,
+) -> Vec<Arc<Vec<SpaceTimeCurve>>> {
+    train_schedules
+        .iter()
+        .map(|train_schedule| {
+            let train_to_project = TrainToProjectOnOperationalPoint::new(train_schedule);
+            Arc::new(project_train_path_op(
+                &train_to_project,
+                path_item_cache,
+                &operational_points_projection,
+            ))
+        })
+        .collect_vec()
 }
 
 pub async fn extract_train_details<T: TrainScheduleLike>(
