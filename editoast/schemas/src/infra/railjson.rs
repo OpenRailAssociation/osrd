@@ -6,6 +6,7 @@ use utoipa::ToSchema;
 use super::BufferStop;
 use super::Detector;
 use super::Electrification;
+use super::LevelCrossing;
 use super::NeutralSection;
 use super::OperationalPoint;
 use super::Route;
@@ -15,7 +16,7 @@ use super::Switch;
 use super::SwitchType;
 use super::TrackSection;
 
-pub const RAILJSON_VERSION: &str = "3.4.13";
+pub const RAILJSON_VERSION: &str = "3.5.0";
 
 /// An infrastructure description in the RailJson format
 #[derive(Deserialize, Educe, Serialize, Clone, Debug, ToSchema)]
@@ -47,6 +48,10 @@ pub struct RailJson {
     pub buffer_stops: Vec<BufferStop>,
     /// `Detector` is a device that identifies the presence of a train in a TVD section (Track Vacancy Detection section), indicating when a track area is occupied.
     pub detectors: Vec<Detector>,
+    /// `LevelCrossing` is an intersections where a railway line crosses a road
+    // TODO Change it to Vec<LevelCrossing> when we no longuer need retro compatibility with old exports
+    #[educe(Default = Some(vec![]))]
+    pub level_crossings: Option<Vec<LevelCrossing>>,
 }
 
 pub fn major_version(version: &str) -> &str {

@@ -40,6 +40,7 @@ pub async fn persist_railjson(
         speed_sections,
         extended_switch_types,
         neutral_sections,
+        level_crossings,
     } = railjson;
 
     if major_version(&version) != major_version(RAILJSON_VERSION) {
@@ -117,6 +118,14 @@ pub async fn persist_railjson(
                 let _ = NeutralSectionModel::create_batch::<_, Vec<_>>(
                     &mut conn.clone(),
                     NeutralSectionModel::from_infra_schemas(infra_id, neutral_sections),
+                )
+                .await?;
+
+                // TODO Remove it when level_crossings is no longuer an optional field
+                let level_crossings = level_crossings.unwrap_or_else(|| vec![]);
+                let _ = LevelCrossingModel::create_batch::<_, Vec<_>>(
+                    &mut conn.clone(),
+                    LevelCrossingModel::from_infra_schemas(infra_id, level_crossings),
                 )
                 .await?;
 

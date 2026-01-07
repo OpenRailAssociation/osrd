@@ -3013,6 +3013,21 @@ export type SwitchType = {
   id: string;
   ports: string[];
 };
+export type LevelCrossingPart = {
+  /** Offset in mm of the downstream pedal from the main position (downstream refers to the START_TO_STOP direction of the track) */
+  pedal_downstream: number;
+  /** Offset in mm of the upstream pedal from the main position (upstream refers to the START_TO_STOP direction of the track) */
+  pedal_upstream: number;
+  position: number;
+  track: string;
+};
+export type LevelCrossing = {
+  id: string;
+  name: string;
+  parts: LevelCrossingPart[];
+  /** Short zone length in mm */
+  short_zone_length: number;
+};
 export type Direction = 'START_TO_STOP' | 'STOP_TO_START';
 export type DirectionalTrackRange = {
   begin: number;
@@ -3214,6 +3229,8 @@ export type RailJson = {
   electrifications: Electrification[];
   /** These define the types of switches available for route management. */
   extended_switch_types: SwitchType[];
+  /** `LevelCrossing` is an intersections where a railway line crosses a road */
+  level_crossings: LevelCrossing[];
   /** `NeutralSections` are designated areas of rail infrastructure where train drivers are instructed to cut the power supply to the train, primarily for safety reasons. */
   neutral_sections: NeutralSection[];
   /** Operational point is also known in French as "Point Remarquable" (PR). One `OperationalPoint` is a **collection** of points (`OperationalPointParts`) of interest. */
@@ -3230,21 +3247,6 @@ export type RailJson = {
   track_sections: TrackSection[];
   /** The version of the RailJSON format. Defaults to the current version. */
   version: string;
-};
-export type LevelCrossingPart = {
-  /** Offset in mm of the downstream pedal from the main position (downstream refers to the START_TO_STOP direction of the track) */
-  pedal_downstream: number;
-  /** Offset in mm of the upstream pedal from the main position (upstream refers to the START_TO_STOP direction of the track) */
-  pedal_upstream: number;
-  position: number;
-  track: string;
-};
-export type LevelCrossing = {
-  id: string;
-  name: string;
-  parts: LevelCrossingPart[];
-  /** Short zone length in mm */
-  short_zone_length: number;
 };
 export type InfraObject =
   | {

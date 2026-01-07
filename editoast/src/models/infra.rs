@@ -409,6 +409,7 @@ pub mod tests {
             signals: (0..10).map(|_| Default::default()).collect(),
             detectors: (0..10).map(|_| Default::default()).collect(),
             operational_points: (0..10).map(|_| Default::default()).collect(),
+            level_crossings: (0..10).map(|_| Default::default()).collect(),
             version: RAILJSON_VERSION.to_string(),
         };
 
