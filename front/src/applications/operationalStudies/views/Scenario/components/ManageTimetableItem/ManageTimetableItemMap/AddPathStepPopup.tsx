@@ -14,8 +14,9 @@ import { calculateDistanceAlongTrack } from 'applications/editor/tools/utils';
 import { useManageTimetableItemContext } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { MapPathProperties } from 'applications/operationalStudies/types';
-import { isSameOperationalPoint } from 'applications/operationalStudies/utils';
+import { getOpIdFromStep } from 'applications/operationalStudies/utils';
 import { osrdEditoastApi, type OperationalPoint } from 'common/api/osrdEditoastApi';
+import type { SuggestedOP } from 'modules/timetableItem/types';
 import {
   getOrigin,
   getDestination,
@@ -33,6 +34,7 @@ import { setPointIti } from './setPointIti';
 type AddPathStepPopupProps = {
   infraId: number | undefined;
   pathProperties?: MapPathProperties;
+  pathStepsAndSuggestedOPs?: SuggestedOP[];
   featureInfoClick: FeatureInfoClick;
   resetFeatureInfoClick: () => void;
 };
@@ -40,6 +42,7 @@ type AddPathStepPopupProps = {
 const AddPathStepPopup = ({
   infraId,
   pathProperties,
+  pathStepsAndSuggestedOPs,
   featureInfoClick,
   resetFeatureInfoClick,
 }: AddPathStepPopupProps) => {
@@ -69,9 +72,17 @@ const AddPathStepPopup = ({
   const handleViaClick = () => {
     if (!newPathStep) return;
 
-    const sameViaDifferentTrack = vias.find(
-      (via) => via && isSameOperationalPoint(via, newPathStep)
-    );
+    const newOpId = getOpIdFromStep(newPathStep, pathStepsAndSuggestedOPs);
+
+    const sameViaDifferentTrack = vias.find((via) => {
+      if (!via) return false;
+
+      const viaOpId = getOpIdFromStep(via, pathStepsAndSuggestedOPs);
+
+      if (newOpId && viaOpId) return newOpId === viaOpId;
+      return false;
+    });
+
     if (!sameViaDifferentTrack) {
       setPointIti('via', newPathStep, launchPathfinding, resetFeatureInfoClick, pathProperties);
       return;

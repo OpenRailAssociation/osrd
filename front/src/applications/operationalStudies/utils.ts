@@ -15,8 +15,10 @@ import type {
   TrainSchedule,
 } from 'common/api/osrdEditoastApi';
 import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
+import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import { ARRIVAL_TIME_ACCEPTABLE_ERROR } from 'modules/timesStops/consts';
 import { isPacedTrainResponseWithPaced } from 'modules/timetableItem/helpers/pacedTrain';
+import type { SuggestedOP } from 'modules/timetableItem/types';
 import type {
   PathStep,
   TimetableItem,
@@ -495,22 +497,14 @@ export const matchOpRefAndOp = (
   );
 };
 
-export const isSameOperationalPoint = (a: PathStep, b: PathStep) => {
-  const prevOp =
-    'operational_point' in a.location && a.location.operational_point
-      ? a.location.operational_point
-      : undefined;
-  const currOp =
-    'operational_point' in b.location && b.location.operational_point
-      ? b.location.operational_point
-      : undefined;
-  if (!prevOp || !currOp) return false;
+export const getOpIdFromStep = (step: PathStep, ops?: SuggestedOP[]): string | undefined => {
+  if ('operational_point' in step.location && step.location.operational_point?.type === 'id') {
+    return step.location.operational_point.operational_point;
+  }
 
-  const sameUic = 'uic' in prevOp && 'uic' in currOp && prevOp.uic === currOp.uic;
-  const sameSecondaryCode =
-    'secondary_code' in prevOp &&
-    'secondary_code' in currOp &&
-    prevOp.secondary_code === currOp.secondary_code;
+  if (!ops?.length) return undefined;
 
-  return sameUic && sameSecondaryCode;
+  const match = ops.find((op) => op.opId && matchPathStepAndOp(step.location, op));
+
+  return match?.opId;
 };
