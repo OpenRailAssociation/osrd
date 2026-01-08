@@ -45,7 +45,7 @@ data class STDCMTimetableData(
     val detailedRequirements: Map<ZoneId, List<DetailedRequirement>>,
 ) {
     @Serializable
-    data class DetailedRequirement(val from: Double, val to: Double, val trainName: String)
+    data class DetailedRequirement(val from: Double, val to: Double, val trainName: String?)
 
     fun toSerializable(): SerializableMap {
         return SerializableMap(detailedRequirements.mapKeys { it.key.index })
