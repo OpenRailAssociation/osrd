@@ -36,4 +36,5 @@ export type SimulationResultsState = {
   trainIdUsedForProjection?: TrainId;
   projectionType: ProjectionType;
   displayOnlyPathSteps: boolean;
+  isSimulationEnabled: boolean;
 };

@@ -4,12 +4,14 @@ import type { OccupancyZone, Track } from '@osrd-project/ui-charts';
 import type { TFunction } from 'i18next';
 import { forEach, fromPairs, isEmpty, isEqual, isFunction, keyBy, noop, uniqBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { type OperationalPointReference, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
 import { computeIndexedOccurrenceStartTime } from 'modules/timetableItem/helpers/pacedTrain';
 import type { PacedTrainId, TimetableItemId, TrainId } from 'reducers/osrdconf/types';
+import { getIsSimulationEnabled } from 'reducers/simulationResults/selectors';
 import {
   extractEditoastIdFromPacedTrainId,
   extractPacedTrainIdFromOccurrenceId,
@@ -107,6 +109,7 @@ const useTrackOccupancy = ({
 
   const [postPacedTrainTrackOccupancy] =
     osrdEditoastApi.endpoints.postPacedTrainTrackOccupancy.useMutation();
+  const isSimulationEnabled = useSelector(getIsSimulationEnabled);
   const [postInfraByInfraIdMatchOperationalPoints] =
     osrdEditoastApi.endpoints.postInfraByInfraIdMatchOperationalPoints.useLazyQuery();
   const timetableItemProjectionsById: Map<TimetableItemId, TrainSpaceTimeData> = useMemo(
@@ -169,7 +172,7 @@ const useTrackOccupancy = ({
               operational_point_id: opId,
               infra_id: infraId,
               paced_train_ids: pacedTrainIds.map(extractEditoastIdFromPacedTrainId),
-              use_simulation: true,
+              use_simulation: isSimulationEnabled,
             }
           : null;
 
@@ -256,7 +259,7 @@ const useTrackOccupancy = ({
 
       return zones;
     },
-    [infraId, postPacedTrainTrackOccupancy]
+    [infraId, postPacedTrainTrackOccupancy, isSimulationEnabled]
   );
 
   const deployedWaypoints = useMemo(() => {

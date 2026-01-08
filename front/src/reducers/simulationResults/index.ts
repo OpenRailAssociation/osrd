@@ -11,6 +11,7 @@ export const simulationResultsInitialState: SimulationResultsState = {
   trainIdUsedForProjection: undefined,
   projectionType: 'trackProjection',
   displayOnlyPathSteps: false,
+  isSimulationEnabled: true,
 };
 
 export const simulationResultsSlice = createSlice({
@@ -37,6 +38,13 @@ export const simulationResultsSlice = createSlice({
       action: PayloadAction<ProjectionType>
     ) {
       state.projectionType = action.payload;
+    },
+    toggleSimulationEnabled(state: Draft<SimulationResultsState>) {
+      state.isSimulationEnabled = !state.isSimulationEnabled;
+      // When switching to input mode, force interPR projection
+      if (!state.isSimulationEnabled) {
+        state.projectionType = 'operationalPointProjection';
+      }
     },
     unsetTrainIdsMatching(state: Draft<SimulationResultsState>, action: PayloadAction<TrainId>) {
       const idToUnset = action.payload;
@@ -80,6 +88,7 @@ export const simulationResultsSlice = createSlice({
 
 export const {
   toggleDisplayOnlyPathSteps,
+  toggleSimulationEnabled,
   updateSelectedTrainId,
   updateTrainIdUsedForProjection,
   updateProjectionType,

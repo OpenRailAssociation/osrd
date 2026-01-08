@@ -11,3 +11,4 @@ export const getDisplayOnlyPathSteps = makeOsrdSimulationSelector('displayOnlyPa
 export const getSelectedTrainId = makeOsrdSimulationSelector('selectedTrainId');
 export const getTrainIdUsedForProjection = makeOsrdSimulationSelector('trainIdUsedForProjection');
 export const getProjectionType = makeOsrdSimulationSelector('projectionType');
+export const getIsSimulationEnabled = makeOsrdSimulationSelector('isSimulationEnabled');

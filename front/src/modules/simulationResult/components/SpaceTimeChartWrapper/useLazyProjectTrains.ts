@@ -10,7 +10,7 @@ import upsertNewProjectedTrains from 'applications/operationalStudies/helpers/up
 import { type OperationalPointReference, type CoreTrainPath } from 'common/api/osrdEditoastApi';
 import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
-import { getProjectionType } from 'reducers/simulationResults/selectors';
+import { getProjectionType, getIsSimulationEnabled } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 
 type UseLazyProjectTrainsOptions = {
@@ -35,6 +35,7 @@ const useLazyProjectTrains = ({
     Map<TimetableItemId, TrainSpaceTimeData>
   >(new Map());
   const projectionType = useSelector(getProjectionType);
+  const isSimulationEnabled = useSelector(getIsSimulationEnabled);
 
   const onProgress = useCallback((results: Map<TimetableItemId, ProjectionResult>) => {
     setProjectedTrainsById((prev) =>
@@ -52,7 +53,7 @@ const useLazyProjectTrains = ({
 
     let loader: TrainProjectionLazyLoaderAbstract;
 
-    if (projectionType === 'trackProjection' && path) {
+    if (isSimulationEnabled && projectionType === 'trackProjection' && path) {
       loader = new TrainTrackProjectionLazyLoader({
         ...baseOptions,
         path,
@@ -63,7 +64,7 @@ const useLazyProjectTrains = ({
       loader = new TrainOpProjectionLazyLoader(
         operationalPointReferences,
         operationalPointDistances,
-        { ...baseOptions, path }
+        { ...baseOptions, path, isSimulationEnabled }
       );
     }
 
@@ -81,6 +82,7 @@ const useLazyProjectTrains = ({
     path,
     operationalPointReferences,
     operationalPointDistances,
+    isSimulationEnabled,
   ]);
 
   const projectTimetableItems = useCallback((timetableItems: TimetableItem[]) => {

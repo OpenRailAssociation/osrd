@@ -5,8 +5,8 @@ import { X } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { updateProjectionType } from 'reducers/simulationResults';
-import { getProjectionType } from 'reducers/simulationResults/selectors';
+import { toggleSimulationEnabled, updateProjectionType } from 'reducers/simulationResults';
+import { getProjectionType, getIsSimulationEnabled } from 'reducers/simulationResults/selectors';
 import type { ProjectionType } from 'reducers/simulationResults/types';
 import { useAppDispatch } from 'store';
 
@@ -31,9 +31,14 @@ const SettingsPanel = ({
   const { t } = useTranslation('operational-studies', { keyPrefix: 'simulationResults' });
   const dispatch = useAppDispatch();
   const projectionType = useSelector(getProjectionType);
+  const isSimulationEnabled = useSelector(getIsSimulationEnabled);
 
   const handleChange = (key: keyof Settings) => (event: ChangeEvent<HTMLInputElement>) => {
     onChange({ ...settings, [key]: event.target.checked });
+  };
+
+  const handleUseSimulationChange = () => {
+    dispatch(toggleSimulationEnabled());
   };
 
   return (
@@ -52,7 +57,7 @@ const SettingsPanel = ({
           label={t('timeSpaceChartSettings.projection')}
           value={projectionType}
           onChange={(value) => dispatch(updateProjectionType(value as ProjectionType))}
-          disabled={!isTimetableItemValid}
+          disabled={!isTimetableItemValid || !isSimulationEnabled}
           options={[
             {
               label: t('timeSpaceChartSettings.trackProjection'),
@@ -64,6 +69,11 @@ const SettingsPanel = ({
             },
           ]}
         />
+        <Checkbox
+          label={t('timeSpaceChartSettings.inputMode')}
+          checked={!isSimulationEnabled}
+          onChange={handleUseSimulationChange}
+        />
       </section>
 
       <section className="pb-4">
@@ -72,6 +82,7 @@ const SettingsPanel = ({
           label={t('timeSpaceChartSettings.signalsStates')}
           checked={settings.showSignalsStates}
           onChange={handleChange('showSignalsStates')}
+          disabled={!isSimulationEnabled}
         />
       </section>
 
@@ -81,6 +92,7 @@ const SettingsPanel = ({
           label={t('timeSpaceChartSettings.conflicts')}
           checked={settings.showConflicts}
           onChange={handleChange('showConflicts')}
+          disabled={!isSimulationEnabled}
         />
       </section>
     </div>
