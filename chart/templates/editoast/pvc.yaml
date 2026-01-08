@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: editoast_volume
+  name: editoast-volume
   namespace: {{ .Release.Namespace }}
 spec:
   accessMode: ReadWriteMany

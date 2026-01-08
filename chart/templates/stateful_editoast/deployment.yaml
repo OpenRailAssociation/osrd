@@ -42,7 +42,7 @@ spec:
           {{- if .Values.services.editoast.permanent_storage_size }}
           volumeMounts:
             - mountPath: /data
-              name: editoast_volume
+              name: editoast-volume
           {{- end }}
           {{- if not .Values.services.statefulEditoast.livenessProbe.disabled }}
           livenessProbe:
@@ -119,9 +119,9 @@ spec:
 
       {{- if .Values.services.editoast.permanent_storage_size }}
       volumes:
-      - name: editoast_volume
+      - name: editoast-volume
         persistentVolumeClaim:
-          claimName: editoast_volume
+          claimName: editoast-volume
       {{- end}}
 
       nodeSelector:
