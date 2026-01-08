@@ -191,18 +191,21 @@ class TimetableCacheManager(
         val serializer = STDCMTimetableData.SerializableMap.serializer()
 
         if (file.exists()) {
-            val bytes = file.readBytes()
-            val serializableMap = cbor.decodeFromByteArray(serializer, bytes)
-            logger.debug("local timetable file cache hit at {}", file)
-            return serializableMap.toSTDCMRequirements()
-        } else {
-            val res = generateData.invoke()
-            logger.info("writing timetable to local file cache at $file")
-            val serializableMap = res.toSerializable()
-            val bytes = cbor.encodeToByteArray(serializer, serializableMap)
-            file.writeBytes(bytes)
-            return res
+            try {
+                val bytes = file.readBytes()
+                val serializableMap = cbor.decodeFromByteArray(serializer, bytes)
+                logger.debug("local timetable file cache hit at {}", file)
+                return serializableMap.toSTDCMRequirements()
+            } catch (e: Exception) {
+                logger.warn("failed to load valkey cached timetable data, reloading", e)
+            }
         }
+        val res = generateData.invoke()
+        logger.info("writing timetable to local file cache at $file")
+        val serializableMap = res.toSerializable()
+        val bytes = cbor.encodeToByteArray(serializer, serializableMap)
+        file.writeBytes(bytes)
+        return res
     }
 
     /**
