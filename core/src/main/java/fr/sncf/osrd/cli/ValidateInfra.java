@@ -5,7 +5,6 @@ import static fr.sncf.osrd.api.SignalingSimulatorKt.makeSignalingSimulator;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.signaling.SignalingSimulator;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
@@ -48,7 +47,6 @@ public class ValidateInfra implements CliCommand {
     }
 
     /** Parse the RailJSON file at the given Path */
-    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", justification = "that's a spotbugs bug :)")
     static RJSInfra parseRailJSONFromFile(String path) throws IOException {
         try (var fileSource = Okio.source(Path.of(path));
                 var bufferedSource = Okio.buffer(fileSource)) {

@@ -1,7 +1,6 @@
 package fr.sncf.osrd.railjson.schema.infra.trackranges;
 
 import com.squareup.moshi.Json;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
 
 /**
@@ -11,7 +10,6 @@ import java.util.List;
  * for different sign placement depending on the direction. For more details see <a
  * href="https://osrd.fr/en/docs/explanation/neutral_sections/">the documentation</a>.
  */
-@SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSNeutralSection {
     @Json(name = "announcement_track_ranges")
     public List<RJSDirectionalTrackRange> announcementTrackRanges;

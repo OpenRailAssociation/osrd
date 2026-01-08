@@ -2,7 +2,6 @@ package fr.sncf.osrd.envelope;
 
 import static fr.sncf.osrd.envelope.EnvelopeCursor.NextStepResult.*;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope_utils.CmpOperator;
 import java.util.function.Predicate;
@@ -273,7 +272,6 @@ public final class EnvelopeCursor {
     }
 
     /** Set the position / speed and bumps the revision */
-    @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
     private void setPosition(double newPosition, double newSpeed) {
         // when setting newPosition is the same as current and the speed is force-set, avoid
         // overriding the forced value

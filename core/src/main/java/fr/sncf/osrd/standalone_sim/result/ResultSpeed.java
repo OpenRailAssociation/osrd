@@ -1,8 +1,5 @@
 package fr.sncf.osrd.standalone_sim.result;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
-@SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
 public class ResultSpeed {
     public final double time;
     public final double position;
