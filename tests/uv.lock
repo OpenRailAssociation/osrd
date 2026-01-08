@@ -340,7 +340,7 @@ wheels = [
 
 [[package]]
 name = "railjson-generator"
-version = "0.4.12"
+version = "0.4.13"
 source = { editable = "../python/railjson_generator" }
 dependencies = [
     { name = "osrd-schemas" },
