@@ -8,7 +8,7 @@ import type {
   CorePathfindingNotFound,
   ReceptionSignal,
   SimulationSummaryResult,
-  TrainScheduleResponse,
+  PacedTrainResponse,
 } from 'common/api/osrdEditoastApi';
 import type { OccurrenceId, PacedTrainId } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
@@ -62,8 +62,8 @@ export type SimulationSummary =
     };
 
 export type TimetableItemWithSummaries = Omit<
-  TrainScheduleResponse,
-  'id' | 'train_name' | 'rolling_stock_name' | 'timetable_id' | 'start_time'
+  PacedTrainResponse,
+  'id' | 'train_name' | 'rolling_stock_name' | 'timetable_id' | 'start_time' | 'paced'
 > & {
   name: string;
   startTime: Date;

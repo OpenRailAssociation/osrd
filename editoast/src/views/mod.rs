@@ -232,13 +232,6 @@ fn service_router() -> router::DocumentedRouter {
                             })
                             .nests("/round_trips", |path| {
                                 path.route("/paced_trains", get!(round_trips::list_paced_trains))
-                                    .route(
-                                        "/train_schedules",
-                                        get!(round_trips::list_train_schedules),
-                                    )
-                            })
-                            .nests("/train_schedules", |path| {
-                                path.route("/", get!(timetable::get_train_schedules))
                             })
                     })
             })
@@ -246,39 +239,6 @@ fn service_router() -> router::DocumentedRouter {
                 "/similar_trains",
                 post!(timetable::similar_trains::similar_trains),
             )
-            .nests("/train_schedule", |path| {
-                path.route("/", delete!(timetable::train_schedule::delete))
-                    .route(
-                        "/occupancy_blocks",
-                        post!(timetable::train_schedule::occupancy_blocks),
-                    )
-                    .route(
-                        "/project_path",
-                        post!(timetable::train_schedule::project_path),
-                    )
-                    .route(
-                        "/project_path_op",
-                        post!(timetable::train_schedule::project_path_op),
-                    )
-                    .route(
-                        "/simulation_summary",
-                        post!(timetable::train_schedule::simulation_summary),
-                    )
-                    .route(
-                        "/track_occupancy",
-                        post!(timetable::train_schedule::track_occupancy),
-                    )
-                    .nests("/{id}", |path| {
-                        path.route("/", get!(timetable::train_schedule::get))
-                            .route("/", put!(timetable::train_schedule::put))
-                            .route(
-                                "/etcs_braking_curves",
-                                get!(timetable::train_schedule::etcs_braking_curves),
-                            )
-                            .route("/path", get!(timetable::train_schedule::get_path))
-                            .route("/simulation", get!(timetable::train_schedule::simulation))
-                    })
-            })
             .nests("/paced_train", |path| {
                 path.route("/", delete!(timetable::paced_train::delete))
                     .route(
@@ -310,11 +270,7 @@ fn service_router() -> router::DocumentedRouter {
                     })
             })
             .nests("/round_trips", |path| {
-                path.nests("/train_schedules", |path| {
-                    path.route("/", post!(round_trips::post_train_schedules))
-                        .route("/delete", post!(round_trips::delete_train_schedules))
-                })
-                .nests("/paced_trains", |path| {
+                path.nests("/paced_trains", |path| {
                     path.route("/", post!(round_trips::post_paced_trains))
                         .route("/delete", post!(round_trips::delete_paced_trains))
                 })
@@ -1101,30 +1057,6 @@ mod tests {
 
     use super::test_app::TestAppBuilder;
     use crate::views::timetable::simulation_empty_response;
-
-    #[cfg(test)]
-    pub fn mocked_core_pathfinding_and_sim() -> MockingClient {
-        let mut core = MockingClient::new();
-        core.stub("/pathfinding/blocks")
-            .response(StatusCode::OK)
-            .json(
-                serde_json::from_str::<serde_json::Value>(include_str!(
-                    "../tests/track_occupancy/example_pathfinding_track_occupancy.json"
-                ))
-                .expect("Invalid JSON file"),
-            )
-            .finish();
-        core.stub("/standalone_simulation")
-            .response(StatusCode::OK)
-            .json(
-                serde_json::from_str::<serde_json::Value>(include_str!(
-                    "../tests/track_occupancy/example_simulation_track_occupancy.json"
-                ))
-                .expect("Invalid JSON file"),
-            )
-            .finish();
-        core
-    }
 
     #[cfg(test)]
     pub fn mocked_core_pathfinding_sim_and_proj() -> MockingClient {

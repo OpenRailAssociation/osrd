@@ -898,28 +898,6 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['round_trips'],
       }),
-      postRoundTripsTrainSchedules: build.mutation<
-        PostRoundTripsTrainSchedulesApiResponse,
-        PostRoundTripsTrainSchedulesApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/round_trips/train_schedules`,
-          method: 'POST',
-          body: queryArg.roundTrips,
-        }),
-        invalidatesTags: ['round_trips'],
-      }),
-      postRoundTripsTrainSchedulesDelete: build.mutation<
-        PostRoundTripsTrainSchedulesDeleteApiResponse,
-        PostRoundTripsTrainSchedulesDeleteApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/round_trips/train_schedules/delete`,
-          method: 'POST',
-          body: queryArg.body,
-        }),
-        invalidatesTags: ['round_trips'],
-      }),
       getScenarios: build.query<GetScenariosApiResponse, GetScenariosApiArg>({
         query: (queryArg) => ({
           url: `/scenarios`,
@@ -1182,19 +1160,6 @@ const injectedRtkApi = api
         }),
         providesTags: ['timetable', 'round_trips'],
       }),
-      getTimetableByIdRoundTripsTrainSchedules: build.query<
-        GetTimetableByIdRoundTripsTrainSchedulesApiResponse,
-        GetTimetableByIdRoundTripsTrainSchedulesApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/timetable/${queryArg.id}/round_trips/train_schedules`,
-          params: {
-            page: queryArg.page,
-            page_size: queryArg.pageSize,
-          },
-        }),
-        providesTags: ['timetable', 'round_trips'],
-      }),
       postTimetableByIdStdcm: build.mutation<
         PostTimetableByIdStdcmApiResponse,
         PostTimetableByIdStdcmApiArg
@@ -1209,19 +1174,6 @@ const injectedRtkApi = api
           },
         }),
         invalidatesTags: ['stdcm'],
-      }),
-      getTimetableByIdTrainSchedules: build.query<
-        GetTimetableByIdTrainSchedulesApiResponse,
-        GetTimetableByIdTrainSchedulesApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/timetable/${queryArg.id}/train_schedules`,
-          params: {
-            page: queryArg.page,
-            page_size: queryArg.pageSize,
-          },
-        }),
-        providesTags: ['timetable'],
       }),
       getTowedRollingStock: build.query<
         GetTowedRollingStockApiResponse,
@@ -1278,124 +1230,6 @@ const injectedRtkApi = api
           body: queryArg.towedRollingStockLockedForm,
         }),
         invalidatesTags: ['rolling_stock'],
-      }),
-      deleteTrainSchedule: build.mutation<
-        DeleteTrainScheduleApiResponse,
-        DeleteTrainScheduleApiArg
-      >({
-        query: (queryArg) => ({ url: `/train_schedule`, method: 'DELETE', body: queryArg.body }),
-        invalidatesTags: ['timetable', 'train_schedule'],
-      }),
-      postTrainScheduleOccupancyBlocks: build.mutation<
-        PostTrainScheduleOccupancyBlocksApiResponse,
-        PostTrainScheduleOccupancyBlocksApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/train_schedule/occupancy_blocks`,
-          method: 'POST',
-          body: queryArg.occupancyBlockForm,
-        }),
-        invalidatesTags: ['train_schedule'],
-      }),
-      postTrainScheduleProjectPath: build.mutation<
-        PostTrainScheduleProjectPathApiResponse,
-        PostTrainScheduleProjectPathApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/train_schedule/project_path`,
-          method: 'POST',
-          body: queryArg.projectPathForm,
-        }),
-        invalidatesTags: ['train_schedule'],
-      }),
-      postTrainScheduleProjectPathOp: build.mutation<
-        PostTrainScheduleProjectPathOpApiResponse,
-        PostTrainScheduleProjectPathOpApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/train_schedule/project_path_op`,
-          method: 'POST',
-          body: queryArg.body,
-        }),
-        invalidatesTags: ['train_schedule'],
-      }),
-      postTrainScheduleSimulationSummary: build.mutation<
-        PostTrainScheduleSimulationSummaryApiResponse,
-        PostTrainScheduleSimulationSummaryApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/train_schedule/simulation_summary`,
-          method: 'POST',
-          body: queryArg.body,
-        }),
-        invalidatesTags: ['train_schedule'],
-      }),
-      postTrainScheduleTrackOccupancy: build.mutation<
-        PostTrainScheduleTrackOccupancyApiResponse,
-        PostTrainScheduleTrackOccupancyApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/train_schedule/track_occupancy`,
-          method: 'POST',
-          body: queryArg.body,
-        }),
-        invalidatesTags: ['train_schedule'],
-      }),
-      getTrainScheduleById: build.query<
-        GetTrainScheduleByIdApiResponse,
-        GetTrainScheduleByIdApiArg
-      >({
-        query: (queryArg) => ({ url: `/train_schedule/${queryArg.id}` }),
-        providesTags: ['train_schedule'],
-      }),
-      putTrainScheduleById: build.mutation<
-        PutTrainScheduleByIdApiResponse,
-        PutTrainScheduleByIdApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/train_schedule/${queryArg.id}`,
-          method: 'PUT',
-          body: queryArg.trainScheduleForm,
-        }),
-        invalidatesTags: ['train_schedule', 'timetable'],
-      }),
-      getTrainScheduleByIdEtcsBrakingCurves: build.query<
-        GetTrainScheduleByIdEtcsBrakingCurvesApiResponse,
-        GetTrainScheduleByIdEtcsBrakingCurvesApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/train_schedule/${queryArg.id}/etcs_braking_curves`,
-          params: {
-            infra_id: queryArg.infraId,
-            electrical_profile_set_id: queryArg.electricalProfileSetId,
-          },
-        }),
-        providesTags: ['train_schedule', 'etcs_braking_curves'],
-      }),
-      getTrainScheduleByIdPath: build.query<
-        GetTrainScheduleByIdPathApiResponse,
-        GetTrainScheduleByIdPathApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/train_schedule/${queryArg.id}/path`,
-          params: {
-            infra_id: queryArg.infraId,
-          },
-        }),
-        providesTags: ['train_schedule', 'pathfinding'],
-      }),
-      getTrainScheduleByIdSimulation: build.query<
-        GetTrainScheduleByIdSimulationApiResponse,
-        GetTrainScheduleByIdSimulationApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/train_schedule/${queryArg.id}/simulation`,
-          params: {
-            infra_id: queryArg.infraId,
-            electrical_profile_set_id: queryArg.electricalProfileSetId,
-          },
-        }),
-        providesTags: ['train_schedule'],
       }),
       getTrainScheduleSet: build.query<GetTrainScheduleSetApiResponse, GetTrainScheduleSetApiArg>({
         query: (queryArg) => ({
@@ -2323,15 +2157,6 @@ export type PostRoundTripsPacedTrainsDeleteApiArg = {
   /** IDs of paced trains to remove from round trips or one-way. */
   body: number[];
 };
-export type PostRoundTripsTrainSchedulesApiResponse = unknown;
-export type PostRoundTripsTrainSchedulesApiArg = {
-  roundTrips: RoundTrips;
-};
-export type PostRoundTripsTrainSchedulesDeleteApiResponse = unknown;
-export type PostRoundTripsTrainSchedulesDeleteApiArg = {
-  /** IDs of train schedules to remove from round trips or one-way. */
-  body: number[];
-};
 export type GetScenariosApiResponse =
   /** status 200 A paginated list of scenarios */ PaginationStats & {
     results: ScenarioWithDetails[];
@@ -2543,16 +2368,6 @@ export type GetTimetableByIdRoundTripsPacedTrainsApiArg = {
   page?: number;
   pageSize?: number;
 };
-export type GetTimetableByIdRoundTripsTrainSchedulesApiResponse =
-  /** status 200  */ PaginationStats & {
-    results: RoundTrips;
-  };
-export type GetTimetableByIdRoundTripsTrainSchedulesApiArg = {
-  /** A timetable ID */
-  id: number;
-  page?: number;
-  pageSize?: number;
-};
 export type PostTimetableByIdStdcmApiResponse = /** status 200 The simulation result */
   | {
       core_payload?: null | CoreStdcmRequest;
@@ -2622,16 +2437,6 @@ export type PostTimetableByIdStdcmApiArg = {
     work_schedule_group_id?: number | null;
   };
 };
-export type GetTimetableByIdTrainSchedulesApiResponse =
-  /** status 200 Timetable with train schedules ids */ PaginationStats & {
-    results: TrainScheduleResponse[];
-  };
-export type GetTimetableByIdTrainSchedulesApiArg = {
-  /** A timetable ID */
-  id: number;
-  page?: number;
-  pageSize?: number;
-};
 export type GetTowedRollingStockApiResponse = /** status 200  */ PaginationStats & {
   results: TowedRollingStock[];
 };
@@ -2660,121 +2465,6 @@ export type PatchTowedRollingStockByTowedRollingStockIdLockedApiResponse = unkno
 export type PatchTowedRollingStockByTowedRollingStockIdLockedApiArg = {
   towedRollingStockId: number;
   towedRollingStockLockedForm: TowedRollingStockLockedForm;
-};
-export type DeleteTrainScheduleApiResponse = unknown;
-export type DeleteTrainScheduleApiArg = {
-  body: {
-    ids: number[];
-  };
-};
-export type PostTrainScheduleOccupancyBlocksApiResponse = /** status 200  */ {
-  [key: string]: CoreSignalUpdate[];
-};
-export type PostTrainScheduleOccupancyBlocksApiArg = {
-  occupancyBlockForm: OccupancyBlockForm;
-};
-export type PostTrainScheduleProjectPathApiResponse = /** status 200 Project Path Output */ {
-  [key: string]: SpaceTimeCurve[];
-};
-export type PostTrainScheduleProjectPathApiArg = {
-  projectPathForm: ProjectPathForm;
-};
-export type PostTrainScheduleProjectPathOpApiResponse =
-  /** status 200 Project train schedules on a list of operational points. */ {
-    [key: string]: SpaceTimeCurve[];
-  };
-export type PostTrainScheduleProjectPathOpApiArg = {
-  body: {
-    electrical_profile_set_id?: number | null;
-    infra_id: number;
-    /** Distances between operational points in mm */
-    operational_points_distances: number[];
-    operational_points_refs: (
-      | {
-          /** The object id of an operational point */
-          operational_point: string;
-          type: 'id';
-        }
-      | {
-          /** An optional secondary code to identify a more specific location */
-          secondary_code?: string | null;
-          /** The operational point trigram */
-          trigram: string;
-          type: 'trigram';
-        }
-      | {
-          /** An optional secondary code to identify a more specific location */
-          secondary_code?: string | null;
-          type: 'uic';
-          /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
-          uic: number;
-        }
-    )[];
-    train_ids: number[];
-  };
-};
-export type PostTrainScheduleSimulationSummaryApiResponse =
-  /** status 200 Associate each train id with its simulation summary */ {
-    [key: string]: SimulationSummaryResult;
-  };
-export type PostTrainScheduleSimulationSummaryApiArg = {
-  body: {
-    electrical_profile_set_id?: number | null;
-    ids: number[];
-    infra_id: number;
-  };
-};
-export type PostTrainScheduleTrackOccupancyApiResponse =
-  /** status 200 Track section occupancy periods for a set of train schedules */ {
-    [key: string]: ({
-      duration: string;
-      time_begin: string;
-    } & {
-      train_schedule_id: number;
-    })[];
-  };
-export type PostTrainScheduleTrackOccupancyApiArg = {
-  body: {
-    electrical_profile_set_id?: number | null;
-    infra_id: number;
-    operational_point_id: string;
-    train_schedule_ids: number[];
-  };
-};
-export type GetTrainScheduleByIdApiResponse =
-  /** status 200 The train schedule */ TrainScheduleResponse;
-export type GetTrainScheduleByIdApiArg = {
-  /** A train schedule ID */
-  id: number;
-};
-export type PutTrainScheduleByIdApiResponse =
-  /** status 200 The train schedule have been updated */ TrainScheduleResponse;
-export type PutTrainScheduleByIdApiArg = {
-  /** A train schedule ID */
-  id: number;
-  trainScheduleForm: TrainScheduleForm;
-};
-export type GetTrainScheduleByIdEtcsBrakingCurvesApiResponse =
-  /** status 200 ETCS Braking Curves Output */ CoreEtcsBrakingCurvesResponse;
-export type GetTrainScheduleByIdEtcsBrakingCurvesApiArg = {
-  /** A train schedule ID */
-  id: number;
-  infraId: number;
-  electricalProfileSetId?: number;
-};
-export type GetTrainScheduleByIdPathApiResponse = /** status 200 The path */ PathfindingResult;
-export type GetTrainScheduleByIdPathApiArg = {
-  /** A train schedule ID */
-  id: number;
-  infraId: number;
-};
-export type GetTrainScheduleByIdSimulationApiResponse =
-  /** status 200 Simulation Output */ SimulationResponse;
-export type GetTrainScheduleByIdSimulationApiArg = {
-  /** A train schedule ID */
-  id: number;
-  infraId: number;
-  electricalProfileSetId?: number;
 };
 export type GetTrainScheduleSetApiResponse =
   /** status 200 list of train schedule sets */ (TrainScheduleSet & {
@@ -4648,7 +4338,6 @@ export type Scenario = {
 export type ScenarioWithDetails = Scenario & {
   infra_name: string;
   paced_trains_count: number;
-  trains_count: number;
 };
 export type ScenarioCreateForm = {
   description?: string;
@@ -4681,7 +4370,6 @@ export type ScenarioResponse = Scenario & {
   paced_trains_count: number;
   project: Project;
   study: Study;
-  trains_count: number;
 };
 export type ScenarioPatchForm = {
   description?: string | null;
@@ -5103,10 +4791,6 @@ export type PathfindingItem = {
     arrival_time_tolerance_before: number;
   };
 };
-export type TrainScheduleResponse = TrainSchedule & {
-  id: number;
-  timetable_id: number;
-};
 export type RollingResistancePerWeight = {
   /**  Solid friction in N·kg⁻¹; N = kg⋅m⋅s⁻²
     Acceleration in m·s⁻² */
@@ -5165,10 +4849,6 @@ export type TowedRollingStockForm = {
 export type TowedRollingStockLockedForm = {
   /** New locked value */
   locked: boolean;
-};
-export type TrainScheduleForm = TrainSchedule & {
-  /** Timetable attached to the train schedule */
-  timetable_id?: number | null;
 };
 export type TrainScheduleSet = {
   catalog_entry_id?: number | null;

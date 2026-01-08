@@ -11,7 +11,6 @@ pub mod runserver;
 pub mod search_commands;
 pub mod stdcm_search_env_commands;
 mod telemetry_config;
-pub mod timetables_commands;
 mod trains_traffic;
 pub mod user;
 mod valkey_config;
@@ -31,7 +30,6 @@ use search_commands::SearchCommands;
 use stdcm_search_env_commands::StdcmSearchEnvCommands;
 pub use telemetry_config::TelemetryConfig;
 pub use telemetry_config::TelemetryKind;
-use timetables_commands::TimetablesCommands;
 use user::UserCommand;
 pub use valkey_config::ValkeyConfig;
 
@@ -82,8 +80,6 @@ pub enum Commands {
     Search(SearchCommands),
     #[command(subcommand, about, long_about = "Infrastructure related commands")]
     Infra(InfraCommands),
-    #[command(subcommand, about, long_about = "Timetables related commands")]
-    Timetables(TimetablesCommands),
     #[command(
         subcommand,
         about,

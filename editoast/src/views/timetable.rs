@@ -4,7 +4,6 @@ pub mod similar_trains;
 pub mod simulation;
 pub mod stdcm;
 mod track_occupancy;
-pub mod train_schedule;
 
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -51,7 +50,6 @@ use serde::Deserialize;
 use serde::Serialize;
 use simulation::train_simulation_batch;
 use thiserror::Error;
-use train_schedule::TrainScheduleResponse;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 use uuid::Uuid;
@@ -108,57 +106,6 @@ impl From<Timetable> for TimetableResult {
 pub struct TimetableIdParam {
     /// A timetable ID
     pub id: i64,
-}
-
-#[derive(Serialize, ToSchema, Debug)]
-#[cfg_attr(test, derive(Deserialize))]
-pub(in crate::views) struct ListTrainSchedulesResponse {
-    #[schema(value_type = Vec<TrainScheduleResponse>)]
-    results: Vec<TrainScheduleResponse>,
-    #[serde(flatten)]
-    stats: PaginationStats,
-}
-
-/// Return a specific timetable with its associated schedules
-#[editoast_derive::route]
-#[utoipa::path(
-    get, path = "",
-    tag = "timetable",
-    params(TimetableIdParam, PaginationQueryParams<200>),
-    responses(
-        (status = 200, description = "Timetable with train schedules ids", body = inline(ListTrainSchedulesResponse)),
-        (status = 404, description = "Timetable not found"),
-    ),
-)]
-pub(in crate::views) async fn get_train_schedules(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
-    Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
-    Query(pagination_params): Query<PaginationQueryParams<200>>,
-) -> Result<Json<ListTrainSchedulesResponse>> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
-    let conn = &mut db_pool.get().await?;
-    let timetable_exists = Timetable::exists(conn, timetable_id).await?;
-    if !timetable_exists {
-        return Err(TimetableError::NotFound { timetable_id }.into());
-    }
-
-    let settings = pagination_params
-        .into_selection_settings()
-        .filter(move || editoast_models::TrainSchedule::TIMETABLE_ID.eq(timetable_id));
-
-    let (train_schedules, stats) =
-        editoast_models::TrainSchedule::list_paginated(conn, settings).await?;
-    let results = train_schedules.into_iter().map_into().collect();
-
-    Ok(Json(ListTrainSchedulesResponse { stats, results }))
 }
 
 /// Create a timetable
@@ -911,23 +858,6 @@ mod tests {
     use crate::models::fixtures::create_timetable;
     use crate::models::fixtures::simple_paced_train_base;
     use crate::views::test_app::TestAppBuilder;
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn get_timetable() {
-        let app = TestAppBuilder::default_app();
-        let pool = app.db_pool();
-
-        let timetable = create_timetable(&mut pool.get_ok()).await;
-
-        let request = app.get(&format!("/timetable/{}/train_schedules", timetable.id));
-
-        let timetable_from_response: ListTrainSchedulesResponse = app
-            .fetch(request)
-            .await
-            .assert_status(StatusCode::OK)
-            .json_into();
-        assert_eq!(timetable_from_response.results.len(), 0);
-    }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_unexisting_timetable() {

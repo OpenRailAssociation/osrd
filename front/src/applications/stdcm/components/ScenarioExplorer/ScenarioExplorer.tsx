@@ -110,7 +110,7 @@ const ScenarioExplorer = ({
                 </span>
 
                 <span className="scenario-explorator-card-head-scenario-traincount">
-                  {scenario.trains_count}
+                  {scenario.paced_trains_count}
                   <MdTrain />
                 </span>
               </div>
