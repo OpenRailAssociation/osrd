@@ -31,6 +31,7 @@ data class TrainPathNoBacktrack(
     private val blocks: List<BlockRange>,
     private val chunks: List<DirChunkRange>,
     private val electricalProfileMapping: ElectricalProfileMapping?,
+    private val backtrackLocations: List<Offset<TrainPath>>,
     // Set to true if the blocks have been generated from the track path. Throws an error if the
     // routes are read. Note: we may eventually want to turn the error into a warning, if we do want
     // approximate blocks along the path (when we lack context and don't have the actual ones).
@@ -88,6 +89,7 @@ data class TrainPathNoBacktrack(
             chunks = chunks.subRange(fromDist, toDist, resetOffsets = true),
             electricalProfileMapping = electricalProfileMapping,
             haveApproximateBlocks = haveApproximateBlocks,
+            backtrackLocations = backtrackLocations.filter { it in fromDist..toDist },
         )
     }
 
@@ -339,6 +341,10 @@ data class TrainPathNoBacktrack(
     override fun withRoutes(routes: List<RouteId>): TrainPath {
         val routeRanges = generateRouteRanges(rawInfra, chunks, routes)
         return copy(routes = routeRanges)
+    }
+
+    override fun getBacktrackLocations(): List<Offset<TrainPath>> {
+        return backtrackLocations
     }
 
     /** *Debugging purpose*. We try to find the actual names of underlying objects. */
