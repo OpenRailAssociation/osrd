@@ -63,8 +63,14 @@ FROM train_schedule;
 -- Migrate round trips using the legacy ID mapping
 INSERT INTO paced_train_round_trips (left_id, right_id)
 SELECT
-    pt_left.id AS left_id,
-    pt_right.id AS right_id
+    CASE
+        WHEN pt_right.id IS NULL THEN pt_left.id
+        ELSE LEAST(pt_left.id, pt_right.id)
+    END AS left_id,
+    CASE
+        WHEN pt_right.id IS NULL THEN NULL
+        ELSE GREATEST(pt_left.id, pt_right.id)
+    END AS right_id
 FROM train_schedule_round_trips
 INNER JOIN paced_train pt_left ON pt_left.legacy_train_schedule_id = train_schedule_round_trips.left_id
 LEFT JOIN paced_train pt_right ON pt_right.legacy_train_schedule_id = train_schedule_round_trips.right_id;
