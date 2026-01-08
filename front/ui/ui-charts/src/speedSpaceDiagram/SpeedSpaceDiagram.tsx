@@ -78,7 +78,8 @@ const SpeedSpaceDiagram = ({
 
   return (
     <div ref={setRoot} className={cx('relative speed-space-diagram-2')} style={{ background }}>
-      <div ref={setCanvasesRoot} className="absolute inset-0" />
+      {/* WARNING Retirer plus tard le style width, height*/}
+      <div ref={setCanvasesRoot} className="absolute inset-0" style={{ height, width }}/>
       <SpeedSpaceDiagramContext.Provider value={contextState}>
         <SpeedSpaceDiagramCanvasContext.Provider value={canvasContext}>
           <MouseContext.Provider value={mouseContext}>{children}</MouseContext.Provider>
