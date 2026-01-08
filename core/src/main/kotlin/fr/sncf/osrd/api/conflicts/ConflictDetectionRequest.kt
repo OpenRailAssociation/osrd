@@ -48,7 +48,7 @@ open class TrainRequirementsRequest(
 // TrainRequirementsRequest>
 class TrainRequirementsById(
     @Json(name = "train_id") val trainId: String,
-    @Json(name = "train_name") val trainName: String,
+    @Json(name = "train_name") val trainName: String?,
     @Json(name = "start_time") startTime: ZonedDateTime,
     @Json(name = "spacing_requirements") spacingRequirements: Collection<RJSSpacingRequirement>,
     @Json(name = "routing_requirements") routingRequirements: Collection<RJSRoutingRequirement>,
