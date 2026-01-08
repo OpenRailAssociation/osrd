@@ -1,6 +1,6 @@
 {{- if .Values.services.editoast.permanent_storage_size -}}
 apiVersion: v1
-kind: persistentVolumeClaim
+kind: PersistentVolumeClaim
 metadata:
   name: editoast_volume
   namespace: default
