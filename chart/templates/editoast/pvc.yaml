@@ -6,6 +6,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   accessModes: [ReadWriteMany]
+  {{- if .Values.services.editoast.permanent_storage_class }}
+  storageClassName: {{ .Values.services.editoast.permanent_storage_class }}
+  {{- end }}
   resources:
     requests:
       storage: {{ .Values.services.editoast.permanent_storage_size }}

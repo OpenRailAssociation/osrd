@@ -195,6 +195,7 @@ services:
       extend: ""
       env: []
     permanent_storage_size: null
+    permanent_storage_class: null
     labels: {}
     nodeSelector: {}
     tolerations: []
