@@ -73,6 +73,9 @@ export type TrainrunSectionDto = {
   targetNodeId: number;
   targetPortId: number;
 
+  sourceSymmetry: boolean;
+  targetSymmetry: boolean;
+
   sourceDeparture: TimeLockDto;
   sourceArrival: TimeLockDto;
   targetDeparture: TimeLockDto;
