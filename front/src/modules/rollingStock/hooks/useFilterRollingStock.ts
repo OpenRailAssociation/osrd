@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 
-import { FREIGHT_ROLLING_STOCKS } from 'assets/rollingStock/freightRollingStocks';
+import { STDCM_ROLLING_STOCKS } from 'assets/rollingStock/freightRollingStocks';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { LightRollingStock, LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
@@ -148,7 +148,7 @@ const useFilterRollingStock = ({ isStdcm } = { isStdcm: false }) => {
   const usefulRollingStocks = useMemo(
     () =>
       isStdcm
-        ? allRollingStocks.filter((rs) => FREIGHT_ROLLING_STOCKS.includes(rs.name))
+        ? allRollingStocks.filter((rs) => STDCM_ROLLING_STOCKS.includes(rs.name))
         : allRollingStocks,
     [isStdcm, allRollingStocks]
   );
