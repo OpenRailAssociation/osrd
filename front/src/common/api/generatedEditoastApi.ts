@@ -1286,7 +1286,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/train_schedule`, method: 'DELETE', body: queryArg.body }),
         invalidatesTags: ['timetable', 'train_schedule'],
       }),
-      postTrainScheduleOccupancyBlocks: build.query<
+      postTrainScheduleOccupancyBlocks: build.mutation<
         PostTrainScheduleOccupancyBlocksApiResponse,
         PostTrainScheduleOccupancyBlocksApiArg
       >({
@@ -1295,9 +1295,9 @@ const injectedRtkApi = api
           method: 'POST',
           body: queryArg.occupancyBlockForm,
         }),
-        providesTags: ['train_schedule'],
+        invalidatesTags: ['train_schedule'],
       }),
-      postTrainScheduleProjectPath: build.query<
+      postTrainScheduleProjectPath: build.mutation<
         PostTrainScheduleProjectPathApiResponse,
         PostTrainScheduleProjectPathApiArg
       >({
@@ -1306,9 +1306,9 @@ const injectedRtkApi = api
           method: 'POST',
           body: queryArg.projectPathForm,
         }),
-        providesTags: ['train_schedule'],
+        invalidatesTags: ['train_schedule'],
       }),
-      postTrainScheduleProjectPathOp: build.query<
+      postTrainScheduleProjectPathOp: build.mutation<
         PostTrainScheduleProjectPathOpApiResponse,
         PostTrainScheduleProjectPathOpApiArg
       >({
@@ -1317,9 +1317,9 @@ const injectedRtkApi = api
           method: 'POST',
           body: queryArg.body,
         }),
-        providesTags: ['train_schedule'],
+        invalidatesTags: ['train_schedule'],
       }),
-      postTrainScheduleSimulationSummary: build.query<
+      postTrainScheduleSimulationSummary: build.mutation<
         PostTrainScheduleSimulationSummaryApiResponse,
         PostTrainScheduleSimulationSummaryApiArg
       >({
@@ -1328,7 +1328,7 @@ const injectedRtkApi = api
           method: 'POST',
           body: queryArg.body,
         }),
-        providesTags: ['train_schedule'],
+        invalidatesTags: ['train_schedule'],
       }),
       postTrainScheduleTrackOccupancy: build.mutation<
         PostTrainScheduleTrackOccupancyApiResponse,
