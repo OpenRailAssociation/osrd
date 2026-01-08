@@ -194,13 +194,6 @@ pub fn simple_paced_train_base() -> PacedTrain {
     }
 }
 
-pub fn simple_train_schedule_changeset(
-    timetable_id: i64,
-) -> Changeset<editoast_models::TrainSchedule> {
-    Changeset::<editoast_models::TrainSchedule>::from(schemas::TrainSchedule::fake())
-        .timetable_id(timetable_id)
-}
-
 pub fn simple_paced_train_changeset(timetable_id: i64) -> Changeset<models::PacedTrain> {
     Changeset::<models::PacedTrain>::from(simple_paced_train_base()).timetable_id(timetable_id)
 }

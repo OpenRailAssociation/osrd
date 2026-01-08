@@ -24,6 +24,7 @@ use schemas::train_schedule::MarginValue;
 use schemas::train_schedule::Margins;
 use schemas::train_schedule::ReceptionSignal;
 use schemas::train_schedule::ScheduleItem;
+use schemas::train_schedule::TrainSchedule;
 use serde::Deserialize;
 use serde::Serialize;
 use std::cmp::max;
@@ -48,7 +49,6 @@ use editoast_models::WorkSchedule;
 use editoast_models::prelude::*;
 use editoast_models::rolling_stock::RollingStock;
 use editoast_models::timetable::Timetable;
-use editoast_models::train_schedule::TrainSchedule;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
 #[serde(tag = "status", rename_all = "snake_case")]
@@ -273,7 +273,6 @@ pub(in crate::views) async fn stdcm_handler(
         &request,
         &infra,
         &physics_consist_parameters,
-        timetable_id,
     )
     .await?;
 
@@ -367,7 +366,6 @@ impl VirtualTrainRun {
         stdcm_request: &Request,
         infra: &Infra,
         consist_parameters: &PhysicsConsistParameters,
-        timetable_id: i64,
     ) -> Result<Self> {
         // Doesn't matter for now, but eventually it will affect tmp speed limits
         let approx_start_time = stdcm_request.get_earliest_step_time();
@@ -376,11 +374,9 @@ impl VirtualTrainRun {
         let last_step = path.last().expect("empty step list");
 
         let train_schedule = TrainSchedule {
-            id: 0,
             train_name: "".to_string(),
             labels: vec![],
             rolling_stock_name: consist_parameters.traction_engine.name.clone(),
-            timetable_id,
             start_time: approx_start_time,
             schedule: vec![ScheduleItem {
                 // Make the train stop at the end
@@ -394,11 +390,13 @@ impl VirtualTrainRun {
             comfort: stdcm_request.comfort,
             path,
             constraint_distribution: Default::default(),
-            speed_limit_tag: stdcm_request.speed_limit_tags.clone(),
+            speed_limit_tag: stdcm_request
+                .speed_limit_tags
+                .clone()
+                .map(schemas::primitives::NonBlankString::from),
             power_restrictions: vec![],
             options: Default::default(),
-            main_category: None,
-            sub_category: None,
+            category: None,
         };
 
         // Compute simulation of a train schedule

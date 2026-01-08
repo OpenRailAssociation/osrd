@@ -63,13 +63,6 @@ impl Scenario {
         Ok(infra_name)
     }
 
-    pub async fn trains_count(
-        &self,
-        conn: &mut DbConnection,
-    ) -> Result<i64, database::DatabaseError> {
-        Timetable::trains_count(self.timetable_id, conn).await
-    }
-
     pub async fn paced_trains_count(
         &self,
         conn: &mut DbConnection,

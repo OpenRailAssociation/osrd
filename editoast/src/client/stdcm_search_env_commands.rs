@@ -287,7 +287,7 @@ async fn show_stdcm_search_env(conn: &mut DbConnection) -> anyhow::Result<()> {
     if let Some(search_env) = search_env {
         println!("{search_env:#?}");
 
-        let n_trains = Timetable::trains_count(search_env.timetable_id, conn).await?;
+        let n_trains = Timetable::paced_trains_count(search_env.timetable_id, conn).await?;
         println!("🚆 Number of trains in timetable: {n_trains}");
     } else {
         println!("🔎 No STDCM search environment has been set up yet")
@@ -303,7 +303,7 @@ mod tests {
     use crate::models::fixtures::create_scenario_fixtures_set;
     use crate::models::fixtures::create_timetable;
     use crate::models::fixtures::create_work_schedule_group;
-    use crate::models::fixtures::simple_train_schedule_changeset;
+    use crate::models::fixtures::simple_paced_train_changeset;
     use editoast_models::prelude::*;
 
     use super::*;
@@ -318,17 +318,17 @@ mod tests {
         DateTime::parse_from_rfc3339(s).unwrap().to_utc()
     }
 
-    async fn create_train_schedules_from_start_times(
+    async fn create_trains_from_start_times(
         start_times: Vec<DateTime<Utc>>,
         timetable_id: i64,
         conn: &mut DbConnection,
     ) {
         for start_time in start_times {
-            simple_train_schedule_changeset(timetable_id)
+            simple_paced_train_changeset(timetable_id)
                 .start_time(start_time)
                 .create(conn)
                 .await
-                .expect("Should be able to create train schedules");
+                .expect("Should be able to create paced trains");
         }
     }
 
@@ -381,7 +381,7 @@ mod tests {
             make_datetime("2000-01-19 17:00:00Z"),
         ];
 
-        create_train_schedules_from_start_times(start_times, timetable.id, conn).await;
+        create_trains_from_start_times(start_times, timetable.id, conn).await;
 
         let (begin, end) =
             resolve_search_window(timetable.id, search_window_begin, search_window_end, conn)
@@ -430,7 +430,7 @@ mod tests {
             make_datetime("2000-02-02 00:00:01Z"),
         ];
 
-        create_train_schedules_from_start_times(start_times, timetable.id, conn).await;
+        create_trains_from_start_times(start_times, timetable.id, conn).await;
 
         assert!(
             resolve_search_window(timetable.id, search_window_begin, search_window_end, conn)
@@ -454,12 +454,7 @@ mod tests {
             make_datetime("2000-02-02 08:00:00Z"),
         ];
 
-        create_train_schedules_from_start_times(
-            start_times,
-            scenario_fixture_set.timetable.id,
-            conn,
-        )
-        .await;
+        create_trains_from_start_times(start_times, scenario_fixture_set.timetable.id, conn).await;
 
         let allowed_tracks_json = json!({
             "GA" : ["1","2","3"],
@@ -538,7 +533,7 @@ mod tests {
             make_datetime("2000-02-02 08:00:00Z"),
         ];
 
-        create_train_schedules_from_start_times(start_times, timetable.id, conn).await;
+        create_trains_from_start_times(start_times, timetable.id, conn).await;
         let operational_points = Vec::from([1, 2, 3, 4]);
         let operational_points_id_filtered =
             Vec::from(["uuid-1".to_string(), "uuid-2".to_string()]);
