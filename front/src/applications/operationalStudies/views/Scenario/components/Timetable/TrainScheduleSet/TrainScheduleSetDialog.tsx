@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 
 import { Button, Dialog, Input, Select, TextArea } from '@osrd-project/ui-core';
+import { Blocked } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
@@ -9,6 +10,7 @@ import {
   type CatalogEntry,
   type TrainScheduleSetForm,
 } from 'common/api/osrdEditoastApi';
+import { getErrorMessage } from 'utils/error';
 
 import { MOCK_CATALOG } from '../../../mockTrainScheduleSets';
 
@@ -30,6 +32,7 @@ const TrainScheduleSetDialog = ({ onCancel }: TrainScheduleSetDialogProps) => {
   const [catalogEntryError, setCatalogEntryError] = useState<'duplicate' | 'missing' | 'none'>(
     'none'
   );
+  const [formError, setFormError] = useState<string>();
 
   const { data: catalogueEntryResult } = osrdEditoastApi.endpoints.getCatalogEntry.useQuery(
     {
@@ -74,6 +77,8 @@ const TrainScheduleSetDialog = ({ onCancel }: TrainScheduleSetDialogProps) => {
   };
 
   const handleSubmit = async () => {
+    setFormError(undefined);
+
     if (!name) {
       setIsNameMissing(true);
       return;
@@ -90,10 +95,16 @@ const TrainScheduleSetDialog = ({ onCancel }: TrainScheduleSetDialogProps) => {
         return;
       }
 
-      const newCatalogEntry = await postCatalogEntry({
-        catalogEntryForm: { name: newCatalogEntryName },
-      }).unwrap();
-      catalogEntryId = newCatalogEntry.id;
+      try {
+        const newCatalogEntry = await postCatalogEntry({
+          catalogEntryForm: { name: newCatalogEntryName },
+        }).unwrap();
+        catalogEntryId = newCatalogEntry.id;
+      } catch (error) {
+        const errorMessage = getErrorMessage(error);
+        setFormError(errorMessage);
+        return;
+      }
     }
 
     const payload: TrainScheduleSetForm = {
@@ -102,7 +113,14 @@ const TrainScheduleSetDialog = ({ onCancel }: TrainScheduleSetDialogProps) => {
       catalog_entry_id: catalogEntryId,
       published: false, // new train schedule sets are always local by default
     };
-    postTrainScheduleSet({ trainScheduleSetForm: payload });
+
+    try {
+      postTrainScheduleSet({ trainScheduleSetForm: payload });
+    } catch (error) {
+      const errorMessage = getErrorMessage(error);
+      setFormError(errorMessage);
+      return;
+    }
     onCancel();
   };
 
@@ -112,22 +130,33 @@ const TrainScheduleSetDialog = ({ onCancel }: TrainScheduleSetDialogProps) => {
       header={<h5>{t('newLocalTrainScheduleSet')}</h5>}
       footer={
         <>
-          <Button
-            variant="Cancel"
-            label={t('cancel')}
-            onClick={onCancel}
-            isDisabled={isPostTrainScheduleSetLoading || isPostCatalogEntryLoading}
-          />
-          <Button
-            label={t('addTrainScheduleSet')}
-            className={cx('submit-button', {
-              'wizz-effect': catalogEntryError !== 'none' || isNameMissing,
-            })}
-            onClick={handleSubmit}
-            isLoading={isPostTrainScheduleSetLoading || isPostCatalogEntryLoading}
-          />
+          {formError && (
+            <div className="submit-error">
+              <Blocked variant="fill" size="lg" />
+              <span>{formError}</span>
+            </div>
+          )}
+          <div className="footer-buttons">
+            <Button
+              variant="Cancel"
+              label={t('cancel')}
+              onClick={onCancel}
+              isDisabled={isPostTrainScheduleSetLoading || isPostCatalogEntryLoading}
+            />
+            <Button
+              label={t('addTrainScheduleSet')}
+              className={cx('submit-button', {
+                'wizz-effect': catalogEntryError !== 'none' || isNameMissing,
+              })}
+              onClick={handleSubmit}
+              isLoading={isPostTrainScheduleSetLoading || isPostCatalogEntryLoading}
+            />
+          </div>
         </>
       }
+      footerClassname={cx('train-schedule-set-dialog-footer', {
+        'with-error': !formError,
+      })}
     >
       <div className="train-schedule-set-name">
         <Input
