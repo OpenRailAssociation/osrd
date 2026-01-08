@@ -555,6 +555,18 @@ const getNgeTrainrunSectionsWithNodes = (
           travelTime.consecutiveTime = travelTime.time;
         }
 
+        // Minute symmetry
+        const sourceSymmetry = Boolean(
+          sourceDeparture.time &&
+          sourceArrival.time &&
+          (sourceDeparture.time + sourceArrival.time) % 60 === 0
+        );
+        const targetSymmetry = Boolean(
+          targetDeparture.time &&
+          targetArrival.time &&
+          (targetDeparture.time + targetArrival.time) % 60 === 0
+        );
+
         const trainrunSection = {
           id: trainrunSectionId,
           sourceNodeId: sourceNode.id,
@@ -566,6 +578,8 @@ const getNgeTrainrunSectionsWithNodes = (
           sourceArrival,
           targetDeparture,
           targetArrival,
+          sourceSymmetry,
+          targetSymmetry,
           numberOfStops: 0,
           trainrunId: index + 1,
           resourceId: state.ngeResource.id,

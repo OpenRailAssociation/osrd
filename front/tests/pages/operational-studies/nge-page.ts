@@ -64,7 +64,10 @@ class NGEPage extends OpSimulationResultPage {
   }
 
   private getTrainLabel(lineIndex: number, labelIndex: number): Locator {
-    return this.trainLabelRows.nth(lineIndex).getByTestId('edge_text').nth(labelIndex);
+    return this.trainLabelRows
+      .nth(lineIndex)
+      .locator('[data-testid="edge_text"]:not(.hidden)')
+      .nth(labelIndex);
   }
 
   async toggleTopologyEditor() {
