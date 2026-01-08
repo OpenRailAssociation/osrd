@@ -198,22 +198,6 @@ async fn delete_sub_category_and_fallback_to_main(
         .update_batch(conn, paced_trains_ids)
         .await?;
 
-    let train_schedule_ids: Vec<i64> = editoast_models::TrainSchedule::list(
-        conn,
-        SelectionSettings::new()
-            .filter(move || editoast_models::TrainSchedule::SUB_CATEGORY.eq(Some(code.clone()))),
-    )
-    .await?
-    .into_iter()
-    .map(|train_schedule| train_schedule.id)
-    .collect();
-
-    let _: (Vec<_>, _) = editoast_models::TrainSchedule::changeset()
-        .main_category(Some(sub_category.main_category.clone()))
-        .sub_category(None)
-        .update_batch(conn, train_schedule_ids)
-        .await?;
-
     sub_category.delete(conn).await?;
     Ok(())
 }
@@ -231,7 +215,6 @@ pub mod tests {
     use crate::models::fixtures::create_timetable;
     use crate::models::fixtures::simple_paced_train_changeset;
     use crate::models::fixtures::simple_sub_category;
-    use crate::models::fixtures::simple_train_schedule_changeset;
     use crate::views::sub_categories::SubCategoryPage;
     use crate::views::test_app::TestAppBuilder;
     use editoast_models::prelude::*;
@@ -383,22 +366,6 @@ pub mod tests {
             .await
             .expect("Failed to create paced train");
 
-        let train_schedule_1 = simple_train_schedule_changeset(timetable.id)
-            .main_category(None)
-            .sub_category(Some(created_sub_category.code.clone()));
-        let train_schedule_1 = train_schedule_1
-            .create(&mut db_pool.get_ok())
-            .await
-            .expect("Failed to create train schedule 1");
-
-        let train_schedule_2 = simple_train_schedule_changeset(timetable.id)
-            .main_category(None)
-            .sub_category(Some(created_sub_category.code.clone()));
-        let train_schedule_2 = train_schedule_2
-            .create(&mut db_pool.get_ok())
-            .await
-            .expect("Failed to create train schedule 2");
-
         let request = app.delete(&format!(
             "/sub_category/{}",
             created_sub_category.code.clone()
@@ -428,34 +395,6 @@ pub mod tests {
         );
         assert_eq!(
             paced_train_2.main_category,
-            Some(TrainMainCategory(
-                schemas::rolling_stock::TrainMainCategory::HighSpeedTrain
-            ))
-        );
-
-        let train_schedule_1 =
-            editoast_models::TrainSchedule::retrieve(db_pool.get_ok(), train_schedule_1.id)
-                .await
-                .expect("Failed to retrieve train schedule")
-                .expect("Train schedule 1 not found");
-
-        let train_schedule_2 =
-            editoast_models::TrainSchedule::retrieve(db_pool.get_ok(), train_schedule_2.id)
-                .await
-                .expect("Failed to retrieve train schedule")
-                .expect("Train schedule 2 not found");
-
-        assert_eq!(train_schedule_1.sub_category, None);
-        assert_eq!(train_schedule_2.sub_category, None);
-
-        assert_eq!(
-            train_schedule_1.main_category,
-            Some(TrainMainCategory(
-                schemas::rolling_stock::TrainMainCategory::HighSpeedTrain
-            ))
-        );
-        assert_eq!(
-            train_schedule_2.main_category,
             Some(TrainMainCategory(
                 schemas::rolling_stock::TrainMainCategory::HighSpeedTrain
             ))

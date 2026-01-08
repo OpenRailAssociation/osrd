@@ -758,7 +758,7 @@ pub mod tests {
     use crate::models::fixtures::create_small_infra;
     use crate::models::fixtures::create_study;
     use crate::models::fixtures::create_timetable;
-    use crate::models::fixtures::simple_train_schedule_changeset;
+    use crate::models::fixtures::simple_paced_train_changeset;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
     use editoast_models::rolling_stock::RollingStock;
@@ -953,17 +953,17 @@ pub mod tests {
         )
         .await;
 
-        simple_train_schedule_changeset(timetable_1.id)
+        simple_paced_train_changeset(timetable_1.id)
             .rolling_stock_name(rolling_stock.name.clone())
             .create(&mut db_pool.get_ok())
             .await
             .unwrap();
-        simple_train_schedule_changeset(timetable_2.id)
+        simple_paced_train_changeset(timetable_2.id)
             .rolling_stock_name(rolling_stock.name)
             .create(&mut db_pool.get_ok())
             .await
             .unwrap();
-        simple_train_schedule_changeset(timetable_3.id)
+        simple_paced_train_changeset(timetable_3.id)
             .rolling_stock_name(other_rolling_stock.name)
             .create(&mut db_pool.get_ok())
             .await
@@ -1538,11 +1538,11 @@ pub mod tests {
         )
         .await;
 
-        simple_train_schedule_changeset(timetable.id)
+        simple_paced_train_changeset(timetable.id)
             .rolling_stock_name(fast_rolling_stock.name.clone())
             .create(&mut db_pool.get_ok())
             .await
-            .expect("Failed to create train schedule");
+            .expect("Failed to create paced train");
 
         let request = app.delete(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str());
         let request_forced =

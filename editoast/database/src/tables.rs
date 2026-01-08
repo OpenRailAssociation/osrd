@@ -865,47 +865,6 @@ diesel::table! {
 diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
-    use super::sql_types::TrainMainCategory;
-
-    train_schedule (id) {
-        id -> Int8,
-        #[max_length = 128]
-        train_name -> Varchar,
-        labels -> Array<Nullable<Text>>,
-        #[max_length = 128]
-        rolling_stock_name -> Varchar,
-        timetable_id -> Int8,
-        start_time -> Timestamptz,
-        schedule -> Jsonb,
-        margins -> Jsonb,
-        initial_speed -> Float8,
-        comfort -> Int2,
-        path -> Jsonb,
-        constraint_distribution -> Int2,
-        #[max_length = 128]
-        speed_limit_tag -> Nullable<Varchar>,
-        power_restrictions -> Jsonb,
-        options -> Jsonb,
-        main_category -> Nullable<TrainMainCategory>,
-        #[max_length = 255]
-        sub_category -> Nullable<Varchar>,
-    }
-}
-
-diesel::table! {
-    use diesel::sql_types::*;
-    use postgis_diesel::sql_types::*;
-
-    train_schedule_round_trips (id) {
-        id -> Int8,
-        left_id -> Int8,
-        right_id -> Nullable<Int8>,
-    }
-}
-
-diesel::table! {
-    use diesel::sql_types::*;
-    use postgis_diesel::sql_types::*;
 
     train_schedule_set (id) {
         id -> Int8,
@@ -996,7 +955,6 @@ diesel::joinable!(stdcm_search_environment -> timetable (timetable_id));
 diesel::joinable!(stdcm_search_environment -> work_schedule_group (work_schedule_group_id));
 diesel::joinable!(study -> project (project_id));
 diesel::joinable!(temporary_speed_limit -> temporary_speed_limit_group (temporary_speed_limit_group_id));
-diesel::joinable!(train_schedule -> timetable (timetable_id));
 diesel::joinable!(train_schedule_set -> catalog_entry (catalog_entry_id));
 diesel::joinable!(work_schedule -> work_schedule_group (work_schedule_group_id));
 
@@ -1056,8 +1014,6 @@ diesel::allow_tables_to_appear_in_same_query!(
     temporary_speed_limit_group,
     timetable,
     towed_rolling_stock,
-    train_schedule,
-    train_schedule_round_trips,
     train_schedule_set,
     work_schedule,
     work_schedule_group,
