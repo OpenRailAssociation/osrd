@@ -9,8 +9,7 @@ const buildPacedTrain = (id: number): TimetableItem =>
   ({
     id: `paced_${id}` as PacedTrainId,
     train_name: `Paced ${id}`,
-    paced: { occurrences: [] },
-  }) as unknown as TimetableItem;
+  }) as TimetableItem;
 
 describe('buildTimetableExportPayload', () => {
   it('includes forced one-way round trips for selected paced trains', () => {
