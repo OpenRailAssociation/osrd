@@ -5,7 +5,7 @@ metadata:
   name: editoast-volume
   namespace: {{ .Release.Namespace }}
 spec:
-  accessMode: ReadWriteMany
+  accessModes: [ReadWriteMany]
   resources:
     requests:
       storage: {{ .Values.services.editoast.permanent_storage_size }}
