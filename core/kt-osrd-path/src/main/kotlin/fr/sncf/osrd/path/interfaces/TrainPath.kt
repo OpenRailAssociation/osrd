@@ -38,6 +38,8 @@ interface TrainPath : PhysicsPath, PathProperties {
     /** Returns a copy with the specified routes instead */
     override fun withRoutes(routes: List<RouteId>): TrainPath
 
+    fun getBacktrackLocations(): List<Offset<TrainPath>>
+
     fun getBlocks(): List<BlockRange>
 
     fun getRoutes(): List<RouteRange>

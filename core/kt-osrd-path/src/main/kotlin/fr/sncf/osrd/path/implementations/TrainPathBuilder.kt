@@ -97,6 +97,7 @@ fun buildTrainPathFromBlockRanges(
     routeNames: List<String>? = null,
     electricalProfileMapping: ElectricalProfileMapping? = null,
     haveApproximateBlocks: Boolean = false,
+    backtrackLocations: List<Offset<TrainPath>> = listOf(),
 ): TrainPath {
     require(routes == null || routeNames == null)
     val chunks = generateTrackChunks(rawInfra, blockInfra, blockRanges)
@@ -110,6 +111,7 @@ fun buildTrainPathFromBlockRanges(
         chunks,
         electricalProfileMapping,
         haveApproximateBlocks = haveApproximateBlocks,
+        backtrackLocations = backtrackLocations,
     )
 }
 
