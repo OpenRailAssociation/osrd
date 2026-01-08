@@ -2,6 +2,7 @@ package fr.sncf.osrd.api
 
 import io.opentelemetry.api.trace.Span
 import java.net.URI
+import mu.KotlinLogging
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.regions.Region
@@ -11,17 +12,30 @@ import software.amazon.awssdk.services.s3.model.HeadObjectRequest
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 
+/**
+ * Wraps S3 data and operations into a more convenient class.
+ *
+ * Note: as this S3 is only used to generate data that helps with viewing and debugging, errors are
+ * never critical. All operations are wrapped into try/catch blocks with error logging.
+ */
 data class S3Context(val s3Client: S3Client, val bucketName: String) {
+
+    val logger = KotlinLogging.logger {}
+
     /** Write a new file for a given stdcm request. */
     fun writeSTDCMFile(fileName: String, content: String) {
-        val traceId = Span.current().spanContext.traceId
-        val putObjectRequest =
-            PutObjectRequest.builder()
-                .bucket(bucketName)
-                .key("stdcm/requests/$traceId/$fileName")
-                .build()
+        try {
+            val traceId = Span.current().spanContext.traceId
+            val putObjectRequest =
+                PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key("stdcm/requests/$traceId/$fileName")
+                    .build()
 
-        s3Client.putObject(putObjectRequest, RequestBody.fromString(content))
+            s3Client.putObject(putObjectRequest, RequestBody.fromString(content))
+        } catch (e: Exception) {
+            logger.error { e }
+        }
     }
 
     /**
@@ -40,6 +54,9 @@ data class S3Context(val s3Client: S3Client, val bucketName: String) {
             s3Client.headObject(headRequest)
             true
         } catch (_: NoSuchKeyException) {
+            false
+        } catch (e: Exception) {
+            logger.error { e }
             false
         }
     }

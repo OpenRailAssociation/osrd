@@ -277,14 +277,18 @@ class TimetableCacheManager(
         val objectPath = "stdcm/saved_timetables/$cacheKey.cbor"
         if (s3Context.fileExists(objectPath)) return
 
-        val putObjectRequest =
-            PutObjectRequest.builder().bucket(s3Context.bucketName).key(objectPath).build()
+        try {
+            val putObjectRequest =
+                PutObjectRequest.builder().bucket(s3Context.bucketName).key(objectPath).build()
 
-        val serializable = requirements.toSerializable()
-        val cbor = Cbor {}
-        val serializer = STDCMTimetableData.SerializableMap.serializer()
-        val bytes = cbor.encodeToByteArray(serializer, serializable)
+            val serializable = requirements.toSerializable()
+            val cbor = Cbor {}
+            val serializer = STDCMTimetableData.SerializableMap.serializer()
+            val bytes = cbor.encodeToByteArray(serializer, serializable)
 
-        s3Context.s3Client.putObject(putObjectRequest, RequestBody.fromBytes(bytes))
+            s3Context.s3Client.putObject(putObjectRequest, RequestBody.fromBytes(bytes))
+        } catch (e: Exception) {
+            logger.error("failed to save timetable to s3", e)
+        }
     }
 }
