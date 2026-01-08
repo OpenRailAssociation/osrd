@@ -116,22 +116,39 @@
     section {
       // Correctly align the checkbox with the radio buttons
       .ui-checkbox {
-        margin-left: 4px;
+        margin-left: 2px;
       }
 
       // Override the default padding of the radio button wrapper
       .ui-radio-button-wrapper {
         padding-left: 0;
         padding-block: 0;
+        margin-bottom: 14px;
 
         .ui-radio-button {
           padding-left: 8px;
 
           label {
             font-weight: 400;
+            margin-bottom: 0px;
           }
         }
       }
+    }
+  }
+
+  .space-time-chart.without-train-simulation-mode {
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 26px;
+      bottom: 40px;
+      left: 0;
+      right: 0;
+      border: 12px solid rgba(0, 0, 0, 0.05);
+      z-index: 1;
     }
   }
 }

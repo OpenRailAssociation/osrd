@@ -14,7 +14,13 @@ import TrainProjectionLazyLoaderAbstract, {
   type TrainProjectionLazyLoaderOptions,
 } from './TrainProjectionLazyLoaderAbstract';
 
+export type TrainOpProjectionOptions = TrainProjectionLazyLoaderOptions & {
+  isSimulationEnabled: boolean;
+};
+
 export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoaderAbstract {
+  declare readonly options: TrainOpProjectionOptions;
+
   readonly opRefs: OperationalPointReference[];
 
   readonly opDistances: number[];
@@ -22,7 +28,7 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
   constructor(
     opRefs: OperationalPointReference[],
     opDistances: number[],
-    options: TrainProjectionLazyLoaderOptions
+    options: TrainOpProjectionOptions
   ) {
     super(options);
     this.opRefs = opRefs;
@@ -52,7 +58,7 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
                 train_ids: editoastIds,
                 operational_points_refs: this.opRefs,
                 operational_points_distances: this.opDistances,
-                use_simulation: true,
+                use_simulation: this.options.isSimulationEnabled,
               },
             },
 

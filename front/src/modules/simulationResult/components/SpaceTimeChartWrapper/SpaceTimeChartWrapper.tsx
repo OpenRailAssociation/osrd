@@ -21,7 +21,9 @@ import {
   isOccupancyPickingElement,
 } from '@osrd-project/ui-charts';
 import { Slider } from '@osrd-project/ui-core';
+import cx from 'classnames';
 import { createPortal } from 'react-dom';
+import { useSelector } from 'react-redux';
 
 import upward from 'assets/pictures/workSchedules/ScheduledMaintenanceUp.svg';
 import { type PostWorkSchedulesProjectPathApiResponse } from 'common/api/osrdEditoastApi';
@@ -42,6 +44,7 @@ import type {
   TrainId,
   TrainScheduleId,
 } from 'reducers/osrdconf/types';
+import { getIsSimulationEnabled } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import {
   isTrainId,
@@ -141,6 +144,7 @@ const SpaceTimeChartWrapper = ({
   pathfindingHasFailed = false,
 }: SpaceTimeChartWrapperProps) => {
   const dispatch = useAppDispatch();
+  const isSimulationEnabled = useSelector(getIsSimulationEnabled);
 
   const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);
   const activeWaypointRef = useRef<HTMLDivElement>(null);
@@ -420,7 +424,9 @@ const SpaceTimeChartWrapper = ({
           )}
 
           <SpaceTimeChart
-            className="inset-0 absolute h-full"
+            className={cx('inset-0 absolute h-full', {
+              'without-train-simulation-mode': !isSimulationEnabled,
+            })}
             height={height}
             {...spaceTimeChartProps}
             onPan={handlePan}
@@ -449,9 +455,13 @@ const SpaceTimeChartWrapper = ({
                 imageUrl={upward}
               />
             )}
-            {settings.showConflicts && <ConflictLayer conflicts={cutConflicts} />}
-            {settings.showSignalsStates && (
-              <OccupancyBlockLayer occupancyBlocks={occupancyBlocks} />
+            {isSimulationEnabled && (
+              <>
+                {settings.showConflicts && <ConflictLayer conflicts={cutConflicts} />}
+                {settings.showSignalsStates && (
+                  <OccupancyBlockLayer occupancyBlocks={occupancyBlocks} />
+                )}
+              </>
             )}
           </SpaceTimeChart>
         </div>

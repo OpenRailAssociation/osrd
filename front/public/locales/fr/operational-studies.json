@@ -636,6 +636,7 @@
     "timeSpaceChartSettings": {
       "capacity": "Capacité",
       "conflicts": "Conflits",
+      "inputMode": "Non calcul",
       "operationalPointProjection": "Au point remarquable",
       "paths": "Sillons",
       "projection": "Projection",
