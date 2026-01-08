@@ -8,5 +8,5 @@ spec:
   accessMode: ReadWriteMany
   resources:
     requests:
-	  storage: {{ .Values.services.editoast.permanent_storage_size }}
+      storage: {{ .Values.services.editoast.permanent_storage_size }}
 {{- end -}}
