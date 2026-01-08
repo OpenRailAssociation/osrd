@@ -205,16 +205,6 @@ pub fn simple_paced_train_changeset(timetable_id: i64) -> Changeset<models::Pace
     Changeset::<models::PacedTrain>::from(simple_paced_train_base()).timetable_id(timetable_id)
 }
 
-pub async fn create_simple_train_schedule(
-    conn: &mut DbConnection,
-    timetable_id: i64,
-) -> editoast_models::TrainSchedule {
-    simple_train_schedule_changeset(timetable_id)
-        .create(conn)
-        .await
-        .expect("Failed to create train schedule")
-}
-
 pub async fn create_simple_paced_train(
     conn: &mut DbConnection,
     timetable_id: i64,

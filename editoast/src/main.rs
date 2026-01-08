@@ -31,7 +31,6 @@ use client::roles::RolesCommand;
 use client::runserver::runserver;
 use client::search_commands::*;
 use client::stdcm_search_env_commands::handle_stdcm_search_env_command;
-use client::timetables_commands::*;
 use client::user;
 use client::user::UserCommand;
 use common::tracing::SpanUploading;
@@ -174,10 +173,6 @@ async fn run() -> anyhow::Result<()> {
                 generate_infra(args, db_pool.into(), valkey_config, app_version.as_deref()).await
             }
             InfraCommands::ImportRailjson(args) => import_railjson(args, db_pool.into()).await,
-        },
-        Commands::Timetables(subcommand) => match subcommand {
-            TimetablesCommands::Import(args) => trains_import(args, db_pool.into()).await,
-            TimetablesCommands::Export(args) => trains_export(args, db_pool.into()).await,
         },
         Commands::STDCMSearchEnv(subcommand) => {
             handle_stdcm_search_env_command(subcommand, db_pool).await
