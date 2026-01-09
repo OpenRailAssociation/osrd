@@ -24,6 +24,7 @@ private fun CollectionItemType.generateInterfaces(context: GeneratorContext, cur
 
             package $generatedPackage
 
+            import kotlin.jvm.JvmName
             import ${type.qualifiedName}
 
             /** GENERATED CODE */

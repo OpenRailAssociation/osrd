@@ -27,6 +27,7 @@ private fun CollectionItemType.generateArray(context: GeneratorContext, currentF
 
             package $generatedPackage
 
+            import kotlin.jvm.JvmInline
             import ${type.qualifiedName}
 
             // regular lambda types are compiled to a generic Function<In, Out> type, which boxes

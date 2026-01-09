@@ -36,6 +36,7 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
             package $generatedPackage
 
             import fr.sncf.osrd.fast_collections.growCapacity
+            import kotlin.jvm.JvmName
             import ${type.qualifiedName}
 
             /** GENERATED CODE */
