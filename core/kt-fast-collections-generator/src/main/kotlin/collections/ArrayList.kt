@@ -158,13 +158,13 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
 
                 /** GENERATED CODE */
                 override operator fun get(index: Int): $type {
-                    assert(index < usedElements)
+                    require(index < usedElements)
                     return buffer[index]
                 }
 
                 /** GENERATED CODE */
                 override operator fun set(index: Int, element: $type): $type {
-                    assert(index < usedElements)
+                    require(index < usedElements)
                     val oldValue = buffer[index]
                     buffer[index] = element
                     return oldValue
@@ -173,7 +173,7 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
                 /** GENERATED CODE */
                 @JvmName("removeAt")
                 override fun remove(index: Int): $type {
-                    assert(index < usedElements)
+                    require(index < usedElements)
                     val oldValue = buffer[index]
                     for (i in index until usedElements - 1)
                         buffer[i] = buffer[i + 1]
