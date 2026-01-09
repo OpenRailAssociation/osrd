@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 import { Button, Input, Dialog, TextArea, Select } from '@osrd-project/ui-core';
-import { Search } from '@osrd-project/ui-icons';
+import { Blocked, Search } from '@osrd-project/ui-icons';
 import { type Meta, type StoryObj } from '@storybook/react-vite';
 
 import '@osrd-project/ui-core/dist/theme.css';
@@ -68,6 +68,54 @@ export const FormDialog: Story = {
       <>
         <Button variant="Cancel" label="Cancel" onClick={() => setOpen(false)} />
         <Button type="submit" form="form" label="Edit variant" onClick={() => setOpen(false)} />
+      </>
+    ),
+  },
+};
+
+export const FormErrorDialog: Story = {
+  args: {
+    btnLabel: 'Dialog with form in error',
+    className: 'ambientB with-error',
+    header: <h5>Edit local variant</h5>,
+    body: (
+      <form id="form" style={{ width: '406px', margin: '0 auto' }}>
+        <p>
+          The error dialog must include the `with-error` class, and the footer must conform to the
+          DOM structure shown below.
+        </p>
+        <Input id="variant" label="Variant name" type="text" defaultValue="Variant 003004" />
+        <Select
+          getOptionLabel={(e) => e}
+          getOptionValue={(e) => e}
+          id="parent"
+          label="Parent train group"
+          value="Group DDDEEEFFF"
+          onChange={() => {}}
+          options={['Group DDDEEEFFF', 'Group AAABBBCCC']}
+          placeholder="Choose"
+        />
+        <TextArea
+          id="description"
+          label="Variant description"
+          value="Testing more trains upstream"
+        />
+      </form>
+    ),
+    footer: (setOpen) => (
+      <>
+        <div className="error">
+          <Blocked variant="fill" size="lg" />
+          <span>
+            Network timeout error. Your message was not delivered. Please try again later. Network
+            timeout error. Your message was not delivered. Please try again later. Network timeout
+            error. Your message was not delivered. Please try again later.
+          </span>
+        </div>
+        <div className="buttons">
+          <Button variant="Cancel" label="Cancel" onClick={() => setOpen(false)} />
+          <Button type="submit" form="form" label="Edit variant" onClick={() => setOpen(false)} />
+        </div>
       </>
     ),
   },

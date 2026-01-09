@@ -44,10 +44,12 @@ const Dialog = ({
     if (fullscreen) return;
     if (!overlayRef.current || !dialogRef.current) return;
     const resizeObserver = new ResizeObserver(() => {
-      if (overlayRef.current!.scrollHeight > overlayRef.current!.clientHeight) {
-        overlayRef.current!.classList.add('scroll');
-      } else {
-        overlayRef.current!.classList.remove('scroll');
+      if (overlayRef.current) {
+        if (overlayRef.current.scrollHeight > overlayRef.current.clientHeight) {
+          overlayRef.current.classList.add('scroll');
+        } else {
+          overlayRef.current.classList.remove('scroll');
+        }
       }
     });
     resizeObserver.observe(dialogRef.current);
