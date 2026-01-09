@@ -1,6 +1,5 @@
 import React, { type ButtonHTMLAttributes, type ReactNode } from 'react';
 
-import { Gear } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 
 type ButtonVariant = 'Normal' | 'Cancel' | 'Quiet' | 'Destructive' | 'Primary';
@@ -52,17 +51,9 @@ const Button = ({
       onClick={handleClick}
       disabled={isDisabled || isLoading}
     >
-      {isLoading ? (
-        <span className="icon">
-          <Gear variant="fill" size="lg" />
-        </span>
-      ) : (
-        <>
-          {leadingIcon && <span className="leading-icon mr-2">{leadingIcon}</span>}
-          {label}
-          {counter !== null && <span className="counter ml-2">{counter}</span>}
-        </>
-      )}
+      {leadingIcon && <span className="leading-icon mr-2">{leadingIcon}</span>}
+      {label}
+      {counter !== null && <span className="counter ml-2">{counter}</span>}
     </button>
   );
 };

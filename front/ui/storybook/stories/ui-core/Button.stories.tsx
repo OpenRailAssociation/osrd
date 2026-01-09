@@ -35,6 +35,7 @@ type Story = StoryObj<typeof Button>;
 export const Default: Story = {
   args: {
     label: 'Click me',
+    isLoading: false,
   },
 };
 
@@ -42,6 +43,7 @@ export const Loading: Story = {
   args: {
     label: 'Loading',
     isLoading: true,
+    isDisabled: false,
   },
 };
 
@@ -49,6 +51,7 @@ export const Disabled: Story = {
   args: {
     label: 'Disabled',
     isDisabled: true,
+    isLoading: false,
   },
 };
 
@@ -56,6 +59,7 @@ export const Counter: Story = {
   args: {
     label: 'Counter',
     counter: 5,
+    isLoading: false,
   },
 };
 
@@ -63,6 +67,7 @@ export const Quiet: Story = {
   args: {
     label: 'Quiet',
     variant: 'Quiet',
+    isLoading: false,
   },
 };
 
@@ -70,6 +75,7 @@ export const Destructive: Story = {
   args: {
     label: 'Destructive',
     variant: 'Destructive',
+    isLoading: false,
   },
 };
 
@@ -77,6 +83,7 @@ export const Cancel: Story = {
   args: {
     label: 'Cancel',
     variant: 'Cancel',
+    isLoading: false,
   },
 };
 
