@@ -94,13 +94,6 @@
             text-align: left;
             white-space: nowrap;
 
-            .check-circle {
-              display: flex;
-              align-items: center;
-              margin-left: 8px;
-              color: rgb(60, 202, 128);
-            }
-
             .alternative-simulation {
               display: flex;
               align-items: center;
@@ -151,6 +144,19 @@
       bottom: 4px;
       border-bottom: 1px solid rgb(182, 178, 175);
     }
+  }
+
+  .check-circle {
+    display: flex;
+    align-items: center;
+    margin-left: 8px;
+    color: var(--success30);
+  }
+
+  .success-message {
+    display: inline-flex;
+    color: var(--success60);
+    font-weight: 600;
   }
 
   .simulation-results {
@@ -275,7 +281,7 @@
             }
             .button-get-simulation {
               padding-top: 32px;
-              padding-right: 36px;
+              padding-right: 32px;
             }
             .selected-simulation {
               padding-top: 9.6px;

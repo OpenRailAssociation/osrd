@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
+import { CheckCircle } from '@osrd-project/ui-icons';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { head, last } from 'lodash';
 import { useTranslation, Trans } from 'react-i18next';
@@ -59,6 +60,8 @@ const StdcmResults = ({
   const infraId = useSelector(getStdcmInfraID);
   const { openModal, closeModal } = useModal();
   const railwayManagerUrl = useSelector(getRailwayManagerInterfaceUrl);
+  const [isRailwayRequestSuccessful, setIsRailwayRequestSuccessful] = useState(false);
+  const [railwayDemandId, setRailwayDemandId] = useState<string>();
 
   const { t } = useTranslation('stdcm', { keyPrefix: 'simulation.results' });
   const deploymentSettings = useDeploymentSettings();
@@ -108,6 +111,13 @@ const StdcmResults = ({
   const [areSegmentsLoading, setAreSegmentsLoading] = useState(true);
 
   const [postSimilarTrains] = osrdEditoastApi.endpoints.postSimilarTrains.useMutation();
+
+  const handleSubmitSuccess = (isSuccessful: boolean, request_identifier?: string) => {
+    if (isSuccessful) {
+      setIsRailwayRequestSuccessful(isSuccessful);
+      setRailwayDemandId(request_identifier);
+    }
+  };
 
   useEffect(() => {
     const searchForSimilarTrains = async () => {
@@ -291,28 +301,35 @@ const StdcmResults = ({
                           />
                         </PDFDownloadLink>
                       </div>
-                      {railwayManagerUrl && (
-                        <Button
-                          label={t('transferSheetToRailManager')}
-                          onClick={() =>
-                            openModal(
-                              <SendToRailwayManagerModal
-                                consist={selectedSimulation.inputs.consist}
-                                stdcmData={outputs.results}
-                                linkedTrains={selectedSimulation.inputs.linkedTrains}
-                                simulationReportSheetNumber={simulationReportSheetNumber}
-                                operationalPointsList={operationalPointsList}
-                                simulationSheetLogo={deploymentSettings?.stdcmSimulationSheetLogo}
-                                similarTrains={similarTrains}
-                                deploymentSettings={deploymentSettings}
-                                onClose={closeModal}
-                              />,
-                              'xl',
-                              'no-close-modal'
-                            )
-                          }
-                        />
-                      )}
+                      {railwayManagerUrl &&
+                        (!isRailwayRequestSuccessful ? (
+                          <Button
+                            label={t('transferSheetToRailManager')}
+                            onClick={() =>
+                              openModal(
+                                <SendToRailwayManagerModal
+                                  consist={selectedSimulation.inputs.consist}
+                                  stdcmData={outputs.results}
+                                  linkedTrains={selectedSimulation.inputs.linkedTrains}
+                                  simulationReportSheetNumber={simulationReportSheetNumber}
+                                  operationalPointsList={operationalPointsList}
+                                  simulationSheetLogo={deploymentSettings?.stdcmSimulationSheetLogo}
+                                  similarTrains={similarTrains}
+                                  deploymentSettings={deploymentSettings}
+                                  onClose={closeModal}
+                                  onSuccess={handleSubmitSuccess}
+                                />,
+                                'xl',
+                                'no-close-modal'
+                              )
+                            }
+                          />
+                        ) : (
+                          <div className="success-message">
+                            {t('modal.successMessage', { demandNumber: railwayDemandId })}
+                            <CheckCircle className="check-circle" variant="fill" />
+                          </div>
+                        ))}
                     </div>
                   )}
                   {retainedSimulationIndex !== undefined && buttonsVisible && (
