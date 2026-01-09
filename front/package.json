@@ -113,7 +113,7 @@
     "@types/react-dom": "^19.2.3",
     "@types/tether": "^1.4.9",
     "@vitejs/plugin-react-swc": "^4.2.2",
-    "@vitest/eslint-plugin": "^1.4.3",
+    "@vitest/eslint-plugin": "^1.6.5",
     "ansi-to-html": "^0.7.2",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.5",
