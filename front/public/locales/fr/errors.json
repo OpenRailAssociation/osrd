@@ -126,7 +126,7 @@
     },
     "macro_node": {
       "Database": "Erreur interne",
-      "NotFound": "Noeud {{node_id}} non trouvé",
+      "NotFound": "Noeud {{node_id}} non trouvé.",
       "ScenarioNotFound": "Scénario '{{scenario_id}}' non trouvé"
     },
     "macro_note": {
