@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, useCallback } from 'react';
+import { useMemo, useState, useRef, useCallback, useEffect } from 'react';
 
 import { Button, Checkbox, DatePicker, Input, Select, TextArea } from '@osrd-project/ui-core';
 import { Download, CheckCircle } from '@osrd-project/ui-icons';
@@ -37,6 +37,7 @@ import { kmhToMs, tToKg } from 'utils/physics';
 import StdcmSimulationReportSheet from './StdcmSimulationReportSheet';
 
 type SendToRailwayManagerModalProps = {
+  onSuccess: (isSuccessful: boolean, request_identifier?: string) => void;
   onClose: () => void;
   consist: StdcmSimulationInputs['consist'];
   stdcmData: StdcmSuccessResponse;
@@ -56,6 +57,7 @@ type SubstituteTrain = {
 
 const SendToRailwayManagerModal = ({
   consist,
+  onSuccess,
   onClose,
   stdcmData,
   linkedTrains,
@@ -308,6 +310,12 @@ const SendToRailwayManagerModal = ({
       );
     }
   };
+
+  useEffect(() => {
+    if (isSuccess) {
+      onSuccess(isSuccess, data.request_identifier);
+    }
+  }, [isSuccess, data]);
 
   return (
     <div className="send-to-railway-manager">

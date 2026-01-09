@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
+import { CheckCircle } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
@@ -142,7 +143,10 @@ const StcdmResultsTable = ({
               onClick={onRetainSimulation}
             />
           ) : (
-            <div className="selected-simulation">{t('simulation.results.simulationSelected')}</div>
+            <div className="selected-simulation success-message">
+              {t('simulation.results.simulationSelected')}
+              <CheckCircle className="check-circle" variant="fill" />
+            </div>
           )}
         </div>
       </div>
