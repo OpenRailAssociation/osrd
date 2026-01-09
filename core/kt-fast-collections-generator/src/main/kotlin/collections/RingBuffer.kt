@@ -146,15 +146,15 @@ private fun CollectionItemType.generateRingBuffer(context: GeneratorContext, cur
                 /** GENERATED CODE */
                 operator fun get(index: Int): $type {
                     val true_index = index - startIndex
-                    assert(true_index >= 0)
-                    assert(true_index < size)
+                    require(true_index >= 0)
+                    require(true_index < size)
                     return buffer[(offset + true_index).mod(capacity)]
                 }
 
                 /** GENERATED CODE */
                 operator fun set(index: Int, element: $type): $type {
                     val true_index = index - startIndex
-                    assert(true_index < size)
+                    require(true_index < size)
                     val oldValue = buffer[(offset + true_index).mod(capacity)]
                     buffer[(offset + true_index).mod(capacity)] = element
                     return oldValue
@@ -162,13 +162,13 @@ private fun CollectionItemType.generateRingBuffer(context: GeneratorContext, cur
 
                 /** GENERATED CODE */
                 fun removeBack(): $type {
-                    assert(_size-- > 0)
+                    require(_size-- > 0)
                     return buffer[(offset + size).mod(capacity)]
                 }
 
                 /** GENERATED CODE */
                 fun removeFront(): $type {
-                    assert(_size-- > 0)
+                    require(_size-- > 0)
                     startIndex++
                     val oldValue = buffer[offset.mod(capacity)]
                     offset = (offset + 1).mod(capacity)
@@ -180,8 +180,8 @@ private fun CollectionItemType.generateRingBuffer(context: GeneratorContext, cur
                     val removedCount = cutoffIndex - startIndex
                     if (removedCount == 0)
                         return
-                    assert(removedCount > 0)
-                    assert(removedCount <= size)
+                    require(removedCount > 0)
+                    require(removedCount <= size)
                     _size -= removedCount
                     startIndex += removedCount
                     offset = (offset + removedCount).mod(capacity)
