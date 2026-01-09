@@ -8,6 +8,7 @@ import fr.sncf.osrd.path.implementations.buildRangeList
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlockRanges
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.interfaces.splitAtBacktracks
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
 import fr.sncf.osrd.sim_infra.api.Block
@@ -24,6 +25,7 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.sumDistances
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.Disabled
 
 /**
@@ -149,6 +151,29 @@ class BacktrackTests {
     fun testPathProperties() {
         // Smoke test, we only test for uncaught exceptions and failed asserts
         makePathPropResponse(path, infra.rawInfra)
+    }
+
+    @Test
+    fun testPathSplit() {
+        val paths = path.splitAtBacktracks()
+        assertEquals(2, paths.size)
+        val first = paths[0]
+        val second = paths[1]
+
+        assertEquals(first.getLength(), path.getBacktrackLocations().single())
+        assertEquals(path.getLength(), first.getLength() + second.getLength().distance)
+        assertEquals(path.getRoutes().size, first.getRoutes().size + second.getRoutes().size)
+
+        val firstBlockRanges = first.getBlocks()
+        val secondBlockRanges = second.getBlocks()
+        val allBlockRanges = path.getBlocks()
+        assertEquals(allBlockRanges.size, firstBlockRanges.size + secondBlockRanges.size)
+
+        val firstBlocks = firstBlockRanges.map { it.value }.toSet()
+        val secondBlocks = secondBlockRanges.map { it.value }.toSet()
+        val allBlocks = allBlockRanges.map { it.value }.toSet()
+        assert(firstBlocks.intersect(secondBlocks).isEmpty())
+        assertEquals(allBlocks, firstBlocks.union(secondBlocks))
     }
 
     @Test
