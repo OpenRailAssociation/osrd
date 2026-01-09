@@ -33,7 +33,12 @@ import fr.sncf.osrd.utils.units.Offset
  * may include partial blocks, especially at the edges of the path or around backtracks.
  */
 interface TrainPath : PhysicsPath, PathProperties {
-    fun subPath(from: Offset<PhysicsPath>?, to: Offset<PhysicsPath>?): TrainPath
+    fun subPath(
+        from: Offset<PhysicsPath>?,
+        to: Offset<PhysicsPath>?,
+        includeExactStart: Boolean = true,
+        includeExactEnd: Boolean = true,
+    ): TrainPath
 
     /** Returns a copy with the specified routes instead */
     override fun withRoutes(routes: List<RouteId>): TrainPath
@@ -70,4 +75,40 @@ fun TrainPath.getLegacyBlockPath(): List<BlockId> {
 fun TrainPath.getLegacyRoutePath(): List<RouteId> {
     // Legacy route list excluded routes that were only used in 0-length segments
     return getRoutes().filter { !it.isSinglePoint() }.map { it.value }
+}
+
+/**
+ * Split the path at each backtrack location, converting a path that may have backtracks into a list
+ * of paths that don't have any. Zero-length ranges are removed at backtrack locations, to avoid
+ * leaving traces of the path across the backtrack location.
+ *
+ * Note: for typing consistency, all subpath become their own references for their
+ * `Offset<PhysicsPath>`. Projecting onto the original path requires some extra effort. If this
+ * becomes an issue, some tooling can be added.
+ */
+fun TrainPath.splitAtBacktracks(): List<TrainPath> {
+    val res = mutableListOf<TrainPath>()
+    var currentBeginOffset = Offset.zero<PhysicsPath>()
+    for (backtrackLocation in getBacktrackLocations()) {
+        if (backtrackLocation == currentBeginOffset || backtrackLocation == this.getLength())
+            continue
+        res.add(
+            subPath(
+                from = currentBeginOffset,
+                to = backtrackLocation,
+                includeExactStart = currentBeginOffset == Offset.zero<TrainPath>(),
+                includeExactEnd = false,
+            )
+        )
+        currentBeginOffset = backtrackLocation
+    }
+    res.add(
+        subPath(
+            from = currentBeginOffset,
+            to = getLength(),
+            includeExactStart = currentBeginOffset == Offset.zero<TrainPath>(),
+            includeExactEnd = true,
+        )
+    )
+    return res
 }

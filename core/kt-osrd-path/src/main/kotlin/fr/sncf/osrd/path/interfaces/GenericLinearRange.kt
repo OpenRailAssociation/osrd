@@ -312,17 +312,27 @@ fun <ValueType, OffsetType, ObjectType> List<GenericLinearRange<ValueType, Offse
         .withoutConsecutiveDuplicates() // For objects exactly on range boundaries
 }
 
-/** Truncate the list of linear objects, updating the underlying object ranges */
+/**
+ * Truncate the list of linear objects, updating the underlying object ranges. If
+ * [includeExactStart] (resp. [includeExactEnd]) is set to false, zero-length ranges are removed at
+ * the start (resp. end).
+ */
 fun <ValueType, OffsetType> List<GenericLinearRange<ValueType, OffsetType>>.subRange(
     from: Offset<PhysicsPath>,
     to: Offset<PhysicsPath>,
     resetOffsets: Boolean = false,
+    includeExactStart: Boolean = true,
+    includeExactEnd: Boolean = true,
 ): List<GenericLinearRange<ValueType, OffsetType>> {
     return mapNotNull { range ->
         val truncatedStart = max(from, range.pathBegin)
         val truncatedEnd = min(to, range.pathEnd)
 
         if (truncatedStart > truncatedEnd) return@mapNotNull null
+        if (truncatedStart == truncatedEnd) {
+            if (truncatedEnd == from && !includeExactStart) return@mapNotNull null
+            if (truncatedStart == to && !includeExactEnd) return@mapNotNull null
+        }
 
         val newPathBegin = if (resetOffsets) truncatedStart - from.distance else truncatedStart
         val newPathEnd = if (resetOffsets) truncatedEnd - from.distance else truncatedEnd
