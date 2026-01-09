@@ -44,7 +44,8 @@ use chrono::Utc;
 use serde::Deserialize;
 use serde::Serialize;
 use serde::de::Error as SerdeError;
-use serde_with::{DefaultOnNull, serde_as};
+use serde_with::DefaultOnNull;
+use serde_with::serde_as;
 use utoipa::ToSchema;
 
 use crate::primitives::NonBlankString;
