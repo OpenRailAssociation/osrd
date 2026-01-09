@@ -57,26 +57,6 @@ interface TrainPath : PhysicsPath, PathProperties {
     // To be expanded as needed with other linear objects
 }
 
-fun concat(vararg paths: TrainPath): TrainPath {
-    TODO("Required for actual backtracks, not necessary earlier than that")
-}
-
-// Extension functions that help with backward compatibility.
-// These should only exist during the migration to enable more local changes,
-// to allow partial migration while still having a working core.
-// Every call site will become a bug once we have backtracks.
-// TODO path migration: remove these.
-
-fun TrainPath.getLegacyBlockPath(): List<BlockId> {
-    // Legacy block list excluded blocks that were only used in 0-length segments
-    return getBlocks().filter { !it.isSinglePoint() }.map { it.value }
-}
-
-fun TrainPath.getLegacyRoutePath(): List<RouteId> {
-    // Legacy route list excluded routes that were only used in 0-length segments
-    return getRoutes().filter { !it.isSinglePoint() }.map { it.value }
-}
-
 /**
  * Split the path at each backtrack location, converting a path that may have backtracks into a list
  * of paths that don't have any. Zero-length ranges are removed at backtrack locations, to avoid
@@ -86,29 +66,42 @@ fun TrainPath.getLegacyRoutePath(): List<RouteId> {
  * `Offset<PhysicsPath>`. Projecting onto the original path requires some extra effort. If this
  * becomes an issue, some tooling can be added.
  */
-fun TrainPath.splitAtBacktracks(): List<TrainPath> {
-    val res = mutableListOf<TrainPath>()
+fun TrainPath.splitAtBacktracks(): List<PathFragment> {
+    val res = mutableListOf<PathFragment>()
     var currentBeginOffset = Offset.zero<PhysicsPath>()
     for (backtrackLocation in getBacktrackLocations()) {
         if (backtrackLocation == currentBeginOffset || backtrackLocation == this.getLength())
             continue
         res.add(
-            subPath(
-                from = currentBeginOffset,
-                to = backtrackLocation,
-                includeExactStart = currentBeginOffset == Offset.zero<TrainPath>(),
-                includeExactEnd = false,
+            PathFragment(
+                subPath(
+                    from = currentBeginOffset,
+                    to = backtrackLocation,
+                    includeExactStart = currentBeginOffset == Offset.zero<TrainPath>(),
+                    includeExactEnd = false,
+                ),
+                currentBeginOffset,
             )
         )
         currentBeginOffset = backtrackLocation
     }
     res.add(
-        subPath(
-            from = currentBeginOffset,
-            to = getLength(),
-            includeExactStart = currentBeginOffset == Offset.zero<TrainPath>(),
-            includeExactEnd = true,
+        PathFragment(
+            subPath(
+                from = currentBeginOffset,
+                to = getLength(),
+                includeExactStart = currentBeginOffset == Offset.zero<TrainPath>(),
+                includeExactEnd = true,
+            ),
+            currentBeginOffset,
         )
     )
     return res
 }
+
+/**
+ * Output of [splitAtBacktracks]. Note: the typing isn't ideal here. The path fragment is a
+ * TrainPath and has its own `Offset<PhysicsPath>`, but they don't refer to the "outer" train path.
+ * We can't have the usual type safety.
+ */
+data class PathFragment(val pathFragment: TrainPath, val fragmentStartOffset: Offset<PhysicsPath>)

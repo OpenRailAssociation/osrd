@@ -1,8 +1,6 @@
 package fr.sncf.osrd.signaling.impl
 
 import fr.sncf.osrd.path.interfaces.TrainPath
-import fr.sncf.osrd.path.interfaces.getLegacyBlockPath
-import fr.sncf.osrd.path.interfaces.getLegacyRoutePath
 import fr.sncf.osrd.signaling.*
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.SignalParameters
@@ -169,15 +167,18 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         followingSignalState: SigState?,
         followingSignalSettings: SigSettings?,
     ): Map<LogicalSignalId, SigState> {
-        val fullPath = trainPath.getLegacyBlockPath()
-        val routes = trainPath.getLegacyRoutePath()
-        val evaluatedPathEnd = fullPath.size
+        require(trainPath.getBacktrackLocations().isEmpty()) {
+            "Signaling simulator cannot be used on paths containing backtracks"
+        }
+        val blockIdList = trainPath.getBlocks().filter { !it.isSinglePoint() }.map { it.value }
+        val routeIdList = trainPath.getRoutes().filter { !it.isSinglePoint() }.map { it.value }
+        val evaluatedPathEnd = blockIdList.size
         return evaluate(
             infra,
             loadedSignalInfra,
             blocks,
-            fullPath,
-            routes,
+            blockIdList,
+            routeIdList,
             evaluatedPathEnd,
             zoneStates,
             followingZoneState,

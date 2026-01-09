@@ -155,10 +155,14 @@ class BacktrackTests {
 
     @Test
     fun testPathSplit() {
-        val paths = path.splitAtBacktracks()
+        val locatedPaths = path.splitAtBacktracks()
+        val paths = locatedPaths.map { it.pathFragment }
         assertEquals(2, paths.size)
         val first = paths[0]
         val second = paths[1]
+
+        assertEquals(Offset.zero(), locatedPaths[0].fragmentStartOffset)
+        assertEquals(first.getLength(), locatedPaths[1].fragmentStartOffset)
 
         assertEquals(first.getLength(), path.getBacktrackLocations().single())
         assertEquals(path.getLength(), first.getLength() + second.getLength().distance)

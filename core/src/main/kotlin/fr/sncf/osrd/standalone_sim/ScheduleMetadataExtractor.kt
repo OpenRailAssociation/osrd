@@ -20,6 +20,7 @@ import fr.sncf.osrd.path.interfaces.BlockRange
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.RouteRange
 import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.interfaces.splitAtBacktracks
 import fr.sncf.osrd.signaling.SigSystemManager
 import fr.sncf.osrd.signaling.SignalingTrainState
 import fr.sncf.osrd.signaling.ZoneStatus
@@ -327,34 +328,40 @@ fun routingRequirements(
 
     val res = mutableListOf<RoutingRequirement>()
     // for all routes, generate requirements
-    for (routeRange in trainPath.getRoutes()) {
-        // start out by figuring out when the route needs to be set
-        // when the route is set, signaling can allow the train to proceed
-        val routeSetDeadline = findRouteSetDeadline(routeRange) ?: continue
+    // we first split the path at backtrack location, and process routes in their single-direction
+    // context
+    // TODO
+    for (pathFragment in trainPath.splitAtBacktracks()) {
+        for (routeRange in trainPath.getRoutes()) {
+            // start out by figuring out when the route needs to be set
+            // when the route is set, signaling can allow the train to proceed
+            val routeSetDeadline = findRouteSetDeadline(routeRange) ?: continue
 
-        // find the release time of the last zone of each release group
-        val route = routeRange.value
-        val routeZonePath = rawInfra.getRoutePath(route)
-        val zoneRanges = routeRange.mapSubObject(routeZonePath, rawInfra::getZonePathLength)
-        val zoneRequirements = mutableListOf<RoutingZoneRequirement>()
-        for (zoneRange in zoneRanges) {
-            val zonePath = zoneRange.value
-            // the distance to the end of the zone from the start of the train path
-            val zoneEndOffset = zoneRange.objectAbsolutePathEnd
-            // the point in the train path at which the zone is released
-            val exitCriticalPos = zoneEndOffset + rollingStock.length.meters
-            // if the zones are never occupied by the train, no requirement is emitted
-            // Note: the train is considered starting from a "portal", so "growing" from its start
-            // offset
-            if (zoneEndOffset < Offset.zero()) {
-                assert(routeRange.pathBegin == Offset.zero<TrainPath>())
-                continue
+            // find the release time of the last zone of each release group
+            val route = routeRange.value
+            val routeZonePath = rawInfra.getRoutePath(route)
+            val zoneRanges = routeRange.mapSubObject(routeZonePath, rawInfra::getZonePathLength)
+            val zoneRequirements = mutableListOf<RoutingZoneRequirement>()
+            for (zoneRange in zoneRanges) {
+                val zonePath = zoneRange.value
+                // the distance to the end of the zone from the start of the train path
+                val zoneEndOffset = zoneRange.objectAbsolutePathEnd
+                // the point in the train path at which the zone is released
+                val exitCriticalPos = zoneEndOffset + rollingStock.length.meters
+                // if the zones are never occupied by the train, no requirement is emitted
+                // Note: the train is considered starting from a "portal", so "growing" from its
+                // start
+                // offset
+                if (zoneEndOffset < Offset.zero()) {
+                    assert(routeRange.pathBegin == Offset.zero<TrainPath>())
+                    continue
+                }
+                val exitCriticalTime =
+                    envelope.interpolateDepartureFromClamp(exitCriticalPos.meters).seconds
+                zoneRequirements.add(routingZoneRequirement(rawInfra, zonePath, exitCriticalTime))
             }
-            val exitCriticalTime =
-                envelope.interpolateDepartureFromClamp(exitCriticalPos.meters).seconds
-            zoneRequirements.add(routingZoneRequirement(rawInfra, zonePath, exitCriticalTime))
+            res.add(RoutingRequirement(route, routeSetDeadline.seconds, zoneRequirements))
         }
-        res.add(RoutingRequirement(route, routeSetDeadline.seconds, zoneRequirements))
     }
     return res
 }
