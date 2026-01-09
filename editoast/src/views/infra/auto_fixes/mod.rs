@@ -39,6 +39,7 @@ use schemas::primitives::ObjectType;
 mod buffer_stop;
 mod detector;
 mod electrifications;
+mod level_crossing;
 mod operational_point;
 mod route;
 mod signal;
@@ -202,6 +203,12 @@ fn fix_infra(
                     .get_electrification(&object_ref.obj_id)
                     .map_err(|e| AutoFixesEditoastError::MissingErrorObject { source: e })?;
                 electrifications::fix_electrification(electrification, errors)
+            }
+            ObjectType::LevelCrossing => {
+                let level_crossing = infra_cache
+                    .get_level_crossing(&object_ref.obj_id)
+                    .map_err(|e| AutoFixesEditoastError::MissingErrorObject { source: e })?;
+                level_crossing::fix_level_crossing(level_crossing, errors)
             }
             object_type => {
                 debug!("error not (yet) fixable on '{}'", object_type);
@@ -369,6 +376,8 @@ mod tests {
     use schemas::infra::Electrification;
     use schemas::infra::Endpoint;
     use schemas::infra::InfraObject;
+    use schemas::infra::LevelCrossing;
+    use schemas::infra::LevelCrossingPart;
     use schemas::infra::OperationalPoint;
     use schemas::infra::OperationalPointPart;
     use schemas::infra::Route;
@@ -406,7 +415,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_fix_invalid_ref_puntual_objects() {
+    async fn test_fix_invalid_ref_punctual_objects() {
         // GIVEN
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -816,8 +825,14 @@ mod tests {
         let electrification: InfraObject = Electrification::default().into();
         let operational_point = OperationalPoint::default().into();
         let speed_section = SpeedSection::default().into();
+        let level_crossing: InfraObject = LevelCrossing::default().into();
 
-        for obj in [&electrification, &operational_point, &speed_section] {
+        for obj in [
+            &electrification,
+            &operational_point,
+            &speed_section,
+            &level_crossing,
+        ] {
             apply_create_operation(obj, empty_infra_id, &mut db_pool.get_ok())
                 .await
                 .expect("Failed to create object");
@@ -829,7 +844,12 @@ mod tests {
             .assert_status(StatusCode::OK)
             .json_into();
 
-        for obj in [&electrification, &operational_point, &speed_section] {
+        for obj in [
+            &electrification,
+            &operational_point,
+            &speed_section,
+            &level_crossing,
+        ] {
             assert!(operations.contains(&Operation::Delete(DeleteOperation {
                 obj_id: obj.get_id().to_string(),
                 obj_type: obj.get_type(),
@@ -888,7 +908,23 @@ mod tests {
         }
         .into();
 
-        for obj in [&track, &electrification, &operational_point, &speed_section] {
+        let level_crossing: InfraObject = LevelCrossing {
+            parts: vec![LevelCrossingPart {
+                track: track.get_id().as_str().into(),
+                position: 1250.0,
+                ..Default::default()
+            }],
+            ..Default::default()
+        }
+        .into();
+
+        for obj in [
+            &track,
+            &electrification,
+            &operational_point,
+            &speed_section,
+            &level_crossing,
+        ] {
             apply_create_operation(obj, empty_infra_id, &mut db_pool.get_ok())
                 .await
                 .expect("Failed to create object");
@@ -900,7 +936,13 @@ mod tests {
             .assert_status(StatusCode::OK)
             .json_into();
 
-        for obj in [&track, &electrification, &operational_point, &speed_section] {
+        for obj in [
+            &track,
+            &electrification,
+            &operational_point,
+            &speed_section,
+            &level_crossing,
+        ] {
             assert!(!operations.contains(&Operation::Delete(DeleteOperation {
                 obj_id: obj.get_id().to_string(),
                 obj_type: obj.get_type(),
