@@ -18,6 +18,7 @@ package fr.sncf.osrd.utils.units
 import fr.sncf.osrd.fast_collections.PrimitiveWrapperCollections
 import fr.sncf.osrd.utils.Direction
 import kotlin.math.absoluteValue
+import kotlin.math.round
 
 /**
  * Describes a distance.
@@ -47,7 +48,7 @@ value class Distance(val millimeters: Long) : Comparable<Distance> {
         val ZERO = Distance(millimeters = 0L)
         val MAX = Distance(millimeters = Long.MAX_VALUE)
 
-        fun fromMeters(meters: Double) = Distance(millimeters = (Math.round(meters * 1_000.0)))
+        fun fromMeters(meters: Double) = Distance(millimeters = (round(meters * 1_000.0).toLong()))
 
         fun toMeters(distance: Distance) =
             distance.meters // Only meant to be used in java, for compatibility
@@ -71,16 +72,16 @@ value class Distance(val millimeters: Long) : Comparable<Distance> {
     override fun toString(): String {
         val meters = millimeters / 1000
         val decimal = (millimeters % 1000).absoluteValue
-        if (decimal == 0L) return String.format("%dm", meters)
-        else return String.format("%d.%03dm", meters, decimal)
+        if (decimal == 0L) return "${meters}m"
+        else return "${meters}.${decimal.toString().padStart(3, '0')}m"
     }
 
-    operator fun div(d: Double): Distance = Distance(Math.round(millimeters / d))
+    operator fun div(d: Double): Distance = Distance(round(millimeters / d).toLong())
 
     operator fun div(distance: Distance): Double =
         millimeters.toDouble() / distance.millimeters.toDouble()
 
-    operator fun times(d: Double): Distance = Distance(Math.round(millimeters * d))
+    operator fun times(d: Double): Distance = Distance(round(millimeters * d).toLong())
 }
 
 val Double.meters: Distance
@@ -184,7 +185,7 @@ fun <T> OffsetArray<T>.findSegment(offset: Offset<T>, direction: Direction): Int
 
     // the position falls within a section
     val insertionPos = -(boundIndex + 1)
-    assert(insertionPos in 1..sectionCount)
+    require(insertionPos in 1..sectionCount)
     return insertionPos - 1
 }
 
