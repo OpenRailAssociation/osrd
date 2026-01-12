@@ -8,6 +8,8 @@ import fr.sncf.osrd.sim_infra.api.NeutralSection
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.DistanceRangeMapImpl
+import fr.sncf.osrd.utils.from
+import fr.sncf.osrd.utils.toRangeMap
 import fr.sncf.osrd.utils.units.Offset
 
 fun makePathPropResponse(pathProperties: TrainPath, rawInfra: RawSignalingInfra): PathPropResponse {
