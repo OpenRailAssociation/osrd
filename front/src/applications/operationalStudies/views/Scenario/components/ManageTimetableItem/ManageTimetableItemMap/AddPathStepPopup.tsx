@@ -14,9 +14,17 @@ import { calculateDistanceAlongTrack } from 'applications/editor/tools/utils';
 import { useManageTimetableItemContext } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { MapPathProperties } from 'applications/operationalStudies/types';
+import { getOpIdFromStep } from 'applications/operationalStudies/utils';
 import { osrdEditoastApi, type OperationalPoint } from 'common/api/osrdEditoastApi';
-import { getOrigin, getDestination } from 'reducers/osrdconf/operationalStudiesConf/selectors';
+import type { SuggestedOP } from 'modules/timetableItem/types';
+import {
+  getOrigin,
+  getDestination,
+  getVias,
+  getPathSteps,
+} from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { PathStep } from 'reducers/osrdconf/types';
+import { replaceElementAtIndex } from 'utils/array';
 import { getPointOnTrackCoordinates } from 'utils/geometry';
 
 import type { FeatureInfoClick } from '../types';
@@ -26,6 +34,7 @@ import { setPointIti } from './setPointIti';
 type AddPathStepPopupProps = {
   infraId: number | undefined;
   pathProperties?: MapPathProperties;
+  pathStepsAndSuggestedOPs?: SuggestedOP[];
   featureInfoClick: FeatureInfoClick;
   resetFeatureInfoClick: () => void;
 };
@@ -33,6 +42,7 @@ type AddPathStepPopupProps = {
 const AddPathStepPopup = ({
   infraId,
   pathProperties,
+  pathStepsAndSuggestedOPs,
   featureInfoClick,
   resetFeatureInfoClick,
 }: AddPathStepPopupProps) => {
@@ -40,6 +50,8 @@ const AddPathStepPopup = ({
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
   const origin = useSelector(getOrigin);
   const destination = useSelector(getDestination);
+  const vias = useSelector(getVias());
+  const pathSteps = useSelector(getPathSteps);
 
   const { getTrackSectionsByIds } = useScenarioContext();
 
@@ -56,6 +68,47 @@ const AddPathStepPopup = ({
     coordinates?: number[];
   }>();
   const [newPathStep, setNewPathStep] = useState<PathStep>();
+
+  const handleViaClick = () => {
+    if (!newPathStep) return;
+
+    const newOpId = getOpIdFromStep(newPathStep, pathStepsAndSuggestedOPs);
+
+    const sameViaDifferentTrack = vias.find((via) => {
+      if (!via) return false;
+
+      const viaOpId = getOpIdFromStep(via, pathStepsAndSuggestedOPs);
+
+      if (newOpId && viaOpId) return newOpId === viaOpId;
+      return false;
+    });
+
+    if (!sameViaDifferentTrack) {
+      setPointIti('via', newPathStep, launchPathfinding, resetFeatureInfoClick, pathProperties);
+      return;
+    }
+
+    const indexInPathSteps = pathSteps.findIndex(
+      (step) => step && step.id === sameViaDifferentTrack.id
+    );
+    const oldStep = pathSteps[indexInPathSteps];
+    if (!oldStep) {
+      setPointIti('via', newPathStep, launchPathfinding, resetFeatureInfoClick, pathProperties);
+      return;
+    }
+    const updatedStep: PathStep = {
+      ...oldStep,
+      location: {
+        ...oldStep.location,
+        ...('track_reference' in newPathStep.location
+          ? { track_reference: newPathStep.location.track_reference }
+          : { track_reference: undefined }),
+      },
+    };
+    const newPathStepsArray = replaceElementAtIndex(pathSteps, indexInPathSteps, updatedStep);
+    resetFeatureInfoClick();
+    launchPathfinding(newPathStepsArray);
+  };
 
   const [getInfraObjectEntity] =
     osrdEditoastApi.endpoints.postInfraByInfraIdObjectsAndObjectType.useLazyQuery();
@@ -224,19 +277,7 @@ const AddPathStepPopup = ({
           <span className="d-none">{t('origin')}</span>
         </button>
         {origin && destination && (
-          <button
-            className="btn btn-sm btn-info"
-            type="button"
-            onClick={() => {
-              setPointIti(
-                'via',
-                newPathStep,
-                launchPathfinding,
-                resetFeatureInfoClick,
-                pathProperties
-              );
-            }}
-          >
+          <button className="btn btn-sm btn-info" type="button" onClick={handleViaClick}>
             <RiMapPin3Fill />
             <span className="d-none">{t('via')}</span>
           </button>

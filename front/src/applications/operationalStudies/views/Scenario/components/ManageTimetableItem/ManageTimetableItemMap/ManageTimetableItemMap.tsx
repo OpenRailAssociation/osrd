@@ -205,6 +205,7 @@ const ManageTimetableItemMap = ({
           <AddPathStepPopup
             infraId={infraID}
             pathProperties={pathProperties}
+            pathStepsAndSuggestedOPs={pathStepsAndSuggestedOPs}
             featureInfoClick={featureInfoClick}
             resetFeatureInfoClick={resetFeatureInfoClick}
           />

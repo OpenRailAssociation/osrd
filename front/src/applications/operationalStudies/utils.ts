@@ -15,9 +15,12 @@ import type {
   TrainSchedule,
 } from 'common/api/osrdEditoastApi';
 import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
+import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import { ARRIVAL_TIME_ACCEPTABLE_ERROR } from 'modules/timesStops/consts';
 import { isPacedTrainResponseWithPaced } from 'modules/timetableItem/helpers/pacedTrain';
+import type { SuggestedOP } from 'modules/timetableItem/types';
 import type {
+  PathStep,
   TimetableItem,
   TimetableItemId,
   TimetableItemWithPathOps,
@@ -480,4 +483,16 @@ export const matchOpRefAndOp = (
     location.operational_point.trigram === op.extensions?.sncf?.trigram &&
     location.operational_point.secondary_code === op.extensions?.sncf?.ch
   );
+};
+
+export const getOpIdFromStep = (step: PathStep, ops?: SuggestedOP[]): string | undefined => {
+  if ('operational_point' in step.location && step.location.operational_point?.type === 'id') {
+    return step.location.operational_point.operational_point;
+  }
+
+  if (!ops?.length) return undefined;
+
+  const match = ops.find((op) => op.opId && matchPathStepAndOp(step.location, op));
+
+  return match?.opId;
 };
