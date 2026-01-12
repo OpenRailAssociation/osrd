@@ -16,9 +16,7 @@ import {
   VALID_PACED_TRAINS,
   VALID_TRAIN_SCHEDULE,
 } from '../../assets/constants/timetable-items-count';
-import test from '../../logging-fixture';
-import PacedTrainSection from '../../pages/operational-studies/paced-train-section';
-import ScenarioTimetableSection from '../../pages/operational-studies/scenario-timetable-section';
+import test from '../../page-object-fixture';
 import { waitForInfraStateToBeCached } from '../../utils';
 import { getInfra, getProject, getScenario, getStudy } from '../../utils/api-utils';
 import readJsonFile from '../../utils/file-utils';
@@ -35,9 +33,6 @@ const frTranslations = {
 };
 
 test.describe('@op @timetable-items', () => {
-  let scenarioTimetableSection: ScenarioTimetableSection;
-  let pacedTrainSection: PacedTrainSection;
-
   let project: Project;
   let study: Study;
   let scenario: Scenario;
@@ -53,11 +48,6 @@ test.describe('@op @timetable-items', () => {
   test.beforeEach(
     'Navigate to scenario page and wait for infrastructure to be loaded',
     async ({ page }) => {
-      [scenarioTimetableSection, pacedTrainSection] = [
-        new ScenarioTimetableSection(page),
-        new PacedTrainSection(page),
-      ];
-
       await page.goto(
         `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
       );
@@ -66,7 +56,9 @@ test.describe('@op @timetable-items', () => {
   );
 
   /** *************** Test 1 **************** */
-  test('@smoke Loading timetable items and verifying simulation result for train schedules', async () => {
+  test('@smoke Loading timetable items and verifying simulation result for train schedules', async ({
+    scenarioTimetableSection,
+  }) => {
     await test.step('Verify counts then filter valid train schedules', async () => {
       await scenarioTimetableSection.verifyTimetableItemsCount(TOTAL_TIMETABLE_ITEMS);
       await scenarioTimetableSection.filterTrainTypeAndVerifyTrainCount(
@@ -86,7 +78,9 @@ test.describe('@op @timetable-items', () => {
   });
 
   /** *************** Test 2 **************** */
-  test('Loading timetable items and verifying simulation result for paced trains', async () => {
+  test('Loading timetable items and verifying simulation result for paced trains', async ({
+    scenarioTimetableSection,
+  }) => {
     test.slow(); // Verifying all occurrences of paced trains can take some time, this test will be reworked later to optimize it
     await test.step('Verify invalid message, then filter valid paced trains', async () => {
       await scenarioTimetableSection.verifyInvalidTrainsMessageVisibility();
@@ -107,7 +101,9 @@ test.describe('@op @timetable-items', () => {
   });
 
   /** *************** Test 3 **************** */
-  test('Loading timetable items and verifying paced trains display', async () => {
+  test('Loading timetable items and verifying paced trains display', async ({
+    pacedTrainSection,
+  }) => {
     await test.step('Verify each imported paced train card and its occurrences', async () => {
       const pacedTrainsData: PacedTrain[] = readJsonFile(
         './tests/assets/paced-train/paced_trains.json'

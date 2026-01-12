@@ -9,15 +9,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 
 import { improbableRollingStockName } from '../../assets/constants/project-const';
-import test from '../../logging-fixture';
-import OperationalStudiesPage from '../../pages/operational-studies/operational-studies-page';
-import RouteTab from '../../pages/operational-studies/route-tab';
-import ScenarioTimetableSection from '../../pages/operational-studies/scenario-timetable-section';
-import OpSimulationResultPage from '../../pages/operational-studies/simulation-results-page';
-import SimulationSettingsTab from '../../pages/operational-studies/simulation-settings-tab';
-import TimeAndStopSimulationOutputs from '../../pages/operational-studies/time-stop-simulation-outputs';
-import TimesAndStopsTab from '../../pages/operational-studies/times-and-stops-tab';
-import RollingStockSelector from '../../pages/rolling-stock/rolling-stock-selector';
+import test from '../../page-object-fixture';
 import { waitForInfraStateToBeCached } from '../../utils';
 import { deleteApiRequest, getInfra, setElectricalProfile } from '../../utils/api-utils';
 import { cleanWhitespace } from '../../utils/data-normalizer';
@@ -55,15 +47,6 @@ const expectedCellDataForAllSettings: StationData[] = readJsonFile(
 );
 
 test.describe('@op @simulation-settings-tab', () => {
-  let operationalStudiesPage: OperationalStudiesPage;
-  let rollingStockSelector: RollingStockSelector;
-  let routeTab: RouteTab;
-  let timesAndStopsTab: TimesAndStopsTab;
-  let timeAndStopSimulationOutputs: TimeAndStopSimulationOutputs;
-  let simulationSettingsTab: SimulationSettingsTab;
-  let simulationResultPage: OpSimulationResultPage;
-  let scenarioTimetableSection: ScenarioTimetableSection;
-
   let electricalProfileSet: ElectricalProfileSet;
   let project: Project;
   let study: Study;
@@ -89,27 +72,7 @@ test.describe('@op @simulation-settings-tab', () => {
       await deleteApiRequest(`/api/electrical_profile_set/${electricalProfileSet.id}/`);
   });
 
-  test.beforeEach(async ({ page }) => {
-    [
-      operationalStudiesPage,
-      routeTab,
-      rollingStockSelector,
-      timesAndStopsTab,
-      timeAndStopSimulationOutputs,
-      simulationSettingsTab,
-      simulationResultPage,
-      scenarioTimetableSection,
-    ] = [
-      new OperationalStudiesPage(page),
-      new RouteTab(page),
-      new RollingStockSelector(page),
-      new TimesAndStopsTab(page),
-      new TimeAndStopSimulationOutputs(page),
-      new SimulationSettingsTab(page),
-      new OpSimulationResultPage(page),
-      new ScenarioTimetableSection(page),
-    ];
-
+  test.beforeEach(async ({ page, operationalStudiesPage, rollingStockSelector, routeTab }) => {
     await test.step('Create then navigate to scenario page', async () => {
       ({ project, study, scenario } = await createScenario(
         undefined,
@@ -144,7 +107,15 @@ test.describe('@op @simulation-settings-tab', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('Activate electrical profiles', async ({ browserName }) => {
+  test('Activate electrical profiles', async ({
+    browserName,
+    timesAndStopsTab,
+    operationalStudiesPage,
+    simulationSettingsTab,
+    scenarioTimetableSection,
+    opSimulationResultPage,
+    timeAndStopSimulationOutputs,
+  }) => {
     const cell: CellData = { stationName: 'Mid_East_station', header: 'stopTime', value: '124' };
     const translatedHeader = cleanWhitespace(frTranslations[cell.header]);
 
@@ -167,17 +138,17 @@ test.describe('@op @simulation-settings-tab', () => {
       await operationalStudiesPage.closeToastNotification();
       await operationalStudiesPage.returnSimulationResult();
       await scenarioTimetableSection.getTimetableItemArrivalTime('11:48');
-      await simulationResultPage.setTrainListVisible();
+      await opSimulationResultPage.setTrainListVisible();
 
-      await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
-      await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
+      await operationalStudiesPage.verifyTimesStopsDataSheetVisibility();
+      await opSimulationResultPage.selectAllSpeedSpaceChartCheckboxes();
       if (browserName === 'chromium') {
-        await expect(simulationResultPage.speedSpaceChart).toHaveScreenshot(
+        await expect(opSimulationResultPage.speedSpaceChart).toHaveScreenshot(
           'SpeedSpaceChart-ElectricalProfileActivated.png'
         );
       }
       await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataElectricalProfileON);
-      await simulationResultPage.setTrainListVisible(false);
+      await opSimulationResultPage.setTrainListVisible(false);
     });
 
     await test.step('Deactivate electrical profiles and verify (OFF)', async () => {
@@ -185,23 +156,31 @@ test.describe('@op @simulation-settings-tab', () => {
       await operationalStudiesPage.openSimulationSettingsTab();
       await simulationSettingsTab.deactivateElectricalProfile();
       await operationalStudiesPage.submitTimetableItemEdit();
-      await simulationResultPage.setTrainListVisible();
+      await opSimulationResultPage.setTrainListVisible();
 
-      await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
-      await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
+      await operationalStudiesPage.verifyTimesStopsDataSheetVisibility();
+      await opSimulationResultPage.selectAllSpeedSpaceChartCheckboxes();
       if (browserName === 'chromium') {
-        await expect(simulationResultPage.speedSpaceChart).toHaveScreenshot(
+        await expect(opSimulationResultPage.speedSpaceChart).toHaveScreenshot(
           'SpeedSpaceChart-ElectricalProfileDisabled.png'
         );
       }
       await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataElectricalProfileOFF);
-      await simulationResultPage.setTrainListVisible(false);
+      await opSimulationResultPage.setTrainListVisible(false);
       await scenarioTimetableSection.getTimetableItemArrivalTime('11:48');
     });
   });
 
   /** *************** Test 2 **************** */
-  test('Add speed limit tag', async ({ browserName }) => {
+  test('Add speed limit tag', async ({
+    browserName,
+    timesAndStopsTab,
+    operationalStudiesPage,
+    simulationSettingsTab,
+    scenarioTimetableSection,
+    opSimulationResultPage,
+    timeAndStopSimulationOutputs,
+  }) => {
     const cell: CellData = { stationName: 'Mid_East_station', header: 'stopTime', value: '124' };
     const translatedHeader = cleanWhitespace(frTranslations[cell.header]);
 
@@ -225,17 +204,17 @@ test.describe('@op @simulation-settings-tab', () => {
       await operationalStudiesPage.closeToastNotification();
       await operationalStudiesPage.returnSimulationResult();
       await scenarioTimetableSection.getTimetableItemArrivalTime('11:49');
-      await simulationResultPage.setTrainListVisible();
+      await opSimulationResultPage.setTrainListVisible();
 
-      await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
-      await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
+      await operationalStudiesPage.verifyTimesStopsDataSheetVisibility();
+      await opSimulationResultPage.selectAllSpeedSpaceChartCheckboxes();
       if (browserName === 'chromium') {
-        await expect(simulationResultPage.speedSpaceChart).toHaveScreenshot(
+        await expect(opSimulationResultPage.speedSpaceChart).toHaveScreenshot(
           'SpeedSpaceChart-SpeedLimitTagActivated.png'
         );
       }
       await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataCodeCompoON);
-      await simulationResultPage.setTrainListVisible(false);
+      await opSimulationResultPage.setTrainListVisible(false);
     });
 
     await test.step('Remove speed limit tag and verify (speed limit tag OFF)', async () => {
@@ -243,23 +222,31 @@ test.describe('@op @simulation-settings-tab', () => {
       await operationalStudiesPage.openSimulationSettingsTab();
       await simulationSettingsTab.selectSpeedLimitTagOption('__PLACEHOLDER__');
       await operationalStudiesPage.submitTimetableItemEdit();
-      await simulationResultPage.setTrainListVisible();
+      await opSimulationResultPage.setTrainListVisible();
 
-      await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
-      await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
+      await operationalStudiesPage.verifyTimesStopsDataSheetVisibility();
+      await opSimulationResultPage.selectAllSpeedSpaceChartCheckboxes();
       if (browserName === 'chromium') {
-        await expect(simulationResultPage.speedSpaceChart).toHaveScreenshot(
+        await expect(opSimulationResultPage.speedSpaceChart).toHaveScreenshot(
           'SpeedSpaceChart-SpeedLimitTagDisabled.png'
         );
       }
       await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataCodeCompoOFF);
-      await simulationResultPage.setTrainListVisible(false);
+      await opSimulationResultPage.setTrainListVisible(false);
       await scenarioTimetableSection.getTimetableItemArrivalTime('11:48');
     });
   });
 
   /** *************** Test 3 **************** */
-  test('Activate linear and mareco margin', async ({ browserName }) => {
+  test('Activate linear and mareco margin', async ({
+    browserName,
+    timesAndStopsTab,
+    operationalStudiesPage,
+    simulationSettingsTab,
+    scenarioTimetableSection,
+    opSimulationResultPage,
+    timeAndStopSimulationOutputs,
+  }) => {
     const inputTableData: CellData[] = [
       { stationName: 'Mid_East_station', header: 'stopTime', value: '124' },
       {
@@ -293,17 +280,17 @@ test.describe('@op @simulation-settings-tab', () => {
       await operationalStudiesPage.closeToastNotification();
       await operationalStudiesPage.returnSimulationResult();
       await scenarioTimetableSection.getTimetableItemArrivalTime('11:51');
-      await simulationResultPage.setTrainListVisible();
+      await opSimulationResultPage.setTrainListVisible();
 
-      await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
-      await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
+      await operationalStudiesPage.verifyTimesStopsDataSheetVisibility();
+      await opSimulationResultPage.selectAllSpeedSpaceChartCheckboxes();
       if (browserName === 'chromium') {
-        await expect(simulationResultPage.speedSpaceChart).toHaveScreenshot(
+        await expect(opSimulationResultPage.speedSpaceChart).toHaveScreenshot(
           'SpeedSpaceChart-LinearMargin.png'
         );
       }
       await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataLinearMargin);
-      await simulationResultPage.setTrainListVisible(false);
+      await opSimulationResultPage.setTrainListVisible(false);
     });
 
     await test.step('Edit to Mareco margin and verify', async () => {
@@ -311,23 +298,31 @@ test.describe('@op @simulation-settings-tab', () => {
       await operationalStudiesPage.openSimulationSettingsTab();
       await simulationSettingsTab.activateMarecoMargin();
       await operationalStudiesPage.submitTimetableItemEdit();
-      await simulationResultPage.setTrainListVisible();
+      await opSimulationResultPage.setTrainListVisible();
 
-      await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
-      await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
+      await operationalStudiesPage.verifyTimesStopsDataSheetVisibility();
+      await opSimulationResultPage.selectAllSpeedSpaceChartCheckboxes();
       if (browserName === 'chromium') {
-        await expect(simulationResultPage.speedSpaceChart).toHaveScreenshot(
+        await expect(opSimulationResultPage.speedSpaceChart).toHaveScreenshot(
           'SpeedSpaceChart-MarecoMargin.png'
         );
       }
       await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataMarecoMargin);
-      await simulationResultPage.setTrainListVisible(false);
+      await opSimulationResultPage.setTrainListVisible(false);
       await scenarioTimetableSection.getTimetableItemArrivalTime('11:51');
     });
   });
 
   /** *************** Test 4 **************** */
-  test('@smoke Add all the simulation settings', async ({ browserName }) => {
+  test('@smoke Add all the simulation settings', async ({
+    browserName,
+    timesAndStopsTab,
+    operationalStudiesPage,
+    simulationSettingsTab,
+    scenarioTimetableSection,
+    opSimulationResultPage,
+    timeAndStopSimulationOutputs,
+  }) => {
     const inputTableData: CellData[] = [
       { stationName: 'Mid_East_station', header: 'stopTime', value: '124' },
       {
@@ -361,17 +356,17 @@ test.describe('@op @simulation-settings-tab', () => {
       await operationalStudiesPage.createTimetableItem();
       await operationalStudiesPage.closeToastNotification();
       await operationalStudiesPage.returnSimulationResult();
-      await simulationResultPage.setTrainListVisible();
+      await opSimulationResultPage.setTrainListVisible();
 
-      await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
-      await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
+      await operationalStudiesPage.verifyTimesStopsDataSheetVisibility();
+      await opSimulationResultPage.selectAllSpeedSpaceChartCheckboxes();
       if (browserName === 'chromium') {
-        await expect(simulationResultPage.speedSpaceChart).toHaveScreenshot(
+        await expect(opSimulationResultPage.speedSpaceChart).toHaveScreenshot(
           'SpeedSpaceChart-AllSettingsEnabled.png'
         );
       }
       await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataForAllSettings);
-      await simulationResultPage.setTrainListVisible(false);
+      await opSimulationResultPage.setTrainListVisible(false);
       await scenarioTimetableSection.getTimetableItemArrivalTime('11:50');
     });
   });

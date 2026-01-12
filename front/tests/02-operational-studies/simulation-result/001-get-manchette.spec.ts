@@ -18,11 +18,7 @@ import {
   CONFORM_ACTIVE_OCCURRENCE_MENU_BUTTONS,
   EXCEPTION_ACTIVE_OCCURRENCE_MENU_BUTTONS,
 } from '../../assets/paced-train/const';
-import test from '../../logging-fixture';
-import GetManchetteComponent from '../../pages/operational-studies/get-manchette-component';
-import PacedTrainSection from '../../pages/operational-studies/paced-train-section';
-import ScenarioTimetableSection from '../../pages/operational-studies/scenario-timetable-section';
-import OpSimulationResultPage from '../../pages/operational-studies/simulation-results-page';
+import test from '../../page-object-fixture';
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
 import { getInfra, getProject, getStudy } from '../../utils/api-utils';
 import readJsonFile from '../../utils/file-utils';
@@ -68,11 +64,6 @@ test.skip(
 );
 
 test.describe('@op @manchette @std', () => {
-  let simulationResultPage: OpSimulationResultPage;
-  let scenarioTimetableSection: ScenarioTimetableSection;
-  let pacedTrainSection: PacedTrainSection;
-  let getManchetteComponent: GetManchetteComponent;
-
   let project: Project;
   let study: Study;
   let scenarioItems: Scenario;
@@ -95,13 +86,6 @@ test.describe('@op @manchette @std', () => {
   });
 
   test.beforeEach('Open scenario and wait for infra to be loaded', async ({ page }) => {
-    [simulationResultPage, scenarioTimetableSection, pacedTrainSection, getManchetteComponent] = [
-      new OpSimulationResultPage(page),
-      new ScenarioTimetableSection(page),
-      new PacedTrainSection(page),
-      new GetManchetteComponent(page),
-    ];
-
     await page.goto(
       `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
     );
@@ -113,10 +97,14 @@ test.describe('@op @manchette @std', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('@smoke Basic checks for STD/Manchette', async () => {
+  test('@smoke Basic checks for STD/Manchette', async ({
+    scenarioTimetableSection,
+    opSimulationResultPage,
+    getManchetteComponent,
+  }) => {
     await test.step('Verify first train schedule is selected', async () => {
       await scenarioTimetableSection.verifyFirstTimetableItemIsSelected();
-      await simulationResultPage.setTrainListVisible();
+      await opSimulationResultPage.setTrainListVisible();
     });
     await test.step('Assert GET slider', async () => {
       await getManchetteComponent.assertDefaultSliderValue();
@@ -141,29 +129,34 @@ test.describe('@op @manchette @std', () => {
   });
 
   /** *************** Test 2 **************** */
-  test.skip('Space time diagram (temporarily skipped until STD snapshots are stable)', async () => {
+  test.skip('Space time diagram (temporarily skipped until STD snapshots are stable)', async ({
+    scenarioTimetableSection,
+    opSimulationResultPage,
+    getManchetteComponent,
+    pacedTrainSection,
+  }) => {
     await test.step('Project train schedule and capture GET screenshot', async () => {
       await scenarioTimetableSection.projectTrain();
       await getManchetteComponent.selectAllSpaceTimeChartCheckboxes();
       await getManchetteComponent.setRangeSliderValue('60'); // Adjust slider to show the full projection
-      await simulationResultPage.setTrainListVisible();
-      await expect(simulationResultPage.manchetteSpaceTimeChart).toHaveScreenshot(
+      await opSimulationResultPage.setTrainListVisible();
+      await expect(opSimulationResultPage.manchetteSpaceTimeChart).toHaveScreenshot(
         'TrainSchedule-Space-Time-Chart.png'
       );
     });
 
     await test.step('Project paced train and capture GET screenshot', async () => {
-      await simulationResultPage.setTrainListVisible(false);
+      await opSimulationResultPage.setTrainListVisible(false);
       await pacedTrainSection.projectPacedTrain();
       await getManchetteComponent.setRangeSliderValue('50'); // Adjust slider to show the paced train better
-      await simulationResultPage.setTrainListVisible();
-      await expect(simulationResultPage.manchetteSpaceTimeChart).toHaveScreenshot(
+      await opSimulationResultPage.setTrainListVisible();
+      await expect(opSimulationResultPage.manchetteSpaceTimeChart).toHaveScreenshot(
         'PacedTrain-Space-Time-Chart.png'
       );
     });
 
     await test.step('Project first occurrence (conform) and capture screenshot', async () => {
-      await simulationResultPage.setTrainListVisible(false);
+      await opSimulationResultPage.setTrainListVisible(false);
       await getManchetteComponent.setRangeSliderValue('60'); // Reset slider to show the full diagram
       await pacedTrainSection.clickOnOccurrence(0);
       await pacedTrainSection.checkOccurrenceMenuIcon(0);
@@ -174,14 +167,14 @@ test.describe('@op @manchette @std', () => {
       });
 
       await pacedTrainSection.clickOccurrenceMenuButton('project');
-      await simulationResultPage.setTrainListVisible();
-      await expect(simulationResultPage.manchetteSpaceTimeChart).toHaveScreenshot(
+      await opSimulationResultPage.setTrainListVisible();
+      await expect(opSimulationResultPage.manchetteSpaceTimeChart).toHaveScreenshot(
         'ConformOccurrence-Space-Time-Chart.png'
       );
     });
 
     await test.step('Project added exception and capture screenshot', async () => {
-      await simulationResultPage.setTrainListVisible(false);
+      await opSimulationResultPage.setTrainListVisible(false);
       await pacedTrainSection.clickOnOccurrence(3);
       await pacedTrainSection.checkOccurrenceMenuIcon(3);
       await pacedTrainSection.checkOccurrenceActionMenu({
@@ -191,14 +184,14 @@ test.describe('@op @manchette @std', () => {
       });
 
       await pacedTrainSection.clickOccurrenceMenuButton('project');
-      await simulationResultPage.setTrainListVisible();
-      await expect(simulationResultPage.manchetteSpaceTimeChart).toHaveScreenshot(
+      await opSimulationResultPage.setTrainListVisible();
+      await expect(opSimulationResultPage.manchetteSpaceTimeChart).toHaveScreenshot(
         'AddedOccurrence-Space-Time-Chart.png'
       );
     });
 
     await test.step('Project last occurrence (exception) and capture screenshot', async () => {
-      await simulationResultPage.setTrainListVisible(false);
+      await opSimulationResultPage.setTrainListVisible(false);
       await pacedTrainSection.clickOnOccurrence(4);
       await pacedTrainSection.checkOccurrenceMenuIcon(4);
       await pacedTrainSection.checkOccurrenceActionMenu({
@@ -207,18 +200,23 @@ test.describe('@op @manchette @std', () => {
         translations: frTranslations,
       });
       await pacedTrainSection.clickOccurrenceMenuButton('project');
-      await simulationResultPage.setTrainListVisible();
-      await expect(simulationResultPage.manchetteSpaceTimeChart).toHaveScreenshot(
+      await opSimulationResultPage.setTrainListVisible();
+      await expect(opSimulationResultPage.manchetteSpaceTimeChart).toHaveScreenshot(
         'ModifiedOccurrence-Space-Time-Chart.png'
       );
     });
   });
 
   /** *************** Test 3 **************** */
-  test('Manchette waypoints data', async () => {
+  test('Manchette waypoints data', async ({
+    scenarioTimetableSection,
+    opSimulationResultPage,
+    getManchetteComponent,
+    pacedTrainSection,
+  }) => {
     await test.step('Project train schedule and verify waypoints list', async () => {
       await scenarioTimetableSection.projectTrain();
-      await simulationResultPage.setTrainListVisible();
+      await opSimulationResultPage.setTrainListVisible();
       const actualWaypointsListData = await getManchetteComponent.getWaypointsListData(4);
       verifyWaypointsData(actualWaypointsListData, expectedWaypointsListDataForTrainSchedule);
     });
@@ -231,9 +229,9 @@ test.describe('@op @manchette @std', () => {
     });
 
     await test.step('Project paced train and verify waypoints list', async () => {
-      await simulationResultPage.setTrainListVisible(false);
+      await opSimulationResultPage.setTrainListVisible(false);
       await pacedTrainSection.projectPacedTrain();
-      await simulationResultPage.setTrainListVisible();
+      await opSimulationResultPage.setTrainListVisible();
       const actualWaypointsListData = await getManchetteComponent.getWaypointsListData(4);
       verifyWaypointsData(actualWaypointsListData, expectedWaypointsListDataForPacedTrain);
     });

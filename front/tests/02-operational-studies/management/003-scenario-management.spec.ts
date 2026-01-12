@@ -9,8 +9,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 
 import { infrastructureName } from '../../assets/constants/project-const';
-import test from '../../logging-fixture';
-import ScenarioPage from '../../pages/operational-studies/scenario-page';
+import test from '../../page-object-fixture';
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
 import {
   deleteApiRequest,
@@ -27,8 +26,6 @@ import type { ScenarioData } from '../../utils/types';
 const scenarioData: ScenarioData = readJsonFile('tests/assets/operation-studies/scenario.json');
 
 test.describe('@op @scenario @management', () => {
-  let scenarioPage: ScenarioPage;
-
   let project: Project;
   let study: Study;
   let scenario: Scenario;
@@ -51,12 +48,8 @@ test.describe('@op @scenario @management', () => {
     await Promise.allSettled(scenariosToDelete.map((s) => deleteScenario(s.studyId, s.name)));
   });
 
-  test.beforeEach(async ({ page }) => {
-    scenarioPage = new ScenarioPage(page);
-  });
-
   /** *************** Test 1 **************** */
-  test('@smoke Create a new scenario', async ({ page }) => {
+  test('@smoke Create a new scenario', async ({ page, scenarioPage }) => {
     const scenarioName = generateUniqueName(scenarioData.name);
     createdScenarios.push({
       projectId: project.id,
@@ -89,7 +82,7 @@ test.describe('@op @scenario @management', () => {
   });
 
   /** *************** Test 2 **************** */
-  test('@smoke Update an existing scenario', async ({ page }) => {
+  test('@smoke Update an existing scenario', async ({ page, scenarioPage }) => {
     await test.step('Create a base scenario', async () => {
       ({ project, study, scenario } = await createScenario());
     });
@@ -142,7 +135,7 @@ test.describe('@op @scenario @management', () => {
   });
 
   /** *************** Test 3 **************** */
-  test('Delete a scenario', async ({ page }) => {
+  test('Delete a scenario', async ({ page, scenarioPage }) => {
     await test.step('Create a scenario to delete', async () => {
       ({ project, study, scenario } = await createScenario());
     });

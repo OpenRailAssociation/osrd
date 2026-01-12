@@ -9,10 +9,7 @@ import {
   PACED_DETAILS,
   TRAIN_SCHEDULE_DETAILS,
 } from '../../assets/constants/timetable-items-details';
-import test from '../../logging-fixture';
-import ImportPage from '../../pages/import-page';
-import PacedTrainSection from '../../pages/operational-studies/paced-train-section';
-import TimetableItemDetailSection from '../../pages/operational-studies/timetable-items-details-section';
+import test from '../../page-object-fixture';
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
 import { getInfra, getProject, getStudy } from '../../utils/api-utils';
 import readJsonFile from '../../utils/file-utils';
@@ -31,10 +28,6 @@ const frTranslations = {
 };
 
 test.describe('@op @timetable-items @import', () => {
-  let importPage: ImportPage;
-  let timetableItemDetailSection: TimetableItemDetailSection;
-  let pacedTrainSection: PacedTrainSection;
-
   let project: Project;
   let study: Study;
   let scenario: Scenario;
@@ -47,10 +40,6 @@ test.describe('@op @timetable-items @import', () => {
   });
 
   test.beforeEach('Open scenario ', async ({ page }) => {
-    importPage = new ImportPage(page);
-    timetableItemDetailSection = new TimetableItemDetailSection(page);
-    pacedTrainSection = new PacedTrainSection(page);
-
     await test.step('Create, open scenario and wait for infra to be loaded', async () => {
       scenario = (
         await createScenario(generateUniqueName('import-scenario'), project.id, study.id, infra.id)
@@ -66,7 +55,11 @@ test.describe('@op @timetable-items @import', () => {
     await deleteScenario(study.id, scenario.name);
   });
 
-  test('Verify timetable items are imported correctly', async () => {
+  test('Verify timetable items are imported correctly', async ({
+    importPage,
+    timetableItemDetailSection,
+    pacedTrainSection,
+  }) => {
     await test.step('Verify timetable is empty', async () => {
       await importPage.verifyTimetableIsEmpty(frTranslations.timetable.noTrain);
     });

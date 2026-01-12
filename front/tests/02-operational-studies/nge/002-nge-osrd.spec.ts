@@ -6,10 +6,7 @@ import {
   timetableItemProjectName,
   timetableItemStudyName,
 } from '../../assets/constants/project-const';
-import test from '../../logging-fixture';
-import NGEPage from '../../pages/operational-studies/nge-page';
-import RoundTripPage from '../../pages/operational-studies/round-trips-page';
-import ScenarioTimetableSection from '../../pages/operational-studies/scenario-timetable-section';
+import test from '../../page-object-fixture';
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
 import { getInfra, getProject, getStudy } from '../../utils/api-utils';
 import readJsonFile from '../../utils/file-utils';
@@ -30,10 +27,6 @@ const frTranslations = {
 test.describe('@op @nge @round-trips', () => {
   test.use({ ignorePageErrors: true });
 
-  let ngePage: NGEPage;
-  let scenarioTimetableSection: ScenarioTimetableSection;
-  let roundTripPage: RoundTripPage;
-
   let project: Project;
   let study: Study;
   let scenarioItems: Scenario;
@@ -45,11 +38,7 @@ test.describe('@op @nge @round-trips', () => {
     infra = await getInfra();
   });
 
-  test.beforeEach('Open scenario and enable only macro view', async ({ page }) => {
-    ngePage = new NGEPage(page);
-    scenarioTimetableSection = new ScenarioTimetableSection(page);
-    roundTripPage = new RoundTripPage(page);
-
+  test.beforeEach('Open scenario and enable only macro view', async ({ page, ngePage }) => {
     await test.step('Create, open scenario and wait for infra to be loaded', async () => {
       scenarioItems = (
         await createScenario(generateUniqueName('nge-scenario'), project.id, study.id, infra.id)
@@ -70,7 +59,11 @@ test.describe('@op @nge @round-trips', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('@smoke Add a train from NGE', async () => {
+  test('@smoke Add a train from NGE', async ({
+    ngePage,
+    scenarioTimetableSection,
+    roundTripPage,
+  }) => {
     await test.step('Create three nodes', async () => {
       await ngePage.createNode({ x: 50, y: 400 }, 'NWS', 'Origin');
       await expect(ngePage.nodeCards).toHaveCount(1);

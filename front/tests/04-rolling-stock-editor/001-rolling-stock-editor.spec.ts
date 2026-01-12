@@ -1,8 +1,7 @@
 import { expect } from '@playwright/test';
 
 import { electricRollingStockName } from './../assets/constants/project-const';
-import test from './../logging-fixture';
-import RollingstockEditorPage from './../pages/rolling-stock/rolling-stock-editor-page';
+import test from './../page-object-fixture';
 import readJsonFile from './../utils/file-utils';
 import {
   generateUniqueName,
@@ -17,17 +16,13 @@ const rollingstockDetails: RollingStockDetails = readJsonFile(
 );
 
 test.describe('@rs-editor', () => {
-  let rollingStockEditorPage: RollingstockEditorPage;
-
   const createdRollingStocks: string[] = [];
 
   let uniqueRollingStockName: string;
   let uniqueUpdatedRollingStockName: string;
   let uniqueDeletedRollingStockName: string;
 
-  test.beforeEach(async ({ page }) => {
-    rollingStockEditorPage = new RollingstockEditorPage(page);
-
+  test.beforeEach(async ({ rollingStockEditorPage }) => {
     await test.step('Generate unique names and cleanup any leftovers', async () => {
       uniqueRollingStockName = generateUniqueName('RSN');
       uniqueUpdatedRollingStockName = generateUniqueName('U_RSN');
@@ -53,7 +48,7 @@ test.describe('@rs-editor', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('@smoke Create a new rolling stock', async ({ page }) => {
+  test('@smoke Create a new rolling stock', async ({ page, rollingStockEditorPage }) => {
     createdRollingStocks.push(uniqueRollingStockName);
 
     await test.step('Open creation form', async () => {
@@ -138,7 +133,7 @@ test.describe('@rs-editor', () => {
   });
 
   /** *************** Test 2 **************** */
-  test('Duplicate and modify a rolling stock', async ({ page }) => {
+  test('Duplicate and modify a rolling stock', async ({ page, rollingStockEditorPage }) => {
     createdRollingStocks.push(uniqueUpdatedRollingStockName);
 
     await test.step('Duplicate existing Electric rolling stock', async () => {
@@ -181,7 +176,7 @@ test.describe('@rs-editor', () => {
   });
 
   /** *************** Test 3 **************** */
-  test('Duplicate and delete a rolling stock', async ({ page }) => {
+  test('Duplicate and delete a rolling stock', async ({ page, rollingStockEditorPage }) => {
     createdRollingStocks.push(uniqueDeletedRollingStockName);
 
     await test.step('Duplicate Electric rolling stock and rename', async () => {

@@ -11,10 +11,7 @@ import {
   timetableItemProjectName,
   timetableItemStudyName,
 } from '../../assets/constants/project-const';
-import test from '../../logging-fixture';
-import OperationalStudiesPage from '../../pages/operational-studies/operational-studies-page';
-import PacedTrainSection from '../../pages/operational-studies/paced-train-section';
-import ScenarioTimetableSection from '../../pages/operational-studies/scenario-timetable-section';
+import test from '../../page-object-fixture';
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
 import { getInfra, getProject, getStudy } from '../../utils/api-utils';
 import readJsonFile from '../../utils/file-utils';
@@ -52,10 +49,6 @@ const INTERVAL = '20';
 const EDITED_PACED_TRAIN_NAME = 'Paced train edited';
 
 test.describe('@op @paced-train @train-schedule', () => {
-  let scenarioTimetableSection: ScenarioTimetableSection;
-  let operationalStudiesPage: OperationalStudiesPage;
-  let pacedTrainSection: PacedTrainSection;
-
   let project: Project;
   let study: Study;
   let scenarioItems: Scenario;
@@ -70,11 +63,6 @@ test.describe('@op @paced-train @train-schedule', () => {
   test.beforeEach(
     'Setup scenario with one train schedule and one paced train',
     async ({ page }) => {
-      [pacedTrainSection, scenarioTimetableSection, operationalStudiesPage] = [
-        new PacedTrainSection(page),
-        new ScenarioTimetableSection(page),
-        new OperationalStudiesPage(page),
-      ];
       scenarioItems = (
         await createScenario(
           generateUniqueName('edit-train-scenario'),
@@ -104,7 +92,11 @@ test.describe('@op @paced-train @train-schedule', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('Edit a paced train', async () => {
+  test('Edit a paced train', async ({
+    scenarioTimetableSection,
+    operationalStudiesPage,
+    pacedTrainSection,
+  }) => {
     await test.step('Open paced train edition page', async () => {
       await pacedTrainSection.openPacedTrainEditor();
     });
@@ -141,7 +133,11 @@ test.describe('@op @paced-train @train-schedule', () => {
   });
 
   /** *************** Test 2 **************** */
-  test('Turn paced train into train schedule', async () => {
+  test('Turn paced train into train schedule', async ({
+    scenarioTimetableSection,
+    operationalStudiesPage,
+    pacedTrainSection,
+  }) => {
     await test.step('Edit paced train', async () => {
       await pacedTrainSection.openPacedTrainEditor();
     });
@@ -160,7 +156,10 @@ test.describe('@op @paced-train @train-schedule', () => {
   });
 
   /** *************** Test 3 **************** */
-  test('Turn a train schedule into a paced train', async () => {
+  test('Turn a train schedule into a paced train', async ({
+    scenarioTimetableSection,
+    operationalStudiesPage,
+  }) => {
     await test.step('Edit train schedule at index 1', async () => {
       await scenarioTimetableSection.editTimetableItem(1);
     });

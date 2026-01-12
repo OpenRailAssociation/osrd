@@ -9,8 +9,7 @@ import {
   TOTAL_PACED_TRAINS,
   TOTAL_TRAIN_SCHEDULES,
 } from '../../assets/constants/timetable-items-count';
-import test from '../../logging-fixture';
-import ScenarioTimetableSection from '../../pages/operational-studies/scenario-timetable-section';
+import test from '../../page-object-fixture';
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
 import { getInfra, getProject, getStudy } from '../../utils/api-utils';
 import readJsonFile from '../../utils/file-utils';
@@ -33,8 +32,6 @@ const trainSchedulesJson: JSON = readJsonFile('./tests/assets/train-schedule/tra
 const pacedTrainsJson: JSON = readJsonFile('./tests/assets/paced-train/paced_trains.json');
 
 test.describe('@op @timetable-items @timetable-multiselection', () => {
-  let scenarioTimetableSection: ScenarioTimetableSection;
-
   let project: Project;
   let study: Study;
   let scenarioItems: Scenario;
@@ -64,8 +61,6 @@ test.describe('@op @timetable-items @timetable-multiselection', () => {
   });
 
   test.beforeEach('Go to scenario page', async ({ page }) => {
-    scenarioTimetableSection = new ScenarioTimetableSection(page);
-
     await page.goto(
       `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
     );
@@ -73,7 +68,7 @@ test.describe('@op @timetable-items @timetable-multiselection', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('Select and delete all timetable items', async () => {
+  test('Select and delete all timetable items', async ({ scenarioTimetableSection }) => {
     await test.step('Verify initial totals', async () => {
       await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
         totalPacedTrainCount: TOTAL_PACED_TRAINS,

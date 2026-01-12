@@ -19,8 +19,7 @@ import {
   ThirdPacedTrain,
   ThirdTrainSchedule,
 } from '../../assets/operation-studies/round-trips/round-trip-card';
-import test from '../../logging-fixture';
-import RoundTripPage from '../../pages/operational-studies/round-trips-page';
+import test from '../../page-object-fixture';
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
 import { getInfra, getProject, getStudy } from '../../utils/api-utils';
 import readJsonFile from '../../utils/file-utils';
@@ -39,8 +38,6 @@ const trainSchedulesJson = readJsonFile<TrainSchedule[]>(
 const pacedTrainsJson = readJsonFile<PacedTrain[]>('./tests/assets/paced-train/paced_trains.json');
 
 test.describe('@op @timetable-items @round-trips', () => {
-  let roundTripPage: RoundTripPage;
-
   let project: Project;
   let study: Study;
   let scenarioItems: Scenario;
@@ -52,9 +49,7 @@ test.describe('@op @timetable-items @round-trips', () => {
     infra = await getInfra();
   });
 
-  test.beforeEach('Open scenario & round-trip modal', async ({ page }) => {
-    roundTripPage = new RoundTripPage(page);
-
+  test.beforeEach('Open scenario & round-trip modal', async ({ page, roundTripPage }) => {
     await test.step('Create, open scenario and wait for infra to be loaded', async () => {
       scenarioItems = (
         await createScenario(
@@ -84,7 +79,7 @@ test.describe('@op @timetable-items @round-trips', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('Basic checks round trips', async () => {
+  test('Basic checks round trips', async ({ roundTripPage }) => {
     await test.step('Verify round trips elements are visible', async () => {
       await roundTripPage.verifyRoundTripsModalElements(
         frTranslations.roundTripsModal.todo,
@@ -103,7 +98,7 @@ test.describe('@op @timetable-items @round-trips', () => {
   });
 
   /** *************** Test 2 **************** */
-  test('@smoke Verify round trip cards: paced trains and schedules', async () => {
+  test('@smoke Verify round trip cards: paced trains and schedules', async ({ roundTripPage }) => {
     await test.step('First paced train - data & no tooltip', async () => {
       await roundTripPage.verifyRoundTripCardData({
         roundTripCardIndex: 0,
@@ -154,7 +149,7 @@ test.describe('@op @timetable-items @round-trips', () => {
   });
 
   /** *************** Test 3 **************** */
-  test('Cancel round trip items', async () => {
+  test('Cancel round trip items', async ({ roundTripPage }) => {
     await test.step('Move 1 item from To-do → One-way (not yet saved)', async () => {
       await roundTripPage.setTodoCardToOneWay({
         index: 3,
@@ -179,7 +174,7 @@ test.describe('@op @timetable-items @round-trips', () => {
   });
 
   /** *************** Test 4 **************** */
-  test('@smoke Save round trip items', async () => {
+  test('@smoke Save round trip items', async ({ roundTripPage }) => {
     await test.step('Move 1 item from To-do → One-way', async () => {
       await roundTripPage.setTodoCardToOneWay({
         index: 0,
@@ -204,7 +199,7 @@ test.describe('@op @timetable-items @round-trips', () => {
   });
 
   /** *************** Test 5 **************** */
-  test('Set One-way trip', async () => {
+  test('Set One-way trip', async ({ roundTripPage }) => {
     await test.step('Filter item by name → verify filtered counts', async () => {
       await roundTripPage.searchForRoundTripsCard({
         searchText: 'train19',
@@ -239,7 +234,7 @@ test.describe('@op @timetable-items @round-trips', () => {
   });
 
   /** *************** Test 6 **************** */
-  test('Create and undo Round trips', async () => {
+  test('Create and undo Round trips', async ({ roundTripPage }) => {
     await test.step('Pair first One-way with its return', async () => {
       await roundTripPage.pickReturnForOneWayCard({
         index: 2,

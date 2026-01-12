@@ -1,7 +1,6 @@
 import type { Project } from 'common/api/osrdEditoastApi';
 
-import test from '../../logging-fixture';
-import ProjectPage from '../../pages/operational-studies/project-page';
+import test from '../../page-object-fixture';
 import { generateUniqueName } from '../../utils';
 import readJsonFile from '../../utils/file-utils';
 import { createProject } from '../../utils/setup-utils';
@@ -11,14 +10,9 @@ import type { ProjectData } from '../../utils/types';
 const projectData: ProjectData = readJsonFile('tests/assets/operation-studies/project.json');
 
 test.describe('@op @project @management', () => {
-  let projectPage: ProjectPage;
   let project: Project;
 
   const createdProjects: string[] = [];
-
-  test.beforeEach(async ({ page }) => {
-    projectPage = new ProjectPage(page);
-  });
 
   test.afterAll(async () => {
     if (!createdProjects.length) return;
@@ -27,7 +21,7 @@ test.describe('@op @project @management', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('@smoke Create a new project', async ({ page }) => {
+  test('@smoke Create a new project', async ({ page, projectPage }) => {
     const projectName = generateUniqueName(projectData.name);
     createdProjects.push(projectName);
 
@@ -59,7 +53,7 @@ test.describe('@op @project @management', () => {
   });
 
   /** *************** Test 2 **************** */
-  test('Update an existing project', async ({ page }) => {
+  test('Update an existing project', async ({ page, projectPage }) => {
     const baseName = generateUniqueName(projectData.name);
     const updatedName = `${baseName} (updated)`;
     createdProjects.push(baseName, updatedName);
@@ -103,7 +97,7 @@ test.describe('@op @project @management', () => {
   });
 
   /** *************** Test 3 **************** */
-  test('Delete a project', async ({ page }) => {
+  test('Delete a project', async ({ page, projectPage }) => {
     const projectName = generateUniqueName(projectData.name);
     createdProjects.push(projectName);
 

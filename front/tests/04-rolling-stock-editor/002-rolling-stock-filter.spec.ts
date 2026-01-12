@@ -1,19 +1,15 @@
 import { expect } from '@playwright/test';
 
 import { dualModeRollingStockName } from './../assets/constants/project-const';
-import test from './../logging-fixture';
-import RollingstockEditorPage from './../pages/rolling-stock/rolling-stock-editor-page';
+import test from './../page-object-fixture';
 
 test.describe('@rs-editor @filter', () => {
-  let rollingStockEditorPage: RollingstockEditorPage;
-
-  test.beforeEach('Navigate to editor page', async ({ page }) => {
-    rollingStockEditorPage = new RollingstockEditorPage(page);
+  test.beforeEach('Navigate to editor page', async ({ rollingStockEditorPage }) => {
     await rollingStockEditorPage.navigateToRollingStockPage();
   });
 
   /** *************** Test 1 **************** */
-  test('Filtering rolling stocks', async () => {
+  test('Filtering rolling stocks', async ({ rollingStockEditorPage }) => {
     const initialRollingStockFoundNumber =
       await rollingStockEditorPage.getRollingStockSearchNumber();
 
@@ -54,7 +50,7 @@ test.describe('@rs-editor @filter', () => {
   });
 
   /** *************** Test 2 **************** */
-  test('Search for a rolling stock', async () => {
+  test('Search for a rolling stock', async ({ rollingStockEditorPage }) => {
     const initialRollingStockFoundNumber =
       await rollingStockEditorPage.getRollingStockSearchNumber();
 

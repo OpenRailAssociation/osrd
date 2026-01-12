@@ -1,20 +1,13 @@
 import type { Infra, Project, Scenario, Study } from 'common/api/osrdEditoastApi';
 
 import { electricRollingStockName } from '../../assets/constants/project-const';
-import test from '../../logging-fixture';
-import OperationalStudiesPage from '../../pages/operational-studies/operational-studies-page';
-import RouteTab from '../../pages/operational-studies/route-tab';
-import RollingStockSelector from '../../pages/rolling-stock/rolling-stock-selector';
+import test from '../../page-object-fixture';
 import { waitForInfraStateToBeCached } from '../../utils';
 import { getInfra } from '../../utils/api-utils';
 import createScenario from '../../utils/scenario';
 import { deleteScenario } from '../../utils/teardown-utils';
 
 test.describe('@op @route-tab', () => {
-  let operationalStudiesPage: OperationalStudiesPage;
-  let rollingstockSelector: RollingStockSelector;
-  let routeTab: RouteTab;
-
   let project: Project;
   let study: Study;
   let scenario: Scenario;
@@ -29,13 +22,7 @@ test.describe('@op @route-tab', () => {
     await deleteScenario(study.id, scenario.name);
   });
 
-  test.beforeEach(async ({ page }) => {
-    [operationalStudiesPage, rollingstockSelector, routeTab] = [
-      new OperationalStudiesPage(page),
-      new RollingStockSelector(page),
-      new RouteTab(page),
-    ];
-
+  test.beforeEach(async ({ page, operationalStudiesPage, rollingStockSelector }) => {
     await test.step('Open scenario, wait infra cache, open form and verify tab warnings', async () => {
       await page.goto(
         `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
@@ -46,13 +33,17 @@ test.describe('@op @route-tab', () => {
     });
 
     await test.step('Select rolling stock and open the Route tab', async () => {
-      await rollingstockSelector.selectRollingStock(electricRollingStockName);
+      await rollingStockSelector.selectRollingStock(electricRollingStockName);
       await operationalStudiesPage.openRouteTab();
     });
   });
 
   /** *************** Test 1 **************** */
-  test('@smoke Select a route for operational study', async ({ browserName }) => {
+  test('@smoke Select a route for operational study', async ({
+    browserName,
+    routeTab,
+    operationalStudiesPage,
+  }) => {
     await test.step('Verify no route selected initially', async () => {
       await routeTab.verifyNoSelectedRoute();
     });
@@ -78,7 +69,11 @@ test.describe('@op @route-tab', () => {
   });
 
   /** *************** Test 2 **************** */
-  test('Adding waypoints to a route for operational study', async ({ browserName }) => {
+  test('Adding waypoints to a route for operational study', async ({
+    browserName,
+    routeTab,
+    operationalStudiesPage,
+  }) => {
     await test.step('Perform pathfinding by trigrams (WS → NES)', async () => {
       await routeTab.performPathfindingByTrigram({
         originTrigram: 'WS',
@@ -116,7 +111,7 @@ test.describe('@op @route-tab', () => {
   });
 
   /** *************** Test 3 **************** */
-  test('Reversing and deleting waypoints', async ({ browserName }) => {
+  test('Reversing and deleting waypoints', async ({ browserName, routeTab }) => {
     const expectedMapMarkersValues = ['West_station', 'South_East_station', 'Mid_West_station'];
 
     await test.step('Perform pathfinding WS → SES via MWS and verify markers', async () => {

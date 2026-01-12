@@ -12,18 +12,13 @@ import {
   dualModeRollingStockName,
   electricRollingStockName,
 } from '../../assets/constants/project-const';
-import test from '../../logging-fixture';
-import OperationalStudiesPage from '../../pages/operational-studies/operational-studies-page';
-import RollingStockSelector from '../../pages/rolling-stock/rolling-stock-selector';
+import test from '../../page-object-fixture';
 import { waitForInfraStateToBeCached } from '../../utils';
 import { getInfra, getRollingStock } from '../../utils/api-utils';
 import createScenario from '../../utils/scenario';
 import { deleteScenario } from '../../utils/teardown-utils';
 
 test.describe('@op @rs-tab', () => {
-  let operationalStudiesPage: OperationalStudiesPage;
-  let rollingStockSelector: RollingStockSelector;
-
   let project: Project;
   let study: Study;
   let scenario: Scenario;
@@ -40,21 +35,22 @@ test.describe('@op @rs-tab', () => {
     await deleteScenario(study.id, scenario.name);
   });
 
-  test.beforeEach('Navigate to the scenario page and open form', async ({ page }) => {
-    [operationalStudiesPage, rollingStockSelector] = [
-      new OperationalStudiesPage(page),
-      new RollingStockSelector(page),
-    ];
-
-    await page.goto(
-      `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
-    );
-    await waitForInfraStateToBeCached(infra.id);
-    await operationalStudiesPage.openTimetableItemForm();
-  });
+  test.beforeEach(
+    'Navigate to the scenario page and open form',
+    async ({ page, operationalStudiesPage }) => {
+      await page.goto(
+        `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
+      );
+      await waitForInfraStateToBeCached(infra.id);
+      await operationalStudiesPage.openTimetableItemForm();
+    }
+  );
 
   /** *************** Test 1 **************** */
-  test('@smoke Select a rolling stock for operational study', async () => {
+  test('@smoke Select a rolling stock for operational study', async ({
+    operationalStudiesPage,
+    rollingStockSelector,
+  }) => {
     await test.step('Verify tab warnings are present', async () => {
       await operationalStudiesPage.verifyTabWarningPresence();
     });
@@ -84,7 +80,7 @@ test.describe('@op @rs-tab', () => {
   });
 
   /** *************** Test 2 **************** */
-  test('Modify a rolling stock for operational study', async () => {
+  test('Modify a rolling stock for operational study', async ({ rollingStockSelector }) => {
     await test.step('Select electric rolling stock', async () => {
       await rollingStockSelector.openEmptyRollingStockSelector();
       await rollingStockSelector.searchRollingstock(electricRollingStockName);

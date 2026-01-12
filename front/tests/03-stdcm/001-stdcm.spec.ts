@@ -5,14 +5,7 @@ import {
   fastRollingStockName,
 } from './../assets/constants/project-const';
 import { CONFLICT_ARRIVAL_TIME } from './../assets/constants/stdcm-const';
-import test from './../logging-fixture';
-import ConsistSection from './../pages/stdcm/consist-section';
-import DestinationSection from './../pages/stdcm/destination-section';
-import LinkedTrainSection from './../pages/stdcm/linked-train-section';
-import OriginSection from './../pages/stdcm/origin-section';
-import SimulationResultPage from './../pages/stdcm/simulation-results-page';
-import STDCMPage from './../pages/stdcm/stdcm-page';
-import ViaSection from './../pages/stdcm/via-section';
+import test from './../page-object-fixture';
 import { waitForInfraStateToBeCached } from './../utils';
 import { getInfra, setTowedRollingStock } from './../utils/api-utils';
 import type { ConsistFields } from './../utils/types';
@@ -28,14 +21,6 @@ const fastRollingStockPrefilledValues = { tonnage: '190', length: '46' };
 const towedRollingStockPrefilledValues = { tonnage: '46', length: '26' };
 
 test.describe('@stdcm', () => {
-  let stdcmPage: STDCMPage;
-  let consistSection: ConsistSection;
-  let originSection: OriginSection;
-  let viaSection: ViaSection;
-  let destinationSection: DestinationSection;
-  let linkedTrainSection: LinkedTrainSection;
-  let simulationResultPage: SimulationResultPage;
-
   let infra: Infra;
   let createdTowedRollingStock: TowedRollingStock;
 
@@ -45,30 +30,19 @@ test.describe('@stdcm', () => {
   });
 
   test.beforeEach('Navigate to the STDCM page', async ({ page }) => {
-    [
-      stdcmPage,
-      consistSection,
-      originSection,
-      viaSection,
-      destinationSection,
-      simulationResultPage,
-      linkedTrainSection,
-    ] = [
-      new STDCMPage(page),
-      new ConsistSection(page),
-      new OriginSection(page),
-      new ViaSection(page),
-      new DestinationSection(page),
-      new SimulationResultPage(page),
-      new LinkedTrainSection(page),
-    ];
-
     await page.goto('/stdcm');
     await waitForInfraStateToBeCached(infra.id);
   });
 
   /** *************** Test 1 **************** */
-  test('@smoke Verify default STDCM page', async () => {
+  test('@smoke Verify default STDCM page', async ({
+    stdcmPage,
+    consistSection,
+    originSection,
+    viaSection,
+    destinationSection,
+    linkedTrainSection,
+  }) => {
     await test.step('Verify base UI sections are visible', async () => {
       await stdcmPage.verifyStdcmElementsVisibility();
     });
@@ -86,7 +60,14 @@ test.describe('@stdcm', () => {
   });
 
   /** *************** Test 2 **************** */
-  test('@smoke Launch STDCM simulation with all stops', async () => {
+  test('@smoke Launch STDCM simulation with all stops', async ({
+    consistSection,
+    originSection,
+    destinationSection,
+    viaSection,
+    stdcmPage,
+    stdcmSimulationResultPage,
+  }) => {
     await test.step('Fill consist, origin and destination', async () => {
       await consistSection.fillAndVerifyConsistDetails(
         consistDetails,
@@ -110,17 +91,24 @@ test.describe('@stdcm', () => {
 
     await test.step('Launch simulation and verify results table', async () => {
       await stdcmPage.verifyValidSimulationLaunch();
-      await simulationResultPage.verifySimulationDetails({
+      await stdcmSimulationResultPage.verifySimulationDetails({
         simulationIndex: 0,
         simulationLengthAndDuration: '51 km — 1h 17min',
         validSimulationNumber: 1,
       });
-      await simulationResultPage.verifyTableData('./tests/assets/stdcm/stdcm-all-stops.json');
+      await stdcmSimulationResultPage.verifyTableData('./tests/assets/stdcm/stdcm-all-stops.json');
     });
   });
 
   /** *************** Test 3 **************** */
-  test('Launch simulation with and without capacity for towed rolling stock', async () => {
+  test('Launch simulation with and without capacity for towed rolling stock', async ({
+    consistSection,
+    originSection,
+    destinationSection,
+    viaSection,
+    stdcmPage,
+    stdcmSimulationResultPage,
+  }) => {
     const towedConsistDetails: ConsistFields = {
       tractionEngine: fastRollingStockName,
       towedRollingStock: createdTowedRollingStock.name,
@@ -144,22 +132,22 @@ test.describe('@stdcm', () => {
     });
 
     await test.step('Initial simulation result is "No capacity"', async () => {
-      await simulationResultPage.verifySimulationDetails({ simulationIndex: 0 });
+      await stdcmSimulationResultPage.verifySimulationDetails({ simulationIndex: 0 });
     });
 
     await test.step('First alternative simulation is VALID (51 km — 2h 35min) and verify details', async () => {
-      await simulationResultPage.verifySimulationDetails({
+      await stdcmSimulationResultPage.verifySimulationDetails({
         simulationIndex: 1,
         simulationLengthAndDuration: '51 km — 2h 35min',
         validSimulationNumber: 1,
       });
-      await simulationResultPage.verifyTableData(
+      await stdcmSimulationResultPage.verifyTableData(
         './tests/assets/stdcm/towed-rolling-stock/towed-rolling-stock-table-result.json'
       );
     });
 
     await test.step('Second alternative simulation result is "No capacity"', async () => {
-      await simulationResultPage.verifySimulationDetails({ simulationIndex: 2 });
+      await stdcmSimulationResultPage.verifySimulationDetails({ simulationIndex: 2 });
     });
   });
 });
