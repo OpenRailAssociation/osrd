@@ -52,7 +52,7 @@
     "ajv-errors": "^3.0.0",
     "ajv-formats": "^3.0.1",
     "ajv-i18n": "^4.2.0",
-    "bootstrap": "4.3.1",
+    "bootstrap": "5.3.8",
     "chroma-js": "^3.2.0",
     "classnames": "^2.5.1",
     "country-flag-icons": "^1.6.4",
