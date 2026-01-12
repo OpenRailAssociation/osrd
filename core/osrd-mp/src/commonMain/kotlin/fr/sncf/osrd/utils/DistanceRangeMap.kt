@@ -1,10 +1,6 @@
 package fr.sncf.osrd.utils
 
-import com.google.common.collect.ImmutableRangeMap
-import com.google.common.collect.Range
-import com.google.common.collect.RangeMap
 import fr.sncf.osrd.utils.units.Distance
-import fr.sncf.osrd.utils.units.meters
 
 /**
  * DistanceRangeMap allows to store values over intervals (e.g. elevation on sections of a track)
@@ -106,17 +102,4 @@ fun <T, R> filterIntersection(
         res.putMany(filteredRange.asList())
     }
     return res
-}
-
-// TODO: Get rid of this function, by propagating DistanceRangeMap to the whole codebase
-/**
- * Converts a DistanceRangeMap<T> into a legacy RangeMap<Double, T>. Distances are converted to
- * floats (m).
- */
-fun <T : Any> DistanceRangeMap<T>.toRangeMap(): RangeMap<Double, T> {
-    val res = ImmutableRangeMap.builder<Double, T>()
-    for (entry in this) {
-        res.put(Range.closedOpen(entry.lower.meters, entry.upper.meters), entry.value)
-    }
-    return res.build()
 }

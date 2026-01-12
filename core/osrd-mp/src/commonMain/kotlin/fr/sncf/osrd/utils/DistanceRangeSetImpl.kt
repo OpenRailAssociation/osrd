@@ -1,6 +1,5 @@
 package fr.sncf.osrd.utils
 
-import com.google.common.collect.RangeSet
 import fr.sncf.osrd.utils.units.Distance
 
 class DistanceRangeSetImpl : DistanceRangeSet {
@@ -44,14 +43,6 @@ class DistanceRangeSetImpl : DistanceRangeSet {
         return asList().iterator()
     }
 
-    companion object {
-        fun from(set: RangeSet<Double>): DistanceRangeSet {
-            val res = distanceRangeSetOf()
-            for (entry in set.asRanges()) res.put(
-                Distance.fromMeters(entry.lowerEndpoint()),
-                Distance.fromMeters(entry.upperEndpoint()),
-            )
-            return res
-        }
-    }
+    // This declaration is needed for the extension methods in kt-osrd-utils
+    companion object
 }

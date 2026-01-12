@@ -1,8 +1,5 @@
 package fr.sncf.osrd.utils
 
-import com.google.common.collect.Range
-import com.google.common.collect.RangeMap
-import com.google.common.collect.TreeRangeMap
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.MutableDistanceArrayList
 import kotlin.math.min
@@ -403,23 +400,6 @@ data class DistanceRangeMapImpl<T>(
         require(bounds.size == values.size + 1 || (bounds.size == 0 && values.isEmpty()))
     }
 
-    companion object {
-        fun <T : Any> from(map: RangeMap<Distance, T>): DistanceRangeMap<T> {
-            val res = distanceRangeMapOf<T>()
-            for (entry in map.entries) res.put(
-                entry.key.lowerEndpoint(),
-                entry.key.upperEndpoint(),
-                entry.value,
-            )
-            return res
-        }
-
-        fun <T : Any> toRangeMap(distanceRangeMap: DistanceRangeMap<T>): RangeMap<Distance, T> {
-            val rangeMap = TreeRangeMap.create<Distance, T>()
-            for (entry in distanceRangeMap.asList()) {
-                rangeMap.put(Range.closed(entry.lower, entry.upper), entry.value!!)
-            }
-            return rangeMap
-        }
-    }
+    // This declaration is needed for the extension methods in kt-osrd-utils
+    companion object
 }
