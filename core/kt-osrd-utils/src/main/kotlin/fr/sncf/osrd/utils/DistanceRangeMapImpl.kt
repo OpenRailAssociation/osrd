@@ -5,7 +5,6 @@ import com.google.common.collect.RangeMap
 import com.google.common.collect.TreeRangeMap
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.MutableDistanceArrayList
-import java.util.PriorityQueue
 import kotlin.math.min
 
 data class DistanceRangeMapImpl<T>(
@@ -62,6 +61,36 @@ data class DistanceRangeMapImpl<T>(
             return groupByConsecutiveFirst(swapped)
         }
 
+        class PriorityQueue<T>(private val comparison: (T, T) -> Int) {
+            private val inner = mutableListOf<T>()
+
+            private fun binarySearch(element: T): Int =
+                inner.binarySearch { comparison(it, element) }
+
+            fun contains(element: T): Boolean = binarySearch(element) >= 0
+
+            fun add(element: T) {
+                val r = binarySearch(element)
+                val i =
+                    if (r < 0) {
+                        -r - 1
+                    } else {
+                        r
+                    }
+                inner.add(i, element)
+            }
+
+            fun remove(element: T) {
+                val r = binarySearch(element)
+                if (r < 0) {
+                    return
+                }
+                inner.removeAt(r)
+            }
+
+            fun peek(): T? = inner.getOrNull(0)
+        }
+
         // Order matters and existing entries should come first.
         // E.g. allEntries = [(lower=0, upper=5, value=1), (lower=5, upper=10, value=1)]
         val allEntries = asList() + entries
@@ -94,7 +123,7 @@ data class DistanceRangeMapImpl<T>(
         for ((bound, indices) in entriesByBound) {
             for (index in indices) {
                 // Update relevant entries. PriorityQueue only guarantees linear time for
-                // contains and remove, an optimized heap could be helpful.
+                // add and remove, an optimized heap could be helpful.
                 if (entryQueue.contains(index)) entryQueue.remove(index) else entryQueue.add(index)
             }
             // Get the latest relevant entry.
