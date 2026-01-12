@@ -11,33 +11,19 @@ import CommonPage from '../common-page';
 
 class PacedTrainSection extends CommonPage {
   private readonly pacedTrainItem: Locator;
-
   private readonly testedPacedTrain: Locator;
-
   private readonly testedPacedTrainShowOccurrencesButton: Locator;
-
   private readonly testedPacedTrainName: Locator;
-
   private readonly testedPacedTrainRollingStock: Locator;
-
   private readonly testedPacedTrainInterval: Locator;
-
   private readonly testedPacedTrainOccurrences: Locator;
-
   private readonly testedOccurrenceName: Locator;
-
   private readonly testedOccurrenceStartTime: Locator;
-
   private readonly testedOccurrenceArrivalTime: Locator;
-
   private readonly occurrencesCount: Locator;
-
   private readonly manageTimetableItemPage: Locator;
-
   private readonly confirmationModalDeleteButton: Locator;
-
   private readonly confirmationModalButton: Locator;
-
   private readonly portalOccurrenceMenu: {
     disable: Locator;
     enable: Locator;

@@ -6,52 +6,29 @@ import type { Waypoint } from '../../utils/manchette';
 
 class GetManchetteComponent extends OpSimulationResultPage {
   private readonly spaceTimeChartMenuButton: Locator;
-
   private readonly spaceTimeChartCloseSettingsButton: Locator;
-
   private readonly spaceTimeChartSettingsPanel: Locator;
-
   private readonly spaceTimeChartCheckboxItems: Locator;
-
   private readonly manchetteMenuButton: Locator;
-
   private readonly manchetteVisibilityButton: Locator;
-
   private readonly waypointsList: Locator;
-
   private readonly waypointsPanel: Locator;
-
   private readonly waypointItems: Locator;
-
   private readonly waypointPanelFooter: Locator;
-
   private readonly waypointCancelButton: Locator;
-
   private readonly waypointSaveButton: Locator;
-
   private readonly speedSpaceChartZoomButton: Locator;
-
   private readonly speedSpaceChartResetButton: Locator;
-
   private readonly speedSpaceChartRangerSlider: Locator;
-
   private readonly manchetteActionsButton: Locator;
-
   private readonly manchetteZoomInButton: Locator;
-
   private readonly manchetteZoomOutButton: Locator;
-
   private readonly manchetteResetButton: Locator;
-
   private readonly manchetteKmModeButton: Locator;
-
   private readonly manchetteLinearModeButton: Locator;
-
   private readonly warpedMapButton: Locator;
-
   private readonly simulationWarpedMap: Locator;
-
-  private readonly manchetteSpacetimediagramRef: Locator;
+  private readonly manchetteSpaceTimeDiagramRef: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -79,7 +56,7 @@ class GetManchetteComponent extends OpSimulationResultPage {
     this.speedSpaceChartResetButton = this.spaceTimeChart.getByTestId('zoom-reset-button');
     this.warpedMapButton = page.getByTestId('warped-map-button');
     this.simulationWarpedMap = page.getByTestId('simulation-warped-map');
-    this.manchetteSpacetimediagramRef = page.getByTestId('manchette-spacetimediagram-ref');
+    this.manchetteSpaceTimeDiagramRef = page.getByTestId('manchette-spacetimediagram-ref');
   }
 
   private getWaypointNameListLocator(index: number): Locator {
@@ -195,7 +172,7 @@ class GetManchetteComponent extends OpSimulationResultPage {
     await this.manchetteZoomInButton.click({ clickCount: 5 });
 
     await expect
-      .poll(async () => await isOverflowing(this.manchetteSpacetimediagramRef))
+      .poll(async () => await isOverflowing(this.manchetteSpaceTimeDiagramRef))
       .toBe(true);
 
     await this.expectVisibleEnabled(this.manchetteZoomOutButton);
@@ -204,7 +181,7 @@ class GetManchetteComponent extends OpSimulationResultPage {
     await this.manchetteResetButton.click();
 
     await expect
-      .poll(async () => await isOverflowing(this.manchetteSpacetimediagramRef))
+      .poll(async () => await isOverflowing(this.manchetteSpaceTimeDiagramRef))
       .toBe(false);
   }
 

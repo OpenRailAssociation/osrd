@@ -5,49 +5,27 @@ import CommonPage from '../common-page';
 
 class ScenarioPage extends CommonPage {
   private readonly scenarioEditionModal: Locator;
-
   private readonly scenarioUpdateButton: Locator;
-
   private readonly scenarioDeleteButton: Locator;
-
   private readonly scenarioConfirmUpdateButton: Locator;
-
   private readonly scenarioNameInput: Locator;
-
   private readonly scenarioDescriptionInput: Locator;
-
   private readonly scenarioInfraList: Locator;
-
   private readonly scenarioElectricProfileSelect: Locator;
-
   private readonly scenarioName: Locator;
-
   private readonly scenarioNameContainer: Locator;
-
   private readonly scenarioDescription: Locator;
-
   private readonly scenarioInfraName: Locator;
-
   private readonly addScenarioButton: Locator;
-
   private readonly createScenarioButton: Locator;
-
   private readonly scenarioTagsLabel: Locator;
-
   private readonly scenarioConfirmDeleteButton: Locator;
-
   readonly conflictsButton: Locator;
-
   readonly trainsButton: Locator;
-
   readonly simulationMapButton: Locator;
-
   readonly timeStopsOutputsButton: Locator;
-
   readonly macroEditorButton: Locator;
-
   readonly stdButton: Locator;
-
   readonly sddButton: Locator;
 
   constructor(readonly page: Page) {

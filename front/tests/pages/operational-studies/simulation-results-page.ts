@@ -5,29 +5,17 @@ import { toggleByState } from '../../utils';
 
 class OpSimulationResultPage extends ScenarioPage {
   readonly simulationResults: Locator;
-
   private readonly speedSpaceChartSettingsButton: Locator;
-
   private readonly speedSpaceChartCheckboxItems: Locator;
-
   private readonly speedSpaceChartCloseSettingsButton: Locator;
-
   readonly manchetteSpaceTimeChart: Locator;
-
   readonly spaceTimeChart: Locator;
-
   readonly speedSpaceChart: Locator;
-
   readonly timesStopsDataSheet: Locator;
-
   private readonly simulationMap: Locator;
-
   private readonly trainList: Locator;
-
   private readonly timeStopsOutputs: Locator;
-
   private readonly macroEditor: Locator;
-
   private readonly conflictsList: Locator;
 
   constructor(page: Page) {

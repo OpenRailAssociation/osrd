@@ -12,37 +12,21 @@ const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.
 class SimulationResultPage {
   readonly page: Page;
   private readonly mapResultContainer: Locator;
-
   private readonly originResultMarker: Locator;
-
   private readonly destinationResultMarker: Locator;
-
   private readonly viaResultMarker: Locator;
-
   private readonly simulationResultTable: Locator;
-
   private readonly simulationTableRows: Locator;
-
   private readonly allViasButton: Locator;
-
   private readonly retainSimulationButton: Locator;
-
   private readonly downloadSimulationButton: Locator;
-
   private readonly downloadLink: Locator;
-
   private readonly startNewQueryButton: Locator;
-
   private readonly startNewQueryWithDataButton: Locator;
-
   private readonly feedbackCardContainer: Locator;
-
   private readonly feedbackTitle: Locator;
-
   private readonly feedbackDescription: Locator;
-
   private readonly feedbackButton: Locator;
-
   private readonly simulationItem: Locator;
 
   constructor(page: Page) {

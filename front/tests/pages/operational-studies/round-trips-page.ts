@@ -5,65 +5,35 @@ import type { RoundTripCardExpected } from '../../utils/types';
 class RoundTripPage {
   readonly page: Page;
   private readonly manageRoundTripsButton: Locator;
-
   private readonly roundTripsModalPage: Locator;
-
   private readonly roundTripsCards: Locator;
-
   private roundTripsPairingColumn: Locator;
-
   private roundTripPairs: Locator;
-
   private oneWaysColumnCard: Locator;
-
   private toDoColumnCard: Locator;
-
   private readonly oneWaysColumnTitle: Locator;
-
   private readonly oneWaysItemCount: Locator;
-
   private readonly roundTripColumnTitle: Locator;
-
   private readonly roundTripItemCount: Locator;
-
   private readonly toDoColumnTitle: Locator;
-
   private readonly toDoItemCount: Locator;
-
   private readonly saveRoundTripsButton: Locator;
-
   private readonly cancelRoundTripsButton: Locator;
-
   private readonly roundTripFilterField: Locator;
-
   private readonly roundTripCardName: Locator;
-
   private readonly roundTripCardInterval: Locator;
-
   private readonly roundTripCardStops: Locator;
-
   private readonly roundTripCardOrigin: Locator;
-
   private readonly roundTripCardDestination: Locator;
-
   private readonly roundTripCardStartTime: Locator;
-
   private readonly roundTripCardRequestedArrivalTime: Locator;
-
   private readonly intermediateStopsTooltip: Locator;
-
   private readonly intermediateStopTooltipItem: Locator;
-
   private oneWayButton: Locator;
-
   private roundTripButton: Locator;
-
   private restoreButton: Locator;
-
   private pairingColumnCard: Locator;
-
   private pairingFilterField: Locator;
-
   private roundTripPairCards: Locator;
 
   constructor(page: Page) {

@@ -10,21 +10,13 @@ import {
 
 class OriginSection extends STDCMPage {
   private readonly originChField: Locator;
-
   private readonly originCiField: Locator;
-
   readonly dateOriginArrival: Locator;
-
   readonly originArrival: Locator;
-
   readonly timeOriginArrival: Locator;
-
   readonly toleranceOriginArrival: Locator;
-
   readonly dynamicOriginCh: Locator;
-
   readonly dynamicOriginCi: Locator;
-
   private readonly suggestionNWS: Locator;
 
   constructor(page: Page) {

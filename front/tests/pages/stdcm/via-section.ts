@@ -13,15 +13,10 @@ const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.
 
 class ViaSection extends STDCMPage {
   private readonly viaIcon: Locator;
-
   private readonly viaDeleteButton: Locator;
-
   private readonly suggestionNS: Locator;
-
   private readonly suggestionMES: Locator;
-
   private readonly suggestionMWS: Locator;
-
   private readonly viaCard: Locator;
 
   constructor(page: Page) {

@@ -13,12 +13,10 @@ class TimetableItemDetailSection extends ScenarioTimetableSection {
   private readonly showItemsDetailsButton: Locator;
   private readonly pacedTrainDetailLabels: Locator;
   private readonly trainScheduleDetailLabels: Locator;
-
   private readonly pacedTrainStopsCount: Locator;
   private readonly pacedTrainPathLength: Locator;
   private readonly pacedTrainEnergyConsumed: Locator;
   private readonly pacedTrainDurationTime: Locator;
-
   private readonly trainScheduleStopsCount: Locator;
   private readonly trainSchedulePathLength: Locator;
   private readonly trainScheduleEnergyConsumed: Locator;
@@ -27,15 +25,12 @@ class TimetableItemDetailSection extends ScenarioTimetableSection {
   constructor(page: Page) {
     super(page);
     this.showItemsDetailsButton = page.getByTestId('scenarios-show-train-details-button');
-
     this.pacedTrainDetailLabels = page.getByTestId('paced-train-more-info');
     this.trainScheduleDetailLabels = page.getByTestId('train-schedule-more-info');
-
     this.pacedTrainStopsCount = page.getByTestId('paced-train-stop-count');
     this.pacedTrainPathLength = page.getByTestId('paced-train-path-length');
     this.pacedTrainEnergyConsumed = page.getByTestId('paced-train-allowance-energy-consumed');
     this.pacedTrainDurationTime = page.getByTestId('paced-train-duration-time');
-
     this.trainScheduleStopsCount = page.getByTestId('train-schedule-stop-count');
     this.trainSchedulePathLength = page.getByTestId('train-schedule-path-length');
     this.trainScheduleEnergyConsumed = page.getByTestId('train-schedule-allowance-energy-consumed');

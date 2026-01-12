@@ -8,27 +8,16 @@ import { DEFAULT_DETAILS } from '../../assets/constants/stdcm-const';
 
 class LinkedTrainSection extends STDCMPage {
   readonly originPage: OriginSection;
-
   readonly destinationPage: DestinationSection;
-
   private readonly anteriorDeleteLinkedPathButton: Locator;
-
   private readonly anteriorLinkedTrainField: Locator;
-
   private readonly anteriorLinkedTrainDate: Locator;
-
   private readonly anteriorLinkedTrainSearchButton: Locator;
-
   private readonly anteriorLinkedTrainResultInfosButton: Locator;
-
   private readonly posteriorDeleteLinkedPathButton: Locator;
-
   private readonly posteriorLinkedTrainField: Locator;
-
   private readonly posteriorLinkedTrainDate: Locator;
-
   private readonly posteriorLinkedTrainSearchButton: Locator;
-
   private readonly posteriorLinkedTrainResultInfosButton: Locator;
 
   constructor(page: Page) {
