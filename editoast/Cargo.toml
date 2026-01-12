@@ -143,7 +143,7 @@ tracing-opentelemetry = { version = "0.32.0", default-features = false, features
 ] }
 tracing-subscriber = { version = "0.3.22", features = ["env-filter"] }
 uom = { version = "0.37.0", default-features = false, features = ["f64", "si"] }
-url = { version = "2.5.7", features = ["serde"] }
+url = { version = "2.5.8", features = ["serde"] }
 urlencoding = "2.1.3"
 utoipa = { version = "5.4.0", features = ["chrono", "uuid"] }
 uuid = { version = "1.19.0", features = ["serde", "v4"] }
