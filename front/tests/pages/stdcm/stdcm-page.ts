@@ -2,11 +2,11 @@ import { expect, type Locator, type Page } from '@playwright/test';
 
 import readJsonFile from '../../utils/file-utils';
 import type { StdcmTranslations } from '../../utils/types';
-import HomePage from '../home-page';
 
 const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');
 
-class STDCMPage extends HomePage {
+class STDCMPage {
+  readonly page: Page;
   private readonly consistCard: Locator;
 
   readonly originCard: Locator;
@@ -52,7 +52,7 @@ class STDCMPage extends HomePage {
   private readonly pathfindingStatusMessage: Locator;
 
   constructor(page: Page) {
-    super(page);
+    this.page = page;
     this.debugButton = page.getByTestId('stdcm-debug-button');
     this.helpButton = page.getByTestId('stdcm-help-button');
     this.mapContainer = page.locator('#stdcm-map-config');

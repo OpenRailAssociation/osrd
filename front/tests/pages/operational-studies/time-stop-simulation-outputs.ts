@@ -1,6 +1,5 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
-import OpSimulationResultPage from './simulation-results-page';
 import { normalizeStationData } from '../../utils/data-normalizer';
 import readJsonFile from '../../utils/file-utils';
 import type { FlatTranslations, StationData } from '../../utils/types';
@@ -9,13 +8,14 @@ const frTranslations = readJsonFile<Record<string, FlatTranslations>>(
   'public/locales/fr/translation.json'
 ).timeStopTable;
 
-class TimeAndStopSimulationOutputs extends OpSimulationResultPage {
+class TimeAndStopSimulationOutputs {
+  readonly page: Page;
   private readonly columnHeaders: Locator;
 
   private readonly tableRows: Locator;
 
   constructor(page: Page) {
-    super(page);
+    this.page = page;
     this.columnHeaders = page.locator(
       '.dsg-cell.dsg-cell-header:not(.dsg-cell-gutter) .dsg-cell-header-container'
     );
