@@ -1,9 +1,9 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
 import { extractNumberFromString } from '../../utils/index';
-import OperationalStudiesPage from '../operational-studies/operational-studies-page';
+import CommonPage from '../common-page';
 
-class RollingStockSelector extends OperationalStudiesPage {
+class RollingStockSelector extends CommonPage {
   private readonly rollingStockSelectorButton: Locator;
 
   private readonly emptyRollingStockSelector: Locator;

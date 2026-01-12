@@ -3,14 +3,14 @@ import path from 'path';
 
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import STDCMPage from './stdcm-page';
 import { logger } from '../../logging-fixture';
 import readJsonFile from '../../utils/file-utils';
 import type { STDCMResultTableRow, StdcmTranslations } from '../../utils/types';
 
 const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');
 
-class SimulationResultPage extends STDCMPage {
+class SimulationResultPage {
+  readonly page: Page;
   private readonly mapResultContainer: Locator;
 
   private readonly originResultMarker: Locator;
@@ -46,7 +46,7 @@ class SimulationResultPage extends STDCMPage {
   private readonly simulationItem: Locator;
 
   constructor(page: Page) {
-    super(page);
+    this.page = page;
     this.simulationItem = page.getByTestId('simulation-item-button');
     this.mapResultContainer = page.locator('#stdcm-map-result');
     this.originResultMarker = this.mapResultContainer.locator('img[alt="origin"]');

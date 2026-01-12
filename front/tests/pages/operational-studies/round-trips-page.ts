@@ -1,9 +1,9 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
-import OperationalStudiesPage from './operational-studies-page';
 import type { RoundTripCardExpected } from '../../utils/types';
 
-class RoundTripPage extends OperationalStudiesPage {
+class RoundTripPage {
+  readonly page: Page;
   private readonly manageRoundTripsButton: Locator;
 
   private readonly roundTripsModalPage: Locator;
@@ -67,7 +67,7 @@ class RoundTripPage extends OperationalStudiesPage {
   private roundTripPairCards: Locator;
 
   constructor(page: Page) {
-    super(page);
+    this.page = page;
     this.manageRoundTripsButton = page.getByTestId('scenarios-manage-round-trips-button');
     this.roundTripsModalPage = page.getByTestId('round-trips-modal');
     this.oneWaysColumnCard = page.getByTestId('one-ways-column').getByTestId('round-trips-card');
