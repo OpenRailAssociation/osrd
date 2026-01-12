@@ -3,12 +3,7 @@ import { expect } from '@playwright/test';
 import type { Infra, Project, Scenario, Study } from 'common/api/osrdEditoastApi';
 
 import { dualModeRollingStockName } from '../../assets/constants/project-const';
-import test from '../../logging-fixture';
-import OperationalStudiesPage from '../../pages/operational-studies/operational-studies-page';
-import RouteTab from '../../pages/operational-studies/route-tab';
-import TimeAndStopSimulationOutputs from '../../pages/operational-studies/time-stop-simulation-outputs';
-import TimesAndStopsTab from '../../pages/operational-studies/times-and-stops-tab';
-import RollingStockSelector from '../../pages/rolling-stock/rolling-stock-selector';
+import test from '../../page-object-fixture';
 import { waitForInfraStateToBeCached } from '../../utils';
 import { getInfra } from '../../utils/api-utils';
 import { cleanWhitespace, cleanWhitespaceInArray } from '../../utils/data-normalizer';
@@ -43,12 +38,6 @@ const expectedViaValues = [
 ];
 
 test.describe('@op @times-stops-tab', () => {
-  let operationalStudiesPage: OperationalStudiesPage;
-  let rollingStockSelector: RollingStockSelector;
-  let routeTab: RouteTab;
-  let timesAndStopsTab: TimesAndStopsTab;
-  let timeAndStopSimulationOutputs: TimeAndStopSimulationOutputs;
-
   let project: Project;
   let study: Study;
   let scenario: Scenario;
@@ -58,21 +47,7 @@ test.describe('@op @times-stops-tab', () => {
     infra = await getInfra();
   });
 
-  test.beforeEach(async ({ page }) => {
-    [
-      operationalStudiesPage,
-      routeTab,
-      rollingStockSelector,
-      timesAndStopsTab,
-      timeAndStopSimulationOutputs,
-    ] = [
-      new OperationalStudiesPage(page),
-      new RouteTab(page),
-      new RollingStockSelector(page),
-      new TimesAndStopsTab(page),
-      new TimeAndStopSimulationOutputs(page),
-    ];
-
+  test.beforeEach(async ({ page, operationalStudiesPage, rollingStockSelector, routeTab }) => {
     await test.step('Create then navigate to scenario page', async () => {
       ({ project, study, scenario } = await createScenario());
 
@@ -102,7 +77,12 @@ test.describe('@op @times-stops-tab', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('@smoke Set and display times and stops tables', async () => {
+  test('@smoke Set and display times and stops tables', async ({
+    timesAndStopsTab,
+    operationalStudiesPage,
+    routeTab,
+    timeAndStopSimulationOutputs,
+  }) => {
     await test.step('Verify table headers', async () => {
       const expectedColumnNames = cleanWhitespaceInArray([
         frTranslations.name,
@@ -144,7 +124,7 @@ test.describe('@op @times-stops-tab', () => {
       await operationalStudiesPage.openRouteTab();
       for (const [viaIndex, expectedValue] of expectedViaValues.entries()) {
         const droppedWaypoint = routeTab.droppedWaypoints.nth(viaIndex);
-        await RouteTab.validateAddedWaypoint(
+        await routeTab.validateAddedWaypoint(
           droppedWaypoint,
           expectedValue.name,
           expectedValue.ch,
@@ -157,13 +137,17 @@ test.describe('@op @times-stops-tab', () => {
       await operationalStudiesPage.createTimetableItem();
       await operationalStudiesPage.closeToastNotification();
       await operationalStudiesPage.returnSimulationResult();
-      await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
+      await operationalStudiesPage.verifyTimesStopsDataSheetVisibility();
       await timeAndStopSimulationOutputs.getOutputTableData(outputExpectedCellData);
     });
   });
 
   /** *************** Test 2 **************** */
-  test('@smoke Update and clear input table row', async () => {
+  test('@smoke Update and clear input table row', async ({
+    timesAndStopsTab,
+    operationalStudiesPage,
+    routeTab,
+  }) => {
     await test.step('Fill initial inputs and verify table', async () => {
       for (const cell of initialInputsData) {
         const translatedHeader = cleanWhitespace(frTranslations[cell.header]);
@@ -202,7 +186,7 @@ test.describe('@op @times-stops-tab', () => {
       await operationalStudiesPage.openRouteTab();
       for (const [viaIndex, expectedValue] of expectedViaValues.entries()) {
         const droppedWaypoint = routeTab.droppedWaypoints.nth(viaIndex);
-        await RouteTab.validateAddedWaypoint(
+        await routeTab.validateAddedWaypoint(
           droppedWaypoint,
           expectedValue.name,
           expectedValue.ch,

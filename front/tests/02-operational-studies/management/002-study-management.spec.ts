@@ -2,8 +2,7 @@ import { expect } from '@playwright/test';
 
 import type { Project, Study } from 'common/api/osrdEditoastApi';
 
-import test from '../../logging-fixture';
-import StudyPage from '../../pages/operational-studies/study-page';
+import test from '../../page-object-fixture';
 import { generateUniqueName } from '../../utils';
 import { getProject } from '../../utils/api-utils';
 import { formatDateToDayMonthYear } from '../../utils/date-utils';
@@ -19,7 +18,6 @@ const frTranslations: StudyFrTranslations = readJsonFile(
 );
 
 test.describe('@op @study @management', () => {
-  let studyPage: StudyPage;
   let project: Project;
   let study: Study;
 
@@ -35,12 +33,8 @@ test.describe('@op @study @management', () => {
     await Promise.allSettled(studiesToDelete.map((s) => deleteStudy(s.projectId, s.name)));
   });
 
-  test.beforeEach(async ({ page }) => {
-    studyPage = new StudyPage(page);
-  });
-
   /** *************** Test 1 **************** */
-  test('@smoke Create a new study', async ({ page }) => {
+  test('@smoke Create a new study', async ({ page, studyPage }) => {
     await test.step('Navigate to project page', async () => {
       await page.goto(`/operational-studies/projects/${project.id}`);
     });
@@ -85,7 +79,7 @@ test.describe('@op @study @management', () => {
   });
 
   /** *************** Test 2 **************** */
-  test('Update an existing study', async ({ page }) => {
+  test('Update an existing study', async ({ page, studyPage }) => {
     const baseName = generateUniqueName(studyData.name);
     const updatedName = `${baseName} (updated)`;
     createdStudies.push({ projectId: project.id, name: updatedName });
@@ -138,7 +132,7 @@ test.describe('@op @study @management', () => {
   });
 
   /** *************** Test 3 **************** */
-  test('Delete a study', async ({ page }) => {
+  test('Delete a study', async ({ page, studyPage }) => {
     await test.step('Create a study to delete', async () => {
       study = await createStudy(project.id, generateUniqueName(studyData.name));
       createdStudies.push({ projectId: project.id, name: study.name });

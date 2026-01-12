@@ -4,13 +4,10 @@ import type { Infra } from 'common/api/osrdEditoastApi';
 
 import { electricRollingStockName } from './../assets/constants/project-const';
 import simulationSheetDetails from './../assets/constants/simulation-sheet-const';
-import test from './../logging-fixture';
+import test from './../page-object-fixture';
 import ConsistSection from './../pages/stdcm/consist-section';
 import DestinationSection from './../pages/stdcm/destination-section';
 import OriginSection from './../pages/stdcm/origin-section';
-import SimulationResultPage from './../pages/stdcm/simulation-results-page';
-import STDCMPage from './../pages/stdcm/stdcm-page';
-import ViaSection from './../pages/stdcm/via-section';
 import { waitForInfraStateToBeCached } from './../utils';
 import { getInfra } from './../utils/api-utils';
 import { findFirstPdf, parsePdfText, verifySimulationContent } from './../utils/pdf-parser';
@@ -32,13 +29,6 @@ const tractionEnginePrefilledValues = {
 test.describe('@stdcm @stdcm-sheet', () => {
   test.describe.configure({ mode: 'serial' });
 
-  let stdcmPage: STDCMPage;
-  let consistSection: ConsistSection;
-  let originSection: OriginSection;
-  let viaSection: ViaSection;
-  let destinationSection: DestinationSection;
-  let simulationResultPage: SimulationResultPage;
-
   let infra: Infra;
   let downloadDir: string | undefined;
 
@@ -47,22 +37,6 @@ test.describe('@stdcm @stdcm-sheet', () => {
   });
 
   test.beforeEach('Navigate to the STDCM page', async ({ page }) => {
-    [
-      stdcmPage,
-      consistSection,
-      originSection,
-      viaSection,
-      destinationSection,
-      simulationResultPage,
-    ] = [
-      new STDCMPage(page),
-      new ConsistSection(page),
-      new OriginSection(page),
-      new ViaSection(page),
-      new DestinationSection(page),
-      new SimulationResultPage(page),
-    ];
-
     await page.goto('/stdcm');
     await waitForInfraStateToBeCached(infra.id);
   });
@@ -71,6 +45,12 @@ test.describe('@stdcm @stdcm-sheet', () => {
   test('@smoke Verify STDCM stops and simulation sheet', async ({
     browserName,
     context,
+    consistSection,
+    originSection,
+    destinationSection,
+    viaSection,
+    stdcmPage,
+    stdcmSimulationResultPage,
   }, testInfo) => {
     await test.step('Fill consist, origin, destination and via', async () => {
       await consistSection.fillAndVerifyConsistDetails(
@@ -96,23 +76,27 @@ test.describe('@stdcm @stdcm-sheet', () => {
 
     await test.step('Verify result map markers and tables', async () => {
       if (browserName === 'chromium') {
-        await simulationResultPage.mapMarkerResultVisibility();
+        await stdcmSimulationResultPage.mapMarkerResultVisibility();
       }
-      await simulationResultPage.verifyTableData('./tests/assets/stdcm/stdcm-without-all-via.json');
-      await simulationResultPage.displayAllOperationalPoints();
-      await simulationResultPage.verifyTableData('./tests/assets/stdcm/stdcm-with-all-via.json');
+      await stdcmSimulationResultPage.verifyTableData(
+        './tests/assets/stdcm/stdcm-without-all-via.json'
+      );
+      await stdcmSimulationResultPage.displayAllOperationalPoints();
+      await stdcmSimulationResultPage.verifyTableData(
+        './tests/assets/stdcm/stdcm-with-all-via.json'
+      );
     });
 
     await test.step('Retain & download simulation PDF', async () => {
-      await simulationResultPage.retainSimulation();
+      await stdcmSimulationResultPage.retainSimulation();
       downloadDir = testInfo.outputDir;
-      await simulationResultPage.downloadSimulation(downloadDir);
+      await stdcmSimulationResultPage.downloadSimulation(downloadDir);
     });
 
     await test.step('Start a new query and verify fields are reset', async () => {
       const [newPage] = await Promise.all([
         context.waitForEvent('page'),
-        simulationResultPage.startNewQuery(),
+        stdcmSimulationResultPage.startNewQuery(),
       ]);
       await newPage.waitForLoadState();
 

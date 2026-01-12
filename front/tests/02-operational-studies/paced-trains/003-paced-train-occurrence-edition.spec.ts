@@ -14,13 +14,7 @@ import {
   EXCEPTION_ACTIVE_OCCURRENCE_MENU_BUTTONS,
   INITIAL_OCCURRENCE_NAME,
 } from '../../assets/paced-train/const';
-import test from '../../logging-fixture';
-import OperationalStudiesPage from '../../pages/operational-studies/operational-studies-page';
-import PacedTrainSection from '../../pages/operational-studies/paced-train-section';
-import RouteTab from '../../pages/operational-studies/route-tab';
-import SimulationSettingsTab from '../../pages/operational-studies/simulation-settings-tab';
-import TimesAndStopsTab from '../../pages/operational-studies/times-and-stops-tab';
-import RollingStockSelector from '../../pages/rolling-stock/rolling-stock-selector';
+import test from '../../page-object-fixture';
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
 import { getInfra, getProject, getStudy } from '../../utils/api-utils';
 import readJsonFile from '../../utils/file-utils';
@@ -57,13 +51,6 @@ test.describe('@op @paced-trains @exceptions', () => {
   let study: Study;
   let infra: Infra;
 
-  let operationalStudiesPage: OperationalStudiesPage;
-  let pacedTrainSection: PacedTrainSection;
-  let rollingStockSelector: RollingStockSelector;
-  let routeTab: RouteTab;
-  let timesAndStopsTab: TimesAndStopsTab;
-  let simulationSettingsTab: SimulationSettingsTab;
-
   let scenarioItems: Scenario;
 
   test.beforeAll('Setup project, study, infra and create scenario with paced trains', async () => {
@@ -84,22 +71,6 @@ test.describe('@op @paced-trains @exceptions', () => {
   test.beforeEach(
     'Navigate to scenario page and wait for infrastructure to be loaded',
     async ({ page }) => {
-      [
-        pacedTrainSection,
-        operationalStudiesPage,
-        rollingStockSelector,
-        routeTab,
-        timesAndStopsTab,
-        simulationSettingsTab,
-      ] = [
-        new PacedTrainSection(page),
-        new OperationalStudiesPage(page),
-        new RollingStockSelector(page),
-        new RouteTab(page),
-        new TimesAndStopsTab(page),
-        new SimulationSettingsTab(page),
-      ];
-
       await page.goto(
         `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
       );
@@ -112,7 +83,7 @@ test.describe('@op @paced-trains @exceptions', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('Edit an indexed occurrence', async () => {
+  test('Edit an indexed occurrence', async ({ pacedTrainSection, operationalStudiesPage }) => {
     await test.step('Open paced train and check initial menu (first occurrence)', async () => {
       await pacedTrainSection.expandPacedTrainOccurrenceList(0);
       await pacedTrainSection.checkOccurrenceMenuIcon(0);
@@ -175,7 +146,14 @@ test.describe('@op @paced-trains @exceptions', () => {
   });
 
   /** *************** Test 2 **************** */
-  test('Edit added exception', async () => {
+  test('Edit added exception', async ({
+    pacedTrainSection,
+    operationalStudiesPage,
+    rollingStockSelector,
+    timesAndStopsTab,
+    routeTab,
+    simulationSettingsTab,
+  }) => {
     const PACED_TRAIN_NUMBER = 4;
     const addedOccurrenceIndex = 1;
     const editedPacedTrainData = pacedTrainsJson[PACED_TRAIN_NUMBER];

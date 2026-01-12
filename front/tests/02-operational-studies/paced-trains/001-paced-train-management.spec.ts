@@ -14,15 +14,7 @@ import {
   TOTAL_PACED_TRAINS,
   TOTAL_PACED_TRAINS_WITH_DUPLICATE,
 } from '../../assets/constants/timetable-items-count';
-import test from '../../logging-fixture';
-import OperationalStudiesPage from '../../pages/operational-studies/operational-studies-page';
-import PacedTrainSection from '../../pages/operational-studies/paced-train-section';
-import RouteTab from '../../pages/operational-studies/route-tab';
-import ScenarioTimetableSection from '../../pages/operational-studies/scenario-timetable-section';
-import OpSimulationResultPage from '../../pages/operational-studies/simulation-results-page';
-import TimeAndStopSimulationOutputs from '../../pages/operational-studies/time-stop-simulation-outputs';
-import TimesAndStopsTab from '../../pages/operational-studies/times-and-stops-tab';
-import RollingStockSelector from '../../pages/rolling-stock/rolling-stock-selector';
+import test from '../../page-object-fixture';
 import { waitForInfraStateToBeCached } from '../../utils';
 import { getInfra } from '../../utils/api-utils';
 import { cleanWhitespace } from '../../utils/data-normalizer';
@@ -71,15 +63,6 @@ const expectedOutputData: StationData[] = readJsonFile(
 const pacedTrainsJson = readJsonFile<[PacedTrain]>('./tests/assets/paced-train/paced_trains.json');
 
 test.describe('@op @paced-trains', () => {
-  let rollingstockSelector: RollingStockSelector;
-  let operationalStudiesPage: OperationalStudiesPage;
-  let scenarioTimetableSection: ScenarioTimetableSection;
-  let routeTab: RouteTab;
-  let pacedTrainSection: PacedTrainSection;
-  let timesAndStopsTab: TimesAndStopsTab;
-  let simulationResultPage: OpSimulationResultPage;
-  let timeAndStopSimulationOutputs: TimeAndStopSimulationOutputs;
-
   let project: Project;
   let study: Study;
   let scenario: Scenario;
@@ -97,26 +80,6 @@ test.describe('@op @paced-trains', () => {
   test.beforeEach(
     'Navigate to scenario page and wait for infrastructure to be loaded',
     async ({ page }) => {
-      [
-        rollingstockSelector,
-        operationalStudiesPage,
-        scenarioTimetableSection,
-        routeTab,
-        pacedTrainSection,
-        timesAndStopsTab,
-        simulationResultPage,
-        timeAndStopSimulationOutputs,
-      ] = [
-        new RollingStockSelector(page),
-        new OperationalStudiesPage(page),
-        new ScenarioTimetableSection(page),
-        new RouteTab(page),
-        new PacedTrainSection(page),
-        new TimesAndStopsTab(page),
-        new OpSimulationResultPage(page),
-        new TimeAndStopSimulationOutputs(page),
-      ];
-
       await page.goto(
         `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
       );
@@ -125,7 +88,7 @@ test.describe('@op @paced-trains', () => {
   );
 
   /** *************** Test 1 **************** */
-  test('Verify default behaviors with paced train mode', async () => {
+  test('Verify default behaviors with paced train mode', async ({ operationalStudiesPage }) => {
     await test.step('Open timetable item form', async () => {
       await operationalStudiesPage.openTimetableItemForm();
     });
@@ -148,7 +111,17 @@ test.describe('@op @paced-trains', () => {
   });
 
   /** *************** Test 2 **************** */
-  test('@smoke Add a paced train and verify its timetable details', async ({ browserName }) => {
+  test('@smoke Add a paced train and verify its timetable details', async ({
+    browserName,
+    operationalStudiesPage,
+    rollingStockSelector,
+    routeTab,
+    timesAndStopsTab,
+    scenarioTimetableSection,
+    pacedTrainSection,
+    opSimulationResultPage,
+    timeAndStopSimulationOutputs,
+  }) => {
     await test.step('Open timetable item form', async () => {
       await operationalStudiesPage.openTimetableItemForm();
     });
@@ -158,7 +131,7 @@ test.describe('@op @paced-trains', () => {
     });
 
     await test.step('Select rolling stock', async () => {
-      await rollingstockSelector.selectRollingStock(dualModeRollingStockName);
+      await rollingStockSelector.selectRollingStock(dualModeRollingStockName);
     });
 
     await test.step('Select itinerary and verify distance', async () => {
@@ -203,9 +176,9 @@ test.describe('@op @paced-trains', () => {
 
     await test.step('Open first occurrence and verify its simulation results (screenshot comparison for the GEV)', async () => {
       await pacedTrainSection.selectOccurrence({ pacedTrainIndex: 0, occurrenceIndex: 0 });
-      await simulationResultPage.setTrainListVisible();
+      await opSimulationResultPage.setTrainListVisible();
       if (browserName === 'chromium') {
-        await expect(simulationResultPage.speedSpaceChart).toHaveScreenshot(
+        await expect(opSimulationResultPage.speedSpaceChart).toHaveScreenshot(
           'SpeedSpaceChart-InitialInputs.png'
         );
       }
@@ -214,7 +187,12 @@ test.describe('@op @paced-trains', () => {
   });
 
   /** *************** Test 3 **************** */
-  test('Duplicate and delete a paced train', async ({ page }) => {
+  test('Duplicate and delete a paced train', async ({
+    page,
+    scenarioTimetableSection,
+    pacedTrainSection,
+    operationalStudiesPage,
+  }) => {
     await test.step('Set paced trains via API and reload to initialize list', async () => {
       await sendTrains(scenario.timetable_id, pacedTrainsJson);
       await page.reload();

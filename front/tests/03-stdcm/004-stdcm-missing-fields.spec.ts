@@ -7,12 +7,7 @@ import {
   REMOVED_MISSING_FIELDS_KEYS,
 } from './../assets/constants/missing-fields';
 import { electricRollingStockName } from './../assets/constants/project-const';
-import test from './../logging-fixture';
-import ConsistSection from './../pages/stdcm/consist-section';
-import DestinationSection from './../pages/stdcm/destination-section';
-import OriginSection from './../pages/stdcm/origin-section';
-import SimulationResultPage from './../pages/stdcm/simulation-results-page';
-import STDCMPage from './../pages/stdcm/stdcm-page';
+import test from './../page-object-fixture';
 import { waitForInfraStateToBeCached } from './../utils';
 import { getInfra } from './../utils/api-utils';
 import readJsonFile from './../utils/file-utils';
@@ -21,11 +16,6 @@ import type { StdcmTranslations } from './../utils/types';
 const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');
 
 test.describe('@stdcm @stdcm-missing-fields', () => {
-  let stdcmPage: STDCMPage;
-  let consistSection: ConsistSection;
-  let originSection: OriginSection;
-  let destinationSection: DestinationSection;
-  let simulationResultPage: SimulationResultPage;
   let infra: Infra;
 
   test.beforeAll('Fetch infrastructure', async () => {
@@ -33,20 +23,18 @@ test.describe('@stdcm @stdcm-missing-fields', () => {
   });
 
   test.beforeEach('Navigate to the STDCM page', async ({ page }) => {
-    [stdcmPage, consistSection, originSection, destinationSection, simulationResultPage] = [
-      new STDCMPage(page),
-      new ConsistSection(page),
-      new OriginSection(page),
-      new DestinationSection(page),
-      new SimulationResultPage(page),
-    ];
-
     await page.goto('/stdcm');
     await waitForInfraStateToBeCached(infra.id);
   });
 
   /** *************** Test 1 **************** */
-  test('Verify missing fields warnings when launching simulation', async () => {
+  test('Verify missing fields warnings when launching simulation', async ({
+    stdcmPage,
+    consistSection,
+    originSection,
+    destinationSection,
+    stdcmSimulationResultPage,
+  }) => {
     await test.step('Launch simulation with all fields empty → expect all missing field warnings', async () => {
       const allMissingLabels = getFieldsLabel(ALL_MISSING_FIELDS_KEY, frTranslations);
       await stdcmPage.verifyInvalidSimulationLaunch();
@@ -72,7 +60,7 @@ test.describe('@stdcm @stdcm-missing-fields', () => {
       );
       await stdcmPage.verifyValidSimulationLaunch();
       await stdcmPage.expectWarningBoxHidden();
-      await simulationResultPage.verifySimulationDetails({
+      await stdcmSimulationResultPage.verifySimulationDetails({
         simulationIndex: 0,
         simulationLengthAndDuration: '51 km — 33min',
         validSimulationNumber: 1,
@@ -112,7 +100,7 @@ test.describe('@stdcm @stdcm-missing-fields', () => {
 
       await stdcmPage.verifyValidSimulationLaunch();
       await stdcmPage.expectWarningBoxHidden();
-      await simulationResultPage.verifySimulationDetails({
+      await stdcmSimulationResultPage.verifySimulationDetails({
         simulationIndex: 1,
         simulationLengthAndDuration: '51 km — 22min',
         validSimulationNumber: 2,

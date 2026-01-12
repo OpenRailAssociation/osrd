@@ -4,9 +4,7 @@ import {
   timetableItemProjectName,
   timetableItemStudyName,
 } from '../../assets/constants/project-const';
-import test from '../../logging-fixture';
-import NGEPage from '../../pages/operational-studies/nge-page';
-import ScenarioTimetableSection from '../../pages/operational-studies/scenario-timetable-section';
+import test from '../../page-object-fixture';
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
 import { getInfra, getProject, getStudy } from '../../utils/api-utils';
 import readJsonFile from '../../utils/file-utils';
@@ -24,11 +22,6 @@ const frTranslations: TimetableFilterTranslations = readJsonFile<{
 }>('public/locales/fr/operational-studies.json').main;
 
 test.describe('@op @nge', () => {
-  test.use({ ignorePageErrors: true });
-
-  let ngePage: NGEPage;
-  let scenarioTimetableSection: ScenarioTimetableSection;
-
   let project: Project;
   let study: Study;
   let scenarioItems: Scenario;
@@ -40,10 +33,7 @@ test.describe('@op @nge', () => {
     infra = await getInfra();
   });
 
-  test.beforeEach('Open scenario and enable only macro view', async ({ page }) => {
-    ngePage = new NGEPage(page);
-    scenarioTimetableSection = new ScenarioTimetableSection(page);
-
+  test.beforeEach('Open scenario and enable only macro view', async ({ page, ngePage }) => {
     // scenario header is persisted in local storage, clear it before loading the scenario
     await page.addInitScript(() => {
       window.localStorage.clear();
@@ -70,7 +60,7 @@ test.describe('@op @nge', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('Verify NGE train data', async () => {
+  test('Verify NGE train data', async ({ ngePage }) => {
     await test.step('Verify nodes displayed on NGE graph', async () => {
       await ngePage.expectNodes(['SWS/BV', 'MWS/BV', 'MES/BV']);
     });
@@ -113,7 +103,7 @@ test.describe('@op @nge', () => {
   });
 
   /** *************** Test 2 **************** */
-  test('Delete a train from train list', async ({ page }) => {
+  test('Delete a train from train list', async ({ page, scenarioTimetableSection, ngePage }) => {
     await test.step('Delete train from timetable list', async () => {
       await scenarioTimetableSection.deleteTimetableItem();
     });
@@ -136,7 +126,7 @@ test.describe('@op @nge', () => {
   });
 
   /** *************** Test 3 **************** */
-  test('Delete a train from NGE', async ({ page }) => {
+  test('Delete a train from NGE', async ({ page, ngePage, scenarioTimetableSection }) => {
     await test.step('Delete first node via dialog (expect 2 nodes, 1 line)', async () => {
       await ngePage.deleteNodeByIndexViaDialog(0, { nodes: 2, lines: 1 });
     });

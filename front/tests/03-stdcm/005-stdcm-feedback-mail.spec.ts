@@ -1,14 +1,8 @@
-import { test } from '@playwright/test';
-
 import type { Infra } from 'common/api/osrdEditoastApi';
 
 import getMailFeedbackData from './../assets/constants/mail-feedback-const';
 import { electricRollingStockName } from './../assets/constants/project-const';
-import ConsistSection from './../pages/stdcm/consist-section';
-import DestinationSection from './../pages/stdcm/destination-section';
-import OriginSection from './../pages/stdcm/origin-section';
-import SimulationResultPage from './../pages/stdcm/simulation-results-page';
-import STDCMPage from './../pages/stdcm/stdcm-page';
+import test from './../page-object-fixture';
 import { waitForInfraStateToBeCached } from './../utils';
 import { getInfra } from './../utils/api-utils';
 import type { ConsistFields } from './../utils/types';
@@ -28,11 +22,6 @@ const tractionEnginePrefilledValues = {
 };
 
 test.describe('@stdcm @stdcm-feedback', () => {
-  let stdcmPage: STDCMPage;
-  let consistSection: ConsistSection;
-  let originSection: OriginSection;
-  let destinationSection: DestinationSection;
-  let simulationResultPage: SimulationResultPage;
   let infra: Infra;
 
   test.beforeAll('Fetch infrastructure', async () => {
@@ -40,19 +29,18 @@ test.describe('@stdcm @stdcm-feedback', () => {
   });
 
   test.beforeEach('Navigate to the STDCM page', async ({ page }) => {
-    [stdcmPage, consistSection, originSection, destinationSection, simulationResultPage] = [
-      new STDCMPage(page),
-      new ConsistSection(page),
-      new OriginSection(page),
-      new DestinationSection(page),
-      new SimulationResultPage(page),
-    ];
     await page.goto('/stdcm');
     await waitForInfraStateToBeCached(infra.id);
   });
 
   /** *************** Test 1 **************** */
-  test('Verify feedback card visibility and mail redirection', async () => {
+  test('Verify feedback card visibility and mail redirection', async ({
+    stdcmPage,
+    consistSection,
+    originSection,
+    destinationSection,
+    stdcmSimulationResultPage,
+  }) => {
     await test.step('Fill consist with traction engine details and verify prefilled values', async () => {
       await consistSection.fillAndVerifyConsistDetails(
         consistDetails,
@@ -69,7 +57,7 @@ test.describe('@stdcm @stdcm-feedback', () => {
 
     await test.step('Launch simulation and verify simulation details', async () => {
       await stdcmPage.verifyValidSimulationLaunch();
-      await simulationResultPage.verifySimulationDetails({
+      await stdcmSimulationResultPage.verifySimulationDetails({
         simulationIndex: 0,
         simulationLengthAndDuration: '51 km — 33min',
         validSimulationNumber: 1,
@@ -77,12 +65,16 @@ test.describe('@stdcm @stdcm-feedback', () => {
     });
 
     await test.step('Verify feedback card is visible', async () => {
-      await simulationResultPage.verifyFeedbackCardVisibility();
+      await stdcmSimulationResultPage.verifyFeedbackCardVisibility();
     });
 
     await test.step('Verify mail redirection from feedback card', async () => {
       const { expectedSubject, expectedBody, expectedMail } = getMailFeedbackData();
-      await simulationResultPage.verifyMailRedirection(expectedSubject, expectedBody, expectedMail);
+      await stdcmSimulationResultPage.verifyMailRedirection(
+        expectedSubject,
+        expectedBody,
+        expectedMail
+      );
     });
   });
 });

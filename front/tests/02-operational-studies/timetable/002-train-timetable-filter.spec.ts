@@ -24,8 +24,7 @@ import {
   VALID_TIMETABLE_ITEMS,
   VALID_PACED_TRAINS,
 } from '../../assets/constants/timetable-items-count';
-import test from '../../logging-fixture';
-import ScenarioTimetableSection from '../../pages/operational-studies/scenario-timetable-section';
+import test from '../../page-object-fixture';
 import { waitForInfraStateToBeCached } from '../../utils';
 import { getInfra, getProject, getScenario, getStudy } from '../../utils/api-utils';
 import readJsonFile from '../../utils/file-utils';
@@ -42,8 +41,6 @@ const frTranslations = {
 };
 
 test.describe('@op @timetable-items @filter', () => {
-  let scenarioTimetableSection: ScenarioTimetableSection;
-
   let project: Project;
   let study: Study;
   let scenario: Scenario;
@@ -59,8 +56,6 @@ test.describe('@op @timetable-items @filter', () => {
   test.beforeEach(
     'Navigate to scenario page and wait for infrastructure to be loaded',
     async ({ page }) => {
-      scenarioTimetableSection = new ScenarioTimetableSection(page);
-
       await page.goto(
         `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
       );
@@ -69,7 +64,7 @@ test.describe('@op @timetable-items @filter', () => {
   );
 
   /** *************** Test 1 **************** */
-  test('Filtering imported timetable items', async () => {
+  test('Filtering imported timetable items', async ({ scenarioTimetableSection }) => {
     await test.step('Verify totals and default filter UI', async () => {
       await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
         totalPacedTrainCount: TOTAL_PACED_TRAINS,

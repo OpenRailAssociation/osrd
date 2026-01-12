@@ -1,5 +1,3 @@
-import type { Page } from '@playwright/test';
-
 import type {
   Scenario,
   Project,
@@ -13,11 +11,7 @@ import {
   timetableItemProjectName,
   timetableItemStudyName,
 } from '../../assets/constants/project-const';
-import test from '../../logging-fixture';
-import OperationalStudiesPage from '../../pages/operational-studies/operational-studies-page';
-import PacedTrainSection from '../../pages/operational-studies/paced-train-section';
-import ScenarioTimetableSection from '../../pages/operational-studies/scenario-timetable-section';
-import StudyPage from '../../pages/operational-studies/study-page';
+import test from '../../page-object-fixture';
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
 import { getInfra, getProject, getStudy } from '../../utils/api-utils';
 import readJsonFile from '../../utils/file-utils';
@@ -58,14 +52,6 @@ test.skip(
 );
 
 test.describe('@op @multi-tab-sync', () => {
-  let firstPage: Page;
-  let secondPage: Page;
-  let firstTimetableSection: ScenarioTimetableSection;
-  let secondTimetableSection: ScenarioTimetableSection;
-  let pacedTrainSection: PacedTrainSection;
-  let studyPage: StudyPage;
-  let operationalStudiesPage: OperationalStudiesPage;
-
   let project: Project;
   let study: Study;
   let scenario: Scenario;
@@ -97,35 +83,34 @@ test.describe('@op @multi-tab-sync', () => {
   );
 
   test.afterAll('Close pages', async () => {
-    await firstPage.close();
-    await secondPage.close();
     await deleteScenario(study.id, scenario.name);
   });
 
   /** *************** Test 1 **************** */
-  test('Reflects updates across tabs', async ({ context }) => {
+  test('Reflects updates across tabs', async ({
+    page,
+    secondPage,
+    scenarioTimetableSection,
+    pacedTrainSection,
+    studyPage,
+    secondScenarioTimetableSection,
+    secondOperationalStudiesPage,
+  }) => {
     const scenarioUrl = `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`;
 
     await test.step('Open first tab on scenario page and wait infra cache', async () => {
-      firstPage = await context.newPage();
-      await firstPage.goto(scenarioUrl);
-      firstTimetableSection = new ScenarioTimetableSection(firstPage);
-      pacedTrainSection = new PacedTrainSection(firstPage);
-      studyPage = new StudyPage(firstPage);
+      await page.goto(scenarioUrl);
       await waitForInfraStateToBeCached(infra.id);
     });
 
     await test.step('Open second tab on same scenario page', async () => {
-      secondPage = await context.newPage();
       await secondPage.goto(scenarioUrl);
-      secondTimetableSection = new ScenarioTimetableSection(secondPage);
-      operationalStudiesPage = new OperationalStudiesPage(secondPage);
     });
 
     await test.step('Delete a paced train in first tab and verify counts', async () => {
-      await firstPage.bringToFront();
+      await page.bringToFront();
       await pacedTrainSection.deletePacedTrain(1, frTranslations);
-      await firstTimetableSection.verifyTotalItemsLabel(frTranslations, {
+      await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
         totalPacedTrainCount: 1,
         totalTrainScheduleCount: 2,
       });
@@ -133,26 +118,26 @@ test.describe('@op @multi-tab-sync', () => {
 
     await test.step('Verify deletion is reflected in second tab', async () => {
       await secondPage.bringToFront();
-      await secondTimetableSection.verifyTotalItemsLabel(frTranslations, {
+      await secondScenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
         totalPacedTrainCount: 1,
         totalTrainScheduleCount: 2,
       });
     });
 
     await test.step('Edit a train schedule in second tab and verify the update', async () => {
-      await secondTimetableSection.editTimetableItem(1);
-      await operationalStudiesPage.setFormattedStartTime('2025-03-15T08:35:40');
-      await operationalStudiesPage.submitTimetableItemEdit();
-      await secondTimetableSection.getTimetableItemArrivalTime('08:43', 1);
+      await secondScenarioTimetableSection.editTimetableItem(1);
+      await secondOperationalStudiesPage.setFormattedStartTime('2025-03-15T08:35:40');
+      await secondOperationalStudiesPage.submitTimetableItemEdit();
+      await secondScenarioTimetableSection.getTimetableItemArrivalTime('08:43', 1);
     });
 
     await test.step('Confirm edit is synchronized back in first tab', async () => {
-      await firstPage.bringToFront();
-      await firstTimetableSection.getTimetableItemArrivalTime('08:43', 1);
+      await page.bringToFront();
+      await scenarioTimetableSection.getTimetableItemArrivalTime('08:43', 1);
     });
 
     await test.step('Go to study page in first tab, verify train count, delete scenario', async () => {
-      await firstPage.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
+      await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
       await studyPage.verifyScenarioTrainCount(scenario.name, '3');
       await studyPage.deleteScenario(scenario.name);
     });
@@ -160,7 +145,7 @@ test.describe('@op @multi-tab-sync', () => {
     await test.step('Reload second tab and verify scenario is gone', async () => {
       await secondPage.bringToFront();
       await secondPage.reload();
-      await operationalStudiesPage.expectResourceNotFoundPage();
+      await secondOperationalStudiesPage.expectResourceNotFoundPage();
     });
   });
 });

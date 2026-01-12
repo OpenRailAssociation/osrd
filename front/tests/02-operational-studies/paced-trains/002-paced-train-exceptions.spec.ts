@@ -9,11 +9,7 @@ import {
   timetableItemStudyName,
 } from '../../assets/constants/project-const';
 import { ADDED_EXCEPTION_MENU_BUTTONS } from '../../assets/paced-train/const';
-import test from '../../logging-fixture';
-import OperationalStudiesPage from '../../pages/operational-studies/operational-studies-page';
-import PacedTrainSection from '../../pages/operational-studies/paced-train-section';
-import ScenarioTimetableSection from '../../pages/operational-studies/scenario-timetable-section';
-import RollingStockSelector from '../../pages/rolling-stock/rolling-stock-selector';
+import test from '../../page-object-fixture';
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
 import { getInfra, getProject, getStudy } from '../../utils/api-utils';
 import readJsonFile from '../../utils/file-utils';
@@ -50,11 +46,6 @@ test.describe('@op @paced-trains @exceptions', () => {
   let study: Study;
   let infra: Infra;
 
-  let scenarioTimetableSection: ScenarioTimetableSection;
-  let operationalStudiesPage: OperationalStudiesPage;
-  let pacedTrainSection: PacedTrainSection;
-  let rollingStockSelector: RollingStockSelector;
-
   let scenarioItems: Scenario;
 
   test.beforeAll('Setup project, study, infra and create scenario with paced trains', async () => {
@@ -75,14 +66,6 @@ test.describe('@op @paced-trains @exceptions', () => {
   test.beforeEach(
     'Navigate to scenario page and wait for infrastructure to be loaded',
     async ({ page }) => {
-      [pacedTrainSection, scenarioTimetableSection, operationalStudiesPage, rollingStockSelector] =
-        [
-          new PacedTrainSection(page),
-          new ScenarioTimetableSection(page),
-          new OperationalStudiesPage(page),
-          new RollingStockSelector(page),
-        ];
-
       await page.goto(
         `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
       );
@@ -95,7 +78,12 @@ test.describe('@op @paced-trains @exceptions', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('@smoke Edit a paced train and handle exceptions', async () => {
+  test('@smoke Edit a paced train and handle exceptions', async ({
+    pacedTrainSection,
+    scenarioTimetableSection,
+    rollingStockSelector,
+    operationalStudiesPage,
+  }) => {
     const editedPacedTrainData = pacedTrainsJson[5];
 
     await test.step('Open action buttons for paced train at index 5', async () => {
@@ -213,7 +201,11 @@ test.describe('@op @paced-trains @exceptions', () => {
   });
 
   /** *************** Test 2 **************** */
-  test('Modify a paced train and create added exception', async () => {
+  test('Modify a paced train and create added exception', async ({
+    pacedTrainSection,
+    scenarioTimetableSection,
+    operationalStudiesPage,
+  }) => {
     const editedPacedTrainData = pacedTrainsJson[1];
 
     await test.step('Edit paced train at index 1', async () => {
