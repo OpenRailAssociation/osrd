@@ -6,6 +6,7 @@ use utoipa::ToSchema;
 use super::BufferStop;
 use super::Detector;
 use super::Electrification;
+use super::LevelCrossing;
 use super::NeutralSection;
 use super::OperationalPoint;
 use super::Route;
@@ -47,6 +48,8 @@ pub struct RailJson {
     pub buffer_stops: Vec<BufferStop>,
     /// `Detector` is a device that identifies the presence of a train in a TVD section (Track Vacancy Detection section), indicating when a track area is occupied.
     pub detectors: Vec<Detector>,
+    /// `LevelCrossing` is an intersections where a railway line crosses a road
+    pub level_crossings: Vec<LevelCrossing>,
 }
 
 pub fn major_version(version: &str) -> &str {

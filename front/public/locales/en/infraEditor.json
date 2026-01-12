@@ -254,6 +254,49 @@
   "FlagSignalParameter": {
     "title": "Flag signal parameter"
   },
+  "LevelCrossing": {
+    "description": "This class describes the level crossings of the corresponding infra.",
+    "properties": {
+      "id": {
+        "description": "Unique identifier of the object",
+        "title": "Id"
+      },
+      "name": {
+        "description": "Name of the level crossing",
+        "title": "Name"
+      },
+      "parts": {
+        "title": "Parts"
+      },
+      "short_zone_length": {
+        "description": "Length of the short zone in mm",
+        "title": "Short zone length"
+      }
+    },
+    "title": "Level crossing"
+  },
+  "LevelCrossingPart": {
+    "description": "Level crossing part is a single point on the infrastructure.\nIt holds information about pedal offsets relative to this point.\nIt's linked to a level crossing.",
+    "properties": {
+      "pedal_downstream": {
+        "description": "Offset in mm of the downstream pedal from the main position",
+        "title": "Pedal downstream"
+      },
+      "pedal_upstream": {
+        "description": "Offset in mm of the upstream pedal from the main position",
+        "title": "Pedal upstream"
+      },
+      "position": {
+        "description": "Offset of the point in meters to the beginning of the track section",
+        "title": "Position"
+      },
+      "track": {
+        "description": "Reference to the track section on which the object is located",
+        "title": "Track"
+      }
+    },
+    "title": "Level crossing part"
+  },
   "LimitedLogicalSignal": {
     "description": "Limited list of logical signals. Used to generate a usable schema for the front editor",
     "title": "Limited logical signal"
@@ -953,6 +996,10 @@
     "extended_switch_types": {
       "description": "Switch types of the infra that can be added by the user",
       "title": "Extended switch types"
+    },
+    "level_crossings": {
+      "description": "List of level crossings of the corresponding infra",
+      "title": "Level crossings"
     },
     "neutral_sections": {
       "description": "Neutral sections of the infra",
