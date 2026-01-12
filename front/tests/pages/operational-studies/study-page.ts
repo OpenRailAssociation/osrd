@@ -5,63 +5,34 @@ import CommonPage from '../common-page';
 
 class StudyPage extends CommonPage {
   private readonly studyUpdateButton: Locator;
-
   private readonly studyName: Locator;
-
   private readonly studyDescription: Locator;
-
   private readonly studyState: Locator;
-
   private readonly studyType: Locator;
-
   private readonly studyServiceCodeInfo: Locator;
-
   private readonly studyBusinessCodeInfo: Locator;
-
   private readonly studyFinancialAmount: Locator;
-
   private readonly studyTags: Locator;
-
   private readonly addStudyButton: Locator;
-
   private readonly studyUpdateConfirmButton: Locator;
-
   private readonly studyInputName: Locator;
-
   private readonly studyTypeSelect: Locator;
-
   private readonly studyStatusSelect: Locator;
-
   private readonly studyDescriptionInput: Locator;
-
   private readonly studyStartDateInput: Locator;
-
   private readonly studyExpectedEndDateInput: Locator;
-
   private readonly studyEndDateInput: Locator;
-
   private readonly studyServiceCodeInput: Locator;
-
   private readonly studyBusinessCodeInput: Locator;
-
   private readonly studyBudgetInput: Locator;
-
   private readonly studyDeleteButton: Locator;
-
   private readonly createStudyButton: Locator;
-
   private readonly studyEditionModal: Locator;
-
   private readonly startDate: Locator;
-
   private readonly expectedEndDate: Locator;
-
   private readonly realEndDate: Locator;
-
   private readonly deleteScenarioButton: Locator;
-
   private readonly confirmDeleteScenarioButton: Locator;
-
   private readonly studyConfirmDeleteButton: Locator;
 
   constructor(page: Page) {

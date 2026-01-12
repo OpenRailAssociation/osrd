@@ -6,37 +6,21 @@ import HomePage from '../home-page';
 
 class ProjectPage extends HomePage {
   private readonly projectNameLabel: Locator;
-
   private readonly updateProjectButton: Locator;
-
   private readonly projectDescriptionLabel: Locator;
-
   private readonly projectObjectivesLabel: Locator;
-
   private readonly projectFinancialInfoLabel: Locator;
-
   private readonly projectFinancialAmountLabel: Locator;
-
   private readonly projectTagsLabel: Locator;
-
   private readonly addProjectButton: Locator;
-
   private readonly projectNameInput: Locator;
-
   private readonly projectDescriptionInput: Locator;
-
   private readonly projectObjectiveInput: Locator;
-
   private readonly projectFunderInput: Locator;
-
   private readonly projectBudgetInput: Locator;
-
   private readonly updateConfirmButton: Locator;
-
   private readonly projectDeleteButton: Locator;
-
   private readonly createProjectButton: Locator;
-
   private readonly projectConfirmDeleteButton: Locator;
 
   constructor(page: Page) {

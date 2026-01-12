@@ -6,17 +6,11 @@ import type { ConsistFields } from '../../utils/types';
 
 class ConsistSection {
   readonly page: Page;
-
   private readonly tractionEngineField: Locator;
-
   private readonly towedRollingStockField: Locator;
-
   private readonly tonnageField: Locator;
-
   private readonly lengthField: Locator;
-
   private readonly speedLimitTagField: Locator;
-
   private readonly maxSpeedField: Locator;
 
   constructor(page: Page) {

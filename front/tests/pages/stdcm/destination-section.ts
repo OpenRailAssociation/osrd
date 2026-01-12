@@ -13,27 +13,16 @@ const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.
 
 class DestinationSection extends STDCMPage {
   private readonly destinationChField: Locator;
-
   private readonly destinationCiField: Locator;
-
   readonly destinationArrival: Locator;
-
   readonly dateDestinationArrival: Locator;
-
   readonly timeDestinationArrival: Locator;
-
   readonly toleranceDestinationArrival: Locator;
-
   readonly dynamicDestinationCh: Locator;
-
   readonly dynamicDestinationCi: Locator;
-
   private readonly suggestionSS: Locator;
-
   private readonly closeDestinationTimePickerButton: Locator;
-
   private readonly clearButton: Locator;
-
   private readonly destinationIncrementTimeButton: Locator;
 
   constructor(page: Page) {

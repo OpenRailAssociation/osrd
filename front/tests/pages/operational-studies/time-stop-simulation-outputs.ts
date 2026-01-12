@@ -11,7 +11,6 @@ const frTranslations = readJsonFile<Record<string, FlatTranslations>>(
 class TimeAndStopSimulationOutputs {
   readonly page: Page;
   private readonly columnHeaders: Locator;
-
   private readonly tableRows: Locator;
 
   constructor(page: Page) {

@@ -10,13 +10,9 @@ const frTranslations = readJsonFile<Record<string, FlatTranslations>>(
 
 class TimesAndStopsTab {
   private readonly page: Page;
-
   readonly columnHeaders: Locator;
-
   private readonly activeRows: Locator;
-
   private readonly tableRows: Locator;
-
   private readonly clearButtons: Locator;
 
   constructor(page: Page) {

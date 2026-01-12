@@ -1,6 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import OperationalStudiesPage from './operational-studies/operational-studies-page';
+import OperationalStudiesPage from './operational-studies-page';
 
 class ImportPage extends OperationalStudiesPage {
   private readonly importTimetableItemButton: Locator;

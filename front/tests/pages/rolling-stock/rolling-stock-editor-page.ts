@@ -13,45 +13,25 @@ const frTranslations = readJsonFile<{ rollingStock: RollingStockTranslations }>(
 
 class RollingstockEditorPage extends RollingStockSelector {
   private readonly rollingstockEditorList: Locator;
-
   private readonly rollingstockCard: Locator;
-
   private readonly newRollingstockButton: Locator;
-
   private readonly submitRollingstockButton: Locator;
-
   private readonly rollingstockDetailsButton: Locator;
-
   private readonly speedEffortCurvesButton: Locator;
-
   private readonly rollingStockSpreadsheet: Locator;
-
   private readonly rollingStockSearchInput: Locator;
-
   private readonly powerRestrictionSelector: Locator;
-
   private readonly electricalProfileSelector: Locator;
-
   private readonly loadingGauge: Locator;
-
   private readonly primaryCategorySelector: Locator;
-
   private readonly tractionModeSelector: Locator;
-
   private readonly confirmModalButtonYes: Locator;
-
   private readonly addPowerRestrictionButton: Locator;
-
   private readonly powerRestrictionModalBody: Locator;
-
   private readonly selectedElectricalProfileButton: Locator;
-
   private readonly deleteSelectedElectricalProfileButton: Locator;
-
   private readonly editRollingStockButton: Locator;
-
   private readonly duplicateRollingStockButton: Locator;
-
   private readonly deleteRollingStockButton: Locator;
 
   constructor(page: Page) {

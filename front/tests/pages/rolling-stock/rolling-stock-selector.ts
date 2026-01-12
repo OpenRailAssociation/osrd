@@ -5,41 +5,23 @@ import CommonPage from '../common-page';
 
 class RollingStockSelector extends CommonPage {
   private readonly rollingStockSelectorButton: Locator;
-
   private readonly emptyRollingStockSelector: Locator;
-
   readonly rollingStockSelectorModal: Locator;
-
   private readonly rollingStockModalSearch: Locator;
-
   private readonly rollingStockMiniCards: Locator;
-
   private readonly electricRollingStockFilter: Locator;
-
   private readonly thermalRollingStockFilter: Locator;
-
   private readonly rollingStockSearchResult: Locator;
-
   readonly thermalRollingStockIcons: Locator;
-
   readonly electricRollingStockIcons: Locator;
-
   readonly electricRollingStockFirstIcon: Locator;
-
   readonly thermalRollingStockFirstIcon: Locator;
-
   readonly rollingStockList: Locator;
-
   readonly dualModeRollingStockIcons: Locator;
-
   readonly noRollingStockResult: Locator;
-
   readonly comfortACButton: Locator;
-
   readonly selectedComfortType: Locator;
-
   readonly selectedRollingStockName: Locator;
-
   readonly rollingStockNameTab: Locator;
 
   constructor(page: Page) {

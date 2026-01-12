@@ -19,59 +19,32 @@ const frTranslations: ScenarioTranslations = readJsonFile<{
 
 class ScenarioTimetableSection extends OpSimulationResultPage {
   private readonly invalidTimetableItemsMessage: Locator;
-
   private readonly timetableItems: Locator;
-
   private readonly timetableBoardWrapper: Locator;
-
   private readonly timetableSelectAllButton: Locator;
-
   private readonly timetableSelectOptionsButton: Locator;
-
   private readonly timetableTotalItemLabel: Locator;
-
   private readonly deleteAllTimetableItemsButton: Locator;
-
   private readonly confirmationModalDeleteButton: Locator;
-
   private readonly timetableFilterButton: Locator;
-
   private readonly timetableFilterButtonClose: Locator;
-
   private readonly timetableLabelFilterInputLabel: Locator;
-
   private readonly timetableLabelFilterInput: Locator;
-
   private readonly timetableRollingStockFilterInputLabel: Locator;
-
   private readonly timetableRollingStockFilterInput: Locator;
-
   private readonly timetableValidityFilterSelectLabel: Locator;
-
   private readonly timetableValidityFilterSelect: Locator;
-
   private readonly timetablePunctualityFilterSelectLabel: Locator;
-
   private readonly timetablePunctualityFilterSelect: Locator;
-
   private readonly timetableTrainTypeFilterSelectLabel: Locator;
-
   private readonly timetableTrainTypeFilterSelect: Locator;
-
   private readonly timetableSpeedLimitTagFilterLabel: Locator;
-
   private readonly editItemButton: Locator;
-
   private readonly projectItemButton: Locator;
-
   private readonly deleteItemButton: Locator;
-
   readonly editTimetableItemButton: Locator;
-
   private readonly timetableItemArrivalTime: Locator;
-
   private readonly timetableItemArrivalTimeLoader: Locator;
-
   private readonly invalidTimetableItemsReasons: Locator;
 
   constructor(page: Page) {

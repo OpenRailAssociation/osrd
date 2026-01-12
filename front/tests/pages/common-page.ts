@@ -4,19 +4,12 @@ import { logger } from '../logging-fixture';
 
 class CommonPage {
   readonly page: Page;
-
   readonly toastContainer: Locator;
-
   private readonly toastTitle: Locator;
-
   private readonly tagField: Locator;
-
   private readonly closeToastButton: Locator;
-
   private readonly navigationToHomeButton: Locator;
-
   private readonly navigationBackButton: Locator;
-
   private readonly loader: Locator;
 
   constructor(page: Page) {

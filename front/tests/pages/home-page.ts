@@ -4,21 +4,13 @@ import CommonPage from './common-page';
 
 class HomePage extends CommonPage {
   private readonly operationalStudiesLink: Locator;
-
   private readonly cartoLink: Locator;
-
   private readonly editorLink: Locator;
-
   readonly linksTitle: Locator;
-
   private readonly rollingStockEditorLink: Locator;
-
   private readonly STDCMLink: Locator;
-
   private readonly backHomeLogo: Locator;
-
   private readonly dropDown: Locator;
-
   private readonly OSRDLanguage: Locator;
 
   constructor(page: Page) {

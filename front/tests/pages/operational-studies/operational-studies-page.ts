@@ -12,27 +12,16 @@ import type { ManageTimetableItemTranslations, PacedTrainDetails } from '../../u
 
 class OperationalStudiesPage extends ScenarioTimetableSection {
   private readonly addTimetableItemButton: Locator;
-
   private readonly manageTimetableItemPage: Locator;
-
   private readonly rollingStockTab: Locator;
-
   private readonly routeTab: Locator;
-
   private readonly startTimeField: Locator;
-
   private readonly resultPathfindingDistance: Locator;
-
   private readonly returnSimulationResultButton: Locator;
-
   private readonly definePacedTrainCheckbox: Locator;
-
   private readonly definePacedTrainCheckboxLabel: Locator;
-
   private readonly pacedTrainTimeWindow: Locator;
-
   private readonly pacedTrainIntervalInput: Locator;
-
   private readonly pacedTrainAddException: {
     label: Locator;
     dateInput: Locator;
@@ -40,17 +29,11 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
     button: Locator;
     list: Locator;
   };
-
   private readonly timetableItemNameInput: Locator;
-
   private readonly initialSpeedInput: Locator;
-
   private readonly timetableItemTagsInput: Locator;
-
   private readonly createTimetableItemButton: Locator;
-
   private readonly simulationSettingsTab: Locator;
-
   private readonly timesAndStopsTab: Locator;
 
   constructor(page: Page) {

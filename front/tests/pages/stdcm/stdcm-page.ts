@@ -8,47 +8,26 @@ const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.
 class STDCMPage {
   readonly page: Page;
   private readonly consistCard: Locator;
-
   readonly originCard: Locator;
-
   readonly destinationCard: Locator;
-
   readonly anteriorLinkedTrainContainer: Locator;
-
   readonly anteriorAddLinkedPathButton: Locator;
-
   readonly posteriorLinkedTrainContainer: Locator;
-
   readonly posteriorAddLinkedPathButton: Locator;
-
   readonly addViaButton: Locator;
-
   readonly warningBox: Locator;
-
   private readonly debugButton: Locator;
-
   private readonly mapContainer: Locator;
-
   readonly launchSimulationButton: Locator;
-
   private readonly closeOriginTolerancePickerButton: Locator;
-
   private readonly closeDestinationTolerancePickerButton;
-
   private readonly suggestionList: Locator;
-
   readonly suggestionItems: Locator;
-
   private readonly simulationStatus: Locator;
-
   private readonly originMarker: Locator;
-
   private readonly destinationMarker: Locator;
-
   private readonly viaMarker: Locator;
-
   private readonly helpButton: Locator;
-
   private readonly pathfindingStatusMessage: Locator;
 
   constructor(page: Page) {

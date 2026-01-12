@@ -9,49 +9,27 @@ const frTranslations: FlatTranslations = readJsonFile<{ manageTimetableItem: Fla
 
 class RouteTab {
   readonly page: Page;
-
   private readonly noOriginChosen: Locator;
-
   private readonly noDestinationChosen: Locator;
-
   private readonly searchByTrigramButton: Locator;
-
   private readonly searchByTrigramContainer: Locator;
-
   private readonly searchByTrigramInput: Locator;
-
   private readonly searchByTrigramSubmit: Locator;
-
   private readonly resultPathfindingDone: Locator;
-
   private readonly originInfo: Locator;
-
   private readonly destinationInfo: Locator;
-
   private readonly originDeleteButton: Locator;
-
   private readonly destinationDeleteButton: Locator;
-
   private readonly viaDeleteButton: Locator;
-
   private readonly addWaypointsButton: Locator;
-
   private readonly reverseItineraryButton: Locator;
-
   private readonly deleteItineraryButton: Locator;
-
   readonly droppedWaypoints: Locator;
-
   private readonly waypointSuggestions: Locator;
-
   private readonly viaModal: Locator;
-
   private readonly closeViaModalButton: Locator;
-
   private readonly missingParamMessage: Locator;
-
   private readonly pathfindingLoader: Locator;
-
   private readonly pathfindingInProgressMessage: Locator;
 
   constructor(page: Page) {
@@ -274,7 +252,7 @@ class RouteTab {
   }
 
   // Validate the added waypoints by checking the name, CH, and UIC.
-  static async validateAddedWaypoint(
+  async validateAddedWaypoint(
     droppedWaypoint: Locator,
     expectedName: string,
     expectedCh: string,
@@ -321,7 +299,7 @@ class RouteTab {
       const droppedWaypoint = this.droppedWaypoints.nth(droppedWaypointCount);
       const expectedValue = expectedValues[droppedWaypointCount];
 
-      await RouteTab.validateAddedWaypoint(
+      await this.validateAddedWaypoint(
         droppedWaypoint,
         expectedValue.name,
         expectedValue.ch,

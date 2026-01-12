@@ -2,13 +2,9 @@ import { type Locator, type Page, expect } from '@playwright/test';
 
 class SimulationSettingsTab {
   readonly page: Page;
-
   private readonly electricalProfilesSwitch: Locator;
-
   private readonly linearMarginSwitch: Locator;
-
   private readonly marecoMarginSwitch: Locator;
-
   private readonly speedLimitTagSelector: Locator;
 
   constructor(page: Page) {
