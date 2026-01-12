@@ -205,7 +205,7 @@ data class DistanceRangeMapImpl<T>(
     }
 
     override fun subMap(lower: Distance, upper: Distance): DistanceRangeMap<T> {
-        assert(lower < upper)
+        require(lower < upper)
         val res = this.clone()
         res.truncate(lower, upper)
         return res
@@ -400,7 +400,7 @@ data class DistanceRangeMapImpl<T>(
 
     /** Asserts that the internal state is consistent */
     private fun validate() {
-        assert(bounds.size == values.size + 1 || (bounds.size == 0 && values.isEmpty()))
+        require(bounds.size == values.size + 1 || (bounds.size == 0 && values.isEmpty()))
     }
 
     companion object {
