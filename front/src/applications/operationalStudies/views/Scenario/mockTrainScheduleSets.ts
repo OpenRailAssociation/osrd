@@ -84,18 +84,12 @@ export const MOCK_TRAIN_SCHEDULE_SETS: TrainScheduleSet[] = [
     const randomTsName = randomArrayElement(TRAINSCHEDULESET_NAMES);
     return {
       id: index,
-      name: randomTsName.name ? `${randomTsName.name} ${index}` : undefined,
+      name: `${randomTsName.name} ${index}`,
       description: randomTsName.description,
       catalog_entry_id: randomArrayElement(MOCK_CATALOG).id,
       published: Math.random() > 0.8,
     };
   }),
-
-  {
-    id: 1000,
-    description: 'Jeu sandbox temporaire utilisé pour tests internes.',
-    published: false,
-  },
 ];
 
 export async function mockListTrainScheduleSet(): Promise<TrainScheduleSet[]> {
