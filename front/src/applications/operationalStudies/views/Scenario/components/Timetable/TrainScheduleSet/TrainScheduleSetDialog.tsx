@@ -155,7 +155,7 @@ const TrainScheduleSetDialog = ({ onCancel }: TrainScheduleSetDialogProps) => {
         </>
       }
       footerClassname={cx('train-schedule-set-dialog-footer', {
-        'with-error': !formError,
+        'with-error': formError,
       })}
     >
       <div className="train-schedule-set-name">

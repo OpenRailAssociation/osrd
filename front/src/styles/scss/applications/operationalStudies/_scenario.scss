@@ -517,7 +517,6 @@
 
         .train-schedule-set-dialog-footer {
           display: flex;
-          justify-content: space-between;
 
           // all the following styles should propbably be modified in osrd-ui
           align-items: center; // instead of align-content
@@ -534,6 +533,7 @@
 
           &.with-error {
             background-color: var(--error5);
+            justify-content: space-between;
           }
 
           .footer-buttons {
