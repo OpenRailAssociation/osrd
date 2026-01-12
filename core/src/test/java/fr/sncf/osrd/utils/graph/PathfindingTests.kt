@@ -1,6 +1,7 @@
 package fr.sncf.osrd.utils.graph
 
 import com.google.common.graph.NetworkBuilder
+import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.graph.Graph
 import fr.sncf.osrd.graph.NetworkGraphAdapter
 import fr.sncf.osrd.pathfinding.BlockLocation
@@ -8,6 +9,7 @@ import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
 import fr.sncf.osrd.pathfinding.Pathfinding.EdgeRange
 import fr.sncf.osrd.pathfinding.Pathfinding.Result
+import fr.sncf.osrd.pathfinding.PathfindingEdge
 import fr.sncf.osrd.pathfinding.PathfindingGraph
 import fr.sncf.osrd.pathfinding.getStartLocations
 import fr.sncf.osrd.pathfinding.getTargetsOnEdges
@@ -29,6 +31,25 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
 class PathfindingTests {
+    private fun runDummyPathfinding(
+        infra: FullInfra,
+        waypoints: ArrayList<Collection<BlockLocation>>,
+    ): Result<PathfindingEdge>? {
+        val mrspBuilder = CachedBlockMRSPBuilder(infra.rawInfra, infra.blockInfra, null)
+        return Pathfinding(PathfindingGraph())
+            .setEdgeToLength { it.length }
+            .setRangeCost { range ->
+                val start = mrspBuilder.getBlockTime(range.edge.block, range.start)
+                val end = mrspBuilder.getBlockTime(range.edge.block, range.end)
+                val res = end - start
+                return@setRangeCost res
+            }
+            .runPathfinding(
+                getStartLocations(infra.rawInfra, infra.blockInfra, waypoints, listOf()),
+                getTargetsOnEdges(waypoints),
+            )
+    }
+
     class SimpleGraphBuilder {
         data class Edge(
             val length: Length<Block>,
@@ -89,25 +110,20 @@ class PathfindingTests {
                    \        /
                     + ->-> +
          */
-        val builder = SimpleGraphBuilder()
-        builder.makeNodes(5)
-        builder.makeEdge(0, 1, 0.meters)
-        builder.makeEdge(1, 2, 10.meters)
-        builder.makeEdge(2, 3, 10.meters)
-        builder.makeEdge(1, 3, 21.meters)
-        builder.makeEdge(3, 4, 0.meters)
-        val g = builder.build()
-        val res =
-            Pathfinding(g)
-                .setEdgeToLength { it.length }
-                .runPathfindingEdgesOnly(
-                    listOf(
-                        listOf(builder.getEdgeLocation("0-1")),
-                        listOf(builder.getEdgeLocation("3-4")),
-                    )
-                )
-        val resIDs = res!!.stream().map { x -> x!!.label }.toList()
-        Assertions.assertEquals(listOf("0-1", "1-2", "2-3", "3-4"), resIDs)
+        val infra = DummyInfra()
+        val block01 = infra.addBlock("0", "1", 0.meters)
+        val block12 = infra.addBlock("1", "2", 10.meters)
+        val block23 = infra.addBlock("2", "3", 10.meters)
+        infra.addBlock("1", "3", 21.meters)
+        val block34 = infra.addBlock("3", "4", 0.meters)
+        val waypoints =
+            arrayListOf<Collection<BlockLocation>>(
+                listOf(BlockLocation(block01, Offset.zero())),
+                listOf(BlockLocation(block34, Offset.zero())),
+            )
+        val res = runDummyPathfinding(infra.fullInfra(), waypoints)
+        val resIDs = res!!.ranges.stream().map { it.edge.block }.toList()
+        Assertions.assertEquals(listOf(block01, block12, block23, block34), resIDs)
     }
 
     @Test
@@ -753,31 +769,12 @@ class PathfindingTests {
         val fast = infra.addBlock("a", "b", 4_999.meters, 50.0)
         val slow = infra.addBlock("x", "b", 100.meters, 1.0)
         val secondBlock = infra.addBlock("b", "c")
-        val mrspBuilder =
-            CachedBlockMRSPBuilder(infra.fullInfra().rawInfra, infra.fullInfra().blockInfra, null)
         val waypoints =
             arrayListOf<Collection<BlockLocation>>(
                 listOf(BlockLocation(slow, Offset.zero()), BlockLocation(fast, Offset.zero())),
                 listOf(BlockLocation(secondBlock, Offset.zero())),
             )
-        val res =
-            Pathfinding(PathfindingGraph())
-                .setEdgeToLength { it.length }
-                .setRangeCost { range ->
-                    val start = mrspBuilder.getBlockTime(range.edge.block, range.start)
-                    val end = mrspBuilder.getBlockTime(range.edge.block, range.end)
-                    val res = end - start
-                    return@setRangeCost res
-                }
-                .runPathfinding(
-                    getStartLocations(
-                        infra.fullInfra().rawInfra,
-                        infra.fullInfra().blockInfra,
-                        waypoints,
-                        listOf(),
-                    ),
-                    getTargetsOnEdges(waypoints),
-                )
+        val res = runDummyPathfinding(infra.fullInfra(), waypoints)
         Assertions.assertEquals(
             arrayListOf(
                 EdgeRange(fast, Offset.zero(), Offset(4999.meters)),
