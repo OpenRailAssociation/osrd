@@ -3213,6 +3213,7 @@ dependencies = [
  "clap",
  "geo-types",
  "geos",
+ "itertools",
  "osm4routing",
  "rstest",
  "schemas",
@@ -3220,6 +3221,7 @@ dependencies = [
  "tempfile",
  "tracing",
  "tracing-subscriber",
+ "uuid",
 ]
 
 [[package]]

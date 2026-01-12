@@ -9,6 +9,9 @@ pub struct OsmToRailjsonArgs {
     pub osm_pbf_in: PathBuf,
     /// Output file in Railjson format
     pub railjson_out: PathBuf,
+    /// Option to generate realistic signals (overrides existing signals)
+    #[arg(long, default_value_t = false)]
+    pub generate_signals: bool,
 }
 
 fn main() {
@@ -17,6 +20,6 @@ fn main() {
         .init();
 
     let args = OsmToRailjsonArgs::parse();
-    osm_to_railjson::osm_to_railjson(args.osm_pbf_in, args.railjson_out)
+    osm_to_railjson::osm_to_railjson(args.osm_pbf_in, args.railjson_out, args.generate_signals)
         .expect("Could not convert osm to railjson");
 }
