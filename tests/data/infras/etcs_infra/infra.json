@@ -1,5 +1,5 @@
 {
-    "version": "3.4.13",
+    "version": "3.5.0",
     "operational_points": [
         {
             "id": "West_station",
@@ -216,6 +216,52 @@
                     "uic": 8788
                 }
             }
+        }
+    ],
+    "level_crossings": [
+        {
+            "id": "lc1",
+            "name": "LC1",
+            "short_zone_length": 2000,
+            "parts": [
+                {
+                    "track": "TB0",
+                    "position": 750.0,
+                    "pedal_upstream": 4000,
+                    "pedal_downstream": 4000
+                }
+            ]
+        },
+        {
+            "id": "lc2",
+            "name": "LC2",
+            "short_zone_length": 1500,
+            "parts": [
+                {
+                    "track": "TC0",
+                    "position": 125.0,
+                    "pedal_upstream": 4000,
+                    "pedal_downstream": 6000
+                },
+                {
+                    "track": "TC1",
+                    "position": 120.0,
+                    "pedal_upstream": 5000,
+                    "pedal_downstream": 5000
+                },
+                {
+                    "track": "TC2",
+                    "position": 110.0,
+                    "pedal_upstream": 5000,
+                    "pedal_downstream": 5000
+                },
+                {
+                    "track": "TC3",
+                    "position": 115.0,
+                    "pedal_upstream": 6000,
+                    "pedal_downstream": 6000
+                }
+            ]
         }
     ],
     "routes": [

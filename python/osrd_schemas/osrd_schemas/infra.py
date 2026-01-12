@@ -8,7 +8,7 @@ from pydantic.fields import FieldInfo
 
 ALL_OBJECT_TYPES = []
 
-RAILJSON_INFRA_VERSION_TYPE = Literal["3.4.13"]
+RAILJSON_INFRA_VERSION_TYPE = Literal["3.5.0"]
 RAILJSON_INFRA_VERSION = get_args(RAILJSON_INFRA_VERSION_TYPE)[0]
 
 # Traits
@@ -599,6 +599,9 @@ class RailJsonInfra(BaseModel):
     )
     operational_points: List[OperationalPoint] = Field(
         description="List of operational points of the corresponding infra"
+    )
+    level_crossings: List[LevelCrossing] = Field(
+        description="List of level crossings of the corresponding infra"
     )
     routes: List[Route] = Field(description="Routes of the infra")
     extended_switch_types: List[SwitchType] = Field(

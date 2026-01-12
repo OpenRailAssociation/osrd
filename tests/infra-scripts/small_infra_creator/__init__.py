@@ -676,6 +676,19 @@ def create_small_infra(signaling_system: str) -> ScenarioData:
         ta0, 1990, 2000, Direction.STOP_TO_START
     )
     keep_pantograph_section_4.add_track_range(ta0, 1850, 1990, Direction.STOP_TO_START)
+
+    # ================================
+    # Add level crossings
+    # ================================
+    lc1 = builder.add_level_crossing(id="lc1", name="LC1", short_zone_length=2000)
+    lc1.add_part(tb0.label, tb0.length / 4, pedal_upstream=4000, pedal_downstream=4000)
+
+    lc2 = builder.add_level_crossing(id="lc2", name="LC2", short_zone_length=1500)
+    lc2.add_part(tc0.label, 125, pedal_upstream=4000, pedal_downstream=6000)
+    lc2.add_part(tc1.label, 120, pedal_upstream=5000, pedal_downstream=5000)
+    lc2.add_part(tc2.label, 110, pedal_upstream=5000, pedal_downstream=5000)
+    lc2.add_part(tc3.label, 115, pedal_upstream=6000, pedal_downstream=6000)
+
     # ================================
     # Produce the railjson
     # ================================

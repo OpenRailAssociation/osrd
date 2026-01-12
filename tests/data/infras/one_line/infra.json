@@ -1,6 +1,7 @@
 {
-    "version": "3.4.13",
+    "version": "3.5.0",
     "operational_points": [],
+    "level_crossings": [],
     "routes": [
         {
             "id": "rt.buffer_stop.0->detector.0",
