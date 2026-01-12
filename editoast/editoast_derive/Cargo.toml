@@ -17,7 +17,7 @@ syn.workspace = true
 proc-macro = true
 
 [dev-dependencies]
-insta = "1.45"
+insta = "1.46"
 pretty_assertions = "1.4.1"
 prettyplease = "0.2"
 
