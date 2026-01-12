@@ -5,7 +5,6 @@ import com.google.common.collect.Range
 import com.google.common.collect.RangeMap
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.meters
-import java.util.function.BiFunction
 
 /**
  * DistanceRangeMap allows to store values over intervals (e.g. elevation on sections of a track)
@@ -65,7 +64,7 @@ interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
      * Updates the map with another one, using a merge function to fuse the values of intersecting
      * ranges. Doesn't keep any range from update where there is no intersection.
      */
-    fun <U> updateMapIntersection(update: DistanceRangeMap<U>, updateFunction: BiFunction<T, U, T>)
+    fun <U> updateMapIntersection(update: DistanceRangeMap<U>, updateFunction: (T, U) -> T)
 
     /**
      * Updates the map with another one, using a merge function to fuse the values of intersecting

@@ -6,7 +6,6 @@ import com.google.common.collect.TreeRangeMap
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.MutableDistanceArrayList
 import java.util.PriorityQueue
-import java.util.function.BiFunction
 import kotlin.math.min
 
 data class DistanceRangeMapImpl<T>(
@@ -189,11 +188,11 @@ data class DistanceRangeMapImpl<T>(
 
     override fun <U> updateMapIntersection(
         update: DistanceRangeMap<U>,
-        updateFunction: BiFunction<T, U, T>,
+        updateFunction: (T, U) -> T,
     ) {
         for ((updateLower, updateUpper, updateValue) in update) {
             for ((subMapLower, subMapUpper, subMapValue) in this.subMap(updateLower, updateUpper)) {
-                this.put(subMapLower, subMapUpper, updateFunction.apply(subMapValue, updateValue))
+                this.put(subMapLower, subMapUpper, updateFunction(subMapValue, updateValue))
             }
         }
     }
