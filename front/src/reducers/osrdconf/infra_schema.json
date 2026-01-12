@@ -482,6 +482,83 @@
             "title": "FlagSignalParameter",
             "type": "string"
         },
+        "LevelCrossing": {
+            "description": "This class describes the level crossings of the corresponding infra.",
+            "properties": {
+                "id": {
+                    "description": "Unique identifier of the object",
+                    "maxLength": 255,
+                    "minLength": 1,
+                    "title": "Id",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Name of the level crossing",
+                    "minLength": 1,
+                    "title": "Name",
+                    "type": "string"
+                },
+                "parts": {
+                    "items": {
+                        "$ref": "#/$defs/LevelCrossingPart"
+                    },
+                    "title": "Parts",
+                    "type": "array"
+                },
+                "short_zone_length": {
+                    "description": "Length of the short zone in mm",
+                    "minimum": 0,
+                    "title": "Short Zone Length",
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "short_zone_length",
+                "parts"
+            ],
+            "title": "LevelCrossing",
+            "type": "object"
+        },
+        "LevelCrossingPart": {
+            "description": "Level crossing part is a single point on the infrastructure.\nIt holds information about pedal offsets relative to this point.\nIt's linked to a level crossing.",
+            "properties": {
+                "pedal_downstream": {
+                    "description": "Offset in mm of the downstream pedal from the main position",
+                    "minimum": 0,
+                    "title": "Pedal Downstream",
+                    "type": "integer"
+                },
+                "pedal_upstream": {
+                    "description": "Offset in mm of the upstream pedal from the main position",
+                    "minimum": 0,
+                    "title": "Pedal Upstream",
+                    "type": "integer"
+                },
+                "position": {
+                    "description": "Offset of the point in meters to the beginning of the track section",
+                    "minimum": 0,
+                    "title": "Position",
+                    "type": "number"
+                },
+                "track": {
+                    "description": "Reference to the track section on which the object is located",
+                    "maxLength": 255,
+                    "minLength": 1,
+                    "title": "Track",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "track",
+                "position",
+                "pedal_upstream",
+                "pedal_downstream"
+            ],
+            "title": "LevelCrossingPart",
+            "type": "object"
+        },
         "LimitedLogicalSignal": {
             "description": "Limited list of logical signals. Used to generate a usable schema for the front editor",
             "discriminator": {
@@ -2004,6 +2081,14 @@
             "title": "Extended Switch Types",
             "type": "array"
         },
+        "level_crossings": {
+            "description": "List of level crossings of the corresponding infra",
+            "items": {
+                "$ref": "#/$defs/LevelCrossing"
+            },
+            "title": "Level Crossings",
+            "type": "array"
+        },
         "neutral_sections": {
             "description": "Neutral sections of the infra",
             "items": {
@@ -2061,8 +2146,8 @@
             "type": "array"
         },
         "version": {
-            "const": "3.4.13",
-            "default": "3.4.13",
+            "const": "3.5.0",
+            "default": "3.5.0",
             "description": "Version of the schema",
             "title": "Version",
             "type": "string"
@@ -2070,6 +2155,7 @@
     },
     "required": [
         "operational_points",
+        "level_crossings",
         "routes",
         "switches",
         "track_sections",

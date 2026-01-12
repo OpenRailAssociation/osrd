@@ -5,6 +5,7 @@ from .schema.infra.endpoint import TrackEndpoint
 from .schema.infra.infra import BufferStop, Infra, Switch, Detector
 from .schema.infra.neutral_section import NeutralSection
 from .schema.infra.operational_point import OperationalPoint
+from .schema.infra.level_crossing import LevelCrossing
 from .schema.infra.route import Route
 from .schema.infra.speed_section import SpeedSection
 from .schema.infra.switch import (
@@ -85,6 +86,16 @@ class InfraBuilder:
         _register_connection(base, right, switch.group("A_B2"))
         self.infra.switches.append(switch)
         return switch
+
+    def add_level_crossing(
+        self, id: str, name: str, short_zone_length: int
+    ) -> LevelCrossing:
+        """Build a level crossing, add it to the infra, and return it."""
+        lc = LevelCrossing(
+            id=id, name=name, short_zone_length=short_zone_length, parts=[]
+        )
+        self.infra.level_crossings.append(lc)
+        return lc
 
     def add_crossing(
         self,

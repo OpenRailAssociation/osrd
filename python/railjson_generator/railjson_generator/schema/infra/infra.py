@@ -7,6 +7,7 @@ from osrd_schemas import infra
 from railjson_generator.schema.infra.electrification import Electrification
 from railjson_generator.schema.infra.neutral_section import NeutralSection
 from railjson_generator.schema.infra.operational_point import OperationalPoint
+from railjson_generator.schema.infra.level_crossing import LevelCrossing
 from railjson_generator.schema.infra.route import Route
 from railjson_generator.schema.infra.speed_section import SpeedSection
 from railjson_generator.schema.infra.switch import Switch
@@ -19,12 +20,13 @@ class Infra:
     track_sections: List[TrackSection] = field(default_factory=list)
     switches: List[Switch] = field(default_factory=list)
     operational_points: List[OperationalPoint] = field(default_factory=list)
+    level_crossings: List[LevelCrossing] = field(default_factory=list)
     routes: List[Route] = field(default_factory=list)
     speed_sections: List[SpeedSection] = field(default_factory=list)
     electrifications: List[Electrification] = field(default_factory=list)
     neutral_sections: List[NeutralSection] = field(default_factory=list)
 
-    VERSION = "3.4.13"
+    VERSION = "3.5.0"
 
     def add_route(self, *args, **kwargs):
         self.routes.append(Route(*args, **kwargs))
@@ -40,6 +42,7 @@ class Infra:
             buffer_stops=list(self.make_rjs_buffer_stops()),
             detectors=list(self.make_rjs_detectors()),
             operational_points=self.make_rjs_operational_points(),
+            level_crossings=[lc.to_rjs() for lc in self.level_crossings],
             extended_switch_types=[],
             speed_sections=[
                 speed_section.to_rjs() for speed_section in self.speed_sections

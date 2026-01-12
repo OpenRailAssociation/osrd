@@ -1,5 +1,5 @@
 {
-    "version": "3.4.13",
+    "version": "3.5.0",
     "operational_points": [
         {
             "id": "op.a",
@@ -71,6 +71,7 @@
             }
         }
     ],
+    "level_crossings": [],
     "routes": [
         {
             "id": "rt.bf.a->det.a3",

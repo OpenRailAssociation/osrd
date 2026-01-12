@@ -1,5 +1,5 @@
 {
-    "version": "3.4.13",
+    "version": "3.5.0",
     "operational_points": [
         {
             "id": "op.station_foo",
@@ -52,6 +52,7 @@
             }
         }
     ],
+    "level_crossings": [],
     "routes": [
         {
             "id": "rt.buffer_stop_a->tde.foo_a-switch_foo",

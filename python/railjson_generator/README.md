@@ -27,6 +27,7 @@ uv run -m railjson_generator ../../tests/data/infras ../../tests/infra-scripts/*
 
 - `__init__(self) -> InfraBuilder`: Instantiates an infra builder.
 - `add_track_section(self, length, label="track.X", waypoints=[], signals=[], operational_points=[]) -> TrackSection`: Add a track section.
+- `add_level_crossing(self, id, name="lc.X", short_zone_length=1000) -> LevelCrossing`: Add a level crossing.
 - `add_point_switch(self, base, left, right, label="switch.X", delay=0) -> Switch`: Add a point.
 - `add_crossing(self, north, south, east, west, label="switch.X", delay=0) -> Switch`: Add a cross switch.
 - `add_double_slip_switch(self, north_1, north_2, south_1, south_2, label="switch.X", delay=0) -> Switch`: Add a double cross switch.
@@ -66,6 +67,10 @@ Route can either be manually created, or generated using `generate_routes`, and 
 ### Operation point
 
 - `add_part(self, track, offset)`: Link an operational point to a position.
+
+### Level crossing
+
+- `add_part(self, track, position, pedal_upstream, pedal_downstream)`: Add a part to a level crossing.
 
 ### Infra
 
