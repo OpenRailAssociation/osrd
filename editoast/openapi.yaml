@@ -11942,6 +11942,7 @@ components:
       - signals
       - buffer_stops
       - detectors
+      - level_crossings
       properties:
         buffer_stops:
           type: array
@@ -11963,6 +11964,11 @@ components:
           items:
             $ref: '#/components/schemas/SwitchType'
           description: These define the types of switches available for route management.
+        level_crossings:
+          type: array
+          items:
+            $ref: '#/components/schemas/LevelCrossing'
+          description: '`LevelCrossing` is an intersections where a railway line crosses a road'
         neutral_sections:
           type: array
           items:

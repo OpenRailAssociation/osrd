@@ -108,6 +108,7 @@ pub(in crate::views) async fn get_railjson(
             "buffer_stops": {buffer_stops},
             "routes": {routes},
             "operational_points": {operational_points},
+            "level_crossings": {level_crossings},
             "electrifications": {electrifications},
             "neutral_sections": {neutral_sections}
         }}"#,
@@ -121,6 +122,7 @@ pub(in crate::views) async fn get_railjson(
         buffer_stops = res[ObjectType::BufferStop],
         routes = res[ObjectType::Route],
         operational_points = res[ObjectType::OperationalPoint],
+        level_crossings = res[ObjectType::LevelCrossing],
         electrifications = res[ObjectType::Electrification],
         neutral_sections = res[ObjectType::NeutralSection]
     );
