@@ -12,6 +12,7 @@ use tracing::info;
 
 use super::utils::*;
 use crate::generate_routes;
+use crate::generate_signals;
 use schemas::infra::RailJson;
 use schemas::infra::TrackSection;
 /// Run the osm-to-railjson subcommand
@@ -19,19 +20,23 @@ use schemas::infra::TrackSection;
 pub fn osm_to_railjson(
     osm_pbf_in: PathBuf,
     railjson_out: PathBuf,
+    generate_signals: bool,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     info!(
         "🗺️ Converting {} to {}",
         osm_pbf_in.display(),
         railjson_out.display()
     );
-    let railjson = parse_osm(osm_pbf_in)?;
+    let railjson = parse_osm(osm_pbf_in, generate_signals)?;
     let file = std::fs::File::create(railjson_out)?;
     serde_json::to_writer(file, &railjson)?;
     Ok(())
 }
 
-pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send + Sync>> {
+pub fn parse_osm(
+    osm_pbf_in: PathBuf,
+    generate_signals: bool,
+) -> Result<RailJson, Box<dyn Error + Send + Sync>> {
     let (nodes, edges) = osm4routing::Reader::new()
         .require("railway", "rail")
         .reject("service", "yard")
@@ -146,6 +151,11 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
             _ => debug!("node {id} with {edges_count} edges and {branches_count} branches"),
         }
     }
+    if generate_signals {
+        debug!("Start generating signals");
+        generate_signals::generate_signals(&mut railjson);
+        debug!("Done, got {} signals", railjson.signals.len());
+    }
     debug!("Start generating routes");
     railjson.routes = generate_routes::routes(&railjson);
     debug!("Done, got {} routes", railjson.routes.len());
@@ -168,7 +178,8 @@ mod tests {
         assert!(
             osm_to_railjson(
                 "src/tests/minimal_rail.osm.pbf".into(),
-                output.path().into()
+                output.path().into(),
+                false,
             )
             .is_ok()
         );
@@ -183,7 +194,7 @@ mod tests {
         fn port_eq(ports: &HashMap<Identifier, TrackEndpoint>, name: &str, expected: &str) -> bool {
             ports.get(&name.into()).unwrap().track.0 == expected
         }
-        let mut railjson = parse_osm("src/tests/switches.osm.pbf".into()).unwrap();
+        let mut railjson = parse_osm("src/tests/switches.osm.pbf".into(), false).unwrap();
         assert_eq!(4, railjson.switches.len());
         assert_eq!(18, railjson.buffer_stops.len());
 
@@ -237,21 +248,21 @@ mod tests {
 
     #[test]
     fn parse_signals() {
-        let railjson = parse_osm("src/tests/signals.osm.pbf".into()).unwrap();
+        let railjson = parse_osm("src/tests/signals.osm.pbf".into(), false).unwrap();
         assert_eq!(1, railjson.signals.len());
         assert_eq!(1, railjson.detectors.len());
     }
 
     #[test]
     fn ignore_signals_at_end_of_line() {
-        let railjson = parse_osm("src/tests/signal_at_end_of_line.osm.pbf".into()).unwrap();
+        let railjson = parse_osm("src/tests/signal_at_end_of_line.osm.pbf".into(), false).unwrap();
         assert!(railjson.signals.is_empty());
         assert_eq!(2, railjson.buffer_stops.len());
     }
 
     #[test]
     fn parse_speed() {
-        let rj = parse_osm("src/tests/minimal_rail.osm.pbf".into()).unwrap();
+        let rj = parse_osm("src/tests/minimal_rail.osm.pbf".into(), false).unwrap();
         assert_eq!(2, rj.speed_sections.len());
         let forward = rj
             .speed_sections
@@ -269,14 +280,14 @@ mod tests {
 
     #[test]
     fn parse_electrifications() {
-        let rj = parse_osm("src/tests/minimal_rail.osm.pbf".into()).unwrap();
+        let rj = parse_osm("src/tests/minimal_rail.osm.pbf".into(), false).unwrap();
         assert_eq!(1, rj.electrifications.len());
         assert_eq!("15000V", rj.electrifications[0].voltage);
     }
 
     #[test]
     fn parse_stations() {
-        let rj = parse_osm("src/tests/station.osm.pbf".into()).unwrap();
+        let rj = parse_osm("src/tests/station.osm.pbf".into(), false).unwrap();
         assert_eq!(1, rj.operational_points.len());
         let op = &rj.operational_points[0];
         assert_eq!(2, op.parts.len());

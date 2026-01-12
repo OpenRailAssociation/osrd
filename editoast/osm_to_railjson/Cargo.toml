@@ -8,11 +8,13 @@ edition.workspace = true
 clap.workspace = true
 geo-types = "0.7.18"
 geos.workspace = true
+itertools.workspace = true
 osm4routing = "0.8"
 schemas.workspace = true
 serde_json.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
+uuid.workspace = true
 
 [dev-dependencies]
 rstest.workspace = true

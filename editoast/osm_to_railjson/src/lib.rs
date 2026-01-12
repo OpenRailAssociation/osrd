@@ -1,4 +1,5 @@
 mod generate_routes;
+mod generate_signals;
 mod osm_to_railjson;
 mod utils;
 
