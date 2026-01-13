@@ -262,18 +262,6 @@ pub struct SpeedLimitProperties {
     #[schema(inline)]
     pub values: Vec<SpeedLimitProperty>,
 }
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct SimulationPowerRestrictionRange {
-    /// Start position in the path in mm
-    begin: u64,
-    /// End position in the path in mm
-    end: u64,
-    code: String,
-    /// Is power restriction handled during simulation
-    handled: bool,
-}
-
 #[derive(Debug, Serialize, Educe)]
 #[educe(Hash)]
 pub struct Request {
