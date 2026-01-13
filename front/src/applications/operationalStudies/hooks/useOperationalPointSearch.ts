@@ -305,34 +305,52 @@ export const useOperationalPointSearch = ({
 }: Params) => {
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useLazyQuery();
   const [activeStepId, setActiveStepId] = useState<string | null>(null);
-  const [opInputByStepId, setOpInputByStepId] = useState<Record<string, string>>({});
-  const activeOpInput = activeStepId ? (opInputByStepId[activeStepId] ?? '') : '';
-  const debouncedOpInput = useDebounce(activeOpInput.trim(), debounceMs);
+  const [draftByStepId, setDraftByStepId] = useState<Record<string, string>>({});
+  const [displayByStepId, setDisplayByStepId] = useState<Record<string, string>>({});
+  const [isEditingByStepId, setIsEditingByStepId] = useState<Record<string, boolean>>({});
+  const activeDraft = activeStepId ? (draftByStepId[activeStepId] ?? '') : '';
+  const isEditingActive = activeStepId ? (isEditingByStepId[activeStepId] ?? true) : true;
+  const debouncedOpInput = useDebounce((isEditingActive ? activeDraft : '').trim(), debounceMs);
+
+  const setInputForStep = useCallback((stepId: string, value: string) => {
+    setIsEditingByStepId((prev) => ({ ...prev, [stepId]: true }));
+    setDraftByStepId((prev) => ({ ...prev, [stepId]: value }));
+  }, []);
+
+  const getInputForStep = useCallback(
+    (stepId: string) => {
+      const isEditing = isEditingByStepId[stepId] ?? true;
+      return isEditing ? (draftByStepId[stepId] ?? '') : (displayByStepId[stepId] ?? '');
+    },
+    [draftByStepId, displayByStepId, isEditingByStepId]
+  );
 
   const [opSuggestions, setOpSuggestions] = useState<OperationalPointSuggestion[]>([]);
 
   const resetOpSuggestions = useCallback(() => setOpSuggestions([]), []);
 
-  const setInputForStep = useCallback((stepId: string, value: string) => {
-    setOpInputByStepId((prev) => ({ ...prev, [stepId]: value }));
+  const commitSelectionForStep = useCallback((stepId: string, display: string) => {
+    setDisplayByStepId((prev) => ({ ...prev, [stepId]: display }));
+    setDraftByStepId((prev) => ({ ...prev, [stepId]: '' }));
+    setIsEditingByStepId((prev) => ({ ...prev, [stepId]: false }));
+    setOpSuggestions([]);
   }, []);
 
-  const getInputForStep = useCallback(
-    (stepId: string) => opInputByStepId[stepId] ?? '',
-    [opInputByStepId]
-  );
+  const startEditingForStep = useCallback((stepId: string) => {
+    setIsEditingByStepId((prev) => ({ ...prev, [stepId]: true }));
+  }, []);
 
   const chooseChForSuggestion = useCallback(
     (stepId: string, suggestion: OperationalPointSuggestion, forcedCh?: string) => {
-      const rawInput = opInputByStepId[stepId] ?? '';
+      const rawInput = draftByStepId[stepId] ?? '';
       const unique = inferUniqueChFromInput(suggestion, rawInput);
       return forcedCh ?? unique ?? suggestion.chList[0]?.code;
     },
-    [opInputByStepId]
+    [draftByStepId]
   );
 
   const formatChosenValue = useCallback(
-    (s: OperationalPointSuggestion, ch: string) => `${s.trigram} ${s.name} ${ch}`,
+    (s: OperationalPointSuggestion, ch: string) => `${s.name} ${ch}`,
     []
   );
 
@@ -467,5 +485,7 @@ export const useOperationalPointSearch = ({
     resetOpSuggestions,
     chooseChForSuggestion,
     formatChosenValue,
+    commitSelectionForStep,
+    startEditingForStep,
   };
 };

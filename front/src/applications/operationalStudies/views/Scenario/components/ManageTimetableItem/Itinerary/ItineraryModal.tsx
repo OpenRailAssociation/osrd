@@ -9,6 +9,7 @@ import { useSelector } from 'react-redux';
 import { v4 as uuidV4 } from 'uuid';
 
 import useCategoryColors from 'applications/operationalStudies/hooks/useCategoryColors';
+import { useOperationalPointSearch } from 'applications/operationalStudies/hooks/useOperationalPointSearch';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import AlertBox from 'common/AlertBox';
 import { type PathProperties, type PathItemLocation } from 'common/api/osrdEditoastApi';
@@ -35,7 +36,6 @@ import PathStepItem from './PathStepItem';
 import { computePathStepCoordinates } from './utils';
 import { MANAGE_TIMETABLE_ITEM_TYPES } from '../../../consts';
 import { buildOpSuggestion } from '../helpers/buildOpSuggestion';
-import { useOperationalPointSearch } from 'applications/operationalStudies/hooks/useOperationalPointSearch';
 
 type ItineraryModalProps = {
   itineraryModalIsOpen: boolean;
@@ -76,6 +76,7 @@ const ItineraryModal = ({
     resetOpSuggestions,
     chooseChForSuggestion,
     formatChosenValue,
+    commitSelectionForStep,
   } = useOperationalPointSearch({
     infraId,
     buildOpSuggestion,
@@ -103,7 +104,7 @@ const ItineraryModal = ({
       prev.map((s) => (s.id === stepId ? { ...s, location: newLocation } : s))
     );
 
-    setInputForStep(stepId, formatChosenValue(suggestion, chosenCh));
+    commitSelectionForStep(stepId, formatChosenValue(suggestion, chosenCh));
     resetOpSuggestions();
   };
 

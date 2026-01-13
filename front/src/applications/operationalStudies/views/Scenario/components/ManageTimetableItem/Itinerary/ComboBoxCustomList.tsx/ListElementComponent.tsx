@@ -1,5 +1,4 @@
 import './ListElementComponent.scss';
-
 import cx from 'classnames';
 
 export type OpCh = {
@@ -21,25 +20,33 @@ export type ListElementComponentProps = {
   index: number;
   isActive: boolean;
   isSelected: boolean;
-  onPickCh?: (code: string) => void;
+  onSelect?: (op: OperationalPointSuggestion, ch?: string) => void;
 };
 
 export const ListElementComponent = ({
   suggestion,
   isActive,
   isSelected,
-  onPickCh,
+  onSelect,
 }: ListElementComponentProps) => (
   <div
     className={cx('op-suggestion', {
       'op-suggestion--active': isActive,
       'op-suggestion--selected': isSelected,
     })}
+    role="button"
+    tabIndex={0}
+    onMouseDown={(e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const defaultCh = suggestion.chList?.[0]?.code;
+      onSelect?.(suggestion, defaultCh);
+    }}
   >
     <span className="op-suggestion-trigram">{suggestion.trigram}</span>
     <span className="op-suggestion-name">{suggestion.name}</span>
 
-    <div className="op-suggestion-ch-list">
+    <div className="op-suggestion-secondary-code-list">
       {suggestion.chList.map((ch) => (
         <button
           key={ch.code}
@@ -49,8 +56,10 @@ export const ListElementComponent = ({
             'op-suggestion-secondary-code--inactive': ch.isCandidate === false,
           })}
           disabled={ch.isCandidate === false}
-          onClick={() => {
-            onPickCh?.(ch.code);
+          onMouseDown={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onSelect?.(suggestion, ch.code);
           }}
         >
           {ch.code}

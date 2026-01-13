@@ -93,17 +93,18 @@
   }
 }
 
-.ui-combo-box {
-  &:has(#combo-box-custom) {
+.path-step-op-name {
+  .ui-combo-box {
     .suggestions-list {
-      margin-top: 15px;
+      margin-top: 10px;
       right: auto;
-      left: 0.7rem;
       max-height: none;
       border-radius: 4px;
       display: inline-block;
-      width: max-content;
-      max-width: 748px;
+      width: 100%;
+      max-width: 100%;
+
+      overflow-x: hidden;
     }
 
     .suggestion-item {

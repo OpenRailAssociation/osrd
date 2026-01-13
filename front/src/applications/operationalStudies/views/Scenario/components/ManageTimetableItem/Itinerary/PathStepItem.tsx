@@ -55,6 +55,12 @@ const PathStepItem = ({
   const mapSettings = useMapSettings();
   const { updateViewport } = useMapSettingsActions();
 
+  const blurActiveElement = () => {
+    requestAnimationFrame(() => {
+      (document.activeElement as HTMLElement | null)?.blur();
+    });
+  };
+
   const getInvalidMessage = () => {
     let message = t('invalidOP');
     if (!pathStepMetadata?.isInvalid || !pathStep?.location) return message;
@@ -221,18 +227,29 @@ const PathStepItem = ({
               }
 
               onSelectOpSuggestion?.(op);
+              resetOpSuggestions?.();
+              blurActiveElement();
             }}
             resetSuggestions={() => resetOpSuggestions?.()}
-            listElementComponent={({ suggestion, index, isActive, isSelected }) => {
+            listElementComponent={({
+              suggestion,
+              index: suggestionIndex,
+              isActive,
+              isSelected,
+            }) => {
               if (typeof suggestion === 'string') return suggestion;
 
               return (
                 <ListElementComponent
                   suggestion={suggestion}
-                  index={index}
+                  index={suggestionIndex}
                   isActive={isActive}
                   isSelected={isSelected}
-                  onPickCh={(chCode) => onSelectOpSuggestion?.(suggestion, chCode)}
+                  onSelect={(op, ch) => {
+                    onSelectOpSuggestion?.(op, ch);
+                    resetOpSuggestions?.();
+                    blurActiveElement();
+                  }}
                 />
               );
             }}
@@ -245,24 +262,22 @@ const PathStepItem = ({
         {pathStep?.location && 'track' in pathStep.location ? (
           <div className="requested-point-block" />
         ) : (
-          <>
-            <div
-              className={cx('track-name', {
-                invalid: pathStepMetadata?.isInvalid,
-              })}
-            >
-              <Select
-                id={`pathStep-status-${pathStep?.id ?? 'empty'}`}
-                value={selectedTrackNameOption}
-                options={trackNameSuggestions}
-                getOptionLabel={(option) => option.label}
-                getOptionValue={(option) => option.id}
-                onChange={() => {}}
-                small
-                narrow
-              />
-            </div>
-          </>
+          <div
+            className={cx('track-name', {
+              invalid: pathStepMetadata?.isInvalid,
+            })}
+          >
+            <Select
+              id={`pathStep-status-${pathStep?.id ?? 'empty'}`}
+              value={selectedTrackNameOption}
+              options={trackNameSuggestions}
+              getOptionLabel={(option) => option.label}
+              getOptionValue={(option) => option.id}
+              onChange={() => {}}
+              small
+              narrow
+            />
+          </div>
         )}
         <div className="map-interactions">
           {pathStep?.location && 'track' in pathStep.location ? (
