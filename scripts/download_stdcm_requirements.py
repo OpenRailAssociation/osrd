@@ -27,10 +27,7 @@ def main(*args, **kwargs):
     asyncio.run(async_main(*args, **kwargs))
 
 
-async def async_main(
-    editoast_url, timetable_id, infra_id, path, gateway_cookie, page_size
-):
-    url = f"{editoast_url}api/timetable/{timetable_id}/requirements/?page=$page&{page_size=}&{infra_id=}"
+def make_connector(gateway_cookie):
     if gateway_cookie is not None:
         cookies = {"gateway": gateway_cookie}
         ssl_context = ssl.create_default_context()
@@ -40,6 +37,14 @@ async def async_main(
     else:
         cookies = None
         connector = None
+    return cookies, connector
+
+
+async def async_main(
+    editoast_url, timetable_id, infra_id, path, gateway_cookie, page_size
+):
+    url = f"{editoast_url}api/timetable/{timetable_id}/requirements/?page=$page&{page_size=}&{infra_id=}"
+    cookies, connector = make_connector(gateway_cookie)
     async with aiohttp.ClientSession(
         trust_env=True, raise_for_status=True, cookies=cookies, connector=connector
     ) as session:
