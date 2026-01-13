@@ -12,7 +12,7 @@ use crate as editoast_models;
 #[derive(Clone, Debug, Model)]
 #[model(row(derive(QueryableByName)))]
 #[model(table = database::tables::paced_train_round_trips)]
-#[model(gen(batch_ops = c))]
+#[model(gen(batch_ops = cd))]
 pub struct PacedTrainRoundTrips {
     pub id: i64,
     /// First ID of the paced train of this round trip
@@ -82,5 +82,25 @@ impl PacedTrainRoundTrips {
         .execute(conn.write().await.deref_mut())
         .await?;
         Ok(nb)
+    }
+
+    /// Retrieves a batch of paced train round trips given a list of paced train IDs
+    ///
+    /// **IMPORTANT**: This function does not take ids of round trips, but rather the IDs of the paced trains
+    pub async fn retrieve_from_paced_train_ids<I: IntoIterator<Item = i64> + Send>(
+        conn: &mut DbConnection,
+        paced_train_ids: I,
+    ) -> Result<Vec<Self>, database::DatabaseError> {
+        use database::tables::paced_train_round_trips::dsl;
+        use diesel::prelude::*;
+        use diesel_async::RunQueryDsl;
+        use std::ops::DerefMut;
+
+        let ids = paced_train_ids.into_iter().collect::<Vec<_>>();
+        let results = database::tables::paced_train_round_trips::table
+            .filter(dsl::left_id.eq_any(&ids).or(dsl::right_id.eq_any(&ids)))
+            .load::<PacedTrainRoundTripsRow>(conn.write().await.deref_mut())
+            .await?;
+        Ok(results.into_iter().map_into().collect())
     }
 }

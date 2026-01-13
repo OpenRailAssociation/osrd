@@ -16,8 +16,10 @@ use core_client::simulation::PhysicsConsist;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
 use editoast_models::prelude::*;
+use editoast_models::round_trips::PacedTrainRoundTrips;
 use itertools::Itertools;
 use itertools::izip;
+use reqwest::StatusCode;
 use schemas::paced_train::PacedTrain;
 use schemas::primitives::TimeWindow;
 use schemas::train_schedule::OperationalPointPartReference;
@@ -35,6 +37,7 @@ use crate::models;
 use crate::models::Infra;
 use crate::models::paced_train::OccurrenceId;
 use crate::models::paced_train::PacedTrainChangeset;
+use crate::models::train_schedule_set::TrainScheduleSet;
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraIdQueryParam;
 use crate::views::path::path_item_cache::PathItemCache;
@@ -88,6 +91,10 @@ enum PacedTrainError {
     #[error("Simulation failed for train schedule '{paced_train_id}'")]
     #[editoast_error(status = 404)]
     SimulationFailed { paced_train_id: i64 },
+    #[error("Train schedule set '{train_schedule_set_id}', could not be found")]
+    #[editoast_error(status = 404)]
+    TrainScheduleSetNotFound { train_schedule_set_id: i64 },
+
     #[error(transparent)]
     #[editoast_error(status = 500)]
     Database(#[from] editoast_models::Error),
@@ -1341,6 +1348,96 @@ pub(in crate::views) async fn track_occupancy(
             });
 
     Ok(Json(results))
+}
+
+#[derive(Deserialize, ToSchema)]
+pub(in crate::views) struct MovePacedTrainsForm {
+    pub paced_train_ids: Vec<i64>,
+    pub train_schedule_set_id: i64,
+}
+
+#[editoast_derive::route]
+#[utoipa::path(
+    patch, path = "",
+    tag = "paced_train",
+    request_body = inline(MovePacedTrainsForm),
+    responses(
+        (status = 204, description = "The train schedule set is updated with the paced trains"),
+    ),
+)]
+pub(in crate::views) async fn move_paced_trains_to_another_train_schedule_set(
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    Extension(auth): AuthenticationExt,
+    Json(MovePacedTrainsForm {
+        paced_train_ids,
+        train_schedule_set_id,
+    }): Json<MovePacedTrainsForm>,
+) -> Result<impl IntoResponse> {
+    let authorized = auth
+        .check_roles([authz::Role::OperationalStudies].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    TrainScheduleSet::exists_or_fail(&mut db_pool.get().await?, train_schedule_set_id, || {
+        PacedTrainError::TrainScheduleSetNotFound {
+            train_schedule_set_id,
+        }
+    })
+    .await?;
+
+    let paced_trains: Vec<_> = models::PacedTrain::retrieve_batch_or_fail(
+        &mut db_pool.get().await?,
+        paced_train_ids.clone(),
+        |missing| PacedTrainError::BatchNotFound {
+            count: missing.len(),
+        },
+    )
+    .await?;
+
+    // Filter paced trains ids to remove ones that are already in the provided train schedule set
+    let paced_train_ids = paced_trains
+        .into_iter()
+        .filter_map(|paced_train| {
+            if paced_train.train_schedule_set_id != train_schedule_set_id {
+                Some(paced_train.id)
+            } else {
+                None
+            }
+        })
+        .collect_vec();
+
+    // Check if some paced trains are part of a round_trips
+    let round_trips = PacedTrainRoundTrips::retrieve_from_paced_train_ids(
+        &mut db_pool.get().await?,
+        paced_train_ids.clone(),
+    )
+    .await?;
+
+    let mut to_break: Vec<i64> = vec![];
+
+    for round_trip in round_trips {
+        // We extract right_id, if it is None we skip the iteration
+        let Some(right_id) = round_trip.right_id else {
+            continue;
+        };
+        // If one of the two trains is not a train we want to move, we add the ID to to_break
+        if !paced_train_ids.contains(&right_id) || !paced_train_ids.contains(&round_trip.left_id) {
+            to_break.push(round_trip.id);
+        }
+    }
+
+    PacedTrainRoundTrips::delete_batch(&mut db_pool.get().await?, to_break).await?;
+
+    // Update the train_schedule_set_id of the paced trains
+    let _: (Vec<_>, _) = models::PacedTrain::changeset()
+        .train_schedule_set_id(train_schedule_set_id)
+        .update_batch(&mut db_pool.get().await?, paced_train_ids)
+        .await?;
+
+    Ok(StatusCode::NO_CONTENT)
 }
 
 #[cfg(test)]
