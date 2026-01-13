@@ -2,6 +2,7 @@ package fr.sncf.osrd.api
 
 import fr.sncf.osrd.api.standalone_sim.PhysicsConsistModel
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.TractiveEffortPoint
+import fr.sncf.osrd.envelope_sim.etcs.toEtcsBrakeParams
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSEffortCurves.*
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance
@@ -47,7 +48,7 @@ fun parseRawRollingStock(
         rawPhysicsConsist.startupAcceleration,
         rawPhysicsConsist.comfortAcceleration,
         rawPhysicsConsist.constGamma,
-        rawPhysicsConsist.etcsBrakeParams,
+        rawPhysicsConsist.etcsBrakeParams?.toEtcsBrakeParams(),
         loadingGaugeType,
         modes,
         rawPhysicsConsist.effortCurves.defaultMode,

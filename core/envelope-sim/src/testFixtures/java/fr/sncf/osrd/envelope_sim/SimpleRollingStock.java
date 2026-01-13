@@ -3,7 +3,7 @@ package fr.sncf.osrd.envelope_sim;
 import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.Range;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.railjson.schema.rollingstock.RJSEtcsBrakeParams;
+import fr.sncf.osrd.envelope_sim.etcs.EtcsBrakeParams;
 import java.util.ArrayList;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
@@ -92,7 +92,7 @@ public class SimpleRollingStock implements PhysicsRollingStock {
     }
 
     @Override
-    public RJSEtcsBrakeParams getRJSEtcsBrakeParams() {
+    public EtcsBrakeParams getEtcsBrakeParams() {
         throw new UnsupportedOperationException("To be implemented");
     }
 

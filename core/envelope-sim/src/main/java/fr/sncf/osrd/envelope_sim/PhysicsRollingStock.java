@@ -4,7 +4,7 @@ import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.GRAVITY_ACCELERAT
 import static fr.sncf.osrd.envelope_sim.etcs.ConstantsKt.M_ROTATING_MAX;
 import static fr.sncf.osrd.envelope_sim.etcs.ConstantsKt.M_ROTATING_MIN;
 
-import fr.sncf.osrd.railjson.schema.rollingstock.RJSEtcsBrakeParams;
+import fr.sncf.osrd.envelope_sim.etcs.EtcsBrakeParams;
 
 public interface PhysicsRollingStock {
     /** The mass of the train, in kilograms */
@@ -25,7 +25,7 @@ public interface PhysicsRollingStock {
     /** The first derivative of the resistance to movement at a given speed, in kg/s */
     double getRollingResistanceDeriv(double speed);
 
-    RJSEtcsBrakeParams getRJSEtcsBrakeParams();
+    EtcsBrakeParams getEtcsBrakeParams();
 
     /** Get the effort the train can apply at a given speed, in newtons */
     static double getMaxEffort(double speed, TractiveEffortPoint[] tractiveEffortCurve) {

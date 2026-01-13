@@ -4,9 +4,9 @@ import static fr.sncf.osrd.envelope_sim.SimpleRollingStock.createEffortSpeedCurv
 
 import com.google.common.collect.Lists;
 import fr.sncf.osrd.envelope_sim.SimpleRollingStock.CurveShape;
+import fr.sncf.osrd.envelope_sim.etcs.EtcsBrakeParams;
+import fr.sncf.osrd.envelope_sim.etcs.EtcsBrakeParams.SpeedIntervalValueCurve;
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort;
-import fr.sncf.osrd.railjson.schema.rollingstock.RJSEtcsBrakeParams;
-import fr.sncf.osrd.railjson.schema.rollingstock.RJSEtcsBrakeParams.RJSSpeedIntervalValueCurve;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 import java.util.*;
 
@@ -179,19 +179,18 @@ public class TestTrains {
                 0.05,
                 0.25,
                 0.5,
-                new RJSEtcsBrakeParams(
-                        new RJSSpeedIntervalValueCurve(
+                new EtcsBrakeParams(
+                        new SpeedIntervalValueCurve(
                                 new double[] {8.333333, 16.666667, 55.555556, 61.111111},
                                 new double[] {1.11, 1.25, 1.34, 1.17, 0.94}),
-                        new RJSSpeedIntervalValueCurve(
+                        new SpeedIntervalValueCurve(
                                 new double[] {8.333333, 16.666667, 55.555556, 61.111111},
                                 new double[] {0.74, 0.833333, 0.983333, 0.78, 0.626667}),
-                        new RJSSpeedIntervalValueCurve(new double[] {61.111111}, new double[] {0.6, 0.35}),
-                        new RJSSpeedIntervalValueCurve(
-                                new double[] {8.333333, 61.111111}, new double[] {0.72, 0.69, 0.7}),
-                        new RJSSpeedIntervalValueCurve(new double[] {}, new double[] {0.89}),
-                        new RJSSpeedIntervalValueCurve(new double[] {}, new double[] {6.74e-3}),
-                        new RJSSpeedIntervalValueCurve(new double[] {}, new double[] {1.74e-3}),
+                        new SpeedIntervalValueCurve(new double[] {61.111111}, new double[] {0.6, 0.35}),
+                        new SpeedIntervalValueCurve(new double[] {8.333333, 61.111111}, new double[] {0.72, 0.69, 0.7}),
+                        new SpeedIntervalValueCurve(new double[] {}, new double[] {0.89}),
+                        new SpeedIntervalValueCurve(new double[] {}, new double[] {6.74e-3}),
+                        new SpeedIntervalValueCurve(new double[] {}, new double[] {1.74e-3}),
                         1,
                         2,
                         2,

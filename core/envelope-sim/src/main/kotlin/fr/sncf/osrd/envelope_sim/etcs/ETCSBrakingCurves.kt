@@ -382,8 +382,8 @@ private fun computeBrakingCurvesFromRefs(
     val rollingStock = context.rollingStock
     val (sbiBrakingCurveType, tBs) =
         when (refBrakingCurve.brakingType) {
-            SBD -> Pair(SBI_1, rollingStock.rjsEtcsBrakeParams.tBs1)
-            EBI -> Pair(SBI_2, rollingStock.rjsEtcsBrakeParams.tBs2)
+            SBD -> Pair(SBI_1, rollingStock.etcsBrakeParams.tBs1)
+            EBI -> Pair(SBI_2, rollingStock.etcsBrakeParams.tBs2)
             else ->
                 throw IllegalArgumentException(
                     "Expected EBI or SBD reference braking curve type, found: ${refBrakingCurve.brakingType}"
@@ -621,8 +621,8 @@ private fun computeBecParams(
     // The time during which the traction effort is still present. See Subset: §3.13.9.3.2.3.
     val tTraction =
         max(
-            rollingStock.rjsEtcsBrakeParams.tTractionCutOff -
-                (T_WARNING + rollingStock.rjsEtcsBrakeParams.tBs2),
+            rollingStock.etcsBrakeParams.tTractionCutOff -
+                (T_WARNING + rollingStock.etcsBrakeParams.tBs2),
             0.0,
         )
     // Estimated acceleration during tTraction, worst case scenario (the train accelerates as much
@@ -647,7 +647,7 @@ private fun computeBecParams(
 
     // The remaining time during which the traction effort is not present. See Subset:
     // §3.13.9.3.2.6.
-    val tBerem = max(rollingStock.rjsEtcsBrakeParams.tBe - tTraction, 0.0)
+    val tBerem = max(rollingStock.etcsBrakeParams.tBe - tTraction, 0.0)
     // Speed correction due to the braking system not being active yet. See Subset: §3.13.9.3.2.10.
     val vDelta2 = A_EST_2 * tBerem
 
