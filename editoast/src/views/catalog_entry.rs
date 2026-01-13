@@ -96,7 +96,7 @@ pub(in crate::views) struct CatalogEntryPage {
         (status = 200, description = "List of catalog entries", body = inline(CatalogEntryPage)),
     ),
 )]
-pub(in crate::views) async fn get(
+pub(in crate::views) async fn list_paginated(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Query(pagination_params): Query<PaginationQueryParams<100>>,
@@ -117,39 +117,6 @@ pub(in crate::views) async fn get(
         results: catalog_entries,
         stats,
     }))
-}
-
-#[editoast_derive::route]
-#[utoipa::path(
-        get, path = "",
-        tag = "catalog_entry",
-        params(CatalogEntryIdParam),
-    responses(
-        (status = 200, description = "Catalog entry", body = CatalogEntry),
-        (status = 404, description = "Catalog entry not found"),
-    ),
-)]
-pub(in crate::views) async fn get_by_id(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
-    Path(CatalogEntryIdParam {
-        id: catalog_entry_id,
-    }): Path<CatalogEntryIdParam>,
-) -> Result<Json<CatalogEntry>> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
-    let catalog_entry_result =
-        CatalogEntry::retrieve_or_fail(db_pool.get().await?, catalog_entry_id, || {
-            CatalogEntryError::NotFound { catalog_entry_id }
-        })
-        .await?;
-    Ok(Json(catalog_entry_result))
 }
 
 #[editoast_derive::route]
