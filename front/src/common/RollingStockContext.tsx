@@ -8,7 +8,7 @@ import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 
 type RollingStockContextValue = {
-  rollingStockMap: Map<string, LightRollingStockWithLiveries>;
+  rollingStocksByName: Map<string, LightRollingStockWithLiveries>;
   rollingStocks: LightRollingStockWithLiveries[] | null;
 };
 
@@ -46,10 +46,10 @@ export const RollingStockContextProvider = ({ children }: RollingStockContextPro
 
   const value = useMemo(() => {
     const rollingStocks = data?.results ?? [];
-    const rollingStockMap = new Map<string, LightRollingStockWithLiveries>(
+    const rollingStocksByName = new Map<string, LightRollingStockWithLiveries>(
       rollingStocks.map((rs) => [rs.name, rs])
     );
-    return { rollingStockMap, rollingStocks };
+    return { rollingStocksByName, rollingStocks };
   }, [data?.results]);
 
   return <RollingStockContext.Provider value={value}>{children}</RollingStockContext.Provider>;

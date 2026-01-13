@@ -32,7 +32,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
   const [putPacedTrainById] = osrdEditoastApi.endpoints.putPacedTrainById.useMutation();
 
   const { workerStatus } = useScenarioContext();
-  const { rollingStocks, rollingStockMap: rollingStocksByName } = useRollingStockContext();
+  const { rollingStocks, rollingStocksByName } = useRollingStockContext();
 
   const projectionPath = usePathProjection(infraId, timetableItemsById);
 
