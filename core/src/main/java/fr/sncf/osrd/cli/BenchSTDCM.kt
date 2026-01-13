@@ -17,6 +17,7 @@ import fr.sncf.osrd.cli.ValidateInfra.parseRailJSONFromFile
 import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
 import fr.sncf.osrd.stdcm.STDCMResult
+import fr.sncf.osrd.stdcm.graph.STDCMGraph
 import fr.sncf.osrd.stdcm.graph.findPath
 import fr.sncf.osrd.stdcm.preprocessing.implementation.makeBlockAvailability
 import fr.sncf.osrd.utils.CSVLogger
@@ -190,6 +191,11 @@ class BenchSTDCM : CliCommand {
                             Pathfinding.TIMEOUT,
                             temporarySpeedLimitManager,
                             allowedTrackSections,
+                            STDCMGraph.SearchMetadata(
+                                request.startTime,
+                                requirements.metadata,
+                                null,
+                            ),
                         )
                     if (path != null && hasDuplicateTracks(infra, path.trainPath)) path = null
                 } catch (e: Exception) {

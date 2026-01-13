@@ -53,15 +53,16 @@ def main(input_location, output_location):
     fig.width = 900
     fig.height = 600
 
-    plot_positions(fig, data["sim_output"]["final_output"], departure_time)
-    plot_zone_updates(
-        fig, data["sim_output"]["final_output"], zone_locations, departure_time
-    )
-    plot_new_train_requirements(
-        fig, data["sim_output"]["final_output"], zone_locations, departure_time
-    )
-    plot_other_trains(fig, zone_locations, data["other_requirements"], departure_time)
+    plot_positions(fig, data, departure_time)
     plot_engineering_allowances(fig, data, departure_time)
+    if "sim_output" in data:
+        plot_zone_updates(
+            fig, data["sim_output"]["final_output"], zone_locations, departure_time
+        )
+        plot_new_train_requirements(
+            fig, data["sim_output"]["final_output"], zone_locations, departure_time
+        )
+    plot_other_trains(fig, zone_locations, data["other_requirements"], departure_time)
 
     fig.legend.click_policy = "hide"
     show_operational_points(fig, data["path_properties"]["operational_points"])
@@ -75,9 +76,9 @@ def convert_times(departure_time: datetime, times: List[int]) -> List[datetime]:
     return [departure_time + timedelta(milliseconds=x) for x in times]
 
 
-def plot_positions(fig, sim: Dict, departure_time: datetime):
-    positions = [x / 1000 for x in sim["positions"]]
-    times = convert_times(departure_time, [x for x in sim["times"]])
+def plot_positions(fig, data: Dict, departure_time: datetime):
+    positions = [x / 1000 for x in data["train_positions"]]
+    times = convert_times(departure_time, [x for x in data["train_times"]])
     fig.line(times, positions, line_width=2, legend_label="train_positions")
 
 
@@ -239,9 +240,8 @@ def plot_other_trains(
 
 def plot_engineering_allowances(fig, data, departure_time):
     engineering_allowance_ranges = data["engineering_allowances_ranges"]
-    sim = data["sim_output"]["final_output"]
-    positions = [x / 1000 for x in sim["positions"]]
-    times = [x for x in sim["times"]]
+    positions = [x / 1000 for x in data["train_positions"]]
+    times = [x for x in data["train_times"]]
 
     data = {
         "from": [],

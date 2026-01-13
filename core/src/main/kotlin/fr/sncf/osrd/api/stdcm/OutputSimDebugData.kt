@@ -14,16 +14,24 @@ import fr.sncf.osrd.api.standalone_sim.polymorphicElectricalProfileAdapter
 import fr.sncf.osrd.api.standalone_sim.polymorphicSimulationResponseAdapter
 import fr.sncf.osrd.api.standalone_sim.polymorphicSpeedLimitSourceAdapter
 import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.sim_infra.api.BlockInfra
 import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.api.ZoneId
 import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.graph.EngineeringAllowanceRange
+import fr.sncf.osrd.stdcm.graph.STDCMEdge
+import fr.sncf.osrd.stdcm.graph.STDCMGraph
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.TimeDelta
 import fr.sncf.osrd.utils.units.seconds
+import java.time.Duration.ofMillis
 import java.time.ZonedDateTime
 import kotlin.math.min
+
+// Include occupancy for other train up to this amount of seconds before the new train departure and
+// after its arrival
+private const val includedOccupancyMargin = 3_600.0
 
 /**
  * Contains data describing the output stdcm simulation. Meant to contain anything that may be
@@ -33,13 +41,15 @@ import kotlin.math.min
  * For now, this whole file only meant for debugging purposes.
  */
 data class OutputSimDebugData(
-    @Json(name = "sim_output") val simOutput: SimulationSuccess,
+    @Json(name = "sim_output") val simOutput: SimulationSuccess?,
     @Json(name = "path_properties") val pathProperties: PathPropResponse,
     @Json(name = "other_requirements") val otherRequirements: List<TrainZoneRequirement>,
     @Json(name = "departure_time") val departureTime: ZonedDateTime,
     @Json(name = "engineering_allowances_ranges")
     val engineeringAllowanceRanges: List<EngineeringAllowanceRange>,
     @Json(name = "zone_locations") val zoneLocations: List<ZoneLocation>,
+    @Json(name = "train_times") val trainTimes: List<TimeDelta>,
+    @Json(name = "train_positions") val trainPositions: List<Offset<TrainPath>>,
 ) {
     companion object {
         val adapter: JsonAdapter<OutputSimDebugData> =
@@ -71,32 +81,87 @@ fun generateDebugData(
     departureTime: ZonedDateTime,
     requirements: Map<ZoneId, List<STDCMTimetableData.DetailedRequirement>>,
 ): OutputSimDebugData {
+    val minRelevantTime = -includedOccupancyMargin
+    val maxRelevantTime =
+        path.envelope.totalTime + path.stopResults.sumOf { it.duration } + includedOccupancyMargin
     return OutputSimDebugData(
         simOutput = simulationResponse,
         pathProperties = makePathPropResponse(path.trainPath, rawInfra),
-        otherRequirements = makeOtherRequirements(rawInfra, requirements, path),
+        otherRequirements =
+            makeOtherRequirements(
+                rawInfra,
+                requirements,
+                path.departureTime,
+                minRelevantTime,
+                maxRelevantTime,
+                path.trainPath,
+            ),
         departureTime = departureTime,
         engineeringAllowanceRanges = path.engineeringAllowanceRanges,
         zoneLocations =
             path.trainPath.getZoneRanges().map {
                 ZoneLocation(rawInfra.getZoneName(it.value), it.pathBegin, it.pathEnd)
             },
+        trainTimes = simulationResponse.finalOutput.times,
+        trainPositions = simulationResponse.finalOutput.positions,
+    )
+}
+
+fun generatePartialDebugData(
+    rawInfra: RawInfra,
+    blockInfra: BlockInfra,
+    edges: List<STDCMEdge>,
+    searchMetadata: STDCMGraph.SearchMetadata,
+    allowanceRanges: List<EngineeringAllowanceRange>,
+): OutputSimDebugData {
+    val lastEdge = edges.last()
+    val timeData = lastEdge.timeData
+    val trainPath = lastEdge.infraExplorer.buildFullPath(rawInfra, blockInfra)
+    val departureTime =
+        searchMetadata.originalStartTime.plus(ofMillis((timeData.departureTime * 1000).toLong()))
+    val minRelevantTime = -includedOccupancyMargin
+    val maxRelevantTime = timeData.earliestReachableTime + includedOccupancyMargin
+    return OutputSimDebugData(
+        simOutput = null,
+        pathProperties = makePathPropResponse(trainPath, rawInfra),
+        otherRequirements =
+            makeOtherRequirements(
+                rawInfra,
+                searchMetadata.requirementMetadata,
+                timeData.departureTime,
+                minRelevantTime,
+                maxRelevantTime,
+                trainPath,
+            ),
+        departureTime = departureTime,
+        engineeringAllowanceRanges = allowanceRanges,
+        zoneLocations =
+            trainPath.getZoneRanges().map {
+                ZoneLocation(rawInfra.getZoneName(it.value), it.pathBegin, it.pathEnd)
+            },
+        trainTimes =
+            edges.map {
+                (it.timeData.getUpdatedEarliestReachableTime(timeData) - timeData.departureTime)
+                    .seconds
+            },
+        trainPositions = edges.map { it.infraExplorer.getCurrentBlockRange().pathBegin },
     )
 }
 
 fun makeOtherRequirements(
     rawInfra: RawInfra,
     requirements: Map<ZoneId, List<STDCMTimetableData.DetailedRequirement>>,
-    path: STDCMResult,
+    departureTimeDelta: Double,
+    minRelevantTime: Double,
+    maxRelevantTime: Double,
+    trainPath: TrainPath,
 ): List<TrainZoneRequirement> {
     val res = mutableListOf<TrainZoneRequirement>()
-    val minRelevantTime = -3_600.0
-    val maxRelevantTime = path.envelope.totalTime + 3_600.0
-    for (zoneRange in path.trainPath.getZoneRanges()) {
+    for (zoneRange in trainPath.getZoneRanges()) {
         val metadataList = requirements[zoneRange.value] ?: continue
         for (metadata in metadataList) {
-            val beginTime = max(minRelevantTime, metadata.from - path.departureTime)
-            val endTime = min(maxRelevantTime, metadata.to - path.departureTime)
+            val beginTime = max(minRelevantTime, metadata.from - departureTimeDelta)
+            val endTime = min(maxRelevantTime, metadata.to - departureTimeDelta)
             if (endTime < beginTime) continue
             res.add(
                 TrainZoneRequirement(
