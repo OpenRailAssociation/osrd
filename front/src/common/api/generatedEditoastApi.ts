@@ -73,9 +73,9 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/authz/${queryArg.resourceType}/${queryArg.resourceId}` }),
         providesTags: ['authz'],
       }),
-      getCatalogEntry: build.query<GetCatalogEntryApiResponse, GetCatalogEntryApiArg>({
+      getCatalogEntries: build.query<GetCatalogEntriesApiResponse, GetCatalogEntriesApiArg>({
         query: (queryArg) => ({
-          url: `/catalog_entry`,
+          url: `/catalog_entries`,
           params: {
             page: queryArg.page,
             page_size: queryArg.pageSize,
@@ -90,10 +90,6 @@ const injectedRtkApi = api
           body: queryArg.catalogEntryForm,
         }),
         invalidatesTags: ['catalog_entry'],
-      }),
-      getCatalogEntryById: build.query<GetCatalogEntryByIdApiResponse, GetCatalogEntryByIdApiArg>({
-        query: (queryArg) => ({ url: `/catalog_entry/${queryArg.id}` }),
-        providesTags: ['catalog_entry'],
       }),
       putCatalogEntryById: build.mutation<
         PutCatalogEntryByIdApiResponse,
@@ -1238,16 +1234,6 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['rolling_stock'],
       }),
-      getTrainScheduleSet: build.query<GetTrainScheduleSetApiResponse, GetTrainScheduleSetApiArg>({
-        query: (queryArg) => ({
-          url: `/train_schedule_set`,
-          params: {
-            catalog_entry_id: queryArg.catalogEntryId,
-            published: queryArg.published,
-          },
-        }),
-        providesTags: ['train_schedule_set'],
-      }),
       postTrainScheduleSet: build.mutation<
         PostTrainScheduleSetApiResponse,
         PostTrainScheduleSetApiArg
@@ -1294,6 +1280,19 @@ const injectedRtkApi = api
           body: queryArg.body,
         }),
         invalidatesTags: ['train_schedule_set', 'paced_train'],
+      }),
+      getTrainScheduleSets: build.query<
+        GetTrainScheduleSetsApiResponse,
+        GetTrainScheduleSetsApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/train_schedule_sets`,
+          params: {
+            catalog_entry_id: queryArg.catalogEntryId,
+            published: queryArg.published,
+          },
+        }),
+        providesTags: ['train_schedule_set'],
       }),
       getVersion: build.query<GetVersionApiResponse, GetVersionApiArg>({
         query: () => ({ url: `/version` }),
@@ -1448,22 +1447,17 @@ export type GetAuthzByResourceTypeAndResourceIdApiArg = {
   resourceType: ResourceType;
   resourceId: number;
 };
-export type GetCatalogEntryApiResponse =
+export type GetCatalogEntriesApiResponse =
   /** status 200 List of catalog entries */ PaginationStats & {
     results: CatalogEntry[];
   };
-export type GetCatalogEntryApiArg = {
+export type GetCatalogEntriesApiArg = {
   page?: number;
   pageSize?: number;
 };
 export type PostCatalogEntryApiResponse = /** status 201 Catalog entry */ CatalogEntry;
 export type PostCatalogEntryApiArg = {
   catalogEntryForm: CatalogEntryForm;
-};
-export type GetCatalogEntryByIdApiResponse = /** status 200 Catalog entry */ CatalogEntry;
-export type GetCatalogEntryByIdApiArg = {
-  /** A catalog entry ID */
-  id: number;
 };
 export type PutCatalogEntryByIdApiResponse = /** status 200 Catalog entry */ CatalogEntry;
 export type PutCatalogEntryByIdApiArg = {
@@ -2491,14 +2485,6 @@ export type PatchTowedRollingStockByTowedRollingStockIdLockedApiArg = {
   towedRollingStockId: number;
   towedRollingStockLockedForm: TowedRollingStockLockedForm;
 };
-export type GetTrainScheduleSetApiResponse =
-  /** status 200 list of train schedule sets */ (TrainScheduleSet & {
-    train_schedule_count: number;
-  })[];
-export type GetTrainScheduleSetApiArg = {
-  catalogEntryId?: number;
-  published?: boolean;
-};
 export type PostTrainScheduleSetApiResponse =
   /** status 201 Train schedule set */ TrainScheduleSetResponse;
 export type PostTrainScheduleSetApiArg = {
@@ -2528,6 +2514,14 @@ export type PostTrainScheduleSetByIdPacedTrainsApiArg = {
   /** A train schedule set ID */
   id: number;
   body: PacedTrain[];
+};
+export type GetTrainScheduleSetsApiResponse =
+  /** status 200 list of train schedule sets */ (TrainScheduleSet & {
+    train_schedule_count: number;
+  })[];
+export type GetTrainScheduleSetsApiArg = {
+  catalogEntryId?: number;
+  published?: boolean;
 };
 export type GetVersionApiResponse = /** status 200 Return the service version */ Version;
 export type GetVersionApiArg = void;
