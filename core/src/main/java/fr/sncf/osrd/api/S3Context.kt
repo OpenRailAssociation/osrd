@@ -70,7 +70,7 @@ data class S3Context(val s3Client: S3Client, val bucketName: String) {
 fun makeS3Context(): S3Context? {
     val url = System.getenv("AWS_ENDPOINT_URL_S3")
     val bucket = System.getenv("BUCKET_NAME")
-    if (url == null || bucket == null || url == "" || bucket == "") {
+    if (bucket == null || bucket == "") {
         s3Logger.info {
             "s3 env variables are not set, not using it: AWS_ENDPOINT_URL_S3=$url, BUCKET_NAME=$bucket"
         }
@@ -80,13 +80,14 @@ fun makeS3Context(): S3Context? {
     val s3Config =
         S3Configuration.builder().chunkedEncodingEnabled(false).pathStyleAccessEnabled(true).build()
 
-    val s3Client =
+    val s3Builder =
         S3Client.builder()
-            // A region needs to be set, but it's not used with an endpoint override
-            .region(Region.EU_WEST_1)
+            .region(Region.EU_WEST_3)
             .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
-            .endpointOverride(URI.create(url))
             .serviceConfiguration(s3Config)
-            .build()
+    if (url != null && url != "") {
+        s3Builder.endpointOverride(URI.create(url))
+    }
+    val s3Client = s3Builder.build()
     return S3Context(s3Client, bucket)
 }
