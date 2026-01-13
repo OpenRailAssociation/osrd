@@ -1,6 +1,8 @@
 package fr.sncf.osrd.stdcm.graph
 
 import com.squareup.moshi.Json
+import fr.sncf.osrd.api.stdcm.OutputSimDebugData
+import fr.sncf.osrd.api.stdcm.generatePartialDebugData
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceRange
@@ -20,6 +22,7 @@ import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
+import java.io.File
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
@@ -121,6 +124,7 @@ fun buildFinalEnvelope(
                     fixedPoints,
                     conflictOffset,
                     isMareco,
+                    allowanceRanges,
                 )
             }
             val newPoint =
@@ -475,6 +479,7 @@ private fun handlePostProcessingConflict(
     fixedPoints: TreeSet<FixedTimePoint>,
     conflictOffset: Offset<TrainPath>,
     isMareco: Boolean,
+    allowanceRanges: List<EngineeringAllowanceRange>,
 ): FinalEnvelopeResult {
     postProcessingLogger.error(
         "Conflicts detected in post-processing, mismatch with the exploration data"
@@ -487,6 +492,27 @@ private fun handlePostProcessingConflict(
         "    conflict happened at offset=$conflictOffset/${maxSpeedEnvelope.endPos.toInt()} " +
             "and t=${conflictTime.toInt()}/${updatedTimeData.timeSinceDeparture.toInt()}"
     )
+
+    if (graph.searchMetadata != null) {
+        val stringDebugData by lazy {
+            OutputSimDebugData.adapter.toJson(
+                generatePartialDebugData(
+                    graph.rawInfra,
+                    graph.blockInfra,
+                    edges,
+                    graph.searchMetadata,
+                    allowanceRanges,
+                )
+            )
+        }
+        val filename = System.getenv("STDCM_DEBUG_DATA_FILENAME")
+        if (filename != null) {
+            File(filename).writeText(stringDebugData)
+        }
+        graph.searchMetadata.s3Context?.writeSTDCMFile("failed_simulation_data.json") {
+            stringDebugData
+        }
+    }
 
     var remainingDistance = conflictOffset.distance
     for ((i, edge) in edges.withIndex()) {

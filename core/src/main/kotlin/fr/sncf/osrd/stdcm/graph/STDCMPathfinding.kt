@@ -61,6 +61,7 @@ fun findPath(
     pathfindingTimeout: Double,
     temporarySpeedLimitManager: TemporarySpeedLimitManager,
     allowedTrackSections: Set<TrackSectionId>? = null,
+    searchMetadata: STDCMGraph.SearchMetadata? = null,
 ): STDCMResult? {
     return STDCMPathfinding(
             fullInfra,
@@ -77,6 +78,7 @@ fun findPath(
             pathfindingTimeout,
             temporarySpeedLimitManager,
             allowedTrackSections,
+            searchMetadata,
         )
         .findPath()
 }
@@ -96,6 +98,7 @@ class STDCMPathfinding(
     private val pathfindingTimeout: Double = Pathfinding.TIMEOUT,
     private val temporarySpeedLimitManager: TemporarySpeedLimitManager,
     private val allowedTrackSections: Set<TrackSectionId>?,
+    private val searchMetadata: STDCMGraph.SearchMetadata?,
 ) {
 
     private var starts: Set<STDCMNode> = HashSet()
@@ -119,6 +122,7 @@ class STDCMPathfinding(
             standardAllowance,
             temporarySpeedLimitManager,
             constraints,
+            searchMetadata,
         )
 
     @WithSpan(value = "STDCM pathfinding", kind = SpanKind.SERVER)

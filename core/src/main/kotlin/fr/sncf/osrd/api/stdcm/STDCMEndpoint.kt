@@ -43,6 +43,7 @@ import fr.sncf.osrd.standalone_sim.runScheduleMetadataExtractor
 import fr.sncf.osrd.stdcm.PlannedTimingData
 import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.STDCMStep
+import fr.sncf.osrd.stdcm.graph.STDCMGraph
 import fr.sncf.osrd.stdcm.graph.checkPlannedStepsAndMaybeIndex
 import fr.sncf.osrd.stdcm.graph.findPath
 import fr.sncf.osrd.stdcm.graph.logger
@@ -145,6 +146,7 @@ class STDCMEndpoint(
                     Pathfinding.TIMEOUT,
                     temporarySpeedLimitManager,
                     allowedTrackSections,
+                    STDCMGraph.SearchMetadata(request.startTime, requirements.metadata, s3Context),
                 )
             if (path == null || hasDuplicateTracks(infra, path.trainPath)) {
                 val response = PathNotFound()
