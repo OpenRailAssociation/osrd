@@ -1,6 +1,8 @@
 package fr.sncf.osrd.api
 
 import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.SpanKind
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.net.URI
 import mu.KotlinLogging
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider
@@ -12,6 +14,8 @@ import software.amazon.awssdk.services.s3.model.HeadObjectRequest
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 
+val s3Logger = KotlinLogging.logger {}
+
 /**
  * Wraps S3 data and operations into a more convenient class.
  *
@@ -20,12 +24,12 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest
  */
 data class S3Context(val s3Client: S3Client, val bucketName: String) {
 
-    val logger = KotlinLogging.logger {}
-
     /** Write a new file for a given stdcm request. */
+    @WithSpan(value = "Writing S3 file", kind = SpanKind.SERVER)
     fun writeSTDCMFile(fileName: String, content: String) {
         try {
             val traceId = Span.current().spanContext.traceId
+            s3Logger.info { "Request $traceId: writing $fileName" }
             val putObjectRequest =
                 PutObjectRequest.builder()
                     .bucket(bucketName)
@@ -34,7 +38,7 @@ data class S3Context(val s3Client: S3Client, val bucketName: String) {
 
             s3Client.putObject(putObjectRequest, RequestBody.fromString(content))
         } catch (e: Exception) {
-            logger.error { e }
+            s3Logger.error { e }
         }
     }
 
@@ -56,7 +60,7 @@ data class S3Context(val s3Client: S3Client, val bucketName: String) {
         } catch (_: NoSuchKeyException) {
             false
         } catch (e: Exception) {
-            logger.error { e }
+            s3Logger.error { e }
             false
         }
     }
@@ -64,9 +68,14 @@ data class S3Context(val s3Client: S3Client, val bucketName: String) {
 
 /** Returns an S3 context (client + bucket name), or null if the env variables aren't set. */
 fun makeS3Context(): S3Context? {
-    val url = System.getenv("AWS_ENDPOINT_URL_S3") ?: return null
-    val bucket = System.getenv("BUCKET_NAME") ?: return null
-    if (url == "" || bucket == "") return null
+    val url = System.getenv("AWS_ENDPOINT_URL_S3")
+    val bucket = System.getenv("BUCKET_NAME")
+    if (url == null || bucket == null || url == "" || bucket == "") {
+        s3Logger.info {
+            "s3 env variables are not set, not using it: AWS_ENDPOINT_URL_S3=$url, BUCKET_NAME=$bucket"
+        }
+        return null
+    }
 
     val s3Config =
         S3Configuration.builder().chunkedEncodingEnabled(false).pathStyleAccessEnabled(true).build()
