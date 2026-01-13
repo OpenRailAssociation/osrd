@@ -107,7 +107,6 @@ const OccurrenceItem = ({
     setIsMenuOpen(false);
   };
 
-  // TODO exceptions : add action to menu buttons
   const menuItems: Record<string, OSRDMenuItem> = {
     disable: {
       title: t('occurrenceMenu.disable'),
@@ -165,7 +164,6 @@ const OccurrenceItem = ({
     },
   };
 
-  // TODO exceptions : filter menu items depending on the occurrence status
   const filteredMenuItems = useMemo(() => {
     const { disable, enable, delete: deleteItem, edit, restore, project } = menuItems;
 
@@ -286,7 +284,6 @@ const OccurrenceItem = ({
       {summary?.isValid && !disabled && isExceptionFromPathOrSimulation(occurrence) && (
         <div className="more-info">
           <div className="more-info-left">
-            {/* TODO : add a category span in https://github.com/OpenRailAssociation/osrd/issues/11542 */}
             <span className="more-info-item">
               {t('timetable.stopsCount', { count: occurrence.stopsCount })}
             </span>

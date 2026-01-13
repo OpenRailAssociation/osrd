@@ -144,7 +144,6 @@ const useOccurrenceActions = ({
         );
 
         dispatch(updateSelectedTrainId(firstEnabledOccurrence?.id));
-        // TODO exceptions : update projected occurrence id in issue https://github.com/OpenRailAssociation/osrd/issues/11476
       }
     },
     [pacedTrain, occurrences, selectedTrainId]

@@ -93,7 +93,6 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
     },
   });
 
-  // TODO Paced trains : adapt this to handle paced trains in the conflicts issue
   const {
     data: conflicts,
     isLoading,

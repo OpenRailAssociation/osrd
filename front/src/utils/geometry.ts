@@ -160,7 +160,6 @@ export function getPointOnTrackCoordinates(
   if (infraPositionOnTrack > trackLength) {
     return null;
   }
-  // TODO TS2 : when adapting train update check that this computation works properly
   const geometryDistanceAlongTrack =
     infraPositionOnTrack * (geometryTrackLength / infraTrackLength);
   return along(pathLineString, geometryDistanceAlongTrack, { units: 'millimeters' }).geometry

@@ -91,8 +91,6 @@ const useSimulationResults = (): SimulationResults | undefined => {
       : skipToken
   );
 
-  // TODO: replace this API call by extracting the rolling stock from the rolling
-  // stocks list
   const { currentData: rollingStock } =
     osrdEditoastApi.endpoints.getRollingStockNameByRollingStockName.useQuery(
       train?.rolling_stock_name
