@@ -262,6 +262,12 @@ fn service_router() -> router::DocumentedRouter {
                         post!(timetable::paced_train::simulation_summary),
                     )
                     .route(
+                        "/move",
+                        patch!(
+                            timetable::paced_train::move_paced_trains_to_another_train_schedule_set
+                        ),
+                    )
+                    .route(
                         "/track_occupancy",
                         post!(timetable::paced_train::track_occupancy),
                     )
