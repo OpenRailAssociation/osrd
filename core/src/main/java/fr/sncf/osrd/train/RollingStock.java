@@ -6,12 +6,12 @@ import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
+import fr.sncf.osrd.envelope_sim.etcs.EtcsBrakeParams;
 import fr.sncf.osrd.path.interfaces.Electrification;
 import fr.sncf.osrd.path.legacy_objects.electrification.Electrified;
 import fr.sncf.osrd.path.legacy_objects.electrification.Neutral;
 import fr.sncf.osrd.path.legacy_objects.electrification.NonElectrified;
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort;
-import fr.sncf.osrd.railjson.schema.rollingstock.RJSEtcsBrakeParams;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 import java.util.Map;
 import java.util.Set;
@@ -35,7 +35,7 @@ public final class RollingStock implements PhysicsRollingStock {
     /** the deceleration of the train, in m/s^2 */
     public final double constGamma;
 
-    public final RJSEtcsBrakeParams etcsBrakeParams;
+    public final EtcsBrakeParams etcsBrakeParams;
 
     /** the length of the train, in meters. */
     public final double length;
@@ -123,7 +123,7 @@ public final class RollingStock implements PhysicsRollingStock {
     }
 
     @Override
-    public RJSEtcsBrakeParams getRJSEtcsBrakeParams() {
+    public EtcsBrakeParams getEtcsBrakeParams() {
         assert etcsBrakeParams != null;
         return etcsBrakeParams;
     }
@@ -281,7 +281,7 @@ public final class RollingStock implements PhysicsRollingStock {
             double startUpAcceleration,
             double comfortAcceleration,
             double constGamma,
-            RJSEtcsBrakeParams etcsBrakeParams,
+            EtcsBrakeParams etcsBrakeParams,
             RJSLoadingGaugeType loadingGaugeType,
             Map<String, ModeEffortCurves> modes,
             String defaultMode,
@@ -325,7 +325,7 @@ public final class RollingStock implements PhysicsRollingStock {
             double startUpAcceleration,
             double comfortAcceleration,
             double constGamma,
-            RJSEtcsBrakeParams etcsBrakeParams,
+            EtcsBrakeParams etcsBrakeParams,
             RJSLoadingGaugeType loadingGaugeType,
             Map<String, ModeEffortCurves> modes,
             String defaultMode,
