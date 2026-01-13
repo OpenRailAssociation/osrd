@@ -138,7 +138,7 @@ services:
     image: minio/mc
     container_name: osrd-s3-init-pr-tests
     volumes:
-      - ./docker/create_bucket.sh:/create_bucket.sh
+      - ../docker/create_bucket.sh:/create_bucket.sh
     depends_on:
       s3:
         condition: service_healthy
