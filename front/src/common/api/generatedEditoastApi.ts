@@ -635,6 +635,13 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/paced_train`, method: 'DELETE', body: queryArg.body }),
         invalidatesTags: ['timetable', 'paced_train'],
       }),
+      patchPacedTrainMove: build.mutation<
+        PatchPacedTrainMoveApiResponse,
+        PatchPacedTrainMoveApiArg
+      >({
+        query: (queryArg) => ({ url: `/paced_train/move`, method: 'PATCH', body: queryArg.body }),
+        invalidatesTags: ['paced_train'],
+      }),
       postPacedTrainOccupancyBlocks: build.query<
         PostPacedTrainOccupancyBlocksApiResponse,
         PostPacedTrainOccupancyBlocksApiArg
@@ -1938,6 +1945,13 @@ export type DeletePacedTrainApiResponse = unknown;
 export type DeletePacedTrainApiArg = {
   body: {
     ids: number[];
+  };
+};
+export type PatchPacedTrainMoveApiResponse = unknown;
+export type PatchPacedTrainMoveApiArg = {
+  body: {
+    paced_train_ids: number[];
+    train_schedule_set_id: number;
   };
 };
 export type PostPacedTrainOccupancyBlocksApiResponse = /** status 200  */ {
