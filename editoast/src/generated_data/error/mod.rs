@@ -2,6 +2,7 @@ pub mod buffer_stops;
 pub mod detectors;
 pub mod electrifications;
 pub mod infra_error;
+pub mod level_crossings;
 pub mod operational_points;
 pub mod routes;
 pub mod signals;
@@ -241,6 +242,13 @@ pub async fn generate_infra_errors(infra_cache: &InfraCache) -> Vec<InfraError> 
             &[],
         )),
         Box::pin(generate_errors(
+            ObjectType::LevelCrossing,
+            infra_cache,
+            &graph,
+            &level_crossings::OBJECT_GENERATORS,
+            &[],
+        )),
+        Box::pin(generate_errors(
             ObjectType::Switch,
             infra_cache,
             &graph,
@@ -278,7 +286,6 @@ fn get_insert_errors_query(obj_type: ObjectType) -> &'static str {
         ObjectType::Route => include_str!("sql/routes_insert_errors.sql"),
         ObjectType::OperationalPoint => include_str!("sql/operational_points_insert_errors.sql"),
         ObjectType::Electrification => include_str!("sql/electrifications_insert_errors.sql"),
-        // TODO: level_crossings_insert_errors.sql
         ObjectType::LevelCrossing => include_str!("sql/level_crossings_insert_errors.sql"),
     }
 }
@@ -439,6 +446,7 @@ mod tests {
     use super::switch_types;
     use super::switches;
     use super::track_sections;
+    use crate::generated_data::error::level_crossings;
     use crate::infra_cache::tests::create_buffer_stop_cache;
     use crate::infra_cache::tests::create_small_infra_cache;
     use schemas::primitives::ObjectType;
@@ -533,6 +541,17 @@ mod tests {
                 &small_infra_cache,
                 &graph,
                 &operational_points::OBJECT_GENERATORS,
+                &[],
+            )
+            .await
+            .is_empty()
+        );
+        assert!(
+            generate_errors(
+                ObjectType::LevelCrossing,
+                &small_infra_cache,
+                &graph,
+                &level_crossings::OBJECT_GENERATORS,
                 &[],
             )
             .await
