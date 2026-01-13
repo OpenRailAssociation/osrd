@@ -30,7 +30,7 @@ export const defaultMapSettings: MapSettings = {
     speed_limits: false,
     speedlimittag: null,
     switches: false,
-    tvds: false,
+    tvds: true,
     platforms: false,
     errors: false,
   },
