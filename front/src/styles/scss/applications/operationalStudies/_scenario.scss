@@ -936,6 +936,11 @@ $train-category-colors: (
     --catalog-entry-mode-button-offset: 9px;
 
     max-width: 560px;
+
+    &.delete-dialog {
+      max-width: 680px;
+    }
+
     font-family: 'IBM Plex Sans';
 
     &:has(.wizz-effect:active) {
@@ -992,6 +997,16 @@ $train-category-colors: (
             margin-right: 15px;
           }
         }
+      }
+    }
+    .train-schedule-set-remove-dialog-text {
+      span {
+        display: block;
+      }
+
+      span:nth-child(2) {
+        color: var(--error60);
+        font-weight: 600;
       }
     }
 

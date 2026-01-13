@@ -68,6 +68,8 @@ const Timetable = ({
     publishTrainScheduleSet,
     getTrainScheduleSetByCatalogAndName,
     localCopyTrainScheduleSet,
+    updateTrainScheduleSet,
+    removeTrainScheduleSet,
   } = useScenarioTrainScheduleSet(timetableItemsWithDetails);
 
   const { filteredTimetableItems, ...timetableFilters } = useFilterTimetableItems(
@@ -186,6 +188,8 @@ const Timetable = ({
                       publishTrainScheduleSet={publishTrainScheduleSet}
                       getTrainScheduleSetByCatalogAndName={getTrainScheduleSetByCatalogAndName}
                       localCopyTrainScheduleSet={localCopyTrainScheduleSet}
+                      updateTrainScheduleSet={updateTrainScheduleSet}
+                      removeTrainScheduleSet={removeTrainScheduleSet}
                     >
                       <CalendarTrainList
                         setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}

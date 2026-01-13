@@ -22,16 +22,19 @@ import type useScenarioTrainScheduleSet from 'applications/operationalStudies/ho
 import type { TrainScheduleSet } from 'common/api/osrdEditoastApi';
 import MenuTriggerButton, { type MenuProps } from 'common/MenuTriggerButton';
 
-import TrainScheduleSetDialog from './TrainScheduleSetDialog';
+import TrainScheduleDeleteDialog from './TrainScheduleDeleteDialog';
 import { computeTrainScheduleSetName, isSandbox } from '../utils';
 import LocalCopyTrainScheduleSetDialog from './LocalCopyTrainScheduleSetDialog';
+import TrainScheduleSetDialog from './TrainScheduleSetDialog';
 
 type OpenDialogName =
-  | 'transformToLocalCopy'
-  | 'publishToCatalog'
-  | 'edit'
   | 'duplicate'
-  | 'removeFromScenario';
+  | 'editPublished'
+  | 'editLocal'
+  | 'removePublished'
+  | 'removeLocal'
+  | 'publishToCatalog'
+  | 'transformToLocalCopy';
 
 type TrainScheduleSetTabProps = PropsWithChildren<{
   trainScheduleSet: TrainScheduleSet;
@@ -52,6 +55,8 @@ type TrainScheduleSetTabProps = PropsWithChildren<{
   localCopyTrainScheduleSet: ReturnType<
     typeof useScenarioTrainScheduleSet
   >['localCopyTrainScheduleSet'];
+  updateTrainScheduleSet: ReturnType<typeof useScenarioTrainScheduleSet>['updateTrainScheduleSet'];
+  removeTrainScheduleSet: ReturnType<typeof useScenarioTrainScheduleSet>['removeTrainScheduleSet'];
 }>;
 
 const TrainScheduleSetTab = ({
@@ -68,6 +73,8 @@ const TrainScheduleSetTab = ({
   publishTrainScheduleSet,
   getTrainScheduleSetByCatalogAndName,
   localCopyTrainScheduleSet,
+  updateTrainScheduleSet,
+  removeTrainScheduleSet,
 }: TrainScheduleSetTabProps) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'main.timetable.trainScheduleSets',
@@ -88,24 +95,38 @@ const TrainScheduleSetTab = ({
               icon: <Verified />,
               onClick: () => setOpenedDialog('publishToCatalog'),
             },
-        {
-          title: t('edit'),
-          icon: <LinkExternal />,
-          onClick: noop,
-          disabled: true,
-        },
+        trainScheduleSet.published
+          ? {
+              title: t('edit'),
+              icon: <LinkExternal />,
+              onClick: () => setOpenedDialog('editPublished'),
+              disabled: false,
+            }
+          : {
+              title: t('edit'),
+              icon: <LinkExternal />,
+              onClick: () => setOpenedDialog('editLocal'),
+              disabled: false,
+            },
         {
           title: t('duplicate'),
           icon: <Duplicate />,
           onClick: () => noop,
           disabled: true,
         },
-        {
-          title: t('removeFromScenario'),
-          icon: <NoEntry />,
-          onClick: noop,
-          disabled: true,
-        },
+        trainScheduleSet.published
+          ? {
+              title: t('removeFromScenario'),
+              icon: <NoEntry />,
+              onClick: () => setOpenedDialog('removePublished'),
+              disabled: false,
+            }
+          : {
+              title: t('removeFromScenario'),
+              icon: <NoEntry />,
+              onClick: () => setOpenedDialog('removeLocal'),
+              disabled: false,
+            },
       ],
     }),
     [trainScheduleSet]
@@ -154,7 +175,6 @@ const TrainScheduleSetTab = ({
         )}
       </div>
       {isTrainListOpen && children}
-
       {openedDialog === 'publishToCatalog' &&
         createPortal(
           <TrainScheduleSetDialog
@@ -185,6 +205,48 @@ const TrainScheduleSetTab = ({
             onCancel={() => setOpenedDialog(null)}
             onSubmit={async () => {
               await localCopyTrainScheduleSet(trainScheduleSet);
+            }}
+          />,
+          document.body
+        )}
+      {(openedDialog === 'editPublished' || openedDialog === 'editLocal') &&
+        createPortal(
+          <TrainScheduleSetDialog
+            trainScheduleSet={trainScheduleSet}
+            getCatalogEntries={getCatalogEntries}
+            labels={{
+              title: t(openedDialog === 'editLocal' ? 'editLocalTitle' : 'editPublishedTitle'),
+              submit: t('edit'),
+              cancel: t('cancel'),
+            }}
+            onCancel={() => setOpenedDialog(null)}
+            onSubmit={async (data) => {
+              await updateTrainScheduleSet(trainScheduleSet, data);
+            }}
+          />,
+          document.body
+        )}
+
+      {(openedDialog === 'removePublished' || openedDialog === 'removeLocal') &&
+        createPortal(
+          <TrainScheduleDeleteDialog
+            trainScheduleSet={trainScheduleSet}
+            labels={{
+              title: t(
+                openedDialog === 'removeLocal' ? 'localRemoveDialogTitle' : 'removeDialogTitle'
+              ),
+              texts: [
+                t('removeDialogText', {
+                  name: trainScheduleSet.name,
+                }),
+                openedDialog === 'removeLocal' ? t('localRemoveDialogWarning') : '',
+              ],
+              submit: t('removeFromScenario'),
+              cancel: t('cancel'),
+            }}
+            onCancel={() => setOpenedDialog(null)}
+            onDelete={async () => {
+              await removeTrainScheduleSet(trainScheduleSet.id);
             }}
           />,
           document.body
