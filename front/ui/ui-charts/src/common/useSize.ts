@@ -13,7 +13,7 @@ export function useSize(dom?: HTMLElement | null) {
     // Function to update the state with the new size
     const updateSize = () => {
       const width = dom?.offsetWidth || 1;
-      const height = dom?.offsetHeight || 1;
+      const height = dom?.offsetHeight || 600;
 
       if (width !== size.width || height !== size.height) setSize({ width, height });
     };
