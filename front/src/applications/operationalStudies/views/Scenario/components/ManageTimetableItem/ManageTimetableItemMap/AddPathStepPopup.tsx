@@ -18,6 +18,7 @@ import { osrdEditoastApi, type OperationalPoint } from 'common/api/osrdEditoastA
 import { getOrigin, getDestination } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { getPointOnTrackCoordinates } from 'utils/geometry';
+import { mToMm } from 'utils/physics';
 
 import type { FeatureInfoClick } from '../types';
 import OperationalPointPopupDetails from './OperationalPointPopupDetails';
@@ -75,11 +76,13 @@ const AddPathStepPopup = ({
         return;
       }
 
+      // trackEntity length is in meters, so a conversion in mm is needed here
       const trackEntity = editoastToEditorEntity<TrackSectionEntity>(result[0], 'TrackSection');
-      const offset = calculateDistanceAlongTrack(
-        trackEntity,
-        point(featureInfoClick.coordinates.slice(0, 2)).geometry,
-        'millimeters'
+      const offset = mToMm(
+        calculateDistanceAlongTrack(
+          trackEntity,
+          point(featureInfoClick.coordinates.slice(0, 2)).geometry
+        )
       );
 
       if (!featureInfoClick.feature.properties) return;
