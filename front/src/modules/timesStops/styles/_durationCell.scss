@@ -1,0 +1,50 @@
+.duration-cell-digit {
+  width: 17px;
+  height: 20px;
+  color: var(--black100);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.duration-cell-digit-saved {
+  color: var(--primary60);
+}
+
+.duration-cell-letter {
+  width: 8px;
+  height: 20px;
+  color: var(--grey30);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.duration-cell-letter-saved {
+  color: var(--primary30);
+}
+
+.duration-cell-digit-focused-editing {
+  .duration-cell-digits-value {
+    position: relative;
+    width: 17px;
+    height: 18px;
+    background-color: var(--primary10);
+    border-radius: 2px;
+  }
+}
+
+.duration-cell-caret {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 20px;
+  background-color: #006dff;
+}
+
+.duration-cell {
+  &:focus {
+    outline: none;
+  }
+}
