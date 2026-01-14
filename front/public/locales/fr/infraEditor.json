@@ -257,6 +257,49 @@
   "FlagSignalParameter": {
     "title": "Paramètres du signal"
   },
+  "LevelCrossing": {
+    "description": "Cette classe décrit les passages à niveau de l'infra correspondante.",
+    "properties": {
+      "id": {
+        "description": "Identifiant unique de l'objet",
+        "title": "Id"
+      },
+      "name": {
+        "description": "Nom du passage à niveau",
+        "title": "Nom"
+      },
+      "parts": {
+        "title": "Parties de passage à niveau"
+      },
+      "short_zone_length": {
+        "description": "Longueur de la zone courte en mm",
+        "title": "Longueur de la zone courte"
+      }
+    },
+    "title": "Passage à niveau"
+  },
+  "LevelCrossingPart": {
+    "description": "Une partie de passage à niveau est un point unique sur l'infrastructure.\nIl contient des informations sur la distance des pédales par rapport à ce point.\nIl est lié à un passage à niveau.",
+    "properties": {
+      "pedal_downstream": {
+        "description": "Distance en mm entre la pédale aval et la position principale",
+        "title": "Pédale aval"
+      },
+      "pedal_upstream": {
+        "description": "Distance en mm entre la pédale amont et la position principale",
+        "title": "Pédale amont"
+      },
+      "position": {
+        "description": "Distance entre le point et le début de la section de voie (en mètres)",
+        "title": "Position"
+      },
+      "track": {
+        "description": "Référence à la section de voie sur laquelle l’objet est situé",
+        "title": "Voie"
+      }
+    },
+    "title": "Partie de passage à niveau"
+  },
   "LimitedLogicalSignal": {
     "description": "Liste définie de signaux logiques. Utilisée pour générer un schéma utilisable pour le front de l’éditeur",
     "title": "Signaux logiques définis"
@@ -404,6 +447,10 @@
   "OperationalPointPart": {
     "description": "Une partie de point remarquable correspond à un point unique sur l’infrastructure qui fait partie du point remarquable.",
     "properties": {
+      "local_track_name": {
+        "description": "Nom de voie locale pour cette partie du point remarquable",
+        "title": "Nom de la voie locale"
+      },
       "position": {
         "description": "Décalage entre le point et le début de la section de voie",
         "title": "Position"
@@ -993,6 +1040,10 @@
     "extended_switch_types": {
       "description": "Types d'appareil de voie pouvant être ajouté par l'utilisateur",
       "title": "Types d’aiguillages étendus"
+    },
+    "level_crossings": {
+      "description": "Liste des passages à niveau de l'infra",
+      "title": "Passages à niveau"
     },
     "neutral_sections": {
       "description": "Sections neutres de l’infrastructure",
