@@ -9,6 +9,7 @@ import { useSelector } from 'react-redux';
 import { v4 as uuidV4 } from 'uuid';
 
 import useCategoryColors from 'applications/operationalStudies/hooks/useCategoryColors';
+import { useManageTimetableItemContext } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
 import { useOperationalPointSearch } from 'applications/operationalStudies/hooks/useOperationalPointSearch';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import AlertBox from 'common/AlertBox';
@@ -18,13 +19,14 @@ import { useInfraID } from 'common/osrdContext';
 import IncompatibleConstraints from 'modules/pathfinding/components/IncompatibleConstraints';
 import usePathfindingV2 from 'modules/pathfinding/hooks/usePathfindingV2';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
+import { updatePathSteps } from 'reducers/osrdconf/operationalStudiesConf';
 import {
   getCategory,
   getOperationalStudiesRollingStockID,
   getOperationalStudiesSpeedLimitByTag,
   getPathSteps,
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import type { PathStepV2 } from 'reducers/osrdconf/types';
+import type { PathStep, PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 
@@ -81,6 +83,8 @@ const ItineraryModal = ({
     infraId,
     buildOpSuggestion,
   });
+
+  const { launchPathfinding } = useManageTimetableItemContext();
 
   const { pathStepsMetadataById } = usePathStepsMetadata(pathSteps);
   const { launchPathfindingV2, pathProperties, pathfindingError } = usePathfindingV2();
@@ -210,6 +214,46 @@ const ItineraryModal = ({
     setItineraryModalIsOpen(false);
   };
 
+  const buildPathSteps = (steps: PathStepV2[], metadataById: Map<string, PathStepMetadata>) =>
+    steps.map<PathStep | null>((s) => {
+      if (!s.location) return null;
+
+      const metadata = metadataById.get(s.id);
+      if (!metadata || metadata.isInvalid) return null;
+
+      const coordinates =
+        metadata.type === 'trackOffset' ? metadata.coordinates : metadata.parts[0]?.coordinates;
+
+      const secondary_code = metadata.type === 'opRef' ? metadata.secondaryCode : undefined;
+
+      return {
+        id: s.id,
+        location: s.location,
+        arrival: s.arrival,
+        stopFor: s.stopFor,
+        theoreticalMargin: s.theoreticalMargin ?? undefined,
+        receptionSignal: s.receptionSignal ?? undefined,
+
+        name: metadata.type === 'opRef' ? metadata.name : undefined,
+        uic: metadata.type === 'opRef' ? metadata.uic : undefined,
+        secondary_code,
+        coordinates,
+      };
+    });
+
+  const submitItinerary = () => {
+    if (hasInvalidPathStep) return;
+    if (pathfindingError) return;
+
+    const updatedPathSteps = buildPathSteps(pathSteps, pathStepsMetadataById);
+
+    dispatch(updatePathSteps(updatedPathSteps));
+    launchPathfinding(updatedPathSteps, rollingStockId, {
+      isInitialization: true,
+    });
+    closeModal();
+  };
+
   useModalFocusTrap(modalRef, closeModal);
 
   useEffect(() => {
@@ -280,7 +324,7 @@ const ItineraryModal = ({
           </div>
         </div>
         <div className="itinerary-modal-form-footer">
-          <Button label={t('next')} variant="Primary" size="medium" onClick={closeModal} />
+          <Button label={t('next')} variant="Primary" size="medium" onClick={submitItinerary} />
         </div>
       </div>
       <div className="itinerary-modal-map">
