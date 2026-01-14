@@ -27,10 +27,7 @@
   "importTrains": {
     "cancel": "Cancel",
     "chooseFile": "Browse… No file selected.",
-    "date": "DATE",
-    "datetime": "Date & time",
     "download": "Download",
-    "endTime": "END",
     "errorMessages": {
       "error": "An error has occurred",
       "errorEmptyFile": "Empty file",
@@ -41,17 +38,14 @@
       "errorSameFromTo": "Origin and destination must be different."
     },
     "failure": "Operation failed",
-    "from": "Origin",
     "importTimetable": "Import a timetable",
     "inputPlaceholder": "Name, trigram",
     "launchImport": "Start import",
     "noResults": "No results",
     "pacedTrainsFound_one": "1 service found",
     "pacedTrainsFound_other": "{{count}} services found",
-    "searchTimetable": "Search timetable",
     "selectStation": "Select this station",
     "selectedFile": "Selected file: {{fileName}}",
-    "startTime": "START",
     "status": {
       "invalidTimetableItems_one": "Invalid timetable item.",
       "invalidTimetableItems_other": "Invalid timetable items.",
@@ -59,7 +53,6 @@
       "successfulImport_one": "An item is imported."
     },
     "success": "Operation successful",
-    "to": "Destination",
     "trainSchedulesAndPacedTrainsFound": "$t(main.pacedTrain, {'count': {{pacedTrainCount}}}) and $t(main.train, {'count': {{trainScheduleCount}}}) found",
     "trainSchedulesFound_one": "1 train found",
     "trainSchedulesFound_other": "{{count}} trains found",

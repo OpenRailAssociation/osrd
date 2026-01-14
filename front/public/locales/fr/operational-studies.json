@@ -27,10 +27,7 @@
   "importTrains": {
     "cancel": "Annuler",
     "chooseFile": "Parcourir… Aucun fichier sélectionné.",
-    "date": "DATE",
-    "datetime": "Date & horaires",
     "download": "Télécharger",
-    "endTime": "FIN",
     "errorMessages": {
       "error": "Une erreur est survenue",
       "errorEmptyFile": "Fichier vide",
@@ -41,17 +38,14 @@
       "errorSameFromTo": "L'origine et la destination doivent être différentes."
     },
     "failure": "L'opération a échoué",
-    "from": "Origine",
     "importTimetable": "Importer une grille horaire",
     "inputPlaceholder": "Nom, trigramme",
     "launchImport": "Démarrer l'import",
     "noResults": "Aucun résultat",
     "pacedTrainsFound_one": "1 mission trouvée",
     "pacedTrainsFound_other": "{{count}} missions trouvées",
-    "searchTimetable": "Rechercher la grille horaire",
     "selectStation": "Sélectionner cette station",
     "selectedFile": "Fichier sélectionné : {{fileName}}",
-    "startTime": "DÉBUT",
     "status": {
       "invalidTimetableItems_one": "La circulation à importer n'est pas au bon format.",
       "invalidTimetableItems_other": "Les circulations à importer ne sont pas au bon format.",

@@ -11,10 +11,7 @@
   "importTrains": {
     "and": "und",
     "cancel": "Abbrechen",
-    "date": "DATUM",
-    "datetime": "Datum & Uhrzeit",
     "download": "Herunterladen",
-    "endTime": "ENDE",
     "errorMessages": {
       "error": "Ein Fehler ist aufgetreten",
       "errorEmptyFile": "Leere Datei",
@@ -25,14 +22,11 @@
       "errorSameFromTo": "Herkunfts- und Zielort müssen sich unterscheiden."
     },
     "failure": "Operation fehlgeschlagen",
-    "from": "Herkunft",
     "importTimetable": "Fahrplan importieren",
     "inputPlaceholder": "Name, Dreierkürzel",
     "launchImport": "Import starten",
     "noResults": "Kein Ergebnis",
-    "searchTimetable": "Fahrplan suchen",
     "selectStation": "Betriebsstelle auswählen",
-    "startTime": "START",
     "status": {
       "invalidTimetableItems": "Ungültige Zugfahrpläne.",
       "invalidTimetableItems_one": "Ungültiger Zugfahrplan.",
@@ -40,7 +34,6 @@
       "successfulImport_one": "Ein Zug wurde importiert."
     },
     "success": "Operation erfolgreich",
-    "to": "Ziel",
     "warningMessages": {
       "warning": "Warnung",
       "warningFilteredStepImport": "Es wurden einige ungültige Schritte entfernt, um den Import für Züge zu erlauben: {{trainNumbers}}"
