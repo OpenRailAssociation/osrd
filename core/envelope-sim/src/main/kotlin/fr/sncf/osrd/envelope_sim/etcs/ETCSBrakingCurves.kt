@@ -637,7 +637,7 @@ private fun computeBecParams(
                 speed,
                 // TODO: have a tractive effort curve map which extends until the last SvL instead
                 // of the end of the path.
-                context.tractiveEffortCurveMap.get(min(position, context.path.length)),
+                context.tractiveEffortCurveMap.get(min(position, context.path.length))!!,
             ),
             1.0,
         )
