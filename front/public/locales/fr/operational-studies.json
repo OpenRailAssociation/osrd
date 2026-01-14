@@ -35,12 +35,10 @@
     },
     "failure": "L'opération a échoué",
     "importTimetable": "Importer une grille horaire",
-    "inputPlaceholder": "Nom, trigramme",
     "launchImport": "Démarrer l'import",
     "noResults": "Aucun résultat",
     "pacedTrainsFound_one": "1 mission trouvée",
     "pacedTrainsFound_other": "{{count}} missions trouvées",
-    "selectStation": "Sélectionner cette station",
     "selectedFile": "Fichier sélectionné : {{fileName}}",
     "status": {
       "invalidTimetableItems_one": "La circulation à importer n'est pas au bon format.",
