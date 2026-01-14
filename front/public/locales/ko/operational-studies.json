@@ -5,9 +5,6 @@
     "map": "지도"
   },
   "importTrains": {
-    "errorMessages": {
-      "errorNoDate": "날짜를 입력해야 합니다."
-    },
     "importTimetable": "시간표 불러오기"
   }
 }

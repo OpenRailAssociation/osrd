@@ -31,11 +31,7 @@
     "errorMessages": {
       "error": "An error has occurred",
       "errorEmptyFile": "Empty file",
-      "errorInvalidFile": "Invalid file",
-      "errorNoDate": "You must enter a date.",
-      "errorNoFrom": "You must fill in an origin.",
-      "errorNoTo": "You must fill in a destination.",
-      "errorSameFromTo": "Origin and destination must be different."
+      "errorInvalidFile": "Invalid file"
     },
     "failure": "Operation failed",
     "importTimetable": "Import a timetable",
@@ -59,9 +55,7 @@
     "warningMessages": {
       "alreadyPresentNode_one": "One macroscopic node was already present and was not updated.",
       "alreadyPresentNode_other": "{{count}} macroscopic nodes were already present and were not updated.",
-      "warning": "Warning",
-      "warningFilteredStepImport": "Some invalid steps were removed from the following trains: {{modifiedTrainNames}}.",
-      "warningRejectedTrainsImport": "{{rejectedTrainsCount}} invalid trains could not be imported."
+      "warning": "Warning"
     }
   },
   "main": {
