@@ -1,56 +1,5 @@
 .import-timetable-item {
-  .station-selector {
-    position: relative;
-    height: 112px;
+  .import-button {
+    height: 51px;
   }
-
-  .osrd-config-item-from {
-    background-color: var(--green);
-    z-index: 3;
-  }
-  .osrd-config-item-to {
-    background-color: var(--yellow);
-    z-index: 2;
-  }
-
-  @media screen and (min-width: 768px) {
-    .osrd-config-item-from,
-    .osrd-config-item-to {
-      position: absolute;
-      width: 100%;
-    }
-    .sm-gutters {
-      &:nth-child(1n) {
-        padding-right: 4px;
-        padding-left: 4px;
-      }
-      &:first-child {
-        padding-left: 0;
-        padding-right: 4px;
-      }
-      &:last-child {
-        padding-left: 4px;
-        padding-right: 0;
-      }
-    }
-  }
-
-  .results-stations {
-    height: 240px;
-    overflow: auto;
-    .station-card {
-      margin-bottom: 4px;
-    }
-  }
-  .results-stations,
-  .result-station-selected {
-    border-radius: 4px;
-    position: relative;
-    margin-top: 8px;
-  }
-}
-.automated-map {
-  position: relative;
-  width: 100%;
-  height: 320px;
 }

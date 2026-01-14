@@ -204,133 +204,22 @@ const ImportTimetableItemConfig = ({
     await processXmlFile(file, fileContent);
   };
   return (
-    <>
-      <div className="container-fluid row no-gutters mb-2">
-        <div className="col-lg-6 station-selector sm-gutters">
-          <div className="mb-2">
-            <div className="osrd-config-item-container osrd-config-item-from">
-              <h2>{t('from')}</h2>
-              {from ? (
-                <div
-                  className="result-station-selected"
-                  aria-label={t('from')}
-                  onClick={() => setFrom(undefined)}
-                  role="button"
-                  tabIndex={0}
-                >
-                  <StationCard station={from} fixedHeight />
-                </div>
-              ) : (
-                <StationSelector
-                  id="fromSearch"
-                  onSelect={setFrom}
-                  term={fromSearchString}
-                  setTerm={setFromSearchString}
-                />
-              )}
-            </div>
-          </div>
-        </div>
-        <div className="col-lg-6 station-selector sm-gutters">
-          <div className="mb-2">
-            <div className="osrd-config-item-container osrd-config-item-to">
-              <h2>{t('to')}</h2>
-              {to ? (
-                <div
-                  className="result-station-selected"
-                  aria-label={t('to')}
-                  onClick={() => setTo(undefined)}
-                  role="button"
-                  tabIndex={0}
-                >
-                  <StationCard station={to} fixedHeight />
-                </div>
-              ) : (
-                <StationSelector
-                  id="toSearch"
-                  onSelect={setTo}
-                  term={toSearchString}
-                  setTerm={setToSearchString}
-                />
-              )}
-            </div>
-          </div>
+    <div className="container-fluid mb-2">
+      <div className="row no-gutters">
+        <div className="col-12 d-flex flex-column no-gutters pl-1">
+          <button
+            type="button"
+            className="btn btn-sm btn-secondary btn-block import-button"
+            aria-label={t('importTimetable')}
+            title={t('importTimetable')}
+            onClick={() => openModal(<UploadFileModal handleSubmit={importFile} />)}
+            data-testid="import-timetable-item-upload-button"
+          >
+            <Download />
+          </button>
         </div>
       </div>
-
-      <div className="container-fluid mb-2">
-        <div className="row no-gutters">
-          <div className="col-lg-10 col-10">
-            <div className="osrd-config-item-container osrd-config-item-datetime">
-              <h2>{t('datetime')}</h2>
-              <div className="mb-2">
-                <InputSNCF
-                  id="date"
-                  type="date"
-                  value={date}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDate(e.target.value)}
-                  sm
-                  noMargin
-                  step={0}
-                  unit={t('date')}
-                />
-              </div>
-              <div className="row no-gutters">
-                <div className="col-6 sm-gutters">
-                  <InputSNCF
-                    id="startTime"
-                    type="time"
-                    value={startTime}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setStartTime(e.target.value)
-                    }
-                    sm
-                    noMargin
-                    step={0}
-                    unit={t('startTime')}
-                  />
-                </div>
-                <div className="col-6 sm-gutters">
-                  <InputSNCF
-                    id="endTime"
-                    type="time"
-                    value={endTime}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setEndTime(e.target.value)
-                    }
-                    sm
-                    noMargin
-                    step={0}
-                    unit={t('endTime')}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="col-lg-2 col-2 d-flex flex-column no-gutters pl-1">
-            <button
-              type="button"
-              className="btn btn-sm btn-primary btn-block h-100"
-              aria-label={t('searchTimetable')}
-              title={t('searchTimetable')}
-              onClick={defineConfig}
-            >
-              <Search />
-            </button>
-            <button
-              type="button"
-              className="btn btn-sm btn-secondary btn-block h-100"
-              aria-label={t('importTimetable')}
-              title={t('importTimetable')}
-              onClick={() => openModal(<UploadFileModal handleSubmit={importFile} />)}
-              data-testid="import-timetable-item-upload-button"
-            >
-              <Download />
-            </button>
-          </div>
-        </div>
-      </div>
-    </>
+    </div>
   );
 };
 

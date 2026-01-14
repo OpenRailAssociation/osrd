@@ -8,8 +8,6 @@
   },
   "importTrains": {
     "cancel": "Cancelar",
-    "date": "DATA",
-    "datetime": "Data e hora",
     "download": "Transferir"
   }
 }
