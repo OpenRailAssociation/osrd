@@ -21,6 +21,16 @@ export type TimesStopsRowNew = {
   computedDeparture: Date | null;
 };
 
+export type TableMeta = {
+  updateTime: (
+    rowIndex: number,
+    columnId: string,
+    hours: number,
+    minutes: number,
+    seconds: number
+  ) => void;
+};
+
 export type TimesStopsRow = {
   pathStepId: string | undefined;
   opId: string | undefined;

@@ -1,4 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+import type { CellContext } from '@tanstack/react-table';
+
+import type { TimesStopsRowNew, TableMeta } from './types';
 
 const TIME_MASK = [
   { char: '-', isEditable: true, value: 'twentyTens' },
@@ -68,6 +72,17 @@ const applyMask = (rawDigits: string): string => {
   return result;
 };
 
+// Converts a masked time string into a usable Date parts
+const processMask = (maskedDate: string): { hours: number; minutes: number; seconds: number } => {
+  const parts = maskedDate.split(':');
+
+  return {
+    hours: Number(parts[0]),
+    minutes: Number(parts[1]),
+    seconds: Number(parts[2]),
+  };
+};
+
 // Utility to delay execution until after render
 function delayAfterRender(callback: () => void) {
   queueMicrotask(callback);
@@ -81,15 +96,13 @@ const getNextEditablePosition = (pos: number): number => {
   return TIME_MASK.length;
 };
 
-const TimeCell = (
-  ctx: {
-    getValue: () => Date | null;
-  },
-  // Let the parent component handle the onChange if provided
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void,
-  props?: React.InputHTMLAttributes<HTMLInputElement>
-) => {
-  const controlledValue = ctx.getValue();
+const TimeCell = ({
+  getValue,
+  row: { index },
+  column: { id },
+  table,
+}: CellContext<TimesStopsRowNew, Date | null>) => {
+  const controlledValue = getValue();
   const [displayValue, setDisplayValue] = useState<string>(() => {
     const date = controlledValue
       ? controlledValue.toTimeString().slice(0, 8).replace(/:/g, '')
@@ -112,11 +125,10 @@ const TimeCell = (
       const newRawInput = rawInput.slice(0, cursorPos) + rawInput.slice(cursorPos + 1);
 
       const newDigits = newRawInput.replace(/[^0-9]/g, '').slice(0, 6);
-      const newDisplayValue = applyMask(newDigits);
 
-      if (onChange) {
-        onChange({ ...e, target: { ...e.target, value: newDisplayValue } });
-      } else {
+      // filtering non numeric characters
+      if (newDigits.length >= 6) {
+        const newDisplayValue = applyMask(newDigits);
         setDisplayValue(newDisplayValue);
       }
 
@@ -146,11 +158,7 @@ const TimeCell = (
         .padEnd(6, '0');
       const newDisplayValue = applyMask(newDigits);
 
-      if (onChange) {
-        onChange({ ...e, target: { ...e.target, value: newDisplayValue } });
-      } else {
-        setDisplayValue(newDisplayValue);
-      }
+      setDisplayValue(newDisplayValue);
 
       delayAfterRender(() => {
         if (input === document.activeElement) {
@@ -167,12 +175,10 @@ const TimeCell = (
 
     if (!allFilled) {
       const newDisplayValue = applyMask('');
-      if (onChange) {
-        onChange({ ...e, target: { ...e.target, value: newDisplayValue } });
-      } else {
-        setDisplayValue(newDisplayValue);
-      }
+      setDisplayValue(newDisplayValue);
     }
+    const time = processMask(inputValue);
+    (table.options.meta as TableMeta).updateTime(index, id, time.hours, time.minutes, time.seconds);
   };
 
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
@@ -181,11 +187,7 @@ const TimeCell = (
     const rawDigits = pasteData.replace(/[^0-9]/g, '').slice(0, 6);
     const newDisplayValue = applyMask(rawDigits);
 
-    if (onChange) {
-      onChange({ ...e, target: { ...(e.target as HTMLInputElement), value: newDisplayValue } });
-    } else {
-      setDisplayValue(newDisplayValue);
-    }
+    setDisplayValue(newDisplayValue);
 
     delayAfterRender(() => {
       const input = e.target as HTMLInputElement;
@@ -217,14 +219,20 @@ const TimeCell = (
     });
   };
 
+  useEffect(() => {
+    const date = controlledValue
+      ? controlledValue.toTimeString().slice(0, 8).replace(/:/g, '')
+      : '';
+    setDisplayValue(applyMask(date));
+  }, [controlledValue]);
+
   return (
     <input
-      value={displayValue}
+      value={displayValue.includes('-') ? '+' : displayValue}
       onChange={handleChange}
       onFocus={handleFocus}
       onBlur={handleBlur}
       onPaste={handlePaste}
-      {...props}
     />
   );
 };

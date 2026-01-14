@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 
 import {
   createColumnHelper,
@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { Loader } from 'common/Loaders/Loader';
 import { formatLocalTime } from 'utils/date';
 
+import TimeCell from './TimeCell';
 import type { TimesStopsRowNew } from './types';
 
 type TimesStopsTableProps = {
@@ -22,6 +23,8 @@ const columnHelper = createColumnHelper<TimesStopsRowNew>();
 
 const TimesStopsTable = ({ rows, dataIsLoading }: TimesStopsTableProps) => {
   const { t } = useTranslation('translation', { keyPrefix: 'timeStopTable' });
+
+  const [data, setData] = useState(rows);
 
   const columns = useMemo(
     () => [
@@ -50,7 +53,7 @@ const TimesStopsTable = ({ rows, dataIsLoading }: TimesStopsTableProps) => {
       }),
       columnHelper.accessor('requestedArrival', {
         header: () => t('arrivalTime'),
-        cell: (info) => (info.getValue() ? formatLocalTime(info.getValue()!) : ''),
+        cell: (info) => <TimeCell {...info} />,
       }),
       columnHelper.accessor('computedArrival', {
         header: () => t('calculatedArrivalTime'),
@@ -62,7 +65,7 @@ const TimesStopsTable = ({ rows, dataIsLoading }: TimesStopsTableProps) => {
       }),
       columnHelper.accessor('requestedDeparture', {
         header: () => t('departureTime'),
-        cell: (info) => (info.getValue() ? formatLocalTime(info.getValue()!) : ''),
+        cell: (info) => <TimeCell {...info} />,
       }),
       columnHelper.accessor('computedDeparture', {
         header: () => t('calculatedDepartureTime'),
@@ -72,11 +75,45 @@ const TimesStopsTable = ({ rows, dataIsLoading }: TimesStopsTableProps) => {
     [t]
   );
 
+  useEffect(() => {
+    setData(rows);
+  }, [rows]);
+
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
-    data: rows,
+    data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    meta: {
+      updateTime: (
+        rowIndex: number,
+        columnId: number,
+        hours: number,
+        minutes: number,
+        seconds: number
+      ) => {
+        setData((old) =>
+          old.map((row, index) => {
+            const sameDay = new Date(rows[rowIndex].computedArrival!);
+
+            if (index === rowIndex) {
+              return {
+                ...old[rowIndex],
+                [columnId]: new Date(
+                  sameDay?.getFullYear(),
+                  sameDay?.getMonth(),
+                  sameDay?.getDate(),
+                  hours,
+                  minutes,
+                  seconds
+                ),
+              };
+            }
+            return row;
+          })
+        );
+      },
+    },
   });
 
   if (dataIsLoading) {
