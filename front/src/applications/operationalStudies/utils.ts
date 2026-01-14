@@ -4,7 +4,6 @@ import { type Dictionary, isEqual } from 'lodash';
 import type {
   OperationalPoint,
   OperationalPointReference,
-  OperationalPointPartReference,
   CorePathfindingResultSuccess,
   PathItemLocation,
   PathProperties,
@@ -303,13 +302,16 @@ export const getStationFromOps = (ops: OperationalPoint[]): OperationalPoint | u
  */
 export const getUniqueOpRefsFromTimetableItems = (
   timetableItems: TimetableItem[]
-): OperationalPointPartReference[] => {
+): OperationalPointReference[] => {
   const pathItems = timetableItems.flatMap((timetableItem) => timetableItem.path);
-  const uniqueSteps = new Map<string, OperationalPointPartReference>();
+  const uniqueSteps = new Map<string, OperationalPointReference>();
   for (const pathItem of pathItems) {
     const pathItemLocation = pathItem.location;
     if (!('operational_point' in pathItemLocation)) continue;
-    uniqueSteps.set(JSON.stringify(pathItemLocation), pathItemLocation);
+    uniqueSteps.set(
+      JSON.stringify(pathItemLocation.operational_point),
+      pathItemLocation.operational_point
+    );
   }
   return [...uniqueSteps.values()];
 };
@@ -320,7 +322,7 @@ export const getUniqueOpRefsFromTimetableItems = (
  */
 export const addPathOpsToTimetableItems = (
   timetableItems: TimetableItem[],
-  timetableOpRefs: OperationalPointPartReference[],
+  timetableOpRefs: OperationalPointReference[],
   timetableOperationalPoints: RelatedOperationalPoint[][]
 ): TimetableItemWithPathOps[] => {
   if (timetableOpRefs.length !== timetableOperationalPoints.length) {
@@ -341,9 +343,10 @@ export const addPathOpsToTimetableItems = (
     // 1. if found, return the operational points
     // 2. if key exists but no operational points were found, return an empty array
     // 3. if key does not exist in opsByKey (meaning it's a track offset), return an empty array
-    const pathOps = timetableItem.path.map(
-      (pathItem) => opsByKey.get(JSON.stringify(pathItem.location)) ?? []
-    );
+    const pathOps = timetableItem.path.map((pathItem) => {
+      if (!('operational_point' in pathItem.location)) return [];
+      return opsByKey.get(JSON.stringify(pathItem.location.operational_point)) ?? [];
+    });
     return { ...timetableItem, pathOps };
   });
 };

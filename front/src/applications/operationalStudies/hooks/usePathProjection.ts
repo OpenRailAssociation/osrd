@@ -9,7 +9,6 @@ import { useSelector } from 'react-redux';
 import {
   osrdEditoastApi,
   type PathfindingResult,
-  type OperationalPointPartReference,
   type PathProperties,
   type OperationalPointReference,
 } from 'common/api/osrdEditoastApi';
@@ -157,11 +156,11 @@ const usePathProjection = (
     return exception?.path_and_schedule?.path ?? pacedTrain!.path;
   }, [trainIdUsedForProjection, timetableItemsById]);
 
-  const opPartRefs = useMemo(() => {
-    const refs: OperationalPointPartReference[] = [];
+  const opRefs = useMemo(() => {
+    const refs: OperationalPointReference[] = [];
     pathUsedForProjection?.forEach((step) => {
       if ('operational_point' in step.location) {
-        refs.push({ operational_point: step.location.operational_point });
+        refs.push(step.location.operational_point);
       }
     });
     return refs;
@@ -169,11 +168,11 @@ const usePathProjection = (
 
   const { data: matchedOperationalPoints } =
     osrdEditoastApi.endpoints.postInfraByInfraIdMatchOperationalPoints.useQuery(
-      opPartRefs.length > 0
+      opRefs.length > 0
         ? {
             infraId,
             body: {
-              operational_point_part_references: opPartRefs,
+              operational_point_references: opRefs,
             },
           }
         : skipToken
@@ -199,11 +198,9 @@ const usePathProjection = (
     if (pathfinding?.status === 'success' && pathProperties) {
       const { operational_points: operationalPoints } = pathProperties;
 
-      const pathfindingOpRefs: OperationalPointPartReference[] = [];
+      const pathfindingOpRefs: OperationalPointReference[] = [];
       operationalPoints.forEach((op, index) => {
-        pathfindingOpRefs.push({
-          operational_point: { operational_point: op.id, type: 'id' },
-        });
+        pathfindingOpRefs.push({ operational_point: op.id, type: 'id' });
         if (index > 0) {
           operationalPointDistances.push(op.position - operationalPoints[index - 1].position);
         }
@@ -215,7 +212,7 @@ const usePathProjection = (
         path: pathUsedForProjection,
         geometry: pathProperties.geometry,
         operationalPoints,
-        operationalPointPartReferences: pathfindingOpRefs,
+        operationalPointReferences: pathfindingOpRefs,
         projectingOnSimulatedPathException,
         operationalPointDistances,
       };
@@ -232,7 +229,7 @@ const usePathProjection = (
     // 3. If a point is not matched (e.g., NGE) → create a virtual point from the reference
     const normalizedOps: PathProperties['operational_points'] = [];
 
-    opPartRefs.forEach((opPartRef, index) => {
+    opRefs.forEach((opRef, index) => {
       const matchedOps = matchedOperationalPoints?.related_operational_points[index] || [];
       const matchedOp = getStationFromOps(matchedOps);
       const weight = 0; // Uniform weight for consistent manchette spacing
@@ -258,16 +255,7 @@ const usePathProjection = (
       } else {
         // NOT MATCHED: Point doesn't exist in infrastructure (e.g., NGE point)
         // Create virtual point from the reference
-        normalizedOps.push(
-          createVirtualOp(
-            opPartRef.operational_point,
-            index,
-            opPartRefs.length,
-            position,
-            weight,
-            t
-          )
-        );
+        normalizedOps.push(createVirtualOp(opRef, index, opRefs.length, position, weight, t));
       }
     });
 
@@ -275,7 +263,7 @@ const usePathProjection = (
       pathfindingStatus: 'failed',
       path: pathUsedForProjection,
       operationalPoints: normalizedOps,
-      operationalPointPartReferences: opPartRefs,
+      operationalPointReferences: opRefs,
       operationalPointDistances,
     };
   }, [

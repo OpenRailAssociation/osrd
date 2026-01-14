@@ -663,17 +663,17 @@ const fetchTimetableItemPathOps = async (
   timetableItems: TimetableItem[],
   dispatch: AppDispatch
 ): Promise<TimetableItemWithPathOps[]> => {
-  const opPartRefs = getUniqueOpRefsFromTimetableItems(timetableItems);
+  const opRefs = getUniqueOpRefsFromTimetableItems(timetableItems);
   const ops = await dispatch(
     osrdEditoastApi.endpoints.matchAllOperationalPoints.initiate(
       {
         infraId,
-        opPartRefs,
+        opRefs,
       },
       { subscribe: false }
     )
   ).unwrap();
-  return addPathOpsToTimetableItems(timetableItems, opPartRefs, ops);
+  return addPathOpsToTimetableItems(timetableItems, opRefs, ops);
 };
 
 const groupCompatibleRoundTrips = (

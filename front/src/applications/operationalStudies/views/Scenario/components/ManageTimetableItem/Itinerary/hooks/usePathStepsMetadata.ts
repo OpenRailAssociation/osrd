@@ -7,7 +7,7 @@ import usePathOps from 'applications/operationalStudies/hooks/usePathOps';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import {
   osrdEditoastApi,
-  type OperationalPointPartReference,
+  type OperationalPointReference,
   type TrainSchedule,
 } from 'common/api/osrdEditoastApi';
 import type { PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
@@ -63,7 +63,7 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
   // with postInfraByInfraIdMatchOperationalPoints, we need to call the endpoint again with
   // the opId corresponding uic in order to get all the possible matches and have
   // all the secondary codes and track names
-  const uicPayload: OperationalPointPartReference[] = useMemo(() => {
+  const uicPayload: OperationalPointReference[] = useMemo(() => {
     const opIds = pathSteps.reduce<string[]>((acc, step) => {
       if (
         step.location &&
@@ -77,10 +77,10 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
 
     if (opIds.length === 0) return [];
 
-    return pathStepsOperationalPoints.reduce<OperationalPointPartReference[]>((acc, op) => {
+    return pathStepsOperationalPoints.reduce<OperationalPointReference[]>((acc, op) => {
       const uic = op.extensions?.identifier?.uic;
       if (uic && opIds.includes(op.id)) {
-        acc.push({ operational_point: { uic, type: 'uic' } });
+        acc.push({ uic, type: 'uic' });
       }
       return acc;
     }, []);
@@ -92,7 +92,7 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
         ? {
             infraId,
             body: {
-              operational_point_part_references: uicPayload,
+              operational_point_references: uicPayload,
             },
           }
         : skipToken

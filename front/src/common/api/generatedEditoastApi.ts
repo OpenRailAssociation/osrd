@@ -1655,13 +1655,8 @@ export type PostInfraByInfraIdLockApiArg = {
   infraId: number;
 };
 export type PostInfraByInfraIdMatchOperationalPointsApiResponse = /** status 200
-Take a list of operational point references and return for each of them the list of operational
-points that they match on a given infrastructure and a mapping between the track indentifiers of
-the returned operational points parts their related track name.
-If an input OperationalPointPartReference contains a track reference, that track reference is also
-used to filter out operational points that match the input operational point identifier but do
-not match the input track reference (i.e. operational points which do not have any part that
-matches the input track reference).
+Take a list of operational point references and return for each of them the list
+of operational points that they match on a given infrastructure.
  */ {
   related_operational_points: RelatedOperationalPoint[][];
 };
@@ -1669,7 +1664,7 @@ export type PostInfraByInfraIdMatchOperationalPointsApiArg = {
   /** An existing infra ID */
   infraId: number;
   body: {
-    operational_point_part_references: OperationalPointPartReference[];
+    operational_point_references: OperationalPointReference[];
   };
 };
 export type PostInfraByInfraIdObjectsAndObjectTypeApiResponse =
@@ -3207,17 +3202,6 @@ export type OperationalPointReference =
       /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
       uic: number;
     };
-export type TrackReference =
-  | {
-      track_id: string;
-    }
-  | {
-      track_name: string;
-    };
-export type OperationalPointPartReference = {
-  operational_point: OperationalPointReference;
-  track_reference?: null | TrackReference;
-};
 export type GeoJsonMultiPointValue = GeoJsonPointValue[];
 export type GeoJsonMultiPoint = {
   coordinates: GeoJsonMultiPointValue;
@@ -3383,6 +3367,17 @@ export type TrackOffset = {
   offset: number;
   /** Track section identifier */
   track: string;
+};
+export type TrackReference =
+  | {
+      track_id: string;
+    }
+  | {
+      track_name: string;
+    };
+export type OperationalPointPartReference = {
+  operational_point: OperationalPointReference;
+  track_reference?: null | TrackReference;
 };
 export type PathItemLocation = TrackOffset | OperationalPointPartReference;
 export type CorePathfindingInputError =

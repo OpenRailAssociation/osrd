@@ -6,7 +6,7 @@ import { forEach, fromPairs, isEmpty, isEqual, isFunction, keyBy, noop, uniqBy }
 import { useTranslation } from 'react-i18next';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
-import { type OperationalPointPartReference, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { type OperationalPointReference, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
 import { computeIndexedOccurrenceStartTime } from 'modules/timetableItem/helpers/pacedTrain';
 import type { PacedTrainId, TimetableItemId, TrainId } from 'reducers/osrdconf/types';
@@ -468,16 +468,14 @@ const useTrackOccupancy = ({
       (op) => !(tracksState.data || {})[op.waypointId]
     );
     const loadAllTracks = async (
-      operationalPointPartReferences: {
-        operational_point: { operational_point: string; type: 'id' };
-      }[]
+      operationalPointReferences: { operational_point: string; type: 'id' }[]
     ) => {
       setTracksState((state) => ({ type: 'loading', data: state.data || {} }));
 
       try {
         const data = await postInfraByInfraIdMatchOperationalPoints({
           infraId,
-          body: { operational_point_part_references: operationalPointPartReferences },
+          body: { operational_point_references: operationalPointReferences },
         }).unwrap();
 
         if (aborted) return;
@@ -493,7 +491,7 @@ const useTrackOccupancy = ({
         }
 
         const loadedTracks = fromPairs(
-          operationalPointPartReferences.map(({ operational_point: { operational_point } }, i) => [
+          operationalPointReferences.map(({ operational_point }, i) => [
             operational_point,
             uniqBy(
               data.related_operational_points[i][0].parts.map((part) => {
@@ -517,7 +515,7 @@ const useTrackOccupancy = ({
       }
     };
     const waypointsPayload = pathOperationalPointsWithoutTracks.flatMap((op) =>
-      op.opId ? [{ operational_point: { operational_point: op.opId, type: 'id' as const } }] : []
+      op.opId ? [{ operational_point: op.opId, type: 'id' as const }] : []
     );
     if (!waypointsPayload.length) return noop;
 
@@ -640,7 +638,7 @@ const useTrackOccupancy = ({
         const requests: {
           timetableItemId: TimetableItemId;
           side: 'origin' | 'destination';
-          opReference: OperationalPointPartReference;
+          opReference: OperationalPointReference;
         }[] = [];
 
         timetableItemsToFetch.forEach((timetableItem) => {
@@ -662,10 +660,8 @@ const useTrackOccupancy = ({
                 side,
                 timetableItemId: timetableItem.id,
                 opReference: {
-                  operational_point: {
-                    operational_point: itemLocation.operational_point.operational_point,
-                    type: 'id',
-                  },
+                  operational_point: itemLocation.operational_point.operational_point,
+                  type: 'id',
                 },
               });
             } else if (itemLocation.operational_point.type === 'trigram') {
@@ -673,11 +669,9 @@ const useTrackOccupancy = ({
                 side,
                 timetableItemId: timetableItem.id,
                 opReference: {
-                  operational_point: {
-                    trigram: itemLocation.operational_point.trigram,
-                    secondary_code: itemLocation.operational_point.secondary_code,
-                    type: 'trigram',
-                  },
+                  trigram: itemLocation.operational_point.trigram,
+                  secondary_code: itemLocation.operational_point.secondary_code,
+                  type: 'trigram',
                 },
               });
             } else if (itemLocation.operational_point.type === 'uic') {
@@ -685,11 +679,9 @@ const useTrackOccupancy = ({
                 side,
                 timetableItemId: timetableItem.id,
                 opReference: {
-                  operational_point: {
-                    uic: itemLocation.operational_point.uic,
-                    secondary_code: itemLocation.operational_point.secondary_code,
-                    type: 'uic',
-                  },
+                  uic: itemLocation.operational_point.uic,
+                  secondary_code: itemLocation.operational_point.secondary_code,
+                  type: 'uic',
                 },
               });
             }
@@ -701,7 +693,7 @@ const useTrackOccupancy = ({
         const data = await postInfraByInfraIdMatchOperationalPoints({
           infraId,
           body: {
-            operational_point_part_references: requests.map(({ opReference }) => opReference),
+            operational_point_references: requests.map(({ opReference }) => opReference),
           },
         }).unwrap();
 

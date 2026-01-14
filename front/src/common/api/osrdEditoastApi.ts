@@ -13,7 +13,7 @@ import {
   type GetLightRollingStockApiResponse,
   type GetSpritesSignalingSystemsApiResponse,
   type MacroNodeResponse,
-  type OperationalPointPartReference,
+  type OperationalPointReference,
   type PacedTrainResponse,
   type PathfindingResult,
   type PostTimetableByIdStdcmApiResponse,
@@ -145,22 +145,22 @@ const osrdEditoastApi = generatedEditoastApi
       }),
       matchAllOperationalPoints: builder.query<
         RelatedOperationalPoint[][],
-        { infraId: number; opPartRefs: OperationalPointPartReference[] }
+        { infraId: number; opRefs: OperationalPointReference[] }
       >({
-        queryFn: async ({ infraId, opPartRefs }, { dispatch }) => {
+        queryFn: async ({ infraId, opRefs }, { dispatch }) => {
           const batchSize = 200;
           const result: RelatedOperationalPoint[][] = [];
 
           // Split opRefs into batches of 200
-          for (let i = 0; i < opPartRefs.length; i += batchSize) {
-            const batch = opPartRefs.slice(i, i + batchSize);
+          for (let i = 0; i < opRefs.length; i += batchSize) {
+            const batch = opRefs.slice(i, i + batchSize);
 
             const promise = dispatch(
               osrdEditoastApi.endpoints.postInfraByInfraIdMatchOperationalPoints.initiate(
                 {
                   infraId,
                   body: {
-                    operational_point_part_references: batch,
+                    operational_point_references: batch,
                   },
                 },
                 { subscribe: false }

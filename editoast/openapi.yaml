@@ -1174,24 +1174,19 @@ paths:
             schema:
               type: object
               required:
-              - operational_point_part_references
+              - operational_point_references
               properties:
-                operational_point_part_references:
+                operational_point_references:
                   type: array
                   items:
-                    $ref: '#/components/schemas/OperationalPointPartReference'
+                    $ref: '#/components/schemas/OperationalPointReference'
         required: true
       responses:
         '200':
           description: |2
 
-            Take a list of operational point references and return for each of them the list of operational
-            points that they match on a given infrastructure and a mapping between the track indentifiers of
-            the returned operational points parts their related track name.
-            If an input OperationalPointPartReference contains a track reference, that track reference is also
-            used to filter out operational points that match the input operational point identifier but do
-            not match the input track reference (i.e. operational points which do not have any part that
-            matches the input track reference).
+            Take a list of operational point references and return for each of them the list
+            of operational points that they match on a given infrastructure.
           content:
             application/json:
               schema:
