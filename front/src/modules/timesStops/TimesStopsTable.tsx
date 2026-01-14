@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { Loader } from 'common/Loaders/Loader';
 import { formatLocalTime } from 'utils/date';
 
+import DurationCell from './DurationCell';
 import TimeCell from './TimeCell';
 import type { TimesStopsRowNew } from './types';
 
@@ -80,7 +81,7 @@ const TimesStopsTable = ({ rows, dataIsLoading }: TimesStopsTableProps) => {
       }),
       columnHelper.accessor('stopDuration', {
         header: () => t('stopTime'),
-        cell: (info) => <span>{info.getValue()?.total('second') ?? ''}</span>,
+        cell: (info) => <DurationCell {...info} />,
         meta: {
           className: 'col-stop-duration',
         },
