@@ -27,9 +27,9 @@ const TimesStopsTable = ({ rows, dataIsLoading }: TimesStopsTableProps) => {
   const columns = useMemo(
     () => [
       columnHelper.display({
-        id: 'index',
+        id: 'opOnPathIndex',
         header: '#',
-        cell: (info) => info.row.original.index + 1,
+        cell: (info) => info.row.original.opOnPathIndex + 1,
       }),
       columnHelper.accessor('name', {
         header: () => t('name'),

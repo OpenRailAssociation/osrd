@@ -25,7 +25,7 @@ import type { TimesStopsRowNew } from '../types';
 
 type BuildTableRowParams = {
   id: string;
-  index: number;
+  opOnPathIndex: number;
   name?: string;
   secondaryCode?: string;
   trackName?: string;
@@ -36,7 +36,7 @@ type BuildTableRowParams = {
 
 const buildTableRow = ({
   id,
-  index,
+  opOnPathIndex,
   name,
   secondaryCode,
   trackName,
@@ -69,7 +69,7 @@ const buildTableRow = ({
 
   return {
     id,
-    index,
+    opOnPathIndex,
     name: name ?? '',
     secondaryCode: secondaryCode ?? '',
     track: trackName ?? '',
@@ -149,8 +149,8 @@ const useTimesStopsTableData = (
 
         const row = buildTableRow({
           id: pathStep.id,
-          // index is a placeholder here (-1), it will be replaced by opIndex when matching with operationalPointsOnPath
-          index: -1,
+          // opOnPathIndex is a placeholder here (-1), it will be replaced by opIndex when matching with operationalPointsOnPath
+          opOnPathIndex: -1,
           name,
           secondaryCode: matchingOp?.extensions?.sncf?.ch,
           trackName,
@@ -190,7 +190,7 @@ const useTimesStopsTableData = (
           formattedRows.push({
             ...matchingPathStepRow,
             track: trackName,
-            index: opIndex,
+            opOnPathIndex: opIndex,
           });
         } else if (!displayOnlyPathSteps) {
           const matchingReportTrainIndex = simulatedTrain.positions.findIndex(
@@ -208,7 +208,7 @@ const useTimesStopsTableData = (
           formattedRows.push(
             buildTableRow({
               id: op.id,
-              index: opIndex,
+              opOnPathIndex: opIndex,
               name: op.extensions?.identifier?.name,
               secondaryCode: op.extensions?.sncf?.ch,
               trackName,
@@ -219,7 +219,10 @@ const useTimesStopsTableData = (
         }
       });
     } else {
-      formattedRows = Array.from(pathStepRowsById.values());
+      formattedRows = Array.from(pathStepRowsById.values()).map((row, rowIndex) => ({
+        ...row,
+        opOnPathIndex: rowIndex,
+      }));
     }
 
     return formattedRows;

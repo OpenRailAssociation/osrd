@@ -10,7 +10,7 @@ export type TimeExtraDays = {
 
 export type TimesStopsRowNew = {
   id: string;
-  index: number;
+  opOnPathIndex: number;
   name: string;
   secondaryCode: string;
   track: string;
