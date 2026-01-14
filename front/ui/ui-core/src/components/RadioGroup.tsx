@@ -1,4 +1,4 @@
-import React, { type ChangeEvent, useState } from 'react';
+import React, { type ChangeEvent, useEffect, useState } from 'react';
 
 import { RequiredInput } from '@osrd-project/ui-icons';
 import cx from 'classnames';
@@ -34,6 +34,12 @@ const RadioGroup = ({
 }: RadioGroupProps) => {
   const [selectedValue, setSelectedValue] = useState<string | undefined>(value);
 
+  useEffect(() => {
+    setSelectedValue(value);
+  }, [value]);
+
+  const statusClassname = statusWithMessage?.status ? { [statusWithMessage.status]: true } : {};
+
   const handleOptionChange = (e: ChangeEvent<HTMLInputElement>, nextOption: RadioButtonProps) => {
     if (!readOnly) {
       setSelectedValue(nextOption.value);
@@ -41,8 +47,6 @@ const RadioGroup = ({
       onChange?.(nextOption.value);
     }
   };
-
-  const statusClassname = statusWithMessage?.status ? { [statusWithMessage.status]: true } : {};
 
   return (
     <div className={cx('ui-radio-button-wrapper', statusClassname)}>
