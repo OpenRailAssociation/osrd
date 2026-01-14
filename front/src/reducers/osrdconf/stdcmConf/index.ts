@@ -52,6 +52,7 @@ export const stdcmConfInitialState: OsrdStdcmConfState = {
     posteriorTrain: undefined,
   },
   simulations: [],
+  simulationCounter: 0,
 };
 
 const updateSimulationState = (state: Draft<OsrdStdcmConfState>, simulation: StdcmSimulation) => {
@@ -299,12 +300,14 @@ export const stdcmConfSlice = createSlice({
     },
     addStdcmSimulations(
       state: Draft<OsrdStdcmConfState>,
-      action: PayloadAction<Omit<StdcmSimulation, 'index' | 'creationDate'>[]>
+      action: PayloadAction<Omit<StdcmSimulation, 'index' | 'creationDate' | 'displayNumber'>[]>
     ) {
       action.payload.forEach((simulation) => {
+        state.simulationCounter++;
         state.simulations.push({
           ...simulation,
           index: state.simulations.length,
+          displayNumber: state.simulationCounter,
           creationDate: new Date(),
         });
       });

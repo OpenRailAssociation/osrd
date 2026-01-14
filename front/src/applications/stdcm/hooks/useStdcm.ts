@@ -78,7 +78,7 @@ const useStdcm = ({
       { status: 'success' | 'path_not_found' }
     >,
     alternativePath?: 'upstream' | 'downstream'
-  ): Promise<Omit<StdcmSimulation, 'index'>> => {
+  ): Promise<Omit<StdcmSimulation, 'index' | 'displayNumber'>> => {
     const creationDate = new Date();
     let outputs;
     // If the response is successful compute the chart data.
@@ -154,7 +154,7 @@ const useStdcm = ({
     response: Extract<PostTimetableByIdStdcmApiResponseWithTraceId, { status: 'path_not_found' }>,
     payload: PostTimetableByIdStdcmApiArg
   ) => {
-    const simulationsToAdd: Omit<StdcmSimulation, 'index'>[] = [];
+    const simulationsToAdd: Omit<StdcmSimulation, 'index' | 'displayNumber'>[] = [];
     try {
       const currentSimulation = await createSimulation(currentSimulationInputs, payload, response);
       simulationsToAdd.push(currentSimulation);

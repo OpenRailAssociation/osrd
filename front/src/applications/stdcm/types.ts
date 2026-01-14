@@ -139,6 +139,7 @@ export type StdcmSimulationOutputs = StdcmResultsOutput | StdcmPathNotFound;
 
 export type StdcmSimulation = {
   index: number;
+  displayNumber: number;
   creationDate: Date;
   inputs: StdcmSimulationInputs;
   outputs?: StdcmSimulationOutputs;

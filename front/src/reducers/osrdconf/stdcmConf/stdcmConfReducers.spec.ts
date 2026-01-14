@@ -303,6 +303,7 @@ describe('stdcmConfReducers', () => {
 
     const simulation = {
       index: 0,
+      displayNumber: 1,
       creationDate: new Date(),
       inputs: simulationInputs,
     };

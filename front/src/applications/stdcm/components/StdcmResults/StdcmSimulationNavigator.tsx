@@ -37,8 +37,6 @@ const StdcmSimulationNavigator = ({
     ITEM_TO_SHOW_COUNT_ON_SCROLL
   );
 
-  let displayedIndex = 0;
-
   return (
     <div
       className={cx('simulation-navigator', {
@@ -60,81 +58,77 @@ const StdcmSimulationNavigator = ({
               </div>
             )}
             <div className="simulation-list" ref={scrollableRef}>
-              {completedSimulations.map(({ index, creationDate, outputs, alternativePath }) => {
-                let formatedTotalLength = '';
-                let formatedTripDuration = '';
-                const hasValidResults = hasResults(outputs);
+              {completedSimulations.map(
+                ({ index, displayNumber, creationDate, outputs, alternativePath }) => {
+                  let formatedTotalLength = '';
+                  let formatedTripDuration = '';
+                  const hasValidResults = hasResults(outputs);
 
-                if (hasValidResults) {
-                  const { results } = outputs;
-                  const lastPointTime = results.simulation.final_output.times.at(-1)!;
-                  const departureTime = new Date(results.departure_time);
+                  if (hasValidResults) {
+                    const { results } = outputs;
+                    const lastPointTime = results.simulation.final_output.times.at(-1)!;
+                    const departureTime = new Date(results.departure_time);
 
-                  formatedTotalLength = `${Math.round(mmToKm(results.pathfinding_result.length))} ${t('common.units.km', { ns: 'translation' })} `;
-                  formatedTripDuration = formatTimeDifference(
-                    departureTime,
-                    new Date(lastPointTime + departureTime.getTime()),
-                    t
+                    formatedTotalLength = `${Math.round(mmToKm(results.pathfinding_result.length))} ${t('common.units.km', { ns: 'translation' })} `;
+                    formatedTripDuration = formatTimeDifference(
+                      departureTime,
+                      new Date(lastPointTime + departureTime.getTime()),
+                      t
+                    );
+                  }
+                  return (
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      key={index}
+                      data-testid="simulation-item-button"
+                      className={cx(SIMULATION_ITEM_CLASSNAME, {
+                        retained: retainedSimulationIndex === index,
+                        selected: selectedSimulationIndex === index,
+                        anyRetained: retainedSimulationIndex !== undefined,
+                      })}
+                      onClick={() => onSelectSimulation(index)}
+                    >
+                      <div data-testid="simulation-name" className="simulation-name">
+                        <span>
+                          {hasValidResults
+                            ? t('simulation.results.simulationName.withOutputs', {
+                                id: displayNumber,
+                                ns: 'stdcm',
+                              })
+                            : t('simulation.results.simulationName.withoutOutputs', {
+                                ns: 'stdcm',
+                              })}
+                        </span>
+                        {retainedSimulationIndex === index && (
+                          <CheckCircle className="check-circle" variant="fill" />
+                        )}
+                        {alternativePath && (
+                          <Sparkle className="alternative-simulation" variant="fill" />
+                        )}
+                      </div>
+                      <div className="simulation-metadata" key={index}>
+                        <span className="creation-date">
+                          {creationDate.toLocaleString(dateTimeLocale, {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
+                        <span
+                          data-testid="total-length-trip-duration"
+                          className="total-length-trip-duration"
+                        >{`${formatedTotalLength}— ${formatedTripDuration}`}</span>
+                      </div>
+                      {selectedSimulationIndex === index && (
+                        <div className="selected-simulation-indicator" />
+                      )}
+                    </div>
                   );
                 }
-                if (hasValidResults) {
-                  // TODO: fix this lint
-                  // eslint-disable-next-line react-hooks/immutability
-                  displayedIndex += 1;
-                }
-                const simulationId = hasValidResults ? displayedIndex : '';
-                return (
-                  <div
-                    role="button"
-                    tabIndex={0}
-                    key={index}
-                    data-testid="simulation-item-button"
-                    className={cx(SIMULATION_ITEM_CLASSNAME, {
-                      retained: retainedSimulationIndex === index,
-                      selected: selectedSimulationIndex === index,
-                      anyRetained: retainedSimulationIndex !== undefined,
-                    })}
-                    onClick={() => onSelectSimulation(index)}
-                  >
-                    <div data-testid="simulation-name" className="simulation-name">
-                      <span>
-                        {hasValidResults
-                          ? t('simulation.results.simulationName.withOutputs', {
-                              id: simulationId,
-                              ns: 'stdcm',
-                            })
-                          : t('simulation.results.simulationName.withoutOutputs', {
-                              ns: 'stdcm',
-                            })}
-                      </span>
-                      {retainedSimulationIndex === index && (
-                        <CheckCircle className="check-circle" variant="fill" />
-                      )}
-                      {alternativePath && (
-                        <Sparkle className="alternative-simulation" variant="fill" />
-                      )}
-                    </div>
-                    <div className="simulation-metadata" key={index}>
-                      <span className="creation-date">
-                        {creationDate.toLocaleString(dateTimeLocale, {
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: '2-digit',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </span>
-                      <span
-                        data-testid="total-length-trip-duration"
-                        className="total-length-trip-duration"
-                      >{`${formatedTotalLength}— ${formatedTripDuration}`}</span>
-                    </div>
-                    {selectedSimulationIndex === index && (
-                      <div className="selected-simulation-indicator" />
-                    )}
-                  </div>
-                );
-              })}
+              )}
             </div>
             {showRightBtn && (
               <div
