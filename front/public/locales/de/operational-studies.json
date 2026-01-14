@@ -15,11 +15,7 @@
     "errorMessages": {
       "error": "Ein Fehler ist aufgetreten",
       "errorEmptyFile": "Leere Datei",
-      "errorInvalidFile": "Ungültige Datei",
-      "errorNoDate": "Sie müssen ein Datum angeben.",
-      "errorNoFrom": "Sie müssen einen Herkunftsort angeben.",
-      "errorNoTo": "Sie müssen einen Zielort angeben.",
-      "errorSameFromTo": "Herkunfts- und Zielort müssen sich unterscheiden."
+      "errorInvalidFile": "Ungültige Datei"
     },
     "failure": "Operation fehlgeschlagen",
     "importTimetable": "Fahrplan importieren",
@@ -35,8 +31,7 @@
     },
     "success": "Operation erfolgreich",
     "warningMessages": {
-      "warning": "Warnung",
-      "warningFilteredStepImport": "Es wurden einige ungültige Schritte entfernt, um den Import für Züge zu erlauben: {{trainNumbers}}"
+      "warning": "Warnung"
     }
   },
   "main": {
