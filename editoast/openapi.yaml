@@ -1198,7 +1198,6 @@ paths:
                 type: object
                 required:
                 - related_operational_points
-                - track_names
                 properties:
                   related_operational_points:
                     type: array
@@ -1206,16 +1205,6 @@ paths:
                       type: array
                       items:
                         $ref: '#/components/schemas/RelatedOperationalPoint'
-                  track_names:
-                    type: object
-                    additionalProperties:
-                      type:
-                      - string
-                      - 'null'
-                    propertyNames:
-                      type: string
-                      maxLength: 255
-                      minLength: 1
   /infra/{infra_id}/objects/{object_type}:
     post:
       tags:

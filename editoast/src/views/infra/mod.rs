@@ -32,7 +32,6 @@ use schemas::infra::SwitchType;
 use schemas::primitives::Identifier;
 use serde::Deserialize;
 use serde::Serialize;
-use std::collections::HashMap;
 use std::collections::HashSet;
 use thiserror::Error;
 use utoipa::IntoParams;
@@ -50,7 +49,6 @@ use crate::infra_cache::InfraCache;
 use crate::map;
 use crate::models::Infra;
 use crate::models::SwitchTypeModel;
-use crate::models::TrackSectionModel;
 use crate::views::AuthorizationError;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
@@ -805,7 +803,6 @@ struct RelatedOperationalPoint {
 #[cfg_attr(test, derive(Deserialize))]
 pub(in crate::views) struct MatchOperationalPointsResponse {
     related_operational_points: Vec<Vec<RelatedOperationalPoint>>,
-    track_names: HashMap<Identifier, Option<String>>,
 }
 
 #[editoast_derive::route]
@@ -923,43 +920,10 @@ pub(in crate::views) async fn match_operational_points(
     }
     let related_operational_points =
         populate_op_geo(&mut conn, infra_id, &operational_points).await?;
-    let track_names = find_track_names(
-        db_pool,
-        infra_id,
-        &operational_points.iter().flatten().collect::<Vec<_>>(),
-    )
-    .await?;
+
     Ok(Json(MatchOperationalPointsResponse {
         related_operational_points,
-        track_names,
     }))
-}
-
-/// Take a list of [OperationalPoint] and return a mapping between the identifiers of the tracks
-/// contained in their operational point parts of the name of the tracks (if any).
-async fn find_track_names(
-    db_pool: Arc<DbConnectionPoolV2>,
-    infra_id: i64,
-    operational_points: &[&OperationalPoint],
-) -> Result<HashMap<Identifier, Option<String>>> {
-    let track_ids: Vec<(i64, String)> = operational_points
-        .iter()
-        .flat_map(|op| &op.parts)
-        .map(|part| (infra_id, part.track.to_string()))
-        .collect::<Vec<_>>();
-    let (tracks, _): (Vec<_>, _) =
-        TrackSectionModel::retrieve_batch(&mut db_pool.get().await?, track_ids).await?;
-    Ok(HashMap::from_iter(tracks.into_iter().map(
-        |TrackSectionModel { schema: track, .. }| {
-            (
-                track.id.clone(),
-                track
-                    .extensions
-                    .sncf
-                    .map(|sncf_ext| sncf_ext.track_name.to_string()),
-            )
-        },
-    )))
 }
 
 fn compute_operational_point_geo(points: &[GeoJsonPoint]) -> Option<GeoJsonPoint> {
@@ -1054,6 +1018,7 @@ pub mod tests {
     use schemas::primitives::ObjectType;
     use schemas::train_schedule::TrackReference;
     use serde_json::json;
+    use std::collections::HashMap;
     use std::ops::DerefMut;
     use strum::IntoEnumIterator;
 
@@ -1552,14 +1517,6 @@ pub mod tests {
                 49.4999,
             ))))
         );
-        let expected_track_names: HashMap<Identifier, Option<String>> = HashMap::from([
-            ("TA0".into(), Some("V1".to_string())),
-            ("TA1".into(), Some("V2".to_string())),
-            ("TA2".into(), Some("A".to_string())),
-            ("TD0".into(), Some("V1".to_string())),
-            ("TD1".into(), Some("V2".to_string())),
-        ]);
-        assert_eq!(response.track_names, expected_track_names);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
