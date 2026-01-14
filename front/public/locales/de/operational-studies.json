@@ -19,10 +19,8 @@
     },
     "failure": "Operation fehlgeschlagen",
     "importTimetable": "Fahrplan importieren",
-    "inputPlaceholder": "Name, Dreierkürzel",
     "launchImport": "Import starten",
     "noResults": "Kein Ergebnis",
-    "selectStation": "Betriebsstelle auswählen",
     "status": {
       "invalidTimetableItems": "Ungültige Zugfahrpläne.",
       "invalidTimetableItems_one": "Ungültiger Zugfahrplan.",
