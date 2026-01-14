@@ -53,6 +53,7 @@ class DummyInfra : RawInfra, BlockInfra {
         allowedSpeed: Double = Double.POSITIVE_INFINITY,
         signalingSystemName: String = BAL.id,
         detailedSpeedLimits: DistanceRangeMap<SpeedLimitProperty>? = null,
+        gradient: Double = 0.0,
     ): BlockId {
         val name = String.format("%s->%s", entry, exit)
         val entryId = getOrCreateDetectorId(entry)
@@ -69,7 +70,7 @@ class DummyInfra : RawInfra, BlockInfra {
                 entryId,
                 exitId,
                 speedLimits,
-                0.0,
+                gradient,
                 signalingSystemId,
                 signalingSystemName,
             )
@@ -405,7 +406,7 @@ class DummyInfra : RawInfra, BlockInfra {
     }
 
     override fun getTrackChunkSlope(trackChunk: DirTrackChunkId): DistanceRangeMap<Double> {
-        TODO("Not yet implemented")
+        return getTrackChunkGradient(trackChunk)
     }
 
     override fun getTrackChunkCurve(trackChunk: DirTrackChunkId): DistanceRangeMap<Double> {
