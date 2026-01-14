@@ -1664,9 +1664,6 @@ not match the input track reference (i.e. operational points which do not have a
 matches the input track reference).
  */ {
   related_operational_points: RelatedOperationalPoint[][];
-  track_names: {
-    [key: string]: string | null;
-  };
 };
 export type PostInfraByInfraIdMatchOperationalPointsApiArg = {
   /** An existing infra ID */
