@@ -35,12 +35,10 @@
     },
     "failure": "Operation failed",
     "importTimetable": "Import a timetable",
-    "inputPlaceholder": "Name, trigram",
     "launchImport": "Start import",
     "noResults": "No results",
     "pacedTrainsFound_one": "1 service found",
     "pacedTrainsFound_other": "{{count}} services found",
-    "selectStation": "Select this station",
     "selectedFile": "Selected file: {{fileName}}",
     "status": {
       "invalidTimetableItems_one": "Invalid timetable item.",
