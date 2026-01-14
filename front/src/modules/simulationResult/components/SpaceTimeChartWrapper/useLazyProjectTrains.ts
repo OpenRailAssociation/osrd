@@ -7,7 +7,7 @@ import type { ProjectionResult } from 'applications/operationalStudies/helpers/T
 import type TrainProjectionLazyLoaderAbstract from 'applications/operationalStudies/helpers/TrainProjectionLazyLoaderAbstract';
 import TrainTrackProjectionLazyLoader from 'applications/operationalStudies/helpers/TrainTrackProjectionLazyLoader';
 import upsertNewProjectedTrains from 'applications/operationalStudies/helpers/upsertNewProjectedTrains';
-import { type OperationalPointPartReference, type CoreTrainPath } from 'common/api/osrdEditoastApi';
+import { type OperationalPointReference, type CoreTrainPath } from 'common/api/osrdEditoastApi';
 import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import { getProjectionType } from 'reducers/simulationResults/selectors';
@@ -18,7 +18,7 @@ type UseLazyProjectTrainsOptions = {
   electricalProfileSetId?: number;
   path?: CoreTrainPath;
   operationalPointDistances?: number[];
-  operationalPointPartReferences?: OperationalPointPartReference[];
+  operationalPointReferences?: OperationalPointReference[];
 };
 
 const useLazyProjectTrains = ({
@@ -26,7 +26,7 @@ const useLazyProjectTrains = ({
   electricalProfileSetId,
   path,
   operationalPointDistances = [],
-  operationalPointPartReferences = [],
+  operationalPointReferences = [],
 }: UseLazyProjectTrainsOptions) => {
   const dispatch = useAppDispatch();
   const loaderRef = useRef<TrainProjectionLazyLoaderAbstract>(null);
@@ -58,10 +58,10 @@ const useLazyProjectTrains = ({
         path,
       });
     } else {
-      if (operationalPointPartReferences.length < 2) return;
+      if (operationalPointReferences.length < 2) return;
 
       loader = new TrainOpProjectionLazyLoader(
-        operationalPointPartReferences.map(({ operational_point }) => operational_point),
+        operationalPointReferences,
         operationalPointDistances,
         { ...baseOptions, path }
       );
@@ -79,7 +79,7 @@ const useLazyProjectTrains = ({
     electricalProfileSetId,
     projectionType,
     path,
-    operationalPointPartReferences,
+    operationalPointReferences,
     operationalPointDistances,
   ]);
 
