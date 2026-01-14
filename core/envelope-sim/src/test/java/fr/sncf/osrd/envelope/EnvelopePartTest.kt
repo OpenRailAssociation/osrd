@@ -118,7 +118,7 @@ internal class EnvelopePartTest {
             when (i) {
                 0 ->
                     expectedEnvelopePartEnergy =
-                        (PhysicsRollingStock.getMaxEffort(1.0, testEffortCurveMap[0.0]) *
+                        (PhysicsRollingStock.getMaxEffort(1.0, testEffortCurveMap[0.0]!!) *
                             envelopePart.totalTimeUS / 1000000)
                 1 -> {
                     Assertions.assertEquals(envelopePart.minSpeed, envelopePart.maxSpeed)

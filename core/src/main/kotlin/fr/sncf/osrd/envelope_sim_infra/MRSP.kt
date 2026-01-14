@@ -44,8 +44,8 @@ fun computeMRSP(
 ): Envelope {
     return computeMRSP(
         path,
-        rollingStock.getMaxSpeed(),
-        rollingStock.getLength(),
+        rollingStock.maxSpeed,
+        rollingStock.length,
         addRollingStockLength,
         trainTag,
         temporarySpeedLimitManager,
