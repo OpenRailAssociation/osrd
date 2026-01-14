@@ -213,11 +213,6 @@ OSRD's infrastructure editor allows you to edit the linear and point objects of 
 infrastructure, and then run simulations based on this information. It is possible to modify the
 existing infrastructure as well as to create a new one.
 
-### Opendata importation `opendata/`
-
-_EXPERIMENTATION_ This application uses opendata from [GRAOU](https://carto.graou.info) to create
-realistic timetable from [french GTFS data by SNCF](https://data.sncf.com).
-
 ### Reference map `referenceMap/`
 
 This is an implementation reference for all map concerns. It aims to display all layers and propose
