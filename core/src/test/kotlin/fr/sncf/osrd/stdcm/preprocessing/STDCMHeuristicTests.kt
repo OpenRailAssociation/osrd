@@ -15,7 +15,7 @@ import fr.sncf.osrd.stdcm.graph.STDCMNode
 import fr.sncf.osrd.stdcm.graph.TimeData
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelopeImpl
-import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorer
+import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorers
 import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.appendOnlyLinkedListOf
@@ -66,7 +66,7 @@ class STDCMHeuristicTests {
 
         // Current block = 0
         var explorer =
-            initInfraExplorer(infra, infra, steps.first().locations.first(), steps).single()
+            initInfraExplorers(infra, infra, steps.first().locations.first(), steps).single()
 
         assertEquals(400.0 - 50.0, getLocationRemainingTime(infra, explorer, 50.meters, heuristic))
         assertEquals(400.0 - 85.0, getLocationRemainingTime(infra, explorer, 85.meters, heuristic))
@@ -130,7 +130,7 @@ class STDCMHeuristicTests {
                 .build()
 
         val explorer =
-            initInfraExplorer(infra, infra, steps.first().locations.first(), steps).single()
+            initInfraExplorers(infra, infra, steps.first().locations.first(), steps).single()
 
         val resWithAllowance =
             getLocationRemainingTime(infra, explorer, 50.meters, heuristicWithAllowance)
@@ -181,7 +181,7 @@ class STDCMHeuristicTests {
                 .build()
 
         var explorer =
-            initInfraExplorer(infra, infra, steps.first().locations.first(), steps).single()
+            initInfraExplorers(infra, infra, steps.first().locations.first(), steps).single()
 
         repeat(blocks.size - 1) {
             explorer =
@@ -197,7 +197,7 @@ class STDCMHeuristicTests {
         }
 
         var wrongPathExplorer =
-            initInfraExplorer(infra, infra, steps.first().locations.first(), steps).single()
+            initInfraExplorers(infra, infra, steps.first().locations.first(), steps).single()
         repeat(2) {
             wrongPathExplorer =
                 wrongPathExplorer.cloneAndExtendLookahead().single {
