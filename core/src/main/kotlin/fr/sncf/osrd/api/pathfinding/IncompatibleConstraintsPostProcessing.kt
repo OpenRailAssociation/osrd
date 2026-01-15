@@ -6,7 +6,6 @@ import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.pathfinding.constraints.ElectrificationConstraints
 import fr.sncf.osrd.pathfinding.constraints.LoadingGaugeConstraints
 import fr.sncf.osrd.pathfinding.constraints.SignalingSystemConstraints
-import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.filterIntersection
@@ -16,7 +15,7 @@ import fr.sncf.osrd.utils.units.OffsetRange
 fun buildIncompatibleConstraintsResponse(
     infra: FullInfra,
     possiblePathWithoutErrorNoConstraints: ProcessedPathfindingResponse,
-    constraints: Collection<PathfindingConstraint<Block>>,
+    constraints: Collection<PathfindingConstraint>,
     initialRequest: PathfindingBlockRequest,
 ): IncompatibleConstraintsPathResponse? {
     val path = possiblePathWithoutErrorNoConstraints.path
@@ -71,7 +70,7 @@ fun buildIncompatibleConstraintsResponse(
 private fun <T> getConstraintsDistanceRange(
     path: TrainPath,
     pathConstrainedValues: DistanceRangeMap<T>,
-    constraint: PathfindingConstraint<Block>?,
+    constraint: PathfindingConstraint?,
 ): DistanceRangeMap<T> {
     if (constraint == null) {
         return distanceRangeMapOf()
@@ -84,7 +83,7 @@ private fun <T> getConstraintsDistanceRange(
 
 private fun getBlockedRanges(
     path: TrainPath,
-    currentConstraint: PathfindingConstraint<Block>,
+    currentConstraint: PathfindingConstraint,
 ): DistanceRangeMap<Boolean> {
     val blockList = path.getBlocks()
     val blockedRanges = distanceRangeMapOf<Boolean>()

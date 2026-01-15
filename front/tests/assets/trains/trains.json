@@ -1847,6 +1847,7 @@
       {
         "id": "id1371",
         "location": {
+          "local_track_name": "V2",
           "operational_point": {
             "uic": 8744,
             "secondary_code": "BV",

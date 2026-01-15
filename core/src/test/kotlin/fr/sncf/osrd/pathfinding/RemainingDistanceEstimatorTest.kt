@@ -49,7 +49,10 @@ class RemainingDistanceEstimatorTest {
                 edgeLocations,
                 remainingDistance,
             )
-        Assertions.assertEquals(expectedDistance, estimator.apply(block!!, blockOffset))
+        Assertions.assertEquals(
+            expectedDistance,
+            estimator.apply(BlockLocation(block!!, blockOffset)).meters,
+        )
     }
 
     @SuppressFBWarnings(

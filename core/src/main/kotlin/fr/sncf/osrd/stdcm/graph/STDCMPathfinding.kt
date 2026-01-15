@@ -9,7 +9,6 @@ import fr.sncf.osrd.pathfinding.constraints.initConstraints
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
-import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.TrackSectionId
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.stdcm.ProgressLogger
@@ -289,7 +288,7 @@ class STDCMPathfinding(
     /** Converts start locations into starting nodes. */
     private fun getStartNodes(
         graph: STDCMGraph,
-        constraints: List<PathfindingConstraint<Block>>,
+        constraints: List<PathfindingConstraint>,
     ): Set<STDCMNode> {
         val res = HashSet<STDCMNode>()
         val firstStep = steps[0]

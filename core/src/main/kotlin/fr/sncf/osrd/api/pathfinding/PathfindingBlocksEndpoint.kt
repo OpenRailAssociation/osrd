@@ -15,19 +15,12 @@ import fr.sncf.osrd.graph.*
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.pathfinding.Pathfinding
-import fr.sncf.osrd.pathfinding.Pathfinding.EdgeRange
-import fr.sncf.osrd.pathfinding.PathfindingEdge
-import fr.sncf.osrd.pathfinding.PathfindingGraph
-import fr.sncf.osrd.pathfinding.RemainingDistanceEstimator
-import fr.sncf.osrd.pathfinding.constraints.ConstraintCombiner
 import fr.sncf.osrd.pathfinding.constraints.initConstraintsFromRSProps
-import fr.sncf.osrd.pathfinding.getStartLocations
-import fr.sncf.osrd.pathfinding.getTargetsOnEdges
-import fr.sncf.osrd.pathfinding.minDistanceBetweenSteps
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.stdcm.infra_exploration.BlockLocation
+import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.utils.*
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
@@ -140,11 +133,9 @@ fun runPathfinding(infra: FullInfra, request: PathfindingBlockRequest): Pathfind
             request.rollingStockSupportedSignalingSystems,
         )
 
-    val heuristics =
-        makeHeuristicsForPathfindingEdges(infra, waypoints, request.rollingStockMaximumSpeed)
-
     // Compute the paths from the entry waypoint to the exit waypoint
-    val path = computePaths(infra, waypoints, constraints, heuristics, request, request.timeout)
+    val timeout = request.timeout ?: Pathfinding.TIMEOUT
+    val path = computePaths(infra, waypoints, constraints, request, timeout)
     return runPathfindingPostProcessing(infra, request, path)
 }
 
@@ -152,38 +143,21 @@ fun runPathfinding(infra: FullInfra, request: PathfindingBlockRequest): Pathfind
 private fun computePaths(
     infra: FullInfra,
     waypoints: ArrayList<Collection<BlockLocation>>,
-    constraints: List<PathfindingConstraint<Block>>,
-    remainingDistanceEstimators: List<AStarHeuristic<PathfindingEdge>>,
+    constraints: List<PathfindingConstraint>,
     initialRequest: PathfindingBlockRequest,
-    timeout: Double?,
+    timeout: Double,
 ): ProcessedPathfindingResponse {
     val start = Instant.now()
-    val mrspBuilder =
-        CachedBlockMRSPBuilder(
-            infra.rawInfra,
-            infra.blockInfra,
-            initialRequest.rollingStockMaximumSpeed,
-            initialRequest.rollingStockLength,
-            initialRequest.speedLimitTag,
-        )
-    val constraintCombiner = ConstraintCombiner(constraints.toMutableList())
-
     val pathFound =
-        Pathfinding(PathfindingGraph())
-            .setTimeout(timeout)
-            .setEdgeToLength { it.length }
-            .setRangeCost { getRangeCost(it, mrspBuilder, infra) }
-            .setRemainingDistanceEstimator(remainingDistanceEstimators)
-            .setComparisonFallback { a, b -> a.block.index.compareTo(b.block.index) }
-            .runPathfinding(
-                getStartLocations(
-                    infra.rawInfra,
-                    infra.blockInfra,
-                    waypoints,
-                    listOf(constraintCombiner),
-                ),
-                getTargetsOnEdges(waypoints),
+        Pathfinding(
+                infra,
+                waypoints,
+                constraints,
+                initialRequest.speedLimitTag,
+                initialRequest.rollingStockMaximumSpeed,
+                initialRequest.rollingStockLength,
             )
+            .runPathfinding()
 
     if (pathFound != null) {
         pathfindingLogger.info("Path found, start postprocessing")
@@ -200,10 +174,8 @@ private fun computePaths(
         infra,
         waypoints,
         constraints,
-        mrspBuilder,
-        remainingDistanceEstimators,
         initialRequest,
-        timeout?.minus(elapsedSeconds),
+        timeout.minus(elapsedSeconds),
     )
 }
 
@@ -221,48 +193,25 @@ fun hasDuplicateTracks(infra: FullInfra, path: TrainPath): Boolean {
     return tracks.toSet().size < tracks.size
 }
 
-const val SIGNALING_SYSTEM_COST_WEIGHTING = 1e-2
-
-private fun getRangeCost(
-    range: EdgeRange<PathfindingEdge>,
-    mrspBuilder: CachedBlockMRSPBuilder,
-    infra: FullInfra,
-): Double {
-    val edgeDuration =
-        mrspBuilder.getBlockTime(range.edge.block, range.end) -
-            mrspBuilder.getBlockTime(range.edge.block, range.start)
-    val signalingSystemPenaltyFactor =
-        SIGNALING_SYSTEM_COST_WEIGHTING *
-            infra.signalingSimulator.sigModuleManager.getCost(
-                infra.blockInfra.getBlockSignalingSystem(range.edge.block)
-            )
-    return (edgeDuration) * (1 + signalingSystemPenaltyFactor)
-}
-
 @WithSpan(value = "Identifying why no path was found")
 private fun throwNoPathFoundException(
     infra: FullInfra,
     waypoints: ArrayList<Collection<BlockLocation>>,
-    constraints: Collection<PathfindingConstraint<Block>>,
-    mrspBuilder: CachedBlockMRSPBuilder,
-    remainingDistanceEstimators: List<AStarHeuristic<PathfindingEdge>>,
+    constraints: Collection<PathfindingConstraint>,
     initialRequest: PathfindingBlockRequest,
-    timeout: Double?,
+    timeout: Double,
 ): Nothing {
     try {
         val possiblePathWithoutErrorNoConstraints =
-            Pathfinding(PathfindingGraph())
-                .setTimeout(timeout)
-                .setEdgeToLength { it.length }
-                .setRangeCost { range ->
-                    mrspBuilder.getBlockTime(range.edge.block, Offset(range.end.distance)) -
-                        mrspBuilder.getBlockTime(range.edge.block, Offset(range.start.distance))
-                }
-                .setRemainingDistanceEstimator(remainingDistanceEstimators)
-                .runPathfinding(
-                    getStartLocations(infra.rawInfra, infra.blockInfra, waypoints, listOf()),
-                    getTargetsOnEdges(waypoints),
+            Pathfinding(
+                    infra,
+                    waypoints,
+                    listOf(),
+                    initialRequest.speedLimitTag,
+                    initialRequest.rollingStockMaximumSpeed,
+                    initialRequest.rollingStockLength,
                 )
+                .runPathfinding(timeout)
         if (possiblePathWithoutErrorNoConstraints != null) {
             buildIncompatibleConstraintsResponse(
                     infra,
@@ -286,9 +235,8 @@ data class ProcessedPathfindingResponse(val path: TrainPath, val offsets: List<O
 
 private fun processPathfindingResponse(
     infra: FullInfra,
-    path: Pathfinding.Result<PathfindingEdge>,
+    explorer: InfraExplorer,
 ): ProcessedPathfindingResponse {
-    val explorer = path.ranges.last().edge.infraExplorer
     val trainPath = explorer.buildFullPath(infra.rawInfra, infra.blockInfra)
     val stepOffsets = explorer.getStepTracker().getSeenSteps().map { it.travelledPathOffset }
     return ProcessedPathfindingResponse(trainPath, stepOffsets)
@@ -388,49 +336,6 @@ private fun getBlockOffset(
     throw AssertionError(
         String.format("getBlockOffset: Track chunk %s not in block %s", trackChunkId, blockId)
     )
-}
-
-@WithSpan(value = "Building heuristic")
-private fun makeHeuristicsForPathfindingEdges(
-    infra: FullInfra,
-    waypoints: List<Collection<BlockLocation>>,
-    rollingStockMaxSpeed: Double,
-): ArrayList<AStarHeuristic<PathfindingEdge>> {
-    // Compute the minimum distance between steps
-    val stepMinDistance = Array(waypoints.size - 1) { 0.meters }
-    for (i in 0 until waypoints.size - 2) {
-        stepMinDistance[i] =
-            minDistanceBetweenSteps(
-                infra.blockInfra,
-                infra.rawInfra,
-                waypoints[i + 1],
-                waypoints[i + 2],
-            )
-    }
-
-    // Reversed cumulative sum
-    for (i in stepMinDistance.size - 2 downTo 0) {
-        stepMinDistance[i] += stepMinDistance[i + 1]
-    }
-
-    // Setup estimators foreach intermediate steps
-    val remainingDistanceEstimators = ArrayList<AStarHeuristic<PathfindingEdge>>()
-    for (i in 0 until waypoints.size - 1) {
-        val remainingDistanceEstimator =
-            RemainingDistanceEstimator(
-                infra.blockInfra,
-                infra.rawInfra,
-                waypoints[i + 1],
-                stepMinDistance[i],
-            )
-
-        // Now that the cost function is an approximation of the remaining time,
-        // we need to return the smallest possible remaining time here
-        remainingDistanceEstimators.add { edge, offset ->
-            remainingDistanceEstimator.apply(edge.block, offset).meters / rollingStockMaxSpeed
-        }
-    }
-    return remainingDistanceEstimators
 }
 
 /**

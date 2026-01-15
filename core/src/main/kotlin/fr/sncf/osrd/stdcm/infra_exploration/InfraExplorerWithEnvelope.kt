@@ -8,7 +8,6 @@ import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.path.interfaces.PhysicsPath
-import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.stdcm.graph.TimeData
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.appendOnlyLinkedListOf
@@ -115,7 +114,7 @@ fun initInfraExplorerWithEnvelope(
     location: BlockLocation,
     rollingStock: PhysicsRollingStock,
     steps: List<ExplorerStep> = listOf(),
-    constraints: List<PathfindingConstraint<Block>> = listOf(),
+    constraints: List<PathfindingConstraint> = listOf(),
 ): Collection<InfraExplorerWithEnvelope> {
     return initInfraExplorers(
             fullInfra.rawInfra,

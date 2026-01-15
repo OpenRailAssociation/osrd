@@ -172,7 +172,7 @@ fun initInfraExplorers(
     blockInfra: BlockInfra,
     location: BlockLocation,
     steps: List<ExplorerStep> = listOf(),
-    constraints: List<PathfindingConstraint<Block>> = listOf(),
+    constraints: List<PathfindingConstraint> = listOf(),
 ): Collection<InfraExplorer> {
     val infraExplorers = mutableListOf<InfraExplorer>()
     val block = location.edge
@@ -209,7 +209,7 @@ private class InfraExplorerImpl(
     private var trainPathCache: MutableMap<BlockId, TrainPath>,
     private var currentIndex: Int = 0,
     private var stepTracker: StepTracker,
-    private var constraints: List<PathfindingConstraint<Block>>,
+    private var constraints: List<PathfindingConstraint>,
     override var isPathComplete: Boolean = false,
 ) : InfraExplorer {
     override fun getCurrentEdgePathProperties(offset: Offset<Block>, length: Distance?): TrainPath {
@@ -409,42 +409,38 @@ private class InfraExplorerImpl(
                 blockRoutes[block] = route
 
                 // Simulation range start on the current block, 0m on any block that isn't the first
-                val travelledPathBegin: Offset<Block> =
+                val blockStartOffset: Offset<Block> =
                     if (startsPath) firstLocation!!.offset else Offset.zero()
 
                 val blockLength = blockInfra.getBlockLength(block)
 
-                val stepsOnBlock =
-                    stepTracker.exploreBlockRange(block, travelledPathBegin, blockLength)
-                val arrivalLocation =
-                    if (stepTracker.hasSeenDestination()) stepsOnBlock.lastOrNull()?.location
-                    else null
+                stepTracker.exploreBlockRange(block, blockStartOffset, blockLength)
+
+                val lastSeenStepLocation = stepTracker.getSeenSteps().lastOrNull()?.location
+                isPathComplete =
+                    stepTracker.hasSeenDestination() && lastSeenStepLocation?.edge == block
+                val blockEndOffset =
+                    if (isPathComplete) lastSeenStepLocation!!.offset else blockLength
+
                 // If a block cannot be explored, give up
                 val isRouteBlocked =
                     constraints.any { constraint ->
                         constraint.apply(block).any {
-                            if (firstLocation != null && firstLocation.edge == block)
-                                firstLocation.offset.distance < it.end.distance
-                            else if (arrivalLocation != null)
-                                arrivalLocation.offset.distance > it.start.distance
-                            else true
+                            blockStartOffset < it.end && blockEndOffset > it.start
                         }
                     }
                 if (isRouteBlocked) return false
-                isPathComplete = arrivalLocation != null
-                val travelledPathEndBlockOffset = arrivalLocation?.offset ?: blockLength
 
                 val rangePathBegin = getLookaheadEndOffset()
-                val rangePathEnd =
-                    rangePathBegin + (travelledPathEndBlockOffset - travelledPathBegin)
+                val rangePathEnd = rangePathBegin + (blockEndOffset - blockStartOffset)
 
                 if (rangePathBegin > rangePathEnd) continue
 
                 val blockRange =
                     BlockRange(
                         value = block,
-                        objectBegin = travelledPathBegin,
-                        objectEnd = travelledPathEndBlockOffset,
+                        objectBegin = blockStartOffset,
+                        objectEnd = blockEndOffset,
                         pathBegin = rangePathBegin,
                         pathEnd = rangePathEnd,
                         objectLength = blockLength,

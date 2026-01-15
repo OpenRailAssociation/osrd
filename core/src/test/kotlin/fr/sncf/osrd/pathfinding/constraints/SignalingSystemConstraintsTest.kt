@@ -1,11 +1,12 @@
 package fr.sncf.osrd.pathfinding.constraints
 
-import fr.sncf.osrd.pathfinding.Pathfinding
+import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.OffsetRange
 import fr.sncf.osrd.utils.units.meters
 import java.util.stream.Stream
 import org.assertj.core.api.Assertions
@@ -24,7 +25,7 @@ class SignalingSystemConstraintsTest {
     fun testSignalingSystemBlockedRanges(
         blockId: BlockId,
         rollingStock: RollingStock,
-        expectedBlockedRanges: Collection<Pathfinding.Range>,
+        expectedBlockedRanges: Collection<OffsetRange<Block>>,
     ) {
         /*
 
@@ -52,7 +53,7 @@ class SignalingSystemConstraintsTest {
             Arguments.of(
                 1,
                 TestTrains.TRAIN_WITHOUT_TVM,
-                setOf(Pathfinding.Range(Offset(0.meters), Offset(100.meters))),
+                setOf(OffsetRange<Block>(Offset(0.meters), Offset(100.meters))),
             ),
             Arguments.of(0, TestTrains.FAST_ELECTRIC_TRAIN, HashSet<Any>()),
             Arguments.of(1, TestTrains.FAST_ELECTRIC_TRAIN, HashSet<Any>()),

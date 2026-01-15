@@ -1,12 +1,12 @@
 package fr.sncf.osrd.pathfinding.constraints
 
-import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.TrackChunkId
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.OffsetRange
 import fr.sncf.osrd.utils.units.meters
 import java.util.stream.Stream
 import org.assertj.core.api.AssertionsForClassTypes
@@ -37,7 +37,7 @@ class ElectrificationConstraintsTest {
     @MethodSource("testDeadSectionArgs")
     fun testDeadSectionAndElectrificationBlockedRanges(
         blockId: BlockId,
-        expectedBlockedRanges: Collection<Pathfinding.Range>,
+        expectedBlockedRanges: Collection<OffsetRange<Block>>,
     ) {
         val blockedRanges = electrificationConstraints!!.apply(blockId)
         AssertionsForClassTypes.assertThat(blockedRanges).isEqualTo(expectedBlockedRanges)
@@ -47,12 +47,12 @@ class ElectrificationConstraintsTest {
         return Stream.of( // No corresponding electrification ranges without dead sections
             Arguments.of(
                 0,
-                mutableSetOf(Pathfinding.Range(Offset(0.meters), chunk0Length)),
+                mutableSetOf(OffsetRange(Offset(0.meters), chunk0Length)),
             ), // Partially corresponding electrification ranges with dead
             // section
             Arguments.of(
                 1,
-                mutableSetOf(Pathfinding.Range(Offset(0.meters), Offset(140.meters))),
+                mutableSetOf(OffsetRange<Block>(Offset(0.meters), Offset(140.meters))),
             ), // Fully corresponding electrification ranges without dead
             // sections
             Arguments.of(2, HashSet<Any>()),

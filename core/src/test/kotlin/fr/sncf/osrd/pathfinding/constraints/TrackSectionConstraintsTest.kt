@@ -1,11 +1,11 @@
 package fr.sncf.osrd.pathfinding.constraints
 
-import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.OffsetRange
 import fr.sncf.osrd.utils.units.meters
 import java.util.stream.Stream
 import org.assertj.core.api.Assertions
@@ -82,7 +82,7 @@ class TrackSectionConstraintsTest {
     @MethodSource("testZonesArgs")
     fun testRestrictedTrackSectionBlockedRanges(
         blockId: BlockId,
-        expectedBlockedRanges: Collection<Pathfinding.Range>,
+        expectedBlockedRanges: Collection<OffsetRange<Block>>,
     ) {
         val blockedRanges = trackSectionConstraints!!.apply(blockId)
         Assertions.assertThat(blockedRanges).isEqualTo(expectedBlockedRanges)
@@ -92,11 +92,11 @@ class TrackSectionConstraintsTest {
         return Stream.of(
             Arguments.of(
                 ta0Chunk0block!!.index.toInt(),
-                setOf(Pathfinding.Range(Offset(0.meters), ta0Chunk0Length)),
+                setOf(OffsetRange(Offset(0.meters), ta0Chunk0Length)),
             ),
             Arguments.of(
                 ta0Chunk1block!!.index.toInt(),
-                setOf(Pathfinding.Range(Offset(0.meters), Offset(180.meters))),
+                setOf(OffsetRange<Block>(Offset(0.meters), Offset(180.meters))),
             ),
             Arguments.of(ta1Chunk0block!!.index.toInt(), HashSet<Any>()),
         )
