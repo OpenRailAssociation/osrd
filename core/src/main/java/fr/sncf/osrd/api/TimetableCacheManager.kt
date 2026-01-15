@@ -9,8 +9,11 @@ import io.lettuce.core.api.StatefulRedisConnection
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
+import java.io.ByteArrayOutputStream
 import java.nio.file.Files
 import java.util.concurrent.ConcurrentHashMap
+import java.util.zip.GZIPInputStream
+import java.util.zip.GZIPOutputStream
 import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.readBytes
@@ -23,8 +26,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.cbor.Cbor
-import kotlinx.serialization.decodeFromHexString
-import kotlinx.serialization.encodeToHexString
+import kotlinx.serialization.encodeToByteArray
 import org.slf4j.LoggerFactory
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
@@ -79,7 +81,7 @@ data class STDCMTimetableData(
 class TimetableCacheManager(
     val timetableProvider: TimetableProvider,
     val localCacheLocation: String? = null,
-    val valkeyConnection: StatefulRedisConnection<String, String>? = null,
+    val valkeyConnection: StatefulRedisConnection<ByteArray, ByteArray>? = null,
     val disableAllCaching: Boolean = false,
     val osrdGitDescribe: String,
     val s3Context: S3Context? = null,
@@ -213,17 +215,18 @@ class TimetableCacheManager(
      * error happened.
      */
     private suspend fun tryGetFromValkey(
-        valkeyConnection: StatefulRedisConnection<String, String>,
+        valkeyConnection: StatefulRedisConnection<ByteArray, ByteArray>,
         key: String,
     ): STDCMTimetableData? {
         try {
             val async = valkeyConnection.async()
-            val data = async.get(key).await() ?: return null
+            val byteKey = key.encodeToByteArray()
+            val data = async.get(byteKey).await()?.decompress() ?: return null
             logger.debug("valkey cache hit")
 
             val cbor = Cbor {}
             val serializer = STDCMTimetableData.SerializableMap.serializer()
-            val serializableMap = cbor.decodeFromHexString(serializer, data)
+            val serializableMap = cbor.decodeFromByteArray(serializer, data)
             return serializableMap.toSTDCMRequirements()
         } catch (e: Exception) {
             logger.warn("error when fetching valkey cache: ${e.message}")
@@ -233,20 +236,20 @@ class TimetableCacheManager(
 
     /** Write the value to valkey, not blocking. */
     private fun writeCacheToValkey(
-        valkeyConnection: StatefulRedisConnection<String, String>,
+        valkeyConnection: StatefulRedisConnection<ByteArray, ByteArray>,
         key: String,
         data: STDCMTimetableData,
     ) {
         val async = valkeyConnection.async()
         val cbor = Cbor {}
         val serializer = STDCMTimetableData.SerializableMap.serializer()
-        val serialized = cbor.encodeToHexString(serializer, data.toSerializable())
+        val serialized = cbor.encodeToByteArray(serializer, data.toSerializable()).compress()
 
         // One day and a half. Timetables should be relevant for one day before being replaced, we
         // keep them a little longer than that to be on the safe side.
         val expirationMS = 36L * 60L * 60L * 1000L
 
-        async.psetex(key, expirationMS, serialized).exceptionally {
+        async.psetex(key.encodeToByteArray(), expirationMS, serialized).exceptionally {
             logger.warn("failed to send cached timetable to valkey: ", it)
             null
         }
@@ -257,7 +260,7 @@ class TimetableCacheManager(
      * and write a new entry.
      */
     private suspend fun withValkeyCache(
-        valkeyConnection: StatefulRedisConnection<String, String>?,
+        valkeyConnection: StatefulRedisConnection<ByteArray, ByteArray>?,
         cacheKey: String?,
         generateData: () -> STDCMTimetableData,
     ): STDCMTimetableData {
@@ -294,4 +297,14 @@ class TimetableCacheManager(
             logger.error("failed to save timetable to s3", e)
         }
     }
+}
+
+fun ByteArray.compress(): ByteArray {
+    val outputStream = ByteArrayOutputStream(this.size)
+    GZIPOutputStream(outputStream).use { it.write(this) }
+    return outputStream.toByteArray()
+}
+
+fun ByteArray.decompress(): ByteArray {
+    return GZIPInputStream(this.inputStream()).use { it.readBytes() }
 }
