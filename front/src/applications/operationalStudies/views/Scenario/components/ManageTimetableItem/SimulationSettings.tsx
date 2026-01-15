@@ -5,14 +5,14 @@ import ConstraintDistributionSwitch from './ConstraintDistributionSwitch';
 import ElectricalProfiles from './ElectricalProfiles';
 
 type Props = {
-  selectedSpeedLimitByTag?: string;
+  selectedSpeedLimitTag?: string;
   speedLimitTags: string[];
   updateSpeedLimitTag: (newTag: string | null) => void;
   constraintDistribution: Distribution;
 };
 
 const SimulationSettings = ({
-  selectedSpeedLimitByTag: speedLimitByTag,
+  selectedSpeedLimitTag,
   speedLimitTags,
   updateSpeedLimitTag,
   constraintDistribution,
@@ -24,7 +24,7 @@ const SimulationSettings = ({
     </div>
     <div className="second-row">
       <SpeedLimitTagSelector
-        selectedSpeedLimitTag={speedLimitByTag}
+        selectedSpeedLimitTag={selectedSpeedLimitTag}
         speedLimitTags={speedLimitTags}
         updateSpeedLimitTag={updateSpeedLimitTag}
         showPlaceHolder
