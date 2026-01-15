@@ -83,11 +83,11 @@ const StdcmConsist = ({
 }: StdcmConsistProps) => {
   const { t } = useTranslation('stdcm');
 
-  const speedLimitByTag = useSelector(getStdcmSpeedLimitByTag);
+  const selectedSpeedLimitTag = useSelector(getStdcmSpeedLimitByTag);
   const speedLimitsByTag = useSelector(getStdcmSpeedLimitsByTag);
   const speedLimitTags = useMemo(
     () => removeDuplicates(Object.keys(speedLimitsByTag)).sort(),
-    [speedLimitByTag]
+    [speedLimitsByTag]
   );
   const trackSectionIdsByLoadingGauge = useSelector(getTrackSectionIdsByLoadingGauge);
   const loadingGauges = trackSectionIdsByLoadingGauge
@@ -160,7 +160,7 @@ const StdcmConsist = ({
   );
 
   const handleRollingStockSelect = (option?: LightRollingStockWithLiveries) => {
-    prefillConsist(option, towedRollingStock, speedLimitByTag);
+    prefillConsist(option, towedRollingStock, selectedSpeedLimitTag);
     dispatch(updateRollingStockID(option?.id));
     setStatusMessagesVisible({
       mass: true,
@@ -277,7 +277,7 @@ const StdcmConsist = ({
           value={towedRollingStock}
           getSuggestionLabel={(suggestion: TowedRollingStock) => suggestion.name}
           onSelectSuggestion={(towed) => {
-            prefillConsist(rollingStock, towed, speedLimitByTag);
+            prefillConsist(rollingStock, towed, selectedSpeedLimitTag);
             dispatch(updateTowedRollingStockID(towed?.id));
           }}
           {...towedRollingStockComboBoxDefaultProps}
@@ -344,7 +344,7 @@ const StdcmConsist = ({
       <div className="stdcm-consist__properties">
         <SpeedLimitTagSelector
           disabled={disabled}
-          selectedSpeedLimitTag={speedLimitByTag}
+          selectedSpeedLimitTag={selectedSpeedLimitTag}
           speedLimitTags={speedLimitTags}
           updateSpeedLimitTag={onSpeedLimitTagChange}
           showPlaceHolder={isDebugMode}
