@@ -8,7 +8,7 @@
   top: 0;
   width: 100%;
   z-index: 1000;
-  overflow: scroll;
+  overflow: auto;
   align-items: safe center;
 
   .dialog-content {
@@ -40,6 +40,7 @@
       h5 {
         font-weight: var(--font-weight-semibold);
         font-size: 1.5rem;
+        margin-bottom: 0;
       }
     }
 
@@ -67,6 +68,10 @@
         display: flex;
         gap: 24px;
         flex-shrink: 0;
+      }
+
+      button {
+        font-size: 1rem;
       }
     }
 
