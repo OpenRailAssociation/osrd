@@ -9,17 +9,9 @@ import {
   isPacedTrainBase,
 } from 'modules/timetableItem/helpers/pacedTrain';
 import type { PacedTrainWithDetails } from 'modules/timetableItem/types';
-import type {
-  TimetableItemToEditData,
-  OperationalStudiesConfState,
-  PacedTrainId,
-} from 'reducers/osrdconf/types';
+import type { TimetableItemToEditData, OperationalStudiesConfState } from 'reducers/osrdconf/types';
 import { kmhToMs } from 'utils/physics';
-import {
-  extractOccurrenceIndexFromOccurrenceId,
-  isIndexedOccurrenceId,
-  isPacedTrainId,
-} from 'utils/trainId';
+import { extractOccurrenceIndexFromOccurrenceId, isIndexedOccurrenceId } from 'utils/trainId';
 
 import {
   generatePacedTrainException,
@@ -90,12 +82,6 @@ export function formatPacedTrainWithDetailsToPacedTrainPayload(
   };
 }
 
-export function isPacedTrainToEditData(
-  timetableItemToEditData: TimetableItemToEditData
-): timetableItemToEditData is Extract<TimetableItemToEditData, { timetableItemId: PacedTrainId }> {
-  return isPacedTrainId(timetableItemToEditData.timetableItemId);
-}
-
 /**
  * Used when creating and editing a paced train
  * @param osrdconf pace train fields that were modified by user
@@ -124,11 +110,7 @@ export function formatPacedTrainPayload(
     },
   };
 
-  if (
-    timetableItemToEditData &&
-    isPacedTrainToEditData(timetableItemToEditData) &&
-    timetableItemToEditData.originalPacedTrain.paced
-  ) {
+  if (timetableItemToEditData && timetableItemToEditData.originalPacedTrain.paced) {
     const originalPacedTrain = formatPacedTrainWithDetailsToPacedTrainPayload(
       timetableItemToEditData.originalPacedTrain
     );
