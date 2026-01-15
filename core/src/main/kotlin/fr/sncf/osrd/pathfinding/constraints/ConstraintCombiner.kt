@@ -1,22 +1,22 @@
 package fr.sncf.osrd.pathfinding.constraints
 
 import fr.sncf.osrd.api.FullInfra
-import fr.sncf.osrd.graph.EdgeToRanges
 import fr.sncf.osrd.graph.PathfindingConstraint
-import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.sim_infra.api.Block
+import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.TrackSectionId
 import fr.sncf.osrd.train.RollingStock
+import fr.sncf.osrd.utils.units.OffsetRange
 
-class ConstraintCombiner<EdgeT>(val functions: MutableList<EdgeToRanges<EdgeT>> = ArrayList()) :
-    EdgeToRanges<EdgeT> {
-    private val cache = mutableMapOf<EdgeT, Collection<Pathfinding.Range>>()
+class ConstraintCombiner(val functions: List<PathfindingConstraint> = ArrayList()) :
+    PathfindingConstraint {
+    private val cache = mutableMapOf<BlockId, Collection<OffsetRange<Block>>>()
 
-    override fun apply(edge: EdgeT): Collection<Pathfinding.Range> {
+    override fun apply(edge: BlockId): Collection<OffsetRange<Block>> {
         val cached = cache[edge]
         if (cached != null) return cached
-        val res = HashSet<Pathfinding.Range>()
+        val res = HashSet<OffsetRange<Block>>()
         for (f in functions) res.addAll(f.apply(edge))
         cache[edge] = res
         return res
@@ -28,7 +28,7 @@ fun initConstraints(
     fullInfra: FullInfra,
     rollingStock: RollingStock,
     allowedTrackSections: Set<TrackSectionId>? = null,
-): List<PathfindingConstraint<Block>> {
+): List<PathfindingConstraint> {
     return initConstraintsFromRSProps(
         fullInfra,
         rollingStock.isThermal,
@@ -46,8 +46,8 @@ fun initConstraintsFromRSProps(
     rollingStockSupportedElectrification: List<String>,
     rollingStockSupportedSignalingSystems: List<String>,
     allowedTrackSections: Set<TrackSectionId>? = null,
-): List<PathfindingConstraint<Block>> {
-    val res = mutableListOf<PathfindingConstraint<Block>>()
+): List<PathfindingConstraint> {
+    val res = mutableListOf<PathfindingConstraint>()
     if (!rollingStockIsThermal) {
         res.add(
             ElectrificationConstraints(

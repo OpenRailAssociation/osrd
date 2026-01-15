@@ -15,7 +15,8 @@ import fr.sncf.osrd.utils.units.Offset
  *
  * The tricky part is that we need to keep track of which steps are seen on the path as a whole
  * (including lookahead), and which have actually been reached by the simulations (excluding
- * lookahead).
+ * lookahead). As the simulation is managed outside the StepTracker, the simulator is in charge of
+ * moving the StepTracker forward, which updates the reached steps.
  *
  * Unless specified otherwise, fields and methods refer to the whole path (including lookahead).
  */

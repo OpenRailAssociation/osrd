@@ -1,86 +1,35 @@
 package fr.sncf.osrd.utils.graph
 
-import com.google.common.graph.NetworkBuilder
-import fr.sncf.osrd.graph.Graph
-import fr.sncf.osrd.graph.NetworkGraphAdapter
+import fr.sncf.osrd.graph.PathfindingConstraint
+import fr.sncf.osrd.path.interfaces.BlockRange
 import fr.sncf.osrd.pathfinding.Pathfinding
-import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
-import fr.sncf.osrd.pathfinding.Pathfinding.EdgeRange
-import fr.sncf.osrd.pathfinding.Pathfinding.Result
-import fr.sncf.osrd.pathfinding.PathfindingGraph
-import fr.sncf.osrd.pathfinding.getStartLocations
-import fr.sncf.osrd.pathfinding.getTargetsOnEdges
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Block
+import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.stdcm.infra_exploration.BlockLocation
-import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
+import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
+import fr.sncf.osrd.train.RollingStock
+import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.DummyInfra
-import fr.sncf.osrd.utils.graph.PathfindingTests.SimpleGraphBuilder.Edge
-import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.OffsetRange
 import fr.sncf.osrd.utils.units.meters
-import java.util.stream.Collectors
 import org.assertj.core.api.AssertionsForClassTypes
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
-class PathfindingTests {
-    class SimpleGraphBuilder {
-        data class Edge(
-            val length: Length<Block>,
-            val label: String,
-            val blockedRanges: Set<Pathfinding.Range>,
-        )
-
-        class Node
-
-        private val builder =
-            NetworkBuilder.directed().allowsParallelEdges(true).immutable<Node, Edge>()
-        private val edges: MutableMap<String, Edge> = HashMap()
-        private val nodes: MutableList<Node> = ArrayList()
-
-        private fun makeNode() {
-            val res = Node()
-            builder.addNode(res)
-            nodes.add(res)
-        }
-
-        fun makeNodes(n: Int) {
-            repeat(n) { makeNode() }
-        }
-
-        fun makeEdge(
-            n1: Int,
-            n2: Int,
-            length: Distance,
-            blockedRanges: Set<Pathfinding.Range> = setOf(),
-        ) {
-            val label = String.format("%d-%s", n1, n2)
-            val res = Edge(Length(length), label, blockedRanges)
-            builder.addEdge(nodes[n1], nodes[n2], res)
-            edges[label] = res
-        }
-
-        fun build(): Graph<Node, Edge> {
-            return NetworkGraphAdapter(builder.build())
-        }
-
-        fun getEdgeLocation(id: String, offset: Distance): EdgeLocation<Edge> {
-            return EdgeLocation(edges[id]!!, Offset(offset))
-        }
-
-        fun getEdgeLocation(id: String): EdgeLocation<Edge> {
-            return EdgeLocation(edges[id]!!, Offset(0.meters))
-        }
+data class TestRangeConstraints(val f: (BlockId) -> Collection<OffsetRange<Block>>) :
+    PathfindingConstraint {
+    override fun apply(edge: BlockId): Collection<OffsetRange<Block>> {
+        return f(edge)
     }
+}
 
-    /** A range where the edge is only referenced by its ID (for easier equality check) */
-    data class SimpleRange(val id: String, val begin: Offset<Block>, val end: Offset<Block>)
-
+class PathfindingTests {
     @Test
     fun pathfindingShortestTwoStepsTest() {
         /* Two possible paths, top path is the shortest
@@ -89,25 +38,39 @@ class PathfindingTests {
                    \        /
                     + ->-> +
          */
-        val builder = SimpleGraphBuilder()
-        builder.makeNodes(5)
-        builder.makeEdge(0, 1, 0.meters)
-        builder.makeEdge(1, 2, 10.meters)
-        builder.makeEdge(2, 3, 10.meters)
-        builder.makeEdge(1, 3, 21.meters)
-        builder.makeEdge(3, 4, 0.meters)
-        val g = builder.build()
-        val res =
-            Pathfinding(g)
-                .setEdgeToLength { it.length }
-                .runPathfindingEdgesOnly(
-                    listOf(
-                        listOf(builder.getEdgeLocation("0-1")),
-                        listOf(builder.getEdgeLocation("3-4")),
-                    )
-                )
-        val resIDs = res!!.stream().map { x -> x!!.label }.toList()
-        Assertions.assertEquals(listOf("0-1", "1-2", "2-3", "3-4"), resIDs)
+        val infra = DummyInfra()
+        val block01 = infra.addBlock("0", "1", 0.meters)
+        val block12 = infra.addBlock("1", "2", 10.meters)
+        val block23 = infra.addBlock("2", "3", 10.meters)
+        infra.addBlock("1", "3", 21.meters)
+        val block34 = infra.addBlock("3", "4", 0.meters)
+        val waypoints =
+            arrayListOf<Collection<BlockLocation>>(
+                listOf(BlockLocation(block01, Offset(0.meters))),
+                listOf(BlockLocation(block34, Offset(0.meters))),
+            )
+        val res = runPathFinding(waypoints, infra)
+        Assertions.assertEquals(
+            arrayListOf(
+                BlockRange(block01, Offset(0.meters), Offset(0.meters), 0.meters, Length(0.meters)),
+                BlockRange(
+                    block12,
+                    Offset(0.meters),
+                    Offset(0.meters),
+                    10.meters,
+                    Length(10.meters),
+                ),
+                BlockRange(
+                    block23,
+                    Offset(0.meters),
+                    Offset(10.meters),
+                    10.meters,
+                    Length(10.meters),
+                ),
+                BlockRange(block34, Offset(0.meters), Offset(20.meters), 0.meters, Length(0.meters)),
+            ),
+            res!!.getAllBlocks(),
+        )
     }
 
     @Test
@@ -118,48 +81,74 @@ class PathfindingTests {
                    \        /
                     + ->-> +
          */
-        val builder = SimpleGraphBuilder()
-        builder.makeNodes(5)
-        builder.makeEdge(0, 1, 0.meters)
-        builder.makeEdge(1, 2, 10.meters)
-        builder.makeEdge(2, 3, 10.meters)
-        builder.makeEdge(1, 3, 19.meters)
-        builder.makeEdge(3, 4, 0.meters)
-        val g = builder.build()
-        val res =
-            Pathfinding(g)
-                .setEdgeToLength { it.length }
-                .runPathfindingEdgesOnly(
-                    listOf(
-                        listOf(builder.getEdgeLocation("0-1")),
-                        listOf(builder.getEdgeLocation("3-4")),
-                    )
-                )
-        val resIDs = res!!.stream().map { x -> x!!.label }.toList()
-        Assertions.assertEquals(listOf("0-1", "1-3", "3-4"), resIDs)
+        val infra = DummyInfra()
+        val block01 = infra.addBlock("0", "1", 0.meters)
+        infra.addBlock("1", "2", 10.meters)
+        infra.addBlock("2", "3", 10.meters)
+        val block13 = infra.addBlock("1", "3", 19.meters)
+        val block34 = infra.addBlock("3", "4", 0.meters)
+        val waypoints =
+            arrayListOf<Collection<BlockLocation>>(
+                listOf(BlockLocation(block01, Offset(0.meters))),
+                listOf(BlockLocation(block34, Offset(0.meters))),
+            )
+        val res = runPathFinding(waypoints, infra)
+        Assertions.assertEquals(
+            arrayListOf(
+                BlockRange(block01, Offset(0.meters), Offset(0.meters), 0.meters, Length(0.meters)),
+                BlockRange(
+                    block13,
+                    Offset(0.meters),
+                    Offset(0.meters),
+                    19.meters,
+                    Length(19.meters),
+                ),
+                BlockRange(block34, Offset(0.meters), Offset(19.meters), 0.meters, Length(0.meters)),
+            ),
+            res!!.getAllBlocks(),
+        )
     }
 
     @Test
     fun overlappingWaypoints() {
-        val builder = SimpleGraphBuilder()
-        builder.makeNodes(7)
-        builder.makeEdge(0, 1, 10.meters)
-        builder.makeEdge(1, 2, 10.meters)
-        builder.makeEdge(2, 3, 10.meters)
-        val g = builder.build()
-        val res =
-            Pathfinding(g)
-                .setEdgeToLength { it.length }
-                .runPathfindingEdgesOnly(
-                    listOf(
-                        listOf(builder.getEdgeLocation("0-1", 10.meters)),
-                        listOf(builder.getEdgeLocation("1-2", 10.meters)),
-                        listOf(builder.getEdgeLocation("1-2", 10.meters)),
-                        listOf(builder.getEdgeLocation("2-3", 1.meters)),
-                    )
-                )
-        val resIDs = res!!.map { x -> x.label }
-        Assertions.assertEquals(listOf("0-1", "1-2", "2-3"), resIDs)
+        val infra = DummyInfra()
+        val block01 = infra.addBlock("0", "1", 10.meters)
+        val block12 = infra.addBlock("1", "2", 10.meters)
+        val block23 = infra.addBlock("2", "3", 10.meters)
+        val waypoints =
+            arrayListOf<Collection<BlockLocation>>(
+                listOf(BlockLocation(block01, Offset(10.meters))),
+                listOf(BlockLocation(block12, Offset(10.meters))),
+                listOf(BlockLocation(block12, Offset(10.meters))),
+                listOf(BlockLocation(block23, Offset(1.meters))),
+            )
+        val res = runPathFinding(waypoints, infra)
+        Assertions.assertEquals(
+            arrayListOf(
+                BlockRange(
+                    block01,
+                    Offset(10.meters),
+                    Offset(0.meters),
+                    0.meters,
+                    Length(10.meters),
+                ),
+                BlockRange(
+                    block12,
+                    Offset(0.meters),
+                    Offset(0.meters),
+                    10.meters,
+                    Length(10.meters),
+                ),
+                BlockRange(
+                    block23,
+                    Offset(0.meters),
+                    Offset(10.meters),
+                    1.meters,
+                    Length(10.meters),
+                ),
+            ),
+            res!!.getAllBlocks(),
+        )
     }
 
     @Test
@@ -172,85 +161,106 @@ class PathfindingTests {
                          /
         2 -> B2 -> 3 -> 4
          */
-        val builder = SimpleGraphBuilder()
-        builder.makeNodes(7)
-        builder.makeEdge(0, 1, 0.meters)
-        builder.makeEdge(1, 5, 10.meters)
-        builder.makeEdge(2, 3, 0.meters)
-        builder.makeEdge(3, 4, 5.meters)
-        builder.makeEdge(4, 5, 4.meters)
-        builder.makeEdge(5, 6, 0.meters)
-        val g = builder.build()
-        val res =
-            Pathfinding(g)
-                .setEdgeToLength { it.length }
-                .runPathfindingEdgesOnly(
-                    listOf(
-                        listOf(builder.getEdgeLocation("0-1"), builder.getEdgeLocation("2-3")),
-                        listOf(builder.getEdgeLocation("5-6")),
-                    )
-                )
-        val resIDs = res!!.stream().map { x -> x!!.label }.toList()
-        Assertions.assertEquals(listOf("2-3", "3-4", "4-5", "5-6"), resIDs)
+        val infra = DummyInfra()
+        val block01 = infra.addBlock("0", "1", 0.meters)
+        infra.addBlock("1", "5", 10.meters)
+        val block23 = infra.addBlock("2", "3", 0.meters)
+        val block34 = infra.addBlock("3", "4", 5.meters)
+        val block45 = infra.addBlock("4", "5", 4.meters)
+        val block56 = infra.addBlock("5", "6", 0.meters)
+        val waypoints =
+            arrayListOf<Collection<BlockLocation>>(
+                listOf(
+                    BlockLocation(block01, Offset(0.meters)),
+                    BlockLocation(block23, Offset(0.meters)),
+                ),
+                listOf(BlockLocation(block56, Offset(0.meters))),
+            )
+        val res = runPathFinding(waypoints, infra)
+        Assertions.assertEquals(
+            arrayListOf(
+                BlockRange(block23, Offset(0.meters), Offset(0.meters), 0.meters, Length(0.meters)),
+                BlockRange(block34, Offset(0.meters), Offset(0.meters), 5.meters, Length(5.meters)),
+                BlockRange(block45, Offset(0.meters), Offset(5.meters), 4.meters, Length(4.meters)),
+                BlockRange(block56, Offset(0.meters), Offset(9.meters), 0.meters, Length(0.meters)),
+            ),
+            res!!.getAllBlocks(),
+        )
     }
 
     @Test
     fun severalEndsTest() {
         /* The bottom path has more edges but is shorter
 
-        0 -> B -> 1 -> 2 -> E1 -> 2
+        0 -> B -> 1 -> 2 -> E1 -> 3
                    \
                     v
                      4 -> 5 -> E2 -> 6
          */
-        val builder = SimpleGraphBuilder()
-        builder.makeNodes(7)
-        builder.makeEdge(0, 1, 0.meters)
-        builder.makeEdge(1, 2, 10.meters)
-        builder.makeEdge(2, 3, 0.meters)
-        builder.makeEdge(1, 4, 4.meters)
-        builder.makeEdge(4, 5, 5.meters)
-        builder.makeEdge(5, 6, 0.meters)
-        val g = builder.build()
-        val res =
-            Pathfinding(g)
-                .setEdgeToLength { it.length }
-                .runPathfindingEdgesOnly(
-                    listOf(
-                        listOf(builder.getEdgeLocation("0-1")),
-                        listOf(builder.getEdgeLocation("2-3"), builder.getEdgeLocation("5-6")),
-                    )
-                )
-        val resIDs = res!!.stream().map { x -> x!!.label }.toList()
-        Assertions.assertEquals(listOf("0-1", "1-4", "4-5", "5-6"), resIDs)
+        val infra = DummyInfra()
+        val block01 = infra.addBlock("0", "1", 0.meters)
+        infra.addBlock("1", "2", 10.meters)
+        val block23 = infra.addBlock("2", "3", 0.meters)
+        val block14 = infra.addBlock("1", "4", 4.meters)
+        val block45 = infra.addBlock("4", "5", 5.meters)
+        val block56 = infra.addBlock("5", "6", 0.meters)
+        val waypoints =
+            arrayListOf<Collection<BlockLocation>>(
+                listOf(BlockLocation(block01, Offset(0.meters))),
+                listOf(
+                    BlockLocation(block23, Offset(0.meters)),
+                    BlockLocation(block56, Offset(0.meters)),
+                ),
+            )
+        val res = runPathFinding(waypoints, infra)
+        Assertions.assertEquals(
+            arrayListOf(
+                BlockRange(block01, Offset(0.meters), Offset(0.meters), 0.meters, Length(0.meters)),
+                BlockRange(block14, Offset(0.meters), Offset(0.meters), 4.meters, Length(4.meters)),
+                BlockRange(block45, Offset(0.meters), Offset(4.meters), 5.meters, Length(5.meters)),
+                BlockRange(block56, Offset(0.meters), Offset(9.meters), 0.meters, Length(0.meters)),
+            ),
+            res!!.getAllBlocks(),
+        )
     }
 
     @Test
     fun loopTest() {
-        /* The 1 -> 0 path has a negative length.
-        if the "seen" edges are badly handled, this starts an infinite loop
+        /* The 1 -> 3 -> 1 path has a null length.
+        if the "seen" edges are badly handled, this could start an infinite loop
 
         0 -> B -> 1 -> E -> 2
          ^        v
           + <-<- +
         */
-        val builder = SimpleGraphBuilder()
-        builder.makeNodes(3)
-        builder.makeEdge(0, 1, 1.meters)
-        builder.makeEdge(1, 2, 100.meters)
-        builder.makeEdge(1, 0, (-100).meters)
-        val g = builder.build()
-        val res =
-            Pathfinding(g)
-                .setEdgeToLength { it.length }
-                .runPathfindingEdgesOnly(
-                    listOf(
-                        listOf(builder.getEdgeLocation("0-1")),
-                        listOf(builder.getEdgeLocation("1-2", 50.meters)),
-                    )
-                )
-        val resIDs = res!!.stream().map { x -> x!!.label }.toList()
-        Assertions.assertEquals(listOf("0-1", "1-2"), resIDs)
+        val infra = DummyInfra()
+        val block01 = infra.addBlock("0", "1", 1.meters)
+        val block13 = infra.addBlock("1", "3", 0.meters)
+        val block31 = infra.addBlock("3", "1", 0.meters)
+        val block12 = infra.addBlock("1", "2", 100.meters)
+        val waypoints =
+            arrayListOf<Collection<BlockLocation>>(
+                listOf(BlockLocation(block01, Offset(0.meters))),
+                listOf(BlockLocation(block12, Offset(50.meters))),
+            )
+        val res = runPathFinding(waypoints, infra)
+        Assertions.assertEquals(
+            arrayListOf(
+                BlockRange(block01, Offset(0.meters), Offset(0.meters), 1.meters, Length(1.meters)),
+                // The loop is triggered when favoring multiple blocks, but could disappear.
+                // However, the loop can never be used multiple times.
+                BlockRange(block13, Offset(0.meters), Offset(1.meters), 0.meters, Length(0.meters)),
+                BlockRange(block31, Offset(0.meters), Offset(1.meters), 0.meters, Length(0.meters)),
+                BlockRange(
+                    block12,
+                    Offset(0.meters),
+                    Offset(1.meters),
+                    50.meters,
+                    Length(100.meters),
+                ),
+            ),
+            res!!.getAllBlocks(),
+        )
     }
 
     @Test
@@ -259,21 +269,16 @@ class PathfindingTests {
 
         0 -> E -> 1 -> 2 -> B -> 3
          */
-        val builder = SimpleGraphBuilder()
-        builder.makeNodes(4)
-        builder.makeEdge(0, 1, 100.meters)
-        builder.makeEdge(1, 2, 100.meters)
-        builder.makeEdge(2, 3, 100.meters)
-        val g = builder.build()
-        val res =
-            Pathfinding(g)
-                .setEdgeToLength { it.length }
-                .runPathfindingEdgesOnly(
-                    listOf(
-                        listOf(builder.getEdgeLocation("2-3")),
-                        listOf(builder.getEdgeLocation("0-1")),
-                    )
-                )
+        val infra = DummyInfra()
+        val block01 = infra.addBlock("0", "1", 100.meters)
+        infra.addBlock("1", "2", 100.meters)
+        val block23 = infra.addBlock("2", "3", 100.meters)
+        val waypoints =
+            arrayListOf<Collection<BlockLocation>>(
+                listOf(BlockLocation(block23, Offset(0.meters))),
+                listOf(BlockLocation(block01, Offset(0.meters))),
+            )
+        val res = runPathFinding(waypoints, infra)
         Assertions.assertNull(res)
     }
 
@@ -283,22 +288,17 @@ class PathfindingTests {
 
         0 -> B -> 1 -> 2 -> E2 -> E1 -> 3
          */
-        val builder = SimpleGraphBuilder()
-        builder.makeNodes(4)
-        builder.makeEdge(0, 1, 100.meters)
-        builder.makeEdge(1, 2, 100.meters)
-        builder.makeEdge(2, 3, 100.meters)
-        val g = builder.build()
-        val res =
-            Pathfinding(g)
-                .setEdgeToLength { it.length }
-                .runPathfindingEdgesOnly(
-                    listOf(
-                        listOf(builder.getEdgeLocation("0-1")),
-                        listOf(builder.getEdgeLocation("2-3", 20.meters)),
-                        listOf(builder.getEdgeLocation("2-3", 10.meters)),
-                    )
-                )
+        val infra = DummyInfra()
+        val block01 = infra.addBlock("0", "1", 100.meters)
+        infra.addBlock("1", "2", 100.meters)
+        val block23 = infra.addBlock("2", "3", 100.meters)
+        val waypoints =
+            arrayListOf<Collection<BlockLocation>>(
+                listOf(BlockLocation(block01, Offset(0.meters))),
+                listOf(BlockLocation(block23, Offset(20.meters))),
+                listOf(BlockLocation(block23, Offset(10.meters))),
+            )
+        val res = runPathFinding(waypoints, infra)
         Assertions.assertNull(res)
     }
 
@@ -308,19 +308,14 @@ class PathfindingTests {
 
         0 -> -> E -> -> B -> -> 1
          */
-        val builder = SimpleGraphBuilder()
-        builder.makeNodes(2)
-        builder.makeEdge(0, 1, 100.meters)
-        val g = builder.build()
-        val res =
-            Pathfinding(g)
-                .setEdgeToLength { it.length }
-                .runPathfindingEdgesOnly(
-                    listOf(
-                        listOf(builder.getEdgeLocation("0-1", 60.meters)),
-                        listOf(builder.getEdgeLocation("0-1", 30.meters)),
-                    )
-                )
+        val infra = DummyInfra()
+        val block01 = infra.addBlock("0", "1", 100.meters)
+        val waypoints =
+            arrayListOf<Collection<BlockLocation>>(
+                listOf(BlockLocation(block01, Offset(60.meters))),
+                listOf(BlockLocation(block01, Offset(30.meters))),
+            )
+        val res = runPathFinding(waypoints, infra)
         Assertions.assertNull(res)
     }
 
@@ -330,21 +325,16 @@ class PathfindingTests {
 
         0 -> -> B -> -> E -> -> Step -> -> 1
          */
-        val builder = SimpleGraphBuilder()
-        builder.makeNodes(3)
-        builder.makeEdge(0, 1, 100.meters)
-        builder.makeEdge(1, 2, 100.meters)
-        val g = builder.build()
-        val res =
-            Pathfinding(g)
-                .setEdgeToLength { it.length }
-                .runPathfindingEdgesOnly(
-                    listOf(
-                        listOf(builder.getEdgeLocation("0-1", 10.meters)),
-                        listOf(builder.getEdgeLocation("0-1", 40.meters)),
-                        listOf(builder.getEdgeLocation("0-1", 20.meters)),
-                    )
-                )
+        val infra = DummyInfra()
+        val block01 = infra.addBlock("0", "1", 100.meters)
+        infra.addBlock("1", "2", 100.meters)
+        val waypoints =
+            arrayListOf<Collection<BlockLocation>>(
+                listOf(BlockLocation(block01, Offset(10.meters))),
+                listOf(BlockLocation(block01, Offset(40.meters))),
+                listOf(BlockLocation(block01, Offset(20.meters))),
+            )
+        val res = runPathFinding(waypoints, infra)
         Assertions.assertNull(res)
     }
 
@@ -357,23 +347,49 @@ class PathfindingTests {
           \                v
            + <- - 2 <- -  +
          */
-        val builder = SimpleGraphBuilder()
-        builder.makeNodes(3)
-        builder.makeEdge(0, 1, 100.meters)
-        builder.makeEdge(1, 2, 100.meters)
-        builder.makeEdge(2, 0, 100.meters)
-        val g = builder.build()
-        val res =
-            Pathfinding(g)
-                .setEdgeToLength { it.length }
-                .runPathfindingEdgesOnly(
-                    listOf(
-                        listOf(builder.getEdgeLocation("0-1", 60.meters)),
-                        listOf(builder.getEdgeLocation("0-1", 30.meters)),
-                    )
-                )
-        val resIDs = res!!.stream().map { x -> x!!.label }.toList()
-        Assertions.assertEquals(listOf("0-1", "1-2", "2-0", "0-1"), resIDs)
+        val infra = DummyInfra()
+        val block01 = infra.addBlock("0", "1", 100.meters)
+        val block12 = infra.addBlock("1", "2", 100.meters)
+        val block20 = infra.addBlock("2", "0", 100.meters)
+        val waypoints =
+            arrayListOf<Collection<BlockLocation>>(
+                listOf(BlockLocation(block01, Offset(60.meters))),
+                listOf(BlockLocation(block01, Offset(30.meters))),
+            )
+        val res = runPathFinding(waypoints, infra)
+        Assertions.assertEquals(
+            arrayListOf(
+                BlockRange(
+                    block01,
+                    Offset(60.meters),
+                    Offset(0.meters),
+                    40.meters,
+                    Length(100.meters),
+                ),
+                BlockRange(
+                    block12,
+                    Offset(0.meters),
+                    Offset(40.meters),
+                    100.meters,
+                    Length(100.meters),
+                ),
+                BlockRange(
+                    block20,
+                    Offset(0.meters),
+                    Offset(140.meters),
+                    100.meters,
+                    Length(100.meters),
+                ),
+                BlockRange(
+                    block01,
+                    Offset(0.meters),
+                    Offset(240.meters),
+                    30.meters,
+                    Length(100.meters),
+                ),
+            ),
+            res!!.getAllBlocks(),
+        )
     }
 
     @Test
@@ -385,33 +401,40 @@ class PathfindingTests {
                  \
                   4 - E2 - 5
          */
-        val builder = SimpleGraphBuilder()
-        builder.makeNodes(6)
-        builder.makeEdge(0, 1, 0.meters)
-        builder.makeEdge(1, 2, 10.meters)
-        builder.makeEdge(2, 3, 1000.meters)
-        builder.makeEdge(1, 4, 100.meters)
-        builder.makeEdge(4, 5, 1000.meters)
-        val g = builder.build()
-        val res =
-            Pathfinding(g)
-                .setEdgeToLength { it.length }
-                .runPathfinding(
-                    listOf(
-                        listOf(builder.getEdgeLocation("0-1")),
-                        listOf(
-                            builder.getEdgeLocation("2-3", 500.meters),
-                            builder.getEdgeLocation("4-5", 10.meters),
-                        ),
-                    )
-                )!!
+        val infra = DummyInfra()
+        val block01 = infra.addBlock("0", "1", 0.meters)
+        infra.addBlock("1", "2", 10.meters)
+        val block23 = infra.addBlock("2", "3", 1000.meters)
+        val block14 = infra.addBlock("1", "4", 100.meters)
+        val block45 = infra.addBlock("4", "5", 1000.meters)
+        val waypoints =
+            arrayListOf<Collection<BlockLocation>>(
+                listOf(BlockLocation(block01, Offset(0.meters))),
+                listOf(
+                    BlockLocation(block23, Offset(500.meters)),
+                    BlockLocation(block45, Offset(10.meters)),
+                ),
+            )
+        val res = runPathFinding(waypoints, infra)
         Assertions.assertEquals(
-            listOf(
-                SimpleRange("0-1", Offset(0.meters), Offset(0.meters)),
-                SimpleRange("1-4", Offset(0.meters), Offset(100.meters)),
-                SimpleRange("4-5", Offset(0.meters), Offset(10.meters)),
+            arrayListOf(
+                BlockRange(block01, Offset(0.meters), Offset(0.meters), 0.meters, Length(0.meters)),
+                BlockRange(
+                    block14,
+                    Offset(0.meters),
+                    Offset(0.meters),
+                    100.meters,
+                    Length(100.meters),
+                ),
+                BlockRange(
+                    block45,
+                    Offset(0.meters),
+                    Offset(100.meters),
+                    10.meters,
+                    Length(1000.meters),
+                ),
             ),
-            convertRes(res),
+            res!!.getAllBlocks(),
         )
     }
 
@@ -424,34 +447,59 @@ class PathfindingTests {
                  \        /
                   4 step 5
          */
-        val builder = SimpleGraphBuilder()
-        builder.makeNodes(6)
-        builder.makeEdge(0, 1, 10.meters)
-        builder.makeEdge(1, 2, 10.meters)
-        builder.makeEdge(2, 3, 10.meters)
-        builder.makeEdge(1, 4, 1000.meters)
-        builder.makeEdge(4, 5, 10.meters)
-        builder.makeEdge(5, 2, 1000.meters)
-        val g = builder.build()
-        val res =
-            Pathfinding(g)
-                .setEdgeToLength { it.length }
-                .runPathfinding(
-                    listOf(
-                        listOf(builder.getEdgeLocation("0-1", 5.meters)),
-                        listOf(builder.getEdgeLocation("4-5", 5.meters)),
-                        listOf(builder.getEdgeLocation("2-3", 5.meters)),
-                    )
-                )!!
+        val infra = DummyInfra()
+        val block01 = infra.addBlock("0", "1", 10.meters)
+        infra.addBlock("1", "2", 10.meters)
+        val block23 = infra.addBlock("2", "3", 10.meters)
+        val block14 = infra.addBlock("1", "4", 1000.meters)
+        val block45 = infra.addBlock("4", "5", 10.meters)
+        val block52 = infra.addBlock("5", "2", 1000.meters)
+        val waypoints =
+            arrayListOf<Collection<BlockLocation>>(
+                listOf(BlockLocation(block01, Offset(5.meters))),
+                listOf(BlockLocation(block45, Offset(5.meters))),
+                listOf(BlockLocation(block23, Offset(5.meters))),
+            )
+        val res = runPathFinding(waypoints, infra)
         Assertions.assertEquals(
-            listOf(
-                SimpleRange("0-1", Offset(5.meters), Offset(10.meters)),
-                SimpleRange("1-4", Offset(0.meters), Offset(1000.meters)),
-                SimpleRange("4-5", Offset(0.meters), Offset(10.meters)),
-                SimpleRange("5-2", Offset(0.meters), Offset(1000.meters)),
-                SimpleRange("2-3", Offset(0.meters), Offset(5.meters)),
+            arrayListOf(
+                BlockRange(
+                    block01,
+                    Offset(5.meters),
+                    Offset(0.meters),
+                    5.meters,
+                    Length(10.meters),
+                ),
+                BlockRange(
+                    block14,
+                    Offset(0.meters),
+                    Offset(5.meters),
+                    1000.meters,
+                    Length(1000.meters),
+                ),
+                BlockRange(
+                    block45,
+                    Offset(0.meters),
+                    Offset(1005.meters),
+                    10.meters,
+                    Length(10.meters),
+                ),
+                BlockRange(
+                    block52,
+                    Offset(0.meters),
+                    Offset(1015.meters),
+                    1000.meters,
+                    Length(1000.meters),
+                ),
+                BlockRange(
+                    block23,
+                    Offset(0.meters),
+                    Offset(2015.meters),
+                    5.meters,
+                    Length(10.meters),
+                ),
             ),
-            convertRes(res),
+            res!!.getAllBlocks(),
         )
     }
 
@@ -466,31 +514,59 @@ class PathfindingTests {
                               ^
         2 -> B2 -> -> -> ->-> 3
          */
-        val builder = SimpleGraphBuilder()
-        builder.makeNodes(7)
-        builder.makeEdge(
-            0,
-            1,
-            100.meters,
-            setOf(Pathfinding.Range(Offset(50.meters), Offset(50.meters))),
-        )
-        builder.makeEdge(1, 4, 100.meters)
-        builder.makeEdge(2, 3, 100.meters)
-        builder.makeEdge(3, 4, 100000.meters)
-        builder.makeEdge(4, 5, 0.meters)
-        val g = builder.build()
+        val infra = DummyInfra()
+        val block01 = infra.addBlock("0", "1", 100.meters)
+        infra.addBlock("1", "4", 100.meters)
+        val block23 = infra.addBlock("2", "3", 100.meters)
+        val block34 = infra.addBlock("3", "4", 100000.meters)
+        val block45 = infra.addBlock("4", "5", 0.meters)
+        val waypoints =
+            arrayListOf<Collection<BlockLocation>>(
+                listOf(
+                    BlockLocation(block01, Offset(0.meters)),
+                    BlockLocation(block23, Offset(0.meters)),
+                ),
+                listOf(BlockLocation(block45, Offset(0.meters))),
+            )
         val res =
-            Pathfinding(g)
-                .setEdgeToLength { it.length }
-                .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
-                .runPathfindingEdgesOnly(
+            runPathFinding(
+                waypoints,
+                infra,
+                constraints =
                     listOf(
-                        listOf(builder.getEdgeLocation("0-1"), builder.getEdgeLocation("2-3")),
-                        listOf(builder.getEdgeLocation("4-5")),
-                    )
-                )
-        val resIDs = res!!.stream().map { x -> x!!.label }.toList()
-        Assertions.assertEquals(listOf("2-3", "3-4", "4-5"), resIDs)
+                        TestRangeConstraints { edge ->
+                            if (edge == block01)
+                                setOf(OffsetRange(Offset(50.meters), Offset(50.meters)))
+                            else setOf()
+                        }
+                    ),
+            )
+        Assertions.assertEquals(
+            arrayListOf(
+                BlockRange(
+                    block23,
+                    Offset(0.meters),
+                    Offset(0.meters),
+                    100.meters,
+                    Length(100.meters),
+                ),
+                BlockRange(
+                    block34,
+                    Offset(0.meters),
+                    Offset(100.meters),
+                    100000.meters,
+                    Length(100000.meters),
+                ),
+                BlockRange(
+                    block45,
+                    Offset(0.meters),
+                    Offset(100100.meters),
+                    0.meters,
+                    Length(0.meters),
+                ),
+            ),
+            res!!.getAllBlocks(),
+        )
     }
 
     @Test
@@ -499,25 +575,26 @@ class PathfindingTests {
 
         0 -> BLOCKED( -> B -> E -> ) -> 1
          */
-        val builder = SimpleGraphBuilder()
-        builder.makeNodes(2)
-        builder.makeEdge(
-            0,
-            1,
-            100.meters,
-            setOf(Pathfinding.Range(Offset(0.meters), Offset(10.meters))),
-        )
-        val g = builder.build()
+        val infra = DummyInfra()
+        val block01 = infra.addBlock("0", "1", 100.meters)
+        val waypoints =
+            arrayListOf<Collection<BlockLocation>>(
+                listOf(BlockLocation(block01, Offset(5.meters))),
+                listOf(BlockLocation(block01, Offset(7.meters))),
+            )
         val res =
-            Pathfinding(g)
-                .setEdgeToLength { it.length }
-                .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
-                .runPathfindingEdgesOnly(
+            runPathFinding(
+                waypoints,
+                infra,
+                constraints =
                     listOf(
-                        listOf(builder.getEdgeLocation("0-1", 5.meters)),
-                        listOf(builder.getEdgeLocation("0-1", 7.meters)),
-                    )
-                )
+                        TestRangeConstraints { edge ->
+                            if (edge == block01)
+                                setOf(OffsetRange(Offset(0.meters), Offset(10.meters)))
+                            else setOf()
+                        }
+                    ),
+            )
         Assertions.assertNull(res)
     }
 
@@ -527,29 +604,41 @@ class PathfindingTests {
 
         0 -> BLOCKED() -> B -> E -> BLOCKED() -> 1
          */
-        val builder = SimpleGraphBuilder()
-        builder.makeNodes(2)
-        builder.makeEdge(
-            0,
-            1,
-            100.meters,
-            setOf(
-                Pathfinding.Range(Offset(0.meters), Offset(30.meters)),
-                Pathfinding.Range(Offset(70.meters), Offset(100.meters)),
-            ),
-        )
-        val g = builder.build()
+        val infra = DummyInfra()
+        val block01 = infra.addBlock("0", "1", 100.meters)
+        val waypoints =
+            arrayListOf<Collection<BlockLocation>>(
+                listOf(BlockLocation(block01, Offset(40.meters))),
+                listOf(BlockLocation(block01, Offset(50.meters))),
+            )
         val res =
-            Pathfinding(g)
-                .setEdgeToLength { it.length }
-                .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
-                .runPathfindingEdgesOnly(
+            runPathFinding(
+                waypoints,
+                infra,
+                constraints =
                     listOf(
-                        listOf(builder.getEdgeLocation("0-1", 40.meters)),
-                        listOf(builder.getEdgeLocation("0-1", 50.meters)),
-                    )
+                        TestRangeConstraints { edge ->
+                            if (edge == block01)
+                                setOf(
+                                    OffsetRange(Offset(0.meters), Offset(30.meters)),
+                                    OffsetRange(Offset(70.meters), Offset(100.meters)),
+                                )
+                            else setOf()
+                        }
+                    ),
+            )
+        Assertions.assertEquals(
+            arrayListOf(
+                BlockRange(
+                    block01,
+                    Offset(40.meters),
+                    Offset(0.meters),
+                    10.meters,
+                    Length(100.meters),
                 )
-        Assertions.assertNotNull(res)
+            ),
+            res!!.getAllBlocks(),
+        )
     }
 
     @Test
@@ -558,27 +647,46 @@ class PathfindingTests {
 
         0 -> B -> 1 -> E -> BLOCKED() -> 2
          */
-        val builder = SimpleGraphBuilder()
-        builder.makeNodes(3)
-        builder.makeEdge(0, 1, 100.meters)
-        builder.makeEdge(
-            1,
-            2,
-            100.meters,
-            setOf(Pathfinding.Range(Offset(70.meters), Offset(100.meters))),
-        )
-        val g = builder.build()
+        val infra = DummyInfra()
+        val block01 = infra.addBlock("0", "1", 100.meters)
+        val block12 = infra.addBlock("1", "2", 100.meters)
+        val waypoints =
+            arrayListOf<Collection<BlockLocation>>(
+                listOf(BlockLocation(block01, Offset(0.meters))),
+                listOf(BlockLocation(block12, Offset(50.meters))),
+            )
         val res =
-            Pathfinding(g)
-                .setEdgeToLength { it.length }
-                .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
-                .runPathfindingEdgesOnly(
+            runPathFinding(
+                waypoints,
+                infra,
+                constraints =
                     listOf(
-                        listOf(builder.getEdgeLocation("0-1")),
-                        listOf(builder.getEdgeLocation("1-2", 50.meters)),
-                    )
-                )
-        Assertions.assertNotNull(res)
+                        TestRangeConstraints { edge ->
+                            if (edge == block12)
+                                setOf(OffsetRange(Offset(70.meters), Offset(100.meters)))
+                            else setOf()
+                        }
+                    ),
+            )
+        Assertions.assertEquals(
+            arrayListOf(
+                BlockRange(
+                    block01,
+                    Offset(0.meters),
+                    Offset(0.meters),
+                    100.meters,
+                    Length(100.meters),
+                ),
+                BlockRange(
+                    block12,
+                    Offset(0.meters),
+                    Offset(100.meters),
+                    50.meters,
+                    Length(100.meters),
+                ),
+            ),
+            res!!.getAllBlocks(),
+        )
     }
 
     @Test
@@ -587,26 +695,27 @@ class PathfindingTests {
 
         0 -> B -> 1 -> BLOCKED() -> E -> 2
          */
-        val builder = SimpleGraphBuilder()
-        builder.makeNodes(3)
-        builder.makeEdge(0, 1, 100.meters)
-        builder.makeEdge(
-            1,
-            2,
-            100.meters,
-            setOf(Pathfinding.Range(Offset(10.meters), Offset(20.meters))),
-        )
-        val g = builder.build()
+        val infra = DummyInfra()
+        val block01 = infra.addBlock("0", "1", 100.meters)
+        val block12 = infra.addBlock("1", "2", 100.meters)
+        val waypoints =
+            arrayListOf<Collection<BlockLocation>>(
+                listOf(BlockLocation(block01, Offset(0.meters))),
+                listOf(BlockLocation(block12, Offset(50.meters))),
+            )
         val res =
-            Pathfinding(g)
-                .setEdgeToLength { it.length }
-                .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
-                .runPathfindingEdgesOnly(
+            runPathFinding(
+                waypoints,
+                infra,
+                constraints =
                     listOf(
-                        listOf(builder.getEdgeLocation("0-1")),
-                        listOf(builder.getEdgeLocation("1-2", 50.meters)),
-                    )
-                )
+                        TestRangeConstraints { edge ->
+                            if (edge == block12)
+                                setOf(OffsetRange(Offset(10.meters), Offset(20.meters)))
+                            else setOf()
+                        }
+                    ),
+            )
         Assertions.assertNull(res)
     }
 
@@ -616,29 +725,41 @@ class PathfindingTests {
 
         0 -> B1 -> BLOCKED -> B2 -> E -> 1
          */
-        val builder = SimpleGraphBuilder()
-        builder.makeNodes(2)
-        builder.makeEdge(
-            0,
-            1,
-            100.meters,
-            setOf(Pathfinding.Range(Offset(10.meters), Offset(20.meters))),
-        )
-        val g = builder.build()
+        val infra = DummyInfra()
+        val block01 = infra.addBlock("0", "1", 100.meters)
+        val waypoints =
+            arrayListOf<Collection<BlockLocation>>(
+                listOf(
+                    BlockLocation(block01, Offset(10.meters)),
+                    BlockLocation(block01, Offset(40.meters)),
+                ),
+                listOf(BlockLocation(block01, Offset(50.meters))),
+            )
         val res =
-            Pathfinding(g)
-                .setEdgeToLength { it.length }
-                .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
-                .runPathfindingEdgesOnly(
+            runPathFinding(
+                waypoints,
+                infra,
+                constraints =
                     listOf(
-                        listOf(
-                            builder.getEdgeLocation("0-1", 10.meters),
-                            builder.getEdgeLocation("0-1", 40.meters),
-                        ),
-                        listOf(builder.getEdgeLocation("0-1", 50.meters)),
-                    )
+                        TestRangeConstraints { edge ->
+                            if (edge == block01)
+                                setOf(OffsetRange(Offset(10.meters), Offset(20.meters)))
+                            else setOf()
+                        }
+                    ),
+            )
+        Assertions.assertEquals(
+            arrayListOf(
+                BlockRange(
+                    block01,
+                    Offset(40.meters),
+                    Offset(0.meters),
+                    10.meters,
+                    Length(100.meters),
                 )
-        Assertions.assertNotNull(res)
+            ),
+            res!!.getAllBlocks(),
+        )
     }
 
     @Test
@@ -649,28 +770,29 @@ class PathfindingTests {
              +  - blocked -  +
                      +  -  blocked -  -  -  +
          */
-        val builder = SimpleGraphBuilder()
-        builder.makeNodes(2)
-        builder.makeEdge(
-            0,
-            1,
-            100.meters,
-            setOf(
-                Pathfinding.Range(Offset(10.meters), Offset(50.meters)),
-                Pathfinding.Range(Offset(30.meters), Offset(80.meters)),
-            ),
-        )
-        val g = builder.build()
+        val infra = DummyInfra()
+        val block01 = infra.addBlock("0", "1", 100.meters)
+        val waypoints =
+            arrayListOf<Collection<BlockLocation>>(
+                listOf(BlockLocation(block01, Offset(55.meters))),
+                listOf(BlockLocation(block01, Offset(60.meters))),
+            )
         val res =
-            Pathfinding(g)
-                .setEdgeToLength { it.length }
-                .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
-                .runPathfindingEdgesOnly(
+            runPathFinding(
+                waypoints,
+                infra,
+                constraints =
                     listOf(
-                        listOf(builder.getEdgeLocation("0-1", 55.meters)),
-                        listOf(builder.getEdgeLocation("0-1", 60.meters)),
-                    )
-                )
+                        TestRangeConstraints { edge ->
+                            if (edge == block01)
+                                setOf(
+                                    OffsetRange(Offset(10.meters), Offset(50.meters)),
+                                    OffsetRange(Offset(30.meters), Offset(80.meters)),
+                                )
+                            else setOf()
+                        }
+                    ),
+            )
         Assertions.assertNull(res)
     }
 
@@ -681,50 +803,65 @@ class PathfindingTests {
         0 -> B1 ------> E1 -> 1
         2 -> B2 -> 3 -> 4 -> E2 -> 5
          */
-        val builder = SimpleGraphBuilder()
-        builder.makeNodes(6)
-        builder.makeEdge(0, 1, 10000.meters)
-        builder.makeEdge(2, 3, 1000.meters)
-        builder.makeEdge(3, 4, 1000.meters)
-        builder.makeEdge(4, 5, 1000.meters)
-        val g = builder.build()
-        val res =
-            Pathfinding(g)
-                .setEdgeToLength { it.length }
-                .runPathfindingEdgesOnly(
-                    listOf(
-                        listOf(
-                            builder.getEdgeLocation("0-1", 5000.meters),
-                            builder.getEdgeLocation("2-3"),
-                        ),
-                        listOf(
-                            builder.getEdgeLocation("0-1", 6999.meters),
-                            builder.getEdgeLocation("4-5", 1000.meters),
-                        ),
-                    )
+        val infra = DummyInfra()
+        val block01 = infra.addBlock("0", "1", 10000.meters)
+        val block23 = infra.addBlock("2", "3", 1000.meters)
+        infra.addBlock("3", "4", 1000.meters)
+        val block45 = infra.addBlock("4", "5", 1000.meters)
+        val waypoints =
+            arrayListOf<Collection<BlockLocation>>(
+                listOf(
+                    BlockLocation(block01, Offset(5000.meters)),
+                    BlockLocation(block23, Offset(0.meters)),
+                ),
+                listOf(
+                    BlockLocation(block01, Offset(6999.meters)),
+                    BlockLocation(block45, Offset(1000.meters)),
+                ),
+            )
+        val res = runPathFinding(waypoints, infra)
+        Assertions.assertEquals(
+            arrayListOf(
+                BlockRange(
+                    block01,
+                    Offset(5000.meters),
+                    Offset(0.meters),
+                    1999.meters,
+                    Length(10000.meters),
                 )
-        val resIDs = res!!.stream().map { x -> x!!.label }.toList()
-        Assertions.assertEquals(listOf("0-1"), resIDs)
+            ),
+            res!!.getAllBlocks(),
+        )
     }
 
     @ParameterizedTest
     @CsvSource("0, true", "10, false", ", false")
     fun pathfindingTimesOut(timeout: Long?, timesOut: Boolean) {
-        val builder = SimpleGraphBuilder()
-        builder.makeNodes(2)
-        builder.makeEdge(0, 1, 100.meters)
-        val g = builder.build()
-        val pathfinding =
-            Pathfinding(g).setEdgeToLength { it.length }.setTimeout(timeout?.toDouble())
+        val infra = DummyInfra()
+        val block01 = infra.addBlock("0", "1", 100.meters)
+        val waypoints =
+            arrayListOf<Collection<BlockLocation>>(
+                listOf(BlockLocation(block01, Offset(0.meters))),
+                listOf(BlockLocation(block01, Offset(10.meters))),
+            )
+
         if (!timesOut) {
-            val res =
-                pathfinding.runPathfindingEdgesOnly(listOf(listOf(builder.getEdgeLocation("0-1"))))
-            Assertions.assertNotNull(res)
+            val res = runPathFinding(waypoints, infra, timeout = timeout?.toDouble())
+            Assertions.assertEquals(
+                arrayListOf(
+                    BlockRange(
+                        block01,
+                        Offset(0.meters),
+                        Offset(0.meters),
+                        10.meters,
+                        Length(100.meters),
+                    )
+                ),
+                res!!.getAllBlocks(),
+            )
         } else {
             AssertionsForClassTypes.assertThatThrownBy {
-                    pathfinding.runPathfindingEdgesOnly(
-                        listOf(listOf(builder.getEdgeLocation("0-1")))
-                    )
+                    runPathFinding(waypoints, infra, timeout = timeout?.toDouble())
                 }
                 .isExactlyInstanceOf(OSRDError::class.java)
                 .satisfies({ exception: Throwable? ->
@@ -752,47 +889,64 @@ class PathfindingTests {
         val infra = DummyInfra()
         val fast = infra.addBlock("a", "b", 4_999.meters, 50.0)
         val slow = infra.addBlock("x", "b", 100.meters, 1.0)
-        val secondBlock = infra.addBlock("b", "c")
-        val mrspBuilder =
-            CachedBlockMRSPBuilder(infra.fullInfra().rawInfra, infra.fullInfra().blockInfra, null)
+        val secondBlock = infra.addBlock("b", "c", 100.meters)
         val waypoints =
             arrayListOf<Collection<BlockLocation>>(
-                listOf(BlockLocation(slow, Offset.zero()), BlockLocation(fast, Offset.zero())),
-                listOf(BlockLocation(secondBlock, Offset.zero())),
+                listOf(
+                    BlockLocation(slow, Offset(0.meters)),
+                    BlockLocation(fast, Offset(0.meters)),
+                ),
+                listOf(BlockLocation(secondBlock, Offset(0.meters))),
             )
-        val res =
-            Pathfinding(PathfindingGraph())
-                .setEdgeToLength { it.length }
-                .setRangeCost { range ->
-                    val start = mrspBuilder.getBlockTime(range.edge.block, range.start)
-                    val end = mrspBuilder.getBlockTime(range.edge.block, range.end)
-                    val res = end - start
-                    return@setRangeCost res
-                }
-                .runPathfinding(
-                    getStartLocations(
-                        infra.fullInfra().rawInfra,
-                        infra.fullInfra().blockInfra,
-                        waypoints,
-                        listOf(),
-                    ),
-                    getTargetsOnEdges(waypoints),
-                )
+        val res = runPathFinding(waypoints, infra)
         Assertions.assertEquals(
             arrayListOf(
-                EdgeRange(fast, Offset.zero(), Offset(4999.meters)),
-                EdgeRange(secondBlock, Offset.zero(), Offset.zero()),
+                BlockRange(
+                    fast,
+                    Offset(0.meters),
+                    Offset(0.meters),
+                    4999.meters,
+                    Length(4999.meters),
+                ),
+                BlockRange(
+                    secondBlock,
+                    Offset(0.meters),
+                    Offset(4999.meters),
+                    0.meters,
+                    Length(100.meters),
+                ),
             ),
-            res!!.ranges.map { EdgeRange(it.edge.block, it.start, it.end) },
+            res!!.getAllBlocks(),
         )
     }
 
-    companion object {
-        private fun convertRes(res: Result<Edge>): List<SimpleRange> {
-            return res.ranges
-                .stream()
-                .map { x -> SimpleRange(x.edge.label, x.start, x.end) }
-                .collect(Collectors.toList())
-        }
+    private fun runPathFinding(
+        targets: List<Collection<BlockLocation>>,
+        infra: DummyInfra,
+        rollingStock: RollingStock = TestTrains.REALISTIC_FAST_TRAIN,
+        speedLimitTag: String? = null,
+        constraints: List<PathfindingConstraint> = listOf(),
+        timeout: Double? = null,
+    ): InfraExplorer? {
+        if (timeout == null)
+            return Pathfinding(
+                    infra.fullInfra(),
+                    targets,
+                    constraints,
+                    speedLimitTag,
+                    rollingStock.maxSpeed,
+                    rollingStock.length,
+                )
+                .runPathfinding()
+        else
+            return Pathfinding(
+                    infra.fullInfra(),
+                    targets,
+                    constraints,
+                    speedLimitTag,
+                    rollingStock.maxSpeed,
+                    rollingStock.length,
+                )
+                .runPathfinding(timeout)
     }
 }

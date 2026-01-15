@@ -594,7 +594,7 @@ class PathfindingTest : ApiTest() {
     }
 }
 
-class PathfindingV2StopsAtEndOfBlock : ApiTest() {
+class PathfindingStopsAtEndOfBlock : ApiTest() {
     fun callPathfindingEndpoint(
         rs: RollingStock,
         pathItems: List<Collection<TrackLocation>>,

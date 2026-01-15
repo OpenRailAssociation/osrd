@@ -111,7 +111,7 @@ class STDCMHeuristicBuilder(
     private val maxRunningTime: Double,
     private val maxSpeedEnvBuilder: CachedBlockMaxSpeedEnvBuilder,
     val allowance: AllowanceValue?,
-    private val constraints: ConstraintCombiner<StaticIdx<Block>>? = null,
+    private val constraints: ConstraintCombiner? = null,
 ) {
     private val logger: Logger = LoggerFactory.getLogger("STDCMHeuristic")
 
@@ -123,7 +123,7 @@ class STDCMHeuristicBuilder(
         // maps[n][block] = min time it takes to go from the start of the block to the destination,
         // if we're at the n-th step of the path
         val remainingTimeEstimations = mutableListOf<MutableMap<BlockId, Double>>()
-        for (i in 0 until steps.size - 1) remainingTimeEstimations.add(mutableMapOf())
+        repeat(steps.size) { remainingTimeEstimations.add(mutableMapOf()) }
 
         // Build the cached values
         // We run a kind of Dijkstra, but starting from the end

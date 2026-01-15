@@ -154,10 +154,7 @@ class PerformanceTests {
                 .setStartLocations(setOf(BlockLocation(blocks[0], Offset(0.meters))))
                 .setEndLocations(setOf(BlockLocation(Iterables.getLast(blocks), Offset(0.meters))))
                 .setUnavailableTimes(occupancyGraph)
-                .setTimeStep(
-                    timeStep
-                ) // TODO: remove this once the test runs in less than Pathfinding.TIMEOUT
-                .setPathfindingTimeout(Double.POSITIVE_INFINITY)
+                .setTimeStep(timeStep)
                 .run()!!
         occupancyTest(res, occupancyGraph, 2 * timeStep)
     }

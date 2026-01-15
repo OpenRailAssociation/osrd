@@ -1,382 +1,274 @@
 package fr.sncf.osrd.pathfinding
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.pathfinding.pathfindingLogger
-import fr.sncf.osrd.graph.*
+import fr.sncf.osrd.graph.AStarHeuristic
+import fr.sncf.osrd.graph.PathfindingConstraint
+import fr.sncf.osrd.path.interfaces.BlockRange
 import fr.sncf.osrd.pathfinding.constraints.ConstraintCombiner
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
-import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.utils.units.Offset
-import fr.sncf.osrd.utils.units.OffsetRange
+import fr.sncf.osrd.sim_infra.api.BlockId
+import fr.sncf.osrd.sim_infra.api.BlockInfra
+import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
+import fr.sncf.osrd.stdcm.infra_exploration.BlockLocation
+import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
+import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
+import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorers
+import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
+import fr.sncf.osrd.utils.POSITION_EPSILON
+import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.meters
-import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.time.Duration
 import java.time.Instant
-import java.util.*
-import java.util.stream.Collectors
+import java.util.ArrayList
+import java.util.HashMap
+import java.util.PriorityQueue
+import kotlin.collections.set
+import kotlin.math.abs
 import kotlin.math.max
 
-/**
- * This class implements a pathfinding on an abstract graph, where the paths may end and start in
- * the middle of edges.
- *
- * This should be considered as legacy, in the sense that we've had *a lot* of small increments and
- * new features that weren't planned from the start. Although it works fine, it's very hard to
- * navigate and modify. If we need to make any significant change in there, the best course of
- * action would probably be to rewrite this whole class.
- */
-@SuppressFBWarnings(
-    value = ["FE_FLOATING_POINT_EQUALITY"],
-    justification = "No arithmetic is done on values where we test for equality, only copies",
-)
-class Pathfinding<NodeT : Any, EdgeT : Any>(private val graph: Graph<NodeT, EdgeT>) {
-    /** Pathfinding step */
-    private data class Step<EdgeT : Any>(
-        val range: EdgeRange<EdgeT>, // Range covered by this step
-        val prev: Step<EdgeT>?, // Previous step (to construct the result)
-        val totalDistance: Double, // Total distance from the start
-        val weight:
-            Double, // Priority queue weight (could be different from totalDistance to allow for A*)
-        val nReachedTargets: Int, // How many targets we found by this path
-        val targets: List<EdgeLocation<EdgeT>>,
-        val comparisonFallback: ((EdgeT, EdgeT) -> Int)?,
-    ) : Comparable<Step<EdgeT>> {
-        override fun compareTo(other: Step<EdgeT>): Int {
+const val SIGNALING_SYSTEM_COST_WEIGHTING = 1e-2
+
+// TODO: Refactor this to remove the list<AStarHeuristic> and better express the intent
+//       Probably also completely remove AStarHeuristic interface
+@WithSpan(value = "Building heuristic")
+private fun makeRemainingDistanceHeuristics(
+    infra: FullInfra,
+    waypoints: List<Collection<BlockLocation>>,
+): ArrayList<AStarHeuristic> {
+    // Compute the minimum distance between steps
+    val stepMinDistance = Array(waypoints.size - 1) { 0.meters }
+    for (i in 0 until waypoints.size - 2) {
+        stepMinDistance[i] =
+            minDistanceBetweenSteps(
+                infra.blockInfra,
+                infra.rawInfra,
+                waypoints[i + 1],
+                waypoints[i + 2],
+            )
+    }
+
+    // Reversed cumulative sum
+    for (i in stepMinDistance.size - 2 downTo 0) {
+        stepMinDistance[i] += stepMinDistance[i + 1]
+    }
+
+    // Setup estimators foreach intermediate steps
+    val remainingCostEstimators = ArrayList<AStarHeuristic>()
+    for (i in 0 until waypoints.size - 1) {
+        val remainingDistanceEstimator =
+            RemainingDistanceEstimator(
+                infra.blockInfra,
+                infra.rawInfra,
+                waypoints[i + 1],
+                stepMinDistance[i],
+            )
+
+        // Now that the cost function is an approximation of the remaining distance,
+        // we need to return the smallest possible remaining distance here
+        remainingCostEstimators.add(remainingDistanceEstimator)
+    }
+    return remainingCostEstimators
+}
+
+class Pathfinding(
+    val fullInfra: FullInfra,
+    val waypoints: List<Collection<BlockLocation>>,
+    val constraints: List<PathfindingConstraint>,
+    val speedLimitTag: String?,
+    val rollingStockMaxSpeed: Double,
+    rollingStockLength: Double,
+) {
+    init {
+        checkParameters(waypoints)
+    }
+
+    val mrspBuilder: CachedBlockMRSPBuilder =
+        CachedBlockMRSPBuilder(
+            fullInfra.rawInfra,
+            fullInfra.blockInfra,
+            rollingStockMaxSpeed,
+            rollingStockLength,
+            speedLimitTag,
+        )
+
+    val remainingCostEstimators = makeRemainingDistanceHeuristics(fullInfra, waypoints)
+
+    private data class Step( // Instance used to explore the infra
+        val infraExplorer: InfraExplorer,
+        val establishedCost: Double,
+        val estimatedRemainingCost: Double,
+        val establishedLength: Distance,
+    ) : Comparable<Step> {
+        val weight: Double = establishedCost + estimatedRemainingCost
+
+        override fun compareTo(other: Step): Int {
             if (weight != other.weight) return weight.compareTo(other.weight)
-            else if (nReachedTargets != other.nReachedTargets) {
-                // If the weights are equal, we prioritize the highest number of reached targets
-                return other.nReachedTargets - nReachedTargets
-            } else if (comparisonFallback != null) {
-                // Having *some* comparison fallback is required to have a deterministic result
-                return comparisonFallback.invoke(range.edge, other.range.edge)
-            }
-            return 0
+            // favor less uncertain path
+            if (estimatedRemainingCost != other.estimatedRemainingCost)
+                return estimatedRemainingCost.compareTo(other.estimatedRemainingCost)
+            // favor shorter (in distance) path
+            if (establishedLength != other.establishedLength)
+                return establishedLength.compareTo(other.establishedLength)
+            // favor more blocks (hoping that capacity consumed diminishes, could be removed)
+            return -infraExplorer
+                .getAllBlocks()
+                .size
+                .compareTo(other.infraExplorer.getAllBlocks().size)
         }
     }
 
-    /** Contains all the results of a pathfinding */
-    data class Result<EdgeT>(
-        val ranges: List<EdgeRange<EdgeT>>, // Full path as edge ranges
-        val waypoints: List<EdgeLocation<EdgeT>>,
-    )
+    private fun rangeCost(range: BlockRange): Double {
+        val start = mrspBuilder.getBlockTime(range.value, range.objectBegin)
+        val end = mrspBuilder.getBlockTime(range.value, range.objectEnd)
+        val edgeDuration = end - start
+        val signalingSystemPenaltyFactor =
+            SIGNALING_SYSTEM_COST_WEIGHTING *
+                fullInfra.signalingSimulator.sigModuleManager.getCost(
+                    fullInfra.blockInfra.getBlockSignalingSystem(range.value)
+                )
+        return edgeDuration * (1 + signalingSystemPenaltyFactor)
+    }
 
-    /** A location on a range, made of edge + offset. Used for the input of the pathfinding */
-    data class EdgeLocation<EdgeT>(val edge: EdgeT, val offset: Offset<Block>)
+    private fun remainingCostEstimation(infraExplorer: InfraExplorer): Double {
+        if (infraExplorer.getStepTracker().hasSeenDestination()) return 0.0
 
-    /**
-     * A range, made of edge + start and end offsets on the edge. Used for the output of the
-     * pathfinding
-     */
-    data class EdgeRange<EdgeT>(val edge: EdgeT, val start: Offset<Block>, val end: Offset<Block>)
-
-    /** A simple range with no edge attached */
-    @JvmInline
-    value class Range(private val r: OffsetRange<Block>) {
-        constructor(start: Offset<Block>, end: Offset<Block>) : this(OffsetRange(start, end))
-
-        val start: Offset<Block>
-            get() = r.start
-
-        val end: Offset<Block>
-            get() = r.end
+        val nbSeenSteps = infraExplorer.getStepTracker().getSeenSteps().size
+        val currentRange = infraExplorer.getCurrentBlockRange()
+        return remainingCostEstimators[nbSeenSteps - 1].apply(
+            BlockLocation(currentRange.value, currentRange.objectEnd)
+        ) / rollingStockMaxSpeed
     }
 
     /** Step priority queue */
-    private val queue = PriorityQueue<Step<EdgeT>>()
+    private val queue = PriorityQueue<Step>()
 
-    /** Function to call to get edge length */
-    private var edgeToLength: EdgeToLength<EdgeT>? = null
+    fun runPathfinding(timeout: Double = TIMEOUT): InfraExplorer? {
+        val constraintCombiner = ConstraintCombiner(constraints)
 
-    /**
-     * Comparison function to use to pick between edges of identical costs. Optional, but helps to
-     * make the result deterministic (when different solutions exist with strictly identical cost).
-     */
-    private var comparisonFallback: ((EdgeT, EdgeT) -> Int)? = null
+        val startTime = Instant.now()
+        val seenBlocks = HashMap<BlockId, Int>()
 
-    /** Function to call to get the blocked ranges on an edge */
-    private val blockedRangesOnEdge = ConstraintCombiner<EdgeT>()
-
-    /**
-     * Keeps track of visited location. For each visited range, keeps the max number of passed
-     * targets at that point
-     */
-    private val seen = HashMap<EdgeRange<EdgeT>, Int>()
-
-    /**
-     * Functions to call to get estimate of the remaining distance. We have a list of function for
-     * each step. These functions take the edge and the offset and returns a distance.
-     */
-    private var estimateRemainingDistance: List<AStarHeuristic<EdgeT>>? = ArrayList()
-
-    /**
-     * Function to call to get the cost of a range. Defaults to distances. The heuristic unit *must*
-     * match.
-     */
-    private var rangeCost: (EdgeRange<EdgeT>) -> Double = { range: EdgeRange<EdgeT> ->
-        (range.end - range.start).millimeters.toDouble()
-    }
-
-    /** Timeout, in seconds, to avoid infinite loop when no path can be found. */
-    private var timeout = TIMEOUT
-
-    /** Sets the functor used to estimate the remaining distance for A* */
-    fun setEdgeToLength(f: EdgeToLength<EdgeT>?): Pathfinding<NodeT, EdgeT> {
-        edgeToLength = f
-        return this
-    }
-
-    fun setComparisonFallback(f: (EdgeT, EdgeT) -> Int): Pathfinding<NodeT, EdgeT> {
-        comparisonFallback = f
-        return this
-    }
-
-    /** Sets the functor used to define the cost of an edge range */
-    fun setRangeCost(f: (EdgeRange<EdgeT>) -> Double): Pathfinding<NodeT, EdgeT> {
-        rangeCost = f
-        return this
-    }
-
-    /** Sets functors used to estimate the remaining distance for A* */
-    fun setRemainingDistanceEstimator(f: List<AStarHeuristic<EdgeT>>?): Pathfinding<NodeT, EdgeT> {
-        estimateRemainingDistance = f
-        return this
-    }
-
-    /** Sets the functor used to determine which ranges are blocked on an edge */
-    fun addBlockedRangeOnEdges(f: EdgeToRanges<EdgeT>): Pathfinding<NodeT, EdgeT> {
-        blockedRangesOnEdge.functions.add(f)
-        return this
-    }
-
-    /** Sets the pathfinding's timeout */
-    fun setTimeout(timeout: Double?): Pathfinding<NodeT, EdgeT> {
-        if (timeout != null) this.timeout = timeout
-        return this
-    }
-
-    /**
-     * Runs the pathfinding, returning a path as a list of (edge, start offset, end offset). Each
-     * target is given as a collection of location. It finds the shortest path from start to end,
-     * going through at least one location of each every intermediate target in order. It uses
-     * Dijkstra algorithm by default, but can be changed to an A* by specifying a function to
-     * estimate the remaining distance, using `setRemainingDistanceEstimator`
-     */
-    fun runPathfinding(targets: List<Collection<EdgeLocation<EdgeT>>>): Result<EdgeT>? {
-        // We convert the targets of each step into functions, to call the more generic overload of
-        // this method below
-        val starts = targets[0]
-        val targetsOnEdges = ArrayList<TargetsOnEdge<EdgeT>>()
-        for (i in 1 until targets.size) {
-            targetsOnEdges.add { edge: EdgeT ->
-                val res = HashSet<EdgeLocation<EdgeT>>()
-                for (target in targets[i]) {
-                    if (target.edge == edge) res.add(EdgeLocation(edge, target.offset))
-                }
-                res
-            }
+        val startInfraExplorers =
+            getStartInfraExplorers(
+                fullInfra.rawInfra,
+                fullInfra.blockInfra,
+                waypoints,
+                listOf(constraintCombiner),
+            )
+        for (infraExplorer in startInfraExplorers) {
+            registerStep(
+                infraExplorer,
+                rangeCost(infraExplorer.getCurrentBlockRange()),
+                infraExplorer.getCurrentBlockRange().length,
+            )
         }
-        return runPathfinding(starts, targetsOnEdges)
-    }
 
-    /**
-     * Runs the pathfinding, returning a path as a list of (edge, start offset, end offset). The
-     * targets for each step are defined as functions, which tell for each edge the offsets (if any)
-     * of the target locations for the current step. It finds the shortest path from start to end,
-     * going through at least one location of each every intermediate target in order. It uses
-     * Dijkstra algorithm by default, but can be changed to an A* by specifying a function to
-     * estimate the remaining distance, using `setRemainingDistanceEstimator`
-     */
-    @WithSpan(value = "Running core pathfinding algorithm", kind = SpanKind.SERVER)
-    fun runPathfinding(
-        starts: Collection<EdgeLocation<EdgeT>>,
-        targetsOnEdges: List<TargetsOnEdge<EdgeT>>,
-    ): Result<EdgeT>? {
-        checkParameters()
-        for (location in starts) {
-            val startRange = EdgeRange(location.edge, location.offset, location.offset)
-            registerStep(startRange, null, 0.0, 0, listOf(location))
-        }
-        var maxReachedTarget = 0
-        val start = Instant.now()
+        var maxSeenTarget = 0
+
         while (true) {
-            if (Duration.between(start, Instant.now()).toSeconds() >= timeout)
+            if (Duration.between(startTime, Instant.now()).toSeconds() >= timeout)
                 throw OSRDError(ErrorType.PathfindingTimeoutError)
+
             val step = queue.poll()
+
             if (step == null) {
+                // Fail :(
                 pathfindingLogger.info(
-                    "pathfinding failed, # reached waypoints = $maxReachedTarget/${targetsOnEdges.size}"
+                    "pathfinding failed, # reached waypoints = $maxSeenTarget/${waypoints.size}"
                 )
                 return null
             }
-            val endNode = graph.getEdgeEnd(step.range.edge)
-            if (seen.getOrDefault(step.range, -1) >= step.nReachedTargets) {
+
+            require(step.infraExplorer.getLookahead().isEmpty())
+
+            if (step.infraExplorer.getStepTracker().hasSeenDestination()) {
+                // Success!
+                require(
+                    abs(
+                        step.infraExplorer.getAllBlocks().toList().sumOf { it.length.meters } -
+                            step.establishedLength.meters
+                    ) < POSITION_EPSILON
+                )
+                return step.infraExplorer
+            }
+
+            val nbSeenTargets = step.infraExplorer.getStepTracker().getSeenSteps().size
+            maxSeenTarget = max(nbSeenTargets, maxSeenTarget)
+
+            val currentBlock = step.infraExplorer.getCurrentBlock()
+            if (seenBlocks.getOrDefault(currentBlock, -1) >= nbSeenTargets) {
+                pathfindingLogger.trace(
+                    "Dropping current search as a more promising search on the same block is already done"
+                )
                 continue
             }
-            maxReachedTarget = max(step.nReachedTargets, maxReachedTarget)
-            seen[step.range] = step.nReachedTargets
-            if (hasReachedEnd(targetsOnEdges.size, step)) return buildResult(step)
-            // Check if the next target is reached in this step, only if the step doesn't already
-            // reach a target
-            var waypointOnRange = false
-            if (step.prev == null || step.nReachedTargets == step.prev.nReachedTargets)
-                for (target in targetsOnEdges[step.nReachedTargets].apply(step.range.edge)) {
-                    if (step.range.start <= target.offset) {
-                        if (
-                            (step.targets.lastOrNull()?.offset ?: Offset(0.meters)) > target.offset
-                        ) {
-                            // The previous waypoint is further on the edge
-                            continue
-                        }
-                        waypointOnRange = true
-                        // Adds a new step precisely on the stop location. This ensures that we
-                        // don't ignore the distance between the start of the edge and the stop
-                        // location
-                        var newRange = EdgeRange(target.edge, step.range.start, target.offset)
-                        newRange = filterRange(newRange)!!
-                        if (newRange.end != target.offset) {
-                            // The target location is blocked by a blocked range, it can't be
-                            // accessed from here
-                            continue
-                        }
-                        val stepTargets = ArrayList(step.targets)
-                        stepTargets.add(target)
+            seenBlocks[currentBlock] = nbSeenTargets
 
-                        // Handle overlapping consecutive waypoints at the end of the edge (the only
-                        // case we need to explicitly handle)
-                        var newNReachedTargets = step.nReachedTargets + 1
-                        while (
-                            step.range.start == edgeToLength!!.apply(step.range.edge) &&
-                                newNReachedTargets < targetsOnEdges.size &&
-                                targetsOnEdges[newNReachedTargets]
-                                    .apply(step.range.edge)
-                                    .contains(EdgeLocation(step.range.edge, step.range.end))
-                        ) {
-                            newNReachedTargets++
-                            stepTargets.add(EdgeLocation(step.range.edge, step.range.end))
-                        }
-
-                        registerStep(
-                            newRange,
-                            step.prev,
-                            step.totalDistance,
-                            newNReachedTargets,
-                            stepTargets,
-                        )
-                    }
-                }
-            val edgeLength = edgeToLength!!.apply(step.range.edge)
-            if (!waypointOnRange && step.range.end == edgeLength) {
-                // We reach the end of the edge: we visit neighbors
-                val neighbors = graph.getAdjacentEdges(endNode)
-                for (edge in neighbors) {
-                    registerStep(
-                        EdgeRange(edge, Offset(0.meters), edgeToLength!!.apply(edge)),
-                        step,
-                        step.totalDistance,
-                        step.nReachedTargets,
-                    )
-                }
-            } else {
-                // We don't reach the end of the edge (intermediate target): we add a new step until
-                // the end
-                val newRange = EdgeRange(step.range.edge, step.range.end, edgeLength)
-                registerStep(newRange, step, step.totalDistance, step.nReachedTargets)
+            step.infraExplorer.cloneAndExtendLookahead().forEach {
+                registerStep(it, step.establishedCost, step.establishedLength)
             }
         }
     }
 
-    /** Runs the pathfinding, returning a path as a list of edge. */
-    fun runPathfindingEdgesOnly(targets: List<Collection<EdgeLocation<EdgeT>>>): List<EdgeT>? {
-        val res = runPathfinding(targets) ?: return null
-        return res.ranges
-            .stream()
-            .map { step: EdgeRange<EdgeT> -> step.edge }
-            .collect(Collectors.toList())
+    private fun getStartInfraExplorers(
+        rawInfra: RawSignalingInfra,
+        blockInfra: BlockInfra,
+        waypoints: List<Collection<BlockLocation>>,
+        constraints: List<PathfindingConstraint>,
+    ): Collection<InfraExplorer> {
+        val res = mutableListOf<InfraExplorer>()
+        val firstStep = waypoints[0]
+        val steps = waypoints.map { ExplorerStep(it) }
+        for (location in firstStep) {
+            val infraExplorers =
+                initInfraExplorers(
+                    rawInfra,
+                    blockInfra,
+                    location,
+                    steps = steps,
+                    constraints = constraints,
+                )
+            res.addAll(infraExplorers)
+        }
+        return res
     }
 
     /** Checks that required parameters are set, sets the optional ones to their default values */
-    private fun checkParameters() {
-        assert(edgeToLength != null)
-        assert(estimateRemainingDistance != null)
+    private fun checkParameters(targets: List<Collection<BlockLocation>>) {
+        if (targets.size < 2)
+            throw OSRDError(ErrorType.InvalidSTDCMInputs)
+                .withContext("cause", "Not enough steps have been set to find a path")
     }
 
-    /** Returns true if the step has reached the end of the path (last target) */
-    private fun hasReachedEnd(nTargets: Int, step: Step<EdgeT>): Boolean {
-        return step.nReachedTargets >= nTargets
-    }
-
-    /** Builds the result, iterating over the previous steps and merging ranges */
-    private fun buildResult(lastStep: Step<EdgeT>): Result<EdgeT> {
-        var mutLastStep: Step<EdgeT>? = lastStep
-        val orderedSteps = ArrayDeque<Step<EdgeT>>()
-        while (mutLastStep != null) {
-            orderedSteps.addFirst(mutLastStep)
-            mutLastStep = mutLastStep.prev
-        }
-        val ranges = ArrayList<EdgeRange<EdgeT>>()
-        val waypoints = ArrayList<EdgeLocation<EdgeT>>()
-        for (step in orderedSteps) {
-            val range = step.range
-            val lastIndex = ranges.size - 1
-            if (ranges.isEmpty() || ranges[lastIndex].edge !== range.edge) {
-                // If we start a new edge, add a new range to the result
-                ranges.add(range)
-            } else {
-                // Otherwise, extend the previous range
-                val newRange = EdgeRange(range.edge, ranges[lastIndex].start, range.end)
-                ranges[lastIndex] = newRange
-            }
-            waypoints.addAll(step.targets)
-        }
-        return Result(ranges, waypoints)
-    }
-
-    /** Filter the range to keep only the parts that can be reached */
-    private fun filterRange(range: EdgeRange<EdgeT>): EdgeRange<EdgeT>? {
-        var end = range.end
-        for (blockedRange in blockedRangesOnEdge.apply(range.edge)) {
-            if (blockedRange.end < range.start) {
-                // The blocked range is before the considered range
-                continue
-            }
-            if (blockedRange.start <= range.start) {
-                // The start of the range is blocked: we don't visit this range
-                return null
-            }
-            end = Offset.min(end, blockedRange.start)
-        }
-        return EdgeRange(range.edge, range.start, end)
-    }
-
-    /** Registers one step, adding the edge to the queue if not already seen */
+    /** Registers one step, add the edge to the queue if not already seen */
     private fun registerStep(
-        range: EdgeRange<EdgeT>,
-        prev: Step<EdgeT>?,
-        prevDistance: Double,
-        nPassedTargets: Int,
-        targets: List<EdgeLocation<EdgeT>> = listOf(),
+        infraExplorer: InfraExplorer,
+        prevEstablishedCost: Double,
+        prevEstablishedLength: Distance,
     ) {
-        val filteredRange = filterRange(range) ?: return
-        val totalDistance = prevDistance + rangeCost.invoke(filteredRange)
-        var distanceLeftEstimation = 0.0
-        if (nPassedTargets < estimateRemainingDistance!!.size)
-            distanceLeftEstimation =
-                estimateRemainingDistance!![nPassedTargets].apply(
-                    filteredRange.edge,
-                    filteredRange.end,
-                )
+        var establishedCost = prevEstablishedCost
+        var establishedLength = prevEstablishedLength
+        while (infraExplorer.getLookahead().isNotEmpty()) {
+            // Move forward and add new current block's estimated cost.
+            infraExplorer.moveForward()
+            val currentBlockRange = infraExplorer.getCurrentBlockRange()
+            establishedCost += rangeCost(currentBlockRange)
+            establishedLength += currentBlockRange.length
+        }
+
+        val estimatedRemainingCost = remainingCostEstimation(infraExplorer)
+
         val newStep =
-            Step(
-                filteredRange,
-                prev,
-                totalDistance,
-                totalDistance + distanceLeftEstimation,
-                nPassedTargets,
-                targets,
-                comparisonFallback,
-            )
+            Step(infraExplorer, establishedCost, estimatedRemainingCost, establishedLength)
+        require(
+            abs(
+                newStep.infraExplorer.getAllBlocks().toList().sumOf { it.length.meters } -
+                    newStep.establishedLength.meters
+            ) < POSITION_EPSILON
+        )
         if (newStep.weight.isFinite()) queue.add(newStep)
     }
 

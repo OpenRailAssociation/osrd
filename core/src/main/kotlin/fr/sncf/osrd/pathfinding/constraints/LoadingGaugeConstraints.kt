@@ -3,18 +3,18 @@ package fr.sncf.osrd.pathfinding.constraints
 import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
 import fr.sncf.osrd.path.interfaces.TrainPath
-import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.OffsetRange
 
 data class LoadingGaugeConstraints(
     val blockInfra: BlockInfra,
     val infra: RawSignalingInfra,
     val loadingGaugeType: RJSLoadingGaugeType,
-) : PathfindingConstraint<Block> {
-    override fun apply(edge: BlockId): Collection<Pathfinding.Range> {
-        val res = HashSet<Pathfinding.Range>()
+) : PathfindingConstraint {
+    override fun apply(edge: BlockId): Collection<OffsetRange<Block>> {
+        val res = HashSet<OffsetRange<Block>>()
         val path = buildTrainPathFromBlock(infra, blockInfra, edge)
         res.addAll(getBlockedRanges(loadingGaugeType, path))
         return res
@@ -24,11 +24,11 @@ data class LoadingGaugeConstraints(
     private fun getBlockedRanges(
         type: RJSLoadingGaugeType,
         path: TrainPath,
-    ): Collection<Pathfinding.Range> {
+    ): Collection<OffsetRange<Block>> {
         return path
             .getLoadingGauge()
             .toSet()
             .filter { !it.value.isCompatibleWith(LoadingGaugeTypeId(type.ordinal.toUInt())) }
-            .map { (lower, upper) -> Pathfinding.Range(Offset(lower), Offset(upper)) }
+            .map { (lower, upper) -> OffsetRange(Offset(lower), Offset(upper)) }
     }
 }

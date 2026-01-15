@@ -55,7 +55,7 @@
     {
       "stationName": "North_East_station",
       "stationCh": "BV",
-      "trackName": "V1",
+      "trackName": "V2",
       "requestedArrival": "",
       "requestedDeparture": "",
       "stopTime": "0",
@@ -126,7 +126,7 @@
     {
       "stationName": "North_East_station",
       "stationCh": "BV",
-      "trackName": "V1",
+      "trackName": "V2",
       "requestedArrival": "",
       "requestedDeparture": "",
       "stopTime": "0",

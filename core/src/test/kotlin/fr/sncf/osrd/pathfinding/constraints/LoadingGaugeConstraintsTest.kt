@@ -1,12 +1,12 @@
 package fr.sncf.osrd.pathfinding.constraints
 
-import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.OffsetRange
 import fr.sncf.osrd.utils.units.meters
 import java.io.IOException
 import java.net.URISyntaxException
@@ -62,7 +62,7 @@ class LoadingGaugeConstraintsTest {
     @MethodSource("testLoadingGaugeArgs")
     fun testLoadingGaugeBlockedRanges(
         blockId: BlockId,
-        expectedBlockedRanges: Collection<Pathfinding.Range>,
+        expectedBlockedRanges: Collection<OffsetRange<Block>>,
     ) {
         val blockedRanges = loadingGaugeConstraints!!.apply(blockId)
         Assertions.assertThat(blockedRanges).isEqualTo(expectedBlockedRanges)
@@ -80,15 +80,15 @@ class LoadingGaugeConstraintsTest {
             Arguments.of(
                 ta0Chunk0block!!.index.toInt(),
                 setOf(
-                    Pathfinding.Range(Offset(0.meters), Offset(100.meters)),
-                    Pathfinding.Range(Offset(100.meters), Offset(200.meters)),
-                    Pathfinding.Range(Offset(200.meters), Offset(1500.meters)),
-                    Pathfinding.Range(Offset(1500.meters), ta0Chunk0Length),
+                    OffsetRange(Offset(0.meters), Offset(100.meters)),
+                    OffsetRange(Offset(100.meters), Offset(200.meters)),
+                    OffsetRange(Offset(200.meters), Offset(1500.meters)),
+                    OffsetRange(Offset(1500.meters), ta0Chunk0Length),
                 ),
             ), // Different loading gauge constraints applied to all block
             Arguments.of(
                 ta0Chunk1block!!.index.toInt(),
-                setOf(Pathfinding.Range(Offset(0.meters), Offset(80.meters))),
+                setOf(OffsetRange<Block>(Offset(0.meters), Offset(80.meters))),
             ), // Loading gauge constraints partially applied to block
             Arguments.of(
                 ta1Chunk0block!!.index.toInt(),

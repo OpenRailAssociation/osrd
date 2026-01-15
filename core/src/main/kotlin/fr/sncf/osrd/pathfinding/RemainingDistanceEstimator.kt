@@ -1,13 +1,16 @@
 package fr.sncf.osrd.pathfinding
 
 import fr.sncf.osrd.geom.Point
+import fr.sncf.osrd.graph.AStarHeuristic
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.BlockInfra
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
+import fr.sncf.osrd.sim_infra.api.TrackChunk
 import fr.sncf.osrd.stdcm.infra_exploration.BlockLocation
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import kotlin.math.min
@@ -21,7 +24,7 @@ class RemainingDistanceEstimator(
     private val rawInfra: RawSignalingInfra,
     edgeLocations: Collection<BlockLocation>,
     private val remainingDistance: Distance,
-) {
+) : AStarHeuristic {
     private val targets: MutableCollection<Point> = ArrayList()
 
     init {
@@ -34,12 +37,12 @@ class RemainingDistanceEstimator(
         }
     }
 
-    fun apply(edge: BlockId, offset: Offset<Block>): Distance {
+    override fun apply(location: BlockLocation): Double {
         var resMeters = Double.POSITIVE_INFINITY
-        val point = blockOffsetToPoint(blockInfra, rawInfra, edge, offset)
+        val point = blockOffsetToPoint(blockInfra, rawInfra, location.edge, location.offset)
         for (target in targets) resMeters = min(resMeters, point.distanceAsMeters(target))
 
-        return resMeters.meters + remainingDistance
+        return resMeters + remainingDistance.meters
     }
 
     companion object {
@@ -98,7 +101,11 @@ private fun blockOffsetToPoint(
             } else {
                 chunkLength.distance - remainingOffsetOnBlock
             }
+        require(chunkOffset <= chunkLength.distance)
         val lineString = rawInfra.getTrackChunkGeom(chunk.value)
+        if (chunkLength == Length.zero<TrackChunk>()) {
+            return lineString.interpolateNormalized(0.0)
+        }
         return lineString.interpolateNormalized(chunkOffset.meters / chunkLength.meters)
     }
     throw RuntimeException("Unreachable (block offset outside of block)")
