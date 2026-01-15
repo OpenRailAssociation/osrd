@@ -60,7 +60,7 @@ export type OperationalStudiesConfState = OsrdConfState & {
     key: string;
     startTime: Date;
   }[];
-  editingItemType: 'trainSchedule' | 'pacedTrain' | 'occurrence';
+  editingItemType: 'uniqueTrain' | 'pacedTrain' | 'occurrence';
 };
 
 export type OsrdStdcmConfState = OsrdConfState & {

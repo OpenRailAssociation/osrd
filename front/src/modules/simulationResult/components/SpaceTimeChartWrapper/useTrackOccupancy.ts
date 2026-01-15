@@ -194,7 +194,7 @@ const useTrackOccupancy = ({
             if (!train.paced) {
               if (occupation.type !== 'base') {
                 throw new Error(
-                  `Invalid occupation type ${occupation.type} for train schedule ${train.id}`
+                  `Invalid occupation type ${occupation.type} for unique train ${train.id}`
                 );
               }
               zones.push(

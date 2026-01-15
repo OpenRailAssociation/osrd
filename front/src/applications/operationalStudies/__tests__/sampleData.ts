@@ -350,7 +350,7 @@ export const trainSummaryNotHonored: Extract<SimulationSummaryResult, { status: 
   path_item_respect_margins: [true, true, true],
 };
 
-export const trainScheduleHonored: TimetableItem = {
+export const uniqueTrainHonored: TimetableItem = {
   id: 'paced_95' as PacedTrainId,
   train_schedule_set_id: 1000,
   train_name: 'normal',
@@ -393,18 +393,6 @@ export const trainScheduleHonored: TimetableItem = {
   options: {
     use_electrical_profiles: true,
   },
-};
-
-export const trainScheduleNoMatch: TimetableItem = {
-  ...trainScheduleHonored,
-  schedule: [
-    {
-      at: 'notExisting',
-      arrival: 'PT300S',
-      stop_for: 'P0D',
-      reception_signal: 'OPEN',
-    },
-  ],
 };
 
 export const trainSummaryHonored: Extract<SimulationSummaryResult, { status: 'success' }> = {

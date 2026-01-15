@@ -7,7 +7,7 @@ import {
 import {
   TOTAL_TIMETABLE_ITEMS,
   TOTAL_PACED_TRAINS,
-  TOTAL_TRAIN_SCHEDULES,
+  TOTAL_UNIQUE_TRAINS,
 } from '../../assets/constants/timetable-items-count';
 import test from '../../page-object-fixture';
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
@@ -70,14 +70,14 @@ test.describe('@op @timetable-items @timetable-multiselection', () => {
     await test.step('Verify initial totals', async () => {
       await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
         totalPacedTrainCount: TOTAL_PACED_TRAINS,
-        totalTrainScheduleCount: TOTAL_TRAIN_SCHEDULES,
+        totalUniqueTrainCount: TOTAL_UNIQUE_TRAINS,
       });
     });
 
     await test.step('Select all timetable items', async () => {
       await scenarioTimetableSection.selectAllTimetableItems(frTranslations, {
         totalPacedTrainCount: TOTAL_PACED_TRAINS,
-        totalTrainScheduleCount: TOTAL_TRAIN_SCHEDULES,
+        totalUniqueTrainCount: TOTAL_UNIQUE_TRAINS,
       });
     });
 

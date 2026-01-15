@@ -56,7 +56,7 @@ export type TrainSpaceTimeData = {
   };
 } & BaseTrainProjection;
 
-/** Contains an individual projection, either of a trainSchedule or an occurrence */
+/** Contains an individual projection, either of a unique train or an occurrence */
 export type IndividualTrainProjection = {
   name: string;
   departureTime: Date;

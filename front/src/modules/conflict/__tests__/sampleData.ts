@@ -10,7 +10,7 @@ export const pacedId = (n: number) => `paced_${n}` as PacedTrainId;
 export const occurrenceId = (paced: number, index = 0) =>
   `indexedoccurrence_${paced}_${index}` as OccurrenceId;
 
-export const trainSchedule = ({
+export const uniqueTrain = ({
   id,
   train_name,
   category,

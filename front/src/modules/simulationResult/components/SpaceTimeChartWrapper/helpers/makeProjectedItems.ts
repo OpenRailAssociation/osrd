@@ -14,7 +14,7 @@ import {
 } from 'utils/trainId';
 
 /**
- * Turns trainSpaceTimeData (trainSchedules + pacedTrains) into individual train projection.
+ * Turns trainSpaceTimeData (unique trains + pacedTrains) into individual train projection.
  * Extracts everything into one flat array.
  */
 const makeProjectedItems = (timetableItemProjections: TrainSpaceTimeData[]) =>

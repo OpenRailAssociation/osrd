@@ -16,9 +16,9 @@ import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
 import { getInfra, getProject, getStudy } from '../../utils/api-utils';
 import readJsonFile from '../../utils/file-utils';
 import {
-  expectedWaypointsListDataForTrainSchedule,
+  expectedWaypointsListDataForUniqueTrain,
   expectedWaypointsListDataForPacedTrain,
-  expectedWaypointsPanelDataForTrainSchedule,
+  expectedWaypointsPanelDataForUniqueTrain,
   expectedWaypointsPanelDataForPacedTrain,
   verifyWaypointsData,
 } from '../../utils/manchette';
@@ -92,7 +92,7 @@ test.describe('@op @manchette @std', () => {
     opSimulationResultPage,
     getManchetteComponent,
   }) => {
-    await test.step('Verify first train schedule is selected', async () => {
+    await test.step('Verify first unique train is selected', async () => {
       await scenarioTimetableSection.verifyFirstTimetableItemIsSelected();
       await opSimulationResultPage.setTrainListVisible();
     });
@@ -125,13 +125,13 @@ test.describe('@op @manchette @std', () => {
     getManchetteComponent,
     pacedTrainSection,
   }) => {
-    await test.step('Project train schedule and capture GET screenshot', async () => {
+    await test.step('Project unique train and capture GET screenshot', async () => {
       await scenarioTimetableSection.projectTrain();
       await getManchetteComponent.selectAllSpaceTimeChartCheckboxes();
       await getManchetteComponent.setRangeSliderValue('60'); // Adjust slider to show the full projection
       await opSimulationResultPage.setTrainListVisible();
       await expect(opSimulationResultPage.manchetteSpaceTimeChart).toHaveScreenshot(
-        'TrainSchedule-Space-Time-Chart.png'
+        'UniqueTrain-Space-Time-Chart.png'
       );
     });
 
@@ -204,17 +204,17 @@ test.describe('@op @manchette @std', () => {
     getManchetteComponent,
     pacedTrainSection,
   }) => {
-    await test.step('Project train schedule and verify waypoints list', async () => {
+    await test.step('Project unique train and verify waypoints list', async () => {
       await scenarioTimetableSection.projectTrain();
       await opSimulationResultPage.setTrainListVisible();
       const actualWaypointsListData = await getManchetteComponent.getWaypointsListData(4);
-      verifyWaypointsData(actualWaypointsListData, expectedWaypointsListDataForTrainSchedule);
+      verifyWaypointsData(actualWaypointsListData, expectedWaypointsListDataForUniqueTrain);
     });
 
     await test.step('Open panel and verify waypoints panel data', async () => {
       await getManchetteComponent.openManchettePanel();
       const actualWaypointsPanelData = await getManchetteComponent.getWaypointsPanelData();
-      verifyWaypointsData(actualWaypointsPanelData, expectedWaypointsPanelDataForTrainSchedule);
+      verifyWaypointsData(actualWaypointsPanelData, expectedWaypointsPanelDataForUniqueTrain);
       await getManchetteComponent.closeWaypointPanel();
     });
 

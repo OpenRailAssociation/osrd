@@ -6,11 +6,11 @@ import {
 } from '../../assets/constants/project-const';
 import {
   FirstPacedTrain,
-  FirstTrainSchedule,
+  FirstUniqueTrain,
   SecondPacedTrain,
-  SecondTrainSchedule,
+  SecondUniqueTrain,
   ThirdPacedTrain,
-  ThirdTrainSchedule,
+  ThirdUniqueTrain,
 } from '../../assets/operation-studies/round-trips/round-trip-card';
 import test from '../../page-object-fixture';
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
@@ -86,7 +86,9 @@ test.describe('@op @timetable-items @round-trips', () => {
   });
 
   /** *************** Test 2 **************** */
-  test('@smoke Verify round trip cards: paced trains and schedules', async ({ roundTripPage }) => {
+  test('@smoke Verify round trip cards: paced trains and unique trains', async ({
+    roundTripPage,
+  }) => {
     await test.step('First paced train - data & no tooltip', async () => {
       await roundTripPage.verifyRoundTripCardData({
         roundTripCardIndex: 0,
@@ -111,26 +113,26 @@ test.describe('@op @timetable-items @round-trips', () => {
       await roundTripPage.verifyNoTooltipDisplayed({ roundTripCardIndex: 2 });
     });
 
-    await test.step('First schedule - data & no tooltip', async () => {
+    await test.step('First unique train - data & no tooltip', async () => {
       await roundTripPage.verifyRoundTripCardData({
         roundTripCardIndex: 3,
-        expectedCard: FirstTrainSchedule,
+        expectedCard: FirstUniqueTrain,
       });
       await roundTripPage.verifyNoTooltipDisplayed({ roundTripCardIndex: 3 });
     });
 
-    await test.step('Second schedule - data & tooltip check', async () => {
+    await test.step('Second unique train - data & tooltip check', async () => {
       await roundTripPage.verifyRoundTripCardData({
         roundTripCardIndex: 4,
-        expectedCard: SecondTrainSchedule,
+        expectedCard: SecondUniqueTrain,
       });
       await roundTripPage.checkIntermediateStopsTooltip({ roundTripCardIndex: 4 });
     });
 
-    await test.step('Third schedule - data, tooltip check & final no-tooltip', async () => {
+    await test.step('Third unique train - data, tooltip check & final no-tooltip', async () => {
       await roundTripPage.verifyRoundTripCardData({
         roundTripCardIndex: 5,
-        expectedCard: ThirdTrainSchedule,
+        expectedCard: ThirdUniqueTrain,
       });
       await roundTripPage.checkIntermediateStopsTooltip({ roundTripCardIndex: 5 });
     });

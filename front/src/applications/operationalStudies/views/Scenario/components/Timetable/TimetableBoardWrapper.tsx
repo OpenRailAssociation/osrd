@@ -66,34 +66,34 @@ const TimetableBoardWrapper = ({
 
   const dispatch = useAppDispatch();
 
-  const { totalPacedTrainCount, totalTrainScheduleCount } = useMemo(
+  const { totalPacedTrainCount, totalUniqueTrainCount } = useMemo(
     () =>
       timetableItems.reduce(
         (acc, timetableItem) => {
           if (!timetableItem.paced) {
-            acc.totalTrainScheduleCount += 1;
+            acc.totalUniqueTrainCount += 1;
           } else {
             acc.totalPacedTrainCount += 1;
           }
           return acc;
         },
-        { totalPacedTrainCount: 0, totalTrainScheduleCount: 0 }
+        { totalPacedTrainCount: 0, totalUniqueTrainCount: 0 }
       ),
     [timetableItems]
   );
 
-  const { selectedTrainScheduleIds, selectedPacedTrainIds } = useMemo(() => {
+  const { selectedUniqueTrainIds, selectedPacedTrainIds } = useMemo(() => {
     const timetableItemsById = mapBy(timetableItemsWithDetails, 'id');
     return selectedTimetableItemIds.reduce(
       (acc, timetableItemId) => {
         const pacedTrain = timetableItemsById.get(timetableItemId);
         if (!pacedTrain) throw new Error(`No timetableItem found for id ${timetableItemId}`);
-        if (!pacedTrain.paced) acc.selectedTrainScheduleIds.push(timetableItemId);
+        if (!pacedTrain.paced) acc.selectedUniqueTrainIds.push(timetableItemId);
         else acc.selectedPacedTrainIds.push(timetableItemId);
         return acc;
       },
-      { selectedTrainScheduleIds: [], selectedPacedTrainIds: [] } as {
-        selectedTrainScheduleIds: TimetableItemId[];
+      { selectedUniqueTrainIds: [], selectedPacedTrainIds: [] } as {
+        selectedUniqueTrainIds: TimetableItemId[];
         selectedPacedTrainIds: TimetableItemId[];
       }
     );
@@ -101,7 +101,7 @@ const TimetableBoardWrapper = ({
 
   // --- BOARD WRAPPER TITLE MANAGEMENT -------------------------
   const computedItemLabel = useCallback(() => {
-    if (totalTrainScheduleCount === 0 && totalPacedTrainCount === 0)
+    if (totalUniqueTrainCount === 0 && totalPacedTrainCount === 0)
       return t('main.timetable.noItem');
 
     const pacedTrainLabel =
@@ -112,38 +112,33 @@ const TimetableBoardWrapper = ({
           })
         : t('main.pacedTrain', { count: totalPacedTrainCount });
 
-    const trainScheduleLabel =
-      selectedTrainScheduleIds.length > 0
+    const uniqueTrainLabel =
+      selectedUniqueTrainIds.length > 0
         ? t('main.trainCountSelected', {
-            count: selectedTrainScheduleIds.length,
-            totalCount: totalTrainScheduleCount,
+            count: selectedUniqueTrainIds.length,
+            totalCount: totalUniqueTrainCount,
           })
-        : t('main.train', { count: totalTrainScheduleCount });
+        : t('main.train', { count: totalUniqueTrainCount });
 
-    if (totalTrainScheduleCount === 0) {
+    if (totalUniqueTrainCount === 0) {
       return pacedTrainLabel;
     }
 
     if (totalPacedTrainCount === 0) {
-      return trainScheduleLabel;
+      return uniqueTrainLabel;
     }
 
-    if (selectedTrainScheduleIds.length > 0 || selectedPacedTrainIds.length > 0) {
+    if (selectedUniqueTrainIds.length > 0 || selectedPacedTrainIds.length > 0) {
       return t('main.pacedTrainAndTrainCount', {
         pacedTrainCount: selectedPacedTrainIds.length,
         totalPacedTrainCount,
-        trainCount: selectedTrainScheduleIds.length,
-        totalTrainScheduleCount,
+        trainCount: selectedUniqueTrainIds.length,
+        totalUniqueTrainCount,
       });
     }
 
-    return `${pacedTrainLabel}, ${trainScheduleLabel}`;
-  }, [
-    totalTrainScheduleCount,
-    totalPacedTrainCount,
-    selectedTrainScheduleIds,
-    selectedPacedTrainIds,
-  ]);
+    return `${pacedTrainLabel}, ${uniqueTrainLabel}`;
+  }, [totalUniqueTrainCount, totalPacedTrainCount, selectedUniqueTrainIds, selectedPacedTrainIds]);
   // --- END BOARD WRAPPER TITLE MANAGEMENT ---------------------
 
   const removeAndUnselectTrains = useCallback(
@@ -272,7 +267,7 @@ const TimetableBoardWrapper = ({
       <DeleteModal
         handleDelete={() => handleTrainsDelete(selectedTrainId)}
         selectedPacedTrainCount={selectedPacedTrainIds.length}
-        selectedTrainScheduleCount={selectedTrainScheduleIds.length}
+        selectedUniqueTrainCount={selectedUniqueTrainIds.length}
       />,
       'sm'
     );

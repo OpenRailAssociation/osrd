@@ -103,14 +103,14 @@
           "shortName": "B"
         }
       },
-      "uniqueTrainSchedule": "Einzelner Zug"
+      "uniqueTrain": "Einzelner Zug"
     },
     "moreDetails": "Mehr Details anzeigen",
     "noElectricalProfileSet": "Kein Bahnstromprofil",
     "pacedTrain": {
       "pacedTrain": "Taktleistung"
     },
-    "pacedTrainAndTrainCount": "{{pacedTrainCount}}/$t(main.pacedTrain, { 'count': {{totalPacedTrainCount}} }), {{trainCount}}/$t(main.train, { 'count': {{totalTrainScheduleCount}} }) ausgewählt",
+    "pacedTrainAndTrainCount": "{{pacedTrainCount}}/$t(main.pacedTrain, { 'count': {{totalPacedTrainCount}} }), {{trainCount}}/$t(main.train, { 'count': {{totalUniqueTrainCount}} }) ausgewählt",
     "pacedTrainCount_one": "1/$t(main.pacedTrain, { 'count': {{totalCount}} }) ausgewählt",
     "pacedTrainCount_other": "{{count}}/$t(main.pacedTrain, { 'count': {{totalCount}} }) ausgewählt",
     "pacedTrainCount_zero": "$t(main.pacedTrain, { 'count': {{totalCount}} })",
@@ -189,7 +189,7 @@
   },
   "manageTimetableItem": {
     "addPacedTrain": "Taktleistung hinzufügen",
-    "addTrainSchedule": "Zug hinzufügen",
+    "addUniqueTrain": "Zug hinzufügen",
     "addVia": "Wegepunkt hinzufügen",
     "addVias": "Wegepunkte hinzufügen",
     "allowances": {
@@ -307,12 +307,12 @@
     "toggleTrigramSearch": "Dreierkürzelsuche auswählen",
     "trainAdded": "Zug hinzugefügt",
     "trainLabels": "Tags",
-    "trainScheduleUpdated": "Zug aktualisiert",
-    "turnPacedTrainIntoTrainSchedule": "Diesen getakteten Zug in einen Fahrplan umwandeln",
-    "turnTrainScheduleIntoPacedTrain": "Diesen Fahrplan in einen getakteten Zug umwandeln",
+    "turnPacedTrainIntoUniqueTrain": "Diesen getakteten Zug in einen Fahrplan umwandeln",
+    "turnUniqueTrainIntoPacedTrain": "Diesen Fahrplan in einen getakteten Zug umwandeln",
     "unavailableDistance": "Nicht verfügbarer Abstand",
+    "uniqueTrainUpdated": "Zug aktualisiert",
     "updatePacedTrain": "Den getakteten Zug bearbeiten",
-    "updateTrainSchedule": "Zug bearbeiten",
+    "updateUniqueTrain": "Zug bearbeiten",
     "usingElectricalProfiles": "Bahnstromprofil benutzen",
     "via": "Wegepunkt",
     "viewItineraryOnMap": "Reiseweg auf Karte sehen",

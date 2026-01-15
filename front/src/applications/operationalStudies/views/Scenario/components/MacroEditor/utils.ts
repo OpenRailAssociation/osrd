@@ -19,8 +19,8 @@ import {
   CUSTOM_TRAINRUN_TIME_CATEGORY,
   DEFAULT_PACED_TRAIN_FREQUENCY_IDS,
   DEFAULT_TRAINRUN_TIME_CATEGORY,
-  UNIQUE_TRAIN_SCHEDULE_TIME_CATEGORY,
-  TRAIN_SCHEDULE_FREQUENCY_ID,
+  UNIQUE_TRAIN_TIME_CATEGORY,
+  UNIQUE_TRAIN_FREQUENCY_ID,
   DEFAULT_TRAINRUN_FREQUENCIES,
   NETZGRAFIK_COLOR_PALETTE,
   CATEGORY_COLOR_VARIANTS,
@@ -144,8 +144,8 @@ export const getDefaultTrainrunFrequencies = (
   DEFAULT_TRAINRUN_FREQUENCIES.map((freq) => ({
     ...freq,
     name:
-      freq.id === TRAIN_SCHEDULE_FREQUENCY_ID
-        ? t('main.macroEditor.uniqueTrainSchedule')
+      freq.id === UNIQUE_TRAIN_FREQUENCY_ID
+        ? t('main.macroEditor.uniqueTrain')
         : t('main.macroEditor.intervalXmin', { minutes: freq.frequency }),
   }));
 
@@ -155,8 +155,8 @@ export const getDefaultTrainrunFrequencies = (
 export const getTrainrunTimeCategoryFromFrequency = (
   trainrunFrequency: TrainrunFrequency
 ): TrainrunTimeCategory => {
-  if (trainrunFrequency.id === TRAIN_SCHEDULE_FREQUENCY_ID) {
-    return UNIQUE_TRAIN_SCHEDULE_TIME_CATEGORY;
+  if (trainrunFrequency.id === UNIQUE_TRAIN_FREQUENCY_ID) {
+    return UNIQUE_TRAIN_TIME_CATEGORY;
   }
   if (!DEFAULT_PACED_TRAIN_FREQUENCY_IDS.includes(trainrunFrequency.id)) {
     return CUSTOM_TRAINRUN_TIME_CATEGORY;
@@ -186,7 +186,7 @@ export const getTrainrunFrequencyFromTimetableItem = (
   state: MacroEditorState
 ): TrainrunFrequency => {
   if (!isPacedTrain(timetableItem)) {
-    return getFrequencyFromFrequencyId(state.trainrunFrequencies, TRAIN_SCHEDULE_FREQUENCY_ID);
+    return getFrequencyFromFrequencyId(state.trainrunFrequencies, UNIQUE_TRAIN_FREQUENCY_ID);
   }
   const intervalInMinutes = Duration.parse(timetableItem.paced.interval).total('minute');
   const trainrunFrequency = state.trainrunFrequencies.find(

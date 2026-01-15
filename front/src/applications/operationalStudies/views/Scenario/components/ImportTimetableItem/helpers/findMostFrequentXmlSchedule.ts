@@ -1,8 +1,8 @@
 import type { PacedTrain } from 'common/api/osrdEditoastApi';
 
-function getRelativeStepsTimeAndNames(trainSchedule: PacedTrain): string {
-  const stepsWithRelativeTimesAndNames = trainSchedule.schedule!.map((step) => ({
-    ...trainSchedule.path.find((pathStep) => pathStep.id === step.at),
+function getRelativeStepsTimeAndNames(pacedTrain: PacedTrain): string {
+  const stepsWithRelativeTimesAndNames = pacedTrain.schedule!.map((step) => ({
+    ...pacedTrain.path.find((pathStep) => pathStep.id === step.at),
     arrival: step.arrival,
     stop_for: step.stop_for,
   }));

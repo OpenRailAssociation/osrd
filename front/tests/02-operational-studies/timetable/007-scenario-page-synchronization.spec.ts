@@ -95,7 +95,7 @@ test.describe('@op @multi-tab-sync', () => {
       await pacedTrainSection.deletePacedTrain(1, frTranslations);
       await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
         totalPacedTrainCount: 1,
-        totalTrainScheduleCount: 2,
+        totalUniqueTrainCount: 2,
       });
     });
 
@@ -103,11 +103,11 @@ test.describe('@op @multi-tab-sync', () => {
       await secondPage.bringToFront();
       await secondScenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
         totalPacedTrainCount: 1,
-        totalTrainScheduleCount: 2,
+        totalUniqueTrainCount: 2,
       });
     });
 
-    await test.step('Edit a train schedule in second tab and verify the update', async () => {
+    await test.step('Edit a unique train in second tab and verify the update', async () => {
       await secondScenarioTimetableSection.editTimetableItem(1);
       await secondOperationalStudiesPage.setFormattedStartTime('2025-03-15T08:35:40');
       await secondOperationalStudiesPage.submitTimetableItemEdit();

@@ -22,7 +22,7 @@ describe('formatSchedule', () => {
       const result = formatSchedule(pathSteps);
       expect(result?.length).toBe(0);
     });
-    it('should format the train schedule', () => {
+    it("should format the train's schedule field", () => {
       const pathSteps: PathStep[] = [
         {
           id: 'id332',

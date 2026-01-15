@@ -1,7 +1,7 @@
 import type { TFunction } from 'i18next';
 import { describe, it, expect, vi } from 'vitest';
 
-import { trainScheduleHonored } from 'applications/operationalStudies/__tests__/sampleData';
+import { uniqueTrainHonored } from 'applications/operationalStudies/__tests__/sampleData';
 import type { TimetableJsonPayload } from 'applications/operationalStudies/types';
 import type { RoundTrips } from 'common/api/osrdEditoastApi';
 
@@ -15,7 +15,7 @@ const tMock = vi.fn().mockImplementation(() => 'translated') as unknown as TFunc
 >;
 
 const buildTrainSchedule = (overrides: Record<string, unknown> = {}) => ({
-  ...trainScheduleHonored,
+  ...uniqueTrainHonored,
   ...overrides,
 });
 

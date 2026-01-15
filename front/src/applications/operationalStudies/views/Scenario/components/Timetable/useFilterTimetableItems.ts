@@ -154,7 +154,7 @@ const useFilterTimetableItems = (
           return filterTimetableItem(timetableItem);
         }
 
-        if (trainTypeFilter === 'trainSchedule') return false;
+        if (trainTypeFilter === 'uniqueTrain') return false;
 
         const { paced, ...modelTrain } = timetableItem;
         const exceptionItems = paced.exceptions.map((exception) => {

@@ -12,9 +12,9 @@ import {
 import {
   TOTAL_TIMETABLE_ITEMS,
   TOTAL_PACED_TRAINS,
-  TOTAL_TRAIN_SCHEDULES,
+  TOTAL_UNIQUE_TRAINS,
   VALID_PACED_TRAINS,
-  VALID_TRAIN_SCHEDULE,
+  VALID_UNIQUE_TRAIN,
 } from '../../assets/constants/timetable-items-count';
 import test from '../../page-object-fixture';
 import { waitForInfraStateToBeCached } from '../../utils';
@@ -38,7 +38,7 @@ test.describe('@op @timetable-items', () => {
   let scenario: Scenario;
   let infra: Infra;
 
-  test.beforeAll('Fetch project, study and scenario with train schedule', async () => {
+  test.beforeAll('Fetch project, study and scenario with unique train', async () => {
     project = await getProject(timetableItemProjectName);
     study = await getStudy(project.id, timetableItemStudyName);
     scenario = await getScenario(study.id, timetableItemScenarioName);
@@ -56,24 +56,24 @@ test.describe('@op @timetable-items', () => {
   );
 
   /** *************** Test 1 **************** */
-  test('@smoke Loading timetable items and verifying simulation result for train schedules', async ({
+  test('@smoke Loading timetable items and verifying simulation result for unique trains', async ({
     scenarioTimetableSection,
   }) => {
-    await test.step('Verify counts then filter valid train schedules', async () => {
+    await test.step('Verify counts then filter valid unique trains', async () => {
       await scenarioTimetableSection.verifyTimetableItemsCount(TOTAL_TIMETABLE_ITEMS);
       await scenarioTimetableSection.filterTrainTypeAndVerifyTrainCount(
         'Unique train',
-        TOTAL_TRAIN_SCHEDULES
+        TOTAL_UNIQUE_TRAINS
       );
       await scenarioTimetableSection.filterValidityAndVerifyTrainCount(
         'Valid',
-        VALID_TRAIN_SCHEDULE,
+        VALID_UNIQUE_TRAIN,
         frTranslations
       );
     });
 
-    await test.step('Verify simulation results for valid train schedules', async () => {
-      await scenarioTimetableSection.verifyEachTrainScheduleSimulation(VALID_TRAIN_SCHEDULE);
+    await test.step('Verify simulation results for valid unique trains', async () => {
+      await scenarioTimetableSection.verifyEachUniqueTrainSimulation(VALID_UNIQUE_TRAIN);
     });
   });
 

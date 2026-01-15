@@ -133,7 +133,7 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
 
   async checkInputsAndButtons(translations: ManageTimetableItemTranslations, date: string) {
     await expect(this.createTimetableItemButton).toBeVisible();
-    await expect(this.createTimetableItemButton).toHaveText(translations.addTrainSchedule);
+    await expect(this.createTimetableItemButton).toHaveText(translations.addUniqueTrain);
     await expect(this.definePacedTrainCheckboxLabel).toBeVisible();
     await expect(this.definePacedTrainCheckboxLabel).toHaveText(
       translations.pacedTrains.defineService
@@ -166,21 +166,21 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
     await this.submitTimetableItemEdit();
   }
 
-  async turnTrainScheduleIntoPacedTrain(translations: ManageTimetableItemTranslations) {
+  async turnUniqueTrainIntoPacedTrain(translations: ManageTimetableItemTranslations) {
     await expect(this.definePacedTrainCheckbox).not.toBeChecked();
     await expect(this.editTimetableItemButton).toBeVisible();
-    await expect(this.editTimetableItemButton).toHaveText(translations.updateTrainSchedule);
+    await expect(this.editTimetableItemButton).toHaveText(translations.updateUniqueTrain);
 
     await this.definePacedTrainCheckboxLabel.click();
     await expect(this.definePacedTrainCheckbox).toBeChecked();
     await expect(this.editTimetableItemButton).toHaveText(
-      translations.turnTrainScheduleIntoPacedTrain
+      translations.turnUniqueTrainIntoPacedTrain
     );
 
     await this.submitTimetableItemEdit();
   }
 
-  async turnPacedTrainIntoTrainSchedule(translations: ManageTimetableItemTranslations) {
+  async turnPacedTrainIntoUniqueTrain(translations: ManageTimetableItemTranslations) {
     await expect(this.definePacedTrainCheckbox).toBeChecked();
     await expect(this.editTimetableItemButton).toBeVisible();
     await expect(this.editTimetableItemButton).toHaveText(translations.updatePacedTrain);
@@ -188,7 +188,7 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
     await this.definePacedTrainCheckboxLabel.click();
     await expect(this.definePacedTrainCheckbox).not.toBeChecked();
     await expect(this.editTimetableItemButton).toHaveText(
-      translations.turnPacedTrainIntoTrainSchedule
+      translations.turnPacedTrainIntoUniqueTrain
     );
 
     await this.submitTimetableItemEdit();
@@ -226,7 +226,7 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
     await this.setTimeWindow(PACED_TRAIN_SETTINGS_TEST.timeWindow);
     await this.setInterval(PACED_TRAIN_SETTINGS_TEST.interval);
     await this.definePacedTrainCheckboxLabel.click();
-    await expect(this.createTimetableItemButton).toHaveText(translations.addTrainSchedule);
+    await expect(this.createTimetableItemButton).toHaveText(translations.addUniqueTrain);
     await expect(this.pacedTrainTimeWindow).not.toBeVisible();
     await expect(this.pacedTrainIntervalInput).not.toBeVisible();
 

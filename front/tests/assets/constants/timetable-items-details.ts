@@ -6,7 +6,7 @@ const frScenarioTranslations: TimetableFilterTranslations = readJsonFile<{
 
 export const EXPECTED_COUNTS = {
   totalPacedTrainCount: 4,
-  totalTrainScheduleCount: 7,
+  totalUniqueTrainCount: 7,
 };
 
 export type DetailRow = {
@@ -38,7 +38,7 @@ export const PACED_DETAILS: DetailRow[] = [
   },
 ];
 
-export const TRAIN_SCHEDULE_DETAILS: DetailRow[] = [
+export const UNIQUE_TRAIN_DETAILS: DetailRow[] = [
   {
     stopsCount: itemStopZero,
     pathLength: '6.8 km',

@@ -91,8 +91,8 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     this.trainName = page.getByTestId('train-name');
   }
 
-  private static getTrainScheduleButton(trainScheduleSelector: Locator): Locator {
-    return trainScheduleSelector.getByTestId('scenario-timetable-train-schedule-button');
+  private static getUniqueTrainButton(UniqueTrainSelector: Locator): Locator {
+    return UniqueTrainSelector.getByTestId('scenario-timetable-unique-train-button');
   }
 
   static getPacedTrainButton(pacedTrainSelector: Locator): Locator {
@@ -172,10 +172,10 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     translations: TimetableFilterTranslations & CommonTranslations,
     itemCounts: {
       totalPacedTrainCount: number;
-      totalTrainScheduleCount: number;
+      totalUniqueTrainCount: number;
     }
   ): Promise<void> {
-    const { totalPacedTrainCount, totalTrainScheduleCount } = itemCounts;
+    const { totalPacedTrainCount, totalUniqueTrainCount } = itemCounts;
     await expect(this.timetableItems.first()).toBeVisible();
     await expect(this.timetableTotalItemLabel).toBeVisible();
 
@@ -183,14 +183,14 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     const pacedTrainLabel = translations.pacedTrain_other
       .split(' ')[1]
       .slice(0, totalPacedTrainCount > 1 ? undefined : -1); // "services"
-    const trainScheduleLabel = translations.train_other
+    const uniqueTrainLabel = translations.train_other
       .split(' ')[1]
-      .slice(0, totalTrainScheduleCount > 1 ? undefined : -1); // "trains"
+      .slice(0, totalUniqueTrainCount > 1 ? undefined : -1); // "trains"
 
-    let expectedComputedLabel = `${totalPacedTrainCount} ${pacedTrainLabel}, ${totalTrainScheduleCount} ${trainScheduleLabel}`;
+    let expectedComputedLabel = `${totalPacedTrainCount} ${pacedTrainLabel}, ${totalUniqueTrainCount} ${uniqueTrainLabel}`;
     if (totalPacedTrainCount === 0) {
-      expectedComputedLabel = `${totalTrainScheduleCount} ${trainScheduleLabel}`;
-    } else if (totalTrainScheduleCount === 0) {
+      expectedComputedLabel = `${totalUniqueTrainCount} ${uniqueTrainLabel}`;
+    } else if (totalUniqueTrainCount === 0) {
       expectedComputedLabel = `${totalPacedTrainCount} ${pacedTrainLabel}`;
     }
     await expect(this.timetableTotalItemLabel).toHaveText(expectedComputedLabel);
@@ -256,7 +256,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
     const trainTypeFilters = {
       Service: frTranslations.timetable.pacedTrain,
-      'Unique train': frTranslations.timetable.trainSchedule,
+      'Unique train': frTranslations.timetable.uniqueTrain,
       All: frTranslations.timetable.showAllTrains,
     };
 
@@ -306,16 +306,16 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     }
   }
 
-  // Iterate over each trainSchedule and verify the visibility of simulation results
-  async verifyEachTrainScheduleSimulation(trainScheduleCount: number): Promise<void> {
+  // Iterate over each unique train and verify the visibility of simulation results
+  async verifyEachUniqueTrainSimulation(uniqueTrainCount: number): Promise<void> {
     await expect(this.timetableItems.first()).toBeVisible();
     const timetableItemsCount = await this.timetableItems.count();
     for (
-      let currentTrainScheduleIndex = trainScheduleCount;
-      currentTrainScheduleIndex < timetableItemsCount;
-      currentTrainScheduleIndex += 1
+      let currentUniqueTrainIndex = uniqueTrainCount;
+      currentUniqueTrainIndex < timetableItemsCount;
+      currentUniqueTrainIndex += 1
     ) {
-      await this.projectTrain(currentTrainScheduleIndex);
+      await this.projectTrain(currentUniqueTrainIndex);
       await this.verifySimulationResultsVisibility();
     }
   }
@@ -333,14 +333,14 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   }
 
   async projectTrain(index = 0) {
-    const trainScheduleButton = ScenarioTimetableSection.getTrainScheduleButton(
+    const UniqueTrainButton = ScenarioTimetableSection.getUniqueTrainButton(
       this.timetableItems.nth(index)
     );
-    await expect(trainScheduleButton).toBeVisible();
+    await expect(UniqueTrainButton).toBeVisible();
     // Click and hover near the left edge to avoid action buttons
-    await trainScheduleButton.click({ position: { x: 5, y: 5 } });
-    await trainScheduleButton.scrollIntoViewIfNeeded();
-    await trainScheduleButton.hover({ position: { x: 5, y: 5 } });
+    await UniqueTrainButton.click({ position: { x: 5, y: 5 } });
+    await UniqueTrainButton.scrollIntoViewIfNeeded();
+    await UniqueTrainButton.hover({ position: { x: 5, y: 5 } });
     await expect(this.projectItemButton.nth(index)).toBeVisible();
     await this.projectItemButton.nth(index).click();
   }
@@ -359,22 +359,22 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     translations: TimetableFilterTranslations & CommonTranslations,
     itemCounts: {
       totalPacedTrainCount: number;
-      totalTrainScheduleCount: number;
+      totalUniqueTrainCount: number;
     }
   ) {
     await this.timetableSelectOptionsButton.click();
     await expect(this.timetableSelectAllButton).toBeVisible();
     await this.timetableSelectAllButton.click();
 
-    const { totalPacedTrainCount, totalTrainScheduleCount } = itemCounts;
+    const { totalPacedTrainCount, totalUniqueTrainCount } = itemCounts;
     await expect(this.timetableTotalItemLabel).toBeVisible();
 
     // Rebuild the expected text for total items label which has the syntax : "X/X services and Y/Y trains selected"
     const trainTypeTranslation = translations.timetable.trainType; // format "Services, trains"
-    const [pacedTrains, trainSchedules] = trainTypeTranslation.split(', '); // expect to return ["Services", "trains"]
+    const [pacedTrains, uniqueTrains] = trainTypeTranslation.split(', '); // expect to return ["Services", "trains"]
     const pacedTrainAndTrainCountTrad = translations.pacedTrainAndTrainCount; // finished by "selected"
     const selectedTrad = pacedTrainAndTrainCountTrad.split(' ').at(-1); // expect to return "selected"
-    const expectedComputedLabel = `${totalPacedTrainCount}/${totalPacedTrainCount} ${pacedTrains.toLowerCase()}, ${totalTrainScheduleCount}/${totalTrainScheduleCount} ${trainSchedules} ${selectedTrad}`;
+    const expectedComputedLabel = `${totalPacedTrainCount}/${totalPacedTrainCount} ${pacedTrains.toLowerCase()}, ${totalUniqueTrainCount}/${totalUniqueTrainCount} ${uniqueTrains} ${selectedTrad}`;
     await expect(this.timetableTotalItemLabel).toHaveText(expectedComputedLabel);
   }
 

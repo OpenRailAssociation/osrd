@@ -93,7 +93,7 @@ test.describe('@op @nge @round-trips', () => {
     await test.step('Validate timetable list and round-trip modal', async () => {
       await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
         totalPacedTrainCount: 2,
-        totalTrainScheduleCount: 0,
+        totalUniqueTrainCount: 0,
       });
       await scenarioTimetableSection.verifyInvalidReasons([
         frTranslations.timetable.invalid.rolling_stock_not_found,

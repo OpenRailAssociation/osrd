@@ -37,7 +37,7 @@ export const ThirdPacedTrain: RoundTripCardExpected = {
   requestedArrivalTime: '?',
 };
 
-export const FirstTrainSchedule: RoundTripCardExpected = {
+export const FirstUniqueTrain: RoundTripCardExpected = {
   title: 'Train19',
   interval: '–',
   stops: '0',
@@ -47,7 +47,7 @@ export const FirstTrainSchedule: RoundTripCardExpected = {
   requestedArrivalTime: '?',
 };
 
-export const SecondTrainSchedule: RoundTripCardExpected = {
+export const SecondUniqueTrain: RoundTripCardExpected = {
   title: 'Train20',
   interval: '–',
   stops: '2',
@@ -57,7 +57,7 @@ export const SecondTrainSchedule: RoundTripCardExpected = {
   requestedArrivalTime: '01',
 };
 
-export const ThirdTrainSchedule: RoundTripCardExpected = {
+export const ThirdUniqueTrain: RoundTripCardExpected = {
   title: 'Train21',
   interval: '–',
   stops: '2',

@@ -177,7 +177,7 @@ export async function createDataForTests(): Promise<void> {
     // Step 5: Create a scenario for the study
     await createScenario(undefined, project.id, study.id, mediumInfra.id);
 
-    // Step 6: Create a project, study, scenario and import train schedule and paced train data
+    // Step 6: Create a project, study, scenario and import unique train and paced train data
     const projectWithTimetableItems = await createProject(timetableItemProjectName);
     const studyWithTimetableItems = await createStudy(
       projectWithTimetableItems.id,

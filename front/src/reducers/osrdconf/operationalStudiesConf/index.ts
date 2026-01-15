@@ -34,7 +34,7 @@ export const operationalStudiesInitialConf: OperationalStudiesConfState = {
   timeWindow: new Duration({ minutes: 120 }),
   interval: new Duration({ minutes: 60 }),
   addedExceptions: [],
-  editingItemType: 'trainSchedule',
+  editingItemType: 'uniqueTrain',
 };
 
 export const operationalStudiesConfSlice = createSlice({
@@ -91,7 +91,7 @@ export const operationalStudiesConfSlice = createSlice({
         state.timeWindow = action.payload.item.paced.timeWindow;
         state.interval = action.payload.item.paced.interval;
       } else {
-        state.editingItemType = 'trainSchedule';
+        state.editingItemType = 'uniqueTrain';
         state.timeWindow = new Duration({ minutes: 120 });
         state.interval = new Duration({ minutes: 60 });
       }

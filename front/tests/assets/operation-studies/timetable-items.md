@@ -2,12 +2,12 @@
 
 Ensures full functional coverage of timetable import, parsing, and validation.
 
-This dataset is designed to cover a wide range of both **TrainSchedules** and **PacedTrains** in
+This dataset is designed to cover a wide range of both **Unique Trains** and **PacedTrains** in
 end-to-end testing.
 
 ---
 
-## TrainSchedules
+## Unique Trains
 
 - Multiple rolling stock categories
 - Distinct itineraries using predefined trigrams or requested map points
@@ -20,5 +20,5 @@ end-to-end testing.
 
 ## PacedTrains
 
-- Mirrors TrainSchedule diversity (rolling stock, margins, itineraries, speed limits)
+- Mirrors Unique Trains diversity (rolling stock, margins, itineraries, speed limits)
 - Includes all possible occurrence types

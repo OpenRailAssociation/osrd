@@ -133,7 +133,7 @@
           "shortName": "TX"
         }
       },
-      "uniqueTrainSchedule": "Train unique"
+      "uniqueTrain": "Train unique"
     },
     "moreDetails": "Afficher plus de détails",
     "noElectricalProfileSet": "Pas de profil électrique",
@@ -147,7 +147,7 @@
       "restore": "Rétablir sur le modèle"
     },
     "operationalPointReference": "Référence de point",
-    "pacedTrainAndTrainCount": "$t(main.pacedTrainCount, { 'count': {{pacedTrainCount}}, 'totalCount': {{totalPacedTrainCount}} }), $t(main.trainCount, { 'count': {{trainCount}}, 'totalCount': {{totalTrainScheduleCount}} }) sélectionnés",
+    "pacedTrainAndTrainCount": "$t(main.pacedTrainCount, { 'count': {{pacedTrainCount}}, 'totalCount': {{totalPacedTrainCount}} }), $t(main.trainCount, { 'count': {{trainCount}}, 'totalCount': {{totalUniqueTrainCount}} }) sélectionnés",
     "pacedTrainCountSelected_one": "1/{{totalCount}} mission sélectionnée",
     "pacedTrainCountSelected_other": "{{count}}/{{totalCount}} missions sélectionnées",
     "pacedTrainCount_one": "1/{{totalCount}} mission",
@@ -204,10 +204,10 @@
       "closeFilter": "Fermer le filtre",
       "copy": "copie",
       "delete": "Supprimer",
-      "deletePacedTrainAndTrainSelectionConfirmation": "Confirmez-vous la suppression de $t(main.pacedTrain, { 'count': {{selectedPacedTrainsCount}} }) et $t(main.train, { 'count': {{selectedTrainSchedulesCount}} }) ?",
+      "deletePacedTrainAndTrainSelectionConfirmation": "Confirmez-vous la suppression de $t(main.pacedTrain, { 'count': {{selectedPacedTrainsCount}} }) et $t(main.train, { 'count': {{selectedUniqueTrainsCount}} }) ?",
       "deletePacedTrainSelectionConfirmation": "Confirmez-vous la suppression de $t(main.pacedTrain, { 'count': {{selectedPacedTrainsCount}} }) ?",
       "deleteSelection": "Supprimer les trains sélectionnés",
-      "deleteTrainSelectionConfirmation": "Confirmez-vous la suppression de $t(main.train, { 'count': {{selectedTrainSchedulesCount}} }) ?",
+      "deleteTrainSelectionConfirmation": "Confirmez-vous la suppression de $t(main.train, { 'count': {{selectedUniqueTrainsCount}} }) ?",
       "duplicate": "Dupliquer",
       "exportSelection": "Exporter les trains sélectionnés",
       "filterLabel": "Nom, étiquette",
@@ -274,7 +274,6 @@
       "trainAdded": "Train ajouté",
       "trainCategories": "Catégorie de train",
       "trainDeleted": "Le train {{name}} a bien été supprimé.",
-      "trainSchedule": "Train unique",
       "trainScheduleSets": {
         "addTrainScheduleSet": "Ajouter le paquet",
         "cancel": "Annuler",
@@ -318,6 +317,7 @@
         "transformToLocalCopySubmit": "Copier le paquet localement"
       },
       "trainType": "Missions, trains",
+      "uniqueTrain": "Train unique",
       "unselectAll": "Tout désélectionner",
       "update": "Modifier",
       "validityFilter": "Validité des trains"
@@ -334,7 +334,7 @@
   },
   "manageTimetableItem": {
     "addPacedTrain": "Ajouter une mission",
-    "addTrainSchedule": "Ajouter un train",
+    "addUniqueTrain": "Ajouter un train",
     "addVia": "Ajouter ce point de passage",
     "addVias": "Ajout de points de passage",
     "allowances": {
@@ -478,13 +478,13 @@
     "toggleTrigramSearch": "Basculer l'affichage de la recherche par trigramme",
     "trainAdded": "Train ajouté",
     "trainLabels": "Étiquettes",
-    "trainScheduleUpdated": "Train unique modifié",
-    "turnPacedTrainIntoTrainSchedule": "Transformer cette mission en train",
-    "turnTrainScheduleIntoPacedTrain": "Transformer ce train en mission",
+    "turnPacedTrainIntoUniqueTrain": "Transformer cette mission en train",
+    "turnUniqueTrainIntoPacedTrain": "Transformer ce train en mission",
     "unavailableDistance": "Distance indisponible",
+    "uniqueTrainUpdated": "Train unique modifié",
     "updateOccurrence": "Modifier cette occurrence",
     "updatePacedTrain": "Modifier la mission",
-    "updateTrainSchedule": "Modifier le train",
+    "updateUniqueTrain": "Modifier le train",
     "usingElectricalProfiles": "Utiliser les profils électriques",
     "via": "Étape",
     "viewItineraryOnMap": "Voir l'itinéraire sur la carte",
