@@ -11,7 +11,7 @@ import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
 import fr.sncf.osrd.stdcm.graph.STDCMSimulations
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
-import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorer
+import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorers
 import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TestTrains
@@ -115,7 +115,7 @@ fun infraExplorerFromBlock(
     blockInfra: BlockInfra,
     block: BlockId,
 ): InfraExplorer {
-    return initInfraExplorer(rawInfra, blockInfra, BlockLocation(block, Offset(0.meters)))
+    return initInfraExplorers(rawInfra, blockInfra, BlockLocation(block, Offset(0.meters)))
         .elementAt(0)
 }
 

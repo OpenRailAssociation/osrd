@@ -30,7 +30,7 @@ class InfraExplorerTests {
         val block = infra.addBlock("a", "b")
 
         val explorers =
-            initInfraExplorer(
+            initInfraExplorers(
                 infra,
                 infra,
                 BlockLocation(block, Offset(0.meters)),
@@ -57,7 +57,7 @@ class InfraExplorerTests {
 
         // a --> b
         val firstExplorers =
-            initInfraExplorer(
+            initInfraExplorers(
                 infra,
                 infra,
                 BlockLocation(blocks[0], Offset(0.meters)),
@@ -120,7 +120,7 @@ class InfraExplorerTests {
 
         // a --> b
         val firstExplorers =
-            initInfraExplorer(infra, infra, BlockLocation(blocks[0], Offset(0.meters)))
+            initInfraExplorers(infra, infra, BlockLocation(blocks[0], Offset(0.meters)))
         assertEquals(1, firstExplorers.size)
         val firstExplorer = firstExplorers.first()
 
@@ -210,7 +210,7 @@ class InfraExplorerTests {
 
         // a --> b
         val firstExplorers =
-            initInfraExplorer(
+            initInfraExplorers(
                 infra,
                 infra,
                 BlockLocation(blocks[0], Offset(0.meters)),
@@ -260,7 +260,7 @@ class InfraExplorerTests {
         }
         firstBlock!!
         val firstExplorers =
-            initInfraExplorer(
+            initInfraExplorers(
                 infra.rawInfra,
                 infra.blockInfra,
                 BlockLocation(firstBlock, Offset(0.meters)),
@@ -299,7 +299,7 @@ class InfraExplorerTests {
 
         // block 1->2, lookahead 2->3->bx
         val explorers =
-            initInfraExplorer(
+            initInfraExplorers(
                 infra.rawInfra,
                 infra.blockInfra,
                 BlockLocation(block, Offset(0.meters)),
@@ -337,7 +337,7 @@ class InfraExplorerTests {
 
         // bf.a1 -> s.a1
         val explorers =
-            initInfraExplorer(
+            initInfraExplorers(
                     infra.rawInfra,
                     infra.blockInfra,
                     BlockLocation(block, Offset(0.meters)),
@@ -365,7 +365,7 @@ class InfraExplorerTests {
             )
 
         var explorer =
-            initInfraExplorer(
+            initInfraExplorers(
                     infra,
                     infra,
                     BlockLocation(blocks[0], Offset(50.meters)),
@@ -403,7 +403,7 @@ class InfraExplorerTests {
 
         // block 1->2, lookahead 2->3->bx
         val explorers =
-            initInfraExplorer(
+            initInfraExplorers(
                     infra.rawInfra,
                     infra.blockInfra,
                     BlockLocation(block, Offset(32.meters)),

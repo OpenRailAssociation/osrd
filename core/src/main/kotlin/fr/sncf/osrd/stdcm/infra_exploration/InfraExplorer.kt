@@ -159,7 +159,7 @@ interface EdgeIdentifier {
  * when the incremental path is complete. `constraints` are used to determine if a block can be
  * explored
  */
-fun initInfraExplorer(
+fun initInfraExplorers(
     rawInfra: RawInfra,
     blockInfra: BlockInfra,
     location: BlockLocation,
