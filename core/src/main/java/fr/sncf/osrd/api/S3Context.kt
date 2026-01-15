@@ -5,7 +5,6 @@ import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.net.URI
 import mu.KotlinLogging
-import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3Client
@@ -80,11 +79,7 @@ fun makeS3Context(): S3Context? {
     val s3Config =
         S3Configuration.builder().chunkedEncodingEnabled(false).pathStyleAccessEnabled(true).build()
 
-    val s3Builder =
-        S3Client.builder()
-            .region(Region.EU_WEST_3)
-            .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
-            .serviceConfiguration(s3Config)
+    val s3Builder = S3Client.builder().region(Region.EU_WEST_3).serviceConfiguration(s3Config)
     if (url != null && url != "") {
         s3Builder.endpointOverride(URI.create(url))
     }
