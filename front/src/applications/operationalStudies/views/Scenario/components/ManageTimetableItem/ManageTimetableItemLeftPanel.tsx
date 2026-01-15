@@ -19,7 +19,6 @@ import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 
 import CreateTimetableItemButton from './CreateTimetableItemButton';
-import { isPacedTrainToEditData } from './helpers/formatTimetableItemPayload';
 import useUpdateTimetableItem from './hooks/useUpdateTimetableItem';
 import ItineraryModal from './Itinerary/ItineraryModal';
 import PacedTrainSettings from './PacedTrainSettings';
@@ -69,20 +68,13 @@ const ManageTimetableItemLeftPanel = ({
   );
 
   const getEditLabel = (_itemToEdit: TimetableItemToEditData) => {
-    if (
-      (!isPacedTrainToEditData(_itemToEdit) || !_itemToEdit.originalPacedTrain.paced) &&
-      editingItemType === 'trainSchedule'
-    ) {
+    if (!_itemToEdit.originalPacedTrain.paced && editingItemType === 'trainSchedule') {
       return t('updateTrainSchedule');
     }
-    if (
-      isPacedTrainToEditData(_itemToEdit) &&
-      _itemToEdit.originalPacedTrain.paced &&
-      editingItemType !== 'trainSchedule'
-    ) {
+    if (_itemToEdit.originalPacedTrain.paced && editingItemType !== 'trainSchedule') {
       return editingItemType === 'pacedTrain' ? t('updatePacedTrain') : t('updateOccurrence');
     }
-    return !isPacedTrainToEditData(_itemToEdit) || !_itemToEdit.originalPacedTrain.paced
+    return !_itemToEdit.originalPacedTrain.paced
       ? t('turnTrainScheduleIntoPacedTrain')
       : t('turnPacedTrainIntoTrainSchedule');
   };
@@ -98,7 +90,6 @@ const ManageTimetableItemLeftPanel = ({
                 type="button"
                 onClick={() => {
                   if (
-                    isPacedTrainToEditData(timetableItemToEditData) &&
                     timetableItemToEditData.originalPacedTrain.paced &&
                     timetableItemToEditData.originalPacedTrain.paced.exceptions.length > 0 &&
                     (osrdConf.timeWindow.toISOString() !==
