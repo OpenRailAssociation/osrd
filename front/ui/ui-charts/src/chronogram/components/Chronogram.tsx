@@ -98,7 +98,7 @@ export const Chronogram = (props: ChronogramProps) => {
       timeOrigin,
       timeScale,
       timePixelOffset: xOffset,
-      spacePixelOffset: yOffset,
+      yPixelOffset: yOffset,
       theme: fullTheme,
       captionSize: fullTheme.dateCaptionsSize + fullTheme.timeCaptionsSize,
     };
