@@ -10,7 +10,7 @@ import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.graph.extendLookaheadUntil
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
-import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorer
+import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorers
 import java.util.ArrayList
 import java.util.HashSet
 import java.util.Objects
@@ -65,7 +65,7 @@ fun getStartLocations(
     val steps = waypoints.map { STDCMStep(it) }
     for (location in firstStep) {
         val infraExplorers =
-            initInfraExplorer(
+            initInfraExplorers(
                 rawInfra,
                 blockInfra,
                 location,

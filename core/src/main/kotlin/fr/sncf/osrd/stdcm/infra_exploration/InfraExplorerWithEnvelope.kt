@@ -89,7 +89,7 @@ fun initInfraExplorerWithEnvelope(
     steps: List<STDCMStep> = listOf(),
     constraints: List<PathfindingConstraint<Block>> = listOf(),
 ): Collection<InfraExplorerWithEnvelope> {
-    return initInfraExplorer(
+    return initInfraExplorers(
             fullInfra.rawInfra,
             fullInfra.blockInfra,
             location,
