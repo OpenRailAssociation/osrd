@@ -9,10 +9,10 @@ import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.pathfinding.BlockLocation
 import fr.sncf.osrd.stdcm.STDCMAStarHeuristic
 import fr.sncf.osrd.stdcm.STDCMHeuristicBuilder
-import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.graph.STDCMEdge
 import fr.sncf.osrd.stdcm.graph.STDCMNode
 import fr.sncf.osrd.stdcm.graph.TimeData
+import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelopeImpl
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorers
@@ -46,11 +46,11 @@ class STDCMHeuristicTests {
 
         val steps =
             listOf(
-                STDCMStep(listOf(BlockLocation(blocks[0], Offset(50.meters))), null, false),
-                STDCMStep(listOf(BlockLocation(blocks[1], Offset(25.meters))), null, false),
-                STDCMStep(listOf(BlockLocation(blocks[1], Offset(75.meters))), null, false),
-                STDCMStep(listOf(BlockLocation(blocks[2], Offset(0.meters))), null, false),
-                STDCMStep(listOf(BlockLocation(blocks[3], Offset(100.meters))), 1.0, true),
+                ExplorerStep(listOf(BlockLocation(blocks[0], Offset(50.meters))), null, false),
+                ExplorerStep(listOf(BlockLocation(blocks[1], Offset(25.meters))), null, false),
+                ExplorerStep(listOf(BlockLocation(blocks[1], Offset(75.meters))), null, false),
+                ExplorerStep(listOf(BlockLocation(blocks[2], Offset(0.meters))), null, false),
+                ExplorerStep(listOf(BlockLocation(blocks[3], Offset(100.meters))), 1.0, true),
             )
 
         val heuristic =
@@ -104,8 +104,8 @@ class STDCMHeuristicTests {
 
         val steps =
             listOf(
-                STDCMStep(listOf(BlockLocation(blocks[0], Offset(0.meters))), null, false),
-                STDCMStep(listOf(BlockLocation(blocks[1], Offset(100.meters))), null, true),
+                ExplorerStep(listOf(BlockLocation(blocks[0], Offset(0.meters))), null, false),
+                ExplorerStep(listOf(BlockLocation(blocks[1], Offset(100.meters))), null, true),
             )
 
         val heuristicWithAllowance =
@@ -164,9 +164,9 @@ class STDCMHeuristicTests {
 
         val steps =
             listOf(
-                STDCMStep(listOf(BlockLocation(blocks[0], Offset(50.meters))), null, false),
-                STDCMStep(listOf(BlockLocation(blocks[1], Offset(50.meters))), null, false),
-                STDCMStep(listOf(BlockLocation(blocks[3], Offset(50.meters))), 1.0, true),
+                ExplorerStep(listOf(BlockLocation(blocks[0], Offset(50.meters))), null, false),
+                ExplorerStep(listOf(BlockLocation(blocks[1], Offset(50.meters))), null, false),
+                ExplorerStep(listOf(BlockLocation(blocks[3], Offset(50.meters))), 1.0, true),
             )
 
         val heuristics =

@@ -10,6 +10,8 @@ import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.stdcm.graph.findPath
+import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
+import fr.sncf.osrd.stdcm.infra_exploration.PlannedTimingData
 import fr.sncf.osrd.stdcm.preprocessing.DummyBlockAvailability
 import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
@@ -27,7 +29,7 @@ import fr.sncf.osrd.train.TestTrains
 data class STDCMPathfindingBuilder(
     // region NON-OPTIONAL
     var infra: FullInfra? = null,
-    var steps: MutableList<STDCMStep> = ArrayList(),
+    var steps: MutableList<ExplorerStep> = ArrayList(),
 
     // endregion NON-OPTIONAL
     // region OPTIONAL
@@ -66,7 +68,7 @@ data class STDCMPathfindingBuilder(
         startLocations: Set<BlockLocation>,
         plannedTimingData: PlannedTimingData? = null,
     ): STDCMPathfindingBuilder {
-        steps.add(0, STDCMStep(startLocations, null, false, plannedTimingData))
+        steps.add(0, ExplorerStep(startLocations, null, false, plannedTimingData))
         return this
     }
 
@@ -78,12 +80,12 @@ data class STDCMPathfindingBuilder(
         endLocations: Set<BlockLocation>,
         plannedTimingData: PlannedTimingData? = null,
     ): STDCMPathfindingBuilder {
-        steps.add(STDCMStep(endLocations, 0.0, true, plannedTimingData))
+        steps.add(ExplorerStep(endLocations, 0.0, true, plannedTimingData))
         return this
     }
 
     /** Add a step to the path */
-    fun addStep(step: STDCMStep): STDCMPathfindingBuilder {
+    fun addStep(step: ExplorerStep): STDCMPathfindingBuilder {
         steps.add(step)
         return this
     }

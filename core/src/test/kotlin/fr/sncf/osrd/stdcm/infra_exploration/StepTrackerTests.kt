@@ -1,7 +1,6 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
 import fr.sncf.osrd.pathfinding.BlockLocation
-import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -24,16 +23,16 @@ class StepTrackerTests {
             )
         val steps =
             listOf(
-                STDCMStep(listOf(BlockLocation(blocks[0], Offset(50.meters)))),
-                STDCMStep(
+                ExplorerStep(listOf(BlockLocation(blocks[0], Offset(50.meters)))),
+                ExplorerStep(
                     listOf(
                         BlockLocation(blocks[0], Offset(40.meters)),
                         BlockLocation(blocks[0], Offset(51.meters)),
                     )
                 ),
-                STDCMStep(listOf(BlockLocation(blocks[1], Offset(0.meters)))),
-                STDCMStep(listOf(BlockLocation(blocks[1], Offset(100.meters)))),
-                STDCMStep(listOf(BlockLocation(blocks[2], Offset(100.meters)))),
+                ExplorerStep(listOf(BlockLocation(blocks[1], Offset(0.meters)))),
+                ExplorerStep(listOf(BlockLocation(blocks[1], Offset(100.meters)))),
+                ExplorerStep(listOf(BlockLocation(blocks[2], Offset(100.meters)))),
             )
         val tracker = StepTracker(steps)
 

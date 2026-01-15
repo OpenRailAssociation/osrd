@@ -11,6 +11,8 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
 import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.api.Route
 import fr.sncf.osrd.standalone_sim.runStandaloneSimulation
+import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
+import fr.sncf.osrd.stdcm.infra_exploration.PlannedTimingData
 import fr.sncf.osrd.stdcm.preprocessing.implementation.makeBlockAvailability
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN
@@ -197,8 +199,8 @@ class FullSTDCMTests {
     @ParameterizedTest
     @MethodSource("plannedTimingDataArg")
     fun testScheduledStartOrEnd(
-        start: Helpers.LocationPair,
-        end: Helpers.LocationPair,
+        start: LocationPair,
+        end: LocationPair,
         startPlannedTimingData: PlannedTimingData?,
         endPlannedTimingData: PlannedTimingData?,
         expectedPassageTime: Double,
@@ -250,7 +252,7 @@ class FullSTDCMTests {
             .setInfra(infra)
             .setStartTime(0.0)
             .setStartLocations(start.blockLocations)
-            .addStep(STDCMStep(stop.blockLocations, 5_000.0, true))
+            .addStep(ExplorerStep(stop.blockLocations, 5_000.0, true))
             .setEndLocations(
                 end.blockLocations,
                 PlannedTimingData(10_000.seconds, 0.seconds, 0.seconds),
@@ -285,7 +287,7 @@ class FullSTDCMTests {
                 .setInfra(infra)
                 .setStartTime(0.0)
                 .setStartLocations(start.blockLocations)
-                .addStep(STDCMStep(stop.blockLocations, 5_000.0, true))
+                .addStep(ExplorerStep(stop.blockLocations, 5_000.0, true))
                 .setEndLocations(end.blockLocations)
                 .setBlockAvailability(makeBlockAvailability(requirements))
                 .setMaxRunTime(Double.POSITIVE_INFINITY)

@@ -14,9 +14,9 @@ import fr.sncf.osrd.sim_infra.api.ZoneId
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.stdcm.STDCMAStarHeuristic
 import fr.sncf.osrd.stdcm.STDCMHeuristicBuilder
-import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.graph.engineering_allowance.EngineeringAllowanceManager
 import fr.sncf.osrd.stdcm.graph.visited_node_tracking.VisitedNodes
+import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
@@ -44,7 +44,7 @@ class STDCMGraph(
     blockAvailability: BlockAvailabilityInterface,
     val maxRunTime: Double,
     minScheduleTimeStart: Double,
-    steps: List<STDCMStep>,
+    steps: List<ExplorerStep>,
     val tag: String?,
     val standardAllowance: AllowanceValue?,
     val temporarySpeedLimitManager: TemporarySpeedLimitManager = TemporarySpeedLimitManager(),
