@@ -105,12 +105,20 @@
       }
 
       .path-step-list {
+        position: relative;
         background-color: var(--ambientB15);
         border-radius: 8px;
         margin-top: 12px;
         margin-inline: 8px;
         padding-top: 16px;
-
+        .reverse-itinerary-button {
+          position: absolute;
+          padding: 8px;
+          transform: rotate(90deg);
+          top: 0;
+          left: 8px;
+          color: var(--grey30);
+        }
         .itinerary-icons {
           display: flex;
           justify-content: end;

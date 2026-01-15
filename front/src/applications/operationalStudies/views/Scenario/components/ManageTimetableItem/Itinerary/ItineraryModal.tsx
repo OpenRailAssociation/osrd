@@ -1,7 +1,7 @@
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
-import { FrameAll } from '@osrd-project/ui-icons';
+import { ArrowSwitch, FrameAll } from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';
 import type { Position } from 'geojson';
 import { useTranslation } from 'react-i18next';
@@ -38,6 +38,8 @@ import PathStepItem from './PathStepItem';
 import { computePathStepCoordinates } from './utils';
 import { MANAGE_TIMETABLE_ITEM_TYPES } from '../../../consts';
 import { buildOpSuggestion } from '../helpers/buildOpSuggestion';
+import reversePathSteps from 'modules/pathfinding/helpers/reversePathSteps';
+import { compact } from 'lodash';
 
 type ItineraryModalProps = {
   itineraryModalIsOpen: boolean;
@@ -241,6 +243,14 @@ const ItineraryModal = ({
       };
     });
 
+  const inverseOD = () => {
+    const updatedPathSteps = buildPathSteps(pathSteps, pathStepsMetadataById);
+
+    // No step should be null when inverseOD is called (as start and arrival need to be defined), so compact should let the array unchanged but constrain the type
+    const cPathSteps = compact(updatedPathSteps);
+    launchPathfinding(reversePathSteps(cPathSteps));
+  };
+
   const submitItinerary = () => {
     if (hasInvalidPathStep) return;
     if (pathfindingError) return;
@@ -280,6 +290,14 @@ const ItineraryModal = ({
             <AlertBox type="error" message={pathfindingError} />
           )}
           <div className="path-step-list">
+            <button
+              data-testid="reverse-itinerary-button"
+              className="reverse-itinerary-button"
+              type="button"
+              onClick={inverseOD}
+            >
+              <ArrowSwitch />
+            </button>
             <div className="itinerary-icons">
               <button className="frame-all" onClick={frameAllPathSteps}>
                 <FrameAll title={t('frameAll')} aria-label={t('frameAll')} />
