@@ -8,7 +8,7 @@ import type {
   PositionData,
 } from 'applications/operationalStudies/types';
 import type { SimulationSummaryResult } from 'common/api/osrdEditoastApi';
-import type { PacedTrainId, TimetableItem } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 
 export const pathLength = 4000;
 export const pathLengthLong = 6000;
@@ -316,7 +316,7 @@ export const electrificationRangesSingleSegment: ElectrificationRange[] = [
  */
 
 export const trainScheduleTooFast: TimetableItem = {
-  id: 'paced_98' as PacedTrainId,
+  id: 98,
   train_name: 'tooFast',
   labels: [],
   rolling_stock_name: 'TC64700',
@@ -385,7 +385,7 @@ export const trainSummaryTooFast: Extract<SimulationSummaryResult, { status: 'su
 };
 
 export const trainScheduleTooFastOnInterval: TimetableItem = {
-  id: 'trainschedule_38366' as PacedTrainId,
+  id: 38366,
   train_name: 'tooFastOnInterval',
   labels: [],
   rolling_stock_name: 'rs-fictive',
@@ -457,7 +457,7 @@ export const trainSummaryTooFastOnInterval: Extract<
 };
 
 export const trainScheduleNotHonored: TimetableItem = {
-  id: 'paced_96' as PacedTrainId,
+  id: 96,
   train_name: 'notHonored',
   labels: [],
   rolling_stock_name: 'TC64700',
@@ -526,7 +526,7 @@ export const trainSummaryNotHonored: Extract<SimulationSummaryResult, { status: 
 };
 
 export const trainScheduleHonored: TimetableItem = {
-  id: 'paced_95' as PacedTrainId,
+  id: 95,
   train_name: 'normal',
   labels: [],
   rolling_stock_name: 'TC64700',

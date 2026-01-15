@@ -22,16 +22,14 @@ import type {
 import type { RangedValue } from 'common/types';
 import type { PathOperationalPoint } from 'modules/simulationResult/types';
 import type { SuggestedOP } from 'modules/timetableItem/types';
-import type { Train, TimetableItemWithPathOps, PacedTrainId } from 'reducers/osrdconf/types';
+import type { Train, TimetableItemWithPathOps } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
 import type { ArrayElement } from 'utils/types';
 
 export type Board = 'trains' | 'map' | 'macro' | 'std' | 'sdd' | 'tables' | 'conflicts';
 
 export type PacedTrainWithPaced = TrainSchedule & { paced: NonNullable<PacedTrain['paced']> };
-export type PacedTrainResponseWithPaced = PacedTrainWithPaced & {
-  id: PacedTrainId;
-};
+export type PacedTrainResponseWithPaced = PacedTrainWithPaced & { id: number };
 
 export type TrainScheduleFromJson = Omit<TrainSchedule, 'category'> & {
   category?: TrainCategory | string | null;

@@ -3,14 +3,10 @@ import type {
   PacedTrainWithPaced,
 } from 'applications/operationalStudies/types';
 import type { PacedTrain, PacedTrainException } from 'common/api/osrdEditoastApi';
-import type {
-  OccurrenceId,
-  PacedTrainId,
-  TimetableItem,
-  TimetableItemId,
-} from 'reducers/osrdconf/types';
+import type { OccurrenceId, PacedTrainId, TimetableItem } from 'reducers/osrdconf/types';
 import { Duration, addDurationToDate } from 'utils/duration';
 import {
+  extractEditoastIdFromPacedTrainId,
   extractExceptionIdFromOccurrenceId,
   extractOccurrenceIndexFromOccurrenceId,
   extractPacedTrainIdFromOccurrenceId,
@@ -155,10 +151,12 @@ export const getOccurrencesWorstStatus = (
 };
 
 export const getExceptionFromOccurrenceId = (
-  timetableItemsById: Map<TimetableItemId, TimetableItem>,
+  timetableItemsById: Map<number, TimetableItem>,
   occurrenceId: OccurrenceId
 ) => {
-  const pacedTrainId = extractPacedTrainIdFromOccurrenceId(occurrenceId);
+  const pacedTrainId = extractEditoastIdFromPacedTrainId(
+    extractPacedTrainIdFromOccurrenceId(occurrenceId)
+  );
   const pacedTrain = timetableItemsById.get(pacedTrainId);
   if (!pacedTrain || !isPacedTrain(pacedTrain))
     throw new Error(`No paced train found for id ${pacedTrainId}`);

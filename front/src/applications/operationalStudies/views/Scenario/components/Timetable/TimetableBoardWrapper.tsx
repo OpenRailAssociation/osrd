@@ -10,12 +10,7 @@ import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { deletePacedTrains } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import { setFailure, setSuccess } from 'reducers/main';
-import type {
-  TimetableItem,
-  TimetableItemId,
-  TimetableItemToEditData,
-  TrainId,
-} from 'reducers/osrdconf/types';
+import type { TimetableItem, TimetableItemToEditData, TrainId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
@@ -30,14 +25,14 @@ type TimetableBoardWrapperProps = {
   setDisplayTimetableItemManagement: (mode: string) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   setTimetableItemToEditData: (timetableItemToEditData?: TimetableItemToEditData) => void;
-  removeTimetableItems: (timetableItemsToRemove: TimetableItemId[]) => void;
+  removeTimetableItems: (timetableItemsToRemove: number[]) => void;
   timetableItemToEditData?: TimetableItemToEditData;
   timetableItems?: TimetableItem[];
   timetableItemsWithDetails: TimetableItemWithDetails[];
   refreshNge: () => Promise<void>;
   projectingOnSimulatedPathException: boolean | undefined;
-  selectedTimetableItemIds: TimetableItemId[];
-  setSelectedTimetableItemIds: React.Dispatch<React.SetStateAction<TimetableItemId[]>>;
+  selectedTimetableItemIds: number[];
+  setSelectedTimetableItemIds: React.Dispatch<React.SetStateAction<number[]>>;
 };
 
 const TimetableBoardWrapper = ({
@@ -89,8 +84,8 @@ const TimetableBoardWrapper = ({
         return acc;
       },
       { selectedTrainScheduleIds: [], selectedPacedTrainIds: [] } as {
-        selectedTrainScheduleIds: TimetableItemId[];
-        selectedPacedTrainIds: TimetableItemId[];
+        selectedTrainScheduleIds: number[];
+        selectedPacedTrainIds: number[];
       }
     );
   }, [selectedTimetableItemIds]);
@@ -143,7 +138,7 @@ const TimetableBoardWrapper = ({
   // --- END BOARD WRAPPER TITLE MANAGEMENT ---------------------
 
   const removeAndUnselectTrains = useCallback(
-    (timetableItemIds: TimetableItemId[]) => {
+    (timetableItemIds: number[]) => {
       removeTimetableItems(timetableItemIds);
     },
     [removeTimetableItems, setSelectedTimetableItemIds]
@@ -158,7 +153,7 @@ const TimetableBoardWrapper = ({
     const isSelectedTimetableItemInSelection =
       currentSelectedTrainId !== undefined &&
       selectedTimetableItemIds.some((timetableItemId) =>
-        currentSelectedTrainId.includes(timetableItemId)
+        currentSelectedTrainId.includes(`${timetableItemId}`)
       );
 
     if (isSelectedTimetableItemInSelection) {

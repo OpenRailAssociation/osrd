@@ -4,11 +4,17 @@ import { useSelector } from 'react-redux';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TimetableItem, TrainId } from 'reducers/osrdconf/types';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
-import { extractPacedTrainIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
+import {
+  extractEditoastIdFromPacedTrainId,
+  extractPacedTrainIdFromOccurrenceId,
+  isOccurrenceId,
+} from 'utils/trainId';
 
 const extractTimetableItemId = (trainId?: TrainId) => {
   if (!trainId) return undefined;
-  return isOccurrenceId(trainId) ? extractPacedTrainIdFromOccurrenceId(trainId) : trainId;
+  return extractEditoastIdFromPacedTrainId(
+    isOccurrenceId(trainId) ? extractPacedTrainIdFromOccurrenceId(trainId) : trainId
+  );
 };
 
 const useSelectedTimetableItem = (): TimetableItem | undefined => {

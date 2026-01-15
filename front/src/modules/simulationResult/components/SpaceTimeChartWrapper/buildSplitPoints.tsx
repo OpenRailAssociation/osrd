@@ -15,8 +15,12 @@ import { keyBy, sortBy } from 'lodash';
 import type { SubCategory } from 'common/api/osrdEditoastApi';
 import { Spinner } from 'common/Loaders';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
-import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
-import { extractPacedTrainIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
+import type { TrainId } from 'reducers/osrdconf/types';
+import {
+  extractEditoastIdFromPacedTrainId,
+  extractPacedTrainIdFromOccurrenceId,
+  isOccurrenceId,
+} from 'utils/trainId';
 
 import getPathStyle from './helpers/getPathStyle';
 
@@ -48,20 +52,22 @@ export function buildSplitPoints(
   selectedTrainId?: TrainId,
   onCloseOccupancyLayer?: (waypointId: string) => void,
   handleWaypointClick?: (waypointId: string) => void,
-  hoveredPathId?: TimetableItemId
+  hoveredPathId?: number
 ): SplitPoint[] {
   if (!occupancyZonesLayers?.length) return [];
 
   const pathsById = keyBy(paths, ({ id }) => id);
 
   const countZonesByPacedTrainId = (zones: OccupancyZone[] = []) => {
-    const counts = new Map<TimetableItemId, Map<string, number>>();
+    const counts = new Map<number, Map<string, number>>();
     for (const zone of zones) {
       if (isOccurrenceId(zone.trainId)) {
-        const pacedTrainId = extractPacedTrainIdFromOccurrenceId(zone.trainId);
-        const pacedTrainIdCounts = counts.get(pacedTrainId) ?? new Map();
-        pacedTrainIdCounts.set(zone.trackId, (pacedTrainIdCounts.get(zone.trackId) ?? 0) + 1);
-        counts.set(pacedTrainId, pacedTrainIdCounts);
+        const trainId = extractEditoastIdFromPacedTrainId(
+          extractPacedTrainIdFromOccurrenceId(zone.trainId)
+        );
+        const trainIdCounts = counts.get(trainId) ?? new Map();
+        trainIdCounts.set(zone.trackId, (trainIdCounts.get(zone.trackId) ?? 0) + 1);
+        counts.set(trainId, trainIdCounts);
       }
     }
     return counts;
@@ -92,11 +98,17 @@ export function buildSplitPoints(
 
             const zonesCountByPacedTrainId = countZonesByPacedTrainId(baseZones);
 
-            const isHovered = hoveredPathId === zone.trainId;
+            if (!isOccurrenceId(zone.trainId)) throw new Error();
+
+            const isHovered =
+              hoveredPathId ===
+              extractEditoastIdFromPacedTrainId(extractPacedTrainIdFromOccurrenceId(zone.trainId));
             const isSelected = selectedTrainId === zone.trainId;
             let totalOccurrencesOnTrack = 0;
             if (isOccurrenceId(zone.trainId)) {
-              const pacedTrainId = extractPacedTrainIdFromOccurrenceId(zone.trainId);
+              const pacedTrainId = extractEditoastIdFromPacedTrainId(
+                extractPacedTrainIdFromOccurrenceId(zone.trainId)
+              );
               totalOccurrencesOnTrack =
                 zonesCountByPacedTrainId.get(pacedTrainId)?.get(zone.trackId) ?? 0;
             }

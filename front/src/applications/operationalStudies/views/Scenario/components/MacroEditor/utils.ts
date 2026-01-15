@@ -10,10 +10,9 @@ import {
 } from 'common/api/osrdEditoastApi';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import { isPacedTrain } from 'modules/timetableItem/helpers/pacedTrain';
-import type { TimetableItem, PacedTrainId } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration } from 'utils/duration';
-import { extractEditoastIdFromPacedTrainId } from 'utils/trainId';
 
 import {
   CUSTOM_TRAINRUN_TIME_CATEGORY,
@@ -89,19 +88,17 @@ export const deleteMacroNodeByNgeId = async (
 
 export const storeRoundTrip = async (
   dispatch: AppDispatch,
-  forwardId: PacedTrainId,
-  returnId?: PacedTrainId
+  forwardId: number,
+  returnId?: number
 ) => {
   let roundTrips;
   if (returnId) {
     roundTrips = {
-      round_trips: [
-        [extractEditoastIdFromPacedTrainId(forwardId), extractEditoastIdFromPacedTrainId(returnId)],
-      ],
+      round_trips: [[forwardId, returnId]],
     };
   } else {
     roundTrips = {
-      one_ways: [extractEditoastIdFromPacedTrainId(forwardId)],
+      one_ways: [forwardId],
     };
   }
   await dispatch(

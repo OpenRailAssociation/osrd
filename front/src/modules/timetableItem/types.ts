@@ -10,7 +10,7 @@ import type {
   SimulationSummaryResult,
   PacedTrainResponse,
 } from 'common/api/osrdEditoastApi';
-import type { OccurrenceId, PacedTrainId } from 'reducers/osrdconf/types';
+import type { OccurrenceId } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
 
 export type SuggestedOP = {
@@ -63,7 +63,7 @@ export type SimulationSummary =
 
 export type TimetableItemWithSummaries = Omit<
   PacedTrainResponse,
-  'id' | 'train_name' | 'rolling_stock_name' | 'timetable_id' | 'start_time' | 'paced'
+  'train_name' | 'rolling_stock_name' | 'timetable_id' | 'start_time' | 'paced'
 > & {
   name: string;
   startTime: Date;
@@ -82,7 +82,6 @@ export type InvalidReason =
 export type SimulatedException = PacedTrainException & { summary?: SimulationSummary };
 
 export type PacedTrainWithDetails = TimetableItemWithSummaries & {
-  id: PacedTrainId;
   paced?: {
     timeWindow: Duration;
     interval: Duration;
@@ -92,7 +91,7 @@ export type PacedTrainWithDetails = TimetableItemWithSummaries & {
 
 // tmp type
 export type PacedTrainWithPacedWithDetails = TimetableItemWithSummaries & {
-  id: PacedTrainId;
+  id: number;
   paced: {
     timeWindow: Duration;
     interval: Duration;

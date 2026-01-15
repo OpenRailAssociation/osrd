@@ -4,11 +4,7 @@ import cx from 'classnames';
 import { Virtualizer } from 'virtua';
 
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
-import type {
-  TimetableItemId,
-  TimetableItem,
-  TimetableItemToEditData,
-} from 'reducers/osrdconf/types';
+import type { TimetableItem, TimetableItemToEditData } from 'reducers/osrdconf/types';
 
 import CalendarTrainList from './CalendarTrainList';
 import TimetableToolbar from './TimetableToolbar';
@@ -24,13 +20,13 @@ type TimetableProps = {
   setDisplayTimetableItemManagement: (mode: string) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   setTimetableItemToEditData: (timetableItemToEditData?: TimetableItemToEditData) => void;
-  setSelectedTimetableItemIds: React.Dispatch<React.SetStateAction<TimetableItemId[]>>;
-  removeAndUnselectTrains: (trainIds: TimetableItemId[]) => void;
+  setSelectedTimetableItemIds: React.Dispatch<React.SetStateAction<number[]>>;
+  removeAndUnselectTrains: (trainIds: number[]) => void;
   handleDeleteTimetableItems: () => void;
   timetableItemToEditData?: TimetableItemToEditData;
   timetableItems?: TimetableItem[];
   timetableItemsWithDetails: TimetableItemWithDetails[];
-  selectedTimetableItemIds: TimetableItemId[];
+  selectedTimetableItemIds: number[];
   projectingOnSimulatedPathException: boolean | undefined;
 };
 
@@ -79,7 +75,7 @@ const Timetable = ({
   );
 
   const handleSelectTrainScheduleSet = useCallback(
-    (trainIds: TimetableItemId[]) => {
+    (trainIds: number[]) => {
       const allSelected = trainIds.every((id) => selectedTimetableItemIds.includes(id));
       if (allSelected) {
         // Deselect all

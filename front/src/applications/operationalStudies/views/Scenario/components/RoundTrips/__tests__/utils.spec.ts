@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import type { RoundTrips } from 'common/api/osrdEditoastApi';
-import type { PacedTrainId } from 'reducers/osrdconf/types';
 
 import type { PairingItem } from '../types';
 import { buildRoundTripsPayload } from '../utils';
@@ -13,7 +12,7 @@ describe('buildRoundTripsPayload', () => {
   };
 
   const basePairingItems: PairingItem = {
-    id: 'paced_1' as PacedTrainId,
+    id: 1,
     status: 'todo',
     name: 'Train 1',
     category: null,
@@ -30,11 +29,11 @@ describe('buildRoundTripsPayload', () => {
       basePairingItems,
       {
         ...basePairingItems,
-        id: 'paced_2' as PacedTrainId,
+        id: 2,
       },
       {
         ...basePairingItems,
-        id: 'paced_3' as PacedTrainId,
+        id: 3,
       },
     ];
 

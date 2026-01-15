@@ -14,15 +14,9 @@ import {
   fetchTimetableItem,
   storePacedTrain,
 } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
-import type {
-  TimetableItem,
-  TimetableItemId,
-  TrainScheduleId,
-  PacedTrainId,
-} from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration } from 'utils/duration';
-import { formatEditoastIdToPacedTrainId, isPacedTrainId } from 'utils/trainId';
 
 import { checkChangeGroups } from '../../ManageTimetableItem/helpers/buildPacedTrainException';
 import type {
@@ -458,26 +452,19 @@ const handleCreateTimetableItem = async (
     })
   ).unwrap();
 
-  const newPacedTrain: TimetableItem = {
-    ...newTimetableItems[0],
-    id: formatEditoastIdToPacedTrainId(newTimetableItems[0].id),
-  };
-  const newReturnPacedTrain: TimetableItem = {
-    ...newTimetableItems[1],
-    id: formatEditoastIdToPacedTrainId(newTimetableItems[1].id),
-  };
+  const newPacedTrain: TimetableItem = newTimetableItems[0];
+  const newReturnPacedTrain: TimetableItem = newTimetableItems[1];
+
   state.timetableItemIdByNgeId.set(trainrun.id, [newPacedTrain.id, newReturnPacedTrain.id]);
   addUpsertedTimetableItems([newPacedTrain, newReturnPacedTrain]);
 };
 
 const deleteTimetableItemById = async (
-  timetableItemId: TimetableItemId,
+  timetableItemId: number,
   dispatch: AppDispatch,
-  addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void
+  addDeletedTimetableItemIds: (timetableItemIds: number[]) => void
 ) => {
-  if (isPacedTrainId(timetableItemId)) await deletePacedTrains(dispatch, [timetableItemId]);
-  else throw new Error('TrainSchedules are not handled anymore.');
-
+  await deletePacedTrains(dispatch, [timetableItemId]);
   addDeletedTimetableItemIds([timetableItemId]);
 };
 
@@ -485,7 +472,7 @@ const handleDeleteTimetableItem = async (
   trainrunId: number,
   state: MacroEditorState,
   dispatch: AppDispatch,
-  addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void
+  addDeletedTimetableItemIds: (timetableItemIds: number[]) => void
 ) => {
   const timetableItemIds = state.timetableItemIdByNgeId.get(trainrunId);
   for (const timetableItemId of timetableItemIds ?? []) {
@@ -521,7 +508,7 @@ export const handleUpdateTimetableItem = async ({
   state: MacroEditorState;
   dispatch: AppDispatch;
   addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void;
-  addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void;
+  addDeletedTimetableItemIds: (timetableItemIds: number[]) => void;
 }) => {
   const timetableItemIds = state.timetableItemIdByNgeId.get(trainrun.id)!;
   const oldForwardTimetableItem = await fetchTimetableItem(timetableItemIds[0], dispatch);
@@ -560,7 +547,7 @@ export const handleUpdateTimetableItem = async ({
   let newForwardPacedTrain: PacedTrain | undefined;
   // Track the updated forward item to preserve its (potentially new) id when changing type
 
-  let updatedForwardTrainId: TrainScheduleId | PacedTrainId;
+  let updatedForwardTrainId: number;
   if (!paced) {
     const updatedTrainSchedule = await storePacedTrain(
       oldForwardTimetableItem.id,
@@ -605,7 +592,7 @@ export const handleUpdateTimetableItem = async ({
       await deleteTimetableItemById(timetableItemIds[1], dispatch, addDeletedTimetableItemIds);
     }
 
-    const forwardId: TimetableItemId = updatedForwardTrainId;
+    const forwardId = updatedForwardTrainId;
     state.timetableItemIdByNgeId.set(trainrun.id, [forwardId, null]);
     return;
   }
@@ -670,7 +657,7 @@ export const handleUpdateTimetableItem = async ({
   } else {
     // otherwise create return
     if (newForwardPacedTrain) {
-      if (!isPacedTrainId(oldForwardTimetableItem.id)) {
+      if (!oldForwardTimetableItem.paced) {
         throw new Error(
           'Conversion from one way to round trip and train schedule to paced train at the same time'
         );
@@ -682,7 +669,7 @@ export const handleUpdateTimetableItem = async ({
 
       newReturnTimetableItem = await createPacedTrain(dispatch, timetableId, returnPacedTrain);
     } else {
-      if (isPacedTrainId(oldForwardTimetableItem.id)) {
+      if (oldForwardTimetableItem.paced) {
         throw new Error(
           'Conversion from one way to round trip and paced train to train schedule at the same time'
         );
@@ -723,7 +710,7 @@ export const handleTrainrunOperation = async ({
   state: MacroEditorState;
   dispatch: AppDispatch;
   addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void;
-  addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void;
+  addDeletedTimetableItemIds: (timetableItemIds: number[]) => void;
 }) => {
   const trainrun = netzgrafikDto.trainruns.find((tr) => tr.id === trainrunId);
   switch (type) {
@@ -777,7 +764,7 @@ export const updateTrainrunsByNode = async ({
   infraId: number;
   timetableId: number;
   addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void;
-  addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void;
+  addDeletedTimetableItemIds: (timetableItemIds: number[]) => void;
   node: NodeDto;
 }) => {
   const trainrunsById = new Map<number, TrainrunDto>();

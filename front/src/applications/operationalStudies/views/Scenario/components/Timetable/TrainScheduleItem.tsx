@@ -14,7 +14,7 @@ import isMainCategory from 'modules/rollingStock/helpers/category';
 import { deletePacedTrains } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import { setFailure, setSuccess } from 'reducers/main';
-import type { TimetableItem, TimetableItemId, TrainId } from 'reducers/osrdconf/types';
+import type { TimetableItem, TrainId } from 'reducers/osrdconf/types';
 import {
   updateTrainIdUsedForProjection,
   updateSelectedTrainId,
@@ -24,7 +24,7 @@ import { useAppDispatch } from 'store';
 import { timeToLocaleStringRounded, useDateTimeLocale } from 'utils/date';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
-import { extractEditoastIdFromPacedTrainId, formatEditoastIdToPacedTrainId } from 'utils/trainId';
+import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
 import ArrivalTimeLoader from './ArrivalTimeLoader';
 import { TIMETABLE_ITEM_DELTA } from './consts';
@@ -36,12 +36,12 @@ type TrainScheduleItemProps = {
   train: TimetableItemWithDetails;
   isSelected: boolean;
   isModified?: boolean;
-  handleSelectTrain: (trainId: TimetableItemId) => void;
+  handleSelectTrain: (trainId: number) => void;
   upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void;
-  removeTrains: (trainIds: TimetableItemId[]) => void;
+  removeTrains: (trainIds: number[]) => void;
   projectionPathIsUsed: boolean;
   selectTrainToEdit: (train: TimetableItemWithDetails) => void;
-  setSelectedTimetableItemIds: React.Dispatch<React.SetStateAction<TimetableItemId[]>>;
+  setSelectedTimetableItemIds: React.Dispatch<React.SetStateAction<number[]>>;
   subCategories: SubCategory[];
   isSelectMode: boolean;
 };
@@ -88,7 +88,7 @@ const TrainScheduleItem = ({
       .catch((e) => {
         dispatch(setFailure(castErrorToFailure(e)));
         if (isSelected) {
-          dispatch(updateSelectedTrainId(train.id));
+          dispatch(updateSelectedTrainId(formatEditoastIdToPacedTrainId(train.id)));
         }
       });
   };
@@ -97,9 +97,8 @@ const TrainScheduleItem = ({
     const trainName = `${train.name} (${t('timetable.copy')})`;
 
     try {
-      const editoastTrainId = extractEditoastIdFromPacedTrainId(train.id);
       const trainDetail = await getPacedTrain({
-        id: editoastTrainId,
+        id: train.id,
       }).unwrap();
 
       const startTime = addDurationToDate(
@@ -117,11 +116,7 @@ const TrainScheduleItem = ({
         id: trainDetail.timetable_id,
         body: [newTrain],
       }).unwrap();
-      const formattedTrainScheduleResponse: TimetableItem = {
-        ...newTimetableItem,
-        id: formatEditoastIdToPacedTrainId(newTimetableItem.id),
-      };
-      upsertTrainSchedules([formattedTrainScheduleResponse]);
+      upsertTrainSchedules([newTimetableItem]);
       dispatch(
         setSuccess({
           title: t('timetable.trainAdded'),
@@ -134,7 +129,7 @@ const TrainScheduleItem = ({
   };
 
   const selectPathProjection = async () => {
-    dispatch(updateTrainIdUsedForProjection(train.id));
+    dispatch(updateTrainIdUsedForProjection(formatEditoastIdToPacedTrainId(train.id)));
     if (!summary?.isValid) dispatch(updateProjectionType('operationalPointProjection'));
   };
 
@@ -167,7 +162,7 @@ const TrainScheduleItem = ({
         data-testid="scenario-timetable-train-schedule-button"
         role="button"
         tabIndex={0}
-        onClick={() => changeSelectedTrainId(train.id)}
+        onClick={() => changeSelectedTrainId(formatEditoastIdToPacedTrainId(train.id))}
         className="w-full clickable-button"
       >
         <div

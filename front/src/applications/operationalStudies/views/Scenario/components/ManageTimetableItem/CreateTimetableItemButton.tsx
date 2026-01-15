@@ -11,7 +11,6 @@ import { getOperationalStudiesConf } from 'reducers/osrdconf/operationalStudiesC
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
-import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
 import checkCurrentConfig from './helpers/checkCurrentConfig';
 import {
@@ -61,12 +60,6 @@ const CreateTimetableItemButton = ({
         body: [payload],
       }).unwrap();
 
-      // We can only add one paced train at a time
-      const formattedNewPacedTrain: TimetableItem = {
-        ...newTimetableItem.at(0)!,
-        id: formatEditoastIdToPacedTrainId(newTimetableItem.at(0)!.id),
-      };
-
       dispatch(
         setSuccess({
           title: isPacedTrainMode ? t('pacedTrains.added') : t('trainAdded'),
@@ -76,7 +69,7 @@ const CreateTimetableItemButton = ({
       if (simulationConf.editingItemType === 'pacedTrain') {
         dispatch(clearAddedExceptionsList());
       }
-      upsertTimetableItems([formattedNewPacedTrain]);
+      upsertTimetableItems([newTimetableItem.at(0)!]);
     } catch (e) {
       dispatch(setFailure(castErrorToFailure(e)));
     } finally {

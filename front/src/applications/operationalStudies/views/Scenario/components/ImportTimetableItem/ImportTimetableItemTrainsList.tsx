@@ -25,7 +25,6 @@ import isMainCategory from 'modules/rollingStock/helpers/category';
 import { setFailure, setSuccess, setWarning } from 'reducers/main';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
-import { extractEditoastIdFromPacedTrainId } from 'utils/trainId';
 
 import generateTrainSchedulesPayloads from './generateTrainSchedulesPayloads';
 import findValidTrainNameKey from './helpers/findValidTrainNameKey';
@@ -169,11 +168,7 @@ const ImportTimetableItemTrainsList = ({
     formattedPacedTrains: TimetableItem[]
   ): Promise<void> => {
     if (roundTrips.paced_trains.length > 0) {
-      const payload = generateRoundTripsPayload(
-        roundTrips.paced_trains,
-        formattedPacedTrains,
-        extractEditoastIdFromPacedTrainId
-      );
+      const payload = generateRoundTripsPayload(roundTrips.paced_trains, formattedPacedTrains);
       await postPacedTrainRoundTrips(payload).unwrap();
     }
   };

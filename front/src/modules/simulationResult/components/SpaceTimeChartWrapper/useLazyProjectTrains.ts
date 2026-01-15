@@ -9,7 +9,7 @@ import TrainTrackProjectionLazyLoader from 'applications/operationalStudies/help
 import upsertNewProjectedTrains from 'applications/operationalStudies/helpers/upsertNewProjectedTrains';
 import { type OperationalPointPartReference, type CoreTrainPath } from 'common/api/osrdEditoastApi';
 import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
-import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 import { getProjectionType } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 
@@ -30,13 +30,13 @@ const useLazyProjectTrains = ({
 }: UseLazyProjectTrainsOptions) => {
   const dispatch = useAppDispatch();
   const loaderRef = useRef<TrainProjectionLazyLoaderAbstract>(null);
-  const timetableItemsByIdRef = useRef<Map<TimetableItemId, TimetableItem>>(new Map());
-  const [projectedTrainsById, setProjectedTrainsById] = useState<
-    Map<TimetableItemId, TrainSpaceTimeData>
-  >(new Map());
+  const timetableItemsByIdRef = useRef<Map<number, TimetableItem>>(new Map());
+  const [projectedTrainsById, setProjectedTrainsById] = useState<Map<number, TrainSpaceTimeData>>(
+    new Map()
+  );
   const projectionType = useSelector(getProjectionType);
 
-  const onProgress = useCallback((results: Map<TimetableItemId, ProjectionResult>) => {
+  const onProgress = useCallback((results: Map<number, ProjectionResult>) => {
     setProjectedTrainsById((prev) =>
       upsertNewProjectedTrains(prev, results, timetableItemsByIdRef.current)
     );
@@ -91,7 +91,7 @@ const useLazyProjectTrains = ({
     loaderRef.current?.projectTimetableItems(timetableItems.map(({ id }) => id));
   }, []);
 
-  const removeProjectedTimetableItems = useCallback((ids: TimetableItemId[]) => {
+  const removeProjectedTimetableItems = useCallback((ids: number[]) => {
     for (const id of ids) {
       timetableItemsByIdRef.current.delete(id);
     }
@@ -106,7 +106,7 @@ const useLazyProjectTrains = ({
   }, []);
 
   const updateProjectedTimetableItemDepartureTime = useCallback(
-    (id: TimetableItemId, newDeparture: Date) => {
+    (id: number, newDeparture: Date) => {
       setProjectedTrainsById((prev) => {
         const result = prev.get(id);
         if (!result) {

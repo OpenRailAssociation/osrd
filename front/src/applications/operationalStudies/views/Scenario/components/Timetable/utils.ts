@@ -11,9 +11,8 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import type { SimulationSummary, TimetableItemWithDetails } from 'modules/timetableItem/types';
-import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
-import { extractEditoastIdFromPacedTrainId } from 'utils/trainId';
 
 import { specialCodeDictionary, TRAIN_MAIN_CATEGORY_CLASS } from './consts';
 
@@ -46,15 +45,14 @@ export const formatTrainDuration = (duration: Duration) =>
 
 const formatTimetableItemsForExport = (
   timetableItems: TimetableItem[],
-  selectedTimeTableIdsFromClick: TimetableItemId[]
+  selectedTimeTableIdsFromClick: number[]
 ) => {
   const pacedTrainIndexByEditoastId = new Map<number, number>();
 
   const pacedTrains = timetableItems
     .filter(({ id }) => selectedTimeTableIdsFromClick.includes(id))
     .reduce<PacedTrain[]>((acc, timetableItem) => {
-      const pacedTrainEditoastId = extractEditoastIdFromPacedTrainId(timetableItem.id);
-      pacedTrainIndexByEditoastId.set(pacedTrainEditoastId, acc.length);
+      pacedTrainIndexByEditoastId.set(timetableItem.id, acc.length);
       acc.push(omit(timetableItem, ['id']));
       return acc;
     }, []);
@@ -66,7 +64,7 @@ const formatTimetableItemsForExport = (
 };
 
 export const copyTimetableItemsToClipboard = async (
-  selectedTimeTableIdsFromClick: TimetableItemId[],
+  selectedTimeTableIdsFromClick: number[],
   timetableItems: TimetableItem[]
 ) => {
   const { formattedTimetableItems } = formatTimetableItemsForExport(
@@ -128,7 +126,7 @@ type TimetableExportPayload = {
 
 export const buildTimetableExportPayload = (
   timetableItems: TimetableItem[],
-  selectedTimeTableIdsFromClick: TimetableItemId[],
+  selectedTimeTableIdsFromClick: number[],
   pacedTrainRoundTrips?: RoundTrips
 ): TimetableExportPayload => {
   const { formattedTimetableItems, pacedTrainIndexByEditoastId } = formatTimetableItemsForExport(
@@ -149,7 +147,7 @@ export const buildTimetableExportPayload = (
 };
 
 export const exportTimetableItems = (
-  selectedTimeTableIdsFromClick: TimetableItemId[],
+  selectedTimeTableIdsFromClick: number[],
   timetableItems: TimetableItem[],
   pacedTrainRoundTrips?: RoundTrips
 ) => {

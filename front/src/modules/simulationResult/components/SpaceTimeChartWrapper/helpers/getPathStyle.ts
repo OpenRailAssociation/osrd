@@ -11,8 +11,13 @@ import {
   isPacedTrainWithDetails,
 } from 'modules/timetableItem/helpers/pacedTrain';
 import type { SimulatedException, TimetableItemWithDetails } from 'modules/timetableItem/types';
-import type { TrainId } from 'reducers/osrdconf/types';
-import { extractPacedTrainIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
+import type { PacedTrainId, TrainId } from 'reducers/osrdconf/types';
+import {
+  extractEditoastIdFromPacedTrainId,
+  extractPacedTrainIdFromOccurrenceId,
+  isOccurrenceId,
+  isPacedTrainId,
+} from 'utils/trainId';
 
 const getPathStyle = (
   hovered: HoveredItem | null,
@@ -31,9 +36,14 @@ const getPathStyle = (
     backgroundColor?: string;
   };
 } => {
-  const timetableItemId = isOccurrenceId(train.id)
-    ? extractPacedTrainIdFromOccurrenceId(train.id)
-    : train.id;
+  let pacedTrainId: PacedTrainId;
+  if (isOccurrenceId(train.id)) {
+    pacedTrainId = extractPacedTrainIdFromOccurrenceId(train.id);
+  } else {
+    if (!isPacedTrainId(train.id)) throw new Error();
+    pacedTrainId = train.id;
+  }
+  const timetableItemId = extractEditoastIdFromPacedTrainId(pacedTrainId);
 
   const item = timetableItemsWithDetails?.find((t) => t.id === timetableItemId);
 
@@ -67,7 +77,8 @@ const getPathStyle = (
       train.id === hoveredTrainId ||
       // if the hovered train is an occurrence from the same paced train, apply the hovered style
       (isOccurrenceId(hoveredTrainId) &&
-        timetableItemId === extractPacedTrainIdFromOccurrenceId(hoveredTrainId))
+        timetableItemId ===
+          extractEditoastIdFromPacedTrainId(extractPacedTrainIdFromOccurrenceId(hoveredTrainId)))
     ) {
       return { color: colors.hovered, level: 1 };
     }

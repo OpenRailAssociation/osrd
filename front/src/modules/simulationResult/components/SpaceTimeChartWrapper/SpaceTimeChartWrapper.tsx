@@ -36,13 +36,7 @@ import type {
 } from 'modules/simulationResult/types';
 import { isPacedTrainWithDetails } from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
-import type {
-  OccurrenceId,
-  PacedTrainId,
-  TimetableItemId,
-  TrainId,
-  TrainScheduleId,
-} from 'reducers/osrdconf/types';
+import type { TrainId } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import {
   isTrainId,
@@ -53,6 +47,7 @@ import {
   extractOccurrenceIndexFromOccurrenceId,
   extractExceptionIdFromOccurrenceId,
   isAddedExceptionId,
+  extractEditoastIdFromPacedTrainId,
 } from 'utils/trainId';
 
 import { buildSplitPoints } from './buildSplitPoints';
@@ -99,7 +94,7 @@ type SpaceTimeChartWrapperBaseProps = {
   }) => Promise<void>;
   height?: number;
   onTrainClick?: (trainId: TrainId) => void;
-  selectedProjectionId: TrainScheduleId | PacedTrainId | OccurrenceId;
+  selectedProjectionId: TrainId;
   timetableItemsWithDetails?: TimetableItemWithDetails[];
   pathfindingHasFailed?: boolean;
 };
@@ -148,9 +143,11 @@ const SpaceTimeChartWrapper = ({
   const [draggingState, setDraggingState] = useState<DraggingState>();
 
   const isTimetableItemValid = useMemo(() => {
-    const selectedItemId = isOccurrenceId(selectedProjectionId)
-      ? extractPacedTrainIdFromOccurrenceId(selectedProjectionId)
-      : selectedProjectionId;
+    const selectedItemId = extractEditoastIdFromPacedTrainId(
+      isOccurrenceId(selectedProjectionId)
+        ? extractPacedTrainIdFromOccurrenceId(selectedProjectionId)
+        : selectedProjectionId
+    );
 
     const timetableItemUsedForProjectionWithDetails = timetableItemsWithDetails?.find(
       (item) => item.id === selectedItemId
@@ -219,7 +216,7 @@ const SpaceTimeChartWrapper = ({
 
   const hoveredPathId = useMemo(() => {
     const element = hoveredItem?.element;
-    return element && 'pathId' in element ? (element.pathId as TimetableItemId) : undefined;
+    return element && 'pathId' in element ? (element.pathId as number) : undefined;
   }, [hoveredItem]);
 
   const splitPoints = useMemo<SplitPoint[]>(

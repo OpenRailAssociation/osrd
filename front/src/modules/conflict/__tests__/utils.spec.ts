@@ -10,12 +10,12 @@ describe('addTrainNamesToConflicts', () => {
   it('combines schedule and occurrence names', () => {
     const trains: TimetableItem[] = [
       {
-        id: pacedId(10),
+        id: 10,
         train_name: 'TS 1234',
         category: null,
       } as TimetableItem,
       {
-        id: pacedId(20),
+        id: 20,
         train_name: 'PT 4567',
         category: null,
         paced: { exceptions: [{ key: 'abc', train_name: { value: 'PT 5678/9' } }] },

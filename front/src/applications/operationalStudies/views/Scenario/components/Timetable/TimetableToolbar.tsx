@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
-import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 
 import FilterPanel from './FilterPanel';
 import SelectionToolBar from './TimetableSelectionToolbar';
@@ -30,10 +30,10 @@ type TimetableToolbarProps = {
   timetableFilters: TimetableFilters;
   timetableItems: TimetableItem[];
   filteredTimetableItems: TimetableItemWithDetails[];
-  selectedTimetableItemIds: TimetableItemId[];
+  selectedTimetableItemIds: number[];
   showTrainDetails: boolean;
   isSelectMode: boolean;
-  setSelectedTimetableItemIds: (selectedTimetableItemIds: TimetableItemId[]) => void;
+  setSelectedTimetableItemIds: (selectedTimetableItemIds: number[]) => void;
   setShowTrainDetails: (show: boolean) => void;
   setIsSelectMode: (show: boolean) => void;
   setDisplayTimetableItemManagement: (mode: string) => void;

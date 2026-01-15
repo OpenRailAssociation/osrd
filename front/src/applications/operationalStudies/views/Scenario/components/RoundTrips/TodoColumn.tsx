@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { checkRoundTripCompatible } from 'applications/operationalStudies/utils';
 import type { SubCategory } from 'common/api/osrdEditoastApi';
 import { isPacedTrainBase } from 'modules/timetableItem/helpers/pacedTrain';
-import type { TimetableItemId, TimetableItemWithPathOps } from 'reducers/osrdconf/types';
+import type { TimetableItemWithPathOps } from 'reducers/osrdconf/types';
 
 import RoundTripsModalCard from './RoundTripsModalCard';
 import RoundTripsModalPairingColumn from './RoundTripsModalPairingColumn';
@@ -15,10 +15,10 @@ import type { PairingItem } from './types';
 type TodoColumnProps = {
   setPairingItems: React.Dispatch<React.SetStateAction<PairingItem[]>>;
   pairingItems: PairingItem[];
-  itemIdToPair?: TimetableItemId;
-  setItemIdToPair: (itemToPair?: TimetableItemId) => void;
-  timetableItemsWithOpsById: Map<TimetableItemId, TimetableItemWithPathOps>;
-  pairingItemsById: Map<TimetableItemId, PairingItem>;
+  itemIdToPair?: number;
+  setItemIdToPair: (itemToPair?: number) => void;
+  timetableItemsWithOpsById: Map<number, TimetableItemWithPathOps>;
+  pairingItemsById: Map<number, PairingItem>;
   subCategories: SubCategory[];
 };
 
@@ -77,7 +77,7 @@ const TodoColumn = ({
     ]);
   };
 
-  const openPairingMode = (itemId: TimetableItemId) => {
+  const openPairingMode = (itemId: number) => {
     setItemIdToPair(itemId);
   };
 
