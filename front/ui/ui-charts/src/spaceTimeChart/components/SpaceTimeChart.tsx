@@ -159,7 +159,7 @@ export const SpaceTimeChart = (props: SpaceTimeChartProps) => {
       timeOrigin,
       timeScale,
       timePixelOffset,
-      spacePixelOffset,
+      yPixelOffset: spacePixelOffset,
       timeAxis,
       spaceAxis,
       swapAxis: !!swapAxis,

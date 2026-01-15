@@ -19,7 +19,7 @@ const TimeGraduations = () => {
         timeScale,
         timeOrigin,
         timePixelOffset,
-        spacePixelOffset,
+        yPixelOffset,
         getTimePixel,
         getTime,
         swapAxis,
@@ -55,7 +55,7 @@ const TimeGraduations = () => {
         ctx.globalAlpha = styles.opacity ?? 1;
         ctx.setLineDash(styles.dashArray ?? []);
         if (styles.dashArray) {
-          ctx.lineDashOffset = -spacePixelOffset;
+          ctx.lineDashOffset = -yPixelOffset;
         }
 
         const timePixel = getCrispLineCoordinate(getTimePixel(time), ctx.lineWidth);
