@@ -519,7 +519,7 @@ const SendToRailwayManagerModal = ({
                   narrow: true,
                 }}
                 selectableSlot={selectableSlot}
-                value={realDepartureTime}
+                value={new Date(substituteTrain.date)}
                 onDateChange={(date) => {
                   if (date) {
                     setSubstituteTrain({ ...substituteTrain, date: date.toISOString() });
