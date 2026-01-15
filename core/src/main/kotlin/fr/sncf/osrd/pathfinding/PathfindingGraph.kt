@@ -7,8 +7,8 @@ import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockInfra
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
-import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.graph.extendLookaheadUntil
+import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorers
 import java.util.ArrayList
@@ -62,7 +62,7 @@ fun getStartLocations(
 ): Collection<EdgeLocation<PathfindingEdge>> {
     val res = mutableListOf<EdgeLocation<PathfindingEdge>>()
     val firstStep = waypoints[0]
-    val steps = waypoints.map { STDCMStep(it) }
+    val steps = waypoints.map { ExplorerStep(it) }
     for (location in firstStep) {
         val infraExplorers =
             initInfraExplorers(

@@ -15,7 +15,6 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.utils.getRouteBlocks
 import fr.sncf.osrd.sim_infra.utils.routesOnBlock
-import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.utils.AppendOnlyLinkedList
 import fr.sncf.osrd.utils.AppendOnlyMap
 import fr.sncf.osrd.utils.appendOnlyLinkedListOf
@@ -154,6 +153,13 @@ interface EdgeIdentifier {
     override fun hashCode(): Int
 }
 
+data class ExplorerStep(
+    val locations: Collection<BlockLocation>,
+    val duration: Double? = null,
+    val stop: Boolean = false,
+    val plannedTimingData: PlannedTimingData? = null,
+)
+
 /**
  * Init all InfraExplorers starting at the given location. The last of `stops` are used to identify
  * when the incremental path is complete. `constraints` are used to determine if a block can be
@@ -163,7 +169,7 @@ fun initInfraExplorers(
     rawInfra: RawInfra,
     blockInfra: BlockInfra,
     location: BlockLocation,
-    steps: List<STDCMStep> = listOf(),
+    steps: List<ExplorerStep> = listOf(),
     constraints: List<PathfindingConstraint<Block>> = listOf(),
 ): Collection<InfraExplorer> {
     val infraExplorers = mutableListOf<InfraExplorer>()

@@ -4,7 +4,6 @@ import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.pathfinding.BlockLocation
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
-import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.utils.AppendOnlyLinkedList
 import fr.sncf.osrd.utils.appendOnlyLinkedListOf
 import fr.sncf.osrd.utils.dropSeq
@@ -22,7 +21,7 @@ import fr.sncf.osrd.utils.units.Offset
  * Unless specified otherwise, fields and methods refer to the whole path (including lookahead).
  */
 class StepTracker(
-    private val inputSteps: List<STDCMStep>,
+    private val inputSteps: List<ExplorerStep>,
     private val seenSteps: AppendOnlyLinkedList<LocatedStep> = appendOnlyLinkedListOf(),
 ) {
     private val nSeenSteps: Int
@@ -119,7 +118,7 @@ class StepTracker(
 data class LocatedStep(
     val travelledPathOffset: Offset<TrainPath>,
     val location: BlockLocation,
-    val originalStep: STDCMStep,
+    val originalStep: ExplorerStep,
     val isPlanned: Boolean = true, // Set to false for overtakes (when implemented)
 ) {
     init {

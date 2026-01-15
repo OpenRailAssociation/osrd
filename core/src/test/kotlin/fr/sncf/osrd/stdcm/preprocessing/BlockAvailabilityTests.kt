@@ -8,9 +8,9 @@ import fr.sncf.osrd.pathfinding.BlockLocation
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.DirDetectorId
-import fr.sncf.osrd.stdcm.PlannedTimingData
-import fr.sncf.osrd.stdcm.STDCMStep
+import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
+import fr.sncf.osrd.stdcm.infra_exploration.PlannedTimingData
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.implementation.BlockAvailability
 import fr.sncf.osrd.stdcm.preprocessing.implementation.makeBlockAvailability
@@ -105,7 +105,7 @@ class BlockAvailabilityTests {
     private fun makeExplorer(
         nBlocksInPath: Int,
         nBlocksSimulated: Int,
-        originalSteps: List<STDCMStep> = listOf(),
+        originalSteps: List<ExplorerStep> = listOf(),
         rollingStock: RollingStock = REALISTIC_FAST_TRAIN,
         startOffset: Offset<Block> = Offset(0.meters),
     ): InfraExplorerWithEnvelope {
@@ -617,7 +617,7 @@ class BlockAvailabilityTests {
         val timeAtZoneEnd = explorer.interpolateDepartureFromClamp(explorer.getSimulatedLength())
         val steps =
             listOf(
-                STDCMStep(
+                ExplorerStep(
                     listOf(BlockLocation(blocks[0], plannedStepOffset)),
                     null,
                     false,
@@ -644,13 +644,13 @@ class BlockAvailabilityTests {
         val outOfBoundsStepOffset = Offset<Block>(100.meters)
         val steps =
             listOf(
-                STDCMStep(
+                ExplorerStep(
                     listOf(BlockLocation(blocks[0], outOfBoundsStepOffset)),
                     null,
                     false,
                     PlannedTimingData(0.seconds, 0.seconds, 0.seconds),
                 ),
-                STDCMStep(
+                ExplorerStep(
                     listOf(BlockLocation(blocks[1], Offset(0.meters))),
                     null,
                     false,
@@ -681,7 +681,7 @@ class BlockAvailabilityTests {
         val stepMaximumTolerance = 60.0
         val steps =
             listOf(
-                STDCMStep(
+                ExplorerStep(
                     listOf(BlockLocation(blocks[0], plannedStepOffset)),
                     null,
                     false,
@@ -730,7 +730,7 @@ class BlockAvailabilityTests {
         val plannedStepOffset = Offset<Block>(100.meters)
         val steps =
             listOf(
-                STDCMStep(
+                ExplorerStep(
                     listOf(BlockLocation(blocks[0], plannedStepOffset)),
                     null,
                     false,
@@ -766,7 +766,7 @@ class BlockAvailabilityTests {
         val plannedStepOffset = Offset<Block>(100.meters)
         val steps =
             listOf(
-                STDCMStep(
+                ExplorerStep(
                     listOf(BlockLocation(blocks[0], plannedStepOffset)),
                     null,
                     false,
@@ -804,7 +804,7 @@ class BlockAvailabilityTests {
         val minDelay = 60.0
         val steps =
             listOf(
-                STDCMStep(
+                ExplorerStep(
                     listOf(BlockLocation(blocks[0], plannedStepOffset)),
                     null,
                     false,
@@ -838,7 +838,7 @@ class BlockAvailabilityTests {
         val steps =
             listOf(
                 // We need to add delay = timeAtZoneEnd + internal margin
-                STDCMStep(
+                ExplorerStep(
                     listOf(BlockLocation(blocks[0], plannedStepOffset)),
                     null,
                     false,
@@ -849,7 +849,7 @@ class BlockAvailabilityTests {
                     ),
                 ),
                 // If we add delay = timeAtZoneEnd + internal margin, this step is not respected
-                STDCMStep(
+                ExplorerStep(
                     listOf(BlockLocation(blocks[0], secondPlannedStepOffset)),
                     null,
                     false,
@@ -887,7 +887,7 @@ class BlockAvailabilityTests {
         val timeAtZoneEnd = explorer.interpolateDepartureFromClamp(explorer.getSimulatedLength())
         val steps =
             listOf(
-                STDCMStep(
+                ExplorerStep(
                     listOf(BlockLocation(blocks[0], Offset(100.meters))),
                     null,
                     false,
