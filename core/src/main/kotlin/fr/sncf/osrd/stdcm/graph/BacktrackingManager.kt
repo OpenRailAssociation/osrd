@@ -55,6 +55,7 @@ class BacktrackingManager(private val graph: STDCMGraph) {
         val oldEnvelope =
             graph.stdcmSimulations.simulateBlock(
                 graph.rawInfra,
+                graph.blockInfra,
                 graph.rollingStock,
                 graph.comfort,
                 graph.timeStep,

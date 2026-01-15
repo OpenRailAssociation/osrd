@@ -87,6 +87,7 @@ internal constructor(
             envelope =
                 graph.stdcmSimulations.simulateBlock(
                     graph.rawInfra,
+                    graph.blockInfra,
                     graph.rollingStock,
                     graph.comfort,
                     graph.timeStep,

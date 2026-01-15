@@ -16,7 +16,6 @@ import fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeMaintain
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
-import kotlin.math.max
 import kotlin.math.min
 
 /**
@@ -142,9 +141,8 @@ private fun accelerate(
         val err = OSRDError(ErrorType.ImpossibleSimulationError)
         val offset = cursor.getPosition()
         err.context.put("offset", String.format("%.0fm", offset))
-        val headPosition = min(max(0.0, offset), context.path.length)
-        val tailPosition =
-            min(max(0.0, headPosition - context.rollingStock.length), context.path.length)
+        val headPosition = offset
+        val tailPosition = headPosition - context.rollingStock.length
         val grade = context.path.getAverageGrade(headPosition, tailPosition)
         err.context.put("grade", String.format("%.2fm/km", grade))
         val map = context.tractiveEffortCurveMap[cursor.getPosition()]!!

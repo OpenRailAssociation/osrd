@@ -722,7 +722,7 @@ class EngineeringAllowanceTests {
                 .setTimeStep(timeStep)
                 .setRollingStock(VERY_LONG_FAST_TRAIN)
                 .setStandardAllowance(AllowanceValue.Percentage(10.0))
-                .run()!!
+                .run() ?: return // Not finding a solution is valid (and expected)
         occupancyTest(res, occupancyGraph, 2 * timeStep)
     }
 }

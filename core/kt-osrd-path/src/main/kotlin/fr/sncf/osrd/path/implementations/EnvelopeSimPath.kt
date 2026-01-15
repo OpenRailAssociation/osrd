@@ -10,6 +10,8 @@ import fr.sncf.osrd.utils.RangeMapUtils
 import fr.sncf.osrd.utils.arePositionsEqual
 import fr.sncf.osrd.utils.entries
 import java.util.Arrays
+import kotlin.math.max
+import kotlin.math.min
 
 class EnvelopeSimPath(
     length: Double,
@@ -104,12 +106,16 @@ class EnvelopeSimPath(
     }
 
     override fun getAverageGrade(begin: Double, end: Double): Double {
+        val begin = min(max(begin, 0.0), length)
+        val end = min(max(end, 0.0), length)
         if (begin == end) return getCumGrade(begin)
         return (getCumGrade(end) - getCumGrade(begin)) / (end - begin)
     }
 
     override fun getMinGrade(begin: Double, end: Double): Double {
         // TODO: Optimise method by adding in a cache.
+        val begin = min(max(begin, 0.0), length)
+        val end = min(max(end, 0.0), length)
         val indexBegin = getIndexBeforePos(begin)
         val indexEnd = getIndexBeforePos(end)
         // TODO: Remove if we extend path properties until last SvL > path.length.
