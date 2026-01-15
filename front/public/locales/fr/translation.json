@@ -39,7 +39,7 @@
           "name": "Position de l'aiguille invalide"
         },
         "invalid_reference": {
-          "description": "L’object « {{obj_id}} » référence l’objet « {{reference.obj_id}} » qui n’existe pas",
+          "description": "L’objet « {{obj_id}} » référence l’objet « {{reference.obj_id}} » qui n’existe pas",
           "name": "Référence invalide"
         },
         "invalid_route": {
