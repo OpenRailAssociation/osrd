@@ -8,6 +8,8 @@ import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.stdcm.StandardAllowanceTests.Companion.checkAllowanceResult
 import fr.sncf.osrd.stdcm.StandardAllowanceTests.Companion.runWithAndWithoutAllowance
+import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
+import fr.sncf.osrd.stdcm.infra_exploration.PlannedTimingData
 import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.DummyInfra
@@ -36,12 +38,16 @@ class StopTests {
         val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .addStep(STDCMStep(setOf(BlockLocation(firstBlock, Offset(0.meters)))))
+                .addStep(ExplorerStep(setOf(BlockLocation(firstBlock, Offset(0.meters)))))
                 .addStep(
-                    STDCMStep(setOf(BlockLocation(secondBlock, Offset(50.meters))), 10000.0, true)
+                    ExplorerStep(
+                        setOf(BlockLocation(secondBlock, Offset(50.meters))),
+                        10000.0,
+                        true,
+                    )
                 )
                 .addStep(
-                    STDCMStep(setOf(BlockLocation(secondBlock, Offset(100.meters))), 0.0, true)
+                    ExplorerStep(setOf(BlockLocation(secondBlock, Offset(100.meters))), 0.0, true)
                 )
                 .run()!!
         val expectedOffset = 150.0
@@ -75,17 +81,17 @@ class StopTests {
         val builder =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .addStep(STDCMStep(setOf(BlockLocation(firstBlock, Offset(0.meters)))))
-                .addStep(STDCMStep(setOf(BlockLocation(firstBlock, Offset(1.meters)))))
-                .addStep(STDCMStep(setOf(BlockLocation(firstBlock, Offset(2.meters)))))
-                .addStep(STDCMStep(setOf(BlockLocation(firstBlock, Offset(3.meters)))))
+                .addStep(ExplorerStep(setOf(BlockLocation(firstBlock, Offset(0.meters)))))
+                .addStep(ExplorerStep(setOf(BlockLocation(firstBlock, Offset(1.meters)))))
+                .addStep(ExplorerStep(setOf(BlockLocation(firstBlock, Offset(2.meters)))))
+                .addStep(ExplorerStep(setOf(BlockLocation(firstBlock, Offset(3.meters)))))
         for (offset in stopsOffsets) builder.addStep(
-            STDCMStep(setOf(BlockLocation(secondBlock, offset)), 1.0, true)
+            ExplorerStep(setOf(BlockLocation(secondBlock, offset)), 1.0, true)
         )
         val res =
             builder
                 .addStep(
-                    STDCMStep(setOf(BlockLocation(secondBlock, Offset(100.meters))), 0.0, true)
+                    ExplorerStep(setOf(BlockLocation(secondBlock, Offset(100.meters))), 0.0, true)
                 )
                 .run()!!
 
@@ -107,12 +113,12 @@ class StopTests {
         val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .addStep(STDCMStep(setOf(BlockLocation(firstBlock, Offset(0.meters)))))
+                .addStep(ExplorerStep(setOf(BlockLocation(firstBlock, Offset(0.meters)))))
                 .addStep(
-                    STDCMStep(setOf(BlockLocation(secondBlock, Offset(0.meters))), 10000.0, true)
+                    ExplorerStep(setOf(BlockLocation(secondBlock, Offset(0.meters))), 10000.0, true)
                 )
                 .addStep(
-                    STDCMStep(setOf(BlockLocation(secondBlock, Offset(100.meters))), 0.0, true)
+                    ExplorerStep(setOf(BlockLocation(secondBlock, Offset(100.meters))), 0.0, true)
                 )
                 .run()!!
         checkStop(res, listOf(TrainStop(100.0, 10000.0, SHORT_SLIP_STOP)))
@@ -130,12 +136,16 @@ class StopTests {
         val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .addStep(STDCMStep(setOf(BlockLocation(firstBlock, Offset(0.meters)))))
+                .addStep(ExplorerStep(setOf(BlockLocation(firstBlock, Offset(0.meters)))))
                 .addStep(
-                    STDCMStep(setOf(BlockLocation(firstBlock, Offset(100.meters))), 10000.0, true)
+                    ExplorerStep(
+                        setOf(BlockLocation(firstBlock, Offset(100.meters))),
+                        10000.0,
+                        true,
+                    )
                 )
                 .addStep(
-                    STDCMStep(setOf(BlockLocation(secondBlock, Offset(100.meters))), 0.0, true)
+                    ExplorerStep(setOf(BlockLocation(secondBlock, Offset(100.meters))), 0.0, true)
                 )
                 .run()!!
         checkStop(res, listOf(TrainStop(100.0, 10000.0, SHORT_SLIP_STOP)))
@@ -168,10 +178,12 @@ class StopTests {
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartTime(100.0)
-                .addStep(STDCMStep(setOf(BlockLocation(blocksDirectPath[0], Offset(0.meters)))))
-                .addStep(STDCMStep(setOf(BlockLocation(detour[1], Offset(1000.meters))), 0.0, stop))
+                .addStep(ExplorerStep(setOf(BlockLocation(blocksDirectPath[0], Offset(0.meters)))))
                 .addStep(
-                    STDCMStep(
+                    ExplorerStep(setOf(BlockLocation(detour[1], Offset(1000.meters))), 0.0, stop)
+                )
+                .addStep(
+                    ExplorerStep(
                         setOf(BlockLocation(blocksDirectPath[3], Offset(0.meters))),
                         0.0,
                         true,
@@ -204,12 +216,16 @@ class StopTests {
         val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .addStep(STDCMStep(setOf(BlockLocation(firstBlock, Offset(0.meters)))))
+                .addStep(ExplorerStep(setOf(BlockLocation(firstBlock, Offset(0.meters)))))
                 .addStep(
-                    STDCMStep(setOf(BlockLocation(firstBlock, Offset(10.meters))), 100000.0, true)
+                    ExplorerStep(
+                        setOf(BlockLocation(firstBlock, Offset(10.meters))),
+                        100000.0,
+                        true,
+                    )
                 )
                 .addStep(
-                    STDCMStep(setOf(BlockLocation(secondBlock, Offset(100.meters))), 0.0, true)
+                    ExplorerStep(setOf(BlockLocation(secondBlock, Offset(100.meters))), 0.0, true)
                 )
                 .setUnavailableTimes(unavailableTimes)
                 .run()
@@ -239,11 +255,11 @@ class StopTests {
         val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .addStep(STDCMStep(setOf(BlockLocation(blocks[0], Offset(0.meters)))))
+                .addStep(ExplorerStep(setOf(BlockLocation(blocks[0], Offset(0.meters)))))
                 .addStep(
-                    STDCMStep(setOf(BlockLocation(blocks[0], Offset(50.meters))), 10000.0, true)
+                    ExplorerStep(setOf(BlockLocation(blocks[0], Offset(50.meters))), 10000.0, true)
                 )
-                .addStep(STDCMStep(setOf(BlockLocation(blocks[2], Offset(1.meters))), 0.0, true))
+                .addStep(ExplorerStep(setOf(BlockLocation(blocks[2], Offset(1.meters))), 0.0, true))
                 .setUnavailableTimes(occupancy)
                 .run()!!
         checkStop(res, listOf(TrainStop(50.0, 10000.0, SHORT_SLIP_STOP)))
@@ -293,12 +309,16 @@ class StopTests {
                     .setUnavailableTimes(occupancy)
                     .setTimeStep(timeStep)
                     .setStandardAllowance(allowance)
-                    .addStep(STDCMStep(setOf(BlockLocation(blocks[0], Offset(0.meters)))))
+                    .addStep(ExplorerStep(setOf(BlockLocation(blocks[0], Offset(0.meters)))))
                     .addStep(
-                        STDCMStep(setOf(BlockLocation(blocks[1], Offset(50.meters))), 1000.0, true)
+                        ExplorerStep(
+                            setOf(BlockLocation(blocks[1], Offset(50.meters))),
+                            1000.0,
+                            true,
+                        )
                     )
                     .addStep(
-                        STDCMStep(setOf(BlockLocation(blocks[3], Offset(1.meters))), 0.0, true)
+                        ExplorerStep(setOf(BlockLocation(blocks[3], Offset(1.meters))), 0.0, true)
                     )
             )
         val expectedStops = listOf(TrainStop(51.0, 1000.0, SHORT_SLIP_STOP))
@@ -364,12 +384,16 @@ class StopTests {
                     .setUnavailableTimes(occupancy)
                     .setTimeStep(timeStep)
                     .setStandardAllowance(allowance)
-                    .addStep(STDCMStep(setOf(BlockLocation(blocks[0], Offset(0.meters)))))
+                    .addStep(ExplorerStep(setOf(BlockLocation(blocks[0], Offset(0.meters)))))
                     .addStep(
-                        STDCMStep(setOf(BlockLocation(blocks[1], Offset(50.meters))), 1000.0, true)
+                        ExplorerStep(
+                            setOf(BlockLocation(blocks[1], Offset(50.meters))),
+                            1000.0,
+                            true,
+                        )
                     )
                     .addStep(
-                        STDCMStep(setOf(BlockLocation(blocks[3], Offset(1.meters))), 0.0, true)
+                        ExplorerStep(setOf(BlockLocation(blocks[3], Offset(1.meters))), 0.0, true)
                     )
             )
         val expectedStops = listOf(TrainStop(51.0, 1000.0, SHORT_SLIP_STOP))
@@ -419,11 +443,11 @@ class StopTests {
         val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .addStep(STDCMStep(setOf(BlockLocation(blocks[0], Offset(0.meters)))))
+                .addStep(ExplorerStep(setOf(BlockLocation(blocks[0], Offset(0.meters)))))
                 .addStep(
-                    STDCMStep(setOf(BlockLocation(blocks[1], Offset(50.meters))), 10_000.0, true)
+                    ExplorerStep(setOf(BlockLocation(blocks[1], Offset(50.meters))), 10_000.0, true)
                 )
-                .addStep(STDCMStep(setOf(BlockLocation(blocks[2], Offset(1.meters))), 0.0, true))
+                .addStep(ExplorerStep(setOf(BlockLocation(blocks[2], Offset(1.meters))), 0.0, true))
                 .setUnavailableTimes(occupancy)
                 .setMaxDepartureDelay(0.0) // Prevents the train from starting after the conflict
                 .run()
@@ -464,9 +488,11 @@ class StopTests {
         var builderWithoutConflict =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .addStep(STDCMStep(setOf(BlockLocation(blocks[0], Offset(0.meters)))))
-                .addStep(STDCMStep(setOf(BlockLocation(blocks[1], Offset(50.meters))), 1.0, true))
-                .addStep(STDCMStep(setOf(BlockLocation(blocks[2], Offset(1.meters))), 0.0, true))
+                .addStep(ExplorerStep(setOf(BlockLocation(blocks[0], Offset(0.meters)))))
+                .addStep(
+                    ExplorerStep(setOf(BlockLocation(blocks[1], Offset(50.meters))), 1.0, true)
+                )
+                .addStep(ExplorerStep(setOf(BlockLocation(blocks[2], Offset(1.meters))), 0.0, true))
                 .setMaxDepartureDelay(0.0) // Prevents the train from starting after the conflict
                 .setTimeStep(timeStep)
         if (withAllowance)
@@ -542,16 +568,16 @@ class StopTests {
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .addStep(
-                    STDCMStep(
+                    ExplorerStep(
                         setOf(BlockLocation(blocks[0], Offset(0.meters))),
                         plannedTimingData =
                             PlannedTimingData(7_000.seconds, 7_000.seconds, 3_000.seconds),
                     )
                 )
                 .addStep(
-                    STDCMStep(setOf(BlockLocation(blocks[1], Offset(50.meters))), 5_000.0, true)
+                    ExplorerStep(setOf(BlockLocation(blocks[1], Offset(50.meters))), 5_000.0, true)
                 )
-                .addStep(STDCMStep(setOf(BlockLocation(blocks[2], Offset(1.meters))), 0.0, true))
+                .addStep(ExplorerStep(setOf(BlockLocation(blocks[2], Offset(1.meters))), 0.0, true))
                 .setTimeStep(timeStep)
                 .setUnavailableTimes(occupancy)
                 .run()!!
@@ -609,12 +635,12 @@ class StopTests {
         val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .addStep(STDCMStep(setOf(BlockLocation(blocks[0], Offset(0.meters)))))
+                .addStep(ExplorerStep(setOf(BlockLocation(blocks[0], Offset(0.meters)))))
                 .addStep(
-                    STDCMStep(setOf(BlockLocation(blocks[1], Offset(50.meters))), 5_000.0, true)
+                    ExplorerStep(setOf(BlockLocation(blocks[1], Offset(50.meters))), 5_000.0, true)
                 )
                 .addStep(
-                    STDCMStep(
+                    ExplorerStep(
                         setOf(BlockLocation(blocks[2], Offset(1.meters))),
                         0.0,
                         true,
@@ -672,9 +698,13 @@ class StopTests {
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setUnavailableTimes(occupancy)
-                .addStep(STDCMStep(setOf(BlockLocation(blocks[0], Offset(0.meters)))))
-                .addStep(STDCMStep(setOf(BlockLocation(blocks[1], Offset(50.meters))), 1.0, true))
-                .addStep(STDCMStep(setOf(BlockLocation(blocks[2], Offset(100.meters))), 0.0, true))
+                .addStep(ExplorerStep(setOf(BlockLocation(blocks[0], Offset(0.meters)))))
+                .addStep(
+                    ExplorerStep(setOf(BlockLocation(blocks[1], Offset(50.meters))), 1.0, true)
+                )
+                .addStep(
+                    ExplorerStep(setOf(BlockLocation(blocks[2], Offset(100.meters))), 0.0, true)
+                )
                 .setTimeStep(timeStep)
                 .setMaxRunTime(5_000.0)
                 .setMaxDepartureDelay(Double.POSITIVE_INFINITY)
@@ -742,10 +772,16 @@ class StopTests {
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setUnavailableTimes(occupancy)
-                .addStep(STDCMStep(setOf(BlockLocation(blocks[0], Offset(0.meters)))))
-                .addStep(STDCMStep(setOf(BlockLocation(blocks[1], Offset(50.meters))), 1.0, true))
-                .addStep(STDCMStep(setOf(BlockLocation(blocks[3], Offset(50.meters))), 1.0, true))
-                .addStep(STDCMStep(setOf(BlockLocation(blocks[4], Offset(100.meters))), 0.0, true))
+                .addStep(ExplorerStep(setOf(BlockLocation(blocks[0], Offset(0.meters)))))
+                .addStep(
+                    ExplorerStep(setOf(BlockLocation(blocks[1], Offset(50.meters))), 1.0, true)
+                )
+                .addStep(
+                    ExplorerStep(setOf(BlockLocation(blocks[3], Offset(50.meters))), 1.0, true)
+                )
+                .addStep(
+                    ExplorerStep(setOf(BlockLocation(blocks[4], Offset(100.meters))), 0.0, true)
+                )
                 .setTimeStep(timeStep)
                 .run()!!
         occupancyTest(res, occupancy)
@@ -789,9 +825,9 @@ class StopTests {
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setMaxRunTime(Double.POSITIVE_INFINITY)
-                .addStep(STDCMStep(setOf(BlockLocation(firstBlock, Offset(0.meters)))))
+                .addStep(ExplorerStep(setOf(BlockLocation(firstBlock, Offset(0.meters)))))
                 .addStep(
-                    STDCMStep(
+                    ExplorerStep(
                         setOf(
                             BlockLocation(topPath[1], Offset(100.meters)),
                             BlockLocation(botPath[1], Offset(100.meters)),
@@ -800,7 +836,9 @@ class StopTests {
                         true,
                     )
                 )
-                .addStep(STDCMStep(setOf(BlockLocation(lastBlock, Offset(100.meters))), 0.0, true))
+                .addStep(
+                    ExplorerStep(setOf(BlockLocation(lastBlock, Offset(100.meters))), 0.0, true)
+                )
                 .run()!!
         val blocks = res.trainPath.getBlocks().map { infra.getBlockName(it.value) }
         val useBotPath = blocks.contains("x->y")

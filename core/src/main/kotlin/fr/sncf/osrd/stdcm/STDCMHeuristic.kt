@@ -8,6 +8,7 @@ import fr.sncf.osrd.sim_infra.api.BlockInfra
 import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.utils.getBlockEntry
 import fr.sncf.osrd.stdcm.graph.STDCMEdge
+import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.infra_exploration.StepTracker
 import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
@@ -101,7 +102,7 @@ data class STDCMAStarHeuristic(
 class STDCMHeuristicBuilder(
     private val blockInfra: BlockInfra,
     private val rawInfra: RawInfra,
-    private val steps: List<STDCMStep>,
+    private val steps: List<ExplorerStep>,
     private val maxRunningTime: Double,
     private val mrspBuilder: CachedBlockMRSPBuilder,
     val allowance: AllowanceValue?,

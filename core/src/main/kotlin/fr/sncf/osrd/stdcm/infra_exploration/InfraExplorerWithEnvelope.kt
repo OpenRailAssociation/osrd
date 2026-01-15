@@ -10,12 +10,14 @@ import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.pathfinding.BlockLocation
 import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.graph.TimeData
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.appendOnlyLinkedListOf
+import fr.sncf.osrd.utils.units.Duration
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.TimeDelta
+import kotlin.math.abs
 
 /**
  * Explore the infra while running simulations. Builds one global envelope and path from the start
@@ -81,12 +83,39 @@ interface InfraExplorerWithEnvelope : InfraExplorer {
     fun endAtStop(): Boolean
 }
 
+data class PlannedTimingData(
+    val arrivalTime: TimeDelta,
+    val arrivalTimeToleranceBefore: Duration,
+    val arrivalTimeToleranceAfter: Duration,
+) {
+    /**
+     * TimeDiff is the time difference between the train's passage and the planned timing data's
+     * arrival time. This method returns the relative time diff, depending on whether the train
+     * passes before or after the planned arrival time.
+     */
+    fun getBeforeOrAfterRelativeTimeDiff(timeDiff: Double): Double {
+        return when {
+            timeDiff < 0 -> abs(timeDiff / arrivalTimeToleranceBefore.seconds)
+            timeDiff > 0 -> timeDiff / arrivalTimeToleranceAfter.seconds
+            else -> timeDiff
+        }
+    }
+
+    /**
+     * Get time difference between the time at which the train passes through the node and the
+     * planned time at which it should have arrived at the node.
+     */
+    fun getTimeDiff(time: Double): Double {
+        return time - this.arrivalTime.seconds
+    }
+}
+
 /** Init all InfraExplorersWithEnvelope starting at the given location. */
 fun initInfraExplorerWithEnvelope(
     fullInfra: FullInfra,
     location: BlockLocation,
     rollingStock: PhysicsRollingStock,
-    steps: List<STDCMStep> = listOf(),
+    steps: List<ExplorerStep> = listOf(),
     constraints: List<PathfindingConstraint<Block>> = listOf(),
 ): Collection<InfraExplorerWithEnvelope> {
     return initInfraExplorers(

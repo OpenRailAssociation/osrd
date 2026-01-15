@@ -5,6 +5,7 @@ import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.pathfinding.BlockLocation
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.SpeedLimitProperty
+import fr.sncf.osrd.stdcm.infra_exploration.PlannedTimingData
 import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.DistanceRangeMap

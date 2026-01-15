@@ -10,6 +10,7 @@ import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
 import fr.sncf.osrd.stdcm.graph.STDCMSimulations
+import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorers
 import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment
@@ -119,9 +120,12 @@ fun infraExplorerFromBlock(
         .elementAt(0)
 }
 
-fun stepsFromLocations(vararg locations: BlockLocation, stops: Boolean = false): List<STDCMStep> {
+fun stepsFromLocations(
+    vararg locations: BlockLocation,
+    stops: Boolean = false,
+): List<ExplorerStep> {
     val duration = if (stops) 0.0 else null
-    return locations.map { STDCMStep(listOf(it), duration, stops) }
+    return locations.map { ExplorerStep(listOf(it), duration, stops) }
 }
 
 /**

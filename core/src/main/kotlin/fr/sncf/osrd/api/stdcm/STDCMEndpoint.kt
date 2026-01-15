@@ -40,13 +40,13 @@ import fr.sncf.osrd.standalone_sim.makeElectricalProfiles
 import fr.sncf.osrd.standalone_sim.makeMRSPResponse
 import fr.sncf.osrd.standalone_sim.result.ElectrificationRange
 import fr.sncf.osrd.standalone_sim.runScheduleMetadataExtractor
-import fr.sncf.osrd.stdcm.PlannedTimingData
 import fr.sncf.osrd.stdcm.STDCMResult
-import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.graph.STDCMGraph
 import fr.sncf.osrd.stdcm.graph.checkPlannedStepsAndMaybeIndex
 import fr.sncf.osrd.stdcm.graph.findPath
 import fr.sncf.osrd.stdcm.graph.logger
+import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
+import fr.sncf.osrd.stdcm.infra_exploration.PlannedTimingData
 import fr.sncf.osrd.stdcm.preprocessing.implementation.makeBlockAvailability
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TrainStop
@@ -349,7 +349,7 @@ fun parseSteps(
     pathItems: List<STDCMPathItem>,
     startTime: ZonedDateTime,
     rollingStockLength: Double,
-): List<STDCMStep> {
+): List<ExplorerStep> {
     if (pathItems.last().stopDuration == null) {
         throw OSRDError(ErrorType.MissingLastSTDCMStop)
     }
@@ -369,7 +369,7 @@ fun parseSteps(
 
     return pathItems
         .mapIndexed { index, it ->
-            STDCMStep(
+            ExplorerStep(
                 if (index != 0 && index != pathItems.size - 1) {
                     val destinationBlock = findWaypointBlocks(infra, pathItems.last().locations)
                     findWaypointBlocks(infra, it.locations).map { waypointBlock ->

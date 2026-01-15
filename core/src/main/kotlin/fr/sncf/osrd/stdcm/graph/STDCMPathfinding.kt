@@ -14,7 +14,7 @@ import fr.sncf.osrd.sim_infra.api.TrackSectionId
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.stdcm.ProgressLogger
 import fr.sncf.osrd.stdcm.STDCMResult
-import fr.sncf.osrd.stdcm.STDCMStep
+import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
@@ -51,7 +51,7 @@ fun findPath(
     rollingStock: RollingStock,
     comfort: Comfort?,
     startTime: Double,
-    steps: List<STDCMStep>,
+    steps: List<ExplorerStep>,
     blockAvailability: BlockAvailabilityInterface,
     timeStep: Double,
     maxDepartureDelay: Double,
@@ -88,7 +88,7 @@ class STDCMPathfinding(
     private val rollingStock: RollingStock,
     private val comfort: Comfort?,
     private val startTime: Double,
-    private val steps: List<STDCMStep>,
+    private val steps: List<ExplorerStep>,
     private val blockAvailability: BlockAvailabilityInterface,
     private val timeStep: Double,
     private val maxDepartureDelay: Double,
