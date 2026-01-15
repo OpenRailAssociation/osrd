@@ -62,7 +62,7 @@ const ManageTimetableItem = () => {
   const origin = useSelector(getOrigin);
   const destination = useSelector(getDestination);
   const pathSteps = useSelector(getPathSteps);
-  const speedLimitByTag = useSelector(getOperationalStudiesSpeedLimitByTag);
+  const selectedSpeedLimitTag = useSelector(getOperationalStudiesSpeedLimitByTag);
   const rollingStockId = useSelector(getOperationalStudiesRollingStockID);
   const currentCategory = useSelector(getCategory);
 
@@ -214,7 +214,7 @@ const ManageTimetableItem = () => {
     content: (
       <div>
         <SimulationSettings
-          selectedSpeedLimitByTag={speedLimitByTag}
+          selectedSpeedLimitTag={selectedSpeedLimitTag}
           speedLimitTags={speedLimitTags}
           updateSpeedLimitTag={onSelectSpeedLimitTag}
           constraintDistribution={constraintDistribution}
