@@ -48,7 +48,7 @@ export const NOTE_LABEL_GROUP: LabelGroupDto = {
 /**
  * Return the default TrainrunFrequencies without their translated names.
  * The main types of TimetableItems are to be displayed:
- * - `TrainSchedule` -> `TrainrunFrequency.linePatternRef = '120'`
+ * - `UniqueTrain` -> `TrainrunFrequency.linePatternRef = '120'`
  * - `PacedTrain`:
  *    - `paced.interval = 30` -> `TrainrunFrequency.linePatternRef = '30'`
  *    - `paced.interval = 60` -> `TrainrunFrequency.linePatternRef = '60'`
@@ -93,7 +93,7 @@ export const DEFAULT_TRAINRUN_FREQUENCIES: Omit<TrainrunFrequency, 'name'>[] = [
 export const TRAIN_SCHEDULE_FREQUENCY_ID = 1;
 
 /**
- * Default TrainrunFrequencies ids that are not TrainSchedule.
+ * Default TrainrunFrequencies ids that are not UniqueTrains.
  */
 export const DEFAULT_PACED_TRAIN_FREQUENCY_IDS = DEFAULT_TRAINRUN_FREQUENCIES.filter(
   (freq) => freq.id !== TRAIN_SCHEDULE_FREQUENCY_ID
@@ -102,7 +102,7 @@ export const DEFAULT_PACED_TRAIN_FREQUENCY_IDS = DEFAULT_TRAINRUN_FREQUENCIES.fi
 /**
  * For cosmetic use only, attributes except id and linePatternRef are not used.
  * The main types of TimetableItems are to be displayed:
- * - `TrainSchedule` -> `TrainrunTimeCategory.linePatternRef = 'ZEITWEISE'`
+ * - `UniqueTrain` -> `TrainrunTimeCategory.linePatternRef = 'ZEITWEISE'`
  * - `PacedTrain`:
  *    - `paced.interval = 30` -> `TrainrunTimeCategory.linePatternRef = '7/24'`
  *    - `paced.interval = 60` -> `TrainrunTimeCategory.linePatternRef = '7/24'`
