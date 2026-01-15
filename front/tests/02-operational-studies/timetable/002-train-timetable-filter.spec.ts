@@ -20,7 +20,7 @@ import {
   ROLLING_STOCK_FILTERED_TIMETABLE_ITEMS_EXCEPTION,
   TOTAL_TIMETABLE_ITEMS,
   TOTAL_PACED_TRAINS,
-  TOTAL_TRAIN_SCHEDULES,
+  TOTAL_UNIQUE_TRAINS,
   VALID_TIMETABLE_ITEMS,
   VALID_PACED_TRAINS,
 } from '../../assets/constants/timetable-items-count';
@@ -46,7 +46,7 @@ test.describe('@op @timetable-items @filter', () => {
   let scenario: Scenario;
   let infra: Infra;
 
-  test.beforeAll('Fetch project, study and scenario with train schedule', async () => {
+  test.beforeAll('Fetch project, study and scenario with unique train', async () => {
     project = await getProject(timetableItemProjectName);
     study = await getStudy(project.id, timetableItemStudyName);
     scenario = await getScenario(study.id, timetableItemScenarioName);
@@ -68,7 +68,7 @@ test.describe('@op @timetable-items @filter', () => {
     await test.step('Verify totals and default filter UI', async () => {
       await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
         totalPacedTrainCount: TOTAL_PACED_TRAINS,
-        totalTrainScheduleCount: TOTAL_TRAIN_SCHEDULES,
+        totalUniqueTrainCount: TOTAL_UNIQUE_TRAINS,
       });
       await scenarioTimetableSection.checkTimetableFilterVisibilityLabelDefaultValue(
         frTranslations.timetable,
@@ -152,7 +152,7 @@ test.describe('@op @timetable-items @filter', () => {
       );
       await scenarioTimetableSection.filterTrainTypeAndVerifyTrainCount(
         'Unique train',
-        TOTAL_TRAIN_SCHEDULES
+        TOTAL_UNIQUE_TRAINS
       );
       await scenarioTimetableSection.filterTrainTypeAndVerifyTrainCount(
         'All',

@@ -83,9 +83,9 @@ const useUpdateTimetableItem = (
     dispatch(
       setSuccess({
         title:
-          simulationConf.editingItemType === 'trainSchedule'
+          simulationConf.editingItemType === 'uniqueTrain'
             ? t('pacedTrainUpdated')
-            : t('trainScheduleUpdated'),
+            : t('uniqueTrainUpdated'),
         text: `${confName}: ${startTime.toLocaleString()}`,
       })
     );

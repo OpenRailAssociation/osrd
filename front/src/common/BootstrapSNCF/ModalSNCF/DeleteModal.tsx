@@ -5,33 +5,33 @@ import { ModalBodySNCF, ModalFooterSNCF, useModal } from 'common/BootstrapSNCF/M
 type DeleteModalProps = {
   handleDelete: () => void;
   selectedPacedTrainCount?: number;
-  selectedTrainScheduleCount?: number;
+  selectedUniqueTrainCount?: number;
 };
 
 const DeleteModal = ({
   handleDelete,
   selectedPacedTrainCount = 0,
-  selectedTrainScheduleCount: selectedTrainScheduleCount = 0,
+  selectedUniqueTrainCount = 0,
 }: DeleteModalProps) => {
   const { t } = useTranslation(['operational-studies', 'translation']);
   const { closeModal } = useModal();
 
   const deleteTimetableItemsComputedLabel = () => {
-    if (selectedPacedTrainCount > 0 && selectedTrainScheduleCount === 0) {
+    if (selectedPacedTrainCount > 0 && selectedUniqueTrainCount === 0) {
       return t('main.timetable.deletePacedTrainSelectionConfirmation', {
         selectedPacedTrainsCount: selectedPacedTrainCount,
       });
     }
 
-    if (selectedTrainScheduleCount > 0 && selectedPacedTrainCount === 0) {
+    if (selectedUniqueTrainCount > 0 && selectedPacedTrainCount === 0) {
       return t('main.timetable.deleteTrainSelectionConfirmation', {
-        selectedTrainSchedulesCount: selectedTrainScheduleCount,
+        selectedUniqueTrainsCount: selectedUniqueTrainCount,
       });
     }
 
     return t('main.timetable.deletePacedTrainAndTrainSelectionConfirmation', {
       selectedPacedTrainsCount: selectedPacedTrainCount,
-      selectedTrainSchedulesCount: selectedTrainScheduleCount,
+      selectedUniqueTrainsCount: selectedUniqueTrainCount,
     });
   };
   return (

@@ -80,7 +80,7 @@ const checkCurrentConfig = (
     );
   }
 
-  // Prevent to block the train creation if a paced train field is invalid but we want to add a train schedule
+  // Prevent to block the train creation if a paced train field is invalid but we want to add a unique train
   if (editingItemType === 'pacedTrain') {
     if (interval.total('minute') < 1) {
       error = true;

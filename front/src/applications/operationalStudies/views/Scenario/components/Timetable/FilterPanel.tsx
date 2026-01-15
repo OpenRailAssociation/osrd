@@ -56,7 +56,7 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
   const trainTypeOptions: { value: TrainTypeFilter; label: string }[] = [
     { value: 'both', label: t('timetable.showAllTrains') },
     { value: 'pacedTrain', label: t('timetable.pacedTrain') },
-    { value: 'trainSchedule', label: t('timetable.trainSchedule') },
+    { value: 'uniqueTrain', label: t('timetable.uniqueTrain') },
   ];
 
   const formattedCategoryOptions: {

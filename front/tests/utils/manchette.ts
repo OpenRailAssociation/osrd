@@ -19,7 +19,7 @@ export function requestedPoint(number: string): string {
   return frScenarioTranslations.requestedPoint.replaceAll('{{ count }}', number);
 }
 
-export const expectedWaypointsPanelDataForTrainSchedule: Record<string, Partial<Waypoint>> = {
+export const expectedWaypointsPanelDataForUniqueTrain: Record<string, Partial<Waypoint>> = {
   North_East_station: { ch: 'BV', offset: '0.0', checked: true },
   Mid_East_station: { ch: 'BV', offset: '19.55', checked: true },
   [requestedPoint('2')]: { offset: '22.47', checked: true },
@@ -43,7 +43,7 @@ export const expectedWaypointsListDataForPacedTrain: Record<string, Partial<Wayp
   [requestedDestination]: { offset: '47.7' },
 };
 
-export const expectedWaypointsListDataForTrainSchedule: Record<string, Partial<Waypoint>> = {
+export const expectedWaypointsListDataForUniqueTrain: Record<string, Partial<Waypoint>> = {
   North_East_station: { ch: 'BV', offset: '0' },
   Mid_East_station: { ch: 'BV', offset: '19.6' },
   Mid_West_station: { ch: 'BV', offset: '34' },

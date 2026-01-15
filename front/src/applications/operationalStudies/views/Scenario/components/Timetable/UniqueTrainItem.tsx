@@ -32,13 +32,13 @@ import { TIMETABLE_ITEM_DELTA } from './consts';
 import TimetableItemActions from './TimetableItemActions';
 import { formatTrainDuration, getTrainCategoryClassName } from './utils';
 
-type TrainScheduleItemProps = {
+type UniqueTrainItemProps = {
   isInSelection: boolean;
   train: TimetableItemWithDetails;
   isSelected: boolean;
   isModified?: boolean;
   handleSelectTrain: (trainId: TimetableItemId) => void;
-  upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void;
+  upsertUniqueTrains: (uniqueTrains: TimetableItem[]) => void;
   removeTrains: (trainIds: TimetableItemId[]) => void;
   projectionPathIsUsed: boolean;
   selectTrainToEdit: (train: TimetableItemWithDetails) => void;
@@ -49,13 +49,13 @@ type TrainScheduleItemProps = {
   showMovebutton: boolean;
 };
 
-const TrainScheduleItem = ({
+const UniqueTrainItem = ({
   isInSelection,
   train,
   isSelected,
   isModified,
   handleSelectTrain,
-  upsertTrainSchedules,
+  upsertUniqueTrains,
   removeTrains,
   projectionPathIsUsed,
   selectTrainToEdit,
@@ -64,7 +64,7 @@ const TrainScheduleItem = ({
   isSelectMode,
   moveTimetableItem,
   showMovebutton,
-}: TrainScheduleItemProps) => {
+}: UniqueTrainItemProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const dateTimeLocale = useDateTimeLocale();
   const dispatch = useAppDispatch();
@@ -113,21 +113,22 @@ const TrainScheduleItem = ({
         new Duration({ minutes: TIMETABLE_ITEM_DELTA })
       );
 
-      const newTrain: PacedTrain = {
+      const newUniqueTrainPayload: PacedTrain = {
         ...omit(trainDetail, ['id', 'train_schedule_set_id']),
         start_time: startTime.toISOString(),
         train_name: trainName,
       };
 
-      const [newTimetableItem] = await postPacedTrain({
+      const [newUniqueTrain] = await postPacedTrain({
         id: trainDetail.train_schedule_set_id,
-        body: [newTrain],
+        body: [newUniqueTrainPayload],
       }).unwrap();
-      const formattedTrainScheduleResponse: TimetableItem = {
-        ...newTimetableItem,
-        id: formatEditoastIdToPacedTrainId(newTimetableItem.id),
+
+      const formattedUniqueTrain: TimetableItem = {
+        ...newUniqueTrain,
+        id: formatEditoastIdToPacedTrainId(newUniqueTrain.id),
       };
-      upsertTrainSchedules([formattedTrainScheduleResponse]);
+      upsertUniqueTrains([formattedUniqueTrain]);
       dispatch(
         setSuccess({
           title: t('timetable.trainAdded'),
@@ -172,7 +173,7 @@ const TrainScheduleItem = ({
       onMouseLeave={() => dispatch(updateHoveredTrainId(undefined))}
     >
       <div
-        data-testid="scenario-timetable-train-schedule-button"
+        data-testid="scenario-timetable-unique-train-button"
         role="button"
         tabIndex={0}
         onClick={() => changeSelectedTrainId(train.id)}
@@ -274,21 +275,21 @@ const TrainScheduleItem = ({
 
         {summary?.isValid && (
           <div className="more-info">
-            <div data-testid="train-schedule-more-info" className="more-info-left">
-              <span data-testid="train-schedule-stop-count" className="more-info-item">
+            <div data-testid="unique-train-more-info" className="more-info-left">
+              <span data-testid="unique-train-stop-count" className="more-info-item">
                 {t('timetable.stopsCount', { count: train.stopsCount })}
               </span>
-              <span data-testid="train-schedule-path-length" className="more-info-item">
+              <span data-testid="unique-train-path-length" className="more-info-item">
                 {summary.pathLength}
               </span>
               <span
                 className="more-info-item m-0"
-                data-testid="train-schedule-allowance-energy-consumed"
+                data-testid="unique-train-allowance-energy-consumed"
               >
                 {summary.mechanicalEnergyConsumed}&nbsp;kWh
               </span>
             </div>
-            <div data-testid="train-schedule-duration-time" className="duration-time">
+            <div data-testid="unique-train-duration-time" className="duration-time">
               <span data-testid="train-duration">{formatTrainDuration(summary.duration)}</span>
             </div>
           </div>
@@ -306,4 +307,4 @@ const TrainScheduleItem = ({
   );
 };
 
-export default React.memo(TrainScheduleItem);
+export default React.memo(UniqueTrainItem);

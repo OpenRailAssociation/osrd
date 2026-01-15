@@ -383,7 +383,7 @@ export const createPacedAttributesFromTrainrun = (
 /**
  * By default (in NGE code), a newly created trainrun has a frequencyId of 3,
  * which is equivalent to a PacedTrain (paced.interval = 60min).
- * No TrainSchedule can be created here, but only updated from an existing PacedTrain.
+ * No UniqueTrain can be created here, but only updated from an existing PacedTrain.
  */
 const handleCreateTimetableItem = async (
   netzgrafikDto: NetzgrafikDto,
@@ -485,10 +485,10 @@ const handleDeleteTimetableItem = async (
 
 /**
  * Handle the following cases:
- * - if the TimetableItem is initially a PacedTrain and the frequency is still PacedTrain (`paced` time window is keep identical and interval to corresponding TrainrunFrequency)
- * - if the TimetableItem is initially a PacedTrain and the frequency is now changed to TrainSchedule (`paced` set to undefined)
- * - if the TimetableItem is initially a TrainSchedule and the frequency is still TrainSchedule (`paced` set to undefined)
- * - if the TimetableItem is initially a TrainSchedule and the frequency is now changed to PacedTrain (`paced` time window set to 2 hours and interval to corresponding TrainrunFrequency)
+ * - if the TrainSchedule is initially a PacedTrain and the frequency is still PacedTrain (`paced` time window is keep identical and interval to corresponding TrainrunFrequency)
+ * - if the TrainSchedule is initially a PacedTrain and the frequency is now changed to UniqueTrain (`paced` set to undefined)
+ * - if the TrainSchedule is initially a UniqueTrain and the frequency is still UniqueTrain (`paced` set to undefined)
+ * - if the TrainSchedule is initially a UniqueTrain and the frequency is now changed to PacedTrain (`paced` time window set to 2 hours and interval to corresponding TrainrunFrequency)
  * Also handles conversion from round trips to one way trips and the inverse.
  */
 export const handleUpdateTimetableItem = async ({

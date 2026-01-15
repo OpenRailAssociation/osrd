@@ -7,7 +7,7 @@ import {
 import {
   EXPECTED_COUNTS,
   PACED_DETAILS,
-  TRAIN_SCHEDULE_DETAILS,
+  UNIQUE_TRAIN_DETAILS,
 } from '../../assets/constants/timetable-items-details';
 import test from '../../page-object-fixture';
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
@@ -82,8 +82,8 @@ test.describe('@op @timetable-items @import', () => {
       await timetableItemDetailSection.verifyPacedTrainDetails(1, PACED_DETAILS[1]);
       await pacedTrainSection.verifyOccurrencesCount(5, 3);
     });
-    await test.step('Verify details for valid imported train schedules', async () => {
-      await timetableItemDetailSection.verifyTrainSchedulesDetails(TRAIN_SCHEDULE_DETAILS);
+    await test.step('Verify details for valid imported unique trains', async () => {
+      await timetableItemDetailSection.verifyUniqueTrainsDetails(UNIQUE_TRAIN_DETAILS);
     });
     await test.step('Verify invalid items reasons', async () => {
       await timetableItemDetailSection.verifyInvalidReasons([

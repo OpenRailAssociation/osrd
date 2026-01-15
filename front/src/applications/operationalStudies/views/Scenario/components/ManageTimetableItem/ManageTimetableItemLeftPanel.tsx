@@ -33,7 +33,7 @@ export type ManageTimetableItemLeftPanelProps = {
 };
 
 /**
- * Create/edit train schedules and paced trains
+ * Create/edit unique trains and paced trains
  */
 const ManageTimetableItemLeftPanel = ({
   displayTimetableItemManagement,
@@ -71,20 +71,20 @@ const ManageTimetableItemLeftPanel = ({
   const getEditLabel = (_itemToEdit: TimetableItemToEditData) => {
     if (
       (!isPacedTrainToEditData(_itemToEdit) || !_itemToEdit.originalPacedTrain.paced) &&
-      editingItemType === 'trainSchedule'
+      editingItemType === 'uniqueTrain'
     ) {
-      return t('updateTrainSchedule');
+      return t('updateUniqueTrain');
     }
     if (
       isPacedTrainToEditData(_itemToEdit) &&
       _itemToEdit.originalPacedTrain.paced &&
-      editingItemType !== 'trainSchedule'
+      editingItemType !== 'uniqueTrain'
     ) {
       return editingItemType === 'pacedTrain' ? t('updatePacedTrain') : t('updateOccurrence');
     }
     return !isPacedTrainToEditData(_itemToEdit) || !_itemToEdit.originalPacedTrain.paced
-      ? t('turnTrainScheduleIntoPacedTrain')
-      : t('turnPacedTrainIntoTrainSchedule');
+      ? t('turnUniqueTrainIntoPacedTrain')
+      : t('turnPacedTrainIntoUniqueTrain');
   };
 
   return (

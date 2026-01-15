@@ -19,7 +19,7 @@ import { deleteScenario } from '../../utils/teardown-utils';
 
 const trains: PacedTrain[] = readJsonFile('./tests/assets/trains/trains.json');
 
-test.describe('@op @paced-train @train-schedule', () => {
+test.describe('@op @paced-train @unique-train', () => {
   let project: Project;
   let study: Study;
   let scenarioItems: Scenario;

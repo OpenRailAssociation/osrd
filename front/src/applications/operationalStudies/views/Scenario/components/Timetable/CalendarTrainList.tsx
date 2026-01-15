@@ -22,8 +22,8 @@ import { useAppDispatch } from 'store';
 import { useDateTimeLocale } from 'utils/date';
 
 import PacedTrainItem from './PacedTrain/PacedTrainItem';
-import TrainScheduleItem from './TrainScheduleItem';
 import type { TimetableMode } from './types';
+import UniqueTrainItem from './UniqueTrainItem';
 import { MANAGE_TIMETABLE_ITEM_TYPES } from '../../consts';
 
 type CalendarTrainListProps = {
@@ -146,13 +146,13 @@ const CalendarTrainList = ({
             <div className="scenario-timetable-departure-date">{currentDepartureDates[index]}</div>
           )}
           {!isPacedTrainWithDetails(timetableItem) ? (
-            <TrainScheduleItem
+            <UniqueTrainItem
               isInSelection={selectedTimetableItemIds.includes(timetableItem.id)}
               handleSelectTrain={handleSelectTimetableItem}
               train={timetableItem}
               isSelected={workerStatus === 'READY' && selectedTrainId === timetableItem.id}
               isModified={timetableItem.id === timetableItemToEditData?.timetableItemId}
-              upsertTrainSchedules={upsertTimetableItems}
+              upsertUniqueTrains={upsertTimetableItems}
               removeTrains={removeAndUnselectTrains}
               selectTrainToEdit={selectTimetableItemToEdit}
               setSelectedTimetableItemIds={setSelectedTimetableItemIds}

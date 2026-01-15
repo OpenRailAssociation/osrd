@@ -41,7 +41,7 @@ const frTranslations = {
 
 const trains: PacedTrain[] = readJsonFile('./tests/assets/trains/trains.json');
 
-test.describe('@op @paced-train @train-schedule', () => {
+test.describe('@op @paced-train @unique-train', () => {
   let project: Project;
   let study: Study;
   let scenarioItems: Scenario;
@@ -53,26 +53,23 @@ test.describe('@op @paced-train @train-schedule', () => {
     infra = await getInfra();
   });
 
-  test.beforeEach(
-    'Setup scenario with one train schedule and one paced train',
-    async ({ page }) => {
-      const { scenario, trainScheduleSet } = await createScenario(
-        generateUniqueName('edit-train-scenario'),
-        project.id,
-        study.id,
-        infra.id
-      );
-      scenarioItems = scenario;
+  test.beforeEach('Setup scenario with one unique train and one paced train', async ({ page }) => {
+    const { scenario, trainScheduleSet } = await createScenario(
+      generateUniqueName('edit-train-scenario'),
+      project.id,
+      study.id,
+      infra.id
+    );
+    scenarioItems = scenario;
 
-      const selectedTrains = [...trains.slice(0, 1), ...trains.slice(7, 8)];
-      await sendTrains(trainScheduleSet.id, selectedTrains);
+    const selectedTrains = [...trains.slice(0, 1), ...trains.slice(7, 8)];
+    await sendTrains(trainScheduleSet.id, selectedTrains);
 
-      await page.goto(
-        `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
-      );
-      await waitForInfraStateToBeCached(infra.id);
-    }
-  );
+    await page.goto(
+      `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
+    );
+    await waitForInfraStateToBeCached(infra.id);
+  });
 
   test.afterEach('Delete the created scenario', async () => {
     await deleteScenario(study.id, scenarioItems.name);
@@ -108,7 +105,7 @@ test.describe('@op @paced-train @train-schedule', () => {
     await test.step('Verify timetable labels and paced train details', async () => {
       await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
         totalPacedTrainCount: 1,
-        totalTrainScheduleCount: 1,
+        totalUniqueTrainCount: 1,
       });
       await pacedTrainSection.verifyPacedTrainItemDetails(
         {
@@ -126,7 +123,7 @@ test.describe('@op @paced-train @train-schedule', () => {
   });
 
   /** *************** Test 2 **************** */
-  test('Turn paced train into train schedule', async ({
+  test('Turn paced train into unique train', async ({
     scenarioTimetableSection,
     operationalStudiesPage,
     pacedTrainSection,
@@ -135,37 +132,37 @@ test.describe('@op @paced-train @train-schedule', () => {
       await pacedTrainSection.openPacedTrainEditor();
     });
 
-    await test.step('Convert paced train to train schedule', async () => {
-      await operationalStudiesPage.turnPacedTrainIntoTrainSchedule(frTranslations);
+    await test.step('Convert paced train to unique train', async () => {
+      await operationalStudiesPage.turnPacedTrainIntoUniqueTrain(frTranslations);
       await operationalStudiesPage.checkToastHasBeenLaunched(frTranslations.pacedTrainUpdated);
     });
 
     await test.step('Verify timetable labels after conversion', async () => {
       await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
         totalPacedTrainCount: 0,
-        totalTrainScheduleCount: 2,
+        totalUniqueTrainCount: 2,
       });
     });
   });
 
   /** *************** Test 3 **************** */
-  test('Turn a train schedule into a paced train', async ({
+  test('Turn a unique train into a paced train', async ({
     scenarioTimetableSection,
     operationalStudiesPage,
   }) => {
-    await test.step('Edit train schedule at index 1', async () => {
+    await test.step('Edit unique train at index 1', async () => {
       await scenarioTimetableSection.editTimetableItem(1);
     });
 
-    await test.step('Convert train schedule to paced train', async () => {
-      await operationalStudiesPage.turnTrainScheduleIntoPacedTrain(frTranslations);
-      await operationalStudiesPage.checkToastHasBeenLaunched(frTranslations.trainScheduleUpdated);
+    await test.step('Convert unique train to paced train', async () => {
+      await operationalStudiesPage.turnUniqueTrainIntoPacedTrain(frTranslations);
+      await operationalStudiesPage.checkToastHasBeenLaunched(frTranslations.uniqueTrainUpdated);
     });
 
     await test.step('Verify timetable labels after conversion', async () => {
       await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
         totalPacedTrainCount: 2,
-        totalTrainScheduleCount: 0,
+        totalUniqueTrainCount: 0,
       });
     });
   });

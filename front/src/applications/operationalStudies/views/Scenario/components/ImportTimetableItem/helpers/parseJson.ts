@@ -65,13 +65,13 @@ export const validateTimetableJsonPayload = (importedItems: unknown): TimetableJ
     paced_trains: importedPacedTrains,
     round_trips: importedRoundTrips,
     trains: importedTrains,
-    train_schedules: importedTrainSchedules,
+    train_schedules: importedUniqueTrains,
   } = importedItems as Partial<TimetableJsonPayloadCompat>;
 
-  // For backward compatibility, can be removed in the future
+  // TODO : For backward compatibility, can be removed in the future
   const allTrains = [
     ...(Array.isArray(importedTrains) ? importedTrains : []),
-    ...(Array.isArray(importedTrainSchedules) ? importedTrainSchedules : []),
+    ...(Array.isArray(importedUniqueTrains) ? importedUniqueTrains : []),
     ...(Array.isArray(importedPacedTrains) ? importedPacedTrains : []),
   ];
 

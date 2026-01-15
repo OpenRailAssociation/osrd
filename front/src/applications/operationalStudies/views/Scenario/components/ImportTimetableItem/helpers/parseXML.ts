@@ -18,13 +18,13 @@ const extractCiChCode = (code: string) => {
   return { ciCode: Number(ciCode), chCode };
 };
 
-const trainScheduleToPacedTrain = (
-  trainSchedule: PacedTrain,
+const uniqueTrainToPacedTrain = (
+  uniqueTrain: PacedTrain,
   pacedTrainId: string,
   intervalDuration: Duration,
   timeWindowDuration: Duration
 ): Omit<PacedTrainWithPaced, 'train_schedule_set_id'> => ({
-  ...trainSchedule,
+  ...uniqueTrain,
   train_name: pacedTrainId,
   paced: {
     interval: intervalDuration.toISOString(),
@@ -33,7 +33,7 @@ const trainScheduleToPacedTrain = (
   },
 });
 
-const mapTrainNames = (trainSchedules: PacedTrain[], trains: Element[]): PacedTrain[] => {
+const mapTrainNames = (uniqueTrains: PacedTrain[], trains: Element[]): PacedTrain[] => {
   const trainPartToTrainMap: Record<string, string> = {};
 
   trains.forEach((train) => {
@@ -44,16 +44,16 @@ const mapTrainNames = (trainSchedules: PacedTrain[], trains: Element[]): PacedTr
     }
   });
 
-  const updatedTrainSchedules = trainSchedules.map((schedule) => {
-    const mappedTrainNumber = trainPartToTrainMap[schedule.train_name] || schedule.train_name;
+  const updatedUniqueTrains = uniqueTrains.map((train) => {
+    const mappedTrainNumber = trainPartToTrainMap[train.train_name] || train.train_name;
 
     return {
-      ...schedule,
+      ...train,
       train_name: mappedTrainNumber,
     };
   });
 
-  return updatedTrainSchedules;
+  return updatedUniqueTrains;
 };
 
 export const getMostFrequentInterval = (schedules: PacedTrain[]): Duration => {
@@ -132,7 +132,7 @@ const reconcilePacedTrainOccurrences = (
 
   const numberOfExpectedOccurrences = numberOfIntervals + 1;
 
-  const originalPacedTrain = trainScheduleToPacedTrain(
+  const originalPacedTrain = uniqueTrainToPacedTrain(
     modelTrainSchedule,
     pacedTrainId,
     intervalDuration,
@@ -254,7 +254,7 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
   const pacedTrains: Record<string, PacedTrain[]> = {};
   const trainGroups = Array.from(xmlDoc.getElementsByTagName('trainGroup'));
 
-  const trainSchedulesByTrainPartId: Record<string, PacedTrain> = {};
+  const uniqueTrainsByTrainPartId: Record<string, PacedTrain> = {};
   const trainParts = Array.from(xmlDoc.getElementsByTagName('trainPart'));
   const period = xmlDoc.getElementsByTagName('timetablePeriod')[0];
   const startDate = period ? period.getAttribute('startDate') : null;
@@ -290,7 +290,7 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
     // Build steps using the fully populated localCichDict
     const { path, schedule } = buildSteps(ocpSteps, localCichDict, new Date(startDate));
 
-    const trainSchedule: PacedTrain = {
+    const uniqueTrain: PacedTrain = {
       train_name: trainNumber,
       rolling_stock_name: rollingStockName || formationRef || '', // RollingStocks in xml files rarely have the correct format
       start_time: new Date(`${startDate} ${firstDepartureTimeformatted}`).toISOString(),
@@ -298,8 +298,8 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
       path,
       schedule,
     };
-    trainSchedulesByTrainPartId[trainPartId] = trainSchedule;
-    trainSchedules.push(trainSchedule);
+    uniqueTrainsByTrainPartId[trainPartId] = uniqueTrain;
+    trainSchedules.push(uniqueTrain);
   });
 
   const trainElementsById: Record<string, Element> = {};
@@ -321,7 +321,7 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
 
         const trainPartRef = trainElement?.querySelector('trainPartRef')?.getAttribute('ref');
 
-        return trainPartRef ? trainSchedulesByTrainPartId[trainPartRef] : undefined;
+        return trainPartRef ? uniqueTrainsByTrainPartId[trainPartRef] : undefined;
       })
       .filter((schedule) => schedule !== undefined);
   });
@@ -341,15 +341,15 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
 
   const importedPacedTrains: PacedTrain[] = [];
   Object.entries(pacedTrains).forEach(([pacedTrainId, pacedTrainSchedules]) => {
-    const modelTrainSchedule = pacedTrainMostFrequentSchedules[pacedTrainId].schedule;
+    const modelPacedTrainSchedule = pacedTrainMostFrequentSchedules[pacedTrainId].schedule;
 
-    if (modelTrainSchedule && pacedTrainSchedules.length > 0) {
+    if (modelPacedTrainSchedule && pacedTrainSchedules.length > 0) {
       const intervalDuration = getMostFrequentInterval(pacedTrainSchedules);
 
       const pacedTrainWithExceptions = reconcilePacedTrainOccurrences(
         pacedTrainId,
         pacedTrainSchedules,
-        modelTrainSchedule,
+        modelPacedTrainSchedule,
         intervalDuration
       );
 
@@ -368,15 +368,15 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
       .flat()
       .map((schedule) => schedule.train_name)
   );
-  const singleTrainSchedules = trainSchedules.filter(
+  const uniqueTrains = trainSchedules.filter(
     (schedule) => !trainSchedulesInPacedTrain.has(schedule.train_name)
   );
 
   const trains = Array.from(xmlDoc.getElementsByTagName('train'));
-  const updatedTrainSchedules = mapTrainNames(singleTrainSchedules, trains);
+  const updatedUniqueTrains = mapTrainNames(uniqueTrains, trains);
 
   return {
-    paced_trains: [...importedPacedTrains, ...updatedTrainSchedules],
+    paced_trains: [...importedPacedTrains, ...updatedUniqueTrains],
   };
 };
 

@@ -4,7 +4,7 @@ export type ValidityFilter = 'both' | 'valid' | 'invalid';
 
 export type ScheduledPointsHonoredFilter = 'both' | 'honored' | 'notHonored';
 
-export type TrainTypeFilter = 'both' | 'pacedTrain' | 'trainSchedule';
+export type TrainTypeFilter = 'both' | 'pacedTrain' | 'uniqueTrain';
 
 export type TrainCategoryFilter =
   | 'all'

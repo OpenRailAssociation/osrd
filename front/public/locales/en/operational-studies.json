@@ -137,7 +137,7 @@
           "shortName": "W"
         }
       },
-      "uniqueTrainSchedule": "Unique train schedule"
+      "uniqueTrain": "Unique train"
     },
     "moreDetails": "Display more details",
     "noElectricalProfileSet": "No electrical profile",
@@ -151,7 +151,7 @@
       "restore": "Restore to template"
     },
     "operationalPointReference": "Operational point reference",
-    "pacedTrainAndTrainCount": "$t(main.pacedTrainCount, { 'count': {{pacedTrainCount}}, 'totalCount': {{totalPacedTrainCount}} }), $t(main.trainCount, { 'count': {{trainCount}}, 'totalCount': {{totalTrainScheduleCount}} }) selected",
+    "pacedTrainAndTrainCount": "$t(main.pacedTrainCount, { 'count': {{pacedTrainCount}}, 'totalCount': {{totalPacedTrainCount}} }), $t(main.trainCount, { 'count': {{trainCount}}, 'totalCount': {{totalUniqueTrainCount}} }) selected",
     "pacedTrainCountSelected_one": "1/{{totalCount}} service selected",
     "pacedTrainCountSelected_other": "{{count}}/{{totalCount}} services selected",
     "pacedTrainCount_one": "1/{{totalCount}} service",
@@ -208,10 +208,10 @@
       "closeFilter": "Close filter",
       "copy": "copy",
       "delete": "Delete",
-      "deletePacedTrainAndTrainSelectionConfirmation": "Do you confirm the deletion of $t(main.pacedTrain, { 'count': {{selectedPacedTrainsCount}} }) and $t(main.train, { 'count': {{selectedTrainSchedulesCount}} }) ?",
+      "deletePacedTrainAndTrainSelectionConfirmation": "Do you confirm the deletion of $t(main.pacedTrain, { 'count': {{selectedPacedTrainsCount}} }) and $t(main.train, { 'count': {{selectedUniqueTrainsCount}} }) ?",
       "deletePacedTrainSelectionConfirmation": "Do you confirm the deletion of $t(main.pacedTrain, { 'count': {{selectedPacedTrainsCount}} }) ?",
       "deleteSelection": "Delete selected trains",
-      "deleteTrainSelectionConfirmation": "Do you confirm the deletion of $t(main.train, { 'count': {{selectedTrainSchedulesCount}} }) ?",
+      "deleteTrainSelectionConfirmation": "Do you confirm the deletion of $t(main.train, { 'count': {{selectedUniqueTrainsCount}} }) ?",
       "duplicate": "Clone",
       "exportSelection": "Export selected trains",
       "filterLabel": "Name, label",
@@ -278,7 +278,6 @@
       "trainAdded": "Train added",
       "trainCategories": "Train categories",
       "trainDeleted": "{{ name }} train has been deleted.",
-      "trainSchedule": "Unique train",
       "trainScheduleSets": {
         "addTrainScheduleSet": "Add package",
         "cancel": "Cancel",
@@ -322,6 +321,7 @@
         "transformToLocalCopySubmit": "Make a local copy"
       },
       "trainType": "Services, trains",
+      "uniqueTrain": "Unique train",
       "unselectAll": "Unselect all",
       "update": "Edit",
       "validityFilter": "Trains validity"
@@ -338,7 +338,7 @@
   },
   "manageTimetableItem": {
     "addPacedTrain": "Add a service",
-    "addTrainSchedule": "Add a train",
+    "addUniqueTrain": "Add a train",
     "addVia": "Add this waypoint",
     "addVias": "Add waypoints",
     "allowances": {
@@ -482,13 +482,13 @@
     "toggleTrigramSearch": "Toggle trigram search",
     "trainAdded": "Train added",
     "trainLabels": "Tags",
-    "trainScheduleUpdated": "Train schedule updated",
-    "turnPacedTrainIntoTrainSchedule": "Turn this service into a train schedule",
-    "turnTrainScheduleIntoPacedTrain": "Turn this train schedule into a service",
+    "turnPacedTrainIntoUniqueTrain": "Turn this service into a unique train",
+    "turnUniqueTrainIntoPacedTrain": "Turn this unique train into a service",
     "unavailableDistance": "Unavailable distance",
+    "uniqueTrainUpdated": "Unique train updated",
     "updateOccurrence": "Edit this occurrence",
     "updatePacedTrain": "Edit this service",
-    "updateTrainSchedule": "Edit this train",
+    "updateUniqueTrain": "Edit this train",
     "usingElectricalProfiles": "Use electrical profiles",
     "via": "Via",
     "viewItineraryOnMap": "View the itinerary on the map",

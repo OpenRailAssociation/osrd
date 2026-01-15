@@ -12,35 +12,35 @@ export type DetailRow = {
 class TimetableItemDetailSection extends ScenarioTimetableSection {
   private readonly showItemsDetailsButton: Locator;
   private readonly pacedTrainDetailLabels: Locator;
-  private readonly trainScheduleDetailLabels: Locator;
+  private readonly uniqueTrainDetailLabels: Locator;
   private readonly pacedTrainStopsCount: Locator;
   private readonly pacedTrainPathLength: Locator;
   private readonly pacedTrainEnergyConsumed: Locator;
   private readonly pacedTrainDurationTime: Locator;
-  private readonly trainScheduleStopsCount: Locator;
-  private readonly trainSchedulePathLength: Locator;
-  private readonly trainScheduleEnergyConsumed: Locator;
-  private readonly trainScheduleDurationTime: Locator;
+  private readonly uniqueTrainStopsCount: Locator;
+  private readonly uniqueTrainPathLength: Locator;
+  private readonly uniqueTrainEnergyConsumed: Locator;
+  private readonly uniqueTrainDurationTime: Locator;
 
   constructor(page: Page) {
     super(page);
     this.showItemsDetailsButton = page.getByTestId('scenarios-show-train-details-button');
     this.pacedTrainDetailLabels = page.getByTestId('paced-train-more-info');
-    this.trainScheduleDetailLabels = page.getByTestId('train-schedule-more-info');
+    this.uniqueTrainDetailLabels = page.getByTestId('unique-train-more-info');
     this.pacedTrainStopsCount = page.getByTestId('paced-train-stop-count');
     this.pacedTrainPathLength = page.getByTestId('paced-train-path-length');
     this.pacedTrainEnergyConsumed = page.getByTestId('paced-train-allowance-energy-consumed');
     this.pacedTrainDurationTime = page.getByTestId('paced-train-duration-time');
-    this.trainScheduleStopsCount = page.getByTestId('train-schedule-stop-count');
-    this.trainSchedulePathLength = page.getByTestId('train-schedule-path-length');
-    this.trainScheduleEnergyConsumed = page.getByTestId('train-schedule-allowance-energy-consumed');
-    this.trainScheduleDurationTime = page.getByTestId('train-schedule-duration-time');
+    this.uniqueTrainStopsCount = page.getByTestId('unique-train-stop-count');
+    this.uniqueTrainPathLength = page.getByTestId('unique-train-path-length');
+    this.uniqueTrainEnergyConsumed = page.getByTestId('unique-train-allowance-energy-consumed');
+    this.uniqueTrainDurationTime = page.getByTestId('unique-train-duration-time');
   }
 
   async showTimetableItemsDetails(): Promise<void> {
     await this.showItemsDetailsButton.click();
     await expect(this.pacedTrainDetailLabels.first()).toBeVisible();
-    await expect(this.trainScheduleDetailLabels.first()).toBeVisible();
+    await expect(this.uniqueTrainDetailLabels.first()).toBeVisible();
   }
 
   async verifyPacedTrainDetails(
@@ -57,32 +57,27 @@ class TimetableItemDetailSection extends ScenarioTimetableSection {
     await expect.soft(this.pacedTrainDurationTime.nth(pacedTrainIndex)).toHaveText(durationTime);
   }
 
-  async verifyTrainScheduleDetails(
-    trainScheduleIndex: number,
+  async verifyUniqueTrainDetails(
+    uniqueTrainIndex: number,
     expectedDetails: DetailRow
   ): Promise<void> {
     const { stopsCount, pathLength, energyConsumed, durationTime } = expectedDetails;
 
-    await expect.soft(this.trainScheduleStopsCount.nth(trainScheduleIndex)).toHaveText(stopsCount);
-    await expect.soft(this.trainSchedulePathLength.nth(trainScheduleIndex)).toHaveText(pathLength);
+    await expect.soft(this.uniqueTrainStopsCount.nth(uniqueTrainIndex)).toHaveText(stopsCount);
+    await expect.soft(this.uniqueTrainPathLength.nth(uniqueTrainIndex)).toHaveText(pathLength);
     await expect
-      .soft(this.trainScheduleEnergyConsumed.nth(trainScheduleIndex))
+      .soft(this.uniqueTrainEnergyConsumed.nth(uniqueTrainIndex))
       .toHaveText(energyConsumed);
-    await expect
-      .soft(this.trainScheduleDurationTime.nth(trainScheduleIndex))
-      .toHaveText(durationTime);
+    await expect.soft(this.uniqueTrainDurationTime.nth(uniqueTrainIndex)).toHaveText(durationTime);
   }
 
-  async verifyTrainSchedulesDetails(details: DetailRow[]): Promise<void> {
+  async verifyUniqueTrainsDetails(details: DetailRow[]): Promise<void> {
     for (
-      let validTrainScheduleIndex = 0;
-      validTrainScheduleIndex < details.length;
-      validTrainScheduleIndex += 1
+      let validUniqueTrainIndex = 0;
+      validUniqueTrainIndex < details.length;
+      validUniqueTrainIndex += 1
     ) {
-      await this.verifyTrainScheduleDetails(
-        validTrainScheduleIndex,
-        details[validTrainScheduleIndex]
-      );
+      await this.verifyUniqueTrainDetails(validUniqueTrainIndex, details[validUniqueTrainIndex]);
     }
   }
 }

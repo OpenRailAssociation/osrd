@@ -379,7 +379,7 @@
         "frequency": 1440,
         "offset": 0,
         "shortName": "once",
-        "name": "once a day (TrainSchedule)",
+        "name": "once a day (Unique Train)",
         "linePatternRef": "120"
       }
     ],

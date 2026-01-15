@@ -91,7 +91,7 @@ test.describe('@op @simulation-settings-tab', () => {
       );
       await waitForInfraStateToBeCached(infra.id);
     });
-    await test.step('Add a new train schedule, set its properties and perform pathfinding', async () => {
+    await test.step('Add a new unique train, set its properties and perform pathfinding', async () => {
       await operationalStudiesPage.openTimetableItemForm();
       await operationalStudiesPage.setTimetableItemName(TRAIN_NAME);
       await rollingStockSelector.selectRollingStock(improbableRollingStockName);
@@ -138,7 +138,7 @@ test.describe('@op @simulation-settings-tab', () => {
       await simulationSettingsTab.checkMarecoMargin();
     });
 
-    await test.step('Create train schedule and verify (electrical profile ON)', async () => {
+    await test.step('Create unique train and verify (electrical profile ON)', async () => {
       await operationalStudiesPage.createTimetableItem();
       await operationalStudiesPage.closeToastNotification();
       await operationalStudiesPage.returnSimulationResult();
@@ -205,7 +205,7 @@ test.describe('@op @simulation-settings-tab', () => {
       await simulationSettingsTab.selectSpeedLimitTagOption('E32C');
     });
 
-    await test.step('Create train schedule and verify (speed limit tag ON)', async () => {
+    await test.step('Create unique train and verify (speed limit tag ON)', async () => {
       await operationalStudiesPage.createTimetableItem();
       await operationalStudiesPage.closeToastNotification();
       await operationalStudiesPage.returnSimulationResult();
@@ -281,7 +281,7 @@ test.describe('@op @simulation-settings-tab', () => {
       await simulationSettingsTab.activateLinearMargin();
     });
 
-    await test.step('Create train schedule and verify (Linear)', async () => {
+    await test.step('Create unique train and verify (Linear)', async () => {
       await operationalStudiesPage.createTimetableItem();
       await operationalStudiesPage.closeToastNotification();
       await operationalStudiesPage.returnSimulationResult();
@@ -358,7 +358,7 @@ test.describe('@op @simulation-settings-tab', () => {
       await simulationSettingsTab.selectSpeedLimitTagOption('E32C');
     });
 
-    await test.step('Create train schedule and verify outputs (all settings ON)', async () => {
+    await test.step('Create unique train and verify outputs (all settings ON)', async () => {
       await operationalStudiesPage.createTimetableItem();
       await operationalStudiesPage.closeToastNotification();
       await operationalStudiesPage.returnSimulationResult();

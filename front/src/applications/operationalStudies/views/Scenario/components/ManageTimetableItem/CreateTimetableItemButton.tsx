@@ -26,7 +26,7 @@ type CreateTimetableItemButtonProps = {
 };
 
 /**
- * Create train schedules and paced trains
+ * Create unique trains and paced trains
  */
 const CreateTimetableItemButton = ({
   setIsWorking,
@@ -96,7 +96,7 @@ const CreateTimetableItemButton = ({
       <span className="mr-2">
         <Plus size="lg" />
       </span>
-      {isPacedTrainMode ? t('addPacedTrain') : t('addTrainSchedule')}
+      {isPacedTrainMode ? t('addPacedTrain') : t('addUniqueTrain')}
     </button>
   );
 };

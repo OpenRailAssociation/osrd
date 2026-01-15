@@ -211,7 +211,7 @@ test.describe('@op @paced-trains', () => {
     await test.step('Verify initial counters', async () => {
       await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
         totalPacedTrainCount: TOTAL_PACED_TRAINS,
-        totalTrainScheduleCount: 0,
+        totalUniqueTrainCount: 0,
       });
     });
 
@@ -225,7 +225,7 @@ test.describe('@op @paced-trains', () => {
     await test.step('Verify counters increased by one', async () => {
       await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
         totalPacedTrainCount: TOTAL_PACED_TRAINS + 1,
-        totalTrainScheduleCount: 0,
+        totalUniqueTrainCount: 0,
       });
     });
 
@@ -240,7 +240,7 @@ test.describe('@op @paced-trains', () => {
     await test.step('Verify global counter with duplicate', async () => {
       await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
         totalPacedTrainCount: TOTAL_PACED_TRAINS_WITH_DUPLICATE,
-        totalTrainScheduleCount: 0,
+        totalUniqueTrainCount: 0,
       });
     });
 
@@ -252,7 +252,7 @@ test.describe('@op @paced-trains', () => {
       );
       await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
         totalPacedTrainCount: TOTAL_PACED_TRAINS,
-        totalTrainScheduleCount: 0,
+        totalUniqueTrainCount: 0,
       });
     });
   });
