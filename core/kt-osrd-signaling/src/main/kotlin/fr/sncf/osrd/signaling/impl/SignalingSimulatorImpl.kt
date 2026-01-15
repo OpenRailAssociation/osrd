@@ -1,8 +1,8 @@
 package fr.sncf.osrd.signaling.impl
 
-import fr.sncf.osrd.path.interfaces.TrainPath
-import fr.sncf.osrd.path.interfaces.getLegacyBlockPath
-import fr.sncf.osrd.path.interfaces.getLegacyRoutePath
+import fr.sncf.osrd.path.implementations.TrainPath
+import fr.sncf.osrd.path.implementations.getLegacyBlockPath
+import fr.sncf.osrd.path.implementations.getLegacyRoutePath
 import fr.sncf.osrd.signaling.*
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.SignalParameters

@@ -12,9 +12,9 @@ import fr.sncf.osrd.cli.RsWithBody
 import fr.sncf.osrd.cli.RsWithStatus
 import fr.sncf.osrd.cli.Take
 import fr.sncf.osrd.path.implementations.PartialDirTrackRange
+import fr.sncf.osrd.path.implementations.TrainPath
 import fr.sncf.osrd.path.implementations.buildRangeList
 import fr.sncf.osrd.path.implementations.buildTrainPathFromTracks
-import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.reporting.exceptions.OSRDError.newUnknownTrackSectionError
 import fr.sncf.osrd.sim_infra.api.DirTrackSectionId
 import fr.sncf.osrd.toDirection

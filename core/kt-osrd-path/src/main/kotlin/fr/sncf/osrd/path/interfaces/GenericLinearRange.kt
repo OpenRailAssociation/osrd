@@ -1,5 +1,6 @@
 package fr.sncf.osrd.path.interfaces
 
+import fr.sncf.osrd.path.implementations.TrainPath
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.Route
 import fr.sncf.osrd.sim_infra.api.TrackChunk

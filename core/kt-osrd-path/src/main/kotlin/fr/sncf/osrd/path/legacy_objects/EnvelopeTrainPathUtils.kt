@@ -1,7 +1,7 @@
 package fr.sncf.osrd.path.legacy_objects
 
+import fr.sncf.osrd.path.implementations.TrainPath
 import fr.sncf.osrd.path.interfaces.Electrification
-import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.legacy_objects.electrification.Electrified
 import fr.sncf.osrd.path.legacy_objects.electrification.Neutral
 import fr.sncf.osrd.path.legacy_objects.electrification.NonElectrified

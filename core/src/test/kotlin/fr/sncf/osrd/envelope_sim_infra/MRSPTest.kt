@@ -5,8 +5,8 @@ import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeTestUtils
 import fr.sncf.osrd.envelope.MRSPEnvelopeBuilder.LimitKind
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile.CONSTANT_SPEED
+import fr.sncf.osrd.path.implementations.TrainPath
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
-import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.railjson.schema.common.RJSWaypointRef
 import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection

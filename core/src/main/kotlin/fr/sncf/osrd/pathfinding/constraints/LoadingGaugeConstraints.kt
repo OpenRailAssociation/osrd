@@ -1,8 +1,8 @@
 package fr.sncf.osrd.pathfinding.constraints
 
 import fr.sncf.osrd.graph.PathfindingConstraint
+import fr.sncf.osrd.path.implementations.TrainPath
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
-import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.sim_infra.api.*

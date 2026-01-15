@@ -5,8 +5,8 @@ import fr.sncf.osrd.api.InfraMetadata
 import fr.sncf.osrd.api.TrackLocation
 import fr.sncf.osrd.api.pathfinding.*
 import fr.sncf.osrd.cli.RqFake
+import fr.sncf.osrd.path.implementations.TrainPath
 import fr.sncf.osrd.path.interfaces.JsonTrainPath.TrackSectionRange
-import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSLoadingGaugeLimit
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType

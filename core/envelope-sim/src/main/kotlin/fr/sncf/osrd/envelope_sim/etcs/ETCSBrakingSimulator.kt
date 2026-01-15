@@ -7,7 +7,7 @@ import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.etcs.BrakingType.IND
 import fr.sncf.osrd.envelope_sim.etcs.BrakingType.PS
 import fr.sncf.osrd.envelope_sim.pipelines.increase
-import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.implementations.TrainPath
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.utils.arePositionsEqual
 import fr.sncf.osrd.utils.units.Offset

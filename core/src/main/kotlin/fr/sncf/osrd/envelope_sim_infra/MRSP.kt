@@ -5,7 +5,7 @@ import fr.sncf.osrd.envelope.MRSPEnvelopeBuilder
 import fr.sncf.osrd.envelope.part.EnvelopePart
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
-import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.implementations.TrainPath
 import fr.sncf.osrd.sim_infra.api.SpeedLimitProperty
 import fr.sncf.osrd.sim_infra.api.SpeedLimitSource.UnknownTag
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager

@@ -2,6 +2,7 @@ package fr.sncf.osrd.path.interfaces
 
 import com.squareup.moshi.Json
 import fr.sncf.osrd.path.implementations.PartialBlockRange
+import fr.sncf.osrd.path.implementations.TrainPath
 import fr.sncf.osrd.path.implementations.buildRangeList
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlockRanges
 import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping

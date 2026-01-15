@@ -2,7 +2,7 @@ package fr.sncf.osrd.api.pathfinding
 
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.graph.*
-import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.implementations.TrainPath
 import fr.sncf.osrd.pathfinding.constraints.ElectrificationConstraints
 import fr.sncf.osrd.pathfinding.constraints.LoadingGaugeConstraints
 import fr.sncf.osrd.pathfinding.constraints.SignalingSystemConstraints

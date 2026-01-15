@@ -21,10 +21,35 @@ import fr.sncf.osrd.utils.units.toDirected
 import kotlin.collections.flatMap
 
 /**
- * Basic path, does not support backtracks. Paths with backtracks are meant to be concatenated
- * versions of other path types.
+ * A `TrainPath` describes the path taken by a train and its properties. It is built in a way that
+ * can easily be mapped to train simulations, where we track the distance travelled by the train
+ * head.
+ *
+ * `Offset<TrainPath>` is the correct typing to locate elements on a path.
+ *
+ * We consider that 1m of train path means 1m of train movement, not necessarily 1m of actual track
+ * length. Specifically, when a train turns around at a station, no distance is travelled. See
+ * below, where a train goes up to a point and turn around:
+ * ```
+ *                         backtrack
+ *                         location
+ * ========================>|
+ * -------------------------|-----    track section
+ * <============############|
+ *              ^   train   ^
+ *              ^   length  ^
+ *             new         old
+ *             head        head
+ * ```
+ *
+ * What we consider the "train path" is marked with `===>` symbols. The area covered by the train
+ * itself ('#') is excluded from the path after turning around. 1m after the backtrack offset is
+ * already `train length + 1m` away from the previous location.
+ *
+ * `getBlocks` and similar methods only return block ranges that are part of the train path. This
+ * may include partial blocks, especially at the edges of the path or around backtracks.
  */
-data class TrainPathNoBacktrack(
+data class TrainPath(
     private val rawInfra: RawInfra,
     private val blockInfra: BlockInfra,
     private val routes: List<RouteRange>?,
@@ -37,7 +62,7 @@ data class TrainPathNoBacktrack(
     // approximate blocks along the path (when we lack context and don't have the actual ones).
     // TODO: always forward actual blocks, from pathfinding to any Train Path constructor
     private val haveApproximateBlocks: Boolean,
-) : TrainPath {
+) : PhysicsPath, PathProperties {
 
     private val cachedEnvelopeSimPath by lazy { computeEnvelopeSimPath() }
 
@@ -78,10 +103,10 @@ data class TrainPathNoBacktrack(
         checkRangeList(chunks) { rawInfra.getTrackChunkLength(it.value).forceDirected() }
     }
 
-    override fun subPath(from: Offset<TrainPath>?, to: Offset<TrainPath>?): TrainPath {
+    fun subPath(from: Offset<TrainPath>?, to: Offset<TrainPath>?): TrainPath {
         val fromDist = from ?: Offset(0.meters)
         val toDist = to ?: getLength()
-        return TrainPathNoBacktrack(
+        return TrainPath(
             rawInfra = rawInfra,
             blockInfra = blockInfra,
             routes = routes?.subRange(fromDist, toDist, resetOffsets = true),
@@ -93,18 +118,18 @@ data class TrainPathNoBacktrack(
         )
     }
 
-    override fun getBlocks(): List<BlockRange> {
+    fun getBlocks(): List<BlockRange> {
         require(!haveApproximateBlocks)
         return blocks
     }
 
-    override fun getRoutes(): List<RouteRange> = routes!!
+    fun getRoutes(): List<RouteRange> = routes!!
 
-    override fun getChunks(): List<DirChunkRange> = chunks
+    fun getChunks(): List<DirChunkRange> = chunks
 
-    override fun getZonePaths(): List<ZonePathRange> = cachedZonePaths
+    fun getZonePaths(): List<ZonePathRange> = cachedZonePaths
 
-    override fun getZoneRanges(): List<ZoneRange> = cachedZoneRanges
+    fun getZoneRanges(): List<ZoneRange> = cachedZoneRanges
 
     override val length: Double
         get() = getLength().meters
@@ -343,7 +368,7 @@ data class TrainPathNoBacktrack(
         return copy(routes = routeRanges)
     }
 
-    override fun getBacktrackLocations(): List<Offset<TrainPath>> {
+    fun getBacktrackLocations(): List<Offset<TrainPath>> {
         return backtrackLocations
     }
 
@@ -381,4 +406,20 @@ data class TrainPathNoBacktrack(
         val routes = listToPrintable(routes) { rawInfra.getRouteName(it) }
         return "$chunks ; blocks=$blocks ; routes=$routes"
     }
+}
+
+// Extension functions that help with backward compatibility.
+// These should only exist during the migration to enable more local changes,
+// to allow partial migration while still having a working core.
+// Every call site will become a bug once we have backtracks.
+// TODO path migration: remove these.
+
+fun TrainPath.getLegacyBlockPath(): List<BlockId> {
+    // Legacy block list excluded blocks that were only used in 0-length segments
+    return getBlocks().filter { !it.isSinglePoint() }.map { it.value }
+}
+
+fun TrainPath.getLegacyRoutePath(): List<RouteId> {
+    // Legacy route list excluded routes that were only used in 0-length segments
+    return getRoutes().filter { !it.isSinglePoint() }.map { it.value }
 }

@@ -2,12 +2,12 @@ package fr.sncf.osrd.stdcm.infra_exploration
 
 import fr.sncf.osrd.conflicts.PathStop
 import fr.sncf.osrd.graph.PathfindingConstraint
+import fr.sncf.osrd.path.implementations.TrainPath
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlockRanges
 import fr.sncf.osrd.path.interfaces.BlockRange
 import fr.sncf.osrd.path.interfaces.GenericLinearRange
 import fr.sncf.osrd.path.interfaces.RouteRange
-import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.subRange
 import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
 import fr.sncf.osrd.pathfinding.BlockLocation

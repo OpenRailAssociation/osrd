@@ -5,9 +5,9 @@ import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.etcs.BrakingType.IND
 import fr.sncf.osrd.envelope_sim.etcs.ETCSBrakingSimulatorImpl
 import fr.sncf.osrd.envelope_sim.etcs.EoaType
+import fr.sncf.osrd.path.implementations.TrainPath
 import fr.sncf.osrd.path.interfaces.BlockRange
 import fr.sncf.osrd.path.interfaces.RouteRange
-import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.ZoneRange
 import fr.sncf.osrd.path.interfaces.addLinearObjects
 import fr.sncf.osrd.path.interfaces.mapPointObjects

@@ -1,8 +1,8 @@
 package fr.sncf.osrd.stdcm.preprocessing
 
 import com.google.common.collect.Multimap
+import fr.sncf.osrd.path.implementations.TrainPath
 import fr.sncf.osrd.path.interfaces.BlockRange
-import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.BlockInfra
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer

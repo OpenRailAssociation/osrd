@@ -1,7 +1,7 @@
 package fr.sncf.osrd.stdcm
 
 import fr.sncf.osrd.envelope.Envelope
-import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.implementations.TrainPath
 import fr.sncf.osrd.sim_infra.api.RouteId
 import fr.sncf.osrd.stdcm.graph.EngineeringAllowanceRange
 import fr.sncf.osrd.train.TrainStop

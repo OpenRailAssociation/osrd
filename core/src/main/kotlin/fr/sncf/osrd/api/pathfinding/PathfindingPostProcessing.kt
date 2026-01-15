@@ -1,7 +1,7 @@
 package fr.sncf.osrd.api.pathfinding
 
 import fr.sncf.osrd.api.FullInfra
-import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.implementations.TrainPath
 import fr.sncf.osrd.path.interfaces.toJsonTrainPath
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError

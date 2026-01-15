@@ -2,9 +2,9 @@ package fr.sncf.osrd.utils
 
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.path.implementations.PartialDirTrackRange
+import fr.sncf.osrd.path.implementations.TrainPath
 import fr.sncf.osrd.path.implementations.buildRangeList
 import fr.sncf.osrd.path.implementations.buildTrainPathFromTracks
-import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.subRange
 import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
 import fr.sncf.osrd.reporting.exceptions.OSRDError.newUnknownTrackSectionError

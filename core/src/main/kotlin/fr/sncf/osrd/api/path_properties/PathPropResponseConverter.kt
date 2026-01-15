@@ -2,7 +2,7 @@ package fr.sncf.osrd.api.path_properties
 
 import com.google.common.collect.Range
 import fr.sncf.osrd.api.RangeValues
-import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.implementations.TrainPath
 import fr.sncf.osrd.railjson.schema.geom.RJSLineString
 import fr.sncf.osrd.sim_infra.api.NeutralSection
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra

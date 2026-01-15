@@ -1,8 +1,8 @@
 package fr.sncf.osrd.envelope_sim
 
 import com.google.common.collect.RangeMap
+import fr.sncf.osrd.path.implementations.TrainPath
 import fr.sncf.osrd.path.interfaces.PhysicsPath
-import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.utils.DistanceRangeSet
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters

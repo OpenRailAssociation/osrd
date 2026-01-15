@@ -1,7 +1,7 @@
 package fr.sncf.osrd.standalone_sim.result
 
 import com.squareup.moshi.Json
-import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.implementations.TrainPath
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters

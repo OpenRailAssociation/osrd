@@ -103,7 +103,7 @@ fun buildTrainPathFromBlockRanges(
     val chunks = generateTrackChunks(rawInfra, blockInfra, blockRanges)
     val routeIds = routes ?: routeNames?.map { rawInfra.getRouteFromName(it) }
     val routes = routeIds?.let { generateRouteRanges(rawInfra, chunks, it) }
-    return TrainPathNoBacktrack(
+    return TrainPath(
         rawInfra,
         blockInfra,
         routes,

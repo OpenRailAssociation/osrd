@@ -1,7 +1,7 @@
 package fr.sncf.osrd.api
 
 import com.squareup.moshi.Json
-import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.implementations.TrainPath
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.sim_infra.api.TrackSection
 import fr.sncf.osrd.utils.DistanceRangeMap

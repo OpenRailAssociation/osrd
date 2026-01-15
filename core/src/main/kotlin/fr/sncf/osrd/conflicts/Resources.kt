@@ -1,7 +1,7 @@
 package fr.sncf.osrd.conflicts
 
 import fr.sncf.osrd.envelope.Envelope
-import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.implementations.TrainPath
 import fr.sncf.osrd.utils.units.Offset
 
 interface IncrementalRequirementCallbacks {
