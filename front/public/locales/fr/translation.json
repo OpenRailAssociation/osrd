@@ -582,6 +582,10 @@
     "uploadError": "Erreur lors du chargement du fichier"
   },
   "map": {
+    "cooperativeGestures": {
+      "cmd": "Utilisez ⌘ + défilement pour zoomer la carte",
+      "ctrl": "Utilisez Ctrl + défilement pour zoomer la carte"
+    },
     "layers-modal": {
       "data-layers": "Couches de données",
       "disabled-layer": "nécessaire pour l'outil actif",

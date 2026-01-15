@@ -1,7 +1,8 @@
-import { type RefObject, type PropsWithChildren, useEffect, useState } from 'react';
+import { type PropsWithChildren, type RefObject, useEffect, useState } from 'react';
 
 import type { Geometry } from 'geojson';
 import type { MapLayerMouseEvent, MapLibreEvent } from 'maplibre-gl';
+import { useTranslation } from 'react-i18next';
 import type { MapRef } from 'react-map-gl/maplibre';
 import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
 import { useParams } from 'react-router-dom';
@@ -42,6 +43,7 @@ type MapProps = {
    * - OP & tracks are full displayed, but elements ouside the area are muted
    */
   highlightedArea?: Geometry;
+  cooperativeGestures?: boolean;
 };
 
 const BaseMap = ({
@@ -61,7 +63,9 @@ const BaseMap = ({
   onIdle,
   onIdleRouterSync,
   highlightedArea,
+  cooperativeGestures = false,
 }: PropsWithChildren<MapProps>) => {
+  const { t } = useTranslation();
   const mapBlankStyle = useMapBlankStyle();
 
   const [mapIsLoaded, setMapIsLoaded] = useState(false);
@@ -79,6 +83,11 @@ const BaseMap = ({
     mapSearchMarker,
     lineSearchCode,
   } = mapSettings;
+
+  const cooperativeGesturesLocale = {
+    'CooperativeGesturesHandler.WindowsHelpText': t('map.cooperativeGestures.ctrl'),
+    'CooperativeGesturesHandler.MacHelpText': t('map.cooperativeGestures.cmd'),
+  };
 
   useEffect(() => {
     if (urlLat) {
@@ -129,7 +138,8 @@ const BaseMap = ({
       attributionControl={false} // Defined below
       dragPan
       maxPitch={85}
-      scrollZoom
+      cooperativeGestures={cooperativeGestures}
+      locale={cooperativeGesturesLocale}
       style={{ width: '100%', height: '100%' }}
       touchZoomRotate
     >
