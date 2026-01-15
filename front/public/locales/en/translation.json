@@ -582,6 +582,10 @@
     "uploadError": "Error occurred while uploading the file"
   },
   "map": {
+    "cooperativeGestures": {
+      "cmd": "Use ⌘ + scroll to zoom the map",
+      "ctrl": "Use Ctrl + scroll to zoom the map"
+    },
     "layers-modal": {
       "data-layers": "Data layers",
       "disabled-layer": "needed for the active tool",
