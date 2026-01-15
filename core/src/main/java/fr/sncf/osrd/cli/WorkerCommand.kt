@@ -15,6 +15,7 @@ import fr.sncf.osrd.api.stdcm.STDCMEndpoint
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import io.lettuce.core.RedisClient
+import io.lettuce.core.codec.ByteArrayCodec
 import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.context.Context
 import io.opentelemetry.context.propagation.TextMapGetter
@@ -115,7 +116,8 @@ class WorkerCommand : CliCommand {
         )
 
         val httpClient = OkHttpClient.Builder().readTimeout(120, TimeUnit.SECONDS).build()
-        val valkeyConnection = VALKEY_URL?.let { RedisClient.create(it).connect() }
+        val valkeyConnection =
+            VALKEY_URL?.let { RedisClient.create(it).connect(ByteArrayCodec.INSTANCE) }
         val s3Context = makeS3Context()
 
         val infraId = WORKER_KEY.split("-").first()
