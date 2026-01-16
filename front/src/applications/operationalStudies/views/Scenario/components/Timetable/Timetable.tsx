@@ -3,12 +3,17 @@ import { useCallback, useState } from 'react';
 import cx from 'classnames';
 import { Virtualizer } from 'virtua';
 
+import useScenarioTrainScheduleSet, {
+  type TimetableItemWithDetailsAndTrainScheduleSet,
+} from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
+import { Loader } from 'common/Loaders';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type {
   TimetableItemId,
   TimetableItem,
   TimetableItemToEditData,
 } from 'reducers/osrdconf/types';
+import { useAsyncMemo } from 'utils/useAsyncMemo';
 
 import CalendarTrainList from './CalendarTrainList';
 import TimetableToolbar from './TimetableToolbar';
@@ -17,8 +22,6 @@ import TrainScheduleSetDialog from './TrainScheduleSet/TrainScheduleSetDialog';
 import TrainScheduleSetTab from './TrainScheduleSet/TrainScheduleSetTab';
 import type { TimetableMode } from './types';
 import useFilterTimetableItems from './useFilterTimetableItems';
-import { sortTrainScheduleSets } from './utils';
-import { MOCK_CATALOG, MOCK_TRAIN_SCHEDULE_SETS } from '../../mockTrainScheduleSets';
 
 type TimetableProps = {
   setDisplayTimetableItemManagement: (mode: string) => void;
@@ -55,15 +58,14 @@ const Timetable = ({
   );
   const [showTrainScheduleSetDialog, setShowTrainScheduleSetDialog] = useState(false);
 
-  const { filteredTimetableItems, ...timetableFilters } =
-    useFilterTimetableItems(timetableItemsWithDetails);
+  const {
+    timetableItemsWithDetails: mockedTimetableItemsWithDetails,
+    getTrainScheduleSetsFromTimetableItems,
+  } = useScenarioTrainScheduleSet(timetableItemsWithDetails);
 
-  // TODO Package : replace this by a useMemo when back endpoint ready
-  const catalogEntryNameById = new Map<number, string>();
-  MOCK_CATALOG.forEach((entry) => {
-    if (!entry.name) return;
-    catalogEntryNameById.set(entry.id, entry.name);
-  });
+  const { filteredTimetableItems, ...timetableFilters } = useFilterTimetableItems(
+    mockedTimetableItemsWithDetails
+  );
 
   const handleClickTrainScheduleSet = useCallback(
     (id: number) => {
@@ -95,6 +97,17 @@ const Timetable = ({
       }
     },
     [selectedTimetableItemIds]
+  );
+
+  // TODO: the "as unknown as" should be removed on unmock.
+  // We do it because the PacedTrainWithDetail doesn't have (yet) the `train_schedule_set_id`
+  // But here we know that is set but the `useScenarioTrainScheduleSet` hook.
+  const trainScheduleSetsData = useAsyncMemo(
+    () =>
+      getTrainScheduleSetsFromTimetableItems(
+        filteredTimetableItems as unknown as TimetableItemWithDetailsAndTrainScheduleSet[]
+      ),
+    [filteredTimetableItems, getTrainScheduleSetsFromTimetableItems]
   );
 
   return (
@@ -137,37 +150,23 @@ const Timetable = ({
             />
           </Virtualizer>
         ) : (
-          <Virtualizer overscan={15}>
-            {MOCK_TRAIN_SCHEDULE_SETS.length > 0 &&
-              MOCK_TRAIN_SCHEDULE_SETS
-                // TODO Package : extract the sort part in a useMemo when back endpoint ready
-                .sort((a, b) => sortTrainScheduleSets(a, b, catalogEntryNameById))
-                .map((trainScheduleSet) => {
-                  // TODO Package : filter trains depending on their true train_schedule_set_id when back ready
-                  const trainScheduleSetTrains = filteredTimetableItems
-                    .map((item, i) => ({
-                      ...item,
-                      train_schedule_set_id: (i % 12) + 1,
-                    }))
-                    .filter((train) => train.train_schedule_set_id === trainScheduleSet.id);
-                  const trainScheduleSetTrainsIds = trainScheduleSetTrains.map((train) => train.id);
-                  const isSelected = trainScheduleSetTrains.every((train) =>
+          <>
+            {trainScheduleSetsData.type === 'ready' && (
+              <Virtualizer overscan={15}>
+                {trainScheduleSetsData.data.map(({ trainScheduleSet, catalog, trains }) => {
+                  const trainScheduleSetTrainsIds = trains.map((train) => train.id);
+                  const isSelected = trains.every((train) =>
                     selectedTimetableItemIds.includes(train.id)
                   );
                   const isIndeterminate =
                     !isSelected &&
-                    trainScheduleSetTrains.some((train) =>
-                      selectedTimetableItemIds.includes(train.id)
-                    );
-                  const catalogName =
-                    MOCK_CATALOG.find((entry) => entry.id === trainScheduleSet.catalog_entry_id)
-                      ?.name ?? '';
+                    trains.some((train) => selectedTimetableItemIds.includes(train.id));
 
                   return (
                     <TrainScheduleSetTab
                       key={trainScheduleSet.id}
                       trainScheduleSet={trainScheduleSet}
-                      catalogName={catalogName}
+                      catalogName={catalog?.name}
                       handleClickTrainScheduleSet={handleClickTrainScheduleSet}
                       handleSelectTrainScheduleSet={() =>
                         handleSelectTrainScheduleSet(trainScheduleSetTrainsIds)
@@ -184,7 +183,7 @@ const Timetable = ({
                         setSelectedTimetableItemIds={setSelectedTimetableItemIds}
                         removeAndUnselectTrains={removeAndUnselectTrains}
                         timetableItemToEditData={timetableItemToEditData}
-                        timetableItemsWithDetails={trainScheduleSetTrains}
+                        timetableItemsWithDetails={trains}
                         selectedTimetableItemIds={selectedTimetableItemIds}
                         projectingOnSimulatedPathException={projectingOnSimulatedPathException}
                         isSelectMode={isSelectMode}
@@ -193,16 +192,17 @@ const Timetable = ({
                     </TrainScheduleSetTab>
                   );
                 })}
-            <AddNewTrainScheduleSetTab onClick={() => setShowTrainScheduleSetDialog(true)} />
-          </Virtualizer>
+                <AddNewTrainScheduleSetTab onClick={() => setShowTrainScheduleSetDialog(true)} />
+              </Virtualizer>
+            )}
+            {trainScheduleSetsData.type === 'loading' && (
+              <Loader className="scenario-timetable-trainschedule-loader" />
+            )}
+          </>
         )}
       </div>
       {showTrainScheduleSetDialog && (
-        <TrainScheduleSetDialog
-          onCancel={() => {
-            setShowTrainScheduleSetDialog(false);
-          }}
-        />
+        <TrainScheduleSetDialog onCancel={() => setShowTrainScheduleSetDialog(false)} />
       )}
     </div>
   );

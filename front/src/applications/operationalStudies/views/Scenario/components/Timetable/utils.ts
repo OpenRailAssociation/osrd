@@ -8,6 +8,7 @@ import type {
   TrainMainCategory,
   RoundTrips,
   TrainScheduleSet,
+  CatalogEntry,
 } from 'common/api/osrdEditoastApi';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import type { SimulationSummary, TimetableItemWithDetails } from 'modules/timetableItem/types';
@@ -209,32 +210,32 @@ export const isSandbox = (trainScheduleSet: TrainScheduleSet) => !trainScheduleS
 
 export const computeTrainScheduleSetName = (
   trainScheduleSetName: string,
-  catalogName?: string
+  catalogName?: string | null
 ): string => (catalogName ? `${catalogName} | ${trainScheduleSetName}` : trainScheduleSetName);
 
 export const sortTrainScheduleSets = (
   set1: TrainScheduleSet,
   set2: TrainScheduleSet,
-  catalogEntryNameById: Map<number, string>
+  catalogEntryNameById: Map<number, CatalogEntry>
 ): number => {
   const set1CatalogId = set1.catalog_entry_id;
   const set2CatalogId = set2.catalog_entry_id;
 
-  const catalogName1 = set1CatalogId ? (catalogEntryNameById.get(set1CatalogId) ?? null) : null;
-  const catalogName2 = set2CatalogId ? (catalogEntryNameById.get(set2CatalogId) ?? null) : null;
+  const catalog1 = set1CatalogId ? (catalogEntryNameById.get(set1CatalogId) ?? null) : null;
+  const catalog2 = set2CatalogId ? (catalogEntryNameById.get(set2CatalogId) ?? null) : null;
 
   // If no catalog name, put at the end
-  if (!catalogName1 && catalogName2) return 1;
-  if (catalogName1 && !catalogName2) return -1;
+  if (!catalog1 && catalog2) return 1;
+  if (catalog1 && !catalog2) return -1;
 
   // If sandbox, put at the very end
   if (isSandbox(set1) && !isSandbox(set2)) return 1;
   if (!isSandbox(set1) && isSandbox(set2)) return -1;
 
   // If both have catalog names, build full names and compare
-  if (catalogName1 && catalogName2) {
-    const fullName1 = computeTrainScheduleSetName(set1.name ?? '', catalogName1);
-    const fullName2 = computeTrainScheduleSetName(set2.name ?? '', catalogName2);
+  if (catalog1 && catalog2) {
+    const fullName1 = computeTrainScheduleSetName(set1.name ?? '', catalog1.name);
+    const fullName2 = computeTrainScheduleSetName(set2.name ?? '', catalog2.name);
     return fullName1.localeCompare(fullName2);
   }
 
