@@ -479,7 +479,7 @@
     }
   },
   {
-    "timetable_id": 428,
+    "train_schedule_set_id": 428,
     "train_name": "Paced Train - All exceptions",
     "labels": ["NWS-NES", "Valid"],
     "rolling_stock_name": "FAST_RS_E2E",

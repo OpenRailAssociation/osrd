@@ -54,7 +54,7 @@ const TimetableBoardWrapper = ({
 }: TimetableBoardWrapperProps) => {
   const { openModal } = useContext(ModalContext);
 
-  const { timetableId } = useScenarioContext();
+  const { sandboxId } = useScenarioContext();
 
   const selectedTrainId = useSelector(getSelectedTrainId);
 
@@ -216,7 +216,7 @@ const TimetableBoardWrapper = ({
     try {
       data = JSON.parse(clipboardContent);
       const newTimetableItems = await postTimetableItems(
-        timetableId,
+        sandboxId,
         [...data.train_schedules, ...data.paced_trains],
         dispatch
       );
@@ -232,7 +232,7 @@ const TimetableBoardWrapper = ({
       if (data && data.train_schedules && data.paced_trains)
         dispatch(setFailure(castErrorToFailure(e)));
     }
-  }, [timetableId]);
+  }, [sandboxId]);
 
   const handleCut = useCallback(
     async (event: ClipboardEvent) => {

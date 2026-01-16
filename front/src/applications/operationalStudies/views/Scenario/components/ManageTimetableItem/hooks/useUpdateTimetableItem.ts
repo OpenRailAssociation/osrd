@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/views/Scenario/consts';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import { storePacedTrain } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
@@ -36,8 +35,6 @@ const useUpdateTimetableItem = (
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
   const dispatch = useAppDispatch();
 
-  const { timetableId } = useScenarioContext();
-
   const confName = useSelector(getName);
   const simulationConf = useSelector(getOperationalStudiesConf);
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
@@ -65,7 +62,6 @@ const useUpdateTimetableItem = (
       // The function will compare these original paced train informations with the one
       // from the store and save the differences in the exception property of the original paced train.
       formatPacedTrainPayload(simulationConf, rollingStock!.name, timetableItemToEditData),
-      timetableId,
       dispatch,
       upsertTimetableItems
     );

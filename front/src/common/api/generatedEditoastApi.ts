@@ -1121,17 +1121,6 @@ const injectedRtkApi = api
         }),
         providesTags: ['timetable'],
       }),
-      postTimetableByIdPacedTrains: build.mutation<
-        PostTimetableByIdPacedTrainsApiResponse,
-        PostTimetableByIdPacedTrainsApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/timetable/${queryArg.id}/paced_trains`,
-          method: 'POST',
-          body: queryArg.body,
-        }),
-        invalidatesTags: ['timetable', 'paced_train'],
-      }),
       getTimetableByIdRequirements: build.query<
         GetTimetableByIdRequirementsApiResponse,
         GetTimetableByIdRequirementsApiArg
@@ -1174,6 +1163,24 @@ const injectedRtkApi = api
           },
         }),
         invalidatesTags: ['stdcm'],
+      }),
+      getTimetableByIdTrainScheduleSets: build.query<
+        GetTimetableByIdTrainScheduleSetsApiResponse,
+        GetTimetableByIdTrainScheduleSetsApiArg
+      >({
+        query: (queryArg) => ({ url: `/timetable/${queryArg.id}/train_schedule_sets` }),
+        providesTags: ['timetable', 'train_schedule_set'],
+      }),
+      postTimetableByIdTrainScheduleSets: build.mutation<
+        PostTimetableByIdTrainScheduleSetsApiResponse,
+        PostTimetableByIdTrainScheduleSetsApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/timetable/${queryArg.id}/train_schedule_sets`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['timetable', 'train_schedule_set'],
       }),
       getTowedRollingStock: build.query<
         GetTowedRollingStockApiResponse,
@@ -1276,6 +1283,17 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({ url: `/train_schedule_set/${queryArg.id}`, method: 'DELETE' }),
         invalidatesTags: ['train_schedule_set'],
+      }),
+      postTrainScheduleSetByIdPacedTrains: build.mutation<
+        PostTrainScheduleSetByIdPacedTrainsApiResponse,
+        PostTrainScheduleSetByIdPacedTrainsApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/train_schedule_set/${queryArg.id}/paced_trains`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['train_schedule_set', 'paced_train'],
       }),
       getVersion: build.query<GetVersionApiResponse, GetVersionApiArg>({
         query: () => ({ url: `/version` }),
@@ -2333,13 +2351,6 @@ export type GetTimetableByIdPacedTrainsApiArg = {
   page?: number;
   pageSize?: number;
 };
-export type PostTimetableByIdPacedTrainsApiResponse =
-  /** status 200 The created paced trains */ PacedTrainResponse[];
-export type PostTimetableByIdPacedTrainsApiArg = {
-  /** A timetable ID */
-  id: number;
-  body: PacedTrain[];
-};
 export type GetTimetableByIdRequirementsApiResponse =
   /** status 200 The paginated list of timetable requirements */ PaginationStats & {
     results: CoreTrainRequirementsById[];
@@ -2431,6 +2442,26 @@ export type PostTimetableByIdStdcmApiArg = {
     work_schedule_group_id?: number | null;
   };
 };
+export type GetTimetableByIdTrainScheduleSetsApiResponse =
+  /** status 200 list of train_schedule_sets linked to a timetable */ {
+    catalog_entry_id?: number | null;
+    description: string;
+    id: number;
+    name?: string | null;
+    published: boolean;
+  }[];
+export type GetTimetableByIdTrainScheduleSetsApiArg = {
+  /** A timetable ID */
+  id: number;
+};
+export type PostTimetableByIdTrainScheduleSetsApiResponse = unknown;
+export type PostTimetableByIdTrainScheduleSetsApiArg = {
+  /** A timetable ID */
+  id: number;
+  body: {
+    train_schedule_set_ids: number[];
+  };
+};
 export type GetTowedRollingStockApiResponse = /** status 200  */ PaginationStats & {
   results: TowedRollingStock[];
 };
@@ -2490,6 +2521,13 @@ export type DeleteTrainScheduleSetByIdApiResponse = unknown;
 export type DeleteTrainScheduleSetByIdApiArg = {
   /** A train schedule set ID */
   id: number;
+};
+export type PostTrainScheduleSetByIdPacedTrainsApiResponse =
+  /** status 200 The created paced trains */ PacedTrainResponse[];
+export type PostTrainScheduleSetByIdPacedTrainsApiArg = {
+  /** A train schedule set ID */
+  id: number;
+  body: PacedTrain[];
 };
 export type GetVersionApiResponse = /** status 200 Return the service version */ Version;
 export type GetVersionApiArg = void;
@@ -3963,7 +4001,7 @@ export type PacedTrain = TrainSchedule & {
 };
 export type PacedTrainResponse = PacedTrain & {
   id: number;
-  timetable_id: number;
+  train_schedule_set_id: number;
 };
 export type CoreEtcsConflictCurves = {
   conflict_type: 'Spacing' | 'Routing';
@@ -4452,8 +4490,8 @@ export type SearchResultItemTrainSchedule = {
   schedule: ScheduleItem[];
   speed_limit_tag?: string | null;
   start_time: string;
-  timetable_id: number;
   train_name: string;
+  train_schedule_set_id: number;
 };
 export type SearchResultItemUser = {
   id: number;

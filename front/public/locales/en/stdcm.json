@@ -270,6 +270,8 @@
     "destination": "Destination",
     "linkedTrain": {
       "anterior": "Anterior train",
+      "error": "Linked trains error",
+      "noTrainScheduleSetFound": "No train schedule sets found for the timetable",
       "posterior": "Posterior train"
     },
     "origin": "Origin",

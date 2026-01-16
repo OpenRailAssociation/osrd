@@ -231,8 +231,8 @@ const osrdEditoastApi = generatedEditoastApi
       deletePacedTrain: {
         invalidatesTags: ['timetable', 'scenarios'],
       },
-      postTimetableByIdPacedTrains: {
-        invalidatesTags: ['timetable', 'scenarios'],
+      postTrainScheduleSetByIdPacedTrains: {
+        invalidatesTags: ['train_schedule_set', 'scenarios'],
       },
 
       // Project handling

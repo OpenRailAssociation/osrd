@@ -737,7 +737,7 @@ pub(super) struct SearchResultItemScenario {
 #[cfg_attr(test, derive(serde::Deserialize))]
 #[search(
     table = "paced_train",
-    column(name = "timetable_id", data_type = "integer"),
+    column(name = "train_schedule_set_id", data_type = "integer"),
     column(name = "train_name", data_type = "string")
 )]
 /// A search result item for a query with `object = "trainschedule"`
@@ -750,8 +750,8 @@ pub(super) struct SearchResultItemTrainSchedule {
     labels: Vec<Option<String>>,
     #[search(sql = "paced_train.rolling_stock_name")]
     rolling_stock_name: String,
-    #[search(sql = "paced_train.timetable_id")]
-    timetable_id: i64,
+    #[search(sql = "paced_train.train_schedule_set_id")]
+    train_schedule_set_id: i64,
     #[search(sql = "paced_train.start_time")]
     start_time: DateTime<Utc>,
     #[search(sql = "paced_train.schedule")]
@@ -798,7 +798,7 @@ pub mod tests {
 
     use super::*;
     use crate::models::fixtures::create_simple_paced_train;
-    use crate::models::fixtures::create_timetable;
+    use crate::models::fixtures::create_train_schedule_set;
     use crate::views::test_app::TestAppBuilder;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -806,18 +806,17 @@ pub mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        // Create the timetable in the database
-        let timetable = create_timetable(&mut pool.get_ok()).await;
-        let timetable_id = timetable.id;
+        // Create a train_schedule_set in the database
+        let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
 
         // Add a train_schedule in the database
-        let train = create_simple_paced_train(&mut pool.get_ok(), timetable_id).await;
+        let train = create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
 
         // The body
         let request = app.post("/search").json(&json!({
             "object": "trainschedule",
             "query": ["and", ["=", ["train_name"], train.train_name],
-                             ["=", ["timetable_id"], timetable_id]],
+                             ["=", ["train_schedule_set_id"], train.train_schedule_set_id]],
         }));
 
         let response: Vec<SearchResultItemTrainSchedule> = app
@@ -835,12 +834,11 @@ pub mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        // Create the timetable in the database
-        let timetable = create_timetable(&mut pool.get_ok()).await;
-        let timetable_id = timetable.id;
+        // Create a train_schedule_set in the database
+        let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
 
         // Add a train_schedule in the database
-        create_simple_paced_train(&mut pool.get_ok(), timetable_id).await;
+        create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
 
         let train_name = "NonExistingTrain";
 
@@ -848,7 +846,7 @@ pub mod tests {
         let request = app.post("/search").json(&json!({
             "object": "trainschedule",
             "query": ["and", ["=", ["train_name"], train_name],
-                             ["=", ["timetable_id"], timetable_id]],
+                             ["=", ["train_schedule_set_id"], train_schedule_set.id]],
         }));
 
         let response: Vec<SearchResultItemTrainSchedule> = app

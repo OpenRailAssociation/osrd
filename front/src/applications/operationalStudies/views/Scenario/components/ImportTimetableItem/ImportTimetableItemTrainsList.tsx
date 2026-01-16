@@ -62,7 +62,7 @@ const ImportTimetableItemTrainsList = ({
 }: ImportTimetableItemTrainsListProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'importTrains' });
   const dispatch = useAppDispatch();
-  const { scenario } = useScenarioContext();
+  const { scenario, sandboxId } = useScenarioContext();
   const {
     train_schedules: trainSchedulesFromJsonData,
     paced_trains: pacedTrainsFromJsonData,
@@ -162,8 +162,6 @@ const ImportTimetableItemTrainsList = ({
   const [postMacroNodes] = osrdEditoastApi.endpoints.postMacroNodes.useMutation();
   const [postMacroNotes] = osrdEditoastApi.endpoints.postMacroNotes.useMutation();
 
-  const timetableId = scenario.timetable_id;
-
   const postRoundTrips = async (
     roundTrips: RoundTripsFromJson,
     formattedPacedTrains: TimetableItem[]
@@ -226,7 +224,7 @@ const ImportTimetableItemTrainsList = ({
       }
 
       const timetableItems = await postTimetableItems(
-        timetableId,
+        sandboxId,
         [...trainSchedulePayloads, ...pacedTrainPayloads],
         dispatch
       );

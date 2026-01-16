@@ -185,16 +185,14 @@ export async function createDataForTests(): Promise<void> {
       projectWithTimetableItems.id,
       timetableItemStudyName
     );
-    const scenarioWithTimetableItems = (
-      await createScenario(
-        timetableItemScenarioName,
-        projectWithTimetableItems.id,
-        studyWithTimetableItems.id,
-        mediumInfra.id
-      )
-    ).scenario;
-    await sendTrains(scenarioWithTimetableItems.timetable_id, trainSchedulesJson);
-    await sendTrains(scenarioWithTimetableItems.timetable_id, pacedTrainsJson);
+    const { scenario, trainScheduleSet } = await createScenario(
+      timetableItemScenarioName,
+      projectWithTimetableItems.id,
+      studyWithTimetableItems.id,
+      mediumInfra.id
+    );
+    await sendTrains(trainScheduleSet.id, trainSchedulesJson);
+    await sendTrains(trainScheduleSet.id, pacedTrainsJson);
 
     // Step 7: Configure STDCM search environment for the tests
     const stdcmEnvironment = {
@@ -207,7 +205,7 @@ export async function createDataForTests(): Promise<void> {
         '2024-10-18T23:59:59',
         'Europe/Paris'
       ).toISOString(),
-      timetable_id: scenarioWithTimetableItems.timetable_id,
+      timetable_id: scenario.timetable_id,
       enabled_from: new Date(Date.now() - 60 * 60 * 1000).toISOString(), // one hour ago
       enabled_until: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(), // in four hours
       speed_limits: {

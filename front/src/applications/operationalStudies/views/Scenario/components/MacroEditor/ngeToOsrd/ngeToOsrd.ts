@@ -25,7 +25,7 @@ const handleLabelOperation = async ({
   type,
   netzgrafikDto,
   label,
-  timetableId,
+  trainScheduleSetId,
   infraId,
   state,
   dispatch,
@@ -35,7 +35,7 @@ const handleLabelOperation = async ({
   type: NGEEvent['type'];
   netzgrafikDto: NetzgrafikDto;
   label: LabelDto;
-  timetableId: number;
+  trainScheduleSetId: number;
   infraId: number;
   state: MacroEditorState;
   dispatch: AppDispatch;
@@ -52,7 +52,7 @@ const handleLabelOperation = async ({
         await handleUpdateTimetableItem({
           netzgrafikDto,
           trainrun,
-          timetableId,
+          trainScheduleSetId,
           infraId,
           state,
           dispatch,
@@ -71,7 +71,7 @@ const handleLabelOperation = async ({
 export const handleOperation = async ({
   event,
   netzgrafikDto,
-  timetableId,
+  trainScheduleSetId,
   infraId,
   state,
   dispatch,
@@ -80,7 +80,7 @@ export const handleOperation = async ({
 }: {
   event: NGEEvent;
   netzgrafikDto: NetzgrafikDto;
-  timetableId: number;
+  trainScheduleSetId: number;
   infraId: number;
   state: MacroEditorState;
   dispatch: AppDispatch;
@@ -95,7 +95,7 @@ export const handleOperation = async ({
         dispatch,
         netzgrafikDto,
         infraId,
-        timetableId,
+        trainScheduleSetId,
         addUpsertedTimetableItems,
         addDeletedTimetableItemIds,
         type,
@@ -107,7 +107,7 @@ export const handleOperation = async ({
         type,
         netzgrafikDto,
         trainrunId: event.trainrun.id,
-        timetableId,
+        trainScheduleSetId,
         infraId,
         state,
         dispatch,
@@ -121,7 +121,7 @@ export const handleOperation = async ({
         type,
         netzgrafikDto,
         label: event.label,
-        timetableId,
+        trainScheduleSetId,
         infraId,
         state,
         dispatch,

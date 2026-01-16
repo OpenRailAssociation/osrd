@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { skipToken } from '@reduxjs/toolkit/query';
 import { useParams } from 'react-router-dom';
@@ -19,6 +19,8 @@ const useScenario = () => {
 
   const { scenarioId: urlScenarioId } = useParams() as SimulationParams;
 
+  const [sandboxId, setSandboxId] = useState<number>();
+
   const scenarioId = useMemo(() => parseNumber(urlScenarioId), [urlScenarioId]);
 
   const {
@@ -32,6 +34,18 @@ const useScenario = () => {
         }
       : skipToken
   );
+
+  const { currentData: trainScheduleSets } =
+    osrdEditoastApi.endpoints.getTimetableByIdTrainScheduleSets.useQuery(
+      scenario
+        ? {
+            id: scenario.timetable_id,
+          }
+        : skipToken
+    );
+  const [postTrainScheduleSet] = osrdEditoastApi.endpoints.postTrainScheduleSet.useMutation();
+  const [linkTrainscheduleSetToTimetable] =
+    osrdEditoastApi.endpoints.postTimetableByIdTrainScheduleSets.useMutation();
 
   useEffect(() => {
     if (scenario) {
@@ -52,7 +66,38 @@ const useScenario = () => {
     }
   }, [scenarioId]);
 
-  return { scenario };
+  // Ensure a sandbox train schedule set exists and is linked to the timetable
+  useEffect(() => {
+    const checkAndCreateSandbox = async (timetableId: number) => {
+      const sandbox = await postTrainScheduleSet({
+        trainScheduleSetForm: {
+          name: null, // sandbox never has a name
+          description: '',
+          published: false,
+        },
+      }).unwrap();
+
+      setSandboxId(sandbox.id);
+
+      await linkTrainscheduleSetToTimetable({
+        id: timetableId,
+        body: { train_schedule_set_ids: [sandbox.id] },
+      }).unwrap();
+    };
+
+    if (!trainScheduleSets || !scenario) return;
+
+    const sandbox = trainScheduleSets.find((tss) => !tss.name);
+
+    if (sandbox) {
+      setSandboxId(sandbox.id);
+      return;
+    }
+
+    checkAndCreateSandbox(scenario.timetable_id);
+  }, [trainScheduleSets, scenario?.timetable_id]);
+
+  return { scenario, sandboxId };
 };
 
 export default useScenario;

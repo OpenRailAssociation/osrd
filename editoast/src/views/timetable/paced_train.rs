@@ -96,7 +96,7 @@ enum PacedTrainError {
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub(in crate::views) struct PacedTrainResponse {
     id: i64,
-    timetable_id: i64,
+    train_schedule_set_id: i64,
     #[serde(flatten)]
     paced_train: PacedTrain,
 }
@@ -105,7 +105,7 @@ impl From<models::PacedTrain> for PacedTrainResponse {
     fn from(value: models::PacedTrain) -> Self {
         Self {
             id: value.id,
-            timetable_id: value.timetable_id,
+            train_schedule_set_id: value.train_schedule_set_id,
             paced_train: value.into(),
         }
     }
@@ -1389,7 +1389,7 @@ mod tests {
     use crate::models::fixtures::create_paced_train_with_exceptions;
     use crate::models::fixtures::create_simple_paced_train;
     use crate::models::fixtures::create_small_infra;
-    use crate::models::fixtures::create_timetable;
+    use crate::models::fixtures::create_train_schedule_set;
     use crate::models::fixtures::simple_paced_train_base;
     use crate::models::fixtures::simple_paced_train_changeset;
     use crate::models::fixtures::simple_sub_category;
@@ -1416,11 +1416,11 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let timetable = create_timetable(&mut pool.get_ok()).await;
+        let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
         let paced_train_base = simple_paced_train_base();
         // Insert paced_train
         let request = app
-            .post(format!("/timetable/{}/paced_trains", timetable.id).as_str())
+            .post(format!("/train_schedule_set/{}/paced_trains", train_schedule_set.id).as_str())
             .json(&json!(vec![paced_train_base]));
 
         let response: Vec<PacedTrainResponse> = app
@@ -1444,7 +1444,7 @@ mod tests {
         .await
         .expect("Failed to create sub category");
 
-        let timetable = create_timetable(&mut pool.get_ok()).await;
+        let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
         let mut paced_train_base = simple_paced_train_base();
         paced_train_base.train_schedule_base.category = Some(TrainCategory::Sub {
             sub_category_code: created_sub_category.code.clone(),
@@ -1452,7 +1452,7 @@ mod tests {
 
         // Insert paced_train
         let request = app
-            .post(format!("/timetable/{}/paced_trains", timetable.id).as_str())
+            .post(format!("/train_schedule_set/{}/paced_trains", train_schedule_set.id).as_str())
             .json(&json!(vec![paced_train_base]));
 
         let response: Vec<PacedTrainResponse> = app
@@ -1488,8 +1488,9 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let timetable = create_timetable(&mut pool.get_ok()).await;
-        let simple_paced_train = simple_paced_train_changeset(timetable.id).exceptions(vec![]);
+        let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
+        let simple_paced_train =
+            simple_paced_train_changeset(train_schedule_set.id).exceptions(vec![]);
         let mut simple_paced_train = simple_paced_train
             .create(&mut pool.get_ok())
             .await
@@ -1528,8 +1529,9 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let timetable = create_timetable(&mut pool.get_ok()).await;
-        let paced_train = create_simple_paced_train(&mut pool.get_ok(), timetable.id).await;
+        let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
+        let paced_train =
+            create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
 
         let mut paced_train_base = simple_paced_train_base();
         paced_train_base.paced.as_mut().unwrap().time_window =
@@ -1558,8 +1560,9 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let timetable = create_timetable(&mut pool.get_ok()).await;
-        let paced_train = create_simple_paced_train(&mut pool.get_ok(), timetable.id).await;
+        let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
+        let paced_train =
+            create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
 
         let mut paced_train_base = simple_paced_train_base();
         paced_train_base.paced.as_mut().unwrap().time_window =
@@ -1591,8 +1594,9 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let timetable = create_timetable(&mut pool.get_ok()).await;
-        let paced_train = create_simple_paced_train(&mut pool.get_ok(), timetable.id).await;
+        let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
+        let paced_train =
+            create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
 
         let mut paced_train_base = simple_paced_train_base();
         paced_train_base.paced.as_mut().unwrap().time_window =
@@ -1623,8 +1627,9 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let timetable = create_timetable(&mut pool.get_ok()).await;
-        let paced_train = create_simple_paced_train(&mut pool.get_ok(), timetable.id).await;
+        let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
+        let paced_train =
+            create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
 
         let request = app
             .delete("/paced_train/")
@@ -1661,8 +1666,9 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let timetable = create_timetable(&mut pool.get_ok()).await;
-        let paced_train = create_simple_paced_train(&mut pool.get_ok(), timetable.id).await;
+        let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
+        let paced_train =
+            create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
 
         let request = app.get(&format!("/paced_train/{}", paced_train.id));
 
@@ -1678,7 +1684,7 @@ mod tests {
     async fn app_infra_id_paced_train_id_for_simulation_tests() -> (TestApp, i64, i64) {
         let db_pool = DbConnectionPoolV2::for_tests();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
-        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), "simulation_rolling_stock").await;
         let paced_train_base = PacedTrain {
@@ -1696,7 +1702,7 @@ mod tests {
         };
         let paced_train: PacedTrainChangeset = paced_train_base.into();
         let paced_train = paced_train
-            .timetable_id(timetable.id)
+            .train_schedule_set_id(train_schedule_set.id)
             .create(&mut db_pool.get_ok())
             .await
             .expect("Failed to create paced train");
@@ -1986,8 +1992,9 @@ mod tests {
     async fn get_paced_train_path_infra_not_found() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
-        let timetable = create_timetable(&mut pool.get_ok()).await;
-        let paced_train = create_simple_paced_train(&mut pool.get_ok(), timetable.id).await;
+        let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
+        let paced_train =
+            create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
 
         let request = app.get(&format!(
             "/paced_train/{}/path?infra_id={}",
@@ -2028,8 +2035,9 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
         let small_infra = create_small_infra(&mut pool.get_ok()).await;
-        let timetable = create_timetable(&mut pool.get_ok()).await;
-        let paced_train = create_simple_paced_train(&mut pool.get_ok(), timetable.id).await;
+        let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
+        let paced_train =
+            create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
         let request = app.get(
             format!(
                 "/paced_train/{}/path/?infra_id={}&exception_key=toto",
@@ -2069,8 +2077,9 @@ mod tests {
         let db_pool = app.db_pool();
 
         create_fast_rolling_stock(&mut db_pool.get_ok(), "R2D2").await;
-        let timetable = create_timetable(&mut db_pool.get_ok()).await;
-        let paced_train = create_simple_paced_train(&mut db_pool.get_ok(), timetable.id).await;
+        let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
+        let paced_train =
+            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.id).await;
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
 
         let request = app.get(&format!(
@@ -2116,7 +2125,7 @@ mod tests {
         let db_pool = app.db_pool();
 
         create_fast_rolling_stock(&mut db_pool.get_ok(), "R2D2").await;
-        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
         let mut exception = create_created_exception_with_change_groups("exception_created_key");
         exception.rolling_stock = Some(RollingStockChangeGroup {
             rolling_stock_name: "exception_rolling_stock".into(),
@@ -2124,7 +2133,7 @@ mod tests {
         });
         let paced_train = create_paced_train_with_exceptions(
             &mut db_pool.get_ok(),
-            timetable.id,
+            train_schedule_set.id,
             vec![exception.clone()],
         )
         .await;
@@ -2172,11 +2181,11 @@ mod tests {
         let db_pool = app.db_pool();
 
         create_fast_rolling_stock(&mut db_pool.get_ok(), "simulation_rolling_stock").await;
-        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
         let exception = create_created_exception_with_change_groups("exception_created_key");
         let paced_train = create_paced_train_with_exceptions(
             &mut db_pool.get_ok(),
-            timetable.id,
+            train_schedule_set.id,
             vec![exception.clone()],
         )
         .await;
@@ -2214,11 +2223,11 @@ mod tests {
         let db_pool = DbConnectionPoolV2::for_tests();
 
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
-        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
         let _ = create_fast_rolling_stock(&mut db_pool.get_ok(), "R2D2").await;
         let paced_train_valid =
-            create_simple_paced_train(&mut db_pool.get_ok(), timetable.id).await;
-        let paced_train_fail = simple_paced_train_changeset(timetable.id)
+            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.id).await;
+        let paced_train_fail = simple_paced_train_changeset(train_schedule_set.id)
             .rolling_stock_name("fail".to_string())
             .start_time(DateTime::from_timestamp(0, 0).unwrap())
             .create(&mut db_pool.get_ok())
@@ -2366,10 +2375,10 @@ mod tests {
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), "simulation_rolling_stock").await;
-        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
         let paced_train = models::PacedTrain::default()
             .into_changeset()
-            .timetable_id(timetable.id)
+            .train_schedule_set_id(train_schedule_set.id)
             .rolling_stock_name(rolling_stock.name)
             .path(vec![
                 PathItem::new_operational_point("Mid_West_station"),

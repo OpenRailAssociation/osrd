@@ -110,18 +110,19 @@ export function handleErrorResponse(response: APIResponse, errorMessage = 'API R
  * @param data - Optional. The payload to send in the request body.
  * @param params - Optional query parameters to include in the request.
  * @param errorMessage - Optional. Custom error message for failed requests.
+ * @param parseResponse - Whether to parse the response as JSON.
  */
 export const postApiRequest = async <T, U>(
   url: string,
   data?: T,
   params?: { [key: string]: string | number | boolean },
-  errorMessage?: string
+  errorMessage?: string,
+  parseResponse = true
 ): Promise<U> => {
   const apiContext = await getApiContext();
   const response = await apiContext.post(url, { data, params });
   handleErrorResponse(response, errorMessage);
-
-  return response.json() as U;
+  return parseResponse ? (response.json() as U) : (response as U);
 };
 
 /**

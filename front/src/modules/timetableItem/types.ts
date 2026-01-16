@@ -63,7 +63,7 @@ export type SimulationSummary =
 
 export type TimetableItemWithSummaries = Omit<
   PacedTrainResponse,
-  'id' | 'train_name' | 'rolling_stock_name' | 'timetable_id' | 'start_time' | 'paced'
+  'id' | 'train_name' | 'rolling_stock_name' | 'train_schedule_set_id' | 'start_time' | 'paced'
 > & {
   name: string;
   startTime: Date;

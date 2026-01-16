@@ -267,11 +267,13 @@
       "NameAlreadyUsed": "A group of temporary speed limits with '{{name}}' already exists"
     },
     "timetable": {
+      "BatchTrainScheduleSetNotFound": "'{{count}}' train schedule set(s) not found",
       "Database": "Internal error (database)",
       "InfraNotFound": "Infrastructure '{{infra_id}}' does not exist",
       "InfraNotLoaded": "Infrastructure '{{infra_id}}' is not loaded",
       "NotFound": "Timetable '{{timetable_id}}' could not be found",
       "ParseError": "Failed to parse train_id: '{{train_id}}'",
+      "TrainScheduleSetsNotFound": "'{{ids}}' train schedule sets not found",
       "similar_trains": {
         "Database": "Internal error (database)",
         "EmptyTrainsTraffic": "Trains traffic data are empty",
@@ -302,6 +304,7 @@
       "UnsimulatedTrainSchedule": "Train Schedule '{{train_schedule_id}}' is not simulated"
     },
     "train_schedule_set": {
+      "CatalogEntryNotFound": "Catalog entry '{{catalog_entry_id}}' could not be found",
       "Database": "Internal error (database)",
       "NotFound": "Train schedule set '{{train_schedule_set_id}}' could not be found"
     },

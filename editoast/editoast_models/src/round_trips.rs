@@ -37,11 +37,18 @@ impl PacedTrainRoundTrips {
     ) -> Result<(Vec<Self>, u64), database::DatabaseError> {
         use database::tables::paced_train;
         use database::tables::paced_train_round_trips;
+        use database::tables::timetable_train_schedule_set;
 
         let query = paced_train_round_trips::table
             .inner_join(paced_train::table)
             .select(paced_train_round_trips::all_columns)
-            .filter(paced_train::dsl::timetable_id.eq(timetable_id))
+            .filter(
+                paced_train::dsl::train_schedule_set_id.eq_any(
+                    timetable_train_schedule_set::dsl::timetable_train_schedule_set
+                        .select(timetable_train_schedule_set::dsl::train_schedule_set_id)
+                        .filter(timetable_train_schedule_set::dsl::timetable_id.eq(timetable_id)),
+                ),
+            )
             .order_by(paced_train_round_trips::id.asc());
 
         let (results, count): (Vec<PacedTrainRoundTripsRow>, _) =

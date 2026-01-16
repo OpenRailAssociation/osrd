@@ -270,6 +270,8 @@
     "destination": "Destination",
     "linkedTrain": {
       "anterior": "Sillon antérieur",
+      "error": "Erreur de sillons liés",
+      "noTrainScheduleSetFound": "Aucun paquet lié à cette grille horaire n'a été trouvé",
       "posterior": "Sillon postérieur"
     },
     "origin": "Origine",

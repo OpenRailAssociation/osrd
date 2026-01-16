@@ -17,6 +17,7 @@ type ScenarioContextType = {
   isInfraLoaded: boolean;
   scenario: ScenarioResponse;
   timetableId: number;
+  sandboxId: number;
   electricalProfileSetId?: number;
   trackSectionsLoading: boolean;
   getTrackSectionsByIds: (requestedTrackIds: string[]) => Promise<Record<string, TrackSection>>;
@@ -25,10 +26,15 @@ const ScenarioContext = createContext<ScenarioContextType>(null);
 
 type ScenarioContextProviderProps = {
   scenario: ScenarioResponse;
+  sandboxId: number;
   children: ReactNode;
 };
 
-export const ScenarioContextProvider = ({ scenario, children }: ScenarioContextProviderProps) => {
+export const ScenarioContextProvider = ({
+  scenario,
+  sandboxId,
+  children,
+}: ScenarioContextProviderProps) => {
   const { data: infra } = osrdEditoastApi.endpoints.getInfraByInfraId.useQuery({
     infraId: scenario.infra_id,
   });
@@ -47,11 +53,12 @@ export const ScenarioContextProvider = ({ scenario, children }: ScenarioContextP
       isInfraLoaded: workerStatus === 'READY',
       scenario,
       timetableId: scenario.timetable_id,
+      sandboxId,
       electricalProfileSetId: scenario.electrical_profile_set_id,
       trackSectionsLoading,
       getTrackSectionsByIds,
     }),
-    [infra, scenario, workerStatus, trackSectionsLoading, getTrackSectionsByIds]
+    [infra, scenario, workerStatus, sandboxId, trackSectionsLoading, getTrackSectionsByIds]
   );
 
   return <ScenarioContext.Provider value={providedContext}>{children}</ScenarioContext.Provider>;

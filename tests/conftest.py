@@ -107,11 +107,16 @@ def foo_study_id(foo_project_id: int, session: Session) -> Iterator[int]:
 def tiny_scenario(
     tiny_infra: Infra, foo_project_id: int, foo_study_id: int, session: Session
 ) -> Iterator[Scenario]:
-    scenario_id, timetable_id = create_scenario(
+    scenario_id, timetable_id, train_schedule_set_id = create_scenario(
         EDITOAST_URL, tiny_infra.id, foo_study_id, session
     )
     yield Scenario(
-        foo_project_id, foo_study_id, scenario_id, tiny_infra.id, timetable_id
+        foo_project_id,
+        foo_study_id,
+        scenario_id,
+        tiny_infra.id,
+        timetable_id,
+        train_schedule_set_id,
     )
 
 
@@ -119,11 +124,16 @@ def tiny_scenario(
 def small_scenario(
     small_infra: Infra, foo_project_id: int, foo_study_id: int, session: Session
 ) -> Iterator[Scenario]:
-    scenario_id, timetable_id = create_scenario(
+    scenario_id, timetable_id, train_schedule_set_id = create_scenario(
         EDITOAST_URL, small_infra.id, foo_study_id, session
     )
     yield Scenario(
-        foo_project_id, foo_study_id, scenario_id, small_infra.id, timetable_id
+        foo_project_id,
+        foo_study_id,
+        scenario_id,
+        small_infra.id,
+        timetable_id,
+        train_schedule_set_id,
     )
 
 
@@ -131,11 +141,16 @@ def small_scenario(
 def etcs_scenario(
     etcs_infra: Infra, foo_project_id: int, foo_study_id: int, session: Session
 ) -> Iterator[Scenario]:
-    scenario_id, timetable_id = create_scenario(
+    scenario_id, timetable_id, train_schedule_set_id = create_scenario(
         EDITOAST_URL, etcs_infra.id, foo_study_id, session
     )
     yield Scenario(
-        foo_project_id, foo_study_id, scenario_id, etcs_infra.id, timetable_id
+        foo_project_id,
+        foo_study_id,
+        scenario_id,
+        etcs_infra.id,
+        timetable_id,
+        train_schedule_set_id,
     )
 
 
@@ -288,7 +303,7 @@ def west_to_south_east_simulation(
     response = session.get(EDITOAST_URL + f"light_rolling_stock/{fast_rolling_stock}")
     fast_rolling_stock_name = response.json()["name"]
     response = session.post(
-        f"{EDITOAST_URL}timetable/{small_scenario.timetable}/paced_trains/",
+        f"{EDITOAST_URL}train_schedule_set/{small_scenario.train_schedule_set}/paced_trains/",
         json=[
             {
                 "constraint_distribution": "STANDARD",
@@ -316,7 +331,7 @@ def west_to_south_east_paced_train(
     response = session.get(EDITOAST_URL + f"light_rolling_stock/{fast_rolling_stock}")
     fast_rolling_stock_name = response.json()["name"]
     response = session.post(
-        f"{EDITOAST_URL}timetable/{small_scenario.timetable}/paced_trains/",
+        f"{EDITOAST_URL}train_schedule_set/{small_scenario.train_schedule_set}/paced_trains/",
         json=[
             {
                 "constraint_distribution": "STANDARD",
@@ -360,7 +375,7 @@ def west_to_south_east_paced_trains(
     }
 
     response = session.post(
-        f"{EDITOAST_URL}timetable/{small_scenario.timetable}/paced_trains/",
+        f"{EDITOAST_URL}train_schedule_set/{small_scenario.train_schedule_set}/paced_trains/",
         json=[
             {
                 **base,
@@ -402,7 +417,7 @@ def west_to_south_east_etcs_simulation(
     )
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     response = session.post(
-        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/paced_trains/",
+        f"{EDITOAST_URL}train_schedule_set/{etcs_scenario.train_schedule_set}/paced_trains/",
         json=[
             {
                 "constraint_distribution": "STANDARD",
@@ -441,7 +456,7 @@ def west_to_south_east_simulations(
     }
 
     response = session.post(
-        f"{EDITOAST_URL}timetable/{small_scenario.timetable}/paced_trains/",
+        f"{EDITOAST_URL}train_schedule_set/{small_scenario.train_schedule_set}/paced_trains/",
         json=[
             {
                 **base,
@@ -466,3 +481,23 @@ def timetable_id(session: Session) -> int:
     if not r.ok:
         raise RuntimeError(f"Error creating timetable {r.status_code}: {r.content}")
     return r.json()["timetable_id"]
+
+
+@pytest.fixture
+def train_schedule_set_id(session: Session, timetable_id: int) -> int:
+    r = session.post(
+        f"{EDITOAST_URL}train_schedule_set/",
+        json={
+            "name": None,
+            "catalog_entry": None,
+            "description": "",
+            "published": False,
+        },
+    )
+    r.raise_for_status()
+    train_schedule_set_id = r.json()["id"]
+    session.post(
+        f"{EDITOAST_URL}timetable/{timetable_id}/train_schedule_sets/",
+        json={"train_schedule_set_ids": [train_schedule_set_id]},
+    )
+    return train_schedule_set_id

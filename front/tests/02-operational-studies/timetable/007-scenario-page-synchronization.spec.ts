@@ -54,7 +54,7 @@ test.skip(
 test.describe('@op @multi-tab-sync', () => {
   let project: Project;
   let study: Study;
-  let scenario: Scenario;
+  let scenarioItems: Scenario;
   let infra: Infra;
 
   test.beforeAll(
@@ -63,27 +63,26 @@ test.describe('@op @multi-tab-sync', () => {
       project = await getProject(timetableItemProjectName);
       study = await getStudy(project.id, timetableItemStudyName);
       infra = await getInfra();
-      scenario = (
-        await createScenario(
-          generateUniqueName('scenario-page-synchronization'),
-          project.id,
-          study.id,
-          infra.id
-        )
-      ).scenario;
+      const { scenario, trainScheduleSet } = await createScenario(
+        generateUniqueName('scenario-page-synchronization'),
+        project.id,
+        study.id,
+        infra.id
+      );
+      scenarioItems = scenario;
       await sendTrains(
-        scenario.timetable_id,
+        trainScheduleSet.id,
         JSON.parse(JSON.stringify(trainSchedulesJson.slice(0, 2)))
       );
       await sendTrains(
-        scenario.timetable_id,
+        trainScheduleSet.id,
         JSON.parse(JSON.stringify(pacedTrainsJson.slice(0, 2)))
       );
     }
   );
 
   test.afterAll('Close pages', async () => {
-    await deleteScenario(study.id, scenario.name);
+    await deleteScenario(study.id, scenarioItems.name);
   });
 
   /** *************** Test 1 **************** */
@@ -96,7 +95,7 @@ test.describe('@op @multi-tab-sync', () => {
     secondScenarioTimetableSection,
     secondOperationalStudiesPage,
   }) => {
-    const scenarioUrl = `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`;
+    const scenarioUrl = `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`;
 
     await test.step('Open first tab on scenario page and wait infra cache', async () => {
       await page.goto(scenarioUrl);
@@ -138,8 +137,8 @@ test.describe('@op @multi-tab-sync', () => {
 
     await test.step('Go to study page in first tab, verify train count, delete scenario', async () => {
       await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
-      await studyPage.verifyScenarioTrainCount(scenario.name, '3');
-      await studyPage.deleteScenario(scenario.name);
+      await studyPage.verifyScenarioTrainCount(scenarioItems.name, '3');
+      await studyPage.deleteScenario(scenarioItems.name);
     });
 
     await test.step('Reload second tab and verify scenario is gone', async () => {

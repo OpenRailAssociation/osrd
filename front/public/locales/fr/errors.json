@@ -272,6 +272,7 @@
       "InfraNotLoaded": "L'infrastructure '{{infra_id}}' n'est pas chargée",
       "NotFound": "Grille horaire '{{timetable_id}}' non trouvée",
       "ParseError": "Impossible de parser train_id : '{{train_id}}'",
+      "TrainScheduleSetsNotFound": "'{{ids}}' paquets de circulation non trouvés",
       "similar_trains": {
         "Database": "Erreur interne (base de données)",
         "EmptyTrainsTraffic": "Les données de circulation sont vides",
@@ -302,6 +303,7 @@
       "UnsimulatedTrainSchedule": "La circulation '{{train_schedule_id}}' n'est pas simulée"
     },
     "train_schedule_set": {
+      "CatalogEntryNotFound": "Catalogue '{{catalog_entry_id}}' non trouvé",
       "Database": "Erreur interne (base de données)",
       "NotFound": "Paquet de train '{{train_schedule_set_id}}' non trouvé"
     },

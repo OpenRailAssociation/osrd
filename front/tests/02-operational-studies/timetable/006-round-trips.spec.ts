@@ -51,17 +51,16 @@ test.describe('@op @timetable-items @round-trips', () => {
 
   test.beforeEach('Open scenario & round-trip modal', async ({ page, roundTripPage }) => {
     await test.step('Create, open scenario and wait for infra to be loaded', async () => {
-      scenarioItems = (
-        await createScenario(
-          generateUniqueName('round-trips-scenario'),
-          project.id,
-          study.id,
-          infra.id
-        )
-      ).scenario;
+      const { scenario, trainScheduleSet } = await createScenario(
+        generateUniqueName('round-trips-scenario'),
+        project.id,
+        study.id,
+        infra.id
+      );
+      scenarioItems = scenario;
       await Promise.all([
-        sendTrains(scenarioItems.timetable_id, trainSchedulesJson.slice(18, 21)),
-        sendTrains(scenarioItems.timetable_id, pacedTrainsJson.slice(4, 7)),
+        sendTrains(trainScheduleSet.id, trainSchedulesJson.slice(18, 21)),
+        sendTrains(trainScheduleSet.id, pacedTrainsJson.slice(4, 7)),
       ]);
 
       await page.goto(

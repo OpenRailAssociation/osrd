@@ -43,7 +43,7 @@ export const handleNodeOperation = async ({
   netzgrafikDto,
   dispatch,
   infraId,
-  timetableId,
+  trainScheduleSetId,
   addUpsertedTimetableItems,
   addDeletedTimetableItemIds,
 }: {
@@ -53,7 +53,7 @@ export const handleNodeOperation = async ({
   netzgrafikDto: NetzgrafikDto;
   dispatch: AppDispatch;
   infraId: number;
-  timetableId: number;
+  trainScheduleSetId: number;
   addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void;
   addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void;
 }): Promise<void> => {
@@ -93,7 +93,7 @@ export const handleNodeOperation = async ({
               netzgrafikDto,
               dispatch,
               infraId,
-              timetableId,
+              trainScheduleSetId,
               addUpsertedTimetableItems,
               addDeletedTimetableItemIds,
               node,

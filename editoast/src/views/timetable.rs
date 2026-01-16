@@ -6,6 +6,7 @@ pub mod stdcm;
 mod track_occupancy;
 
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::sync::Arc;
 
 use authz;
@@ -63,6 +64,7 @@ use crate::error::Result;
 use crate::models;
 use crate::models::Infra;
 use crate::models::paced_train::OccurrenceId;
+use crate::models::train_schedule_set::TrainScheduleSet;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
@@ -83,6 +85,9 @@ enum TimetableError {
     #[error("Failed to parse train_id '{train_id}'")]
     #[editoast_error(status = 500)]
     ParseError { train_id: String },
+    #[error("{:?} train schedule set(s) could not be found", .ids)]
+    #[editoast_error(status = 404)]
+    TrainScheduleSetsNotFound { ids: HashSet<i64> },
 }
 
 /// Creation result for a Timetable
@@ -208,9 +213,15 @@ pub(in crate::views) async fn get_paced_trains(
         return Err(TimetableError::NotFound { timetable_id }.into());
     }
 
+    let train_schedule_set_ids =
+        Timetable::get_train_schedule_set_ids_from_timetable(timetable_id, conn).await?;
+
     let settings = pagination_params
         .into_selection_settings()
-        .filter(move || models::PacedTrain::TIMETABLE_ID.eq(timetable_id));
+        .filter(move || {
+            models::PacedTrain::TRAIN_SCHEDULE_SET_ID.eq_any(train_schedule_set_ids.clone())
+        })
+        .order_by(move || models::PacedTrain::ID.asc());
 
     let (paced_trains, stats) = models::PacedTrain::list_paginated(conn, settings).await?;
 
@@ -484,12 +495,17 @@ pub(in crate::views) async fn requirements(
     })
     .await?;
 
+    let train_schedule_sets_ids =
+        Timetable::get_train_schedule_set_ids_from_timetable(timetable_id, conn).await?;
+
     // List trains and paced trains
     let (paced_trains, stats) = models::PacedTrain::list_paginated(
         conn,
         page_settings
             .into_selection_settings()
-            .filter(move || models::PacedTrain::TIMETABLE_ID.eq(timetable_id))
+            .filter(move || {
+                models::PacedTrain::TRAIN_SCHEDULE_SET_ID.eq_any(train_schedule_sets_ids.clone())
+            })
             .order_by(move || models::PacedTrain::ID.asc()),
     )
     .await?;
@@ -738,6 +754,101 @@ impl From<PhysicsConsistParameters> for PhysicsConsist {
     }
 }
 
+/// Set links between a timetable and train schedule sets
+/// If a link already exists, it is ignored
+/// If a link exists and is not in the new list, it is removed
+#[editoast_derive::route]
+#[utoipa::path(
+    post, path = "",
+    tags = ["timetable", "train_schedule_set"],
+    params(TimetableIdParam),
+    request_body(content = inline(TrainScheduleSetForm)),
+    responses(
+        (status = 204, description = "The train schedule set has been linked to the timetable"),
+    ),
+)]
+pub(in crate::views) async fn set_links_train_schedule_sets_to_timetable(
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    Extension(auth): AuthenticationExt,
+    Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
+    Json(TrainScheduleSetForm {
+        train_schedule_set_ids,
+    }): Json<TrainScheduleSetForm>,
+) -> Result<impl IntoResponse> {
+    let authorized = auth
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    let mut conn = db_pool.get().await?;
+
+    Timetable::exists_or_fail(&mut conn, timetable_id, || TimetableError::NotFound {
+        timetable_id,
+    })
+    .await?;
+
+    let _: Vec<_> = TrainScheduleSet::retrieve_batch_or_fail(
+        &mut conn,
+        train_schedule_set_ids.clone(),
+        |missing| TimetableError::TrainScheduleSetsNotFound { ids: missing },
+    )
+    .await?;
+
+    // Transaction to ensure consistency of modifications
+    Timetable::set_links_train_schedule_set(timetable_id, train_schedule_set_ids, &mut conn)
+        .await?;
+
+    Ok(StatusCode::NO_CONTENT)
+}
+
+/// Retrieve the list of train schedule sets linked to a timetable
+#[editoast_derive::route]
+#[utoipa::path(
+    get, path = "",
+    tags = ["timetable", "train_schedule_set"],
+    params(TimetableIdParam),
+    responses(
+        (status = 200, description = "list of train_schedule_sets linked to a timetable", body = inline(Vec<TrainScheduleSet>)),
+    ),
+)]
+pub(in crate::views) async fn get_train_schedule_sets_from_timetable(
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    Extension(auth): AuthenticationExt,
+    Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
+) -> Result<Json<Vec<TrainScheduleSet>>> {
+    let authorized = auth
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    Timetable::exists_or_fail(&mut db_pool.get().await?, timetable_id, || {
+        TimetableError::NotFound { timetable_id }
+    })
+    .await?;
+
+    let train_schedule_set_ids = Timetable::get_train_schedule_set_ids_from_timetable(
+        timetable_id,
+        &mut db_pool.get().await?,
+    )
+    .await?;
+
+    let (train_schedule_sets, _): (Vec<_>, _) =
+        TrainScheduleSet::retrieve_batch(&mut db_pool.get().await?, train_schedule_set_ids).await?;
+
+    Ok(Json(train_schedule_sets))
+}
+
+#[derive(IntoParams, Deserialize, ToSchema)]
+pub(in crate::views) struct TrainScheduleSetForm {
+    train_schedule_set_ids: HashSet<i64>,
+}
+
 #[cfg(test)]
 pub(in crate::views) fn simulation_empty_response() -> core_client::simulation::Response {
     use core_client::simulation::CompleteReportTrain;
@@ -806,7 +917,10 @@ mod tests {
     use super::*;
     use crate::error::InternalError;
     use crate::models::fixtures::create_timetable;
+    use crate::models::fixtures::create_timetable_with_train_schedule_set;
+    use crate::models::fixtures::create_train_schedule_set;
     use crate::models::fixtures::simple_paced_train_base;
+    use crate::models::paced_train::PacedTrainChangeset;
     use crate::views::test_app::TestAppBuilder;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -866,7 +980,7 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let timetable = create_timetable(&mut pool.get_ok()).await;
+        let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
         let mut paced_train_1 = simple_paced_train_base();
 
         paced_train_1.paced.as_mut().unwrap().exceptions = vec![
@@ -875,7 +989,7 @@ mod tests {
         ];
 
         let request = app
-            .post(format!("/timetable/{}/paced_trains", timetable.id).as_str())
+            .post(format!("/train_schedule_set/{}/paced_trains", train_schedule_set.id).as_str())
             .json(&vec![paced_train_1.clone()]);
 
         let response = app
@@ -895,7 +1009,8 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let timetable = create_timetable(&mut pool.get_ok()).await;
+        let (timetable, train_schedule_set) =
+            create_timetable_with_train_schedule_set(&mut pool.get_ok()).await;
 
         let paced_train_1 = simple_paced_train_base();
         let mut paced_train_2 = simple_paced_train_base();
@@ -909,7 +1024,7 @@ mod tests {
         let changesets = paced_trains
             .into_iter()
             .map(PacedTrainChangeset::from)
-            .map(|cs| cs.timetable_id(timetable.id))
+            .map(|cs| cs.train_schedule_set_id(train_schedule_set.id))
             .collect::<Vec<_>>();
 
         let _paced_trains: Vec<_> =
