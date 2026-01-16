@@ -31,18 +31,21 @@ export async function fetchTimetableItem(
   throw new Error('TrainSchedules are not handled anymore.');
 }
 
-export async function createPacedTrain(
+export async function createPacedTrains(
   dispatch: AppDispatch,
   trainScheduleSetId: number,
-  pacedTrain: PacedTrain
-): Promise<TimetableItem> {
+  pacedTrains: PacedTrain[]
+): Promise<TimetableItem[]> {
   const newPacedTrains = await dispatch(
     osrdEditoastApi.endpoints.postTrainScheduleSetsByIdPacedTrains.initiate({
       id: trainScheduleSetId,
-      body: [pacedTrain],
+      body: pacedTrains,
     })
   ).unwrap();
-  return { ...newPacedTrains[0], id: formatEditoastIdToPacedTrainId(newPacedTrains[0].id) };
+  return newPacedTrains.map((pacedTrain) => ({
+    ...pacedTrain,
+    id: formatEditoastIdToPacedTrainId(pacedTrain.id),
+  }));
 }
 
 async function updatePacedTrain(dispatch: AppDispatch, id: PacedTrainId, pacedTrain: PacedTrain) {
