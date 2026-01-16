@@ -22,7 +22,7 @@ type SimulationTableProps = {
   simulationIndex: number;
 };
 
-const StcdmResultsTable = ({
+const StdcmResultsTable = ({
   stdcmData,
   consist,
   isSimulationRetained,
@@ -154,4 +154,4 @@ const StcdmResultsTable = ({
   );
 };
 
-export default StcdmResultsTable;
+export default StdcmResultsTable;
