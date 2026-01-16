@@ -18,7 +18,7 @@
     "errorMessages": {
       "error": "Ein Fehler ist aufgetreten",
       "errorEmptyFile": "Leere Datei",
-      "errorInvalidFile": "Ungültige Datei.",
+      "errorInvalidFile": "Ungültige Datei",
       "errorNoDate": "Sie müssen ein Datum angeben.",
       "errorNoFrom": "Sie müssen einen Herkunftsort angeben.",
       "errorNoTo": "Sie müssen einen Zielort angeben.",
@@ -67,7 +67,7 @@
     "electricalProfileSet": "Bahnstromprofil-Satz",
     "errorMessages": {
       "error": "Ein Fehler ist aufgetreten",
-      "unableToDeleteScenarioMessage": "Szenario löschen nicht möglich."
+      "unableToDeleteScenarioMessage": "Szenario löschen nicht möglich"
     },
     "filterPlaceholder": "Filter, Tags",
     "infrastructure": "Netz",
