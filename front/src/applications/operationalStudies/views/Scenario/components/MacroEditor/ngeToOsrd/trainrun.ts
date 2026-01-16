@@ -1,7 +1,6 @@
 import { compact, uniq } from 'lodash';
 
 import {
-  osrdEditoastApi,
   type PacedTrain,
   type TrainSchedule,
   type PathItemLocation,
@@ -22,7 +21,7 @@ import type {
 } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration } from 'utils/duration';
-import { formatEditoastIdToPacedTrainId, isPacedTrainId } from 'utils/trainId';
+import { isPacedTrainId } from 'utils/trainId';
 
 import { checkChangeGroups } from '../../ManageTimetableItem/helpers/buildPacedTrainException';
 import type {
@@ -405,11 +404,6 @@ const handleCreateTimetableItem = async (
   const trainrunSections = getContinuousTrainrunSectionsByTrainrunId(netzgrafikDto, trainrun.id);
   const labels = getTrainrunLabels(netzgrafikDto, trainrun);
 
-  if (trainrun.direction === 'one_way') {
-    throw new Error(
-      'ngeToOsrd handleCreateTimetableItem received a one_way train dto instead of a round trip'
-    );
-  }
   const pathAndSchedule = generatePathAndSchedule(
     trainrunSections,
     netzgrafikDto.nodes,
@@ -436,41 +430,38 @@ const handleCreateTimetableItem = async (
     trainrun.categoryId
   );
 
-  const pacedTrain: PacedTrain = {
+  const paced = createPacedAttributesFromTrainrun(trainrun, netzgrafikDto);
+
+  const forwardTrip: PacedTrain = {
     ...DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
-    paced: createPacedAttributesFromTrainrun(trainrun, netzgrafikDto)!,
+    paced,
     train_name: trainrun.name,
     labels,
     category,
     ...pathAndSchedule,
   };
-  const returnPacedTrain = { ...pacedTrain, ...returnPathAndSchedule };
 
-  const newTimetableItems = await dispatch(
-    osrdEditoastApi.endpoints.postTrainScheduleSetsByIdPacedTrains.initiate({
-      id: trainScheduleSetId,
-      body: [pacedTrain, returnPacedTrain],
-    })
-  ).unwrap();
-  if (newTimetableItems.length !== 2) {
-    throw new Error('Failed to create paced train with return trip');
+  const returnTrip =
+    trainrun.direction === 'round_trip' ? { ...forwardTrip, ...returnPathAndSchedule } : undefined;
+
+  const timetableItemsToCreate = returnTrip ? [forwardTrip, returnTrip] : [forwardTrip];
+
+  const newTimetableItems: TimetableItem[] = await createPacedTrains(
+    dispatch,
+    trainScheduleSetId,
+    timetableItemsToCreate
+  );
+  if (newTimetableItems.length !== timetableItemsToCreate.length) {
+    throw new Error('Failed to create timetable item(s)');
   }
-  await dispatch(
-    osrdEditoastApi.endpoints.postRoundTripsPacedTrains.initiate({
-      roundTrips: { round_trips: [[newTimetableItems[0].id, newTimetableItems[1].id]] },
-    })
-  ).unwrap();
+  addUpsertedTimetableItems(newTimetableItems);
 
-  const newPacedTrain: TimetableItem = {
-    ...newTimetableItems[0],
-    id: formatEditoastIdToPacedTrainId(newTimetableItems[0].id),
-  };
-  const newReturnPacedTrain: TimetableItem = {
-    ...newTimetableItems[1],
-    id: formatEditoastIdToPacedTrainId(newTimetableItems[1].id),
-  };
-  state.timetableItemIdByNgeId.set(trainrun.id, [newPacedTrain.id, newReturnPacedTrain.id]);
-  addUpsertedTimetableItems([newPacedTrain, newReturnPacedTrain]);
+  const newTrainIds: [PacedTrainId, PacedTrainId | null] = [
+    newTimetableItems[0].id,
+    newTimetableItems.at(1)?.id ?? null,
+  ];
+  state.timetableItemIdByNgeId.set(trainrun.id, newTrainIds);
+  storeRoundTrip(dispatch, newTrainIds[0], newTrainIds[1] ?? undefined);
 };
 
 const deleteTimetableItemById = async (
