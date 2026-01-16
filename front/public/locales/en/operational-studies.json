@@ -317,7 +317,10 @@
         "publishToCatalog": "Publish to catalog",
         "removeFromScenario": "Remove from scenario",
         "sandbox": "Sandbox",
-        "transformToLocalCopy": "Transform to local copy"
+        "transformToLocalCopy": "Transform to local copy",
+        "transformToLocalCopyDialogText": "You are about to copy the package '{{name}}' locally. This package is a reference, and once copied, it will no longer be synchronized with the reference.",
+        "transformToLocalCopyDialogTitle": "Transform to a local copy",
+        "transformToLocalCopySubmit": "Make a local copy"
       },
       "trainType": "Services, trains",
       "unselectAll": "Unselect all",
