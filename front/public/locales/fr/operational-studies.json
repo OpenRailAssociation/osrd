@@ -40,7 +40,7 @@
       "errorNoTo": "Vous devez renseigner une destination.",
       "errorSameFromTo": "L'origine et la destination doivent être différentes."
     },
-    "failure": "Opération échouée",
+    "failure": "L'opération a échoué",
     "from": "Origine",
     "importTimetable": "Importer une grille horaire",
     "inputPlaceholder": "Nom, trigramme",
