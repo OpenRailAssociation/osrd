@@ -2,8 +2,11 @@ use database::DbConnectionPoolV2;
 use editoast_models::timetable::Timetable;
 use std::sync::Arc;
 
+use crate::models::train_schedule_set::TrainScheduleSet;
+
 pub async fn run_garbage_collector(db_pool: Arc<DbConnectionPoolV2>) -> anyhow::Result<()> {
     clean_orphaned_timetables(&db_pool).await?;
+    clean_orphaned_train_schedule_sets(&db_pool).await?;
     Ok(())
 }
 
@@ -18,6 +21,26 @@ async fn clean_orphaned_timetables(db_pool: &Arc<DbConnectionPoolV2>) -> anyhow:
         println!("✨ No orphaned timetables found");
     } else {
         println!("✅ {} orphaned timetable(s) deleted", deleted_count);
+    }
+    Ok(())
+}
+
+/// Deletes train schedule sets that are not published or linked to a timetable
+async fn clean_orphaned_train_schedule_sets(
+    db_pool: &Arc<DbConnectionPoolV2>,
+) -> anyhow::Result<()> {
+    let conn = &mut db_pool.get().await?;
+
+    println!("🧹 Removing orphaned train schedule sets...");
+    let deleted_count = TrainScheduleSet::delete_orphaned(conn).await?;
+
+    if deleted_count == 0 {
+        println!("✨ No orphaned train schedule sets found");
+    } else {
+        println!(
+            "✅ {} orphaned train schedule set(s) deleted",
+            deleted_count
+        );
     }
     Ok(())
 }
@@ -72,5 +95,42 @@ mod tests {
             let found = Timetable::exists(conn, *kept_id).await.unwrap();
             assert!(found, "Timetable should exist")
         }
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn test_clean_orphaned_train_schedule_sets() {
+        let db_pool = Arc::new(DbConnectionPoolV2::for_tests());
+        let conn = &mut db_pool.get_ok();
+
+        // Train schedule set referenced by Scenario
+        let scenario_set = create_scenario_fixtures_set(conn, "test_scenario").await;
+
+        // Orphaned train schedule sets
+        let orphaned1 = TrainScheduleSet::changeset()
+            .name(Some("orphaned1".into()))
+            .description("description1".into())
+            .published(false)
+            .create(conn)
+            .await
+            .expect("Failed to create orphaned train schedule set");
+        let orphaned2 = TrainScheduleSet::changeset()
+            .name(Some("orphaned2".into()))
+            .description("description2".into())
+            .published(false)
+            .create(conn)
+            .await
+            .expect("Failed to create orphaned train schedule set");
+
+        clean_orphaned_train_schedule_sets(&db_pool).await.unwrap();
+
+        for orphaned_id in &[orphaned1.id, orphaned2.id] {
+            let found = TrainScheduleSet::exists(conn, *orphaned_id).await.unwrap();
+            assert!(!found, "Train schedule set should not exists anymore")
+        }
+
+        let found = TrainScheduleSet::exists(conn, scenario_set.train_schedule_set.id)
+            .await
+            .unwrap();
+        assert!(found, "Train schedule set should exist")
     }
 }
