@@ -21,6 +21,7 @@ export default function useStdcmEnvironment() {
       setLoading(true);
       const { data } = await getStdcmSearchEnvironment();
       if (!data) throw new Error(NO_CONFIG_FOUND_MSG);
+
       dispatch(resetStdcmSimulations());
       dispatch(
         updateStdcmEnvironment({

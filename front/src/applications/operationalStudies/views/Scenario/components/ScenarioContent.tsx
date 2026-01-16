@@ -44,7 +44,7 @@ const MACRO_MIN_HEIGHT = 500;
 const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
   const { t, i18n } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
-  const { scenario } = useScenarioContext();
+  const { scenario, sandboxId } = useScenarioContext();
 
   const { infraId, isInfraLoaded } = useScenarioContext();
 
@@ -143,7 +143,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
         await handleOperation({
           event,
           netzgrafikDto,
-          timetableId: scenario.timetable_id,
+          trainScheduleSetId: sandboxId,
           infraId,
           state: macroEditorState.current!,
           dispatch,

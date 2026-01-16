@@ -33,12 +33,12 @@ export async function fetchTimetableItem(
 
 export async function createPacedTrain(
   dispatch: AppDispatch,
-  timetableId: number,
+  trainScheduleSetId: number,
   pacedTrain: PacedTrain
 ): Promise<TimetableItem> {
   const newPacedTrains = await dispatch(
-    osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.initiate({
-      id: timetableId,
+    osrdEditoastApi.endpoints.postTrainScheduleSetByIdPacedTrains.initiate({
+      id: trainScheduleSetId,
       body: [pacedTrain],
     })
   ).unwrap();
@@ -66,7 +66,6 @@ export async function deletePacedTrains(dispatch: AppDispatch, ids: PacedTrainId
 export async function storePacedTrain(
   timetableItemIdToUpdate: TimetableItemId,
   pacedTrain: PacedTrain,
-  timetableId: number,
   dispatch: AppDispatch,
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void
 ): Promise<TimetableItem> {
@@ -79,10 +78,9 @@ export async function storePacedTrain(
     );
   }
   await updatePacedTrain(dispatch, timetableItemIdToUpdate, pacedTrain);
-  const updatedPacedTrain = {
+  const updatedPacedTrain: TimetableItem = {
     ...pacedTrain,
     id: timetableItemIdToUpdate,
-    timetable_id: timetableId,
   };
   upsertTimetableItems([updatedPacedTrain]);
   return updatedPacedTrain;

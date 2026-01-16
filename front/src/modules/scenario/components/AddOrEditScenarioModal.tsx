@@ -85,7 +85,10 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
     [urlStudyId, urlProjectId]
   );
 
+  const [postTrainScheduleSet] = osrdEditoastApi.endpoints.postTrainScheduleSet.useMutation();
   const [postTimetable] = osrdEditoastApi.endpoints.postTimetable.useMutation({});
+  const [linkTrainScheduleSetToTimetable] =
+    osrdEditoastApi.endpoints.postTimetableByIdTrainScheduleSets.useMutation();
   const [postScenario] = osrdEditoastApi.endpoints.postScenarios.useMutation({});
   const [patchScenario] = osrdEditoastApi.endpoints.patchScenariosByScenarioId.useMutation({});
   const [deleteScenario] = osrdEditoastApi.endpoints.deleteScenariosByScenarioId.useMutation({});
@@ -152,26 +155,36 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
     if (!currentScenario.infra_id || hasErrors) {
       setDisplayErrors(true);
     } else if (projectId && studyId && currentScenario && currentScenario.name) {
-      const timetable = await postTimetable().unwrap();
-      postScenario({
-        scenarioCreateForm: {
-          description: currentScenario.description || '',
-          infra_id: currentScenario.infra_id,
-          name: currentScenario.name,
-          study_id: studyId,
-          tags: currentScenario.tags || [],
-          timetable_id: timetable.timetable_id,
-          electrical_profile_set_id: currentScenario.electrical_profile_set_id,
-        },
-      })
-        .unwrap()
-        .then(({ id }) => {
-          navigate(`projects/${projectId}/studies/${studyId}/scenarios/${id}`);
-          closeModal();
-        })
-        .catch((error) => {
-          dispatch(setFailure(castErrorToFailure(error)));
-        });
+      try {
+        // Creating a scenario requires to: create a sandbox, a timetable, link both and finally create the scenario
+        const sandbox = await postTrainScheduleSet({
+          trainScheduleSetForm: {
+            name: null, // sandbox never has a name
+            description: '',
+            published: false,
+          },
+        }).unwrap();
+        const timetable = await postTimetable().unwrap();
+        await linkTrainScheduleSetToTimetable({
+          id: timetable.timetable_id,
+          body: { train_schedule_set_ids: [sandbox.id] },
+        }).unwrap();
+        const newScenario = await postScenario({
+          scenarioCreateForm: {
+            description: currentScenario.description || '',
+            infra_id: currentScenario.infra_id,
+            name: currentScenario.name,
+            study_id: studyId,
+            tags: currentScenario.tags || [],
+            timetable_id: timetable.timetable_id,
+            electrical_profile_set_id: currentScenario.electrical_profile_set_id,
+          },
+        }).unwrap();
+        navigate(`projects/${projectId}/studies/${studyId}/scenarios/${newScenario.id}`);
+        closeModal();
+      } catch (error) {
+        dispatch(setFailure(castErrorToFailure(error)));
+      }
     }
   };
 

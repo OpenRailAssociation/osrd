@@ -31,6 +31,7 @@ def test_get_timetable(timetable_id: int, session: Session):
 def test_conflicts_with_paced_trains(
     small_infra: Infra,
     timetable_id: int,
+    train_schedule_set_id: int,
     fast_rolling_stock: int,
     paced_start_time: str,
     expected_conflict_types: set[str],
@@ -65,7 +66,7 @@ def test_conflicts_with_paced_trains(
     ]
 
     stopping_train_schedule_response = session.post(
-        f"{EDITOAST_URL}/timetable/{timetable_id}/paced_trains",
+        f"{EDITOAST_URL}/train_schedule_set/{train_schedule_set_id}/paced_trains",
         json=stopping_train_schedule_payload,
     )
     stopping_train_schedule_response.raise_for_status()
@@ -79,7 +80,7 @@ def test_conflicts_with_paced_trains(
     ]
 
     stopping_paced_train_response = session.post(
-        f"{EDITOAST_URL}/timetable/{timetable_id}/paced_trains",
+        f"{EDITOAST_URL}/train_schedule_set/{train_schedule_set_id}/paced_trains",
         json=[stopping_paced_train_payload],
     )
     stopping_paced_train_response.raise_for_status()
@@ -117,6 +118,7 @@ def test_conflicts_with_paced_trains(
 def test_conflicts_with_reception_on_closed_signal(
     small_infra: Infra,
     timetable_id: int,
+    train_schedule_set_id: int,
     fast_rolling_stock: int,
     reception_signal: str,
     expected_conflict_types: set[str],
@@ -156,7 +158,7 @@ def test_conflicts_with_reception_on_closed_signal(
     ]
 
     stopping_train_schedule_response = session.post(
-        f"{EDITOAST_URL}/timetable/{timetable_id}/paced_trains",
+        f"{EDITOAST_URL}/train_schedule_set/{train_schedule_set_id}/paced_trains",
         json=stopping_train_schedule_payload,
     )
     stopping_train_schedule_response.raise_for_status()
@@ -188,7 +190,7 @@ def test_conflicts_with_reception_on_closed_signal(
         }
     ]
     session.post(
-        f"{EDITOAST_URL}/timetable/{timetable_id}/paced_trains",
+        f"{EDITOAST_URL}/train_schedule_set/{train_schedule_set_id}/paced_trains",
         json=train_schedule_payload,
     ).raise_for_status()
 
@@ -246,6 +248,7 @@ def test_conflicts_with_reception_on_closed_signal(
 def test_paced_train_conflicts(
     small_infra: Infra,
     timetable_id: int,
+    train_schedule_set_id: int,
     fast_rolling_stock: int,
     paced_train_interval: str,
     expected_conflict_types: set[str],
@@ -282,7 +285,7 @@ def test_paced_train_conflicts(
     }
 
     paced_train_response = session.post(
-        f"{EDITOAST_URL}timetable/{timetable_id}/paced_trains",
+        f"{EDITOAST_URL}train_schedule_set/{train_schedule_set_id}/paced_trains",
         json=[paced_train_payload],
     )
     paced_train_response.raise_for_status()
@@ -317,6 +320,7 @@ def test_paced_train_conflicts(
 def test_paced_train_with_exceptions_conflicts(
     small_infra: Infra,
     timetable_id: int,
+    train_schedule_set_id: int,
     fast_rolling_stock: int,
     session: Session,
 ):
@@ -374,7 +378,7 @@ def test_paced_train_with_exceptions_conflicts(
     }
 
     paced_train_response = session.post(
-        f"{EDITOAST_URL}timetable/{timetable_id}/paced_trains",
+        f"{EDITOAST_URL}train_schedule_set/{train_schedule_set_id}/paced_trains",
         json=[paced_train_payload],
     )
     paced_train_response.raise_for_status()
@@ -425,7 +429,7 @@ def _match_conflict_lists(a, b):
 
 def test_scheduled_points_with_incompatible_margins(
     small_infra: Infra,
-    timetable_id: int,
+    train_schedule_set_id: int,
     fast_rolling_stock: int,
     session: Session,
 ):
@@ -458,7 +462,7 @@ def test_scheduled_points_with_incompatible_margins(
         }
     ]
     response = session.post(
-        f"{EDITOAST_URL}/timetable/{timetable_id}/paced_trains",
+        f"{EDITOAST_URL}/train_schedule_set/{train_schedule_set_id}/paced_trains",
         json=train_schedule_payload,
     )
     response.raise_for_status()
@@ -477,7 +481,7 @@ def test_scheduled_points_with_incompatible_margins(
 
 def test_mrsp_sources(
     small_infra: Infra,
-    timetable_id: int,
+    train_schedule_set_id: int,
     fast_rolling_stock: int,
     session: Session,
 ):
@@ -509,7 +513,7 @@ def test_mrsp_sources(
         }
     ]
     content = _get_train_schedule_simulation_response(
-        small_infra, timetable_id, train_schedule_payload, session
+        small_infra, train_schedule_set_id, train_schedule_payload, session
     )
     assert content["mrsp"] == {
         "boundaries": [4180000, 4580000],
@@ -528,7 +532,7 @@ def test_mrsp_sources(
 
     train_schedule_payload[0]["speed_limit_tag"] = "MA80"
     content = _get_train_schedule_simulation_response(
-        small_infra, timetable_id, train_schedule_payload, session
+        small_infra, train_schedule_set_id, train_schedule_payload, session
     )
     assert content["mrsp"] == {
         "boundaries": [3680000, 4580000],
@@ -542,12 +546,12 @@ def test_mrsp_sources(
 
 def _get_train_schedule_simulation_response(
     infra: Infra,
-    timetable_id: int,
+    train_schedule_set_id: int,
     train_schedules_payload: list[dict[str, Any]],
     session: Session,
 ):
     ts_response = session.post(
-        f"{EDITOAST_URL}/timetable/{timetable_id}/paced_trains",
+        f"{EDITOAST_URL}/train_schedule_set/{train_schedule_set_id}/paced_trains",
         json=train_schedules_payload,
     )
     ts_response.raise_for_status()

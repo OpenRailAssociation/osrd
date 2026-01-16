@@ -8,3 +8,4 @@ class Scenario:
     scenario: int
     infra: int
     timetable: int
+    train_schedule_set: int

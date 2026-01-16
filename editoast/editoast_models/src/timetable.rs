@@ -7,11 +7,14 @@ use diesel::sql_types::Array;
 use diesel::sql_types::BigInt;
 use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
+use itertools::Itertools;
+use std::collections::HashSet;
 use std::ops::DerefMut;
 
 use database::DbConnection;
 
 use crate as editoast_models;
+use crate::timetable_train_schedule_set::TimetableTrainScheduleSet;
 
 #[derive(Debug, Default, Clone, Model)]
 #[cfg_attr(test, derive(serde::Deserialize))]
@@ -32,12 +35,33 @@ impl Timetable {
         timetable_id: i64,
         conn: &mut DbConnection,
     ) -> Result<i64, database::DatabaseError> {
-        use database::tables::paced_train::dsl;
+        use database::tables::paced_train;
+        use database::tables::timetable_train_schedule_set;
 
-        dsl::paced_train
-            .filter(dsl::timetable_id.eq(timetable_id))
+        paced_train::dsl::paced_train
+            .filter(
+                paced_train::dsl::train_schedule_set_id.eq_any(
+                    timetable_train_schedule_set::dsl::timetable_train_schedule_set
+                        .select(timetable_train_schedule_set::dsl::train_schedule_set_id)
+                        .filter(timetable_train_schedule_set::dsl::timetable_id.eq(timetable_id)),
+                ),
+            )
             .count()
             .get_result(conn.write().await.deref_mut())
+            .await
+            .map_err(Into::into)
+    }
+
+    pub async fn get_train_schedule_set_ids_from_timetable(
+        timetable_id: i64,
+        conn: &mut DbConnection,
+    ) -> Result<Vec<i64>, database::DatabaseError> {
+        use database::tables::timetable_train_schedule_set::dsl;
+
+        dsl::timetable_train_schedule_set
+            .filter(dsl::timetable_id.eq(timetable_id))
+            .select(dsl::train_schedule_set_id)
+            .load(conn.write().await.deref_mut())
             .await
             .map_err(Into::into)
     }
@@ -46,14 +70,65 @@ impl Timetable {
         timetable_id: i64,
         conn: &mut DbConnection,
     ) -> Result<Vec<DateTime<Utc>>, database::DatabaseError> {
-        use database::tables::paced_train::dsl;
+        use database::tables::paced_train;
+        use database::tables::timetable_train_schedule_set;
 
-        dsl::paced_train
-            .select(dsl::start_time)
-            .filter(dsl::timetable_id.eq(timetable_id))
+        paced_train::dsl::paced_train
+            .select(paced_train::dsl::start_time)
+            .filter(
+                paced_train::dsl::train_schedule_set_id.eq_any(
+                    timetable_train_schedule_set::dsl::timetable_train_schedule_set
+                        .select(timetable_train_schedule_set::dsl::train_schedule_set_id)
+                        .filter(timetable_train_schedule_set::dsl::timetable_id.eq(timetable_id)),
+                ),
+            )
             .load(conn.write().await.deref_mut())
             .await
             .map_err(Into::into)
+    }
+
+    pub async fn set_links_train_schedule_set(
+        timetable_id: i64,
+        train_schedule_set_ids: HashSet<i64>,
+        conn: &mut DbConnection,
+    ) -> Result<(), editoast_models::Error> {
+        use crate::prelude::*;
+        use database::tables::timetable_train_schedule_set::dsl;
+
+        // Transaction to ensure consistency of modifications
+        conn.transaction(async move |mut conn| {
+            // 1. Retrieve the current links
+            let existing_linked_ids: HashSet<i64> = dsl::timetable_train_schedule_set
+                .select(dsl::train_schedule_set_id)
+                .filter(dsl::timetable_id.eq(timetable_id))
+                .load(conn.write().await.deref_mut())
+                .await?
+                .into_iter()
+                .collect();
+
+            // 2. Delete only the links that are NOT in the new list
+            let links_to_delete = existing_linked_ids.difference(&train_schedule_set_ids);
+            diesel::delete(
+                dsl::timetable_train_schedule_set
+                    .filter(dsl::timetable_id.eq(timetable_id))
+                    .filter(dsl::train_schedule_set_id.eq_any(links_to_delete)),
+            )
+            .execute(conn.write().await.deref_mut())
+            .await?;
+
+            // 3. Create missing links
+            let links_to_create = train_schedule_set_ids.difference(&existing_linked_ids);
+            let changesets = links_to_create
+                .map(|train_schedule_set_id| {
+                    TimetableTrainScheduleSet::changeset()
+                        .timetable_id(timetable_id)
+                        .train_schedule_set_id(*train_schedule_set_id)
+                })
+                .collect_vec();
+            let _: Vec<_> = TimetableTrainScheduleSet::create_batch(&mut conn, changesets).await?;
+            Ok(())
+        })
+        .await
     }
 
     /// Deletes timetables that are not referenced by any Scenario or StdcmSearchEnvironment
@@ -97,7 +172,8 @@ impl TimetableWithTrains {
             "SELECT timetable.*,
         array_remove(array_agg(paced_train.id), NULL) as paced_train_ids
         FROM timetable
-        LEFT JOIN paced_train ON timetable.id = paced_train.timetable_id
+        JOIN timetable_train_schedule_set ON timetable.id = timetable_train_schedule_set.timetable_id
+        LEFT JOIN paced_train ON timetable_train_schedule_set.train_schedule_set_id = paced_train.train_schedule_set_id
         WHERE timetable.id = $1
         GROUP BY timetable.id",
         )

@@ -39,11 +39,16 @@ test.describe('@op @nge', () => {
       window.localStorage.clear();
     });
     await test.step('Create, open scenario and wait for infra to be loaded', async () => {
-      scenarioItems = (
-        await createScenario(generateUniqueName('nge-scenario'), project.id, study.id, infra.id)
-      ).scenario;
+      const { scenario, trainScheduleSet } = await createScenario(
+        generateUniqueName('nge-scenario'),
+        project.id,
+        study.id,
+        infra.id
+      );
 
-      await sendTrains(scenarioItems.timetable_id, trainSchedulesJson.slice(4, 5));
+      scenarioItems = scenario;
+
+      await sendTrains(trainScheduleSet.id, trainSchedulesJson.slice(4, 5));
 
       await page.goto(
         `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`

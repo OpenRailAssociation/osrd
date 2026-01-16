@@ -64,7 +64,8 @@ const TrainScheduleItem = ({
   const dateTimeLocale = useDateTimeLocale();
   const dispatch = useAppDispatch();
 
-  const [postPacedTrain] = osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.useMutation();
+  const [postPacedTrain] =
+    osrdEditoastApi.endpoints.postTrainScheduleSetByIdPacedTrains.useMutation();
   const [getPacedTrain] = osrdEditoastApi.endpoints.getPacedTrainById.useLazyQuery();
 
   const { summary } = train;
@@ -108,13 +109,13 @@ const TrainScheduleItem = ({
       );
 
       const newTrain: TrainSchedule = {
-        ...omit(trainDetail, ['id', 'timetable_id']),
+        ...omit(trainDetail, ['id', 'train_schedule_set_id']),
         start_time: startTime.toISOString(),
         train_name: trainName,
       };
 
       const [newTimetableItem] = await postPacedTrain({
-        id: trainDetail.timetable_id,
+        id: trainDetail.train_schedule_set_id,
         body: [newTrain],
       }).unwrap();
       const formattedTrainScheduleResponse: TimetableItem = {

@@ -17,6 +17,7 @@ use editoast_models::scenario::Scenario;
 use editoast_models::study::Study;
 use editoast_models::tags::Tags;
 use editoast_models::timetable::Timetable;
+use editoast_models::timetable_train_schedule_set::TimetableTrainScheduleSet;
 use schemas::fixtures::simple_created_exception_with_change_groups;
 use schemas::fixtures::simple_modified_exception_with_change_groups;
 use schemas::infra::InfraObject;
@@ -54,6 +55,7 @@ use schemas::train_schedule::TrainScheduleOptions;
 use crate::infra_cache::operation::create::apply_create_operation;
 use crate::models;
 use crate::models::Infra;
+use crate::models::train_schedule_set::TrainScheduleSet;
 
 pub async fn create_project(conn: &mut DbConnection, name: &str) -> Project {
     Project::fake(name)
@@ -69,11 +71,42 @@ pub async fn create_study(conn: &mut DbConnection, name: &str, project_id: i64) 
         .expect("Failed to create study")
 }
 
+/// Returns a tuple of (timetable_id, train_schedule_set_id)
+pub async fn create_timetable_with_train_schedule_set(
+    conn: &mut DbConnection,
+) -> (Timetable, TrainScheduleSet) {
+    let timetable = create_timetable(conn).await;
+    let train_schedule_set = create_train_schedule_set(conn).await;
+    let _ = link_train_schedule_set_to_timetable(conn, train_schedule_set.id, timetable.id).await;
+    (timetable, train_schedule_set)
+}
+
 pub async fn create_timetable(conn: &mut DbConnection) -> Timetable {
     Timetable::changeset()
         .create(conn)
         .await
         .expect("Failed to create timetable")
+}
+
+pub async fn create_train_schedule_set(conn: &mut DbConnection) -> TrainScheduleSet {
+    TrainScheduleSet::changeset()
+        .name(None)
+        .create(conn)
+        .await
+        .expect("Failed to create train schedule set")
+}
+
+async fn link_train_schedule_set_to_timetable(
+    conn: &mut DbConnection,
+    train_schedule_set_id: i64,
+    timetable_id: i64,
+) -> TimetableTrainScheduleSet {
+    TimetableTrainScheduleSet::changeset()
+        .train_schedule_set_id(train_schedule_set_id)
+        .timetable_id(timetable_id)
+        .create(conn)
+        .await
+        .expect("Failed to link train schedule set to timetable")
 }
 
 pub fn create_created_exception_with_change_groups(key: &str) -> PacedTrainException {
@@ -194,15 +227,16 @@ pub fn simple_paced_train_base() -> PacedTrain {
     }
 }
 
-pub fn simple_paced_train_changeset(timetable_id: i64) -> Changeset<models::PacedTrain> {
-    Changeset::<models::PacedTrain>::from(simple_paced_train_base()).timetable_id(timetable_id)
+pub fn simple_paced_train_changeset(train_schedule_set_id: i64) -> Changeset<models::PacedTrain> {
+    Changeset::<models::PacedTrain>::from(simple_paced_train_base())
+        .train_schedule_set_id(train_schedule_set_id)
 }
 
 pub async fn create_simple_paced_train(
     conn: &mut DbConnection,
-    timetable_id: i64,
+    train_schedule_set_id: i64,
 ) -> models::PacedTrain {
-    simple_paced_train_changeset(timetable_id)
+    simple_paced_train_changeset(train_schedule_set_id)
         .create(conn)
         .await
         .expect("Failed to create paced train")
@@ -210,10 +244,10 @@ pub async fn create_simple_paced_train(
 
 pub async fn create_paced_train_with_exceptions(
     conn: &mut DbConnection,
-    timetable_id: i64,
+    train_schedule_set_id: i64,
     exceptions: Vec<PacedTrainException>,
 ) -> models::PacedTrain {
-    let paced_train = simple_paced_train_changeset(timetable_id).exceptions(exceptions);
+    let paced_train = simple_paced_train_changeset(train_schedule_set_id).exceptions(exceptions);
     paced_train
         .create(conn)
         .await
@@ -255,6 +289,7 @@ pub struct ScenarioFixtureSet {
     pub scenario: Scenario,
     pub timetable: Timetable,
     pub infra: Infra,
+    pub train_schedule_set: TrainScheduleSet,
 }
 
 pub async fn create_scenario_fixtures_set(
@@ -262,7 +297,7 @@ pub async fn create_scenario_fixtures_set(
     name: &str,
 ) -> ScenarioFixtureSet {
     let infra = create_empty_infra(conn).await;
-    let timetable = create_timetable(conn).await;
+    let (timetable, train_schedule_set) = create_timetable_with_train_schedule_set(conn).await;
     let project = create_project(conn, &format!("project_test_name_with_{name}")).await;
     let study = create_study(conn, &format!("study_test_name_with_{name}"), project.id).await;
     let scenario = create_scenario(conn, name, study.id, timetable.id, infra.id).await;
@@ -270,6 +305,7 @@ pub async fn create_scenario_fixtures_set(
         scenario,
         timetable,
         infra,
+        train_schedule_set,
     }
 }
 

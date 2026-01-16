@@ -73,16 +73,15 @@ test.describe('@op @manchette @std', () => {
     project = await getProject(timetableItemProjectName);
     study = await getStudy(project.id, timetableItemStudyName);
     infra = await getInfra();
-    scenarioItems = (
-      await createScenario(
-        generateUniqueName('std-manchette-scenario'),
-        project.id,
-        study.id,
-        infra.id
-      )
-    ).scenario;
-    await sendTrains(scenarioItems.timetable_id, trainSchedulesJson.slice(20, 21));
-    await sendTrains(scenarioItems.timetable_id, pacedTrainsJson.slice(6, 7));
+    const { scenario, trainScheduleSet } = await createScenario(
+      generateUniqueName('std-manchette-scenario'),
+      project.id,
+      study.id,
+      infra.id
+    );
+    scenarioItems = scenario;
+    await sendTrains(trainScheduleSet.id, trainSchedulesJson.slice(20, 21));
+    await sendTrains(trainScheduleSet.id, pacedTrainsJson.slice(6, 7));
   });
 
   test.beforeEach('Open scenario and wait for infra to be loaded', async ({ page }) => {

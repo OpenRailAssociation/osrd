@@ -393,7 +393,7 @@ export const createPacedAttributesFromTrainrun = (trainrun: TrainrunDto, dto: Ne
 const handleCreateTimetableItem = async (
   netzgrafikDto: NetzgrafikDto,
   trainrun: TrainrunDto,
-  timetableId: number,
+  trainScheduleSetId: number,
   infraId: number,
   state: MacroEditorState,
   dispatch: AppDispatch,
@@ -444,8 +444,8 @@ const handleCreateTimetableItem = async (
   const returnPacedTrain = { ...pacedTrain, ...returnPathAndSchedule };
 
   const newTimetableItems = await dispatch(
-    osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.initiate({
-      id: timetableId,
+    osrdEditoastApi.endpoints.postTrainScheduleSetByIdPacedTrains.initiate({
+      id: trainScheduleSetId,
       body: [pacedTrain, returnPacedTrain],
     })
   ).unwrap();
@@ -507,7 +507,7 @@ const handleDeleteTimetableItem = async (
 export const handleUpdateTimetableItem = async ({
   netzgrafikDto,
   trainrun,
-  timetableId,
+  trainScheduleSetId,
   infraId,
   state,
   dispatch,
@@ -517,7 +517,7 @@ export const handleUpdateTimetableItem = async ({
   netzgrafikDto: NetzgrafikDto;
   trainrun: TrainrunDto;
   infraId: number;
-  timetableId: number;
+  trainScheduleSetId: number;
   state: MacroEditorState;
   dispatch: AppDispatch;
   addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void;
@@ -565,7 +565,6 @@ export const handleUpdateTimetableItem = async ({
     const updatedTrainSchedule = await storePacedTrain(
       oldForwardTimetableItem.id,
       newForwardTimetableItem,
-      timetableId,
       dispatch,
       addUpsertedTimetableItems
     );
@@ -590,7 +589,6 @@ export const handleUpdateTimetableItem = async ({
     const updatedPacedTrain = await storePacedTrain(
       oldForwardTimetableItem.id,
       newForwardPacedTrain,
-      timetableId,
       dispatch,
       addUpsertedTimetableItems
     );
@@ -654,7 +652,6 @@ export const handleUpdateTimetableItem = async ({
       newReturnTimetableItem = await storePacedTrain(
         oldReturnTimetableItem.id,
         newReturnPacedTrainBase,
-        timetableId,
         dispatch,
         addUpsertedTimetableItems
       );
@@ -662,7 +659,6 @@ export const handleUpdateTimetableItem = async ({
       newReturnTimetableItem = await storePacedTrain(
         oldReturnTimetableItem.id,
         newReturnTimetableItemBase,
-        timetableId,
         dispatch,
         addUpsertedTimetableItems
       );
@@ -680,7 +676,11 @@ export const handleUpdateTimetableItem = async ({
         ...returnPathAndSchedule,
       };
 
-      newReturnTimetableItem = await createPacedTrain(dispatch, timetableId, returnPacedTrain);
+      newReturnTimetableItem = await createPacedTrain(
+        dispatch,
+        trainScheduleSetId,
+        returnPacedTrain
+      );
     } else {
       if (isPacedTrainId(oldForwardTimetableItem.id)) {
         throw new Error(
@@ -692,7 +692,11 @@ export const handleUpdateTimetableItem = async ({
         ...returnPathAndSchedule,
       };
 
-      newReturnTimetableItem = await createPacedTrain(dispatch, timetableId, returnTrainSchedule);
+      newReturnTimetableItem = await createPacedTrain(
+        dispatch,
+        trainScheduleSetId,
+        returnTrainSchedule
+      );
     }
 
     addUpsertedTimetableItems([newReturnTimetableItem]);
@@ -708,7 +712,7 @@ export const handleTrainrunOperation = async ({
   type,
   netzgrafikDto,
   trainrunId,
-  timetableId,
+  trainScheduleSetId,
   infraId,
   state,
   dispatch,
@@ -718,7 +722,7 @@ export const handleTrainrunOperation = async ({
   type: NGEEvent['type'];
   netzgrafikDto: NetzgrafikDto;
   trainrunId: number;
-  timetableId: number;
+  trainScheduleSetId: number;
   infraId: number;
   state: MacroEditorState;
   dispatch: AppDispatch;
@@ -731,7 +735,7 @@ export const handleTrainrunOperation = async ({
       await handleCreateTimetableItem(
         netzgrafikDto,
         trainrun!,
-        timetableId,
+        trainScheduleSetId,
         infraId,
         state,
         dispatch,
@@ -743,7 +747,7 @@ export const handleTrainrunOperation = async ({
       await handleUpdateTimetableItem({
         netzgrafikDto,
         trainrun: trainrun!,
-        timetableId,
+        trainScheduleSetId,
         infraId,
         dispatch,
         state,
@@ -766,7 +770,7 @@ export const updateTrainrunsByNode = async ({
   netzgrafikDto,
   dispatch,
   infraId,
-  timetableId,
+  trainScheduleSetId,
   addUpsertedTimetableItems,
   addDeletedTimetableItemIds,
   node,
@@ -775,7 +779,7 @@ export const updateTrainrunsByNode = async ({
   netzgrafikDto: NetzgrafikDto;
   dispatch: AppDispatch;
   infraId: number;
-  timetableId: number;
+  trainScheduleSetId: number;
   addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void;
   addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void;
   node: NodeDto;
@@ -797,7 +801,7 @@ export const updateTrainrunsByNode = async ({
     await handleUpdateTimetableItem({
       netzgrafikDto,
       trainrun,
-      timetableId,
+      trainScheduleSetId,
       infraId,
       dispatch,
       state,

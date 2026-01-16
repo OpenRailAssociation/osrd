@@ -35,7 +35,7 @@ pub struct PacedTrain {
     #[model(remote = "Vec<Option<String>>")]
     pub labels: Tags,
     pub rolling_stock_name: String,
-    pub timetable_id: i64,
+    pub train_schedule_set_id: i64,
     pub start_time: DateTime<Utc>,
     #[model(json)]
     pub schedule: Vec<ScheduleItem>,
@@ -406,7 +406,7 @@ mod tests {
     pub fn create_paced_train(exceptions: Vec<PacedTrainException>) -> PacedTrain {
         PacedTrain {
             id: 1,
-            timetable_id: 1,
+            train_schedule_set_id: 1,
             train_name: "train_name".to_string(),
             rolling_stock_name: "R2D2".to_string(),
             comfort: Comfort::Standard,

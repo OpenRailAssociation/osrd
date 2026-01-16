@@ -1,6 +1,7 @@
 import { useMemo, useState, useCallback, useEffect } from 'react';
 
 import { compact } from 'lodash';
+import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import type {
@@ -10,21 +11,29 @@ import type {
   SearchResultItemTrainSchedule,
 } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { setFailure } from 'reducers/main';
 import {
   getSearchDatetimeWindow,
   getStdcmInfraID,
   getStdcmTimetableID,
 } from 'reducers/osrdconf/stdcmConf/selectors';
+import { useAppDispatch } from 'store';
 import { isArrivalDateInSearchTimeWindow, isEqualDate } from 'utils/date';
 import { Duration } from 'utils/duration';
+import { castErrorToFailure } from 'utils/error';
 
 import type { StdcmLinkedTrainResult } from '../types';
 import computeOpSchedules from '../utils/computeOpSchedules';
 
 const useLinkedTrainSearch = () => {
+  const { t } = useTranslation('stdcm', { keyPrefix: 'trainPath.linkedTrain' });
+  const dispatch = useAppDispatch();
+
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useLazyQuery();
   const [postPacedTrainSimulationSummary] =
     osrdEditoastApi.endpoints.postPacedTrainSimulationSummary.useLazyQuery();
+  const [getTrainScheduleSets] =
+    osrdEditoastApi.endpoints.getTimetableByIdTrainScheduleSets.useLazyQuery();
 
   const infraId = useSelector(getStdcmInfraID);
   const timetableId = useSelector(getStdcmTimetableID);
@@ -97,15 +106,21 @@ const useLinkedTrainSearch = () => {
     if (!trainNameInput) return;
     setDisplaySearchButton(false);
     setLinkedTrainResults([]);
+
     try {
+      // Fetch the train schedule sets linked to the timetable to search among them
+      const trainScheduleSets = await getTrainScheduleSets({ id: timetableId }).unwrap();
+      if (trainScheduleSets.length === 0) {
+        // should not happen
+        dispatch(setFailure({ name: t('error'), message: t('noTrainScheduleSetFound') }));
+        return;
+      }
+      const tssPayload = trainScheduleSets.map((tss) => ['=', ['train_schedule_set_id'], tss.id]);
+
       const results = (await postSearch({
         searchPayload: {
           object: 'trainschedule',
-          query: [
-            'and',
-            ['search', ['train_name'], trainNameInput],
-            ['=', ['timetable_id'], timetableId],
-          ],
+          query: ['and', ['search', ['train_name'], trainNameInput], ['or', ...tssPayload]],
         },
         pageSize: 25,
       }).unwrap()) as SearchResultItemTrainSchedule[];
@@ -150,10 +165,17 @@ const useLinkedTrainSearch = () => {
       );
       setLinkedTrainResults(compact(newLinkedPathResults));
     } catch (error) {
-      console.error('Train schedule search failed:', error);
+      dispatch(setFailure(castErrorToFailure(error)));
       setDisplaySearchButton(true);
     }
-  }, [postSearch, trainNameInput, timetableId, linkedTrainDate, getExtremityDetails]);
+  }, [
+    postSearch,
+    trainNameInput,
+    timetableId,
+    getTrainScheduleSets,
+    linkedTrainDate,
+    getExtremityDetails,
+  ]);
 
   const resetLinkedTrainSearch = () => {
     setDisplaySearchButton(true);

@@ -757,7 +757,7 @@ pub mod tests {
     use crate::models::fixtures::create_scenario;
     use crate::models::fixtures::create_small_infra;
     use crate::models::fixtures::create_study;
-    use crate::models::fixtures::create_timetable;
+    use crate::models::fixtures::create_timetable_with_train_schedule_set;
     use crate::models::fixtures::simple_paced_train_changeset;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
@@ -923,9 +923,15 @@ pub mod tests {
             project.id,
         )
         .await;
-        let timetable_1 = create_timetable(&mut db_pool.get_ok()).await;
-        let timetable_2 = create_timetable(&mut db_pool.get_ok()).await;
-        let timetable_3 = create_timetable(&mut db_pool.get_ok()).await;
+
+        let (timetable_1, train_schedule_set_1) =
+            create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
+
+        let (timetable_2, train_schedule_set_2) =
+            create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
+        let (timetable_3, train_schedule_set_3) =
+            create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
+
         let infra = create_small_infra(&mut db_pool.get_ok()).await;
         let scenario_1 = create_scenario(
             &mut db_pool.get_ok(),
@@ -953,17 +959,17 @@ pub mod tests {
         )
         .await;
 
-        simple_paced_train_changeset(timetable_1.id)
+        simple_paced_train_changeset(train_schedule_set_1.id)
             .rolling_stock_name(rolling_stock.name.clone())
             .create(&mut db_pool.get_ok())
             .await
             .unwrap();
-        simple_paced_train_changeset(timetable_2.id)
+        simple_paced_train_changeset(train_schedule_set_2.id)
             .rolling_stock_name(rolling_stock.name)
             .create(&mut db_pool.get_ok())
             .await
             .unwrap();
-        simple_paced_train_changeset(timetable_3.id)
+        simple_paced_train_changeset(train_schedule_set_3.id)
             .rolling_stock_name(other_rolling_stock.name)
             .create(&mut db_pool.get_ok())
             .await
@@ -1527,7 +1533,8 @@ pub mod tests {
             project.id,
         )
         .await;
-        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let (timetable, train_schedule_set) =
+            create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
         let infra = create_small_infra(&mut db_pool.get_ok()).await;
         create_scenario(
             &mut db_pool.get_ok(),
@@ -1538,7 +1545,7 @@ pub mod tests {
         )
         .await;
 
-        simple_paced_train_changeset(timetable.id)
+        simple_paced_train_changeset(train_schedule_set.id)
             .rolling_stock_name(fast_rolling_stock.name.clone())
             .create(&mut db_pool.get_ok())
             .await

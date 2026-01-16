@@ -8,7 +8,7 @@ import ScenarioContent from './components/ScenarioContent';
 import ScenarioHeader from './components/ScenarioHeader';
 
 const Scenario = () => {
-  const { scenario } = useScenario();
+  const { scenario, sandboxId } = useScenario();
 
   const { activeBoards, toggleBoard } = usePersistScenarioHeader(scenario?.id, [
     'trains',
@@ -18,10 +18,10 @@ const Scenario = () => {
     'tables',
   ]);
 
-  if (!scenario) return null;
+  if (!scenario || !sandboxId) return null;
 
   return (
-    <ScenarioContextProvider scenario={scenario}>
+    <ScenarioContextProvider scenario={scenario} sandboxId={sandboxId}>
       <ScenarioHeader activeBoards={activeBoards} toggleBoard={toggleBoard} />
       <RollingStockContextProvider>
         <SubCategoryContextProvider>

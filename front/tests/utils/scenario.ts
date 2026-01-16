@@ -1,8 +1,15 @@
 import { v4 as uuidv4 } from 'uuid';
 
-import type { Infra, Project, Scenario, Study, TimetableResult } from 'common/api/osrdEditoastApi';
+import type {
+  Infra,
+  Project,
+  Scenario,
+  Study,
+  TimetableResult,
+  TrainScheduleSet,
+} from 'common/api/osrdEditoastApi';
 
-import { getInfra, getProject, getStudy, postApiRequest } from './api-utils';
+import { postApiRequest, getInfra, getProject, getStudy } from './api-utils';
 import readJsonFile from './file-utils';
 import type { ScenarioData } from './types';
 
@@ -15,6 +22,7 @@ type SetupResult = {
   study: Study;
   scenario: Scenario;
   timetableResult: TimetableResult;
+  trainScheduleSet: TrainScheduleSet;
 };
 
 /**
@@ -42,6 +50,25 @@ export default async function createScenario(
   // Create a new timetable result
   const timetableResult: TimetableResult = await postApiRequest(`/api/timetable`);
 
+  // Create the sandbox
+  const trainScheduleSet: TrainScheduleSet = await postApiRequest(`/api/train_schedule_set`, {
+    name: null,
+    description: '',
+    catalog_entry_id: null,
+    published: false,
+  });
+
+  // Link the timetable with the sandbox
+  await postApiRequest(
+    `/api/timetable/${timetableResult.timetable_id}/train_schedule_sets`,
+    {
+      train_schedule_set_ids: [trainScheduleSet.id],
+    },
+    undefined,
+    'Failed to link timetable with train schedule set',
+    false
+  );
+
   // Create a new scenario with a unique name if not provided
   const scenarioNameFinal = scenarioName || `${scenarioData.name} ${uuidv4()}`;
 
@@ -67,5 +94,6 @@ export default async function createScenario(
     study,
     scenario,
     timetableResult,
+    trainScheduleSet,
   };
 }

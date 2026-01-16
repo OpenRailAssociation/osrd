@@ -23,13 +23,27 @@ def create_scenario(
     infra_id: int,
     op_study_id: int,
     session: Session,
-) -> tuple[int, int]:
+) -> tuple[int, int, int]:
     # Create the timetable
     r = session.post(editoast_url + "/timetable/")
     if r.status_code // 100 != 2:
         err = f"Error creating timetable {r.status_code}: {r.content}"
         raise RuntimeError(err)
     timetable_id = r.json()["timetable_id"]
+
+    r = session.post(
+        editoast_url + "/train_schedule_set/",
+        json={
+            "catalog_entry_id": None,
+            "name": None,
+            "published": False,
+            "description": "",
+        },
+    )
+    if r.status_code // 100 != 2:
+        err = f"Error creating train_schedule_set_id {r.status_code}: {r.content}"
+        raise RuntimeError(err)
+    train_schedule_set_id = r.json()["id"]
 
     # Create the scenario
     scenario_payload = {
@@ -43,4 +57,4 @@ def create_scenario(
         json=scenario_payload,
     )
     r.raise_for_status()
-    return r.json()["id"], timetable_id
+    return r.json()["id"], timetable_id, train_schedule_set_id
