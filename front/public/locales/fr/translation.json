@@ -39,7 +39,7 @@
           "name": "Position de l'aiguille invalide"
         },
         "invalid_reference": {
-          "description": "L’object « {{obj_id}} » référence l’objet « {{reference.obj_id}} » qui n’existe pas",
+          "description": "L’objet « {{obj_id}} » référence l’objet « {{reference.obj_id}} » qui n’existe pas",
           "name": "Référence invalide"
         },
         "invalid_route": {
@@ -107,14 +107,14 @@
       },
       "list": {
         "filter-type": "Type d'anomalie",
-        "goto-error": "Sélectionner et viualiser sur la carte",
+        "goto-error": "Sélectionner et visualiser sur la carte",
         "total-all_one": "Une erreur ou un avertissement trouvé",
         "total-all_other": "{{count}} erreurs et avertissements trouvés",
         "total-all_zero": "Aucune erreur ni avertissement trouvé",
         "total-errors_one": "Une erreur trouvée",
         "total-errors_other": "{{count}} erreurs trouvées",
         "total-errors_zero": "Aucune erreur trouvée",
-        "total-warnings_one": "Un avertissement trouvés",
+        "total-warnings_one": "Un avertissement trouvé",
         "total-warnings_other": "{{count}} avertissements trouvés",
         "total-warnings_zero": "Aucun avertissement trouvé"
       },
