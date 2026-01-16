@@ -968,6 +968,12 @@
             }
           }
         }
+
+        .scenario-timetable-trainschedule-loader {
+          .spinner-border {
+            position: absolute;
+          }
+        }
       }
     }
   }

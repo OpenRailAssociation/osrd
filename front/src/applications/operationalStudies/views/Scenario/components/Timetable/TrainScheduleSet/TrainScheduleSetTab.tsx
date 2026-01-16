@@ -24,7 +24,7 @@ import { computeTrainScheduleSetName, isSandbox } from '../utils';
 
 type TrainScheduleSetTabProps = PropsWithChildren<{
   trainScheduleSet: TrainScheduleSet;
-  catalogName?: string;
+  catalogName?: string | null;
   handleClickTrainScheduleSet: (id: number) => void;
   handleSelectTrainScheduleSet: () => void;
   isSelectMode: boolean;
