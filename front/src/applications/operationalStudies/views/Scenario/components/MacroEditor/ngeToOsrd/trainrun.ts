@@ -371,7 +371,10 @@ const populateSecondaryCodesInPath = async (
   await Promise.all(promises);
 };
 
-export const createPacedAttributesFromTrainrun = (trainrun: TrainrunDto, dto: NetzgrafikDto) => {
+export const createPacedAttributesFromTrainrun = (
+  trainrun: TrainrunDto,
+  dto: NetzgrafikDto
+): PacedTrain['paced'] => {
   const freq = getFrequencyFromFrequencyId(dto.metadata.trainrunFrequencies, trainrun.frequencyId);
   const interval = new Duration({ minutes: freq.frequency });
   if (interval >= new Duration({ hours: 24 })) {
