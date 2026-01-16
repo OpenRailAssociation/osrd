@@ -40,7 +40,6 @@ use editoast_models::timetable::TimetableWithTrains;
 use itertools::Itertools;
 use itertools::izip;
 use paced_train::PacedTrainResponse;
-use schemas::paced_train::PacedTrain;
 use schemas::rolling_stock::EtcsBrakeParams;
 use schemas::rolling_stock::RollingResistance;
 use schemas::rolling_stock::RollingStock;
@@ -64,7 +63,6 @@ use crate::error::Result;
 use crate::models;
 use crate::models::Infra;
 use crate::models::paced_train::OccurrenceId;
-use crate::models::paced_train::PacedTrainChangeset;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
@@ -167,49 +165,6 @@ pub(in crate::views) async fn delete(
     })
     .await?;
     Ok(StatusCode::NO_CONTENT)
-}
-
-/// Create paced trains by batch
-#[editoast_derive::route]
-#[utoipa::path(
-    post, path = "",
-    tags = ["timetable", "paced_train"],
-    params(TimetableIdParam),
-    request_body = Vec<PacedTrain>,
-    responses(
-        (status = 200, description = "The created paced trains", body = Vec<PacedTrainResponse>)
-    )
-)]
-pub(in crate::views) async fn post_paced_train(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
-    Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
-    Json(paced_trains): Json<Vec<PacedTrain>>,
-) -> Result<Json<Vec<PacedTrainResponse>>> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
-    let conn = &mut db_pool.get().await?;
-
-    let timetable_exists = Timetable::exists(conn, timetable_id).await?;
-    if !timetable_exists {
-        return Err(TimetableError::NotFound { timetable_id }.into());
-    }
-
-    let changesets = paced_trains
-        .into_iter()
-        .map(PacedTrainChangeset::from)
-        .map(|cs| cs.timetable_id(timetable_id))
-        .collect::<Vec<_>>();
-
-    // Create a batch of paced trains
-    let paced_trains: Vec<_> = models::PacedTrain::create_batch(conn, changesets).await?;
-    Ok(Json(paced_trains.into_iter().map_into().collect()))
 }
 
 #[derive(Serialize, ToSchema, Debug)]
@@ -846,12 +801,7 @@ mod tests {
     use schemas::fixtures::simple_modified_exception_with_change_groups;
     use schemas::fixtures::simple_rolling_stock;
     use schemas::fixtures::towed_rolling_stock;
-    use schemas::paced_train::ExceptionType;
-    use schemas::paced_train::PacedTrainException;
-    use schemas::paced_train::PathAndScheduleChangeGroup;
     use schemas::rolling_stock::RollingResistance;
-    use schemas::train_schedule::MarginValue;
-    use schemas::train_schedule::Margins;
 
     use super::*;
     use crate::error::InternalError;
@@ -912,81 +862,6 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn create_paced_train_exceptions() {
-        let app = TestAppBuilder::default_app();
-        let pool = app.db_pool();
-
-        let timetable = create_timetable(&mut pool.get_ok()).await;
-        let mut paced_train_1 = simple_paced_train_base();
-        let exception_1 = PacedTrainException {
-            key: "exception_key_1".into(),
-            exception_type: ExceptionType::Created {},
-            disabled: false,
-            constraint_distribution: None,
-            initial_speed: None,
-            labels: None,
-            options: None,
-            path_and_schedule: None,
-            rolling_stock: None,
-            rolling_stock_category: None,
-            speed_limit_tag: None,
-            start_time: None,
-            train_name: None,
-        };
-
-        let exception_2 = PacedTrainException {
-            key: "exception_key_2".into(),
-            exception_type: ExceptionType::Modified {
-                occurrence_index: 1,
-            },
-            disabled: true,
-            path_and_schedule: Some(PathAndScheduleChangeGroup {
-                power_restrictions: vec![],
-                schedule: vec![],
-                path: vec![],
-                margins: Margins {
-                    boundaries: vec![],
-                    values: vec![MarginValue::Percentage(5.0)],
-                },
-            }),
-            constraint_distribution: None,
-            initial_speed: None,
-            labels: None,
-            options: None,
-            rolling_stock: None,
-            rolling_stock_category: None,
-            speed_limit_tag: None,
-            start_time: None,
-            train_name: None,
-        };
-
-        paced_train_1.paced.as_mut().unwrap().exceptions =
-            vec![exception_1.clone(), exception_2.clone()];
-
-        let request = app
-            .post(format!("/timetable/{}/paced_trains", timetable.id).as_str())
-            .json(&vec![paced_train_1.clone()]);
-
-        let _: Vec<PacedTrainResponse> = app
-            .fetch(request)
-            .await
-            .assert_status(StatusCode::OK)
-            .json_into();
-
-        let settings = SelectionSettings::default()
-            .filter(move || models::PacedTrain::TIMETABLE_ID.eq(timetable.id))
-            .limit(25)
-            .offset(0);
-
-        let list_result = models::PacedTrain::list(&mut pool.get_ok(), settings)
-            .await
-            .expect("Failed to fetch paced trains");
-
-        assert_eq!(&list_result[0].exceptions[0], &exception_1);
-        assert_eq!(&list_result[0].exceptions[1], &exception_2);
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_paced_train_with_duplicated_exceptions() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -1013,48 +888,6 @@ mod tests {
                 .unwrap()
                 .contains("Duplicate exception key: 'duplicated_key_1'")
         )
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn create_paced_train() {
-        let app = TestAppBuilder::default_app();
-        let pool = app.db_pool();
-
-        let timetable = create_timetable(&mut pool.get_ok()).await;
-        let paced_train_1 = simple_paced_train_base();
-        let mut paced_train_2 = simple_paced_train_base();
-        paced_train_2.paced.as_mut().unwrap().time_window =
-            Duration::minutes(120).try_into().unwrap();
-        paced_train_2.paced.as_mut().unwrap().interval = Duration::seconds(30).try_into().unwrap();
-
-        let paced_trains = vec![paced_train_1, paced_train_2.clone()];
-
-        let request = app
-            .post(format!("/timetable/{}/paced_trains", timetable.id).as_str())
-            .json(&paced_trains);
-
-        let response: Vec<PacedTrainResponse> = app
-            .fetch(request)
-            .await
-            .assert_status(StatusCode::OK)
-            .json_into();
-
-        assert!(response.len() == 2);
-
-        let settings = SelectionSettings::default()
-            .filter(move || models::PacedTrain::TIMETABLE_ID.eq(timetable.id))
-            .limit(25)
-            .offset(0);
-
-        let list_result = models::PacedTrain::list(&mut pool.get_ok(), settings)
-            .await
-            .expect("Failed to fetch paced trains");
-
-        assert!(list_result.len() == 2);
-        assert_eq!(
-            list_result[0].exceptions,
-            paced_train_2.paced.unwrap().exceptions
-        );
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
