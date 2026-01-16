@@ -1,12 +1,12 @@
+use database::DbConnection;
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
+use editoast_models::prelude::*;
 use serde::Deserialize;
 use serde::Serialize;
 use std::ops::DerefMut;
 use utoipa::ToSchema;
-
-use database::DbConnection;
 
 #[derive(Deserialize, Serialize, ToSchema, Debug, Clone, PartialEq, Model)]
 #[model(table = database::tables::train_schedule_set)]
@@ -33,5 +33,51 @@ impl TrainScheduleSet {
             .get_result(conn.write().await.deref_mut())
             .await
             .map_err(Into::into)
+    }
+
+    /// Deletes train schedule sets that are not published or linked to a timetable
+    pub async fn delete_orphaned(conn: &mut DbConnection) -> anyhow::Result<usize> {
+        use database::tables::timetable_train_schedule_set::dsl as tt_dsl;
+        use database::tables::train_schedule_set::dsl as tss_dsl;
+
+        let max_to_delete_per_batch = 10;
+        let mut total_deleted = 0;
+
+        loop {
+            let deleted_count = conn
+                .transaction(async move |mut conn| -> anyhow::Result<usize> {
+                    let ids_to_delete: Vec<i64> = tss_dsl::train_schedule_set
+                        .filter(
+                            tss_dsl::published.eq(false).and(
+                                tss_dsl::id.ne_all(
+                                    tt_dsl::timetable_train_schedule_set
+                                        .select(tt_dsl::train_schedule_set_id),
+                                ),
+                            ),
+                        )
+                        .select(tss_dsl::id)
+                        .limit(max_to_delete_per_batch)
+                        .load(conn.write().await.deref_mut())
+                        .await?;
+
+                    if ids_to_delete.is_empty() {
+                        return Ok(0);
+                    }
+
+                    // Delete the found train schedule sets
+                    let count = Self::delete_batch(&mut conn, ids_to_delete).await?;
+
+                    Ok(count)
+                })
+                .await?;
+
+            if deleted_count == 0 {
+                break;
+            }
+
+            total_deleted += deleted_count;
+        }
+
+        Ok(total_deleted)
     }
 }
