@@ -9,7 +9,7 @@ import {
 } from 'common/api/osrdEditoastApi';
 import { isPacedTrain } from 'modules/timetableItem/helpers/pacedTrain';
 import {
-  createPacedTrain,
+  createPacedTrains,
   deletePacedTrains,
   fetchTimetableItem,
   storePacedTrain,
@@ -676,11 +676,9 @@ export const handleUpdateTimetableItem = async ({
         ...returnPathAndSchedule,
       };
 
-      newReturnTimetableItem = await createPacedTrain(
-        dispatch,
-        trainScheduleSetId,
-        returnPacedTrain
-      );
+      newReturnTimetableItem = (
+        await createPacedTrains(dispatch, trainScheduleSetId, [returnPacedTrain])
+      )[0];
     } else {
       if (isPacedTrainId(oldForwardTimetableItem.id)) {
         throw new Error(
@@ -692,11 +690,9 @@ export const handleUpdateTimetableItem = async ({
         ...returnPathAndSchedule,
       };
 
-      newReturnTimetableItem = await createPacedTrain(
-        dispatch,
-        trainScheduleSetId,
-        returnTrainSchedule
-      );
+      newReturnTimetableItem = (
+        await createPacedTrains(dispatch, trainScheduleSetId, [returnTrainSchedule])
+      )[0];
     }
 
     addUpsertedTimetableItems([newReturnTimetableItem]);
