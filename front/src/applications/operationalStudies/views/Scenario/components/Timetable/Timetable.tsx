@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 
 import cx from 'classnames';
+import { useTranslation } from 'react-i18next';
 import { Virtualizer } from 'virtua';
 
 import useScenarioTrainScheduleSet, {
@@ -50,6 +51,7 @@ const Timetable = ({
   selectedTimetableItemIds,
   projectingOnSimulatedPathException,
 }: TimetableProps) => {
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'main.timetable' });
   const [showTrainDetails, setShowTrainDetails] = useState(false);
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [timetableMode, setTimetableMode] = useState<TimetableMode>('calendar');
@@ -61,6 +63,8 @@ const Timetable = ({
   const {
     timetableItemsWithDetails: mockedTimetableItemsWithDetails,
     getTrainScheduleSetsFromTimetableItems,
+    getCatalogEntries,
+    createTrainScheduleSet,
   } = useScenarioTrainScheduleSet(timetableItemsWithDetails);
 
   const { filteredTimetableItems, ...timetableFilters } = useFilterTimetableItems(
@@ -202,7 +206,16 @@ const Timetable = ({
         )}
       </div>
       {showTrainScheduleSetDialog && (
-        <TrainScheduleSetDialog onCancel={() => setShowTrainScheduleSetDialog(false)} />
+        <TrainScheduleSetDialog
+          getCatalogEntries={getCatalogEntries}
+          onCancel={() => setShowTrainScheduleSetDialog(false)}
+          onSubmit={createTrainScheduleSet}
+          labels={{
+            title: t('trainScheduleSets.newLocalTrainScheduleSet'),
+            submit: t('trainScheduleSets.addTrainScheduleSet'),
+            cancel: t('trainScheduleSets.cancel'),
+          }}
+        />
       )}
     </div>
   );
