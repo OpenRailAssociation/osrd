@@ -32,11 +32,11 @@ import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 import SendToRailwayManagerModal from './SendToRailwayManagerModal';
 import StdcmDebugResults from './StdcmDebugResults';
 import StdcmFeedback from './StdcmFeedback';
-import StcdmResultsTable from './StdcmResultsTable';
+import StdcmResultsTable from './StdcmResultsTable';
 import StdcmSimulationNavigator from './StdcmSimulationNavigator';
 import StdcmSimulationReportSheet from './StdcmSimulationReportSheet';
 
-type StcdmResultsProps = {
+type StdcmResultsProps = {
   isCalculationFailed: boolean;
   isDebugMode: boolean;
   onSelectSimulation: (simulationIndex: number) => void;
@@ -56,7 +56,7 @@ const StdcmResults = ({
   buttonsVisible,
   showStatusBanner,
   displayInfoMessage,
-}: StcdmResultsProps) => {
+}: StdcmResultsProps) => {
   const infraId = useSelector(getStdcmInfraID);
   const { openModal, closeModal } = useModal();
   const railwayManagerUrl = useSelector(getRailwayManagerInterfaceUrl);
@@ -268,7 +268,7 @@ const StdcmResults = ({
               )}
               {hasSimulationResults ? (
                 <div className="results-and-sheet">
-                  <StcdmResultsTable
+                  <StdcmResultsTable
                     stdcmData={outputs.results}
                     consist={selectedSimulation.inputs.consist}
                     isSimulationRetained={isSelectedSimulationRetained}
