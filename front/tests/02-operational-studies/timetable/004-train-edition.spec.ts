@@ -63,20 +63,19 @@ test.describe('@op @paced-train @train-schedule', () => {
   test.beforeEach(
     'Setup scenario with one train schedule and one paced train',
     async ({ page }) => {
-      scenarioItems = (
-        await createScenario(
-          generateUniqueName('edit-train-scenario'),
-          project.id,
-          study.id,
-          infra.id
-        )
-      ).scenario;
+      const { scenario, trainScheduleSet } = await createScenario(
+        generateUniqueName('edit-train-scenario'),
+        project.id,
+        study.id,
+        infra.id
+      );
+      scenarioItems = scenario;
       await sendTrains(
-        scenarioItems.timetable_id,
+        trainScheduleSet.id,
         JSON.parse(JSON.stringify(trainSchedulesJson.slice(0, 1)))
       );
       await sendTrains(
-        scenarioItems.timetable_id,
+        trainScheduleSet.id,
         JSON.parse(JSON.stringify(pacedTrainsJson.slice(0, 1)))
       );
 

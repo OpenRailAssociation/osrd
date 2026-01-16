@@ -36,7 +36,7 @@ const CreateTimetableItemButton = ({
   const dispatch = useAppDispatch();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
 
-  const { workerStatus, timetableId } = useScenarioContext();
+  const { workerStatus, sandboxId } = useScenarioContext();
 
   const simulationConf = useSelector(getOperationalStudiesConf);
 
@@ -45,7 +45,8 @@ const CreateTimetableItemButton = ({
     rollingStockId: simulationConf.rollingStockID,
   });
 
-  const [postPacedTrain] = osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.useMutation();
+  const [postPacedTrain] =
+    osrdEditoastApi.endpoints.postTrainScheduleSetByIdPacedTrains.useMutation();
 
   const createTrainSchedules = async () => {
     if (!checkCurrentConfig(simulationConf, t, dispatch, rollingStock?.name)) return;
@@ -57,7 +58,7 @@ const CreateTimetableItemButton = ({
         ? formatPacedTrainPayload(simulationConf, rollingStock!.name)
         : formatTimetableItemPayload(simulationConf, rollingStock!.name);
       const newTimetableItem = await postPacedTrain({
-        id: timetableId,
+        id: sandboxId,
         body: [payload],
       }).unwrap();
 

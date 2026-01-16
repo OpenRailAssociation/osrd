@@ -128,7 +128,23 @@ def create_scenario(editoast_url: str, infra_id: int) -> Scenario:
     # Create the timetable
     r = _post_with_timeout(session, editoast_url + "/timetable/", json={})
     timetable_id = r.json()["timetable_id"]
-    return Scenario(-1, -1, -1, infra_id, timetable_id)
+    r = _post_with_timeout(
+        session,
+        editoast_url + "/train_schedule_set/",
+        json={
+            "catalog_entry_id": None,
+            "name": None,
+            "published": False,
+            "description": "",
+        },
+    )
+    train_schedule_set_id = r.json()["id"]
+    r = _post_with_timeout(
+        session,
+        editoast_url + "/timetable/{timetable_id}/train_schedule_sets/",
+        json=[train_schedule_set_id],
+    )
+    return Scenario(-1, -1, -1, infra_id, timetable_id, train_schedule_set_id)
 
 
 class _FailedTest(Exception):
@@ -261,7 +277,8 @@ def _test_new_train(
     schedule_payload = _make_payload_schedule(path, rolling_stock)
     r = _post_with_timeout(
         session,
-        editoast_url + f"/timetable/{scenario.timetable}/paced_trains/",
+        editoast_url
+        + f"/train_schedule_set/{scenario.train_schedule_set}/paced_trains/",
         json=schedule_payload,
     )
     if r.status_code // 100 != 2:
@@ -530,7 +547,30 @@ def _reset_timetable(editoast_url: str, scenario: Scenario) -> Scenario:
     # Create a timetable
     r = _post_with_timeout(session, editoast_url + "/timetable/", json={})
     timetable_id = r.json()["timetable_id"]
-    return Scenario(-1, -1, -1, infra_id, timetable_id)
+    r = _post_with_timeout(
+        session,
+        editoast_url + "/train_schedule_set/",
+        json={
+            "catalog_entry_id": None,
+            "name": None,
+            "published": False,
+            "description": "",
+        },
+    )
+    train_schedule_set_id = r.json()["id"]
+    r = _post_with_timeout(
+        session,
+        editoast_url + f"/timetable/{timetable_id}/train_schedule_sets",
+        json=[train_schedule_set_id],
+    )
+    return Scenario(
+        scenario.project,
+        scenario.op_study,
+        scenario.scenario,
+        scenario.infra,
+        timetable_id,
+        train_schedule_set_id,
+    )
 
 
 def _make_random_margin_value() -> str:

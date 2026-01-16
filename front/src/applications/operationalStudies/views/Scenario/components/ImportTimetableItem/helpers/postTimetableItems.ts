@@ -4,15 +4,15 @@ import type { AppDispatch } from 'store';
 import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
 const postTimetableItems = async (
-  timetableId: number,
+  trainScheduleSetId: number,
   payloads: PacedTrain[],
   dispatch: AppDispatch
 ) => {
   let timetableItems: TimetableItem[] = [];
   if (payloads.length) {
     const rawTimetableItems = await dispatch(
-      osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.initiate({
-        id: timetableId,
+      osrdEditoastApi.endpoints.postTrainScheduleSetByIdPacedTrains.initiate({
+        id: trainScheduleSetId,
         body: payloads,
       })
     ).unwrap();

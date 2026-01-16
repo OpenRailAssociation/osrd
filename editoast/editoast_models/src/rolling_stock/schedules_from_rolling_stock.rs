@@ -12,6 +12,7 @@ use database::tables::project;
 use database::tables::rolling_stock;
 use database::tables::scenario;
 use database::tables::study;
+use database::tables::timetable_train_schedule_set;
 
 use super::RollingStock;
 
@@ -55,7 +56,12 @@ impl RollingStock {
                 rolling_stock::table.on(paced_train::rolling_stock_name.eq(rolling_stock::name)),
             )
             .inner_join(
-                (scenario::table.on(scenario::timetable_id.eq(paced_train::timetable_id)))
+                timetable_train_schedule_set::table.on(paced_train::train_schedule_set_id
+                    .eq(timetable_train_schedule_set::train_schedule_set_id)),
+            )
+            .inner_join(
+                scenario::table
+                    .on(timetable_train_schedule_set::timetable_id.eq(scenario::timetable_id))
                     .inner_join(study::table.inner_join(project::table)),
             )
             .select((

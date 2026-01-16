@@ -21,6 +21,7 @@ _TIMEOUT = 300
 _EDITOAST_URL = "http://127.0.0.1:8090/"
 _INFRA_NAME = "France"
 _TIMETABLE_ID = 0
+_TRAIN_SCHEDULE_SET_ID = 0
 
 """
 Generates random stdcm requests on a single infra + fixed timetable.
@@ -104,7 +105,7 @@ def _get_train_ids(
     res = []
     while page is not None:
         r = session.get(
-            f"{editoast_url}/timetable/{scenario.timetable}/paced_trains/?page={page}"
+            f"{editoast_url}/train_schedule_set/{scenario.train_schedule_set}/paced_trains/?page={page}"
         )
         r.raise_for_status()
         parsed = r.json()
@@ -234,7 +235,7 @@ if __name__ == "__main__":
     infra_id = get_infra(_EDITOAST_URL, _INFRA_NAME, session)
     run(
         _EDITOAST_URL,
-        scenario=Scenario(-1, -1, -1, infra_id, _TIMETABLE_ID),
+        scenario=Scenario(-1, -1, -1, infra_id, _TIMETABLE_ID, _TRAIN_SCHEDULE_SET_ID),
         session=session,
         n_test=10_000,
         log_folder=Path(__file__).parent / "errors",

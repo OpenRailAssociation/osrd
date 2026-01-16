@@ -494,7 +494,6 @@ diesel::table! {
         labels -> Array<Nullable<Text>>,
         #[max_length = 128]
         rolling_stock_name -> Varchar,
-        timetable_id -> Int8,
         start_time -> Timestamptz,
         schedule -> Jsonb,
         margins -> Jsonb,
@@ -512,6 +511,7 @@ diesel::table! {
         exceptions -> Jsonb,
         #[max_length = 255]
         sub_category -> Nullable<Varchar>,
+        train_schedule_set_id -> Int8,
     }
 }
 
@@ -841,6 +841,17 @@ diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
+    timetable_train_schedule_set (id) {
+        id -> Int8,
+        timetable_id -> Int8,
+        train_schedule_set_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
     towed_rolling_stock (id) {
         id -> Int8,
         #[max_length = 255]
@@ -932,7 +943,7 @@ diesel::joinable!(infra_object_switch -> infra (infra_id));
 diesel::joinable!(infra_object_track_section -> infra (infra_id));
 diesel::joinable!(macro_node -> scenario (scenario_id));
 diesel::joinable!(macro_note -> scenario (scenario_id));
-diesel::joinable!(paced_train -> timetable (timetable_id));
+diesel::joinable!(paced_train -> train_schedule_set (train_schedule_set_id));
 diesel::joinable!(project -> document (image_id));
 diesel::joinable!(rolling_stock_livery -> document (compound_image_id));
 diesel::joinable!(rolling_stock_livery -> rolling_stock (rolling_stock_id));
@@ -955,6 +966,8 @@ diesel::joinable!(stdcm_search_environment -> timetable (timetable_id));
 diesel::joinable!(stdcm_search_environment -> work_schedule_group (work_schedule_group_id));
 diesel::joinable!(study -> project (project_id));
 diesel::joinable!(temporary_speed_limit -> temporary_speed_limit_group (temporary_speed_limit_group_id));
+diesel::joinable!(timetable_train_schedule_set -> timetable (timetable_id));
+diesel::joinable!(timetable_train_schedule_set -> train_schedule_set (train_schedule_set_id));
 diesel::joinable!(train_schedule_set -> catalog_entry (catalog_entry_id));
 diesel::joinable!(work_schedule -> work_schedule_group (work_schedule_group_id));
 
@@ -1013,6 +1026,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     temporary_speed_limit,
     temporary_speed_limit_group,
     timetable,
+    timetable_train_schedule_set,
     towed_rolling_stock,
     train_schedule_set,
     work_schedule,

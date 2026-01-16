@@ -17,6 +17,7 @@ pub mod sub_category;
 pub mod tags;
 pub mod temporary_speed_limits;
 pub mod timetable;
+pub mod timetable_train_schedule_set;
 pub mod towed_rolling_stock;
 pub mod work_schedules;
 

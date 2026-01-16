@@ -223,12 +223,19 @@ fn service_router() -> router::DocumentedRouter {
                 path.route("/", post!(timetable::post))
                     .nests("/{id}", |path| {
                         path.route("/", delete!(timetable::delete))
+                            .route(
+                                "/train_schedule_sets",
+                                get!(timetable::get_train_schedule_sets_from_timetable),
+                            )
+                            .route(
+                                "/train_schedule_sets",
+                                post!(timetable::set_links_train_schedule_sets_to_timetable),
+                            )
                             .route("/conflicts", get!(timetable::conflicts))
                             .route("/requirements", get!(timetable::requirements))
                             .route("/stdcm", post!(timetable::stdcm::stdcm))
                             .nests("/paced_trains", |path| {
                                 path.route("/", get!(timetable::get_paced_trains))
-                                    .route("/", post!(timetable::post_paced_train))
                             })
                             .nests("/round_trips", |path| {
                                 path.route("/paced_trains", get!(round_trips::list_paced_trains))
@@ -422,6 +429,7 @@ fn service_router() -> router::DocumentedRouter {
                         path.route("/", get!(train_schedule_set::get_by_id))
                             .route("/", put!(train_schedule_set::put))
                             .route("/", delete!(train_schedule_set::delete))
+                            .route("/paced_trains", post!(train_schedule_set::post_paced_train))
                     })
             })
             .nests("/catalog_entry", |path| {

@@ -8,7 +8,6 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { EditedElementContainerContext } from 'applications/operationalStudies/views/Scenario/components/EditedElementContainerContext';
 import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/formatTimetableItemPayload';
 import {
@@ -101,7 +100,6 @@ const PacedTrainItem = ({
   const { openModal } = useContext(ModalContext);
   const { closeModal } = useContext(ModalContext);
 
-  const { timetableId } = useScenarioContext();
   const { rollingStocks } = useRollingStockContext();
 
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
@@ -142,7 +140,8 @@ const PacedTrainItem = ({
     upsertTimetableItems,
   });
 
-  const [postPacedTrain] = osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.useMutation();
+  const [postPacedTrain] =
+    osrdEditoastApi.endpoints.postTrainScheduleSetByIdPacedTrains.useMutation();
   const [getPacedTrainById] = osrdEditoastApi.endpoints.getPacedTrainById.useLazyQuery();
 
   const selectPathProjection = async () => {
@@ -172,13 +171,7 @@ const PacedTrainItem = ({
       paced: { ...pacedTrain.paced, exceptions: [] },
     });
 
-    await storePacedTrain(
-      pacedTrain.id,
-      updatedPacedTrainPayload,
-      timetableId,
-      dispatch,
-      upsertTimetableItems
-    );
+    await storePacedTrain(pacedTrain.id, updatedPacedTrainPayload, dispatch, upsertTimetableItems);
 
     closeModal();
   }
@@ -206,7 +199,7 @@ const PacedTrainItem = ({
       new Duration({ minutes: TIMETABLE_ITEM_DELTA })
     );
     const newPacedTrain: PacedTrain = {
-      ...omit(pacedTrainDetail, ['id', 'timetable_id']),
+      ...omit(pacedTrainDetail, ['id', 'train_schedule_set_id']),
       start_time: startTime.toISOString(),
       train_name: pacedTrainName,
     };
@@ -214,7 +207,7 @@ const PacedTrainItem = ({
     let pacedTrainResult;
     try {
       [pacedTrainResult] = await postPacedTrain({
-        id: pacedTrainDetail.timetable_id,
+        id: pacedTrainDetail.train_schedule_set_id,
         body: [newPacedTrain],
       }).unwrap();
     } catch (e) {

@@ -1,6 +1,13 @@
 import { expect } from '@playwright/test';
 
-import type { Infra, PacedTrain, Project, Scenario, Study } from 'common/api/osrdEditoastApi';
+import type {
+  Infra,
+  PacedTrain,
+  Project,
+  Scenario,
+  Study,
+  TrainScheduleSet,
+} from 'common/api/osrdEditoastApi';
 
 import {
   ADD_PACED_TRAIN_OCCURRENCES_DETAILS,
@@ -66,11 +73,12 @@ test.describe('@op @paced-trains', () => {
   let project: Project;
   let study: Study;
   let scenario: Scenario;
+  let trainScheduleSet: TrainScheduleSet;
   let infra: Infra;
 
   test.beforeAll('Fetch infrastructure and set up the scenario', async () => {
     infra = await getInfra();
-    ({ project, study, scenario } = await createScenario());
+    ({ project, study, scenario, trainScheduleSet } = await createScenario());
   });
 
   test.afterAll('Delete the created scenario', async () => {
@@ -194,7 +202,7 @@ test.describe('@op @paced-trains', () => {
     operationalStudiesPage,
   }) => {
     await test.step('Set paced trains via API and reload to initialize list', async () => {
-      await sendTrains(scenario.timetable_id, pacedTrainsJson);
+      await sendTrains(trainScheduleSet.id, pacedTrainsJson);
       await page.reload();
     });
 

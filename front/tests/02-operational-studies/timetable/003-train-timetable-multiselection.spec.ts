@@ -43,16 +43,15 @@ test.describe('@op @timetable-items @timetable-multiselection', () => {
       project = await getProject(timetableItemProjectName);
       study = await getStudy(project.id, timetableItemStudyName);
       infra = await getInfra();
-      scenarioItems = (
-        await createScenario(
-          generateUniqueName('timetable-item-scenario'),
-          project.id,
-          study.id,
-          infra.id
-        )
-      ).scenario;
-      await sendTrains(scenarioItems.timetable_id, trainSchedulesJson);
-      await sendTrains(scenarioItems.timetable_id, pacedTrainsJson);
+      const { scenario, trainScheduleSet } = await createScenario(
+        generateUniqueName('timetable-item-scenario'),
+        project.id,
+        study.id,
+        infra.id
+      );
+      scenarioItems = scenario;
+      await sendTrains(trainScheduleSet.id, trainSchedulesJson);
+      await sendTrains(trainScheduleSet.id, pacedTrainsJson);
     }
   );
 

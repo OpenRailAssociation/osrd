@@ -3847,36 +3847,6 @@ paths:
                         $ref: '#/components/schemas/PacedTrainResponse'
         '404':
           description: Timetable not found
-    post:
-      tags:
-      - timetable
-      - paced_train
-      summary: Create paced trains by batch
-      parameters:
-      - name: id
-        in: path
-        description: A timetable ID
-        required: true
-        schema:
-          type: integer
-          format: int64
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/PacedTrain'
-        required: true
-      responses:
-        '200':
-          description: The created paced trains
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PacedTrainResponse'
   /timetable/{id}/requirements:
     get:
       tags:
@@ -4208,6 +4178,84 @@ paths:
                       type: string
                       enum:
                       - preprocessing_simulation_error
+  /timetable/{id}/train_schedule_sets:
+    get:
+      tags:
+      - timetable
+      - train_schedule_set
+      summary: Retrieve the list of train schedule sets linked to a timetable
+      parameters:
+      - name: id
+        in: path
+        description: A timetable ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: list of train_schedule_sets linked to a timetable
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                  - id
+                  - description
+                  - published
+                  properties:
+                    catalog_entry_id:
+                      type:
+                      - integer
+                      - 'null'
+                      format: int64
+                    description:
+                      type: string
+                    id:
+                      type: integer
+                      format: int64
+                    name:
+                      type:
+                      - string
+                      - 'null'
+                    published:
+                      type: boolean
+    post:
+      tags:
+      - timetable
+      - train_schedule_set
+      summary: |-
+        Set links between a timetable and train schedule sets
+        If a link already exists, it is ignored
+        If a link exists and is not in the new list, it is removed
+      parameters:
+      - name: id
+        in: path
+        description: A timetable ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - train_schedule_set_ids
+              properties:
+                train_schedule_set_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  uniqueItems: true
+        required: true
+      responses:
+        '204':
+          description: The train schedule set has been linked to the timetable
   /towed_rolling_stock:
     get:
       tags:
@@ -4443,6 +4491,37 @@ paths:
           description: the train schedule set is deleted
         '404':
           description: Train schedule set not found
+  /train_schedule_set/{id}/paced_trains:
+    post:
+      tags:
+      - train_schedule_set
+      - paced_train
+      summary: Create paced trains by batch
+      parameters:
+      - name: id
+        in: path
+        description: A train schedule set ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/PacedTrain'
+        required: true
+      responses:
+        '200':
+          description: The created paced trains
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PacedTrainResponse'
   /version:
     get:
       responses:
@@ -6038,6 +6117,7 @@ components:
       - $ref: '#/components/schemas/EditoastTimetableErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastTimetableErrorNotFound'
       - $ref: '#/components/schemas/EditoastTimetableErrorParseError'
+      - $ref: '#/components/schemas/EditoastTimetableErrorTrainScheduleSetsNotFound'
       - $ref: '#/components/schemas/EditoastTowedRollingStockErrorDatabase'
       - $ref: '#/components/schemas/EditoastTowedRollingStockErrorIdNotFound'
       - $ref: '#/components/schemas/EditoastTowedRollingStockErrorIsLocked'
@@ -8220,6 +8300,30 @@ components:
           type: string
           enum:
           - editoast:timetable:ParseError
+    EditoastTimetableErrorTrainScheduleSetsNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - ids
+          properties:
+            ids:
+              type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:timetable:TrainScheduleSetsNotFound
     EditoastTowedRollingStockErrorDatabase:
       type: object
       required:
@@ -10332,12 +10436,12 @@ components:
       - type: object
         required:
         - id
-        - timetable_id
+        - train_schedule_set_id
         properties:
           id:
             type: integer
             format: int64
-          timetable_id:
+          train_schedule_set_id:
             type: integer
             format: int64
     PacedTrainSimulationSummaryResult:
@@ -12389,7 +12493,7 @@ components:
       - train_name
       - labels
       - rolling_stock_name
-      - timetable_id
+      - train_schedule_set_id
       - start_time
       - schedule
       - margins
@@ -12444,11 +12548,11 @@ components:
         start_time:
           type: string
           format: date-time
-        timetable_id:
-          type: integer
-          format: int64
         train_name:
           type: string
+        train_schedule_set_id:
+          type: integer
+          format: int64
     SearchResultItemUser:
       type: object
       description: A search result item for a query with `object = "user"`

@@ -212,7 +212,7 @@ pub mod tests {
     use serde_json::json;
 
     use crate::models;
-    use crate::models::fixtures::create_timetable;
+    use crate::models::fixtures::create_train_schedule_set;
     use crate::models::fixtures::simple_paced_train_changeset;
     use crate::models::fixtures::simple_sub_category;
     use crate::views::sub_categories::SubCategoryPage;
@@ -348,9 +348,9 @@ pub mod tests {
         .await
         .expect("Failed to create sub category");
 
-        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
 
-        let paced_train_1 = simple_paced_train_changeset(timetable.id)
+        let paced_train_1 = simple_paced_train_changeset(train_schedule_set.id)
             .main_category(None)
             .sub_category(Some(created_sub_category.code.clone()));
         let paced_train_1 = paced_train_1
@@ -358,7 +358,7 @@ pub mod tests {
             .await
             .expect("Failed to create paced train");
 
-        let paced_train_2 = simple_paced_train_changeset(timetable.id)
+        let paced_train_2 = simple_paced_train_changeset(train_schedule_set.id)
             .main_category(None)
             .sub_category(Some(created_sub_category.code.clone()));
         let paced_train_2 = paced_train_2

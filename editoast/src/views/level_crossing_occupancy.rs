@@ -336,7 +336,7 @@ mod tests {
     use super::*;
     use crate::models::fixtures::create_fast_rolling_stock;
     use crate::models::fixtures::create_small_infra;
-    use crate::models::fixtures::create_timetable;
+    use crate::models::fixtures::create_train_schedule_set;
     use crate::views::test_app::TestAppBuilder;
     use crate::views::test_app::TestResponse;
     use chrono::TimeDelta;
@@ -513,7 +513,7 @@ mod tests {
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), "simulation_rolling_stock").await;
-        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
 
         // Create level crossing
         let level_crossing = LevelCrossingModel::default()
@@ -537,7 +537,7 @@ mod tests {
 
         let train = crate::models::PacedTrain::default()
             .into_changeset()
-            .timetable_id(timetable.id)
+            .train_schedule_set_id(train_schedule_set.id)
             .rolling_stock_name(rolling_stock.name)
             .path(vec![
                 PathItem::new_operational_point("Mid_West_station"),

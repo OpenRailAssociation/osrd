@@ -5,16 +5,16 @@ import type { PacedTrainResponse } from 'common/api/osrdEditoastApi';
 import { getApiContext, handleErrorResponse } from './api-utils';
 
 /**
- * Send paced trains to the API for a specific timetable and returns the result.
+ * Send paced trains to the API for a specific train_schedule_set and returns the result.
  *
- * @param timetableId - The ID of the timetable for which the paced trains are being sent.
+ * @param trainScheduleSetId - The ID of the train_schedule_set for which the paced trains are being sent.
  * @param body - The request payload containing paced train data.
  * @returns {Promise<PacedTrainResponse[]>} - The API response containing the paced train response.
  */
-async function sendTrains<T>(timetableId: number, body: T): Promise<PacedTrainResponse[]> {
+async function sendTrains<T>(trainScheduleSetId: number, body: T): Promise<PacedTrainResponse[]> {
   const apiContext: APIRequestContext = await getApiContext();
   const pacedTrainsResponse: APIResponse = await apiContext.post(
-    `/api/timetable/${timetableId}/paced_trains/`,
+    `/api/train_schedule_set/${trainScheduleSetId}/paced_trains/`,
     {
       data: JSON.stringify(body),
       headers: {

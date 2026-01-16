@@ -57,15 +57,14 @@ test.describe('@op @paced-trains @exceptions', () => {
     project = await getProject(timetableItemProjectName);
     study = await getStudy(project.id, timetableItemStudyName);
     infra = await getInfra();
-    scenarioItems = (
-      await createScenario(
-        generateUniqueName('paced-trains-scenario'),
-        project.id,
-        study.id,
-        infra.id
-      )
-    ).scenario;
-    await sendTrains(scenarioItems.timetable_id, pacedTrainsJson.slice(0, 6));
+    const { scenario, trainScheduleSet } = await createScenario(
+      generateUniqueName('paced-trains-scenario'),
+      project.id,
+      study.id,
+      infra.id
+    );
+    scenarioItems = scenario;
+    await sendTrains(trainScheduleSet.id, pacedTrainsJson.slice(0, 6));
   });
 
   test.beforeEach(
