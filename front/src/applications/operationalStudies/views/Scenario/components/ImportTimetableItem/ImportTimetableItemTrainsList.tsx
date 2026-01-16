@@ -14,19 +14,15 @@ import {
   type MacroNodeForm,
   type PacedTrain,
   type TrainSchedule,
-  type TrainCategory,
-  type TrainMainCategory,
 } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
-import { TrainMainCategoryDict } from 'modules/rollingStock/consts';
-import isMainCategory from 'modules/rollingStock/helpers/category';
 import { setFailure, setSuccess, setWarning } from 'reducers/main';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { extractEditoastIdFromPacedTrainId } from 'utils/trainId';
 
-import { generateRoundTripsPayload } from './helpers/generatePayloads';
+import { generateRoundTripsPayload, generateTrainPayloads } from './helpers/generatePayloads';
 import postTimetableItems from './helpers/postTimetableItems';
 
 function LoadingIfSearching({
@@ -67,72 +63,11 @@ const ImportTimetableItemTrainsList = ({
 
   const subCategories = useSubCategoryContext();
 
-  const isTrainMainCategory = (v: string): v is TrainMainCategory => v in TrainMainCategoryDict;
-
-  const checkCategory = (category?: TrainCategory | string | null): TrainCategory | null => {
-    if (!category) return null;
-
-    // This condition is added for train imports that still use the old format: `category: string`, in particular imports from nge
-    if (typeof category === 'string') {
-      if (isTrainMainCategory(category)) return { main_category: category };
-      let correspondingSubCategory = subCategories.find(
-        (subCategory) => subCategory.code === category
-      );
-      if (!correspondingSubCategory)
-        correspondingSubCategory = subCategories.find(
-          (subCategory) => subCategory.name === category
-        );
-      return correspondingSubCategory ? { sub_category_code: correspondingSubCategory.code } : null;
-    }
-
-    if (isMainCategory(category)) {
-      return isTrainMainCategory(category.main_category) ? category : null;
-    }
-
-    const hasValidSubCategory = subCategories.some(
-      (subCategory) => subCategory.code === category.sub_category_code
-    );
-    return hasValidSubCategory ? category : null;
-  };
-
-  const unrecognizedCategoryToLabel = (category?: TrainCategory | string | null): string | null => {
-    if (!category || checkCategory(category)) return null;
-    if (typeof category === 'string') {
-      return category;
-    }
-    if (isMainCategory(category)) {
-      return category.main_category;
-    }
-    return category.sub_category_code;
-  };
-
-  const buildLabels = (
-    labels: string[] | undefined,
-    category?: TrainCategory | string | null
-  ): string[] | undefined => {
-    const unrecognizedCategoryLabel = unrecognizedCategoryToLabel(category);
-    if (!unrecognizedCategoryLabel) return labels;
-    if (!labels) return [unrecognizedCategoryLabel];
-    if (labels.includes(unrecognizedCategoryLabel)) return labels;
-    return [...labels, unrecognizedCategoryLabel];
-  };
-
   const { pacedTrainsPayload, trainSchedulesPayload } = useMemo<{
     pacedTrainsPayload: PacedTrain[];
     trainSchedulesPayload: TrainSchedule[];
   }>(
-    () => ({
-      pacedTrainsPayload: parsedPacedTrains.map((pacedTrain) => ({
-        ...pacedTrain,
-        category: checkCategory(pacedTrain.category),
-        labels: buildLabels(pacedTrain.labels, pacedTrain.category),
-      })),
-      trainSchedulesPayload: parsedTrainSchedules.map((trainSchedule) => ({
-        ...trainSchedule,
-        category: checkCategory(trainSchedule.category),
-        labels: buildLabels(trainSchedule.labels, trainSchedule.category),
-      })),
-    }),
+    () => generateTrainPayloads(parsedPacedTrains, parsedTrainSchedules, subCategories),
     [parsedPacedTrains, parsedTrainSchedules, subCategories]
   );
 
