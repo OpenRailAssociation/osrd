@@ -18,6 +18,7 @@ type TrainScheduleSetDialogProps = {
   onCancel: () => void;
   onSubmit: (data: TrainScheduleSetFormData) => Promise<void>;
   getCatalogEntries: () => Promise<CatalogEntry[]>;
+  checkNameInCatalogIsUniq?: (name: string, catalogId: number) => Promise<boolean>;
   labels: {
     title: string;
     submit: string;
@@ -30,6 +31,7 @@ const TrainScheduleSetDialog = ({
   onSubmit,
   onCancel,
   getCatalogEntries,
+  checkNameInCatalogIsUniq,
   labels,
 }: TrainScheduleSetDialogProps) => {
   const catalog = useAsyncMemo(() => getCatalogEntries(), [getCatalogEntries]);
@@ -93,6 +95,7 @@ const TrainScheduleSetDialog = ({
         catalog={catalog.type === 'ready' ? catalog.data : []}
         onSubmit={submit}
         onValidation={(hasError) => setFormHasError(hasError)}
+        checkNameInCatalogIsUniq={checkNameInCatalogIsUniq}
       />
       {catalog.type === 'loading' && <LoaderFill />}
     </Dialog>

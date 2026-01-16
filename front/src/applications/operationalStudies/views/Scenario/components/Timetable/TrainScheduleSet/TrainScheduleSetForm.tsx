@@ -2,10 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Input, Select, TextArea, type StatusWithMessage } from '@osrd-project/ui-core';
 import cx from 'classnames';
+import { debounce } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import type { TrainScheduleSetFormData } from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
 import type { CatalogEntry, TrainScheduleSet } from 'common/api/osrdEditoastApi';
+import type { AsyncStatus } from 'common/types';
 
 export type FieldName = 'name' | 'catalog' | 'description';
 
@@ -19,6 +21,7 @@ type TrainScheduleSetFormProps = {
     data: Partial<TrainScheduleSetFormData>
   ) => Partial<Record<FieldName, StatusWithMessage>>;
   onValidation: (hasError: boolean) => void;
+  checkNameInCatalogIsUniq?: (name: string, catalogId: number) => Promise<boolean>;
 };
 
 const TrainScheduleSetForm = ({
@@ -27,15 +30,16 @@ const TrainScheduleSetForm = ({
   catalog,
   onSubmit,
   onValidation,
+  checkNameInCatalogIsUniq,
 }: TrainScheduleSetFormProps) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'main.timetable.trainScheduleSets',
   });
-  const [catalogEntryMode, setCatalogEntryMode] = useState<'select' | 'create'>('select');
 
   // Name input
   const [name, setName] = useState<string>('');
   const [nameError, setNameError] = useState<StatusWithMessage>();
+  const [nameUniqueStatus, setNameUniqueStatus] = useState<AsyncStatus>({ type: 'idle' });
   const isNameValid = useCallback((value: string) => {
     let error: StatusWithMessage | null = null;
     if (!value || value.length === 0) error = { status: 'error' };
@@ -48,6 +52,7 @@ const TrainScheduleSetForm = ({
 
   // Catalog
   const [catalogEntry, setCatalogEntry] = useState<TrainScheduleSetFormData['catalog']>();
+  const [catalogEntryMode, setCatalogEntryMode] = useState<'select' | 'create'>('select');
   const [catalogEntryError, setCatalogEntryError] = useState<StatusWithMessage>();
   const checkCatalogEntryIsUniq = useCallback(
     (value: TrainScheduleSetFormData['catalog']): StatusWithMessage | undefined => {
@@ -86,6 +91,29 @@ const TrainScheduleSetForm = ({
   );
 
   /**
+   * Function that check the uniqueness of the couple name/catalog.
+   * This function is debounce by lodash to avoid multiple calls
+   */
+  const checkNameCatalogUniqueness = useCallback(
+    // eslint-disable-next-line react-hooks/use-memo
+    debounce(async (formName?: string, formCatalog?: TrainScheduleSetFormData['catalog']) => {
+      if (checkNameInCatalogIsUniq && formName && formCatalog && 'id' in formCatalog) {
+        const catalogId = formCatalog.id;
+        setNameUniqueStatus({ type: 'loading' });
+        try {
+          const isUniq = await checkNameInCatalogIsUniq(formName, catalogId);
+          if (isUniq) setNameUniqueStatus({ type: 'success' });
+          else setNameUniqueStatus({ type: 'error' });
+        } catch (e) {
+          console.error(e);
+          setNameUniqueStatus({ type: 'idle' });
+        }
+      }
+    }, 300),
+    [checkNameInCatalogIsUniq]
+  );
+
+  /**
    * Sort the catalog for the select
    */
   const catalogSorted = useMemo(
@@ -118,12 +146,33 @@ const TrainScheduleSetForm = ({
     return undefined;
   }, [catalogEntry, catalog]);
 
+  /**
+   *  Status of the package name
+   *  We need it due to the async task that check if the name is unique.
+   *  - the loading status is first
+   *  - the success of the task is last order
+   */
+  const inputNameStatus: StatusWithMessage | undefined = useMemo(() => {
+    // we check the status of uniqNameChecker for live validation
+    if (nameUniqueStatus.type === 'loading') return { status: 'loading' };
+    if (nameError) return nameError;
+    if (nameUniqueStatus.type === 'error')
+      return { status: 'error', message: t('checkingNameUniquenessError') };
+    if (nameUniqueStatus.type === 'success') return { status: 'success' };
+    return undefined;
+  }, [nameError, nameUniqueStatus, t]);
+
   return (
     <form
       id={formId}
       onSubmit={async (e) => {
         e.preventDefault();
-        if (isNameValid(name) && isCatalogEntryValid(catalogEntry)) {
+        if (
+          isNameValid(name) &&
+          isCatalogEntryValid(catalogEntry) &&
+          nameUniqueStatus.type !== 'error' &&
+          nameUniqueStatus.type !== 'loading'
+        ) {
           await onSubmit({
             name,
             description,
@@ -146,9 +195,11 @@ const TrainScheduleSetForm = ({
             const newValue = e.target.value;
             setNameError(undefined);
             setName(newValue);
-            isNameValid(newValue);
+            if (checkNameInCatalogIsUniq) {
+              checkNameCatalogUniqueness(newValue, catalogEntry);
+            }
           }}
-          statusWithMessage={nameError}
+          statusWithMessage={inputNameStatus}
         />
       </div>
 
@@ -165,9 +216,12 @@ const TrainScheduleSetForm = ({
                 ? { id: item.id, type: 'selected' }
                 : undefined;
               setCatalogEntry(newCatalog);
-              isCatalogEntryValid(newCatalog);
               setCatalogEntryError(checkCatalogEntryIsUniq(newCatalog));
+              if (checkNameInCatalogIsUniq) {
+                checkNameCatalogUniqueness(name, newCatalog);
+              }
             }}
+            required={checkNameInCatalogIsUniq !== undefined}
             options={catalogSorted}
             getOptionLabel={(option) => option.name ?? ''}
             getOptionValue={(option) => `${option.id}`}

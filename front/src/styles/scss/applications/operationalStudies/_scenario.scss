@@ -451,99 +451,6 @@
         background-color: var(--primary);
       }
 
-      .train-schedule-set-dialog {
-        --fieldwrapper-default-padding-top: 10px;
-        --fieldwrapper-default-padding-right: 13px;
-        --fieldwrapper-default-padding-bottom: 16px;
-        --fieldwrapper-default-padding-left: 16px;
-        --catalog-entry-mode-button-offset: 9px;
-
-        max-width: 560px;
-
-        &:has(.wizz-effect:active) {
-          .train-schedule-set-name:has(.error),
-          .new-catalog-entry-input:has(.error) {
-            animation: tilt-shaking 0.25s 0s;
-          }
-        }
-
-        h5 {
-          margin-bottom: 0;
-        }
-
-        section {
-          padding-top: calc(31px - var(--fieldwrapper-default-padding-top));
-          padding-left: calc(80px - var(--fieldwrapper-default-padding-left));
-          padding-right: calc(80px - var(--fieldwrapper-default-padding-right));
-          padding-bottom: calc(64px - var(--fieldwrapper-default-padding-bottom));
-
-          label {
-            margin-bottom: 0;
-          }
-
-          .catalog-entry {
-            display: flex;
-            flex-direction: column;
-            margin-top: calc(
-              30px - var(--fieldwrapper-default-padding-top) - var(
-                  --fieldwrapper-default-padding-bottom
-                )
-            );
-            margin-bottom: calc(21px - var(--fieldwrapper-default-padding-top));
-
-            &:not(:has(.error)) {
-              .ui-feedback {
-                padding-bottom: var(--catalog-entry-mode-button-offset);
-              }
-            }
-
-            &:has(.error) {
-              gap: 9px;
-            }
-
-            .catalog-entry-mode-button {
-              font-weight: 600;
-              color: var(--primary60);
-              margin-left: 24px;
-              align-self: flex-start;
-
-              &.existing {
-                align-self: flex-end;
-                margin-right: 15px;
-              }
-            }
-          }
-        }
-
-        .train-schedule-set-dialog-footer {
-          display: flex;
-
-          // all the following styles should propbably be modified in osrd-ui
-          align-items: center; // instead of align-content
-          padding-left: 16px;
-          padding-block: 23px;
-
-          .submit-error {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--error60);
-            font-weight: 600;
-          }
-
-          &.with-error {
-            background-color: var(--error5);
-            justify-content: space-between;
-          }
-
-          .footer-buttons {
-            display: flex;
-            gap: 24px;
-            flex-shrink: 0;
-          }
-        }
-      }
-
       .scenario-timetable-trains {
         font-family: 'IBM Plex Sans';
         background: var(--ambientB15);
@@ -1015,6 +922,105 @@ $train-category-colors: (
 
     &::before {
       background: var(--#{$color}) !important;
+    }
+  }
+}
+
+/* Due to react portal, dialog can be outside the normal flow of a scenario */
+.ui-dialog-overlay {
+  .dialog-content.train-schedule-set-dialog {
+    --fieldwrapper-default-padding-top: 10px;
+    --fieldwrapper-default-padding-right: 13px;
+    --fieldwrapper-default-padding-bottom: 16px;
+    --fieldwrapper-default-padding-left: 16px;
+    --catalog-entry-mode-button-offset: 9px;
+
+    max-width: 560px;
+    font-family: 'IBM Plex Sans';
+
+    &:has(.wizz-effect:active) {
+      .train-schedule-set-name:has(.error),
+      .new-catalog-entry-input:has(.error),
+      .new-catalog-entry-name:has(.error),
+      .catalog-entry:has(.error) {
+        animation: tilt-shaking 0.25s 0s;
+      }
+    }
+
+    h5 {
+      margin-bottom: 0;
+    }
+
+    section {
+      padding-top: calc(31px - var(--fieldwrapper-default-padding-top));
+      padding-left: calc(80px - var(--fieldwrapper-default-padding-left));
+      padding-right: calc(80px - var(--fieldwrapper-default-padding-right));
+      padding-bottom: calc(64px - var(--fieldwrapper-default-padding-bottom));
+
+      label {
+        margin-bottom: 0;
+      }
+
+      .catalog-entry {
+        display: flex;
+        flex-direction: column;
+        margin-top: calc(
+          30px - var(--fieldwrapper-default-padding-top) - var(
+              --fieldwrapper-default-padding-bottom
+            )
+        );
+        margin-bottom: calc(21px - var(--fieldwrapper-default-padding-top));
+
+        &:not(:has(.error)) {
+          .ui-feedback {
+            padding-bottom: var(--catalog-entry-mode-button-offset);
+          }
+        }
+
+        &:has(.error) {
+          gap: 9px;
+        }
+
+        .catalog-entry-mode-button {
+          font-weight: 600;
+          color: var(--primary60);
+          margin-left: 24px;
+          align-self: flex-start;
+
+          &.existing {
+            align-self: flex-end;
+            margin-right: 15px;
+          }
+        }
+      }
+    }
+
+    .train-schedule-set-dialog-footer {
+      display: flex;
+
+      // all the following styles should propbably be modified in osrd-ui
+      align-items: center; // instead of align-content
+      padding-left: 16px;
+      padding-block: 23px;
+
+      .submit-error {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--error60);
+        font-weight: 600;
+      }
+
+      &.with-error {
+        background-color: var(--error5);
+        justify-content: space-between;
+      }
+
+      .footer-buttons {
+        display: flex;
+        gap: 24px;
+        flex-shrink: 0;
+      }
     }
   }
 }

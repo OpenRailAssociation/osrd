@@ -65,6 +65,8 @@ const Timetable = ({
     getTrainScheduleSetsFromTimetableItems,
     getCatalogEntries,
     createTrainScheduleSet,
+    publishTrainScheduleSet,
+    getTrainScheduleSetByCatalogAndName,
   } = useScenarioTrainScheduleSet(timetableItemsWithDetails);
 
   const { filteredTimetableItems, ...timetableFilters } = useFilterTimetableItems(
@@ -179,6 +181,9 @@ const Timetable = ({
                       isSelected={isSelected}
                       isIndeterminate={isIndeterminate}
                       isTrainListOpen={expandedTrainScheduleSetIds.has(trainScheduleSet.id)}
+                      getCatalogEntries={getCatalogEntries}
+                      publishTrainScheduleSet={publishTrainScheduleSet}
+                      getTrainScheduleSetByCatalogAndName={getTrainScheduleSetByCatalogAndName}
                     >
                       <CalendarTrainList
                         setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}

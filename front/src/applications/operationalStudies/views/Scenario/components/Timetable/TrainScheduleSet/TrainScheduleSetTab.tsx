@@ -1,4 +1,4 @@
-import { useMemo, type PropsWithChildren } from 'react';
+import { useMemo, useState, type PropsWithChildren } from 'react';
 
 import { Checkbox } from '@osrd-project/ui-core';
 import {
@@ -15,12 +15,22 @@ import {
 } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { noop } from 'lodash';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
+import type useScenarioTrainScheduleSet from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
 import type { TrainScheduleSet } from 'common/api/osrdEditoastApi';
 import MenuTriggerButton, { type MenuProps } from 'common/MenuTriggerButton';
 
+import TrainScheduleSetDialog from './TrainScheduleSetDialog';
 import { computeTrainScheduleSetName, isSandbox } from '../utils';
+
+type OpenDialogName =
+  | 'transformToLocalCopy'
+  | 'publishToCatalog'
+  | 'edit'
+  | 'duplicate'
+  | 'removeFromScenario';
 
 type TrainScheduleSetTabProps = PropsWithChildren<{
   trainScheduleSet: TrainScheduleSet;
@@ -31,6 +41,13 @@ type TrainScheduleSetTabProps = PropsWithChildren<{
   isSelected: boolean;
   isIndeterminate: boolean;
   isTrainListOpen: boolean;
+  getCatalogEntries: ReturnType<typeof useScenarioTrainScheduleSet>['getCatalogEntries'];
+  publishTrainScheduleSet: ReturnType<
+    typeof useScenarioTrainScheduleSet
+  >['publishTrainScheduleSet'];
+  getTrainScheduleSetByCatalogAndName: ReturnType<
+    typeof useScenarioTrainScheduleSet
+  >['getTrainScheduleSetByCatalogAndName'];
 }>;
 
 const TrainScheduleSetTab = ({
@@ -43,10 +60,14 @@ const TrainScheduleSetTab = ({
   isIndeterminate,
   isTrainListOpen,
   children,
+  getCatalogEntries,
+  publishTrainScheduleSet,
+  getTrainScheduleSetByCatalogAndName,
 }: TrainScheduleSetTabProps) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'main.timetable.trainScheduleSets',
   });
+  const [openedDialog, setOpenedDialog] = useState<OpenDialogName | null>(null);
 
   const menuProps: MenuProps = useMemo(
     () => ({
@@ -61,8 +82,7 @@ const TrainScheduleSetTab = ({
           : {
               title: t('publishToCatalog'),
               icon: <Verified />,
-              onClick: noop,
-              disabled: true,
+              onClick: () => setOpenedDialog('publishToCatalog'),
             },
         {
           title: t('edit'),
@@ -130,6 +150,29 @@ const TrainScheduleSetTab = ({
         )}
       </div>
       {isTrainListOpen && children}
+
+      {openedDialog === 'publishToCatalog' &&
+        createPortal(
+          <TrainScheduleSetDialog
+            trainScheduleSet={trainScheduleSet}
+            getCatalogEntries={getCatalogEntries}
+            labels={{
+              title: t('publishDialogTitle'),
+              submit: t('publishSubmit'),
+              cancel: t('cancel'),
+            }}
+            onCancel={() => setOpenedDialog(null)}
+            onSubmit={async (data) => {
+              await publishTrainScheduleSet(trainScheduleSet, data);
+            }}
+            checkNameInCatalogIsUniq={async (name, catalogId) => {
+              const result = await getTrainScheduleSetByCatalogAndName(name, catalogId);
+              if (!result) return true;
+              return result.id === trainScheduleSet.id;
+            }}
+          />,
+          document.body
+        )}
     </>
   );
 };
