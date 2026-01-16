@@ -32,7 +32,7 @@ export type SignalingSystem = {
 );
 
 export type SignalingSystemForm = {
-  next_signaling_systems: Array<string | undefined>;
+  next_signaling_systems?: Array<string | undefined>;
   signaling_system: 'BAL' | 'BAPR' | 'TVM';
   settings?: { Nf?: 'true' | 'false'; distant?: 'true' | 'false'; is_430?: 'true' | 'false' };
   default_parameters?: { jaune_cli: 'true' | 'false' };
