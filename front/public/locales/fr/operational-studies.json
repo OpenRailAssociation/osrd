@@ -317,7 +317,10 @@
         "publishToCatalog": "Publier au catalogue",
         "removeFromScenario": "Retirer du scénario",
         "sandbox": "Bac à sable",
-        "transformToLocalCopy": "Transformer en copie locale"
+        "transformToLocalCopy": "Transformer en copie locale",
+        "transformToLocalCopyDialogText": "Vous êtes sur le point de copier localement le paquet '{{name}}' qui est une référence. Une fois la copie effectuée, celle-ci ne sera plus synchronisée avec la référence.",
+        "transformToLocalCopyDialogTitle": "Transformer en une copie locale",
+        "transformToLocalCopySubmit": "Copier le paquet localement"
       },
       "trainType": "Missions, trains",
       "unselectAll": "Tout désélectionner",

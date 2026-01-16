@@ -24,6 +24,7 @@ import MenuTriggerButton, { type MenuProps } from 'common/MenuTriggerButton';
 
 import TrainScheduleSetDialog from './TrainScheduleSetDialog';
 import { computeTrainScheduleSetName, isSandbox } from '../utils';
+import LocalCopyTrainScheduleSetDialog from './LocalCopyTrainScheduleSetDialog';
 
 type OpenDialogName =
   | 'transformToLocalCopy'
@@ -48,6 +49,9 @@ type TrainScheduleSetTabProps = PropsWithChildren<{
   getTrainScheduleSetByCatalogAndName: ReturnType<
     typeof useScenarioTrainScheduleSet
   >['getTrainScheduleSetByCatalogAndName'];
+  localCopyTrainScheduleSet: ReturnType<
+    typeof useScenarioTrainScheduleSet
+  >['localCopyTrainScheduleSet'];
 }>;
 
 const TrainScheduleSetTab = ({
@@ -63,6 +67,7 @@ const TrainScheduleSetTab = ({
   getCatalogEntries,
   publishTrainScheduleSet,
   getTrainScheduleSetByCatalogAndName,
+  localCopyTrainScheduleSet,
 }: TrainScheduleSetTabProps) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'main.timetable.trainScheduleSets',
@@ -76,8 +81,7 @@ const TrainScheduleSetTab = ({
           ? {
               title: t('transformToLocalCopy'),
               icon: <DesktopDownload />,
-              onClick: noop,
-              disabled: true,
+              onClick: () => setOpenedDialog('transformToLocalCopy'),
             }
           : {
               title: t('publishToCatalog'),
@@ -169,6 +173,18 @@ const TrainScheduleSetTab = ({
               const result = await getTrainScheduleSetByCatalogAndName(name, catalogId);
               if (!result) return true;
               return result.id === trainScheduleSet.id;
+            }}
+          />,
+          document.body
+        )}
+
+      {openedDialog === 'transformToLocalCopy' &&
+        createPortal(
+          <LocalCopyTrainScheduleSetDialog
+            trainScheduleSet={trainScheduleSet}
+            onCancel={() => setOpenedDialog(null)}
+            onSubmit={async () => {
+              await localCopyTrainScheduleSet(trainScheduleSet);
             }}
           />,
           document.body
