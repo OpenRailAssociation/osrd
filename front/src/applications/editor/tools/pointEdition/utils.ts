@@ -87,7 +87,7 @@ function getLogicalSignalSettings(signalingSystem: SignalingSystemForm) {
 }
 
 export function formatSignalingSystem(logicalSignal: SignalingSystemForm): SignalingSystem {
-  const next_signaling_systems = logicalSignal.next_signaling_systems.map(
+  const next_signaling_systems = (logicalSignal.next_signaling_systems ?? []).map(
     (nextSignalingSystem) => nextSignalingSystem || 'BAL'
   );
 
@@ -103,10 +103,14 @@ export function formatSignalingSystem(logicalSignal: SignalingSystemForm): Signa
     } as SignalingSystem;
   }
 
-  const conditional_parameters = logicalSignal.conditional_parameters.map((conditionalParameter) =>
-    isEmpty(conditionalParameter)
-      ? { on_route: '', parameters: { jaune_cli: 'false' } }
-      : conditionalParameter
+  const conditional_parameters = (logicalSignal.conditional_parameters ?? []).map(
+    (conditionalParameter) =>
+      isEmpty(conditionalParameter)
+        ? { on_route: '', parameters: { jaune_cli: 'false' } }
+        : {
+            on_route: conditionalParameter.on_route ?? '',
+            parameters: { jaune_cli: conditionalParameter.parameters?.jaune_cli ?? 'false' },
+          }
   );
 
   return {
