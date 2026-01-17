@@ -35,10 +35,6 @@
     },
     "failure": "L'opération a échoué",
     "importTimetable": "Importer une grille horaire",
-    "launchImport": "Démarrer l'import",
-    "noResults": "Aucun résultat",
-    "pacedTrainsFound_one": "1 mission trouvée",
-    "pacedTrainsFound_other": "{{count}} missions trouvées",
     "selectedFile": "Fichier sélectionné : {{fileName}}",
     "status": {
       "invalidTimetableItems_one": "La circulation à importer n'est pas au bon format.",
@@ -47,9 +43,6 @@
       "successfulImport_one": "L'item a été importé."
     },
     "success": "Opération réussie",
-    "trainSchedulesAndPacedTrainsFound": "$t(main.pacedTrain, {'count': {{pacedTrainCount}}}) et $t(main.train, {'count': {{trainScheduleCount}}}) trouvés",
-    "trainSchedulesFound_one": "1 train trouvé",
-    "trainSchedulesFound_other": "{{count}} trains trouvés",
     "warningMessages": {
       "alreadyPresentNode_one": "Un noeud macroscopique était déjà présent et n'a pas été mis à jour.",
       "alreadyPresentNode_other": "{{count}} noeuds macroscopiques étaient déjà présents et n'ont pas été mis à jour.",

@@ -35,10 +35,6 @@
     },
     "failure": "Operation failed",
     "importTimetable": "Import a timetable",
-    "launchImport": "Start import",
-    "noResults": "No results",
-    "pacedTrainsFound_one": "1 service found",
-    "pacedTrainsFound_other": "{{count}} services found",
     "selectedFile": "Selected file: {{fileName}}",
     "status": {
       "invalidTimetableItems_one": "Invalid timetable item.",
@@ -47,9 +43,6 @@
       "successfulImport_one": "An item is imported."
     },
     "success": "Operation successful",
-    "trainSchedulesAndPacedTrainsFound": "$t(main.pacedTrain, {'count': {{pacedTrainCount}}}) and $t(main.train, {'count': {{trainScheduleCount}}}) found",
-    "trainSchedulesFound_one": "1 train found",
-    "trainSchedulesFound_other": "{{count}} trains found",
     "warningMessages": {
       "alreadyPresentNode_one": "One macroscopic node was already present and was not updated.",
       "alreadyPresentNode_other": "{{count}} macroscopic nodes were already present and were not updated.",
