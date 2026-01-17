@@ -121,7 +121,7 @@ const SendToRailwayManagerModal = ({
   const afterDate = addDurationToDate(realConstraintTime, afterTolerance);
   const beforeDate = subtractDurationFromDate(realConstraintTime, beforeTolerance);
 
-  const [sendLastMinuteRequest, { isLoading, isSuccess, data }] =
+  const [sendLastMinuteRequest, { isLoading, isSuccess, data, error: lastMinuteRequestError }] =
     osrdRailwayManagerApi.endpoints.postSendLastMinuteRequest.useMutation();
 
   const convoyDetails = useMemo(
@@ -275,17 +275,23 @@ const SendToRailwayManagerModal = ({
       await sendLastMinuteRequest({
         body: formData as unknown as PostSendLastMinuteRequestApiArg['body'],
       });
-    } catch (error) {
+    } catch (err) {
+      console.error('Error sending last minute request:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (lastMinuteRequestError) {
       dispatch(
         setFailure(
-          castErrorToFailure(error, {
+          castErrorToFailure(lastMinuteRequestError, {
             name: mainT('common.error'),
             message: t('modal.errorRailwayManager'),
           })
         )
       );
     }
-  };
+  }, [lastMinuteRequestError]);
 
   useEffect(() => {
     if (isSuccess) {
