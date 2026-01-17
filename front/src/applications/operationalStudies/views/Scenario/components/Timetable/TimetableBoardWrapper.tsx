@@ -24,7 +24,7 @@ import { mapBy } from 'utils/types';
 
 import Timetable from './Timetable';
 import { copyTimetableItemsToClipboard } from './utils';
-import postTimetableItems from '../ImportTimetableItem/helpers/postTimetableItems';
+import { postTimetableItems } from '../ImportTimetableItem/helpers/postPayloads';
 
 type TimetableBoardWrapperProps = {
   setDisplayTimetableItemManagement: (mode: string) => void;
