@@ -63,6 +63,8 @@ const StdcmResults = ({
   const [isRailwayRequestSuccessful, setIsRailwayRequestSuccessful] = useState(false);
   const [railwayDemandId, setRailwayDemandId] = useState<string>();
 
+  const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
+
   const { t } = useTranslation('stdcm', { keyPrefix: 'simulation.results' });
   const deploymentSettings = useDeploymentSettings();
 
@@ -85,7 +87,10 @@ const StdcmResults = ({
 
   const hasSimulationResults = hasResults(outputs);
 
-  const simulationReportSheetNumber = generateCodeNumber();
+  const simulationReportSheetNumber = useMemo(
+    () => generateCodeNumber(),
+    [selectedSimulation.index]
+  );
   const isSelectedSimulationRetained =
     retainedSimulationIndex !== undefined && selectedSimulation.index === retainedSimulationIndex;
 
@@ -242,6 +247,30 @@ const StdcmResults = ({
     }
   }, [isSelectedSimulationRetained]);
 
+  const pdfDocument = useMemo(() => {
+    if (!hasSimulationResults || !isSelectedSimulationRetained || !outputs) return null;
+    return (
+      <StdcmSimulationReportSheet
+        stdcmLinkedTrains={selectedSimulation.inputs.linkedTrains}
+        stdcmData={outputs.results}
+        consist={selectedSimulation.inputs.consist}
+        simulationReportSheetNumber={simulationReportSheetNumber}
+        operationalPointsList={operationalPointsList}
+        simulationSheetLogo={deploymentSettings?.stdcmSimulationSheetLogo}
+        similarTrains={similarTrains}
+      />
+    );
+  }, [
+    outputs,
+    hasSimulationResults,
+    isSelectedSimulationRetained,
+    simulationReportSheetNumber,
+    operationalPointsList,
+    selectedSimulation.inputs,
+    deploymentSettings?.stdcmSimulationSheetLogo,
+    similarTrains,
+  ]);
+
   return (
     <>
       <StdcmSimulationNavigator
@@ -275,30 +304,25 @@ const StdcmResults = ({
                     operationalPointsList={operationalPointsList}
                     simulationIndex={selectedSimulation.index}
                   />
-                  {isSelectedSimulationRetained && (
+                  {isSelectedSimulationRetained && pdfDocument && (
                     <div className="get-simulation">
                       <div className="download-simulation" data-testid="download-simulation">
                         <PDFDownloadLink
-                          document={
-                            <StdcmSimulationReportSheet
-                              stdcmLinkedTrains={selectedSimulation.inputs.linkedTrains}
-                              stdcmData={outputs.results}
-                              consist={selectedSimulation.inputs.consist}
-                              simulationReportSheetNumber={simulationReportSheetNumber}
-                              operationalPointsList={operationalPointsList}
-                              simulationSheetLogo={deploymentSettings?.stdcmSimulationSheetLogo}
-                              similarTrains={similarTrains}
-                            />
-                          }
+                          document={pdfDocument}
                           fileName={`${deploymentSettings?.stdcmName || 'Stdcm'}-${simulationReportSheetNumber}.pdf`}
                         >
-                          <Button
-                            data-testid="download-simulation-button"
-                            label={t('downloadSimulationSheet')}
-                            onClick={() => {}}
-                            isDisabled={areSegmentsLoading}
-                            variant="Normal"
-                          />
+                          {({ blob }) => {
+                            if (blob && blob !== pdfBlob) setPdfBlob(blob);
+                            return (
+                              <Button
+                                data-testid="download-simulation-button"
+                                label={t('downloadSimulationSheet')}
+                                onClick={() => {}}
+                                isDisabled={areSegmentsLoading}
+                                variant="Normal"
+                              />
+                            );
+                          }}
                         </PDFDownloadLink>
                       </div>
                       {railwayManagerUrl &&
@@ -312,10 +336,9 @@ const StdcmResults = ({
                                   stdcmData={outputs.results}
                                   linkedTrains={selectedSimulation.inputs.linkedTrains}
                                   simulationReportSheetNumber={simulationReportSheetNumber}
-                                  operationalPointsList={operationalPointsList}
-                                  simulationSheetLogo={deploymentSettings?.stdcmSimulationSheetLogo}
                                   similarTrains={similarTrains}
-                                  deploymentSettings={deploymentSettings}
+                                  pdfBlob={pdfBlob}
+                                  pdfDocument={pdfDocument}
                                   onClose={closeModal}
                                   onSuccess={handleSubmitSuccess}
                                 />,

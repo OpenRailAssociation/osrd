@@ -1,16 +1,15 @@
-import { useMemo, useState, useRef, useCallback, useEffect } from 'react';
+import { useEffect, useMemo, useState, useCallback, type ReactElement } from 'react';
 
 import { Button, Checkbox, DatePicker, Input, Select, TextArea } from '@osrd-project/ui-core';
 import { Download, CheckCircle } from '@osrd-project/ui-icons';
-import { PDFDownloadLink, pdf } from '@react-pdf/renderer';
+import { pdf, type DocumentProps } from '@react-pdf/renderer';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import {
-  type StdcmSimulationInputs,
-  type StdcmSuccessResponse,
-  type SimilarTrainWithSecondaryCode,
-  type StdcmResultsOperationalPoint,
+import type {
+  StdcmSimulationInputs,
+  StdcmSuccessResponse,
+  SimilarTrainWithSecondaryCode,
 } from 'applications/stdcm/types';
 import {
   osrdRailwayManagerApi,
@@ -31,10 +30,7 @@ import { useAppDispatch } from 'store';
 import { useDateTimeLocale } from 'utils/date';
 import { addDurationToDate, Duration, subtractDurationFromDate } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
-import type { DeploymentSettings } from 'utils/hooks/useDeploymentSettings';
 import { kmhToMs, tToKg } from 'utils/physics';
-
-import StdcmSimulationReportSheet from './StdcmSimulationReportSheet';
 
 type SendToRailwayManagerModalProps = {
   onSuccess: (isSuccessful: boolean, request_identifier?: string) => void;
@@ -43,10 +39,9 @@ type SendToRailwayManagerModalProps = {
   stdcmData: StdcmSuccessResponse;
   linkedTrains: StdcmSimulationInputs['linkedTrains'];
   simulationReportSheetNumber: string;
-  operationalPointsList: StdcmResultsOperationalPoint[];
-  simulationSheetLogo?: string;
   similarTrains: SimilarTrainWithSecondaryCode[];
-  deploymentSettings?: DeploymentSettings;
+  pdfBlob: Blob | null;
+  pdfDocument: ReactElement<DocumentProps>;
 };
 
 type Option = { value: string; label: string };
@@ -62,10 +57,9 @@ const SendToRailwayManagerModal = ({
   stdcmData,
   linkedTrains,
   simulationReportSheetNumber,
-  operationalPointsList,
-  simulationSheetLogo,
   similarTrains,
-  deploymentSettings,
+  pdfBlob,
+  pdfDocument,
 }: SendToRailwayManagerModalProps) => {
   const { t } = useTranslation('stdcm', { keyPrefix: 'simulation.results' });
   const { t: mainT } = useTranslation('translation');
@@ -86,7 +80,6 @@ const SendToRailwayManagerModal = ({
   const [isHazardousMaterials, setIsHazardousMaterials] = useState(false);
   const [pathTypeError, setPathTypeError] = useState(false);
   const [csCodeError, setCsCodeError] = useState(false);
-  const pdfBlobRef = useRef<Blob | null>(null);
 
   const { simulationPathSteps: steps } = stdcmData;
 
@@ -165,29 +158,6 @@ const SendToRailwayManagerModal = ({
     { value: 'C', label: 'C' },
   ];
 
-  const pdfDocument = useMemo(
-    () => (
-      <StdcmSimulationReportSheet
-        stdcmLinkedTrains={linkedTrains}
-        stdcmData={stdcmData}
-        consist={consist}
-        simulationReportSheetNumber={simulationReportSheetNumber}
-        operationalPointsList={operationalPointsList}
-        simulationSheetLogo={simulationSheetLogo}
-        similarTrains={similarTrains}
-      />
-    ),
-    [
-      linkedTrains,
-      stdcmData,
-      consist,
-      simulationReportSheetNumber,
-      operationalPointsList,
-      simulationSheetLogo,
-      similarTrains,
-    ]
-  );
-
   const handleCsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value.toUpperCase();
     setCsCode(input);
@@ -234,8 +204,14 @@ const SendToRailwayManagerModal = ({
       return;
     }
 
-    const instance = pdf(pdfDocument);
-    const blobToUpload = await instance.toBlob();
+    let blobToSend: Blob;
+
+    if (pdfBlob) {
+      blobToSend = pdfBlob;
+    } else {
+      const pdfInstance = pdf(pdfDocument);
+      blobToSend = await pdfInstance.toBlob();
+    }
 
     const filename = `Last Minute Request-${simulationReportSheetNumber}`;
 
@@ -292,7 +268,7 @@ const SendToRailwayManagerModal = ({
     formData.append('simulation_report', JSON.stringify(simulationReport));
     formData.append(
       'simulation_report_sheet',
-      new File([blobToUpload], filename, { type: 'application/pdf' })
+      new File([blobToSend], filename, { type: 'application/pdf' })
     );
 
     try {
@@ -384,30 +360,22 @@ const SendToRailwayManagerModal = ({
 
           <section className="simulation">
             <h3>{t('modal.retainedSimulation')}</h3>
-
             <div>
-              <PDFDownloadLink
-                document={pdfDocument}
-                fileName={`${deploymentSettings?.stdcmName || 'Stdcm'}-${simulationReportSheetNumber}.pdf`}
-              >
-                {({ loading, blob, url }) => {
-                  if (blob) pdfBlobRef.current = blob;
-                  return (
-                    <div
-                      className="pdf-download"
-                      style={{ cursor: loading ? 'wait' : 'pointer' }}
-                      onClick={() => {
-                        if (!loading && url) window.open(url, '_blank');
-                      }}
-                      role="button"
-                      tabIndex={0}
-                    >
-                      <Download className="pdf-icon" size="lg" iconColor="var(--grey40)" />
-                      <span className="pdf-badge">{t('modal.pdf')}</span>
-                    </div>
-                  );
+              <div
+                className="pdf-download"
+                style={{ cursor: 'pointer' }}
+                onClick={() => {
+                  if (!pdfBlob) return;
+                  const url = URL.createObjectURL(pdfBlob);
+                  window.open(url, '_blank');
+                  setTimeout(() => URL.revokeObjectURL(url), 1000);
                 }}
-              </PDFDownloadLink>
+                role="button"
+                tabIndex={0}
+              >
+                <Download className="pdf-icon" size="lg" iconColor="var(--grey40)" />
+                <span className="pdf-badge">{t('modal.pdf')}</span>
+              </div>
             </div>
           </section>
         </div>
