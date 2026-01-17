@@ -27,9 +27,7 @@
       margin-bottom: 16px;
     }
 
-    section:not(:last-child) {
-      margin-bottom: 32px;
-
+    section {
       h3 {
         font-family: 'IBM Plex Sans';
         font-size: 1.125rem;
@@ -37,6 +35,10 @@
         margin-bottom: 16px;
         text-wrap-mode: nowrap;
       }
+    }
+
+    section:not(:last-child) {
+      margin-bottom: 32px;
     }
   }
 
