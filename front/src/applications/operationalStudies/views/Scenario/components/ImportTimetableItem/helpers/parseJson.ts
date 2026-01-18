@@ -12,10 +12,6 @@ import { type TrainSchedule } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
 import { castErrorToFailure } from 'utils/error';
 
-export const handleFileReadingError = (error: Error) => {
-  console.error('File reading error:', error);
-};
-
 const TRAIN_SCHEDULE_COMPULSORY_KEYS: (keyof TrainSchedule)[] = [
   'constraint_distribution',
   'path',

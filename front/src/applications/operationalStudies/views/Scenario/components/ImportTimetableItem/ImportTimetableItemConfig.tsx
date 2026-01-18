@@ -13,7 +13,7 @@ import { getRailwayManagerInterfaceUrl } from 'reducers/main/mainSelector';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
-import { processJsonFile, handleFileReadingError } from './helpers/parseJson';
+import { processJsonFile } from './helpers/parseJson';
 import parseXML from './helpers/parseXML';
 
 type ImportTimetableItemConfigProps = {
@@ -33,69 +33,55 @@ const ImportTimetableItemConfig = ({
     osrdRailwayManagerApi.endpoints.postTransformTimetable.useMutation();
 
   const locallyProcessXmlFile = async (fileContent: string) => {
-    try {
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(fileContent, 'application/xml');
-      const parserError = xmlDoc.getElementsByTagName('parsererror');
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(fileContent, 'application/xml');
 
-      if (parserError.length > 0) {
-        throw new Error('Invalid XML');
-      }
-
-      const trainData = await parseXML(xmlDoc);
-      setTrainsJsonData(trainData);
-    } catch (error: unknown) {
-      const failure = castErrorToFailure(error);
-      dispatch(setFailure(failure));
+    const parserError = xmlDoc.getElementsByTagName('parsererror');
+    if (parserError.length > 0) {
+      throw new Error('Invalid XML');
     }
+
+    const trainData = await parseXML(xmlDoc);
+    setTrainsJsonData(trainData);
   };
 
   const processXmlFile = async (file: File, fileContent: string) => {
-    setIsLoading(true);
-
     if (!railwayManagerUrl) {
       await locallyProcessXmlFile(fileContent);
-      setIsLoading(false);
       return;
     }
     try {
       const trainData = await postTransformTimetable({ body: file }).unwrap();
       setTrainsJsonData(trainData as TimetableJsonPayload);
     } catch (error: unknown) {
+      //TODO: check whether the code should be: if (isObject(error) && 'status' in error && error.status === '415') await locallyProcessXmlFile(fileContent); else throw error
       await locallyProcessXmlFile(fileContent);
-      const failure = castErrorToFailure(error);
-      dispatch(setFailure(failure));
-    } finally {
-      setIsLoading(false);
+      dispatch(setFailure(castErrorToFailure(error)));
     }
   };
 
   const importFile = async (file: File) => {
-    closeModal();
-
-    let fileContent: string;
     try {
-      fileContent = await file.text();
-    } catch (error) {
-      handleFileReadingError(error as Error);
-      return;
+      closeModal();
+      setIsLoading(true);
+      const fileContent = await file.text();
+
+      const fileHasBeenParsed = processJsonFile(
+        fileContent,
+        file.type,
+        setTrainsJsonData,
+        dispatch,
+        t
+      );
+
+      if (!fileHasBeenParsed) {
+        await processXmlFile(file, fileContent);
+      }
+    } catch (error: unknown) {
+      dispatch(setFailure(castErrorToFailure(error)));
+    } finally {
+      setIsLoading(false);
     }
-
-    const fileHasBeenParsed = processJsonFile(
-      fileContent,
-      file.type,
-      setTrainsJsonData,
-      dispatch,
-      t
-    );
-
-    // the file has been processed, return
-    if (fileHasBeenParsed) {
-      return;
-    }
-
-    // try to parse the file as an XML file
-    await processXmlFile(file, fileContent);
   };
   return (
     <div className="container-fluid mb-2">
