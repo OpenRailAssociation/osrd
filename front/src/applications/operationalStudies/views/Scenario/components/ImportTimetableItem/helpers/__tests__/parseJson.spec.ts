@@ -4,7 +4,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { trainScheduleHonored } from 'applications/operationalStudies/__tests__/sampleData';
 import { setFailure } from 'reducers/main';
 
-import { processJsonFile } from '../handleParseFiles';
+import { processJsonFile } from '../parseJson';
 
 // there seems to be no nice cast to make this mock
 const tMock = vi.fn().mockImplementation(() => 'translated') as unknown as TFunction<
