@@ -13,11 +13,8 @@ import { getRailwayManagerInterfaceUrl } from 'reducers/main/mainSelector';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
+import { processJsonFile, handleFileReadingError } from './helpers/parseJson';
 import parseXML from './helpers/parseXML';
-import {
-  handleFileReadingError,
-  processJsonFile,
-} from '../ManageTimetableItem/helpers/handleParseFiles';
 
 type ImportTimetableItemConfigProps = {
   setIsLoading: (isLoading: boolean) => void;
