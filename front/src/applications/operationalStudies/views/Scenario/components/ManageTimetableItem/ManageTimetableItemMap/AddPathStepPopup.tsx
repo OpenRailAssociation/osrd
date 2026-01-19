@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import { point } from '@turf/helpers';
+import type { Position } from 'geojson';
 import { useTranslation } from 'react-i18next';
 import { IoFlag } from 'react-icons/io5';
 import { RiMapPin2Fill, RiMapPin3Fill } from 'react-icons/ri';
@@ -123,8 +124,11 @@ const AddPathStepPopup = ({
       const trackIds = operationalPoint.parts.map((part) => part.track);
       const tracks = await getTrackSectionsByIds(trackIds);
 
-      const trackPartCoordinates = operationalPoint.parts.map((part) => ({
-        trackName: tracks[part.track]?.extensions?.sncf?.track_name,
+      const trackPartCoordinates: {
+        trackName: string | undefined;
+        coordinates: Position;
+      }[] = operationalPoint.parts.map((part) => ({
+        trackName: part.local_track_name,
         coordinates: getPointOnTrackCoordinates(
           tracks[part.track]?.geo,
           tracks[part.track]?.length,
