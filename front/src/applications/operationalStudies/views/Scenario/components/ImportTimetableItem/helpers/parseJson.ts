@@ -1,6 +1,5 @@
 import type { TFunction } from 'i18next';
 import { isObject } from 'lodash';
-import type { Dispatch } from 'redux';
 
 import type {
   RoundTripsFromJson,
@@ -9,8 +8,6 @@ import type {
 import { convertNgeDtoToOsrd } from 'applications/operationalStudies/views/Scenario/components/MacroEditor/ngeToOsrd';
 import type { NetzgrafikDto } from 'applications/operationalStudies/views/Scenario/components/NGE/types';
 import { type TrainSchedule } from 'common/api/osrdEditoastApi';
-import { setFailure } from 'reducers/main';
-import { castErrorToFailure } from 'utils/error';
 
 const TRAIN_SCHEDULE_COMPULSORY_KEYS: (keyof TrainSchedule)[] = [
   'constraint_distribution',
@@ -112,13 +109,22 @@ const validateNgeDto = (payload: unknown): payload is NetzgrafikDto =>
     'trainrunSections' in payload
   );
 
+/**
+ * Parse a file as json to a TimetableJsonPayload, assuming either an NGE dto format or directly a TimetableJsonPayload format
+ *
+ * If the file can not be parsed as json:
+ *   - If it has a json extension, throw (bad json)
+ *   - Otherwise return null (not a json file, needs to be parsed as something else)
+ *
+ * If the file can be parsed as json:
+ *   - If the content can be parsed to a TimetableJsonPayload containing trains, return the parsed payload!
+ *   - Otherwise throw
+ */
 export const processJsonFile = (
   fileContent: string,
   fileExtension: string,
-  setTrainsJsonData: (data: TimetableJsonPayload) => void,
-  dispatch: Dispatch,
   t: TFunction<'operational-studies', 'importTrains'>
-) => {
+): TimetableJsonPayload | null => {
   const isJsonFile = fileExtension === 'application/json';
 
   // try to parse the file content
@@ -126,54 +132,35 @@ export const processJsonFile = (
   try {
     rawContent = JSON.parse(fileContent);
   } catch {
-    if (isJsonFile) {
-      dispatch(
-        setFailure({
-          name: t('errorMessages.error'),
-          message: t('errorMessages.errorInvalidFile'),
-        })
-      );
-    }
-    return isJsonFile;
+    if (!isJsonFile) return null;
+    throw {
+      name: t('errorMessages.error'),
+      message: t('errorMessages.errorInvalidFile'),
+    };
   }
 
+  // try to parse the content as nge
   if (validateNgeDto(rawContent)) {
-    let importedData;
-    try {
-      importedData = convertNgeDtoToOsrd(rawContent);
-    } catch (err) {
-      dispatch(setFailure(castErrorToFailure(err)));
-      return true;
-    }
-    setTrainsJsonData(importedData);
-    return true;
+    return convertNgeDtoToOsrd(rawContent);
   }
 
-  // validate the trainSchedules
+  // try to parse the content directly as a TimetableJsonPayload
   try {
     const importedTrainSchedules = validateTrainSchedules(rawContent);
     if (
-      importedTrainSchedules.train_schedules.length > 0 ||
-      importedTrainSchedules.paced_trains.length > 0
+      importedTrainSchedules.train_schedules.length === 0 &&
+      importedTrainSchedules.paced_trains.length === 0
     ) {
-      setTrainsJsonData(importedTrainSchedules);
-    } else {
-      dispatch(
-        setFailure({
-          name: t('errorMessages.error'),
-          message: t('errorMessages.errorEmptyFile'),
-        })
-      );
-    }
-  } catch {
-    dispatch(
-      setFailure({
+      throw {
         name: t('errorMessages.error'),
-        message: t('errorMessages.errorInvalidFile'),
-      })
-    );
+        message: t('errorMessages.errorEmptyFile'),
+      };
+    }
+    return importedTrainSchedules;
+  } catch {
+    throw {
+      name: t('errorMessages.error'),
+      message: t('errorMessages.errorInvalidFile'),
+    };
   }
-
-  // file has been parsed successfully
-  return true;
 };
