@@ -49,7 +49,7 @@ const fetchPathProperties = async (
           ? {
               lineCode: sncf.line_code!,
               lineName: sncf.line_name!,
-              trackName: sncf.track_name!,
+              trackName: op.part.local_track_name,
               trackNumber: sncf.track_number!,
             }
           : undefined;
