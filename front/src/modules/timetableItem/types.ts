@@ -59,6 +59,10 @@ export type SimulationSummary =
         provisional: SimulationSummaryResultSuccess['path_item_times_provisional'];
         final: SimulationSummaryResultSuccess['path_item_times_final'];
       };
+      pathItemRespect: {
+        margins: SimulationSummaryResultSuccess['path_item_respect_margins'];
+        times: SimulationSummaryResultSuccess['path_item_respect_times'];
+      };
     };
 
 export type TimetableItemWithSummaries = Omit<
