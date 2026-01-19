@@ -48,30 +48,14 @@ pub(in crate::views) struct TrainScheduleSetResponse {
 impl TrainScheduleSetResponse {
     pub async fn try_fetch(
         conn: &mut DbConnection,
-        published: Option<bool>,
-        catalog_entry_id: Option<i64>,
-    ) -> Result<Vec<Self>> {
-        let mut settings = SelectionSettings::new();
-
-        if let Some(catalog_entry_id) = catalog_entry_id {
-            settings = settings
-                .filter(move || TrainScheduleSet::CATALOG_ENTRY_ID.eq(Some(catalog_entry_id)));
-        }
-
-        if let Some(published) = published {
-            settings = settings.filter(move || TrainScheduleSet::PUBLISHED.eq(published));
-        }
-
-        let train_schedule_sets = TrainScheduleSet::list(conn, settings).await?;
-        Ok(train_schedule_sets
-            .into_iter()
-            .map(|train_schedule_set| Self {
-                train_schedule_set,
-                // TODO: Add database operation to get train schedule set count
-                // once paced trains and train schedules are merged
-                train_schedule_count: 0,
-            })
-            .collect())
+        train_schedule_set: TrainScheduleSet,
+    ) -> Result<Self> {
+        let train_schedule_count =
+            TrainScheduleSet::train_schedule_count(train_schedule_set.id, conn).await? as u64;
+        Ok(Self {
+            train_schedule_set,
+            train_schedule_count,
+        })
     }
 }
 #[derive(Serialize, Deserialize, ToSchema)]
@@ -126,8 +110,6 @@ pub(in crate::views) async fn post(
 
     Ok(Json(TrainScheduleSetResponse {
         train_schedule_set,
-        // TODO: Add database operation to get train schedule set count
-        // once paced trains and train schedules are merged
         train_schedule_count: 0,
     }))
 }
@@ -171,12 +153,10 @@ pub(in crate::views) async fn get_by_id(
             }
         })
         .await?;
-    Ok(Json(TrainScheduleSetResponse {
-        train_schedule_set,
-        // TODO: Add database operation to get train schedule set count
-        // once paced trains and train schedules are merged
-        train_schedule_count: 0,
-    }))
+
+    let train_schedule_set_response =
+        TrainScheduleSetResponse::try_fetch(&mut db_pool.get().await?, train_schedule_set).await?;
+    Ok(Json(train_schedule_set_response))
 }
 
 #[editoast_derive::route]
@@ -205,9 +185,29 @@ pub(in crate::views) async fn get(
     }
 
     let conn = &mut db_pool.get().await?;
-    let train_schedule_sets =
-        TrainScheduleSetResponse::try_fetch(conn, published, catalog_entry_id).await?;
-    Ok(Json(train_schedule_sets))
+
+    let mut settings = SelectionSettings::new();
+
+    if let Some(catalog_entry_id) = catalog_entry_id {
+        settings =
+            settings.filter(move || TrainScheduleSet::CATALOG_ENTRY_ID.eq(Some(catalog_entry_id)));
+    }
+
+    if let Some(published) = published {
+        settings = settings.filter(move || TrainScheduleSet::PUBLISHED.eq(published));
+    }
+
+    let train_schedule_sets = TrainScheduleSet::list(conn, settings).await?;
+
+    let results = train_schedule_sets
+        .into_iter()
+        .zip(db_pool.iter_conn())
+        .map(|(train_schedule_set, conn)| async move {
+            TrainScheduleSetResponse::try_fetch(&mut conn.await?, train_schedule_set).await
+        });
+
+    let results = futures::future::try_join_all(results).await?;
+    Ok(Json(results))
 }
 
 #[editoast_derive::route]
@@ -246,12 +246,10 @@ pub(in crate::views) async fn put(
             }
         })
         .await?;
-    let train_schedule_set_response = TrainScheduleSetResponse {
-        train_schedule_set,
-        // TODO: Add database operation to get train schedule set count
-        // once paced trains and train schedules are merged
-        train_schedule_count: 0,
-    };
+
+    let train_schedule_set_response =
+        TrainScheduleSetResponse::try_fetch(&mut db_pool.get().await?, train_schedule_set).await?;
+
     Ok(Json(train_schedule_set_response))
 }
 
