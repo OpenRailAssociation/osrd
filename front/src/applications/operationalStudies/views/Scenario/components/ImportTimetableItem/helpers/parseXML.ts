@@ -378,4 +378,16 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
   return { train_schedules: updatedTrainSchedules, paced_trains: importedPacedTrains };
 };
 
-export default parseXML;
+export const locallyProcessXmlFile = async (fileContent: string): Promise<TimetableJsonPayload> => {
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(fileContent, 'application/xml');
+
+  const parserError = xmlDoc.getElementsByTagName('parsererror');
+  if (parserError.length > 0) {
+    throw new Error('Invalid XML');
+  }
+
+  return await parseXML(xmlDoc);
+};
+
+export default locallyProcessXmlFile;

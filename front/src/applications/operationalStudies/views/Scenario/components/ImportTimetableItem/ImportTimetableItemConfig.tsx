@@ -14,7 +14,7 @@ import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
 import { processJsonFile } from './helpers/parseJson';
-import parseXML from './helpers/parseXML';
+import locallyProcessXmlFile from './helpers/parseXML';
 
 type ImportTimetableItemConfigProps = {
   setIsLoading: (isLoading: boolean) => void;
@@ -31,18 +31,6 @@ const ImportTimetableItemConfig = ({
   const { openModal, closeModal } = useContext(ModalContext);
   const [postTransformTimetable] =
     osrdRailwayManagerApi.endpoints.postTransformTimetable.useMutation();
-
-  const locallyProcessXmlFile = async (fileContent: string): Promise<TimetableJsonPayload> => {
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(fileContent, 'application/xml');
-
-    const parserError = xmlDoc.getElementsByTagName('parsererror');
-    if (parserError.length > 0) {
-      throw new Error('Invalid XML');
-    }
-
-    return await parseXML(xmlDoc);
-  };
 
   const processXmlFile = async (file: File, fileContent: string): Promise<TimetableJsonPayload> => {
     if (!railwayManagerUrl) {
