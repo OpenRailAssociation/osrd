@@ -4,6 +4,7 @@ import { Button } from '@osrd-project/ui-core';
 import { ArrowSwitch, FrameAll } from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';
 import type { Position } from 'geojson';
+import { compact } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { v4 as uuidV4 } from 'uuid';
@@ -17,6 +18,7 @@ import { type PathProperties, type PathItemLocation } from 'common/api/osrdEdito
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
 import IncompatibleConstraints from 'modules/pathfinding/components/IncompatibleConstraints';
+import reversePathSteps from 'modules/pathfinding/helpers/reversePathSteps';
 import usePathfindingV2 from 'modules/pathfinding/hooks/usePathfindingV2';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import { updatePathSteps } from 'reducers/osrdconf/operationalStudiesConf';
@@ -38,8 +40,6 @@ import PathStepItem from './PathStepItem';
 import { computePathStepCoordinates } from './utils';
 import { MANAGE_TIMETABLE_ITEM_TYPES } from '../../../consts';
 import { buildOpSuggestion } from '../helpers/buildOpSuggestion';
-import reversePathSteps from 'modules/pathfinding/helpers/reversePathSteps';
-import { compact } from 'lodash';
 
 type ItineraryModalProps = {
   itineraryModalIsOpen: boolean;
