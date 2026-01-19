@@ -57,15 +57,6 @@ img {
   }
 }
 
-// __________________ Tolerance Picker  __________________
-.ui-tolerance-picker {
-  .modal-content {
-    .tolerance-grid {
-      grid-auto-rows: 32px !important;
-    }
-  }
-}
-
 // __________________ Select  __________________
 // TODO Remove this after the fix in the ui-core
 .ui-select {
