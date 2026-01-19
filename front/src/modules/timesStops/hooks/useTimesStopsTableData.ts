@@ -133,11 +133,14 @@ const useTimesStopsTableData = (
           selectedTrain.path.length,
           t
         );
+
+        const pathStepLocation = pathStep.location;
+
         const trackName =
-          'track' in pathStep.location
-            ? (trackSections[pathStep.location.track]?.extensions?.sncf?.track_name ??
-              pathStep.location.track)
-            : (pathStep.location.local_track_name ?? undefined);
+          'track' in pathStepLocation
+            ? matchingOp?.parts.find((part) => part.track === pathStepLocation.track)
+                ?.local_track_name
+            : (pathStepLocation.local_track_name ?? undefined);
 
         const schedule = scheduleByAt[pathStep.id];
         const computedArrival =
@@ -166,8 +169,7 @@ const useTimesStopsTableData = (
     // Case 1: Valid train with simulation results
     if (isValid && simulatedTrain && operationalPointsOnPath) {
       operationalPointsOnPath.forEach((op, opIndex) => {
-        const trackName =
-          trackSections[op.part.track]?.extensions?.sncf?.track_name ?? op.part.track;
+        const trackName = op.part.local_track_name;
 
         const matchingPathStep = selectedTrain.path.find((pathStep) =>
           matchPathStepAndOp(pathStep.location, {
