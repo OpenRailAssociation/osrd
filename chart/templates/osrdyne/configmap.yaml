@@ -62,6 +62,10 @@ data:
             value: "{{ $redis }}"
             {{- end -}}
 
+        {{- if .Values.services.core.service_account_name }}
+        service_account_name: {{ .Values.services.core.service_account_name }}
+        {{- end }}
+
         {{- with .Values.services.core.resources }}
         resources:
           {{- toYaml . | nindent 10 }}
