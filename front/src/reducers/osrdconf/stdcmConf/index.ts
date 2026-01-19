@@ -315,6 +315,11 @@ export const stdcmConfSlice = createSlice({
       // select the first simulation added
       state.selectedSimulationIndex = state.simulations.length - action.payload.length;
     },
+    deleteStdcmSimulation(state: Draft<OsrdStdcmConfState>, action: PayloadAction<number>) {
+      state.simulations = state.simulations.splice(action.payload, 1);
+      state.selectedSimulationIndex =
+        state.simulations.length === 0 ? undefined : state.selectedSimulationIndex! - 1;
+    },
     selectSimulation(state: Draft<OsrdStdcmConfState>, action: PayloadAction<number>) {
       state.selectedSimulationIndex = action.payload;
       updateSimulationState(state, state.simulations[action.payload]);

@@ -1,4 +1,4 @@
-import { CheckCircle, ChevronLeft, ChevronRight, Sparkle } from '@osrd-project/ui-icons';
+import { CheckCircle, ChevronLeft, ChevronRight, Sparkle, XCircle } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -106,6 +106,9 @@ const StdcmSimulationNavigator = ({
                         {alternativePath && (
                           <Sparkle className="alternative-simulation" variant="fill" />
                         )}
+                        <button className="close-btn" type="button">
+                          <XCircle variant="fill" />
+                        </button>
                       </div>
                       <div className="simulation-metadata" key={index}>
                         <span className="creation-date">

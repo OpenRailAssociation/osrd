@@ -93,6 +93,7 @@
             letter-spacing: 0;
             text-align: left;
             white-space: nowrap;
+            align-items: center;
 
             .check-circle {
               display: flex;
@@ -106,6 +107,22 @@
               align-items: center;
               margin-left: 4px;
               color: var(--info30);
+            }
+
+            .close-btn {
+              display: flex;
+              align-items: center;
+              margin-left: 8px;
+              padding: 0;
+              border: none;
+              background: none;
+              cursor: pointer;
+              line-height: 0;
+
+              svg {
+                display: block;
+                transform: translateY(-1px);
+              }
             }
           }
 
