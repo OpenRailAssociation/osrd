@@ -188,6 +188,10 @@ describe('formatTimetableItemPayload', () => {
           provisional: [0, 5532133],
           final: [0, 5532133],
         },
+        pathItemRespect: {
+          margins: [true, true],
+          times: [true, true],
+        },
       },
     },
   };

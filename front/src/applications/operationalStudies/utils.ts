@@ -14,7 +14,6 @@ import type {
   TrainSchedule,
 } from 'common/api/osrdEditoastApi';
 import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
-import { ARRIVAL_TIME_ACCEPTABLE_ERROR } from 'modules/timesStops/consts';
 import { isPacedTrain } from 'modules/timetableItem/helpers/pacedTrain';
 import type {
   TimetableItem,
@@ -196,43 +195,14 @@ export const isInvalidName = (name?: string | null) =>
   !name || name.length > SMALL_INPUT_MAX_LENGTH;
 
 /**
- * Check if the scheduled points are honored with a timetable item and a timetable item summary
- * @param timetableItem
+ * Check if the scheduled points are honored with a timetable item summary,
+ * meaning that it respects the requested arrival time at scheduled steps (steps with an arrival time set)
  * @param timetableItemSummary
  * @returns true if the scheduled points are not honored
  */
 export const isScheduledPointsNotHonored = (
-  timetableItem: TimetableItem,
   timetableItemSummary: Extract<SimulationSummaryResult, { status: 'success' }>
-): boolean => {
-  if (timetableItemSummary.path_item_times_final.length !== timetableItem.path.length) {
-    console.error(
-      'The number of path_item_times_final does not match the number of paths in the schedule'
-    );
-    throw new Error('Assertion failed');
-  }
-
-  if (!timetableItem.schedule) return false;
-
-  const pathItemIndexById = new Map<string, number>();
-  timetableItem.path.forEach((pathItem, index) => {
-    pathItemIndexById.set(pathItem.id, index);
-  });
-  return timetableItem.schedule.some((schedule) => {
-    if (!schedule.arrival) return false;
-    const matchindIndex = pathItemIndexById.get(schedule.at);
-    if (!matchindIndex) {
-      throw new Error(
-        `No matching index found for schedule ${schedule} on timetableItem ${timetableItem}`
-      );
-    }
-    const arrival = Duration.parse(schedule.arrival);
-    return (
-      Math.abs(arrival.ms - timetableItemSummary.path_item_times_final[matchindIndex]) >=
-      ARRIVAL_TIME_ACCEPTABLE_ERROR.ms
-    );
-  });
-};
+): boolean => timetableItemSummary.path_item_respect_times.some((respected) => !respected);
 
 export const getPathItemByIndexDict = (timetableItemResult: TimetableItem) =>
   timetableItemResult.path.reduce((acc, pathItem, index) => {
@@ -248,51 +218,8 @@ export const getPathItemByIndexDict = (timetableItemResult: TimetableItem) =>
  * @returns true if the train is too fast
  */
 export const isTooFast = (
-  timetableItem: TimetableItem,
   timetableItemSummary: Extract<SimulationSummaryResult, { status: 'success' }>
-): boolean => {
-  if (
-    timetableItemSummary.path_item_times_final.length !==
-    timetableItemSummary.path_item_times_provisional.length
-  ) {
-    throw new Error('Assertion failed');
-  }
-
-  const marginBoundariesSet = new Set(timetableItem.margins?.boundaries);
-  const toCheckPathItemIds: string[] = [];
-  timetableItem.schedule?.forEach((schedule, i) => {
-    if (!i || schedule.arrival || marginBoundariesSet.has(schedule.at)) {
-      toCheckPathItemIds.push(schedule.at);
-    }
-  });
-  const lastStepId = timetableItem.path[timetableItem.path.length - 1].id;
-  if (toCheckPathItemIds[toCheckPathItemIds.length - 1] !== lastStepId)
-    toCheckPathItemIds.push(lastStepId);
-
-  const pathItemMap = getPathItemByIndexDict(timetableItem);
-
-  for (let j = 0; j < toCheckPathItemIds.length; j++) {
-    const pathItemId = toCheckPathItemIds[j];
-    const pathItemIndex = pathItemMap[pathItemId];
-    const pathItemTimeFinal = timetableItemSummary.path_item_times_final[pathItemIndex];
-    const pathItemTimeProvisional = timetableItemSummary.path_item_times_provisional[pathItemIndex];
-
-    const prevPathItemId = j ? toCheckPathItemIds[j - 1] : timetableItem.path[0].id;
-    const prevPathItemIndex = pathItemMap[prevPathItemId];
-    const prevPathItemTimeFinal = timetableItemSummary.path_item_times_final[prevPathItemIndex];
-    const prevPathItemTimeProvisional =
-      timetableItemSummary.path_item_times_provisional[prevPathItemIndex];
-
-    const intervalDurationFinal = pathItemTimeFinal - prevPathItemTimeFinal;
-    const intervalDurationProvisional = pathItemTimeProvisional - prevPathItemTimeProvisional;
-    const marginDiff = intervalDurationFinal - intervalDurationProvisional;
-
-    if (marginDiff < -ARRIVAL_TIME_ACCEPTABLE_ERROR.ms) {
-      return true;
-    }
-  }
-  return false;
-};
+): boolean => timetableItemSummary.path_item_respect_margins.some((respected) => !respected);
 
 export const getStationFromOps = (ops: OperationalPoint[]): OperationalPoint | undefined =>
   ops.find((op) => ['BV', '00'].includes(op.extensions?.sncf?.ch || '')) || ops.at(0);

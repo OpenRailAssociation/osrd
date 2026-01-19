@@ -25,12 +25,6 @@ import {
   mergedElectricalBoundariesMismatched,
   pathLength,
   pathLengthLong,
-  trainScheduleHonored,
-  trainScheduleNoMatch,
-  trainScheduleNoSchedule,
-  trainScheduleNotHonored,
-  trainScheduleTooFast,
-  trainScheduleTooFastOnInterval,
   trainSummaryHonored,
   trainSummaryNotHonored,
   trainSummaryTooFast,
@@ -119,7 +113,7 @@ describe('transformElectricalBoundariesToRanges', () => {
 
 describe('isTooFast', () => {
   it('should return true if the train is too fast', () => {
-    const result = isTooFast(trainScheduleTooFast, trainSummaryTooFast);
+    const result = isTooFast(trainSummaryTooFast);
     expect(result).toBe(true);
   });
 
@@ -127,35 +121,24 @@ describe('isTooFast', () => {
     // Case where the final time at C is higher than the provisional time at C,
     // and the final time at B is higher than the provisional time at B,
     // but the final travel time from B to C is lower than the provisional travel time from B to C.
-    const result = isTooFast(trainScheduleTooFastOnInterval, trainSummaryTooFastOnInterval);
+    const result = isTooFast(trainSummaryTooFastOnInterval);
     expect(result).toBe(true);
   });
 
   it('should return false if the train is not too fast', () => {
-    const result = isTooFast(trainScheduleHonored, trainSummaryHonored);
+    const result = isTooFast(trainSummaryHonored);
     expect(result).toBe(false);
   });
 });
 
 describe('isScheduledPointsNotHonored', () => {
   it('should return true if the train schedule is not honored', () => {
-    const result = isScheduledPointsNotHonored(trainScheduleNotHonored, trainSummaryNotHonored);
+    const result = isScheduledPointsNotHonored(trainSummaryNotHonored);
     expect(result).toBe(true);
   });
 
   it('should return false if the train schedule is honored', () => {
-    const result = isScheduledPointsNotHonored(trainScheduleHonored, trainSummaryHonored);
+    const result = isScheduledPointsNotHonored(trainSummaryHonored);
     expect(result).toBe(false);
-  });
-
-  it('should return false if there is no schedule', () => {
-    const result = isScheduledPointsNotHonored(trainScheduleNoSchedule, trainSummaryHonored);
-    expect(result).toBe(false);
-  });
-
-  it('should throw an error if no matching index is found for a schedule', () => {
-    expect(() => {
-      isScheduledPointsNotHonored(trainScheduleNoMatch, trainSummaryHonored);
-    }).toThrow();
   });
 });
