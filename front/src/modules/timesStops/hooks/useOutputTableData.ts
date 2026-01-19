@@ -164,7 +164,7 @@ const useOutputTableData = (
     // For valid trains, complete the rows with the simulated path's operational points and tracks information
     if (isValid && simulatedTrain && operationalPointsOnPath) {
       for (const op of operationalPointsOnPath) {
-        const trackName = trackSections[op.part.track]?.extensions?.sncf?.track_name;
+        const trackName = op.part.local_track_name;
 
         // early return if the op matches a pathStep (handled above)
         // only add the trackName which has been found by the pathfinding (if not precised in the pathStep)
