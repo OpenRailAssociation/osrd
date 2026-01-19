@@ -1,3 +1,3 @@
-import ImportTimetableItem from './ImportTimetableItem';
+import useImportTimetableItems from './useImportTimetableItems';
 
-export default ImportTimetableItem;
+export default useImportTimetableItems;

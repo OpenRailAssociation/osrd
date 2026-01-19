@@ -3,7 +3,6 @@ import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
 import { ManageTimetableItemContextProvider } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
 import type { TrainScheduleSet } from 'common/api/osrdEditoastApi';
 
-import ImportTimetableItem from '../ImportTimetableItem';
 import ManageTimetableItem from './ManageTimetableItem';
 import ManageTimetableItemLeftPanel, {
   type ManageTimetableItemLeftPanelProps,
@@ -54,12 +53,6 @@ const ManageTimetableItemModal = ({
         >
           {collapsedTimetableEdit ? <ChevronRight /> : <ChevronLeft />}
         </button>
-      </div>
-    )}
-
-    {displayTimetableItemManagement === MANAGE_TIMETABLE_ITEM_TYPES.import && (
-      <div className="scenario-manage-timetable-item">
-        <ImportTimetableItem upsertTimetableItems={upsertTimetableItems} />
       </div>
     )}
 

@@ -18,7 +18,6 @@
       "errorInvalidFile": "Ungültige Datei"
     },
     "failure": "Operation fehlgeschlagen",
-    "importTimetable": "Fahrplan importieren",
     "status": {
       "invalidTimetableItems": "Ungültige Zugfahrpläne.",
       "invalidTimetableItems_one": "Ungültiger Zugfahrplan.",
