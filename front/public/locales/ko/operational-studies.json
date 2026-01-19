@@ -3,8 +3,5 @@
     "conflicts": "충돌",
     "macro": "매크로",
     "map": "지도"
-  },
-  "importTrains": {
-    "importTimetable": "시간표 불러오기"
   }
 }

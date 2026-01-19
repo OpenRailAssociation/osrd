@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 
 import {
   Alert,
@@ -18,7 +18,9 @@ import { useTranslation } from 'react-i18next';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import MenuTriggerButton from 'common/MenuTriggerButton';
+import UploadFileModal from 'common/uploadFileModal';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 
@@ -27,6 +29,7 @@ import SelectionToolBar from './TimetableSelectionToolbar';
 import type { TimetableFilters, TimetableMode } from './types';
 import { exportTimetableItems, timetableHasInvalidItem } from './utils';
 import { MANAGE_TIMETABLE_ITEM_TYPES } from '../../consts';
+import useImportTimetableItems from '../ImportTimetableItem';
 import RoundTripsModal from '../RoundTrips/RoundTripsModal';
 
 type TimetableToolbarProps = {
@@ -44,6 +47,7 @@ type TimetableToolbarProps = {
   handleDeleteTimetableItems: () => void;
   timetableMode: TimetableMode;
   setTimetableMode: React.Dispatch<React.SetStateAction<TimetableMode>>;
+  upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
 };
 
 const TimetableToolbar = ({
@@ -61,6 +65,7 @@ const TimetableToolbar = ({
   handleDeleteTimetableItems,
   timetableMode,
   setTimetableMode,
+  upsertTimetableItems,
 }: TimetableToolbarProps) => {
   const { t } = useTranslation(['operational-studies', 'translation'], { keyPrefix: 'main' });
 
@@ -72,6 +77,9 @@ const TimetableToolbar = ({
 
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [roundTripsModalIsOpen, setRoundTripsModalIsOpen] = useState(false);
+
+  const { openModal, closeModal } = useContext(ModalContext);
+  const importFile = useImportTimetableItems({ upsertTimetableItems });
 
   const toggleisSelectMode = () => {
     setIsSelectMode(!isSelectMode);
@@ -105,6 +113,16 @@ const TimetableToolbar = ({
       setSelectedTimetableItemIds([]);
     }
   };
+
+  const openTimetableImportModal = () =>
+    openModal(
+      <UploadFileModal
+        handleSubmit={async (file) => {
+          closeModal();
+          await importFile(file);
+        }}
+      />
+    );
 
   return (
     <>
@@ -169,8 +187,7 @@ const TimetableToolbar = ({
                   icon: <File />,
                   title: t('timetable.importTimetableFromFile'),
                   dataTestID: 'scenarios-import-timetable-by-file',
-                  onClick: () =>
-                    setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.import),
+                  onClick: () => openTimetableImportModal(),
                 },
                 {
                   icon: <Book />,
