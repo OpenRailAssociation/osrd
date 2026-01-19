@@ -14,23 +14,20 @@ import { Duration } from 'utils/duration';
 import { jouleToKwh } from 'utils/physics';
 import { formatKmValue } from 'utils/strings';
 
-import { extractOccurrenceDetailsFromPacedTrain } from './pacedTrain';
-
 const extractInvalidReason = (summary: Exclude<SimulationSummaryResult, { status: 'success' }>) =>
   summary.status === 'pathfinding_not_found' || summary.status === 'pathfinding_input_error'
     ? summary.error_type
     : summary.status;
 
 const formatSuccessfulSummary = (
-  timetableItem: TimetableItem,
   summary: Extract<SimulationSummaryResult, { status: 'success' }>
 ): SimulationSummary => {
   let notHonoredReason: Extract<
     NonNullable<TimetableItemWithDetails['summary']>,
     { isValid: true }
   >['notHonoredReason'];
-  if (isTooFast(timetableItem, summary)) notHonoredReason = 'trainTooFast';
-  if (isScheduledPointsNotHonored(timetableItem, summary)) notHonoredReason = 'scheduleNotHonored';
+  if (isTooFast(summary)) notHonoredReason = 'trainTooFast';
+  if (isScheduledPointsNotHonored(summary)) notHonoredReason = 'scheduleNotHonored';
   return {
     isValid: true,
     duration: new Duration({ milliseconds: summary.time }),
@@ -42,18 +39,19 @@ const formatSuccessfulSummary = (
       provisional: summary.path_item_times_provisional,
       final: summary.path_item_times_final,
     },
+    pathItemRespect: {
+      margins: summary.path_item_respect_margins,
+      times: summary.path_item_respect_times,
+    },
   };
 };
 
-const formatSummary = (
-  timetableItem: TimetableItem,
-  summary?: SimulationSummaryResult
-): SimulationSummary | undefined => {
+const formatSummary = (summary?: SimulationSummaryResult): SimulationSummary | undefined => {
   if (!summary) {
     return undefined;
   }
   return summary.status === 'success'
-    ? formatSuccessfulSummary(timetableItem, summary)
+    ? formatSuccessfulSummary(summary)
     : { isValid: false, invalidReason: extractInvalidReason(summary) };
 };
 
@@ -87,7 +85,7 @@ export const formatPacedTrainWithDetails = (
       ...pacedTrainProps,
       ...extractBaseTimetableItemProps(pacedTrain),
       rollingStock,
-      summary: formatSummary(pacedTrain, pacedTrainSummary?.paced_train),
+      summary: formatSummary(pacedTrainSummary?.paced_train),
     };
   }
 
@@ -98,10 +96,9 @@ export const formatPacedTrainWithDetails = (
 
       let summary: SimulationSummary | undefined;
       if (simulationSummary) {
-        const occurrence = extractOccurrenceDetailsFromPacedTrain(pacedTrain, exception);
         summary =
           simulationSummary.status === 'success'
-            ? formatSuccessfulSummary(occurrence, simulationSummary)
+            ? formatSuccessfulSummary(simulationSummary)
             : { isValid: false, invalidReason: extractInvalidReason(simulationSummary) };
       }
 
@@ -123,6 +120,6 @@ export const formatPacedTrainWithDetails = (
       interval: Duration.parse(paced.interval),
       exceptions: simulatedExceptions,
     },
-    summary: formatSummary(pacedTrain, pacedTrainSummary?.paced_train),
+    summary: formatSummary(pacedTrainSummary?.paced_train),
   };
 };

@@ -38,6 +38,7 @@ const baseTimetableItemWithSummary: TimetableItemWithSummaries = {
     duration: new Duration({ milliseconds: 1000 }),
     mechanicalEnergyConsumed: 100,
     pathItemTimes: { base: [], provisional: [], final: [] },
+    pathItemRespect: { margins: [], times: [] },
   },
 };
 
