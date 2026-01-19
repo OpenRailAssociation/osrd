@@ -127,7 +127,7 @@ export const formatOperationalPoints = (
       line_code: metadata?.line_code || null,
       track_number: metadata?.track_number || null,
       line_name: metadata?.line_name || null,
-      track_name: metadata?.track_name || null,
+      track_name: op.part.local_track_name,
       ch: op.extensions?.sncf?.ch || null,
     };
 
