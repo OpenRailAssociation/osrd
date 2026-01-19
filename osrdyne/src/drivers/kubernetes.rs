@@ -97,6 +97,9 @@ pub struct KubernetesDeploymentOptions {
     /// The resources to allocate to the worker (passthrough to kubernetes deployment)
     pub resources: Option<ResourceRequirements>,
 
+    /// The service account name which will be mounted by core (passthrough to kubernetes deployment)
+    pub service_account_name: Option<String>,
+
     /// The node selector to use for the worker (passthrough to kubernetes deployment)
     pub node_selector: Option<BTreeMap<String, String>>,
 
@@ -488,6 +491,11 @@ impl WorkerDriver for KubernetesDriver {
                         }),
                         spec: Some(PodSpec {
                             image_pull_secrets: self.options.image_pull_secrets.clone(),
+                            service_account_name: self
+                                .options
+                                .kube_deployment_options
+                                .service_account_name
+                                .clone(),
                             containers: vec![Container {
                                 name: worker_deployment_name.clone(),
                                 image: Some(self.options.container_image.clone()),
