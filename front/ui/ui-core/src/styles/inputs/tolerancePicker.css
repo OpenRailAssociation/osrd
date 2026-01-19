@@ -19,10 +19,10 @@
     cursor: pointer;
   }
 
-  .ui-modal-overlay {
+  .ui-input-modal-overlay {
     .tolerance-picker-section {
       display: flex;
-      gap: 1rem;
+      gap: 16px;
       align-items: center;
 
       .tolerance-grid {
@@ -34,7 +34,7 @@
           'a8 a9 a10 a11 . .'
           'a12 a13 a14 a15 . .'
           'a16 a17 a18 a19 . .';
-        grid-auto-rows: 40px;
+        grid-auto-rows: 32px;
         grid-gap: 10px;
       }
 
