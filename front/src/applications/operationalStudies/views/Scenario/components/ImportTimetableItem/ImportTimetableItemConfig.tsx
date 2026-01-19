@@ -32,7 +32,7 @@ const ImportTimetableItemConfig = ({
   const [postTransformTimetable] =
     osrdRailwayManagerApi.endpoints.postTransformTimetable.useMutation();
 
-  const locallyProcessXmlFile = async (fileContent: string) => {
+  const locallyProcessXmlFile = async (fileContent: string): Promise<TimetableJsonPayload> => {
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(fileContent, 'application/xml');
 
@@ -41,22 +41,19 @@ const ImportTimetableItemConfig = ({
       throw new Error('Invalid XML');
     }
 
-    const trainData = await parseXML(xmlDoc);
-    setTrainsJsonData(trainData);
+    return await parseXML(xmlDoc);
   };
 
-  const processXmlFile = async (file: File, fileContent: string) => {
+  const processXmlFile = async (file: File, fileContent: string): Promise<TimetableJsonPayload> => {
     if (!railwayManagerUrl) {
-      await locallyProcessXmlFile(fileContent);
-      return;
+      return await locallyProcessXmlFile(fileContent);
     }
     try {
-      const trainData = await postTransformTimetable({ body: file }).unwrap();
-      setTrainsJsonData(trainData as TimetableJsonPayload);
+      return (await postTransformTimetable({ body: file }).unwrap()) as TimetableJsonPayload;
     } catch (error: unknown) {
-      //TODO: check whether the code should be: if (isObject(error) && 'status' in error && error.status === '415') await locallyProcessXmlFile(fileContent); else throw error
-      await locallyProcessXmlFile(fileContent);
+      //TODO: check whether the code should be: if (isObject(error) && 'status' in error && error.status === '415') return await locallyProcessXmlFile(fileContent); else throw error
       dispatch(setFailure(castErrorToFailure(error)));
+      return await locallyProcessXmlFile(fileContent);
     }
   };
 
@@ -66,16 +63,11 @@ const ImportTimetableItemConfig = ({
       setIsLoading(true);
       const fileContent = await file.text();
 
-      const fileHasBeenParsed = processJsonFile(
-        fileContent,
-        file.type,
-        setTrainsJsonData,
-        dispatch,
-        t
-      );
-
-      if (!fileHasBeenParsed) {
-        await processXmlFile(file, fileContent);
+      const jsonPayload = processJsonFile(fileContent, file.type, t);
+      if (jsonPayload !== null) {
+        setTrainsJsonData(jsonPayload);
+      } else {
+        setTrainsJsonData(await processXmlFile(file, fileContent));
       }
     } catch (error: unknown) {
       dispatch(setFailure(castErrorToFailure(error)));
