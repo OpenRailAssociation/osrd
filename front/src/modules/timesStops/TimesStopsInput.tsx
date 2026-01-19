@@ -140,8 +140,9 @@ const TimesStopsInput = ({
         const trackSections = await getTrackSectionsByIds(trackIds);
         const suggestedOPsWithTrackNames = pathStepsAndSuggestedOPs.map((op) => ({
           ...op,
-          trackName: trackSections[op.track]?.extensions?.sncf?.track_name,
+          trackName: op.trackName || trackSections[op.track]?.extensions?.sncf?.track_name,
         }));
+
         const formatedRows = formatSuggestedViasToRowVias(
           suggestedOPsWithTrackNames,
           pathSteps || [],

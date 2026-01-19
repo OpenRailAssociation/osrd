@@ -37,6 +37,7 @@ export const formatSuggestedOperationalPoints = (
     trigram: op.extensions?.sncf?.trigram,
     offsetOnTrack: op.part.position,
     track: op.part.track,
+    trackName: op.part.local_track_name,
     positionOnPath: op.position,
     coordinates: getPointOnTrackCoordinates(geometry, pathLength, op.position)!,
     metadata: op?.metadata,
