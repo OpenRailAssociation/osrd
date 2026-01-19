@@ -45,6 +45,7 @@ use editoast_models::rolling_stock::RollingStock;
 /// Path input is described by some rolling stock information
 /// and a list of path waypoints
 #[derive(Deserialize, Clone, Debug, Hash, ToSchema)]
+#[cfg_attr(test, derive(Serialize))]
 pub(in crate::views) struct PathfindingInput {
     /// The loading gauge of the rolling stock
     rolling_stock_loading_gauge: LoadingGaugeType,
@@ -516,52 +517,74 @@ pub mod tests {
     use core_client::pathfinding::PathfindingResultSuccess;
     use core_client::pathfinding::TrainPath;
     use pretty_assertions::assert_eq;
-
+    use schemas::rolling_stock::LoadingGaugeType;
     use schemas::train_schedule::OperationalPointPartReference;
     use schemas::train_schedule::OperationalPointReference;
     use schemas::train_schedule::PathItemLocation;
     use schemas::train_schedule::TrackReference;
-    use serde_json::json;
 
     use crate::models::fixtures::create_small_infra;
     use crate::views::path::pathfinding::PathfindingFailure;
+    use crate::views::path::pathfinding::PathfindingInput;
     use crate::views::path::pathfinding::PathfindingResult;
     use crate::views::test_app::TestAppBuilder;
+
+    fn pathfinding_input(path_items: Vec<PathItemLocation>) -> PathfindingInput {
+        PathfindingInput {
+            rolling_stock_loading_gauge: LoadingGaugeType::G1,
+            rolling_stock_is_thermal: true,
+            rolling_stock_supported_electrifications: Vec::new(),
+            rolling_stock_supported_signaling_systems: vec!["BAL".into(), "BAPR".into()],
+            rolling_stock_maximum_speed: 22.0.into(),
+            rolling_stock_length: 26.0.into(),
+            speed_limit_tag: None,
+            stops_at_end_of_block: None,
+            path_items,
+        }
+    }
+
+    fn pathfinding_result(length: u64) -> PathfindingResult {
+        PathfindingResult::Success(PathfindingResultSuccess {
+            path: TrainPath {
+                blocks: vec![],
+                routes: vec![],
+                track_section_ranges: vec![],
+            },
+            length,
+            path_item_positions: vec![],
+        })
+    }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn pathfinding_fails_when_core_responds_with_zero_length_path() {
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
             .response(StatusCode::OK)
-            .json(json!({
-                "path": {
-                    "blocks":[],
-                    "routes": [],
-                    "track_section_ranges": [],
-                },
-                "path_item_positions": [],
-                "length": 0,
-                "status": "success"
-            }))
+            .json(pathfinding_result(0))
             .finish();
         let app = TestAppBuilder::new().core_client(core.into()).build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let path_items = vec![
+            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
+                operational_point: OperationalPointReference::Trigram {
+                    trigram: "WS".into(),
+                    secondary_code: Some("BV".into()),
+                },
+                track_reference: None,
+            }),
+            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
+                operational_point: OperationalPointReference::Trigram {
+                    trigram: "WS".into(),
+                    secondary_code: Some("BV".into()),
+                },
+                track_reference: None,
+            }),
+        ];
 
         let request = app
             .post(format!("/infra/{}/pathfinding/blocks", small_infra.id).as_str())
-            .json(&json!({
-                "path_items":[
-                {"operational_point": {"trigram":"WS","secondary_code":"BV", "type": "trigram"}},
-                {"operational_point": {"trigram":"WS","secondary_code":"BV", "type": "trigram"}}
-            ],
-                "rolling_stock_is_thermal":true,
-                "rolling_stock_loading_gauge":"G1",
-                "rolling_stock_supported_electrifications":[],
-                "rolling_stock_supported_signaling_systems":["BAL","BAPR"],
-                "rolling_stock_maximum_speed":22.00,
-                "rolling_stock_length":26.00
-            }));
+            .json(&pathfinding_input(path_items));
 
         let pathfinding_result: PathfindingResult = app
             .fetch(request)
@@ -581,22 +604,33 @@ pub mod tests {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let path_items = vec![
+            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
+                operational_point: OperationalPointReference::Trigram {
+                    trigram: "WS".into(),
+                    secondary_code: Some("BV".into()),
+                },
+                track_reference: None,
+            }),
+            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
+                operational_point: OperationalPointReference::Trigram {
+                    trigram: "NO_TRIGRAM".into(),
+                    secondary_code: None,
+                },
+                track_reference: None,
+            }),
+            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
+                operational_point: OperationalPointReference::Trigram {
+                    trigram: "SWS".into(),
+                    secondary_code: Some("BV".into()),
+                },
+                track_reference: None,
+            }),
+        ];
 
         let request = app
             .post(format!("/infra/{}/pathfinding/blocks", small_infra.id).as_str())
-            .json(&json!({
-                "path_items":[
-                    {"operational_point": {"trigram":"WS","secondary_code":"BV", "type": "trigram"}},
-                    {"operational_point": {"trigram":"NO_TRIGRAM","secondary_code":null, "type": "trigram"}},
-                    {"operational_point": {"trigram":"SWS","secondary_code":"BV", "type": "trigram"}}
-                ],
-                "rolling_stock_is_thermal":true,
-                "rolling_stock_loading_gauge":"G1",
-                "rolling_stock_supported_electrifications":[],
-                "rolling_stock_supported_signaling_systems":["BAL","BAPR"],
-                "rolling_stock_maximum_speed":22.00,
-                "rolling_stock_length":26.00
-            }));
+            .json(&pathfinding_input(path_items));
 
         let pathfinding_result: PathfindingResult = app
             .fetch(request)
@@ -629,21 +663,30 @@ pub mod tests {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let path_items = vec![
+            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
+                operational_point: OperationalPointReference::Uic {
+                    uic: 8733,
+                    secondary_code: Some("BV".into()),
+                },
+                track_reference: Some(TrackReference::Name {
+                    track_name: "V2".into(),
+                }),
+            }),
+            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
+                operational_point: OperationalPointReference::Uic {
+                    uic: 8788,
+                    secondary_code: Some("BV".into()),
+                },
+                track_reference: Some(TrackReference::Name {
+                    track_name: "V_INVALID".into(),
+                }),
+            }),
+        ];
 
         let request = app
             .post(format!("/infra/{}/pathfinding/blocks", small_infra.id).as_str())
-            .json(&json!({
-                "path_items":[
-                    {"operational_point": {"uic":8733,"secondary_code":"BV", "type": "uic"}, "track_reference": {"track_name": "V2"}},
-                    {"operational_point": {"uic":8788 ,"secondary_code":"BV", "type": "uic"}, "track_reference": {"track_name": "V_INVALID"}},
-                ],
-                "rolling_stock_is_thermal":true,
-                "rolling_stock_loading_gauge":"G1",
-                "rolling_stock_supported_electrifications":[],
-                "rolling_stock_supported_signaling_systems":["BAL","BAPR"],
-                "rolling_stock_maximum_speed":22.00,
-                "rolling_stock_length":26.00
-            }));
+            .json(&pathfinding_input(path_items));
 
         let pathfinding_result: PathfindingResult = app
             .fetch(request)
@@ -678,52 +721,37 @@ pub mod tests {
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
             .response(StatusCode::OK)
-            .json(json!({
-                "path": {
-                    "blocks":[],
-                    "routes": [],
-                    "track_section_ranges": [],
-                },
-                "path_item_positions": [],
-                "length": 1,
-                "status": "success"
-            }))
+            .json(pathfinding_result(1))
             .finish();
         let app = TestAppBuilder::new().core_client(core.into()).build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let path_items = vec![
+            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
+                operational_point: OperationalPointReference::Trigram {
+                    trigram: "WS".into(),
+                    secondary_code: Some("BV".into()),
+                },
+                track_reference: None,
+            }),
+            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
+                operational_point: OperationalPointReference::Trigram {
+                    trigram: "SWS".into(),
+                    secondary_code: Some("BV".into()),
+                },
+                track_reference: None,
+            }),
+        ];
 
         let request = app
             .post(format!("/infra/{}/pathfinding/blocks", small_infra.id).as_str())
-            .json(&json!({
-                "path_items":[
-                    {"operational_point": {"trigram":"WS","secondary_code":"BV", "type": "trigram"}},
-                    {"operational_point": {"trigram":"SWS","secondary_code":"BV", "type": "trigram"}}
-                ],
-                "rolling_stock_is_thermal":true,
-                "rolling_stock_loading_gauge":"G1",
-                "rolling_stock_supported_electrifications":[],
-                "rolling_stock_supported_signaling_systems":["BAL","BAPR"],
-                "rolling_stock_maximum_speed":22.00,
-                "rolling_stock_length":26.00
-            }));
+            .json(&pathfinding_input(path_items));
 
-        let pathfinding_result: PathfindingResult = app
+        let pathfinding_res: PathfindingResult = app
             .fetch(request)
             .await
             .assert_status(StatusCode::OK)
             .json_into();
-        assert_eq!(
-            pathfinding_result,
-            PathfindingResult::Success(PathfindingResultSuccess {
-                path: TrainPath {
-                    blocks: vec![],
-                    routes: vec![],
-                    track_section_ranges: vec![],
-                },
-                length: 1,
-                path_item_positions: vec![]
-            })
-        );
+        assert_eq!(pathfinding_res, pathfinding_result(1));
     }
 }
