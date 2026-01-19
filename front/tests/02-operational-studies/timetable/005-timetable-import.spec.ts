@@ -64,14 +64,11 @@ test.describe('@op @timetable-items @import', () => {
       await importPage.verifyTimetableIsEmpty(frTranslations.timetable.noItem);
     });
     await test.step('Import timetable items JSON and return to scenario', async () => {
-      await importPage.openImportTimetableItemForm();
-      await importPage.openUploadDialog();
+      await importPage.openImportTimetableItemUploadDialog();
       await importPage.uploadTimetableItemFile(
         './tests/assets/operation-studies/timetable-items.json',
-        EXPECTED_COUNTS
+        frTranslations.success
       );
-      await importPage.launchTimetableItemImport(frTranslations.success);
-      await importPage.returnSimulationResult();
     });
 
     await test.step('Verify timetable items count after import', async () => {

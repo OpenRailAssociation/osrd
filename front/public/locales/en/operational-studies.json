@@ -34,7 +34,6 @@
       "errorInvalidFile": "Invalid file"
     },
     "failure": "Operation failed",
-    "importTimetable": "Import a timetable",
     "selectedFile": "Selected file: {{fileName}}",
     "status": {
       "invalidTimetableItems_one": "Invalid timetable item.",

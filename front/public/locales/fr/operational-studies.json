@@ -34,7 +34,6 @@
       "errorInvalidFile": "Fichier invalide"
     },
     "failure": "L'opération a échoué",
-    "importTimetable": "Importer une grille horaire",
     "selectedFile": "Fichier sélectionné : {{fileName}}",
     "status": {
       "invalidTimetableItems_one": "La circulation à importer n'est pas au bon format.",

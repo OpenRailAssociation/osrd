@@ -141,6 +141,7 @@ const Timetable = ({
           handleDeleteTimetableItems={handleDeleteTimetableItems}
           timetableMode={timetableMode}
           setTimetableMode={setTimetableMode}
+          upsertTimetableItems={upsertTimetableItems}
         />
         {timetableMode === 'calendar' ? (
           <Virtualizer overscan={15}>
