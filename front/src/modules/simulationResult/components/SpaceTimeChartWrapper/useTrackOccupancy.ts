@@ -501,7 +501,7 @@ const useTrackOccupancy = ({
                 const trackPart = trackSectionByTrackId.get(part.track);
                 return {
                   id: part.track,
-                  name: part.local_track_name || undefined,
+                  name: part.local_track_name,
                   line: trackPart?.extensions?.sncf?.line_code,
                 };
               }),
