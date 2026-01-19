@@ -231,7 +231,7 @@ const PathStepItem = ({
               blurActiveElement();
             }}
             resetSuggestions={() => resetOpSuggestions?.()}
-            listElementComponent={({
+            renderListElementComponent={({
               suggestion,
               index: suggestionIndex,
               isActive,
