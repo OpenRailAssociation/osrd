@@ -57,6 +57,7 @@ class TimetableTimeRange:
 
 def run(
     editoast_url: str,
+    towed_rs: list[int],
     scenario: Scenario,
     session: Session,
     n_test: int = 1000,
@@ -105,7 +106,7 @@ def _get_train_ids(
     res = []
     while page is not None:
         r = session.get(
-            f"{editoast_url}/train_schedule_set/{scenario.train_schedule_set}/paced_trains/?page={page}"
+            f"{editoast_url}/timetable/{scenario.timetable}/paced_trains/?page={page}"
         )
         r.raise_for_status()
         parsed = r.json()
@@ -167,7 +168,9 @@ def _test_stdcm(
     stdcm_payload = None
     try:
         rolling_stock = _get_random_rolling_stock(editoast_url, session)
-        stdcm_payload = _make_stdcm_payload(op_list, rolling_stock.id, timetable_range)
+        stdcm_payload = _make_stdcm_payload(
+            op_list, rolling_stock.id, timetable_range, towed_rs
+        )
         r = session.post(
             editoast_url
             + f"/timetable/{scenario.timetable}/stdcm/?infra={scenario.infra}",
@@ -176,6 +179,11 @@ def _test_stdcm(
         )
         if r.status_code // 100 != 2:
             is_json = "application/json" in r.headers.get("Content-Type", "")
+            if is_json:
+                content = r.json()
+                if content["type"].startswith("editoast:stdcm:InvalidConsist"):
+                    print("invalid consist, ignoring")
+                    return
             raise STDCMException(
                 error=r.json() if is_json else str(r.content),
                 status_code=r.status_code,
@@ -189,7 +197,10 @@ def _test_stdcm(
 
 
 def _make_stdcm_payload(
-    op_list: list[int], rolling_stock: int, timetable_range: TimetableTimeRange
+    op_list: list[int],
+    rolling_stock: int,
+    timetable_range: TimetableTimeRange,
+    towed_rs: list[int],
 ) -> dict:
     """
     Generate a random stdcm payload
@@ -199,7 +210,12 @@ def _make_stdcm_payload(
         "steps": _make_steps(op_list, timetable_range),
         "comfort": "STANDARD",
         "margin": "5%",
+        "total_length": random.randint(400, 750),  # 400 to 750m
+        "total_mass": random.randint(500_000, 2_500_000),  # 500 to 2500t
+        "max_speed": random.randint(22, 38),  # 80 to 140 km/h
     }
+    if towed_rs and random.randint(0, 5) > 0:
+        res["towed_rolling_stock_id"] = random.choice(towed_rs)
     return res
 
 
@@ -209,15 +225,21 @@ def _make_steps(op_list: list[int], timetable_range: TimetableTimeRange) -> list
     """
     steps = []
     # Steps aren't sorted in any way, so long path are much more likely to fail
-    n_steps = random.randint(2, 3)
+    n_steps = random.randint(2, 4)
     for _ in range(n_steps):
         steps.append(
             {
                 "location": {
-                    "uic": _random_set_element(op_list),
+                    "operational_point": {
+                        "type": "uic",
+                        "uic": _random_set_element(op_list),
+                    }
                 }
             }
         )
+    for i in range(1, n_steps - 1):
+        if random.randint(0, 1) == 0:
+            steps[i]["duration"] = random.randint(1, 30 * 60 * 1000)
     index_set_time = random.randint(-1, 0)  # first or last
     steps[index_set_time]["timing_data"] = {
         "arrival_time": timetable_range.make_random_time(),
@@ -230,11 +252,23 @@ def _make_steps(op_list: list[int], timetable_range: TimetableTimeRange) -> list
     return steps
 
 
+def _get_towed_rolling_stock_ids(session: Session, editoast_url: str) -> list[int]:
+    r = session.get(f"{editoast_url}/towed_rolling_stock")
+    r.raise_for_status()
+    parsed = r.json()
+    res = []
+    for entry in parsed["results"]:
+        res.append(entry["id"])
+    return res
+
+
 if __name__ == "__main__":
-    session = next(conftest.session())
+    session = conftest.session_no_fixture()
     infra_id = get_infra(_EDITOAST_URL, _INFRA_NAME, session)
+    towed_rs = _get_towed_rolling_stock_ids(session, _EDITOAST_URL)
     run(
         _EDITOAST_URL,
+        towed_rs,
         scenario=Scenario(-1, -1, -1, infra_id, _TIMETABLE_ID, _TRAIN_SCHEDULE_SET_ID),
         session=session,
         n_test=10_000,
