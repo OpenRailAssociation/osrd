@@ -197,14 +197,11 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
         }
 
         const parts: Extract<PathStepMetadata, { isInvalid: false; type: 'opRef' }>['parts'] =
-          matchedOp.parts.map((part) => {
-            const correspondingTrack = trackSectionsById[part.track];
-            return {
-              trackId: correspondingTrack?.id ?? '',
-              trackName: correspondingTrack?.extensions?.sncf?.track_name ?? '',
-              coordinates: part.geo?.coordinates as Position,
-            };
-          });
+          matchedOp.parts.map((part) => ({
+            trackId: part.track,
+            trackName: part.local_track_name,
+            coordinates: part.geo?.coordinates as Position,
+          }));
 
         newPathStepsMetadataById.set(pathStep.id, {
           type: 'opRef',
