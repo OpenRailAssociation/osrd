@@ -21,6 +21,7 @@ export const operationalStudiesInitialConf: OperationalStudiesConfState = {
   startTime: new Date(),
   initialSpeed: 0,
   labels: [],
+  rollingStockName: '',
   rollingStockComfort: 'STANDARD',
   category: null,
   // Corresponds to origin and destination not defined
@@ -55,6 +56,7 @@ export const operationalStudiesConfSlice = createSlice({
     ) {
       const {
         rollingStock,
+        rollingStockName,
         name,
         initial_speed,
         startTime,
@@ -67,6 +69,7 @@ export const operationalStudiesConfSlice = createSlice({
         category,
       } = action.payload.item;
 
+      state.rollingStockName = rollingStockName;
       state.rollingStockID = rollingStock?.id;
       state.pathSteps = path.map((_, index) => computeBasePathStep(action.payload.item, index));
       state.startTime = startTime;

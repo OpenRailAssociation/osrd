@@ -457,7 +457,9 @@
       "pathFinding": "Itinéraire",
       "rollingStock": "Matériel",
       "simulationSettings": "Paramètres de simulation",
-      "timesStops": "Horaires et arrêts"
+      "timesStops": "Horaires et arrêts",
+      "unrecognizedRollingStock": "Matériel non reconnu : {{rollingStockName}}",
+      "unspecifiedRollingStock": "Matériel roulant non renseigné"
     },
     "timetableItemDepartureTime": "Heure de départ",
     "timetableItemInitialSpeed": "Vitesse initiale",

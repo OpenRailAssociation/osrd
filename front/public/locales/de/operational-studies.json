@@ -295,7 +295,9 @@
       "pathFinding": "Route",
       "rollingStock": "Schienenfahrzeug",
       "simulationSettings": "Simulationseinstellungen",
-      "timesStops": "Zeiten und Halte"
+      "timesStops": "Zeiten und Halte",
+      "unrecognizedRollingStock": "Unbekanntes Schienenfahrzeug : {{rollingStockName}}",
+      "unspecifiedRollingStock": "Schienenfahrzeug nicht angegeben"
     },
     "timetableItemDepartureTime": "Abfahrtszeit",
     "timetableItemInitialSpeed": "Eingangsgeschwindigkeit",

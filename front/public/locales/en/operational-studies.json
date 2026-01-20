@@ -457,7 +457,9 @@
       "pathFinding": "Route",
       "rollingStock": "Rolling stock",
       "simulationSettings": "Simulation settings",
-      "timesStops": "Times and stops"
+      "timesStops": "Times and stops",
+      "unrecognizedRollingStock": "Unrecognized rolling stock : {{rollingStockName}}",
+      "unspecifiedRollingStock": "Rolling stock not specified"
     },
     "timetableItemDepartureTime": "Departure time",
     "timetableItemInitialSpeed": "Initial velocity",
