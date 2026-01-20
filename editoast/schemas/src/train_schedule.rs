@@ -11,7 +11,6 @@ pub use path_item::OperationalPointPartReference;
 pub use path_item::OperationalPointReference;
 pub use path_item::PathItem;
 pub use path_item::PathItemLocation;
-pub use path_item::TrackReference;
 
 mod train_schedule_options;
 pub use train_schedule_options::TrainScheduleOptions;
@@ -243,7 +242,7 @@ impl TrainSchedule {
                                 uic: 8711,
                                 secondary_code: None,
                             },
-                            track_reference: None,
+                            local_track_name: None,
                         },
                     ),
                 },
@@ -262,7 +261,7 @@ impl TrainSchedule {
                                 trigram: NonBlankString::from("MWS"),
                                 secondary_code: None,
                             },
-                            track_reference: None,
+                            local_track_name: None,
                         },
                     ),
                 },
@@ -273,7 +272,7 @@ impl TrainSchedule {
                             operational_point: OperationalPointReference::Id {
                                 operational_point: Identifier::from("Mid_East_station"),
                             },
-                            track_reference: None,
+                            local_track_name: None,
                         },
                     ),
                 },
@@ -355,7 +354,7 @@ mod tests {
                 operational_point: Id {
                     operational_point: "op".into(),
                 },
-                track_reference: None,
+                local_track_name: None,
             });
         let path_item = PathItem {
             id: "a".into(),
@@ -413,7 +412,7 @@ mod tests {
                 operational_point: Id {
                     operational_point: "op".into(),
                 },
-                track_reference: None,
+                local_track_name: None,
             });
         let path_item = PathItem {
             id: "a".into(),
@@ -449,7 +448,7 @@ mod tests {
                 operational_point: Id {
                     operational_point: "op".into(),
                 },
-                track_reference: None,
+                local_track_name: None,
             });
         let path_item = PathItem {
             id: "a".into(),

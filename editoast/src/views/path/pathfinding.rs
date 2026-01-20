@@ -521,7 +521,6 @@ pub mod tests {
     use schemas::train_schedule::OperationalPointPartReference;
     use schemas::train_schedule::OperationalPointReference;
     use schemas::train_schedule::PathItemLocation;
-    use schemas::train_schedule::TrackReference;
 
     use crate::models::fixtures::create_small_infra;
     use crate::views::path::pathfinding::PathfindingFailure;
@@ -571,14 +570,14 @@ pub mod tests {
                     trigram: "WS".into(),
                     secondary_code: Some("BV".into()),
                 },
-                track_reference: None,
+                local_track_name: None,
             }),
             PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
                 operational_point: OperationalPointReference::Trigram {
                     trigram: "WS".into(),
                     secondary_code: Some("BV".into()),
                 },
-                track_reference: None,
+                local_track_name: None,
             }),
         ];
 
@@ -610,21 +609,21 @@ pub mod tests {
                     trigram: "WS".into(),
                     secondary_code: Some("BV".into()),
                 },
-                track_reference: None,
+                local_track_name: None,
             }),
             PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
                 operational_point: OperationalPointReference::Trigram {
                     trigram: "NO_TRIGRAM".into(),
                     secondary_code: None,
                 },
-                track_reference: None,
+                local_track_name: None,
             }),
             PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
                 operational_point: OperationalPointReference::Trigram {
                     trigram: "SWS".into(),
                     secondary_code: Some("BV".into()),
                 },
-                track_reference: None,
+                local_track_name: None,
             }),
         ];
 
@@ -649,7 +648,7 @@ pub mod tests {
                                     trigram: "NO_TRIGRAM".into(),
                                     secondary_code: None
                                 },
-                                track_reference: None,
+                                local_track_name: None,
                             }
                         )
                     }]
@@ -659,7 +658,7 @@ pub mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn pathfinding_with_invalid_path_items_due_to_track_reference() {
+    async fn pathfinding_with_invalid_path_items_due_to_local_track_name() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
@@ -669,18 +668,14 @@ pub mod tests {
                     uic: 8733,
                     secondary_code: Some("BV".into()),
                 },
-                track_reference: Some(TrackReference::Name {
-                    track_name: "V2".into(),
-                }),
+                local_track_name: Some("V2".into()),
             }),
             PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
                 operational_point: OperationalPointReference::Uic {
                     uic: 8788,
                     secondary_code: Some("BV".into()),
                 },
-                track_reference: Some(TrackReference::Name {
-                    track_name: "V_INVALID".into(),
-                }),
+                local_track_name: Some("V_INVALID".into()),
             }),
         ];
 
@@ -705,9 +700,7 @@ pub mod tests {
                                     uic: 8788,
                                     secondary_code: Some("BV".into())
                                 },
-                                track_reference: Some(TrackReference::Name {
-                                    track_name: "V_INVALID".into()
-                                }),
+                                local_track_name: Some("V_INVALID".into()),
                             }
                         )
                     }]
@@ -732,14 +725,14 @@ pub mod tests {
                     trigram: "WS".into(),
                     secondary_code: Some("BV".into()),
                 },
-                track_reference: None,
+                local_track_name: None,
             }),
             PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
                 operational_point: OperationalPointReference::Trigram {
                     trigram: "SWS".into(),
                     secondary_code: Some("BV".into()),
                 },
-                track_reference: None,
+                local_track_name: None,
             }),
         ];
 

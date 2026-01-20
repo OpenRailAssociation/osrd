@@ -9,8 +9,6 @@ import type {
   OperationalPoint,
   PathItemLocation,
   ReceptionSignal,
-  TrackReference,
-  TrackSection,
 } from 'common/api/osrdEditoastApi';
 import type { TimeString } from 'common/types';
 import type { SuggestedOP } from 'modules/timetableItem/types';
@@ -333,17 +331,6 @@ export function receptionSignalToSignalBooleans(receptionSignal?: ReceptionSigna
   }
   return { shortSlipDistance: false, onStopSignal: false };
 }
-
-export const getTrackReferenceLabel = (
-  trackSections: Record<string, TrackSection>,
-  trackReference?: TrackReference | null
-) => {
-  if (!trackReference) return undefined;
-  if ('track_name' in trackReference) return trackReference.track_name;
-  return (
-    trackSections[trackReference.track_id]?.extensions?.sncf?.track_name ?? trackReference.track_id
-  );
-};
 
 export const getOperationalPointName = (
   op: OperationalPoint | undefined,

@@ -171,7 +171,7 @@ pub fn create_created_exception_with_change_groups(key: &str) -> PacedTrainExcep
                             operational_point: OperationalPointReference::Id {
                                 operational_point: Identifier("Mid_East_station".to_string()),
                             },
-                            track_reference: None,
+                            local_track_name: None,
                         },
                     ),
                 },

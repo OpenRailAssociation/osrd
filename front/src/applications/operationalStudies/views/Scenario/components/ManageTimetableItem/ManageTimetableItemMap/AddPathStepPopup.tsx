@@ -172,9 +172,7 @@ const AddPathStepPopup = ({
       coordinates: selectedTrack.coordinates,
       location: {
         ...prevLocation,
-        track_reference: selectedTrack.trackName
-          ? { track_name: selectedTrack.trackName }
-          : undefined,
+        local_track_name: selectedTrack.trackName,
       },
     });
   }, [clickedOp, selectedTrack]);

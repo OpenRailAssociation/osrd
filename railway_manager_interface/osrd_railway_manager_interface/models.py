@@ -49,6 +49,10 @@ class LoadingGaugeType(Enum):
     GB = "GB"
 
 
+class LocalTrackName(RootModel[str]):
+    root: Annotated[str, Field(min_length=1)]
+
+
 class Location(BaseModel):
     """
     Information on the operational point.
@@ -71,12 +75,12 @@ class Margins(BaseModel):
 
 
 class OperationalPointPartReference(BaseModel):
+    local_track_name: LocalTrackName | None = None
     operational_point: (
         OperationalPointReferenceId
         | OperationalPointReferenceTrigram
         | OperationalPointReferenceUic
     )
-    track_reference: TrackReferenceId | TrackReferenceName | None = None
 
 
 class OperationalPointReferenceId(BaseModel):
@@ -365,14 +369,6 @@ class TrackOffset(BaseModel):
     """
     Track section identifier
     """
-
-
-class TrackReferenceId(BaseModel):
-    track_id: Annotated[str, Field(max_length=255, min_length=1)]
-
-
-class TrackReferenceName(BaseModel):
-    track_name: Annotated[str, Field(min_length=1)]
 
 
 class TrainCategoryMain(BaseModel):

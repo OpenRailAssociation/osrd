@@ -949,7 +949,7 @@ pub(in crate::views) async fn project_path_op(
         .map(|op_ref| {
             PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
                 operational_point: op_ref.clone(),
-                track_reference: None,
+                local_track_name: None,
             })
         })
         .collect::<Vec<_>>();
@@ -1258,7 +1258,7 @@ pub(in crate::views) async fn track_occupancy(
         .unzip();
 
     // Get track positions at the operational point
-    let operational_point_track_offsets = operational_point.schema.track_offset();
+    let operational_point_track_offsets = operational_point.schema.track_offsets();
 
     let path_items = trains
         .iter()

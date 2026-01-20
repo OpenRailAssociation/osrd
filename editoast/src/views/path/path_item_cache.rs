@@ -1,12 +1,12 @@
 use core_client::pathfinding::InvalidPathItem;
 use core_client::pathfinding::PathfindingInputError;
 use database::DbConnection;
+use itertools::Itertools;
 use schemas::infra::TrackOffset;
 use schemas::primitives::NonBlankString;
 use schemas::train_schedule::OperationalPointPartReference;
 use schemas::train_schedule::OperationalPointReference;
 use schemas::train_schedule::PathItemLocation;
-use schemas::train_schedule::TrackReference;
 use std::collections::HashMap;
 
 use crate::error::Result;
@@ -156,6 +156,11 @@ impl PathItemCache {
             .map(|indices| indices.iter().map(|&idx| &self.ops[idx]))
     }
 
+    /// Get the track name by track id
+    pub fn get_name_by_track(&self, track_id: &str) -> Option<&NonBlankString> {
+        self.track_ids_to_name.get(track_id)
+    }
+
     /// Check if a track exists
     pub fn track_exists(&self, track: &str) -> bool {
         self.track_ids_to_name.contains_key(track)
@@ -203,14 +208,13 @@ impl PathItemCache {
                 PathItemLocation::OperationalPointPartReference(
                     OperationalPointPartReference {
                         operational_point: OperationalPointReference::Id { operational_point },
-                        track_reference,
+                        local_track_name,
                     },
                 ) => {
                     let mut track_offsets = vec![];
                     if let Some(op) = self.get_from_id(&operational_point.0) {
-                        track_offsets = op.track_offset();
                         track_offsets =
-                            self.track_reference_filter(track_offsets, track_reference.as_ref());
+                            op.track_offsets_by_local_track_name(local_track_name.as_ref());
                     }
                     if track_offsets.is_empty() {
                         invalid_path_items.push(InvalidPathItem {
@@ -228,7 +232,7 @@ impl PathItemCache {
                                 trigram,
                                 secondary_code,
                             },
-                        track_reference,
+                        local_track_name,
                     },
                 ) => {
                     let ops = self
@@ -236,9 +240,12 @@ impl PathItemCache {
                         .map(|op| op.collect())
                         .unwrap_or_default();
                     let ops = secondary_code_filter(secondary_code.as_ref(), ops);
-                    let track_offsets = track_offsets_from_ops(ops);
-                    let track_offsets =
-                        self.track_reference_filter(track_offsets, track_reference.as_ref());
+                    let track_offsets = ops
+                        .into_iter()
+                        .flat_map(|op| {
+                            op.track_offsets_by_local_track_name(local_track_name.as_ref())
+                        })
+                        .collect_vec();
                     if track_offsets.is_empty() {
                         invalid_path_items.push(InvalidPathItem {
                             index,
@@ -255,7 +262,7 @@ impl PathItemCache {
                                 uic,
                                 secondary_code,
                             },
-                        track_reference,
+                        local_track_name,
                     },
                 ) => {
                     let ops = self
@@ -263,9 +270,12 @@ impl PathItemCache {
                         .map(|op| op.collect())
                         .unwrap_or_default();
                     let ops = secondary_code_filter(secondary_code.as_ref(), ops);
-                    let track_offsets = track_offsets_from_ops(ops);
-                    let track_offsets =
-                        self.track_reference_filter(track_offsets, track_reference.as_ref());
+                    let track_offsets = ops
+                        .into_iter()
+                        .flat_map(|op| {
+                            op.track_offsets_by_local_track_name(local_track_name.as_ref())
+                        })
+                        .collect_vec();
                     if track_offsets.is_empty() {
                         invalid_path_items.push(InvalidPathItem {
                             index,
@@ -302,25 +312,20 @@ impl PathItemCache {
         Ok(result)
     }
 
-    /// Filter operational points parts by a track label or a track id
-    /// If neither a track label or id is provided, the original list is returned
-    pub fn track_reference_filter(
-        &self,
-        track_offsets: Vec<TrackOffset>,
-        track_reference: Option<&TrackReference>,
-    ) -> Vec<TrackOffset> {
-        match track_reference {
-            Some(TrackReference::Id { track_id }) => track_offsets
-                .into_iter()
-                .filter(|track_offset| &track_offset.track == track_id)
-                .collect(),
-            Some(TrackReference::Name { track_name }) => track_offsets
-                .into_iter()
-                .filter(|track_offset| {
-                    self.track_ids_to_name.get(&track_offset.track.0) == Some(track_name)
-                })
-                .collect(),
-            None => track_offsets,
+    #[cfg(test)]
+    pub(crate) fn new(
+        ops: Vec<OperationalPointModel>,
+        uic_to_indices: HashMap<u32, Vec<usize>>,
+        trigram_to_indices: HashMap<String, Vec<usize>>,
+        obj_id_to_index: HashMap<String, usize>,
+        track_ids_to_name: HashMap<String, NonBlankString>,
+    ) -> Self {
+        Self {
+            ops,
+            uic_to_indices,
+            trigram_to_indices,
+            obj_id_to_index,
+            track_ids_to_name,
         }
     }
 }
@@ -397,12 +402,6 @@ pub async fn retrieve_op_from_ids(
         .map_err(Into::into)
 }
 
-fn track_offsets_from_ops<'a>(
-    ops: impl IntoIterator<Item = &'a OperationalPointModel>,
-) -> Vec<TrackOffset> {
-    ops.into_iter().flat_map(|op| op.track_offset()).collect()
-}
-
 /// Filter operational points by secondary code
 /// If the secondary code is not provided, the original list is returned
 fn secondary_code_filter<'a>(
@@ -476,21 +475,21 @@ mod tests {
                 operational_point: OperationalPointReference::Id {
                     operational_point: Identifier::from("op_1"),
                 },
-                track_reference: None,
+                local_track_name: None,
             }),
             PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
                 operational_point: OperationalPointReference::Trigram {
                     trigram: NonBlankString::from("DEF"),
                     secondary_code: None,
                 },
-                track_reference: None,
+                local_track_name: None,
             }),
             PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
                 operational_point: OperationalPointReference::Uic {
                     uic: 5678,
                     secondary_code: None,
                 },
-                track_reference: None,
+                local_track_name: None,
             }),
         ];
 

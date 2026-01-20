@@ -149,21 +149,22 @@ fn get_track_section(
             .find(|to| path_projection.get_position(to).is_some())
             .map(|to| to.track.to_string());
     }
+
     if let Some(idx) = context.matching_index {
-        let track_reference = match &train_schedule.path[idx].location {
-            PathItemLocation::OperationalPointPartReference(op_ref) => &op_ref.track_reference,
+        let local_track_name = match &train_schedule.path[idx].location {
+            PathItemLocation::OperationalPointPartReference(op_ref) => &op_ref.local_track_name,
             PathItemLocation::TrackOffset(_) => {
                 panic!("matching_index must reference an OperationalPointPartReference")
             }
         };
-        if track_reference.is_some() {
-            return path_item_cache
-                .track_reference_filter(
-                    operational_point_track_offsets.to_vec(),
-                    track_reference.as_ref(),
-                )
-                .first()
-                .map(|to| to.track.to_string());
+        if local_track_name.is_some() {
+            return operational_point_track_offsets
+                .iter()
+                .find(|track_offset| {
+                    path_item_cache.get_name_by_track(&track_offset.track)
+                        == local_track_name.as_ref()
+                })
+                .map(|track_offset| track_offset.track.to_string());
         }
     }
     None
@@ -275,9 +276,9 @@ pub mod tests {
     #[case("op_2", 1000, 300000, true, true, true)]
     // Edge cases: missing simulation or pathfinding
     #[case("op_1", 0, 0, false, true, true)] // op_1 at index 0 works without simulation
-    #[case("op_1", 0, 0, false, false, false)] // No pathfinding fails (no track_reference)
+    #[case("op_1", 0, 0, false, false, false)] // No pathfinding fails (no local_track_name)
     #[case("op_2", 1000, 300000, false, true, false)] // No simulation fails (no arrival_time)
-    #[case("op_3", 5000, 200000, false, false, true)] // op_3 works without simulation/pathfinding (explicit arrival + track_reference)
+    #[case("op_3", 5000, 200000, false, false, true)] // op_3 works without simulation/pathfinding (explicit arrival + local_track_name)
     fn test_find_track_occupancy_with_matching_path_item(
         #[case] op_id: &str,
         #[case] expected_time: u64,
@@ -293,6 +294,13 @@ pub mod tests {
             "op_3" => (Identifier::from("T3"), 100, vec![50, 75, 100, 150]),
             _ => (Identifier::from("T1"), 50, vec![50, 100, 150]),
         };
+        let path_item_cache = PathItemCache::new(
+            Vec::new(),
+            HashMap::new(),
+            HashMap::new(),
+            HashMap::new(),
+            HashMap::from([("T3".into(), "TS3".into())]),
+        );
 
         let track_range = TrackRange {
             track_section: track_section.clone(),
@@ -327,7 +335,7 @@ pub mod tests {
                             operational_point: OperationalPointReference::Id {
                                 operational_point: "op_1".into(),
                             },
-                            track_reference: None,
+                            local_track_name: None,
                         },
                     ),
                 },
@@ -338,7 +346,7 @@ pub mod tests {
                             operational_point: OperationalPointReference::Id {
                                 operational_point: "op_2".into(),
                             },
-                            track_reference: None,
+                            local_track_name: None,
                         },
                     ),
                 },
@@ -349,9 +357,7 @@ pub mod tests {
                             operational_point: OperationalPointReference::Id {
                                 operational_point: "op_3".into(),
                             },
-                            track_reference: Some(schemas::train_schedule::TrackReference::Id {
-                                track_id: track_section.clone(),
-                            }),
+                            local_track_name: Some("TS3".into()),
                         },
                     ),
                 },
@@ -424,7 +430,7 @@ pub mod tests {
         let results = find_track_occupancy_for_operational_point(
             op_id,
             &operational_point_track_offsets,
-            &PathItemCache::default(),
+            &path_item_cache,
             &simulation,
             &pathfinding,
             &train_schedule,
@@ -474,7 +480,7 @@ pub mod tests {
                         operational_point: OperationalPointReference::Id {
                             operational_point: "op_1".into(),
                         },
-                        track_reference: None,
+                        local_track_name: None,
                     },
                 ),
             },
@@ -485,7 +491,7 @@ pub mod tests {
                         operational_point: OperationalPointReference::Id {
                             operational_point: "op_2".into(),
                         },
-                        track_reference: None,
+                        local_track_name: None,
                     },
                 ),
             },
