@@ -211,7 +211,7 @@ class EngineeringAllowanceManager(
             if (pureDecelerationSim.newBeginSpeed > segment.beginSpeed) {
                 // Intersection with base sim. We estimate the new time with a basic speed plateau +
                 // const deceleration, return this segment, and exit the loop.
-                if (segment.beginSpeed < endSpeed || segment.beginSpeed <= 0.0)
+                if (segment.beginSpeed <= endSpeed || segment.beginSpeed <= 0.0)
                     break // Can't run the simplified sim, there's an acceleration
                 val newTime =
                     simplifiedSpeedPlateauThenDeceleration(
