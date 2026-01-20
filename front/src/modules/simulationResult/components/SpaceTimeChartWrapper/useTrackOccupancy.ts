@@ -10,6 +10,7 @@ import { useScenarioContext } from 'applications/operationalStudies/hooks/useSce
 import { type OperationalPointReference, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
 import { computeIndexedOccurrenceStartTime } from 'modules/timetableItem/helpers/pacedTrain';
+import type { SimulatedException } from 'modules/timetableItem/types';
 import type { PacedTrainId, TimetableItemId, TrainId } from 'reducers/osrdconf/types';
 import { getIsSimulationEnabled } from 'reducers/simulationResults/selectors';
 import {
@@ -23,7 +24,7 @@ import {
 } from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
-import type { PathOperationalPoint, TrainSpaceTimeData } from '../../types';
+import type { BaseTrainProjection, PathOperationalPoint, TrainSpaceTimeData } from '../../types';
 import { batchFetchTrackOccupancy } from './helpers/utils';
 import { getMovableOccupancyZone, type MovableOccupancyZone } from './helpers/zones';
 import { usePrevious } from '../../../../utils/hooks/state';
@@ -190,7 +191,12 @@ const useTrackOccupancy = ({
 
             if (!train) throw new Error(`No train found for id ${pacedId}`);
 
-            if (occupation.type === 'base') {
+            if (!train.paced) {
+              if (occupation.type !== 'base') {
+                throw new Error(
+                  `Invalid occupation type ${occupation.type} for train schedule ${train.id}`
+                );
+              }
               zones.push(
                 getMovableOccupancyZone(
                   trackId,
@@ -204,14 +210,13 @@ const useTrackOccupancy = ({
               continue;
             }
 
-            if (!train.paced) throw new Error(`Train with id ${train.id} is not a paced train`);
-
-            const exception = train.paced.exceptions.find(
-              (e) => e.key === occupation.exception_key
-            );
-            const exceptionProjection = train.paced.exceptionProjections.get(
-              occupation.exception_key
-            );
+            let exception: SimulatedException | undefined;
+            let exceptionProjection: BaseTrainProjection | undefined;
+            if (occupation.type !== 'base') {
+              exception = train.paced.exceptions.find((e) => e.key === occupation.exception_key);
+              exceptionProjection = train.paced.exceptionProjections.get(occupation.exception_key);
+              if (!exception) throw new Error(`Exception not found for train ${train.id}`);
+            }
 
             const { spaceTimeCurves } = exceptionProjection ?? train;
 
@@ -219,10 +224,8 @@ const useTrackOccupancy = ({
             let trainName: string;
             let startTime: Date;
 
-            if (!exception) throw new Error(`Exception not found for train ${train.id}`);
-
             if (occupation.type === 'created') {
-              if (!exception.start_time?.value)
+              if (!exception?.start_time?.value)
                 throw new Error(`Created exceptions should always be a start time exception`);
 
               trainId = formatPacedTrainIdToExceptionId(pacedId, occupation.exception_key);
@@ -231,9 +234,9 @@ const useTrackOccupancy = ({
             } else {
               trainId = formatPacedTrainIdToIndexedOccurrenceId(pacedId, occupation.index);
               trainName =
-                exception.train_name?.value ?? computeOccurrenceName(train.name, occupation.index);
+                exception?.train_name?.value ?? computeOccurrenceName(train.name, occupation.index);
 
-              startTime = exception.start_time?.value
+              startTime = exception?.start_time?.value
                 ? new Date(exception.start_time.value)
                 : computeIndexedOccurrenceStartTime(
                     new Date(train.departureTime),
