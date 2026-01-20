@@ -50,6 +50,13 @@ type SubstituteTrain = {
   date: string;
 };
 
+export type TimingContext = {
+  originArrivalTime: Date;
+  destinationArrivalTime?: Date;
+  beforeTolerance: Duration;
+  afterTolerance: Duration;
+};
+
 const SendToRailwayManagerModal = ({
   consist,
   onSuccess,
@@ -244,6 +251,13 @@ const SendToRailwayManagerModal = ({
       return;
     }
 
+    const timingContext: TimingContext = {
+      originArrivalTime: realDepartureTime,
+      destinationArrivalTime: constraintOnDeparture ? undefined : realConstraintTime,
+      beforeTolerance,
+      afterTolerance,
+    };
+
     const simulationReport: SimulationReport = {
       rolling_stock: consist.tractionEngine.name,
       towed_rolling_stock: consist.towedRollingStock?.name,
@@ -252,7 +266,7 @@ const SendToRailwayManagerModal = ({
       total_mass: tToKg(consist.totalMass),
       max_speed: kmhToMs(consist.maxSpeed),
       total_length: consist.totalLength,
-      requested_steps: transformStepsToApiFormat(steps, beforeTolerance, afterTolerance),
+      requested_steps: transformStepsToApiFormat(steps, timingContext),
       departure_time: normalizedDate.toISOString(),
       user_message: comment,
       similar_train: similarTrain,

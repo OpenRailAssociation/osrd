@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next';
 
+import type { TimingContext } from 'applications/stdcm/components/StdcmResults/SendToRailwayManagerModal';
 import {
   type SimilarTrainWithSecondaryCode,
   type StdcmResultsOperationalPoint,
@@ -354,10 +355,9 @@ export const getStopType = (stopType: StdcmStopTypes | undefined, t: TFunction<'
 // Maps Stdcm path steps to the Step payload expected by the Railway Manager API.
 export const transformStepsToApiFormat = (
   steps: StdcmPathStep[],
-  beforeTolerance: Duration,
-  afterTolerance: Duration
+  { originArrivalTime, destinationArrivalTime, beforeTolerance, afterTolerance }: TimingContext
 ): RequestedStep[] =>
-  steps.map((step) => {
+  steps.map((step, index) => {
     const baseStep: RequestedStep = {
       duration: 0,
       location: {
@@ -373,19 +373,26 @@ export const transformStepsToApiFormat = (
         type: STOP_TYPE_MAPPING[step.stopType],
       };
     }
-    const timingData =
-      step.arrivalType === 'preciseTime' && step.arrival
-        ? {
-            arrival_time: new Date(step.arrival).toISOString(),
-            arrival_time_tolerance_before: beforeTolerance.ms,
-            arrival_time_tolerance_after: afterTolerance.ms,
-          }
-        : undefined;
+
+    if (step.arrivalType !== 'preciseTime') {
+      return {
+        ...baseStep,
+      };
+    }
+
+    let arrival_time = originArrivalTime.toISOString();
+
+    if (index === steps.length - 1 && destinationArrivalTime) {
+      arrival_time = destinationArrivalTime.toISOString();
+    }
 
     return {
       ...baseStep,
-      duration: 0,
-      timing_data: timingData,
+      timing_data: {
+        arrival_time,
+        arrival_time_tolerance_before: beforeTolerance.ms,
+        arrival_time_tolerance_after: afterTolerance.ms,
+      },
     };
   });
 
