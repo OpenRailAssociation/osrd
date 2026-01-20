@@ -17,6 +17,11 @@ kotlin {
         }
         // Work around https://github.com/google/ksp/issues/567 see also below
         commonMain.kotlin.srcDir('build/generated/ksp/metadata/commonMain/kotlin')
+
+        commonTest.dependencies {
+            // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
+            implementation(libs.kotlin.test)
+        }
     }
 }
 
