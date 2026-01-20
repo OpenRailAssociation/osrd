@@ -153,7 +153,7 @@ const createPathItemFromNode = (
     // TODO : handle this case in xml import refacto
     pathItemLocation = {
       operational_point: { trigram, secondary_code, type: 'trigram' },
-      track_reference: null,
+      local_track_name: null,
     };
   }
   return {

@@ -528,7 +528,7 @@ mod tests {
                                 trigram: "WS".into(),
                                 secondary_code: Some("BV".to_string()),
                             },
-                            track_reference: None,
+                            local_track_name: None,
                         },
                     ),
                     timing_data: Some(StepTimingData {
@@ -546,7 +546,7 @@ mod tests {
                                 trigram: "MWS".into(),
                                 secondary_code: Some("BV".to_string()),
                             },
-                            track_reference: None,
+                            local_track_name: None,
                         },
                     ),
                     timing_data: None,

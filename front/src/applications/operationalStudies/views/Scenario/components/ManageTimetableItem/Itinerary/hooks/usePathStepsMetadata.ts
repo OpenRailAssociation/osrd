@@ -181,20 +181,17 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
           );
         });
 
-        const trackRef = location.track_reference;
-        const isValidTrackReference = trackRef
+        const { local_track_name } = location;
+        const isValidLocalTrackName = local_track_name
           ? matchedOp?.parts.some((part) => {
               const track = trackSectionsById[part.track];
               if (!track) return false;
-              if ('track_name' in trackRef) {
-                return trackRef.track_name === track.extensions?.sncf?.track_name;
-              }
-              return trackRef.track_id === track.id;
+              return local_track_name === part.local_track_name;
             })
           : true;
 
-        // If no op is found or if its track_reference is invalid, it means the path step is invalid
-        if (!isValidTrackReference || !matchedOp) {
+        // If no op is found or if its local_track_name is invalid, it means the path step is invalid
+        if (!isValidLocalTrackName || !matchedOp) {
           newPathStepsMetadataById.set(pathStep.id, { isInvalid: true });
           return;
         }
@@ -209,22 +206,13 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
             };
           });
 
-        // Get the track name in case the path step has a track_reference with track_id
-        let correspondingTrackName: string | undefined;
-        if (location.track_reference) {
-          correspondingTrackName =
-            'track_name' in location.track_reference
-              ? location.track_reference.track_name
-              : trackSectionsById[location.track_reference.track_id]?.extensions?.sncf?.track_name;
-        }
-
         newPathStepsMetadataById.set(pathStep.id, {
           type: 'opRef',
           isInvalid: false,
           name: matchedOp.extensions?.identifier?.name ?? '',
           uic: matchedOp.extensions?.identifier?.uic,
           secondaryCode: matchedOp.extensions?.sncf?.ch,
-          trackName: correspondingTrackName,
+          trackName: local_track_name ?? undefined,
           parts,
         });
       });

@@ -325,17 +325,17 @@ export const checkRoundTripCompatible = (
       }
     } else {
       // id is specific to each timetable item
-      // track_reference is ignored because we don't want to take tracks into account
+      // local_track_name is ignored because we don't want to take tracks into account
       // Only take into account uic/trigram/opId of the path items
       const opRefA = {
         ...pathItemA,
         id: undefined,
-        track_reference: undefined,
+        local_track_name: undefined,
       };
       const opRefB = {
         ...pathItemB,
         id: undefined,
-        track_reference: undefined,
+        local_track_name: undefined,
       };
 
       if (!isEqual(opRefA, opRefB)) {

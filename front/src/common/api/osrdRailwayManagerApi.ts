@@ -101,6 +101,7 @@ export type Items = {
           track: string;
         }
       | {
+          local_track_name?: null | string;
           operational_point:
             | {
                 /** The object id of an operational point */
@@ -121,16 +122,6 @@ export type Items = {
                 /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
                 uic: number;
               };
-          track_reference?:
-            | null
-            | (
-                | {
-                    track_id: string;
-                  }
-                | {
-                    track_name: string;
-                  }
-              );
         };
   }[];
   power_restrictions?: {
@@ -177,6 +168,7 @@ export type Items2 = {
         track: string;
       }
     | {
+        local_track_name?: null | string;
         operational_point:
           | {
               /** The object id of an operational point */
@@ -197,16 +189,6 @@ export type Items2 = {
               /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
               uic: number;
             };
-        track_reference?:
-          | null
-          | (
-              | {
-                  track_id: string;
-                }
-              | {
-                  track_name: string;
-                }
-            );
       };
 };
 export type Items3 = {
@@ -288,6 +270,7 @@ export type TransformTimetableResponse = {
             track: string;
           }
         | {
+            local_track_name?: null | string;
             operational_point:
               | {
                   /** The object id of an operational point */
@@ -308,16 +291,6 @@ export type TransformTimetableResponse = {
                   /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
                   uic: number;
                 };
-            track_reference?:
-              | null
-              | (
-                  | {
-                      track_id: string;
-                    }
-                  | {
-                      track_name: string;
-                    }
-                );
           };
     }[];
     power_restrictions?: {

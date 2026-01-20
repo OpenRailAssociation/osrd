@@ -20,7 +20,7 @@ import type { Train } from 'reducers/osrdconf/types';
 import { getDisplayOnlyPathSteps } from 'reducers/simulationResults/selectors';
 import { Duration } from 'utils/duration';
 
-import { getTrackReferenceLabel, getOperationalPointName } from '../helpers/utils';
+import { getOperationalPointName } from '../helpers/utils';
 import type { TimesStopsRowNew } from '../types';
 
 type BuildTableRowParams = {
@@ -104,8 +104,6 @@ const useTimesStopsTableData = (
     const trackIdsInPathSteps: string[] = [];
     for (const { location } of selectedTrain.path) {
       if ('track' in location) trackIdsInPathSteps.push(location.track);
-      else if (location.track_reference && 'track_id' in location.track_reference)
-        trackIdsInPathSteps.push(location.track_reference.track_id);
     }
     const trackIdsOnPath = (operationalPointsOnPath || []).map((op) => op.part.track);
     return [...trackIdsInPathSteps, ...trackIdsOnPath];
@@ -139,7 +137,7 @@ const useTimesStopsTableData = (
           'track' in pathStep.location
             ? (trackSections[pathStep.location.track]?.extensions?.sncf?.track_name ??
               pathStep.location.track)
-            : getTrackReferenceLabel(trackSections, pathStep.location.track_reference);
+            : (pathStep.location.local_track_name ?? undefined);
 
         const schedule = scheduleByAt[pathStep.id];
         const computedArrival =

@@ -24,7 +24,7 @@ import { ARRIVAL_TIME_ACCEPTABLE_ERROR } from '../consts';
 import { computeInputDatetimes } from '../helpers/arrivalTime';
 import computeMargins, { getTheoreticalMargins } from '../helpers/computeMargins';
 import { formatSchedule } from '../helpers/scheduleData';
-import { getTrackReferenceLabel, getOperationalPointName } from '../helpers/utils';
+import { getOperationalPointName } from '../helpers/utils';
 import type { TimesStopsRow } from '../types';
 
 const useOutputTableData = (
@@ -43,14 +43,9 @@ const useOutputTableData = (
 
   const trackIds = useMemo(() => {
     const path = selectedTrain?.path || [];
-    const trackIdsInPathSteps = path.flatMap(({ location }) => [
-      ...('track' in location ? [location.track] : []),
-      ...('track_reference' in location &&
-      location.track_reference &&
-      'track_id' in location.track_reference
-        ? [location.track_reference.track_id]
-        : []),
-    ]);
+    const trackIdsInPathSteps = path.flatMap(({ location }) =>
+      'track' in location ? [location.track] : []
+    );
     const trackIdsOnPath = (operationalPointsOnPath || []).map((op) => op.part.track);
     return [...trackIdsInPathSteps, ...trackIdsOnPath];
   }, [selectedTrain?.path, operationalPointsOnPath]);
@@ -93,7 +88,7 @@ const useOutputTableData = (
         const trackName =
           'track' in pathStep.location
             ? trackSections[pathStep.location.track]?.extensions?.sncf?.track_name
-            : getTrackReferenceLabel(trackSections, pathStep.location.track_reference);
+            : (pathStep.location.local_track_name ?? undefined);
 
         const schedule = scheduleByAt[pathStep.id];
         const computedArrival = simulatedPathItemTimes

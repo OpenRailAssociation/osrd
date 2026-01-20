@@ -3423,16 +3423,9 @@ export type TrackOffset = {
   /** Track section identifier */
   track: string;
 };
-export type TrackReference =
-  | {
-      track_id: string;
-    }
-  | {
-      track_name: string;
-    };
 export type OperationalPointPartReference = {
+  local_track_name?: null | string;
   operational_point: OperationalPointReference;
-  track_reference?: null | TrackReference;
 };
 export type PathItemLocation = TrackOffset | OperationalPointPartReference;
 export type CorePathfindingInputError =
