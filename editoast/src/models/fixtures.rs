@@ -5,6 +5,7 @@ use chrono::Duration as ChronoDuration;
 use chrono::Utc;
 use database::DbConnection;
 
+use editoast_models::CatalogEntry;
 use editoast_models::ElectricalProfileSet;
 use editoast_models::SubCategory;
 use editoast_models::TemporarySpeedLimitGroup;
@@ -94,6 +95,14 @@ pub async fn create_train_schedule_set(conn: &mut DbConnection) -> TrainSchedule
         .create(conn)
         .await
         .expect("Failed to create train schedule set")
+}
+
+pub async fn create_catalog_entry(conn: &mut DbConnection) -> CatalogEntry {
+    CatalogEntry::changeset()
+        .name(Some("test".into()))
+        .create(conn)
+        .await
+        .expect("Failed to create catalog entry")
 }
 
 async fn link_train_schedule_set_to_timetable(

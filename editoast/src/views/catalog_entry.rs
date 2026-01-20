@@ -81,6 +81,7 @@ pub(in crate::views) async fn post(
 }
 
 #[derive(Serialize, ToSchema)]
+#[cfg_attr(test, derive(Deserialize))]
 pub(in crate::views) struct CatalogEntryPage {
     #[serde(flatten)]
     stats: PaginationStats,
@@ -220,6 +221,7 @@ pub(in crate::views) async fn delete(
 
 #[cfg(test)]
 mod tests {
+    use crate::models::fixtures::create_catalog_entry;
     use crate::views::test_app::TestAppBuilder;
 
     use super::*;
@@ -241,5 +243,23 @@ mod tests {
             .assert_status(StatusCode::OK)
             .json_into();
         assert_eq!(catalog_entry.name, Some("test".to_string()));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn catalog_entry_get() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+
+        let catalog_entry = create_catalog_entry(&mut db_pool.get().await.unwrap()).await;
+
+        let request = app.get("/catalog_entry");
+        let catalog_entries = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into::<CatalogEntryPage>();
+        let results = catalog_entries.results;
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].id, catalog_entry.id);
     }
 }
