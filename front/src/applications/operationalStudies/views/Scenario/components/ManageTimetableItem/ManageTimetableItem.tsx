@@ -35,6 +35,7 @@ import {
   getOperationalStudiesSpeedLimitByTag,
   getOrigin,
   getPathSteps,
+  getRollingStockName,
   getStartTime,
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import { useAppDispatch } from 'store';
@@ -64,6 +65,7 @@ const ManageTimetableItem = () => {
   const pathSteps = useSelector(getPathSteps);
   const selectedSpeedLimitTag = useSelector(getOperationalStudiesSpeedLimitByTag);
   const rollingStockId = useSelector(getOperationalStudiesRollingStockID);
+  const rollingStockName = useSelector(getRollingStockName);
   const currentCategory = useSelector(getCategory);
 
   const markersInformation = useMemo(
@@ -136,12 +138,21 @@ const ManageTimetableItem = () => {
     withWarning: rollingStockId === undefined,
     label: t('tabs.rollingStock'),
     content: (
-      <RollingStockSelector
-        rollingStockId={rollingStockId}
-        rollingStockSelected={rollingStock}
-        rollingStockComfort={rollingStockComfort}
-        onSelectRollingStock={onSelectRollingStock}
-      />
+      <div className="rolling-stock-tab">
+        {!rollingStock && (
+          <span className="unrecognized-rolling-stock">
+            {rollingStockName
+              ? t('tabs.unrecognizedRollingStock', { rollingStockName })
+              : t('tabs.unspecifiedRollingStock')}
+          </span>
+        )}
+        <RollingStockSelector
+          rollingStockId={rollingStockId}
+          rollingStockSelected={rollingStock}
+          rollingStockComfort={rollingStockComfort}
+          onSelectRollingStock={onSelectRollingStock}
+        />
+      </div>
     ),
   };
 

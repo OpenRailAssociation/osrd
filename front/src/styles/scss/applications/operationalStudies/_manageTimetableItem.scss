@@ -38,6 +38,12 @@
     padding-right: 50px;
   }
 
+  .rolling-stock-tab {
+    .unrecognized-rolling-stock {
+      color: var(--info60);
+    }
+  }
+
   .simulation-settings {
     .first-row {
       display: flex;

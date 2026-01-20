@@ -61,6 +61,7 @@ const extractBaseTimetableItemProps = (timetableItem: TimetableItem) => ({
   stopsCount:
     (timetableItem.schedule?.filter((step) => step.stop_for && Duration.parse(step.stop_for).ms > 0)
       .length ?? 0) + 1, // +1 to take the final stop (destination) into account
+  rollingStockName: timetableItem.rolling_stock_name,
   speedLimitTag: timetableItem.speed_limit_tag ?? null,
   labels: timetableItem.labels ?? [],
 });
@@ -75,7 +76,6 @@ export const formatPacedTrainWithDetails = (
     train_name: _,
     start_time: __,
     speed_limit_tag: ___,
-    rolling_stock_name: ____,
     paced,
     ...pacedTrainProps
   } = pacedTrain;

@@ -22,6 +22,7 @@ const baseTimetableItemWithSummary: TimetableItemWithSummaries = {
   name: 'train1',
   train_schedule_set_id: 1000,
   constraint_distribution: 'MARECO',
+  rollingStockName: 'rollingStock1',
   rollingStock: { id: 1, name: 'rollingStock1' } as LightRollingStockWithLiveries,
   path: [
     { id: 'id1', location: { operational_point: { uic: 123, type: 'uic' } } },
@@ -79,6 +80,7 @@ describe('simulationConfReducer', () => {
         usingElectricalProfiles: false,
         labels: ['label1'],
         rollingStockID: 1,
+        rollingStockName: 'rollingStock1',
         speedLimitByTag: 'MA100',
         name: 'train1',
         pathSteps: [

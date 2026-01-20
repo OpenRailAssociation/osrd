@@ -34,6 +34,7 @@ const buildOperationalStudiesConfSelectors = () => {
     getLabels: makeOsrdConfSelector('labels'),
     getCategory: makeOsrdConfSelector('category'),
 
+    getRollingStockName: makeOsrdConfSelector('rollingStockName'),
     getRollingStockComfort: makeOsrdConfSelector('rollingStockComfort'),
 
     getPathSteps,
@@ -73,6 +74,7 @@ export const {
   getInitialSpeed,
   getLabels,
   getRollingStockComfort,
+  getRollingStockName,
   getPathSteps,
   getOrigin,
   getDestination,

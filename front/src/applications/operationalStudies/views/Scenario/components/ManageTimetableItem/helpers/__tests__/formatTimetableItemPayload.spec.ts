@@ -21,6 +21,7 @@ import { formatPacedTrainPayload } from '../formatTimetableItemPayload';
 describe('formatTimetableItemPayload', () => {
   const rawOsrdconf: OperationalStudiesConfState = {
     timetableID: 184,
+    rollingStockName: 'rollingStock1',
     rollingStockID: 1,
     infraID: 2,
     infraIsLocked: false,
@@ -124,6 +125,7 @@ describe('formatTimetableItemPayload', () => {
       startTime: new Date('2025-06-02T12:45:00.000Z'),
       stopsCount: 1,
       speedLimitTag: null,
+      rollingStockName: 'DUAL-MODE_RS_E2Ee',
       rollingStock: {
         id: 1,
         railjson_version: '3.3',

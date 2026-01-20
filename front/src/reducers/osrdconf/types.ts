@@ -46,6 +46,7 @@ export type OperationalStudiesConfState = OsrdConfState & {
   startTime: Date;
   initialSpeed?: number;
   labels: string[];
+  rollingStockName: string;
   rollingStockComfort: Comfort;
   pathSteps: (PathStep | null)[];
   constraintDistribution: Distribution;

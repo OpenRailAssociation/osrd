@@ -72,6 +72,7 @@ export type TimetableItemWithSummaries = Omit<
   name: string;
   startTime: Date;
   stopsCount: number;
+  rollingStockName: string;
   rollingStock?: LightRollingStockWithLiveries;
   speedLimitTag: string | null;
   labels: string[];
