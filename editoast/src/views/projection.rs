@@ -1014,7 +1014,7 @@ mod tests {
             .map(|&trigram| {
                 PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
                     operational_point: create_path_item_from_trigram(trigram),
-                    track_reference: None,
+                    local_track_name: None,
                 })
             })
             .collect()

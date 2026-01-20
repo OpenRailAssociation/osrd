@@ -105,13 +105,23 @@ impl OSRDIdentified for OperationalPoint {
 }
 
 impl OperationalPoint {
-    pub fn track_offset(&self) -> Vec<TrackOffset> {
+    pub fn track_offsets(&self) -> Vec<TrackOffset> {
+        self.track_offsets_by_local_track_name(None)
+    }
+
+    pub fn track_offsets_by_local_track_name(
+        &self,
+        local_track_name: Option<&NonBlankString>,
+    ) -> Vec<TrackOffset> {
         self.parts
-            .clone()
-            .into_iter()
-            .map(|el| TrackOffset {
-                track: el.track,
-                offset: (el.position * 1000.0) as u64,
+            .iter()
+            .filter(|part| {
+                local_track_name
+                    .is_none_or(|local_track_name| *local_track_name == part.local_track_name)
+            })
+            .map(|part| TrackOffset {
+                track: part.track.clone(),
+                offset: (part.position * 1000.0) as u64,
             })
             .collect()
     }

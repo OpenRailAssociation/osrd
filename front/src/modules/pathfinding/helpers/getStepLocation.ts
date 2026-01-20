@@ -10,7 +10,7 @@ const getStepLocation = (step: PathItemLocation): PathItemLocation => {
         operational_point: step.operational_point.operational_point,
         type: 'id',
       },
-      track_reference: step.track_reference,
+      local_track_name: step.local_track_name,
     };
   }
   if (step.operational_point.type === 'trigram') {
@@ -20,7 +20,7 @@ const getStepLocation = (step: PathItemLocation): PathItemLocation => {
         secondary_code: step.operational_point.secondary_code,
         type: 'trigram',
       },
-      track_reference: step.track_reference,
+      local_track_name: step.local_track_name,
     };
   }
   if (step.operational_point.uic === -1) {
@@ -32,7 +32,7 @@ const getStepLocation = (step: PathItemLocation): PathItemLocation => {
       secondary_code: step.operational_point.secondary_code,
       type: 'uic',
     },
-    track_reference: step.track_reference,
+    local_track_name: step.local_track_name,
   };
 };
 

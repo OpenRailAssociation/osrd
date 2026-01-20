@@ -46,21 +46,21 @@
         {
           "location": {
             "operational_point": { "trigram": "RTR", "type": "trigram" },
-            "track_reference": null
+            "local_track_name": null
           },
           "id": "7-0"
         },
         {
           "location": {
             "operational_point": { "trigram": "LTH", "type": "trigram" },
-            "track_reference": null
+            "local_track_name": null
           },
           "id": "8-1"
         },
         {
           "location": {
             "operational_point": { "trigram": "SS", "type": "trigram" },
-            "track_reference": null
+            "local_track_name": null
           },
           "id": "6-2"
         }

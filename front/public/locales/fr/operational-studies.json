@@ -401,7 +401,6 @@
       "requestedPoint": "Point sur la carte",
       "secondaryCode": "CH",
       "track": "Voie",
-      "trackId": "Identifiant de voie",
       "trainName": "Nom du train",
       "trigram": "Trigramme",
       "uic": "UIC"

@@ -10344,12 +10344,13 @@ components:
       required:
       - operational_point
       properties:
-        operational_point:
-          $ref: '#/components/schemas/OperationalPointReference'
-        track_reference:
+        local_track_name:
           oneOf:
           - type: 'null'
-          - $ref: '#/components/schemas/TrackReference'
+          - type: string
+            minLength: 1
+        operational_point:
+          $ref: '#/components/schemas/OperationalPointReference'
     OperationalPointReference:
       oneOf:
       - type: object
@@ -14081,25 +14082,6 @@ components:
           type: string
           example: 01234567-89ab-cdef-0123-456789abcdef
       additionalProperties: false
-    TrackReference:
-      oneOf:
-      - type: object
-        title: TrackReferenceId
-        required:
-        - track_id
-        properties:
-          track_id:
-            type: string
-            maxLength: 255
-            minLength: 1
-      - type: object
-        title: TrackReferenceName
-        required:
-        - track_name
-        properties:
-          track_name:
-            type: string
-            minLength: 1
     TrackSection:
       type: object
       required:

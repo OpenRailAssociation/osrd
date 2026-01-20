@@ -26,7 +26,7 @@ impl PathItem {
                     operational_point: OperationalPointReference::Id {
                         operational_point: id.into(),
                     },
-                    track_reference: None,
+                    local_track_name: None,
                 },
             ),
         }
@@ -45,22 +45,8 @@ pub enum PathItemLocation {
 pub struct OperationalPointPartReference {
     pub operational_point: OperationalPointReference,
     #[serde(default)]
-    pub track_reference: Option<TrackReference>,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, Hash)]
-#[serde(untagged, deny_unknown_fields)]
-pub enum TrackReference {
-    #[schema(title = "TrackReferenceId")]
-    Id {
-        #[schema(inline)]
-        track_id: Identifier,
-    },
-    #[schema(title = "TrackReferenceName")]
-    Name {
-        #[schema(inline)]
-        track_name: NonBlankString,
-    },
+    #[schema(inline)]
+    pub local_track_name: Option<NonBlankString>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema, Hash)]

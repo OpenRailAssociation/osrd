@@ -34,7 +34,7 @@ export const insertViaFromMap = (
           }
         : {
             ...newLocation,
-            track_reference: newLocation.track_reference,
+            local_track_name: newLocation.local_track_name,
           },
   };
 
@@ -94,9 +94,9 @@ export function upsertPathStep(statePathSteps: (PathStep | null)[], op: Suggeste
       id: cleanPathSteps[stepIndex].id,
       location: {
         ...newVia.location,
-        track_reference:
-          'track_reference' in cleanPathSteps[stepIndex].location
-            ? cleanPathSteps[stepIndex].location.track_reference
+        local_track_name:
+          'local_track_name' in cleanPathSteps[stepIndex].location
+            ? cleanPathSteps[stepIndex].location.local_track_name
             : undefined,
       },
     }; // We don't need to change the id of the updated via

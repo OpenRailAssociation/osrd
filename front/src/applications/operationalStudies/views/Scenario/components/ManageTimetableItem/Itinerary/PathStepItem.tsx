@@ -49,10 +49,8 @@ const PathStepItem = ({
       return (message += t('requestedPoint'));
     }
 
-    const trackInfo = location.track_reference
-      ? 'track_name' in location.track_reference
-        ? `, ${t('track')} ${location.track_reference.track_name}`
-        : `, ${t('trackId')}`
+    const trackInfo = location.local_track_name
+      ? `, ${t('track')} ${location.local_track_name}`
       : '';
 
     if (location.operational_point.type === 'id') {
