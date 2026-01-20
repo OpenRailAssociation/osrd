@@ -267,4 +267,32 @@ mod tests {
         let response = app.fetch(request).await;
         response.assert_status(StatusCode::NOT_FOUND);
     }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn catalog_entry_put() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+
+        let catalog_entry = create_catalog_entry(&mut db_pool.get().await.unwrap()).await;
+
+        let catalog_entry_form = CatalogEntryForm {
+            name: Some("test2".to_string()),
+        };
+
+        let request = app
+            .put(format!("/catalog_entries/{}", catalog_entry.id).as_str())
+            .json(&json!(catalog_entry_form));
+        let catalog_entry_result: CatalogEntry = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
+        assert_eq!(
+            catalog_entry_result,
+            CatalogEntry {
+                id: 1,
+                name: Some("test2".to_string())
+            }
+        );
+    }
 }
