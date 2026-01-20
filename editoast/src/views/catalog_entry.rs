@@ -217,3 +217,29 @@ pub(in crate::views) async fn delete(
     // TODO: Add database operation to delete a catalog entry
     Ok(StatusCode::NO_CONTENT)
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::views::test_app::TestAppBuilder;
+
+    use super::*;
+    use editoast_models::catalog_entry::CatalogEntry;
+    use serde_json::json;
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn catalog_entry_post() {
+        let app = TestAppBuilder::default_app();
+
+        let catalog_entry_form = CatalogEntryForm {
+            name: Some("test".to_string()),
+        };
+
+        let request = app.post("/catalog_entry").json(&json!(catalog_entry_form));
+        let catalog_entry: CatalogEntry = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
+        assert_eq!(catalog_entry.name, Some("test".to_string()));
+    }
+}
