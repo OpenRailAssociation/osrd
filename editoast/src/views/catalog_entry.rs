@@ -81,6 +81,7 @@ pub(in crate::views) async fn post(
 }
 
 #[derive(Serialize, ToSchema)]
+#[cfg_attr(test, derive(Deserialize))]
 pub(in crate::views) struct CatalogEntryPage {
     #[serde(flatten)]
     stats: PaginationStats,
@@ -190,8 +191,17 @@ mod tests {
     use crate::views::test_app::TestAppBuilder;
 
     use super::*;
+    use database::DbConnection;
     use editoast_models::catalog_entry::CatalogEntry;
     use serde_json::json;
+
+    async fn create_catalog_entry(conn: &mut DbConnection) -> CatalogEntry {
+        CatalogEntry::changeset()
+            .name(Some("test".into()))
+            .create(conn)
+            .await
+            .expect("Failed to create catalog entry")
+    }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn catalog_entry_post() {
@@ -214,5 +224,23 @@ mod tests {
                 name: Some("test".to_string())
             }
         );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn catalog_entry_get() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+
+        let catalog_entry = create_catalog_entry(&mut db_pool.get().await.unwrap()).await;
+
+        let request = app.get("/catalog_entries");
+        let catalog_entries = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into::<CatalogEntryPage>();
+        let results = catalog_entries.results;
+        assert_eq!(results.len(), 1);
+        assert_eq!(results, vec![catalog_entry]);
     }
 }
