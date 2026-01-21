@@ -140,6 +140,7 @@ fn service_router() -> router::DocumentedRouter {
                     .nests("/user", |path| {
                         path.route("/info", post!(authz::users_info))
                     })
+                    .route("/groups", get!(authz::list_groups))
             })
             //
             // infra & map

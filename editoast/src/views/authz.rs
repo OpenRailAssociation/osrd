@@ -685,6 +685,36 @@ pub(in crate::views) async fn update_grants(
     }
 }
 
+#[editoast_derive::route]
+#[utoipa::path(
+    get,
+    path = "",
+    tag = "authz",
+    responses((
+        status = 200,
+        description = "List all the groups",
+        body = inline(Vec<Group>),
+    ))
+)]
+pub(in crate::views) async fn list_groups(
+    Extension(auth): AuthenticationExt,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+) -> Result<Json<Vec<Group>>> {
+    let authorized = auth
+        .check_roles([Role::Admin].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    let mut groups = Group::list(&mut db_pool.get().await?, SelectionSettings::new()).await?;
+
+    groups.sort_by_key(|g| g.id);
+
+    Ok(Json(groups))
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::HashSet;
@@ -1281,5 +1311,54 @@ mod tests {
         app.fetch(request)
             .await
             .assert_status(StatusCode::UNAUTHORIZED);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn list_groups_test() {
+        let app = test_app!().enable_authorization(true).build();
+
+        // Create an admin user
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+
+        // Create some groups
+        let group_1 = app.group("G1").create().await;
+        let group_2 = app.group("G2").create().await;
+        let group_3 = app.group("G3").create().await;
+
+        // List all groups as admin
+        let request = app.get("/authz/groups").by_user(&admin);
+        let groups = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into::<Vec<Group>>();
+
+        // Verify all groups are returned
+        assert_eq!(groups.len(), 3);
+        assert!(groups[0].id == group_1.id && groups[0].name == "G1");
+        assert!(groups[1].id == group_2.id && groups[1].name == "G2");
+        assert!(groups[2].id == group_3.id && groups[2].name == "G3");
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn list_groups_forbidden_non_admin() {
+        let app = test_app!().enable_authorization(true).build();
+
+        // Create a non-admin user
+        let user = app
+            .user("user", "User")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+
+        // Try to list groups as non-admin
+        let request = app.get("/authz/groups").by_user(&user);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::FORBIDDEN);
     }
 }
