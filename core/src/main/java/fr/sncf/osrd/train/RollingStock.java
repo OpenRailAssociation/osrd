@@ -13,6 +13,8 @@ import fr.sncf.osrd.path.legacy_objects.electrification.Neutral;
 import fr.sncf.osrd.path.legacy_objects.electrification.NonElectrified;
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -131,7 +133,11 @@ public final class RollingStock implements PhysicsRollingStock {
     public record ModeEffortCurves(
             boolean isElectric, TractiveEffortPoint[] defaultCurve, ConditionalEffortCurve[] curves) {}
 
-    public record ConditionalEffortCurve(EffortCurveConditions cond, TractiveEffortPoint[] curve) {}
+    public record ConditionalEffortCurve(EffortCurveConditions cond, TractiveEffortPoint[] curve) {
+        public ConditionalEffortCurve scale(double lambda) {
+            return new ConditionalEffortCurve(cond, scaleCurve(curve, lambda));
+        }
+    }
 
     public record EffortCurveConditions(Comfort comfort, String electricalProfile, String powerRestriction) {
         /**
@@ -265,6 +271,44 @@ public final class RollingStock implements PhysicsRollingStock {
     /** Return whether this rolling stock's has an electric mode */
     public boolean isElectric() {
         return modes.values().stream().anyMatch(ModeEffortCurves::isElectric);
+    }
+
+    static TractiveEffortPoint[] scaleCurve(TractiveEffortPoint[] old, double lambda) {
+        return Arrays.stream(old)
+                .map(x -> new TractiveEffortPoint(x.speed(), x.maxEffort() * lambda))
+                .toArray(TractiveEffortPoint[]::new);
+    }
+
+    public RollingStock scalePower(double lambda) {
+        if (lambda == 1.0) return this;
+        var newModes = new HashMap<>(modes);
+        for (var entry : newModes.entrySet()) {
+            var value = entry.getValue();
+
+            entry.setValue(new ModeEffortCurves(
+                    value.isElectric,
+                    scaleCurve(value.defaultCurve, lambda),
+                    Arrays.stream(value.curves).map(x -> x.scale(lambda)).toArray(ConditionalEffortCurve[]::new)));
+        }
+        return new RollingStock(
+                id,
+                length,
+                mass,
+                inertiaCoefficient,
+                A,
+                B,
+                C,
+                maxSpeed,
+                startUpTime,
+                startUpAcceleration,
+                comfortAcceleration,
+                constGamma,
+                etcsBrakeParams,
+                loadingGaugeType,
+                newModes,
+                defaultMode,
+                basePowerClass,
+                supportedSignalingSystems);
     }
 
     /** Creates a new rolling stock (a physical train inventory item). */

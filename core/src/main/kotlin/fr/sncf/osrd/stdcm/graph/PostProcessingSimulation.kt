@@ -18,6 +18,7 @@ import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TrainStop
+import fr.sncf.osrd.utils.areSpeedsEqual
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
@@ -76,6 +77,7 @@ fun buildFinalEnvelope(
     stops: List<TrainStop>,
     updatedTimeData: TimeData,
     isMareco: Boolean = true,
+    attempt: Int = 0,
 ): FinalEnvelopeResult {
     val context = build(rollingStock, envelopeSimPath, timeStep, comfort)
     val fullInfraExplorer = edges.last().infraExplorerWithNewEnvelope
@@ -125,6 +127,7 @@ fun buildFinalEnvelope(
                     conflictOffset,
                     isMareco,
                     allowanceRanges,
+                    attempt,
                 )
             }
             val newPoint =
@@ -480,19 +483,8 @@ private fun handlePostProcessingConflict(
     conflictOffset: Offset<TrainPath>,
     isMareco: Boolean,
     allowanceRanges: List<EngineeringAllowanceRange>,
+    attempt: Int,
 ): FinalEnvelopeResult {
-    postProcessingLogger.error(
-        "Conflicts detected in post-processing, mismatch with the exploration data"
-    )
-    postProcessingLogger.error(
-        "NOTE: look through the logs for allowance issues, they may cause mismatches."
-    )
-    val conflictTime = fixedPoints.first { it.offset == conflictOffset }.time
-    postProcessingLogger.info(
-        "    conflict happened at offset=$conflictOffset/${maxSpeedEnvelope.endPos.toInt()} " +
-            "and t=${conflictTime.toInt()}/${updatedTimeData.timeSinceDeparture.toInt()}"
-    )
-
     if (graph.searchMetadata != null) {
         val stringDebugData by lazy {
             OutputSimDebugData.adapter.toJson(
@@ -513,6 +505,18 @@ private fun handlePostProcessingConflict(
             stringDebugData
         }
     }
+
+    postProcessingLogger.error(
+        "Conflicts detected in post-processing, mismatch with the exploration data"
+    )
+    postProcessingLogger.error(
+        "NOTE: look through the logs for allowance issues, they may cause mismatches."
+    )
+    val conflictTime = fixedPoints.first { it.offset == conflictOffset }.time
+    postProcessingLogger.info(
+        "    conflict happened at offset=$conflictOffset/${maxSpeedEnvelope.endPos.toInt()} " +
+            "and t=${conflictTime.toInt()}/${updatedTimeData.timeSinceDeparture.toInt()}"
+    )
 
     var remainingDistance = conflictOffset.distance
     for ((i, edge) in edges.withIndex()) {
@@ -542,24 +546,39 @@ private fun handlePostProcessingConflict(
         remainingDistance -= edge.length.distance
     }
 
-    if (isMareco) {
+    if (attempt < 5) {
         postProcessingLogger.info(
-            "The error happened with mareco allowances, try to fallback on linear allowances"
+            "attempt $attempt: retrying after adding traction to rolling stock..."
         )
         postProcessingLogger.info("(reset of fixed time points)")
+        // First retry by removing mareco, then by increasing rolling stock traction
+        val scaleFactor = if (isMareco) 1.0 else 1.2
+        val newRollingStock = rollingStock.scalePower(scaleFactor)
+        val newMaxSpeedEnvelope =
+            makeMaxSpeedEnvelope(
+                edges.last().infraExplorer.buildFullPath(graph.rawInfra, graph.blockInfra),
+                stops,
+                newRollingStock,
+                timeStep,
+                comfort,
+                graph.tag,
+                graph.temporarySpeedLimitManager,
+                areSpeedsEqual(0.0, edges.last().endSpeed),
+            )
         return buildFinalEnvelope(
             graph,
-            maxSpeedEnvelope,
+            newMaxSpeedEnvelope,
             edges,
             standardAllowance,
             envelopeSimPath,
-            rollingStock,
+            newRollingStock,
             timeStep,
             comfort,
             blockAvailability,
             stops,
             updatedTimeData,
-            false,
+            isMareco = false,
+            attempt = attempt + 1,
         )
     } else {
         throw RuntimeException(

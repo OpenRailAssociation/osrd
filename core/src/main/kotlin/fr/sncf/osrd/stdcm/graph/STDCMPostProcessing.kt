@@ -108,25 +108,6 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         } else res
     }
 
-    private fun makeMaxSpeedEnvelope(
-        trainPath: TrainPath,
-        stops: List<TrainStop>,
-        rollingStock: RollingStock,
-        timeStep: Double,
-        comfort: Comfort?,
-        trainTag: String?,
-        temporarySpeedLimitManager: TemporarySpeedLimitManager?,
-        stopAtEnd: Boolean,
-    ): Envelope {
-        val context = build(rollingStock, trainPath, timeStep, comfort)
-        val mrsp = computeMRSP(trainPath, rollingStock, false, trainTag, temporarySpeedLimitManager)
-        val stopInfos =
-            stops.map { SimStop(Offset(it.position.meters), it.receptionSignal) }.toMutableList()
-        if (stopAtEnd) stopInfos.add(SimStop(trainPath.getLength(), SHORT_SLIP_STOP))
-        val maxSpeedEnvelope = maxSpeedEnvelopeFrom(context, stopInfos, mrsp)
-        return maxEffortEnvelopeFrom(context, 0.0, maxSpeedEnvelope)
-    }
-
     /**
      * Compute the final TimeData to be used as reference. The main things we're looking for are the
      * train departure time and the duration of each stop.
@@ -260,4 +241,23 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         mutStops.addAll(makeOpStops(trainPath))
         return sortAndMergeStopsDuplicates(mutStops)
     }
+}
+
+fun makeMaxSpeedEnvelope(
+    trainPath: TrainPath,
+    stops: List<TrainStop>,
+    rollingStock: RollingStock,
+    timeStep: Double,
+    comfort: Comfort?,
+    trainTag: String?,
+    temporarySpeedLimitManager: TemporarySpeedLimitManager?,
+    stopAtEnd: Boolean,
+): Envelope {
+    val context = build(rollingStock, trainPath, timeStep, comfort)
+    val mrsp = computeMRSP(trainPath, rollingStock, false, trainTag, temporarySpeedLimitManager)
+    val stopInfos =
+        stops.map { SimStop(Offset(it.position.meters), it.receptionSignal) }.toMutableList()
+    if (stopAtEnd) stopInfos.add(SimStop(trainPath.getLength(), SHORT_SLIP_STOP))
+    val maxSpeedEnvelope = maxSpeedEnvelopeFrom(context, stopInfos, mrsp)
+    return maxEffortEnvelopeFrom(context, 0.0, maxSpeedEnvelope)
 }
