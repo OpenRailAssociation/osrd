@@ -32,7 +32,7 @@ import type { PathStep, PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/t
 import { useAppDispatch } from 'store';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 
-import { type OperationalPointSuggestion } from './ComboBoxCustomList.tsx/ListElementComponent';
+import { type OperationalPointSuggestion } from './ComboBoxCustomList/ListElementComponent';
 import { usePathStepsMetadata } from './hooks/usePathStepsMetadata';
 import ItineraryModalFormHeader from './ItineraryModalFormHeader';
 import ItineraryModalMap from './ItineraryModalMap';
@@ -78,9 +78,9 @@ const ItineraryModal = ({
     setInputForStep,
     opSuggestions,
     resetOpSuggestions,
-    chooseChForSuggestion,
     formatChosenValue,
     commitSelectionForStep,
+    chooseChForSuggestion,
   } = useOperationalPointSearch({
     infraId,
     buildOpSuggestion,

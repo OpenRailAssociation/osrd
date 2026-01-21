@@ -3,7 +3,7 @@ import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastAp
 import type {
   OpCh,
   OperationalPointSuggestion,
-} from '../Itinerary/ComboBoxCustomList.tsx/ListElementComponent';
+} from '../Itinerary/ComboBoxCustomList/ListElementComponent';
 
 const sortChList = (chList: OpCh[]) => {
   const priority: Record<string, number> = { BV: 0, '00': 1 };

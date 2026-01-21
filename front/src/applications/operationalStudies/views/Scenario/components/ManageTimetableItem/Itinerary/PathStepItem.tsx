@@ -16,7 +16,7 @@ import { useAppDispatch } from 'store';
 import {
   ListElementComponent,
   type OperationalPointSuggestion,
-} from './ComboBoxCustomList.tsx/ListElementComponent';
+} from './ComboBoxCustomList/ListElementComponent';
 import { computePathStepCoordinates, isOpRefMetadata } from './utils';
 
 const EMPTY_OPTION = { label: '', id: '' };
@@ -31,7 +31,7 @@ type PathStepProps = {
   onOpFocus?: () => void;
   inputValue?: string;
   opSuggestions?: Array<OperationalPointSuggestion | string>;
-  onSelectOpSuggestion?: (suggestion: OperationalPointSuggestion, ch?: string) => void;
+  onSelectOpSuggestion?: (suggestion: OperationalPointSuggestion, secondaryCode?: string) => void;
   resetOpSuggestions?: () => void;
 };
 
@@ -253,8 +253,8 @@ const PathStepItem = ({
                   index={suggestionIndex}
                   isActive={isActive}
                   isSelected={isSelected}
-                  onSelect={(op, ch) => {
-                    onSelectOpSuggestion?.(op, ch);
+                  onSelect={(op, secondaryCode) => {
+                    onSelectOpSuggestion?.(op, secondaryCode);
                     resetOpSuggestions?.();
                     blurActiveElement();
                   }}

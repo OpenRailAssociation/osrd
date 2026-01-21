@@ -20,7 +20,7 @@ export type ListElementComponentProps = {
   index: number;
   isActive: boolean;
   isSelected: boolean;
-  onSelect?: (op: OperationalPointSuggestion, ch?: string) => void;
+  onSelect?: (op: OperationalPointSuggestion, secondaryCode?: string) => void;
 };
 
 export const ListElementComponent = ({
@@ -47,22 +47,22 @@ export const ListElementComponent = ({
     <span className="op-suggestion-name">{suggestion.name}</span>
 
     <div className="op-suggestion-secondary-code-list">
-      {suggestion.chList.map((ch) => (
+      {suggestion.chList.map((secondaryCode) => (
         <button
-          key={ch.code}
+          key={secondaryCode.code}
           type="button"
           className={cx('op-suggestion-secondary-code', {
-            'op-suggestion-secondary-code--best': ch.isBestSuggestion,
-            'op-suggestion-secondary-code--inactive': ch.isCandidate === false,
+            'op-suggestion-secondary-code--best': secondaryCode.isBestSuggestion,
+            'op-suggestion-secondary-code--inactive': secondaryCode.isCandidate === false,
           })}
-          disabled={ch.isCandidate === false}
+          disabled={secondaryCode.isCandidate === false}
           onMouseDown={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            onSelect?.(suggestion, ch.code);
+            onSelect?.(suggestion, secondaryCode.code);
           }}
         >
-          {ch.code}
+          {secondaryCode.code}
         </button>
       ))}
     </div>
