@@ -5,11 +5,11 @@ import com.google.common.collect.Lists
 import com.google.common.collect.Range
 import com.google.common.collect.RangeMap
 import fr.sncf.osrd.envelope_sim.EnvelopeSimPathBuilder
+import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.InfraConditions
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.TractiveEffortPoint
 import fr.sncf.osrd.path.interfaces.Electrification
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
-import fr.sncf.osrd.train.RollingStock.InfraConditions
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest

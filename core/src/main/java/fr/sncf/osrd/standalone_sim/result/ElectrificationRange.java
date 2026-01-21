@@ -115,9 +115,9 @@ public class ElectrificationRange {
             if (seenCond instanceof Electrified e) {
                 return new ElectrifiedUsage(
                         e.mode,
-                        Objects.equals(usedCond.mode, e.mode),
+                        Objects.equals(usedCond.mode(), e.mode),
                         e.profile,
-                        Objects.equals(usedCond.electricalProfile, e.profile));
+                        Objects.equals(usedCond.electricalProfile(), e.profile));
             }
             if (seenCond instanceof Neutral n) {
                 if (n.isAnnouncement) {
