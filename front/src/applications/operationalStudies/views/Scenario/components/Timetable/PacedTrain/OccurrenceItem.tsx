@@ -24,7 +24,9 @@ import type { SubCategory } from 'common/api/osrdEditoastApi';
 import OSRDMenu, { type OSRDMenuItem } from 'common/OSRDMenu';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import type { InvalidReason, Occurrence } from 'modules/timetableItem/types';
+import { updateHoveredTrainId } from 'reducers/simulationResults';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
+import { useAppDispatch } from 'store';
 import { addElementAtIndex } from 'utils/array';
 import { timeToLocaleStringRounded, useDateTimeLocale } from 'utils/date';
 import { addDurationToDate } from 'utils/duration';
@@ -82,6 +84,7 @@ const OccurrenceItem = ({
   pathUsedForProjectionIsException,
 }: OccurrenceItemProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
+  const dispatch = useAppDispatch();
   const menuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -208,6 +211,8 @@ const OccurrenceItem = ({
       })}
       role="button"
       tabIndex={0}
+      onMouseEnter={() => dispatch(updateHoveredTrainId(occurrence.id))}
+      onMouseLeave={() => dispatch(updateHoveredTrainId(undefined))}
       onClick={() => {
         if (isMenuOpen || disabled) return;
         selectOccurrence(occurrence.id);
