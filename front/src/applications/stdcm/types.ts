@@ -4,7 +4,7 @@ import type {
   Conflict,
   LightRollingStock,
   PostTimetableByIdStdcmApiResponseWithTraceId,
-  RollingStockWithLiveries,
+  LightRollingStockWithLiveries,
   TowedRollingStock,
   PathProperties,
   LoadingGaugeType,
@@ -110,7 +110,7 @@ export type StdcmSimulationInputs = {
   departureTime?: string;
   pathSteps: StdcmPathStep[];
   consist?: {
-    tractionEngine?: RollingStockWithLiveries;
+    tractionEngine?: LightRollingStockWithLiveries;
     towedRollingStock?: TowedRollingStock;
     /** In ton */
     totalMass?: number;

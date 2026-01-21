@@ -10,7 +10,6 @@ import { extractMarkersInfo } from 'applications/stdcm/utils';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import DefaultBaseMap from 'common/Map/DefaultBaseMap';
 import useWorkerStatus from 'modules/pathfinding/hooks/useWorkerStatus';
-import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 import { resetMargins, restoreStdcmConfig, updateStdcmPathStep } from 'reducers/osrdconf/stdcmConf';
@@ -23,11 +22,11 @@ import {
   getStdcmOrigin,
   getStdcmPathSteps,
   getStdcmProjectID,
-  getStdcmRollingStockID,
   getStdcmScenarioID,
   getStdcmStudyID,
   getStdcmTimetableID,
   getLoadingGauge,
+  getStdcmRollingStockID,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
@@ -105,8 +104,7 @@ const StdcmConfig = ({
   const origin = useSelector(getStdcmOrigin);
   const pathSteps = useSelector(getStdcmPathSteps);
   const destination = useSelector(getStdcmDestination);
-  const rollingStockId = useSelector(getStdcmRollingStockID);
-  const { rollingStock } = useStoreDataForRollingStockSelector({ rollingStockId });
+  const rollingStockID = useSelector(getStdcmRollingStockID);
   const projectID = useSelector(getStdcmProjectID);
   const studyID = useSelector(getStdcmStudyID);
   const scenarioID = useSelector(getStdcmScenarioID);
@@ -280,7 +278,7 @@ const StdcmConfig = ({
     if (!isEqual(updatedErrors, formErrors)) {
       setFormErrors(updatedErrors);
     }
-  }, [t, formErrors, consistErrors, rollingStock, stdcmConf]);
+  }, [t, formErrors, consistErrors, rollingStockID, stdcmConf]);
 
   return (
     <div className="stdcm__body">

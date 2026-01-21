@@ -74,6 +74,7 @@ export type OsrdStdcmConfState = OsrdConfState & {
   totalLength?: number;
   maxSpeed?: number;
   loadingGauge?: LoadingGaugeType;
+  lightRollingStockID?: number;
   towedRollingStockID?: number;
   linkedTrains: LinkedTrains;
   simulations: StdcmSimulation[];

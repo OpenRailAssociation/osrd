@@ -3,14 +3,12 @@ import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
 import useStdcmTowedRollingStock from 'applications/stdcm/hooks/useStdcmTowedRollingStock';
-import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import {
   getLinkedTrains,
   getMaxSpeed,
   getLoadingGauge,
   getStdcmOrigin,
   getStdcmPathSteps,
-  getStdcmRollingStockID,
   getStdcmSpeedLimitByTag,
   getTotalLength,
   getTotalMass,
@@ -18,6 +16,7 @@ import {
 
 import type { StdcmSimulationInputs } from '../types';
 import { getTimesInfoFromDate } from '../utils';
+import useStdcmLightRollingStock from './useStdcmLightRollingStock';
 
 const useStdcmForm = (): StdcmSimulationInputs => {
   const pathSteps = useSelector(getStdcmPathSteps);
@@ -28,8 +27,7 @@ const useStdcmForm = (): StdcmSimulationInputs => {
   const loadingGauge = useSelector(getLoadingGauge);
   const linkedTrains = useSelector(getLinkedTrains);
   const origin = useSelector(getStdcmOrigin);
-  const rollingStockId = useSelector(getStdcmRollingStockID);
-  const { rollingStock } = useStoreDataForRollingStockSelector({ rollingStockId });
+  const rollingStock = useStdcmLightRollingStock();
   const towedRollingStock = useStdcmTowedRollingStock();
 
   const currentSimulationInputs = useMemo(() => {

@@ -3,12 +3,12 @@ import { compact } from 'lodash';
 
 import type {
   GeoJsonLineString,
+  LightRollingStock,
   LoadingGaugeType,
   PathItemLocation,
   PathProperties,
   PathfindingInput,
   PostInfraByInfraIdPathfindingBlocksApiArg,
-  RollingStockWithLiveries,
 } from 'common/api/osrdEditoastApi';
 import { getSupportedElectrification, isThermal } from 'modules/rollingStock/helpers/electric';
 import type { SuggestedOP } from 'modules/timetableItem/types';
@@ -69,7 +69,10 @@ export const getPathfindingQuery = ({
   speedLimitByTag,
 }: {
   infraId?: number;
-  rollingStock?: RollingStockWithLiveries;
+  rollingStock?: Pick<
+    LightRollingStock,
+    'effort_curves' | 'loading_gauge' | 'max_speed' | 'length' | 'supported_signaling_systems'
+  >;
   pathSteps: (PathItemLocation | null)[];
   loadingGauge?: LoadingGaugeType;
   speedLimitByTag?: string | null;

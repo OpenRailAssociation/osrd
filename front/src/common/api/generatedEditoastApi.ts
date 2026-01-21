@@ -3559,42 +3559,6 @@ export type LightEffortCurves = {
     [key: string]: LightModeEffortCurves;
   };
 };
-export type SpeedDependantPower = {
-  powers: number[];
-  speeds: number[];
-};
-export type RefillLaw = {
-  soc_ref: number;
-  tau: number;
-};
-export type EnergyStorage = {
-  capacity: number;
-  refill_law: null | RefillLaw;
-  soc: number;
-  soc_max: number;
-  soc_min: number;
-};
-export type EnergySource =
-  | {
-      efficiency: number;
-      energy_source_type: 'Electrification';
-      max_input_power: SpeedDependantPower;
-      max_output_power: SpeedDependantPower;
-    }
-  | {
-      efficiency: number;
-      energy_source_type: 'PowerPack';
-      energy_storage: EnergyStorage;
-      max_input_power: SpeedDependantPower;
-      max_output_power: SpeedDependantPower;
-    }
-  | {
-      efficiency: number;
-      energy_source_type: 'Battery';
-      energy_storage: EnergyStorage;
-      max_input_power: SpeedDependantPower;
-      max_output_power: SpeedDependantPower;
-    };
 export type RollingStockMetadata = {
   detail: string;
   family: string;
@@ -3617,18 +3581,6 @@ export type TrainMainCategory =
   | 'TRAM_TRAIN'
   | 'TOURISTIC_TRAIN'
   | 'WORK_TRAIN';
-export type RollingResistance = {
-  /**  Solid friction
-    Solid Friction in N */
-  A: number;
-  /**  Viscosity friction in N·(m/s)⁻¹; N = kg⋅m⋅s⁻²
-    Viscosity friction in kg·s⁻¹ */
-  B: number;
-  /**  Aerodynamic drag in N·(m/s)⁻²; N = kg⋅m⋅s⁻²
-    Aerodynamic drag in kg·m⁻¹ */
-  C: number;
-  type: string;
-};
 export type SpeedIntervalValueCurve = {
   /** Speed in m/s (sorted ascending)
     External bounds are implicit to [0, rolling_stock.max_speed] */
@@ -3686,14 +3638,8 @@ export type SupportedSignalingSystem =
     };
 export type LightRollingStock = {
   base_power_class: string | null;
-  /** Acceleration in m·s⁻² */
-  comfort_acceleration: number;
-  /** Acceleration in m·s⁻² */
-  const_gamma: number;
   effort_curves: LightEffortCurves;
-  energy_sources: EnergySource[];
   id: number;
-  inertia_coefficient: number;
   /** Length in m */
   length: number;
   loading_gauge: LoadingGaugeType;
@@ -3710,11 +3656,6 @@ export type LightRollingStock = {
   };
   primary_category: TrainMainCategory;
   railjson_version: string;
-  rolling_resistance: RollingResistance;
-  /** Acceleration in m·s⁻² */
-  startup_acceleration: number;
-  /** Duration in s */
-  startup_time: number;
   supported_signaling_systems: SupportedSignalingSystem[];
 };
 export type RollingStockLivery = {
@@ -4273,6 +4214,54 @@ export type EffortCurves = {
   modes: {
     [key: string]: ModeEffortCurves;
   };
+};
+export type SpeedDependantPower = {
+  powers: number[];
+  speeds: number[];
+};
+export type RefillLaw = {
+  soc_ref: number;
+  tau: number;
+};
+export type EnergyStorage = {
+  capacity: number;
+  refill_law: null | RefillLaw;
+  soc: number;
+  soc_max: number;
+  soc_min: number;
+};
+export type EnergySource =
+  | {
+      efficiency: number;
+      energy_source_type: 'Electrification';
+      max_input_power: SpeedDependantPower;
+      max_output_power: SpeedDependantPower;
+    }
+  | {
+      efficiency: number;
+      energy_source_type: 'PowerPack';
+      energy_storage: EnergyStorage;
+      max_input_power: SpeedDependantPower;
+      max_output_power: SpeedDependantPower;
+    }
+  | {
+      efficiency: number;
+      energy_source_type: 'Battery';
+      energy_storage: EnergyStorage;
+      max_input_power: SpeedDependantPower;
+      max_output_power: SpeedDependantPower;
+    };
+export type RollingResistance = {
+  /**  Solid friction
+    Solid Friction in N */
+  A: number;
+  /**  Viscosity friction in N·(m/s)⁻¹; N = kg⋅m⋅s⁻²
+    Viscosity friction in kg·s⁻¹ */
+  B: number;
+  /**  Aerodynamic drag in N·(m/s)⁻²; N = kg⋅m⋅s⁻²
+    Aerodynamic drag in kg·m⁻¹ */
+  C: number;
+  type: string;
 };
 export type RollingStock = {
   base_power_class: string | null;

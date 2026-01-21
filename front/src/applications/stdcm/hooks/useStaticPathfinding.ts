@@ -11,14 +11,14 @@ import {
   type WorkerStatus,
 } from 'common/api/osrdEditoastApi';
 import { getPathfindingQuery } from 'modules/pathfinding/utils';
-import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import {
   getStdcmPathSteps,
-  getStdcmRollingStockID,
   getLoadingGauge,
   getStdcmSpeedLimitByTag,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
+
+import useStdcmLightRollingStock from './useStdcmLightRollingStock';
 
 /**
  * Compute the path items locations from the path steps
@@ -33,9 +33,8 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
   const pathSteps = useSelector(getStdcmPathSteps);
   const [pathStepsLocations, setPathStepsLocations] = useState(pathStepsToLocations(pathSteps));
 
-  const rollingStockId = useSelector(getStdcmRollingStockID);
   const speedLimitByTag = useSelector(getStdcmSpeedLimitByTag);
-  const { rollingStock } = useStoreDataForRollingStockSelector({ rollingStockId });
+  const rollingStock = useStdcmLightRollingStock();
   const loadingGauge = useSelector(getLoadingGauge);
 
   const [pathfinding, setPathfinding] = useState<PathfindingResult>();

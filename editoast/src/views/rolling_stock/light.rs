@@ -5,12 +5,7 @@ use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use common::units;
-use common::units::quantities::Acceleration;
-use common::units::quantities::Deceleration;
 use common::units::quantities::Length;
-use common::units::quantities::Mass;
-use common::units::quantities::Time;
-use common::units::quantities::Velocity;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_models::prelude::*;
@@ -19,16 +14,16 @@ use editoast_models::rolling_stock::TrainMainCategory;
 use editoast_models::rolling_stock_livery::RollingStockLivery;
 use itertools::Itertools as _;
 use schemas::rolling_stock::EffortCurves;
-use schemas::rolling_stock::EnergySource;
 use schemas::rolling_stock::LoadingGaugeType;
 use schemas::rolling_stock::ModeEffortCurves;
-use schemas::rolling_stock::RollingResistance;
 use schemas::rolling_stock::RollingStockMetadata;
 use schemas::rolling_stock::SupportedSignalingSystem;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;
+use uom::si::f64::Mass;
+use uom::si::f64::Velocity;
 use utoipa::ToSchema;
 
 use super::RollingStockError;
@@ -194,6 +189,7 @@ pub(in crate::views) async fn get_by_name(
     Ok(Json(light_rolling_stock_with_liveries))
 }
 
+// WARNING: endpoints returning this struct are not protected by roles so this response MUST NOT expose sensitive information.
 #[editoast_derive::annotate_units]
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
@@ -209,23 +205,12 @@ struct LightRollingStock {
     length: Length,
     #[serde(with = "units::meter_per_second")]
     max_speed: Velocity,
-    #[serde(with = "units::second")]
-    startup_time: Time,
-    #[serde(with = "units::meter_per_second_squared")]
-    startup_acceleration: Acceleration,
-    #[serde(with = "units::meter_per_second_squared")]
-    comfort_acceleration: Acceleration,
-    #[serde(with = "units::meter_per_second_squared")]
-    const_gamma: Deceleration,
-    inertia_coefficient: f64,
     #[serde(with = "units::kilogram")]
     mass: Mass,
-    rolling_resistance: RollingResistance,
     loading_gauge: LoadingGaugeType,
     #[schema(required)]
     metadata: Option<RollingStockMetadata>,
     power_restrictions: HashMap<String, String>,
-    energy_sources: Vec<EnergySource>,
     supported_signaling_systems: HashSet<SupportedSignalingSystem>,
     primary_category: TrainMainCategory,
     other_categories: Vec<TrainMainCategory>,
@@ -241,17 +226,10 @@ impl From<RollingStock> for LightRollingStock {
             metadata,
             length,
             max_speed,
-            startup_time,
-            startup_acceleration,
-            comfort_acceleration,
-            const_gamma,
-            inertia_coefficient,
             base_power_class,
             mass,
-            rolling_resistance,
             loading_gauge,
             power_restrictions,
-            energy_sources,
             locked,
             supported_signaling_systems,
             primary_category,
@@ -268,17 +246,10 @@ impl From<RollingStock> for LightRollingStock {
             base_power_class,
             length,
             max_speed,
-            startup_time,
-            startup_acceleration,
-            comfort_acceleration,
-            const_gamma,
-            inertia_coefficient,
             mass,
-            rolling_resistance,
             loading_gauge,
             metadata,
             power_restrictions,
-            energy_sources,
             supported_signaling_systems,
             primary_category,
             other_categories,
