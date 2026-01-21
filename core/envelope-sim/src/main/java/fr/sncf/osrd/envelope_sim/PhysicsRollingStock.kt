@@ -1,8 +1,11 @@
 package fr.sncf.osrd.envelope_sim
 
+import com.google.common.collect.RangeMap
 import fr.sncf.osrd.envelope_sim.etcs.EtcsBrakeParams
 import fr.sncf.osrd.envelope_sim.etcs.M_ROTATING_MAX
 import fr.sncf.osrd.envelope_sim.etcs.M_ROTATING_MIN
+import fr.sncf.osrd.path.interfaces.Electrification
+import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import kotlin.math.abs
 
 interface PhysicsRollingStock {
@@ -29,10 +32,33 @@ interface PhysicsRollingStock {
     /** The maximum constant deceleration, in m/s^2 */
     val deceleration: Double
 
-    /** The maximum acceleration, in m/s^2, which can be applied at a given speed, in m/s */
-    @JvmRecord data class TractiveEffortPoint(val speed: Double, val maxEffort: Double)
+    /**
+     * Returns the tractive effort curves corresponding to the electrical conditions map. The
+     * neutral sections are not extended in this function.
+     *
+     * @param electrificationMap The map of electrification conditions to use along the path.
+     * @param comfort The comfort level to get the curves for.
+     */
+    fun mapTractiveEffortCurves(
+        electrificationMap: RangeMap<Double, Electrification>,
+        comfort: Comfort?,
+    ): CurvesAndConditions
 
-    // TODO move these static methods out of the class
+    data class CurvesAndConditions(
+        val curves: RangeMap<Double, Array<TractiveEffortPoint>>,
+        val conditions: RangeMap<Double, InfraConditions>,
+    )
+
+    @JvmRecord
+    data class InfraConditions(
+        val mode: String?,
+        val electricalProfile: String?,
+        val powerRestriction: String?,
+    )
+
+    /** The maximum acceleration, in m/s^2, which can be applied at a given speed, in m/s */
+    data class TractiveEffortPoint(val speed: Double, val maxEffort: Double)
+
     companion object {
         /** Get the effort the train can apply at a given speed, in newtons */
         fun getMaxEffort(speed: Double, tractiveEffortCurve: Array<TractiveEffortPoint>): Double {
@@ -71,7 +97,6 @@ interface PhysicsRollingStock {
          * m/s². Grade is in m/km. mRotating (Max or Min) is in %, as seen in ERA braking curves
          * simulation tool v5.1.
          */
-        @JvmStatic
         fun getGradientAcceleration(grade: Double): Double {
             val mRotating: Double = if (grade >= 0) M_ROTATING_MAX else M_ROTATING_MIN
             return -TrainPhysicsIntegrator.GRAVITY_ACCELERATION * grade /

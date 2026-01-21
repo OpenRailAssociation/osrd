@@ -2,8 +2,13 @@ package fr.sncf.osrd.envelope_sim
 
 import com.google.common.collect.ImmutableRangeMap
 import com.google.common.collect.Range
+import com.google.common.collect.RangeMap
+import com.google.common.collect.TreeRangeMap
+import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.CurvesAndConditions
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.TractiveEffortPoint
 import fr.sncf.osrd.envelope_sim.etcs.EtcsBrakeParams
+import fr.sncf.osrd.path.interfaces.Electrification
+import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import kotlin.math.abs
 import kotlin.math.max
 
@@ -50,6 +55,13 @@ class SimpleRollingStock(
         get() = TODO()
 
     override val deceleration: Double = -constGamma
+
+    override fun mapTractiveEffortCurves(
+        electrificationMap: RangeMap<Double, Electrification>,
+        comfort: Comfort?,
+    ): CurvesAndConditions {
+        return CurvesAndConditions(TreeRangeMap.create(), TreeRangeMap.create())
+    }
 
     /**
      * The tractive effort curve shape. It can be either linear (effort proportional to speed), or

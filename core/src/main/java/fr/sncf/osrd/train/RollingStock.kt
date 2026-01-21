@@ -5,6 +5,8 @@ import com.google.common.collect.Range
 import com.google.common.collect.RangeMap
 import com.google.common.collect.TreeRangeMap
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
+import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.CurvesAndConditions
+import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.InfraConditions
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.TractiveEffortPoint
 import fr.sncf.osrd.envelope_sim.etcs.EtcsBrakeParams
 import fr.sncf.osrd.path.interfaces.Electrification
@@ -97,6 +99,24 @@ constructor(
         return B + 2 * C * speed
     }
 
+    override fun mapTractiveEffortCurves(
+        electrificationMap: RangeMap<Double, Electrification>,
+        comfort: Comfort?,
+    ): CurvesAndConditions {
+        val conditionsUsed = TreeRangeMap.create<Double, InfraConditions>()
+        val res = TreeRangeMap.create<Double, Array<TractiveEffortPoint>>()
+
+        for (elecCondEntry in electrificationMap.asMapOfRanges().entries) {
+            val curveAndCond = findTractiveEffortCurve(comfort, elecCondEntry.value)
+            res.put(elecCondEntry.key, curveAndCond.curve)
+            conditionsUsed.put(elecCondEntry.key, curveAndCond.cond)
+        }
+        return CurvesAndConditions(
+            ImmutableRangeMap.copyOf(res),
+            ImmutableRangeMap.copyOf(conditionsUsed),
+        )
+    }
+
     @JvmRecord
     data class ModeEffortCurves(
         val isElectric: Boolean,
@@ -133,22 +153,9 @@ constructor(
     }
 
     @JvmRecord
-    data class InfraConditions(
-        @JvmField val mode: String?,
-        @JvmField val electricalProfile: String?,
-        val powerRestriction: String?,
-    )
-
-    @JvmRecord
     private data class CurveAndCondition(
         val curve: Array<TractiveEffortPoint>,
         val cond: InfraConditions,
-    )
-
-    @JvmRecord
-    data class CurvesAndConditions(
-        @JvmField val curves: RangeMap<Double, Array<TractiveEffortPoint>>,
-        @JvmField val conditions: RangeMap<Double, InfraConditions>,
     )
 
     override val deceleration: Double = -constGamma
@@ -179,7 +186,7 @@ constructor(
         }
         if (electrification is NonElectrified) {
             return CurveAndCondition(
-                modes.get(defaultMode)!!.defaultCurve,
+                modes[defaultMode]!!.defaultCurve,
                 InfraConditions(defaultMode, null, null),
             )
         }
@@ -187,7 +194,7 @@ constructor(
         val electrified = electrification as Electrified
 
         val usedMode = if (modes.containsKey(electrified.mode)) electrified.mode else defaultMode
-        val mode: ModeEffortCurves = modes.get(usedMode)!!
+        val mode: ModeEffortCurves = modes[usedMode]!!
         val chosenCond =
             EffortCurveConditions(comfort, electrified.profile, electrified.powerRestriction)
         // Get first matching curve
@@ -204,31 +211,6 @@ constructor(
             }
         }
         return CurveAndCondition(mode.defaultCurve, InfraConditions(usedMode, null, null))
-    }
-
-    /**
-     * Returns the tractive effort curves corresponding to the electrical conditions map The neutral
-     * sections are not extended in this function.
-     *
-     * @param electrificationMap The map of electrification conditions to use
-     * @param comfort The comfort level to get the curves for
-     */
-    fun mapTractiveEffortCurves(
-        electrificationMap: RangeMap<Double, Electrification>,
-        comfort: Comfort?,
-    ): CurvesAndConditions {
-        val conditionsUsed = TreeRangeMap.create<Double, InfraConditions>()
-        val res = TreeRangeMap.create<Double, Array<TractiveEffortPoint>>()
-
-        for (elecCondEntry in electrificationMap.asMapOfRanges().entries) {
-            val curveAndCond = findTractiveEffortCurve(comfort, elecCondEntry.value)
-            res.put(elecCondEntry.key, curveAndCond.curve)
-            conditionsUsed.put(elecCondEntry.key, curveAndCond.cond)
-        }
-        return CurvesAndConditions(
-            ImmutableRangeMap.copyOf(res),
-            ImmutableRangeMap.copyOf(conditionsUsed),
-        )
     }
 
     /**
