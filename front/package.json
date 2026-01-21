@@ -68,7 +68,7 @@
     "ion-rangeslider": "^2.2.0",
     "js-file-download": "^0.4.12",
     "json-schema": "^0.4.0",
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "maplibre-gl": "^5.16.0",
     "party-js": "^2.2.0",
     "pmtiles": "^4.3.2",
