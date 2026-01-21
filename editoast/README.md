@@ -90,69 +90,74 @@ Here are some useful tips grouped by tool (click to expand).
 <details>
   <summary>Visual Studio Code</summary>
 
-  First, open only `./editoast` directory in VSCode:
-  * allows finding `Cargo.toml` (it may be possible to configure work directory when necessary, though)
-  * avoids loading all the projects (multiple cargo, npm, gradle) which consume lot of RAM and processor.
+First, open only `./editoast` directory in VSCode:
 
-  Useful extensions:
-  * `rust-analyzer`
-  * `CodeLLDB` (did not try `LLDB DAP`)
-  * `Rust Syntax`
-  * `Even Better TOML`
-  * `crates`
-  * (`Rust Macro Expand`: not tested, but promising)
+- allows finding `Cargo.toml` (it may be possible to configure work directory when necessary, though)
+- avoids loading all the projects (multiple cargo, npm, gradle) which consume lot of RAM and processor.
 
-  For step-by-step debugging under VS Code, you need to change the debug level
-  to `full` in order to get the variable content.
+Useful extensions:
 
-  This can be done by changing the **profile** in debugger launch tasks. \
-  Here is an example of configurations to put in `launch.json` for `CodeLLDB` extension:
-  ```json
-          {
-              "type": "lldb",
-              "request": "launch",
-              "name": "Debug single 'cargo test'",
-              "cargo": {
-                  "args": [
-                      "test",
-                      "--profile",
-                      "dev-for-debug",
-                      "--no-run",
-                  ]
-              },
-              // optional tests name filter
-              "args": ["create_locked_rolling_stock_successfully"]
-          },
-          {
-              "type": "lldb",
-              "request": "launch",
-              "name": "Debug 'editoast runserver' no-cache/single-worker",
-              "cargo": {
-                  "args": [
-                      "build",
-                      "--profile",
-                      "dev-for-debug",
-                  ]
-              },
-              "env": {
-                  "ROOT_URL": "http://localhost:4000/api",
-                  "EDITOAST_CORE_SINGLE_WORKER": "true",
-                  "EDITOAST_NO_CACHE": "true"
-              },
-              "args": ["runserver"],
-              "cwd": "${workspaceFolder}"
-          },
-  ```
-  Here is some configuration example of workspace's `settings.json` for
-  `rust-analyzer`'s code lens (`▶️ Run Test | ⚙ Debug`):
-  ```json
-      "rust-analyzer.runnables.extraArgs": [
-          "--profile=dev-for-debug"
-      ]
-  ```
+- `rust-analyzer`
+- `CodeLLDB` (did not try `LLDB DAP`)
+- `Rust Syntax`
+- `Even Better TOML`
+- `crates`
+- (`Rust Macro Expand`: not tested, but promising)
 
-  Note: it's also possible to pass environment variables to change the **debug
-  level** of the profile used, but it's a bit less clean.
+For step-by-step debugging under VS Code, you need to change the debug level
+to `full` in order to get the variable content.
+
+This can be done by changing the **profile** in debugger launch tasks. \
+ Here is an example of configurations to put in `launch.json` for `CodeLLDB` extension:
+
+```json
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug single 'cargo test'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--profile",
+                    "dev-for-debug",
+                    "--no-run",
+                ]
+            },
+            // optional tests name filter
+            "args": ["create_locked_rolling_stock_successfully"]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug 'editoast runserver' no-cache/single-worker",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--profile",
+                    "dev-for-debug",
+                ]
+            },
+            "env": {
+                "ROOT_URL": "http://localhost:4000/api",
+                "EDITOAST_CORE_SINGLE_WORKER": "true",
+                "EDITOAST_NO_CACHE": "true"
+            },
+            "args": ["runserver"],
+            "cwd": "${workspaceFolder}"
+        },
+```
+
+Here is some configuration example of workspace's `settings.json` for
+`rust-analyzer`'s code lens (`▶️ Run Test | ⚙ Debug`):
+
+```json
+    "rust-analyzer.runnables.extraArgs": [
+        "--profile=dev-for-debug"
+    ]
+```
+
+Note: it's also possible to pass environment variables to change the **debug
+level** of the profile used, but it's a bit less clean.
 
 </details>
 
