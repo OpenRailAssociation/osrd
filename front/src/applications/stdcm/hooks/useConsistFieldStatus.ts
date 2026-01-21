@@ -1,7 +1,7 @@
 import type { InputProps, StatusWithMessage } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
 
-import type { RollingStockWithLiveries, TowedRollingStock } from 'common/api/osrdEditoastApi';
+import type { LightRollingStockWithLiveries, TowedRollingStock } from 'common/api/osrdEditoastApi';
 import { kgToT, kmhToMs, msToKmh } from 'utils/physics';
 
 import type { ConsistErrors } from '../types';
@@ -20,7 +20,7 @@ const useConsistFieldStatus = (
   },
   consistErrors: ConsistErrors,
   statusMessagesVisible: { mass: boolean; length: boolean; speed: boolean },
-  rollingStock: RollingStockWithLiveries | undefined,
+  rollingStock: LightRollingStockWithLiveries | undefined,
   towedRollingStock: TowedRollingStock | undefined
 ): StatusWithMessage | undefined => {
   const { t } = useTranslation('stdcm');

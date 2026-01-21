@@ -9636,17 +9636,10 @@ components:
       - base_power_class
       - length
       - max_speed
-      - startup_time
-      - startup_acceleration
-      - comfort_acceleration
-      - const_gamma
-      - inertia_coefficient
       - mass
-      - rolling_resistance
       - loading_gauge
       - metadata
       - power_restrictions
-      - energy_sources
       - supported_signaling_systems
       - primary_category
       - other_categories
@@ -9655,26 +9648,11 @@ components:
           type:
           - string
           - 'null'
-        comfort_acceleration:
-          type: number
-          format: double
-          description: Acceleration in m·s⁻²
-        const_gamma:
-          type: number
-          format: double
-          description: Acceleration in m·s⁻²
         effort_curves:
           $ref: '#/components/schemas/LightEffortCurves'
-        energy_sources:
-          type: array
-          items:
-            $ref: '#/components/schemas/EnergySource'
         id:
           type: integer
           format: int64
-        inertia_coefficient:
-          type: number
-          format: double
         length:
           type: number
           format: double
@@ -9711,16 +9689,6 @@ components:
           $ref: '#/components/schemas/TrainMainCategory'
         railjson_version:
           type: string
-        rolling_resistance:
-          $ref: '#/components/schemas/RollingResistance'
-        startup_acceleration:
-          type: number
-          format: double
-          description: Acceleration in m·s⁻²
-        startup_time:
-          type: number
-          format: double
-          description: Duration in s
         supported_signaling_systems:
           type: array
           items:

@@ -60,8 +60,8 @@ const usePathfinding = ({
     useState<PathfindingState>(initialPathfindingState);
   const [pathProperties, setPathProperties] = useState<ManageTimetableItemPathProperties>();
 
-  const [getRollingStockById] =
-    osrdEditoastApi.endpoints.getRollingStockByRollingStockId.useLazyQuery();
+  const [getLightRollingStockById] =
+    osrdEditoastApi.endpoints.getLightRollingStockByRollingStockId.useLazyQuery();
   const [postPathfindingBlocks] =
     osrdEditoastApi.endpoints.postInfraByInfraIdPathfindingBlocks.useLazyQuery();
   const [postPathProperties] =
@@ -264,7 +264,7 @@ const usePathfinding = ({
       setIsRunning();
 
       const rollingStock = rollingStockId
-        ? await getRollingStockById({ rollingStockId }).unwrap()
+        ? await getLightRollingStockById({ rollingStockId }).unwrap()
         : undefined;
       const pathfindingInput = getPathfindingQuery({
         infraId,

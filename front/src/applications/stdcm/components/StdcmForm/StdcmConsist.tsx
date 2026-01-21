@@ -7,6 +7,7 @@ import { useSelector } from 'react-redux';
 import { consistErrorFields } from 'applications/stdcm/consts';
 import useConsistFieldStatus from 'applications/stdcm/hooks/useConsistFieldStatus';
 import useFilterTowedRollingStock from 'applications/stdcm/hooks/useFilterTowedRollingStock';
+import useStdcmLightRollingStock from 'applications/stdcm/hooks/useStdcmLightRollingStock';
 import useStdcmTowedRollingStock from 'applications/stdcm/hooks/useStdcmTowedRollingStock';
 import type { ConsistErrors } from 'applications/stdcm/types';
 import calculateConsistMaxSpeed from 'applications/stdcm/utils/calculateConsistMaxSpeed';
@@ -23,12 +24,10 @@ import type {
 import { useOsrdConfActions } from 'common/osrdContext';
 import SpeedLimitTagSelector from 'common/SpeedLimitTagSelector';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
-import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
 import { updateMaxSpeed, updateTowedRollingStockID } from 'reducers/osrdconf/stdcmConf';
 import {
   getTrackSectionIdsByLoadingGauge,
-  getStdcmRollingStockID,
   getStdcmSpeedLimitByTag,
   getStdcmSpeedLimitsByTag,
 } from 'reducers/osrdconf/stdcmConf/selectors';
@@ -97,8 +96,7 @@ const StdcmConsist = ({
   const { updateRollingStockID, updateSpeedLimitByTag } = useOsrdConfActions();
   const dispatch = useAppDispatch();
 
-  const rollingStockId = useSelector(getStdcmRollingStockID);
-  const { rollingStock } = useStoreDataForRollingStockSelector({ rollingStockId });
+  const rollingStock = useStdcmLightRollingStock();
   const towedRollingStock = useStdcmTowedRollingStock();
 
   const [statusMessagesVisible, setStatusMessagesVisible] = useState({
