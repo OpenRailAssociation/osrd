@@ -138,7 +138,7 @@ tracing = { version = "0.1.44", default-features = false, features = [
   "attributes",
   "log",
 ] }
-tracing-opentelemetry = { version = "0.32.0", default-features = false, features = [
+tracing-opentelemetry = { version = "0.32.1", default-features = false, features = [
   "tracing-log",
 ] }
 tracing-subscriber = { version = "0.3.22", features = ["env-filter"] }
