@@ -8,7 +8,8 @@ const getPathStyle = (
   hovered: HoveredItem | null,
   train: { colors: CategoryColors; id: string },
   dragging: boolean,
-  selectedTrainId?: TrainId
+  selectedTrainId?: TrainId,
+  hoveredTrainIdFromTimetable?: TrainId
 ): {
   color: string;
   level?: PathLevel;
@@ -25,14 +26,25 @@ const getPathStyle = (
   const { colors } = train;
 
   if (hovered && 'pathId' in hovered.element && !dragging) {
-    const hoveredTrainId = hovered.element.pathId as TrainId;
+    const hoveredTrainIdFromChart = hovered.element.pathId as TrainId;
 
     if (
-      train.id === hoveredTrainId ||
+      train.id === hoveredTrainIdFromChart ||
       // if the hovered train is an occurrence from the same paced train, apply the hovered style
-      (isOccurrenceId(hoveredTrainId) &&
-        timetableItemId === extractPacedTrainIdFromOccurrenceId(hoveredTrainId))
+      (isOccurrenceId(hoveredTrainIdFromChart) &&
+        timetableItemId === extractPacedTrainIdFromOccurrenceId(hoveredTrainIdFromChart))
     ) {
+      return { color: colors.hovered, level: 1 };
+    }
+  }
+
+  if (hoveredTrainIdFromTimetable && !dragging) {
+    // When hovering from the timetable list:
+    // - if we hover an occurrence, we only highlight that exact occurrence curve
+    // - if we hover a paced train (collapsed or expanded header), we highlight all its occurrences
+    if (isOccurrenceId(hoveredTrainIdFromTimetable)) {
+      if (train.id === hoveredTrainIdFromTimetable) return { color: colors.hovered, level: 1 };
+    } else if (timetableItemId === hoveredTrainIdFromTimetable) {
       return { color: colors.hovered, level: 1 };
     }
   }

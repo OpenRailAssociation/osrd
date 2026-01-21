@@ -8,6 +8,7 @@ import { extractPacedTrainIdFromOccurrenceId, isOccurrenceId } from 'utils/train
 export const simulationResultsInitialState: SimulationResultsState = {
   chart: undefined,
   selectedTrainId: undefined,
+  hoveredTrainId: undefined,
   trainIdUsedForProjection: undefined,
   projectionType: 'trackProjection',
   displayOnlyPathSteps: false,
@@ -26,6 +27,12 @@ export const simulationResultsSlice = createSlice({
       action: PayloadAction<TrainId | undefined>
     ) {
       state.selectedTrainId = action.payload;
+    },
+    updateHoveredTrainId(
+      state: Draft<SimulationResultsState>,
+      action: PayloadAction<TrainId | undefined>
+    ) {
+      state.hoveredTrainId = action.payload;
     },
     updateTrainIdUsedForProjection(
       state: Draft<SimulationResultsState>,
@@ -61,6 +68,9 @@ export const simulationResultsSlice = createSlice({
       if (state.selectedTrainId === idToUnset || isIdMatchingOccurence(state.selectedTrainId)) {
         state.selectedTrainId = undefined;
       }
+      if (state.hoveredTrainId === idToUnset || isIdMatchingOccurence(state.hoveredTrainId)) {
+        state.hoveredTrainId = undefined;
+      }
     },
     unsetTrainIdsMatchingMissingOccurencesOf(
       state: Draft<SimulationResultsState>,
@@ -82,6 +92,9 @@ export const simulationResultsSlice = createSlice({
       if (isIdMatchingMissingOccurence(state.selectedTrainId)) {
         state.selectedTrainId = undefined;
       }
+      if (isIdMatchingMissingOccurence(state.hoveredTrainId)) {
+        state.hoveredTrainId = undefined;
+      }
     },
   },
 });
@@ -90,6 +103,7 @@ export const {
   toggleDisplayOnlyPathSteps,
   toggleSimulationEnabled,
   updateSelectedTrainId,
+  updateHoveredTrainId,
   updateTrainIdUsedForProjection,
   updateProjectionType,
   unsetTrainIdsMatching,

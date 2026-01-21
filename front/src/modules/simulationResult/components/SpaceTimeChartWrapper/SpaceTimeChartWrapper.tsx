@@ -37,14 +37,8 @@ import type {
 } from 'modules/simulationResult/types';
 import { isPacedTrainWithDetails } from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
-import type {
-  OccurrenceId,
-  PacedTrainId,
-  TimetableItemId,
-  TrainId,
-  TrainScheduleId,
-} from 'reducers/osrdconf/types';
-import { getIsSimulationEnabled } from 'reducers/simulationResults/selectors';
+import type { OccurrenceId, PacedTrainId, TrainId, TrainScheduleId } from 'reducers/osrdconf/types';
+import { getHoveredTrainId, getIsSimulationEnabled } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import {
   isTrainId,
@@ -144,6 +138,7 @@ const SpaceTimeChartWrapper = ({
   pathfindingHasFailed = false,
 }: SpaceTimeChartWrapperProps) => {
   const dispatch = useAppDispatch();
+  const hoveredTrainId = useSelector(getHoveredTrainId);
   const isSimulationEnabled = useSelector(getIsSimulationEnabled);
 
   const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);
@@ -230,10 +225,11 @@ const SpaceTimeChartWrapper = ({
     pathfindingHasFailed
   );
 
-  const hoveredPathId = useMemo(() => {
+  const hoveredTrainIdForChart = useMemo(() => {
     const element = hoveredItem?.element;
-    return element && 'pathId' in element ? (element.pathId as TimetableItemId) : undefined;
-  }, [hoveredItem]);
+    if (element && 'pathId' in element) return element.pathId as TrainId;
+    return hoveredTrainId;
+  }, [hoveredItem, hoveredTrainId]);
 
   const splitPoints = useMemo<SplitPoint[]>(
     () =>
@@ -246,7 +242,8 @@ const SpaceTimeChartWrapper = ({
         selectedTrainId,
         onCloseOccupancyLayer,
         handleWaypointClick,
-        hoveredPathId
+        hoveredTrainIdForChart,
+        hoveredTrainId
       ),
     [
       trackOccupancyDiagramsData,
@@ -259,7 +256,8 @@ const SpaceTimeChartWrapper = ({
       onCloseOccupancyLayer,
       handleWaypointClick,
       activeWaypointRef,
-      hoveredPathId,
+      hoveredTrainIdForChart,
+      hoveredTrainId,
     ]
   );
 
@@ -365,9 +363,9 @@ const SpaceTimeChartWrapper = ({
         isPointPickingElement(hoveredItem.element) ||
         isOccupancyPickingElement(hoveredItem.element))
     ) {
-      const hoveredTrainId = hoveredItem.element.pathId;
-      if (isTrainId(hoveredTrainId) && selectedTrainId !== hoveredTrainId) {
-        onTrainClick(hoveredTrainId);
+      const clickedTrainId = hoveredItem.element.pathId;
+      if (isTrainId(clickedTrainId) && selectedTrainId !== clickedTrainId) {
+        onTrainClick(clickedTrainId);
       }
     }
   };
@@ -440,7 +438,13 @@ const SpaceTimeChartWrapper = ({
               <PathLayer
                 key={`${path.id}-${path.points[0]?.position}`}
                 path={path}
-                {...getPathStyle(hoveredItem, path, !!draggingState, selectedTrainId)}
+                {...getPathStyle(
+                  hoveredItem,
+                  path,
+                  !!draggingState,
+                  selectedTrainId,
+                  hoveredTrainId
+                )}
               />
             ))}
             {rect && <ZoomRect {...rect} />}

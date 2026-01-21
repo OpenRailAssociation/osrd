@@ -45,7 +45,8 @@ export function buildSplitPoints(
   selectedTrainId?: TrainId,
   onCloseOccupancyLayer?: (waypointId: string) => void,
   handleWaypointClick?: (waypointId: string) => void,
-  hoveredPathId?: TimetableItemId
+  hoveredTrainIdForChart?: TrainId,
+  hoveredTrainId?: TrainId
 ): SplitPoint[] {
   if (!occupancyZonesLayers?.length) return [];
 
@@ -89,7 +90,7 @@ export function buildSplitPoints(
 
             const zonesCountByPacedTrainId = countZonesByPacedTrainId(baseZones);
 
-            const isHovered = hoveredPathId === zone.trainId;
+            const isHovered = hoveredTrainIdForChart === zone.trainId;
             const isSelected = selectedTrainId === zone.trainId;
             let totalOccurrencesOnTrack = 0;
             if (isOccurrenceId(zone.trainId)) {
@@ -99,7 +100,13 @@ export function buildSplitPoints(
             }
             const path = pathsById[zone.trainId];
             if (!path) return zone;
-            const style = getPathStyle(hoveredItem, path, isDragging, selectedTrainId);
+            const style = getPathStyle(
+              hoveredItem,
+              path,
+              isDragging,
+              selectedTrainId,
+              hoveredTrainId
+            );
             return {
               ...zone,
               trailingText:

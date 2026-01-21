@@ -35,7 +35,11 @@ import type {
   TrainId,
   OccurrenceId,
 } from 'reducers/osrdconf/types';
-import { updateProjectionType, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
+import {
+  updateHoveredTrainId,
+  updateProjectionType,
+  updateTrainIdUsedForProjection,
+} from 'reducers/simulationResults';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { addDurationToDate, Duration } from 'utils/duration';
@@ -257,6 +261,8 @@ const PacedTrainItem = ({
           warning: !!worstCase,
           [`warning-${worstCase}`]: !!worstCase,
         })}
+        onMouseEnter={() => dispatch(updateHoveredTrainId(pacedTrain.id))}
+        onMouseLeave={() => dispatch(updateHoveredTrainId(undefined))}
       >
         {isSelectMode && (
           <div className="checkbox-title">

@@ -37,4 +37,5 @@ export type SimulationResultsState = {
   projectionType: ProjectionType;
   displayOnlyPathSteps: boolean;
   isSimulationEnabled: boolean;
+  hoveredTrainId?: TrainId;
 };

@@ -16,6 +16,7 @@ import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import { setFailure, setSuccess } from 'reducers/main';
 import type { TimetableItem, TimetableItemId, TrainId } from 'reducers/osrdconf/types';
 import {
+  updateHoveredTrainId,
   updateTrainIdUsedForProjection,
   updateSelectedTrainId,
   updateProjectionType,
@@ -163,6 +164,8 @@ const TrainScheduleItem = ({
         'in-selection': isInSelection,
         invalid: summary && !summary.isValid,
       })}
+      onMouseEnter={() => dispatch(updateHoveredTrainId(train.id))}
+      onMouseLeave={() => dispatch(updateHoveredTrainId(undefined))}
     >
       <div
         data-testid="scenario-timetable-train-schedule-button"
