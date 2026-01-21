@@ -1,6 +1,5 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
-import fr.sncf.osrd.pathfinding.BlockLocation
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters

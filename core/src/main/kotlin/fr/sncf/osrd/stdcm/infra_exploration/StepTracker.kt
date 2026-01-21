@@ -1,7 +1,6 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
 import fr.sncf.osrd.path.interfaces.PhysicsPath
-import fr.sncf.osrd.pathfinding.BlockLocation
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.utils.AppendOnlyLinkedList

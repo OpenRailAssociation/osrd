@@ -7,7 +7,6 @@ import fr.sncf.osrd.pathfinding.constraints.ConstraintCombiner
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.OffsetRange
 import fr.sncf.osrd.utils.units.meters
@@ -385,5 +384,3 @@ class Pathfinding<NodeT : Any, EdgeT : Any>(private val graph: Graph<NodeT, Edge
         const val TIMEOUT = 180.0
     }
 }
-
-data class BlockLocation(val edge: BlockId, val offset: Offset<Block>)
