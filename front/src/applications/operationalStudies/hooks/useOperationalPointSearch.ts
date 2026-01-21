@@ -98,65 +98,75 @@ export const useOperationalPointSearch = ({
       setOpSuggestions(marked);
     };
 
-    // 1) Large call on the entire query
-    postSearch({ searchPayload: largePayload(infraId, debouncedTrimmedInput), pageSize })
-      .unwrap()
-      .then((results) => {
+    const searchOps = async () => {
+      try {
+        // 1) Large call on the entire query
+        const largeRes = (await postSearch({
+          searchPayload: largePayload(infraId, debouncedTrimmedInput),
+          pageSize,
+        }).unwrap()) as SearchResultItemOperationalPoint[];
+
         if (cancelled) return;
 
-        const res = results as SearchResultItemOperationalPoint[];
-        const suggestionsLarge = buildOpSuggestion(res);
+        const suggestionsLarge = buildOpSuggestion(largeRes);
 
         // 2) We try to lock trigram from the "large" call
-        const trigramExactFromLarge = firstTokenUpper
-          ? suggestionsLarge.filter((s) => toUpper(s.trigram) === firstTokenUpper)
-          : [];
-        // If we have an exact trigram and the rest is coherent (name startsWith / secondary code ok), we proceed with this suggestion (no other calls)
-        const keptFromLarge = trigramExactFromLarge.filter((s) => shouldKeepTrigramLock(s, tokens));
-        if (keptFromLarge.length > 0) {
-          apply(suggestionsLarge);
+        if (firstTokenUpper) {
+          const trigramExactFromLarge = suggestionsLarge.filter(
+            (s) => toUpper(s.trigram) === firstTokenUpper
+          );
+          // If we have an exact trigram and the rest is coherent (name startsWith / secondary code ok), we proceed with this suggestion (no other calls)
+          const keptFromLarge = trigramExactFromLarge.filter((s) =>
+            shouldKeepTrigramLock(s, tokens)
+          );
+
+          if (keptFromLarge.length > 0) {
+            apply(suggestionsLarge);
+            return;
+          }
         }
 
         // 3) Fallback: exact trigram via a dedicated call (when the large one doesn't return it)
         // We "lock" only if the rest is coherent, otherwise we relaunch a normal call.
-        postSearch({ searchPayload: exactTrigramPayload(infraId, firstTokenUpper), pageSize })
-          .unwrap()
-          .then((exactRes) => {
-            if (cancelled) return;
+        if (firstTokenUpper) {
+          const exactRes = (await postSearch({
+            searchPayload: exactTrigramPayload(infraId, firstTokenUpper),
+            pageSize,
+          }).unwrap()) as SearchResultItemOperationalPoint[];
 
-            const exact = exactRes as SearchResultItemOperationalPoint[];
-            if (exact.length > 0) {
-              const suggestionsExact = buildOpSuggestion(exact);
-              const keptExact = suggestionsExact.filter((s) => shouldKeepTrigramLock(s, tokens));
-              if (keptExact.length > 0) {
-                apply(uniqById([...keptExact, ...suggestionsExact, ...suggestionsLarge]));
-                return;
-              }
-            }
+          if (cancelled) return;
 
-            if (tokens.length > 1) {
-              const multiPayload = multiPayloadFromTokens(infraId, tokens);
+          if (exactRes.length > 0) {
+            const suggestionsExact = buildOpSuggestion(exactRes);
+            const keptExact = suggestionsExact.filter((s) => shouldKeepTrigramLock(s, tokens));
 
-              postSearch({ searchPayload: multiPayload, pageSize })
-                .unwrap()
-                .then((multiRes) => {
-                  if (cancelled) return;
-
-                  const multi = multiRes as SearchResultItemOperationalPoint[];
-                  const multiSuggestions = buildOpSuggestion(multi);
-
-                  apply(uniqById([...suggestionsLarge, ...multiSuggestions]));
-                });
-
+            if (keptExact.length > 0) {
+              apply(uniqById([...keptExact, ...suggestionsExact, ...suggestionsLarge]));
               return;
             }
+          }
+        }
 
-            apply(suggestionsLarge);
-          });
-      })
-      .catch(() => {
+        if (tokens.length > 1) {
+          const multiRes = (await postSearch({
+            searchPayload: multiPayloadFromTokens(infraId, tokens),
+            pageSize,
+          }).unwrap()) as SearchResultItemOperationalPoint[];
+
+          if (cancelled) return;
+
+          const multiSuggestions = buildOpSuggestion(multiRes);
+          apply(uniqById([...suggestionsLarge, ...multiSuggestions]));
+          return;
+        }
+
+        apply(suggestionsLarge);
+      } catch {
         if (!cancelled) resetOpSuggestions();
-      });
+      }
+    };
+
+    searchOps();
 
     return () => {
       cancelled = true;
@@ -171,7 +181,6 @@ export const useOperationalPointSearch = ({
     pageSize,
     minChars,
     resetOpSuggestions,
-    chooseChForSuggestion,
   ]);
 
   return {

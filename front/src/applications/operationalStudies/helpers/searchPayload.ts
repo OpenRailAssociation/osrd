@@ -8,8 +8,6 @@ export const tokenClause = (token: string) => [
   ['search', ['ch'], token],
 ];
 
-export const buildMultiTokenQuery = (tokens: string[]) => ['and', ...tokens.map(tokenClause)];
-
 export const searchQuery = (debouncedTrimmedInput: string) => [
   'or',
   ['search', ['name'], debouncedTrimmedInput],
@@ -35,10 +33,11 @@ export const exactTrigramPayload = (infraId: number | undefined, firstTokenUpper
   ],
 });
 
-export const multiPayloadFromTokens = (infraId: number | undefined, tokens: string[]) => {
-  const multiQuery = buildMultiTokenQuery(tokens);
-  return {
-    object: 'operationalpoint',
-    query: ['and', multiQuery, infraId !== undefined ? ['=', ['infra_id'], infraId] : true],
-  };
-};
+export const multiPayloadFromTokens = (infraId: number | undefined, tokens: string[]) => ({
+  object: 'operationalpoint',
+  query: [
+    'and',
+    ...tokens.map(tokenClause),
+    infraId !== undefined ? ['=', ['infra_id'], infraId] : true,
+  ],
+});
