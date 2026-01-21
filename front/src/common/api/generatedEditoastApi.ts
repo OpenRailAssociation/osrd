@@ -43,6 +43,10 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/authz/grants`, method: 'POST', body: queryArg.body }),
         invalidatesTags: ['authz'],
       }),
+      getAuthzGroups: build.query<GetAuthzGroupsApiResponse, GetAuthzGroupsApiArg>({
+        query: () => ({ url: `/authz/groups` }),
+        providesTags: ['authz'],
+      }),
       getAuthzMe: build.query<GetAuthzMeApiResponse, GetAuthzMeApiArg>({
         query: () => ({ url: `/authz/me` }),
         providesTags: ['authz'],
@@ -1383,6 +1387,11 @@ export type PostAuthzGrantsApiArg = {
         revoke: RevokeBody[];
       };
 };
+export type GetAuthzGroupsApiResponse = /** status 200 List all the groups */ {
+  id: number;
+  name: string;
+}[];
+export type GetAuthzGroupsApiArg = void;
 export type GetAuthzMeApiResponse = /** status 200 Get the info of the current user */ {
   id: number;
   name: string;
