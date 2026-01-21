@@ -2,13 +2,13 @@ package fr.sncf.osrd.utils.graph
 
 import fr.sncf.osrd.geom.Point
 import fr.sncf.osrd.graph.AStarHeuristic
-import fr.sncf.osrd.pathfinding.BlockLocation
 import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.pathfinding.PathfindingEdge
 import fr.sncf.osrd.pathfinding.PathfindingGraph
 import fr.sncf.osrd.pathfinding.RemainingDistanceEstimator
 import fr.sncf.osrd.pathfinding.getStartLocations
 import fr.sncf.osrd.pathfinding.getTargetsOnEdges
+import fr.sncf.osrd.stdcm.infra_exploration.BlockLocation
 import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
 import fr.sncf.osrd.utils.CachedBlockMRSPBuilder.Companion.DEFAULT_MAX_ROLLING_STOCK_SPEED
 import fr.sncf.osrd.utils.DummyInfra

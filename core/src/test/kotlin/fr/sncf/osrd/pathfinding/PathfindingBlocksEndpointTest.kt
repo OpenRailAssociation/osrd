@@ -6,6 +6,7 @@ import fr.sncf.osrd.api.pathfinding.findDirectedWaypointBlocks
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.BlockId
+import fr.sncf.osrd.stdcm.infra_exploration.BlockLocation
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.units.Offset

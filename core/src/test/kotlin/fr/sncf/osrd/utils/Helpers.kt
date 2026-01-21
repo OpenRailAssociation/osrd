@@ -8,7 +8,6 @@ import fr.sncf.osrd.api.InfraMetadata
 import fr.sncf.osrd.api.TrackLocation
 import fr.sncf.osrd.api.makeSignalingSimulator
 import fr.sncf.osrd.api.standalone_sim.PhysicsConsistModel
-import fr.sncf.osrd.pathfinding.BlockLocation
 import fr.sncf.osrd.railjson.schema.external_generated_inputs.RJSElectricalProfileSet
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance
@@ -19,6 +18,7 @@ import fr.sncf.osrd.sim_infra.api.SignalingSystem
 import fr.sncf.osrd.sim_infra.api.SignalingSystemId
 import fr.sncf.osrd.sim_infra.utils.recoverBlocks
 import fr.sncf.osrd.sim_infra.utils.toBlockList
+import fr.sncf.osrd.stdcm.infra_exploration.BlockLocation
 import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.json.UnitAdapterFactory

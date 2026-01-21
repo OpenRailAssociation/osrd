@@ -11,7 +11,6 @@ import fr.sncf.osrd.path.interfaces.RouteRange
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.subRange
 import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
-import fr.sncf.osrd.pathfinding.BlockLocation
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.utils.getRouteBlocks
@@ -153,6 +152,8 @@ interface EdgeIdentifier {
 
     override fun hashCode(): Int
 }
+
+data class BlockLocation(val edge: BlockId, val offset: Offset<Block>)
 
 data class ExplorerStep(
     val locations: Collection<BlockLocation>,

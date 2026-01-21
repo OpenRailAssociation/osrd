@@ -4,7 +4,6 @@ import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.envelope.part.EnvelopePart
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
-import fr.sncf.osrd.pathfinding.BlockLocation
 import fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.arePositionsEqual
