@@ -43,7 +43,7 @@ const useScenario = () => {
           }
         : skipToken
     );
-  const [postTrainScheduleSet] = osrdEditoastApi.endpoints.postTrainScheduleSet.useMutation();
+  const [postTrainScheduleSets] = osrdEditoastApi.endpoints.postTrainScheduleSets.useMutation();
   const [linkTrainscheduleSetToTimetable] =
     osrdEditoastApi.endpoints.postTimetableByIdTrainScheduleSets.useMutation();
 
@@ -69,7 +69,7 @@ const useScenario = () => {
   // Ensure a sandbox train schedule set exists and is linked to the timetable
   useEffect(() => {
     const checkAndCreateSandbox = async (timetableId: number) => {
-      const sandbox = await postTrainScheduleSet({
+      const sandbox = await postTrainScheduleSets({
         trainScheduleSetForm: {
           name: null, // sandbox never has a name
           description: '',

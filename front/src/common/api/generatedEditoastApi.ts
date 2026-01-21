@@ -83,30 +83,30 @@ const injectedRtkApi = api
         }),
         providesTags: ['catalog_entry'],
       }),
-      postCatalogEntry: build.mutation<PostCatalogEntryApiResponse, PostCatalogEntryApiArg>({
+      postCatalogEntries: build.mutation<PostCatalogEntriesApiResponse, PostCatalogEntriesApiArg>({
         query: (queryArg) => ({
-          url: `/catalog_entry`,
+          url: `/catalog_entries`,
           method: 'POST',
           body: queryArg.catalogEntryForm,
         }),
         invalidatesTags: ['catalog_entry'],
       }),
-      putCatalogEntryById: build.mutation<
-        PutCatalogEntryByIdApiResponse,
-        PutCatalogEntryByIdApiArg
+      putCatalogEntriesById: build.mutation<
+        PutCatalogEntriesByIdApiResponse,
+        PutCatalogEntriesByIdApiArg
       >({
         query: (queryArg) => ({
-          url: `/catalog_entry/${queryArg.id}`,
+          url: `/catalog_entries/${queryArg.id}`,
           method: 'PUT',
           body: queryArg.catalogEntryForm,
         }),
         invalidatesTags: ['catalog_entry'],
       }),
-      deleteCatalogEntryById: build.mutation<
-        DeleteCatalogEntryByIdApiResponse,
-        DeleteCatalogEntryByIdApiArg
+      deleteCatalogEntriesById: build.mutation<
+        DeleteCatalogEntriesByIdApiResponse,
+        DeleteCatalogEntriesByIdApiArg
       >({
-        query: (queryArg) => ({ url: `/catalog_entry/${queryArg.id}`, method: 'DELETE' }),
+        query: (queryArg) => ({ url: `/catalog_entries/${queryArg.id}`, method: 'DELETE' }),
         invalidatesTags: ['catalog_entry'],
       }),
       postDocuments: build.mutation<PostDocumentsApiResponse, PostDocumentsApiArg>({
@@ -1241,53 +1241,6 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['rolling_stock'],
       }),
-      postTrainScheduleSet: build.mutation<
-        PostTrainScheduleSetApiResponse,
-        PostTrainScheduleSetApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/train_schedule_set`,
-          method: 'POST',
-          body: queryArg.trainScheduleSetForm,
-        }),
-        invalidatesTags: ['train_schedule_set'],
-      }),
-      getTrainScheduleSetById: build.query<
-        GetTrainScheduleSetByIdApiResponse,
-        GetTrainScheduleSetByIdApiArg
-      >({
-        query: (queryArg) => ({ url: `/train_schedule_set/${queryArg.id}` }),
-        providesTags: ['train_schedule_set'],
-      }),
-      putTrainScheduleSetById: build.mutation<
-        PutTrainScheduleSetByIdApiResponse,
-        PutTrainScheduleSetByIdApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/train_schedule_set/${queryArg.id}`,
-          method: 'PUT',
-          body: queryArg.trainScheduleSetForm,
-        }),
-        invalidatesTags: ['train_schedule_set'],
-      }),
-      deleteTrainScheduleSetById: build.mutation<
-        DeleteTrainScheduleSetByIdApiResponse,
-        DeleteTrainScheduleSetByIdApiArg
-      >({
-        query: (queryArg) => ({ url: `/train_schedule_set/${queryArg.id}`, method: 'DELETE' }),
-        invalidatesTags: ['train_schedule_set'],
-      }),
-      postTrainScheduleSetByIdPacedTrains: build.mutation<
-        PostTrainScheduleSetByIdPacedTrainsApiResponse,
-        PostTrainScheduleSetByIdPacedTrainsApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/train_schedule_set/${queryArg.id}/paced_trains`,
-          method: 'POST',
-          body: queryArg.body,
-        }),
-        invalidatesTags: ['train_schedule_set', 'paced_train'],
-      }),
       getTrainScheduleSets: build.query<
         GetTrainScheduleSetsApiResponse,
         GetTrainScheduleSetsApiArg
@@ -1300,6 +1253,53 @@ const injectedRtkApi = api
           },
         }),
         providesTags: ['train_schedule_set'],
+      }),
+      postTrainScheduleSets: build.mutation<
+        PostTrainScheduleSetsApiResponse,
+        PostTrainScheduleSetsApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/train_schedule_sets`,
+          method: 'POST',
+          body: queryArg.trainScheduleSetForm,
+        }),
+        invalidatesTags: ['train_schedule_set'],
+      }),
+      getTrainScheduleSetsById: build.query<
+        GetTrainScheduleSetsByIdApiResponse,
+        GetTrainScheduleSetsByIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/train_schedule_sets/${queryArg.id}` }),
+        providesTags: ['train_schedule_set'],
+      }),
+      putTrainScheduleSetsById: build.mutation<
+        PutTrainScheduleSetsByIdApiResponse,
+        PutTrainScheduleSetsByIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/train_schedule_sets/${queryArg.id}`,
+          method: 'PUT',
+          body: queryArg.trainScheduleSetForm,
+        }),
+        invalidatesTags: ['train_schedule_set'],
+      }),
+      deleteTrainScheduleSetsById: build.mutation<
+        DeleteTrainScheduleSetsByIdApiResponse,
+        DeleteTrainScheduleSetsByIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/train_schedule_sets/${queryArg.id}`, method: 'DELETE' }),
+        invalidatesTags: ['train_schedule_set'],
+      }),
+      postTrainScheduleSetsByIdPacedTrains: build.mutation<
+        PostTrainScheduleSetsByIdPacedTrainsApiResponse,
+        PostTrainScheduleSetsByIdPacedTrainsApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/train_schedule_sets/${queryArg.id}/paced_trains`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['train_schedule_set', 'paced_train'],
       }),
       getVersion: build.query<GetVersionApiResponse, GetVersionApiArg>({
         query: () => ({ url: `/version` }),
@@ -1462,18 +1462,18 @@ export type GetCatalogEntriesApiArg = {
   page?: number;
   pageSize?: number;
 };
-export type PostCatalogEntryApiResponse = /** status 201 Catalog entry */ CatalogEntry;
-export type PostCatalogEntryApiArg = {
+export type PostCatalogEntriesApiResponse = /** status 201 Catalog entry */ CatalogEntry;
+export type PostCatalogEntriesApiArg = {
   catalogEntryForm: CatalogEntryForm;
 };
-export type PutCatalogEntryByIdApiResponse = /** status 200 Catalog entry */ CatalogEntry;
-export type PutCatalogEntryByIdApiArg = {
+export type PutCatalogEntriesByIdApiResponse = /** status 200 Catalog entry */ CatalogEntry;
+export type PutCatalogEntriesByIdApiArg = {
   /** A catalog entry ID */
   id: number;
   catalogEntryForm: CatalogEntryForm;
 };
-export type DeleteCatalogEntryByIdApiResponse = unknown;
-export type DeleteCatalogEntryByIdApiArg = {
+export type DeleteCatalogEntriesByIdApiResponse = unknown;
+export type DeleteCatalogEntriesByIdApiArg = {
   /** A catalog entry ID */
   id: number;
 };
@@ -2499,36 +2499,6 @@ export type PatchTowedRollingStockByTowedRollingStockIdLockedApiArg = {
   towedRollingStockId: number;
   towedRollingStockLockedForm: TowedRollingStockLockedForm;
 };
-export type PostTrainScheduleSetApiResponse =
-  /** status 201 Train schedule set */ TrainScheduleSetResponse;
-export type PostTrainScheduleSetApiArg = {
-  trainScheduleSetForm: TrainScheduleSetForm;
-};
-export type GetTrainScheduleSetByIdApiResponse =
-  /** status 200 Train schedule set */ TrainScheduleSetResponse;
-export type GetTrainScheduleSetByIdApiArg = {
-  /** A train schedule set ID */
-  id: number;
-};
-export type PutTrainScheduleSetByIdApiResponse =
-  /** status 200 Train schedule set */ TrainScheduleSetResponse;
-export type PutTrainScheduleSetByIdApiArg = {
-  /** A train schedule set ID */
-  id: number;
-  trainScheduleSetForm: TrainScheduleSetForm;
-};
-export type DeleteTrainScheduleSetByIdApiResponse = unknown;
-export type DeleteTrainScheduleSetByIdApiArg = {
-  /** A train schedule set ID */
-  id: number;
-};
-export type PostTrainScheduleSetByIdPacedTrainsApiResponse =
-  /** status 200 The created paced trains */ PacedTrainResponse[];
-export type PostTrainScheduleSetByIdPacedTrainsApiArg = {
-  /** A train schedule set ID */
-  id: number;
-  body: PacedTrain[];
-};
 export type GetTrainScheduleSetsApiResponse =
   /** status 200 list of train schedule sets */ (TrainScheduleSet & {
     train_schedule_count: number;
@@ -2536,6 +2506,36 @@ export type GetTrainScheduleSetsApiResponse =
 export type GetTrainScheduleSetsApiArg = {
   catalogEntryId?: number;
   published?: boolean;
+};
+export type PostTrainScheduleSetsApiResponse =
+  /** status 201 Train schedule set */ TrainScheduleSetResponse;
+export type PostTrainScheduleSetsApiArg = {
+  trainScheduleSetForm: TrainScheduleSetForm;
+};
+export type GetTrainScheduleSetsByIdApiResponse =
+  /** status 200 Train schedule set */ TrainScheduleSetResponse;
+export type GetTrainScheduleSetsByIdApiArg = {
+  /** A train schedule set ID */
+  id: number;
+};
+export type PutTrainScheduleSetsByIdApiResponse =
+  /** status 200 Train schedule set */ TrainScheduleSetResponse;
+export type PutTrainScheduleSetsByIdApiArg = {
+  /** A train schedule set ID */
+  id: number;
+  trainScheduleSetForm: TrainScheduleSetForm;
+};
+export type DeleteTrainScheduleSetsByIdApiResponse = unknown;
+export type DeleteTrainScheduleSetsByIdApiArg = {
+  /** A train schedule set ID */
+  id: number;
+};
+export type PostTrainScheduleSetsByIdPacedTrainsApiResponse =
+  /** status 200 The created paced trains */ PacedTrainResponse[];
+export type PostTrainScheduleSetsByIdPacedTrainsApiArg = {
+  /** A train schedule set ID */
+  id: number;
+  body: PacedTrain[];
 };
 export type GetVersionApiResponse = /** status 200 Return the service version */ Version;
 export type GetVersionApiArg = void;

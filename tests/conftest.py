@@ -303,7 +303,7 @@ def west_to_south_east_simulation(
     response = session.get(EDITOAST_URL + f"light_rolling_stock/{fast_rolling_stock}")
     fast_rolling_stock_name = response.json()["name"]
     response = session.post(
-        f"{EDITOAST_URL}train_schedule_set/{small_scenario.train_schedule_set}/paced_trains/",
+        f"{EDITOAST_URL}train_schedule_sets/{small_scenario.train_schedule_set}/paced_trains/",
         json=[
             {
                 "constraint_distribution": "STANDARD",
@@ -331,7 +331,7 @@ def west_to_south_east_paced_train(
     response = session.get(EDITOAST_URL + f"light_rolling_stock/{fast_rolling_stock}")
     fast_rolling_stock_name = response.json()["name"]
     response = session.post(
-        f"{EDITOAST_URL}train_schedule_set/{small_scenario.train_schedule_set}/paced_trains/",
+        f"{EDITOAST_URL}train_schedule_sets/{small_scenario.train_schedule_set}/paced_trains/",
         json=[
             {
                 "constraint_distribution": "STANDARD",
@@ -375,7 +375,7 @@ def west_to_south_east_paced_trains(
     }
 
     response = session.post(
-        f"{EDITOAST_URL}train_schedule_set/{small_scenario.train_schedule_set}/paced_trains/",
+        f"{EDITOAST_URL}train_schedule_sets/{small_scenario.train_schedule_set}/paced_trains/",
         json=[
             {
                 **base,
@@ -417,7 +417,7 @@ def west_to_south_east_etcs_simulation(
     )
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     response = session.post(
-        f"{EDITOAST_URL}train_schedule_set/{etcs_scenario.train_schedule_set}/paced_trains/",
+        f"{EDITOAST_URL}train_schedule_sets/{etcs_scenario.train_schedule_set}/paced_trains/",
         json=[
             {
                 "constraint_distribution": "STANDARD",
@@ -456,7 +456,7 @@ def west_to_south_east_simulations(
     }
 
     response = session.post(
-        f"{EDITOAST_URL}train_schedule_set/{small_scenario.train_schedule_set}/paced_trains/",
+        f"{EDITOAST_URL}train_schedule_sets/{small_scenario.train_schedule_set}/paced_trains/",
         json=[
             {
                 **base,
@@ -486,7 +486,7 @@ def timetable_id(session: Session) -> int:
 @pytest.fixture
 def train_schedule_set_id(session: Session, timetable_id: int) -> int:
     r = session.post(
-        f"{EDITOAST_URL}train_schedule_set/",
+        f"{EDITOAST_URL}train_schedule_sets/",
         json={
             "name": None,
             "catalog_entry": None,
