@@ -24,6 +24,7 @@ use schemas::infra::SpeedSection;
 use schemas::infra::Switch;
 use schemas::infra::TrackEndpoint;
 use schemas::primitives::Identifier;
+use schemas::primitives::NonBlankString;
 use std::collections::HashMap;
 use std::str::FromStr;
 use tracing::error;
@@ -220,10 +221,10 @@ impl<'a> NodeToTrack<'a> {
         Self { nodes_edges }
     }
 
-    /// Given an OSM node, returns the track and the position it is on
+    /// Given an OSM node, returns the track, the position it is on and the local ref if its available
     /// If there is an ambiguity (the node is at intersection), we just pick one
     /// We log weird situations (the are 3 edges for that node)
-    pub fn track_and_position(&self, id: NodeId) -> Option<(Identifier, f64)> {
+    pub fn track_and_position(&self, id: NodeId) -> Option<(Identifier, f64, NonBlankString)> {
         self.nodes_edges.get(&id).and_then(|edges| {
             if edges.is_empty() {
                 error!("Missing edge for node {}", id.0);
@@ -231,7 +232,16 @@ impl<'a> NodeToTrack<'a> {
             } else if edges.len() >= 3 {
                 warn!("Too many edges for node {}", id.0);
             }
-            Some((edges[0].id.clone().into(), edges[0].length_until(&id)))
+            let local_ref = edges[0]
+                .tags
+                .get("local_ref")
+                .map(NonBlankString::from)
+                .unwrap_or(NonBlankString::from("unknown"));
+            Some((
+                edges[0].id.clone().into(),
+                edges[0].length_until(&id),
+                local_ref,
+            ))
         })
     }
 }
@@ -252,7 +262,8 @@ pub fn signals(
         })
         .filter(|node| adjacencies.get(&node.id).map_or(0, |adj| adj.edges.len()) != 1) // Ignore all the nodes that are at the end of a track, as it will be buffer stops
         .flat_map(|node| {
-            if let Some((track, position)) = nodes_to_tracks.track_and_position(node.id) {
+            if let Some((track, position, _local_ref)) = nodes_to_tracks.track_and_position(node.id)
+            {
                 let mut settings = HashMap::new();
                 settings.insert("Nf".into(), "true".into());
 
@@ -462,8 +473,7 @@ pub fn operational_points(
                 .flat_map(|node| {
                     nodes_to_tracks
                         .track_and_position(node)
-                        // TODO: use the local_ref osm tag instead of this default value
-                        .map(|(track, position)| OperationalPointPart { track, position, local_track_name: "missing local track name".into(), extensions: Default::default() })
+                        .map(|(track, position, local_track_name)| OperationalPointPart { track, position, local_track_name, extensions: Default::default() })
                 })
                 .collect();
             // Parts can be empty when the stop_area references stops that are not railway (e.g. bus station)
