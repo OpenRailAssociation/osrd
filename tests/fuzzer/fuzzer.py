@@ -130,7 +130,7 @@ def create_scenario(editoast_url: str, infra_id: int) -> Scenario:
     timetable_id = r.json()["timetable_id"]
     r = _post_with_timeout(
         session,
-        editoast_url + "/train_schedule_set/",
+        editoast_url + "/train_schedule_sets/",
         json={
             "catalog_entry_id": None,
             "name": None,
@@ -278,7 +278,7 @@ def _test_new_train(
     r = _post_with_timeout(
         session,
         editoast_url
-        + f"/train_schedule_set/{scenario.train_schedule_set}/paced_trains/",
+        + f"/train_schedule_sets/{scenario.train_schedule_set}/paced_trains/",
         json=schedule_payload,
     )
     if r.status_code // 100 != 2:
@@ -549,7 +549,7 @@ def _reset_timetable(editoast_url: str, scenario: Scenario) -> Scenario:
     timetable_id = r.json()["timetable_id"]
     r = _post_with_timeout(
         session,
-        editoast_url + "/train_schedule_set/",
+        editoast_url + "/train_schedule_sets/",
         json={
             "catalog_entry_id": None,
             "name": None,

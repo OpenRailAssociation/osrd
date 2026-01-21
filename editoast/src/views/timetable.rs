@@ -989,7 +989,13 @@ mod tests {
         ];
 
         let request = app
-            .post(format!("/train_schedule_set/{}/paced_trains", train_schedule_set.id).as_str())
+            .post(
+                format!(
+                    "/train_schedule_sets/{}/paced_trains",
+                    train_schedule_set.id
+                )
+                .as_str(),
+            )
             .json(&vec![paced_train_1.clone()]);
 
         let response = app

@@ -1517,7 +1517,13 @@ mod tests {
         let paced_train_base = simple_paced_train_base();
         // Insert paced_train
         let request = app
-            .post(format!("/train_schedule_set/{}/paced_trains", train_schedule_set.id).as_str())
+            .post(
+                format!(
+                    "/train_schedule_sets/{}/paced_trains",
+                    train_schedule_set.id
+                )
+                .as_str(),
+            )
             .json(&json!(vec![paced_train_base]));
 
         let response: Vec<PacedTrainResponse> = app
@@ -1549,7 +1555,13 @@ mod tests {
 
         // Insert paced_train
         let request = app
-            .post(format!("/train_schedule_set/{}/paced_trains", train_schedule_set.id).as_str())
+            .post(
+                format!(
+                    "/train_schedule_sets/{}/paced_trains",
+                    train_schedule_set.id
+                )
+                .as_str(),
+            )
             .json(&json!(vec![paced_train_base]));
 
         let response: Vec<PacedTrainResponse> = app

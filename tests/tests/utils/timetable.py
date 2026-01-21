@@ -32,7 +32,7 @@ def create_scenario(
     timetable_id = r.json()["timetable_id"]
 
     r = session.post(
-        editoast_url + "/train_schedule_set/",
+        editoast_url + "/train_schedule_sets/",
         json={
             "catalog_entry_id": None,
             "name": None,

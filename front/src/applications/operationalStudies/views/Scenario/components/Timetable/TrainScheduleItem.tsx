@@ -65,7 +65,7 @@ const TrainScheduleItem = ({
   const dispatch = useAppDispatch();
 
   const [postPacedTrain] =
-    osrdEditoastApi.endpoints.postTrainScheduleSetByIdPacedTrains.useMutation();
+    osrdEditoastApi.endpoints.postTrainScheduleSetsByIdPacedTrains.useMutation();
   const [getPacedTrain] = osrdEditoastApi.endpoints.getPacedTrainById.useLazyQuery();
 
   const { summary } = train;

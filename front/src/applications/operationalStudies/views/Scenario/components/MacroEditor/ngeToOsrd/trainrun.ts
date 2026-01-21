@@ -444,7 +444,7 @@ const handleCreateTimetableItem = async (
   const returnPacedTrain = { ...pacedTrain, ...returnPathAndSchedule };
 
   const newTimetableItems = await dispatch(
-    osrdEditoastApi.endpoints.postTrainScheduleSetByIdPacedTrains.initiate({
+    osrdEditoastApi.endpoints.postTrainScheduleSetsByIdPacedTrains.initiate({
       id: trainScheduleSetId,
       body: [pacedTrain, returnPacedTrain],
     })
