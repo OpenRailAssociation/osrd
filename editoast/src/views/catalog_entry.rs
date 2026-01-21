@@ -245,4 +245,32 @@ mod tests {
         assert_eq!(results.len(), 1);
         assert_eq!(results, vec![catalog_entry]);
     }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn catalog_entry_delete() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+
+        let catalog_entry = create_catalog_entry(&mut db_pool.get().await.unwrap()).await;
+
+        let request = app.delete(format!("/catalog_entries/{}", catalog_entry.id).as_str());
+
+        let response = app.fetch(request).await;
+        response.assert_status(StatusCode::NO_CONTENT);
+
+        let exists = CatalogEntry::exists(&mut db_pool.get_ok(), catalog_entry.id)
+            .await
+            .expect("Failed to check if catalog entry exists");
+        assert!(!exists);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn catalog_entry_unexisting_delete() {
+        let app = TestAppBuilder::default_app();
+
+        let request = app.delete("/catalog_entries/999999");
+
+        let response = app.fetch(request).await;
+        response.assert_status(StatusCode::NOT_FOUND);
+    }
 }
