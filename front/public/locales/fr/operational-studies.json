@@ -310,17 +310,22 @@
         "editLocalTitle": "Modifier le paquet local",
         "editPublishedTitle": "Modifier le paquet publié",
         "existingCatalogEntry": "Utiliser un ensemble existant",
-        "localRemoveDialogTitle": "Retirer le paquet local",
-        "localRemoveDialogWarning": "Ce paquet est local : toutes ses informations seront définitivement supprimées.",
+        "localRemoveDialog": {
+          "title": "Retirer le paquet local",
+          "warning": "Ce paquet est local : toutes ses informations seront définitivement supprimées."
+        },
         "name": "Nom",
         "newCatalogEntry": "Nouvel ensemble",
         "newLocalTrainScheduleSet": "Nouveau paquet local",
         "newTrainScheduleSet": "Créer un nouveau paquet",
         "publishDialogTitle": "Publier le paquet local",
+        "publishedRemoveDialog": {
+          "title": "Retirer le paquet",
+          "warning": ""
+        },
         "publishSubmit": "Editer le paquet",
         "publishToCatalog": "Publier au catalogue",
         "removeDialogText": "Vous êtes sur le point de retirer {{name}} du scénario.",
-        "removeDialogTitle": "Retirer le paquet",
         "removeFromScenario": "Retirer du scénario",
         "sandbox": "Bac à sable",
         "transformToLocalCopy": "Transformer en copie locale",

@@ -310,17 +310,22 @@
         "editLocalTitle": "Edit local package",
         "editPublishedTitle": "Edit published package",
         "existingCatalogEntry": "Use an existing set",
-        "localRemoveDialogTitle": "Remove local package",
-        "localRemoveDialogWarning": "This package is local: all information it contains will be permanently deleted.",
+        "localRemoveDialog": {
+          "title": "Remove local package",
+          "warning": "This package is local: all information it contains will be permanently deleted."
+        },
         "name": "Name",
         "newCatalogEntry": "New set",
         "newLocalTrainScheduleSet": "New local package",
         "newTrainScheduleSet": "Create new package",
         "publishDialogTitle": "Publish local package",
+        "publishedRemoveDialog": {
+          "title": "Remove package",
+          "warning": ""
+        },
         "publishSubmit": "Edit package",
         "publishToCatalog": "Publish to catalog",
         "removeDialogText": "You’re about to remove '{{name}}' from this scenario.",
-        "removeDialogTitle": "Remove package",
         "removeFromScenario": "Remove from scenario",
         "sandbox": "Sandbox",
         "transformToLocalCopy": "Transform to local copy",

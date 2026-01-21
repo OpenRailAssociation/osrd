@@ -79,7 +79,15 @@ const TrainScheduleSetTab = ({
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'main.timetable.trainScheduleSets',
   });
+
   const [openedDialog, setOpenedDialog] = useState<OpenDialogName | null>(null);
+
+  const getRemoveDialogTranslation = (key: 'title' | 'warning') => {
+    const namespace =
+      openedDialog === 'removeLocal' ? 'localRemoveDialog' : 'publishedRemoveDialog';
+
+    return t(`${namespace}.${key}`);
+  };
 
   const menuProps: MenuProps = useMemo(
     () => ({
@@ -95,38 +103,26 @@ const TrainScheduleSetTab = ({
               icon: <Verified />,
               onClick: () => setOpenedDialog('publishToCatalog'),
             },
-        trainScheduleSet.published
-          ? {
-              title: t('edit'),
-              icon: <LinkExternal />,
-              onClick: () => setOpenedDialog('editPublished'),
-              disabled: false,
-            }
-          : {
-              title: t('edit'),
-              icon: <LinkExternal />,
-              onClick: () => setOpenedDialog('editLocal'),
-              disabled: false,
-            },
+        {
+          title: t('edit'),
+          icon: <LinkExternal />,
+          onClick: () =>
+            setOpenedDialog(trainScheduleSet.published ? 'editPublished' : 'editLocal'),
+          disabled: false,
+        },
         {
           title: t('duplicate'),
           icon: <Duplicate />,
           onClick: () => noop,
           disabled: true,
         },
-        trainScheduleSet.published
-          ? {
-              title: t('removeFromScenario'),
-              icon: <NoEntry />,
-              onClick: () => setOpenedDialog('removePublished'),
-              disabled: false,
-            }
-          : {
-              title: t('removeFromScenario'),
-              icon: <NoEntry />,
-              onClick: () => setOpenedDialog('removeLocal'),
-              disabled: false,
-            },
+        {
+          title: t('removeFromScenario'),
+          icon: <NoEntry />,
+          onClick: () =>
+            setOpenedDialog(trainScheduleSet.published ? 'removePublished' : 'removeLocal'),
+          disabled: false,
+        },
       ],
     }),
     [trainScheduleSet]
@@ -232,14 +228,12 @@ const TrainScheduleSetTab = ({
           <TrainScheduleDeleteDialog
             trainScheduleSet={trainScheduleSet}
             labels={{
-              title: t(
-                openedDialog === 'removeLocal' ? 'localRemoveDialogTitle' : 'removeDialogTitle'
-              ),
+              title: getRemoveDialogTranslation('title'),
               texts: [
                 t('removeDialogText', {
                   name: trainScheduleSet.name,
                 }),
-                openedDialog === 'removeLocal' ? t('localRemoveDialogWarning') : '',
+                getRemoveDialogTranslation('warning'),
               ],
               submit: t('removeFromScenario'),
               cancel: t('cancel'),
