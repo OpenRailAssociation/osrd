@@ -44,7 +44,7 @@ const frTranslations = {
   ...frCommonTranslations,
 };
 
-const pacedTrainsJson: PacedTrain[] = readJsonFile('./tests/assets/paced-train/paced_trains.json');
+const trains: PacedTrain[] = readJsonFile('./tests/assets/trains/trains.json');
 
 test.describe('@op @paced-trains @exceptions', () => {
   let project: Project;
@@ -64,7 +64,7 @@ test.describe('@op @paced-trains @exceptions', () => {
       infra.id
     );
     scenarioItems = scenario;
-    await sendTrains(trainScheduleSet.id, pacedTrainsJson.slice(0, 6));
+    await sendTrains(trainScheduleSet.id, trains.slice(0, 6));
   });
 
   test.beforeEach(
@@ -155,7 +155,7 @@ test.describe('@op @paced-trains @exceptions', () => {
   }) => {
     const PACED_TRAIN_NUMBER = 4;
     const addedOccurrenceIndex = 1;
-    const editedPacedTrainData = pacedTrainsJson[PACED_TRAIN_NUMBER];
+    const editedPacedTrainData = trains[PACED_TRAIN_NUMBER];
 
     await test.step('Open paced train and check initial menu state', async () => {
       await pacedTrainSection.expandPacedTrainOccurrenceList(PACED_TRAIN_NUMBER);

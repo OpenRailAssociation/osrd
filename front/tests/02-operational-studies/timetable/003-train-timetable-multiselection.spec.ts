@@ -1,4 +1,4 @@
-import type { Scenario, Project, Study, Infra } from 'common/api/osrdEditoastApi';
+import type { Scenario, Project, Study, Infra, PacedTrain } from 'common/api/osrdEditoastApi';
 
 import {
   timetableItemProjectName,
@@ -28,8 +28,7 @@ const frTranslations = {
   ...frCommonTranslations,
 };
 
-const trainSchedulesJson: JSON = readJsonFile('./tests/assets/train-schedule/train_schedules.json');
-const pacedTrainsJson: JSON = readJsonFile('./tests/assets/paced-train/paced_trains.json');
+const trains: PacedTrain[] = readJsonFile('./tests/assets/trains/trains.json');
 
 test.describe('@op @timetable-items @timetable-multiselection', () => {
   let project: Project;
@@ -50,8 +49,8 @@ test.describe('@op @timetable-items @timetable-multiselection', () => {
         infra.id
       );
       scenarioItems = scenario;
-      await sendTrains(trainScheduleSet.id, trainSchedulesJson);
-      await sendTrains(trainScheduleSet.id, pacedTrainsJson);
+
+      await sendTrains(trainScheduleSet.id, trains);
     }
   );
 

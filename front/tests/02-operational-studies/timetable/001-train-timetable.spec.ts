@@ -1,4 +1,4 @@
-import type { Scenario, Project, Study, Infra, PacedTrain } from 'common/api/osrdEditoastApi';
+import type { Scenario, Project, Study, Infra } from 'common/api/osrdEditoastApi';
 
 import {
   IMPORT_PACED_TRAIN_OCCURRENCES_DETAILS,
@@ -105,15 +105,7 @@ test.describe('@op @timetable-items', () => {
     pacedTrainSection,
   }) => {
     await test.step('Verify each imported paced train card and its occurrences', async () => {
-      const pacedTrainsData: PacedTrain[] = readJsonFile(
-        './tests/assets/paced-train/paced_trains.json'
-      );
-
-      for (
-        let pacedTrainIndex = 0;
-        pacedTrainIndex < pacedTrainsData.length;
-        pacedTrainIndex += 1
-      ) {
+      for (let pacedTrainIndex = 0; pacedTrainIndex < 7; pacedTrainIndex += 1) {
         await pacedTrainSection.verifyPacedTrainItemDetails(
           IMPORTED_PACED_TRAIN_DETAILS[pacedTrainIndex],
           pacedTrainIndex,

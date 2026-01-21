@@ -1,13 +1,6 @@
 import { expect } from '@playwright/test';
 
-import type {
-  Scenario,
-  Project,
-  Study,
-  Infra,
-  TrainSchedule,
-  PacedTrain,
-} from 'common/api/osrdEditoastApi';
+import type { Scenario, Project, Study, Infra, PacedTrain } from 'common/api/osrdEditoastApi';
 
 import {
   timetableItemProjectName,
@@ -53,10 +46,7 @@ const frTranslations = {
   ...frCommonTranslations,
 };
 
-const trainSchedulesJson = readJsonFile<TrainSchedule[]>(
-  './tests/assets/train-schedule/train_schedules.json'
-);
-const pacedTrainsJson = readJsonFile<PacedTrain[]>('./tests/assets/paced-train/paced_trains.json');
+const trains: PacedTrain[] = readJsonFile('./tests/assets/trains/trains.json');
 
 test.skip(
   ({ browserName }) => browserName !== 'chromium',
@@ -80,8 +70,9 @@ test.describe('@op @manchette @std', () => {
       infra.id
     );
     scenarioItems = scenario;
-    await sendTrains(trainScheduleSet.id, trainSchedulesJson.slice(20, 21));
-    await sendTrains(trainScheduleSet.id, pacedTrainsJson.slice(6, 7));
+
+    const selectedTrains = [...trains.slice(6, 7), ...trains.slice(27, 28)];
+    await sendTrains(trainScheduleSet.id, selectedTrains);
   });
 
   test.beforeEach('Open scenario and wait for infra to be loaded', async ({ page }) => {

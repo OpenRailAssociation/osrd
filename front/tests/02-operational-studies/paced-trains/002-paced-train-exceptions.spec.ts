@@ -39,7 +39,7 @@ const frTranslations = {
   ...frCommonTranslations,
 };
 
-const pacedTrainsJson: PacedTrain[] = readJsonFile('./tests/assets/paced-train/paced_trains.json');
+const trains: PacedTrain[] = readJsonFile('./tests/assets/trains/trains.json');
 
 test.describe('@op @paced-trains @exceptions', () => {
   let project: Project;
@@ -59,7 +59,7 @@ test.describe('@op @paced-trains @exceptions', () => {
       infra.id
     );
     scenarioItems = scenario;
-    await sendTrains(trainScheduleSet.id, pacedTrainsJson.slice(0, 6));
+    await sendTrains(trainScheduleSet.id, trains.slice(0, 6));
   });
 
   test.beforeEach(
@@ -83,7 +83,7 @@ test.describe('@op @paced-trains @exceptions', () => {
     rollingStockSelector,
     operationalStudiesPage,
   }) => {
-    const editedPacedTrainData = pacedTrainsJson[5];
+    const editedPacedTrainData = trains[5];
 
     await test.step('Open action buttons for paced train at index 5', async () => {
       await pacedTrainSection.getActionButtonsLocators({
@@ -205,7 +205,7 @@ test.describe('@op @paced-trains @exceptions', () => {
     scenarioTimetableSection,
     operationalStudiesPage,
   }) => {
-    const editedPacedTrainData = pacedTrainsJson[1];
+    const editedPacedTrainData = trains[1];
 
     await test.step('Edit paced train at index 1', async () => {
       await pacedTrainSection.openPacedTrainEditor(1);

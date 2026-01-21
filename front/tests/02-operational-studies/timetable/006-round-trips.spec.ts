@@ -1,11 +1,4 @@
-import type {
-  Scenario,
-  Project,
-  Study,
-  Infra,
-  TrainSchedule,
-  PacedTrain,
-} from 'common/api/osrdEditoastApi';
+import type { Scenario, Project, Study, Infra, PacedTrain } from 'common/api/osrdEditoastApi';
 
 import {
   timetableItemProjectName,
@@ -32,10 +25,7 @@ const frTranslations: RoundTripsModalTranslations = readJsonFile<{
   main: RoundTripsModalTranslations;
 }>('public/locales/fr/operational-studies.json').main;
 
-const trainSchedulesJson = readJsonFile<TrainSchedule[]>(
-  './tests/assets/train-schedule/train_schedules.json'
-);
-const pacedTrainsJson = readJsonFile<PacedTrain[]>('./tests/assets/paced-train/paced_trains.json');
+const trains: PacedTrain[] = readJsonFile('./tests/assets/trains/trains.json');
 
 test.describe('@op @timetable-items @round-trips', () => {
   let project: Project;
@@ -58,10 +48,9 @@ test.describe('@op @timetable-items @round-trips', () => {
         infra.id
       );
       scenarioItems = scenario;
-      await Promise.all([
-        sendTrains(trainScheduleSet.id, trainSchedulesJson.slice(18, 21)),
-        sendTrains(trainScheduleSet.id, pacedTrainsJson.slice(4, 7)),
-      ]);
+
+      const selectedTrains = [...trains.slice(4, 7), ...trains.slice(25, 28)];
+      await sendTrains(trainScheduleSet.id, selectedTrains);
 
       await page.goto(
         `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`

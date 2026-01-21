@@ -13,9 +13,7 @@ import sendTrains from '../../utils/send-trains';
 import { deleteScenario } from '../../utils/teardown-utils';
 import type { TimetableFilterTranslations } from '../../utils/types';
 
-const trainSchedulesJson = readJsonFile<TrainSchedule[]>(
-  './tests/assets/train-schedule/train_schedules.json'
-);
+const trains: TrainSchedule[] = readJsonFile('./tests/assets/trains/trains.json');
 
 const frTranslations: TimetableFilterTranslations = readJsonFile<{
   main: TimetableFilterTranslations;
@@ -48,7 +46,7 @@ test.describe('@op @nge', () => {
 
       scenarioItems = scenario;
 
-      await sendTrains(trainScheduleSet.id, trainSchedulesJson.slice(4, 5));
+      await sendTrains(trainScheduleSet.id, trains.slice(11, 12));
 
       await page.goto(
         `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`

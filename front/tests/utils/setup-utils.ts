@@ -2,6 +2,7 @@ import { expect } from '@playwright/test';
 
 import type {
   Infra,
+  PacedTrain,
   PostInfraRailjsonApiResponse,
   Project,
   ProjectCreateForm,
@@ -156,10 +157,7 @@ export async function createStudy(projectId: number, studyName = globalStudyName
  * project, study, and scenario.
  */
 export async function createDataForTests(): Promise<void> {
-  const trainSchedulesJson: JSON = readJsonFile(
-    './tests/assets/train-schedule/train_schedules.json'
-  );
-  const pacedTrainsJson: JSON = readJsonFile('./tests/assets/paced-train/paced_trains.json');
+  const trains: PacedTrain[] = readJsonFile('./tests/assets/trains/trains.json');
 
   try {
     // Step 1: Create infrastructure
@@ -191,8 +189,7 @@ export async function createDataForTests(): Promise<void> {
       studyWithTimetableItems.id,
       mediumInfra.id
     );
-    await sendTrains(trainScheduleSet.id, trainSchedulesJson);
-    await sendTrains(trainScheduleSet.id, pacedTrainsJson);
+    await sendTrains(trainScheduleSet.id, trains);
 
     // Step 7: Configure STDCM search environment for the tests
     const stdcmEnvironment = {

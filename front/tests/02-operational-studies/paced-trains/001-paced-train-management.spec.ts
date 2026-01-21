@@ -67,7 +67,7 @@ const expectedOutputData: StationData[] = readJsonFile(
   './tests/assets/paced-train/output-table-data.json'
 );
 
-const pacedTrainsJson = readJsonFile<[PacedTrain]>('./tests/assets/paced-train/paced_trains.json');
+const trains: [PacedTrain] = readJsonFile('./tests/assets/trains/trains.json');
 
 test.describe('@op @paced-trains', () => {
   let project: Project;
@@ -202,7 +202,7 @@ test.describe('@op @paced-trains', () => {
     operationalStudiesPage,
   }) => {
     await test.step('Set paced trains via API and reload to initialize list', async () => {
-      await sendTrains(trainScheduleSet.id, pacedTrainsJson);
+      await sendTrains(trainScheduleSet.id, trains.slice(0, 7));
       await page.reload();
     });
 
