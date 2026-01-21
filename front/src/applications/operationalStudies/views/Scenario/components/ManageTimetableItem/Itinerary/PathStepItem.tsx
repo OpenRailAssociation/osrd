@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import { ComboBox, Select } from '@osrd-project/ui-core';
-import { AddedLocation, AddLocation, FocusLocation } from '@osrd-project/ui-icons';
+import { AddedLocation, AddLocation, FocusLocation, KebabHorizontal } from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
@@ -173,6 +173,13 @@ const PathStepItem = ({
     return text.length > 0 ? raw : undefined;
   }, [inputValue, pathStepMetadata]);
 
+  const maxVisibleSuggestions = 8;
+  const visibleSuggestions = opSuggestions.slice(0, maxVisibleSuggestions);
+  const hasMore = opSuggestions.length > maxVisibleSuggestions;
+  const numberOfSuggestionsToShow = hasMore
+    ? visibleSuggestions.length + 1
+    : visibleSuggestions.length;
+
   return (
     <div className="path-step-wrapper">
       <div
@@ -208,7 +215,8 @@ const PathStepItem = ({
           <ComboBox
             id={`pathStep-name-${pathStep?.id ?? 'empty'}`}
             value={comboBoxValue}
-            suggestions={opSuggestions}
+            numberOfSuggestionsToShow={numberOfSuggestionsToShow}
+            suggestions={visibleSuggestions}
             getSuggestionLabel={(op) => {
               if (!op) return '';
               if (typeof op === 'string') return op;
@@ -253,6 +261,28 @@ const PathStepItem = ({
                 />
               );
             }}
+            renderFooterItem={
+              hasMore
+                ? () => (
+                    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+                    <li
+                      className="suggestion-item suggestion-item--more"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                    >
+                      <span className="op-suggestion-kebab">
+                        <KebabHorizontal size="sm" />
+                      </span>
+                    </li>
+                  )
+                : undefined
+            }
             small
             narrow
             onFocus={onOpFocus}

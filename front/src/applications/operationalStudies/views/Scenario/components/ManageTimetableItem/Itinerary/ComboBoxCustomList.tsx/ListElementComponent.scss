@@ -125,13 +125,7 @@
           opacity: 1;
         }
 
-        &:hover:not(:has(.op-suggestion-secondary-code:hover))
-          .op-suggestion-secondary-code:first-child:not(.op-suggestion-secondary-code--inactive) {
-          background-color: rgba(31, 15, 150, 1);
-          color: #ffffff;
-        }
-
-        &.active
+        &:has(.op-suggestion-name:hover):not(:has(.op-suggestion-secondary-code:hover))
           .op-suggestion-secondary-code:first-child:not(.op-suggestion-secondary-code--inactive) {
           background-color: rgba(31, 15, 150, 1);
           color: #ffffff;
@@ -150,8 +144,8 @@
       &.suggestion-item--more {
         background-color: rgba(245, 245, 245, 1);
         box-shadow: none;
-        padding-top: 0.25rem;
-        padding-bottom: 0.5rem;
+        padding: 0.25rem 0.5rem;
+        cursor: default;
         display: flex;
       }
     }
