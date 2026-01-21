@@ -1,11 +1,4 @@
-import type {
-  Scenario,
-  Project,
-  Study,
-  Infra,
-  TrainSchedule,
-  PacedTrain,
-} from 'common/api/osrdEditoastApi';
+import type { Scenario, Project, Study, Infra, TrainSchedule } from 'common/api/osrdEditoastApi';
 
 import {
   timetableItemProjectName,
@@ -40,11 +33,7 @@ const frTranslations = {
   ...frCommonTranslations,
 };
 
-const trainSchedulesJson = readJsonFile<TrainSchedule[]>(
-  './tests/assets/train-schedule/train_schedules.json'
-);
-
-const pacedTrainsJson = readJsonFile<PacedTrain[]>('./tests/assets/paced-train/paced_trains.json');
+const trains: TrainSchedule[] = readJsonFile('./tests/assets/trains/trains.json');
 
 test.skip(
   ({ browserName }) => browserName !== 'chromium',
@@ -70,14 +59,9 @@ test.describe('@op @multi-tab-sync', () => {
         infra.id
       );
       scenarioItems = scenario;
-      await sendTrains(
-        trainScheduleSet.id,
-        JSON.parse(JSON.stringify(trainSchedulesJson.slice(0, 2)))
-      );
-      await sendTrains(
-        trainScheduleSet.id,
-        JSON.parse(JSON.stringify(pacedTrainsJson.slice(0, 2)))
-      );
+
+      const selectedTrains = [...trains.slice(0, 2), ...trains.slice(7, 9)];
+      await sendTrains(trainScheduleSet.id, selectedTrains);
     }
   );
 

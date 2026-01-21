@@ -1,11 +1,4 @@
-import type {
-  Scenario,
-  Project,
-  Study,
-  Infra,
-  TrainSchedule,
-  PacedTrain,
-} from 'common/api/osrdEditoastApi';
+import type { Scenario, Project, Study, Infra, PacedTrain } from 'common/api/osrdEditoastApi';
 
 import {
   timetableItemProjectName,
@@ -24,10 +17,7 @@ import createScenario from '../../utils/scenario';
 import sendTrains from '../../utils/send-trains';
 import { deleteScenario } from '../../utils/teardown-utils';
 
-const trainSchedulesJson = readJsonFile<TrainSchedule[]>(
-  './tests/assets/train-schedule/train_schedules.json'
-);
-const pacedTrainsJson = readJsonFile<PacedTrain[]>('./tests/assets/paced-train/paced_trains.json');
+const trains: PacedTrain[] = readJsonFile('./tests/assets/trains/trains.json');
 
 test.describe('@op @paced-train @train-schedule', () => {
   let project: Project;
@@ -56,8 +46,9 @@ test.describe('@op @paced-train @train-schedule', () => {
         infra.id
       )
     ).scenario;
-    await sendTrains(scenarioItems.timetable_id, trainSchedulesJson.slice(10, 11));
-    await sendTrains(scenarioItems.timetable_id, pacedTrainsJson.slice(3, 4));
+
+    const selectedTrains = [...trains.slice(3, 4), ...trains.slice(17, 18)];
+    await sendTrains(scenarioItems.timetable_id, selectedTrains);
 
     await page.goto(
       `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`

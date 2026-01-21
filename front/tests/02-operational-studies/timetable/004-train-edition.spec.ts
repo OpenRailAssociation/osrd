@@ -1,11 +1,4 @@
-import type {
-  Scenario,
-  Project,
-  Study,
-  Infra,
-  TrainSchedule,
-  PacedTrain,
-} from 'common/api/osrdEditoastApi';
+import type { Scenario, Project, Study, Infra, PacedTrain } from 'common/api/osrdEditoastApi';
 
 import {
   timetableItemProjectName,
@@ -39,10 +32,7 @@ const frTranslations = {
   ...frCommonTranslations,
 };
 
-const trainSchedulesJson = readJsonFile<TrainSchedule[]>(
-  './tests/assets/train-schedule/train_schedules.json'
-);
-const pacedTrainsJson = readJsonFile<PacedTrain[]>('./tests/assets/paced-train/paced_trains.json');
+const trains: PacedTrain[] = readJsonFile('./tests/assets/trains/trains.json');
 
 const TIME_WINDOW = '240';
 const INTERVAL = '20';
@@ -70,14 +60,9 @@ test.describe('@op @paced-train @train-schedule', () => {
         infra.id
       );
       scenarioItems = scenario;
-      await sendTrains(
-        trainScheduleSet.id,
-        JSON.parse(JSON.stringify(trainSchedulesJson.slice(0, 1)))
-      );
-      await sendTrains(
-        trainScheduleSet.id,
-        JSON.parse(JSON.stringify(pacedTrainsJson.slice(0, 1)))
-      );
+
+      const selectedTrains = [...trains.slice(0, 1), ...trains.slice(7, 8)];
+      await sendTrains(trainScheduleSet.id, selectedTrains);
 
       await page.goto(
         `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
