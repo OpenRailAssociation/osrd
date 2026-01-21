@@ -95,7 +95,7 @@ pub(in crate::views) async fn post(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Json(train_schedule_set_create_form): Json<TrainScheduleSetForm>,
-) -> Result<Json<TrainScheduleSetResponse>> {
+) -> Result<impl IntoResponse> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())
         .await
@@ -108,10 +108,13 @@ pub(in crate::views) async fn post(
     let changeset = train_schedule_set_create_form.into_changeset();
     let train_schedule_set = changeset.create(conn).await?;
 
-    Ok(Json(TrainScheduleSetResponse {
-        train_schedule_set,
-        train_schedule_count: 0,
-    }))
+    Ok((
+        StatusCode::CREATED,
+        Json(TrainScheduleSetResponse {
+            train_schedule_set,
+            train_schedule_count: 0,
+        }),
+    ))
 }
 
 #[derive(IntoParams, Serialize, Deserialize, ToSchema)]
@@ -530,7 +533,7 @@ mod tests {
         let response: TrainScheduleSetResponse = app
             .fetch(request)
             .await
-            .assert_status(StatusCode::OK)
+            .assert_status(StatusCode::CREATED)
             .json_into();
 
         let expected_response = TrainScheduleSet {
@@ -568,7 +571,7 @@ mod tests {
         let response: TrainScheduleSetResponse = app
             .fetch(request)
             .await
-            .assert_status(StatusCode::OK)
+            .assert_status(StatusCode::CREATED)
             .json_into();
 
         let expected_response = TrainScheduleSet {

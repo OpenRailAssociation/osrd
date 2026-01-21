@@ -65,7 +65,7 @@ pub(in crate::views) async fn post(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Json(catalog_entry_create_form): Json<CatalogEntryForm>,
-) -> Result<Json<CatalogEntry>> {
+) -> Result<impl IntoResponse> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())
         .await
@@ -77,7 +77,7 @@ pub(in crate::views) async fn post(
     let catalog_entry = catalog_entry_changeset
         .create(&mut db_pool.get().await?)
         .await?;
-    Ok(Json(catalog_entry))
+    Ok((StatusCode::CREATED, Json(catalog_entry)))
 }
 
 #[derive(Serialize, ToSchema)]
@@ -211,7 +211,7 @@ mod tests {
         let catalog_entry: CatalogEntry = app
             .fetch(request)
             .await
-            .assert_status(StatusCode::OK)
+            .assert_status(StatusCode::CREATED)
             .json_into();
         assert_eq!(
             catalog_entry,
