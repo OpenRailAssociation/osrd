@@ -104,6 +104,7 @@ dependencies {
 
     // s3
     implementation libs.s3
+    implementation libs.sts
 }
 // endregion
 
