@@ -60,6 +60,12 @@ impl From<String> for NonBlankString {
     }
 }
 
+impl From<&String> for NonBlankString {
+    fn from(s: &String) -> Self {
+        s.as_str().into()
+    }
+}
+
 impl From<&str> for NonBlankString {
     fn from(s: &str) -> Self {
         assert!(!s.is_empty());
