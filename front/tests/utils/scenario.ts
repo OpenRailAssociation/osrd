@@ -51,7 +51,7 @@ export default async function createScenario(
   const timetableResult: TimetableResult = await postApiRequest(`/api/timetable`);
 
   // Create the sandbox
-  const trainScheduleSet: TrainScheduleSet = await postApiRequest(`/api/train_schedule_set`, {
+  const trainScheduleSet: TrainScheduleSet = await postApiRequest(`/api/train_schedule_sets`, {
     name: null,
     description: '',
     catalog_entry_id: null,

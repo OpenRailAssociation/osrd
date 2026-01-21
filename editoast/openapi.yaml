@@ -321,7 +321,6 @@ paths:
                       type: array
                       items:
                         $ref: '#/components/schemas/CatalogEntry'
-  /catalog_entry:
     post:
       tags:
       - catalog_entry
@@ -338,7 +337,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CatalogEntry'
-  /catalog_entry/{id}:
+  /catalog_entries/{id}:
     put:
       tags:
       - catalog_entry
@@ -4384,7 +4383,40 @@ paths:
       responses:
         '204':
           description: No content when successful
-  /train_schedule_set:
+  /train_schedule_sets:
+    get:
+      tags:
+      - train_schedule_set
+      parameters:
+      - name: catalog_entry_id
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: published
+        in: query
+        required: false
+        schema:
+          type: boolean
+      responses:
+        '200':
+          description: list of train schedule sets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                  - $ref: '#/components/schemas/TrainScheduleSet'
+                  - type: object
+                    required:
+                    - train_schedule_count
+                    properties:
+                      train_schedule_count:
+                        type: integer
+                        format: int64
+                        minimum: 0
     post:
       tags:
       - train_schedule_set
@@ -4401,7 +4433,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TrainScheduleSetResponse'
-  /train_schedule_set/{id}:
+  /train_schedule_sets/{id}:
     get:
       tags:
       - train_schedule_set
@@ -4464,7 +4496,7 @@ paths:
           description: the train schedule set is deleted
         '404':
           description: Train schedule set not found
-  /train_schedule_set/{id}/paced_trains:
+  /train_schedule_sets/{id}/paced_trains:
     post:
       tags:
       - train_schedule_set
@@ -4495,40 +4527,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/PacedTrainResponse'
-  /train_schedule_sets:
-    get:
-      tags:
-      - train_schedule_set
-      parameters:
-      - name: catalog_entry_id
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int64
-      - name: published
-        in: query
-        required: false
-        schema:
-          type: boolean
-      responses:
-        '200':
-          description: list of train schedule sets
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  allOf:
-                  - $ref: '#/components/schemas/TrainScheduleSet'
-                  - type: object
-                    required:
-                    - train_schedule_count
-                    properties:
-                      train_schedule_count:
-                        type: integer
-                        format: int64
-                        minimum: 0
   /version:
     get:
       responses:

@@ -211,7 +211,9 @@ mod tests {
             name: Some("test".to_string()),
         };
 
-        let request = app.post("/catalog_entry").json(&json!(catalog_entry_form));
+        let request = app
+            .post("/catalog_entries")
+            .json(&json!(catalog_entry_form));
         let catalog_entry: CatalogEntry = app
             .fetch(request)
             .await

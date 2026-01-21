@@ -85,7 +85,7 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
     [urlStudyId, urlProjectId]
   );
 
-  const [postTrainScheduleSet] = osrdEditoastApi.endpoints.postTrainScheduleSet.useMutation();
+  const [postTrainScheduleSets] = osrdEditoastApi.endpoints.postTrainScheduleSets.useMutation();
   const [postTimetable] = osrdEditoastApi.endpoints.postTimetable.useMutation({});
   const [linkTrainScheduleSetToTimetable] =
     osrdEditoastApi.endpoints.postTimetableByIdTrainScheduleSets.useMutation();
@@ -157,7 +157,7 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
     } else if (projectId && studyId && currentScenario && currentScenario.name) {
       try {
         // Creating a scenario requires to: create a sandbox, a timetable, link both and finally create the scenario
-        const sandbox = await postTrainScheduleSet({
+        const sandbox = await postTrainScheduleSets({
           trainScheduleSetForm: {
             name: null, // sandbox never has a name
             description: '',

@@ -366,7 +366,13 @@ mod tests {
         let paced_trains = vec![paced_train_1, paced_train_2.clone()];
 
         let request = app
-            .post(format!("/train_schedule_set/{}/paced_trains", train_schedule_set.id).as_str())
+            .post(
+                format!(
+                    "/train_schedule_sets/{}/paced_trains",
+                    train_schedule_set.id
+                )
+                .as_str(),
+            )
             .json(&paced_trains);
 
         let response: Vec<PacedTrainResponse> = app
@@ -446,7 +452,13 @@ mod tests {
             vec![exception_1.clone(), exception_2.clone()];
 
         let request = app
-            .post(format!("/train_schedule_set/{}/paced_trains", train_schedule_set.id).as_str())
+            .post(
+                format!(
+                    "/train_schedule_sets/{}/paced_trains",
+                    train_schedule_set.id
+                )
+                .as_str(),
+            )
             .json(&vec![paced_train_1.clone()]);
 
         let _: Vec<PacedTrainResponse> = app
@@ -482,7 +494,13 @@ mod tests {
         ];
 
         let request = app
-            .post(format!("/train_schedule_set/{}/paced_trains", train_schedule_set.id).as_str())
+            .post(
+                format!(
+                    "/train_schedule_sets/{}/paced_trains",
+                    train_schedule_set.id
+                )
+                .as_str(),
+            )
             .json(&vec![paced_train_1.clone()]);
 
         let response = app

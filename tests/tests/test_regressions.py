@@ -34,7 +34,7 @@ def _schedule_with_payload(
     """
     r = session.post(
         editoast_url
-        + f"/train_schedule_set/{scenario.train_schedule_set}/paced_trains/",
+        + f"/train_schedule_sets/{scenario.train_schedule_set}/paced_trains/",
         json=payload,
     )
     if r.status_code // 100 != 2:

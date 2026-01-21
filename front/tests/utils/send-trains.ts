@@ -14,7 +14,7 @@ import { getApiContext, handleErrorResponse } from './api-utils';
 async function sendTrains<T>(trainScheduleSetId: number, body: T): Promise<PacedTrainResponse[]> {
   const apiContext: APIRequestContext = await getApiContext();
   const pacedTrainsResponse: APIResponse = await apiContext.post(
-    `/api/train_schedule_set/${trainScheduleSetId}/paced_trains/`,
+    `/api/train_schedule_sets/${trainScheduleSetId}/paced_trains/`,
     {
       data: JSON.stringify(body),
       headers: {

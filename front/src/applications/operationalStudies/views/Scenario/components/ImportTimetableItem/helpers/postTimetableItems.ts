@@ -11,7 +11,7 @@ const postTimetableItems = async (
   let timetableItems: TimetableItem[] = [];
   if (payloads.length) {
     const rawTimetableItems = await dispatch(
-      osrdEditoastApi.endpoints.postTrainScheduleSetByIdPacedTrains.initiate({
+      osrdEditoastApi.endpoints.postTrainScheduleSetsByIdPacedTrains.initiate({
         id: trainScheduleSetId,
         body: payloads,
       })

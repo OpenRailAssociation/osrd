@@ -428,8 +428,9 @@ fn service_router() -> router::DocumentedRouter {
             //
             // train schedule sets & catalog entries
             //
-            .nests("/train_schedule_set", |path| {
-                path.route("/", post!(train_schedule_set::post))
+            .nests("/train_schedule_sets", |path| {
+                path.route("/", get!(train_schedule_set::get))
+                    .route("/", post!(train_schedule_set::post))
                     .nests("/{id}", |path| {
                         path.route("/", get!(train_schedule_set::get_by_id))
                             .route("/", put!(train_schedule_set::put))
@@ -437,20 +438,15 @@ fn service_router() -> router::DocumentedRouter {
                             .route("/paced_trains", post!(train_schedule_set::post_paced_train))
                     })
             })
-            .nests("/train_schedule_sets", |path| {
-                path.route("/", get!(train_schedule_set::get))
-            })
-            .nests("/catalog_entry", |path| {
-                path.route("/", post!(catalog_entry::post))
+            .nests("/catalog_entries", |path| {
+                path.route("/", get!(catalog_entry::list_paginated))
+                    .route("/", post!(catalog_entry::post))
                     .nests("/{id}", |path| {
                         {
                             path.route("/", put!(catalog_entry::put))
                                 .route("/", delete!(catalog_entry::delete))
                         }
                     })
-            })
-            .nests("/catalog_entries", |path| {
-                path.route("/", get!(catalog_entry::list_paginated))
             })
             //
             // level_crossings

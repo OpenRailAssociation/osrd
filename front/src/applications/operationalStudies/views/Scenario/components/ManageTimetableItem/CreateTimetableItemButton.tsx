@@ -46,7 +46,7 @@ const CreateTimetableItemButton = ({
   });
 
   const [postPacedTrain] =
-    osrdEditoastApi.endpoints.postTrainScheduleSetByIdPacedTrains.useMutation();
+    osrdEditoastApi.endpoints.postTrainScheduleSetsByIdPacedTrains.useMutation();
 
   const createTrainSchedules = async () => {
     if (!checkCurrentConfig(simulationConf, t, dispatch, rollingStock?.name)) return;
