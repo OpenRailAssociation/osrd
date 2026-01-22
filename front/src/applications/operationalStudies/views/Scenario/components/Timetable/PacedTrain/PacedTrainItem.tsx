@@ -79,6 +79,7 @@ type PacedTrainItemProps = {
   infraIsCached: boolean;
   projectingOnSimulatedPathException: boolean | undefined;
   isSelectMode: boolean;
+  moveTimetableItem: (pacedTrainIds: PacedTrainId[]) => void;
 };
 
 const PacedTrainItem = ({
@@ -97,6 +98,7 @@ const PacedTrainItem = ({
   infraIsCached,
   projectingOnSimulatedPathException,
   isSelectMode,
+  moveTimetableItem,
 }: PacedTrainItemProps) => {
   const { editedElementContainer } = useContext(EditedElementContainerContext);
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
@@ -351,6 +353,7 @@ const PacedTrainItem = ({
 
         <TimetableItemActions
           selectPathProjection={selectPathProjection}
+          moveTimetableItem={() => moveTimetableItem([pacedTrain.id])}
           duplicateTimetableItem={duplicatePacedTrain}
           editTimetableItem={() => selectPacedTrainToEdit(pacedTrain)}
           deleteTimetableItem={async () => {

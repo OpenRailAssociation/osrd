@@ -1,11 +1,12 @@
-// import React from 'react';
-
-import { Duplicate, Iterations, Pencil, Trash } from '@osrd-project/ui-icons';
+import { Duplicate, FileDirectorySymlink, Iterations, Pencil, Trash } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { GiPathDistance } from 'react-icons/gi';
 
+import type { PacedTrainId } from 'reducers/osrdconf/types';
+
 type TimetableItemActionsProps = {
   selectPathProjection: () => Promise<void>;
+  moveTimetableItem: (pacedTrainIds: PacedTrainId[]) => void;
   duplicateTimetableItem: () => Promise<void>;
   editTimetableItem: () => void;
   deleteTimetableItem: () => Promise<void>;
@@ -15,6 +16,7 @@ type TimetableItemActionsProps = {
 
 const TimetableItemActions = ({
   selectPathProjection,
+  moveTimetableItem,
   duplicateTimetableItem,
   editTimetableItem,
   deleteTimetableItem,
@@ -44,6 +46,15 @@ const TimetableItemActions = ({
         data-testid="project-item"
       >
         <GiPathDistance />
+      </button>
+      <button
+        type="button"
+        aria-label={t('timetable.trainScheduleSets.moveToPackage')}
+        title={t('timetable.trainScheduleSets.moveToPackage')}
+        onClick={() => moveTimetableItem([])}
+        data-testid="move-item"
+      >
+        <FileDirectorySymlink />
       </button>
       <button
         type="button"

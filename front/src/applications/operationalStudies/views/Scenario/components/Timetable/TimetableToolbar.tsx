@@ -22,7 +22,7 @@ import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import MenuTriggerButton from 'common/MenuTriggerButton';
 import UploadFileModal from 'common/uploadFileModal';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
-import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
+import type { PacedTrainId, TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 
 import FilterPanel from './FilterPanel';
 import SelectionToolBar from './TimetableSelectionToolbar';
@@ -45,6 +45,7 @@ type TimetableToolbarProps = {
   setDisplayTimetableItemManagement: (mode: string) => void;
   refreshNge: () => Promise<void>;
   handleDeleteTimetableItems: () => void;
+  handleMoveTimetableItems: (pacedTrainIds: PacedTrainId[]) => void;
   timetableMode: TimetableMode;
   setTimetableMode: React.Dispatch<React.SetStateAction<TimetableMode>>;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
@@ -63,6 +64,7 @@ const TimetableToolbar = ({
   setDisplayTimetableItemManagement,
   refreshNge,
   handleDeleteTimetableItems,
+  handleMoveTimetableItems,
   timetableMode,
   setTimetableMode,
   upsertTimetableItems,
@@ -257,6 +259,7 @@ const TimetableToolbar = ({
           toggleAllTrainsSelection={toggleAllTrainsSelection}
           handleExportTimetableItems={handleExportTimetableItems}
           handleDeleteTimetableItems={handleDeleteTimetableItems}
+          handleMoveTimetableItems={() => handleMoveTimetableItems(selectedTimetableItemIds)}
         />
       )}
       {isFilterPanelOpen && (

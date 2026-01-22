@@ -1,5 +1,5 @@
 import { Checkbox } from '@osrd-project/ui-core';
-import { Trash, Upload } from '@osrd-project/ui-icons';
+import { FileDirectorySymlink, Trash, Upload } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
@@ -12,6 +12,7 @@ type TimetableSelectionToolbarProps = {
   toggleAllTrainsSelection: () => void;
   handleExportTimetableItems: () => void;
   handleDeleteTimetableItems: () => void;
+  handleMoveTimetableItems: () => void;
 };
 
 const TimetableSelectionToolbar = ({
@@ -21,6 +22,7 @@ const TimetableSelectionToolbar = ({
   toggleAllTrainsSelection,
   handleExportTimetableItems,
   handleDeleteTimetableItems,
+  handleMoveTimetableItems,
 }: TimetableSelectionToolbarProps) => {
   const { t } = useTranslation(['operational-studies', 'translation'], { keyPrefix: 'main' });
 
@@ -63,6 +65,15 @@ const TimetableSelectionToolbar = ({
             type="button"
           >
             <Trash />
+          </button>
+          <button
+            className="delete-selection-button"
+            data-testid="move-all-items-button"
+            title={t('timetable.trainScheduleSets.moveTo')}
+            onClick={handleMoveTimetableItems}
+            type="button"
+          >
+            <FileDirectorySymlink />
           </button>
         </>
       )}
