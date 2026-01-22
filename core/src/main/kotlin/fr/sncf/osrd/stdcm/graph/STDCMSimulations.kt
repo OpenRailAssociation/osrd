@@ -9,6 +9,7 @@ import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint
 import fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
+import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration
 import fr.sncf.osrd.envelope_sim.pipelines.SimStop
 import fr.sncf.osrd.envelope_sim.pipelines.maxEffortEnvelopeFrom
@@ -19,7 +20,6 @@ import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.stdcm.BacktrackingSelfTypeHolder
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
@@ -42,7 +42,6 @@ class STDCMSimulations {
      * simulatedEnvelopes, otherwise computes the matching envelope and adds it to the STDCMGraph.
      */
     fun simulateBlock(
-        rawInfra: RawSignalingInfra,
         rollingStock: RollingStock,
         comfort: Comfort?,
         timeStep: Double,
@@ -55,7 +54,6 @@ class STDCMSimulations {
         if (cached != null) return cached
         val simulatedEnvelope =
             simulateBlock(
-                rawInfra,
                 infraExplorer,
                 blockParams.initialSpeed,
                 blockParams.start,
@@ -79,7 +77,6 @@ class STDCMSimulations {
      * blocks. We are missing slopes and speed limits from earlier in the path.
      */
     fun simulateBlock(
-        rawInfra: RawSignalingInfra,
         infraExplorer: InfraExplorer,
         initialSpeed: Double,
         start: Offset<Block>,
@@ -150,17 +147,12 @@ private fun makeSinglePointEnvelope(speed: Double): Envelope {
     )
 }
 
-/** returns an envelope for a block that already has an envelope, but with a different end speed */
-fun simulateBackwards(
-    rawInfra: RawSignalingInfra,
-    infraExplorer: InfraExplorer,
+/** Returns a new envelope with a different end speed. */
+fun addEndBrakingPart(
+    context: EnvelopeSimContext,
     endSpeed: Double,
-    start: Offset<Block>,
     oldEnvelope: Envelope,
-    graph: STDCMGraph,
 ): Envelope {
-    val path = infraExplorer.getCurrentEdgePathProperties(start, null)
-    val context = build(graph.rollingStock, path, graph.timeStep, graph.comfort)
     val partBuilder = EnvelopePartBuilder()
     partBuilder.setAttr(EnvelopeProfile.BRAKING)
     partBuilder.setAttr(BacktrackingSelfTypeHolder())

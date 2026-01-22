@@ -11,7 +11,7 @@ import fr.sncf.osrd.stdcm.graph.STDCMEdge
 import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.infra_exploration.StepTracker
-import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
+import fr.sncf.osrd.utils.CachedBlockMaxSpeedEnvBuilder
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.units.Offset
 import io.opentelemetry.api.trace.SpanKind
@@ -26,7 +26,7 @@ data class STDCMAStarHeuristic(
     val blockInfra: BlockInfra,
     val remainingTimeEstimations: List<MutableMap<BlockId, Double>>,
     val nPlannedSteps: Int,
-    val mrspBuilder: CachedBlockMRSPBuilder,
+    val maxSpeedEnvBuilder: CachedBlockMaxSpeedEnvBuilder,
     val bestTravelTime: Double,
     val allowanceValue: AllowanceValue?,
     val stopDurations: List<Double>,
@@ -45,23 +45,29 @@ data class STDCMAStarHeuristic(
         // We don't consider the time of the last lookahead block to avoid issues
         // if it contains the destination, and we don't need it (the destination is
         // already locked-in).
+        val lastBlock = allBlocks.removeLast()
 
         // Account for the steps that will be passed in the lookahead
-        val expectedIndex = getExpectedStepIndex(allBlocks.dropLast(1), stepTracker)
+        val expectedIndex = getExpectedStepIndex(allBlocks, stepTracker)
         if (expectedIndex >= remainingTimeEstimations.size) return 0.0
 
         val timeAfterStartOfLastBlock =
-            remainingTimeEstimations[expectedIndex][allBlocks.last()]
-                ?: return Double.POSITIVE_INFINITY
+            remainingTimeEstimations[expectedIndex][lastBlock] ?: return Double.POSITIVE_INFINITY
 
         // Compute the time it takes from the current point until the start
-        // of the last block of the lookahead, then from that point the destination.
+        // of the last block of the lookahead, then from that point to the destination.
         var timeUntilStartOfLastBlock = 0.0
-        for (j in 0 until allBlocks.size - 1) {
+        // If we're at the destination, endSpeed should be 0.0 rather than null. However, if we are
+        // at the destination, there'll be a stop which is taken into account in MaxSpeedEnvBuilder,
+        // so it's fine as is.
+        var endSpeed = maxSpeedEnvBuilder.getMaxSpeedEnvelope(lastBlock).beginSpeed
+        for (block in allBlocks.asReversed()) {
             timeUntilStartOfLastBlock +=
-                mrspBuilder.getBlockTime(allBlocks[j], null, allowanceValue)
+                maxSpeedEnvBuilder.getBlockTime(block, null, allowanceValue, endSpeed)
+            endSpeed = maxSpeedEnvBuilder.getMaxSpeedEnvelope(block, endSpeed).beginSpeed
         }
-        val timeSinceFirstBlock = mrspBuilder.getBlockTime(edge.block, offset, allowanceValue)
+        val timeSinceFirstBlock =
+            maxSpeedEnvBuilder.getBlockTime(edge.block, offset, allowanceValue)
         timeUntilStartOfLastBlock -= timeSinceFirstBlock
 
         val remainingTime = timeUntilStartOfLastBlock + timeAfterStartOfLastBlock
@@ -104,7 +110,7 @@ class STDCMHeuristicBuilder(
     private val rawInfra: RawInfra,
     private val steps: List<ExplorerStep>,
     private val maxRunningTime: Double,
-    private val mrspBuilder: CachedBlockMRSPBuilder,
+    private val maxSpeedEnvBuilder: CachedBlockMaxSpeedEnvBuilder,
     val allowance: AllowanceValue?,
     private val constraints: ConstraintCombiner<StaticIdx<Block>>? = null,
 ) {
@@ -147,7 +153,8 @@ class STDCMHeuristicBuilder(
             steps.first().locations.minOfOrNull {
                 val remainingTimeSinceBlockStart =
                     remainingTimeEstimations.first()[it.edge] ?: Double.POSITIVE_INFINITY
-                val timeSinceBlockStart = mrspBuilder.getBlockTime(it.edge, it.offset, allowance)
+                val timeSinceBlockStart =
+                    maxSpeedEnvBuilder.getBlockTime(it.edge, it.offset, allowance)
                 remainingTimeSinceBlockStart - timeSinceBlockStart
             } ?: Double.POSITIVE_INFINITY
         logger.info(
@@ -158,7 +165,7 @@ class STDCMHeuristicBuilder(
             blockInfra,
             remainingTimeEstimations,
             steps.size,
-            mrspBuilder,
+            maxSpeedEnvBuilder,
             bestTravelTime,
             allowance,
             steps.filter { it.stop }.map { it.duration ?: 0.0 },
@@ -170,6 +177,7 @@ class STDCMHeuristicBuilder(
         val block: BlockId,
         val stepIndex: Int, // Number of steps that have been reached
         val remainingTimeAtBlockStart: Double,
+        val endSpeed: Double?,
     ) : Comparable<PendingBlock> {
         /** Used to find the lowest remaining time at block start in a priority queue. */
         override fun compareTo(other: PendingBlock): Int {
@@ -183,6 +191,12 @@ class STDCMHeuristicBuilder(
      */
     private fun getPredecessors(pendingBlock: PendingBlock): Collection<PendingBlock> {
         if (pendingBlock.remainingTimeAtBlockStart > maxRunningTime) return emptyList()
+        val predecessorEndSpeed =
+            if (maxSpeedEnvBuilder.isStopAtStartOfBlock(pendingBlock.block)) 0.0
+            else
+                maxSpeedEnvBuilder
+                    .getMaxSpeedEnvelope(pendingBlock.block, pendingBlock.endSpeed)
+                    .beginSpeed
         val detector = blockInfra.getBlockEntry(rawInfra, pendingBlock.block)
         val blocks = blockInfra.getBlocksEndingAtDetector(detector)
         val res = mutableListOf<PendingBlock>()
@@ -193,6 +207,7 @@ class STDCMHeuristicBuilder(
                     null,
                     pendingBlock.stepIndex,
                     pendingBlock.remainingTimeAtBlockStart,
+                    predecessorEndSpeed,
                 )
             newBlock?.let { res.add(it) }
         }
@@ -204,7 +219,7 @@ class STDCMHeuristicBuilder(
         val res = PriorityQueue<PendingBlock>()
         val stepCount = steps.size
         for (wp in steps[stepCount - 1].locations) {
-            makePendingBlock(wp.edge, wp.offset, stepCount - 1, 0.0)?.let { res.add(it) }
+            makePendingBlock(wp.edge, wp.offset, stepCount - 1, 0.0, 0.0)?.let { res.add(it) }
         }
         return res
     }
@@ -215,6 +230,7 @@ class STDCMHeuristicBuilder(
         offset: Offset<Block>?,
         currentIndex: Int,
         remainingTime: Double,
+        endSpeed: Double?,
     ): PendingBlock? {
         var newIndex = currentIndex
         val actualOffset = offset ?: blockInfra.getBlockLength(block)
@@ -234,7 +250,8 @@ class STDCMHeuristicBuilder(
         return PendingBlock(
             block,
             newIndex,
-            remainingTime + mrspBuilder.getBlockTime(block, offset, allowance),
+            remainingTime + maxSpeedEnvBuilder.getBlockTime(block, offset, allowance, endSpeed),
+            endSpeed,
         )
     }
 }

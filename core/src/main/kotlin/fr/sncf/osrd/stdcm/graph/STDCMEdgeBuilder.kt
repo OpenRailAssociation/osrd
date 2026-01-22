@@ -86,7 +86,6 @@ internal constructor(
         if (envelope == null)
             envelope =
                 graph.stdcmSimulations.simulateBlock(
-                    graph.rawInfra,
                     graph.rollingStock,
                     graph.comfort,
                     graph.timeStep,
@@ -202,7 +201,7 @@ internal constructor(
             )
         }
         val standardAllowanceSpeedRatio = graph.getStandardAllowanceSpeedRatio(envelope!!)
-        var res: STDCMEdge? =
+        val res =
             STDCMEdge(
                 prevNode.timeData.shifted(
                     timeShift = delayNeeded,
@@ -228,7 +227,7 @@ internal constructor(
                 allowanceData,
                 envelope!!,
             )
-        return graph.backtrackingManager.backtrack(res!!, envelope!!)
+        return graph.backtrackingManager.backtrack(res, envelope!!)
     }
 
     companion object {

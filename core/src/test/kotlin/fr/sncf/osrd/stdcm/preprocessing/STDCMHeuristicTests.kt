@@ -16,7 +16,7 @@ import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelopeImpl
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorers
-import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
+import fr.sncf.osrd.utils.CachedBlockMaxSpeedEnvBuilder
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.appendOnlyLinkedListOf
 import fr.sncf.osrd.utils.units.Distance
@@ -48,8 +48,8 @@ class STDCMHeuristicTests {
             listOf(
                 ExplorerStep(listOf(BlockLocation(blocks[0], Offset(50.meters))), null, false),
                 ExplorerStep(listOf(BlockLocation(blocks[1], Offset(25.meters))), null, false),
-                ExplorerStep(listOf(BlockLocation(blocks[1], Offset(75.meters))), null, false),
-                ExplorerStep(listOf(BlockLocation(blocks[2], Offset(0.meters))), null, false),
+                ExplorerStep(listOf(BlockLocation(blocks[1], Offset(75.meters))), null, true),
+                ExplorerStep(listOf(BlockLocation(blocks[2], Offset(0.meters))), null, true),
                 ExplorerStep(listOf(BlockLocation(blocks[3], Offset(100.meters))), 1.0, true),
             )
 
@@ -59,7 +59,8 @@ class STDCMHeuristicTests {
                     infra,
                     steps,
                     Double.POSITIVE_INFINITY,
-                    mrspBuilder = CachedBlockMRSPBuilder(infra, infra, null),
+                    maxSpeedEnvBuilder =
+                        CachedBlockMaxSpeedEnvBuilder(infra, infra, STANDARD_TRAIN, steps, 2.0),
                     allowance = null,
                 )
                 .build()
@@ -68,24 +69,41 @@ class STDCMHeuristicTests {
         var explorer =
             initInfraExplorers(infra, infra, steps.first().locations.first(), steps).single()
 
-        assertEquals(400.0 - 50.0, getLocationRemainingTime(infra, explorer, 50.meters, heuristic))
-        assertEquals(400.0 - 85.0, getLocationRemainingTime(infra, explorer, 85.meters, heuristic))
+        // Heuristic takes into account decelerations: decelerations add 1s to remaining time,
+        // because the train decelerates on 1m and takes 2s instead of 1s at constant speed.
+        val stopDelta = 1
+
+        // InfraExplorer is at start: 3 stop decelerations to take into account.
+        assertEquals(
+            400.0 - 50.0 + 3 * stopDelta,
+            getLocationRemainingTime(infra, explorer, 50.meters, heuristic),
+        )
+        assertEquals(
+            400.0 - 85.0 + 3 * stopDelta,
+            getLocationRemainingTime(infra, explorer, 85.meters, heuristic),
+        )
 
         // Current block = 1
         explorer = explorer.cloneAndExtendLookahead().single().moveForward()
+        // 3 stop decelerations to take into account
         assertEquals(
-            400.0 - 100.0 - 25.0,
+            400.0 - 100.0 - 25.0 + 3 * stopDelta,
             getLocationRemainingTime(infra, explorer, 25.meters, heuristic),
         )
+        // 2 stop deceleration to take into account
         assertEquals(
-            400.0 - 100.0 - 75.0,
+            400.0 - 100.0 - 75.0 + 2 * stopDelta,
             getLocationRemainingTime(infra, explorer, 75.meters, heuristic),
         )
 
-        // Current block = 2
+        // Current block = 2: 1 stop deceleration to take into account
         explorer = explorer.cloneAndExtendLookahead().single().moveForward()
-        assertEquals(400.0 - 200.0, getLocationRemainingTime(infra, explorer, 0.meters, heuristic))
+        assertEquals(
+            400.0 - 200.0 + stopDelta,
+            getLocationRemainingTime(infra, explorer, 0.meters, heuristic),
+        )
 
+        // Destination reached
         explorer = explorer.cloneAndExtendLookahead().single().moveForward()
         assertEquals(0.0, getLocationRemainingTime(infra, explorer, null, heuristic))
     }
@@ -114,7 +132,8 @@ class STDCMHeuristicTests {
                     infra,
                     steps,
                     Double.POSITIVE_INFINITY,
-                    mrspBuilder = CachedBlockMRSPBuilder(infra, infra, null),
+                    maxSpeedEnvBuilder =
+                        CachedBlockMaxSpeedEnvBuilder(infra, infra, STANDARD_TRAIN, steps, 2.0),
                     allowance = AllowanceValue.Percentage(100.0),
                 )
                 .build()
@@ -124,7 +143,8 @@ class STDCMHeuristicTests {
                     infra,
                     steps,
                     Double.POSITIVE_INFINITY,
-                    mrspBuilder = CachedBlockMRSPBuilder(infra, infra, null),
+                    maxSpeedEnvBuilder =
+                        CachedBlockMaxSpeedEnvBuilder(infra, infra, STANDARD_TRAIN, steps, 2.0),
                     allowance = null,
                 )
                 .build()
@@ -175,7 +195,8 @@ class STDCMHeuristicTests {
                     infra,
                     steps,
                     Double.POSITIVE_INFINITY,
-                    mrspBuilder = CachedBlockMRSPBuilder(infra, infra, null),
+                    maxSpeedEnvBuilder =
+                        CachedBlockMaxSpeedEnvBuilder(infra, infra, STANDARD_TRAIN, steps, 2.0),
                     allowance = null,
                 )
                 .build()
@@ -183,6 +204,9 @@ class STDCMHeuristicTests {
         var explorer =
             initInfraExplorers(infra, infra, steps.first().locations.first(), steps).single()
 
+        // Heuristic takes into account decelerations: decelerations add 1s to remaining time,
+        // because the train decelerates on 1m and takes 2s instead of 1s at constant speed.
+        val stopDelta = 1
         repeat(blocks.size - 1) {
             explorer =
                 explorer.cloneAndExtendLookahead().single { candidate ->
@@ -191,7 +215,7 @@ class STDCMHeuristicTests {
 
             // While the lookahead is on the right path, the remaining distance shouldn't change
             assertEquals(
-                400.0 - 50.0 - 50.0,
+                400.0 - 50.0 - 50.0 + stopDelta,
                 getLocationRemainingTime(infra, explorer, 50.meters, heuristics),
             )
         }

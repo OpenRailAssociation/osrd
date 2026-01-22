@@ -27,7 +27,6 @@ class BacktrackingTests {
         val block = infra.addBlock("a", "b", 1000.meters)
         val firstBlockEnvelope =
             simulateBlock(
-                infra,
                 infraExplorerFromBlock(infra, infra, block),
                 0.0,
                 Offset(0.meters),
@@ -70,7 +69,6 @@ class BacktrackingTests {
         val lastBlock = infra.addBlock("d", "e", 10.meters)
         val firstBlockEnvelope =
             simulateBlock(
-                infra,
                 infraExplorerFromBlock(infra, infra, firstBlock),
                 0.0,
                 Offset(0.meters),
@@ -111,7 +109,6 @@ class BacktrackingTests {
         val secondBlock = infra.addBlock("b", "c", 100.meters, 5.0)
         val firstBlockEnvelope =
             simulateBlock(
-                infra,
                 infraExplorerFromBlock(infra, infra, firstBlock),
                 0.0,
                 Offset(0.meters),

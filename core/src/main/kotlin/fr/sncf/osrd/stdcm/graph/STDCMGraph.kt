@@ -20,7 +20,7 @@ import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
-import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
+import fr.sncf.osrd.utils.CachedBlockMaxSpeedEnvBuilder
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.units.meters
 import java.lang.Double.isFinite
@@ -42,7 +42,7 @@ class STDCMGraph(
     val comfort: Comfort?,
     val timeStep: Double,
     blockAvailability: BlockAvailabilityInterface,
-    val maxRunTime: Double,
+    maxRunTime: Double,
     minScheduleTimeStart: Double,
     steps: List<ExplorerStep>,
     val tag: String?,
@@ -58,11 +58,14 @@ class STDCMGraph(
         DelayManager(minScheduleTimeStart, maxRunTime, blockAvailability, this, timeStep)
     val allowanceManager = EngineeringAllowanceManager(rollingStock.constGamma, this)
     val backtrackingManager: BacktrackingManager = BacktrackingManager(this)
-    val mrspBuilder =
-        CachedBlockMRSPBuilder(
+    val maxSpeedEnvBuilder =
+        CachedBlockMaxSpeedEnvBuilder(
             rawInfra,
             blockInfra,
             rollingStock,
+            steps,
+            timeStep,
+            comfort,
             speedLimitTag = tag,
             temporarySpeedLimitManager = temporarySpeedLimitManager,
             addRollingStockLength = false,
@@ -72,7 +75,7 @@ class STDCMGraph(
     // TODO: this value *should* reflect twice the min delay between two trains,
     // but it seems we need it to be as small as the smallest amount of time
     // a train can occupy a block. There's an issue somewhere.
-    private val visitedNodes = VisitedNodes(30.0, fullInfra, mrspBuilder)
+    private val visitedNodes = VisitedNodes(30.0, fullInfra, maxSpeedEnvBuilder)
 
     // A* heuristic
     val remainingTimeEstimator: STDCMAStarHeuristic
@@ -89,7 +92,7 @@ class STDCMGraph(
                     fullInfra.rawInfra,
                     steps,
                     maxRunTime,
-                    mrspBuilder,
+                    maxSpeedEnvBuilder,
                     standardAllowance,
                     constraints,
                 )
@@ -146,7 +149,7 @@ class STDCMGraph(
         } else {
             val extended = extendLookaheadUntil(node.infraExplorer.clone(), 3)
             for (newPath in extended) {
-                if (newPath.getLookahead().size == 0) continue
+                if (newPath.getLookahead().isEmpty()) continue
                 newPath.moveForward()
                 visitedNodesParameters.fingerprint =
                     VisitedNodes.Fingerprint(

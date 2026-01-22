@@ -40,7 +40,6 @@ class EngineeringAllowanceTests {
         val thirdBlock = infra.addBlock("c", "d", 100.meters, 30.0)
         val firstBlockEnvelope =
             simulateBlock(
-                infra,
                 infraExplorerFromBlock(infra, infra, firstBlock),
                 0.0,
                 Offset(0.meters),
@@ -53,7 +52,6 @@ class EngineeringAllowanceTests {
             )!!
         val secondBlockEnvelope =
             simulateBlock(
-                infra,
                 infraExplorerFromBlock(infra, infra, secondBlock),
                 firstBlockEnvelope.endSpeed,
                 Offset(0.meters),
@@ -122,7 +120,6 @@ class EngineeringAllowanceTests {
         val lastBlock = infra.addBlock("e", "f", 1000.meters, 20.0)
         val firstBlockEnvelope =
             simulateBlock(
-                infra,
                 infraExplorerFromBlock(infra, infra, firstBlock),
                 0.0,
                 Offset(0.meters),
@@ -135,7 +132,6 @@ class EngineeringAllowanceTests {
             )!!
         val secondBlockEnvelope =
             simulateBlock(
-                infra,
                 infraExplorerFromBlock(infra, infra, secondBlock),
                 firstBlockEnvelope.endSpeed,
                 Offset(0.meters),
@@ -207,7 +203,6 @@ class EngineeringAllowanceTests {
         val lastBlock = infra.addBlock("e", "f", 1000.meters, 20.0)
         val firstBlockEnvelope =
             simulateBlock(
-                infra,
                 infraExplorerFromBlock(infra, infra, firstBlock),
                 0.0,
                 Offset(0.meters),
@@ -220,7 +215,6 @@ class EngineeringAllowanceTests {
             )!!
         val secondBlockEnvelope =
             simulateBlock(
-                infra,
                 infraExplorerFromBlock(infra, infra, secondBlock),
                 firstBlockEnvelope.endSpeed,
                 Offset(0.meters),
@@ -637,7 +631,6 @@ class EngineeringAllowanceTests {
         val thirdBlock = infra.addBlock("c", "d", 100.meters, 0.5)
         val firstBlockEnvelope =
             simulateBlock(
-                infra,
                 infraExplorerFromBlock(infra, infra, firstBlock),
                 0.0,
                 Offset(0.meters),
@@ -650,7 +643,6 @@ class EngineeringAllowanceTests {
             )!!
         val secondBlockEnvelope =
             simulateBlock(
-                infra,
                 infraExplorerFromBlock(infra, infra, secondBlock),
                 firstBlockEnvelope.endSpeed,
                 Offset(0.meters),

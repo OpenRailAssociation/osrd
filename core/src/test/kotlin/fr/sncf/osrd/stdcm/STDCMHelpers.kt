@@ -30,7 +30,6 @@ fun getBlocksRunTime(infra: FullInfra, blocks: List<BlockId>): Double {
     for (block in blocks) {
         val envelope =
             simulateBlock(
-                infra.rawInfra,
                 infraExplorerFromBlock(infra.rawInfra, infra.blockInfra, block),
                 speed,
                 Offset(0.meters),
@@ -49,7 +48,6 @@ fun getBlocksRunTime(infra: FullInfra, blocks: List<BlockId>): Double {
 
 /** Helper function to call `simulateBlock` without instantiating an `STDCMSimulations` */
 fun simulateBlock(
-    rawInfra: RawSignalingInfra,
     infraExplorer: InfraExplorer,
     initialSpeed: Double,
     start: Offset<Block>,
@@ -63,7 +61,6 @@ fun simulateBlock(
     val sim = STDCMSimulations()
     val res =
         sim.simulateBlock(
-            rawInfra,
             infraExplorer,
             initialSpeed,
             start,
