@@ -139,8 +139,8 @@ def create_medium_infra(signaling_system: str) -> ScenarioData:
         uic=8799,
         id="North_West_station_1",
     )
-    north_west.add_part(ti0, 300, "V1")
-    north_west_1.add_part(ti1, 250, "V2")
+    north_west.add_part(ti0, 300, "A")
+    north_west_1.add_part(ti1, 250, "B")
 
     pa0 = builder.add_point_switch(
         label="PA0",
@@ -195,7 +195,7 @@ def create_medium_infra(signaling_system: str) -> ScenarioData:
     west = builder.add_operational_point(label="West_station", trigram="WS", uic=8722)
     west.add_part(ta0, 700, "V1")
     west.add_part(ta1, 500, "V2")
-    west.add_part(ta2, 500, "V3")
+    west.add_part(ta2, 500, "A")
     # Slopes
     ta6.add_slope(begin=4000, end=4300, slope=-3)
     ta6.add_slope(begin=4300, end=4700, slope=-6)
@@ -223,7 +223,7 @@ def create_medium_infra(signaling_system: str) -> ScenarioData:
         trigram="SWS",
         uic=8711,
     )
-    south_west.add_part(tb0, 500, "V1")
+    south_west.add_part(tb0, 500, "A")
     # ================================
     #  Around station C: Mid - West
     # ================================
@@ -325,10 +325,10 @@ def create_medium_infra(signaling_system: str) -> ScenarioData:
     mid_west = builder.add_operational_point(
         label="Mid_West_station", trigram="MWS", uic=8733
     )
-    mid_west.add_part(tc0, 550, "V1")
-    mid_west.add_part(tc1, 550, "V2")
-    mid_west.add_part(tc2, 450, "V3")
-    mid_west.add_part(tc3, 450, "V4")
+    mid_west.add_part(tc0, 550, "V1bis")
+    mid_west.add_part(tc1, 550, "V1")
+    mid_west.add_part(tc2, 450, "V2")
+    mid_west.add_part(tc3, 450, "V2bis")
     # ================================
     #  Around station D: Mid-East
     # ================================
@@ -479,8 +479,8 @@ def create_medium_infra(signaling_system: str) -> ScenarioData:
     te3.set_remaining_coords([(-0.145, LAT_0 + 0.002), (-0.145, LAT_3 - 0.002)])
     # Station
     north = builder.add_operational_point(label="North_station", trigram="NS", uic=8755)
-    north.add_part(te1, 1000, "V1")
-    north.add_part(te2, 1025, "V2")
+    north.add_part(te1, 1000, "V1bis")
+    north.add_part(te2, 1025, "V1")
     # Curves
     te3.add_curve(begin=0, end=300, curve=5000)
     te3.add_curve(begin=650, end=850, curve=9000)

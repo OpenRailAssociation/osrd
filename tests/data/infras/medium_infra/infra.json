@@ -7,7 +7,7 @@
                 {
                     "track": "TI0",
                     "position": 300.0,
-                    "local_track_name": "V1"
+                    "local_track_name": "A"
                 }
             ],
             "weight": null,
@@ -31,7 +31,7 @@
                 {
                     "track": "TI1",
                     "position": 250.0,
-                    "local_track_name": "V2"
+                    "local_track_name": "B"
                 }
             ],
             "weight": null,
@@ -65,7 +65,7 @@
                 {
                     "track": "TA2",
                     "position": 500.0,
-                    "local_track_name": "V3"
+                    "local_track_name": "A"
                 }
             ],
             "weight": null,
@@ -89,7 +89,7 @@
                 {
                     "track": "TB0",
                     "position": 500.0,
-                    "local_track_name": "V1"
+                    "local_track_name": "A"
                 }
             ],
             "weight": null,
@@ -113,22 +113,22 @@
                 {
                     "track": "TC0",
                     "position": 550.0,
-                    "local_track_name": "V1"
+                    "local_track_name": "V1bis"
                 },
                 {
                     "track": "TC1",
                     "position": 550.0,
-                    "local_track_name": "V2"
+                    "local_track_name": "V1"
                 },
                 {
                     "track": "TC2",
                     "position": 450.0,
-                    "local_track_name": "V3"
+                    "local_track_name": "V2"
                 },
                 {
                     "track": "TC3",
                     "position": 450.0,
-                    "local_track_name": "V4"
+                    "local_track_name": "V2bis"
                 }
             ],
             "weight": null,
@@ -181,12 +181,12 @@
                 {
                     "track": "TE1",
                     "position": 1000.0,
-                    "local_track_name": "V1"
+                    "local_track_name": "V1bis"
                 },
                 {
                     "track": "TE2",
                     "position": 1025.0,
-                    "local_track_name": "V2"
+                    "local_track_name": "V1"
                 }
             ],
             "weight": null,
