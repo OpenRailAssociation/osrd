@@ -9,6 +9,7 @@ import {
 
 import {
   generatedEditoastApi,
+  type CatalogEntry,
   type CoreEtcsBrakingCurvesResponse,
   type GetLightRollingStockApiResponse,
   type GetSpritesSignalingSystemsApiResponse,
@@ -199,6 +200,30 @@ const osrdEditoastApi = generatedEditoastApi
           return { data: result };
         },
         providesTags: ['scenarios'],
+      }),
+      getAllCatalogEntries: builder.query<CatalogEntry[], unknown>({
+        queryFn: async (_args, { dispatch }) => {
+          const pageSize = 100;
+          let page = 1;
+          let reachEnd = false;
+          const result: CatalogEntry[] = [];
+          while (!reachEnd) {
+            const data = await dispatch(
+              osrdEditoastApi.endpoints.getCatalogEntries.initiate(
+                {
+                  pageSize,
+                  page,
+                },
+                { subscribe: false }
+              )
+            ).unwrap();
+            result.push(...data.results);
+            reachEnd = isNil(data.next);
+            page += 1;
+          }
+          return { data: result };
+        },
+        providesTags: ['catalog_entry'],
       }),
     }),
   })
