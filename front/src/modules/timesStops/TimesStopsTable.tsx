@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { Loader } from 'common/Loaders/Loader';
 import { formatLocalTime } from 'utils/date';
 
+import TimeCell from './TimeCell';
 import type { TimesStopsRowNew } from './types';
 
 type TimesStopsTableProps = {
@@ -50,7 +51,7 @@ const TimesStopsTable = ({ rows, dataIsLoading }: TimesStopsTableProps) => {
       }),
       columnHelper.accessor('requestedArrival', {
         header: () => t('arrivalTime'),
-        cell: (info) => (info.getValue() ? formatLocalTime(info.getValue()!) : ''),
+        cell: (info) => <TimeCell {...info} />,
       }),
       columnHelper.accessor('computedArrival', {
         header: () => t('calculatedArrivalTime'),
