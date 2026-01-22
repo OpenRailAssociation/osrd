@@ -17,10 +17,11 @@ type OperationalPointPopupDetailsProps = {
   };
   selectedTrack: {
     trackName?: string;
+    trackId?: string;
     coordinates?: number[];
   };
   setSelectedTrack: React.Dispatch<
-    SetStateAction<{ trackName?: string; coordinates?: number[] } | undefined>
+    SetStateAction<{ trackName?: string; trackId?: string; coordinates?: number[] } | undefined>
   >;
 };
 

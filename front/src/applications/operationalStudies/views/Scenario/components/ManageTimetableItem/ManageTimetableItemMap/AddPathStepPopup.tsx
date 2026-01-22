@@ -53,6 +53,7 @@ const AddPathStepPopup = ({
     }
   >();
   const [selectedTrack, setSelectedTrack] = useState<{
+    trackId?: string;
     trackName?: string;
     coordinates?: number[];
   }>();
@@ -124,6 +125,7 @@ const AddPathStepPopup = ({
       const tracks = await getTrackSectionsByIds(trackIds);
 
       const trackPartCoordinates = operationalPoint.parts.map((part) => ({
+        trackId: part.track,
         trackName: tracks[part.track]?.extensions?.sncf?.track_name,
         coordinates: getPointOnTrackCoordinates(
           tracks[part.track]?.geo,
@@ -133,6 +135,7 @@ const AddPathStepPopup = ({
       }));
 
       trackPartCoordinates.unshift({
+        trackId: '',
         trackName: undefined,
         coordinates: result[0].geographic.coordinates as number[],
       });
@@ -172,9 +175,7 @@ const AddPathStepPopup = ({
       coordinates: selectedTrack.coordinates,
       location: {
         ...prevLocation,
-        track_reference: selectedTrack.trackName
-          ? { track_name: selectedTrack.trackName }
-          : undefined,
+        track_reference: selectedTrack.trackId ? { track_id: selectedTrack.trackId } : undefined,
       },
     });
   }, [clickedOp, selectedTrack]);
