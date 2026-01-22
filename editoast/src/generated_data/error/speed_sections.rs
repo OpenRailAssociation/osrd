@@ -67,6 +67,7 @@ pub fn check_speed_section_track_ranges(
                     format!("track_ranges.{index}.{field}"),
                     pos,
                     [0.0, track_cache.length],
+                    ObjectRef::new::<&String>(ObjectType::TrackSection, track_id),
                 ));
             }
         }
@@ -184,8 +185,14 @@ mod tests {
             &Graph::load(&infra_cache),
         );
         assert_eq!(1, errors.len());
-        let infra_error =
-            InfraError::new_out_of_range(&speed_section, "track_ranges.0.end", 530., [0.0, 500.]);
+        let obj_ref = ObjectRef::new(ObjectType::TrackSection, "A");
+        let infra_error = InfraError::new_out_of_range(
+            &speed_section,
+            "track_ranges.0.end",
+            530.,
+            [0.0, 500.],
+            obj_ref,
+        );
         assert_eq!(infra_error, errors[0]);
     }
 

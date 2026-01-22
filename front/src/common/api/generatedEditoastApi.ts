@@ -3191,6 +3191,7 @@ export type InfraErrorType =
       error_type: 'out_of_range';
       expected_range: number[];
       position: number;
+      reference: ObjectRef;
     }
   | {
       error_type: 'overlapping_electrifications';
