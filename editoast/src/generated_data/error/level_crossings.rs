@@ -66,6 +66,7 @@ pub fn check_parts_position(
                 format!("parts.{index}.position"),
                 level_crossing_part.position,
                 [0.0, track_cache.length],
+                ObjectRef::new(ObjectType::TrackSection, track_id),
             ));
         }
     }
@@ -133,8 +134,14 @@ mod tests {
             &Graph::load(&infra_cache),
         );
         assert_eq!(1, errors.len());
-        let infra_error =
-            InfraError::new_out_of_range(&level_crossing, "parts.0.position", 530., [0.0, 500.]);
+        let obj_ref = ObjectRef::new(ObjectType::TrackSection, "A");
+        let infra_error = InfraError::new_out_of_range(
+            &level_crossing,
+            "parts.0.position",
+            530.,
+            [0.0, 500.],
+            obj_ref,
+        );
         assert_eq!(infra_error, errors[0]);
     }
 }

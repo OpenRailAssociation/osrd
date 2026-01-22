@@ -30,7 +30,7 @@ pub fn check_op_parts(op: &ObjectCache, infra_cache: &InfraCache, _: &Graph) -> 
         let track_id = &*part.track;
 
         if !infra_cache.track_sections().contains_key(track_id) {
-            let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_id.clone());
+            let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_id);
             infra_errors.push(InfraError::new_invalid_reference(
                 op,
                 format!("parts.{index}.track"),
@@ -50,6 +50,7 @@ pub fn check_op_parts(op: &ObjectCache, infra_cache: &InfraCache, _: &Graph) -> 
                 format!("parts.{index}.position"),
                 part.position,
                 [0.0, track_cache.length],
+                ObjectRef::new(ObjectType::TrackSection, track_id),
             ));
         }
     }
@@ -85,7 +86,9 @@ mod tests {
         infra_cache.add(&op).unwrap();
         let errors = check_op_parts(&op.clone().into(), &infra_cache, &Graph::load(&infra_cache));
         assert_eq!(1, errors.len());
-        let infra_error = InfraError::new_out_of_range(&op, "parts.0.position", 530., [0.0, 500.]);
+        let obj_ref = ObjectRef::new(ObjectType::TrackSection, "A");
+        let infra_error =
+            InfraError::new_out_of_range(&op, "parts.0.position", 530., [0.0, 500.], obj_ref);
         assert_eq!(infra_error, errors[0]);
     }
 }

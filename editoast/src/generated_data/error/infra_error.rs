@@ -54,6 +54,7 @@ pub enum InfraErrorType {
     OutOfRange {
         position: f64,
         expected_range: [f64; 2],
+        reference: ObjectRef,
     },
     OverlappingElectrifications {
         reference: ObjectRef,
@@ -92,6 +93,7 @@ impl InfraError {
         field: T,
         position: f64,
         expected_range: [f64; 2],
+        reference: ObjectRef,
     ) -> Self {
         Self {
             obj_id: obj.get_id().clone(),
@@ -101,6 +103,7 @@ impl InfraError {
             sub_type: InfraErrorType::OutOfRange {
                 position,
                 expected_range,
+                reference,
             },
         }
     }

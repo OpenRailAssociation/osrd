@@ -9244,6 +9244,7 @@ components:
         required:
         - position
         - expected_range
+        - reference
         - error_type
         properties:
           error_type:
@@ -9258,6 +9259,8 @@ components:
           position:
             type: number
             format: double
+          reference:
+            $ref: '#/components/schemas/ObjectRef'
       - type: object
         required:
         - reference
