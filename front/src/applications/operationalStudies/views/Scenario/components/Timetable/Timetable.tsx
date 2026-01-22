@@ -4,18 +4,28 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { Virtualizer } from 'virtua';
 
-import useScenarioTrainScheduleSet from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
+import useScenarioTrainScheduleSet, {
+  type TimetableItemWithDetailsAndTrainScheduleSet,
+} from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
+import { setFailure } from 'reducers/main';
 import type {
   TimetableItemId,
   TimetableItem,
   TimetableItemToEditData,
+  PacedTrainId,
 } from 'reducers/osrdconf/types';
+import { useAppDispatch } from 'store';
+import { castErrorToFailure } from 'utils/error';
+import { extractEditoastIdFromPacedTrainId } from 'utils/trainId';
+import { useAsyncMemo } from 'utils/useAsyncMemo';
 
 import CalendarTrainList from './CalendarTrainList';
 import TimetableToolbar from './TimetableToolbar';
 import AddNewTrainScheduleSetTab from './TrainScheduleSet/AddNewTrainScheduleSetTab';
+import TrainScheduleMoveDialog from './TrainScheduleSet/TrainScheduleMoveDialog';
 import TrainScheduleSetDialog from './TrainScheduleSet/TrainScheduleSetDialog';
 import TrainScheduleSetTab from './TrainScheduleSet/TrainScheduleSetTab';
 import type { TimetableMode } from './types';
@@ -48,7 +58,10 @@ const Timetable = ({
   selectedTimetableItemIds,
   projectingOnSimulatedPathException,
 }: TimetableProps) => {
+  const dispatch = useAppDispatch();
+
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main.timetable' });
+
   const [showTrainDetails, setShowTrainDetails] = useState(false);
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [timetableMode, setTimetableMode] = useState<TimetableMode>('calendar');
@@ -56,6 +69,12 @@ const Timetable = ({
     new Set()
   );
   const [showTrainScheduleSetDialog, setShowTrainScheduleSetDialog] = useState(false);
+
+  const [patchPacedTrainMove] = osrdEditoastApi.endpoints.patchPacedTrainMove.useMutation({});
+
+  const [showTrainScheduleMoveDialog, setShowTrainScheduleMoveDialog] = useState(false);
+  const [pacedTrainIdsToMove, setPacedTrainIdsToMove] = useState<PacedTrainId[]>([]);
+  const [trainScheduleSetIdSelected, setTrainScheduleSetIdSelected] = useState<number>();
 
   const {
     timetableItemsByTrainScheduleSets,
@@ -103,6 +122,43 @@ const Timetable = ({
     [selectedTimetableItemIds]
   );
 
+  // TODO: the "as unknown as" should be removed on unmock.
+  // We do it because the PacedTrainWithDetail doesn't have (yet) the `train_schedule_set_id`
+  // But here we know that is set but the `useScenarioTrainScheduleSet` hook.
+  const trainScheduleSetsData = useAsyncMemo(
+    () =>
+      getTrainScheduleSetsFromTimetableItems(
+        filteredTimetableItems as unknown as TimetableItemWithDetailsAndTrainScheduleSet[]
+      ),
+    [filteredTimetableItems, getTrainScheduleSetsFromTimetableItems]
+  );
+
+  const openMoveDialog = useCallback((pacedTrainIds: PacedTrainId[]) => {
+    if (pacedTrainIds.length === 0) return;
+
+    setPacedTrainIdsToMove(pacedTrainIds);
+    setShowTrainScheduleMoveDialog(true);
+  }, []);
+
+  const handleSubmitMove = useCallback(
+    async (trainScheduleSetId: number) => {
+      const formattedPacedTrainIds = pacedTrainIdsToMove.map(extractEditoastIdFromPacedTrainId);
+      try {
+        await patchPacedTrainMove({
+          body: {
+            paced_train_ids: formattedPacedTrainIds,
+            train_schedule_set_id: trainScheduleSetId,
+          },
+        }).unwrap();
+      } catch (e) {
+        dispatch(setFailure(castErrorToFailure(e)));
+      } finally {
+        setPacedTrainIdsToMove([]);
+      }
+    },
+    [pacedTrainIdsToMove, patchPacedTrainMove, dispatch]
+  );
+
   return (
     <div className="scenario-timetable">
       <div
@@ -123,6 +179,7 @@ const Timetable = ({
           setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
           refreshNge={() => Promise.resolve()}
           handleDeleteTimetableItems={handleDeleteTimetableItems}
+          handleMoveTimetableItems={openMoveDialog}
           timetableMode={timetableMode}
           setTimetableMode={setTimetableMode}
           upsertTimetableItems={upsertTimetableItems}
@@ -141,6 +198,7 @@ const Timetable = ({
               projectingOnSimulatedPathException={projectingOnSimulatedPathException}
               isSelectMode={isSelectMode}
               timetableMode={timetableMode}
+              moveTimetableItem={openMoveDialog}
             />
           </Virtualizer>
         )}
@@ -188,6 +246,7 @@ const Timetable = ({
                       projectingOnSimulatedPathException={projectingOnSimulatedPathException}
                       isSelectMode={isSelectMode}
                       timetableMode={timetableMode}
+                      moveTimetableItem={openMoveDialog}
                     />
                   </TrainScheduleSetTab>
                 );
@@ -208,6 +267,25 @@ const Timetable = ({
             submit: t('trainScheduleSets.addTrainScheduleSet'),
             cancel: t('trainScheduleSets.cancel'),
           }}
+        />
+      )}
+
+      {showTrainScheduleMoveDialog && trainScheduleSetsData.type === 'ready' && (
+        <TrainScheduleMoveDialog
+          trainScheduleSets={trainScheduleSetsData.data.map((tss) => tss.trainScheduleSet)}
+          setTrainScheduleSetIdSelected={setTrainScheduleSetIdSelected}
+          trainScheduleSetIdSelected={trainScheduleSetIdSelected}
+          getCatalogEntries={getCatalogEntries}
+          labels={{
+            title: t('trainScheduleSets.movingToAnotherPackage'),
+            submit: t('trainScheduleSets.moveToSelectPackage'),
+            cancel: t('trainScheduleSets.cancel'),
+          }}
+          onCancel={() => {
+            setTrainScheduleSetIdSelected(undefined);
+            setShowTrainScheduleMoveDialog(false);
+          }}
+          onSubmit={handleSubmitMove}
         />
       )}
     </div>

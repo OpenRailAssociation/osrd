@@ -14,7 +14,12 @@ import isMainCategory from 'modules/rollingStock/helpers/category';
 import { deletePacedTrains } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import { setFailure, setSuccess } from 'reducers/main';
-import type { TimetableItem, TimetableItemId, TrainId } from 'reducers/osrdconf/types';
+import type {
+  PacedTrainId,
+  TimetableItem,
+  TimetableItemId,
+  TrainId,
+} from 'reducers/osrdconf/types';
 import {
   updateHoveredTrainId,
   updateTrainIdUsedForProjection,
@@ -45,6 +50,7 @@ type TrainScheduleItemProps = {
   setSelectedTimetableItemIds: React.Dispatch<React.SetStateAction<TimetableItemId[]>>;
   subCategories: SubCategory[];
   isSelectMode: boolean;
+  moveTimetableItem: (pacedTrainIds: PacedTrainId[]) => void;
 };
 
 const TrainScheduleItem = ({
@@ -60,6 +66,7 @@ const TrainScheduleItem = ({
   setSelectedTimetableItemIds,
   subCategories,
   isSelectMode,
+  moveTimetableItem,
 }: TrainScheduleItemProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const dateTimeLocale = useDateTimeLocale();
@@ -290,6 +297,7 @@ const TrainScheduleItem = ({
       </div>
       <TimetableItemActions
         selectPathProjection={selectPathProjection}
+        moveTimetableItem={() => moveTimetableItem([train.id])}
         duplicateTimetableItem={duplicateTrain}
         editTimetableItem={() => selectTrainToEdit(train)}
         deleteTimetableItem={deleteTrain}

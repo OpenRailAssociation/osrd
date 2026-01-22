@@ -9,6 +9,7 @@ import type { PacedTrainWithDetails, TimetableItemWithDetails } from 'modules/ti
 import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
 import type {
   OccurrenceId,
+  PacedTrainId,
   TimetableItem,
   TimetableItemId,
   TimetableItemToEditData,
@@ -37,6 +38,7 @@ type CalendarTrainListProps = {
   projectingOnSimulatedPathException: boolean | undefined;
   isSelectMode: boolean;
   timetableMode: TimetableMode;
+  moveTimetableItem: (pacedTrainIds: PacedTrainId[]) => void;
 };
 
 const formatDepartureDate = (d: Date, locale: Intl.Locale) =>
@@ -54,6 +56,7 @@ const CalendarTrainList = ({
   projectingOnSimulatedPathException,
   isSelectMode,
   timetableMode,
+  moveTimetableItem,
 }: CalendarTrainListProps) => {
   const dateTimeLocale = useDateTimeLocale();
 
@@ -158,6 +161,7 @@ const CalendarTrainList = ({
               }
               subCategories={subCategories}
               isSelectMode={isSelectMode}
+              moveTimetableItem={moveTimetableItem}
             />
           ) : (
             <PacedTrainItem
@@ -176,6 +180,7 @@ const CalendarTrainList = ({
               subCategories={subCategories}
               projectingOnSimulatedPathException={projectingOnSimulatedPathException}
               isSelectMode={isSelectMode}
+              moveTimetableItem={moveTimetableItem}
             />
           )}
         </div>

@@ -335,9 +335,10 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
       this.timetableItems.nth(index)
     );
     await expect(trainScheduleButton).toBeVisible();
-    await trainScheduleButton.click();
+    // Click and hover near the left edge to avoid action buttons
+    await trainScheduleButton.click({ position: { x: 5, y: 5 } });
     await trainScheduleButton.scrollIntoViewIfNeeded();
-    await trainScheduleButton.hover();
+    await trainScheduleButton.hover({ position: { x: 5, y: 5 } });
     await expect(this.projectItemButton.nth(index)).toBeVisible();
     await this.projectItemButton.nth(index).click();
   }
