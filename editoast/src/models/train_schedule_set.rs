@@ -8,7 +8,7 @@ use utoipa::ToSchema;
 
 use database::DbConnection;
 
-#[derive(Deserialize, Serialize, ToSchema, Debug, Clone, Model)]
+#[derive(Deserialize, Serialize, ToSchema, Debug, Clone, PartialEq, Model)]
 #[model(table = database::tables::train_schedule_set)]
 #[model(gen(ops = crud, batch_ops = crud, list))]
 #[model(row(derive(diesel::QueryableByName)))]
