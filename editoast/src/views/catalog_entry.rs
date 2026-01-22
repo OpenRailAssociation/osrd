@@ -168,10 +168,10 @@ pub(in crate::views) async fn put(
 ),
 )]
 pub(in crate::views) async fn delete(
-    State(_db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(CatalogEntryIdParam {
-        id: _catalog_entry_id,
+        id: catalog_entry_id,
     }): Path<CatalogEntryIdParam>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
@@ -181,8 +181,10 @@ pub(in crate::views) async fn delete(
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
     }
-
-    // TODO: Add database operation to delete a catalog entry
+    CatalogEntry::delete_static_or_fail(&mut db_pool.get().await?, catalog_entry_id, || {
+        CatalogEntryError::NotFound { catalog_entry_id }
+    })
+    .await?;
     Ok(StatusCode::NO_CONTENT)
 }
 
@@ -244,5 +246,33 @@ mod tests {
         let results = catalog_entries.results;
         assert_eq!(results.len(), 1);
         assert_eq!(results, vec![catalog_entry]);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn catalog_entry_delete() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+
+        let catalog_entry = create_catalog_entry(&mut db_pool.get().await.unwrap()).await;
+
+        let request = app.delete(format!("/catalog_entries/{}", catalog_entry.id).as_str());
+
+        let response = app.fetch(request).await;
+        response.assert_status(StatusCode::NO_CONTENT);
+
+        let exists = CatalogEntry::exists(&mut db_pool.get_ok(), catalog_entry.id)
+            .await
+            .expect("Failed to check if catalog entry exists");
+        assert!(!exists);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn catalog_entry_unexisting_delete() {
+        let app = TestAppBuilder::default_app();
+
+        let request = app.delete("/catalog_entries/999999");
+
+        let response = app.fetch(request).await;
+        response.assert_status(StatusCode::NOT_FOUND);
     }
 }
