@@ -10,7 +10,7 @@ import fr.sncf.osrd.stdcm.graph.visited_node_tracking.VisitedNodes.Parameters
 import fr.sncf.osrd.stdcm.infra_exploration.EdgeIdentifier
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.stdcm.infra_exploration.getRemainingBlocks
-import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
+import fr.sncf.osrd.utils.CachedBlockMaxSpeedEnvBuilder
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.meters
 import kotlin.math.min
@@ -44,7 +44,7 @@ import kotlin.math.min
 data class VisitedNodes(
     val minDelay: Double,
     val infra: FullInfra? = null,
-    val mrspBuilder: CachedBlockMRSPBuilder? = null,
+    val maxSpeedEnvBuilder: CachedBlockMaxSpeedEnvBuilder? = null,
 ) {
 
     /** Data class representing a space location. Must be usable as map key. */
@@ -111,7 +111,7 @@ data class VisitedNodes(
 
                 val minTravelTime =
                     parameters.explorer.getRemainingBlocks().sumOf {
-                        mrspBuilder!!.getBlockTime(it, null)
+                        maxSpeedEnvBuilder!!.getBlockTime(it, null)
                     }
 
                 // We compare it to a scenario with the minimum amount of added travel time, and

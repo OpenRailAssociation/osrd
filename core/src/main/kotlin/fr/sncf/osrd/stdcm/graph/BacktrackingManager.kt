@@ -54,7 +54,6 @@ class BacktrackingManager(private val graph: STDCMGraph) {
     private fun rebuildEdgeBackward(old: STDCMEdge, endSpeed: Double): STDCMEdge? {
         val oldEnvelope =
             graph.stdcmSimulations.simulateBlock(
-                graph.rawInfra,
                 graph.rollingStock,
                 graph.comfort,
                 graph.timeStep,
@@ -68,15 +67,9 @@ class BacktrackingManager(private val graph: STDCMGraph) {
                     getNextStopOnCurrentBlock(old.infraExplorer),
                 ),
             )
-        val newEnvelope =
-            simulateBackwards(
-                graph.rawInfra,
-                old.infraExplorer,
-                endSpeed,
-                old.envelopeStartOffset,
-                oldEnvelope!!,
-                graph,
-            )
+        val path = old.infraExplorer.getCurrentEdgePathProperties(old.envelopeStartOffset, null)
+        val context = build(graph.rollingStock, path, graph.timeStep, graph.comfort)
+        val newEnvelope = addEndBrakingPart(context, endSpeed, oldEnvelope!!)
         val prevNode = old.previousNode
         return STDCMEdgeBuilder.fromNode(graph, prevNode, old.infraExplorer)
             .setEnvelope(newEnvelope)
