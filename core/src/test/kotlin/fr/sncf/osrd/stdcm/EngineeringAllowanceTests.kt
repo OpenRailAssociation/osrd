@@ -1,12 +1,14 @@
 package fr.sncf.osrd.stdcm
 
 import com.google.common.collect.ImmutableMultimap
+import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.pathfinding.BlockLocation
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment
 import fr.sncf.osrd.train.TestTrains
+import fr.sncf.osrd.train.TestTrains.VERY_LONG_FAST_TRAIN
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -681,6 +683,46 @@ class EngineeringAllowanceTests {
                 .setUnavailableTimes(occupancyGraph)
                 .setTimeStep(timeStep)
                 .run()!!
+        occupancyTest(res, occupancyGraph, 2 * timeStep)
+    }
+
+    /**
+     * Reproduce a bug: this engineering allowance setup forces the train to be planned as close as
+     * possible to the unoccupied section in the first blocks. But because the gradients don't carry
+     * over block transitions, the post-processing simulation has worse gradients in the second
+     * blocks compared to the sims during the search.
+     */
+    @Test
+    fun testVeryLongTrainWithSlopes() {
+        val infra = DummyInfra()
+        val blocks =
+            listOf(
+                infra.addBlock("a", "b", 100.meters, 60.0, gradient = 40.0),
+                infra.addBlock("b", "c", 2_000.meters, 60.0),
+                infra.addBlock("c", "d", 2_000.meters, 60.0),
+                infra.addBlock("d", "e", 2_000.meters, 30.0),
+                infra.addBlock("e", "f", 100.meters, 30.0),
+            )
+        val occupancyGraph =
+            ImmutableMultimap.of(
+                blocks[0],
+                OccupancySegment(150.0, POSITIVE_INFINITY, 0.meters, 100.meters),
+                blocks[1],
+                OccupancySegment(150.0, POSITIVE_INFINITY, 0.meters, 2_000.meters),
+                blocks.last(),
+                OccupancySegment(0.0, 2 * 3600.0, 0.meters, 100.meters),
+            )
+        val timeStep = 2.0
+        val res =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .setStartLocations(setOf(BlockLocation(blocks.first(), Offset(0.meters))))
+                .setEndLocations(setOf(BlockLocation(blocks.last(), Offset(1.meters))))
+                .setUnavailableTimes(occupancyGraph)
+                .setTimeStep(timeStep)
+                .setRollingStock(VERY_LONG_FAST_TRAIN)
+                .setStandardAllowance(AllowanceValue.Percentage(10.0))
+                .run() ?: return // Not finding a solution is valid (and expected)
         occupancyTest(res, occupancyGraph, 2 * timeStep)
     }
 }

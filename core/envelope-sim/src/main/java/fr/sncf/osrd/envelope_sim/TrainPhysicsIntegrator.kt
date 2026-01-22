@@ -139,9 +139,8 @@ private constructor(
             path: PhysicsPath,
             headPosition: Double,
         ): Double {
-            var headPosition = headPosition
-            val tailPosition = min(max(0.0, headPosition - rollingStock.length), path.length)
-            headPosition = min(max(0.0, headPosition), path.length)
+            val headPosition = headPosition
+            val tailPosition = headPosition - rollingStock.length
             return path.getAverageGrade(tailPosition, headPosition)
         }
 
@@ -159,9 +158,8 @@ private constructor(
             path: PhysicsPath,
             headPosition: Double,
         ): Double {
-            var headPosition = headPosition
-            val tailPosition = min(max(0.0, headPosition - rollingStock.length), path.length)
-            headPosition = min(max(0.0, headPosition), path.length)
+            val headPosition = headPosition
+            val tailPosition = headPosition - rollingStock.length
             return path.getMinGrade(tailPosition, headPosition)
         }
 

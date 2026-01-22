@@ -14,11 +14,13 @@ import fr.sncf.osrd.envelope_sim.pipelines.SimStop
 import fr.sncf.osrd.envelope_sim.pipelines.maxEffortEnvelopeFrom
 import fr.sncf.osrd.envelope_sim.pipelines.maxSpeedEnvelopeFrom
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
+import fr.sncf.osrd.path.implementations.PathViewWithFullSlopes
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Block
+import fr.sncf.osrd.sim_infra.api.BlockInfra
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.stdcm.BacktrackingSelfTypeHolder
@@ -27,6 +29,7 @@ import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.SelfTypeHolder
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.Offset.Companion.min
 import java.lang.ref.SoftReference
 
 /** This class contains all the methods used to simulate the train behavior. */
@@ -43,6 +46,7 @@ class STDCMSimulations {
      */
     fun simulateBlock(
         rawInfra: RawSignalingInfra,
+        blockInfra: BlockInfra,
         rollingStock: RollingStock,
         comfort: Comfort?,
         timeStep: Double,
@@ -56,6 +60,7 @@ class STDCMSimulations {
         val simulatedEnvelope =
             simulateBlock(
                 rawInfra,
+                blockInfra,
                 infraExplorer,
                 blockParams.initialSpeed,
                 blockParams.start,
@@ -80,6 +85,7 @@ class STDCMSimulations {
      */
     fun simulateBlock(
         rawInfra: RawSignalingInfra,
+        blockInfra: BlockInfra,
         infraExplorer: InfraExplorer,
         initialSpeed: Double,
         start: Offset<Block>,
@@ -104,7 +110,20 @@ class STDCMSimulations {
             stops = listOf(SimStop(stopOffset, RJSReceptionSignal.SHORT_SLIP_STOP))
             simLength = Distance.min(simLength, stopOffset.distance)
         }
-        val path = infraExplorer.getCurrentEdgePathProperties(start, simLength)
+
+        // We build the entire train path, then take a subsection that still keeps track of previous
+        // slopes that part of the train may still be covering. It feels inefficient as it has
+        // quadratic scaling with path length, but surprisingly it barely shows up in profilers
+        // (compared to everything else).
+        val pathStart = infraExplorer.getCurrentBlockRange().offsetToTrainPath(start)
+        val fullPath = infraExplorer.buildFullPath(rawInfra, blockInfra)
+        val path =
+            PathViewWithFullSlopes(
+                fullPath,
+                pathStart,
+                min(pathStart + simLength, fullPath.getLength()),
+            )
+
         val context = build(rollingStock, path, timeStep, comfort)
         val mrsp = computeMRSP(path, rollingStock, false, trainTag, temporarySpeedLimitManager)
         return try {
