@@ -1,0 +1,60 @@
+.time-cell {
+  position: relative;
+  display: inline-block;
+  font-size: 14px;
+  font-weight: 400;
+  width: 84px;
+  height: 40px;
+  line-height: 20px;
+  font-family: inherit, monospace;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.5);
+  }
+
+  &__input,
+  &__display {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+
+  &__display {
+    z-index: 1;
+    color: #000;
+    pointer-events: none;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  &__input {
+    z-index: 2;
+    background: transparent;
+    color: transparent;
+    caret-color: #0066cc;
+    cursor: pointer;
+  }
+
+  &__placeholder {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+
+    transform: translate(-50%, -50%);
+    color: var(--primary40);
+    pointer-events: auto;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+
+  &:hover {
+    color: var(--blackAlpha100);
+    background-color: var(--primary5);
+  }
+}
