@@ -163,7 +163,7 @@ const useFilterRollingStock = ({ isStdcm } = { isStdcm: false }) => {
 
   const {
     data: { results: allRollingStocks } = { results: [] },
-    isSuccess,
+    isFetching,
     isError,
     error,
   } = osrdEditoastApi.endpoints.getLightRollingStock.useQuery({
@@ -216,16 +216,12 @@ const useFilterRollingStock = ({ isStdcm } = { isStdcm: false }) => {
 
   useEffect(() => {
     const newFilteredRollingStock = filterRollingStocks(usefulRollingStocks, filters);
-    setFilteredRollingStockList(newFilteredRollingStock);
-  }, [isSuccess]);
-
-  useEffect(() => {
-    const newFilteredRollingStock = filterRollingStocks(usefulRollingStocks, filters);
+    if (isFetching) return;
     setTimeout(() => {
       setFilteredRollingStockList(newFilteredRollingStock);
       setSearchIsLoading(false);
     }, 0);
-  }, [filters, usefulRollingStocks]);
+  }, [filters, usefulRollingStocks, isFetching]);
 
   return {
     filteredRollingStockList,
