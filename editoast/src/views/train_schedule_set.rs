@@ -38,7 +38,7 @@ pub enum TrainScheduleSetError {
     Database(#[from] editoast_models::Error),
 }
 
-#[derive(Serialize, Deserialize, ToSchema)]
+#[derive(Serialize, Deserialize, ToSchema, Debug, PartialEq)]
 pub(in crate::views) struct TrainScheduleSetResponse {
     #[serde(flatten)]
     train_schedule_set: TrainScheduleSet,
@@ -331,25 +331,25 @@ pub(in crate::views) async fn post_paced_train(
 
 #[cfg(test)]
 mod tests {
+    use crate::models;
+    use crate::models::fixtures::create_catalog_entry;
+    use crate::models::fixtures::create_train_schedule_set;
+    use crate::models::fixtures::simple_paced_train_base;
+    use crate::models::train_schedule_set::TrainScheduleSet;
+    use crate::views::test_app::TestAppBuilder;
+    use crate::views::timetable::paced_train::PacedTrainResponse;
+    use crate::views::train_schedule_set::TrainScheduleSetForm;
+    use crate::views::train_schedule_set::TrainScheduleSetResponse;
     use chrono::Duration;
-    use editoast_models::prelude::{List, SelectionSettings};
+    use editoast_models::prelude::*;
     use reqwest::StatusCode;
-    use schemas::{
-        fixtures::{
-            simple_created_exception_with_change_groups,
-            simple_modified_exception_with_change_groups,
-        },
-        paced_train::{ExceptionType, PacedTrainException, PathAndScheduleChangeGroup},
-        train_schedule::{MarginValue, Margins},
-    };
-
-    use crate::{
-        models::{
-            self,
-            fixtures::{create_train_schedule_set, simple_paced_train_base},
-        },
-        views::{test_app::TestAppBuilder, timetable::paced_train::PacedTrainResponse},
-    };
+    use schemas::fixtures::simple_created_exception_with_change_groups;
+    use schemas::fixtures::simple_modified_exception_with_change_groups;
+    use schemas::paced_train::ExceptionType;
+    use schemas::paced_train::PacedTrainException;
+    use schemas::paced_train::PathAndScheduleChangeGroup;
+    use schemas::train_schedule::MarginValue;
+    use schemas::train_schedule::Margins;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_paced_train() {
@@ -513,5 +513,78 @@ mod tests {
                 .unwrap()
                 .contains("Duplicate exception key: 'duplicated_key_1'")
         )
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn create_train_schedule_set_without_catalog_entry() {
+        let app = TestAppBuilder::default_app();
+        let train_schedule_set_form = TrainScheduleSetForm {
+            catalog_entry_id: None,
+            name: Some("test".to_string()),
+            description: String::default(),
+            published: false,
+        };
+        let request = app
+            .post("/train_schedule_sets")
+            .json(&train_schedule_set_form);
+        let response: TrainScheduleSetResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
+
+        let expected_response = TrainScheduleSet {
+            id: 1,
+            catalog_entry_id: None,
+            name: Some("test".to_string()),
+            description: String::default(),
+            published: false,
+        };
+
+        assert_eq!(
+            response,
+            TrainScheduleSetResponse {
+                train_schedule_set: expected_response,
+                train_schedule_count: 0
+            }
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn create_train_schedule_set_with_catalog_entry() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let catalog_entry = create_catalog_entry(&mut db_pool.get().await.unwrap()).await;
+        let catalog_entry_id = catalog_entry.id;
+        let train_schedule_set_form = TrainScheduleSetForm {
+            catalog_entry_id: Some(catalog_entry_id),
+            name: Some("test".to_string()),
+            description: String::default(),
+            published: false,
+        };
+        let request = app
+            .post("/train_schedule_sets")
+            .json(&train_schedule_set_form);
+        let response: TrainScheduleSetResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
+
+        let expected_response = TrainScheduleSet {
+            id: 1,
+            catalog_entry_id: Some(catalog_entry_id),
+            name: Some("test".to_string()),
+            description: String::default(),
+            published: false,
+        };
+
+        assert_eq!(
+            response,
+            TrainScheduleSetResponse {
+                train_schedule_set: expected_response,
+                train_schedule_count: 0
+            }
+        );
     }
 }

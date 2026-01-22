@@ -188,20 +188,12 @@ pub(in crate::views) async fn delete(
 
 #[cfg(test)]
 mod tests {
+    use crate::models::fixtures::create_catalog_entry;
     use crate::views::test_app::TestAppBuilder;
 
     use super::*;
-    use database::DbConnection;
     use editoast_models::catalog_entry::CatalogEntry;
     use serde_json::json;
-
-    async fn create_catalog_entry(conn: &mut DbConnection) -> CatalogEntry {
-        CatalogEntry::changeset()
-            .name(Some("test".into()))
-            .create(conn)
-            .await
-            .expect("Failed to create catalog entry")
-    }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn catalog_entry_post() {
