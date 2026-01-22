@@ -66,6 +66,10 @@ class RollingstockEditorPage extends RollingStockSelector {
     return this.page.getByTestId(`category-checkbox-${rollingstockCategory}-checkbox`);
   }
 
+  private getRollingStockCard(rollingStockName: string): Locator {
+    return this.page.getByTestId(`rollingstock-${rollingStockName}`);
+  }
+
   async navigateToRollingStockPage() {
     await this.page.goto('/rolling-stock-editor/');
     await this.waitForLoaderToDisappear();
@@ -79,9 +83,15 @@ class RollingstockEditorPage extends RollingStockSelector {
     await expect(this.rollingstockCard.first()).toBeVisible();
   }
 
-  async searchRollingStock(rollingStockName: string) {
+  async searchRollingStock(rollingStockName: string, shouldExist = true) {
     await this.rollingStockSearchInput.fill(rollingStockName);
     await this.waitForLoaderToDisappear();
+    const rollingStockCard = this.getRollingStockCard(rollingStockName);
+    if (shouldExist) {
+      await expect(rollingStockCard).toBeVisible();
+    } else {
+      await expect(rollingStockCard).not.toBeVisible();
+    }
   }
 
   async clearSearchRollingStock() {
@@ -90,8 +100,7 @@ class RollingstockEditorPage extends RollingStockSelector {
   }
 
   async selectRollingStock(rollingStockName: string) {
-    const rollingStockCard = this.page.getByTestId(`rollingstock-${rollingStockName}`);
-    await rollingStockCard.click();
+    await this.getRollingStockCard(rollingStockName).click();
   }
 
   async editRollingStock(rollingStockName: string) {

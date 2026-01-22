@@ -72,7 +72,10 @@ test.describe('@rs-editor @filter', () => {
     });
 
     await test.step('Search a non-existent rolling stock → expect no results', async () => {
-      await rollingStockEditorPage.searchRollingStock(`${dualModeRollingStockName}-no-results`);
+      await rollingStockEditorPage.searchRollingStock(
+        `${dualModeRollingStockName}-no-results`,
+        false
+      );
       await expect(rollingStockEditorPage.noRollingStockResult).toBeVisible();
       expect(await rollingStockEditorPage.getRollingStockSearchNumber()).toEqual(0);
     });
