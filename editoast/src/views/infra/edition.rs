@@ -1267,79 +1267,48 @@ pub mod tests {
         assert_eq!(2000.0, res[0].railjson.as_object().unwrap()["length"]);
     }
 
+    #[rstest::rstest]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn split_track_section_with_operational_point() {
+    #[case(15_000_000, 14000.0, 0)] // op at 14000m on TD0, split at 15000m -> stays on left at 14000m
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    #[case(10_000_000, 4000.0, 1)] // op at 14000m on TD0, split at 10000m -> goes to right at 4000m
+    async fn split_track_section_with_operational_point(
+        #[case] offset: u64,
+        #[case] expected_position: f64,
+        #[case] expected_track_index: usize, // 0 for left, 1 for right
+    ) {
         let (app, small_infra) = setup_split_track_test().await;
         let db_pool = app.db_pool();
 
-        // Mid_East_station is at 14000m on TD0
-        // First split TD0 at 15000m
-        let request1 = app
+        let request = app
             .post(format!("/infra/{}/split_track_section", small_infra.id).as_str())
             .json(&json!({
                 "track": "TD0",
-                "offset": 15000000,
+                "offset": offset,
             }));
-        let res1: Vec<String> = app
-            .fetch(request1)
+        let res: Vec<String> = app
+            .fetch(request)
             .await
             .assert_status(StatusCode::OK)
             .json_into();
-        assert_eq!(res1.len(), 2);
-        let left_track_id = &res1[0];
 
-        // Mid_East_station should be on the left track after first split
+        assert_eq!(res.len(), 2);
+        let expected_track_id = &res[expected_track_index];
+
         let infra_cache = InfraCache::load(&mut db_pool.get_ok(), &small_infra)
             .await
             .unwrap();
-        let mid_east_op = infra_cache
+        let op = infra_cache
             .get_operational_point("Mid_East_station")
             .unwrap();
-        let parts_on_left: Vec<_> = mid_east_op
+        let parts_on_track: Vec<_> = op
             .parts
             .iter()
-            .filter(|p| p.track.as_str() == left_track_id)
-            .collect();
-        assert_eq!(parts_on_left.len(), 1);
-        assert_eq!(parts_on_left[0].position, 14000.0);
-
-        // Refresh
-        let req_refresh2 =
-            app.post(format!("/infra/refresh/?infras={}&force=true", small_infra.id).as_str());
-        app.fetch(req_refresh2).await.assert_status(StatusCode::OK);
-
-        // Second split at 10000m on left_track_id - before Mid_East_station
-        let request2 = app
-            .post(format!("/infra/{}/split_track_section", small_infra.id).as_str())
-            .json(&json!({
-                "track": left_track_id,
-                "offset": 10000000,
-            }));
-        let res2: Vec<String> = app
-            .fetch(request2)
-            .await
-            .assert_status(StatusCode::OK)
-            .json_into();
-        assert_eq!(res2.len(), 2);
-        let right_track_id = &res2[1];
-
-        // Mid_East_station should be on the right track after second split
-        let infra_cache = InfraCache::load(&mut db_pool.get_ok(), &small_infra)
-            .await
-            .unwrap();
-        let mid_east_op = infra_cache
-            .get_operational_point("Mid_East_station")
-            .unwrap();
-
-        let parts_on_right: Vec<_> = mid_east_op
-            .parts
-            .iter()
-            .filter(|p| p.track.as_str() == right_track_id)
+            .filter(|p| p.track.as_str() == expected_track_id)
             .collect();
 
-        assert_eq!(parts_on_right.len(), 1);
-        let right_part = &parts_on_right[0];
-        assert_eq!(right_part.position, 4000.0);
+        assert_eq!(parts_on_track.len(), 1);
+        assert_eq!(parts_on_track[0].position, expected_position);
     }
 
     #[rstest::rstest]
