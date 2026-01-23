@@ -1440,42 +1440,40 @@ pub mod tests {
         assert_eq!(buffer2.position, 0.0);
     }
 
+    #[rstest::rstest]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn split_track_section_with_signals() {
+    #[case("SA6_1", 1780.0, 0)] // signal at 1780m on TA6, split at 2000m -> stays on left at 1780m
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    #[case("SA6_2", 1380.0, 1)] // signal at 3380m on TA6, split at 2000m -> goes to right at 1380m
+    async fn split_track_section_with_signals(
+        #[case] signal_id: &str,
+        #[case] expected_position: f64,
+        #[case] expected_track_index: usize, // 0 for left, 1 for right
+    ) {
         let (app, small_infra) = setup_split_track_test().await;
         let db_pool = app.db_pool();
 
-        // Signal SA6_1 is at 1780m and SA6_2 is at 3380m on TA6
-        // Split TA6 at 2000m
-        let request1 = app
+        let request = app
             .post(format!("/infra/{}/split_track_section", small_infra.id).as_str())
             .json(&json!({
                 "track": "TA6",
-                "offset": 2000000,
+                "offset": 2_000_000,
             }));
-        let res1: Vec<String> = app
-            .fetch(request1)
+        let res: Vec<String> = app
+            .fetch(request)
             .await
             .assert_status(StatusCode::OK)
             .json_into();
 
-        assert_eq!(res1.len(), 2);
-        let left_track_id = &res1[0];
-        let right_track_id = &res1[1];
+        assert_eq!(res.len(), 2);
+        let expected_track_id = &res[expected_track_index];
 
         let infra_cache = InfraCache::load(&mut db_pool.get_ok(), &small_infra)
             .await
             .unwrap();
-
-        // SA6_1 should be on the left track after split
-        let sa6_1 = infra_cache.get_signal("SA6_1").unwrap();
-        assert_eq!(sa6_1.track.as_str(), left_track_id);
-        assert_eq!(sa6_1.position, 1780.0);
-
-        // SA6_2 should be on the right track after split
-        let sa6_2 = infra_cache.get_signal("SA6_2").unwrap();
-        assert_eq!(sa6_2.track.as_str(), right_track_id);
-        assert_eq!(sa6_2.position, 1380.0);
+        let signal = infra_cache.get_signal(signal_id).unwrap();
+        assert_eq!(signal.track.as_str(), expected_track_id);
+        assert_eq!(signal.position, expected_position);
     }
 
     #[rstest::rstest]
