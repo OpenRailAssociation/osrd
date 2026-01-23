@@ -8,10 +8,9 @@ use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
 
-pub const OBJECT_GENERATORS: [ObjectErrorGenerator<NoContext>; 3] = [
+pub const OBJECT_GENERATORS: [ObjectErrorGenerator<NoContext>; 2] = [
     ObjectErrorGenerator::new(1, check_empty),
-    ObjectErrorGenerator::new(2, check_invalid_ref),
-    ObjectErrorGenerator::new(3, check_parts_position),
+    ObjectErrorGenerator::new(2, check_lc_parts),
 ];
 
 /// Check if level crossing is empty
@@ -24,42 +23,31 @@ pub fn check_empty(lc: &ObjectCache, _: &InfraCache, _: &Graph) -> Vec<InfraErro
     }
 }
 
-/// Retrieve invalid refs errors for level crossing
-fn check_invalid_ref(lc: &ObjectCache, infra_cache: &InfraCache, _: &Graph) -> Vec<InfraError> {
+/// Retrieve invalid ref and out of range errors for level crossings
+pub fn check_lc_parts(lc: &ObjectCache, infra_cache: &InfraCache, _: &Graph) -> Vec<InfraError> {
     let level_crossing = lc.unwrap_level_crossing();
 
-    let mut errors = Vec::new();
+    let mut infra_errors = Vec::new();
 
     for (index, level_crossing_part) in level_crossing.parts.iter().enumerate() {
         let track_id = level_crossing_part.track.as_ref();
 
         if !infra_cache.track_sections().contains_key(track_id) {
             let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_id);
-            errors.push(InfraError::new_invalid_reference(
+            infra_errors.push(InfraError::new_invalid_reference(
                 lc,
                 format!("parts.{index}.track"),
                 obj_ref,
             ));
+            continue;
         }
-    }
 
-    errors
-}
-
-pub fn check_parts_position(
-    lc: &ObjectCache,
-    infra_cache: &InfraCache,
-    _: &Graph,
-) -> Vec<InfraError> {
-    let mut infra_errors = vec![];
-    let level_crossing = lc.unwrap_level_crossing();
-    for (index, level_crossing_part) in level_crossing.parts.iter().enumerate() {
-        let track_id = level_crossing_part.track.as_ref();
         let track_cache = infra_cache
             .track_sections()
             .get(track_id)
             .unwrap()
             .unwrap_track_section();
+        // Retrieve out of range
         if !(0.0..=track_cache.length).contains(&level_crossing_part.position) {
             infra_errors.push(InfraError::new_out_of_range(
                 lc,
@@ -78,8 +66,7 @@ pub fn check_parts_position(
 mod tests {
     use super::InfraError;
     use super::check_empty;
-    use super::check_invalid_ref;
-    use super::check_parts_position;
+    use super::check_lc_parts;
     use crate::infra_cache::Graph;
     use crate::infra_cache::object_cache::LevelCrossingCache;
     use crate::infra_cache::tests::create_level_crossing_cache;
@@ -111,7 +98,7 @@ mod tests {
         let mut infra_cache = create_small_infra_cache();
         let level_crossing = create_level_crossing_cache("LC_error", "E", 250.);
         infra_cache.add(&level_crossing).unwrap();
-        let errors = check_invalid_ref(
+        let errors = check_lc_parts(
             &level_crossing.clone().into(),
             &infra_cache,
             &Graph::load(&infra_cache),
@@ -128,7 +115,7 @@ mod tests {
         let mut infra_cache = create_small_infra_cache();
         let level_crossing = create_level_crossing_cache("LC_error", "A", 530.);
         infra_cache.add(&level_crossing).unwrap();
-        let errors = check_parts_position(
+        let errors = check_lc_parts(
             &level_crossing.clone().into(),
             &infra_cache,
             &Graph::load(&infra_cache),
