@@ -23,7 +23,7 @@ const trainScheduleToPacedTrain = (
   pacedTrainId: string,
   intervalDuration: Duration,
   timeWindowDuration: Duration
-): PacedTrainWithPaced => ({
+): Omit<PacedTrainWithPaced, 'train_schedule_set_id'> => ({
   ...trainSchedule,
   train_name: pacedTrainId,
   paced: {

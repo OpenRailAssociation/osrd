@@ -115,7 +115,7 @@ export function formatPacedTrainPayload(
     key,
     start_time: { value: startTime.toISOString() },
   }));
-  let newPacedTrain: PacedTrainWithPaced = {
+  let newPacedTrain: Omit<PacedTrainWithPaced, 'train_schedule_set_id'> = {
     ...baseTrain,
     paced: {
       time_window: osrdconf.timeWindow.toISOString(),

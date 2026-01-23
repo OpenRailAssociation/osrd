@@ -9,7 +9,7 @@ import type { TimetableItem } from 'reducers/osrdconf/types';
 
 const computeChartData = (
   stdcmResponse: StdcmSuccessResponse,
-  stdcmTrainResult: TimetableItem,
+  stdcmTrainResult: Omit<TimetableItem, 'train_schedule_set_id'>,
   t: TFunction,
   rollingStock: RollingStockWithLiveries,
   pathProperties: PathProperties

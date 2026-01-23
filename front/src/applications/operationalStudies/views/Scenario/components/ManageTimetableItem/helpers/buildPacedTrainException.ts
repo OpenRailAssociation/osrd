@@ -24,7 +24,7 @@ import {
  */
 export function generatePacedTrainException(
   updatedOccurrence: TrainSchedule,
-  originalPacedTrain: PacedTrainWithPaced,
+  originalPacedTrain: Omit<PacedTrainWithPaced, 'train_schedule_set_id'>,
   occurrenceIndex: number | null = null
 ): Omit<PacedTrainException, 'key' | 'occurrence_index'> {
   const exception: Omit<PacedTrainException, 'key' | 'occurrence_index'> = {};

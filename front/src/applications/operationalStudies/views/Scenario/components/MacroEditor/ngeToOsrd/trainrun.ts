@@ -4,6 +4,7 @@ import {
   type PacedTrain,
   type TrainSchedule,
   type PathItemLocation,
+  type PacedTrainResponse,
 } from 'common/api/osrdEditoastApi';
 import {
   createPacedTrains,
@@ -532,7 +533,7 @@ export const handleUpdateTimetableItem = async ({
 
   const paced = createPacedAttributesFromTrainrun(trainrun, netzgrafikDto);
 
-  const newForwardTrainBase: PacedTrain = {
+  const newForwardTrainBase: Omit<PacedTrainResponse, 'id'> = {
     ...timetableItemBase,
     train_name: trainrun.name,
     labels,
@@ -589,14 +590,13 @@ export const handleUpdateTimetableItem = async ({
     // update return if already present
     const oldReturnTimetableItem = await fetchTimetableItem(timetableItemIds[1], dispatch);
     const { id: _return_id, ...oldReturnTrainBase } = oldReturnTimetableItem;
-    const newReturnTrainBase = {
+    const newReturnTrainBase: Omit<PacedTrainResponse, 'id'> = {
       ...oldReturnTrainBase,
       train_name: trainrun.name,
       labels,
       // Reset margins because they contain references to path items
       margins: undefined,
       paced: returnPaced,
-      exceptions: undefined,
       category,
       ...returnPathAndSchedule,
     };
@@ -619,8 +619,13 @@ export const handleUpdateTimetableItem = async ({
     );
   } else {
     // otherwise create return
-    const returnPacedTrain = {
-      ...newForwardTrainBase,
+
+    // Remove train_schedule_set_id before creating paced train as we don't want to pass it in the payload
+    const { train_schedule_set_id: _trainScheduleSetId, ...pacedTrainWithoutTrainScheduleSetId } =
+      newForwardTrainBase;
+
+    const returnPacedTrain: PacedTrain = {
+      ...pacedTrainWithoutTrainScheduleSetId,
       ...returnPathAndSchedule,
       paced: returnPaced,
     };

@@ -95,7 +95,7 @@ const useStdcm = ({
         infraId,
         dispatch
       );
-      const stdcmTrain: TimetableItem = {
+      const stdcmTrain: Omit<TimetableItem, 'train_schedule_set_id'> = {
         id: STDCM_TRAIN_TIMETABLE_ID,
         comfort: payload.body.comfort,
         constraint_distribution: 'MARECO',

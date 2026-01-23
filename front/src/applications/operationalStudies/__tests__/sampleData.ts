@@ -355,6 +355,7 @@ export const trainSummaryNotHonored: Extract<SimulationSummaryResult, { status: 
 
 export const trainScheduleHonored: TimetableItem = {
   id: 'paced_95' as PacedTrainId,
+  train_schedule_set_id: 1000,
   train_name: 'normal',
   labels: [],
   rolling_stock_name: 'TC64700',

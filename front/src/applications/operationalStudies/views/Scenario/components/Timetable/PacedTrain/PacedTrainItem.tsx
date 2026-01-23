@@ -175,7 +175,12 @@ const PacedTrainItem = ({
       paced: { ...pacedTrain.paced, exceptions: [] },
     });
 
-    await storePacedTrain(pacedTrain.id, updatedPacedTrainPayload, dispatch, upsertTimetableItems);
+    await storePacedTrain(
+      pacedTrain.id,
+      { ...updatedPacedTrainPayload, train_schedule_set_id: pacedTrain.train_schedule_set_id },
+      dispatch,
+      upsertTimetableItems
+    );
 
     closeModal();
   }

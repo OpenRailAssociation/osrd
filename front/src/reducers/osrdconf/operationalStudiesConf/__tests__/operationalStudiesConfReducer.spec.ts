@@ -20,6 +20,7 @@ import testTrainSettingsReducer from './trainSettingsReducer';
 
 const baseTimetableItemWithSummary: TimetableItemWithSummaries = {
   name: 'train1',
+  train_schedule_set_id: 1000,
   constraint_distribution: 'MARECO',
   rollingStock: { id: 1, name: 'rollingStock1' } as LightRollingStockWithLiveries,
   path: [

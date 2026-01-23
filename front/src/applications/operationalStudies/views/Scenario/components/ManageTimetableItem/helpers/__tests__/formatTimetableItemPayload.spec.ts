@@ -119,6 +119,7 @@ describe('formatTimetableItemPayload', () => {
       schedule: [],
       speed_limit_tag: null,
       id: 'paced_238' as PacedTrainId,
+      train_schedule_set_id: 1000,
       name: 'test',
       startTime: new Date('2025-06-02T12:45:00.000Z'),
       stopsCount: 1,
