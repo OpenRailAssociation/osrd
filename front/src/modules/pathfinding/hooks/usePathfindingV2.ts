@@ -38,6 +38,8 @@ const usePathfindingV2 = () => {
       rollingStockId: number;
       speedLimitTag?: string | null;
     }) => {
+      setPathfindingError('');
+
       if (
         !pathSteps.every((step) => !!step) ||
         Array.from(pathStepsMetadataById.values()).some((metadata) => metadata.isInvalid)
