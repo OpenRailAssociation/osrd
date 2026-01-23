@@ -1,0 +1,146 @@
+.times-stops-table-new {
+  .table-container {
+    thead {
+      th {
+        background: color-mix(in srgb, var(--black100) 5%, var(--ambientB5) 100%);
+      }
+    }
+    tbody {
+      tr {
+        &:nth-child(odd) {
+          background: var(--ambientB10);
+        }
+
+        &:nth-child(even) {
+          background: var(--ambientB15);
+        }
+      }
+    }
+    td.col-index {
+      width: 28px;
+      font-size: 0.625rem;
+      line-height: 16px;
+      color: var(--grey50);
+    }
+
+    td.col-name {
+      text-align: left;
+      padding-left: 8px;
+
+      .secondary-code {
+        float: right;
+        padding-right: 16px;
+        font-size: 0.875rem;
+        color: var(--grey50);
+      }
+    }
+
+    td.col-track {
+      width: 54px;
+      font-size: 0.75rem;
+    }
+
+    td.col-requested-arrival,
+    td.col-computed-arrival,
+    td.col-requested-departure,
+    td.col-computed-departure {
+      width: 68px;
+      font-size: 0.875rem;
+    }
+
+    td.col-stop-duration {
+      width: 87px;
+    }
+
+    /* comfortable padding */
+    @media (min-width: 784px) {
+      th[class^='col-'] {
+        padding-inline: 8px;
+      }
+
+      td.col-index {
+        padding-inline: 8px;
+        width: 36px;
+      }
+
+      td.col-track {
+        width: 79px;
+        font-size: 0.875rem;
+      }
+
+      td.col-requested-arrival,
+      td.col-computed-arrival,
+      td.col-requested-departure,
+      td.col-computed-departure {
+        width: 84px;
+      }
+
+      td.col-stop-duration {
+        width: 103px;
+      }
+
+      td[class^='col-']:not(.col-index) {
+        padding-inline: 12px;
+      }
+    }
+
+    /* Computed / uncomputed cells */
+    td[class^='col-']::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: transparent;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    td.computed::before {
+      background: rgba(0, 0, 0, 0.02);
+    }
+
+    td.uncomputed::before {
+      background: var(--white100);
+    }
+
+    /* Hover per cell only */
+    td[class^='col-']:hover::before {
+      background: var(--white50);
+    }
+
+    /* Input focus inside cell */
+    td[class^='col-']:has(input:focus)::before {
+      box-shadow: 0 1px 3px 0 inset rgba(0, 0, 0, 0.34);
+      background-color: var(--white100);
+    }
+
+    /* Ensure content is above layer */
+    td[class^='col-'] > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* =========================
+     * Removal of external borders
+     * ========================= */
+    tr:first-child th {
+      border-top: none;
+    }
+
+    tr:last-child {
+      th,
+      td {
+        border-bottom: none;
+      }
+    }
+
+    th:first-child,
+    td:first-child {
+      border-left: none;
+    }
+
+    th:last-child,
+    td:last-child {
+      border-right: none;
+    }
+  }
+}
