@@ -1342,18 +1342,24 @@ pub mod tests {
         assert_eq!(right_part.position, 4000.0);
     }
 
+    #[rstest::rstest]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn split_track_section_with_detectors() {
+    #[case("DD0_5", 7887.5, 0)] // detector at 7887.5m on TD0, split at 15000m -> stays on left at 7887.5m
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    #[case("DD0_10", 575.0, 1)] // detector at 15575m on TD0, split at 15000m -> goes to right at 575m
+    async fn split_track_section_with_detectors(
+        #[case] detector_id: &str,
+        #[case] expected_position: f64,
+        #[case] expected_track_index: usize, // 0 for left, 1 for right
+    ) {
         let (app, small_infra) = setup_split_track_test().await;
         let db_pool = app.db_pool();
 
-        // DD0_5 is at 7887.5mm and DD0_10 is at 15575mm on TD0
-        // Split TD0 at 15000m
         let request = app
             .post(format!("/infra/{}/split_track_section", small_infra.id).as_str())
             .json(&json!({
                 "track": "TD0",
-                "offset": 15000000,
+                "offset": 15_000_000,
             }));
         let res: Vec<String> = app
             .fetch(request)
@@ -1362,22 +1368,14 @@ pub mod tests {
             .json_into();
 
         assert_eq!(res.len(), 2);
-        let left_track_id = &res[0];
-        let right_track_id = &res[1];
+        let expected_track_id = &res[expected_track_index];
 
         let infra_cache = InfraCache::load(&mut db_pool.get_ok(), &small_infra)
             .await
             .unwrap();
-
-        // DD0_5 should be on left track after split
-        let detector_left = infra_cache.get_detector("DD0_5").unwrap();
-        assert_eq!(detector_left.track.as_str(), left_track_id);
-        assert_eq!(detector_left.position, 7887.5);
-
-        // DD0_10 shoud be on right track after split
-        let detector_right = infra_cache.get_detector("DD0_10").unwrap();
-        assert_eq!(detector_right.track.as_str(), right_track_id);
-        assert_eq!(detector_right.position, 575.0);
+        let detector = infra_cache.get_detector(detector_id).unwrap();
+        assert_eq!(detector.track.as_str(), expected_track_id);
+        assert_eq!(detector.position, expected_position);
     }
 
     #[rstest::rstest]
