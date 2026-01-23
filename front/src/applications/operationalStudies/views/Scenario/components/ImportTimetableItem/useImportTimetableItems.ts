@@ -1,3 +1,4 @@
+import { isObject } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -30,6 +31,10 @@ const useImportTimetableItems = ({ upsertTimetableItems }: ImportTimetableItemsP
   const [postTransformTimetable] =
     osrdRailwayManagerApi.endpoints.postTransformTimetable.useMutation();
 
+  /**
+   * Parse an xml file using the provided railway manager interface.
+   * If the interface is unset or the interface responds with 415 unsupported media type, fallback to local xml parsing.
+   */
   const processXmlFile = async (file: File, fileContent: string): Promise<TimetableJsonPayload> => {
     if (!railwayManagerUrl) {
       return await locallyProcessXmlFile(fileContent);
@@ -37,9 +42,9 @@ const useImportTimetableItems = ({ upsertTimetableItems }: ImportTimetableItemsP
     try {
       return (await postTransformTimetable({ body: file }).unwrap()) as TimetableJsonPayload;
     } catch (error: unknown) {
-      //TODO: check whether the code should be: if (isObject(error) && 'status' in error && error.status === '415') return await locallyProcessXmlFile(fileContent); else throw error
-      dispatch(setFailure(castErrorToFailure(error)));
-      return await locallyProcessXmlFile(fileContent);
+      if (isObject(error) && 'status' in error && error.status === '415')
+        return await locallyProcessXmlFile(fileContent);
+      throw error;
     }
   };
 
