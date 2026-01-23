@@ -1,8 +1,12 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { maxBy } from 'lodash';
 
-import type { CatalogEntry, TrainScheduleSet } from 'common/api/osrdEditoastApi';
+import {
+  osrdEditoastApi,
+  type CatalogEntry,
+  type TrainScheduleSet,
+} from 'common/api/osrdEditoastApi';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 
 import { useScenarioContext } from './useScenarioContext';
@@ -63,31 +67,16 @@ export default function useScenarioTrainScheduleSet(
   }, [timetableItemsWithDetails]);
 
   /**
-   * Retrieve all TrainScheduleSets
+   * Retrieve all TrainScheduleSets of the timetable
    */
-  const getAllTrainScheduleSets = useCallback(
-    () =>
-      new Promise<TrainScheduleSet[]>((resolve) => {
-        setTimeout(() => {
-          console.warn('Mocked: getAllTrainScheduleSets');
-          resolve(mockStore.trainScheduleSets);
-        }, 1000);
-      }),
-    [mockStore.trainScheduleSets]
-  );
+  const { currentData: trainScheduleSets } =
+    osrdEditoastApi.endpoints.getTimetableByIdTrainScheduleSets.useQuery({ id: timetableId });
 
   /**
    * Retrieve all catalog entries
    */
-  const getCatalogEntries = useCallback(
-    () =>
-      new Promise<CatalogEntry[]>((resolve) => {
-        setTimeout(() => {
-          console.warn('Mocked: getAllCatalogEntries');
-          resolve(mockStore.catalog);
-        }, 1000);
-      }),
-    [mockStore.catalog]
+  const { currentData: catalogEntries } = osrdEditoastApi.endpoints.getAllCatalogEntries.useQuery(
+    {}
   );
 
   /**
@@ -109,51 +98,44 @@ export default function useScenarioTrainScheduleSet(
 
   /**
    * Given a list of TimetableItem, returns the associates list of TranscheduleSet,
-   * each one associates with its list of TimetableItem.
-   *
-   * NB: on unmock, this function should be reviewed for better performances:
-   * - keep track of catalog and trainsScheduleSet with a cache mecansim ?
-   * - calling the full catalog in one query (even if we need only one). Same for TSS.
+   * each one associates with its list of timetable item and its catalog entry.
    */
-  const getTrainScheduleSetsFromTimetableItems = useCallback(
-    async (items: TimetableItemWithDetailsAndTrainScheduleSet[]) => {
-      console.warn('Mocked: getTrainScheduleSetsFromTimetableItems');
+  const timetableItemsByTrainScheduleSets = useMemo(() => {
+    if (!trainScheduleSets) return null;
 
-      // We group trains by trainScheduleSet
-      const trainsByTrainScheduleSetId = new Map<number, TimetableItemWithDetails[]>();
-      for (const item of items) {
-        const itemInIndex = trainsByTrainScheduleSetId.get(item.train_schedule_set_id);
-        if (!itemInIndex) {
-          trainsByTrainScheduleSetId.set(item.train_schedule_set_id, [item]);
-        } else {
-          trainsByTrainScheduleSetId.set(item.train_schedule_set_id, [...itemInIndex, item]);
-        }
+    // We group trains by trainScheduleSet
+    const trainsByTrainScheduleSetId = new Map<number, TimetableItemWithDetails[]>();
+    for (const item of timetableItemsWithDetails) {
+      const itemInIndex = trainsByTrainScheduleSetId.get(item.train_schedule_set_id);
+      if (!itemInIndex) {
+        trainsByTrainScheduleSetId.set(item.train_schedule_set_id, [item]);
+      } else {
+        trainsByTrainScheduleSetId.set(item.train_schedule_set_id, [...itemInIndex, item]);
       }
+    }
 
-      // Calling the API to get TrainScheduleSet data and build an index
-      const trainScheduleSets = await getAllTrainScheduleSets();
-      const trainScheduleSetsById = new Map<number, TrainScheduleSet>();
-      for (const trainScheduleSet of trainScheduleSets) {
-        trainScheduleSetsById.set(trainScheduleSet.id, trainScheduleSet);
-      }
+    const trainScheduleSetsById = new Map<number, TrainScheduleSet>();
+    for (const trainScheduleSet of trainScheduleSets) {
+      trainScheduleSetsById.set(trainScheduleSet.id, trainScheduleSet);
+    }
 
-      // Calling the API to get Catalog data
-      const catalogEntries = await getCatalogEntries();
-      const catalogEntriesIndex = new Map<number, CatalogEntry>();
+    const catalogEntriesIndex = new Map<number, CatalogEntry>();
+    if (catalogEntries) {
       for (const catalogEntry of catalogEntries) {
         catalogEntriesIndex.set(catalogEntry.id, catalogEntry);
       }
+    }
 
-      return Array.from(trainScheduleSetsById.values())
-        .sort((a, b) => sortTrainScheduleSets(a, b, catalogEntriesIndex))
-        .map((trainScheduleSet) => ({
-          trainScheduleSet,
-          trains: trainsByTrainScheduleSetId.get(trainScheduleSet.id) || [],
-          catalog: catalogEntriesIndex.get(trainScheduleSet.catalog_entry_id!)!,
-        }));
-    },
-    [getAllTrainScheduleSets, getCatalogEntries]
-  );
+    return Array.from(trainScheduleSetsById.values())
+      .sort((a, b) => sortTrainScheduleSets(a, b, catalogEntriesIndex))
+      .map((trainScheduleSet) => ({
+        trainScheduleSet,
+        trains: trainsByTrainScheduleSetId.get(trainScheduleSet.id) || [],
+        catalog: trainScheduleSet.catalog_entry_id
+          ? catalogEntriesIndex.get(trainScheduleSet.catalog_entry_id)
+          : undefined, // can happen if it's the sandbox
+      }));
+  }, [trainScheduleSets, catalogEntries, timetableItemsWithDetails]);
 
   /**
    * Retrieve a TainScheduleSet via its ID.
@@ -372,8 +354,8 @@ export default function useScenarioTrainScheduleSet(
 
   return {
     timetableItemsWithDetails: mockStore.timetableItemsWithDetails,
-    getCatalogEntries,
-    getTrainScheduleSetsFromTimetableItems,
+    catalogEntries: catalogEntries ?? [],
+    timetableItemsByTrainScheduleSets,
     getTrainScheduleSet,
     createTrainScheduleSet,
     updateTrainScheduleSet,

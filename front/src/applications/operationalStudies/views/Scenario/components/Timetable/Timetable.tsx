@@ -4,9 +4,7 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { Virtualizer } from 'virtua';
 
-import useScenarioTrainScheduleSet, {
-  type TimetableItemWithDetailsAndTrainScheduleSet,
-} from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
+import useScenarioTrainScheduleSet from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
 import { Loader } from 'common/Loaders';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type {
@@ -14,7 +12,6 @@ import type {
   TimetableItem,
   TimetableItemToEditData,
 } from 'reducers/osrdconf/types';
-import { useAsyncMemo } from 'utils/useAsyncMemo';
 
 import CalendarTrainList from './CalendarTrainList';
 import TimetableToolbar from './TimetableToolbar';
@@ -61,9 +58,8 @@ const Timetable = ({
   const [showTrainScheduleSetDialog, setShowTrainScheduleSetDialog] = useState(false);
 
   const {
-    timetableItemsWithDetails: mockedTimetableItemsWithDetails,
-    getTrainScheduleSetsFromTimetableItems,
-    getCatalogEntries,
+    timetableItemsByTrainScheduleSets,
+    catalogEntries,
     createTrainScheduleSet,
     publishTrainScheduleSet,
     getTrainScheduleSetByCatalogAndName,
@@ -72,9 +68,8 @@ const Timetable = ({
     removeTrainScheduleSet,
   } = useScenarioTrainScheduleSet(timetableItemsWithDetails);
 
-  const { filteredTimetableItems, ...timetableFilters } = useFilterTimetableItems(
-    mockedTimetableItemsWithDetails
-  );
+  const { filteredTimetableItems, ...timetableFilters } =
+    useFilterTimetableItems(timetableItemsWithDetails);
 
   const handleClickTrainScheduleSet = useCallback(
     (id: number) => {
@@ -108,17 +103,6 @@ const Timetable = ({
     [selectedTimetableItemIds]
   );
 
-  // TODO: the "as unknown as" should be removed on unmock.
-  // We do it because the PacedTrainWithDetail doesn't have (yet) the `train_schedule_set_id`
-  // But here we know that is set but the `useScenarioTrainScheduleSet` hook.
-  const trainScheduleSetsData = useAsyncMemo(
-    () =>
-      getTrainScheduleSetsFromTimetableItems(
-        filteredTimetableItems as unknown as TimetableItemWithDetailsAndTrainScheduleSet[]
-      ),
-    [filteredTimetableItems, getTrainScheduleSetsFromTimetableItems]
-  );
-
   return (
     <div className="scenario-timetable">
       <div
@@ -143,7 +127,7 @@ const Timetable = ({
           setTimetableMode={setTimetableMode}
           upsertTimetableItems={upsertTimetableItems}
         />
-        {timetableMode === 'calendar' ? (
+        {timetableMode === 'calendar' && (
           <Virtualizer overscan={15}>
             <CalendarTrainList
               setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
@@ -159,67 +143,64 @@ const Timetable = ({
               timetableMode={timetableMode}
             />
           </Virtualizer>
-        ) : (
-          <>
-            {trainScheduleSetsData.type === 'ready' && (
-              <Virtualizer overscan={15}>
-                {trainScheduleSetsData.data.map(({ trainScheduleSet, catalog, trains }) => {
-                  const trainScheduleSetTrainsIds = trains.map((train) => train.id);
-                  const isSelected = trains.every((train) =>
-                    selectedTimetableItemIds.includes(train.id)
-                  );
-                  const isIndeterminate =
-                    !isSelected &&
-                    trains.some((train) => selectedTimetableItemIds.includes(train.id));
-
-                  return (
-                    <TrainScheduleSetTab
-                      key={trainScheduleSet.id}
-                      trainScheduleSet={trainScheduleSet}
-                      catalogName={catalog?.name}
-                      handleClickTrainScheduleSet={handleClickTrainScheduleSet}
-                      handleSelectTrainScheduleSet={() =>
-                        handleSelectTrainScheduleSet(trainScheduleSetTrainsIds)
-                      }
-                      isSelectMode={isSelectMode}
-                      isSelected={isSelected}
-                      isIndeterminate={isIndeterminate}
-                      isTrainListOpen={expandedTrainScheduleSetIds.has(trainScheduleSet.id)}
-                      getCatalogEntries={getCatalogEntries}
-                      publishTrainScheduleSet={publishTrainScheduleSet}
-                      getTrainScheduleSetByCatalogAndName={getTrainScheduleSetByCatalogAndName}
-                      localCopyTrainScheduleSet={localCopyTrainScheduleSet}
-                      updateTrainScheduleSet={updateTrainScheduleSet}
-                      removeTrainScheduleSet={removeTrainScheduleSet}
-                    >
-                      <CalendarTrainList
-                        setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
-                        upsertTimetableItems={upsertTimetableItems}
-                        setTimetableItemToEditData={setTimetableItemToEditData}
-                        setSelectedTimetableItemIds={setSelectedTimetableItemIds}
-                        removeAndUnselectTrains={removeAndUnselectTrains}
-                        timetableItemToEditData={timetableItemToEditData}
-                        timetableItemsWithDetails={trains}
-                        selectedTimetableItemIds={selectedTimetableItemIds}
-                        projectingOnSimulatedPathException={projectingOnSimulatedPathException}
-                        isSelectMode={isSelectMode}
-                        timetableMode={timetableMode}
-                      />
-                    </TrainScheduleSetTab>
-                  );
-                })}
-                <AddNewTrainScheduleSetTab onClick={() => setShowTrainScheduleSetDialog(true)} />
-              </Virtualizer>
-            )}
-            {trainScheduleSetsData.type === 'loading' && (
-              <Loader className="scenario-timetable-trainschedule-loader" />
-            )}
-          </>
         )}
+        {timetableMode === 'trainScheduleSet' &&
+          (timetableItemsByTrainScheduleSets ? (
+            <Virtualizer overscan={15}>
+              {timetableItemsByTrainScheduleSets.map(({ trainScheduleSet, catalog, trains }) => {
+                const trainScheduleSetTrainsIds = trains.map((train) => train.id);
+                const isSelected = trains.every((train) =>
+                  selectedTimetableItemIds.includes(train.id)
+                );
+                const isIndeterminate =
+                  !isSelected &&
+                  trains.some((train) => selectedTimetableItemIds.includes(train.id));
+
+                return (
+                  <TrainScheduleSetTab
+                    key={trainScheduleSet.id}
+                    trainScheduleSet={trainScheduleSet}
+                    catalogName={catalog?.name}
+                    handleClickTrainScheduleSet={handleClickTrainScheduleSet}
+                    handleSelectTrainScheduleSet={() =>
+                      handleSelectTrainScheduleSet(trainScheduleSetTrainsIds)
+                    }
+                    isSelectMode={isSelectMode}
+                    isSelected={isSelected}
+                    isIndeterminate={isIndeterminate}
+                    isTrainListOpen={expandedTrainScheduleSetIds.has(trainScheduleSet.id)}
+                    catalogEntries={catalogEntries}
+                    publishTrainScheduleSet={publishTrainScheduleSet}
+                    getTrainScheduleSetByCatalogAndName={getTrainScheduleSetByCatalogAndName}
+                    localCopyTrainScheduleSet={localCopyTrainScheduleSet}
+                    updateTrainScheduleSet={updateTrainScheduleSet}
+                    removeTrainScheduleSet={removeTrainScheduleSet}
+                  >
+                    <CalendarTrainList
+                      setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
+                      upsertTimetableItems={upsertTimetableItems}
+                      setTimetableItemToEditData={setTimetableItemToEditData}
+                      setSelectedTimetableItemIds={setSelectedTimetableItemIds}
+                      removeAndUnselectTrains={removeAndUnselectTrains}
+                      timetableItemToEditData={timetableItemToEditData}
+                      timetableItemsWithDetails={trains}
+                      selectedTimetableItemIds={selectedTimetableItemIds}
+                      projectingOnSimulatedPathException={projectingOnSimulatedPathException}
+                      isSelectMode={isSelectMode}
+                      timetableMode={timetableMode}
+                    />
+                  </TrainScheduleSetTab>
+                );
+              })}
+              <AddNewTrainScheduleSetTab onClick={() => setShowTrainScheduleSetDialog(true)} />
+            </Virtualizer>
+          ) : (
+            <Loader className="scenario-timetable-trainschedule-loader" />
+          ))}
       </div>
       {showTrainScheduleSetDialog && (
         <TrainScheduleSetDialog
-          getCatalogEntries={getCatalogEntries}
+          catalogEntries={catalogEntries}
           onCancel={() => setShowTrainScheduleSetDialog(false)}
           onSubmit={createTrainScheduleSet}
           labels={{

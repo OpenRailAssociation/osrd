@@ -14,7 +14,7 @@ export type FieldName = 'name' | 'catalog' | 'description';
 type TrainScheduleSetFormProps = {
   formId: string;
   trainScheduleSet?: TrainScheduleSet;
-  catalog: CatalogEntry[];
+  catalogEntries: CatalogEntry[];
   onSubmit: (data: TrainScheduleSetFormData) => Promise<void>;
   isCatalogEntryRequired?: boolean;
   additionalValidations?: (
@@ -27,7 +27,7 @@ type TrainScheduleSetFormProps = {
 const TrainScheduleSetForm = ({
   formId,
   trainScheduleSet,
-  catalog,
+  catalogEntries,
   onSubmit,
   onValidation,
   checkNameInCatalogIsUniq,
@@ -59,7 +59,7 @@ const TrainScheduleSetForm = ({
       if (catalogEntryMode === 'create') {
         const catalogName = value && value.type === 'create' ? value.name : '';
         // Checking that the name is free
-        if (catalog.findIndex((e) => e.name === catalogName) > -1) {
+        if (catalogEntries.findIndex((e) => e.name === catalogName) > -1) {
           return {
             status: 'error',
             message: t('duplicateCatalogEntry'),
@@ -68,7 +68,7 @@ const TrainScheduleSetForm = ({
       }
       return undefined;
     },
-    [catalog, catalogEntryMode]
+    [catalogEntryMode]
   );
   const isCatalogEntryValid = useCallback(
     (value?: TrainScheduleSetFormData['catalog']) => {
@@ -87,7 +87,7 @@ const TrainScheduleSetForm = ({
       setCatalogEntryError(error);
       return error === undefined;
     },
-    [catalog, catalogEntryMode, checkCatalogEntryIsUniq]
+    [catalogEntryMode, checkCatalogEntryIsUniq]
   );
 
   /**
@@ -117,8 +117,8 @@ const TrainScheduleSetForm = ({
    * Sort the catalog for the select
    */
   const catalogSorted = useMemo(
-    () => catalog.sort((a, b) => (a.name && b.name ? a.name.localeCompare(b.name) : 0)),
-    [catalog]
+    () => catalogEntries.sort((a, b) => (a.name && b.name ? a.name.localeCompare(b.name) : 0)),
+    [catalogEntries]
   );
 
   /**
@@ -141,10 +141,10 @@ const TrainScheduleSetForm = ({
   const catalogSelected = useMemo(() => {
     if (catalogEntry && catalogEntry.type === 'selected') {
       const catalogId = catalogEntry.id;
-      return catalog.find((e) => e.id === catalogId);
+      return catalogEntries.find((e) => e.id === catalogId);
     }
     return undefined;
-  }, [catalogEntry, catalog]);
+  }, [catalogEntry, catalogEntries]);
 
   /**
    *  Status of the package name

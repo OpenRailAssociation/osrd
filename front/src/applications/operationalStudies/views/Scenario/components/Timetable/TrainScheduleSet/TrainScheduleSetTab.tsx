@@ -19,7 +19,7 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
 import type useScenarioTrainScheduleSet from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
-import type { TrainScheduleSet } from 'common/api/osrdEditoastApi';
+import type { CatalogEntry, TrainScheduleSet } from 'common/api/osrdEditoastApi';
 import MenuTriggerButton, { type MenuProps } from 'common/MenuTriggerButton';
 
 import TrainScheduleDeleteDialog from './TrainScheduleDeleteDialog';
@@ -45,7 +45,7 @@ type TrainScheduleSetTabProps = PropsWithChildren<{
   isSelected: boolean;
   isIndeterminate: boolean;
   isTrainListOpen: boolean;
-  getCatalogEntries: ReturnType<typeof useScenarioTrainScheduleSet>['getCatalogEntries'];
+  catalogEntries: CatalogEntry[];
   publishTrainScheduleSet: ReturnType<
     typeof useScenarioTrainScheduleSet
   >['publishTrainScheduleSet'];
@@ -69,7 +69,7 @@ const TrainScheduleSetTab = ({
   isIndeterminate,
   isTrainListOpen,
   children,
-  getCatalogEntries,
+  catalogEntries,
   publishTrainScheduleSet,
   getTrainScheduleSetByCatalogAndName,
   localCopyTrainScheduleSet,
@@ -179,7 +179,7 @@ const TrainScheduleSetTab = ({
         createPortal(
           <TrainScheduleSetDialog
             trainScheduleSet={trainScheduleSet}
-            getCatalogEntries={getCatalogEntries}
+            catalogEntries={catalogEntries}
             labels={{
               title: t('publishDialogTitle'),
               submit: t('publishSubmit'),
@@ -213,7 +213,7 @@ const TrainScheduleSetTab = ({
         createPortal(
           <TrainScheduleSetDialog
             trainScheduleSet={trainScheduleSet}
-            getCatalogEntries={getCatalogEntries}
+            catalogEntries={catalogEntries}
             labels={{
               title: t(openedDialog === 'editLocal' ? 'editLocalTitle' : 'editPublishedTitle'),
               submit: t('edit'),
