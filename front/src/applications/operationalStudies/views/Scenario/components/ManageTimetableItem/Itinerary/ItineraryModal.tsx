@@ -18,6 +18,7 @@ import { type PathProperties, type PathItemLocation } from 'common/api/osrdEdito
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
 import IncompatibleConstraints from 'modules/pathfinding/components/IncompatibleConstraints';
+import TypeAndPath from 'modules/pathfinding/components/Pathfinding/TypeAndPath';
 import reversePathSteps from 'modules/pathfinding/helpers/reversePathSteps';
 import usePathfindingV2 from 'modules/pathfinding/hooks/usePathfindingV2';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
@@ -289,6 +290,7 @@ const ItineraryModal = ({
           {!hasInvalidPathStep && pathfindingError && (
             <AlertBox type="error" message={pathfindingError} />
           )}
+          <TypeAndPath rollingStockId={rollingStockId} isInNewModal />
           <div className="path-step-list">
             <button
               data-testid="reverse-itinerary-button"

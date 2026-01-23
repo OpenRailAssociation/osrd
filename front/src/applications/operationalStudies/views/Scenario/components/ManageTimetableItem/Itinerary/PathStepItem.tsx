@@ -167,11 +167,21 @@ const PathStepItem = ({
   };
 
   const comboBoxValue = useMemo(() => {
-    const raw = inputValue ?? (isOpRefMetadata(pathStepMetadata) ? pathStepMetadata.name : '');
+    if (inputValue && inputValue.trim() !== '') {
+      return inputValue;
+    }
 
-    const text = (raw ?? '').trim();
-    return text.length > 0 ? raw : undefined;
+    if (isOpRefMetadata(pathStepMetadata)) {
+      return pathStepMetadata.name;
+    }
+
+    return undefined;
   }, [inputValue, pathStepMetadata]);
+
+  const clearInputAndSuggestions = () => {
+    onOpInputChange?.('');
+    resetOpSuggestions?.();
+  };
 
   const maxVisibleSuggestions = 8;
   const visibleSuggestions = opSuggestions.slice(0, maxVisibleSuggestions);
@@ -224,8 +234,7 @@ const PathStepItem = ({
             }}
             onSelectSuggestion={(op) => {
               if (!op) {
-                onOpInputChange?.('');
-                resetOpSuggestions?.();
+                clearInputAndSuggestions();
                 return;
               }
 
@@ -238,7 +247,7 @@ const PathStepItem = ({
               resetOpSuggestions?.();
               blurActiveElement();
             }}
-            resetSuggestions={() => resetOpSuggestions?.()}
+            resetSuggestions={clearInputAndSuggestions}
             renderListElementComponent={({
               suggestion,
               index: suggestionIndex,
