@@ -58,6 +58,9 @@ pub fn fix_electrification(
                     path: format!("/track_ranges/{track_refs}").parse().unwrap(),
                 })]),
             }),
+            OrderedOperation::UpdatePosition { .. } => {
+                panic!("We should not update electrification position")
+            }
             OrderedOperation::Delete => {
                 Operation::Delete(DeleteOperation::from(electrification.get_ref()))
             }

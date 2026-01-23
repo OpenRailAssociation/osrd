@@ -58,6 +58,9 @@ pub fn fix_speed_section(
                     path: format!("/track_ranges/{track_refs}").parse().unwrap(),
                 })]),
             }),
+            OrderedOperation::UpdatePosition { .. } => {
+                panic!("We should not update speed section position")
+            }
             OrderedOperation::Delete => {
                 Operation::Delete(DeleteOperation::from(speed_section.get_ref()))
             }

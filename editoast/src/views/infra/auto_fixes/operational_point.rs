@@ -64,6 +64,9 @@ pub fn fix_operational_point(
                     path: format!("/parts/{track_refs}").parse().unwrap(),
                 })]),
             }),
+            OrderedOperation::UpdatePosition { .. } => {
+                panic!("We should not update operational point position")
+            }
             OrderedOperation::Delete => {
                 Operation::Delete(DeleteOperation::from(operational_point.get_ref()))
             }

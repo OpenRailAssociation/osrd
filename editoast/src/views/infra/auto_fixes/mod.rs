@@ -8,6 +8,7 @@ use axum::extract::Path;
 use axum::extract::State;
 use editoast_derive::EditoastError;
 use itertools::Itertools as _;
+use ordered_float::OrderedFloat;
 use thiserror::Error;
 use tracing::debug;
 use tracing::error;
@@ -66,7 +67,13 @@ fn new_ref_fix_create_pair(object: InfraObject) -> (ObjectRef, Fix) {
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum OrderedOperation {
-    RemoveTrackRef { track_refs: usize },
+    RemoveTrackRef {
+        track_refs: usize,
+    },
+    UpdatePosition {
+        track_refs: usize,
+        new_position: OrderedFloat<f64>,
+    },
     Delete,
 }
 
