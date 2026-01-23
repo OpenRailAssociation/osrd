@@ -8,6 +8,7 @@ use schemas::train_schedule::OperationalPointReference;
 use schemas::train_schedule::PathItemLocation;
 use schemas::train_schedule::TrackReference;
 use std::collections::HashMap;
+use std::collections::HashSet;
 
 use crate::error::Result;
 use crate::models::OperationalPointModel;
@@ -29,6 +30,7 @@ pub struct PathItemCache {
     trigram_to_indices: HashMap<String, Vec<usize>>,
     /// Maps obj_id to index in the ops Vec
     obj_id_to_index: HashMap<String, usize>,
+    track_ids: HashSet<String>,
     track_ids_to_name: HashMap<String, NonBlankString>,
 }
 
@@ -114,6 +116,11 @@ impl PathItemCache {
         let track_sections =
             TrackSectionModel::retrieve_batch_unchecked::<_, Vec<_>>(&mut conn, tracks).await?;
 
+        let track_ids = track_sections
+            .iter()
+            .map(|track| track.obj_id.clone())
+            .collect();
+
         let track_ids_to_name = track_sections
             .into_iter()
             .filter_map(|track| {
@@ -130,6 +137,7 @@ impl PathItemCache {
             uic_to_indices,
             trigram_to_indices,
             obj_id_to_index,
+            track_ids,
             track_ids_to_name,
         })
     }
@@ -158,7 +166,7 @@ impl PathItemCache {
 
     /// Check if a track exists
     pub fn track_exists(&self, track: &str) -> bool {
-        self.track_ids_to_name.contains_key(track)
+        self.track_ids.contains(track)
     }
 
     /// Retrieve the operational point ID given a reference
