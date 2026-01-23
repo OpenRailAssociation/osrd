@@ -1,12 +1,7 @@
 package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.api.FullInfra
-import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
-import fr.sncf.osrd.envelope_sim.pipelines.SimStop
-import fr.sncf.osrd.envelope_sim.pipelines.maxEffortEnvelopeFrom
-import fr.sncf.osrd.envelope_sim.pipelines.maxSpeedEnvelopeFrom
-import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlockRanges
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
@@ -18,9 +13,7 @@ import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.arePositionsEqual
-import fr.sncf.osrd.utils.areSpeedsEqual
 import fr.sncf.osrd.utils.isTimeStrictlyPositive
-import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -63,21 +56,9 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
 
         val updatedTimeData = computeTimeData(edges)
         val stops = makeStops(edges, updatedTimeData)
-        val maxSpeedEnvelope =
-            makeMaxSpeedEnvelope(
-                trainPath,
-                stops,
-                rollingStock,
-                timeStep,
-                comfort,
-                trainTag,
-                temporarySpeedLimitManager,
-                areSpeedsEqual(0.0, edges.last().endSpeed),
-            )
         val withAllowance =
             buildFinalEnvelope(
                 graph,
-                maxSpeedEnvelope,
                 edges,
                 standardAllowance,
                 trainPath,
@@ -241,23 +222,4 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         mutStops.addAll(makeOpStops(trainPath))
         return sortAndMergeStopsDuplicates(mutStops)
     }
-}
-
-fun makeMaxSpeedEnvelope(
-    trainPath: TrainPath,
-    stops: List<TrainStop>,
-    rollingStock: RollingStock,
-    timeStep: Double,
-    comfort: Comfort?,
-    trainTag: String?,
-    temporarySpeedLimitManager: TemporarySpeedLimitManager?,
-    stopAtEnd: Boolean,
-): Envelope {
-    val context = build(rollingStock, trainPath, timeStep, comfort)
-    val mrsp = computeMRSP(trainPath, rollingStock, false, trainTag, temporarySpeedLimitManager)
-    val stopInfos =
-        stops.map { SimStop(Offset(it.position.meters), it.receptionSignal) }.toMutableList()
-    if (stopAtEnd) stopInfos.add(SimStop(trainPath.getLength(), SHORT_SLIP_STOP))
-    val maxSpeedEnvelope = maxSpeedEnvelopeFrom(context, stopInfos, mrsp)
-    return maxEffortEnvelopeFrom(context, 0.0, maxSpeedEnvelope)
 }
