@@ -5,6 +5,7 @@ import {
   flexRender,
   getCoreRowModel,
   useReactTable,
+  type RowData,
 } from '@tanstack/react-table';
 import { useTranslation } from 'react-i18next';
 
@@ -13,6 +14,13 @@ import { formatLocalTime } from 'utils/date';
 
 import TimeCell from './TimeCell';
 import type { TimesStopsRowNew } from './types';
+
+declare module '@tanstack/react-table' {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions, @typescript-eslint/no-unused-vars
+  interface ColumnMeta<TData extends RowData, TValue> {
+    className: string;
+  }
+}
 
 type TimesStopsTableProps = {
   rows: TimesStopsRowNew[];
@@ -28,46 +36,68 @@ const TimesStopsTable = ({ rows, dataIsLoading }: TimesStopsTableProps) => {
     () => [
       columnHelper.display({
         id: 'opOnPathIndex',
-        header: '#',
-        cell: (info) => info.row.original.opOnPathIndex + 1,
+        header: '',
+        cell: (info) => <span>{info.row.original.opOnPathIndex + 1}</span>,
+        meta: {
+          className: 'col-index computed',
+        },
       }),
       columnHelper.accessor('name', {
-        header: () => t('name'),
+        header: () => t('operational_point'),
         cell: (info) => {
-          const name = info.getValue();
-          const secondaryCode = info.row.original.secondaryCode;
-          const displayName = secondaryCode ? `${name} ${secondaryCode}` : name;
+          const { name, secondaryCode } = info.row.original;
           return (
-            <span title={displayName}>
+            <div title={`${name}${secondaryCode ? ` ${secondaryCode}` : ''}`}>
               <span>{name}</span>
-              {secondaryCode && <span>{secondaryCode}</span>}
-            </span>
+              {secondaryCode && <span className="secondary-code"> {secondaryCode}</span>}
+            </div>
           );
+        },
+        meta: {
+          className: 'col-name computed',
         },
       }),
       columnHelper.accessor('track', {
         header: () => t('trackName'),
-        cell: (info) => info.getValue() ?? '',
+        cell: (info) => <span>{info.getValue() ?? ''}</span>,
+        meta: {
+          className: 'col-track computed',
+        },
       }),
       columnHelper.accessor('requestedArrival', {
         header: () => t('arrivalTime'),
         cell: (info) => <TimeCell {...info} />,
+        meta: {
+          className: 'col-requested-arrival',
+        },
       }),
       columnHelper.accessor('computedArrival', {
         header: () => t('calculatedArrivalTime'),
-        cell: (info) => (info.getValue() ? formatLocalTime(info.getValue()!) : ''),
+        cell: (info) => <span>{info.getValue() ? formatLocalTime(info.getValue()!) : ''}</span>,
+        meta: {
+          className: 'col-computed-arrival computed',
+        },
       }),
       columnHelper.accessor('stopDuration', {
         header: () => t('stopTime'),
-        cell: (info) => info.getValue()?.total('second') ?? '',
+        cell: (info) => <span>{info.getValue()?.total('second') ?? ''}</span>,
+        meta: {
+          className: 'col-stop-duration',
+        },
       }),
       columnHelper.accessor('requestedDeparture', {
         header: () => t('departureTime'),
-        cell: (info) => (info.getValue() ? formatLocalTime(info.getValue()!) : ''),
+        cell: (info) => <span>{info.getValue() ? formatLocalTime(info.getValue()!) : ''}</span>,
+        meta: {
+          className: 'col-requested-departure',
+        },
       }),
       columnHelper.accessor('computedDeparture', {
         header: () => t('calculatedDepartureTime'),
-        cell: (info) => (info.getValue() ? formatLocalTime(info.getValue()!) : ''),
+        cell: (info) => <span>{info.getValue() ? formatLocalTime(info.getValue()!) : ''}</span>,
+        meta: {
+          className: 'col-computed-departure computed',
+        },
       }),
     ],
     [t]
@@ -98,15 +128,13 @@ const TimesStopsTable = ({ rows, dataIsLoading }: TimesStopsTableProps) => {
 
   return (
     <div className="times-stops-table-new">
-      <table>
+      <table className="table-container">
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
-                <th key={header.id}>
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(header.column.columnDef.header, header.getContext())}
+                <th key={header.id} className={header.column.columnDef.meta?.className}>
+                  {flexRender(header.column.columnDef.header, header.getContext())}
                 </th>
               ))}
             </tr>
@@ -116,7 +144,9 @@ const TimesStopsTable = ({ rows, dataIsLoading }: TimesStopsTableProps) => {
           {table.getRowModel().rows.map((row) => (
             <tr key={row.id}>
               {row.getVisibleCells().map((cell) => (
-                <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                <td key={cell.id} className={cell.column.columnDef.meta?.className}>
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </td>
               ))}
             </tr>
           ))}

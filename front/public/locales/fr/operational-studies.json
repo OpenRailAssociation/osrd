@@ -621,7 +621,6 @@
       "signalsStates": "États des signaux",
       "trackProjection": "À la voie"
     },
-    "timetableOutput": "Table horaire de sortie",
     "toggleManchetteMenu": "Basculer l'affichage du menu de la manchette",
     "toggleWarpedMap": "Basculer l'affichage de la carte déformée",
     "warpedMapUnavailable": "La carte déformée n'est pas disponible pour les trains en non calcul",
