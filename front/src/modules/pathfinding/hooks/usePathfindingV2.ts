@@ -45,6 +45,8 @@ const usePathfindingV2 = () => {
         return;
       }
 
+      setPathfindingError('');
+
       const rollingStock = (rollingStocks || []).find((rs) => rs.id === rollingStockId);
 
       if (!rollingStock) return;
