@@ -363,6 +363,35 @@ const osrdEditoastApi = generatedEditoastApi
             }) as const
           )[args.searchPayload.object] ?? [],
       },
+
+      // Train schedule sets handling
+      getTimetableByIdTrainScheduleSets: {
+        providesTags: () => [{ type: 'train_schedule_set', id: 'LIST' }],
+      },
+      postTimetableByIdTrainScheduleSets: {
+        invalidatesTags: () => [{ type: 'train_schedule_set', id: 'LIST' }],
+      },
+      getTrainScheduleSets: {
+        providesTags: (result) => [
+          { type: 'train_schedule_set', id: 'LIST' },
+          ...(result || []).map(({ id }) => ({
+            type: 'train_schedule_set' as const,
+            id,
+          })),
+        ],
+      },
+      getTrainScheduleSetsById: {
+        providesTags: (_result, _error, args) => [{ type: 'train_schedule_set', id: args.id }],
+      },
+      postTrainScheduleSets: {
+        invalidatesTags: () => [{ type: 'train_schedule_set', id: 'LIST' }],
+      },
+      putTrainScheduleSetsById: {
+        invalidatesTags: (_result, _error, args) => [{ type: 'train_schedule_set', id: args.id }],
+      },
+      deleteTrainScheduleSetsById: {
+        invalidatesTags: () => [{ type: 'train_schedule_set', id: 'LIST' }],
+      },
     },
   });
 
