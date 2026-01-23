@@ -9,11 +9,17 @@ import fr.sncf.osrd.envelope_sim.allowances.AllowanceRange
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance
+import fr.sncf.osrd.envelope_sim.pipelines.SimStop
+import fr.sncf.osrd.envelope_sim.pipelines.maxEffortEnvelopeFrom
+import fr.sncf.osrd.envelope_sim.pipelines.maxSpeedEnvelopeFrom
+import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
+import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
@@ -66,7 +72,6 @@ data class FinalEnvelopeResult(
  */
 fun buildFinalEnvelope(
     graph: STDCMGraph,
-    maxSpeedEnvelope: Envelope,
     edges: List<STDCMEdge>,
     standardAllowance: AllowanceValue?,
     envelopeSimPath: PhysicsPath,
@@ -81,6 +86,17 @@ fun buildFinalEnvelope(
 ): FinalEnvelopeResult {
     val context = build(rollingStock, envelopeSimPath, timeStep, comfort)
     val fullInfraExplorer = edges.last().infraExplorerWithNewEnvelope
+    val maxSpeedEnvelope =
+        makeMaxSpeedEnvelope(
+            fullInfraExplorer.buildFullPath(graph.rawInfra, graph.blockInfra),
+            stops,
+            rollingStock,
+            timeStep,
+            comfort,
+            graph.tag,
+            graph.temporarySpeedLimitManager,
+            areSpeedsEqual(0.0, edges.last().endSpeed),
+        )
 
     val pathLength =
         Length<TrainPath>(Distance(millimeters = edges.sumOf { it.length.distance.millimeters }))
@@ -178,7 +194,6 @@ fun buildFinalEnvelope(
         )
         return buildFinalEnvelope(
             graph,
-            maxSpeedEnvelope,
             edges,
             standardAllowance,
             envelopeSimPath,
@@ -554,20 +569,8 @@ private fun handlePostProcessingConflict(
         // First retry by removing mareco, then by increasing rolling stock traction
         val scaleFactor = if (isMareco) 1.0 else 1.2
         val newRollingStock = rollingStock.scalePower(scaleFactor)
-        val newMaxSpeedEnvelope =
-            makeMaxSpeedEnvelope(
-                edges.last().infraExplorer.buildFullPath(graph.rawInfra, graph.blockInfra),
-                stops,
-                newRollingStock,
-                timeStep,
-                comfort,
-                graph.tag,
-                graph.temporarySpeedLimitManager,
-                areSpeedsEqual(0.0, edges.last().endSpeed),
-            )
         return buildFinalEnvelope(
             graph,
-            newMaxSpeedEnvelope,
             edges,
             standardAllowance,
             envelopeSimPath,
@@ -586,4 +589,23 @@ private fun handlePostProcessingConflict(
                 "mismatch between exploration and postprocessing (please open a bug report)"
         )
     }
+}
+
+fun makeMaxSpeedEnvelope(
+    trainPath: TrainPath,
+    stops: List<TrainStop>,
+    rollingStock: RollingStock,
+    timeStep: Double,
+    comfort: Comfort?,
+    trainTag: String?,
+    temporarySpeedLimitManager: TemporarySpeedLimitManager?,
+    stopAtEnd: Boolean,
+): Envelope {
+    val context = build(rollingStock, trainPath, timeStep, comfort)
+    val mrsp = computeMRSP(trainPath, rollingStock, false, trainTag, temporarySpeedLimitManager)
+    val stopInfos =
+        stops.map { SimStop(Offset(it.position.meters), it.receptionSignal) }.toMutableList()
+    if (stopAtEnd) stopInfos.add(SimStop(trainPath.getLength(), SHORT_SLIP_STOP))
+    val maxSpeedEnvelope = maxSpeedEnvelopeFrom(context, stopInfos, mrsp)
+    return maxEffortEnvelopeFrom(context, 0.0, maxSpeedEnvelope)
 }
