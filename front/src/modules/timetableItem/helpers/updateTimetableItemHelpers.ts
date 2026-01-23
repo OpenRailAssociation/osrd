@@ -1,4 +1,8 @@
-import { osrdEditoastApi, type PacedTrain } from 'common/api/osrdEditoastApi';
+import {
+  osrdEditoastApi,
+  type PacedTrain,
+  type PacedTrainResponse,
+} from 'common/api/osrdEditoastApi';
 import type { PacedTrainId, TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 import {
   unsetTrainIdsMatching,
@@ -68,7 +72,7 @@ export async function deletePacedTrains(dispatch: AppDispatch, ids: PacedTrainId
 
 export async function storePacedTrain(
   timetableItemIdToUpdate: TimetableItemId,
-  pacedTrain: PacedTrain,
+  pacedTrain: Omit<PacedTrainResponse, 'id'>,
   dispatch: AppDispatch,
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void
 ): Promise<TimetableItem> {
@@ -80,7 +84,11 @@ export async function storePacedTrain(
       })
     );
   }
-  await updatePacedTrain(dispatch, timetableItemIdToUpdate, pacedTrain);
+
+  // Remove train_schedule_set_id before updating paced train as we don't want to pass it in the payload
+  const { train_schedule_set_id: _trainScheduleSetId, ...pacedTrainWithoutTrainScheduleSetId } =
+    pacedTrain;
+  await updatePacedTrain(dispatch, timetableItemIdToUpdate, pacedTrainWithoutTrainScheduleSetId);
   const updatedPacedTrain: TimetableItem = {
     ...pacedTrain,
     id: timetableItemIdToUpdate,

@@ -126,7 +126,12 @@ const useOccurrenceActions = ({
         paced: { ...pacedTrain.paced, exceptions: updatedExceptions },
       });
 
-      storePacedTrain(pacedTrain.id, formattedPacedTrain, dispatch, upsertTimetableItems);
+      storePacedTrain(
+        pacedTrain.id,
+        { ...formattedPacedTrain, train_schedule_set_id: pacedTrain.train_schedule_set_id },
+        dispatch,
+        upsertTimetableItems
+      );
 
       // If we are disabling the selected occurrence, we want to put the selection
       // on the first enabled occurrence chronologically
@@ -182,7 +187,12 @@ const useOccurrenceActions = ({
         paced: { ...pacedTrain.paced, exceptions: updatedExceptions },
       });
 
-      storePacedTrain(pacedTrain.id, formattedPacedTrain, dispatch, upsertTimetableItems);
+      storePacedTrain(
+        pacedTrain.id,
+        { ...formattedPacedTrain, train_schedule_set_id: pacedTrain.train_schedule_set_id },
+        dispatch,
+        upsertTimetableItems
+      );
     },
     [pacedTrain]
   );
@@ -196,7 +206,12 @@ const useOccurrenceActions = ({
         paced: { ...pacedTrain.paced, exceptions: newExceptions },
       });
 
-      storePacedTrain(pacedTrain.id, updatedPacedTrainPayload, dispatch, upsertTimetableItems);
+      storePacedTrain(
+        pacedTrain.id,
+        { ...updatedPacedTrainPayload, train_schedule_set_id: pacedTrain.train_schedule_set_id },
+        dispatch,
+        upsertTimetableItems
+      );
     },
     [pacedTrain.paced.exceptions]
   );
