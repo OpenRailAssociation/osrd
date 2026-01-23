@@ -110,6 +110,72 @@ class PathfindingTests {
     }
 
     @Test
+    fun pathfindingShortestTimeLongerBlockIntermediateStepTest() {
+        /* Two possible paths: same length, intermediate step must be done top or bottom (50 m/s speed-limit unless specified)
+        - top-path's intermediate step is on a shorter block (2 km, then another 1.5 km block), but with a lower speed limit (45 m/s)
+        - bottom-path's intermediate step is on a longer block (2.5 km, then another 1 km block), and a higher speed limit (50 m/s)
+        We must use the bottom path as it's shorter in time
+
+                  | 45 m/s  |
+        0 -> B -> 1 -> I -> 2 -------> 4 -> E -> 5
+                   \                  /   50 m/s for the rest
+                    + ---> I ---> 3 +
+
+         */
+        val infra = DummyInfra()
+        val block01 = infra.addBlock("0", "1", 2000.meters, 50.0)
+        val block12 = infra.addBlock("1", "2", 2000.meters, 45.0)
+        infra.addBlock("2", "4", 1500.meters, 50.0)
+        val block13 = infra.addBlock("1", "3", 2500.meters, 50.0)
+        val block34 = infra.addBlock("3", "4", 1000.meters, 50.0)
+        val block45 = infra.addBlock("4", "5", 2000.meters, 50.0)
+        val waypoints =
+            arrayListOf<Collection<BlockLocation>>(
+                listOf(BlockLocation(block01, Offset.zero())),
+                listOf(
+                    BlockLocation(block12, Offset(1000.meters)),
+                    BlockLocation(block13, Offset(1250.meters)),
+                ),
+                listOf(BlockLocation(block45, Offset(2000.meters))),
+            )
+
+        val res = runPathFinding(waypoints, infra)
+        Assertions.assertEquals(
+            arrayListOf(
+                BlockRange(
+                    block01,
+                    Offset(0.meters),
+                    Offset(0.meters),
+                    2000.meters,
+                    Length(2000.meters),
+                ),
+                BlockRange(
+                    block13,
+                    Offset(0.meters),
+                    Offset(2000.meters),
+                    2500.meters,
+                    Length(2500.meters),
+                ),
+                BlockRange(
+                    block34,
+                    Offset(0.meters),
+                    Offset(4500.meters),
+                    1000.meters,
+                    Length(1000.meters),
+                ),
+                BlockRange(
+                    block45,
+                    Offset(0.meters),
+                    Offset(5500.meters),
+                    2000.meters,
+                    Length(2000.meters),
+                ),
+            ),
+            res!!.getAllBlocks(),
+        )
+    }
+
+    @Test
     fun overlappingWaypoints() {
         val infra = DummyInfra()
         val block01 = infra.addBlock("0", "1", 10.meters)
