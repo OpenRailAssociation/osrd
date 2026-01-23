@@ -7,9 +7,7 @@ import { noop } from 'lodash';
 
 import type { TrainScheduleSetFormData } from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
 import type { CatalogEntry, TrainScheduleSet } from 'common/api/osrdEditoastApi';
-import { LoaderFill } from 'common/Loaders';
 import { getErrorMessage } from 'utils/error';
-import { useAsyncMemo } from 'utils/useAsyncMemo';
 
 import TrainScheduleSetForm from './TrainScheduleSetForm';
 
@@ -17,7 +15,7 @@ type TrainScheduleSetDialogProps = {
   trainScheduleSet?: TrainScheduleSet;
   onCancel: () => void;
   onSubmit: (data: TrainScheduleSetFormData) => Promise<void>;
-  getCatalogEntries: () => Promise<CatalogEntry[]>;
+  catalogEntries: CatalogEntry[];
   checkNameInCatalogIsUniq?: (name: string, catalogId: number) => Promise<boolean>;
   labels: {
     title: string;
@@ -30,11 +28,10 @@ const TrainScheduleSetDialog = ({
   trainScheduleSet,
   onSubmit,
   onCancel,
-  getCatalogEntries,
+  catalogEntries,
   checkNameInCatalogIsUniq,
   labels,
 }: TrainScheduleSetDialogProps) => {
-  const catalog = useAsyncMemo(() => getCatalogEntries(), [getCatalogEntries]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [formHasError, setFormHasError] = useState<boolean>(false);
@@ -92,12 +89,11 @@ const TrainScheduleSetDialog = ({
       <TrainScheduleSetForm
         formId="train-schedule-set"
         trainScheduleSet={trainScheduleSet}
-        catalog={catalog.type === 'ready' ? catalog.data : []}
+        catalogEntries={catalogEntries}
         onSubmit={submit}
         onValidation={(hasError) => setFormHasError(hasError)}
         checkNameInCatalogIsUniq={checkNameInCatalogIsUniq}
       />
-      {catalog.type === 'loading' && <LoaderFill />}
     </Dialog>
   );
 };
