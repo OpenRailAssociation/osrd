@@ -1380,64 +1380,42 @@ pub mod tests {
         assert_eq!(detector_right.position, 575.0);
     }
 
+    #[rstest::rstest]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn split_track_section_with_buffer_stops() {
+    #[case("TH1", 2_000_000, "buffer_stop.7", 3000.0, 1)] // buffer stop at 5000m on TH1, split at 2000m -> goes to right at 3000m
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    #[case("TA2", 1_000_000, "buffer_stop.2", 0.0, 0)] // buffer stop at 0m on TA2, split at 1000m -> stays on left at 0m
+    async fn split_track_section_with_buffer_stops(
+        #[case] track: &str,
+        #[case] offset: u64,
+        #[case] buffer_stop_id: &str,
+        #[case] expected_position: f64,
+        #[case] expected_track_index: usize, // 0 for left, 1 for right
+    ) {
         let (app, small_infra) = setup_split_track_test().await;
         let db_pool = app.db_pool();
 
-        // buffer_stop.7 is at 5000m on TH1
-        // Split TH1 at 2000m
-        let request1 = app
+        let request = app
             .post(format!("/infra/{}/split_track_section", small_infra.id).as_str())
             .json(&json!({
-                "track": "TH1",
-                "offset": 2000000,
+                "track": track,
+                "offset": offset,
             }));
-        let res1: Vec<String> = app
-            .fetch(request1)
+        let res: Vec<String> = app
+            .fetch(request)
             .await
             .assert_status(StatusCode::OK)
             .json_into();
 
-        assert_eq!(res1.len(), 2);
-        let th1_right_track_id = &res1[1];
+        assert_eq!(res.len(), 2);
+        let expected_track_id = &res[expected_track_index];
 
-        // buffer_stop.7 should be on the right track after split
         let infra_cache = InfraCache::load(&mut db_pool.get_ok(), &small_infra)
             .await
             .unwrap();
-        let buffer7 = infra_cache.get_buffer_stop("buffer_stop.7").unwrap();
-        assert_eq!(buffer7.track.as_str(), th1_right_track_id);
-        assert_eq!(buffer7.position, 3000.0);
-
-        let req_refresh2 =
-            app.post(format!("/infra/refresh/?infras={}&force=true", small_infra.id).as_str());
-        app.fetch(req_refresh2).await.assert_status(StatusCode::OK);
-
-        // buffer_stop.2 is at 0m on TA2
-        // Split TA2 at 1000m
-        let request2 = app
-            .post(format!("/infra/{}/split_track_section", small_infra.id).as_str())
-            .json(&json!({
-                "track": "TA2",
-                "offset": 1000000,
-            }));
-        let res2: Vec<String> = app
-            .fetch(request2)
-            .await
-            .assert_status(StatusCode::OK)
-            .json_into();
-
-        assert_eq!(res2.len(), 2);
-        let ta2_left_track_id = &res2[0];
-
-        // buffer_stop.2 should be on the left track after split
-        let infra_cache = InfraCache::load(&mut db_pool.get_ok(), &small_infra)
-            .await
-            .unwrap();
-        let buffer2 = infra_cache.get_buffer_stop("buffer_stop.2").unwrap();
-        assert_eq!(buffer2.track.as_str(), ta2_left_track_id);
-        assert_eq!(buffer2.position, 0.0);
+        let buffer_stop = infra_cache.get_buffer_stop(buffer_stop_id).unwrap();
+        assert_eq!(buffer_stop.track.as_str(), expected_track_id);
+        assert_eq!(buffer_stop.position, expected_position);
     }
 
     #[rstest::rstest]
