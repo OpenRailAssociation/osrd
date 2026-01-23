@@ -16,6 +16,7 @@ import AlertBox from 'common/AlertBox';
 import { type PathProperties, type PathItemLocation } from 'common/api/osrdEditoastApi';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import IncompatibleConstraints from 'modules/pathfinding/components/IncompatibleConstraints';
+import TypeAndPath from 'modules/pathfinding/components/Pathfinding/TypeAndPath';
 import reversePathSteps from 'modules/pathfinding/helpers/reversePathSteps';
 import usePathfindingV2 from 'modules/pathfinding/hooks/usePathfindingV2';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
@@ -399,6 +400,7 @@ const ItineraryModal = ({
           {!hasInvalidPathStepDisplay && pathfindingError && (
             <AlertBox type="error" message={pathfindingError} />
           )}
+          <TypeAndPath rollingStockId={rollingStockId} isInNewModal />
           <div className="path-step-list">
             <button
               data-testid="reverse-itinerary-button"

@@ -3,6 +3,10 @@
   background-color: var(--white);
   padding: 8px;
   border-radius: var(--border-radius);
+  &.quick-entry-visual {
+    padding: 44px 40px 42px;
+    background-color: var(--ambientB10);
+  }
   .help {
     position: relative;
     display: flex;
@@ -14,10 +18,19 @@
     font-weight: 500;
     color: var(--secondary);
   }
+
+  .input-wrapper {
+    position: relative;
+    button {
+      height: 48px;
+    }
+  }
+
   .op-tooltips {
     position: absolute;
     z-index: 1;
-    bottom: 46.4px;
+    bottom: 100%;
+    margin-bottom: 2px;
     .op {
       position: absolute;
       font-weight: 500;
@@ -72,6 +85,24 @@
       font-size: 0.9rem;
     }
   }
+  .form-control {
+    &.quick-entry-visual {
+      height: 48px;
+      background-color: var(--grey80);
+      color: var(--white100);
+      text-transform: uppercase;
+
+      &:focus {
+        box-shadow:
+          0 1px 4px 0 rgba(0, 245, 255, 0.47),
+          0 3px 8px 0 rgba(60, 138, 255, 0.35),
+          0 6px 32px 0 rgba(24, 68, 239, 0.32);
+        border-radius: 10px;
+        background-color: var(--black75);
+        color: var(--white100);
+      }
+    }
+  }
 }
 
 .results-container {
@@ -79,15 +110,29 @@
   max-width: 720px;
   position: relative;
   line-height: 24px;
-  overflow: hidden;
   border-radius: var(--border-radius);
+  z-index: 1;
+
   .station-results {
     width: 100%;
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
     background-color: white;
-    overflow: hidden;
+
+    &:not(.quick-entry-visual) {
+      overflow: hidden;
+    }
+
+    &.quick-entry-visual {
+      margin-top: 2px;
+      box-shadow:
+        0 0 0 1px inset var(--grey30),
+        0 0 0 2px inset var(--white100);
+      border-radius: 8px;
+      background-color: var(--grey5);
+    }
+
     .station {
       flex: 1 0 auto;
       max-width: 45%;
