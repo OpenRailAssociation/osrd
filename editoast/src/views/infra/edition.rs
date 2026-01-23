@@ -1007,7 +1007,20 @@ pub mod tests {
     use crate::models::fixtures::create_small_infra;
     use crate::models::infra::ObjectQueryable;
     use crate::views::infra::errors::query_errors;
+    use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
+
+    async fn setup_split_track_test() -> (TestApp, Infra) {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+
+        let req_refresh =
+            app.post(format!("/infra/refresh/?infras={}&force=true", small_infra.id).as_str());
+        app.fetch(req_refresh).await.assert_status(StatusCode::OK);
+
+        (app, small_infra)
+    }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn split_track_section_should_return_404_with_bad_infra() {
@@ -1076,15 +1089,8 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case("TD1", 15500000)]
     async fn split_track_section_should_work(#[case] track: &str, #[case] offset: u64) {
-        // Init
-        let app = TestAppBuilder::default_app();
+        let (app, small_infra) = setup_split_track_test().await;
         let db_pool = app.db_pool();
-        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
-
-        // Refresh the infra to get the good number of infra errors
-        let req_refresh =
-            app.post(format!("/infra/refresh/?infras={}&force=true", small_infra.id).as_str());
-        app.fetch(req_refresh).await.assert_status(StatusCode::OK);
 
         // Get infra errors
         let (init_errors, _) = query_errors(&mut db_pool.get_ok(), &small_infra).await;
@@ -1263,13 +1269,8 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn split_track_section_with_operational_point() {
-        let app = TestAppBuilder::default_app();
+        let (app, small_infra) = setup_split_track_test().await;
         let db_pool = app.db_pool();
-        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
-
-        let req_refresh =
-            app.post(format!("/infra/refresh/?infras={}&force=true", small_infra.id).as_str());
-        app.fetch(req_refresh).await.assert_status(StatusCode::OK);
 
         // Mid_East_station is at 14000m on TD0
         // First split TD0 at 15000m
@@ -1343,13 +1344,8 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn split_track_section_with_detectors() {
-        let app = TestAppBuilder::default_app();
+        let (app, small_infra) = setup_split_track_test().await;
         let db_pool = app.db_pool();
-        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
-
-        let req_refresh =
-            app.post(format!("/infra/refresh/?infras={}&force=true", small_infra.id).as_str());
-        app.fetch(req_refresh).await.assert_status(StatusCode::OK);
 
         // DD0_5 is at 7887.5mm and DD0_10 is at 15575mm on TD0
         // Split TD0 at 15000m
@@ -1386,13 +1382,8 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn split_track_section_with_buffer_stops() {
-        let app = TestAppBuilder::default_app();
+        let (app, small_infra) = setup_split_track_test().await;
         let db_pool = app.db_pool();
-        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
-
-        let req_refresh =
-            app.post(format!("/infra/refresh/?infras={}&force=true", small_infra.id).as_str());
-        app.fetch(req_refresh).await.assert_status(StatusCode::OK);
 
         // buffer_stop.7 is at 5000m on TH1
         // Split TH1 at 2000m
@@ -1451,13 +1442,8 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn split_track_section_with_signals() {
-        let app = TestAppBuilder::default_app();
+        let (app, small_infra) = setup_split_track_test().await;
         let db_pool = app.db_pool();
-        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
-
-        let req_refresh =
-            app.post(format!("/infra/refresh/?infras={}&force=true", small_infra.id).as_str());
-        app.fetch(req_refresh).await.assert_status(StatusCode::OK);
 
         // Signal SA6_1 is at 1780m and SA6_2 is at 3380m on TA6
         // Split TA6 at 2000m
@@ -1504,13 +1490,8 @@ pub mod tests {
         #[case] expected_position: f64,
         #[case] expected_track_index: usize, // 0 for left, 1 for right
     ) {
-        let app = TestAppBuilder::default_app();
+        let (app, small_infra) = setup_split_track_test().await;
         let db_pool = app.db_pool();
-        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
-
-        let req_refresh =
-            app.post(format!("/infra/refresh/?infras={}&force=true", small_infra.id).as_str());
-        app.fetch(req_refresh).await.assert_status(StatusCode::OK);
 
         let request = app
             .post(format!("/infra/{}/split_track_section", small_infra.id).as_str())
