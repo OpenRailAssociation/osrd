@@ -457,8 +457,10 @@ class DummyInfra : RawInfra, BlockInfra {
         val entryDetName = getDetectorName(getRouteEntry(RouteId(trackChunk.index)).value)
         val exitDetName = getDetectorName(getRouteExit(RouteId(trackChunk.index)).value)
         val entry = detectorGeoPoint.getOrDefault(entryDetName, Point(0.0, 0.0))
-        val exit = detectorGeoPoint.getOrDefault(exitDetName, Point(1.0, 1.0))
-        return LineString.make(entry, exit)
+        val middle = detectorGeoPoint.getOrDefault(exitDetName, Point(0.000001, 0.000001))
+        return LineString.concatenate(
+            listOf(LineString.make(entry, middle), LineString.make(middle, entry))
+        )
     }
 
     override fun getTrackChunkOperationalPointParts(

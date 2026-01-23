@@ -156,6 +156,40 @@ class PathfindingTests {
     }
 
     @Test
+    fun pathfindingShortestTimeLongerBlockIntermediateStepTest() {
+        /* Two possible paths: same length, intermediate step must be done top or bottom (50 m/s speed-limit unless specified)
+        - top-path's intermediate step is on a shorter block (2 km, then another 1.5 km block), but with a lower speed limit (45 m/s)
+        - bottom-path's intermediate step is on a longer block (2.5 km, then another 1 km block), and a higher speed limit (50 m/s)
+        We must use the bottom path as it's shorter in time
+
+                  | 45 m/s  |
+        0 -> B -> 1 -> I -> 2 -------> 4 -> E -> 5
+                   \                  /   50 m/s for the rest
+                    + ---> I ---> 3 +
+
+         */
+        val infra = DummyInfra()
+        val block01 = infra.addBlock("0", "1", 2000.meters, 50.0)
+        val block12 = infra.addBlock("1", "2", 2000.meters, 45.0)
+        infra.addBlock("2", "4", 1500.meters, 50.0)
+        val block13 = infra.addBlock("1", "3", 2500.meters, 50.0)
+        val block34 = infra.addBlock("3", "4", 1000.meters, 50.0)
+        val block45 = infra.addBlock("4", "5", 2000.meters, 50.0)
+        val waypoints =
+            arrayListOf<Collection<BlockLocation>>(
+                listOf(BlockLocation(block01, Offset.zero())),
+                listOf(
+                    BlockLocation(block12, Offset(1000.meters)),
+                    BlockLocation(block13, Offset(1250.meters)),
+                ),
+                listOf(BlockLocation(block45, Offset(2000.meters))),
+            )
+        val res = runDummyPathfinding(infra.fullInfra(), waypoints)
+        val resIDs = res!!.ranges.stream().map { it.edge.block }.toList()
+        Assertions.assertEquals(listOf(block01, block13, block34, block45), resIDs)
+    }
+
+    @Test
     fun overlappingWaypoints() {
         val builder = SimpleGraphBuilder()
         builder.makeNodes(7)
