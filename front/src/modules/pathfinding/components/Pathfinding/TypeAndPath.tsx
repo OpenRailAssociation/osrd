@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/no-autofocus */
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { Alert, TriangleRight } from '@osrd-project/ui-icons';
+import { Alert, Rocket, TriangleRight } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { v4 as uuidV4 } from 'uuid';
@@ -57,11 +57,16 @@ function OpTooltips({ opList }: { opList: SearchResultItemOperationalPoint[] }) 
   );
 }
 type TypeAndPathProps = {
-  setDisplayTypeAndPath: React.Dispatch<React.SetStateAction<boolean>>;
   rollingStockId: number | undefined;
+  setDisplayTypeAndPath?: React.Dispatch<React.SetStateAction<boolean>>;
+  isInNewModal?: boolean;
 };
 
-const TypeAndPath = ({ setDisplayTypeAndPath, rollingStockId }: TypeAndPathProps) => {
+const TypeAndPath = ({
+  setDisplayTypeAndPath,
+  rollingStockId,
+  isInNewModal = false,
+}: TypeAndPathProps) => {
   const { launchPathfinding } = useManageTimetableItemContext();
 
   const [inputText, setInputText] = useState('');
@@ -163,19 +168,20 @@ const TypeAndPath = ({ setDisplayTypeAndPath, rollingStockId }: TypeAndPathProps
     if (infraId && rollingStockId && opList.length > 0) {
       const pathSteps: PathItem[] = opList
         .filter((op) => op.trigram !== '')
-        .map(({ uic, ch }) => ({
+        .map(({ trigram, ch }) => ({
           id: uuidV4(),
           location: {
             operational_point: {
-              uic,
+              trigram,
               secondary_code: ch,
-              type: 'uic',
+              type: 'trigram',
             },
           },
         }));
 
-      setDisplayTypeAndPath(false);
+      setDisplayTypeAndPath?.(false);
       launchPathfinding(pathSteps);
+      setInputText('');
     }
   };
 
@@ -238,14 +244,14 @@ const TypeAndPath = ({ setDisplayTypeAndPath, rollingStockId }: TypeAndPathProps
   }, [debouncedInputText, opList]);
 
   return (
-    <>
-      <div
-        className="type-and-path mb-2"
-        style={{ minWidth: `${monospaceOneCharREMWidth * inputText.length + 5.5}rem` }}
-        data-testid="type-and-path-container"
-      >
-        <div className="help">{opList.length === 0 && t('inputOPTrigrams')}</div>
-        <OpTooltips opList={opList} />
+    <div
+      className={cx('type-and-path mb-2', { 'quick-entry-visual': isInNewModal })}
+      style={{ minWidth: `${monospaceOneCharREMWidth * inputText.length + 5.5}rem` }}
+      data-testid="type-and-path-container"
+    >
+      {!isInNewModal && <div className="help">{opList.length === 0 && t('inputOPTrigrams')}</div>}
+      <div className="input-wrapper">
+        {!isInNewModal && <OpTooltips opList={opList} />}
         <div className="d-flex align-items-center">
           <div
             className={cx('form-control-container', 'flex-grow-1', 'mr-2', {
@@ -254,7 +260,10 @@ const TypeAndPath = ({ setDisplayTypeAndPath, rollingStockId }: TypeAndPathProps
           >
             <input
               ref={inputRef}
-              className="form-control form-control-sm text-zone"
+              className={cx('form-control', {
+                'form-control-sm text-zone': !isInNewModal,
+                'quick-entry-visual': isInNewModal,
+              })}
               type="text"
               value={inputText}
               onChange={(e) => handleInput(e.target.value, e.target.selectionStart!)}
@@ -262,10 +271,10 @@ const TypeAndPath = ({ setDisplayTypeAndPath, rollingStockId }: TypeAndPathProps
               autoFocus
               data-testid="type-and-path-input"
             />
-            <span className="form-control-state" />
+            {!isInNewModal && <span className="form-control-state" />}
           </div>
           <button
-            className="btn btn-sm btn-success"
+            className="btn btn-success"
             type="button"
             aria-label={t('launchPathFinding')}
             title={t('launchPathFinding')}
@@ -273,25 +282,36 @@ const TypeAndPath = ({ setDisplayTypeAndPath, rollingStockId }: TypeAndPathProps
             disabled={isInvalid || opList.length < 2}
             data-testid="submit-search-by-trigram"
           >
-            <TriangleRight />
+            {isInNewModal ? <Rocket /> : <TriangleRight />}
           </button>
         </div>
       </div>
       {searchResults.length > 0 && isSortedSearchResultsDisplayed && (
         <>
-          <span className="arrow-img"> </span>
+          {!isInNewModal && <span className="arrow-img"> </span>}
           <div className="results-container">
-            <div className="station-results p-2">
+            <div className={cx('station-results p-2', { 'quick-entry-visual': isInNewModal })}>
               {sortedSearchResults.map((result) => (
                 <button
                   id={`trigram-button-${result.name}`}
                   type="button"
                   onClick={() => onResultClick(result)}
                   key={result.obj_id}
-                  className="station"
+                  className={cx({
+                    station: !isInNewModal,
+                    'op-suggestion': isInNewModal,
+                  })}
                   title={`${result.name} ${result.ch}`}
                 >
-                  <span className="station-text text-secondary">{result.name}</span>
+                  {isInNewModal && <span className="op-suggestion-trigram">{result.trigram}</span>}
+                  <span
+                    className={cx({
+                      'station-text text-secondary': !isInNewModal,
+                      'op-suggestion-name': isInNewModal,
+                    })}
+                  >
+                    {result.name}
+                  </span>
                 </button>
               ))}
               {sortedSearchResults.length > 8 && (
@@ -303,7 +323,7 @@ const TypeAndPath = ({ setDisplayTypeAndPath, rollingStockId }: TypeAndPathProps
           </div>
         </>
       )}
-    </>
+    </div>
   );
 };
 
