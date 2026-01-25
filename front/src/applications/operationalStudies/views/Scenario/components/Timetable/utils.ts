@@ -56,7 +56,7 @@ const formatTimetableItemsForExport = (
     .reduce<PacedTrain[]>((acc, timetableItem) => {
       const pacedTrainEditoastId = extractEditoastIdFromPacedTrainId(timetableItem.id);
       pacedTrainIndexByEditoastId.set(pacedTrainEditoastId, acc.length);
-      acc.push(omit(timetableItem, ['id']));
+      acc.push(omit(timetableItem, ['id', 'train_schedule_set_id']));
       return acc;
     }, []);
 

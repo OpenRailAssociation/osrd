@@ -42,7 +42,9 @@ describe('processJsonFile', () => {
       );
       expect(importPayload).toEqual(
         expect.objectContaining({
-          paced_trains: payloadItems.map(({ id: _id, ...rest }) => rest),
+          paced_trains: payloadItems.map(
+            ({ id: _id, train_schedule_set_id: _train_schedule_set_id, ...rest }) => rest
+          ),
           round_trips: {
             paced_trains: [[0, 1]],
           },
