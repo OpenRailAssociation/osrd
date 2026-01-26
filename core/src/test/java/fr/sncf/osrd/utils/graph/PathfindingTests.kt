@@ -1,5 +1,6 @@
 package fr.sncf.osrd.utils.graph
 
+import fr.sncf.osrd.geom.Point
 import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.path.interfaces.BlockRange
 import fr.sncf.osrd.pathfinding.Pathfinding
@@ -983,6 +984,340 @@ class PathfindingTests {
                 ),
             ),
             res!!.getAllBlocks(),
+        )
+    }
+
+    @Test
+    fun multiBlocksGroups() {
+        /* TODO: make dummy infra provide multi-block routes (not the case for now)
+         *       then make sure tests stay identical and rename test
+         *
+         *                                                               k0
+         *                                                              /
+         *                                                            j0
+         *                                                           /
+         *                                                         i0
+         *                                                        /
+         *                                                   g0-h0
+         *                                                  /
+         *                                       c1-d1-e1-f1
+         *                                      /
+         *                             d3-c3-a-b             g1-h1-i1
+         *                            /         \           /        \
+         *                          e3           c2         |          j1-k1
+         *                         /               \        |
+         *                       f3                 d2      |
+         *                                            \     |
+         *                                             e2   |
+         *                                               \  |
+         *                                                f2
+         */
+
+        val dummyInfra = DummyInfra()
+
+        val pointsList =
+            hashMapOf(
+                "a" to Point(.0, .0),
+                "b" to Point(.0, 1.0),
+                "c1" to Point(1.0, 2.0),
+                "d1" to Point(1.0, 3.0),
+                "e1" to Point(1.0, 4.0),
+                "f1" to Point(1.0, 5.0),
+                "g0" to Point(2.0, 6.0),
+                "h0" to Point(2.0, 7.0),
+                "i0" to Point(3.0, 8.0),
+                "j0" to Point(4.0, 9.0),
+                "k0" to Point(6.0, 10.0),
+                "g1" to Point(.0, 6.0),
+                "h1" to Point(.0, 7.0),
+                "i1" to Point(.0, 8.0),
+                "j1" to Point(-1.0, 9.0),
+                "k1" to Point(-1.0, 10.0),
+                "c2" to Point(-1.0, 2.0),
+                "d2" to Point(-2.0, 3.0),
+                "e2" to Point(-4.0, 4.0),
+                "f2" to Point(-5.0, 6.0),
+                "c3" to Point(.0, -1.0),
+                "d3" to Point(.0, -2.0),
+                "e3" to Point(-1.0, -3.0),
+                "f3" to Point(-2.0, -4.0),
+            )
+
+        dummyInfra.addDetectorGeoPoints(pointsList)
+
+        val routePointsAK0 = listOf("a", "b", "c1", "d1", "e1", "f1", "g0", "h0", "i0", "j0", "k0")
+        val routePointsBF2 = listOf("b", "c2", "d2", "e2", "f2")
+        val routePointsF2K1 = listOf("f2", "g1", "h1", "i1", "j1", "k1")
+        val routePointsAF3 = listOf("a", "c3", "d3", "e3", "f3")
+
+        val aK0Blocks = dummyInfra.addBlockChain(routePointsAK0)
+        val bF2Blocks = dummyInfra.addBlockChain(routePointsBF2)
+        val f2K1Blocks = dummyInfra.addBlockChain(routePointsF2K1)
+        val aF3Blocks = dummyInfra.addBlockChain(routePointsAF3)
+
+        // ---------- ----------- ----------
+
+        val aPlus20 = listOf(BlockLocation(aK0Blocks[0], Offset(20.meters)))
+        val d2Plus70 = listOf(BlockLocation(bF2Blocks[2], Offset(70.meters)))
+        val res2Routes =
+            runPathFinding(listOf<Collection<BlockLocation>>(aPlus20, d2Plus70), dummyInfra)
+
+        fun getBlockLength(blockId: BlockId): Length<Block> {
+            return dummyInfra.fullInfra().blockInfra.getBlockLength(blockId)
+        }
+
+        Assertions.assertEquals(
+            arrayListOf(
+                BlockRange(
+                    aK0Blocks[0],
+                    Offset(20.meters),
+                    Offset(0.meters),
+                    getBlockLength(aK0Blocks[0]).distance - 20.meters,
+                    getBlockLength(aK0Blocks[0]),
+                ),
+                BlockRange(
+                    bF2Blocks[0],
+                    Offset(0.meters),
+                    Offset(getBlockLength(aK0Blocks[0]).distance - 20.meters),
+                    getBlockLength(bF2Blocks[0]).distance,
+                    getBlockLength(bF2Blocks[0]),
+                ),
+                BlockRange(
+                    bF2Blocks[1],
+                    Offset(0.meters),
+                    Offset(
+                        getBlockLength(aK0Blocks[0]).distance - 20.meters +
+                            getBlockLength(bF2Blocks[0]).distance
+                    ),
+                    getBlockLength(bF2Blocks[1]).distance,
+                    getBlockLength(bF2Blocks[1]),
+                ),
+                BlockRange(
+                    bF2Blocks[2],
+                    Offset(0.meters),
+                    Offset(
+                        getBlockLength(aK0Blocks[0]).distance - 20.meters +
+                            getBlockLength(bF2Blocks[0]).distance +
+                            getBlockLength(bF2Blocks[1]).distance
+                    ),
+                    70.meters,
+                    getBlockLength(bF2Blocks[2]),
+                ),
+            ),
+            res2Routes!!.getAllBlocks(),
+        )
+
+        // ---------- ----------- ----------
+
+        val h1Plus500 = listOf(BlockLocation(f2K1Blocks[2], Offset(500.meters)))
+        val res3routes =
+            runPathFinding(listOf<Collection<BlockLocation>>(aPlus20, h1Plus500), dummyInfra)
+
+        Assertions.assertEquals(
+            arrayListOf(
+                BlockRange(
+                    aK0Blocks[0],
+                    Offset(20.meters),
+                    Offset(0.meters),
+                    getBlockLength(aK0Blocks[0]).distance - 20.meters,
+                    getBlockLength(aK0Blocks[0]),
+                ),
+                BlockRange(
+                    bF2Blocks[0],
+                    Offset(0.meters),
+                    Offset(getBlockLength(aK0Blocks[0]).distance - 20.meters),
+                    getBlockLength(bF2Blocks[0]).distance,
+                    getBlockLength(bF2Blocks[0]),
+                ),
+                BlockRange(
+                    bF2Blocks[1],
+                    Offset(0.meters),
+                    Offset(
+                        getBlockLength(aK0Blocks[0]).distance - 20.meters +
+                            getBlockLength(bF2Blocks[0]).distance
+                    ),
+                    getBlockLength(bF2Blocks[1]).distance,
+                    getBlockLength(bF2Blocks[1]),
+                ),
+                BlockRange(
+                    bF2Blocks[2],
+                    Offset(0.meters),
+                    Offset(
+                        getBlockLength(aK0Blocks[0]).distance - 20.meters +
+                            getBlockLength(bF2Blocks[0]).distance +
+                            getBlockLength(bF2Blocks[1]).distance
+                    ),
+                    getBlockLength(bF2Blocks[2]).distance,
+                    getBlockLength(bF2Blocks[2]),
+                ),
+                BlockRange(
+                    bF2Blocks[3],
+                    Offset(0.meters),
+                    Offset(
+                        getBlockLength(aK0Blocks[0]).distance - 20.meters +
+                            getBlockLength(bF2Blocks[0]).distance +
+                            getBlockLength(bF2Blocks[1]).distance +
+                            getBlockLength(bF2Blocks[2]).distance
+                    ),
+                    getBlockLength(bF2Blocks[3]).distance,
+                    getBlockLength(bF2Blocks[3]),
+                ),
+                BlockRange(
+                    f2K1Blocks[0],
+                    Offset(0.meters),
+                    Offset(
+                        getBlockLength(aK0Blocks[0]).distance - 20.meters +
+                            getBlockLength(bF2Blocks[0]).distance +
+                            getBlockLength(bF2Blocks[1]).distance +
+                            getBlockLength(bF2Blocks[2]).distance +
+                            getBlockLength(bF2Blocks[3]).distance
+                    ),
+                    getBlockLength(f2K1Blocks[0]).distance,
+                    getBlockLength(f2K1Blocks[0]),
+                ),
+                BlockRange(
+                    f2K1Blocks[1],
+                    Offset(0.meters),
+                    Offset(
+                        getBlockLength(aK0Blocks[0]).distance - 20.meters +
+                            getBlockLength(bF2Blocks[0]).distance +
+                            getBlockLength(bF2Blocks[1]).distance +
+                            getBlockLength(bF2Blocks[2]).distance +
+                            getBlockLength(bF2Blocks[3]).distance +
+                            getBlockLength(f2K1Blocks[0]).distance
+                    ),
+                    getBlockLength(f2K1Blocks[1]).distance,
+                    getBlockLength(f2K1Blocks[1]),
+                ),
+                BlockRange(
+                    f2K1Blocks[2],
+                    Offset(0.meters),
+                    Offset(
+                        getBlockLength(aK0Blocks[0]).distance - 20.meters +
+                            getBlockLength(bF2Blocks[0]).distance +
+                            getBlockLength(bF2Blocks[1]).distance +
+                            getBlockLength(bF2Blocks[2]).distance +
+                            getBlockLength(bF2Blocks[3]).distance +
+                            getBlockLength(f2K1Blocks[0]).distance +
+                            getBlockLength(f2K1Blocks[1]).distance
+                    ),
+                    500.meters,
+                    getBlockLength(f2K1Blocks[2]),
+                ),
+            ),
+            res3routes!!.getAllBlocks(),
+        )
+
+        // ---------- ----------- ----------
+
+        val c3Plus0 = listOf(BlockLocation(aF3Blocks[1], Offset(500.meters)))
+        val resNoPath =
+            runPathFinding(listOf<Collection<BlockLocation>>(c3Plus0, d2Plus70), dummyInfra)
+        Assertions.assertNull(resNoPath)
+
+        // ---------- ----------- ----------
+
+        val c2Plus10 = listOf(BlockLocation(bF2Blocks[1], Offset(10.meters)))
+        val j1Plus400 = listOf(BlockLocation(f2K1Blocks[4], Offset(400.meters)))
+        val multipleStepInBlockGroups =
+            runPathFinding(
+                listOf<Collection<BlockLocation>>(c2Plus10, d2Plus70, h1Plus500, j1Plus400),
+                dummyInfra,
+            )
+
+        Assertions.assertEquals(
+            arrayListOf(
+                BlockRange(
+                    bF2Blocks[1],
+                    Offset(10.meters),
+                    Offset(0.meters),
+                    getBlockLength(bF2Blocks[1]).distance - 10.meters,
+                    getBlockLength(bF2Blocks[1]),
+                ),
+                BlockRange(
+                    bF2Blocks[2],
+                    Offset(0.meters),
+                    Offset(getBlockLength(bF2Blocks[1]).distance - 10.meters),
+                    getBlockLength(bF2Blocks[2]).distance,
+                    getBlockLength(bF2Blocks[2]),
+                ),
+                BlockRange(
+                    bF2Blocks[3],
+                    Offset(0.meters),
+                    Offset(
+                        getBlockLength(bF2Blocks[1]).distance - 10.meters +
+                            getBlockLength(bF2Blocks[2]).distance
+                    ),
+                    getBlockLength(bF2Blocks[3]).distance,
+                    getBlockLength(bF2Blocks[3]),
+                ),
+                BlockRange(
+                    f2K1Blocks[0],
+                    Offset(0.meters),
+                    Offset(
+                        getBlockLength(bF2Blocks[1]).distance - 10.meters +
+                            getBlockLength(bF2Blocks[2]).distance +
+                            getBlockLength(bF2Blocks[3]).distance
+                    ),
+                    getBlockLength(f2K1Blocks[0]).distance,
+                    getBlockLength(f2K1Blocks[0]),
+                ),
+                BlockRange(
+                    f2K1Blocks[1],
+                    Offset(0.meters),
+                    Offset(
+                        getBlockLength(bF2Blocks[1]).distance - 10.meters +
+                            getBlockLength(bF2Blocks[2]).distance +
+                            getBlockLength(bF2Blocks[3]).distance +
+                            getBlockLength(f2K1Blocks[0]).distance
+                    ),
+                    getBlockLength(f2K1Blocks[1]).distance,
+                    getBlockLength(f2K1Blocks[1]),
+                ),
+                BlockRange(
+                    f2K1Blocks[2],
+                    Offset(0.meters),
+                    Offset(
+                        getBlockLength(bF2Blocks[1]).distance - 10.meters +
+                            getBlockLength(bF2Blocks[2]).distance +
+                            getBlockLength(bF2Blocks[3]).distance +
+                            getBlockLength(f2K1Blocks[0]).distance +
+                            getBlockLength(f2K1Blocks[1]).distance
+                    ),
+                    getBlockLength(f2K1Blocks[2]).distance,
+                    getBlockLength(f2K1Blocks[2]),
+                ),
+                BlockRange(
+                    f2K1Blocks[3],
+                    Offset(0.meters),
+                    Offset(
+                        getBlockLength(bF2Blocks[1]).distance - 10.meters +
+                            getBlockLength(bF2Blocks[2]).distance +
+                            getBlockLength(bF2Blocks[3]).distance +
+                            getBlockLength(f2K1Blocks[0]).distance +
+                            getBlockLength(f2K1Blocks[1]).distance +
+                            getBlockLength(f2K1Blocks[2]).distance
+                    ),
+                    getBlockLength(f2K1Blocks[3]).distance,
+                    getBlockLength(f2K1Blocks[3]),
+                ),
+                BlockRange(
+                    f2K1Blocks[4],
+                    Offset(0.meters),
+                    Offset(
+                        getBlockLength(bF2Blocks[1]).distance - 10.meters +
+                            getBlockLength(bF2Blocks[2]).distance +
+                            getBlockLength(bF2Blocks[3]).distance +
+                            getBlockLength(f2K1Blocks[0]).distance +
+                            getBlockLength(f2K1Blocks[1]).distance +
+                            getBlockLength(f2K1Blocks[2]).distance +
+                            getBlockLength(f2K1Blocks[3]).distance
+                    ),
+                    400.meters,
+                    getBlockLength(f2K1Blocks[4]),
+                ),
+            ),
+            multipleStepInBlockGroups!!.getAllBlocks().toList(),
         )
     }
 
