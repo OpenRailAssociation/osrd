@@ -1,3 +1,4 @@
+pub mod authorization;
 pub mod electrical_profiles_commands;
 pub mod garbage_collector;
 pub mod group;
@@ -16,6 +17,7 @@ mod trains_traffic;
 pub mod user;
 mod valkey_config;
 
+use authorization::grants::GrantsCommand;
 use clap::Parser;
 use clap::Subcommand;
 use clap::ValueEnum;
@@ -94,6 +96,8 @@ pub enum Commands {
     Group(GroupCommand),
     #[command(subcommand, about, long_about = "User related commands")]
     User(UserCommand),
+    #[command(subcommand, about, long_about = "Grants related commands")]
+    Grants(GrantsCommand),
     #[command(about, long_about = "Healthcheck")]
     Healthcheck(CoreArgs),
     #[command(
