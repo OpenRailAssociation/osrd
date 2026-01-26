@@ -4,6 +4,7 @@ import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.meters
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -368,5 +369,95 @@ class TestDistanceRangeMap {
         assertTrue(map.fullyCovers((-1).meters))
         assertTrue(map.fullyCovers(0.meters))
         assertFalse(map.fullyCovers(1.meters))
+    }
+
+    @Test
+    fun commonRangesExample() {
+        val map1 =
+            distanceRangeMapOf(
+                DistanceRangeMap.RangeMapEntry(0.meters, 5.meters, "A"),
+                DistanceRangeMap.RangeMapEntry(5.meters, 9.meters, "B"),
+            )
+        val map2 =
+            distanceRangeMapOf(
+                DistanceRangeMap.RangeMapEntry(0.meters, 2.meters, 420),
+                DistanceRangeMap.RangeMapEntry(2.meters, 9.meters, 69),
+            )
+
+        assertEquals(
+            map1.commonRanges(map2).toList(),
+            listOf(
+                DistanceRangeMap.RangeMapEntry(0.meters, 2.meters, "A" to 420),
+                DistanceRangeMap.RangeMapEntry(2.meters, 5.meters, "A" to 69),
+                DistanceRangeMap.RangeMapEntry(5.meters, 9.meters, "B" to 69),
+            ),
+        )
+    }
+
+    @Test
+    fun commonRangesHole() {
+        val map1 =
+            distanceRangeMapOf(
+                DistanceRangeMap.RangeMapEntry(0.meters, 4.meters, "A"),
+                DistanceRangeMap.RangeMapEntry(8.meters, 9.meters, "B"),
+            )
+        val map2 =
+            distanceRangeMapOf(
+                DistanceRangeMap.RangeMapEntry(0.meters, 2.meters, 420),
+                DistanceRangeMap.RangeMapEntry(2.meters, 4.meters, 69),
+                DistanceRangeMap.RangeMapEntry(8.meters, 9.meters, 42),
+            )
+
+        assertEquals(
+            map1.commonRanges(map2).toList(),
+            listOf(
+                DistanceRangeMap.RangeMapEntry(0.meters, 2.meters, "A" to 420),
+                DistanceRangeMap.RangeMapEntry(2.meters, 4.meters, "A" to 69),
+                DistanceRangeMap.RangeMapEntry(8.meters, 9.meters, "B" to 42),
+            ),
+        )
+    }
+
+    @Test
+    fun commonRangesStartsEarly() {
+        val map1 =
+            distanceRangeMapOf(
+                DistanceRangeMap.RangeMapEntry(0.meters, 4.meters, "A"),
+                DistanceRangeMap.RangeMapEntry(8.meters, 9.meters, "B"),
+            )
+        val map2 =
+            distanceRangeMapOf(
+                DistanceRangeMap.RangeMapEntry(2.meters, 4.meters, 69),
+                DistanceRangeMap.RangeMapEntry(8.meters, 9.meters, 42),
+            )
+
+        assertFailsWith(IllegalArgumentException::class) { map1.commonRanges(map2).toList() }
+    }
+
+    @Test
+    fun commonRangesEndsLate() {
+        val map1 = distanceRangeMapOf(DistanceRangeMap.RangeMapEntry(0.meters, 4.meters, "A"))
+        val map2 = distanceRangeMapOf(DistanceRangeMap.RangeMapEntry(0.meters, 6.meters, 69))
+
+        assertFailsWith(IllegalArgumentException::class) { map1.commonRanges(map2).toList() }
+    }
+
+    @Test
+    fun commonRangesEmpty() {
+        val ranges = distanceRangeMapOf<Unit>().commonRanges(distanceRangeMapOf<Unit>())
+
+        assertEquals(ranges.toList(), listOf())
+    }
+
+    @Test
+    fun commonRangesEmptyNotEmpty() {
+        val map = distanceRangeMapOf(DistanceRangeMap.RangeMapEntry(0.meters, 4.meters, Unit))
+
+        assertFailsWith(IllegalArgumentException::class) {
+            map.commonRanges(distanceRangeMapOf<Unit>()).toList()
+        }
+        assertFailsWith(IllegalArgumentException::class) {
+            distanceRangeMapOf<Unit>().commonRanges(map).toList()
+        }
     }
 }

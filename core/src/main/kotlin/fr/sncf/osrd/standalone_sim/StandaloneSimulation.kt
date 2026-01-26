@@ -37,7 +37,6 @@ import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.entries
-import fr.sncf.osrd.utils.toRangeMap
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -87,17 +86,16 @@ fun runStandaloneSimulation(
         computeMRSP(trainPath, rollingStock, false, speedLimitTag, null, null, useSpeedLimits)
 
     // Build paths and contexts
-    val powerRestrictionsLegacyMap = powerRestrictions.toRangeMap()
     val electrificationMap =
         trainPath.getElectrificationMap(
             rollingStock.basePowerClass,
-            powerRestrictionsLegacyMap,
+            powerRestrictions,
             rollingStock.powerRestrictions,
             !useElectricalProfiles,
         )
     val curvesAndConditions = rollingStock.mapTractiveEffortCurves(electrificationMap, comfort)
     val electrificationRanges =
-        ElectrificationRange.from(curvesAndConditions.conditions.toRangeMap(), electrificationMap)
+        ElectrificationRange.from(curvesAndConditions.conditions, electrificationMap)
     var context =
         EnvelopeSimContext(
             rollingStock,
@@ -207,7 +205,7 @@ fun makeElectricalProfiles(
     val profileMap = TreeRangeMap.create<Double, ElectricalProfileValue>()
     for (electrification in electrificationRanges) {
         profileMap.putCoalescing(
-            Range.closed(electrification.start, electrification.stop),
+            Range.closed(electrification.start.meters, electrification.stop.meters),
             profileFromElectrification(electrification.electrificationUsage ?: continue),
         )
     }

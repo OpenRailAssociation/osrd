@@ -1,7 +1,5 @@
 package fr.sncf.osrd.train
 
-import com.google.common.collect.Range
-import com.google.common.collect.RangeMap
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.CurvesAndConditions
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.InfraConditions
@@ -15,7 +13,6 @@ import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.DistanceRangeMapImpl
-import fr.sncf.osrd.utils.put
 import java.util.*
 import kotlin.math.abs
 
@@ -101,16 +98,16 @@ constructor(
     }
 
     override fun mapTractiveEffortCurves(
-        electrificationMap: RangeMap<Double, Electrification>,
+        electrificationMap: DistanceRangeMap<Electrification>,
         comfort: Comfort?,
     ): CurvesAndConditions {
         val conditionsUsed = DistanceRangeMapImpl<InfraConditions>()
         val curves = DistanceRangeMapImpl<Array<TractiveEffortPoint>>()
 
-        for (elecCondEntry in electrificationMap.asMapOfRanges().entries) {
-            val curveAndCond = findTractiveEffortCurve(comfort, elecCondEntry.value)
-            curves.put(elecCondEntry.key, curveAndCond.curve)
-            conditionsUsed.put(elecCondEntry.key, curveAndCond.cond)
+        electrificationMap.forEach { lower, upper, electrification ->
+            val curveAndCond = findTractiveEffortCurve(comfort, electrification)
+            curves.put(lower, upper, curveAndCond.curve)
+            conditionsUsed.put(lower, upper, curveAndCond.cond)
         }
         return CurvesAndConditions(curves, conditionsUsed)
     }
@@ -219,28 +216,23 @@ constructor(
      * @param comfort The comfort level to get the curves for
      */
     fun addNeutralSystemTimes(
-        electrificationMap: RangeMap<Double, Electrification>,
+        electrificationMap: DistanceRangeMap<Electrification>,
         comfort: Comfort,
         curvesUsed: DistanceRangeMap<Array<TractiveEffortPoint>>,
     ): DistanceRangeMap<Array<TractiveEffortPoint>> {
         val newCurves = DistanceRangeMapImpl<Array<TractiveEffortPoint>>()
         newCurves.putMany(curvesUsed)
 
-        for (elecCondEntry in electrificationMap.asMapOfRanges().entries) {
-            val value = elecCondEntry.value
+        electrificationMap.forEach { lower, upper, value ->
             if (value is Neutral) {
                 if (!shouldCoast(value, comfort)) {
-                    continue
+                    return@forEach
                 }
                 // estimate the distance during which the train will be coasting, due to having
-                // respected the
-                // neutral section
-                val neutralRange = elecCondEntry.key
-                val deadSectionRange =
-                    Range.closed(neutralRange.lowerEndpoint(), neutralRange.upperEndpoint())
+                // respected the neutral section
                 val curveAndCondition = findTractiveEffortCurve(comfort, value)
                 if (curveAndCondition.cond.mode == null) { // The train is effectively coasting
-                    newCurves.put(deadSectionRange, curveAndCondition.curve)
+                    newCurves.put(lower, upper, curveAndCondition.curve)
                 }
             }
         }

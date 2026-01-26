@@ -1,6 +1,5 @@
 package fr.sncf.osrd.standalone_sim
 
-import com.google.common.collect.ImmutableRangeMap
 import fr.sncf.osrd.DriverBehaviour
 import fr.sncf.osrd.api.RangeValues
 import fr.sncf.osrd.api.standalone_sim.MarginValue
@@ -60,7 +59,7 @@ class StandaloneSimulationTest {
     private val electrificationMap =
         trainPath.getElectrificationMap(
             rollingStock.basePowerClass,
-            ImmutableRangeMap.of(),
+            distanceRangeMapOf(),
             rollingStock.powerRestrictions,
             true,
         )

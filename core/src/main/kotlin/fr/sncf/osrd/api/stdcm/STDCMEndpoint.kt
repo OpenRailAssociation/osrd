@@ -2,7 +2,6 @@
 
 package fr.sncf.osrd.api.stdcm
 
-import com.google.common.collect.ImmutableRangeMap
 import com.google.common.collect.Range
 import com.google.common.collect.TreeRangeSet
 import fr.sncf.osrd.api.*
@@ -55,7 +54,6 @@ import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.DistanceRangeMap.RangeMapEntry
 import fr.sncf.osrd.utils.distanceRangeMapOf
-import fr.sncf.osrd.utils.toRangeMap
 import fr.sncf.osrd.utils.units.*
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
@@ -282,16 +280,13 @@ class STDCMEndpoint(
         val electrificationMap =
             path.trainPath.getElectrificationMap(
                 rollingStock.basePowerClass,
-                ImmutableRangeMap.of(),
+                distanceRangeMapOf(),
                 rollingStock.powerRestrictions,
                 false,
             )
         val curvesAndConditions = rollingStock.mapTractiveEffortCurves(electrificationMap, comfort)
         val electrificationRanges =
-            ElectrificationRange.from(
-                curvesAndConditions.conditions.toRangeMap(),
-                electrificationMap,
-            )
+            ElectrificationRange.from(curvesAndConditions.conditions, electrificationMap)
         return makeElectricalProfiles(electrificationRanges)
     }
 }

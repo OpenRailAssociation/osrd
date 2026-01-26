@@ -1,7 +1,5 @@
 package fr.sncf.osrd.path.implementations
 
-import com.google.common.collect.ImmutableRangeMap
-import com.google.common.collect.RangeMap
 import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.path.interfaces.*
 import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
@@ -151,10 +149,10 @@ data class TrainPathImpl(
 
     override fun getElectrificationMap(
         basePowerClass: String?,
-        powerRestrictionMap: RangeMap<Double, String>?,
+        powerRestrictionMap: DistanceRangeMap<String>?,
         powerRestrictionToPowerClass: Map<String, String>?,
         ignoreElectricalProfiles: Boolean,
-    ): ImmutableRangeMap<Double, Electrification> {
+    ): DistanceRangeMap<Electrification> {
         return cachedEnvelopeSimPath.getElectrificationMap(
             basePowerClass,
             powerRestrictionMap,

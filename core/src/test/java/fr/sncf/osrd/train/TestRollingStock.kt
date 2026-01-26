@@ -1,15 +1,13 @@
 package fr.sncf.osrd.train
 
-import com.google.common.collect.ImmutableRangeMap
 import com.google.common.collect.Lists
-import com.google.common.collect.Range
-import com.google.common.collect.RangeMap
 import fr.sncf.osrd.envelope_sim.EnvelopeSimPathBuilder
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.InfraConditions
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.TractiveEffortPoint
-import fr.sncf.osrd.path.interfaces.Electrification
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
+import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.meters
 import org.junit.jupiter.api.Assertions
@@ -24,11 +22,11 @@ private fun maxSpeed(curve: Array<TractiveEffortPoint>): Double {
 
 private fun mapTractiveEffortCurveArgs(): Iterable<Arguments> {
     val powerRestrictionMap =
-        ImmutableRangeMap.builder<Double, String>()
-            .put(Range.closedOpen(0.0, 10.0), "Restrict1")
-            .put(Range.closed(10.0, 20.0), "Restrict2")
-            .build()
-    val emptyPowerRestrictionMap = ImmutableRangeMap.builder<Double, String>().build()
+        distanceRangeMapOf(
+            DistanceRangeMap.RangeMapEntry(0.0.meters, 10.0.meters, "Restrict1"),
+            DistanceRangeMap.RangeMapEntry(10.0.meters, 20.0.meters, "Restrict2"),
+        )
+    val emptyPowerRestrictionMap = distanceRangeMapOf<String>()
     return Lists.cartesianProduct(
             listOf(
                 EnvelopeSimPathBuilder.withElectricalProfiles25000(40.0),
@@ -47,11 +45,11 @@ class TestRollingStock {
     fun testMapTractiveEffortCurveCoherent(
         path: PhysicsPath,
         comfort: Comfort,
-        powerRestrictionMap: RangeMap<Double, String>,
+        powerRestrictionMap: DistanceRangeMap<String>,
     ) {
         val rollingStock = TestTrains.REALISTIC_FAST_TRAIN
 
-        val elecCondMap: ImmutableRangeMap<Double, Electrification> =
+        val elecCondMap =
             path.getElectrificationMap(
                 rollingStock.basePowerClass,
                 powerRestrictionMap,
@@ -66,17 +64,17 @@ class TestRollingStock {
     @Test
     fun testMapTractiveEffortCurveWithProfiles() {
         val powerRestrictionMap =
-            ImmutableRangeMap.builder<Double, String>()
-                .put(Range.closedOpen(5.0, 11.0), "Restrict2")
-                .put(Range.closedOpen(15.0, 18.0), "Restrict1")
-                .put(Range.closed(18.0, 20.0), "UnknownRestrict")
-                .build()
+            distanceRangeMapOf(
+                DistanceRangeMap.RangeMapEntry(5.0.meters, 11.0.meters, "Restrict2"),
+                DistanceRangeMap.RangeMapEntry(15.0.meters, 18.0.meters, "Restrict1"),
+                DistanceRangeMap.RangeMapEntry(18.0.meters, 20.0.meters, "UnknownRestrict"),
+            )
         val path = EnvelopeSimPathBuilder.withElectricalProfiles25000(50.0)
 
         val rollingStock = TestTrains.REALISTIC_FAST_TRAIN
 
         val comfort = Comfort.STANDARD
-        val elecCondMap: ImmutableRangeMap<Double, Electrification> =
+        val elecCondMap =
             path.getElectrificationMap(
                 rollingStock.basePowerClass,
                 powerRestrictionMap,

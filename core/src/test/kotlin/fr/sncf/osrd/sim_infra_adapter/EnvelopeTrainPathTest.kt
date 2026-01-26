@@ -1,7 +1,5 @@
 package fr.sncf.osrd.sim_infra_adapter
 
-import com.google.common.collect.ImmutableRangeMap
-import com.google.common.collect.Range
 import fr.sncf.osrd.api.InfraMetadata
 import fr.sncf.osrd.path.interfaces.Electrification
 import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
@@ -59,7 +57,7 @@ class EnvelopeTrainPathTest {
     fun envelopeFromPathTestElectrificationMap(
         tracks: List<String>,
         direction: Direction,
-        expectedMap: ImmutableRangeMap<Double, Electrification>,
+        expectedMap: DistanceRangeMap<Electrification>,
     ) {
         val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
         rjsInfra.electrifications =
@@ -174,58 +172,22 @@ class EnvelopeTrainPathTest {
                 electricalProfileMapping = profileMap,
             )
         val electrificationByPowerClass = path.getElectrificationMap("1", null, null)
-        val expected = ImmutableRangeMap.Builder<Double, Electrification>()
+        val expected = DistanceRangeMapImpl<Electrification>()
 
-        putInElectrificationMapByPowerClass(expected, 0.0, 500.0, NonElectrified(), "A", false)
+        putInElectrificationMapByPowerClass(expected, 0, 500, NonElectrified(), "A")
+        putInElectrificationMapByPowerClass(expected, 500, 600, Electrified("1500V"), "A")
+        putInElectrificationMapByPowerClass(expected, 600, 800, Electrified("1500V"), "B")
+        putInElectrificationMapByPowerClass(expected, 800, 960, Electrified("1500V"), "A")
         putInElectrificationMapByPowerClass(
             expected,
-            500.0,
-            600.0,
-            Electrified("1500V"),
-            "A",
-            false,
-        )
-        putInElectrificationMapByPowerClass(
-            expected,
-            600.0,
-            800.0,
-            Electrified("1500V"),
-            "B",
-            false,
-        )
-        putInElectrificationMapByPowerClass(
-            expected,
-            800.0,
-            960.0,
-            Electrified("1500V"),
-            "A",
-            false,
-        )
-        putInElectrificationMapByPowerClass(
-            expected,
-            960.0,
-            1000.0,
+            960,
+            1000,
             Neutral(true, Electrified("1500V"), false),
             "A",
-            false,
         )
-        putInElectrificationMapByPowerClass(
-            expected,
-            1_000.0,
-            1_500.0,
-            Electrified("1500V"),
-            "B",
-            false,
-        )
-        putInElectrificationMapByPowerClass(
-            expected,
-            1_500.0,
-            2_500.0,
-            Electrified("25000V"),
-            "B",
-            true,
-        )
-        assertThat(electrificationByPowerClass).isEqualTo(expected.build())
+        putInElectrificationMapByPowerClass(expected, 1_000, 1_500, Electrified("1500V"), "B")
+        putInElectrificationMapByPowerClass(expected, 1_500, 2_500, Electrified("25000V"), "B")
+        Assertions.assertEquals(expected, electrificationByPowerClass)
     }
 
     @Test
@@ -272,112 +234,98 @@ class EnvelopeTrainPathTest {
                 electricalProfileMapping = profileMap,
             )
         val electrificationPowerClass1 = path.getElectrificationMap("1", null, null)
-        val expectedElectrificationPowerClass1 =
-            ImmutableRangeMap.Builder<Double, Electrification>()
+        val expectedElectrificationPowerClass1 = DistanceRangeMapImpl<Electrification>()
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass1,
-            0.0,
-            700.0,
+            0,
+            700,
             Electrified("1500V"),
             "B",
-            false,
         )
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass1,
-            700.0,
-            2_600.0,
+            700,
+            2_600,
             Electrified("1500V"),
             "A",
-            false,
         )
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass1,
-            2_600.0,
-            2_910.0,
+            2_600,
+            2_910,
             Electrified("1500V"),
             "B",
-            false,
         )
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass1,
-            2_910.0,
-            3_050.0,
+            2_910,
+            3_050,
             Neutral(false, Electrified("1500V"), false),
             "B",
-            false,
         )
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass1,
-            3_050.0,
-            3_300.0,
+            3_050,
+            3_300,
             Electrified("1500V"),
             "B",
-            false,
         )
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass1,
-            3_300.0,
-            4_000.0,
+            3_300,
+            4_000,
             Electrified("1500V"),
             "A",
-            true,
         )
 
-        assertThat(electrificationPowerClass1).isEqualTo(expectedElectrificationPowerClass1.build())
+        Assertions.assertEquals(expectedElectrificationPowerClass1, electrificationPowerClass1)
 
         val electrificationPowerClass2 = path.getElectrificationMap("2", null, null)
-        val expectedElectrificationPowerClass2 =
-            ImmutableRangeMap.Builder<Double, Electrification>()
+        val expectedElectrificationPowerClass2 = DistanceRangeMapImpl<Electrification>()
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass2,
-            0.0,
-            950.0,
+            0,
+            950,
             Electrified("1500V"),
             "C",
-            false,
         )
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass2,
-            950.0,
-            2_700.0,
+            950,
+            2_700,
             Electrified("1500V"),
             "D",
-            false,
         )
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass2,
-            2_700.0,
-            2_910.0,
+            2_700,
+            2_910,
             Electrified("1500V"),
             "C",
-            false,
         )
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass2,
-            2_910.0,
-            3_000.0,
+            2_910,
+            3_000,
             Neutral(false, Electrified("1500V"), false),
             "C",
-            false,
         )
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass2,
-            3_000.0,
-            3_050.0,
+            3_000,
+            3_050,
             Neutral(false, Electrified("1500V"), false),
             "D",
-            false,
         )
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass2,
-            3_050.0,
-            4_000.0,
+            3_050,
+            4_000,
             Electrified("1500V"),
             "D",
-            true,
         )
 
-        assertThat(electrificationPowerClass2).isEqualTo(expectedElectrificationPowerClass2.build())
+        Assertions.assertEquals(expectedElectrificationPowerClass2, electrificationPowerClass2)
     }
 
     companion object {
@@ -387,32 +335,58 @@ class EnvelopeTrainPathTest {
                 Arguments.of(
                     listOf("TA0", "TA1"),
                     Direction.INCREASING,
-                    ImmutableRangeMap.Builder<Double, Electrification>()
-                        .put(Range.closedOpen(0.0, 300.0), NonElectrified())
-                        .put(Range.closedOpen(300.0, 1_460.0), Electrified("1500V"))
-                        .put(
-                            Range.closedOpen(1_460.0, 1_500.0),
+                    distanceRangeMapOf(
+                        DistanceRangeMap.RangeMapEntry(0.meters, 300.meters, NonElectrified()),
+                        DistanceRangeMap.RangeMapEntry(
+                            300.meters,
+                            1_460.meters,
+                            Electrified("1500V"),
+                        ),
+                        DistanceRangeMap.RangeMapEntry(
+                            1_460.meters,
+                            1_500.meters,
                             Neutral(true, Electrified("1500V"), false),
-                        )
-                        .put(Range.closedOpen(1_500.0, 2_500.0), Electrified("1500V"))
-                        .put(Range.closedOpen(2_500.0, 2_600.0), NonElectrified())
-                        .put(Range.closed(2_600.0, 3_100.0), Electrified("25000V"))
-                        .build(),
+                        ),
+                        DistanceRangeMap.RangeMapEntry(
+                            1_500.meters,
+                            2_500.meters,
+                            Electrified("1500V"),
+                        ),
+                        DistanceRangeMap.RangeMapEntry(
+                            2_500.meters,
+                            2_600.meters,
+                            NonElectrified(),
+                        ),
+                        DistanceRangeMap.RangeMapEntry(
+                            2_600.meters,
+                            3_100.meters,
+                            Electrified("25000V"),
+                        ),
+                    ),
                 ),
                 Arguments.of(
                     listOf("TA1", "TA0"),
                     Direction.DECREASING,
-                    ImmutableRangeMap.Builder<Double, Electrification>()
-                        .put(Range.closedOpen(0.0, 350.0), Electrified("25000V"))
-                        .put(Range.closedOpen(350.0, 450.0), NonElectrified())
-                        .put(Range.closedOpen(450.0, 1_460.0), Electrified("1500V"))
-                        .put(
-                            Range.closedOpen(1_460.0, 1_600.0),
+                    distanceRangeMapOf(
+                        DistanceRangeMap.RangeMapEntry(0.meters, 350.meters, Electrified("25000V")),
+                        DistanceRangeMap.RangeMapEntry(350.meters, 450.meters, NonElectrified()),
+                        DistanceRangeMap.RangeMapEntry(
+                            450.meters,
+                            1_460.meters,
+                            Electrified("1500V"),
+                        ),
+                        DistanceRangeMap.RangeMapEntry(
+                            1_460.meters,
+                            1_600.meters,
                             Neutral(false, Electrified("1500V"), false),
-                        )
-                        .put(Range.closedOpen(1_600.0, 2_650.0), Electrified("1500V"))
-                        .put(Range.closed(2_650.0, 3_100.0), NonElectrified())
-                        .build(),
+                        ),
+                        DistanceRangeMap.RangeMapEntry(
+                            1_600.meters,
+                            2_650.meters,
+                            Electrified("1500V"),
+                        ),
+                        DistanceRangeMap.RangeMapEntry(2_650.meters, 3_100.meters, NonElectrified()),
+                    ),
                 ),
             )
         }
@@ -421,15 +395,12 @@ class EnvelopeTrainPathTest {
 
 /** Puts the specified Electrification with according electricalProfile in the range lower upper */
 private fun putInElectrificationMapByPowerClass(
-    expectedElectrificationMapByPowerClass: ImmutableRangeMap.Builder<Double, Electrification>,
-    lower: Double,
-    upper: Double,
+    expectedElectrificationMapByPowerClass: DistanceRangeMap<Electrification>,
+    lower: Int,
+    upper: Int,
     electrification: Electrification,
     electricalProfile: String,
-    includeUpperBound: Boolean,
 ) {
-    val range =
-        if (includeUpperBound) Range.closed(lower, upper) else Range.closedOpen(lower, upper)
     val elecWithProfile = electrification.withElectricalProfile(electricalProfile)
-    expectedElectrificationMapByPowerClass.put(range, elecWithProfile)
+    expectedElectrificationMapByPowerClass.put(lower.meters, upper.meters, elecWithProfile)
 }

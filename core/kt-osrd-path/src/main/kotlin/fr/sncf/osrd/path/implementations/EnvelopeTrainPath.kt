@@ -1,9 +1,6 @@
 package fr.sncf.osrd.path.implementations
 
 import com.carrotsearch.hppc.DoubleArrayList
-import com.google.common.collect.ImmutableRangeMap
-import com.google.common.collect.Range
-import com.google.common.collect.TreeRangeMap
 import fr.sncf.osrd.path.interfaces.Electrification
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.TrainPath
@@ -28,19 +25,15 @@ object EnvelopeTrainPath {
             gradeValues.add(value)
         }
 
-        val distanceElectrificationMap = buildElectrificationMap(path)
-        var distanceElectrificationMapByPowerClass =
-            mapOf<String, DistanceRangeMap<Electrification>>()
+        val electrificationMap = buildElectrificationMap(path)
+        var electrificationMapByPowerClass = mapOf<String, DistanceRangeMap<Electrification>>()
         if (electricalProfileMapping != null) {
             val profileMap = electricalProfileMapping.getProfilesOnPath(infra, path)
-            distanceElectrificationMapByPowerClass =
-                buildElectrificationMapByPowerClass(distanceElectrificationMap, profileMap)
+            electrificationMapByPowerClass =
+                buildElectrificationMapByPowerClass(electrificationMap, profileMap)
         }
 
         // Convert the maps to fit the needs of EnvelopeSimPath
-        val electrificationMap = convertElectrificationMap(distanceElectrificationMap)
-        val electrificationMapByPowerClass =
-            convertElectrificationMapByPowerClass(distanceElectrificationMapByPowerClass)
         return EnvelopeSimPath(
             path.getLength().meters,
             gradePositions.toArray(),
@@ -63,28 +56,6 @@ object EnvelopeTrainPath {
                 obj.withElectricalProfile(profile)
             }
             res[entry.key] = electrificationMapWithProfiles
-        }
-        return res
-    }
-
-    /** Converts an ElectrificationMap as a DistanceRangeMap into a RangeMap */
-    private fun convertElectrificationMap(
-        map: DistanceRangeMap<Electrification>
-    ): ImmutableRangeMap<Double, Electrification> {
-        val res = TreeRangeMap.create<Double, Electrification>()
-        map.forEach { lower, upper, value ->
-            res.put(Range.closed(toMeters(lower), toMeters(upper)), value)
-        }
-        return ImmutableRangeMap.copyOf(res)
-    }
-
-    /** Converts an ElectrificationMapByPowerClass as a DistanceRangeMap into a RangeMap */
-    private fun convertElectrificationMapByPowerClass(
-        electrificationMapByPowerClass: Map<String, DistanceRangeMap<Electrification>>
-    ): Map<String, ImmutableRangeMap<Double, Electrification>> {
-        val res = mutableMapOf<String, ImmutableRangeMap<Double, Electrification>>()
-        for (entry in electrificationMapByPowerClass.entries) {
-            res[entry.key] = convertElectrificationMap(entry.value)
         }
         return res
     }

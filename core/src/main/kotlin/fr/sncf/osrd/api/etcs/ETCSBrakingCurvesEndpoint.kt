@@ -61,12 +61,11 @@ class ETCSBrakingCurvesEndpoint(
             // Parse path.
             val trainPath =
                 request.path.toTrainPath(infra.rawInfra, infra.blockInfra, electricalProfileMap)
-            val powerRestrictionsLegacyMap =
-                parsePowerRestrictions(request.powerRestrictions).toRangeMap()
+            val powerRestrictions = parsePowerRestrictions(request.powerRestrictions)
             val electrificationMap =
                 trainPath.getElectrificationMap(
                     rollingStock.basePowerClass,
-                    powerRestrictionsLegacyMap,
+                    powerRestrictions,
                     rollingStock.powerRestrictions,
                     request.useElectricalProfiles,
                 )
