@@ -344,6 +344,8 @@ mod tests {
     use crate::views::train_schedule_set::TrainScheduleSetForm;
     use crate::views::train_schedule_set::TrainScheduleSetResponse;
     use chrono::Duration;
+    use database::DbConnection;
+    use editoast_models::CatalogEntry;
     use editoast_models::prelude::*;
     use reqwest::StatusCode;
     use schemas::fixtures::simple_created_exception_with_change_groups;
@@ -353,6 +355,19 @@ mod tests {
     use schemas::paced_train::PathAndScheduleChangeGroup;
     use schemas::train_schedule::MarginValue;
     use schemas::train_schedule::Margins;
+
+    async fn create_train_schedule_set_linked_to_catalog_entry(
+        conn: &mut DbConnection,
+    ) -> (TrainScheduleSet, CatalogEntry) {
+        let catalog_entry = create_catalog_entry(conn).await;
+        let train_schedule_set = TrainScheduleSet::changeset()
+            .catalog_entry_id(Some(catalog_entry.id))
+            .name(Some("test_with_catalog_entry".into()))
+            .create(conn)
+            .await
+            .expect("Failed to create train schedule set");
+        (train_schedule_set, catalog_entry)
+    }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_paced_train() {
@@ -586,6 +601,66 @@ mod tests {
             response,
             TrainScheduleSetResponse {
                 train_schedule_set: expected_response,
+                train_schedule_count: 0
+            }
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn get_train_schedule_set() {
+        let app = TestAppBuilder::default_app();
+
+        let db_pool = app.db_pool();
+        let train_schedule_set = create_train_schedule_set(&mut db_pool.get().await.unwrap()).await;
+
+        let request = app.get(&format!("/train_schedule_sets/{}", train_schedule_set.id));
+        let response: TrainScheduleSetResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
+
+        assert_eq!(
+            response,
+            TrainScheduleSetResponse {
+                train_schedule_set: TrainScheduleSet {
+                    id: 1,
+                    catalog_entry_id: None,
+                    name: None,
+                    description: String::default(),
+                    published: false,
+                },
+                train_schedule_count: 0
+            }
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn get_train_schedule_set_with_catalog_entry() {
+        let app = TestAppBuilder::default_app();
+
+        let db_pool = app.db_pool();
+        let (train_schedule_set, catalog_entry) =
+            create_train_schedule_set_linked_to_catalog_entry(&mut db_pool.get().await.unwrap())
+                .await;
+
+        let request = app.get(&format!("/train_schedule_sets/{}", train_schedule_set.id));
+        let response: TrainScheduleSetResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
+
+        assert_eq!(
+            response,
+            TrainScheduleSetResponse {
+                train_schedule_set: TrainScheduleSet {
+                    id: 1,
+                    catalog_entry_id: Some(catalog_entry.id),
+                    name: Some("test_with_catalog_entry".into()),
+                    description: String::default(),
+                    published: false,
+                },
                 train_schedule_count: 0
             }
         );
