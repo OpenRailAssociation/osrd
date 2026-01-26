@@ -1,22 +1,20 @@
 package fr.sncf.osrd.path.implementations
 
-import com.google.common.collect.ImmutableRangeMap
-import com.google.common.collect.Range
-import com.google.common.collect.RangeMap
-import com.google.common.collect.TreeRangeMap
 import fr.sncf.osrd.path.interfaces.Electrification
 import fr.sncf.osrd.path.interfaces.PhysicsPath
-import fr.sncf.osrd.utils.RangeMapUtils
+import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.arePositionsEqual
 import fr.sncf.osrd.utils.entries
+import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.meters
 import java.util.Arrays
 
 class EnvelopeSimPath(
     length: Double,
     gradePositions: DoubleArray,
     gradeValues: DoubleArray,
-    defaultElectrificationMap: ImmutableRangeMap<Double, Electrification>,
-    electrificationMapByPowerClass: Map<String, ImmutableRangeMap<Double, Electrification>>,
+    defaultElectrificationMap: DistanceRangeMap<Electrification>,
+    electrificationMapByPowerClass: Map<String, DistanceRangeMap<Electrification>>,
 ) : PhysicsPath {
     override val length: Double
 
@@ -33,14 +31,13 @@ class EnvelopeSimPath(
      * A mapping describing electrification on this path (without electrical profiles nor
      * restrictions)
      */
-    private val defaultElectrificationMap: ImmutableRangeMap<Double, Electrification>
+    private val defaultElectrificationMap: DistanceRangeMap<Electrification>
 
     /**
      * Mapping from rolling stock power class to mapping describing electrification on this path
      * (without restrictions)
      */
-    private val electrificationMapByPowerClass:
-        Map<String, ImmutableRangeMap<Double, Electrification>>
+    private val electrificationMapByPowerClass: Map<String, DistanceRangeMap<Electrification>>
 
     /**
      * Creates a new envelope path, which can be used to perform envelope simulations.
@@ -61,12 +58,12 @@ class EnvelopeSimPath(
         this.gradeValues = gradeValues
         this.length = length
         this.gradeCumSum = initCumSum(gradePositions, gradeValues)
-        assert(RangeMapUtils.fullyCovers<Electrification>(defaultElectrificationMap, length)) {
+        assert(defaultElectrificationMap.fullyCovers(length.meters)) {
             "default electrification map does not cover path"
         }
         this.defaultElectrificationMap = defaultElectrificationMap
         for (entry in electrificationMapByPowerClass.entries) assert(
-            RangeMapUtils.fullyCovers<Electrification>(entry.value, length)
+            entry.value.fullyCovers(length.meters)
         ) {
             "electrification map for power class " + entry.key + " does not cover path"
         }
@@ -139,47 +136,39 @@ class EnvelopeSimPath(
 
     private fun getModeAndProfileMap(
         powerClass: String?,
-        range: Range<Double>,
+        lower: Distance,
+        upper: Distance,
         ignoreElectricalProfiles: Boolean,
-    ): RangeMap<Double, Electrification> {
+    ): DistanceRangeMap<Electrification> {
         val powerClass = if (ignoreElectricalProfiles) null else powerClass
         return electrificationMapByPowerClass
             .getOrDefault(powerClass, defaultElectrificationMap)
-            .subRangeMap(range)
+            .subMap(lower, upper)
     }
 
     /** Get the electrification related data for a given power class and power restriction map. */
     override fun getElectrificationMap(
         basePowerClass: String?,
-        powerRestrictionMap: RangeMap<Double, String>?,
+        powerRestrictionMap: DistanceRangeMap<String>?,
         powerRestrictionToPowerClass: Map<String, String>?,
         ignoreElectricalProfiles: Boolean,
-    ): ImmutableRangeMap<Double, Electrification> {
-        val res = TreeRangeMap.create<Double, Electrification>()
-        res.putAll(
-            getModeAndProfileMap(
-                basePowerClass,
-                Range.closed(0.0, length),
-                ignoreElectricalProfiles,
-            )
-        )
+    ): DistanceRangeMap<Electrification> {
+        val res =
+            getModeAndProfileMap(basePowerClass, 0.meters, length.meters, ignoreElectricalProfiles)
 
-        if (powerRestrictionMap != null) {
-            for (entry in powerRestrictionMap.entries) {
-                val restriction = entry.value
-                val powerClass =
-                    powerRestrictionToPowerClass?.getOrDefault(restriction, basePowerClass)
-                val modeAndProfileMap =
-                    getModeAndProfileMap(powerClass, entry.key, ignoreElectricalProfiles)
-                for (modeAndProfileEntry in modeAndProfileMap.entries) {
-                    val electrification = modeAndProfileEntry.value
-                    res.putCoalescing(
-                        modeAndProfileEntry.key,
-                        electrification.withPowerRestriction(restriction),
-                    )
-                }
+        powerRestrictionMap?.forEach { lower, upper, restriction ->
+            val powerClass = powerRestrictionToPowerClass?.getOrDefault(restriction, basePowerClass)
+            val modeAndProfileMap =
+                getModeAndProfileMap(powerClass, lower, upper, ignoreElectricalProfiles)
+            for (modeAndProfileEntry in modeAndProfileMap) {
+                val electrification = modeAndProfileEntry.value
+                res.put(
+                    modeAndProfileEntry.lower,
+                    modeAndProfileEntry.upper,
+                    electrification.withPowerRestriction(restriction),
+                )
             }
         }
-        return ImmutableRangeMap.copyOf(res)
+        return res
     }
 }

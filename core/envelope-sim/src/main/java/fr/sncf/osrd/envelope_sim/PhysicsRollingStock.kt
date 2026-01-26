@@ -1,6 +1,5 @@
 package fr.sncf.osrd.envelope_sim
 
-import com.google.common.collect.RangeMap
 import fr.sncf.osrd.envelope_sim.etcs.EtcsBrakeParams
 import fr.sncf.osrd.envelope_sim.etcs.M_ROTATING_MAX
 import fr.sncf.osrd.envelope_sim.etcs.M_ROTATING_MIN
@@ -41,7 +40,7 @@ interface PhysicsRollingStock {
      * @param comfort The comfort level to get the curves for.
      */
     fun mapTractiveEffortCurves(
-        electrificationMap: RangeMap<Double, Electrification>,
+        electrificationMap: DistanceRangeMap<Electrification>,
         comfort: Comfort?,
     ): CurvesAndConditions
 

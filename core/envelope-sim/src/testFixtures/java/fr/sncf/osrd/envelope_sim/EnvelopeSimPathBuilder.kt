@@ -1,15 +1,13 @@
 package fr.sncf.osrd.envelope_sim
 
-import com.google.common.collect.ImmutableRangeMap
-import com.google.common.collect.Range
-import com.google.common.collect.RangeMap
-import com.google.common.collect.TreeRangeMap
 import fr.sncf.osrd.path.implementations.EnvelopeSimPath
 import fr.sncf.osrd.path.interfaces.Electrification
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.legacy_objects.electrification.Electrified
 import fr.sncf.osrd.path.legacy_objects.electrification.NonElectrified
-import fr.sncf.osrd.utils.RangeMapUtils
+import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.distanceRangeMapOf
+import fr.sncf.osrd.utils.units.meters
 
 /**
  * This is a simple fixture to build EnvelopeSimPath with some electrification conditions.
@@ -19,25 +17,24 @@ import fr.sncf.osrd.utils.RangeMapUtils
  * effort curve in a rolling stock, they are ignored.
  */
 object EnvelopeSimPathBuilder {
-    private fun getModeMap(length: Double): RangeMap<Double, Electrification> {
-        val electrificationMap = TreeRangeMap.create<Double, Electrification>()
-        electrificationMap.put(Range.closed(0.0, length), NonElectrified())
-        electrificationMap.put(Range.closed(1.0, 8.0), Electrified("1500V"))
-        electrificationMap.put(Range.closed(8.1, 20.0), Electrified("25000V"))
-        electrificationMap.put(Range.closed(30.0, 50.0), Electrified("unhandled"))
-        return electrificationMap.subRangeMap(Range.closed(0.0, length))
-    }
+    private fun getModeMap(length: Double): DistanceRangeMap<Electrification> =
+        distanceRangeMapOf(
+            DistanceRangeMap.RangeMapEntry(0.0.meters, length.meters, NonElectrified()),
+            DistanceRangeMap.RangeMapEntry(1.0.meters, 8.0.meters, Electrified("1500V")),
+            DistanceRangeMap.RangeMapEntry(8.1.meters, 20.0.meters, Electrified("25000V")),
+            DistanceRangeMap.RangeMapEntry(30.0.meters, 50.0.meters, Electrified("unhandled")),
+        )
 
     private fun buildElectrified(
         length: Double,
-        electrificationMap: RangeMap<Double, Electrification>,
-        electrificationMapByPowerClass: HashMap<String, ImmutableRangeMap<Double, Electrification>>,
+        electrificationMap: DistanceRangeMap<Electrification>,
+        electrificationMapByPowerClass: HashMap<String, DistanceRangeMap<Electrification>>,
     ): PhysicsPath {
         return EnvelopeSimPath(
             length,
             doubleArrayOf(0.0, length),
             doubleArrayOf(0.0),
-            ImmutableRangeMap.copyOf(electrificationMap),
+            electrificationMap.clone(),
             electrificationMapByPowerClass,
         )
     }
@@ -49,9 +46,9 @@ object EnvelopeSimPathBuilder {
         gradeValues: DoubleArray,
     ): PhysicsPath {
         val defaultElectrificationMap =
-            ImmutableRangeMap.builder<Double, Electrification>()
-                .put(Range.closed(0.0, length), NonElectrified())
-                .build()
+            distanceRangeMapOf<Electrification>(
+                DistanceRangeMap.RangeMapEntry(0.meters, length.meters, NonElectrified())
+            )
         return EnvelopeSimPath(
             length,
             gradePositions,
@@ -63,49 +60,43 @@ object EnvelopeSimPathBuilder {
 
     /** Builds an EnvelopeSimPath with some electrification modes */
     fun withModes(length: Double): PhysicsPath {
-        return buildElectrified(length, ImmutableRangeMap.copyOf(getModeMap(length)), HashMap())
+        return buildElectrified(length, getModeMap(length), HashMap())
     }
 
     /**
      * Builds an EnvelopeSimPath with some electrification modes and a set of electrical profiles
      */
     fun withElectricalProfiles1500(): PhysicsPath {
-        val profiles1: RangeMap<Double, String> = TreeRangeMap.create()
-        profiles1.put(Range.closed(3.0, 8.0), "A")
-        profiles1.put(Range.closed(8.1, 10.5), "25000V")
-
-        val profiles2: RangeMap<Double, String> = TreeRangeMap.create()
-        profiles2.put(Range.closedOpen(3.0, 4.0), "A")
-        profiles2.put(Range.closedOpen(4.0, 5.0), "B")
-        profiles2.put(Range.closedOpen(5.0, 6.0), "C")
-        profiles2.put(Range.closedOpen(6.0, 7.0), "B")
-        profiles2.put(Range.closed(7.0, 8.0), "A")
-        profiles2.put(Range.closed(8.1, 10.5), "25000V")
-
-        val defaultElectrificationMap: RangeMap<Double, Electrification> = getModeMap(10.0)
-        val byPowerClass = HashMap<String, ImmutableRangeMap<Double, Electrification>>()
-        byPowerClass["1"] =
-            ImmutableRangeMap.copyOf(
-                RangeMapUtils.updateRangeMap(defaultElectrificationMap, profiles1) {
-                    obj: Electrification,
-                    profile: String ->
-                    obj.withElectricalProfile(profile)
-                }
-            )
-        byPowerClass["2"] =
-            ImmutableRangeMap.copyOf(
-                RangeMapUtils.updateRangeMap(defaultElectrificationMap, profiles2) {
-                    obj: Electrification,
-                    profile: String ->
-                    obj.withElectricalProfile(profile)
-                }
+        val profiles1 =
+            distanceRangeMapOf(
+                DistanceRangeMap.RangeMapEntry(3.0.meters, 8.0.meters, "A"),
+                DistanceRangeMap.RangeMapEntry(8.1.meters, 10.5.meters, "25000V"),
             )
 
-        return buildElectrified(
-            10.0,
-            ImmutableRangeMap.copyOf(defaultElectrificationMap),
-            byPowerClass,
-        )
+        val profiles2 =
+            distanceRangeMapOf(
+                DistanceRangeMap.RangeMapEntry(3.0.meters, 4.0.meters, "A"),
+                DistanceRangeMap.RangeMapEntry(4.0.meters, 5.0.meters, "B"),
+                DistanceRangeMap.RangeMapEntry(5.0.meters, 6.0.meters, "C"),
+                DistanceRangeMap.RangeMapEntry(6.0.meters, 7.0.meters, "B"),
+                DistanceRangeMap.RangeMapEntry(7.0.meters, 8.0.meters, "A"),
+                DistanceRangeMap.RangeMapEntry(8.1.meters, 10.5.meters, "25000V"),
+            )
+
+        val defaultElectrificationMap = getModeMap(10.0)
+        val byPowerClass = HashMap<String, DistanceRangeMap<Electrification>>()
+        byPowerClass["1"] = defaultElectrificationMap.clone()
+        byPowerClass["1"]?.updateMapIntersection(profiles1) { obj: Electrification, profile: String
+            ->
+            obj.withElectricalProfile(profile)
+        }
+        byPowerClass["2"] = defaultElectrificationMap.clone()
+        byPowerClass["2"]?.updateMapIntersection(profiles2) { obj: Electrification, profile: String
+            ->
+            obj.withElectricalProfile(profile)
+        }
+
+        return buildElectrified(10.0, defaultElectrificationMap, byPowerClass)
     }
 
     /**
@@ -113,41 +104,37 @@ object EnvelopeSimPathBuilder {
      * different from `withElectricalProfiles25000`
      */
     fun withElectricalProfiles25000(length: Double): PhysicsPath {
-        val defaultElecMap: RangeMap<Double, Electrification> = getModeMap(length)
+        val defaultElecMap = getModeMap(length)
 
-        val electricalProfiles = HashMap<String, ImmutableRangeMap<Double, String>>()
+        val electricalProfiles = HashMap<String, DistanceRangeMap<String>>()
         electricalProfiles["5"] =
-            ImmutableRangeMap.Builder<Double, String>()
-                .put(Range.closedOpen(10.0, 12.0), "25000V")
-                .put(Range.closedOpen(12.0, 14.0), "22500V")
-                .put(Range.closedOpen(14.0, 16.0), "20000V")
-                .put(Range.closedOpen(16.0, 18.0), "22500V")
-                .put(Range.closed(18.0, 20.0), "25000V")
-                .build()
+            distanceRangeMapOf(
+                DistanceRangeMap.RangeMapEntry(10.0.meters, 12.0.meters, "25000V"),
+                DistanceRangeMap.RangeMapEntry(12.0.meters, 14.0.meters, "22500V"),
+                DistanceRangeMap.RangeMapEntry(14.0.meters, 16.0.meters, "20000V"),
+                DistanceRangeMap.RangeMapEntry(16.0.meters, 18.0.meters, "22500V"),
+                DistanceRangeMap.RangeMapEntry(18.0.meters, 20.0.meters, "25000V"),
+            )
 
         electricalProfiles["4"] =
-            ImmutableRangeMap.Builder<Double, String>()
-                .put(Range.closedOpen(10.0, 13.0), "25000V")
-                .put(Range.closedOpen(13.0, 17.0), "22500V")
-                .put(Range.closedOpen(17.0, 20.0), "25000V")
-                .build()
+            distanceRangeMapOf(
+                DistanceRangeMap.RangeMapEntry(10.0.meters, 13.0.meters, "25000V"),
+                DistanceRangeMap.RangeMapEntry(13.0.meters, 17.0.meters, "22500V"),
+                DistanceRangeMap.RangeMapEntry(17.0.meters, 20.0.meters, "25000V"),
+            )
 
         electricalProfiles["3"] =
-            ImmutableRangeMap.Builder<Double, String>()
-                .put(Range.closedOpen(10.0, 20.0), "25000V")
-                .build()
+            distanceRangeMapOf(DistanceRangeMap.RangeMapEntry(10.0.meters, 20.0.meters, "25000V"))
 
-        val byPowerClass = HashMap<String, ImmutableRangeMap<Double, Electrification>>()
+        val byPowerClass = HashMap<String, DistanceRangeMap<Electrification>>()
         for (entry in electricalProfiles.entries) {
-            val elecMap: TreeRangeMap<Double, Electrification> =
-                RangeMapUtils.updateRangeMap(defaultElecMap, entry.value) {
-                    obj: Electrification,
-                    profile: String ->
-                    obj.withElectricalProfile(profile)
-                }
-            byPowerClass[entry.key] = ImmutableRangeMap.copyOf(elecMap)
+            val elecMap = defaultElecMap.clone()
+            elecMap.updateMapIntersection(entry.value) { obj: Electrification, profile: String ->
+                obj.withElectricalProfile(profile)
+            }
+            byPowerClass[entry.key] = elecMap
         }
 
-        return buildElectrified(length, ImmutableRangeMap.copyOf(getModeMap(length)), byPowerClass)
+        return buildElectrified(length, getModeMap(length), byPowerClass)
     }
 }

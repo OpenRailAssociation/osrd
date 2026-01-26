@@ -1,7 +1,6 @@
 package fr.sncf.osrd.path.interfaces
 
-import com.google.common.collect.ImmutableRangeMap
-import com.google.common.collect.RangeMap
+import fr.sncf.osrd.utils.DistanceRangeMap
 
 /**
  * A [PhysicsPath] describes the physics of a path taken by a train.
@@ -22,8 +21,8 @@ interface PhysicsPath {
     /** Get the electrification related data for a given power class and power restriction map. */
     fun getElectrificationMap(
         basePowerClass: String?,
-        powerRestrictionMap: RangeMap<Double, String>?,
+        powerRestrictionMap: DistanceRangeMap<String>?,
         powerRestrictionToPowerClass: Map<String, String>?,
         ignoreElectricalProfiles: Boolean = false,
-    ): ImmutableRangeMap<Double, Electrification>
+    ): DistanceRangeMap<Electrification>
 }

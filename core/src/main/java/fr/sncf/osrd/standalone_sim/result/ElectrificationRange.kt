@@ -1,6 +1,5 @@
 package fr.sncf.osrd.standalone_sim.result
 
-import com.google.common.collect.RangeMap
 import com.squareup.moshi.Json
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.InfraConditions
@@ -10,16 +9,18 @@ import fr.sncf.osrd.path.legacy_objects.electrification.Neutral
 import fr.sncf.osrd.path.legacy_objects.electrification.NonElectrified
 import fr.sncf.osrd.standalone_sim.result.ElectrificationRange.ElectrificationUsage
 import fr.sncf.osrd.standalone_sim.result.ElectrificationRange.ElectrificationUsage.*
+import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.units.Distance
 
 /**
  * A range on the train's path with the electrificationUsage conditions given by the infrastructure
  * if electrified, details about the mode and electrical profiles are given.
  */
 class ElectrificationRange(
-    val start: Double,
-    var stop: Double,
+    val start: Distance,
+    var stop: Distance,
     usedCond: InfraConditions,
-    seenCond: Electrification?,
+    seenCond: Electrification,
 ) {
     val electrificationUsage: ElectrificationUsage? = newElectrificationUsage(usedCond, seenCond)
 
@@ -57,47 +58,38 @@ class ElectrificationRange(
 
         /**
          * Builds a list of ElectrificationRanges from two range maps while ensuring to return the
-         * smallest number of ranges
+         * smallest number of ranges.
+         *
+         * Both [DistanceRangeMap]s must cover the same range.
          */
         fun from(
-            condsUsed: RangeMap<Double, InfraConditions>,
-            condsSeen: RangeMap<Double, Electrification>,
+            condsUsed: DistanceRangeMap<InfraConditions>,
+            condsSeen: DistanceRangeMap<Electrification>,
         ): MutableList<ElectrificationRange> {
-            val res = ArrayList<ElectrificationRange>()
-            val elecCondsSeenMap = condsSeen.asMapOfRanges()
-            for (entry in condsUsed.asMapOfRanges().entries) {
-                val range = entry.key
-                if (
-                    !range.hasLowerBound() ||
-                        !range.hasUpperBound() ||
-                        range.upperEndpoint().equals(range.lowerEndpoint())
-                )
-                    continue
-                assert(
-                    elecCondsSeenMap.containsKey(range) ||
-                        condsSeen.subRangeMap(range).asMapOfRanges().isEmpty()
-                )
-                val usedCond = entry.value
-                val seenCond = elecCondsSeenMap[range]
-                val newRange =
-                    ElectrificationRange(
-                        range.lowerEndpoint(),
-                        range.upperEndpoint(),
-                        usedCond,
-                        seenCond,
-                    )
-                if (res.isEmpty() || !res[res.size - 1].shouldBeMergedWith(newRange))
-                    res.add(newRange)
-                else res[res.size - 1].stop = newRange.stop
-            }
-            return res
+            val ranges =
+                condsUsed.commonRanges(condsSeen) { lower, upper, usedCond, seenCond ->
+                    ElectrificationRange(lower, upper, usedCond, seenCond)
+                }
+            var previous = ranges.firstOrNull() ?: return mutableListOf()
+            return sequence {
+                    for (next in ranges.drop(1)) {
+                        if (previous.shouldBeMergedWith(next)) {
+                            previous.stop = next.stop
+                        } else {
+                            yield(previous)
+                            previous = next
+                        }
+                    }
+                    yield(previous)
+                }
+                .toMutableList()
         }
     }
 }
 
 private fun newElectrificationUsage(
     usedCond: InfraConditions,
-    seenCond: Electrification?,
+    seenCond: Electrification,
 ): ElectrificationUsage? =
     when (seenCond) {
         is NonElectrified -> return NonElectrifiedUsage()

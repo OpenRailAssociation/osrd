@@ -1,9 +1,8 @@
 package fr.sncf.osrd.envelope_sim
 
-import com.google.common.collect.ImmutableRangeMap
-import com.google.common.collect.RangeMap
 import fr.sncf.osrd.path.interfaces.Electrification
 import fr.sncf.osrd.path.interfaces.PhysicsPath
+import fr.sncf.osrd.utils.DistanceRangeMap
 
 class FlatPath(override val length: Double, private val slope: Double) : PhysicsPath {
     override fun getAverageGrade(begin: Double, end: Double): Double {
@@ -16,10 +15,10 @@ class FlatPath(override val length: Double, private val slope: Double) : Physics
 
     override fun getElectrificationMap(
         basePowerClass: String?,
-        powerRestrictionMap: RangeMap<Double, String>?,
+        powerRestrictionMap: DistanceRangeMap<String>?,
         powerRestrictionToPowerClass: Map<String, String>?,
         ignoreElectricalProfiles: Boolean,
-    ): ImmutableRangeMap<Double, Electrification> {
+    ): DistanceRangeMap<Electrification> {
         TODO("Not yet implemented")
     }
 }

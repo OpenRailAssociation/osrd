@@ -1,6 +1,5 @@
 package fr.sncf.osrd.envelope_sim
 
-import com.google.common.collect.RangeMap
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.CurvesAndConditions
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.TractiveEffortPoint
 import fr.sncf.osrd.envelope_sim.etcs.EtcsBrakeParams
@@ -57,7 +56,7 @@ class SimpleRollingStock(
     override val deceleration: Double = -constGamma
 
     override fun mapTractiveEffortCurves(
-        electrificationMap: RangeMap<Double, Electrification>,
+        electrificationMap: DistanceRangeMap<Electrification>,
         comfort: Comfort?,
     ): CurvesAndConditions {
         return CurvesAndConditions(distanceRangeMapOf(), distanceRangeMapOf())

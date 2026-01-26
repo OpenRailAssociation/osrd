@@ -112,6 +112,91 @@ interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
         }
         return length <= Distance.ZERO
     }
+
+    /**
+     * Iterates on the ranges where `this` and [other] map to single values.
+     *
+     * # Example
+     *
+     * ```kotlin
+     * val map1 = distanceRangeMapOf(
+     *     RangeMapEntry(0, 5, "A"),
+     *     RangeMapEntry(5, 9, "B"),
+     * )
+     * val map2 = distanceRangeMapOf(
+     *     RangeMapEntry(0, 2, 420),
+     *     RangeMapEntry(2, 9, 69),
+     * )
+     *
+     * assertEquals(
+     *     map1.commonRanges(map2).toList(),
+     *     listOf(
+     *         RangeMapEntry(0, 2, "A" to 420),
+     *         RangeMapEntry(2, 5, "A" to 69),
+     *         RangeMapEntry(5, 9, "B" to 69),
+     *     ),
+     * )
+     * ```
+     *
+     * See `TestDistanceRangeMap` for more examples.
+     *
+     * # Throws
+     *
+     * Throws an exception if `this` maps a range [other] doesn't, and vice versa.
+     */
+    fun <U> commonRanges(other: DistanceRangeMap<U>): Sequence<RangeMapEntry<Pair<T, U>>> =
+        commonRanges(other) { lower, upper, t, u -> RangeMapEntry(lower, upper, t to u) }
+
+    /**
+     * Overload where you're given the opportunity to avoid the allocation of the [RangeMapEntry]
+     * and the [Pair] by using the [transform] argument.
+     */
+    fun <U, R> commonRanges(
+        other: DistanceRangeMap<U>,
+        transform: (lower: Distance, upper: Distance, T, U) -> R,
+    ): Sequence<R> = sequence {
+        val thisIt = this@DistanceRangeMap.iterator()
+        val otherIt = other.iterator()
+
+        var thisEntry =
+            if (thisIt.hasNext()) {
+                thisIt.next()
+            } else {
+                require(!otherIt.hasNext()) { "other has entries beyond this" }
+                return@sequence
+            }
+        require(otherIt.hasNext()) { "this has entries beyond other" }
+        var otherEntry = otherIt.next()
+
+        while (true) {
+            require(thisEntry.lower == otherEntry.lower)
+
+            val lower = thisEntry.lower
+            val upper = Distance.min(thisEntry.upper, otherEntry.upper)
+
+            yield(transform(lower, upper, thisEntry.value, otherEntry.value))
+
+            if (thisEntry.upper == upper) {
+                if (!thisIt.hasNext()) {
+                    require(otherEntry.upper == upper) {
+                        "other's last map entry spans longer than this' last"
+                    }
+                    require(!otherIt.hasNext()) { "other has entries beyond this" }
+                    return@sequence
+                }
+                thisEntry = thisIt.next()
+            } else {
+                thisEntry = thisEntry.copy(lower = upper)
+            }
+
+            if (otherEntry.upper == upper) {
+                require(otherIt.hasNext()) { "this' last map entry spans longer than other's last" }
+                otherEntry = otherIt.next()
+            } else {
+                otherEntry = otherEntry.copy(lower = upper)
+            }
+        }
+    }
 }
 
 fun <T> distanceRangeMapOf(vararg entries: DistanceRangeMap.RangeMapEntry<T>): DistanceRangeMap<T> {
