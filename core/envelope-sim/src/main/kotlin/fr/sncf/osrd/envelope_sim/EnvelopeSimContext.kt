@@ -1,7 +1,7 @@
 package fr.sncf.osrd.envelope_sim
 
-import com.google.common.collect.RangeMap
 import fr.sncf.osrd.path.interfaces.PhysicsPath
+import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.DistanceRangeSet
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -13,7 +13,7 @@ constructor(
     @JvmField val path: PhysicsPath,
     @JvmField val timeStep: Double,
     @JvmField
-    val tractiveEffortCurveMap: RangeMap<Double, Array<PhysicsRollingStock.TractiveEffortPoint>>,
+    val tractiveEffortCurveMap: DistanceRangeMap<Array<PhysicsRollingStock.TractiveEffortPoint>>,
     /** If the train should follow ETCS rules, this contains some extra context */
     val etcsContext: ETCSContext? = null,
 ) {
@@ -63,7 +63,7 @@ constructor(
     }
 
     fun updateCurves(
-        tractiveEffortCurveMap: RangeMap<Double, Array<PhysicsRollingStock.TractiveEffortPoint>>
+        tractiveEffortCurveMap: DistanceRangeMap<Array<PhysicsRollingStock.TractiveEffortPoint>>
     ): EnvelopeSimContext {
         return EnvelopeSimContext(rollingStock, path, timeStep, tractiveEffortCurveMap, etcsContext)
     }

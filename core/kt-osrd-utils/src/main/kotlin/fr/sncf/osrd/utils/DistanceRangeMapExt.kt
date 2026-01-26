@@ -7,6 +7,13 @@ import com.google.common.collect.RangeSet
 import com.google.common.collect.TreeRangeMap
 import fr.sncf.osrd.utils.units.Distance
 
+fun <T : Any> DistanceRangeMap<T>.put(entry: Range<Double>, value: T) =
+    put(
+        Distance.fromMeters(entry.lowerEndpoint()),
+        Distance.fromMeters(entry.upperEndpoint()),
+        value,
+    )
+
 // TODO: Get rid of this function, by propagating DistanceRangeMap to the whole codebase
 /**
  * Converts a DistanceRangeMap<T> into a legacy RangeMap<Double, T>. Distances are converted to

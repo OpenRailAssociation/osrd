@@ -6,6 +6,7 @@ import fr.sncf.osrd.envelope_sim.etcs.M_ROTATING_MAX
 import fr.sncf.osrd.envelope_sim.etcs.M_ROTATING_MIN
 import fr.sncf.osrd.path.interfaces.Electrification
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
+import fr.sncf.osrd.utils.DistanceRangeMap
 import kotlin.math.abs
 
 interface PhysicsRollingStock {
@@ -45,7 +46,7 @@ interface PhysicsRollingStock {
     ): CurvesAndConditions
 
     data class CurvesAndConditions(
-        val curves: RangeMap<Double, Array<TractiveEffortPoint>>,
+        val curves: DistanceRangeMap<Array<TractiveEffortPoint>>,
         val conditions: RangeMap<Double, InfraConditions>,
     )
 

@@ -6,6 +6,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TimeSource
@@ -337,5 +338,35 @@ class TestDistanceRangeMap {
         map.put(0.0.meters, 10.0.meters, "A")
         map.clear()
         assertNull(map.get(5.0.meters))
+    }
+
+    @Test
+    fun fullyCovers() {
+        val map =
+            distanceRangeMapOf(
+                DistanceRangeMap.RangeMapEntry(0.meters, 1.meters, true),
+                DistanceRangeMap.RangeMapEntry(1.meters, 4.meters, true),
+                DistanceRangeMap.RangeMapEntry(7.meters, 9.meters, true),
+            )
+        assertTrue(map.fullyCovers((-1).meters))
+        assertTrue(map.fullyCovers(0.meters))
+        assertTrue(map.fullyCovers(1.meters))
+        assertTrue(map.fullyCovers(2.meters))
+        assertTrue(map.fullyCovers(3.meters))
+        assertTrue(map.fullyCovers(4.meters))
+        assertFalse(map.fullyCovers(5.meters))
+        assertFalse(map.fullyCovers(6.meters))
+        assertFalse(map.fullyCovers(7.meters))
+        assertFalse(map.fullyCovers(8.meters))
+        assertFalse(map.fullyCovers(9.meters))
+        assertFalse(map.fullyCovers(10.meters))
+    }
+
+    @Test
+    fun fullyCoversEmptyMap() {
+        val map = distanceRangeMapOf<Boolean>()
+        assertTrue(map.fullyCovers((-1).meters))
+        assertTrue(map.fullyCovers(0.meters))
+        assertFalse(map.fullyCovers(1.meters))
     }
 }

@@ -10,6 +10,8 @@ import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.TractiveEffortPoint
 import fr.sncf.osrd.path.interfaces.Electrification
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
+import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.meters
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -58,12 +60,7 @@ class TestRollingStock {
             )
         val tractiveEffortCurveMap = rollingStock.mapTractiveEffortCurves(elecCondMap, comfort)
         testRangeCoverage(tractiveEffortCurveMap.conditions, path.length)
-        testRangeCoverage(tractiveEffortCurveMap.curves, path.length)
-        val nCurves =
-            tractiveEffortCurveMap.curves
-                .subRangeMap(Range.closed(0.0, path.length))
-                .asMapOfRanges()
-                .size
+        Assertions.assertTrue(tractiveEffortCurveMap.curves.fullyCovers(path.length.meters))
         val nConditionsSeen =
             elecCondMap.subRangeMap(Range.closed(0.0, path.length)).asMapOfRanges().size
         val nConditionsUsed =
@@ -71,7 +68,6 @@ class TestRollingStock {
                 .subRangeMap(Range.closed(0.0, path.length))
                 .asMapOfRanges()
                 .size
-        Assertions.assertEquals(nCurves, nConditionsUsed, "wrong number of curves")
         Assertions.assertTrue(nConditionsSeen <= nConditionsUsed, "wrong number of conditions")
     }
 
@@ -97,19 +93,17 @@ class TestRollingStock {
             )
         val res = rollingStock.mapTractiveEffortCurves(elecCondMap, comfort)
 
-        testRangeCoverage(res.curves, path.length)
+        Assertions.assertTrue(res.curves.fullyCovers(path.length.meters))
         Assertions.assertEquals(
-            14,
-            res.curves.subRangeMap(Range.closed(0.0, path.length)).asMapOfRanges().size,
+            12,
+            res.curves.subMap(Distance.ZERO, path.length.meters).count(),
             "wrong number of ranges",
         )
 
         // Check that the ranges are correct
         Assertions.assertIterableEquals(
-            listOf(0.0, 1.0, 5.0, 8.0, 8.1, 10.0, 11.0, 12.0, 14.0, 15.0, 17.0, 18.0, 20.0, 30.0),
-            res.curves.subRangeMap(Range.closed(0.0, path.length)).asMapOfRanges().keys.map {
-                it.lowerEndpoint()
-            },
+            listOf(0.0, 1.0, 8.0, 8.1, 10.0, 11.0, 12.0, 14.0, 15.0, 17.0, 18.0, 20.0),
+            res.curves.subMap(Distance.ZERO, path.length.meters).map { it.lower.meters },
         )
 
         // Check that the conditions are correct
@@ -142,7 +136,6 @@ class TestRollingStock {
             doubleArrayOf(
                 TestTrains.MAX_SPEED * 0.92, // 0
                 TestTrains.MAX_SPEED * 0.82, // 1
-                TestTrains.MAX_SPEED * 0.82, // 5
                 TestTrains.MAX_SPEED * 0.92, // 8
                 TestTrains.MAX_SPEED * 0.79, // 8.1
                 TestTrains.MAX_SPEED * 0.79, // 10
@@ -153,13 +146,10 @@ class TestRollingStock {
                 TestTrains.MAX_SPEED * 0.89, // 17
                 TestTrains.MAX_SPEED, // 18
                 TestTrains.MAX_SPEED * 0.92, // 20
-                TestTrains.MAX_SPEED * 0.92, // 30
             ),
             res.curves
-                .subRangeMap(Range.closed(0.0, path.length))
-                .asMapOfRanges()
-                .values
-                .map { maxSpeed(it) }
+                .subMap(Distance.ZERO, path.length.meters)
+                .map { maxSpeed(it.value) }
                 .toDoubleArray(),
             0.001,
         )

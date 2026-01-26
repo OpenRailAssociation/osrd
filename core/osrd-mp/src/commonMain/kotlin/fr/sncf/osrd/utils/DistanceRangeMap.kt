@@ -14,6 +14,10 @@ import fr.sncf.osrd.utils.units.Distance
  *
  * `DistanceRangeMap` should be used when memory footprint is a concern (in particular to store
  * infra data), and only when precise interval semantics aren't necessary.
+ *
+ * # Note to implementors
+ *
+ * [DistanceRangeMap.iterator] must return entries in ascending order.
  */
 interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
 
@@ -90,6 +94,24 @@ interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
 
     /** Same as [forEach], with early exit if the callback returns false. */
     fun forEachWhile(callback: (lower: Distance, upper: Distance, value: T) -> Boolean)
+
+    /**
+     * Returns whether all distances from 0 (included) and [length] (excluded) are mapped.
+     *
+     * If [length] is lower or equal to zero, then this method returns `true`.
+     */
+    fun fullyCovers(length: Distance): Boolean {
+        var prevUpper: Distance? = null
+        for (entry in this) {
+            when {
+                entry.upper <= Distance.ZERO -> continue
+                prevUpper != null && prevUpper != entry.lower -> return false
+                entry.upper >= length -> return true
+            }
+            prevUpper = entry.upper
+        }
+        return length <= Distance.ZERO
+    }
 }
 
 fun <T> distanceRangeMapOf(vararg entries: DistanceRangeMap.RangeMapEntry<T>): DistanceRangeMap<T> {

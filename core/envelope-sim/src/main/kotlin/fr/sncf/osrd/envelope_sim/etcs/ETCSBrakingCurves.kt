@@ -15,6 +15,7 @@ import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
 import fr.sncf.osrd.envelope_sim.etcs.BrakingType.*
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration
+import fr.sncf.osrd.utils.units.meters
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
@@ -620,7 +621,7 @@ private fun computeBecParams(
                 speed,
                 // TODO: have a tractive effort curve map which extends until the last SvL instead
                 // of the end of the path.
-                context.tractiveEffortCurveMap.get(min(position, context.path.length))!!,
+                context.tractiveEffortCurveMap.get(min(position, context.path.length).meters)!!,
             ),
             1.0,
         )

@@ -1,12 +1,13 @@
 package fr.sncf.osrd.envelope_sim
 
-import com.google.common.collect.RangeMap
 import fr.sncf.osrd.envelope_sim.IntegrationStep.Companion.fromNaiveStep
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.TractiveEffortPoint
 import fr.sncf.osrd.envelope_sim.etcs.BrakingType
 import fr.sncf.osrd.path.interfaces.PhysicsPath
+import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.POSITION_EPSILON
 import fr.sncf.osrd.utils.SPEED_EPSILON
+import fr.sncf.osrd.utils.units.meters
 import kotlin.math.*
 
 /**
@@ -21,7 +22,7 @@ private constructor(
     private val path: PhysicsPath,
     private val action: Action,
     private val directionSign: Double,
-    private val tractiveEffortCurveMap: RangeMap<Double, Array<TractiveEffortPoint>>,
+    private val tractiveEffortCurveMap: DistanceRangeMap<Array<TractiveEffortPoint>>,
     private val brakingType: BrakingType,
 ) {
     /** Simulates train movement */
@@ -51,7 +52,8 @@ private constructor(
         }
 
         var tractionForce = 0.0
-        val tractiveEffortCurve = tractiveEffortCurveMap.get(min(max(0.0, position), path.length))!!
+        val tractiveEffortCurve =
+            tractiveEffortCurveMap.get(position.coerceIn(0.0, path.length).meters)!!
         val maxTractionForce = PhysicsRollingStock.getMaxEffort(speed, tractiveEffortCurve)
         val rollingResistance = rollingStock.getRollingResistance(speed)
         val averageGrade: Double = getAverageGrade(rollingStock, path, position)

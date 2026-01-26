@@ -3,6 +3,7 @@ package fr.sncf.osrd.envelope
 import fr.sncf.osrd.envelope.part.EnvelopePart.Companion.generateTimes
 import fr.sncf.osrd.envelope_sim.*
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
+import fr.sncf.osrd.utils.units.meters
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -118,7 +119,7 @@ internal class EnvelopePartTest {
             when (i) {
                 0 ->
                     expectedEnvelopePartEnergy =
-                        (PhysicsRollingStock.getMaxEffort(1.0, testEffortCurveMap[0.0]!!) *
+                        (PhysicsRollingStock.getMaxEffort(1.0, testEffortCurveMap.get(0.meters)!!) *
                             envelopePart.totalTimeUS / 1000000)
                 1 -> {
                     Assertions.assertEquals(envelopePart.minSpeed, envelopePart.maxSpeed)
