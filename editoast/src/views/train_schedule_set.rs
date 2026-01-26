@@ -665,4 +665,70 @@ mod tests {
             }
         );
     }
+
+    async fn create_train_schedule_set_published(conn: &mut DbConnection) -> TrainScheduleSet {
+        let catalog_entry = create_catalog_entry(conn).await;
+        TrainScheduleSet::changeset()
+            .catalog_entry_id(Some(catalog_entry.id))
+            .name(Some("test".to_string()))
+            .description(String::default())
+            .published(true)
+            .create(conn)
+            .await
+            .expect("Failed to create train schedule set")
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn get_train_schedule_sets() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let train_schedule_set_1 =
+            create_train_schedule_set(&mut db_pool.get().await.unwrap()).await;
+        let train_schedule_set_2 =
+            create_train_schedule_set_published(&mut db_pool.get().await.unwrap()).await;
+        let request = app.get("/train_schedule_sets?published=false");
+        let response: Vec<TrainScheduleSetResponse> = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
+        assert_eq!(response.len(), 1);
+        assert_eq!(
+            response,
+            vec![TrainScheduleSetResponse {
+                train_schedule_set: train_schedule_set_1,
+                train_schedule_count: 0,
+            }]
+        );
+
+        let request = app.get("/train_schedule_sets?published=true");
+        let response: Vec<TrainScheduleSetResponse> = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
+        assert_eq!(response.len(), 1);
+        assert_eq!(
+            response,
+            vec![TrainScheduleSetResponse {
+                train_schedule_set: train_schedule_set_2.clone(),
+                train_schedule_count: 0,
+            }]
+        );
+
+        let request = app.get("/train_schedule_sets?catalog_entry_id=1");
+        let response: Vec<TrainScheduleSetResponse> = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
+        assert_eq!(response.len(), 1);
+        assert_eq!(
+            response,
+            vec![TrainScheduleSetResponse {
+                train_schedule_set: train_schedule_set_2,
+                train_schedule_count: 0,
+            }]
+        );
+    }
 }
