@@ -480,6 +480,19 @@ pub struct ElectricalProfileSetIdQueryParam {
     electrical_profile_set_id: Option<i64>,
 }
 
+/// Simulation response enriched with whether path items respect times and margins.
+///
+/// The `path_item_respect_*` fields are kept empty if `simulation` isn't a successful response.
+#[derive(Debug, Serialize, ToSchema)]
+pub(in crate::views) struct SimulationResponseWithRespects {
+    #[serde(flatten)]
+    simulation: simulation::Response,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    path_item_respect_times: Vec<bool>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    path_item_respect_margins: Vec<bool>,
+}
+
 /// Retrieve the space, speed and time curve of a given train
 #[editoast_derive::route]
 #[utoipa::path(
@@ -487,7 +500,7 @@ pub struct ElectricalProfileSetIdQueryParam {
     tag = "paced_train",
     params(PacedTrainIdParam, InfraIdQueryParam, ElectricalProfileSetIdQueryParam, ExceptionQueryParam),
     responses(
-        (status = 200, description = "Simulation Output", body = simulation::Response),
+        (status = 200, description = "Simulation Output", body = SimulationResponseWithRespects),
     ),
 )]
 pub(in crate::views) async fn simulation(
@@ -505,7 +518,7 @@ pub(in crate::views) async fn simulation(
         electrical_profile_set_id,
     }): Query<ElectricalProfileSetIdQueryParam>,
     Query(ExceptionQueryParam { exception_key }): Query<ExceptionQueryParam>,
-) -> Result<Json<simulation::Response>> {
+) -> Result<Json<SimulationResponseWithRespects>> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())
         .await
@@ -555,7 +568,7 @@ pub(in crate::views) async fn simulation(
         &mut db_pool.get().await?,
         valkey_client,
         core_client,
-        &[train_schedule],
+        std::slice::from_ref(&train_schedule),
         &infra,
         electrical_profile_set_id,
         config.app_version.as_deref(),
@@ -564,7 +577,19 @@ pub(in crate::views) async fn simulation(
     .pop()
     .unwrap();
 
-    Ok(Json(Arc::unwrap_or_clone(simulation)))
+    let mut path_item_respect_times = Vec::new();
+    let mut path_item_respect_margins = Vec::new();
+
+    if let simulation::Response::Success(simulation) = simulation.as_ref() {
+        path_item_respect_times = simulation.path_item_respect_times(&train_schedule);
+        path_item_respect_margins = simulation.path_item_respect_margins(&train_schedule);
+    }
+
+    Ok(Json(SimulationResponseWithRespects {
+        simulation: Arc::unwrap_or_clone(simulation),
+        path_item_respect_times,
+        path_item_respect_margins,
+    }))
 }
 
 /// Retrieve the etcs braking curves of an etcs train on etcs portions of the path

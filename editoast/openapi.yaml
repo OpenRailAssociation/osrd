@@ -2747,7 +2747,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SimulationResponse'
+                $ref: '#/components/schemas/SimulationResponseWithRespects'
   /projects:
     get:
       tags:
@@ -12944,6 +12944,23 @@ components:
         provisional:
           $ref: '#/components/schemas/core.ReportTrain'
           description: Simulation that takes into account the regularity margins
+    SimulationResponseWithRespects:
+      allOf:
+      - $ref: '#/components/schemas/SimulationResponse'
+      - type: object
+        properties:
+          path_item_respect_margins:
+            type: array
+            items:
+              type: boolean
+          path_item_respect_times:
+            type: array
+            items:
+              type: boolean
+      description: |-
+        Simulation response enriched with whether path items respect times and margins.
+
+        The `path_item_respect_*` fields are kept empty if `simulation` isn't a successful response.
     SimulationSummaryResult:
       oneOf:
       - type: object

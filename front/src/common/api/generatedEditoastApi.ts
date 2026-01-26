@@ -2087,7 +2087,7 @@ export type GetPacedTrainByIdPathApiArg = {
   exceptionKey?: string;
 };
 export type GetPacedTrainByIdSimulationApiResponse =
-  /** status 200 Simulation Output */ SimulationResponse;
+  /** status 200 Simulation Output */ SimulationResponseWithRespects;
 export type GetPacedTrainByIdSimulationApiArg = {
   id: number;
   infraId: number;
@@ -4206,6 +4206,10 @@ export type SimulationResponse =
       core_error: InternalError;
       status: 'simulation_failed';
     };
+export type SimulationResponseWithRespects = SimulationResponse & {
+  path_item_respect_margins?: boolean[];
+  path_item_respect_times?: boolean[];
+};
 export type Project = {
   budget?: number | null;
   creation_date: string;
