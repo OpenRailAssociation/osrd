@@ -1,0 +1,232 @@
+use std::sync::Arc;
+
+use anyhow::bail;
+use authz::Authorization;
+use authz::Regulator;
+use clap::Args;
+use clap::Subcommand;
+use clap::ValueEnum;
+use editoast_models::PgAuthDriver;
+use tracing::info;
+
+use database::DbConnectionPoolV2;
+use tracing::warn;
+
+use super::parse_and_fetch_subject;
+use crate::client::authorization::RichSubject;
+use crate::client::openfga_config::OpenfgaConfig;
+
+#[derive(Debug, Subcommand)]
+pub enum GrantsCommand {
+    /// Set a grant on a resource for a subject
+    Set(SetArgs),
+    /// Revoke a grant on a resource from a subject
+    Revoke(RevokeArgs),
+    /// List all subjects with their grant level on a resource
+    ListSubjects(ListSubjectsArgs),
+    /// List all resources a subject has grants on
+    ListResources(ListResourcesArgs),
+}
+
+#[derive(Debug, Clone, ValueEnum)]
+pub enum Resource {
+    Infra,
+}
+
+#[derive(Debug, Clone, ValueEnum)]
+#[value(rename_all = "lower")]
+pub enum InfraGrantArg {
+    Reader,
+    Writer,
+    Owner,
+}
+
+impl From<InfraGrantArg> for authz::InfraGrant {
+    fn from(level: InfraGrantArg) -> Self {
+        match level {
+            InfraGrantArg::Reader => authz::InfraGrant::Reader,
+            InfraGrantArg::Writer => authz::InfraGrant::Writer,
+            InfraGrantArg::Owner => authz::InfraGrant::Owner,
+        }
+    }
+}
+
+#[derive(Debug, Args)]
+pub struct SetArgs {
+    resource: Resource,
+    level: InfraGrantArg,
+    subject: String,
+    resource_id: i64,
+}
+
+#[derive(Debug, Args)]
+pub struct RevokeArgs {
+    resource: Resource,
+    subject: String,
+    resource_id: i64,
+}
+
+#[derive(Debug, Args)]
+pub struct ListSubjectsArgs {
+    resource: Resource,
+    resource_id: i64,
+}
+
+#[derive(Debug, Args)]
+pub struct ListResourcesArgs {
+    resource: Resource,
+    subject: String,
+}
+
+pub async fn set_grant(
+    SetArgs {
+        resource,
+        level,
+        subject,
+        resource_id,
+    }: SetArgs,
+    pool: Arc<DbConnectionPoolV2>,
+    openfga_config: OpenfgaConfig,
+) -> anyhow::Result<()> {
+    let regulator = openfga_config.into_regulator(pool).await?;
+    let subject = parse_and_fetch_subject(&subject, regulator.driver()).await?;
+    let new_grant: authz::InfraGrant = level.into();
+
+    match resource {
+        Resource::Infra => {
+            let infra = authz::Infra(resource_id);
+
+            info!("Granting {new_grant} on infra {resource_id} to {subject}");
+            regulator
+                .give_infra_grant_unchecked(&subject.to_authz(), &infra, new_grant)
+                .await?;
+
+            warn_about_last_owner(regulator, &infra).await?;
+        }
+    }
+
+    Ok(())
+}
+
+pub async fn revoke_grant(
+    RevokeArgs {
+        resource,
+        subject,
+        resource_id,
+    }: RevokeArgs,
+    pool: Arc<DbConnectionPoolV2>,
+    openfga_config: OpenfgaConfig,
+) -> anyhow::Result<()> {
+    let regulator = openfga_config.into_regulator(pool).await?;
+    let subject = parse_and_fetch_subject(&subject, regulator.driver()).await?;
+
+    match resource {
+        Resource::Infra => {
+            let infra = authz::Infra(resource_id);
+
+            info!("Revoking grants on infra {resource_id} from {subject}");
+            regulator
+                .revoke_infra_grants_unchecked(&subject.to_authz(), &infra)
+                .await?;
+
+            warn_about_last_owner(regulator, &infra).await?;
+        }
+    }
+
+    Ok(())
+}
+
+async fn warn_about_last_owner(
+    regulator: Regulator<PgAuthDriver>,
+    infra: &authz::Infra,
+) -> anyhow::Result<()> {
+    if regulator.get_infra_owners(infra).await?.is_empty() {
+        warn!("Infra {} now has no owner", infra.0);
+    }
+    Ok(())
+}
+
+pub async fn list_subjects(
+    ListSubjectsArgs {
+        resource,
+        resource_id,
+    }: ListSubjectsArgs,
+    pool: Arc<DbConnectionPoolV2>,
+    openfga_config: OpenfgaConfig,
+) -> anyhow::Result<()> {
+    let regulator = openfga_config.into_regulator(pool).await?;
+    match resource {
+        Resource::Infra => {
+            let infra = authz::Infra(resource_id);
+
+            let (owners, writers, readers) = tokio::try_join!(
+                regulator.get_infra_owners(&infra),
+                regulator.get_infra_writers(&infra),
+                regulator.get_infra_readers(&infra)
+            )?;
+
+            use std::collections::HashMap;
+            let mut grants: HashMap<&authz::Subject, authz::InfraGrant> = HashMap::new();
+            for subject in &readers {
+                grants.insert(subject, authz::InfraGrant::Reader);
+            }
+            for subject in &writers {
+                grants.insert(subject, authz::InfraGrant::Writer);
+            }
+            for subject in &owners {
+                grants.insert(subject, authz::InfraGrant::Owner);
+            }
+
+            if grants.is_empty() {
+                info!("No grants found for infra {resource_id}");
+            }
+            for (subject, grant) in grants {
+                let Some(subject) =
+                    RichSubject::fetch_from_authz(subject, regulator.driver()).await?
+                else {
+                    info!("Subject {subject} from OpenFGA does not exist anymore");
+                    continue;
+                };
+                println!("{subject}:\t{grant}");
+            }
+        }
+    }
+
+    Ok(())
+}
+
+pub async fn list_resources(
+    ListResourcesArgs { resource, subject }: ListResourcesArgs,
+    pool: Arc<DbConnectionPoolV2>,
+    openfga_config: OpenfgaConfig,
+) -> anyhow::Result<()> {
+    let regulator = openfga_config.into_regulator(pool).await?;
+    let subject = parse_and_fetch_subject(&subject, regulator.driver()).await?;
+
+    match resource {
+        Resource::Infra => match subject.to_authz() {
+            authz::Subject::User(user) => {
+                let result = regulator.list_authorized_infra(&user).await?;
+                match result {
+                    Authorization::Bypassed => {
+                        info!("Admin bypass: user can access all infrastructures");
+                    }
+                    Authorization::Granted(infras) => {
+                        if infras.is_empty() {
+                            info!("{subject} does not have any grant on infras");
+                        }
+                        for infra in infras {
+                            println!("{}", infra.0);
+                        }
+                    }
+                    Authorization::Denied { .. } => unreachable!("no access to deny here"),
+                }
+            }
+            authz::Subject::Group(_) => {
+                bail!("list-resources is only supported for users, not groups");
+            }
+        },
+    }
+
+    Ok(())
+}
