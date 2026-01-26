@@ -759,4 +759,79 @@ mod tests {
                 .unwrap()
         );
     }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn put_train_schedule_set() {
+        let app = TestAppBuilder::default_app();
+
+        let db_pool = app.db_pool();
+        let train_schedule_set = create_train_schedule_set(&mut db_pool.get().await.unwrap()).await;
+        let train_schedule_set_id = train_schedule_set.id;
+        let train_schedule_set_form = TrainScheduleSetForm {
+            catalog_entry_id: None,
+            name: Some("test_updated".to_string()),
+            description: "test description".to_string(),
+            published: false,
+        };
+        let request = app
+            .put(&format!("/train_schedule_sets/{}", train_schedule_set_id))
+            .json(&train_schedule_set_form);
+        let response: TrainScheduleSetResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
+
+        assert_eq!(
+            response,
+            TrainScheduleSetResponse {
+                train_schedule_set: TrainScheduleSet {
+                    id: train_schedule_set_id,
+                    catalog_entry_id: None,
+                    name: Some("test_updated".to_string()),
+                    description: "test description".to_string(),
+                    published: false,
+                },
+                train_schedule_count: 0
+            }
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn put_train_schedule_set_with_catalog_entry() {
+        let app = TestAppBuilder::default_app();
+
+        let db_pool = app.db_pool();
+        let catalog_entry = create_catalog_entry(&mut db_pool.get().await.unwrap()).await;
+        let train_schedule_set = create_train_schedule_set(&mut db_pool.get().await.unwrap()).await;
+        let train_schedule_set_id = train_schedule_set.id;
+        let train_schedule_set_form = TrainScheduleSetForm {
+            catalog_entry_id: Some(catalog_entry.id),
+            name: Some("test_updated".to_string()),
+            description: "test description".to_string(),
+            published: true,
+        };
+        let request = app
+            .put(&format!("/train_schedule_sets/{}", train_schedule_set_id))
+            .json(&train_schedule_set_form);
+        let response: TrainScheduleSetResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
+
+        assert_eq!(
+            response,
+            TrainScheduleSetResponse {
+                train_schedule_set: TrainScheduleSet {
+                    id: train_schedule_set_id,
+                    catalog_entry_id: Some(catalog_entry.id),
+                    name: Some("test_updated".to_string()),
+                    description: "test description".to_string(),
+                    published: true,
+                },
+                train_schedule_count: 0
+            }
+        );
+    }
 }
