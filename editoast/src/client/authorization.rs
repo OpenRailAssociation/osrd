@@ -1,4 +1,5 @@
 pub mod grants;
+pub mod roles;
 
 use std::fmt::Display;
 

@@ -18,7 +18,7 @@ use tracing::info;
 
 use editoast_models::PgAuthDriver;
 
-use super::openfga_config::OpenfgaConfig;
+use crate::client::openfga_config::OpenfgaConfig;
 
 #[derive(Debug, Subcommand)]
 pub enum RolesCommand {
