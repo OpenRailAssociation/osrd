@@ -43,19 +43,21 @@ public class TestTrains {
             var conditionalEffortSpeedCurves = new ArrayList<>();
             for (var condition : conditions) {
                 var speed = modeSpeed;
-                switch (condition.comfort()) {
-                    case HEATING -> speed *= 0.91;
-                    case AIR_CONDITIONING -> speed *= .81;
-                    default -> {}
+                if (condition.comfort != null) {
+                    switch (condition.comfort) {
+                        case HEATING -> speed *= 0.91;
+                        case AIR_CONDITIONING -> speed *= .81;
+                        default -> {}
+                    }
                 }
-                if (condition.electricalProfile() != null)
-                    switch (condition.electricalProfile()) {
+                if (condition.electricalProfile != null)
+                    switch (condition.electricalProfile) {
                         case "22500V" -> speed *= 0.9;
                         case "20000V" -> speed *= .8;
                         default -> {}
                     }
-                if (condition.powerRestriction() != null)
-                    switch (condition.powerRestriction()) {
+                if (condition.powerRestriction != null)
+                    switch (condition.powerRestriction) {
                         case "Restrict1" -> speed *= 0.89;
                         case "Restrict2" -> speed *= .79;
                         default -> {}

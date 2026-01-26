@@ -25,7 +25,7 @@ fun makeETCSContext(
     if (etcsRanges.asList().isEmpty()) {
         return null
     } else {
-        assert(rollingStock.etcsBrakeParams != null) {
+        assert(rollingStock.optionalEtcsBrakeParams != null) {
             "Invalid ETCS context: ETCS ranges on the path while no ETCS brake params provided on rolling-stock"
         }
     }

@@ -49,10 +49,10 @@ public class TestRollingStock {
         var elecCondMap = path.getElectrificationMap(
                 rollingStock.basePowerClass, powerRestrictionMap, rollingStock.powerRestrictions, false);
         var tractiveEffortCurveMap = rollingStock.mapTractiveEffortCurves(elecCondMap, comfort);
-        testRangeCoverage(tractiveEffortCurveMap.conditions(), path.getLength());
-        testRangeCoverage(tractiveEffortCurveMap.curves(), path.getLength());
+        testRangeCoverage(tractiveEffortCurveMap.conditions, path.getLength());
+        testRangeCoverage(tractiveEffortCurveMap.curves, path.getLength());
         var nCurves = tractiveEffortCurveMap
-                .curves()
+                .curves
                 .subRangeMap(Range.closed(0., path.getLength()))
                 .asMapOfRanges()
                 .size();
@@ -61,7 +61,7 @@ public class TestRollingStock {
                 .asMapOfRanges()
                 .size();
         var nConditionsUsed = tractiveEffortCurveMap
-                .conditions()
+                .conditions
                 .subRangeMap(Range.closed(0., path.getLength()))
                 .asMapOfRanges()
                 .size();
@@ -85,10 +85,10 @@ public class TestRollingStock {
                 rollingStock.basePowerClass, powerRestrictionMap, rollingStock.powerRestrictions, false);
         var res = rollingStock.mapTractiveEffortCurves(elecCondMap, comfort);
 
-        testRangeCoverage(res.curves(), path.getLength());
+        testRangeCoverage(res.curves, path.getLength());
         assertEquals(
                 14,
-                res.curves()
+                res.curves
                         .subRangeMap(Range.closed(0., path.getLength()))
                         .asMapOfRanges()
                         .size(),
@@ -97,7 +97,7 @@ public class TestRollingStock {
         // Check that the ranges are correct
         assertArrayEquals(
                 new Double[] {0., 1., 5., 8.0, 8.1, 10., 11., 12., 14., 15., 17., 18., 20., 30.},
-                res.curves().subRangeMap(Range.closed(0., path.getLength())).asMapOfRanges().keySet().stream()
+                res.curves.subRangeMap(Range.closed(0., path.getLength())).asMapOfRanges().keySet().stream()
                         .map(Range::lowerEndpoint)
                         .toArray());
 
@@ -119,7 +119,7 @@ public class TestRollingStock {
                     new InfraConditions("thermal", null, null), // 20 No mode given
                     new InfraConditions("thermal", null, null) // 30 Invalid mode
                 },
-                res.conditions()
+                res.conditions
                         .subRangeMap(Range.closed(0., path.getLength()))
                         .asMapOfRanges()
                         .values()
@@ -143,7 +143,7 @@ public class TestRollingStock {
                     TestTrains.MAX_SPEED * 0.92, // 20
                     TestTrains.MAX_SPEED * 0.92 // 30
                 },
-                res.curves().subRangeMap(Range.closed(0., path.getLength())).asMapOfRanges().values().stream()
+                res.curves.subRangeMap(Range.closed(0., path.getLength())).asMapOfRanges().values().stream()
                         .map(TestRollingStock::maxSpeed)
                         .mapToDouble(Double::doubleValue)
                         .toArray(),
