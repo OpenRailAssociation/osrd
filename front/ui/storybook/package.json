@@ -5,7 +5,7 @@
     "@chromatic-com/storybook": "^5.0.0",
     "@storybook/addon-docs": "^10.1.11",
     "@storybook/addon-links": "^10.1.11",
-    "@storybook/addon-onboarding": "^10.1.11",
+    "@storybook/addon-onboarding": "^10.2.0",
     "@storybook/react-vite": "^10.1.11",
     "storybook": "^10.1.10",
     "storybook-addon-run-script": "^0.1.4",
