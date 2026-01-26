@@ -87,41 +87,46 @@ private fun parseEffortCurveConditions(
 /** Parse RJSModeEffortCurve into a ModeEffortCurve */
 private fun parseModeEffortCurves(rjsMode: RJSModeEffortCurve, fieldKey: String): ModeEffortCurves {
     val defaultCurve = parseEffortCurve(rjsMode.defaultCurve, "$fieldKey.default_curve")
-    val curves = arrayOfNulls<ConditionalEffortCurve>(rjsMode.curves.size)
-    for (i in rjsMode.curves.indices) {
-        val rjsCondCurve = rjsMode.curves[i]
-        val curve =
-            parseEffortCurve(rjsCondCurve.curve, String.format("%s.curves[%d].curve", fieldKey, i))
-        val cond =
-            parseEffortCurveConditions(
-                rjsCondCurve.cond,
-                String.format("%s.curves[%d].cond", fieldKey, i),
-            )
-        curves[i] = ConditionalEffortCurve(cond, curve)
-    }
+    val curves =
+        Array(rjsMode.curves.size) { i ->
+            val rjsCondCurve = rjsMode.curves[i]
+            val curve =
+                parseEffortCurve(
+                    rjsCondCurve.curve,
+                    String.format("%s.curves[%d].curve", fieldKey, i),
+                )
+            val cond =
+                parseEffortCurveConditions(
+                    rjsCondCurve.cond,
+                    String.format("%s.curves[%d].cond", fieldKey, i),
+                )
+            ConditionalEffortCurve(cond, curve)
+        }
     return ModeEffortCurves(rjsMode.isElectric, defaultCurve, curves)
 }
 
 private fun parseEffortCurve(
     rjsEffortCurve: RJSEffortCurve,
     fieldKey: String,
-): Array<TractiveEffortPoint?> {
+): Array<TractiveEffortPoint> {
     if (rjsEffortCurve.speeds == null)
         throw OSRDError.newMissingRollingStockFieldError("$fieldKey.speeds")
+    if (!rjsEffortCurve.speeds.isStrictlyIncreasing())
+        throw OSRDError.newInvalidRollingStockFieldError(fieldKey, "speeds not strictly increasing")
     if (rjsEffortCurve.maxEfforts == null)
         throw OSRDError.newMissingRollingStockFieldError("$fieldKey.max_efforts")
     if (rjsEffortCurve.speeds.size != rjsEffortCurve.maxEfforts.size)
         throw OSRDError(ErrorType.InvalidRollingStockEffortCurve)
 
-    val tractiveEffortCurve = arrayOfNulls<TractiveEffortPoint>(rjsEffortCurve.speeds.size)
-    for (i in rjsEffortCurve.speeds.indices) {
+    return Array(rjsEffortCurve.speeds.size) { i ->
         val speed = rjsEffortCurve.speeds[i]
         if (speed < 0) throw OSRDError.newInvalidRollingStockFieldError(fieldKey, "negative speed")
         val maxEffort = rjsEffortCurve.maxEfforts[i]
         if (maxEffort < 0)
             throw OSRDError.newInvalidRollingStockFieldError(fieldKey, "negative max effort")
-        tractiveEffortCurve[i] = TractiveEffortPoint(speed, maxEffort)
-        assert(i == 0 || tractiveEffortCurve[i - 1]!!.speed < speed)
+        TractiveEffortPoint(speed, maxEffort)
     }
-    return tractiveEffortCurve
 }
+
+private fun DoubleArray.isStrictlyIncreasing(): Boolean =
+    asSequence().zipWithNext { prev, next -> prev < next }.all { it }
