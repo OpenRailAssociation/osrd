@@ -4,6 +4,7 @@ import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.SignalCriticalPosition
 import fr.sncf.osrd.api.ZoneUpdate
 import fr.sncf.osrd.api.project_signals.SignalUpdate
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.signaling.SigSystemManager
@@ -170,7 +171,7 @@ private fun signalUpdates(
     sigSystemManager: SigSystemManager,
     rawInfra: RawInfra,
     signalCriticalPositions: Collection<SignalCriticalPosition>,
-    travelledPathLength: Length<TrainPath>,
+    travelledPathLength: Length<PhysicsPath>,
     simulationEndTime: TimeDelta,
 ): MutableList<SignalUpdate> {
     val signalUpdates = mutableListOf<SignalUpdate>()

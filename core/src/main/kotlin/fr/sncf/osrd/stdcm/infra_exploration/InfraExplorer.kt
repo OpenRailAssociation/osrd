@@ -6,6 +6,7 @@ import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlockRanges
 import fr.sncf.osrd.path.interfaces.BlockRange
 import fr.sncf.osrd.path.interfaces.GenericLinearRange
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.RouteRange
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.subRange
@@ -113,8 +114,8 @@ interface InfraExplorer {
      * unspecified.
      */
     fun getBlocksInRange(
-        from: Offset<TrainPath>? = null,
-        to: Offset<TrainPath>? = null,
+        from: Offset<PhysicsPath>? = null,
+        to: Offset<PhysicsPath>? = null,
     ): List<BlockRange>
 
     /**
@@ -122,21 +123,21 @@ interface InfraExplorer {
      * unspecified.
      */
     fun getRoutesInRange(
-        from: Offset<TrainPath>? = null,
-        to: Offset<TrainPath>? = null,
+        from: Offset<PhysicsPath>? = null,
+        to: Offset<PhysicsPath>? = null,
     ): List<RouteRange>
 
     /** Returns the stops in the given interval, going up to the path start/end if unspecified. */
     fun getStopsInRange(
-        from: Offset<TrainPath>? = null,
-        to: Offset<TrainPath>? = null,
+        from: Offset<PhysicsPath>? = null,
+        to: Offset<PhysicsPath>? = null,
     ): List<PathStop>
 
     /**
      * Returns the end of the lookahead as a train path offset. Can also be seen as the total length
      * of the currently known path.
      */
-    fun getLookaheadEndOffset(): Offset<TrainPath>
+    fun getLookaheadEndOffset(): Offset<PhysicsPath>
 }
 
 /** Returns the current block and the lookahead blocks */
@@ -335,8 +336,8 @@ private class InfraExplorerImpl(
 
     private fun <T, U> getSubRanges(
         list: AppendOnlyLinkedList<GenericLinearRange<T, U>>,
-        from: Offset<TrainPath>?,
-        to: Offset<TrainPath>?,
+        from: Offset<PhysicsPath>?,
+        to: Offset<PhysicsPath>?,
     ): List<GenericLinearRange<T, U>> {
         val from = from ?: Offset.zero()
         val to = to ?: getLookaheadEndOffset()
@@ -349,16 +350,19 @@ private class InfraExplorerImpl(
     }
 
     override fun getBlocksInRange(
-        from: Offset<TrainPath>?,
-        to: Offset<TrainPath>?,
+        from: Offset<PhysicsPath>?,
+        to: Offset<PhysicsPath>?,
     ): List<BlockRange> = getSubRanges(blockRanges, from, to)
 
     override fun getRoutesInRange(
-        from: Offset<TrainPath>?,
-        to: Offset<TrainPath>?,
+        from: Offset<PhysicsPath>?,
+        to: Offset<PhysicsPath>?,
     ): List<RouteRange> = getSubRanges(routes, from, to)
 
-    override fun getStopsInRange(from: Offset<TrainPath>?, to: Offset<TrainPath>?): List<PathStop> {
+    override fun getStopsInRange(
+        from: Offset<PhysicsPath>?,
+        to: Offset<PhysicsPath>?,
+    ): List<PathStop> {
         val from = from ?: Offset.zero()
         val to = to ?: getLookaheadEndOffset()
         return getStepTracker()
@@ -372,7 +376,7 @@ private class InfraExplorerImpl(
             .asReversed()
     }
 
-    override fun getLookaheadEndOffset(): Offset<TrainPath> =
+    override fun getLookaheadEndOffset(): Offset<PhysicsPath> =
         blockRanges.lastOrNull()?.pathEnd ?: Offset.zero()
 
     /**

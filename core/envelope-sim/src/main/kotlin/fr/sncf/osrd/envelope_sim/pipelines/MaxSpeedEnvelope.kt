@@ -15,7 +15,7 @@ import fr.sncf.osrd.envelope_sim.etcs.ETCSBrakingSimulatorImpl
 import fr.sncf.osrd.envelope_sim.etcs.EndOfAuthority
 import fr.sncf.osrd.envelope_sim.etcs.EoaType
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration
-import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
@@ -30,7 +30,7 @@ import fr.sncf.osrd.utils.units.Offset
  * closed/open signal flag.
  */
 data class SimStop(
-    val offset: Offset<TrainPath>,
+    val offset: Offset<PhysicsPath>,
     val rjsReceptionSignal: RJSTrainStop.RJSReceptionSignal,
 )
 
@@ -130,7 +130,7 @@ private fun addStopBrakingCurves(
 private fun addConstStopBrakingCurves(
     context: EnvelopeSimContext,
     curveWithDecelerations: Envelope,
-    stops: List<Offset<TrainPath>>,
+    stops: List<Offset<PhysicsPath>>,
 ): Envelope {
     var envelope = curveWithDecelerations
     for (stop in stops) {

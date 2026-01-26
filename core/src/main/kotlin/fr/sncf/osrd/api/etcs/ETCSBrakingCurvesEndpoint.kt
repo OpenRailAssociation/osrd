@@ -14,6 +14,7 @@ import fr.sncf.osrd.envelope.part.EnvelopePart
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.etcs.*
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
 import fr.sncf.osrd.sim_infra.api.*
@@ -138,7 +139,7 @@ class ETCSBrakingCurvesEndpoint(
     }
 
     private data class TravelledPathSignal(
-        val offset: Offset<TrainPath>,
+        val offset: Offset<PhysicsPath>,
         val isRouteDelimiter: Boolean,
     ) : Comparable<TravelledPathSignal> {
         override fun compareTo(other: TravelledPathSignal): Int {
@@ -175,8 +176,8 @@ class ETCSBrakingCurvesEndpoint(
 
     private fun parseRawMrsp(
         rawMrsp: RangeValues<SpeedLimitProperty>,
-        endPos: Offset<TrainPath>,
-        beginPos: Offset<TrainPath> = Offset(Distance.ZERO),
+        endPos: Offset<PhysicsPath>,
+        beginPos: Offset<PhysicsPath> = Offset(Distance.ZERO),
     ): Envelope {
         val speedLimitDistanceRangeMap = rawMrsp.toDistanceRangeMap(beginPos, endPos)
         val mrspParts = mutableListOf<EnvelopePart>()

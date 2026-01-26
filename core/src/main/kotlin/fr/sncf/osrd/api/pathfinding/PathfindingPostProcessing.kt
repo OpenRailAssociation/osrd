@@ -1,6 +1,7 @@
 package fr.sncf.osrd.api.pathfinding
 
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.toJsonTrainPath
 import fr.sncf.osrd.reporting.exceptions.ErrorType
@@ -20,7 +21,7 @@ fun runPathfindingPostProcessing(
 fun runPathfindingBlockPostProcessing(
     infra: FullInfra,
     trainPath: TrainPath,
-    waypointOffsets: List<Offset<TrainPath>>,
+    waypointOffsets: List<Offset<PhysicsPath>>,
 ): PathfindingBlockSuccess {
     return PathfindingBlockSuccess(
         trainPath.toJsonTrainPath(infra.rawInfra, infra.blockInfra),

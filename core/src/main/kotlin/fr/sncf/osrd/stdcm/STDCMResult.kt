@@ -1,6 +1,7 @@
 package fr.sncf.osrd.stdcm
 
 import fr.sncf.osrd.envelope.Envelope
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.sim_infra.api.RouteId
 import fr.sncf.osrd.stdcm.graph.EngineeringAllowanceRange
@@ -17,6 +18,6 @@ data class STDCMResult(
     val routePath: List<RouteId>,
     val departureTime: Double,
     val stopResults: List<TrainStop>,
-    val waypointOffsets: List<Offset<TrainPath>>,
+    val waypointOffsets: List<Offset<PhysicsPath>>,
     val engineeringAllowanceRanges: List<EngineeringAllowanceRange>,
 )

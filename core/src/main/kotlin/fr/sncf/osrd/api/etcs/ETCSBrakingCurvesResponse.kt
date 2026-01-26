@@ -5,7 +5,7 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.conflicts.ConflictType
-import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.TimeDelta
@@ -30,7 +30,7 @@ data class ETCSConflictCurves(
 )
 
 data class SimpleEnvelope(
-    val positions: List<Offset<TrainPath>>,
+    val positions: List<Offset<PhysicsPath>>,
     val times: List<TimeDelta>, // Times are compared to the departure time
     val speeds: List<Double>,
 )

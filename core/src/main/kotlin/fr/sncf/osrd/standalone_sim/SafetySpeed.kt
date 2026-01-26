@@ -2,6 +2,7 @@ package fr.sncf.osrd.standalone_sim
 
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.standalone_sim.SimulationScheduleItem
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
@@ -17,7 +18,7 @@ import fr.sncf.osrd.utils.units.meters
  * Simple internal class representing a stop with safety speed. Makes the function logic more
  * straightforward.
  */
-private data class SafetySpeedStop(val offset: Offset<TrainPath>, val isShortSlip: Boolean)
+private data class SafetySpeedStop(val offset: Offset<PhysicsPath>, val isShortSlip: Boolean)
 
 /**
  * Compute safety speed ranges, areas where the train has a lower speed limit because of a scheduled
@@ -86,7 +87,7 @@ fun makeSafetySpeedRanges(
 
 /** Check if a given stop is in a range of a given signaling system. */
 private fun isStopInSignalingSystemRange(
-    stopOffset: Offset<TrainPath>,
+    stopOffset: Offset<PhysicsPath>,
     signalingRanges: DistanceRangeMap<String>,
     signalingSystem: String,
 ): Boolean {
@@ -100,7 +101,7 @@ private fun isStopInSignalingSystemRange(
 private fun makeEndOfPathStop(
     infra: RawSignalingInfra,
     trainPath: TrainPath,
-    signalOffsets: List<Offset<TrainPath>>,
+    signalOffsets: List<Offset<PhysicsPath>>,
 ): SafetySpeedStop? {
     val lastRouteExit = infra.getRouteExit(trainPath.getRoutes().last().value)
     val isBufferStop = infra.isBufferStop(lastRouteExit.value)
@@ -109,8 +110,8 @@ private fun makeEndOfPathStop(
 }
 
 /** Return the offsets of block-delimiting signals on the path. */
-private fun getSignalOffsets(infra: FullInfra, trainPath: TrainPath): List<Offset<TrainPath>> {
-    val res = mutableListOf<Offset<TrainPath>>()
+private fun getSignalOffsets(infra: FullInfra, trainPath: TrainPath): List<Offset<PhysicsPath>> {
+    val res = mutableListOf<Offset<PhysicsPath>>()
     val rawInfra = infra.rawInfra
     val signalingInfra = infra.loadedSignalInfra
     var prevZonePathsLength = 0.meters

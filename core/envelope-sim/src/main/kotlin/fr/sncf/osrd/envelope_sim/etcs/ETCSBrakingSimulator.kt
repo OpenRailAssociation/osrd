@@ -7,7 +7,7 @@ import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.etcs.BrakingType.IND
 import fr.sncf.osrd.envelope_sim.etcs.BrakingType.PS
 import fr.sncf.osrd.envelope_sim.pipelines.increase
-import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.utils.arePositionsEqual
 import fr.sncf.osrd.utils.units.Offset
@@ -71,7 +71,7 @@ interface ETCSBrakingSimulator {
      */
     fun computeEoaLocations(
         envelope: Envelope,
-        offsets: List<Offset<TrainPath>>,
+        offsets: List<Offset<PhysicsPath>>,
         areSignalsOnOffsetsRestrictive: List<Boolean>,
         eoaType: EoaType,
     ): List<EndOfAuthority>
@@ -85,7 +85,7 @@ typealias EOABrakingCurves = NavigableMap<EndOfAuthority, BrakingCurves>
 
 data class BrakingCurve(val brakingType: BrakingType, val brakingCurve: Envelope)
 
-data class LimitOfAuthority(val offset: Offset<TrainPath>, val speed: Double) :
+data class LimitOfAuthority(val offset: Offset<PhysicsPath>, val speed: Double) :
     Comparable<LimitOfAuthority> {
     init {
         assert(speed > 0)
@@ -98,8 +98,8 @@ data class LimitOfAuthority(val offset: Offset<TrainPath>, val speed: Double) :
 }
 
 data class EndOfAuthority(
-    val offsetEOA: Offset<TrainPath>,
-    val offsetSVL: Offset<TrainPath>?,
+    val offsetEOA: Offset<PhysicsPath>,
+    val offsetSVL: Offset<PhysicsPath>?,
     val usedCurveType: BrakingType,
     val eoaType: EoaType = EoaType.STOP,
 ) : Comparable<EndOfAuthority> {
@@ -211,7 +211,7 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
         val cursor = EnvelopeCursor.backward(mrsp)
         val limitsOfAuthority = mutableListOf<LimitOfAuthority>()
         while (cursor.findPartTransition(::increase)) {
-            val offset = Offset<TrainPath>(cursor.position.meters)
+            val offset = Offset<PhysicsPath>(cursor.position.meters)
             if (etcsRanges.contains(offset.distance)) {
                 limitsOfAuthority.add(LimitOfAuthority(offset, cursor.speed))
             }
@@ -222,7 +222,7 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
 
     override fun computeEoaLocations(
         envelope: Envelope,
-        offsets: List<Offset<TrainPath>>,
+        offsets: List<Offset<PhysicsPath>>,
         areSignalsOnOffsetsRestrictive: List<Boolean>,
         eoaType: EoaType,
     ): List<EndOfAuthority> {
@@ -267,7 +267,7 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
 
     /** Compute the EoA for a simple stop. */
     private fun computeStopEoA(
-        stopOffset: Offset<TrainPath>,
+        stopOffset: Offset<PhysicsPath>,
         isStopOnClosedSignal: Boolean,
     ): EndOfAuthority {
         return if (isStopOnClosedSignal) {
@@ -291,7 +291,7 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
 
     /** Compute the EoA for a spacing conflict on a signal. */
     private fun computeSpacingConflictEoa(
-        signalOffset: Offset<TrainPath>,
+        signalOffset: Offset<PhysicsPath>,
         isRouteDelimiter: Boolean,
         endPos: Double,
     ): EndOfAuthority? {
@@ -322,7 +322,7 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
 
     /** Compute the EoA for a routing conflict on a signal. */
     private fun computeRoutingConflictEoa(
-        signalOffset: Offset<TrainPath>,
+        signalOffset: Offset<PhysicsPath>,
         isRouteDelimiter: Boolean,
     ): EndOfAuthority? {
         return if (isRouteDelimiter) {

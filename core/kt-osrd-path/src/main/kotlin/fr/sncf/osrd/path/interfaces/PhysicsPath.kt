@@ -3,7 +3,12 @@ package fr.sncf.osrd.path.interfaces
 import com.google.common.collect.ImmutableRangeMap
 import com.google.common.collect.RangeMap
 
-/** Legacy interface for the envelope module */
+/**
+ * A [PhysicsPath] describes the physics of a path taken by a train.
+ *
+ * Contrary to [TrainPath], a [PhysicsPath] doesn't provide infrastructure-related information and
+ * only provides slopes and electrification.
+ */
 interface PhysicsPath {
     /** The length of the path, in meters */
     val length: Double

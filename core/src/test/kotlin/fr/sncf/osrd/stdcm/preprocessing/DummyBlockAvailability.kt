@@ -2,7 +2,7 @@ package fr.sncf.osrd.stdcm.preprocessing
 
 import com.google.common.collect.Multimap
 import fr.sncf.osrd.path.interfaces.BlockRange
-import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.BlockInfra
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
@@ -26,8 +26,8 @@ class DummyBlockAvailability(
 ) : BlockAvailabilityInterface {
 
     private data class ResourceUse(
-        val startOffset: Offset<TrainPath>,
-        val endOffset: Offset<TrainPath>,
+        val startOffset: Offset<PhysicsPath>,
+        val endOffset: Offset<PhysicsPath>,
         val startTime: Double,
         val endTime: Double,
         val blockId: BlockId,
@@ -36,8 +36,8 @@ class DummyBlockAvailability(
     /** Returns all resource usage for the given path, or null if more lookahead is needed */
     private fun generateResourcesForPath(
         infraExplorer: InfraExplorerWithEnvelope,
-        startOffset: Offset<TrainPath>,
-        endOffset: Offset<TrainPath>,
+        startOffset: Offset<PhysicsPath>,
+        endOffset: Offset<PhysicsPath>,
     ): List<ResourceUse> {
         val blocks = makeBlocksWithOffsets(infraExplorer)
         val res = mutableListOf<ResourceUse>()
@@ -105,8 +105,8 @@ class DummyBlockAvailability(
 
     override fun getAvailability(
         infraExplorer: InfraExplorerWithEnvelope,
-        startOffset: Offset<TrainPath>,
-        endOffset: Offset<TrainPath>,
+        startOffset: Offset<PhysicsPath>,
+        endOffset: Offset<PhysicsPath>,
         startTime: Double,
     ): BlockAvailabilityInterface.Availability {
         val resourceUses = generateResourcesForPath(infraExplorer, startOffset, endOffset)
@@ -125,10 +125,10 @@ class DummyBlockAvailability(
         infraExplorer: InfraExplorerWithEnvelope,
         resourceUses: List<ResourceUse>,
         pathStartTime: Double,
-        startOffset: Offset<TrainPath>,
+        startOffset: Offset<PhysicsPath>,
     ): BlockAvailabilityInterface.Unavailable? {
         var minimumDelay = 0.0
-        var conflictOffset = Offset<TrainPath>(0.meters)
+        var conflictOffset = Offset<PhysicsPath>(0.meters)
         for (resourceUse in resourceUses) {
             val resourceStartTime = resourceUse.startTime + pathStartTime
             val resourceEndTime = resourceUse.endTime + pathStartTime
@@ -224,8 +224,8 @@ class DummyBlockAvailability(
         unavailableSegment: OccupancySegment,
         blockRange: BlockRange,
         explorer: InfraExplorerWithEnvelope,
-        startOffset: Offset<TrainPath>,
-        endOffset: Offset<TrainPath>,
+        startOffset: Offset<PhysicsPath>,
+        endOffset: Offset<PhysicsPath>,
     ): TimeInterval? {
         val blockEnterOffset = blockRange.offsetToTrainPath(unavailableSegment.distanceStart)
         val blockExitOffset = blockRange.offsetToTrainPath(unavailableSegment.distanceEnd)
@@ -239,8 +239,8 @@ class DummyBlockAvailability(
     /** Returns the list of blocks in the given interval on the path */
     private fun getBlocksInRange(
         blocks: List<BlockRange>,
-        start: Offset<TrainPath>,
-        end: Offset<TrainPath>,
+        start: Offset<PhysicsPath>,
+        end: Offset<PhysicsPath>,
     ): List<BlockRange> {
         return blocks
             .mapNotNull { it.withTruncatedPathRange(start, end) }
