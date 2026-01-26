@@ -16,6 +16,7 @@ import fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeMaintain
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
+import fr.sncf.osrd.utils.units.meters
 import kotlin.math.max
 import kotlin.math.min
 
@@ -147,7 +148,7 @@ private fun accelerate(
             min(max(0.0, headPosition - context.rollingStock.length), context.path.length)
         val grade = context.path.getAverageGrade(headPosition, tailPosition)
         err.context.put("grade", String.format("%.2fm/km", grade))
-        val map = context.tractiveEffortCurveMap[cursor.getPosition()]!!
+        val map = context.tractiveEffortCurveMap.get(cursor.getPosition().meters)!!
         err.context.put("traction_force", String.format("%.2fN", map[0].maxEffort))
         throw err
     }

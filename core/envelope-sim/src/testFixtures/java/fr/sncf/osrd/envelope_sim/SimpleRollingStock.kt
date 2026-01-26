@@ -1,7 +1,5 @@
 package fr.sncf.osrd.envelope_sim
 
-import com.google.common.collect.ImmutableRangeMap
-import com.google.common.collect.Range
 import com.google.common.collect.RangeMap
 import com.google.common.collect.TreeRangeMap
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.CurvesAndConditions
@@ -9,6 +7,9 @@ import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.TractiveEffortPoint
 import fr.sncf.osrd.envelope_sim.etcs.EtcsBrakeParams
 import fr.sncf.osrd.path.interfaces.Electrification
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
+import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.distanceRangeMapOf
+import fr.sncf.osrd.utils.units.Distance
 import kotlin.math.abs
 import kotlin.math.max
 
@@ -60,7 +61,7 @@ class SimpleRollingStock(
         electrificationMap: RangeMap<Double, Electrification>,
         comfort: Comfort?,
     ): CurvesAndConditions {
-        return CurvesAndConditions(TreeRangeMap.create(), TreeRangeMap.create())
+        return CurvesAndConditions(distanceRangeMapOf(), TreeRangeMap.create())
     }
 
     /**
@@ -110,11 +111,14 @@ class SimpleRollingStock(
         fun createEffortCurveMap(
             maxSpeed: Double,
             curveShape: CurveShape,
-        ): ImmutableRangeMap<Double, Array<TractiveEffortPoint>> {
-            val builder = ImmutableRangeMap.builder<Double, Array<TractiveEffortPoint>>()
-            builder.put(Range.all(), createEffortSpeedCurve(maxSpeed, curveShape))
-            return builder.build()
-        }
+        ): DistanceRangeMap<Array<TractiveEffortPoint>> =
+            distanceRangeMapOf(
+                DistanceRangeMap.RangeMapEntry(
+                    lower = Distance.ZERO,
+                    upper = Distance(Long.MAX_VALUE),
+                    value = createEffortSpeedCurve(maxSpeed, curveShape),
+                )
+            )
 
         /**
          * ======================================================== Constant rolling stocks and
@@ -136,10 +140,10 @@ class SimpleRollingStock(
         }
 
         @JvmField
-        val LINEAR_EFFORT_CURVE_MAP: ImmutableRangeMap<Double, Array<TractiveEffortPoint>> =
+        val LINEAR_EFFORT_CURVE_MAP: DistanceRangeMap<Array<TractiveEffortPoint>> =
             createEffortCurveMap(MAX_SPEED, CurveShape.LINEAR)
 
-        val HYPERBOLIC_EFFORT_CURVE_MAP: ImmutableRangeMap<Double, Array<TractiveEffortPoint>> =
+        val HYPERBOLIC_EFFORT_CURVE_MAP: DistanceRangeMap<Array<TractiveEffortPoint>> =
             createEffortCurveMap(MAX_SPEED, CurveShape.HYPERBOLIC)
 
         val SHORT_TRAIN: SimpleRollingStock = build(1.0, .5)

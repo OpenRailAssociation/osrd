@@ -15,6 +15,9 @@ import fr.sncf.osrd.path.legacy_objects.electrification.Neutral
 import fr.sncf.osrd.path.legacy_objects.electrification.NonElectrified
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
+import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.DistanceRangeMapImpl
+import fr.sncf.osrd.utils.put
 import java.util.*
 import kotlin.math.abs
 
@@ -104,17 +107,14 @@ constructor(
         comfort: Comfort?,
     ): CurvesAndConditions {
         val conditionsUsed = TreeRangeMap.create<Double, InfraConditions>()
-        val res = TreeRangeMap.create<Double, Array<TractiveEffortPoint>>()
+        val curves = DistanceRangeMapImpl<Array<TractiveEffortPoint>>()
 
         for (elecCondEntry in electrificationMap.asMapOfRanges().entries) {
             val curveAndCond = findTractiveEffortCurve(comfort, elecCondEntry.value)
-            res.put(elecCondEntry.key, curveAndCond.curve)
+            curves.put(elecCondEntry.key, curveAndCond.curve)
             conditionsUsed.put(elecCondEntry.key, curveAndCond.cond)
         }
-        return CurvesAndConditions(
-            ImmutableRangeMap.copyOf(res),
-            ImmutableRangeMap.copyOf(conditionsUsed),
-        )
+        return CurvesAndConditions(curves, ImmutableRangeMap.copyOf(conditionsUsed))
     }
 
     @JvmRecord
@@ -223,10 +223,10 @@ constructor(
     fun addNeutralSystemTimes(
         electrificationMap: RangeMap<Double, Electrification>,
         comfort: Comfort,
-        curvesUsed: RangeMap<Double, Array<TractiveEffortPoint>>,
-    ): RangeMap<Double, Array<TractiveEffortPoint>> {
-        val newCurves = TreeRangeMap.create<Double, Array<TractiveEffortPoint>>()
-        newCurves.putAll(curvesUsed)
+        curvesUsed: DistanceRangeMap<Array<TractiveEffortPoint>>,
+    ): DistanceRangeMap<Array<TractiveEffortPoint>> {
+        val newCurves = DistanceRangeMapImpl<Array<TractiveEffortPoint>>()
+        newCurves.putMany(curvesUsed)
 
         for (elecCondEntry in electrificationMap.asMapOfRanges().entries) {
             val value = elecCondEntry.value
@@ -246,7 +246,7 @@ constructor(
                 }
             }
         }
-        return ImmutableRangeMap.copyOf(newCurves)
+        return newCurves
     }
 
     val modeNames: Set<String>
