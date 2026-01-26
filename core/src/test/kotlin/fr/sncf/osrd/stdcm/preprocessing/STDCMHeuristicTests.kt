@@ -4,7 +4,7 @@ import fr.sncf.osrd.conflicts.IncrementalRequirementEnvelopeAdapter
 import fr.sncf.osrd.conflicts.SpacingResourceGenerator
 import fr.sncf.osrd.envelope.Envelope.Companion.make
 import fr.sncf.osrd.envelope.EnvelopeTestUtils
-import fr.sncf.osrd.envelope_sim.SimpleRollingStock.STANDARD_TRAIN
+import fr.sncf.osrd.envelope_sim.SimpleRollingStock.Companion.STANDARD_TRAIN
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.pathfinding.BlockLocation
 import fr.sncf.osrd.stdcm.STDCMAStarHeuristic
