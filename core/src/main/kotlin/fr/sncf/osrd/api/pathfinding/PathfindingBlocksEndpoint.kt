@@ -12,6 +12,7 @@ import fr.sncf.osrd.cli.RsWithBody
 import fr.sncf.osrd.cli.RsWithStatus
 import fr.sncf.osrd.cli.Take
 import fr.sncf.osrd.graph.*
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.pathfinding.BlockLocation
 import fr.sncf.osrd.pathfinding.Pathfinding
@@ -281,7 +282,7 @@ private fun throwNoPathFoundException(
     throw NoPathFoundException(NotFoundInBlocks(listOf(), Length(0.meters)))
 }
 
-data class ProcessedPathfindingResponse(val path: TrainPath, val offsets: List<Offset<TrainPath>>)
+data class ProcessedPathfindingResponse(val path: TrainPath, val offsets: List<Offset<PhysicsPath>>)
 
 private fun processPathfindingResponse(
     infra: FullInfra,

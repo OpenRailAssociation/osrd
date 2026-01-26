@@ -1,7 +1,7 @@
 package fr.sncf.osrd.api
 
 import com.squareup.moshi.Json
-import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.sim_infra.api.TrackSection
 import fr.sncf.osrd.utils.DistanceRangeMap
@@ -25,13 +25,13 @@ data class TrackRange(
 data class RangeValues<valueT>(
     // List of `n` internal boundaries of the ranges along the path (excluding start and end
     // bounds).
-    @Json(name = "boundaries") val internalBoundaries: List<Offset<TrainPath>> = listOf(),
+    @Json(name = "boundaries") val internalBoundaries: List<Offset<PhysicsPath>> = listOf(),
     // List of `n+1` values associated to the bounded intervals
     val values: List<valueT> = listOf(),
 ) {
     fun toDistanceRangeMap(
-        beginPos: Offset<TrainPath>,
-        endPos: Offset<TrainPath>,
+        beginPos: Offset<PhysicsPath>,
+        endPos: Offset<PhysicsPath>,
     ): DistanceRangeMap<valueT> {
         val boundaries = internalBoundaries.toMutableList()
         boundaries.add(0, beginPos)
@@ -58,14 +58,14 @@ class TrackLocation(val track: String, val offset: Offset<TrackSection>)
 class ZoneUpdate(
     val zone: String,
     val time: TimeDelta,
-    val position: Offset<TrainPath>,
+    val position: Offset<PhysicsPath>,
     @Json(name = "is_entry") val isEntry: Boolean,
 )
 
 class SignalCriticalPosition(
     val signal: String,
     val time: TimeDelta,
-    val position: Offset<TrainPath>,
+    val position: Offset<PhysicsPath>,
     val state: String,
 )
 

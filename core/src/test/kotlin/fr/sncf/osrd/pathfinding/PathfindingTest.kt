@@ -6,7 +6,7 @@ import fr.sncf.osrd.api.TrackLocation
 import fr.sncf.osrd.api.pathfinding.*
 import fr.sncf.osrd.cli.RqFake
 import fr.sncf.osrd.path.interfaces.JsonTrainPath.TrackSectionRange
-import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSLoadingGaugeLimit
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
@@ -54,14 +54,14 @@ fun checkPathfindingSuccess(
     expectedTrackSectionRanges: List<TrackSectionRange>? = null,
     expectedBlocks: List<String>? = null,
     expectedRoutes: List<String>? = null,
-    expectedIntermediatePathItemPosition: List<Offset<TrainPath>> = listOf(),
+    expectedIntermediatePathItemPosition: List<Offset<PhysicsPath>> = listOf(),
 ): PathfindingBlockSuccess {
     assertThat(pathResp).isExactlyInstanceOf(PathfindingBlockSuccess::class.java)
     val pathSuccess = pathResp as PathfindingBlockSuccess
 
     AssertionsForClassTypes.assertThat(pathSuccess.length.distance).isEqualTo(expectedLength)
     val expectedPathItemsPos =
-        listOf(Offset<TrainPath>(0.meters))
+        listOf(Offset<PhysicsPath>(0.meters))
             .plus(expectedIntermediatePathItemPosition)
             .plusElement(Offset(pathSuccess.length.distance))
     assertEquals(expectedPathItemsPos, pathSuccess.pathItemPositions)

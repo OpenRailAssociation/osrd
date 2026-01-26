@@ -9,8 +9,8 @@ import fr.sncf.osrd.path.implementations.PartialBlockRange
 import fr.sncf.osrd.path.implementations.PartialRouteRange
 import fr.sncf.osrd.path.implementations.buildRangeList
 import fr.sncf.osrd.path.interfaces.BlockRange
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.RouteRange
-import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.ZoneRange
 import fr.sncf.osrd.path.interfaces.mapSubObjects
 import fr.sncf.osrd.path.interfaces.subRange
@@ -291,7 +291,7 @@ class SpacingResourceGeneratorTest {
 
 /** Returns an incremental requirement callback of the given length */
 private fun makeCallbacks(
-    length: Length<TrainPath>,
+    length: Length<PhysicsPath>,
     complete: Boolean,
     rollingStock: PhysicsRollingStock = SimpleRollingStock.STANDARD_TRAIN,
     stops: List<TrainStop> = listOf(),

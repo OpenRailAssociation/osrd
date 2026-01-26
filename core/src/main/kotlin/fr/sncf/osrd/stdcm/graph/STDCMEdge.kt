@@ -1,7 +1,7 @@
 package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.envelope.Envelope
-import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.utils.units.Distance
@@ -175,7 +175,7 @@ data class STDCMEdge(
     }
 
     /** Converts a path offset into an edge offset */
-    fun edgeOffsetFromPathOffset(offset: Offset<TrainPath>): Offset<STDCMEdge> {
+    fun edgeOffsetFromPathOffset(offset: Offset<PhysicsPath>): Offset<STDCMEdge> {
         val blockOffset = infraExplorer.getCurrentBlockRange().offsetFromTrainPath(offset)
         return Offset(blockOffset - envelopeStartOffset)
     }

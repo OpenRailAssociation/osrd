@@ -6,6 +6,7 @@ import fr.sncf.osrd.api.path_properties.makePathPropResponse
 import fr.sncf.osrd.path.implementations.PartialBlockRange
 import fr.sncf.osrd.path.implementations.buildRangeList
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlockRanges
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
@@ -132,7 +133,7 @@ class BacktrackTests {
                 ),
             )
         val backtrackLocation =
-            Offset<TrainPath>(blockRanges.subList(0, 3).map { it.length }.sumDistances())
+            Offset<PhysicsPath>(blockRanges.subList(0, 3).map { it.length }.sumDistances())
 
         return buildTrainPathFromBlockRanges(
             infra.rawInfra,

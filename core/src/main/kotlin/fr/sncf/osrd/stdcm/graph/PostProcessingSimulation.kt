@@ -40,7 +40,7 @@ val postProcessingLogger: Logger = LoggerFactory.getLogger("postprocessing-STDCM
 
 private data class FixedTimePoint(
     val time: Double,
-    val offset: Offset<TrainPath>,
+    val offset: Offset<PhysicsPath>,
     val stopTime: Double?,
 ) : Comparable<FixedTimePoint> {
     override fun compareTo(other: FixedTimePoint): Int {
@@ -49,8 +49,8 @@ private data class FixedTimePoint(
 }
 
 data class EngineeringAllowanceRange(
-    val from: Offset<TrainPath>,
-    val to: Offset<TrainPath>,
+    val from: Offset<PhysicsPath>,
+    val to: Offset<PhysicsPath>,
     @Json(name = "added_duration") val addedDuration: Double,
 )
 
@@ -99,7 +99,7 @@ fun buildFinalEnvelope(
         )
 
     val pathLength =
-        Length<TrainPath>(Distance(millimeters = edges.sumOf { it.length.distance.millimeters }))
+        Length<PhysicsPath>(Distance(millimeters = edges.sumOf { it.length.distance.millimeters }))
     val allowanceRanges = getEngineeringAllowanceRanges(edges)
     assert(fullInfraExplorer.isPathComplete)
     val fixedPoints =
@@ -212,7 +212,7 @@ fun buildFinalEnvelope(
 private fun initFixedPoints(
     edges: List<STDCMEdge>,
     stops: List<TrainStop>,
-    length: Length<TrainPath>,
+    length: Length<PhysicsPath>,
     hasStandardAllowance: Boolean,
     updatedTimeData: TimeData,
     allowanceRanges: List<EngineeringAllowanceRange>,
@@ -241,7 +241,7 @@ private fun initFixedPoints(
         res.add(makeFixedPoint(res, edges, length, length, updatedTimeData, allowanceRanges))
 
     // Add points at the end of each engineering allowance
-    val allowanceEndOffsets = mutableListOf<Offset<TrainPath>>()
+    val allowanceEndOffsets = mutableListOf<Offset<PhysicsPath>>()
     for ((from, to, _) in allowanceRanges) {
         // When ranges overlap, we start with just the last point
         allowanceEndOffsets.removeIf { it > from }
@@ -258,7 +258,7 @@ private fun initFixedPoints(
 }
 
 private fun getEngineeringAllowanceRanges(edges: List<STDCMEdge>): List<EngineeringAllowanceRange> {
-    var edgeStartOffset = Offset.zero<TrainPath>()
+    var edgeStartOffset = Offset.zero<PhysicsPath>()
     val res = mutableListOf<EngineeringAllowanceRange>()
     for (edge in edges) {
         val allowance = edge.engineeringAllowance
@@ -302,8 +302,8 @@ private fun getEngineeringAllowanceRanges(edges: List<STDCMEdge>): List<Engineer
 private fun makeFixedPoint(
     fixedPoints: TreeSet<FixedTimePoint>,
     edges: List<STDCMEdge>,
-    conflictOffset: Offset<TrainPath>,
-    pathLength: Length<TrainPath>,
+    conflictOffset: Offset<PhysicsPath>,
+    pathLength: Length<PhysicsPath>,
     updatedTimeData: TimeData,
     allowanceRanges: List<EngineeringAllowanceRange>,
     stopDuration: Double = 0.0,
@@ -350,10 +350,10 @@ private fun makeFixedPoint(
  */
 private fun roundOffset(
     edges: List<STDCMEdge>,
-    offset: Offset<TrainPath>,
+    offset: Offset<PhysicsPath>,
     roundToEnd: Boolean,
-): Offset<TrainPath> {
-    var prevEdgesLength = Offset<TrainPath>(0.meters)
+): Offset<PhysicsPath> {
+    var prevEdgesLength = Offset<PhysicsPath>(0.meters)
     for (edge in edges) {
         if (offset <= prevEdgesLength + edge.length.distance) {
             return if (roundToEnd) prevEdgesLength + edge.length.distance else prevEdgesLength
@@ -371,7 +371,7 @@ private fun roundOffset(
  */
 private fun getTimeOnEdges(
     edges: List<STDCMEdge>,
-    offset: Offset<TrainPath>,
+    offset: Offset<PhysicsPath>,
     updatedTimeData: TimeData,
 ): Double {
     var remainingDistance = offset.distance
@@ -399,7 +399,7 @@ private fun findConflictOffsets(
     blockAvailability: BlockAvailabilityInterface,
     edges: List<STDCMEdge>,
     updatedTimeData: TimeData,
-): Offset<TrainPath>? {
+): Offset<PhysicsPath>? {
     val explorer = getUpdatedExplorer(edges, envelope, updatedTimeData)
     val availability =
         blockAvailability.getAvailability(
@@ -495,7 +495,7 @@ private fun handlePostProcessingConflict(
     stops: List<TrainStop>,
     updatedTimeData: TimeData,
     fixedPoints: TreeSet<FixedTimePoint>,
-    conflictOffset: Offset<TrainPath>,
+    conflictOffset: Offset<PhysicsPath>,
     isMareco: Boolean,
     allowanceRanges: List<EngineeringAllowanceRange>,
     attempt: Int,
