@@ -311,66 +311,6 @@ export const electrificationRangesSingleSegment: ElectrificationRange[] = [
   },
 ];
 
-/**
- * Data for isTooFast
- */
-
-export const trainScheduleTooFast: TimetableItem = {
-  id: 'paced_98' as PacedTrainId,
-  train_name: 'tooFast',
-  labels: [],
-  rolling_stock_name: 'TC64700',
-  start_time: '2024-08-02T12:00:00Z',
-  path: [
-    {
-      id: 'id440',
-      location: {
-        track: 'TA0',
-        offset: 1299000,
-      },
-    },
-    {
-      id: 'id935',
-      location: {
-        operational_point: { uic: 4, secondary_code: 'BV', type: 'uic' },
-      },
-    },
-    {
-      id: 'id916',
-      location: {
-        track: 'TH1',
-        offset: 4095000,
-      },
-    },
-  ],
-  schedule: [
-    {
-      at: 'id935',
-      arrival: 'PT1740S',
-      stop_for: 'P0D',
-      reception_signal: 'OPEN',
-    },
-    {
-      at: 'id916',
-      arrival: null,
-      stop_for: 'P0D',
-      reception_signal: 'OPEN',
-    },
-  ],
-  margins: {
-    boundaries: ['id916'],
-    values: ['27%', '0%'],
-  },
-  initial_speed: 0,
-  comfort: 'STANDARD',
-  constraint_distribution: 'MARECO',
-  speed_limit_tag: null,
-  power_restrictions: [],
-  options: {
-    use_electrical_profiles: true,
-  },
-};
-
 export const trainSummaryTooFast: Extract<SimulationSummaryResult, { status: 'success' }> = {
   status: 'success',
   length: 44796000,
@@ -382,62 +322,6 @@ export const trainSummaryTooFast: Extract<SimulationSummaryResult, { status: 'su
   path_item_respect_times: [true, true, true],
   path_item_respect_margins: [true, false, true],
   path_item_positions: [0, 1000, 2000],
-};
-
-export const trainScheduleTooFastOnInterval: TimetableItem = {
-  id: 'trainschedule_38366' as PacedTrainId,
-  train_name: 'tooFastOnInterval',
-  labels: [],
-  rolling_stock_name: 'rs-fictive',
-  start_time: '2026-12-13T07:25:00Z',
-  path: [
-    {
-      id: 'idA',
-      location: {
-        operational_point: { uic: 87700000, secondary_code: 'BV', type: 'uic' },
-      },
-    },
-    {
-      id: 'idB',
-      location: {
-        operational_point: { uic: 87700001, secondary_code: 'BV', type: 'uic' },
-      },
-    },
-    {
-      id: 'idC',
-      location: {
-        operational_point: { uic: 87700002, secondary_code: 'BV', type: 'uic' },
-      },
-    },
-  ],
-  schedule: [
-    {
-      at: 'idB',
-      arrival: 'PT5280S',
-      stop_for: null,
-      reception_signal: 'OPEN',
-    },
-    {
-      at: 'idC',
-      arrival: 'PT15300S',
-      stop_for: 'P0D',
-      reception_signal: 'OPEN',
-    },
-  ],
-  margins: {
-    boundaries: [],
-    values: ['6.5min/100km', '0%'],
-  },
-  initial_speed: 0,
-  comfort: 'STANDARD',
-  constraint_distribution: 'STANDARD',
-  speed_limit_tag: null,
-  power_restrictions: [],
-  options: {
-    use_electrical_profiles: true,
-    use_speed_limits_for_simulation: true,
-  },
-  category: null,
 };
 
 export const trainSummaryTooFastOnInterval: Extract<
@@ -454,62 +338,6 @@ export const trainSummaryTooFastOnInterval: Extract<
   path_item_respect_times: [true, true, true],
   path_item_respect_margins: [true, true, false],
   path_item_positions: [0, 1000, 2000],
-};
-
-export const trainScheduleNotHonored: TimetableItem = {
-  id: 'paced_96' as PacedTrainId,
-  train_name: 'notHonored',
-  labels: [],
-  rolling_stock_name: 'TC64700',
-  start_time: '2024-08-02T12:00:00Z',
-  path: [
-    {
-      id: 'id440',
-      location: {
-        track: 'TA0',
-        offset: 1299000,
-      },
-    },
-    {
-      id: 'id584',
-      location: {
-        operational_point: { uic: 4, secondary_code: 'BV', type: 'uic' },
-      },
-    },
-    {
-      id: 'id450',
-      location: {
-        track: 'TG1',
-        offset: 644000,
-      },
-    },
-  ],
-  schedule: [
-    {
-      at: 'id584',
-      arrival: 'PT300S',
-      stop_for: null,
-      reception_signal: 'OPEN',
-    },
-    {
-      at: 'id450',
-      arrival: null,
-      stop_for: 'P0D',
-      reception_signal: 'OPEN',
-    },
-  ],
-  margins: {
-    boundaries: [],
-    values: ['0%'],
-  },
-  initial_speed: 0,
-  comfort: 'STANDARD',
-  constraint_distribution: 'MARECO',
-  speed_limit_tag: null,
-  power_restrictions: [],
-  options: {
-    use_electrical_profiles: true,
-  },
 };
 
 export const trainSummaryNotHonored: Extract<SimulationSummaryResult, { status: 'success' }> = {
@@ -567,11 +395,6 @@ export const trainScheduleHonored: TimetableItem = {
   options: {
     use_electrical_profiles: true,
   },
-};
-
-export const trainScheduleNoSchedule: TimetableItem = {
-  ...trainScheduleHonored,
-  schedule: undefined,
 };
 
 export const trainScheduleNoMatch: TimetableItem = {
