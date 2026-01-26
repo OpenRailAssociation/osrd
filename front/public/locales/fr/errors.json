@@ -268,6 +268,7 @@
       "NameAlreadyUsed": "Un groupe de limites temporaires de vitesse avec le nom '{{name}} existe déjà"
     },
     "timetable": {
+      "BatchTrainScheduleSetNotFound": "'{{count}}' paquet(s) de circulation non trouvés",
       "Database": "Erreur interne (base de données)",
       "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
       "InfraNotLoaded": "L'infrastructure '{{infra_id}}' n'est pas chargée",
