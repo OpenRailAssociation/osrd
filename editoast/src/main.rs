@@ -17,6 +17,8 @@ use clap::Parser;
 use client::Client;
 use client::Color;
 use client::Commands;
+use client::authorization::grants;
+use client::authorization::grants::GrantsCommand;
 use client::electrical_profiles_commands::*;
 use client::garbage_collector;
 use client::group;
@@ -226,6 +228,20 @@ async fn run() -> anyhow::Result<()> {
             }
             UserCommand::AddIdentities(add_identities_args) => {
                 user::add_identities(add_identities_args, Arc::new(db_pool)).await
+            }
+        },
+        Commands::Grants(grants_command) => match grants_command {
+            GrantsCommand::Set(set_args) => {
+                grants::set_grant(set_args, Arc::new(db_pool), openfga_config).await
+            }
+            GrantsCommand::Unset(revoke_args) => {
+                grants::unset_grant(revoke_args, Arc::new(db_pool), openfga_config).await
+            }
+            GrantsCommand::ListSubjects(list_args) => {
+                grants::list_subjects(list_args, Arc::new(db_pool), openfga_config).await
+            }
+            GrantsCommand::ListResources(list_args) => {
+                grants::list_resources(list_args, Arc::new(db_pool), openfga_config).await
             }
         },
         Commands::Healthcheck(core_config) => {
