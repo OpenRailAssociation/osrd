@@ -325,6 +325,7 @@ where
 #[cfg(test)]
 pub(crate) mod test_data {
     use schemas::infra::TrackOffset;
+    use schemas::primitives::NonBlankString;
     use schemas::train_schedule::MarginValue;
 
     use super::*;
@@ -426,31 +427,35 @@ pub(crate) mod test_data {
                 Default::default(),
             ),
         );
-        let start = builder.push_waypoint(
+        builder.push_waypoint(
             pathfinding::PathWaypointAlternatives::from_iter([TrackOffset::new("id", id as u64)]),
+            NonBlankString::from("start"),
             SimulationWaypointSchedule::PassBy,
         );
-        let a = builder.push_waypoint(
+        builder.push_waypoint(
             pathfinding::PathWaypointAlternatives::from_iter([TrackOffset::new("a", 42)]),
+            NonBlankString::from("a"),
             SimulationWaypointSchedule::Stop {
                 arrival_at: Some(1200),
                 stop_for: 60,
                 reception_signal: Default::default(),
             },
         );
-        let b = builder.push_waypoint(
+        builder.push_waypoint(
             pathfinding::PathWaypointAlternatives::from_iter([
                 TrackOffset::new("b", 43),
                 TrackOffset::new("bis", 34),
             ]),
+            NonBlankString::from("b"),
             SimulationWaypointSchedule::Stop {
                 arrival_at: None,
                 stop_for: 120,
                 reception_signal: Default::default(),
             },
         );
-        let finish = builder.push_waypoint(
+        builder.push_waypoint(
             pathfinding::PathWaypointAlternatives::from_iter([TrackOffset::new("finish", 44)]),
+            NonBlankString::from("finish"),
             SimulationWaypointSchedule::Stop {
                 arrival_at: Some(2400),
                 stop_for: 0,
@@ -458,9 +463,9 @@ pub(crate) mod test_data {
             },
         );
 
-        builder.set_power_restriction(start, a, "blackout".to_owned());
-        builder.set_margin(start, finish, MarginValue::Percentage(15.0));
-        builder.set_margin(a, b, MarginValue::MinPer100Km(123.4));
+        builder.set_power_restriction("start", "a", "blackout".to_owned());
+        builder.set_margin("start", "finish", MarginValue::Percentage(15.0));
+        builder.set_margin("a", "b", MarginValue::MinPer100Km(123.4));
 
         builder
     }

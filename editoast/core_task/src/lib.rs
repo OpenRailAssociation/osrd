@@ -11,7 +11,6 @@ pub use envs::pathfinding::PathfindingConsist;
 pub use envs::pathfinding::PathfindingConstraints;
 pub use envs::pathfinding::PathfindingEnv;
 pub use envs::pathfinding::PathfindingTrain;
-pub use envs::simulation::PathWaypointIndex;
 pub use envs::simulation::SimulationConsist;
 pub use envs::simulation::SimulationEnv;
 pub use envs::simulation::SimulationOutput;

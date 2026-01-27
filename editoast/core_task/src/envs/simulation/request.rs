@@ -136,6 +136,7 @@ mod tests {
 
     use core_client::mocking::MockingClient;
     use pretty_assertions::assert_eq;
+    use schemas::primitives::NonBlankString;
     use schemas::train_schedule::MarginValue;
 
     use super::*;
@@ -184,9 +185,14 @@ mod tests {
                 Default::default(),
             ),
         );
-        builder.push_waypoint(path_items[0].clone(), SimulationWaypointSchedule::PassBy);
+        builder.push_waypoint(
+            path_items[0].clone(),
+            NonBlankString::from("a"),
+            SimulationWaypointSchedule::PassBy,
+        );
         builder.push_waypoint(
             path_items[1].clone(),
+            NonBlankString::from("b"),
             SimulationWaypointSchedule::Stop {
                 arrival_at: Some(300),
                 stop_for: 0,
@@ -278,6 +284,7 @@ mod tests {
         {
             builder.push_waypoint(
                 path_items[i].clone(),
+                NonBlankString::from(i.to_string()),
                 SimulationWaypointSchedule::Stop {
                     arrival_at: *arrival,
                     stop_for: 0,
@@ -285,12 +292,12 @@ mod tests {
                 },
             );
         }
-        builder.set_power_restriction(0, 2, "blackout".to_owned());
-        builder.set_power_restriction(1, 3, "reduced".to_owned());
-        builder.set_power_restriction(3, 4, "normal".to_owned());
-        builder.set_margin(0, 2, MarginValue::Percentage(10.0));
-        builder.set_margin(2, 4, MarginValue::MinPer100Km(50.0));
-        builder.set_margin(1, 3, MarginValue::Percentage(5.0));
+        builder.set_power_restriction("0", "2", "blackout".to_owned());
+        builder.set_power_restriction("1", "3", "reduced".to_owned());
+        builder.set_power_restriction("3", "4", "normal".to_owned());
+        builder.set_margin("0", "2", MarginValue::Percentage(10.0));
+        builder.set_margin("2", "4", MarginValue::MinPer100Km(50.0));
+        builder.set_margin("1", "3", MarginValue::Percentage(5.0));
 
         let sim_consist = builder.simulation_consist.clone();
         let sim_key = SimulationKey(
@@ -409,10 +416,12 @@ mod tests {
         );
         builder.push_waypoint(
             PathWaypointAlternatives::from_iter([]),
+            NonBlankString::from("a"),
             SimulationWaypointSchedule::PassBy,
         );
         builder.push_waypoint(
             PathWaypointAlternatives::from_iter([]),
+            NonBlankString::from("b"),
             SimulationWaypointSchedule::Stop {
                 arrival_at: Some(300),
                 stop_for: 0,

@@ -1,11 +1,14 @@
 use core_client::simulation::PhysicsConsist;
+use schemas::primitives::NonBlankString;
 use schemas::train_schedule::Comfort;
 use schemas::train_schedule::Distribution;
 use schemas::train_schedule::MarginValue;
 use schemas::train_schedule::ReceptionSignal;
 use schemas::train_schedule::TrainScheduleOptions;
 
+use std::borrow::Borrow;
 use std::collections::HashMap;
+use std::hash::Hash;
 use std::sync::Arc;
 
 use crate::Correlated;
@@ -163,9 +166,10 @@ pub struct SimulationTrain {
     pub(super) pathfinding_consist: PathfindingConsist,
     pub(super) parameters: SimulationTrainParameters,
     pub(super) path_constraints: PathfindingConstraints,
+    schedule_item_to_index: HashMap<NonBlankString, PathWaypointIndex>,
 }
 
-pub type PathWaypointIndex = usize;
+type PathWaypointIndex = usize;
 
 impl SimulationTrain {
     pub fn new(
@@ -184,6 +188,7 @@ impl SimulationTrain {
             path_constraints: PathfindingConstraints {
                 path_items: Vec::new(),
             },
+            schedule_item_to_index: HashMap::default(),
         }
     }
 
@@ -204,32 +209,41 @@ impl SimulationTrain {
 
     /// Adds a waypoint to the train's path with simulation schedule information
     ///
-    /// Returns the index of the newly added waypoint which can be later used to set
-    /// power restrictions or margins.
-    ///
-    /// Checkout [Self::set_power_restriction] and [Self::set_margin].
+    /// The label can be reused for [Self::set_power_restriction] and [Self::set_margin].
     pub fn push_waypoint(
         &mut self,
         path_constraint: PathWaypointAlternatives,
+        label: NonBlankString,
         point: SimulationWaypointSchedule,
-    ) -> PathWaypointIndex {
+    ) {
         let index = self.parameters.schedule.len();
         self.parameters.schedule.push(point);
         self.path_constraints.path_items.push(path_constraint);
-        index
+        self.schedule_item_to_index.insert(label, index);
     }
 
     /// Sets a power restriction for a range of waypoints.
     ///
+    /// Labels are used to define the range: they can be &NonBlankString, &String or &str.
+    ///
     /// # Panics
     ///
-    /// Panics if `begin_index` or `end_index` is out of bounds.
-    pub fn set_power_restriction(
-        &mut self,
-        begin_index: PathWaypointIndex,
-        end_index: PathWaypointIndex,
-        restriction: String,
-    ) {
+    /// Panics if `begin_label` or `end_label` has not been used to push a waypoint.
+    pub fn set_power_restriction<Q>(&mut self, begin_label: &Q, end_label: &Q, restriction: String)
+    where
+        NonBlankString: Borrow<Q>,
+        Q: Hash + Eq + ?Sized,
+    {
+        let begin_index = self
+            .schedule_item_to_index
+            .get(begin_label)
+            .copied()
+            .expect("only names already inserted through “push_waypoint” can be used");
+        let end_index = self
+            .schedule_item_to_index
+            .get(end_label)
+            .copied()
+            .expect("only names already inserted through “push_waypoint” can be used");
         let n = self.waypoints();
         if begin_index >= n || end_index >= n {
             panic!("path waypoint index out of bounds");
@@ -242,15 +256,26 @@ impl SimulationTrain {
 
     /// Sets a margin for a range of waypoints.
     ///
+    /// Labels are used to define the range: they can be &NonBlankString, &String or &str.
+    ///
     /// # Panics
     ///
-    /// Panics if `begin_index` or `end_index` is out of bounds.
-    pub fn set_margin(
-        &mut self,
-        begin_index: PathWaypointIndex,
-        end_index: PathWaypointIndex,
-        margin: MarginValue,
-    ) {
+    /// Panics if `begin_label` or `end_label` has not been used to push a waypoint.
+    pub fn set_margin<Q>(&mut self, begin_label: &Q, end_label: &Q, margin: MarginValue)
+    where
+        NonBlankString: Borrow<Q>,
+        Q: Hash + Eq + ?Sized,
+    {
+        let begin_index = self
+            .schedule_item_to_index
+            .get(begin_label)
+            .copied()
+            .expect("only names already inserted through “push_waypoint” can be used");
+        let end_index = self
+            .schedule_item_to_index
+            .get(end_label)
+            .copied()
+            .expect("only names already inserted through “push_waypoint” can be used");
         let n = self.waypoints();
         if begin_index >= n || end_index >= n {
             panic!("path waypoint index out of bounds");
@@ -275,6 +300,7 @@ where
                     pathfinding_consist,
                     parameters,
                     path_constraints,
+                    schedule_item_to_index: _,
                 },
             )| {
                 (
