@@ -2,16 +2,16 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { maxBy } from 'lodash';
 
-import type { CatalogEntry, TrainScheduleSet } from 'common/api/osrdEditoastApi';
+import {
+  osrdEditoastApi,
+  type CatalogEntry,
+  type TrainScheduleSet,
+} from 'common/api/osrdEditoastApi';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 
 import { useScenarioContext } from './useScenarioContext';
 import { sortTrainScheduleSets } from '../views/Scenario/components/Timetable/utils';
-import {
-  MOCK_CATALOG,
-  MOCK_TRAIN_SCHEDULE_SETS,
-  randomArrayElement,
-} from '../views/Scenario/mockTrainScheduleSets';
+import { MOCK_CATALOG, randomArrayElement } from '../views/Scenario/mockTrainScheduleSets';
 
 // TODO: this type should be removed when unmocking this hook
 export type TimetableItemWithDetailsAndTrainScheduleSet = TimetableItemWithDetails & {
@@ -43,11 +43,16 @@ export default function useScenarioTrainScheduleSet(
   // The timetableId will be used when unmocked this hook to call the API
   const { timetableId } = useScenarioContext();
 
+  const { data: trainScheduleSets = [] } =
+    osrdEditoastApi.endpoints.getTimetableByIdTrainScheduleSets.useQuery({
+      id: timetableId,
+    });
+
   // Store where we manage mocked data
   const [mockStore, setMockStore] = useState<MockStore>({
     timetableItemsWithDetails: [],
     catalog: [...MOCK_CATALOG],
-    trainScheduleSets: [...MOCK_TRAIN_SCHEDULE_SETS],
+    trainScheduleSets: [...trainScheduleSets],
   });
 
   useEffect(() => {
@@ -56,25 +61,11 @@ export default function useScenarioTrainScheduleSet(
         if (Math.random() > 0.9) {
           return { ...item, train_schedule_set_id: TRAIN_SCHEDULE_SET_SANDBOX_ID };
         }
-        return { ...item, train_schedule_set_id: randomArrayElement(MOCK_TRAIN_SCHEDULE_SETS).id };
+        return { ...item, train_schedule_set_id: randomArrayElement(trainScheduleSets).id };
       });
       return { ...prev, timetableItemsWithDetails: timetableItems };
     });
   }, [timetableItemsWithDetails]);
-
-  /**
-   * Retrieve all TrainScheduleSets
-   */
-  const getAllTrainScheduleSets = useCallback(
-    () =>
-      new Promise<TrainScheduleSet[]>((resolve) => {
-        setTimeout(() => {
-          console.warn('Mocked: getAllTrainScheduleSets');
-          resolve(mockStore.trainScheduleSets);
-        }, 1000);
-      }),
-    [mockStore.trainScheduleSets]
-  );
 
   /**
    * Retrieve all catalog entries
@@ -117,8 +108,6 @@ export default function useScenarioTrainScheduleSet(
    */
   const getTrainScheduleSetsFromTimetableItems = useCallback(
     async (items: TimetableItemWithDetailsAndTrainScheduleSet[]) => {
-      console.warn('Mocked: getTrainScheduleSetsFromTimetableItems');
-
       // We group trains by trainScheduleSet
       const trainsByTrainScheduleSetId = new Map<number, TimetableItemWithDetails[]>();
       for (const item of items) {
@@ -130,8 +119,6 @@ export default function useScenarioTrainScheduleSet(
         }
       }
 
-      // Calling the API to get TrainScheduleSet data and build an index
-      const trainScheduleSets = await getAllTrainScheduleSets();
       const trainScheduleSetsById = new Map<number, TrainScheduleSet>();
       for (const trainScheduleSet of trainScheduleSets) {
         trainScheduleSetsById.set(trainScheduleSet.id, trainScheduleSet);
@@ -152,7 +139,7 @@ export default function useScenarioTrainScheduleSet(
           catalog: catalogEntriesIndex.get(trainScheduleSet.catalog_entry_id!)!,
         }));
     },
-    [getAllTrainScheduleSets, getCatalogEntries]
+    [trainScheduleSets, getCatalogEntries]
   );
 
   /**

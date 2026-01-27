@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 import { ChevronRight } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
@@ -8,6 +8,7 @@ import useScenarioData from 'applications/operationalStudies/hooks/useScenarioDa
 import type { Board } from 'applications/operationalStudies/types';
 import ManageTimetableItemModal from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem';
 import SimulationResults from 'applications/operationalStudies/views/Scenario/components/SimulationResults';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 import Conflicts from 'modules/conflict/components/Conflicts';
 import useConflictsFilter from 'modules/conflict/hooks/useConflictsFilter';
@@ -23,7 +24,6 @@ import { castErrorToFailure } from 'utils/error';
 import { usePrevious } from 'utils/hooks/state';
 
 import { MANAGE_TIMETABLE_ITEM_TYPES } from '../consts';
-import { MOCK_TRAIN_SCHEDULE_SETS } from '../mockTrainScheduleSets';
 import BoardWrapper from './BoardWrapper';
 import { EditedElementContainerProvider } from './EditedElementContainerContext';
 import MacroEditorState from './MacroEditor/MacroEditorState';
@@ -159,12 +159,13 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
 
   const handleNGELoad = () => setNGEIsLoading(false);
 
-  // TODO: unmock it
-  // It should be populated with TrainScheduleSets of the timetable that are a reference (ie with a catalog entry)
-  const trainScheduleSetsInCatalogAlreadyImported = useMemo(
-    () =>
-      new Set<number>(MOCK_TRAIN_SCHEDULE_SETS.filter(() => Math.random() < 0.1).map((e) => e.id)),
-    [timetableItems]
+  const { data: trainScheduleSets = [] } =
+    osrdEditoastApi.endpoints.getTimetableByIdTrainScheduleSets.useQuery({
+      id: scenario.timetable_id,
+    });
+
+  const trainScheduleSetsInCatalogAlreadyImported = new Set(
+    trainScheduleSets.filter((tss) => tss.catalog_entry_id).map((tss) => tss.id)
   );
 
   return (
