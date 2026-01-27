@@ -1,3 +1,4 @@
+use std::borrow::Borrow;
 use std::fmt::Display;
 use std::ops::Deref;
 use std::ops::DerefMut;
@@ -87,6 +88,18 @@ impl Default for NonBlankString {
 impl AsRef<str> for NonBlankString {
     fn as_ref(&self) -> &str {
         self.0.as_str()
+    }
+}
+
+impl Borrow<str> for NonBlankString {
+    fn borrow(&self) -> &str {
+        &self.0
+    }
+}
+
+impl Borrow<String> for NonBlankString {
+    fn borrow(&self) -> &String {
+        &self.0
     }
 }
 

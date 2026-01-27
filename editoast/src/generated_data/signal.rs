@@ -30,7 +30,7 @@ fn find_sprite_id(sprite_config: &SpriteConfigs, logical_signal: &LogicalSignal)
     let sprite_config = sprite_config.get(&logical_signal.signaling_system)?;
     'sprite: for conditional_sprite in &sprite_config.sprites {
         for (cond_key, cond_value) in &conditional_sprite.conditions {
-            match logical_signal.settings.get(&cond_key.clone().into()) {
+            match logical_signal.settings.get(cond_key) {
                 Some(value) if &value.0 == cond_value => continue,
                 _ => continue 'sprite,
             }
