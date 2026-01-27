@@ -2,13 +2,12 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { maxBy } from 'lodash';
 
-import type { CatalogEntry, TrainScheduleSet } from 'common/api/osrdEditoastApi';
+import { type CatalogEntry, type TrainScheduleSet } from 'common/api/osrdEditoastApi';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 
 import { useScenarioContext } from './useScenarioContext';
 import { sortTrainScheduleSets } from '../views/Scenario/components/Timetable/utils';
 import {
-  MOCK_CATALOG,
   MOCK_TRAIN_SCHEDULE_SETS,
   randomArrayElement,
 } from '../views/Scenario/mockTrainScheduleSets';
@@ -44,9 +43,10 @@ export default function useScenarioTrainScheduleSet(
   const { timetableId } = useScenarioContext();
 
   // Store where we manage mocked data
+  // TODO: Remove this state when unmock is done
   const [mockStore, setMockStore] = useState<MockStore>({
     timetableItemsWithDetails: [],
-    catalog: [...MOCK_CATALOG],
+    catalog: [],
     trainScheduleSets: [...MOCK_TRAIN_SCHEDULE_SETS],
   });
 
