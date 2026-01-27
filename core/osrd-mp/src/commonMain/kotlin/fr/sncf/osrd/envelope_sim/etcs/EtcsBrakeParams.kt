@@ -1,6 +1,5 @@
 package fr.sncf.osrd.envelope_sim.etcs
 
-import fr.sncf.osrd.railjson.schema.rollingstock.RJSEtcsBrakeParams
 import kotlin.math.abs
 
 /**
@@ -106,7 +105,7 @@ class EtcsBrakeParams(
         var values: DoubleArray,
     ) {
         fun getValue(speed: Double): Double {
-            assert(values.size == boundaries.size + 1)
+            require(values.size == boundaries.size + 1)
             var index = 0
             val absSpeed = abs(speed)
             for (boundary in boundaries) {
@@ -122,22 +121,3 @@ class EtcsBrakeParams(
 
 /** National Default Value: Available Adhesion. Found in Subset Appendix A.3.2 table. */
 private const val mNvavadh = 0.0
-
-fun RJSEtcsBrakeParams.toEtcsBrakeParams(): EtcsBrakeParams =
-    EtcsBrakeParams(
-        gammaEmergency = gammaEmergency.toSpeedIntervalValueCurve(),
-        gammaService = gammaService.toSpeedIntervalValueCurve(),
-        gammaNormalService = gammaNormalService.toSpeedIntervalValueCurve(),
-        kDry = kDry.toSpeedIntervalValueCurve(),
-        kWet = kWet.toSpeedIntervalValueCurve(),
-        kNPos = kNPos.toSpeedIntervalValueCurve(),
-        kNNeg = kNNeg.toSpeedIntervalValueCurve(),
-        tTractionCutOff = tTractionCutOff,
-        tBs1 = tBs1,
-        tBs2 = tBs2,
-        tBe = tBe,
-    )
-
-fun RJSEtcsBrakeParams.RJSSpeedIntervalValueCurve.toSpeedIntervalValueCurve():
-    EtcsBrakeParams.SpeedIntervalValueCurve =
-    EtcsBrakeParams.SpeedIntervalValueCurve(boundaries = boundaries, values = values)
