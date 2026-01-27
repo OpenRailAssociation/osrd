@@ -109,7 +109,7 @@
     "@types/d3-scale": "^4.0.9",
     "@types/lodash": "^4.17.23",
     "@types/node": "^25",
-    "@types/react": "^19.2.8",
+    "@types/react": "^19.2.9",
     "@types/react-dom": "^19.2.3",
     "@types/tether": "^1.4.9",
     "@vitejs/plugin-react-swc": "^4.2.2",
