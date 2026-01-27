@@ -43,8 +43,7 @@
       "y": 19
     }
   ],
-  "paced_trains": [],
-  "train_schedules": [
+  "paced_trains": [
     {
       "category": {
         "main_category": "INTERCITY_TRAIN"
@@ -53,6 +52,7 @@
       "rolling_stock_name": "",
       "train_name": "Carotte",
       "labels": [],
+      "paced": null,
       "path": [
         {
           "location": {
@@ -94,7 +94,6 @@
     }
   ],
   "round_trips": {
-    "paced_trains": [],
-    "train_schedules": [[0, null]]
+    "paced_trains": [[0, null]]
   }
 }

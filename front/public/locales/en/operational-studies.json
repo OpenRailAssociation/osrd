@@ -30,7 +30,6 @@
     "download": "Download",
     "errorMessages": {
       "error": "An error has occurred",
-      "errorEmptyFile": "Empty file",
       "errorInvalidFile": "Invalid file"
     },
     "failure": "Operation failed",

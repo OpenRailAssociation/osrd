@@ -1,13 +1,9 @@
-import type {
-  PacedTrainFromJson,
-  TrainScheduleFromJson,
-} from 'applications/operationalStudies/types';
+import type { PacedTrainFromJson } from 'applications/operationalStudies/types';
 import type {
   PacedTrain,
   SubCategory,
   TrainCategory,
   TrainMainCategory,
-  TrainSchedule,
 } from 'common/api/osrdEditoastApi';
 import { TrainMainCategoryDict } from 'modules/rollingStock/consts';
 import isMainCategory from 'modules/rollingStock/helpers/category';
@@ -97,22 +93,11 @@ const buildLabels = (
 
 export function generateTrainPayloads(
   parsedPacedTrains: PacedTrainFromJson[],
-  parsedTrainSchedules: TrainScheduleFromJson[],
   allowedSubCategories: SubCategory[]
-): {
-  pacedTrainsPayload: PacedTrain[];
-  trainSchedulesPayload: TrainSchedule[];
-} {
-  return {
-    pacedTrainsPayload: parsedPacedTrains.map((pacedTrain) => ({
-      ...pacedTrain,
-      category: checkCategory(pacedTrain.category, allowedSubCategories),
-      labels: buildLabels(pacedTrain.labels, pacedTrain.category, allowedSubCategories),
-    })),
-    trainSchedulesPayload: parsedTrainSchedules.map((trainSchedule) => ({
-      ...trainSchedule,
-      category: checkCategory(trainSchedule.category, allowedSubCategories),
-      labels: buildLabels(trainSchedule.labels, trainSchedule.category, allowedSubCategories),
-    })),
-  };
+): PacedTrain[] {
+  return parsedPacedTrains.map((pacedTrain) => ({
+    ...pacedTrain,
+    category: checkCategory(pacedTrain.category, allowedSubCategories),
+    labels: buildLabels(pacedTrain.labels, pacedTrain.category, allowedSubCategories),
+  }));
 }

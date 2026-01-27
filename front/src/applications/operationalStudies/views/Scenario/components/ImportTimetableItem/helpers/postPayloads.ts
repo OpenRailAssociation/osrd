@@ -1,18 +1,21 @@
 import type { TFunction } from 'i18next';
 
-import type { RoundTripsFromJson } from 'applications/operationalStudies/types';
+import type {
+  RoundTripsFromJson,
+  TimetableJsonPayload,
+} from 'applications/operationalStudies/types';
 import {
   osrdEditoastApi,
   type MacroNodeForm,
-  type MacroNoteForm,
   type PacedTrain,
+  type SubCategory,
 } from 'common/api/osrdEditoastApi';
-import { setWarning, setSuccess, setFailure } from 'reducers/main';
+import { setWarning, setFailure } from 'reducers/main';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { extractEditoastIdFromPacedTrainId, formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
-import { generateRoundTripsPayload } from './generatePayloads';
+import { generateRoundTripsPayload, generateTrainPayloads } from './generatePayloads';
 
 // TODO: delete this helper and use createPacedTrains (possibly adding if (payloads.length) to it) when the pr createPacedTrain -> createPacedTrains is merged
 export const postTimetableItems = async (
@@ -89,30 +92,30 @@ const postMacroNodesIfNew = async (
 export const postFullImportPayload = async (
   trainScheduleSetId: number,
   scenarioId: number,
-  trainPayloads: PacedTrain[],
-  roundTrips: RoundTripsFromJson | undefined,
-  macroNodes: MacroNodeForm[] | undefined,
-  macroNotes: MacroNoteForm[] | undefined,
+  timetableJsonPayload: TimetableJsonPayload,
+  subCategories: SubCategory[],
   dispatch: AppDispatch,
   t: TFunction<'operational-studies', 'importTrains'>,
   upsertTimetableItems: (items: TimetableItem[]) => void
-): Promise<void> => {
+): Promise<TimetableItem[]> => {
   try {
-    const timetableItems = await postTimetableItems(trainScheduleSetId, trainPayloads, dispatch);
+    const { round_trips, macro_nodes, macro_notes } = timetableJsonPayload;
+    const pacedTrains = generateTrainPayloads(timetableJsonPayload.paced_trains, subCategories);
+    const timetableItems = await postTimetableItems(trainScheduleSetId, pacedTrains, dispatch);
 
-    if (roundTrips) {
-      await postRoundTrips(roundTrips, timetableItems, dispatch);
+    if (round_trips) {
+      await postRoundTrips(round_trips, timetableItems, dispatch);
     }
 
-    if (macroNodes && macroNodes.length > 0) {
-      await postMacroNodesIfNew(macroNodes, scenarioId, dispatch, t);
+    if (macro_nodes && macro_nodes.length > 0) {
+      await postMacroNodesIfNew(macro_nodes, scenarioId, dispatch, t);
     }
 
-    if (macroNotes && macroNotes.length > 0) {
+    if (macro_notes && macro_notes.length > 0) {
       await dispatch(
         osrdEditoastApi.endpoints.postMacroNotes.initiate({
           macroNoteBatchForm: {
-            macro_notes: macroNotes,
+            macro_notes,
             scenario_id: scenarioId,
           },
         })
@@ -121,20 +124,13 @@ export const postFullImportPayload = async (
 
     upsertTimetableItems(timetableItems);
 
-    dispatch(
-      setSuccess({
-        title: t('success'),
-        text: t('status.successfulImport', {
-          count: trainPayloads.length,
-        }),
-      })
-    );
+    return timetableItems;
   } catch (error) {
     dispatch(
       setFailure({
         name: t('failure'),
         message: t('status.invalidTimetableItems', {
-          count: trainPayloads.length,
+          count: timetableJsonPayload.paced_trains.length,
         }),
       })
     );

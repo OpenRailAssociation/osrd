@@ -375,7 +375,9 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
   const trains = Array.from(xmlDoc.getElementsByTagName('train'));
   const updatedTrainSchedules = mapTrainNames(singleTrainSchedules, trains);
 
-  return { train_schedules: updatedTrainSchedules, paced_trains: importedPacedTrains };
+  return {
+    paced_trains: [...importedPacedTrains, ...updatedTrainSchedules],
+  };
 };
 
 export const locallyProcessXmlFile = async (fileContent: string): Promise<TimetableJsonPayload> => {

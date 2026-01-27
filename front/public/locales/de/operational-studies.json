@@ -14,7 +14,6 @@
     "download": "Herunterladen",
     "errorMessages": {
       "error": "Ein Fehler ist aufgetreten",
-      "errorEmptyFile": "Leere Datei",
       "errorInvalidFile": "Ungültige Datei"
     },
     "failure": "Operation fehlgeschlagen",
