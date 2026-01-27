@@ -14,6 +14,10 @@
   - any:
       - changed-files:
           - any-glob-to-any-file: "front/**"
+"area:ui":
+  - any:
+      - changed-files:
+          - any-glob-to-any-file: "front/ui/**"
 "area:gateway":
   - any:
       - changed-files:
