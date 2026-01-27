@@ -42,6 +42,7 @@ export type BaseTrainProjection = {
     times: number[];
   }[];
   signalUpdates: CoreSignalUpdate[];
+  isSimulated?: boolean;
 };
 
 export type TrainSpaceTimeData = {
