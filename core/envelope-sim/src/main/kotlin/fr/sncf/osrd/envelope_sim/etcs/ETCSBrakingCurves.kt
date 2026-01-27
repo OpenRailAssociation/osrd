@@ -21,23 +21,6 @@ import kotlin.math.min
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-/**
- * Formulas are found in `SUBSET-026-3v400.pdf` from the file at
- * https://www.era.europa.eu/system/files/2023-09/index004_-_SUBSET-026_v400.zip
- */
-enum class BrakingType {
-    CONSTANT, // Constant deceleration
-    EBD, // Emergency Brake Deceleration
-    EBI, // Emergency Brake Intervention
-    SBD, // Service Brake Deceleration
-    SBI_1, // Service Brake Intervention 1 - SBI curve computed from SBD
-    SBI_2, // Service Brake Intervention 2 - SBI curve computed from EBD
-    GUI, // Guidance
-    PRE_PS, // Permitted Speed before applying minimum with guidance
-    PS, // Permitted Speed
-    IND, // Indication
-}
-
 val etcsBrakingCurvesLogger: Logger = LoggerFactory.getLogger("EtcsBrakingCurves")
 
 /** Compute LoA braking curves: compute EBD-based curves for LoA. */
