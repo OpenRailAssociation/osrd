@@ -15,6 +15,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
 import { isPacedTrain } from 'modules/timetableItem/helpers/pacedTrain';
+import type { SimulationSummary } from 'modules/timetableItem/types';
 import type {
   TimetableItem,
   TimetableItemId,
@@ -193,6 +194,18 @@ export const preparePathPropertiesData = (
 
 export const isInvalidName = (name?: string | null) =>
   !name || name.length > SMALL_INPUT_MAX_LENGTH;
+
+/**
+ * Check if a simulation summary can be considered as simulated.
+ * A simulation is considered simulated if it has a valid summary
+ * and the schedule was honored (no 'scheduleNotHonored' reason).
+ * @param summary - The simulation summary to check
+ * @returns true if the simulation is valid and schedule was honored
+ */
+export const isSimulated = (summary: SimulationSummary | undefined): boolean => {
+  if (!summary) return false;
+  return summary.isValid && summary.notHonoredReason !== 'scheduleNotHonored';
+};
 
 /**
  * Check if the scheduled points are honored with a timetable item summary,
