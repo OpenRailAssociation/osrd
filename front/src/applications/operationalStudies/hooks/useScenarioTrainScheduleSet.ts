@@ -48,60 +48,7 @@ export default function useScenarioTrainScheduleSet(
   /**
    * Retrieve all catalog entries
    */
-  const createCatalogEntry = useCallback(
-    (name: string) =>
-      new Promise<CatalogEntry>((resolve) => {
-        setTimeout(() => {
-          console.warn('Mocked: createCatalogEntry');
-          const catalogId = (maxBy(mockStore.catalog, 'id')?.id || 1) + 1;
-          const catalogEntry = { id: catalogId, name };
-          setMockStore((prev) => ({ ...prev, catalog: [...prev.catalog, catalogEntry] }));
-          resolve(catalogEntry);
-        }, 1000);
-      }),
-    [mockStore.catalog]
-  );
-
-  /**
-   * Given a list of TimetableItem, returns the associates list of TranscheduleSet,
-   * each one associates with its list of timetable item and its catalog entry.
-   */
-  const timetableItemsByTrainScheduleSets = useMemo(() => {
-    if (!trainScheduleSets) return null;
-
-    // We group trains by trainScheduleSet
-    const trainsByTrainScheduleSetId = new Map<number, TimetableItemWithDetails[]>();
-    for (const item of timetableItemsWithDetails) {
-      const itemInIndex = trainsByTrainScheduleSetId.get(item.train_schedule_set_id);
-      if (!itemInIndex) {
-        trainsByTrainScheduleSetId.set(item.train_schedule_set_id, [item]);
-      } else {
-        trainsByTrainScheduleSetId.set(item.train_schedule_set_id, [...itemInIndex, item]);
-      }
-    }
-
-    const trainScheduleSetsById = new Map<number, TrainScheduleSet>();
-    for (const trainScheduleSet of trainScheduleSets) {
-      trainScheduleSetsById.set(trainScheduleSet.id, trainScheduleSet);
-    }
-
-    const catalogEntriesIndex = new Map<number, CatalogEntry>();
-    if (catalogEntries) {
-      for (const catalogEntry of catalogEntries) {
-        catalogEntriesIndex.set(catalogEntry.id, catalogEntry);
-      }
-    }
-
-    return Array.from(trainScheduleSetsById.values())
-      .sort((a, b) => sortTrainScheduleSets(a, b, catalogEntriesIndex))
-      .map((trainScheduleSet) => ({
-        trainScheduleSet,
-        trains: trainsByTrainScheduleSetId.get(trainScheduleSet.id) || [],
-        catalog: trainScheduleSet.catalog_entry_id
-          ? catalogEntriesIndex.get(trainScheduleSet.catalog_entry_id)
-          : undefined, // can happen if it's the sandbox
-      }));
-  }, [trainScheduleSets, catalogEntries, timetableItemsWithDetails]);
+  const [createCatalogEntryMutation] = osrdEditoastApi.endpoints.postCatalogEntries.useMutation();
 
   /**
    * Retrieve a TainScheduleSet via its ID.
@@ -109,7 +56,7 @@ export default function useScenarioTrainScheduleSet(
   const getTrainScheduleSet = useCallback(
     (id: number) =>
       new Promise<TrainScheduleSet>((resolve, reject) => {
-        const trainScheduleSet = trainScheduleSets.find((e) => e.id === id);
+        const trainScheduleSet = trainScheduleSets?.find((e) => e.id === id);
         if (trainScheduleSet) resolve(trainScheduleSet);
         else return reject('not found');
       }),
@@ -125,7 +72,7 @@ export default function useScenarioTrainScheduleSet(
         setTimeout(() => {
           console.warn('Mocked: removeTrainSchedule', id);
 
-          const found = trainScheduleSets.find((e) => e.id === id);
+          const found = trainScheduleSets?.find((e) => e.id === id);
           if (!found) return reject('not found');
 
           resolve();
@@ -137,15 +84,52 @@ export default function useScenarioTrainScheduleSet(
   /**
    * Create a new TrainScheduleSet
    */
+  const [createTrainScheduleSetMutation] =
+    osrdEditoastApi.endpoints.postTrainScheduleSets.useMutation();
+
+  const [linkTrainScheduleSetToTimetable] =
+    osrdEditoastApi.endpoints.postTimetableByIdTrainScheduleSets.useMutation();
+
   const createTrainScheduleSet = useCallback(
-    (data: TrainScheduleSetFormData) =>
-      new Promise<void>((resolve) => {
-        console.warn('Mocked: createTrainScheduleSet', data);
-        setTimeout(async () => {
-          resolve();
-        }, 1000);
-      }),
-    []
+    // update for create catalog
+    async (data: TrainScheduleSetFormData): Promise<void> => {
+      let catalogEntryId: number | undefined;
+
+      const { catalog, ...trainScheduleSetData } = data;
+
+      if (catalog) {
+        if (catalog.type === 'selected') {
+          catalogEntryId = catalog.id;
+        }
+
+        if (catalog.type === 'create') {
+          const newCatalog = await createCatalogEntryMutation({
+            catalogEntryForm: { name: catalog.name },
+          }).unwrap();
+          catalogEntryId = newCatalog.id;
+        }
+      }
+
+      const newTss = await createTrainScheduleSetMutation({
+        trainScheduleSetForm: {
+          ...trainScheduleSetData,
+          catalog_entry_id: catalogEntryId,
+        },
+      }).unwrap();
+      await linkTrainScheduleSetToTimetable({
+        id: timetableId,
+        body: {
+          train_schedule_set_ids: [...(trainScheduleSets?.map((tss) => tss.id) ?? []), newTss.id],
+        },
+      }).unwrap();
+    },
+    [
+      createTrainScheduleSetMutation,
+      createCatalogEntryMutation,
+      linkTrainScheduleSetToTimetable,
+      timetableId,
+      trainScheduleSets,
+    ]
   );
 
   /**
@@ -156,7 +140,7 @@ export default function useScenarioTrainScheduleSet(
       new Promise<void>((resolve, reject) => {
         console.warn('Mocked: updateTrainSchedule', { trainScheduleSet, data });
         setTimeout(async () => {
-          const found = trainScheduleSets.find((e) => e.id === trainScheduleSet.id);
+          const found = trainScheduleSets?.find((e) => e.id === trainScheduleSet.id);
           if (!found) return reject('not found');
 
           return resolve();
@@ -175,7 +159,7 @@ export default function useScenarioTrainScheduleSet(
         setTimeout(() => {
           if (!trainScheduleSet.catalog_entry_id)
             return reject('Train Schedule Set is not a reference');
-          const found = trainScheduleSets.find((e) => e.id === trainScheduleSet.id);
+          const found = trainScheduleSets?.find((e) => e.id === trainScheduleSet.id);
           if (!found) return reject('Not found');
           return resolve();
         }, 1000);
@@ -196,7 +180,7 @@ export default function useScenarioTrainScheduleSet(
           store: trainScheduleSets,
         });
         setTimeout(async () => {
-          const found = trainScheduleSets.find(
+          const found = trainScheduleSets?.find(
             (tss) => tss.catalog_entry_id === catalogId && tss.name === name
           );
           return resolve(found || null);

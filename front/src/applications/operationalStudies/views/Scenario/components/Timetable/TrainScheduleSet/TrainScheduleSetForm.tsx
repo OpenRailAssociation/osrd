@@ -117,7 +117,7 @@ const TrainScheduleSetForm = ({
    * Sort the catalog for the select
    */
   const catalogSorted = useMemo(
-    () => catalogEntries.sort((a, b) => (a.name && b.name ? a.name.localeCompare(b.name) : 0)),
+    () => [...catalogEntries].sort((a, b) => (a.name && b.name ? a.name.localeCompare(b.name) : 0)),
     [catalogEntries]
   );
 
