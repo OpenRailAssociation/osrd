@@ -1,6 +1,7 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
 import STDCMPage from './stdcm-page';
+import LINKED_TRAIN_DETAILS from '../../assets/constants/linked-train-const';
 import {
   CI_SUGGESTIONS,
   DEFAULT_DETAILS,
@@ -45,6 +46,21 @@ class OriginSection extends STDCMPage {
     await expect(this.toleranceOriginArrival).toHaveValue(tolerance);
   }
 
+  async verifyOriginDetails() {
+    const {
+      dynamicOriginCi,
+      dynamicOriginCh,
+      originArrival,
+      dateOriginArrival,
+      timeOriginArrival,
+    } = LINKED_TRAIN_DETAILS.anterior;
+    await expect(this.originCiField).toHaveValue(dynamicOriginCi);
+    await expect(this.originChField).toHaveValue(dynamicOriginCh);
+    await expect(this.originArrival).toHaveValue(originArrival);
+    await expect(this.dateOriginArrival).toHaveValue(dateOriginArrival);
+    await expect(this.timeOriginArrival).toHaveValue(timeOriginArrival);
+    await expect(this.toleranceOriginArrival).toHaveValue('-15/+15');
+  }
   // Verify the origin suggestions when searching for north
   private async verifyOriginNorthSuggestions() {
     await this.verifySuggestions(CI_SUGGESTIONS.north);

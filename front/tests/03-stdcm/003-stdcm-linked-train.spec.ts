@@ -1,10 +1,11 @@
 import type { Infra, TowedRollingStock } from 'common/api/osrdEditoastApi';
 
 import { fastRollingStockName } from './../assets/constants/project-const';
-import test from './../page-object-fixture';
+import test, { createStdcmTab } from './../page-object-fixture';
 import { waitForInfraStateToBeCached } from './../utils';
 import { getInfra, setTowedRollingStock } from './../utils/api-utils';
 import type { ConsistFields } from './../utils/types';
+import { DEFAULT_DETAILS } from '../assets/constants/stdcm-const';
 
 const fastRollingStockPrefilledValues = {
   tonnage: '190',
@@ -38,6 +39,7 @@ test.describe('@stdcm @stdcm-linked-train', () => {
 
   /** *************** Test 1 **************** */
   test('Verify STDCM anterior linked train', async ({
+    page,
     consistSection,
     linkedTrainSection,
     destinationSection,
@@ -72,6 +74,34 @@ test.describe('@stdcm @stdcm-linked-train', () => {
     await test.step('Retain + download simulation PDF', async () => {
       await stdcmSimulationResultPage.retainSimulation();
       await stdcmSimulationResultPage.downloadSimulation(testInfo.outputDir);
+    });
+
+    await test.step('Start new query with data', async () => {
+      const [newPage] = await Promise.all([
+        page.context().waitForEvent('page'),
+        stdcmSimulationResultPage.startNewQueryWithData(),
+      ]);
+
+      await newPage.bringToFront();
+      await newPage.waitForLoadState('domcontentloaded');
+
+      const {
+        consistSection: newConsistSection,
+        originSection: newOriginSection,
+        viaSection: newViaSection,
+        destinationSection: newDestinationSection,
+      } = createStdcmTab(newPage);
+      await newConsistSection.verifyConsistDetails({
+        tractionEngine: fastRollingStockName,
+        towedRollingStock: createdTowedRollingStock.name,
+        tonnage: `${Number(fastRollingStockPrefilledValues.tonnage) + Number(towedRollingStockPrefilledValues.tonnage)}`,
+        length: `${Number(towedRollingStockPrefilledValues.length) + Number(fastRollingStockPrefilledValues.length)}`,
+        maxSpeed: DEFAULT_DETAILS.maxSpeed,
+        speedLimitTag: DEFAULT_DETAILS.speedLimitTag,
+      });
+      await newOriginSection.verifyOriginDetails();
+      await newDestinationSection.verifyDestinationDetails();
+      await newViaSection.verifyViaDetails();
     });
   });
 

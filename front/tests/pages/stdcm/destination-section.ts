@@ -132,6 +132,14 @@ class DestinationSection extends STDCMPage {
     await expect(this.destinationArrival).toHaveValue(arrivalType);
   }
 
+  async verifyDestinationDetails() {
+    const { chValue, arrivalType } = DESTINATION_DETAILS;
+
+    await expect(this.destinationCiField).toHaveValue(CI_SUGGESTIONS.south[1]);
+    await expect(this.dynamicDestinationCh).toHaveValue(chValue);
+    await expect(this.destinationArrival).toHaveValue(arrivalType.default);
+  }
+
   async clearDestination(): Promise<void> {
     await this.clearButton.click();
 

@@ -31,7 +31,7 @@ class ConsistSection {
       this.lengthField,
       this.maxSpeedField,
     ];
-    for (const field of emptyFields) await expect(field).toHaveValue('');
+    await Promise.all(emptyFields.map((field) => expect(field).toHaveValue('')));
     await expect(this.speedLimitTagField).toHaveValue(DEFAULT_DETAILS.speedLimitTag);
   }
 
@@ -110,6 +110,21 @@ class ConsistSection {
       await this.speedLimitTagField.selectOption(speedLimitTag);
       await expect(this.speedLimitTagField).toHaveValue(speedLimitTag);
     }
+  }
+
+  async verifyConsistDetails(consistFields: ConsistFields) {
+    const fieldMap: Array<[keyof ConsistFields, Locator]> = [
+      ['tractionEngine', this.tractionEngineField],
+      ['towedRollingStock', this.towedRollingStockField],
+      ['tonnage', this.tonnageField],
+      ['length', this.lengthField],
+      ['maxSpeed', this.maxSpeedField],
+      ['speedLimitTag', this.speedLimitTagField],
+    ];
+
+    await Promise.all(
+      fieldMap.map(([key, locator]) => expect(locator).toHaveValue(consistFields[key] ?? ''))
+    );
   }
 
   // Set consist values

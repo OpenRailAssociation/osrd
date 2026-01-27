@@ -69,6 +69,19 @@ type Fixtures = {
   secondScenarioTimetableSection: ScenarioTimetableSection;
 };
 
+/**
+ * Factory used when you obtain a stdcm Page dynamically (new tab via waitForEvent('page')).
+ */
+export function createStdcmTab(page: Page) {
+  return {
+    page,
+    consistSection: new ConsistSection(page),
+    originSection: new OriginSection(page),
+    viaSection: new ViaSection(page),
+    destinationSection: new DestinationSection(page),
+  };
+}
+
 const test = testWithLogging.extend<Fixtures>({
   // Operational studies
   operationalStudiesPage: async ({ page }, use) => {
