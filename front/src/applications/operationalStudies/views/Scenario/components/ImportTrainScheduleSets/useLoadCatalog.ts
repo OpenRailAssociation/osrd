@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+
 import type { CatalogById, TrainScheduleSetById } from './types';
-import { mockGetTrainScheduleSets, mockListCatalogEntries } from '../../mockTrainScheduleSets';
+import { mockGetTrainScheduleSets } from '../../mockTrainScheduleSets';
 
 export default function useLoadCatalog() {
   const [loading, setLoading] = useState<boolean>(false);
@@ -18,7 +20,10 @@ export default function useLoadCatalog() {
       const trainScheduleSets: TrainScheduleSetById = new Map();
 
       // Get all catalog entries
-      const catalogEntriesResult = await mockListCatalogEntries();
+      const { data: { results: catalogEntriesResult } = { results: [] } } =
+        osrdEditoastApi.endpoints.getCatalogEntries.useQuery({
+          pageSize: 1000,
+        });
 
       for (const catalogEntry of catalogEntriesResult) {
         const entryTss = await mockGetTrainScheduleSets(catalogEntry.id);
