@@ -95,28 +95,33 @@ impl SpaceTimeCurve {
         self.positions.is_empty()
     }
 
+    /// Generic linear interpolation function
+    /// Panics if the curve is empty or if x and y have different lengths
+    fn linear_interpolate(x: &[u64], y: &[u64], value: u64) -> u64 {
+        assert!(
+            x.len() == y.len(),
+            "Curve x and y must have the same length"
+        );
+        assert!(!x.is_empty(), "Curve can't be empty");
+
+        if value > x[x.len() - 1] {
+            // If the value is greater than the last x, return the last y
+            return y[y.len() - 1];
+        }
+        // Find the index of the first x greater than or equal to the given value
+        let index = find_index_upper(x, value);
+        if index == 0 {
+            // If the index is 0, return the first y
+            return y[0];
+        }
+        // Interpolate between the two points
+        linear_interpolate(x[index - 1], x[index], y[index - 1], y[index], value)
+    }
+
     /// Find the position at a given time
     /// Panics if the curve is empty
-    fn linear_interpolate(&self, time: u64) -> u64 {
-        assert!(!self.is_empty(), "Space time curve is empty");
-        if time > self.times[self.times.len() - 1] {
-            // If the time is greater than the last time, return the last position
-            return self.positions[self.positions.len() - 1];
-        }
-        // Find the index of the first time greater than or equal to the given time
-        let index = find_index_upper(&self.times, time);
-        if index == 0 {
-            // If the index is 0, return the first position
-            return self.positions[0];
-        }
-        // Interpolate between the two positions
-        linear_interpolate(
-            self.times[index - 1],
-            self.times[index],
-            self.positions[index - 1],
-            self.positions[index],
-            time,
-        )
+    fn linear_interpolate_time(&self, time: u64) -> u64 {
+        Self::linear_interpolate(&self.times, &self.positions, time)
     }
 }
 
@@ -703,8 +708,8 @@ fn project_train_path_op(
                     // Add interpolated points between a and b
                     let index_begin = find_index_upper(&space_time_curve.times, a_time);
                     let index_end = find_index_upper(&space_time_curve.times, b_time);
-                    let start = space_time_curve.linear_interpolate(a_time);
-                    let end = space_time_curve.linear_interpolate(b_time);
+                    let start = space_time_curve.linear_interpolate_time(a_time);
+                    let end = space_time_curve.linear_interpolate_time(b_time);
                     let range = index_begin..index_end;
                     for (&time, &position) in space_time_curve.times[range.clone()]
                         .iter()
