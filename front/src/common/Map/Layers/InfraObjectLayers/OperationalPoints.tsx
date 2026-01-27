@@ -12,7 +12,12 @@ import { MAP_URL } from 'common/Map/const';
 import type { Theme } from 'common/Map/theme';
 import { useMapContext } from 'common/Map/useMapContext';
 
-import { DEFAULT_HALO_WIDTH, getDynamicTextSize, getAllowOverlap } from '../commonLayers';
+import {
+  DEFAULT_HALO_WIDTH,
+  getDynamicTextSize,
+  getAllowOverlap,
+  trackNameLayer,
+} from '../commonLayers';
 import OrderedLayer from '../OrderedLayer';
 
 function getColorByHighlighted(data: {
@@ -144,6 +149,16 @@ const OperationalPointsLayer = ({
       ],
     },
     {
+      id: 'local_track_name',
+      textFormat: [
+        ['concat', ['get', 'local_track_name'], '\n'],
+        {
+          'font-scale': 1,
+          'text-color': colors.op.textName,
+        },
+      ],
+    },
+    {
       id: 'yard',
       textFormat: [
         [
@@ -188,7 +203,7 @@ const OperationalPointsLayer = ({
         9,
         ['format', ...getText(['pk', 'trigram'])],
         10,
-        ['format', ...getText(['pk', 'trigram', 'name'])],
+        ['format', ...getText(['pk', 'trigram', 'name', 'local_track_name'])],
         17,
         ['format', ...getText()],
       ],
@@ -261,6 +276,17 @@ const OperationalPointsLayer = ({
       url={`${MAP_URL}/layer/operational_points/mvt/geo/?infra=${infraId}`}
     >
       <OrderedLayer {...point} id="chartis/osrd_operational_point/geo" layerOrder={layerOrder} />
+      <OrderedLayer
+        {...{
+          ...trackNameLayer(colors, highlightedArea),
+          layout: {
+            ...trackNameLayer(colors, highlightedArea).layout,
+            'text-field': '{local_track_name}',
+          },
+        }}
+        id="chartis/tracks-geo/track-name"
+        layerOrder={layerOrder}
+      />
       <OrderedLayer
         {...name}
         id="chartis/osrd_operational_point_name/geo"
