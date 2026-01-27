@@ -5,7 +5,7 @@ import {
   fastRollingStockName,
 } from './../assets/constants/project-const';
 import { CONFLICT_ARRIVAL_TIME } from './../assets/constants/stdcm-const';
-import test from './../page-object-fixture';
+import test, { createStdcmTab } from './../page-object-fixture';
 import { waitForInfraStateToBeCached } from './../utils';
 import { getInfra, setTowedRollingStock } from './../utils/api-utils';
 import type { ConsistFields } from './../utils/types';
@@ -61,6 +61,7 @@ test.describe('@stdcm', () => {
 
   /** *************** Test 2 **************** */
   test('@smoke Launch STDCM simulation with all stops', async ({
+    page,
     consistSection,
     originSection,
     destinationSection,
@@ -97,6 +98,26 @@ test.describe('@stdcm', () => {
         validSimulationNumber: 1,
       });
       await stdcmSimulationResultPage.verifyTableData('./tests/assets/stdcm/stdcm-all-stops.json');
+    });
+
+    await test.step('Retain simulation and start new query without data', async () => {
+      await stdcmSimulationResultPage.retainSimulation();
+
+      const [newPage] = await Promise.all([
+        page.context().waitForEvent('page'),
+        stdcmSimulationResultPage.startNewQueryWithoutData(),
+      ]);
+      await newPage.bringToFront();
+      await newPage.waitForLoadState('domcontentloaded');
+      const {
+        consistSection: newConsistSection,
+        originSection: newOriginSection,
+        destinationSection: newDestinationSection,
+      } = createStdcmTab(newPage);
+
+      await newConsistSection.verifyDefaultConsistFields();
+      await newOriginSection.verifyDefaultOriginFields();
+      await newDestinationSection.verifyDefaultDestinationFields();
     });
   });
 

@@ -2,6 +2,7 @@ import { expect, type Locator, type Page } from '@playwright/test';
 
 import STDCMPage from './stdcm-page';
 import {
+  CI_SUGGESTIONS,
   DEFAULT_DETAILS,
   VIA_STOP_TIMES,
   VIA_STOP_TYPES,
@@ -131,6 +132,14 @@ class ViaSection extends STDCMPage {
       default:
         throw new Error(`Unsupported viaSearch value: ${ciSearchText}`);
     }
+  }
+
+  async verifyViaDetails(viaNumber: number = 1) {
+    await expect(this.getViaCI(viaNumber)).toHaveValue(CI_SUGGESTIONS.north[1]);
+    await expect(this.getViaType(viaNumber)).toHaveValue(VIA_STOP_TYPES.DRIVER_SWITCH);
+    await expect(this.getViaStopTime(viaNumber)).toHaveValue(
+      VIA_STOP_TIMES.driverSwitch.validInput
+    );
   }
 }
 

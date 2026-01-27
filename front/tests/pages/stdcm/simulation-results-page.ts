@@ -112,6 +112,14 @@ class SimulationResultPage {
     await expect(this.startNewQueryWithDataButton).toBeVisible();
   }
 
+  async startNewQueryWithData() {
+    await this.startNewQueryWithDataButton.click();
+  }
+
+  async startNewQueryWithoutData() {
+    await this.startNewQueryButton.click();
+  }
+
   async downloadSimulation(downloadDir: string): Promise<void> {
     await expect(this.downloadLink).toBeVisible();
 
