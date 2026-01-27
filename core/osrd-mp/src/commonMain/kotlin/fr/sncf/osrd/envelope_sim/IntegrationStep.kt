@@ -1,6 +1,8 @@
 package fr.sncf.osrd.envelope_sim
 
 import fr.sncf.osrd.utils.areSpeedsEqual
+import kotlin.jvm.JvmField
+import kotlin.jvm.JvmStatic
 import kotlin.math.withSign
 
 class IntegrationStep
@@ -31,7 +33,7 @@ private constructor(
             var positionDelta = positionDelta
             var endSpeed = endSpeed
             if (endSpeed < 0.0) {
-                assert(directionSign * acceleration < 0.0)
+                require(directionSign * acceleration < 0.0)
                 endSpeed = 0.0
                 // generic formula:
                 // timeDelta = (endSpeed - startSpeed) / (directionSign * acceleration);
@@ -39,7 +41,7 @@ private constructor(
                 positionDelta = startSpeed * timeDelta + 0.5 * acceleration * timeDelta * timeDelta
                 positionDelta = positionDelta.withSign(directionSign)
             }
-            assert(
+            require(
                 areSpeedsEqual(endSpeed, (startSpeed + directionSign * acceleration * timeDelta))
             )
             return IntegrationStep(
