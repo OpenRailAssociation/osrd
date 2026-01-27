@@ -50,6 +50,9 @@ export default function useScenarioTrainScheduleSet(
    */
   const [createCatalogEntryMutation] = osrdEditoastApi.endpoints.postCatalogEntries.useMutation();
 
+  const [updateCatalogEntryMutation] =
+    osrdEditoastApi.endpoints.putCatalogEntriesById.useMutation();
+
   const [deleteTrainScheduleSetMutation] =
     osrdEditoastApi.endpoints.deleteTrainScheduleSetsById.useMutation();
 
@@ -74,6 +77,9 @@ export default function useScenarioTrainScheduleSet(
 
   const [linkTrainScheduleSetToTimetable] =
     osrdEditoastApi.endpoints.postTimetableByIdTrainScheduleSets.useMutation();
+
+  const [updateTrainScheduleSetMutation] =
+    osrdEditoastApi.endpoints.putTrainScheduleSetsById.useMutation();
 
   const createTrainScheduleSet = useCallback(
     // update for create catalog
@@ -127,9 +133,8 @@ export default function useScenarioTrainScheduleSet(
       await linkTrainScheduleSetToTimetable({
         id: timetableId,
         body: {
-          train_schedule_set_ids: trainScheduleSets
-            .map((tss) => tss.id)
-            .filter((tssId) => tssId !== id),
+          train_schedule_set_ids:
+            trainScheduleSets?.map((tss) => tss.id).filter((tssId) => tssId !== id) ?? [],
         },
       }).unwrap();
     },
@@ -145,17 +150,52 @@ export default function useScenarioTrainScheduleSet(
    * Update a TrainScheduleSet
    */
   const updateTrainScheduleSet = useCallback(
-    (trainScheduleSet: TrainScheduleSet, data: TrainScheduleSetFormData) =>
-      new Promise<void>((resolve, reject) => {
-        console.warn('Mocked: updateTrainSchedule', { trainScheduleSet, data });
-        setTimeout(async () => {
-          const found = trainScheduleSets?.find((e) => e.id === trainScheduleSet.id);
-          if (!found) return reject('not found');
+    async (trainScheduleSet: TrainScheduleSet, data: TrainScheduleSetFormData): Promise<void> => {
+      let catalogEntryId = trainScheduleSet.catalog_entry_id;
 
-          return resolve();
-        }, 1000);
-      }),
-    []
+      const { catalog, ...trainScheduleSetData } = data;
+
+      if (catalog) {
+        if (catalog.type === 'selected') {
+          catalogEntryId = catalog.id;
+        }
+
+        if (catalog.type === 'create') {
+          if (catalogEntryId) {
+            await updateCatalogEntryMutation({
+              id: catalogEntryId,
+              catalogEntryForm: { name: catalog.name },
+            }).unwrap();
+          } else {
+            const newCatalog = await createCatalogEntryMutation({
+              catalogEntryForm: { name: catalog.name },
+            }).unwrap();
+
+            catalogEntryId = newCatalog.id;
+          }
+        }
+      }
+
+      await updateTrainScheduleSetMutation({
+        id: trainScheduleSet.id,
+        trainScheduleSetForm: {
+          ...trainScheduleSetData,
+          catalog_entry_id: catalogEntryId,
+        },
+      }).unwrap();
+      await linkTrainScheduleSetToTimetable({
+        id: timetableId,
+        body: {
+          train_schedule_set_ids: trainScheduleSets?.map((tss) => tss.id) ?? [],
+        },
+      }).unwrap();
+    },
+    [
+      updateTrainScheduleSetMutation,
+      createCatalogEntryMutation,
+      updateCatalogEntryMutation,
+      trainScheduleSets,
+    ]
   );
 
   /**
