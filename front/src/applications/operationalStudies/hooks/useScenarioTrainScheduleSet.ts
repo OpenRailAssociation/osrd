@@ -1,6 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-
-import { maxBy } from 'lodash';
+import { useCallback, useMemo } from 'react';
 
 import {
   osrdEditoastApi,
@@ -11,23 +9,11 @@ import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 
 import { useScenarioContext } from './useScenarioContext';
 import { sortTrainScheduleSets } from '../views/Scenario/components/Timetable/utils';
-import {
-  MOCK_TRAIN_SCHEDULE_SETS,
-  randomArrayElement,
-} from '../views/Scenario/mockTrainScheduleSets';
 
 // TODO: this type should be removed when unmocking this hook
 export type TimetableItemWithDetailsAndTrainScheduleSet = TimetableItemWithDetails & {
   train_schedule_set_id: number;
 };
-
-type MockStore = {
-  timetableItemsWithDetails: TimetableItemWithDetailsAndTrainScheduleSet[];
-  catalog: CatalogEntry[];
-  trainScheduleSets: TrainScheduleSet[];
-};
-
-const TRAIN_SCHEDULE_SET_SANDBOX_ID = 1000;
 
 export type TrainScheduleSetFormData = Omit<TrainScheduleSet, 'catalog_entry_id' | 'id'> & {
   catalog?: { id: number; type: 'selected' } | { name: string; type: 'create' };
@@ -45,26 +31,6 @@ export default function useScenarioTrainScheduleSet(
 ) {
   // The timetableId will be used when unmocked this hook to call the API
   const { timetableId } = useScenarioContext();
-
-  // Store where we manage mocked data
-  // TODO: Remove this state when unmock is done
-  const [mockStore, setMockStore] = useState<MockStore>({
-    timetableItemsWithDetails: [],
-    catalog: [],
-    trainScheduleSets: [...MOCK_TRAIN_SCHEDULE_SETS],
-  });
-
-  useEffect(() => {
-    setMockStore((prev) => {
-      const timetableItems = timetableItemsWithDetails.map((item) => {
-        if (Math.random() > 0.9) {
-          return { ...item, train_schedule_set_id: TRAIN_SCHEDULE_SET_SANDBOX_ID };
-        }
-        return { ...item, train_schedule_set_id: randomArrayElement(MOCK_TRAIN_SCHEDULE_SETS).id };
-      });
-      return { ...prev, timetableItemsWithDetails: timetableItems };
-    });
-  }, [timetableItemsWithDetails]);
 
   /**
    * Retrieve all TrainScheduleSets of the timetable
@@ -143,14 +109,11 @@ export default function useScenarioTrainScheduleSet(
   const getTrainScheduleSet = useCallback(
     (id: number) =>
       new Promise<TrainScheduleSet>((resolve, reject) => {
-        console.warn('Mocked: getTrainScheduleSet');
-        setTimeout(() => {
-          const trainScheduleSet = mockStore.trainScheduleSets.find((e) => e.id === id);
-          if (trainScheduleSet) resolve(trainScheduleSet);
-          else return reject('not found');
-        }, 1000);
+        const trainScheduleSet = trainScheduleSets.find((e) => e.id === id);
+        if (trainScheduleSet) resolve(trainScheduleSet);
+        else return reject('not found');
       }),
-    [mockStore.trainScheduleSets]
+    [trainScheduleSets]
   );
 
   /**
@@ -162,25 +125,13 @@ export default function useScenarioTrainScheduleSet(
         setTimeout(() => {
           console.warn('Mocked: removeTrainSchedule', id);
 
-          const found = mockStore.trainScheduleSets.find((e) => e.id === id);
+          const found = trainScheduleSets.find((e) => e.id === id);
           if (!found) return reject('not found');
-
-          setMockStore((prev) => ({
-            ...prev,
-            trainScheduleSets: prev.trainScheduleSets.filter((e) => e.id !== id),
-            // TODO: this part is just for the mock
-            // In production, we just have to call the API to delete the TSS, the backend will do all the needed tasks.
-            // But here, instead of deleting everything like it should be, we put them in the sandbox.
-            timetableItemsWithDetails: prev.timetableItemsWithDetails.map((item) => {
-              if (item.train_schedule_set_id !== id) return item;
-              return { ...item, train_schedule_set_id: TRAIN_SCHEDULE_SET_SANDBOX_ID };
-            }),
-          }));
 
           resolve();
         }, 1000);
       }),
-    [timetableId, mockStore]
+    [timetableId]
   );
 
   /**
@@ -191,35 +142,10 @@ export default function useScenarioTrainScheduleSet(
       new Promise<void>((resolve) => {
         console.warn('Mocked: createTrainScheduleSet', data);
         setTimeout(async () => {
-          // Create the catalog entry if needed
-          let catalogEntryId = TRAIN_SCHEDULE_SET_SANDBOX_ID;
-          if (data.catalog) {
-            if (data.catalog.type === 'create') {
-              const catalogEntry = await createCatalogEntry(data.catalog.name);
-              catalogEntryId = catalogEntry.id;
-            } else {
-              catalogEntryId = data.catalog.id;
-            }
-          }
-
-          const trainScheduleSetId = (maxBy(mockStore.trainScheduleSets, 'id')?.id || 1) + 1;
-          const trainScheduleSet = {
-            id: trainScheduleSetId,
-            ...data,
-            published: false,
-            catalog_entry_id: catalogEntryId,
-          };
-          setMockStore((prev) => ({
-            ...prev,
-            trainScheduleSets: [
-              ...prev.trainScheduleSets.filter((e) => e.id !== trainScheduleSet.id),
-              trainScheduleSet,
-            ],
-          }));
           resolve();
         }, 1000);
       }),
-    [mockStore]
+    []
   );
 
   /**
@@ -230,30 +156,13 @@ export default function useScenarioTrainScheduleSet(
       new Promise<void>((resolve, reject) => {
         console.warn('Mocked: updateTrainSchedule', { trainScheduleSet, data });
         setTimeout(async () => {
-          const found = mockStore.trainScheduleSets.find((e) => e.id === trainScheduleSet.id);
+          const found = trainScheduleSets.find((e) => e.id === trainScheduleSet.id);
           if (!found) return reject('not found');
 
-          // Create the catalog entry if needed
-          let catalogEntryId = TRAIN_SCHEDULE_SET_SANDBOX_ID;
-          if (data.catalog) {
-            if (data.catalog.type === 'create') {
-              const catalogEntry = await createCatalogEntry(data.catalog.name);
-              catalogEntryId = catalogEntry.id;
-            } else {
-              catalogEntryId = data.catalog.id;
-            }
-          }
-          setMockStore((prev) => ({
-            ...prev,
-            trainScheduleSets: [
-              ...prev.trainScheduleSets.filter((e) => e.id !== trainScheduleSet.id),
-              { ...trainScheduleSet, ...data, catalog_entry_id: catalogEntryId },
-            ],
-          }));
           return resolve();
         }, 1000);
       }),
-    [mockStore]
+    []
   );
 
   /**
@@ -266,37 +175,12 @@ export default function useScenarioTrainScheduleSet(
         setTimeout(() => {
           if (!trainScheduleSet.catalog_entry_id)
             return reject('Train Schedule Set is not a reference');
-          const found = mockStore.trainScheduleSets.find((e) => e.id === trainScheduleSet.id);
+          const found = trainScheduleSets.find((e) => e.id === trainScheduleSet.id);
           if (!found) return reject('Not found');
-
-          // Create the copy
-          const copyTrainScheduleSetId = (maxBy(mockStore.trainScheduleSets, 'id')?.id || 1) + 1;
-          const copyTrainScheduleSet = {
-            ...trainScheduleSet,
-            id: copyTrainScheduleSetId,
-            published: false,
-          };
-
-          // Update the store
-          setMockStore((prev) => ({
-            ...prev,
-            trainScheduleSets: [
-              ...prev.trainScheduleSets.filter((e) => e.id !== trainScheduleSet.id),
-              copyTrainScheduleSet,
-            ],
-            // Update items with the TSS copy ID
-            timetableItemsWithDetails: prev.timetableItemsWithDetails.map((item) => ({
-              ...item,
-              train_schedule_set_id:
-                item.train_schedule_set_id === trainScheduleSet.id
-                  ? copyTrainScheduleSetId
-                  : item.train_schedule_set_id,
-            })),
-          }));
           return resolve();
         }, 1000);
       }),
-    [mockStore]
+    []
   );
 
   /**
@@ -309,16 +193,16 @@ export default function useScenarioTrainScheduleSet(
         console.warn('Mocked: getTrainScheduleSetByCatalogAndName', {
           name,
           catalogId,
-          store: mockStore.trainScheduleSets,
+          store: trainScheduleSets,
         });
         setTimeout(async () => {
-          const found = mockStore.trainScheduleSets.find(
+          const found = trainScheduleSets.find(
             (tss) => tss.catalog_entry_id === catalogId && tss.name === name
           );
           return resolve(found || null);
         }, 1000);
       }),
-    [mockStore.trainScheduleSets]
+    [trainScheduleSets]
   );
 
   /**
@@ -349,11 +233,47 @@ export default function useScenarioTrainScheduleSet(
           return resolve();
         }, 1000);
       }),
-    [mockStore]
+    []
   );
 
+  const timetableItemsByTrainScheduleSets = useMemo(() => {
+    if (!trainScheduleSets) return [];
+
+    // We group trains by trainScheduleSet
+    const trainsByTrainScheduleSetId = new Map<number, TimetableItemWithDetails[]>();
+    for (const item of timetableItemsWithDetails) {
+      const itemInIndex = trainsByTrainScheduleSetId.get(item.train_schedule_set_id);
+      if (!itemInIndex) {
+        trainsByTrainScheduleSetId.set(item.train_schedule_set_id, [item]);
+      } else {
+        trainsByTrainScheduleSetId.set(item.train_schedule_set_id, [...itemInIndex, item]);
+      }
+    }
+
+    const trainScheduleSetsById = new Map<number, TrainScheduleSet>();
+    for (const trainScheduleSet of trainScheduleSets) {
+      trainScheduleSetsById.set(trainScheduleSet.id, trainScheduleSet);
+    }
+
+    const catalogEntriesIndex = new Map<number, CatalogEntry>();
+    if (catalogEntries) {
+      for (const catalogEntry of catalogEntries) {
+        catalogEntriesIndex.set(catalogEntry.id, catalogEntry);
+      }
+    }
+
+    return Array.from(trainScheduleSetsById.values())
+      .sort((a, b) => sortTrainScheduleSets(a, b, catalogEntriesIndex))
+      .map((trainScheduleSet) => ({
+        trainScheduleSet,
+        trains: trainsByTrainScheduleSetId.get(trainScheduleSet.id) || [],
+        catalog: trainScheduleSet.catalog_entry_id
+          ? catalogEntriesIndex.get(trainScheduleSet.catalog_entry_id)
+          : undefined, // can happen if it's the sandbox
+      }));
+  }, [trainScheduleSets, catalogEntries, timetableItemsWithDetails]);
+
   return {
-    timetableItemsWithDetails: mockStore.timetableItemsWithDetails,
     catalogEntries: catalogEntries ?? [],
     timetableItemsByTrainScheduleSets,
     getTrainScheduleSet,

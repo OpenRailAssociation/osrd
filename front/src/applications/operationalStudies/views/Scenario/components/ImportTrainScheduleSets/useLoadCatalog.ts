@@ -3,7 +3,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 import type { CatalogById, TrainScheduleSetById } from './types';
-import { mockGetTrainScheduleSets } from '../../mockTrainScheduleSets';
 
 export default function useLoadCatalog() {
   const [loading, setLoading] = useState<boolean>(false);
@@ -25,8 +24,12 @@ export default function useLoadCatalog() {
           pageSize: 1000,
         });
 
+      const [getTrainScheduleSets] = osrdEditoastApi.endpoints.getTrainScheduleSets.useLazyQuery();
+
       for (const catalogEntry of catalogEntriesResult) {
-        const entryTss = await mockGetTrainScheduleSets(catalogEntry.id);
+        const entryTss = await getTrainScheduleSets({
+          catalogEntryId: catalogEntry.id,
+        }).unwrap();
         catalog.set(catalogEntry.id, {
           ...catalogEntry,
           trainScheduleSetIds: entryTss.map((tss) => tss.id),
