@@ -50,6 +50,9 @@ export default function useScenarioTrainScheduleSet(
    */
   const [createCatalogEntryMutation] = osrdEditoastApi.endpoints.postCatalogEntries.useMutation();
 
+  const [deleteTrainScheduleSetMutation] =
+    osrdEditoastApi.endpoints.deleteTrainScheduleSetsById.useMutation();
+
   /**
    * Retrieve a TainScheduleSet via its ID.
    */
@@ -61,24 +64,6 @@ export default function useScenarioTrainScheduleSet(
         else return reject('not found');
       }),
     [trainScheduleSets]
-  );
-
-  /**
-   * Remove a TainScheduleSet from the timetable.
-   */
-  const removeTrainScheduleSet = useCallback(
-    (id: TrainScheduleSet['id']) =>
-      new Promise<void>((resolve, reject) => {
-        setTimeout(() => {
-          console.warn('Mocked: removeTrainSchedule', id);
-
-          const found = trainScheduleSets?.find((e) => e.id === id);
-          if (!found) return reject('not found');
-
-          resolve();
-        }, 1000);
-      }),
-    [timetableId]
   );
 
   /**
@@ -126,6 +111,30 @@ export default function useScenarioTrainScheduleSet(
     [
       createTrainScheduleSetMutation,
       createCatalogEntryMutation,
+      linkTrainScheduleSetToTimetable,
+      timetableId,
+      trainScheduleSets,
+    ]
+  );
+
+  /**
+   * Remove a TainScheduleSet from the timetable.
+   */
+  const removeTrainScheduleSet = useCallback(
+    async (id: TrainScheduleSet['id']): Promise<void> => {
+      await deleteTrainScheduleSetMutation({ id }).unwrap();
+
+      await linkTrainScheduleSetToTimetable({
+        id: timetableId,
+        body: {
+          train_schedule_set_ids: trainScheduleSets
+            .map((tss) => tss.id)
+            .filter((tssId) => tssId !== id),
+        },
+      }).unwrap();
+    },
+    [
+      deleteTrainScheduleSetMutation,
       linkTrainScheduleSetToTimetable,
       timetableId,
       trainScheduleSets,
