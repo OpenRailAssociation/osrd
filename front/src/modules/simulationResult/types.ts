@@ -78,10 +78,7 @@ export type SpeedDistanceDiagramData = {
   formattedPathProperties: PathPropertiesFormatted;
 };
 
-export type ProjectionData = Omit<
-  PathProjectionResult,
-  'operationalPointDistances' | 'operationalPointPartReferences'
-> & {
+export type ProjectionData = Omit<PathProjectionResult, 'operationalPointPartReferences'> & {
   projectedTrains: TrainSpaceTimeData[];
   projectionLoaderData: {
     allTrainsProjected: boolean;

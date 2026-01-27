@@ -15,6 +15,7 @@ import SpaceTimeChartWrapper, {
   MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
 } from 'modules/simulationResult/components/SpaceTimeChartWrapper/SpaceTimeChartWrapper';
 import useGetProjectedTrainOperationalPoints from 'modules/simulationResult/components/SpaceTimeChartWrapper/useGetProjectedTrainOperationalPoints';
+import useHandleInvalidProjections from 'modules/simulationResult/components/SpaceTimeChartWrapper/useHandleInvalidProjections';
 import useProjectedConflicts from 'modules/simulationResult/components/SpaceTimeChartWrapper/useProjectedConflicts';
 import useTrackOccupancy from 'modules/simulationResult/components/SpaceTimeChartWrapper/useTrackOccupancy';
 import SpeedDistanceDiagramWrapper from 'modules/simulationResult/components/SpeedDistanceDiagram/SpeedDistanceDiagramWrapper';
@@ -85,6 +86,13 @@ const SimulationResults = ({
   useEffect(() => {
     setTimetableItemProjections(projectionData?.projectedTrains || []);
   }, [projectionData]);
+
+  const enrichedProjections = useHandleInvalidProjections({
+    infraId,
+    projectionData,
+    timetableItemsWithDetails,
+    projections: timetableItemProjections,
+  });
 
   const {
     operationalPoints: projectedOperationalPoints,
@@ -208,7 +216,7 @@ const SimulationResults = ({
               {trainIdUsedForProjection && projectionData && (
                 <SpaceTimeChartWrapper
                   operationalPoints={projectedOperationalPoints}
-                  timetableItemProjections={timetableItemProjections}
+                  timetableItemProjections={enrichedProjections}
                   selectedTrainId={selectedTrainId}
                   timetableItemsWithDetails={timetableItemsWithDetails}
                   waypointsPanelData={{
