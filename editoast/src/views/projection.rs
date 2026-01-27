@@ -1,11 +1,8 @@
 use crate::error::Result;
 use core_client::CoreClient;
 use core_client::pathfinding::TrackRange;
-use core_client::pathfinding::TrainPath;
 use core_client::simulation::CompleteReportTrain;
 use core_client::simulation::ReportTrain;
-use core_client::simulation::SignalCriticalPosition;
-use core_client::simulation::ZoneUpdate;
 use database::DbConnection;
 use editoast_derive::EditoastError;
 use itertools::Itertools;
@@ -129,8 +126,6 @@ pub struct TrainSimulationDetails {
     pub positions: Vec<u64>,
     pub times: Vec<u64>,
     pub train_path: Vec<TrackRange>,
-    pub signal_critical_positions: Vec<SignalCriticalPosition>,
-    pub zone_updates: Vec<ZoneUpdate>,
 }
 
 impl TrainSimulationDetails {
@@ -150,24 +145,6 @@ impl TrainSimulationDetails {
         path_projection_tracks.hash(&mut hasher);
         let hash_simulation_input = hasher.finish();
         format!("projection_{osrd_version}.{infra_id}.{infra_version}.{hash_simulation_input}")
-    }
-
-    // Compute hash input of the occupancy block of a train schedule on a path
-    pub fn compute_occupancy_block_hash_with_versioning(
-        &self,
-        infra_id: i64,
-        infra_version: i64,
-        path: &TrainPath,
-        app_version: Option<&str>,
-    ) -> String {
-        let osrd_version = app_version.unwrap_or_default();
-        let mut hasher = DefaultHasher::new();
-        self.signal_critical_positions.hash(&mut hasher);
-        self.zone_updates.hash(&mut hasher);
-        self.train_path.hash(&mut hasher);
-        path.hash(&mut hasher);
-        let hash_simulation_input = hasher.finish();
-        format!("occupancy_block_{osrd_version}.{infra_id}.{infra_version}.{hash_simulation_input}")
     }
 }
 
@@ -805,8 +782,6 @@ pub async fn extract_train_details<T: TrainScheduleLike>(
                 positions: sim.final_output.report_train.positions.clone(),
                 times: sim.final_output.report_train.times.clone(),
                 train_path: pathfinding_result.path.track_section_ranges.clone(),
-                signal_critical_positions: sim.final_output.signal_critical_positions.clone(),
-                zone_updates: sim.final_output.zone_updates.clone(),
             })
         })
         .collect()
@@ -902,8 +877,6 @@ mod tests {
             positions,
             times,
             train_path,
-            signal_critical_positions: vec![],
-            zone_updates: vec![],
         };
 
         let space_time_curves = compute_space_time_curves(&project_path_input, &path_projection);
@@ -939,8 +912,6 @@ mod tests {
             positions: positions.clone(),
             times: times.clone(),
             train_path,
-            signal_critical_positions: vec![],
-            zone_updates: vec![],
         };
 
         let space_time_curves = compute_space_time_curves(&project_path_input, &path_projection);
@@ -979,8 +950,6 @@ mod tests {
             positions,
             times,
             train_path,
-            signal_critical_positions: vec![],
-            zone_updates: vec![],
         };
 
         let space_time_curves = compute_space_time_curves(&project_path_input, &path_projection);
