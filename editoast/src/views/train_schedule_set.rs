@@ -267,10 +267,10 @@ pub(in crate::views) async fn put(
     ),
 )]
 pub(in crate::views) async fn delete(
-    State(_db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(TrainScheduleSetIdParam {
-        id: _train_schedule_set_id,
+        id: train_schedule_set_id,
     }): Path<TrainScheduleSetIdParam>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
@@ -280,6 +280,15 @@ pub(in crate::views) async fn delete(
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
     }
+
+    TrainScheduleSet::delete_static_or_fail(
+        &mut db_pool.get().await?,
+        train_schedule_set_id,
+        || TrainScheduleSetError::NotFound {
+            train_schedule_set_id,
+        },
+    )
+    .await?;
 
     Ok(StatusCode::NO_CONTENT)
 }
@@ -729,6 +738,25 @@ mod tests {
                 train_schedule_set: train_schedule_set_2,
                 train_schedule_count: 0,
             }]
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn delete_train_schedule_set() {
+        let app = TestAppBuilder::default_app();
+
+        let db_pool = app.db_pool();
+        let train_schedule_set = create_train_schedule_set(&mut db_pool.get().await.unwrap()).await;
+        let train_schedule_set_id = train_schedule_set.id;
+        let request = app.delete(&format!("/train_schedule_sets/{}", train_schedule_set_id));
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NO_CONTENT);
+
+        assert!(
+            !TrainScheduleSet::exists(&mut db_pool.get().await.unwrap(), train_schedule_set_id)
+                .await
+                .unwrap()
         );
     }
 }
