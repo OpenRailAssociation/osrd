@@ -30,7 +30,6 @@
     "download": "Télécharger",
     "errorMessages": {
       "error": "Une erreur est survenue",
-      "errorEmptyFile": "Fichier vide",
       "errorInvalidFile": "Fichier invalide"
     },
     "failure": "L'opération a échoué",

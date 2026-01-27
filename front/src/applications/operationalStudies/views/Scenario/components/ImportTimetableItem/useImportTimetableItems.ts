@@ -6,13 +6,12 @@ import { useScenarioContext } from 'applications/operationalStudies/hooks/useSce
 import type { TimetableJsonPayload } from 'applications/operationalStudies/types';
 import { osrdRailwayManagerApi } from 'common/api/osrdRailwayManagerApi';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
-import { setFailure } from 'reducers/main';
+import { setFailure, setSuccess } from 'reducers/main';
 import { getRailwayManagerInterfaceUrl } from 'reducers/main/mainSelector';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
-import { generateTrainPayloads } from './helpers/generatePayloads';
 import { processJsonFile } from './helpers/parseJson';
 import locallyProcessXmlFile from './helpers/parseXML';
 import { postFullImportPayload } from './helpers/postPayloads';
@@ -57,30 +56,25 @@ const useImportTimetableItems = ({ upsertTimetableItems }: ImportTimetableItemsP
 
   const importFile = async (file: File) => {
     try {
-      const {
-        train_schedules: parsedTrainSchedules,
-        paced_trains: parsedPacedTrains,
-        macro_nodes: macroNodes,
-        macro_notes: macroNotes,
-        round_trips: roundTripsFromJsonData,
-      } = await processFile(file);
+      const timetableJsonPayload = await processFile(file);
 
-      const { pacedTrainsPayload, trainSchedulesPayload } = generateTrainPayloads(
-        parsedPacedTrains,
-        parsedTrainSchedules,
-        subCategories
-      );
-
-      await postFullImportPayload(
+      const importedTimetableItems = await postFullImportPayload(
         sandboxId,
         scenario.id,
-        [...trainSchedulesPayload, ...pacedTrainsPayload],
-        roundTripsFromJsonData,
-        macroNodes,
-        macroNotes,
+        timetableJsonPayload,
+        subCategories,
         dispatch,
         t,
         upsertTimetableItems
+      );
+
+      dispatch(
+        setSuccess({
+          title: t('success'),
+          text: t('status.successfulImport', {
+            count: importedTimetableItems.length,
+          }),
+        })
       );
     } catch (error: unknown) {
       dispatch(setFailure(castErrorToFailure(error)));

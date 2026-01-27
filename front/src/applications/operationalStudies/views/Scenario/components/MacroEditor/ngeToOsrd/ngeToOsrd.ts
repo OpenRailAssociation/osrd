@@ -1,6 +1,6 @@
 import type {
   PacedTrainFromJson,
-  TrainScheduleFromJson,
+  TimetableJsonPayload,
 } from 'applications/operationalStudies/types';
 import { type MacroNodeForm } from 'common/api/osrdEditoastApi';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
@@ -162,7 +162,7 @@ export const relabelDuplicateTrigrams = (nodes: NodeDto[]): NodeDto[] => {
   });
 };
 
-export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
+export const convertNgeDtoToOsrd = (dto: NetzgrafikDto): TimetableJsonPayload => {
   const macroNotes = dto.freeFloatingTexts.map((note) => castNgeNoteToOsrd(note, dto));
 
   const dedupNodes = relabelDuplicateTrigrams(dto.nodes);
@@ -174,10 +174,8 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
     });
   }
 
-  const trainSchedules: TrainScheduleFromJson[] = [];
   const pacedTrains: PacedTrainFromJson[] = [];
   const pacedTrainsRoundTrips: ([number, number] | [number, null])[] = [];
-  const trainSchedulesRoundTrips: ([number, number] | [number, null])[] = [];
   for (const trainrun of dto.trainruns) {
     const groupedTrainrunSections = getTrainrunSectionsByTrainrunId(dto, trainrun.id);
     const labels = getTrainrunLabels(dto, trainrun);
@@ -208,29 +206,16 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
           ...pathAndSchedule,
         };
         const paced = createPacedAttributesFromTrainrun(trainrun, dto);
-        if (paced) {
-          pacedTrains.push({
-            ...DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
-            ...commonProps,
-            paced,
-          });
-          if (direction === TRAINRUN_DIRECTIONS.FORWARD) {
-            pacedTrainsRoundTrips.push([
-              pacedTrains.length - 1,
-              trainrun.direction === 'one_way' ? null : pacedTrains.length,
-            ]);
-          }
-        } else {
-          trainSchedules.push({
-            ...DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
-            ...commonProps,
-          });
-          if (direction === TRAINRUN_DIRECTIONS.FORWARD) {
-            trainSchedulesRoundTrips.push([
-              trainSchedules.length - 1,
-              trainrun.direction === 'one_way' ? null : trainSchedules.length,
-            ]);
-          }
+        pacedTrains.push({
+          ...DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
+          ...commonProps,
+          paced,
+        });
+        if (direction === TRAINRUN_DIRECTIONS.FORWARD) {
+          pacedTrainsRoundTrips.push([
+            pacedTrains.length - 1,
+            trainrun.direction === 'one_way' ? null : pacedTrains.length,
+          ]);
         }
       }
     }
@@ -240,7 +225,6 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
     macro_nodes: macroNodes,
     macro_notes: macroNotes,
     paced_trains: pacedTrains,
-    train_schedules: trainSchedules,
-    round_trips: { train_schedules: trainSchedulesRoundTrips, paced_trains: pacedTrainsRoundTrips },
+    round_trips: { paced_trains: pacedTrainsRoundTrips },
   };
 };

@@ -2,7 +2,10 @@ import type { TFunction } from 'i18next';
 import { describe, it, expect, vi } from 'vitest';
 
 import { trainScheduleHonored } from 'applications/operationalStudies/__tests__/sampleData';
+import type { TimetableJsonPayload } from 'applications/operationalStudies/types';
+import type { RoundTrips } from 'common/api/osrdEditoastApi';
 
+import { buildTimetableExportPayload } from '../../../Timetable/utils';
 import { processJsonFile } from '../parseJson';
 
 // there seems to be no nice cast to make this mock
@@ -17,16 +20,43 @@ const buildTrainSchedule = (overrides: Record<string, unknown> = {}) => ({
 });
 
 describe('processJsonFile', () => {
-  const train0 = buildTrainSchedule({ train_name: 'train 0' });
-  const train1 = buildTrainSchedule({ train_name: 'train 1' });
+  const train0 = buildTrainSchedule({ train_name: 'train_0', id: 'paced_0' });
+  const train1 = buildTrainSchedule({ train_name: 'train_1', id: 'paced_1' });
+
+  describe('Export/Import of timetable', () => {
+    it('Should export and import timetable', () => {
+      const payloadItems = [train0, train1];
+
+      const payloadRoundTrips: RoundTrips = {
+        round_trips: [[0, 1]],
+      };
+      const exportPayload = buildTimetableExportPayload(
+        payloadItems,
+        payloadItems.map(({ id }) => id),
+        payloadRoundTrips
+      );
+      const importPayload = processJsonFile(
+        JSON.stringify(exportPayload),
+        'application/json',
+        tMock
+      );
+      expect(importPayload).toEqual(
+        expect.objectContaining({
+          paced_trains: payloadItems.map(({ id: _id, ...rest }) => rest),
+          round_trips: {
+            paced_trains: [[0, 1]],
+          },
+        })
+      );
+    });
+  });
+
   describe('round trips', () => {
     it('should keep one ways when importing valid JSON', () => {
-      const payload = {
-        train_schedules: [train0],
-        paced_trains: [],
+      const payload: TimetableJsonPayload = {
+        paced_trains: [train0],
         round_trips: {
-          train_schedules: [[0, null]],
-          paced_trains: [],
+          paced_trains: [[0, null]],
         },
       };
 
@@ -35,19 +65,16 @@ describe('processJsonFile', () => {
       expect(rawPayload).toEqual(
         expect.objectContaining({
           round_trips: {
-            train_schedules: [[0, null]],
-            paced_trains: [],
+            paced_trains: [[0, null]],
           },
         })
       );
     });
     it('should keep round trips when importing valid JSON', () => {
-      const payload = {
-        train_schedules: [train0, train1],
-        paced_trains: [],
+      const payload: TimetableJsonPayload = {
+        paced_trains: [train0, train1],
         round_trips: {
-          train_schedules: [[0, 1]],
-          paced_trains: [],
+          paced_trains: [[0, 1]],
         },
       };
 
@@ -56,8 +83,7 @@ describe('processJsonFile', () => {
       expect(rawPayload).toEqual(
         expect.objectContaining({
           round_trips: {
-            train_schedules: [[0, 1]],
-            paced_trains: [],
+            paced_trains: [[0, 1]],
           },
         })
       );
@@ -65,8 +91,7 @@ describe('processJsonFile', () => {
 
     it('should reject malformed round trip payloads', () => {
       const invalidPayload = {
-        train_schedules: [train0],
-        paced_trains: [],
+        trains: [train0],
         round_trips: 'invalid',
       };
       expect(() =>
@@ -75,11 +100,9 @@ describe('processJsonFile', () => {
     });
     it('should handle invalid json', () => {
       const invalidPayload = {
-        train_schedules: [0, 1],
-        paced_trains: [],
+        trains: [0, 1],
         round_trips: {
-          train_schedules: [[0, 1]],
-          paced_trains: [],
+          paced_trains: [[0, 1]],
         },
       };
 

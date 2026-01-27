@@ -7,6 +7,7 @@ import { useScenarioContext } from 'applications/operationalStudies/hooks/useSce
 import BoardWrapper from 'applications/operationalStudies/views/Scenario/components/BoardWrapper';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { deletePacedTrains } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import { setFailure, setSuccess } from 'reducers/main';
@@ -24,7 +25,8 @@ import { mapBy } from 'utils/types';
 
 import Timetable from './Timetable';
 import { copyTimetableItemsToClipboard } from './utils';
-import { postTimetableItems } from '../ImportTimetableItem/helpers/postPayloads';
+import { validateTimetableJsonPayload } from '../ImportTimetableItem/helpers/parseJson';
+import { postFullImportPayload } from '../ImportTimetableItem/helpers/postPayloads';
 
 type TimetableBoardWrapperProps = {
   setDisplayTimetableItemManagement: (mode: string) => void;
@@ -54,11 +56,13 @@ const TimetableBoardWrapper = ({
 }: TimetableBoardWrapperProps) => {
   const { openModal } = useContext(ModalContext);
 
-  const { sandboxId } = useScenarioContext();
+  const { scenario, sandboxId } = useScenarioContext();
 
   const selectedTrainId = useSelector(getSelectedTrainId);
 
   const { t } = useTranslation('operational-studies');
+
+  const subCategories = useSubCategoryContext();
 
   const dispatch = useAppDispatch();
 
@@ -215,12 +219,18 @@ const TimetableBoardWrapper = ({
     const clipboardContent = await navigator.clipboard.readText();
     try {
       data = JSON.parse(clipboardContent);
-      const newTimetableItems = await postTimetableItems(
+      const importedPayload = validateTimetableJsonPayload(data);
+
+      const newTimetableItems = await postFullImportPayload(
         sandboxId,
-        [...data.train_schedules, ...data.paced_trains],
-        dispatch
+        scenario.id,
+        importedPayload,
+        subCategories,
+        dispatch,
+        t,
+        upsertTimetableItems
       );
-      upsertTimetableItems(newTimetableItems);
+
       setSelectedTimetableItemIds(newTimetableItems.map((item) => item.id));
       dispatch(
         setSuccess({
@@ -229,8 +239,9 @@ const TimetableBoardWrapper = ({
         })
       );
     } catch (e) {
-      if (data && data.train_schedules && data.paced_trains)
+      if (data && data.paced_trains) {
         dispatch(setFailure(castErrorToFailure(e)));
+      }
     }
   }, [sandboxId]);
 

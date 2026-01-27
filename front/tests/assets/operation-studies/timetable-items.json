@@ -1,5 +1,5 @@
 {
-  "train_schedules": [
+  "paced_trains": [
     {
       "train_name": "Train1",
       "labels": ["Tag-1", "SS-NS"],
@@ -372,9 +372,7 @@
       "start_time": "2024-10-17T19:05:00.000Z",
       "train_name": "Train7",
       "timetable_id": 597
-    }
-  ],
-  "paced_trains": [
+    },
     {
       "train_name": "Paced Train - Updated exception (RS)",
       "labels": ["Paced-Train-Tag-2", "MWS-NES", "Not-honored", "Valid"],

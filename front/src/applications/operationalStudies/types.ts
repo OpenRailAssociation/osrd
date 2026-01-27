@@ -37,21 +37,15 @@ export type PacedTrainResponseWithPaced = PacedTrainWithPaced & {
   id: PacedTrainId;
 };
 
-export type TrainScheduleFromJson = Omit<TrainSchedule, 'category'> & {
-  category?: TrainCategory | string | null;
-};
-
 export type PacedTrainFromJson = Omit<PacedTrain, 'category'> & {
   category?: TrainCategory | string | null;
 };
 
 export type RoundTripsFromJson = {
-  train_schedules: ([number, number] | [number, null])[];
   paced_trains: ([number, number] | [number, null])[];
 };
 
 export type TimetableJsonPayload = {
-  train_schedules: TrainScheduleFromJson[];
   paced_trains: PacedTrainFromJson[];
   macro_nodes?: MacroNodeForm[];
   macro_notes?: MacroNoteForm[];

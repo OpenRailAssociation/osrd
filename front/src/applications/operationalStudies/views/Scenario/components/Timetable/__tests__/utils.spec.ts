@@ -23,7 +23,6 @@ describe('buildTimetableExportPayload', () => {
     );
 
     expect(payload.round_trips).toBeDefined();
-    expect(payload.round_trips!.train_schedules).toEqual([]);
     expect(payload.round_trips!.paced_trains).toEqual([[0, null]]);
   });
 
@@ -54,6 +53,5 @@ describe('buildTimetableExportPayload', () => {
     });
 
     expect(payload.round_trips?.paced_trains).toEqual([[0, null]]);
-    expect(payload.round_trips?.train_schedules).toEqual([]);
   });
 });
