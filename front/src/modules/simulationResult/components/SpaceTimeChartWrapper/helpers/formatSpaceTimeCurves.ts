@@ -1,7 +1,10 @@
+import type { PathData } from '@osrd-project/ui-charts';
+
 import {
   DEFAULT_TRAIN_PATH_COLORS,
   TRAIN_MAIN_CATEGORY_PATH_COLORS,
 } from 'applications/operationalStudies/consts';
+import type { CategoryColors } from 'applications/operationalStudies/types';
 import type { SubCategory } from 'common/api/osrdEditoastApi';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import type { IndividualTrainProjection } from 'modules/simulationResult/types';
@@ -12,6 +15,11 @@ import {
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
 import { isOccurrenceId, extractPacedTrainIdFromOccurrenceId } from 'utils/trainId';
+
+export type PathDataWithInvalid = PathData & {
+  colors: CategoryColors;
+  isInvalid?: boolean;
+};
 
 const getTrainCategory = (
   timetableItemsWithDetailsById: Map<TimetableItemId, TimetableItemWithDetails>,
@@ -33,7 +41,7 @@ const formatSpaceTimeCurves = (
   subCategories: SubCategory[],
   individualTrainProjections: IndividualTrainProjection[],
   timetableItemsWithDetailsById: Map<TimetableItemId, TimetableItemWithDetails>
-) =>
+): PathDataWithInvalid[] =>
   individualTrainProjections.flatMap((train) => {
     const category = getTrainCategory(timetableItemsWithDetailsById, train.id);
 
@@ -59,6 +67,7 @@ const formatSpaceTimeCurves = (
 
     return train.spaceTimeCurves.map((curve) => ({
       id: train.id,
+      isInvalid: train.isInvalid,
       label: train.name,
       colors,
       points: curve.positions.map((position, i) => ({

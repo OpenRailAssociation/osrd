@@ -24,7 +24,7 @@ const makeProjectedItems = (timetableItemProjections: TrainSpaceTimeData[]) =>
     }
 
     const occurrences: IndividualTrainProjection[] = [];
-    const pacedTrainCurves = pick(projectedItem, ['spaceTimeCurves', 'signalUpdates']);
+    const pacedTrainCurves = pick(projectedItem, ['spaceTimeCurves', 'signalUpdates', 'isInvalid']);
 
     // =========== indexed occurrences ===========
     const occurrencesCount = getOccurrencesNb(projectedItem.paced);

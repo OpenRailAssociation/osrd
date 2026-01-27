@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
-import { getProjectionType } from 'reducers/simulationResults/selectors';
+import { getProjectionType, getIsSimulationEnabled } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { extractEditoastIdFromPacedTrainId, formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
@@ -19,7 +19,7 @@ type UseHandleInvalidProjectionsOptions = {
 
 /**
  * Hook that handles display of trains with invalid simulations.
- * For trains with 'scheduleNotHonored', makes an API call with use_simulation: false
+ * For trains with 'scheduleNotHonored', or invalid simulations, makes an API call with use_simulation: false
  * to get linear (input-only) curves instead of invalid simulation curves.
  *
  * Only applies this logic in 'operationalPointProjection' mode.
@@ -32,21 +32,23 @@ const useHandleInvalidProjections = ({
 }: UseHandleInvalidProjectionsOptions): TrainSpaceTimeData[] => {
   const dispatch = useAppDispatch();
   const projectionType = useSelector(getProjectionType);
+  const isSimulationEnabled = useSelector(getIsSimulationEnabled);
 
   const invalidTrainIds = useMemo(() => {
-    if (projectionType !== 'operationalPointProjection') return [];
+    // Don't mark trains as invalid if we're already in input-only mode
+    if (!isSimulationEnabled || projectionType !== 'operationalPointProjection') return [];
 
     const projectionIds = new Set(projections.map((p) => p.id));
-
     return timetableItemsWithDetails
       .filter(
         (train) =>
-          train.summary?.isValid === true &&
-          train.summary.notHonoredReason === 'scheduleNotHonored' &&
-          projectionIds.has(train.id)
+          (train.summary?.isValid === true &&
+            train.summary.notHonoredReason === 'scheduleNotHonored' &&
+            projectionIds.has(train.id)) ||
+          (train.summary?.isValid === false && projectionIds.has(train.id))
       )
       .map((train) => train.id);
-  }, [projectionType, timetableItemsWithDetails, projections]);
+  }, [isSimulationEnabled, projectionType, timetableItemsWithDetails, projections]);
 
   const shouldSkip =
     invalidTrainIds.length === 0 ||
@@ -102,6 +104,7 @@ const useHandleInvalidProjections = ({
           ...existingProjection,
           spaceTimeCurves: projectionResult.paced_train,
           signalUpdates: [],
+          isInvalid: true,
         });
       }
     }

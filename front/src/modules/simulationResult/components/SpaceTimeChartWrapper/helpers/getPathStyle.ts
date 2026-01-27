@@ -6,7 +6,7 @@ import { extractPacedTrainIdFromOccurrenceId, isOccurrenceId } from 'utils/train
 
 const getPathStyle = (
   hovered: HoveredItem | null,
-  train: { colors: CategoryColors; id: string },
+  train: { colors: CategoryColors; id: string; isInvalid?: boolean },
   dragging: boolean,
   selectedTrainId?: TrainId,
   hoveredTrainIdFromTimetable?: TrainId
@@ -25,6 +25,20 @@ const getPathStyle = (
     : train.id;
   const { colors } = train;
 
+  // Invalid trains have a specific style regardless of other states
+  if (train.isInvalid) {
+    return {
+      color: '#8A714B',
+      level: 2,
+      border: {
+        offset: 16,
+        color: 'transparent',
+        backgroundColor: 'rgba(0, 0, 0, 0.05)',
+      },
+    };
+  }
+
+  // Standard behavior for valid trains
   if (hovered && 'pathId' in hovered.element && !dragging) {
     const hoveredTrainIdFromChart = hovered.element.pathId as TrainId;
 
