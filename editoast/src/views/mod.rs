@@ -1083,10 +1083,10 @@ mod tests {
                 "path": {
                     "blocks":[],
                     "routes": [],
-                    "track_section_ranges": [],
+                    "track_section_ranges": [{"track_section": "TA1", "begin":0, "end": 3, "direction": "START_TO_STOP"}],
                 },
                 "path_item_positions": [0,1,2,3],
-                "length": 1,
+                "length": 3,
                 "status": "success"
             }))
             .finish();
