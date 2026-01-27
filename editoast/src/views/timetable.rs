@@ -859,23 +859,23 @@ pub(in crate::views) fn simulation_empty_response() -> core_client::simulation::
 
     core_client::simulation::Response::Success(SimulationSuccess {
         base: ReportTrain {
-            positions: vec![0],
-            times: vec![0],
+            positions: vec![0, 1, 2, 3],
+            times: vec![0, 1, 2, 3],
             speeds: vec![],
             energy_consumption: 0.0,
             path_item_times: vec![0, 1, 2, 3],
         },
         provisional: ReportTrain {
-            positions: vec![0],
-            times: vec![0],
+            positions: vec![0, 1, 2, 3],
+            times: vec![0, 1, 2, 3],
             speeds: vec![],
             energy_consumption: 0.0,
             path_item_times: vec![0, 1, 2, 3],
         },
         final_output: CompleteReportTrain {
             report_train: ReportTrain {
-                positions: vec![0],
-                times: vec![0],
+                positions: vec![0, 1, 2, 3],
+                times: vec![0, 1, 2, 3],
                 speeds: vec![],
                 energy_consumption: 0.0,
                 path_item_times: vec![0, 1, 2, 3],
