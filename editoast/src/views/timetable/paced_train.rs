@@ -725,12 +725,14 @@ pub struct ProjectPathPacedTrainResult {
 /// - Returns 200 with a hashmap of train_id to ProjectPathTrainResult
 ///
 /// ## Important:
-/// - **Only one train schedule per paced train is projected**.
-/// - The train schedule selected is the first occurrence of the paced train.
+/// - The main train projected is the model paced train without exceptions.
+/// - If there are exceptions defined for the paced train that have a different projection than the main train,
+///   they are included in the `exceptions` field of the result.
 /// - The following paced trains are **excluded** from the result:
 ///     - paced trains for which pathfinding fails
 ///     - paced trains for which the simulation fails
-///     - paced trains for which the simulation does not respect schedule times
+/// - Trains that have a simulation but that does not honor their schedule, use their schedule with straight lines
+///   between the known points.
 #[editoast_derive::route]
 #[utoipa::path(
     post, path = "",

@@ -1,5 +1,6 @@
 use crate::error::Result;
 use core_client::CoreClient;
+use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::pathfinding::TrackRange;
 use core_client::simulation::CompleteReportTrain;
 use core_client::simulation::ReportTrain;
@@ -8,6 +9,7 @@ use editoast_derive::EditoastError;
 use itertools::Itertools;
 use schemas::train_schedule::OperationalPointReference;
 use schemas::train_schedule::PathItemLocation;
+use schemas::train_schedule::ScheduleItem;
 use schemas::train_schedule::TrainScheduleLike;
 use serde::Deserialize;
 use serde::Serialize;
@@ -96,19 +98,20 @@ impl SpaceTimeCurve {
     }
 
     /// Generic linear interpolation function
+    /// For a segmented curve going through the points `(x[i],y[i])` find its Y
+    /// coordinate at the given X coordinate `value`. If `value` is out of bounds
+    /// return the first or the last point of the curve.
+    /// Expects `x` to be sorted.
     /// Panics if the curve is empty or if x and y have different lengths
-    fn linear_interpolate(x: &[u64], y: &[u64], value: u64) -> u64 {
-        assert!(
-            x.len() == y.len(),
-            "Curve x and y must have the same length"
-        );
+    fn linear_interpolate_curve(x: &[u64], y: &[u64], value: u64) -> u64 {
+        assert_eq!(x.len(), y.len(), "Curve x and y must have the same length");
         assert!(!x.is_empty(), "Curve can't be empty");
 
         if value > x[x.len() - 1] {
             // If the value is greater than the last x, return the last y
             return y[y.len() - 1];
         }
-        // Find the index of the first x greater than or equal to the given value
+        // Find the index of the last x equal or greater than value
         let index = find_index_upper(x, value);
         if index == 0 {
             // If the index is 0, return the first y
@@ -121,7 +124,13 @@ impl SpaceTimeCurve {
     /// Find the position at a given time
     /// Panics if the curve is empty
     fn linear_interpolate_time(&self, time: u64) -> u64 {
-        Self::linear_interpolate(&self.times, &self.positions, time)
+        Self::linear_interpolate_curve(&self.times, &self.positions, time)
+    }
+
+    /// Find the time at a given position
+    /// Panics if the curve is empty
+    fn linear_interpolate_position(&self, position: u64) -> u64 {
+        Self::linear_interpolate_curve(&self.positions, &self.times, position)
     }
 }
 
@@ -759,6 +768,71 @@ pub fn compute_projected_train_path_op_without_simulation<T: TrainScheduleLike>(
         .collect_vec()
 }
 
+/// Extract space time curve for train that does not respect their times
+/// These trains have path and simulation information that we can use.
+fn extract_curve_for_invalid_train_with_sim<T: TrainScheduleLike>(
+    train_schedule: &T,
+    sim: &SimulationResponseSuccess,
+    path: &PathfindingResultSuccess,
+) -> SpaceTimeCurve {
+    let mut positions = vec![0];
+    let mut times = vec![0];
+    let mut last_scheduled_time = 0;
+    let schedule_map = train_schedule
+        .schedule()
+        .iter()
+        .map(|s| (&s.at, s))
+        .collect::<HashMap<_, _>>();
+
+    for (path_item, path_item_position) in
+        train_schedule.path().iter().zip(&path.path_item_positions)
+    {
+        let Some(ScheduleItem {
+            arrival: Some(arrival),
+            stop_for,
+            ..
+        }) = schedule_map.get(&path_item.id)
+        else {
+            continue;
+        };
+        last_scheduled_time = arrival.num_milliseconds() as u64;
+        positions.push(*path_item_position);
+        times.push(last_scheduled_time);
+        if let Some(stop_for) = stop_for {
+            positions.push(*path_item_position);
+            times.push((arrival.num_milliseconds() + stop_for.num_milliseconds()) as u64);
+        }
+    }
+
+    // If the schedule has no arrival time for the last path item, so we cannot
+    // draw the final straight segment from schedule data alone. At the last schedule position,
+    // we compute the time offset between the simulation curve and the scheduled time.
+    // Then we draw the last segment (with its optional stop).
+    let last_scheduled_position = *positions.last().unwrap();
+    if last_scheduled_position != path.length {
+        let sim_curve = SpaceTimeCurve {
+            positions: sim.final_output.report_train.positions.clone(),
+            times: sim.final_output.report_train.times.clone(),
+        };
+        let last_sim_time = sim_curve.linear_interpolate_position(last_scheduled_position);
+        // Can't use times.last() because of possible stops at the end
+        let diff_time = last_scheduled_time as i64 - last_sim_time as i64;
+
+        let nb_points_to_ignore =
+            find_index_lower(&sim_curve.positions, *sim_curve.positions.last().unwrap());
+        sim_curve
+            .positions
+            .into_iter()
+            .zip(sim_curve.times)
+            .skip(nb_points_to_ignore)
+            .for_each(|(position, time)| {
+                positions.push(position);
+                times.push((time as i64 + diff_time) as u64);
+            });
+    }
+    SpaceTimeCurve { positions, times }
+}
+
 pub async fn extract_train_details<T: TrainScheduleLike>(
     simulations: Vec<(Arc<simulation::Response>, Arc<PathfindingResult>)>,
     train_schedules: &[T],
@@ -769,23 +843,29 @@ pub async fn extract_train_details<T: TrainScheduleLike>(
         .into_iter()
         .zip(train_schedules)
         .map(|((sim, pathfinding_result), train_schedule)| {
-            let simulation::Response::Success(sim) = sim.as_ref() else {
+            let PathfindingResult::Success(pathfinding_result) = pathfinding_result.as_ref() else {
                 return None;
             };
-            let PathfindingResult::Success(pathfinding_result) = pathfinding_result.as_ref() else {
+            let simulation::Response::Success(sim) = sim.as_ref() else {
                 return None;
             };
             let respect_times = sim
                 .path_item_respect_times(train_schedule)
                 .into_iter()
                 .all(|path_item| path_item);
-            if !respect_times {
-                return None;
-            }
+
+            let curve = if respect_times {
+                SpaceTimeCurve {
+                    positions: sim.final_output.report_train.positions.clone(),
+                    times: sim.final_output.report_train.times.clone(),
+                }
+            } else {
+                extract_curve_for_invalid_train_with_sim(train_schedule, sim, pathfinding_result)
+            };
 
             Some(TrainSimulationDetails {
-                positions: sim.final_output.report_train.positions.clone(),
-                times: sim.final_output.report_train.times.clone(),
+                positions: curve.positions,
+                times: curve.times,
                 train_path: pathfinding_result.path.track_section_ranges.clone(),
             })
         })
