@@ -658,29 +658,42 @@ pub async fn compute_projected_train_path_op<T: TrainScheduleLike>(
     )
     .await?;
 
+    struct ComputeContext<'a, T> {
+        indexes: Vec<usize>,
+        train_schedule: &'a T,
+        simulation: simulation::Response,
+    }
+
     let mut to_compute = HashMap::new();
-    for ((idx, ts), (sim, _)) in train_schedules
+    for ((idx, train_schedule), (simulation, _)) in train_schedules
         .iter()
         .enumerate()
         .zip(simulations.into_iter())
     {
         to_compute
-            .entry(Arc::as_ptr(&sim))
-            .or_insert((vec![], ts, Arc::unwrap_or_clone(sim)))
-            .0
+            .entry(Arc::as_ptr(&simulation))
+            .or_insert(ComputeContext {
+                indexes: vec![],
+                train_schedule,
+                simulation: Arc::unwrap_or_clone(simulation),
+            })
+            .indexes
             .push(idx);
     }
 
     let mut results = vec![Arc::default(); train_schedules.len()];
-    for (indexes, ts, sim) in to_compute.into_values() {
-        let train_to_project = TrainToProjectOnOperationalPoint::new_from_simulation(ts, sim);
+    for context in to_compute.into_values() {
+        let train_to_project = TrainToProjectOnOperationalPoint::new_from_simulation(
+            context.train_schedule,
+            context.simulation,
+        );
         let curves = Arc::new(project_train_path_op(
             &train_to_project,
             path_item_cache,
             &operational_points_projection,
         ));
 
-        for index in indexes {
+        for index in context.indexes {
             results[index] = curves.clone();
         }
     }
