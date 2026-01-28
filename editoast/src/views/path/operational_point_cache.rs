@@ -1,7 +1,6 @@
 use core_client::pathfinding::InvalidPathItem;
 use core_client::pathfinding::PathfindingInputError;
 use database::DbConnection;
-use itertools::Itertools;
 use schemas::infra::OperationalPoint;
 use schemas::infra::TrackOffset;
 use schemas::primitives::NonBlankString;
@@ -229,10 +228,7 @@ impl OperationalPointCache {
                 secondary_code,
             ),
         };
-        secondary_code_filter(secondary_code.as_ref(), ops)
-            .into_iter()
-            .next()
-            .map(|op| op.obj_id.clone())
+        find_op_by_secondary_code(secondary_code.as_ref(), ops).map(|op| op.obj_id.clone())
     }
 
     /// Extract locations from path items
@@ -281,13 +277,10 @@ impl OperationalPointCache {
                         .get_from_trigram(&trigram.0)
                         .map(|op| op.collect())
                         .unwrap_or_default();
-                    let ops = secondary_code_filter(secondary_code.as_ref(), ops);
-                    let track_offsets = ops
-                        .into_iter()
-                        .flat_map(|op| {
-                            op.track_offsets_by_local_track_name(local_track_name.as_ref())
-                        })
-                        .collect_vec();
+                    let op = find_op_by_secondary_code(secondary_code.as_ref(), ops);
+                    let track_offsets = op
+                        .map(|op| op.track_offsets_by_local_track_name(local_track_name.as_ref()))
+                        .unwrap_or_default();
                     if track_offsets.is_empty() {
                         invalid_path_items.push(InvalidPathItem {
                             index,
@@ -311,13 +304,10 @@ impl OperationalPointCache {
                         .get_from_uic(*uic)
                         .map(|op| op.collect())
                         .unwrap_or_default();
-                    let ops = secondary_code_filter(secondary_code.as_ref(), ops);
-                    let track_offsets = ops
-                        .into_iter()
-                        .flat_map(|op| {
-                            op.track_offsets_by_local_track_name(local_track_name.as_ref())
-                        })
-                        .collect_vec();
+                    let op = find_op_by_secondary_code(secondary_code.as_ref(), ops);
+                    let track_offsets = op
+                        .map(|op| op.track_offsets_by_local_track_name(local_track_name.as_ref()))
+                        .unwrap_or_default();
                     if track_offsets.is_empty() {
                         invalid_path_items.push(InvalidPathItem {
                             index,
@@ -471,19 +461,16 @@ async fn retrieve_op_from_ids(
         .map_err(Into::into)
 }
 
-/// Filter operational points by secondary code
-/// If the secondary code is not provided, the original list is returned
-fn secondary_code_filter<'a>(
+/// Filter operational points by secondary code to return one unique OP
+/// since the tuple (operational_point, ch) is supposed to be unique in a given infra.
+/// If secondary_code is None, searches for an OP without sncf extension.
+/// If secondary_code is Some, searches for an OP whose sncf extension matches the given code.
+fn find_op_by_secondary_code<'a>(
     secondary_code: Option<&String>,
     ops: Vec<&'a OperationalPointModel>,
-) -> Vec<&'a OperationalPointModel> {
-    if let Some(secondary_code) = secondary_code {
-        ops.into_iter()
-            .filter(|op| &op.extensions.sncf.as_ref().unwrap().ch == secondary_code)
-            .collect()
-    } else {
-        ops
-    }
+) -> Option<&'a OperationalPointModel> {
+    ops.into_iter()
+        .find(|op| secondary_code == op.extensions.sncf.as_ref().map(|sncf| &sncf.ch))
 }
 
 fn filter_by_secondary_code_and_retrieve_op<'a>(

@@ -240,7 +240,7 @@ impl TrainSchedule {
                         OperationalPointPartReference {
                             operational_point: OperationalPointReference::Uic {
                                 uic: 8711,
-                                secondary_code: None,
+                                secondary_code: Some("BV".to_string()),
                             },
                             local_track_name: None,
                         },
@@ -259,7 +259,7 @@ impl TrainSchedule {
                         OperationalPointPartReference {
                             operational_point: OperationalPointReference::Trigram {
                                 trigram: NonBlankString::from("MWS"),
-                                secondary_code: None,
+                                secondary_code: Some("BV".to_string()),
                             },
                             local_track_name: None,
                         },
