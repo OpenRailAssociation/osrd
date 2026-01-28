@@ -1423,13 +1423,12 @@ pub mod tests {
 
     #[rstest::rstest]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    #[case("TC0", 500_000, "lc2", 125.0, 0)] // part at 125m on TC0, split at 500m -> stays on left at 125m
+    #[case("TC0", 500_000, 125.0, 0)] // part at 125m on TC0, split at 500m -> stays on left at 125m
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    #[case("TC1", 100_000, "lc2", 20.0, 1)] // part at 120m on TC1, split at 100m -> goes to right at 20m
+    #[case("TC1", 100_000, 20.0, 1)] // part at 120m on TC1, split at 100m -> goes to right at 20m
     async fn split_track_section_with_level_crossings(
         #[case] track: &str,
         #[case] offset: u64,
-        #[case] lc_id: &str,
         #[case] expected_position: f64,
         #[case] expected_track_index: usize, // 0 for left, 1 for right
     ) {
@@ -1454,7 +1453,7 @@ pub mod tests {
         let infra_cache = InfraCache::load(&mut db_pool.get_ok(), &small_infra)
             .await
             .unwrap();
-        let lc = infra_cache.get_level_crossing(lc_id).unwrap();
+        let lc = infra_cache.get_level_crossing("lc2").unwrap();
         let parts_on_track: Vec<_> = lc
             .parts
             .iter()
