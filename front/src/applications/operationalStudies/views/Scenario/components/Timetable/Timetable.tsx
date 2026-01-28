@@ -5,17 +5,24 @@ import { useTranslation } from 'react-i18next';
 import { Virtualizer } from 'virtua';
 
 import useScenarioTrainScheduleSet from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
+import { setFailure } from 'reducers/main';
 import type {
   TimetableItemId,
   TimetableItem,
   TimetableItemToEditData,
+  PacedTrainId,
 } from 'reducers/osrdconf/types';
+import { useAppDispatch } from 'store';
+import { castErrorToFailure } from 'utils/error';
+import { extractEditoastIdFromPacedTrainId } from 'utils/trainId';
 
 import CalendarTrainList from './CalendarTrainList';
 import TimetableToolbar from './TimetableToolbar';
 import AddNewTrainScheduleSetTab from './TrainScheduleSet/AddNewTrainScheduleSetTab';
+import TrainScheduleMoveDialog from './TrainScheduleSet/TrainScheduleMoveDialog';
 import TrainScheduleSetDialog from './TrainScheduleSet/TrainScheduleSetDialog';
 import TrainScheduleSetTab from './TrainScheduleSet/TrainScheduleSetTab';
 import type { TimetableMode } from './types';
@@ -48,7 +55,10 @@ const Timetable = ({
   selectedTimetableItemIds,
   projectingOnSimulatedPathException,
 }: TimetableProps) => {
+  const dispatch = useAppDispatch();
+
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main.timetable' });
+
   const [showTrainDetails, setShowTrainDetails] = useState(false);
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [timetableMode, setTimetableMode] = useState<TimetableMode>('calendar');
@@ -56,6 +66,12 @@ const Timetable = ({
     new Set()
   );
   const [showTrainScheduleSetDialog, setShowTrainScheduleSetDialog] = useState(false);
+
+  const [patchPacedTrainMove] = osrdEditoastApi.endpoints.patchPacedTrainMove.useMutation({});
+
+  const [showTrainScheduleMoveDialog, setShowTrainScheduleMoveDialog] = useState(false);
+  const [pacedTrainIdsToMove, setPacedTrainIdsToMove] = useState<PacedTrainId[]>([]);
+  const [trainScheduleSetIdSelected, setTrainScheduleSetIdSelected] = useState<number>();
 
   const {
     timetableItemsByTrainScheduleSets,
@@ -103,6 +119,41 @@ const Timetable = ({
     [selectedTimetableItemIds]
   );
 
+  const openMoveDialog = useCallback((pacedTrainIds: PacedTrainId[]) => {
+    if (pacedTrainIds.length === 0) return;
+
+    setPacedTrainIdsToMove(pacedTrainIds);
+    setShowTrainScheduleMoveDialog(true);
+  }, []);
+
+  const handleSubmitMove = useCallback(
+    async (trainScheduleSetId: number) => {
+      const formattedPacedTrainIds = pacedTrainIdsToMove.map(extractEditoastIdFromPacedTrainId);
+      try {
+        await patchPacedTrainMove({
+          body: {
+            paced_train_ids: formattedPacedTrainIds,
+            train_schedule_set_id: trainScheduleSetId,
+          },
+        }).unwrap();
+
+        const trainsToUpsert = timetableItems
+          .filter((item) => pacedTrainIdsToMove.includes(item.id))
+          .map((item) => ({
+            ...item,
+            train_schedule_set_id: trainScheduleSetId,
+          }));
+
+        upsertTimetableItems(trainsToUpsert);
+      } catch (e) {
+        dispatch(setFailure(castErrorToFailure(e)));
+      } finally {
+        setPacedTrainIdsToMove([]);
+      }
+    },
+    [pacedTrainIdsToMove, patchPacedTrainMove, dispatch]
+  );
+
   return (
     <div className="scenario-timetable">
       <div
@@ -123,6 +174,7 @@ const Timetable = ({
           setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
           refreshNge={() => Promise.resolve()}
           handleDeleteTimetableItems={handleDeleteTimetableItems}
+          handleMoveTimetableItems={() => openMoveDialog(selectedTimetableItemIds)}
           timetableMode={timetableMode}
           setTimetableMode={setTimetableMode}
           upsertTimetableItems={upsertTimetableItems}
@@ -188,6 +240,7 @@ const Timetable = ({
                       projectingOnSimulatedPathException={projectingOnSimulatedPathException}
                       isSelectMode={isSelectMode}
                       timetableMode={timetableMode}
+                      moveTimetableItem={(pacedTrainIds) => openMoveDialog(pacedTrainIds)}
                     />
                   </TrainScheduleSetTab>
                 );
@@ -208,6 +261,25 @@ const Timetable = ({
             submit: t('trainScheduleSets.addTrainScheduleSet'),
             cancel: t('trainScheduleSets.cancel'),
           }}
+        />
+      )}
+
+      {showTrainScheduleMoveDialog && timetableItemsByTrainScheduleSets && (
+        <TrainScheduleMoveDialog
+          trainScheduleSets={timetableItemsByTrainScheduleSets.map((tss) => tss.trainScheduleSet)}
+          setTrainScheduleSetIdSelected={setTrainScheduleSetIdSelected}
+          trainScheduleSetIdSelected={trainScheduleSetIdSelected}
+          catalogEntries={catalogEntries}
+          labels={{
+            title: t('trainScheduleSets.movingToAnotherPackage'),
+            submit: t('trainScheduleSets.moveToSelectPackage'),
+            cancel: t('trainScheduleSets.cancel'),
+          }}
+          onCancel={() => {
+            setTrainScheduleSetIdSelected(undefined);
+            setShowTrainScheduleMoveDialog(false);
+          }}
+          onSubmit={handleSubmitMove}
         />
       )}
     </div>

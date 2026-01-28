@@ -45,6 +45,7 @@ type TimetableToolbarProps = {
   setDisplayTimetableItemManagement: (mode: string) => void;
   refreshNge: () => Promise<void>;
   handleDeleteTimetableItems: () => void;
+  handleMoveTimetableItems: () => void;
   timetableMode: TimetableMode;
   setTimetableMode: React.Dispatch<React.SetStateAction<TimetableMode>>;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
@@ -63,6 +64,7 @@ const TimetableToolbar = ({
   setDisplayTimetableItemManagement,
   refreshNge,
   handleDeleteTimetableItems,
+  handleMoveTimetableItems,
   timetableMode,
   setTimetableMode,
   upsertTimetableItems,
@@ -257,6 +259,7 @@ const TimetableToolbar = ({
           toggleAllTrainsSelection={toggleAllTrainsSelection}
           handleExportTimetableItems={handleExportTimetableItems}
           handleDeleteTimetableItems={handleDeleteTimetableItems}
+          handleMoveTimetableItems={handleMoveTimetableItems}
         />
       )}
       {isFilterPanelOpen && (
