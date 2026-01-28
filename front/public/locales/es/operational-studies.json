@@ -5,6 +5,19 @@
     "map": "Mapa",
     "sdd": "DEV",
     "std": "DET",
-    "tables": "Cuadros"
+    "tables": "Cuadros",
+    "trains": "Trenes"
+  },
+  "importTrainScheduleSet": {
+    "cancel": "Cancelar",
+    "cartEmpty": "Selección vacía",
+    "import": "Importar",
+    "importType": {
+      "copy": "Importar mediante copia",
+      "reference": "Importar por referencia"
+    },
+    "title": "Importar paquetes de trenes",
+    "trainScheduleSet": "Paquete",
+    "trainScheduleSetAlreadyImported": "Este paquete ya existe en su escenario como referencia"
   }
 }
