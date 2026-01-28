@@ -19,5 +19,76 @@
     "title": "Importar paquetes de trenes",
     "trainScheduleSet": "Paquete",
     "trainScheduleSetAlreadyImported": "Este paquete ya existe en su escenario como referencia"
+  },
+  "importTrains": {
+    "failure": "Operación fallida"
+  },
+  "main": {
+    "infrastructure": "Infraestructura",
+    "macroEditor": {
+      "trainCategory": {
+        "NO_CATEGORY": {
+          "name": "Sin categoría"
+        }
+      }
+    },
+    "occurrenceMenu": {
+      "edit": "Edición"
+    },
+    "scenarioDeleteButton": "Borrar",
+    "timetable": {
+      "duplicate": "Clon",
+      "occurrenceChangeGroup": {
+        "train_name": "Nombre"
+      },
+      "showAllTrains": "Todo",
+      "speedLimitTags": "Códigos de composición"
+    }
+  },
+  "manageTimetableItem": {
+    "deleteRoute": "Elimina la ruta",
+    "errorMessages": {
+      "error": "Ha ocurrido un error"
+    },
+    "itineraryModal": {
+      "next": "Próximo"
+    },
+    "pacedTrains": {
+      "add": "Añadir"
+    },
+    "pathfindingErrors": {
+      "not_found_in_routes": "Ruta perdida"
+    },
+    "tabs": {
+      "pathFinding": "Recorrido"
+    }
+  },
+  "operational-studies-management": {
+    "open": "Abierto",
+    "unselect-all": "Desseleccionar"
+  },
+  "project": {
+    "projectCancel": "Cancelar",
+    "projectModifyButton": "Salvar"
+  },
+  "simulationResults": {
+    "departureTime": "Salida",
+    "electricalProfiles": {
+      "legend": "Leyenda",
+      "thermal": "Motor de combustión"
+    },
+    "speedDistanceSettings": {
+      "etcs": {
+        "signals": "Señales"
+      },
+      "speedLimits": "Límites de velocidad"
+    },
+    "waypointsPanel": {
+      "secondaryCode": "CH"
+    }
+  },
+  "study": {
+    "date-start": "Comienzo",
+    "studyType": "Tipo"
   }
 }
