@@ -34,9 +34,9 @@ interface PathProperties {
 
     fun getZones(): DistanceRangeMap<ZoneId>
 
-    fun getLength(): Length<TrainPath>
+    fun getLength(): Length<PhysicsPath>
 
-    fun getTrackLocationAtOffset(pathOffset: Offset<TrainPath>): TrackLocation
+    fun getTrackLocationAtOffset(pathOffset: Offset<PhysicsPath>): TrackLocation
 
     fun <T> getRangeMapFromUndirected(
         getData: (chunkId: TrackChunkId) -> DistanceRangeMap<T>

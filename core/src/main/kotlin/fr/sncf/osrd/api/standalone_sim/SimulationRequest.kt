@@ -4,7 +4,7 @@ import com.squareup.moshi.*
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.RangeValues
 import fr.sncf.osrd.path.interfaces.JsonTrainPath
-import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSEffortCurves.RJSModeEffortCurve
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSEtcsBrakeParams
@@ -32,7 +32,7 @@ class SimulationRequest(
     val options: TrainScheduleOptions,
     @Json(name = "physics_consist") val physicsConsist: PhysicsConsistModel,
     @Json(name = "electrical_profile_set_id") val electricalProfileSetId: String?,
-    @Json(name = "path_item_positions") val pathItemPositions: List<Offset<TrainPath>>,
+    @Json(name = "path_item_positions") val pathItemPositions: List<Offset<PhysicsPath>>,
 ) {
     companion object {
         val adapter: JsonAdapter<SimulationRequest> =
@@ -82,7 +82,7 @@ class EffortCurve(
 )
 
 class SimulationScheduleItem(
-    @Json(name = "path_offset") val pathOffset: Offset<TrainPath>,
+    @Json(name = "path_offset") val pathOffset: Offset<PhysicsPath>,
     val arrival: TimeDelta?,
     @Json(name = "stop_for") val stopFor: Duration?,
     @Json(name = "reception_signal") val receptionSignal: RJSReceptionSignal,
@@ -130,8 +130,8 @@ class MarginValueAdapter {
 }
 
 class SimulationPowerRestrictionItem(
-    val from: Offset<TrainPath>,
-    val to: Offset<TrainPath>,
+    val from: Offset<PhysicsPath>,
+    val to: Offset<PhysicsPath>,
     val value: String,
 )
 

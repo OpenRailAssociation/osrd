@@ -6,7 +6,7 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.*
-import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.SpeedLimitProperty
 import fr.sncf.osrd.sim_infra.api.SpeedLimitSource
@@ -46,7 +46,7 @@ sealed class ElectricalProfileValue {
 }
 
 class CompleteReportTrain(
-    positions: List<Offset<TrainPath>>,
+    positions: List<Offset<PhysicsPath>>,
     times: List<TimeDelta>, // Times are compared to the departure time
     speeds: List<Double>,
     @Json(name = "energy_consumption") energyConsumption: Double,
@@ -66,7 +66,7 @@ class CompleteReportTrain(
  * [positions] is sorted.
  */
 open class ReportTrain(
-    val positions: List<Offset<TrainPath>>,
+    val positions: List<Offset<PhysicsPath>>,
     /** Times are compared to departure time */
     val times: List<TimeDelta>,
     val speeds: List<Double>,

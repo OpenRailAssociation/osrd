@@ -3,6 +3,7 @@ package fr.sncf.osrd.standalone_sim
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.path.interfaces.DirChunkRange
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
 import fr.sncf.osrd.sim_infra.api.*
@@ -42,8 +43,8 @@ fun makeETCSContext(
  * May return any number of point beyond the end of the path, specifically any point covered by the
  * routes used by the path.
  */
-fun buildETCSDangerPoints(infra: RawInfra, trainPath: TrainPath): List<Offset<TrainPath>> {
-    val res = mutableSetOf<Offset<TrainPath>>()
+fun buildETCSDangerPoints(infra: RawInfra, trainPath: TrainPath): List<Offset<PhysicsPath>> {
+    val res = mutableSetOf<Offset<PhysicsPath>>()
     for (zonePathRange in trainPath.getZonePaths()) {
         val zonePath = zonePathRange.value
         val movableElements = infra.getZonePathMovableElements(zonePath)
@@ -59,8 +60,8 @@ fun buildETCSDangerPoints(infra: RawInfra, trainPath: TrainPath): List<Offset<Tr
 }
 
 /** Builds the offset list of detectors for ETCS blocks on the block path. */
-fun buildETCSBlockDetectors(infra: FullInfra, trainPath: TrainPath): List<Offset<TrainPath>> {
-    val etcsBlockDetectors = mutableListOf<Offset<TrainPath>>()
+fun buildETCSBlockDetectors(infra: FullInfra, trainPath: TrainPath): List<Offset<PhysicsPath>> {
+    val etcsBlockDetectors = mutableListOf<Offset<PhysicsPath>>()
     for (blockRange in trainPath.getBlocks()) {
         val block = blockRange.value
         if (isETCSBlock(block, infra)) {
@@ -82,7 +83,7 @@ private fun isETCSBlock(block: BlockId, infra: FullInfra): Boolean {
  * Find the last danger point, which may extend beyond the end of the path. Null if tracks are
  * circular with no switch nor buffer stop.
  */
-private fun findLastDangerPoint(infra: RawInfra, trainPath: TrainPath): Offset<TrainPath>? {
+private fun findLastDangerPoint(infra: RawInfra, trainPath: TrainPath): Offset<PhysicsPath>? {
     // Find the offset of the last chunk on the path
     val chunkRanges = trainPath.getChunks()
     val lastChunkRange = chunkRanges.last()
@@ -111,7 +112,7 @@ private fun getEndOfLastTrackPathOffset(
     infra: RawInfra,
     lastTrack: TrackSectionId,
     lastChunkRange: DirChunkRange,
-): Offset<TrainPath> {
+): Offset<PhysicsPath> {
     // Note: this function alone doesn't quite justify it,
     // but we could add a List<DirTrackRange> to TrainPath instead
     val dirLastChunk = lastChunkRange.value

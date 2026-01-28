@@ -7,7 +7,7 @@ import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.graph.PathfindingConstraint
-import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.pathfinding.BlockLocation
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.stdcm.graph.TimeData
@@ -54,7 +54,7 @@ interface InfraExplorerWithEnvelope : InfraExplorer {
     fun updateTimeData(updatedTimeData: TimeData): InfraExplorerWithEnvelope
 
     /** Calls `InterpolateDepartureFromClamp` on the underlying envelope. */
-    fun interpolateDepartureFromClamp(pathOffset: Offset<TrainPath>): Double
+    fun interpolateDepartureFromClamp(pathOffset: Offset<PhysicsPath>): Double
 
     /** Returns the spacing requirements since the last update */
     fun getSpacingRequirements(): List<SpacingRequirement>
@@ -63,7 +63,7 @@ interface InfraExplorerWithEnvelope : InfraExplorer {
     fun getFullSpacingRequirements(): List<SpacingRequirement>
 
     /** Returns the length of the simulated section of the path */
-    fun getSimulatedLength(): Length<TrainPath>
+    fun getSimulatedLength(): Length<PhysicsPath>
 
     /**
      * Generate a list of reached train stops, mostly for debugging purposes. Lookahead isn't

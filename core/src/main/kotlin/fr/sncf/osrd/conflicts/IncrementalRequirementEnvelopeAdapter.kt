@@ -3,7 +3,7 @@ package fr.sncf.osrd.conflicts
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeInterpolate
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
-import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import kotlin.math.max
@@ -22,8 +22,8 @@ class IncrementalRequirementEnvelopeAdapter(
     private val infiniteLastStop: Boolean = false,
 ) : IncrementalRequirementCallbacks {
     override fun maxSpeedInRange(
-        pathBeginOff: Offset<TrainPath>,
-        pathEndOff: Offset<TrainPath>,
+        pathBeginOff: Offset<PhysicsPath>,
+        pathEndOff: Offset<PhysicsPath>,
     ): Double {
         if (envelopeWithStops == null) {
             return Double.POSITIVE_INFINITY
@@ -39,7 +39,7 @@ class IncrementalRequirementEnvelopeAdapter(
         )
     }
 
-    override fun departureFromStop(stopOffset: Offset<TrainPath>): Double {
+    override fun departureFromStop(stopOffset: Offset<PhysicsPath>): Double {
         if (envelopeWithStops == null) {
             return Double.POSITIVE_INFINITY
         }
@@ -66,8 +66,8 @@ class IncrementalRequirementEnvelopeAdapter(
     }
 
     override fun arrivalTimeInRange(
-        pathBeginOff: Offset<TrainPath>,
-        pathEndOff: Offset<TrainPath>,
+        pathBeginOff: Offset<PhysicsPath>,
+        pathEndOff: Offset<PhysicsPath>,
     ): Double {
         if (envelopeWithStops == null) return Double.POSITIVE_INFINITY
         // if the head of the train enters the zone at some point, use that
@@ -86,8 +86,8 @@ class IncrementalRequirementEnvelopeAdapter(
     }
 
     override fun departureTimeFromRange(
-        pathBeginOff: Offset<TrainPath>,
-        pathEndOff: Offset<TrainPath>,
+        pathBeginOff: Offset<PhysicsPath>,
+        pathEndOff: Offset<PhysicsPath>,
     ): Double {
         if (envelopeWithStops == null) return Double.POSITIVE_INFINITY
         val end = pathEndOff.meters
@@ -103,7 +103,7 @@ class IncrementalRequirementEnvelopeAdapter(
         get() = envelopeWithStops?.totalTime ?: 0.0
 
     override val currentPathOffset
-        get() = Offset<TrainPath>(envelopeWithStops?.endPos?.meters ?: 0.meters)
+        get() = Offset<PhysicsPath>(envelopeWithStops?.endPos?.meters ?: 0.meters)
 
     override fun clone(): IncrementalRequirementCallbacks {
         return IncrementalRequirementEnvelopeAdapter(

@@ -13,6 +13,7 @@ import fr.sncf.osrd.api.standalone_sim.SimulationSuccess
 import fr.sncf.osrd.api.standalone_sim.polymorphicElectricalProfileAdapter
 import fr.sncf.osrd.api.standalone_sim.polymorphicSimulationResponseAdapter
 import fr.sncf.osrd.api.standalone_sim.polymorphicSpeedLimitSourceAdapter
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.sim_infra.api.BlockInfra
 import fr.sncf.osrd.sim_infra.api.RawInfra
@@ -49,7 +50,7 @@ data class OutputSimDebugData(
     val engineeringAllowanceRanges: List<EngineeringAllowanceRange>,
     @Json(name = "zone_locations") val zoneLocations: List<ZoneLocation>,
     @Json(name = "train_times") val trainTimes: List<TimeDelta>,
-    @Json(name = "train_positions") val trainPositions: List<Offset<TrainPath>>,
+    @Json(name = "train_positions") val trainPositions: List<Offset<PhysicsPath>>,
 ) {
     companion object {
         val adapter: JsonAdapter<OutputSimDebugData> =
@@ -72,7 +73,11 @@ data class TrainZoneRequirement(
     @Json(name = "train_name") val trainName: String?,
 )
 
-data class ZoneLocation(val name: String, val from: Offset<TrainPath>, val to: Offset<TrainPath>)
+data class ZoneLocation(
+    val name: String,
+    val from: Offset<PhysicsPath>,
+    val to: Offset<PhysicsPath>,
+)
 
 fun generateDebugData(
     rawInfra: RawInfra,

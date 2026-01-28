@@ -17,6 +17,7 @@ import fr.sncf.osrd.envelope_sim.etcs.ETCSBrakingSimulator
 import fr.sncf.osrd.envelope_sim.etcs.ETCSBrakingSimulatorImpl
 import fr.sncf.osrd.envelope_sim.etcs.EoaType
 import fr.sncf.osrd.path.interfaces.BlockRange
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.RouteRange
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.signaling.SigSystemManager
@@ -41,7 +42,7 @@ fun runScheduleMetadataExtractor(
     fullInfra: FullInfra,
     rollingStock: RollingStock,
     schedule: List<SimulationScheduleItem>,
-    pathItemPositions: List<Offset<TrainPath>>,
+    pathItemPositions: List<Offset<PhysicsPath>>,
     context: EnvelopeSimContext? = null,
 ): CompleteReportTrain {
     assert(envelope.continuous)
@@ -173,7 +174,7 @@ fun runScheduleMetadataExtractor(
     )
 }
 
-fun getStopTravelledPathOffset(pathStops: List<PathStop>, indexStop: Int): Offset<TrainPath>? {
+fun getStopTravelledPathOffset(pathStops: List<PathStop>, indexStop: Int): Offset<PhysicsPath>? {
     return pathStops.getOrNull(indexStop)?.pathOffset
 }
 
@@ -182,7 +183,7 @@ fun makeSimpleReportTrain(
     trainPath: TrainPath,
     rollingStock: RollingStock,
     schedule: List<SimulationScheduleItem>,
-    pathItemPositions: List<Offset<TrainPath>>,
+    pathItemPositions: List<Offset<PhysicsPath>>,
 ): ReportTrain {
     // Compute energy consumed
     val mechanicalEnergyConsumed =
@@ -196,7 +197,7 @@ fun makeSimpleReportTrain(
     val envelopeStopWrapper = EnvelopeStopWrapper(envelope, stops)
 
     val pathItemTimes =
-        pathItemPositions.map { position: Offset<TrainPath> ->
+        pathItemPositions.map { position: Offset<PhysicsPath> ->
             TimeDelta.fromSeconds(envelopeStopWrapper.interpolateArrivalAt(position.meters))
         }
 
@@ -365,7 +366,7 @@ private fun getRouteCriticalPos(
     signalingTrainStates: Map<LogicalSignalId, SignalingTrainState>,
     envelope: Envelope,
     etcsSimulator: ETCSBrakingSimulator?,
-): Offset<TrainPath>? {
+): Offset<PhysicsPath>? {
     val blockInfra = fullInfra.blockInfra
     val simulator = fullInfra.signalingSimulator
 
@@ -392,7 +393,7 @@ private fun getEtcsRouteCriticalPos(
     firstBlockRange: BlockRange,
     envelope: Envelope,
     etcsSimulator: ETCSBrakingSimulator,
-): Offset<TrainPath> {
+): Offset<PhysicsPath> {
 
     // The braking curve targets the entry signal of the route's first block
     val signalOffset =
@@ -427,7 +428,7 @@ private fun getSightRouteCriticalPos(
     trainPath: TrainPath,
     firstBlockRange: BlockRange,
     signalingTrainStates: Map<LogicalSignalId, SignalingTrainState>,
-): Offset<TrainPath>? {
+): Offset<PhysicsPath>? {
     val simulator = fullInfra.signalingSimulator
     val rawInfra = fullInfra.rawInfra
     val loadedSignalInfra = fullInfra.loadedSignalInfra
@@ -538,7 +539,7 @@ private fun findLimitingSignal(
 
 data class ZoneOccupationChangeEvent(
     val time: TimeDelta,
-    val offset: Offset<TrainPath>,
+    val offset: Offset<PhysicsPath>,
     val isEntry: Boolean,
     val zone: ZoneId,
 )
@@ -572,7 +573,7 @@ fun zoneOccupationChangeEvents(
 
 data class PathSignal(
     val signal: LogicalSignalId,
-    val pathOffset: Offset<TrainPath>,
+    val pathOffset: Offset<PhysicsPath>,
     // when a signal is between blocks, prefer the index of the first block
     val minBlockPathIndex: Int,
 )
@@ -610,8 +611,8 @@ fun pathSignalsInEnvelope(
 fun pathSignalsInRange(
     trainPath: TrainPath,
     blockInfra: BlockInfra,
-    rangeStart: Offset<TrainPath>,
-    rangeEnd: Offset<TrainPath>,
+    rangeStart: Offset<PhysicsPath>,
+    rangeEnd: Offset<PhysicsPath>,
 ): List<PathSignal> {
     return pathSignals(trainPath, blockInfra).filter { signal ->
         signal.pathOffset in rangeStart..rangeEnd

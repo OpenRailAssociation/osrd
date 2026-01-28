@@ -1,7 +1,7 @@
 package fr.sncf.osrd.stdcm
 
 import com.google.common.collect.ImmutableMultimap
-import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.pathfinding.BlockLocation
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.SpeedLimitProperty
@@ -52,7 +52,7 @@ class STDCMPathfindingTests {
                 .setStartLocations(setOf(BlockLocation(firstBlock, Offset(30.meters))))
                 .setEndLocations(setOf(BlockLocation(secondBlock, Offset(30.meters))))
                 .run()!!
-        assertEquals(Offset<TrainPath>(100.meters), res.trainPath.getLength())
+        assertEquals(Offset<PhysicsPath>(100.meters), res.trainPath.getLength())
     }
 
     /** Look for a path where the blocks are occupied before and after */

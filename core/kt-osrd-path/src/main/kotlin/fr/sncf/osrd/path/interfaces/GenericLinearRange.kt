@@ -32,7 +32,7 @@ data class GenericLinearRange<ValueType, OffsetType>(
     /** Start of the range, compared to the start of the underlying object. */
     val objectBegin: Offset<OffsetType>,
     /** Start of the range, compared to the start of the train path. */
-    val pathBegin: Offset<TrainPath>,
+    val pathBegin: Offset<PhysicsPath>,
     /** Range length. */
     val length: Distance,
     /** Total length of the underlying object. */
@@ -42,8 +42,8 @@ data class GenericLinearRange<ValueType, OffsetType>(
         value: ValueType,
         objectBegin: Offset<OffsetType>,
         objectEnd: Offset<OffsetType>,
-        pathBegin: Offset<TrainPath>,
-        pathEnd: Offset<TrainPath>,
+        pathBegin: Offset<PhysicsPath>,
+        pathEnd: Offset<PhysicsPath>,
         objectLength: Length<OffsetType>,
     ) : this(value, objectBegin, pathBegin, pathEnd - pathBegin, objectLength) {
         assert(objectEnd - objectBegin == pathEnd - pathBegin)
@@ -59,7 +59,7 @@ data class GenericLinearRange<ValueType, OffsetType>(
     }
 
     /** End of the range, compared to the start of the train path. */
-    val pathEnd: Offset<TrainPath>
+    val pathEnd: Offset<PhysicsPath>
         get() = pathBegin + length
 
     /** End of the range, compared to the start of the underlying object. */
@@ -77,13 +77,13 @@ data class GenericLinearRange<ValueType, OffsetType>(
         get() = objectAbsolutePathStart + objectLength.distance
 
     /** Converts a train path offset into an object offset. */
-    fun offsetFromTrainPath(pathOffset: Offset<TrainPath>): Offset<OffsetType> {
+    fun offsetFromTrainPath(pathOffset: Offset<PhysicsPath>): Offset<OffsetType> {
         val objectStart = objectAbsolutePathStart
         return Offset(pathOffset.distance - objectStart.distance)
     }
 
     /** Converts an object offset into a train path offset. */
-    fun offsetToTrainPath(objectOffset: Offset<OffsetType>): Offset<TrainPath> {
+    fun offsetToTrainPath(objectOffset: Offset<OffsetType>): Offset<PhysicsPath> {
         val objectStart = objectAbsolutePathStart
         return objectStart + objectOffset.distance
     }
@@ -93,8 +93,8 @@ data class GenericLinearRange<ValueType, OffsetType>(
      * train path range.
      */
     fun withTruncatedPathRange(
-        from: Offset<TrainPath>,
-        to: Offset<TrainPath>,
+        from: Offset<PhysicsPath>,
+        to: Offset<PhysicsPath>,
     ): GenericLinearRange<ValueType, OffsetType>? {
         val newPathBegin = max(from, pathBegin)
         val newPathEnd = min(to, pathEnd)
@@ -121,7 +121,7 @@ data class GenericLinearRange<ValueType, OffsetType>(
         subObjectList: List<SubObjectType>,
         getSubObjectLength: (SubObjectType) -> Offset<SubObjectOffset>,
     ): List<GenericLinearRange<SubObjectType, SubObjectOffset>> {
-        var prevObjectEndPathOffset: Offset<TrainPath> = pathBegin - objectBegin.distance
+        var prevObjectEndPathOffset: Offset<PhysicsPath> = pathBegin - objectBegin.distance
         val res = mutableListOf<GenericLinearRange<SubObjectType, SubObjectOffset>>()
         for (subObject in subObjectList) {
             val subObjectLength = getSubObjectLength(subObject)
@@ -175,7 +175,7 @@ data class GenericLinearRange<ValueType, OffsetType>(
         )
     }
 
-    data class LocatedObject<T>(val value: T, val offset: Offset<TrainPath>)
+    data class LocatedObject<T>(val value: T, val offset: Offset<PhysicsPath>)
 
     /**
      * Given two functions to map inner point objects to their IDs and offsets, returns the objects
@@ -208,7 +208,7 @@ data class GenericLinearRange<ValueType, OffsetType>(
         )
     }
 
-    fun containsPathOffset(offset: Offset<TrainPath>): Boolean {
+    fun containsPathOffset(offset: Offset<PhysicsPath>): Boolean {
         return offset in pathBegin..pathEnd
     }
 
@@ -314,8 +314,8 @@ fun <ValueType, OffsetType, ObjectType> List<GenericLinearRange<ValueType, Offse
 
 /** Truncate the list of linear objects, updating the underlying object ranges */
 fun <ValueType, OffsetType> List<GenericLinearRange<ValueType, OffsetType>>.subRange(
-    from: Offset<TrainPath>,
-    to: Offset<TrainPath>,
+    from: Offset<PhysicsPath>,
+    to: Offset<PhysicsPath>,
     resetOffsets: Boolean = false,
 ): List<GenericLinearRange<ValueType, OffsetType>> {
     return mapNotNull { range ->

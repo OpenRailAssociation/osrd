@@ -6,8 +6,8 @@ import fr.sncf.osrd.envelope_sim.etcs.BrakingType.IND
 import fr.sncf.osrd.envelope_sim.etcs.ETCSBrakingSimulatorImpl
 import fr.sncf.osrd.envelope_sim.etcs.EoaType
 import fr.sncf.osrd.path.interfaces.BlockRange
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.RouteRange
-import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.ZoneRange
 import fr.sncf.osrd.path.interfaces.addLinearObjects
 import fr.sncf.osrd.path.interfaces.mapPointObjects
@@ -44,7 +44,7 @@ import mu.KotlinLogging
 val logger = KotlinLogging.logger {}
 
 data class PathStop(
-    val pathOffset: Offset<TrainPath>,
+    val pathOffset: Offset<PhysicsPath>,
     val receptionSignal: RJSTrainStop.RJSReceptionSignal,
 )
 
@@ -112,7 +112,7 @@ data class SpacingResourceGenerator(
     private var reachedFirstSignal: Boolean = false
 
     /**
-     * Add a new segment of the path. The ranges must cover the same range of `Offset<TrainPath>`,
+     * Add a new segment of the path. The ranges must cover the same range of `Offset<PhysicsPath>`,
      * and any stop in that range needs to be listed.
      */
     fun extendPath(
@@ -199,7 +199,7 @@ data class SpacingResourceGenerator(
     fun processUpdate(): List<SpacingRequirement>? {
         val simulatedLength = callbacks!!.currentPathOffset
         val signalsToProcess = pendingSignals.takeWhile { it.sightOffset <= simulatedLength }
-        val signalEndOffsets = mutableMapOf<LogicalSignalId, Offset<TrainPath>>()
+        val signalEndOffsets = mutableMapOf<LogicalSignalId, Offset<PhysicsPath>>()
 
         val simulationData =
             SimulationCacheData(blockRanges.map { it.value }, routeRanges.map { it.value }, context)
@@ -247,7 +247,7 @@ data class SpacingResourceGenerator(
     }
 
     /** Returns the current end of the processed path. */
-    fun getCurrentPathEndOffset(): Offset<TrainPath> {
+    fun getCurrentPathEndOffset(): Offset<PhysicsPath> {
         return blockRanges.lastOrNull()?.pathEnd ?: Offset.zero()
     }
 
@@ -260,7 +260,7 @@ data class SpacingResourceGenerator(
     private fun signalToOngoingRequirements(
         simulationData: SimulationCacheData,
         signalData: PendingSignalData,
-        endOffset: Offset<TrainPath>,
+        endOffset: Offset<PhysicsPath>,
     ) {
         val zoneRanges =
             zoneRanges.subRange(signalData.offset, endOffset).filter { !it.isSinglePoint() }
@@ -282,7 +282,7 @@ data class SpacingResourceGenerator(
     private fun getETCSFirstRequiredOffset(
         simulationData: SimulationCacheData,
         signalData: PendingSignalData,
-    ): Offset<TrainPath> {
+    ): Offset<PhysicsPath> {
         val signal = signalData.signal
         var isRouteDelimiter = true
         try {
@@ -354,7 +354,7 @@ data class SpacingResourceGenerator(
     private fun getRequirementEndOffset(
         simulationData: SimulationCacheData,
         signalData: PendingSignalData,
-    ): Offset<TrainPath>? {
+    ): Offset<PhysicsPath>? {
         if (signalData.isCurveBased)
             return blockRanges.first { it.pathBegin >= signalData.offset }.pathEnd
         val trainState = buildTrainState(signalData) ?: return null
@@ -484,9 +484,9 @@ data class SpacingResourceGenerator(
         /** ID of the logical signal */
         val signal: LogicalSignalId,
         /** Offset of the signal itself */
-        val offset: Offset<TrainPath>,
+        val offset: Offset<PhysicsPath>,
         /** Offset at which the signal is seen by the train */
-        val sightOffset: Offset<TrainPath>,
+        val sightOffset: Offset<PhysicsPath>,
         /** Whether this signal is curve-based (ETCS or similar) */
         val isCurveBased: Boolean,
     )
@@ -505,17 +505,17 @@ data class SpacingResourceGenerator(
          * TODO: this is incorrect as stops should be considered at the signal level. It's legacy
          *   behavior identical to the previous class, for an easier transition.
          */
-        val zoneEntryOffset: Offset<TrainPath>,
+        val zoneEntryOffset: Offset<PhysicsPath>,
         /** Offset where the train clears the zone. Does not consider the train length. */
-        val zoneExitOffset: Offset<TrainPath>,
+        val zoneExitOffset: Offset<PhysicsPath>,
         /** The train first needs this zone to be free when the head reaches this offset. */
-        var minRequiredOffset: Offset<TrainPath> = zoneEntryOffset,
+        var minRequiredOffset: Offset<PhysicsPath> = zoneEntryOffset,
     ) {
         /**
          * To be called when a signal requires this zone to be free. Updates the minimum sight
          * offset / requirement offset.
          */
-        fun updateMinRequirementOffset(offset: Offset<TrainPath>) {
+        fun updateMinRequirementOffset(offset: Offset<PhysicsPath>) {
             minRequiredOffset = min(minRequiredOffset, offset)
         }
 

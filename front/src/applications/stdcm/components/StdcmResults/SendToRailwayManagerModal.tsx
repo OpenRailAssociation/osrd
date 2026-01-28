@@ -28,7 +28,12 @@ import { getRailwayManagerInterfaceUrl } from 'reducers/main/mainSelector';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { useDateTimeLocale } from 'utils/date';
-import { addDurationToDate, Duration, subtractDurationFromDate } from 'utils/duration';
+import {
+  addDurationToDate,
+  Duration,
+  minutesBetween,
+  subtractDurationFromDate,
+} from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
 import { kmhToMs, tToKg } from 'utils/physics';
 
@@ -114,9 +119,8 @@ const SendToRailwayManagerModal = ({
   const constraintTime = constraintOnDeparture
     ? new Date(firstStep.arrival!)
     : new Date(lastStep.arrival!);
-  const diffMinutes = new Duration({
-    minutes: Math.round((realConstraintTime.getTime() - constraintTime.getTime()) / 60000),
-  });
+
+  const diffMinutes = minutesBetween(realConstraintTime, constraintTime);
 
   const { tolerances } = constraintOnDeparture ? firstStep : lastStep;
 

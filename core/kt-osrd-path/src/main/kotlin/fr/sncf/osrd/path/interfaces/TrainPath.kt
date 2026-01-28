@@ -8,7 +8,7 @@ import fr.sncf.osrd.utils.units.Offset
  * can easily be mapped to train simulations, where we track the distance travelled by the train
  * head.
  *
- * `Offset<TrainPath>` is the correct typing to locate elements on a path.
+ * `Offset<PhysicsPath>` is the correct typing to locate elements on a path.
  *
  * We consider that 1m of train path means 1m of train movement, not necessarily 1m of actual track
  * length. Specifically, when a train turns around at a station, no distance is travelled. See
@@ -33,12 +33,12 @@ import fr.sncf.osrd.utils.units.Offset
  * may include partial blocks, especially at the edges of the path or around backtracks.
  */
 interface TrainPath : PhysicsPath, PathProperties {
-    fun subPath(from: Offset<TrainPath>?, to: Offset<TrainPath>?): TrainPath
+    fun subPath(from: Offset<PhysicsPath>?, to: Offset<PhysicsPath>?): TrainPath
 
     /** Returns a copy with the specified routes instead */
     override fun withRoutes(routes: List<RouteId>): TrainPath
 
-    fun getBacktrackLocations(): List<Offset<TrainPath>>
+    fun getBacktrackLocations(): List<Offset<PhysicsPath>>
 
     fun getBlocks(): List<BlockRange>
 

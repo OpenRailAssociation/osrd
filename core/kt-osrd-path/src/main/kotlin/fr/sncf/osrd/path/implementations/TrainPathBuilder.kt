@@ -62,7 +62,7 @@ fun buildTrainPathFromBlocks(
     routeNames: List<String>? = null,
     electricalProfileMapping: ElectricalProfileMapping? = null,
 ): TrainPath {
-    var prevBlockFinalOffset: Offset<TrainPath> = Offset.zero()
+    var prevBlockFinalOffset: Offset<PhysicsPath> = Offset.zero()
     val blockRanges = mutableListOf<BlockRange>()
     for (block in blocks) {
         val blockLength = blockInfra.getBlockLength(block)
@@ -97,7 +97,7 @@ fun buildTrainPathFromBlockRanges(
     routeNames: List<String>? = null,
     electricalProfileMapping: ElectricalProfileMapping? = null,
     haveApproximateBlocks: Boolean = false,
-    backtrackLocations: List<Offset<TrainPath>> = listOf(),
+    backtrackLocations: List<Offset<PhysicsPath>> = listOf(),
 ): TrainPath {
     require(routes == null || routeNames == null)
     val chunks = generateTrackChunks(rawInfra, blockInfra, blockRanges)
@@ -187,7 +187,7 @@ fun <ValueType, OffsetType> buildRangeList(
         else merged[merged.lastIndex] = merged.last().copy(objectEnd = range.objectEnd)
     }
 
-    var prevRangeLength: Offset<TrainPath> = Offset.zero()
+    var prevRangeLength: Offset<PhysicsPath> = Offset.zero()
     val res = mutableListOf<GenericLinearRange<ValueType, OffsetType>>()
     for (range in merged) {
         res.add(

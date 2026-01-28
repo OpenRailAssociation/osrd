@@ -2,7 +2,6 @@ package fr.sncf.osrd.envelope_sim
 
 import com.google.common.collect.RangeMap
 import fr.sncf.osrd.path.interfaces.PhysicsPath
-import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.utils.DistanceRangeSet
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -29,18 +28,18 @@ constructor(
          * List of switch and buffer stop offsets on the path, up to the first switch/buffer stop
          * *after* the end of the path (or right at the end).
          */
-        val dangerPointOffsets: List<Offset<TrainPath>>,
+        val dangerPointOffsets: List<Offset<PhysicsPath>>,
         /**
          * List of block-delimiting detectors (block entry/exit) offsets for every ETCS-block on the
          * path. Starts at the start of the path, can end after the end of the path.
          */
-        val detectorOffsets: List<Offset<TrainPath>>,
+        val detectorOffsets: List<Offset<PhysicsPath>>,
     ) {
         /**
          * Returns the next danger point location: next buffer stop or switch, whichever is closest.
          * If there is any.
          */
-        private fun getDangerPoint(offset: Offset<TrainPath>): Offset<TrainPath>? {
+        private fun getDangerPoint(offset: Offset<PhysicsPath>): Offset<PhysicsPath>? {
             return dangerPointOffsets.firstOrNull { it >= offset }
         }
 
@@ -51,14 +50,14 @@ constructor(
          * infrastructure, hence we'll be conservative and place the danger point on the EoA (stop
          * location or signal).
          */
-        fun getMandatoryDangerPoint(signalOffset: Offset<TrainPath>): Offset<TrainPath> {
+        fun getMandatoryDangerPoint(signalOffset: Offset<PhysicsPath>): Offset<PhysicsPath> {
             val dangerPoint = getDangerPoint(signalOffset)
             return if (dangerPoint == null || dangerPoint - signalOffset > 200.meters) signalOffset
             else dangerPoint
         }
 
         /** Returns the next ETCS detector location. */
-        fun getNextDetector(offset: Offset<TrainPath>): Offset<TrainPath>? {
+        fun getNextDetector(offset: Offset<PhysicsPath>): Offset<PhysicsPath>? {
             return detectorOffsets.firstOrNull { it >= offset }
         }
     }

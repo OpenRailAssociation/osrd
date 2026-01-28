@@ -14,7 +14,7 @@ import fr.sncf.osrd.envelope_sim.pipelines.SimStop
 import fr.sncf.osrd.envelope_sim.pipelines.maxEffortEnvelopeFrom
 import fr.sncf.osrd.envelope_sim.pipelines.maxSpeedEnvelopeFrom
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
-import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal
 import fr.sncf.osrd.reporting.exceptions.OSRDError
@@ -97,7 +97,7 @@ class STDCMSimulations {
         var stops = emptyList<SimStop>()
         var simLength = blockLength.distance - start.distance
         if (stopPosition != null) {
-            val stopOffset = Offset<TrainPath>(stopPosition - start)
+            val stopOffset = Offset<PhysicsPath>(stopPosition - start)
             // We presently consider all stdcm stops to be performed on closed signal by default
             // This presently only affects ETCS computations, which are not yet supported in stdcm
             // either

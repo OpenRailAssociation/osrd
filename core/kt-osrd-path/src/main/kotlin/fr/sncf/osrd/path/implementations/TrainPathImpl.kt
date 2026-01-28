@@ -31,7 +31,7 @@ data class TrainPathNoBacktrack(
     private val blocks: List<BlockRange>,
     private val chunks: List<DirChunkRange>,
     private val electricalProfileMapping: ElectricalProfileMapping?,
-    private val backtrackLocations: List<Offset<TrainPath>>,
+    private val backtrackLocations: List<Offset<PhysicsPath>>,
     // Set to true if the blocks have been generated from the track path. Throws an error if the
     // routes are read. Note: we may eventually want to turn the error into a warning, if we do want
     // approximate blocks along the path (when we lack context and don't have the actual ones).
@@ -78,9 +78,9 @@ data class TrainPathNoBacktrack(
         checkRangeList(chunks) { rawInfra.getTrackChunkLength(it.value).forceDirected() }
     }
 
-    override fun subPath(from: Offset<TrainPath>?, to: Offset<TrainPath>?): TrainPath {
-        val fromDist = from ?: Offset(0.meters)
-        val toDist = to ?: getLength()
+    override fun subPath(from: Offset<PhysicsPath>?, to: Offset<PhysicsPath>?): TrainPath {
+        val fromDist = from?.cast<PhysicsPath>() ?: Offset(0.meters)
+        val toDist = (to ?: getLength()).cast<PhysicsPath>()
         return TrainPathNoBacktrack(
             rawInfra = rawInfra,
             blockInfra = blockInfra,
@@ -89,7 +89,7 @@ data class TrainPathNoBacktrack(
             chunks = chunks.subRange(fromDist, toDist, resetOffsets = true),
             electricalProfileMapping = electricalProfileMapping,
             haveApproximateBlocks = haveApproximateBlocks,
-            backtrackLocations = backtrackLocations.filter { it in fromDist..toDist },
+            backtrackLocations = backtrackLocations.filter { it.cast() in fromDist..toDist },
         )
     }
 
@@ -259,11 +259,11 @@ data class TrainPathNoBacktrack(
         }
     }
 
-    override fun getLength(): Length<TrainPath> {
+    override fun getLength(): Length<PhysicsPath> {
         return blocks.last().pathEnd
     }
 
-    override fun getTrackLocationAtOffset(pathOffset: Offset<TrainPath>): TrackLocation {
+    override fun getTrackLocationAtOffset(pathOffset: Offset<PhysicsPath>): TrackLocation {
         val dirTrackRange = cachedDirTracks.first { it.containsPathOffset(pathOffset) }
         val dirTrackOffset = dirTrackRange.offsetFromTrainPath(pathOffset)
         val trackOffset = dirTrackRange.offsetToUndirected(dirTrackOffset)
@@ -343,7 +343,7 @@ data class TrainPathNoBacktrack(
         return copy(routes = routeRanges)
     }
 
-    override fun getBacktrackLocations(): List<Offset<TrainPath>> {
+    override fun getBacktrackLocations(): List<Offset<PhysicsPath>> {
         return backtrackLocations
     }
 

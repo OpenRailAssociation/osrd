@@ -72,3 +72,9 @@ export const addDurationToDate = (date: Date, dur: Duration) => new Date(date.ge
 
 export const subtractDurationFromDate = (date: Date, dur: Duration) =>
   new Date(date.getTime() - dur.ms);
+
+/** Compute the difference in minutes between two dates, truncated to the minute */
+export const minutesBetween = (a: Date, b: Date) =>
+  new Duration({
+    minutes: dayjs(a).startOf('minute').diff(dayjs(b).startOf('minute'), 'minute'),
+  });

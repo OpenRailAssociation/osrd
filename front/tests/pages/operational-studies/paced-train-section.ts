@@ -198,6 +198,7 @@ class PacedTrainSection extends CommonPage {
 
     const actionButtons: Record<string, Locator> = {
       projectItem: item.getByTestId('project-item'),
+      moveItem: item.getByTestId('move-item'),
       duplicateItem: item.getByTestId('duplicate-item'),
       editItem: item.getByTestId('edit-item'),
       deleteItem: item.getByTestId('delete-item'),
