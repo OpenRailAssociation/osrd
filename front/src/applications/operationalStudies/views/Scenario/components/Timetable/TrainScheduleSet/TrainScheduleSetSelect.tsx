@@ -10,7 +10,7 @@ type TrainScheduleSetSelectProps = {
   trainScheduleSets: TrainScheduleSet[];
   setTrainScheduleSetIdSelected: (id: number | undefined) => void;
   trainScheduleSetIdSelected: number | undefined;
-  catalog: CatalogEntry[];
+  catalogEntries: CatalogEntry[];
   onSubmit: (ttsid: number) => Promise<void>;
 };
 
@@ -19,7 +19,7 @@ const TrainScheduleSetSelect = ({
   trainScheduleSets,
   setTrainScheduleSetIdSelected,
   trainScheduleSetIdSelected,
-  catalog,
+  catalogEntries: catalog,
   onSubmit,
 }: TrainScheduleSetSelectProps) => {
   const { t } = useTranslation('operational-studies', {

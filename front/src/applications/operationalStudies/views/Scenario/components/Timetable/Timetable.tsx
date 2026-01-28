@@ -4,9 +4,7 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { Virtualizer } from 'virtua';
 
-import useScenarioTrainScheduleSet, {
-  type TimetableItemWithDetailsAndTrainScheduleSet,
-} from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
+import useScenarioTrainScheduleSet from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
@@ -20,7 +18,6 @@ import type {
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { extractEditoastIdFromPacedTrainId } from 'utils/trainId';
-import { useAsyncMemo } from 'utils/useAsyncMemo';
 
 import CalendarTrainList from './CalendarTrainList';
 import TimetableToolbar from './TimetableToolbar';
@@ -120,17 +117,6 @@ const Timetable = ({
       }
     },
     [selectedTimetableItemIds]
-  );
-
-  // TODO: the "as unknown as" should be removed on unmock.
-  // We do it because the PacedTrainWithDetail doesn't have (yet) the `train_schedule_set_id`
-  // But here we know that is set but the `useScenarioTrainScheduleSet` hook.
-  const trainScheduleSetsData = useAsyncMemo(
-    () =>
-      getTrainScheduleSetsFromTimetableItems(
-        filteredTimetableItems as unknown as TimetableItemWithDetailsAndTrainScheduleSet[]
-      ),
-    [filteredTimetableItems, getTrainScheduleSetsFromTimetableItems]
   );
 
   const openMoveDialog = useCallback((pacedTrainIds: PacedTrainId[]) => {
@@ -270,12 +256,12 @@ const Timetable = ({
         />
       )}
 
-      {showTrainScheduleMoveDialog && trainScheduleSetsData.type === 'ready' && (
+      {showTrainScheduleMoveDialog && timetableItemsByTrainScheduleSets && (
         <TrainScheduleMoveDialog
-          trainScheduleSets={trainScheduleSetsData.data.map((tss) => tss.trainScheduleSet)}
+          trainScheduleSets={timetableItemsByTrainScheduleSets.map((tss) => tss.trainScheduleSet)}
           setTrainScheduleSetIdSelected={setTrainScheduleSetIdSelected}
           trainScheduleSetIdSelected={trainScheduleSetIdSelected}
-          getCatalogEntries={getCatalogEntries}
+          catalogEntries={catalogEntries}
           labels={{
             title: t('trainScheduleSets.movingToAnotherPackage'),
             submit: t('trainScheduleSets.moveToSelectPackage'),

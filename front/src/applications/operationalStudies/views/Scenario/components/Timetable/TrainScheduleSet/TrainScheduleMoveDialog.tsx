@@ -6,9 +6,7 @@ import cx from 'classnames';
 import { noop } from 'lodash';
 
 import type { CatalogEntry, TrainScheduleSet } from 'common/api/osrdEditoastApi';
-import { LoaderFill } from 'common/Loaders';
 import { getErrorMessage } from 'utils/error';
-import { useAsyncMemo } from 'utils/useAsyncMemo';
 
 import TrainScheduleSetSelect from './TrainScheduleSetSelect';
 
@@ -18,7 +16,7 @@ type TrainScheduleMoveDialogProps = {
   trainScheduleSetIdSelected?: number;
   onCancel: () => void;
   onSubmit: (ttsid: number) => Promise<void>;
-  getCatalogEntries: () => Promise<CatalogEntry[]>;
+  catalogEntries: CatalogEntry[];
   labels: {
     title: string;
     submit: string;
@@ -32,10 +30,9 @@ const TrainScheduleMoveDialog = ({
   trainScheduleSetIdSelected,
   onSubmit,
   onCancel,
-  getCatalogEntries,
+  catalogEntries,
   labels,
 }: TrainScheduleMoveDialogProps) => {
-  const catalog = useAsyncMemo(() => getCatalogEntries(), [getCatalogEntries]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -95,10 +92,9 @@ const TrainScheduleMoveDialog = ({
         trainScheduleSets={trainScheduleSets}
         setTrainScheduleSetIdSelected={setTrainScheduleSetIdSelected}
         trainScheduleSetIdSelected={trainScheduleSetIdSelected}
-        catalog={catalog.type === 'ready' ? catalog.data : []}
+        catalogEntries={catalogEntries}
         onSubmit={submit}
       />
-      {catalog.type === 'loading' && <LoaderFill />}
     </Dialog>
   );
 };
