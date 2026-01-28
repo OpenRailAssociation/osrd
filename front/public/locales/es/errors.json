@@ -7,6 +7,7 @@
   "503": "Errores del servidor",
   "504": "El servidor no respondió.",
   "core": {
+    "assert_error": "Error de validación en {{file_location}}: {{assert_message}}",
     "missing_last_stdcm_stop": "No se admiten actualmente las solicitudes STDCM que no terminan en punto"
   },
   "default": "Se produjo un error.",
