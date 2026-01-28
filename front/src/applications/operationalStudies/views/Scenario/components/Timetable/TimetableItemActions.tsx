@@ -1,25 +1,27 @@
-// import React from 'react';
-
-import { Duplicate, Iterations, Pencil, Trash } from '@osrd-project/ui-icons';
+import { Duplicate, FileDirectorySymlink, Iterations, Pencil, Trash } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { GiPathDistance } from 'react-icons/gi';
 
 type TimetableItemActionsProps = {
   selectPathProjection: () => Promise<void>;
+  moveTimetableItem: () => void;
   duplicateTimetableItem: () => Promise<void>;
   editTimetableItem: () => void;
   deleteTimetableItem: () => Promise<void>;
   showResetExceptionsButton?: boolean;
   resetAllExceptions?: () => void;
+  showMovebutton: boolean;
 };
 
 const TimetableItemActions = ({
   selectPathProjection,
+  moveTimetableItem,
   duplicateTimetableItem,
   editTimetableItem,
   deleteTimetableItem,
   showResetExceptionsButton,
   resetAllExceptions,
+  showMovebutton,
 }: TimetableItemActionsProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   return (
@@ -45,6 +47,17 @@ const TimetableItemActions = ({
       >
         <GiPathDistance />
       </button>
+      {showMovebutton && (
+        <button
+          type="button"
+          aria-label={t('timetable.trainScheduleSets.moveToPackage')}
+          title={t('timetable.trainScheduleSets.moveToPackage')}
+          onClick={moveTimetableItem}
+          data-testid="move-item"
+        >
+          <FileDirectorySymlink />
+        </button>
+      )}
       <button
         type="button"
         aria-label={t('timetable.duplicate')}

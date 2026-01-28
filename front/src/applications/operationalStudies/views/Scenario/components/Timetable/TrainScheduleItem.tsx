@@ -45,6 +45,8 @@ type TrainScheduleItemProps = {
   setSelectedTimetableItemIds: React.Dispatch<React.SetStateAction<TimetableItemId[]>>;
   subCategories: SubCategory[];
   isSelectMode: boolean;
+  moveTimetableItem: () => void;
+  showMovebutton: boolean;
 };
 
 const TrainScheduleItem = ({
@@ -60,6 +62,8 @@ const TrainScheduleItem = ({
   setSelectedTimetableItemIds,
   subCategories,
   isSelectMode,
+  moveTimetableItem,
+  showMovebutton,
 }: TrainScheduleItemProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const dateTimeLocale = useDateTimeLocale();
@@ -290,9 +294,11 @@ const TrainScheduleItem = ({
       </div>
       <TimetableItemActions
         selectPathProjection={selectPathProjection}
+        moveTimetableItem={moveTimetableItem}
         duplicateTimetableItem={duplicateTrain}
         editTimetableItem={() => selectTrainToEdit(train)}
         deleteTimetableItem={deleteTrain}
+        showMovebutton={showMovebutton}
       />
     </div>
   );
