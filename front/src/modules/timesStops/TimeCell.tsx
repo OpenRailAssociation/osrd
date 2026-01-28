@@ -1,5 +1,6 @@
 import { useEffect, useReducer, useRef, type ChangeEvent } from 'react';
 
+import { Plus } from '@osrd-project/ui-icons';
 import type { CellContext } from '@tanstack/react-table';
 
 import type { TimesStopsRowNew } from './types';
@@ -453,6 +454,10 @@ const TimeCell = ({
     dispatch({ type: 'SECTION_CLICKED', section });
   };
 
+  const handlePlaceholderClick = () => {
+    inputRef.current?.focus();
+  };
+
   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
     const position = e.currentTarget.selectionStart || 0;
     const section = getSectionFromPosition(position);
@@ -479,11 +484,12 @@ const TimeCell = ({
   }, [state.hours, state.minutes, state.seconds, onChange]);
 
   return (
-    <div className="time-cell">
+    <div className={`time-cell ${state.empty ? 'time-cell--empty' : ''}`}>
       <input
         ref={inputRef}
         value={state.empty ? 'hh:mm:ss' : formatDisplay(state)}
         className="time-cell__input"
+        style={{ pointerEvents: state.empty ? 'none' : 'auto' }}
         onChange={(e) => e.preventDefault()}
         onKeyDown={handleKeyDown}
         onClick={handleClick}
@@ -492,7 +498,7 @@ const TimeCell = ({
         {...userProps}
       />
 
-      {!state.empty && (
+      {!state.empty ? (
         <div className="time-cell__display" aria-hidden="true">
           <span className={state.hours.includes('h') ? 'placeholder' : 'value'}>{state.hours}</span>
           <span className="separator">:</span>
@@ -504,9 +510,16 @@ const TimeCell = ({
             {state.seconds}
           </span>
         </div>
+      ) : (
+        <div
+          className="time-cell__placeholder"
+          onClick={handlePlaceholderClick}
+          role="button"
+          tabIndex={-1}
+        >
+          <Plus />
+        </div>
       )}
-
-      {state.empty && <span className="time-cell__placeholder">+</span>}
     </div>
   );
 };
