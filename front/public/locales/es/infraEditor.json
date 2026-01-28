@@ -4,21 +4,34 @@
     "title": "Direcciones aplicables"
   },
   "ApplicableDirectionsTrackRange": {
+    "description": "Un rango de pistas de direcciones aplicable es un rango de pistas con direcciones asociadas.",
     "properties": {
+      "applicable_directions": {
+        "description": "Dirección donde se aplica el objeto correspondiente"
+      },
       "begin": {
+        "description": "Desplazamiento inicial en metros de la sección de pista correspondiente",
         "title": "Comienzo"
       },
       "end": {
+        "description": "Desplazamiento final en metros de la sección de pista correspondiente",
         "title": "Final"
+      },
+      "track": {
+        "description": "Identificador de la sección de pista",
+        "title": "Vía"
       }
-    }
+    },
+    "title": "Rango de vía con direcciones aplicables"
   },
   "BalSystem": {
     "properties": {
       "conditional_parameters": {
+        "description": "Parámetros de señal BAL para rutas específicas",
         "title": "Parámetros condicionales"
       },
       "next_signaling_systems": {
+        "description": "Lista de sistemas de señalización de entrada permitidos",
         "title": "Sistemas de señalamiento siguientes"
       },
       "settings": {
