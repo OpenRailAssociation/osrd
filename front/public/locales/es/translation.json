@@ -11,7 +11,13 @@
     "infra-errors": {
       "corrector-modal": {
         "create-actions": "{{creation_count}} creaciones de objetos",
-        "delete-actions": "{{deletion_count}} supresión de objetos"
+        "delete-actions": "{{deletion_count}} supresión de objetos",
+        "loading-loader": "Calculando posibles correcciones",
+        "no-fixes-found": "No se encontraron correcciones.",
+        "saving-loader": "Aplicando correcciones a la infraestructura",
+        "text": "Se aplicarán las siguientes acciones para corregir algunos errores de la infraestructura:",
+        "title": "Corrector automático de anomalías",
+        "update-actions": "{{update_count}} actualizaciones de objetos existentes"
       },
       "error-level": {
         "all": "Todo",
