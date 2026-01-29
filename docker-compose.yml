@@ -100,7 +100,7 @@ services:
       test:
         [
           "CMD",
-          "curl", "-f",
+          "curl", "--fail", "--fail-early",
           "http://localhost:9000/health",
           "http://localhost:9001/rustfs/console/health",
         ]
