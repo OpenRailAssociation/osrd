@@ -1,8 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
 
+import type { CategoryOption } from 'applications/rollingStockEditor/types';
 import { STDCM_ROLLING_STOCKS } from 'assets/rollingStock/freightRollingStocks';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { LightRollingStock, LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
+import type {
+  LightRollingStock,
+  LightRollingStockWithLiveries,
+  TrainMainCategory,
+} from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
@@ -14,6 +19,7 @@ import { castErrorToFailure } from 'utils/error';
  * - thermal: true if the rolling stock has a thermal mode
  * - locked: true if the rolling stock is native in the database, can't be updated/deleted
  * - notLocked: true if the rolling stock is created by the user, can be updated/deleted
+ * - category: the category the rolling stocks should have as primary or other categories, none means no restriction
  */
 export type RollingStockFilters = {
   id?: number;
@@ -22,6 +28,7 @@ export type RollingStockFilters = {
   thermal: boolean;
   locked: boolean;
   notLocked: boolean;
+  category?: TrainMainCategory;
 };
 
 export type RollingStockFilterKeys = keyof Omit<RollingStockFilters, 'text'>;
@@ -32,6 +39,7 @@ const initialFilters = {
   thermal: false,
   locked: false,
   notLocked: false,
+  category: undefined,
 };
 
 export function rollingStockPassesEnergeticModeFilters(
@@ -85,6 +93,16 @@ function rollingStockPassesNotlockedFilter(isLocked: boolean, filters: RollingSt
   return true;
 }
 
+function rollingStockPassesCategoryFilter(
+  categories: TrainMainCategory[],
+  filters: RollingStockFilters
+) {
+  if (!filters.category) {
+    return true;
+  }
+  return categories.includes(filters.category);
+}
+
 function filterRollingStocks(
   rollingStockList: LightRollingStockWithLiveries[],
   filters: RollingStockFilters
@@ -92,6 +110,7 @@ function filterRollingStocks(
   if (filters === initialFilters) return rollingStockList;
   return rollingStockList.filter((rollingStock) => {
     const { id, name, metadata, effort_curves: effortCurves, locked } = rollingStock;
+    const categories = rollingStock.other_categories.concat(rollingStock.primary_category);
 
     if (filters.id !== undefined) {
       return id === filters.id;
@@ -108,11 +127,13 @@ function filterRollingStocks(
     );
     const passLockedFilter = rollingStockPassesLockedFilter(locked, filters);
     const passNotlockedFilter = rollingStockPassesNotlockedFilter(locked, filters);
+    const passCategoryFilter = rollingStockPassesCategoryFilter(categories, filters);
     return (
       passSearchedStringFilter &&
       passEnergeticModesFilter &&
       passLockedFilter &&
-      passNotlockedFilter
+      passNotlockedFilter &&
+      passCategoryFilter
     );
   });
 }
@@ -129,6 +150,10 @@ export function computeFilter(filter: RollingStockFilterKeys, filters: RollingSt
     ...filters,
     [filter]: !filters[filter],
   };
+}
+
+function computeCategoryFilter(filters: RollingStockFilters, category?: CategoryOption) {
+  return { ...filters, category: category?.id };
 }
 
 const useFilterRollingStock = ({ isStdcm } = { isStdcm: false }) => {
@@ -174,6 +199,11 @@ const useFilterRollingStock = ({ isStdcm } = { isStdcm: false }) => {
     setSearchIsLoading(true);
   };
 
+  const selectCategoryFilter = (category?: CategoryOption) => {
+    setFilters(computeCategoryFilter(filters, category));
+    setSearchIsLoading(true);
+  };
+
   const resetFilters = () => {
     setFilters(initialFilters);
   };
@@ -205,6 +235,7 @@ const useFilterRollingStock = ({ isStdcm } = { isStdcm: false }) => {
     searchRollingStock,
     searchRollingStockById,
     toggleFilter,
+    selectCategoryFilter,
   };
 };
 

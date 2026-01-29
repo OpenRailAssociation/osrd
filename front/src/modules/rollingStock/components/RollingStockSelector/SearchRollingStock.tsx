@@ -4,14 +4,18 @@ import { BiLockAlt, BiLockOpenAlt } from 'react-icons/bi';
 import { BsLightningFill } from 'react-icons/bs';
 import { MdLocalGasStation } from 'react-icons/md';
 
+import type { CategoryOption } from 'applications/rollingStockEditor/types';
 import type { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
+import { getMainCategoryOptions } from 'modules/rollingStock/hooks/getMainCategoryOptions';
 import type { RollingStockFilters } from 'modules/rollingStock/hooks/useFilterRollingStock';
 
 type SearchRollingStockProps = {
   filteredRollingStockList: LightRollingStockWithLiveries[];
   searchRollingStock: (value: string) => void;
+  selectCategoryFilter: (value?: CategoryOption) => void;
   toggleFilter: (filter: 'elec' | 'thermal' | 'locked' | 'notLocked') => void;
   filters: RollingStockFilters;
   hasWhiteBackground?: boolean;
@@ -21,10 +25,16 @@ const SearchRollingStock = ({
   filteredRollingStockList,
   filters,
   searchRollingStock,
+  selectCategoryFilter,
   toggleFilter,
   hasWhiteBackground,
 }: SearchRollingStockProps) => {
   const { t } = useTranslation();
+  const { t: tRollingStock } = useTranslation('translation', { keyPrefix: 'rollingStock' });
+  const mainCategoriesOptions = getMainCategoryOptions(tRollingStock);
+  const selectedCategory =
+    mainCategoriesOptions.find((c) => (c as CategoryOption).id === filters.category) ??
+    mainCategoriesOptions[0];
 
   return (
     <div className="row no-gutters">
@@ -115,6 +125,17 @@ const SearchRollingStock = ({
         <small data-testid="search-results-text">
           {t('rollingStock.resultFound', { count: filteredRollingStockList.length })}
         </small>
+      </div>
+      <div className="mb-3 d-flex flex-wrap">
+        <SelectSNCF
+          sm
+          name="categorySelector"
+          id="categorySelector"
+          label={`${t('rollingStock.primaryCategory')} & ${t('rollingStock.otherCategories')}`}
+          value={selectedCategory}
+          options={mainCategoriesOptions}
+          onChange={(category) => selectCategoryFilter(category)}
+        />
       </div>
     </div>
   );

@@ -26,8 +26,14 @@ function RollingStockModal({
   const [openRollingStockCardId, setOpenRollingStockCardId] = useState(rollingStockId);
   const { closeModal } = useContext(ModalContext);
 
-  const { filteredRollingStockList, filters, searchRollingStock, toggleFilter, searchIsLoading } =
-    useFilterRollingStock();
+  const {
+    filteredRollingStockList,
+    filters,
+    searchRollingStock,
+    toggleFilter,
+    selectCategoryFilter,
+    searchIsLoading,
+  } = useFilterRollingStock();
 
   useEffect(() => {
     if (openRollingStockCardId !== undefined) {
@@ -71,6 +77,7 @@ function RollingStockModal({
             filters={filters}
             searchRollingStock={searchRollingStock}
             toggleFilter={toggleFilter}
+            selectCategoryFilter={selectCategoryFilter}
           />
         </div>
         <div className="rollingstock-search-list">

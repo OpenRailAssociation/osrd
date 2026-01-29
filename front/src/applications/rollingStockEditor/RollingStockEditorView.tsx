@@ -49,6 +49,7 @@ const RollingStockEditor = () => {
     filters,
     searchRollingStock,
     toggleFilter,
+    selectCategoryFilter,
     searchIsLoading,
     resetFilters,
   } = useFilterRollingStock();
@@ -240,6 +241,7 @@ const RollingStockEditor = () => {
             filters={filters}
             searchRollingStock={searchRollingStock}
             toggleFilter={toggleFilter}
+            selectCategoryFilter={selectCategoryFilter}
             hasWhiteBackground
           />
           {displayList()}
