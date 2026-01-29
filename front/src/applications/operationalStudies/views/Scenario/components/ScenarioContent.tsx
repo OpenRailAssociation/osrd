@@ -1,10 +1,11 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 
 import { ChevronRight } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import useScenarioData from 'applications/operationalStudies/hooks/useScenarioData';
+import useScenarioTrainScheduleSet from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
 import type { Board } from 'applications/operationalStudies/types';
 import ManageTimetableItemModal from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem';
 import SimulationResults from 'applications/operationalStudies/views/Scenario/components/SimulationResults';
@@ -75,7 +76,10 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
     totalConflictsCount,
     selectedTrainConflictsCount,
     displayedConflicts,
-  } = useConflictsFilter(timetableItems || [], conflicts);
+  } = useConflictsFilter(
+    useMemo(() => timetableItems || [], [timetableItems]),
+    conflicts
+  );
 
   const macroEditorState = useRef<MacroEditorState>(null);
   const lastNgeOperationPromise = useRef(Promise.resolve());
@@ -98,6 +102,12 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
       refreshNge();
     },
     [upsertTimetableItems, refreshNge]
+  );
+
+  const { importTrainScheduleSets } = useScenarioTrainScheduleSet(
+    timetableItemsWithDetails,
+    useMemo(() => timetableItems || [], [timetableItems]),
+    upsertTimetableItemsWithNge
   );
 
   const removeTimetableItemsWithNge = useCallback(
@@ -170,6 +180,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
             setTimetableItemToEditData={setTimetableItemToEditData}
             setCollapsedTimetableEdit={() => setCollapsedTimetableEdit(!collapsedTimetableEdit)}
             collapsedTimetableEdit={collapsedTimetableEdit}
+            importTrainScheduleSets={importTrainScheduleSets}
           />
         )}
         <div
