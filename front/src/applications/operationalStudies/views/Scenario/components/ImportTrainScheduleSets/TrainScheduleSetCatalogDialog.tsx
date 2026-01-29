@@ -15,7 +15,6 @@ import type { CartManagement, TrainScheduleSetImportType } from './types';
 import useLoadCatalog from './useLoadCatalog';
 
 type TrainScheduleSetCatalogDialogueProps = {
-  trainScheduleSetsAlreadyImported?: Set<TrainScheduleSet['id']>;
   onCancel: () => void;
   onSubmit: (
     data: Array<{ type: TrainScheduleSetImportType; trainScheduleSet: TrainScheduleSet }>
@@ -23,12 +22,11 @@ type TrainScheduleSetCatalogDialogueProps = {
 };
 
 const TrainScheduleSetCatalogDialog = ({
-  trainScheduleSetsAlreadyImported = new Set(),
   onCancel,
   onSubmit,
 }: TrainScheduleSetCatalogDialogueProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'importTrainScheduleSet' });
-  const { loading, error, data } = useLoadCatalog();
+  const { loading, error, data, trainScheduleSetsAlreadyImported } = useLoadCatalog();
   const [cart, setCart] = useState<CartManagement['cart']>([]);
 
   /**

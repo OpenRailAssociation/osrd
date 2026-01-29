@@ -1,7 +1,6 @@
 import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
 
 import { ManageTimetableItemContextProvider } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
-import type { TrainScheduleSet } from 'common/api/osrdEditoastApi';
 
 import ManageTimetableItem from './ManageTimetableItem';
 import ManageTimetableItemLeftPanel, {
@@ -13,7 +12,6 @@ import { TrainScheduleSetCatalogDialog } from '../ImportTrainScheduleSets';
 type ManageTimetableItemModalProps = ManageTimetableItemLeftPanelProps & {
   setCollapsedTimetableEdit: () => void;
   collapsedTimetableEdit: boolean;
-  trainScheduleSetsAlreadyImported: Set<TrainScheduleSet['id']>;
 };
 
 const ManageTimetableItemModal = ({
@@ -24,7 +22,6 @@ const ManageTimetableItemModal = ({
   setTimetableItemToEditData,
   setCollapsedTimetableEdit,
   collapsedTimetableEdit,
-  trainScheduleSetsAlreadyImported,
 }: ManageTimetableItemModalProps) => (
   <div className="scenario-manage-timetable-item-modal">
     <ManageTimetableItemLeftPanel
@@ -58,7 +55,6 @@ const ManageTimetableItemModal = ({
 
     {displayTimetableItemManagement === MANAGE_TIMETABLE_ITEM_TYPES.catalog && (
       <TrainScheduleSetCatalogDialog
-        trainScheduleSetsAlreadyImported={trainScheduleSetsAlreadyImported}
         onSubmit={(data) => {
           //TODO: do the glue when mock will be removed
           console.debug('Import from catalog', data);
