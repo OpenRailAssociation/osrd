@@ -295,4 +295,23 @@ mod tests {
             }
         );
     }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn catalog_entry_list_paginated() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+
+        let catalog_entry_1 =
+            create_catalog_entry_with_name(&mut db_pool.get().await.unwrap(), "test_1").await;
+        let catalog_entry_2 =
+            create_catalog_entry_with_name(&mut db_pool.get().await.unwrap(), "test_2").await;
+        let request = app.get("/catalog_entries");
+        let catalog_entries: CatalogEntryPage = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
+        let results = catalog_entries.results;
+        assert_eq!(results, vec![catalog_entry_1, catalog_entry_2]);
+    }
 }
