@@ -17,10 +17,23 @@
     top: 50%;
     left: 50%;
     width: 84px;
-    height: 40px;
     padding-bottom: 11px;
     transform: translate(-50%, -50%);
     text-align: center;
+  }
+
+  &__input {
+    z-index: 2;
+    background: transparent;
+    color: transparent;
+    caret-color: transparent;
+    cursor: pointer;
+    &:focus {
+      outline: none;
+    }
+    &::selection {
+      background: transparent;
+    }
   }
 
   &__display {
@@ -31,41 +44,46 @@
     display: flex;
     justify-content: center;
     align-items: center;
-  }
 
-  &__input {
-    z-index: 2;
-    background: transparent;
-    color: transparent;
-    caret-color: #0066cc;
-    cursor: pointer;
-    &:focus {
-      outline: none;
+    &--saved {
+      color: var(--primary60);
     }
-  }
 
-  &__placeholder {
-    position: relative;
-    width: 24px;
-    height: 24px;
-
-    color: var(--primary40);
-    pointer-events: auto;
-    cursor: pointer;
-    transition: color 0.2s;
-  }
-
-  &:hover:not(:focus-within) {
-    background-color: var(--primary5);
-    .time-cell__placeholder {
-      color: var(--primary80);
+    .placeholder-letter {
+      color: var(--grey30);
     }
-  }
 
-  &.time-cell--empty:active {
-    background-color: var(--primary60);
-    .time-cell__placeholder {
-      color: var(--white100);
+    .placeholder-letter-m {
+      // transform works only on block or inline-block elements
+      display: inline-block;
+      transform: scaleX(0.7) translateX(-2px);
+      letter-spacing: -4px;
+    }
+
+    .value {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 20px;
+      width: 17px;
+    }
+
+    .value-focused {
+      position: relative;
+      background-color: var(--primary10);
+      border-radius: 2px;
+      height: 18px;
+      width: 17px;
+    }
+
+    .custom-caret {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 1px;
+      height: 20px;
+      background-color: #006dff;
+      left: 100%;
     }
   }
 }
