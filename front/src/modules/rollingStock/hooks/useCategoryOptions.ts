@@ -5,8 +5,6 @@ import { TrainMainCategoryDict } from 'modules/rollingStock/consts';
 
 import type { CategoryOptionWithId } from '../types';
 
-export type CategoryOption = { id?: string; label: string };
-
 export default function useCategoryOptions(withPlaceholder = true) {
   const { t } = useTranslation();
 
