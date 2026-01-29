@@ -855,6 +855,7 @@
             display: flex;
             align-items: center;
             flex: 1;
+            min-width: 0;
             cursor: pointer;
 
             &.add-tab {
@@ -872,6 +873,12 @@
               color: var(--info60);
               padding-bottom: 2px; // to fix icon weird height
               margin-inline: 6px 8px;
+            }
+
+            .tab-name {
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
             }
           }
         }

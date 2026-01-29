@@ -132,6 +132,10 @@ const TrainScheduleSetTab = ({
     [trainScheduleSet]
   );
 
+  const tabName = isSandbox(trainScheduleSet)
+    ? t('sandbox')
+    : computeTrainScheduleSetName(trainScheduleSet.name!, catalogName);
+
   return (
     <>
       <div
@@ -164,10 +168,8 @@ const TrainScheduleSetTab = ({
             ) : (
               <DeviceDesktop className="train-schedule-set-status" />
             ))}
-          <span>
-            {isSandbox(trainScheduleSet)
-              ? t('sandbox')
-              : computeTrainScheduleSetName(trainScheduleSet.name!, catalogName)}
+          <span title={tabName} className="tab-name">
+            {tabName}
           </span>
         </div>
         {!isSandbox(trainScheduleSet) && (
