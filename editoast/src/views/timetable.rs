@@ -844,6 +844,7 @@ pub(in crate::views) async fn get_train_schedule_sets_from_timetable(
     Ok(Json(train_schedule_sets))
 }
 
+#[cfg_attr(test, derive(Serialize))]
 #[derive(IntoParams, Deserialize, ToSchema)]
 pub(in crate::views) struct TrainScheduleSetForm {
     train_schedule_set_ids: HashSet<i64>,
@@ -1391,5 +1392,32 @@ mod tests {
             physics_consist.compute_const_gamma(),
             units::meter_per_second_squared::new(0.6)
         );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn test_set_links_train_schedule_sets_to_timetable() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+
+        let timetable = create_timetable(&mut db_pool.get().await.unwrap()).await;
+        let train_schedule_set = create_train_schedule_set(&mut db_pool.get().await.unwrap()).await;
+        let train_schedule_set_id = train_schedule_set.id;
+        let train_schedule_set_form = TrainScheduleSetForm {
+            train_schedule_set_ids: HashSet::from([train_schedule_set_id]),
+        };
+        let request = app
+            .post(format!("/timetable/{}/train_schedule_sets", timetable.id).as_str())
+            .json(&train_schedule_set_form);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NO_CONTENT);
+
+        let request = app.get(format!("/timetable/{}/train_schedule_sets", timetable.id).as_str());
+        let train_schedule_sets: Vec<TrainScheduleSet> = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
+        assert_eq!(train_schedule_sets, vec![train_schedule_set]);
     }
 }
