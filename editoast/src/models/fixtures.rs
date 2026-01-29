@@ -97,12 +97,16 @@ pub async fn create_train_schedule_set(conn: &mut DbConnection) -> TrainSchedule
         .expect("Failed to create train schedule set")
 }
 
-pub async fn create_catalog_entry(conn: &mut DbConnection) -> CatalogEntry {
+pub async fn create_catalog_entry_with_name(conn: &mut DbConnection, name: &str) -> CatalogEntry {
     CatalogEntry::changeset()
-        .name(Some("test".into()))
+        .name(Some(name.into()))
         .create(conn)
         .await
         .expect("Failed to create catalog entry")
+}
+
+pub async fn create_catalog_entry(conn: &mut DbConnection) -> CatalogEntry {
+    create_catalog_entry_with_name(conn, "test").await
 }
 
 async fn link_train_schedule_set_to_timetable(
