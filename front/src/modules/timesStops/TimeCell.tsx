@@ -1,8 +1,8 @@
 import { useEffect, useReducer, useRef, type ChangeEvent } from 'react';
 
-import { Plus } from '@osrd-project/ui-icons';
 import type { CellContext } from '@tanstack/react-table';
 
+import CellPlaceholder from './CellPlaceholder';
 import type { TimesStopsRowNew } from './types';
 
 // Types
@@ -390,6 +390,22 @@ const initialTimeState = (controlledValue: Date | null): TimeState => ({
 
 // Component
 
+const renderTimeSection = (value: string, focused: boolean) => (
+  <span className={`value ${focused ? 'value-focused' : ''}`}>
+    {focused && <span className="custom-caret" />}
+    <span
+      className={/\d/.test(value[0]) ? '' : `placeholder-letter placeholder-letter-${value[0]}`}
+    >
+      {value[0]}
+    </span>
+    <span
+      className={/\d/.test(value[1]) ? '' : `placeholder-letter placeholder-letter-${value[1]}`}
+    >
+      {value[1]}
+    </span>
+  </span>
+);
+
 const TimeCell = ({
   getValue,
   ...props
@@ -459,8 +475,13 @@ const TimeCell = ({
   };
 
   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    const position = e.currentTarget.selectionStart || 0;
-    const section = getSectionFromPosition(position);
+    let section: Section;
+    if (state.empty) {
+      section = 'minutes';
+    } else {
+      const position = e.currentTarget.selectionStart || 0;
+      section = getSectionFromPosition(position);
+    }
     dispatch({ type: 'FOCUSED', section });
     onFocus?.(e);
   };
@@ -499,26 +520,20 @@ const TimeCell = ({
       />
 
       {!state.empty ? (
-        <div className="time-cell__display" aria-hidden="true">
-          <span className={state.hours.includes('h') ? 'placeholder' : 'value'}>{state.hours}</span>
+        <div
+          className={`time-cell__display ${
+            !state.focusedSection ? 'time-cell__display--saved' : ''
+          }`}
+          aria-hidden="true"
+        >
+          {renderTimeSection(state.hours, state.focusedSection === 'hours')}
           <span className="separator">:</span>
-          <span className={state.minutes.includes('m') ? 'placeholder' : 'value'}>
-            {state.minutes}
-          </span>
+          {renderTimeSection(state.minutes, state.focusedSection === 'minutes')}
           <span className="separator">:</span>
-          <span className={state.seconds.includes('s') ? 'placeholder' : 'value'}>
-            {state.seconds}
-          </span>
+          {renderTimeSection(state.seconds, state.focusedSection === 'seconds')}
         </div>
       ) : (
-        <div
-          className="time-cell__placeholder"
-          onClick={handlePlaceholderClick}
-          role="button"
-          tabIndex={-1}
-        >
-          <Plus />
-        </div>
+        <CellPlaceholder onClick={handlePlaceholderClick} />
       )}
     </div>
   );
