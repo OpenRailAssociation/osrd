@@ -132,3 +132,5 @@ export type ElectricalParamsLists = Omit<
   RollingStockSelectorParams,
   'comfortLevels' | 'tractionModes'
 >;
+
+export type CategoryOption = { id?: TrainMainCategory; label: string };
