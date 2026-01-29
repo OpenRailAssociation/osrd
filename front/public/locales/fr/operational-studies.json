@@ -286,6 +286,12 @@
         "edit": "Modifier le paquet",
         "editLocalTitle": "Modifier le paquet local",
         "editPublishedTitle": "Modifier le paquet publié",
+        "error": {
+          "alreadyPublished": "Ce paquet est déjà publié",
+          "catalogEntryRequired": "Un ensemble est requis pour publier le paquet",
+          "nameRequired": "Un nom est requis pour publier le paquet",
+          "tssNameDuplicate": "Le nom du paquet {{name}} est déjà utilisé dans l'ensemble avec l'identifiant {{catalogId}}"
+        },
         "existingCatalogEntry": "Utiliser un ensemble existant",
         "localRemoveDialogTitle": "Retirer le paquet local",
         "localRemoveDialogWarning": "Ce paquet est local : toutes ses informations seront définitivement supprimées.",

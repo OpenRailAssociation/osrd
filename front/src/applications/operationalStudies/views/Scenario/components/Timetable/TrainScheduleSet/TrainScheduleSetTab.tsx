@@ -190,7 +190,7 @@ const TrainScheduleSetTab = ({
               await publishTrainScheduleSet(trainScheduleSet, data);
             }}
             checkNameInCatalogIsUniq={async (name, catalogId) => {
-              const result = await getTrainScheduleSetByCatalogAndName(name, catalogId);
+              const result = getTrainScheduleSetByCatalogAndName(name, catalogId);
               if (!result) return true;
               return result.id === trainScheduleSet.id;
             }}

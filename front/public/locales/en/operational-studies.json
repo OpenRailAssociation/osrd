@@ -286,6 +286,12 @@
         "edit": "Edit package",
         "editLocalTitle": "Edit local package",
         "editPublishedTitle": "Edit published package",
+        "error": {
+          "alreadyPublished": "This package is already published",
+          "catalogEntryRequired": "A set is required to publish the package",
+          "nameRequired": "A name is required to publish the package",
+          "tssNameDuplicate": "Package name {{name}} is already in use in set with id {{catalogId}}"
+        },
         "existingCatalogEntry": "Use an existing set",
         "localRemoveDialogTitle": "Remove local package",
         "localRemoveDialogWarning": "This package is local: all information it contains will be permanently deleted.",

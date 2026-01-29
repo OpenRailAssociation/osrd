@@ -82,7 +82,7 @@ const Timetable = ({
     localCopyTrainScheduleSet,
     updateTrainScheduleSet,
     removeTrainScheduleSet,
-  } = useScenarioTrainScheduleSet(timetableItemsWithDetails);
+  } = useScenarioTrainScheduleSet(timetableItemsWithDetails, timetableItems, upsertTimetableItems);
 
   const { filteredTimetableItems, ...timetableFilters } =
     useFilterTimetableItems(timetableItemsWithDetails);
