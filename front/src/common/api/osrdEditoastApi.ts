@@ -366,7 +366,13 @@ const osrdEditoastApi = generatedEditoastApi
 
       // Train schedule sets handling
       getTimetableByIdTrainScheduleSets: {
-        providesTags: () => [{ type: 'train_schedule_set', id: 'LIST' }],
+        providesTags: (result) => [
+          { type: 'train_schedule_set', id: 'LIST' },
+          ...(result || []).map(({ id }) => ({
+            type: 'train_schedule_set' as const,
+            id,
+          })),
+        ],
       },
       postTimetableByIdTrainScheduleSets: {
         invalidatesTags: () => [{ type: 'train_schedule_set', id: 'LIST' }],
