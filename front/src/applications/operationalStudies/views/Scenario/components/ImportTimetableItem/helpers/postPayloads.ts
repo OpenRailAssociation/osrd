@@ -1,4 +1,5 @@
 import type { TFunction } from 'i18next';
+import { chunk } from 'lodash';
 
 import type {
   RoundTripsFromJson,
@@ -101,7 +102,14 @@ export const postFullImportPayload = async (
   try {
     const { round_trips, macro_nodes, macro_notes } = timetableJsonPayload;
     const pacedTrains = generateTrainPayloads(timetableJsonPayload.paced_trains, subCategories);
-    const timetableItems = await postTimetableItems(trainScheduleSetId, pacedTrains, dispatch);
+
+    const timetableItems: TimetableItem[] = [];
+
+    const BATCH_SIZE = 1000;
+    const chunks = chunk(pacedTrains, BATCH_SIZE);
+    for (const c of chunks) {
+      timetableItems.push(...(await postTimetableItems(trainScheduleSetId, c, dispatch)));
+    }
 
     if (round_trips) {
       await postRoundTrips(round_trips, timetableItems, dispatch);
