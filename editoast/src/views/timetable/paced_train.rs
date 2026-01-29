@@ -1352,6 +1352,7 @@ pub(in crate::views) async fn track_occupancy(
     Ok(Json(results))
 }
 
+#[cfg_attr(test, derive(serde::Serialize))]
 #[derive(Deserialize, ToSchema)]
 pub(in crate::views) struct MovePacedTrainsForm {
     pub paced_train_ids: Vec<i64>,
@@ -1499,6 +1500,7 @@ mod tests {
     use crate::views::test_app::TestAppBuilder;
     use crate::views::test_app::TestResponse;
     use crate::views::tests::mocked_core_pathfinding_sim_and_proj;
+    use crate::views::timetable::paced_train::MovePacedTrainsForm;
     use crate::views::timetable::paced_train::OccupancyBlocksPacedTrainResult;
     use crate::views::timetable::paced_train::PacedTrainResponse;
     use crate::views::timetable::paced_train::PacedTrainSummaryResponse;
@@ -2551,5 +2553,34 @@ mod tests {
             response.await.assert_status(StatusCode::OK).json_into();
 
         assert!(track_occupancies.is_empty());
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn move_paced_trains_to_another_train_schedule_set() {
+        let app = TestAppBuilder::new().build();
+        let db_pool = app.db_pool();
+        let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
+        let paced_train =
+            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.id).await;
+
+        let train_schedule_set_to_move = create_train_schedule_set(&mut db_pool.get_ok()).await;
+
+        let move_form = MovePacedTrainsForm {
+            paced_train_ids: vec![paced_train.id],
+            train_schedule_set_id: train_schedule_set_to_move.id,
+        };
+        let request = app.patch("/paced_train/move").json(&move_form);
+
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NO_CONTENT);
+
+        let paced_train = models::PacedTrain::retrieve(db_pool.get_ok(), paced_train.id)
+            .await
+            .expect("Failed to retrieve paced train");
+        assert_eq!(
+            paced_train.unwrap().train_schedule_set_id,
+            train_schedule_set_to_move.id
+        );
     }
 }
