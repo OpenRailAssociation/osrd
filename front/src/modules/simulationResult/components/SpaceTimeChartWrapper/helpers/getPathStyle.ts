@@ -25,20 +25,13 @@ const getPathStyle = (
     : train.id;
   const { colors } = train;
 
-  // Invalid trains have a specific style regardless of other states
-  if (train.isInvalid) {
-    return {
-      color: '#8A714B',
-      level: 2,
-      border: {
-        offset: 16,
-        color: 'transparent',
-        backgroundColor: 'rgba(0, 0, 0, 0.05)',
-      },
-    };
-  }
+  const invalidBorder = {
+    offset: 16,
+    color: 'transparent',
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+  };
 
-  // Standard behavior for valid trains
+  // Check hover from chart
   if (hovered && 'pathId' in hovered.element && !dragging) {
     const hoveredTrainIdFromChart = hovered.element.pathId as TrainId;
 
@@ -48,33 +41,51 @@ const getPathStyle = (
       (isOccurrenceId(hoveredTrainIdFromChart) &&
         timetableItemId === extractPacedTrainIdFromOccurrenceId(hoveredTrainIdFromChart))
     ) {
-      return { color: colors.hovered, level: 1 };
+      return {
+        color: colors.hovered,
+        level: 1,
+        ...(train.isInvalid && { border: invalidBorder }),
+      };
     }
   }
 
+  // Check hover from timetable
   if (hoveredTrainIdFromTimetable && !dragging) {
     // When hovering from the timetable list:
     // - if we hover an occurrence, we only highlight that exact occurrence curve
     // - if we hover a paced train (collapsed or expanded header), we highlight all its occurrences
     if (isOccurrenceId(hoveredTrainIdFromTimetable)) {
-      if (train.id === hoveredTrainIdFromTimetable) return { color: colors.hovered, level: 1 };
+      if (train.id === hoveredTrainIdFromTimetable) {
+        return {
+          color: colors.hovered,
+          level: 1,
+          ...(train.isInvalid && { border: invalidBorder }),
+        };
+      }
     } else if (timetableItemId === hoveredTrainIdFromTimetable) {
-      return { color: colors.hovered, level: 1 };
+      return {
+        color: colors.hovered,
+        level: 1,
+        ...(train.isInvalid && { border: invalidBorder }),
+      };
     }
   }
+
   // Apply occurrence style if selectedTrainId is an occurrence from the same paced
   if (selectedTrainId) {
     if (isOccurrenceId(selectedTrainId)) {
       if (train.id === selectedTrainId) {
         return {
           color: colors.normal,
-          level: 1,
-          border: {
-            offset: 3,
-            width: 0.5,
-            color: colors.normal,
-            backgroundColor: colors.background,
-          },
+          ...(train.isInvalid && { level: 1 }),
+          border: train.isInvalid
+            ? invalidBorder
+            : {
+                offset: 3,
+                width: 0.5,
+                color: colors.normal,
+                backgroundColor: colors.background,
+              },
         };
       }
       // Other occurrences from the same paced
@@ -86,19 +97,27 @@ const getPathStyle = (
         return {
           color: colors.normal,
           level: 1,
-          border: {
-            offset: 3.5,
-            color: 'transparent',
-            backgroundColor: colors.background,
-          },
+          border: train.isInvalid
+            ? invalidBorder
+            : {
+                offset: 3.5,
+                color: 'transparent',
+                backgroundColor: colors.background,
+              },
         };
       }
     } else if (train.id === selectedTrainId) {
-      return { color: colors.normal, level: 1 };
+      return {
+        color: colors.normal,
+        ...(train.isInvalid ? { level: 1, border: invalidBorder } : { level: 1 }),
+      };
     }
   }
 
-  return { color: colors.normal };
+  return {
+    color: colors.normal,
+    ...(train.isInvalid && { border: invalidBorder }),
+  };
 };
 
 export default getPathStyle;
