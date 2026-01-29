@@ -13,11 +13,17 @@ import type { TimetableItem } from 'reducers/osrdconf/types';
 import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
 import { useScenarioContext } from './useScenarioContext';
+import type { TrainScheduleSetImportType } from '../views/Scenario/components/ImportTrainScheduleSets/types';
 import { sortTrainScheduleSets } from '../views/Scenario/components/Timetable/utils';
 
 export type TrainScheduleSetFormData = Omit<TrainScheduleSet, 'catalog_entry_id' | 'id'> & {
   catalog?: { id: number; type: 'selected' } | { name: string; type: 'create' };
 };
+
+export type ImportTrainScheduleSetsPayload = Array<{
+  type: TrainScheduleSetImportType;
+  trainScheduleSet: TrainScheduleSet;
+}>;
 
 export default function useScenarioTrainScheduleSet(
   timetableItemsWithDetails: TimetableItemWithDetails[],
@@ -50,6 +56,9 @@ export default function useScenarioTrainScheduleSet(
 
   const [linkTrainScheduleSetToTimetable] =
     osrdEditoastApi.endpoints.postTimetableByIdTrainScheduleSets.useMutation();
+
+  const [getTrainScheduleSetPacedTrains] =
+    osrdEditoastApi.endpoints.getTrainScheduleSetsByIdPacedTrains.useLazyQuery();
 
   const createTrainScheduleSet = useCallback(
     async (data: TrainScheduleSetFormData): Promise<void> => {
@@ -238,6 +247,93 @@ export default function useScenarioTrainScheduleSet(
     [t, getTrainScheduleSetByCatalogAndName, updateTrainScheduleSet]
   );
 
+  const importTrainScheduleSets = useCallback(
+    async (data: ImportTrainScheduleSetsPayload) => {
+      if (!trainScheduleSets) {
+        throw new Error('Timetable train schedule sets not loaded');
+      }
+
+      const existingIds = trainScheduleSets.map((tss) => tss.id);
+
+      const newIds = [];
+      const allTrainsToUpsert = [];
+
+      for (const item of data) {
+        if (item.type === 'reference') {
+          // For reference imports, just link the existing train schedule set
+          if (!existingIds.includes(item.trainScheduleSet.id)) {
+            newIds.push(item.trainScheduleSet.id);
+          }
+
+          const referencedPacedTrains = await getTrainScheduleSetPacedTrains({
+            id: item.trainScheduleSet.id,
+          }).unwrap();
+
+          const formattedTrains = referencedPacedTrains.map((train) => ({
+            ...train,
+            id: formatEditoastIdToPacedTrainId(train.id),
+          }));
+          allTrainsToUpsert.push(...formattedTrains);
+        } else {
+          // For copy imports, create a new train schedule set and copy the trains
+          const sourcePacedTrains = await getTrainScheduleSetPacedTrains({
+            id: item.trainScheduleSet.id,
+          }).unwrap();
+
+          const newTss = await createTrainScheduleSetMutation({
+            trainScheduleSetForm: {
+              name: item.trainScheduleSet.name,
+              catalog_entry_id: item.trainScheduleSet.catalog_entry_id,
+              published: false,
+              description: item.trainScheduleSet.description,
+            },
+          }).unwrap();
+
+          newIds.push(newTss.id);
+
+          const trainsWithoutIds = sourcePacedTrains.map(({ id: _id, ...train }) => ({
+            ...train,
+            train_schedule_set_id: newTss.id,
+          }));
+
+          const createdTrains = await createPacedTrains({
+            id: newTss.id,
+            body: trainsWithoutIds,
+          }).unwrap();
+
+          const formattedCreatedTrains = createdTrains.map((train) => ({
+            ...train,
+            id: formatEditoastIdToPacedTrainId(train.id),
+          }));
+
+          allTrainsToUpsert.push(...formattedCreatedTrains);
+        }
+      }
+
+      const mergedIds = [...existingIds, ...newIds];
+
+      await linkTrainScheduleSetToTimetable({
+        id: timetableId,
+        body: {
+          train_schedule_set_ids: mergedIds,
+        },
+      }).unwrap();
+
+      if (allTrainsToUpsert.length > 0) {
+        upsertTimetableItems(allTrainsToUpsert);
+      }
+    },
+    [
+      trainScheduleSets,
+      getTrainScheduleSetPacedTrains,
+      createTrainScheduleSetMutation,
+      createPacedTrains,
+      linkTrainScheduleSetToTimetable,
+      timetableId,
+      upsertTimetableItems,
+    ]
+  );
+
   const timetableItemsByTrainScheduleSets = useMemo(() => {
     if (!trainScheduleSets) return null;
 
@@ -284,5 +380,6 @@ export default function useScenarioTrainScheduleSet(
     publishTrainScheduleSet,
     localCopyTrainScheduleSet,
     getTrainScheduleSetByCatalogAndName,
+    importTrainScheduleSets,
   };
 }
