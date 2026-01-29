@@ -1,11 +1,16 @@
 import { useCallback, useMemo } from 'react';
 
+import { useTranslation } from 'react-i18next';
+
 import {
   osrdEditoastApi,
   type CatalogEntry,
+  type PacedTrain,
   type TrainScheduleSet,
 } from 'common/api/osrdEditoastApi';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
+import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
 import { useScenarioContext } from './useScenarioContext';
 import { sortTrainScheduleSets } from '../views/Scenario/components/Timetable/utils';
@@ -15,8 +20,14 @@ export type TrainScheduleSetFormData = Omit<TrainScheduleSet, 'catalog_entry_id'
 };
 
 export default function useScenarioTrainScheduleSet(
-  timetableItemsWithDetails: TimetableItemWithDetails[]
+  timetableItemsWithDetails: TimetableItemWithDetails[],
+  timetableItems: TimetableItem[],
+  upsertTimetableItems: (timetableItems: TimetableItem[]) => void
 ) {
+  const { t } = useTranslation('operational-studies', {
+    keyPrefix: 'main.timetable.trainScheduleSets.error',
+  });
+
   const { timetableId } = useScenarioContext();
 
   const { currentData: trainScheduleSets } =
@@ -25,6 +36,9 @@ export default function useScenarioTrainScheduleSet(
   const { currentData: catalogEntries } = osrdEditoastApi.endpoints.getAllCatalogEntries.useQuery(
     {}
   );
+
+  const [createPacedTrains] =
+    osrdEditoastApi.endpoints.postTrainScheduleSetsByIdPacedTrains.useMutation();
 
   const [createCatalogEntryMutation] = osrdEditoastApi.endpoints.postCatalogEntries.useMutation();
 
@@ -135,64 +149,93 @@ export default function useScenarioTrainScheduleSet(
   );
 
   const localCopyTrainScheduleSet = useCallback(
-    (trainScheduleSet: TrainScheduleSet) =>
-      new Promise<void>((resolve, reject) => {
-        console.warn('Mocked: localCopyTrainScheduleSet', { trainScheduleSet });
-        setTimeout(() => {
-          if (!trainScheduleSet.catalog_entry_id)
-            return reject('Train Schedule Set is not a reference');
-          const found = trainScheduleSets?.find((e) => e.id === trainScheduleSet.id);
-          if (!found) return reject('Not found');
-          return resolve();
-        }, 1000);
-      }),
-    []
+    async (trainScheduleSet: TrainScheduleSet) => {
+      // create a copy of the published train schedule set as unpublished
+      const { id: _id, ...tssWithoutId } = trainScheduleSet;
+      const newTss = await createTrainScheduleSetMutation({
+        trainScheduleSetForm: { ...tssWithoutId, published: false },
+      }).unwrap();
+
+      // link the new tss to the timetable and unlink the old published one
+      await linkTrainScheduleSetToTimetable({
+        id: timetableId,
+        body: {
+          train_schedule_set_ids: [
+            ...(trainScheduleSets
+              ?.filter((tss) => tss.id !== trainScheduleSet.id)
+              .map((tss) => tss.id) ?? []),
+            newTss.id,
+          ],
+        },
+      }).unwrap();
+
+      // copy all the trains that were attached to the old published tss
+      const trainsToCopy: PacedTrain[] = timetableItems
+        .filter((item) => item.train_schedule_set_id === trainScheduleSet.id)
+        .map((item) => {
+          const { id: __id, train_schedule_set_id: _train_schedule_set_id, ...rest } = item;
+
+          return {
+            ...rest,
+          };
+        });
+
+      // create the trains and attach them to the new local tss
+      const createdTrains = await createPacedTrains({
+        id: newTss.id,
+        body: trainsToCopy,
+      }).unwrap();
+
+      upsertTimetableItems(
+        createdTrains.map((train) => ({ ...train, id: formatEditoastIdToPacedTrainId(train.id) }))
+      );
+    },
+    [
+      createTrainScheduleSetMutation,
+      createPacedTrains,
+      linkTrainScheduleSetToTimetable,
+      timetableId,
+      trainScheduleSets,
+      timetableItems,
+    ]
   );
 
   const getTrainScheduleSetByCatalogAndName = useCallback(
-    async (name: string, catalogId: number) =>
-      new Promise<TrainScheduleSet | null>((resolve) => {
-        console.warn('Mocked: getTrainScheduleSetByCatalogAndName', {
-          name,
-          catalogId,
-          store: trainScheduleSets,
-        });
-        setTimeout(async () => {
-          const found = trainScheduleSets?.find(
-            (tss) => tss.catalog_entry_id === catalogId && tss.name === name
-          );
-          return resolve(found || null);
-        }, 1000);
-      }),
+    (name: string, catalogId: number) => {
+      const found = trainScheduleSets?.find(
+        (tss) => tss.catalog_entry_id === catalogId && tss.name === name && tss.published
+      );
+      return found || null;
+    },
     [trainScheduleSets]
   );
 
   const publishTrainScheduleSet = useCallback(
-    (trainScheduleSet: TrainScheduleSet, data: TrainScheduleSetFormData) =>
-      new Promise<void>((resolve, reject) => {
-        console.warn('Mocked: publishTrainScheduleSet', { trainScheduleSet });
-        setTimeout(async () => {
-          // Do some check
-          if (trainScheduleSet.published) return reject('Train Schedule Set is already published');
-          if (!data.catalog)
-            return reject('A catalog is required to publish the Train Schedule Set');
-          if (!data.name) return reject('A name is required to publish the Train Schedule Set');
-          if (data.name && 'id' in data.catalog) {
-            const foundSameName = await getTrainScheduleSetByCatalogAndName(
-              data.name,
-              data.catalog.id
-            );
-            if (foundSameName && foundSameName.id !== trainScheduleSet.id)
-              return reject(`Name ${data.name} is already in used in train set ${data.catalog.id}`);
-          }
+    async (trainScheduleSet: TrainScheduleSet, data: TrainScheduleSetFormData): Promise<void> => {
+      // Do some checks
+      if (trainScheduleSet.published) {
+        throw new Error(t('alreadyPublished'));
+      }
 
-          // Update the Train Schedule Set
-          await updateTrainScheduleSet(trainScheduleSet, { ...data, published: true });
+      if (!data.catalog) {
+        throw new Error(t('catalogEntryRequired'));
+      }
 
-          return resolve();
-        }, 1000);
-      }),
-    []
+      if (!data.name) {
+        throw new Error(t('nameRequired'));
+      }
+
+      if ('id' in data.catalog) {
+        const foundSameName = getTrainScheduleSetByCatalogAndName(data.name, data.catalog.id);
+
+        if (foundSameName && foundSameName.id !== trainScheduleSet.id) {
+          throw new Error(t('tssNameDuplicate', { name: data.name, catalogId: data.catalog.id }));
+        }
+      }
+
+      await updateTrainScheduleSet(trainScheduleSet, { ...data, published: true });
+    },
+    [t, getTrainScheduleSetByCatalogAndName, updateTrainScheduleSet]
   );
 
   const timetableItemsByTrainScheduleSets = useMemo(() => {
