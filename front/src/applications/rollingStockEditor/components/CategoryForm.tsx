@@ -7,9 +7,7 @@ import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import { TrainMainCategoryDict } from 'modules/rollingStock/consts';
 import { getMainCategoryOptions } from 'modules/rollingStock/hooks/getMainCategoryOptions';
 
-import type { RollingStockParametersValues } from '../types';
-
-type CategoryOption = { id?: TrainMainCategory; label: string };
+import type { CategoryOption, RollingStockParametersValues } from '../types';
 
 type RollingStockEditorCategoryFormProps = {
   rollingStockValues: RollingStockParametersValues;
