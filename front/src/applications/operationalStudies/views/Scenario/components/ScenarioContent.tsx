@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 import { ChevronRight } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
@@ -23,7 +23,6 @@ import { castErrorToFailure } from 'utils/error';
 import { usePrevious } from 'utils/hooks/state';
 
 import { MANAGE_TIMETABLE_ITEM_TYPES } from '../consts';
-import { MOCK_TRAIN_SCHEDULE_SETS } from '../mockTrainScheduleSets';
 import BoardWrapper from './BoardWrapper';
 import { EditedElementContainerProvider } from './EditedElementContainerContext';
 import MacroEditorState from './MacroEditor/MacroEditorState';
@@ -159,14 +158,6 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
 
   const handleNGELoad = () => setNGEIsLoading(false);
 
-  // TODO: unmock it
-  // It should be populated with TrainScheduleSets of the timetable that are a reference (ie with a catalog entry)
-  const trainScheduleSetsInCatalogAlreadyImported = useMemo(
-    () =>
-      new Set<number>(MOCK_TRAIN_SCHEDULE_SETS.filter(() => Math.random() < 0.1).map((e) => e.id)),
-    [timetableItems]
-  );
-
   return (
     <EditedElementContainerProvider>
       <main className="mastcontainer mastcontainer-no-mastnav scenario scenario-content-v2">
@@ -179,7 +170,6 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
             setTimetableItemToEditData={setTimetableItemToEditData}
             setCollapsedTimetableEdit={() => setCollapsedTimetableEdit(!collapsedTimetableEdit)}
             collapsedTimetableEdit={collapsedTimetableEdit}
-            trainScheduleSetsAlreadyImported={trainScheduleSetsInCatalogAlreadyImported}
           />
         )}
         <div

@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+
 import type { CatalogById, TrainScheduleSetById } from './types';
-import { mockGetTrainScheduleSets, mockListCatalogEntries } from '../../mockTrainScheduleSets';
 
 export default function useLoadCatalog() {
   const [loading, setLoading] = useState<boolean>(false);
@@ -11,24 +13,45 @@ export default function useLoadCatalog() {
     trainScheduleSets: TrainScheduleSetById;
   } | null>(null);
 
+  const { scenario } = useScenarioContext();
+
+  const { currentData: catalogData } = osrdEditoastApi.endpoints.getAllCatalogEntries.useQuery({});
+
+  const [getTrainScheduleSets] = osrdEditoastApi.endpoints.getTrainScheduleSets.useLazyQuery();
+
+  const { data: tsss = [] } = osrdEditoastApi.endpoints.getTimetableByIdTrainScheduleSets.useQuery({
+    id: scenario.timetable_id,
+  });
+
+  const trainScheduleSetsAlreadyImported = new Set(
+    tsss.filter((tss) => tss.catalog_entry_id).map((tss) => tss.id)
+  );
+
   const loadCatalog = useCallback(async () => {
+    if (!catalogData) return;
+
     setLoading(true);
     try {
       const catalog: CatalogById = new Map();
       const trainScheduleSets: TrainScheduleSetById = new Map();
 
-      // Get all catalog entries
-      const catalogEntriesResult = await mockListCatalogEntries();
+      const catalogEntriesResult = catalogData || [];
 
       for (const catalogEntry of catalogEntriesResult) {
-        const entryTss = await mockGetTrainScheduleSets(catalogEntry.id);
-        catalog.set(catalogEntry.id, {
-          ...catalogEntry,
-          trainScheduleSetIds: entryTss.map((tss) => tss.id),
-        });
+        const entryTss = await getTrainScheduleSets({
+          catalogEntryId: catalogEntry.id,
+          published: true,
+        }).unwrap();
 
-        for (const tss of entryTss) {
-          trainScheduleSets.set(tss.id, tss);
+        if (entryTss.length > 0) {
+          catalog.set(catalogEntry.id, {
+            ...catalogEntry,
+            trainScheduleSetIds: entryTss.map((tss) => tss.id),
+          });
+
+          for (const tss of entryTss) {
+            trainScheduleSets.set(tss.id, tss);
+          }
         }
       }
 
@@ -41,7 +64,7 @@ export default function useLoadCatalog() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [catalogData, getTrainScheduleSets]);
 
   /**
    * When hook is mounted
@@ -51,5 +74,5 @@ export default function useLoadCatalog() {
     loadCatalog();
   }, [loadCatalog]);
 
-  return { loading, error, data };
+  return { loading, error, data, trainScheduleSetsAlreadyImported };
 }
