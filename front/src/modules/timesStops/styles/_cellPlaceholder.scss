@@ -1,0 +1,27 @@
+.input-cell-placeholder {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  color: var(--primary40);
+  pointer-events: auto;
+  cursor: pointer;
+  transition:
+    color 0.2s,
+    background-color 0.2s;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  padding-bottom: 2px;
+
+  &:hover:not(:focus-within) {
+    background-color: var(--primary5);
+    color: var(--primary80);
+  }
+
+  &:active {
+    background-color: var(--primary60);
+    color: var(--white100);
+  }
+}
