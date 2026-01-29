@@ -389,8 +389,11 @@ const osrdEditoastApi = generatedEditoastApi
       getTrainScheduleSetsById: {
         providesTags: (_result, _error, args) => [{ type: 'train_schedule_set', id: args.id }],
       },
+      // Don't invalidate the train schedule sets (tss) when creating one as each post is followed
+      // by a postTimetableByIdTrainScheduleSets call, which links a tss to a timetable, who
+      // is responsible to invalidate the tss list
       postTrainScheduleSets: {
-        invalidatesTags: () => [{ type: 'train_schedule_set', id: 'LIST' }],
+        invalidatesTags: () => [],
       },
       putTrainScheduleSetsById: {
         invalidatesTags: (_result, _error, args) => [{ type: 'train_schedule_set', id: args.id }],
