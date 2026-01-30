@@ -34,9 +34,6 @@ export default function useScenarioTrainScheduleSet(
   const [updateTrainScheduleSetMutation] =
     osrdEditoastApi.endpoints.putTrainScheduleSetsById.useMutation();
 
-  const [deleteTrainScheduleSetMutation] =
-    osrdEditoastApi.endpoints.deleteTrainScheduleSetsById.useMutation();
-
   const [linkTrainScheduleSetToTimetable] =
     osrdEditoastApi.endpoints.postTimetableByIdTrainScheduleSets.useMutation();
 
@@ -86,8 +83,6 @@ export default function useScenarioTrainScheduleSet(
 
   const removeTrainScheduleSet = useCallback(
     async (id: TrainScheduleSet['id']): Promise<void> => {
-      await deleteTrainScheduleSetMutation({ id }).unwrap();
-
       // When linking train schedule sets to a timetable, the backend expects the full list of IDs.
       // Any ID not provided is automatically unlinked, so when removing one train schedule set
       // we must explicitly send all remaining IDs to avoid unlinking the others.
@@ -99,12 +94,7 @@ export default function useScenarioTrainScheduleSet(
         },
       }).unwrap();
     },
-    [
-      deleteTrainScheduleSetMutation,
-      timetableId,
-      trainScheduleSets,
-      linkTrainScheduleSetToTimetable,
-    ]
+    [timetableId, trainScheduleSets, linkTrainScheduleSetToTimetable]
   );
 
   const updateTrainScheduleSet = useCallback(
