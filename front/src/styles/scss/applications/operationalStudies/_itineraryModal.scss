@@ -96,7 +96,7 @@
       height: calc(
         100% - var(--header-height) - var(--footer-height) - var(--footer-box-shadow-height)
       );
-      overflow-y: auto;
+      overflow-y: visible;
       background-color: var(--ambientB10);
       box-shadow: 0 calc(-1 * var(--footer-box-shadow-height)) 0 0 var(--black10);
 
@@ -105,12 +105,20 @@
       }
 
       .path-step-list {
+        position: relative;
         background-color: var(--ambientB15);
         border-radius: 8px;
         margin-top: 12px;
         margin-inline: 8px;
         padding-top: 16px;
-
+        .reverse-itinerary-button {
+          position: absolute;
+          padding: 8px;
+          transform: rotate(90deg);
+          top: 0;
+          left: 8px;
+          color: var(--grey30);
+        }
         .itinerary-icons {
           display: flex;
           justify-content: end;

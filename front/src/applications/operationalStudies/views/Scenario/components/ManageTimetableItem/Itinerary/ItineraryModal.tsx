@@ -1,31 +1,37 @@
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
-import { FrameAll } from '@osrd-project/ui-icons';
+import { ArrowSwitch, FrameAll } from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';
 import type { Position } from 'geojson';
+import { compact } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { v4 as uuidV4 } from 'uuid';
 
 import useCategoryColors from 'applications/operationalStudies/hooks/useCategoryColors';
+import { useManageTimetableItemContext } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
+import { useOperationalPointSearch } from 'applications/operationalStudies/hooks/useOperationalPointSearch';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import AlertBox from 'common/AlertBox';
-import type { PathProperties } from 'common/api/osrdEditoastApi';
+import { type PathProperties, type PathItemLocation } from 'common/api/osrdEditoastApi';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import IncompatibleConstraints from 'modules/pathfinding/components/IncompatibleConstraints';
+import reversePathSteps from 'modules/pathfinding/helpers/reversePathSteps';
 import usePathfindingV2 from 'modules/pathfinding/hooks/usePathfindingV2';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
+import { updatePathSteps } from 'reducers/osrdconf/operationalStudiesConf';
 import {
   getCategory,
   getOperationalStudiesRollingStockID,
   getOperationalStudiesSpeedLimitByTag,
   getPathSteps,
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import type { PathStepV2 } from 'reducers/osrdconf/types';
+import type { PathStep, PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 
+import { type OperationalPointSuggestion } from './ComboBoxCustomList/ListElementComponent';
 import { usePathStepsMetadata } from './hooks/usePathStepsMetadata';
 import ItineraryModalFormHeader from './ItineraryModalFormHeader';
 import ItineraryModalMap from './ItineraryModalMap';
@@ -62,13 +68,90 @@ const ItineraryModal = ({
 
   const [pathSteps, setPathSteps] = useState<PathStepV2[]>([]);
   const [categoryWarning, setCategoryWarning] = useState<string | undefined>(undefined);
+  const [inputCleared, setInputCleared] = useState<Record<string, boolean>>({});
+  const {
+    activeStepId,
+    setActiveStepId,
+    getInputForStep,
+    setInputForStep,
+    opSuggestions,
+    resetOpSuggestions,
+    formatChosenValue,
+    commitSelectionForStep,
+    chooseChForSuggestion,
+    reopenSuggestionsForStep,
+  } = useOperationalPointSearch({});
+
+  const { launchPathfinding } = useManageTimetableItemContext();
 
   const { pathStepsMetadataById } = usePathStepsMetadata(pathSteps);
   const { launchPathfindingV2, pathProperties, pathfindingError } = usePathfindingV2();
+  const applyOperationalPointToStep = (
+    stepId: string,
+    suggestion: OperationalPointSuggestion,
+    forcedCh?: string
+  ) => {
+    const chosenCh = chooseChForSuggestion(stepId, suggestion, forcedCh);
+    if (!chosenCh) return;
+
+    const newLocation: PathItemLocation = {
+      operational_point: {
+        type: 'trigram',
+        trigram: suggestion.trigram,
+        secondary_code: chosenCh,
+      },
+    };
+
+    setPathSteps((prev) =>
+      prev.map((s) => (s.id === stepId ? { ...s, location: newLocation } : s))
+    );
+
+    commitSelectionForStep(stepId, formatChosenValue(suggestion, chosenCh));
+    resetOpSuggestions();
+  };
 
   const hasInvalidPathStep = Array.from(pathStepsMetadataById.values()).some(
     (metadata) => metadata.isInvalid
   );
+  const editingStepIdRef = useRef<string>('');
+
+  const isStepInvalidAndIsEditing = (step: PathStepV2, metadata?: PathStepMetadata) => {
+    if (!metadata?.isInvalid) return false;
+
+    const query = (getInputForStep(step.id) ?? '').trim();
+    const isEditing = editingStepIdRef.current === step.id;
+
+    return query.length > 0 && !isEditing;
+  };
+
+  const hasInvalidPathStepDisplay = pathSteps.some((step) =>
+    isStepInvalidAndIsEditing(step, pathStepsMetadataById.get(step.id))
+  );
+
+  const locatedStepsCount = pathSteps.filter((step) => step.location !== null).length;
+
+  const displayedPathProperties =
+    workerStatus === 'READY' && locatedStepsCount >= 2 && !hasInvalidPathStep
+      ? pathProperties
+      : undefined;
+
+  const filledStepsCount = pathSteps.filter((step) => {
+    if (step.location) return true;
+    const q = (getInputForStep(step.id) ?? '').trim();
+    return q.length > 0;
+  }).length;
+
+  const isNextDisabled = hasInvalidPathStepDisplay || !!pathfindingError || filledStepsCount < 2;
+
+  const markEditing = (stepId: string) => {
+    editingStepIdRef.current = stepId;
+    setActiveStepId(stepId);
+  };
+
+  const unmarkEditing = (stepId: string) => {
+    if (editingStepIdRef.current === stepId) editingStepIdRef.current = '';
+    if (activeStepId === stepId) setActiveStepId('');
+  };
 
   const frameAllPathSteps = () => {
     if (pathProperties && pathProperties.geometry) {
@@ -168,6 +251,62 @@ const ItineraryModal = ({
     setItineraryModalIsOpen(false);
   };
 
+  const buildPathSteps = (steps: PathStepV2[], metadataById: Map<string, PathStepMetadata>) =>
+    steps.map<PathStep | null>((s) => {
+      if (!s.location) return null;
+
+      const metadata = metadataById.get(s.id);
+      if (!metadata || metadata.isInvalid) return null;
+
+      const coordinates =
+        metadata.type === 'trackOffset' ? metadata.coordinates : metadata.parts[0]?.coordinates;
+
+      const secondary_code = metadata.type === 'opRef' ? metadata.secondaryCode : undefined;
+
+      return {
+        id: s.id,
+        location: s.location,
+        arrival: s.arrival,
+        stopFor: s.stopFor,
+        theoreticalMargin: s.theoreticalMargin ?? undefined,
+        receptionSignal: s.receptionSignal ?? undefined,
+
+        name: metadata.type === 'opRef' ? metadata.name : undefined,
+        uic: metadata.type === 'opRef' ? metadata.uic : undefined,
+        secondary_code,
+        coordinates,
+      };
+    });
+
+  const clearStep = (stepId: string) => {
+    setInputCleared((prev) => ({ ...prev, [stepId]: true }));
+    setInputForStep(stepId, '');
+    resetOpSuggestions();
+
+    setPathSteps((prev) => prev.map((s) => (s.id === stepId ? { ...s, location: null } : s)));
+  };
+
+  const reverseItinerary = () => {
+    const updatedPathSteps = buildPathSteps(pathSteps, pathStepsMetadataById);
+
+    // No step should be null when reverseItinerary is called (as start and arrival need to be defined), so compact should let the array unchanged but constrain the type
+    const cPathSteps = compact(updatedPathSteps);
+    launchPathfinding(reversePathSteps(cPathSteps));
+  };
+
+  const submitItinerary = () => {
+    if (hasInvalidPathStep) return;
+    if (pathfindingError) return;
+
+    const updatedPathSteps = buildPathSteps(pathSteps, pathStepsMetadataById);
+
+    dispatch(updatePathSteps(updatedPathSteps));
+    launchPathfinding(updatedPathSteps, rollingStockId, {
+      isInitialization: true,
+    });
+    closeModal();
+  };
+
   useModalFocusTrap(modalRef, closeModal);
 
   useEffect(() => {
@@ -175,6 +314,12 @@ const ItineraryModal = ({
       openModal();
     }
   }, [itineraryModalIsOpen]);
+
+  useEffect(() => {
+    if (locatedStepsCount < 2 || pathStepsMetadataById.size < 2) return;
+
+    frameAllPathSteps();
+  }, [pathStepsMetadataById]);
 
   return (
     <dialog ref={modalRef} className="itinerary-modal">
@@ -189,11 +334,19 @@ const ItineraryModal = ({
         </div>
         <div className="itinerary-modal-form-body">
           {categoryWarning && <AlertBox message={categoryWarning} closeable />}
-          {hasInvalidPathStep && <AlertBox type="error" message={t('alertInvalidOP')} />}
-          {!hasInvalidPathStep && pathfindingError && (
+          {hasInvalidPathStepDisplay && <AlertBox type="error" message={t('alertInvalidOP')} />}
+          {!hasInvalidPathStepDisplay && pathfindingError && (
             <AlertBox type="error" message={pathfindingError} />
           )}
           <div className="path-step-list">
+            <button
+              data-testid="reverse-itinerary-button"
+              className="reverse-itinerary-button"
+              type="button"
+              onClick={reverseItinerary}
+            >
+              <ArrowSwitch />
+            </button>
             <div className="itinerary-icons">
               <button className="frame-all" onClick={frameAllPathSteps}>
                 <FrameAll title={t('frameAll')} aria-label={t('frameAll')} />
@@ -206,7 +359,8 @@ const ItineraryModal = ({
             </div>
             {pathSteps.map((pathStep, i) => {
               const pathStepMetadata = pathStepsMetadataById.get(pathStep.id);
-              const previousPathStepMetadata = pathStepsMetadataById.get(pathSteps[i - 1]?.id);
+              const isInvalid = isStepInvalidAndIsEditing(pathStep, pathStepMetadata);
+
               return (
                 <PathStepItem
                   key={pathStep.id}
@@ -214,9 +368,27 @@ const ItineraryModal = ({
                   pathStepMetadata={pathStepMetadata}
                   index={i + 1}
                   categoryColors={categoryColors}
-                  hidePathfindingLine={
-                    i > 0 && (pathStepMetadata?.isInvalid || previousPathStepMetadata?.isInvalid)
-                  }
+                  hidePathfindingLine={i > 0 && isInvalid}
+                  onOpFocus={() => markEditing(pathStep.id)}
+                  onOpInputChange={(value) => {
+                    markEditing(pathStep.id);
+                    setInputCleared((prev) =>
+                      prev[pathStep.id] ? { ...prev, [pathStep.id]: false } : prev
+                    );
+                    setInputForStep(pathStep.id, value);
+                  }}
+                  onOpBlur={() => unmarkEditing(pathStep.id)}
+                  inputValue={getInputForStep(pathStep.id)}
+                  opSuggestions={activeStepId === pathStep.id ? opSuggestions : []}
+                  onSelectOpSuggestion={(suggestion, chCode) => {
+                    applyOperationalPointToStep(pathStep.id, suggestion, chCode);
+                  }}
+                  onChevronClick={(queryValue) => {
+                    reopenSuggestionsForStep(pathStep.id, queryValue);
+                  }}
+                  onInputClear={() => clearStep(pathStep.id)}
+                  isCleared={!!inputCleared[pathStep.id]}
+                  isInvalidAndIsEditing={isInvalid}
                 />
               );
             })}
@@ -227,14 +399,20 @@ const ItineraryModal = ({
           </div>
         </div>
         <div className="itinerary-modal-form-footer">
-          <Button label={t('next')} variant="Primary" size="medium" onClick={closeModal} />
+          <Button
+            label={t('next')}
+            variant="Primary"
+            size="medium"
+            onClick={submitItinerary}
+            isDisabled={isNextDisabled}
+          />
         </div>
       </div>
       <div className="itinerary-modal-map">
         <ItineraryModalMap
           pathSteps={pathSteps}
           pathStepsMetadata={pathStepsMetadataById}
-          pathProperties={pathProperties}
+          pathProperties={displayedPathProperties}
         >
           <IncompatibleConstraints
             geometry={pathProperties?.geometry}

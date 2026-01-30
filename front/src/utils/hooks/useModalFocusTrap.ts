@@ -2,8 +2,8 @@ import { useEffect } from 'react';
 
 /**
  * Allow the user to escape the modal by pressing escape and to trap the focus inside it
- * */
-
+ * + expose input mode (keyboard vs pointer) via documentElement dataset
+ */
 export default function useModalFocusTrap(
   modalRef: React.RefObject<HTMLDivElement | HTMLDialogElement | null>,
   closeModal: () => void,
@@ -11,6 +11,10 @@ export default function useModalFocusTrap(
 ) {
   useEffect(() => {
     const modalElement = modalRef.current;
+
+    const setInputMode = (mode: 'keyboard' | 'pointer') => {
+      document.documentElement.dataset.opInputMode = mode;
+    };
 
     const focusableElements = modalElement?.querySelectorAll(
       // last declaration stands for all elements not natively focusable like li
@@ -22,20 +26,16 @@ export default function useModalFocusTrap(
 
     if (focusOnFirstElement) firstElement?.focus();
 
-    /**
-     *
-     * Prevent the tab event and set focus on :
-     * - last element if we are pressing on "shift" in addition to "tab" and are on the first element
-     * - first element if we are only pressing "tab" and are on the last element
-     */
     const handleTabKeyPress: EventListener = (event) => {
       const keyboardEvent = event as KeyboardEvent;
       if (keyboardEvent.key === 'Tab') {
+        setInputMode('keyboard');
+
         if (keyboardEvent.shiftKey && document.activeElement === firstElement) {
           keyboardEvent.preventDefault();
           lastElement.focus();
         } else if (!keyboardEvent.shiftKey && document.activeElement === lastElement) {
-          event.preventDefault();
+          keyboardEvent.preventDefault();
           firstElement.focus();
         }
       }
@@ -48,12 +48,31 @@ export default function useModalFocusTrap(
       }
     };
 
+    const handleKeyboardMode: EventListener = (event) => {
+      const e = event as KeyboardEvent;
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter') {
+        setInputMode('keyboard');
+      }
+    };
+
+    const handlePointerMode: EventListener = () => {
+      setInputMode('pointer');
+    };
+
     document.addEventListener('keydown', handleTabKeyPress);
     document.addEventListener('keydown', handleEscapeKeyPress);
+
+    document.addEventListener('keydown', handleKeyboardMode, true);
+    modalElement?.addEventListener('mousemove', handlePointerMode, true);
+    modalElement?.addEventListener('mousedown', handlePointerMode, true);
 
     return () => {
       document.removeEventListener('keydown', handleTabKeyPress);
       document.removeEventListener('keydown', handleEscapeKeyPress);
+
+      document.removeEventListener('keydown', handleKeyboardMode, true);
+      modalElement?.removeEventListener('mousemove', handlePointerMode, true);
+      modalElement?.removeEventListener('mousedown', handlePointerMode, true);
     };
-  }, [modalRef, closeModal]);
+  }, [modalRef, closeModal, focusOnFirstElement]);
 }
