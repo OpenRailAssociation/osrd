@@ -140,7 +140,7 @@ export const upsertPathStepsInOPs = (
       );
 
       // if index === -1, it means that the position on path of the last step is bigger
-      // than the last operationnal point position.
+      // than the last operational point position.
       // So we know this pathStep is the destination and we want to add it at the end of the array.
       if (index !== -1) {
         updatedOPs = addElementAtIndex(updatedOPs, index, formattedStep);
