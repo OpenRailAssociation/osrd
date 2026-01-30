@@ -427,10 +427,6 @@ class TransformTimetableResponse(BaseModel):
     Standard OSRD timetable format
     """
 
-    train_schedules: list[TrainSchedule]
-    """
-    List of train schedules
-    """
     paced_trains: list[PacedTrain]
     """
     List of paced trains

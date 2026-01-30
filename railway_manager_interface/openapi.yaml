@@ -81,14 +81,8 @@ components:
       type: object
       description: Standard OSRD timetable format
       required:
-      - train_schedules
       - paced_trains
       properties:
-        train_schedules:
-          type: array
-          description: List of train schedules
-          items:
-            $ref: '../editoast/openapi.yaml#/components/schemas/TrainSchedule'
         paced_trains:
           type: array
           description: List of paced trains
