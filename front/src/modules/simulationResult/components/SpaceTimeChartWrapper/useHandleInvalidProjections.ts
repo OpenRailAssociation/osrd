@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type { PacedTrainId } from 'reducers/osrdconf/types';
-import { getProjectionType, getIsSimulationEnabled } from 'reducers/simulationResults/selectors';
+import { getIsSimulationEnabled } from 'reducers/simulationResults/selectors';
 import { extractEditoastIdFromPacedTrainId, formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
 import type { ProjectionData, TrainSpaceTimeData } from '../../types';
@@ -31,11 +31,10 @@ const useHandleInvalidProjections = ({
   timetableItemsWithDetails,
   projections,
 }: UseHandleInvalidProjectionsOptions): TrainSpaceTimeData[] => {
-  const projectionType = useSelector(getProjectionType);
   const isSimulationEnabled = useSelector(getIsSimulationEnabled);
 
   const { invalidTrainIds, invalidExceptionKeys, invalidBaseTrains } = useMemo(() => {
-    if (!isSimulationEnabled || projectionType !== 'operationalPointProjection')
+    if (!isSimulationEnabled)
       return {
         invalidTrainIds: new Set<PacedTrainId>(),
         invalidExceptionKeys: new Map(),
@@ -79,7 +78,7 @@ const useHandleInvalidProjections = ({
       invalidExceptionKeys: invalidExceptions,
       invalidBaseTrains: invalidBases,
     };
-  }, [isSimulationEnabled, projectionType, timetableItemsWithDetails, projections]);
+  }, [isSimulationEnabled, timetableItemsWithDetails, projections]);
 
   const shouldSkip =
     invalidTrainIds.size === 0 ||
