@@ -125,3 +125,5 @@ export function absoluteUrl(href: string): string {
   link.href = href;
   return link.href;
 }
+
+export const toUpper = (s: string) => s.trim().toUpperCase();
