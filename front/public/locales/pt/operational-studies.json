@@ -3,11 +3,34 @@
     "conflicts": "Conflitos",
     "macro": "Macro",
     "map": "Mapa",
+    "sdd": "GEV",
+    "std": "GET",
     "tables": "Tabelas",
     "trains": "Comboios"
   },
+  "importTrainScheduleSet": {
+    "cancel": "Anular",
+    "cartEmpty": "Seleção vazia",
+    "import": "Importar",
+    "importType": {
+      "copy": "Importar por cópia",
+      "reference": "Importar por referência"
+    },
+    "title": "Importar pacotes de comboios",
+    "trainScheduleSet": "Pacote",
+    "trainScheduleSetAlreadyImported": "Este pacote já está presente no seu cenário como referência",
+    "trainScheduleSetsSelected_one": "{{count}} pacote selecionado",
+    "trainScheduleSetsSelected_other": "{{count}} pacotes selecionados",
+    "trainSchedulesCount_one": "{{count}} comboio",
+    "trainSchedulesCount_other": "{{count}} comboios"
+  },
   "importTrains": {
     "cancel": "Cancelar",
-    "download": "Transferir"
+    "chooseFile": "Procurar... Nenhum ficheiro selecionado.",
+    "download": "Transferir",
+    "errorMessages": {
+      "error": "Ocorreu um erro",
+      "errorInvalidFile": "Ficheiro inválido"
+    }
   }
 }
