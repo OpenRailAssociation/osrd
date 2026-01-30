@@ -211,9 +211,9 @@
       "duplicate": "Clone",
       "exportSelection": "Export selected trains",
       "filterLabel": "Name, label",
-      "importTimetableFromCatalog": "Import from catalog",
-      "importTimetableFromFile": "Import from file",
-      "importTimetableItem": "Import trains",
+      "importTimetableNetworkGraphFromCatalog": "Import from catalog",
+      "importTimetableNetworkGraphFromFile": "Import from file",
+      "importTimetableNetworkGraphItem": "Import trains or network graphs",
       "invalid": {
         "incompatible_constraints": "Incompatible constraints",
         "invalid_path_items": "Invalid path items",

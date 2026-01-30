@@ -145,7 +145,7 @@
       "duplicate": "Duplizieren",
       "exportSelection": "Ausgewählte Züge exportieren",
       "filterLabel": "Name, Label",
-      "importTimetableItem": "Züge importieren",
+      "importTimetableNetworkGraphItem": "Züge oder Netzgrafik importieren",
       "invalid": {
         "incompatible_constraints": "Beschränkungen nicht kompatibel",
         "invalid_path_items": "Pfaditems ungültig",
