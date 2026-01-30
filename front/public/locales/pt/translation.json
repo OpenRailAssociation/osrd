@@ -15,6 +15,7 @@
         "loading-loader": "A calcular as correções possíveis",
         "no-fixes-found": "Não foram encontradas correções.",
         "saving-loader": "Aplicar correções à infraestrutura",
+        "text": "As ações seguintes vão ser aplicadas para corrigir certas anomalias de infraestrutura:",
         "title": "Corretor automático de erro",
         "update-actions": "{{update_count}} atualizações de objeto existentes"
       },
@@ -25,10 +26,20 @@
       },
       "error-type": {
         "all": "Todos",
+        "duplicated_group": {
+          "description": "O tipo de agulha « {{obj_id}} » contém um duplicado de configuração « {{original_group_path}} »",
+          "name": "Configuração de agulha duplicada"
+        },
         "empty_object": {
+          "description": "O objeto « {{obj_id}} » tem o campo « {{field}} » vazio",
           "name": "Objeto vazio"
         },
+        "invalid_group": {
+          "description": "A agulha « {{obj_id}} » da via « {{group}} » está na configuração « {{switch_type}} », que não existe",
+          "name": "Posição da agulha inválido"
+        },
         "invalid_reference": {
+          "description": "O objeto « {{obj_id}} » faz referência ao objeto « {{reference.obj_id}} » que não existe",
           "name": "Referência inválida"
         },
         "invalid_route": {
