@@ -1,3 +1,50 @@
 {
-  "401": "Utilizador não autenticado"
+  "401": "Utilizador não autenticado",
+  "403": "Acesso negado",
+  "404": "Recurso não encontrado",
+  "500": "Erros de servidor",
+  "502": "Erros de servidor",
+  "503": "Erros servidor",
+  "504": "O servidor não respondeu.",
+  "core": {
+    "assert_error": "Falha de asserção em {{file_location}}: {{assert_message}}",
+    "missing_last_stdcm_stop": "Os pedidos STDCM que não terminam com uma paragem não são atualmente suportados"
+  },
+  "default": "Ocorreu um erro.",
+  "editoast": {
+    "DatabaseAccessError": "Erro fatal de acesso à base de dados",
+    "app_health": {
+      "Core": "Erro de core",
+      "Database": "Erro de base de dados",
+      "Openfga": "Erro de OpenFGA",
+      "Timeout": "O servidor não respondeu a tempo",
+      "Valkey": "Erro de Valkey"
+    },
+    "attached": {
+      "TrackNotFound": "Secção de via {{track_id}} não encontrado"
+    },
+    "authz": {
+      "AuthError": "Erro interno de autenticação ou de autorização, tente novamente ou contacte o suporte",
+      "Authorizer": "Erro interno",
+      "Authz": "Erro interno de autenticação ou de autorização. Tente mais tarde ou contacte o suporte",
+      "Database": "Erro interno (database)",
+      "DbError": "Erro interno de base de dados, tente outra vez ou contacte o suporte",
+      "Driver": "Erro interno de autenticação ou autorização. Tente novamente ou contate o suporte",
+      "Forbidden": "Acesso recusado",
+      "ForbiddenImpersonation": "Usurpação recursa",
+      "GrantsApiMisuse": "Utilização incorreta da API de autorização",
+      "NoSuchUser": "Utilizador desconhecido",
+      "Unauthorized": "Utilizador não autenticado",
+      "UnknownIdentity": "Identidade desconhecida '{{identity}}'",
+      "UnknownResource": "Recurso desconhecido",
+      "UnknownResourceType": "Tipo de recurso desconhecido",
+      "UnknownSubject": "Assunto desconhecido",
+      "UnknownUser": "Utilizador desconhecido '{{id}}'"
+    },
+    "auto_fixes": {
+      "FixTrialFailure": "Falha ao aplicar os corretores",
+      "MaximumIterationReached": "Número máximo de iterações atingido para corrigir a infraestrutura sem fornecer todas as correções possíveis",
+      "MissingErrorObject": "Não foi possível encontrar o objeto do erro"
+    }
+  }
 }
