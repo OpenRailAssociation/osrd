@@ -211,9 +211,9 @@
       "duplicate": "Dupliquer",
       "exportSelection": "Exporter les trains sélectionnés",
       "filterLabel": "Nom, étiquette",
-      "importTimetableFromCatalog": "Importer depuis le catalogue",
-      "importTimetableFromFile": "Importer depuis un fichier",
-      "importTimetableItem": "Importer des trains",
+      "importTimetableNetworkGraphFromCatalog": "Importer depuis le catalogue",
+      "importTimetableNetworkGraphFromFile": "Importer depuis un fichier",
+      "importTimetableNetworkGraphItem": "Importer des trains ou des réticulaires",
       "invalid": {
         "incompatible_constraints": "Contraintes incompatibles",
         "invalid_path_items": "Point(s) de passage(s) invalide(s)",

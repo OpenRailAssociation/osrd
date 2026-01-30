@@ -180,20 +180,20 @@ const TimetableToolbar = ({
             buttonProps={{
               icon: <Download />,
               dataTestID: 'scenarios-import-timetable-item-button',
-              title: t('timetable.importTimetableItem'),
+              title: t('timetable.importTimetableNetworkGraphItem'),
               className: 'import-button',
             }}
             menuProps={{
               items: [
                 {
                   icon: <File />,
-                  title: t('timetable.importTimetableFromFile'),
+                  title: t('timetable.importTimetableNetworkGraphFromFile'),
                   dataTestID: 'scenarios-import-timetable-by-file',
                   onClick: () => openTimetableImportModal(),
                 },
                 {
                   icon: <Book />,
-                  title: t('timetable.importTimetableFromCatalog'),
+                  title: t('timetable.importTimetableNetworkGraphFromCatalog'),
                   dataTestID: 'scenarios-import-timetable-by-catalog',
                   onClick: () =>
                     setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.catalog),
