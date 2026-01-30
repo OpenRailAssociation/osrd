@@ -9,15 +9,25 @@
       "applicable_directions": {
         "description": "Direção onde o objeto correspondente é aplicado"
       },
+      "begin": {
+        "description": "Distância em relação ao início da secção de via correspondente (em metros)",
+        "title": "Início"
+      },
+      "end": {
+        "description": "Distância em relação ao fim de via correspondente (em metros)",
+        "title": "Fim"
+      },
       "track": {
         "description": "Identificador da secção da linha",
         "title": "Linha"
       }
-    }
+    },
+    "title": "Secção de via orientada"
   },
   "BalSystem": {
     "properties": {
       "conditional_parameters": {
+        "description": "Parâmetros de sinais BAL para itinerários específicos",
         "title": "Parâmetros condicionais"
       },
       "default_parameters": {
