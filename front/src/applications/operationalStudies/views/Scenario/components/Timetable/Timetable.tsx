@@ -201,9 +201,9 @@ const Timetable = ({
             <Virtualizer overscan={15}>
               {timetableItemsByTrainScheduleSets.map(({ trainScheduleSet, catalog, trains }) => {
                 const trainScheduleSetTrainsIds = trains.map((train) => train.id);
-                const isSelected = trains.every((train) =>
-                  selectedTimetableItemIds.includes(train.id)
-                );
+                const isSelected =
+                  trains.length > 0 &&
+                  trains.every((train) => selectedTimetableItemIds.includes(train.id));
                 const isIndeterminate =
                   !isSelected &&
                   trains.some((train) => selectedTimetableItemIds.includes(train.id));
