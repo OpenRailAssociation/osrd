@@ -13,6 +13,9 @@ import type { Viewport } from 'reducers/commonMap/types';
 import type { PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 
+import {
+  ListElementComponent,
+} from './ComboBoxCustomList/ListElementComponent';
 import { computePathStepCoordinates, isOpRefMetadata } from './utils';
 
 const EMPTY_OPTION = { label: '', id: '' };
@@ -192,6 +195,28 @@ const PathStepItem = ({
             getSuggestionLabel={(option) => String(option)}
             onSelectSuggestion={() => {}}
             resetSuggestions={() => {}}
+            renderListElementComponent={({
+              suggestion,
+              index: suggestionIndex,
+              isActive,
+              isSelected,
+            }) => {
+              if (typeof suggestion === 'string') return suggestion;
+
+              return (
+                <ListElementComponent
+                  suggestion={suggestion}
+                  index={suggestionIndex}
+                  isActive={isActive}
+                  isSelected={isSelected}
+                  onSelect={(op, secondaryCode) => {
+                    onSelectOpSuggestion?.(op, secondaryCode);
+                    resetOpSuggestions?.();
+                    blurActiveElement();
+                  }}
+                />
+              );
+            }}
             small
             narrow
             readOnly
