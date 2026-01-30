@@ -52,97 +52,6 @@ export type PostSendLastMinuteRequestApiArg = {
   };
 };
 export type Interval = string;
-export type Items = {
-  category?:
-    | null
-    | (
-        | {
-            main_category:
-              | 'HIGH_SPEED_TRAIN'
-              | 'INTERCITY_TRAIN'
-              | 'REGIONAL_TRAIN'
-              | 'NIGHT_TRAIN'
-              | 'COMMUTER_TRAIN'
-              | 'FREIGHT_TRAIN'
-              | 'FAST_FREIGHT_TRAIN'
-              | 'TRAM_TRAIN'
-              | 'TOURISTIC_TRAIN'
-              | 'WORK_TRAIN';
-          }
-        | {
-            sub_category_code: string;
-          }
-      );
-  comfort?: 'STANDARD' | 'AIR_CONDITIONING' | 'HEATING';
-  constraint_distribution: 'STANDARD' | 'MARECO';
-  initial_speed?: number;
-  labels?: string[];
-  margins?: {
-    boundaries: string[];
-    /** The values of the margins. Must contains one more element than the boundaries
-        Can be a percentage `X%` or a time in minutes per 100 kilometer `Xmin/100km` */
-    values: string[];
-  };
-  options?: {
-    stops_at_end_of_block?: boolean;
-    use_electrical_profiles?: boolean;
-    use_speed_limits_for_simulation?: boolean;
-  };
-  path: {
-    /** The unique identifier of the path item.
-        This is used to reference path items in the train schedule. */
-    id: string;
-    /** The location of a path waypoint */
-    location:
-      | {
-          /** Offset in mm */
-          offset: number;
-          /** Track section identifier */
-          track: string;
-        }
-      | {
-          local_track_name?: null | string;
-          operational_point:
-            | {
-                /** The object id of an operational point */
-                operational_point: string;
-                type: 'id';
-              }
-            | {
-                /** An optional secondary code to identify a more specific location */
-                secondary_code?: string | null;
-                /** The operational point trigram */
-                trigram: string;
-                type: 'trigram';
-              }
-            | {
-                /** An optional secondary code to identify a more specific location */
-                secondary_code?: string | null;
-                type: 'uic';
-                /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
-                uic: number;
-              };
-        };
-  }[];
-  power_restrictions?: {
-    from: string;
-    to: string;
-    value: string;
-  }[];
-  rolling_stock_name: string;
-  schedule?: {
-    arrival?: null | Interval;
-    /** Position on the path of the schedule item. */
-    at: string;
-    /** State of the signal where the train is received for its stop.
-        For (important) details, see <https://osrd.fr/en/docs/reference/design-docs/timetable/#modifiable-fields>. */
-    reception_signal?: 'OPEN' | 'STOP' | 'SHORT_SLIP_STOP';
-    stop_for?: null | Interval;
-  }[];
-  speed_limit_tag?: null | string;
-  start_time: string;
-  train_name: string;
-};
 export type ConstraintDistribution = 'STANDARD' | 'MARECO';
 export type Options = {
   stops_at_end_of_block?: boolean;
@@ -155,7 +64,7 @@ export type Margins = {
     Can be a percentage `X%` or a time in minutes per 100 kilometer `Xmin/100km` */
   values: string[];
 };
-export type Items2 = {
+export type Items = {
   /** The unique identifier of the path item.
     This is used to reference path items in the train schedule. */
   id: string;
@@ -191,7 +100,7 @@ export type Items2 = {
             };
       };
 };
-export type Items3 = {
+export type Items2 = {
   arrival?: null | Interval;
   /** Position on the path of the schedule item. */
   at: string;
@@ -201,7 +110,7 @@ export type Items3 = {
   stop_for?: null | Interval;
 };
 export type Comfort = 'STANDARD' | 'AIR_CONDITIONING' | 'HEATING';
-export type ComponentsSchemasTransformTimetableResponsePropertiesTrainSchedulesItemsPropertiesCategoryOneOf1 =
+export type ComponentsSchemasTransformTimetableResponsePropertiesPacedTrainsItemsAllOf0PropertiesCategoryOneOf1 =
 
     | {
         main_category:
@@ -220,8 +129,8 @@ export type ComponentsSchemasTransformTimetableResponsePropertiesTrainSchedulesI
         sub_category_code: string;
       };
 export type TransformTimetableResponse = {
-  /** List of train schedules */
-  train_schedules: {
+  /** List of paced trains */
+  paced_trains: ({
     category?:
       | null
       | (
@@ -311,9 +220,7 @@ export type TransformTimetableResponse = {
     speed_limit_tag?: null | string;
     start_time: string;
     train_name: string;
-  }[];
-  /** List of paced trains */
-  paced_trains: (Items & {
+  } & {
     paced?: null | {
       exceptions: ({
         occurrence_index?: number;
@@ -335,20 +242,20 @@ export type TransformTimetableResponse = {
         };
         path_and_schedule?: {
           margins: Margins;
-          path: Items2[];
+          path: Items[];
           power_restrictions: {
             from: string;
             to: string;
             value: string;
           }[];
-          schedule: Items3[];
+          schedule: Items2[];
         };
         rolling_stock?: {
           comfort: Comfort;
           rolling_stock_name: string;
         };
         rolling_stock_category?: {
-          value?: null | ComponentsSchemasTransformTimetableResponsePropertiesTrainSchedulesItemsPropertiesCategoryOneOf1;
+          value?: null | ComponentsSchemasTransformTimetableResponsePropertiesPacedTrainsItemsAllOf0PropertiesCategoryOneOf1;
         };
         speed_limit_tag?: {
           value?: null | string;
