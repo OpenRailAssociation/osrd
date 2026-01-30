@@ -103,6 +103,8 @@ export const getPathfindingQuery = ({
   return null;
 };
 
+export const isPathStepInvalid = (step: PathStep | null): boolean => step?.isInvalid || false;
+
 export const upsertPathStepsInOPs = (
   ops: SuggestedOP[],
   pathSteps: PathStep[],
@@ -110,6 +112,7 @@ export const upsertPathStepsInOPs = (
 ): SuggestedOP[] => {
   let updatedOPs = [...ops];
   pathSteps.forEach((step, stepIndex) => {
+    if (isPathStepInvalid(step)) return;
     const { arrival, stopFor, receptionSignal, theoreticalMargin } = step;
     // We check only for pathSteps added by map click
     if ('track' in step.location) {
@@ -209,5 +212,3 @@ export const isVia = (
 
 export const isStation = (chCode: string): boolean =>
   chCode === 'BV' || chCode === '00' || chCode === '';
-
-export const isPathStepInvalid = (step: PathStep | null): boolean => step?.isInvalid || false;
