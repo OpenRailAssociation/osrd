@@ -1,7 +1,7 @@
 .op-suggestion {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 8px;
   padding: 4px 4px;
   cursor: pointer;
   white-space: nowrap;
@@ -76,7 +76,7 @@
 .op-combobox {
   &-wrapper {
     position: relative;
-    max-width: 20rem;
+    max-width: 320px;
     &:has(.suggestions-list) .op-combobox-kebab {
       opacity: 1;
     }
@@ -98,7 +98,7 @@
     .suggestions-list {
       margin-top: 15px;
       right: auto;
-      left: 0.7rem;
+      left: 10px;
       max-height: none;
       border-radius: 4px;
       display: inline-block;
@@ -149,8 +149,8 @@
       &.suggestion-item--more {
         background-color: rgba(245, 245, 245, 1);
         box-shadow: none;
-        padding-top: 0.25rem;
-        padding-bottom: 0.5rem;
+        padding-top: 4px;
+        padding-bottom: 8px;
         display: flex;
       }
     }
