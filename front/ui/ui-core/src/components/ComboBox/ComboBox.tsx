@@ -192,7 +192,15 @@ const ComboBox = <T,>({
         }),
       },
     ];
-  }, [inputProps.readOnly, inputProps.disabled, clearInput, value, small, focusInput]);
+  }, [
+    inputProps.readOnly,
+    inputProps.disabled,
+    clearInput,
+    value,
+    small,
+    focusInput,
+    isInputFocused,
+  ]);
 
   return (
     <div
