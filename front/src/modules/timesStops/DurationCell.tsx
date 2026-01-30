@@ -147,7 +147,7 @@ const durationReducer = (state: DurationState, action: DurationAction): Duration
         units: seconds ? secondsToUnits(seconds) : emptyUnits(),
         activeUnit: unit,
         isEditing: true,
-        hasTyped: seconds > 0,
+        hasTyped: false,
         isCreationMode: seconds === 0,
         finishedEntry: false,
         buffer: '',
@@ -197,7 +197,7 @@ const durationReducer = (state: DurationState, action: DurationAction): Duration
     case 'BACKSPACE': {
       const newState = { ...state };
       // Reset hasTyped logic akin to original
-      newState.hasTyped = newState.initialSeconds > 0;
+      newState.hasTyped = true;
 
       if (newState.finishedEntry) newState.finishedEntry = false;
 
@@ -265,7 +265,11 @@ const UnitDisplay = ({ unit, state, dispatch, startEditing, isEdited }: UnitDisp
   const focused = state.isEditing && state.activeUnit === unit;
   const baseClass = 'duration-cell-digit';
   const savedClass = !state.isEditing && isEdited ? `${baseClass}-saved` : '';
-  const focusClass = focused ? 'duration-cell-digit-focused-editing' : '';
+  const focusClass = focused
+    ? state.hasTyped
+      ? 'duration-cell-digit-focused-editing'
+      : 'duration-cell-digit-focused-initial'
+    : '';
   const letterClass =
     !state.isEditing && isEdited ? 'duration-cell-letter-saved' : 'duration-cell-letter';
 
@@ -285,7 +289,9 @@ const UnitDisplay = ({ unit, state, dispatch, startEditing, isEdited }: UnitDisp
       }}
     >
       <span className="duration-cell-digits-value">
-        {focused && <span className="duration-cell-caret" style={{ left: '100%' }} />}
+        {focused && state.hasTyped && (
+          <span className="duration-cell-caret" style={{ left: '100%' }} />
+        )}
         <span>{u.value[0]}</span>
         <span>{u.value[1]}</span>
       </span>

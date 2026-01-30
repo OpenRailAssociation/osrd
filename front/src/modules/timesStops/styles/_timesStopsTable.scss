@@ -108,11 +108,11 @@
     }
 
     /* Input focus inside cell */
-    td[class^='col-']:has(input:focus, div:focus)::before {
+    td[class^='col-']:has(input:focus:not(:active), div:focus:not(:active))::before {
       box-shadow:
         0 1px 3px 0 inset rgba(0, 0, 0, 0.34),
         inset 0 0 0 1px var(--primary60);
-      background-color: var(--white100);
+      background-color: var(--white50);
     }
 
     /* Ensure content is above layer */

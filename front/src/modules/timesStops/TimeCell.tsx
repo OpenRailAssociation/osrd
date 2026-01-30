@@ -23,6 +23,7 @@ type TimeState = {
   seconds: SectionState;
   focusedSection: Section | null;
   empty?: boolean;
+  hasTyped: boolean;
 };
 
 type TimeAction =
@@ -46,7 +47,9 @@ const formatSectionDigits = (str: string, section: Section): SectionState => {
   return sectionPlaceholder + sectionPlaceholder;
 };
 
-const parseTimeState = (date: Date | null): Omit<TimeState, 'focusedSection' | 'empty'> => {
+const parseTimeState = (
+  date: Date | null
+): Omit<TimeState, 'focusedSection' | 'empty' | 'hasTyped'> => {
   if (!date)
     return {
       hours: formatSectionDigits('', 'hours'),
@@ -133,6 +136,7 @@ const clampTimeState = (state: TimeState): TimeState => {
     minutes: clampSection('minutes'),
     seconds: clampSection('seconds'),
     focusedSection: state.focusedSection,
+    hasTyped: state.hasTyped,
   };
 };
 
@@ -306,6 +310,7 @@ const handleBlurred = (state: TimeState): TimeState => {
       seconds: 'ss',
       focusedSection: null,
       empty: true,
+      hasTyped: false,
     };
   }
   return clampTimeState({
@@ -318,11 +323,13 @@ const handleFocused = (state: TimeState, section: Section): TimeState => ({
   ...state,
   focusedSection: section,
   empty: false,
+  hasTyped: state.empty || false,
 });
 
 const handleSectionClicked = (state: TimeState, section: Section): TimeState => ({
   ...state,
   focusedSection: section,
+  hasTyped: state.empty || false,
 });
 
 const handleHorizontalArrow = (state: TimeState, direction: 'left' | 'right'): TimeState => {
@@ -354,6 +361,7 @@ const handleHorizontalArrow = (state: TimeState, direction: 'left' | 'right'): T
   return {
     ...state,
     focusedSection: newFocusedSection(),
+    hasTyped: false,
   };
 };
 
@@ -362,9 +370,9 @@ const handleHorizontalArrow = (state: TimeState, direction: 'left' | 'right'): T
 const timeReducer = (state: TimeState, action: TimeAction): TimeState => {
   switch (action.type) {
     case 'DIGIT_PRESSED':
-      return handleDigitPressed(state, action.digit);
+      return { ...handleDigitPressed(state, action.digit), hasTyped: true };
     case 'BACKSPACE_PRESSED':
-      return handleBackspacePressed(state);
+      return { ...handleBackspacePressed(state), hasTyped: true };
     case 'BLURRED':
       return handleBlurred(state);
     case 'FOCUSED':
@@ -386,13 +394,16 @@ const initialTimeState = (controlledValue: Date | null): TimeState => ({
   ...parseTimeState(controlledValue),
   focusedSection: null,
   empty: controlledValue === null,
+  hasTyped: controlledValue === null,
 });
 
 // Component
 
-const renderTimeSection = (value: string, focused: boolean) => (
-  <span className={`value ${focused ? 'value-focused' : ''}`}>
-    {focused && <span className="custom-caret" />}
+const renderTimeSection = (value: string, focused: boolean, hasTyped: boolean) => (
+  <span
+    className={`value ${focused ? (hasTyped ? 'value-focused' : 'value-focused-initial') : ''}`}
+  >
+    {focused && hasTyped && <span className="custom-caret" />}
     <span
       className={/\d/.test(value[0]) ? '' : `placeholder-letter placeholder-letter-${value[0]}`}
     >
@@ -526,11 +537,11 @@ const TimeCell = ({
           }`}
           aria-hidden="true"
         >
-          {renderTimeSection(state.hours, state.focusedSection === 'hours')}
+          {renderTimeSection(state.hours, state.focusedSection === 'hours', state.hasTyped)}
           <span className="separator">:</span>
-          {renderTimeSection(state.minutes, state.focusedSection === 'minutes')}
+          {renderTimeSection(state.minutes, state.focusedSection === 'minutes', state.hasTyped)}
           <span className="separator">:</span>
-          {renderTimeSection(state.seconds, state.focusedSection === 'seconds')}
+          {renderTimeSection(state.seconds, state.focusedSection === 'seconds', state.hasTyped)}
         </div>
       ) : (
         <CellPlaceholder onClick={handlePlaceholderClick} />
