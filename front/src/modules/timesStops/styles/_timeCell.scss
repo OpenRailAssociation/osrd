@@ -68,6 +68,19 @@
       width: 17px;
     }
 
+    .value-focused-initial {
+      position: relative;
+      background-color: rgba(0, 109, 255, 1);
+      border-radius: 0;
+      height: 20px;
+      width: 17px;
+      color: var(--white100);
+
+      .placeholder-letter {
+        color: var(--white100);
+      }
+    }
+
     .value-focused {
       position: relative;
       background-color: var(--primary10);

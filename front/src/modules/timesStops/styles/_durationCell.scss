@@ -24,6 +24,20 @@
   color: var(--primary30);
 }
 
+.duration-cell-digit-focused-initial {
+  .duration-cell-digits-value {
+    position: relative;
+    width: 17px;
+    height: 20px;
+    background-color: rgba(0, 109, 255, 1);
+    border-radius: 0;
+
+    span {
+      color: var(--white100);
+    }
+  }
+}
+
 .duration-cell-digit-focused-editing {
   .duration-cell-digits-value {
     position: relative;
