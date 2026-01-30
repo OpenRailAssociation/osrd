@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import { ComboBox, Select } from '@osrd-project/ui-core';
-import { AddedLocation, AddLocation, FocusLocation } from '@osrd-project/ui-icons';
+import { AddedLocation, AddLocation, FocusLocation, KebabHorizontal } from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +15,7 @@ import { useAppDispatch } from 'store';
 
 import {
   ListElementComponent,
+  type OperationalPointSuggestion,
 } from './ComboBoxCustomList/ListElementComponent';
 import { computePathStepCoordinates, isOpRefMetadata } from './utils';
 
@@ -26,6 +27,17 @@ type PathStepProps = {
   index?: number;
   hidePathfindingLine?: boolean;
   categoryColors: CategoryColors;
+  onOpInputChange?: (value: string) => void;
+  onOpFocus?: () => void;
+  onOpBlur?: () => void;
+  inputValue?: string;
+  opSuggestions?: Array<OperationalPointSuggestion | string>;
+  onSelectOpSuggestion?: (suggestion: OperationalPointSuggestion, secondaryCode?: string) => void;
+  resetOpSuggestions?: () => void;
+  onChevronClick?: (queryValue: string) => void;
+  onInputClear?: () => void;
+  isCleared?: boolean;
+  isInvalidAndIsEditing?: boolean;
 };
 
 const PathStepItem = ({
@@ -34,6 +46,17 @@ const PathStepItem = ({
   index,
   hidePathfindingLine,
   categoryColors,
+  onOpInputChange,
+  onOpFocus,
+  onOpBlur,
+  inputValue,
+  opSuggestions = [],
+  onSelectOpSuggestion,
+  resetOpSuggestions,
+  onChevronClick,
+  onInputClear,
+  isCleared,
+  isInvalidAndIsEditing,
 }: PathStepProps) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTimetableItem.itineraryModal',
@@ -42,8 +65,22 @@ const PathStepItem = ({
   const mapSettings = useMapSettings();
   const { updateViewport } = useMapSettingsActions();
 
-  const getInvalidMessage = () => {
+  const blurActiveElement = () => {
+    requestAnimationFrame(() => {
+      (document.activeElement as HTMLElement | null)?.blur();
+    });
+  };
+
+  const shouldShowInvalidMessage = !!pathStep && !!isInvalidAndIsEditing;
+
+  const getInvalidMessage = (comboBoxValue: string) => {
     let message = t('invalidOP');
+
+    if (comboBoxValue) {
+      message += `${comboBoxValue}
+      `;
+    }
+
     if (!pathStepMetadata?.isInvalid || !pathStep?.location) return message;
 
     const { location } = pathStep;
@@ -74,17 +111,6 @@ const PathStepItem = ({
 
     return (message += secondaryCodeInfo + trackInfo);
   };
-
-  const secondaryCodeSuggestions = useMemo(() => {
-    if (!isOpRefMetadata(pathStepMetadata)) return [];
-    return [
-      { label: '', id: '' },
-      {
-        label: pathStepMetadata.secondaryCode || '',
-        id: pathStepMetadata.secondaryCode || '',
-      },
-    ];
-  }, [pathStepMetadata]);
 
   const selectedSecondaryCodeOption = useMemo(() => {
     if (!isOpRefMetadata(pathStepMetadata)) return { label: '', id: '' };
@@ -156,6 +182,26 @@ const PathStepItem = ({
     dispatch(updateViewport(viewport));
   };
 
+  const comboBoxValue = useMemo(() => {
+    if (isCleared) return '';
+    if (inputValue && inputValue.trim() !== '') {
+      return inputValue;
+    }
+
+    if (isOpRefMetadata(pathStepMetadata)) {
+      return `${pathStepMetadata.name} ${pathStepMetadata.secondaryCode}`;
+    }
+
+    return undefined;
+  }, [inputValue, pathStepMetadata, isCleared]);
+
+  const maxVisibleSuggestions = 8;
+  const visibleSuggestions = opSuggestions.slice(0, maxVisibleSuggestions);
+  const hasMore = opSuggestions.length > maxVisibleSuggestions;
+  const numberOfSuggestionsToShow = hasMore
+    ? visibleSuggestions.length + 1
+    : visibleSuggestions.length;
+
   return (
     <div className="path-step-wrapper">
       <div
@@ -165,14 +211,14 @@ const PathStepItem = ({
       >
         <div
           className={cx('path-step-counter', {
-            invalid: pathStepMetadata?.isInvalid,
+            invalid: isInvalidAndIsEditing,
             index,
             'pathfinding-line': !hidePathfindingLine,
             origin: index === 1,
             empty: !pathStep,
           })}
           style={{
-            borderColor: !pathStepMetadata?.isInvalid
+            borderColor: !isInvalidAndIsEditing
               ? index
                 ? categoryColors.background
                 : categoryColors.normal
@@ -184,17 +230,45 @@ const PathStepItem = ({
           {index}
         </div>
         <div
+          role="button"
+          tabIndex={0}
           className={cx('path-step-op-name', {
-            invalid: pathStepMetadata?.isInvalid,
+            invalid: isInvalidAndIsEditing,
           })}
+          onMouseDownCapture={(e) => {
+            const target = e.target as HTMLElement | null;
+            if (target?.closest('.chevron-icon')) {
+              onChevronClick?.(comboBoxValue ?? '');
+            }
+          }}
         >
           <ComboBox
             id={`pathStep-name-${pathStep?.id ?? 'empty'}`}
-            value={isOpRefMetadata(pathStepMetadata) ? pathStepMetadata.name : ''}
-            suggestions={[]}
-            getSuggestionLabel={(option) => String(option)}
-            onSelectSuggestion={() => {}}
-            resetSuggestions={() => {}}
+            value={comboBoxValue}
+            numberOfSuggestionsToShow={numberOfSuggestionsToShow}
+            suggestions={visibleSuggestions}
+            getSuggestionLabel={(op) => {
+              if (!op) return '';
+              if (typeof op === 'string') return op;
+              return `${op.trigram} ${op.name}`;
+            }}
+            onSelectSuggestion={(op) => {
+              if (!op) {
+                onInputClear?.();
+                resetOpSuggestions?.();
+                return;
+              }
+
+              if (typeof op === 'string') {
+                onOpInputChange?.(op);
+                return;
+              }
+
+              onSelectOpSuggestion?.(op);
+              resetOpSuggestions?.();
+              blurActiveElement();
+            }}
+            resetSuggestions={() => resetOpSuggestions?.()}
             renderListElementComponent={({
               suggestion,
               index: suggestionIndex,
@@ -217,50 +291,54 @@ const PathStepItem = ({
                 />
               );
             }}
+            renderFooterItem={
+              hasMore
+                ? () => (
+                    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+                    <li
+                      className="suggestion-item suggestion-item--more"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                    >
+                      <span className="op-suggestion-kebab">
+                        <KebabHorizontal size="sm" />
+                      </span>
+                    </li>
+                  )
+                : undefined
+            }
             small
             narrow
-            readOnly
+            onFocus={onOpFocus}
+            onBlur={onOpBlur}
+            onChange={(e) => onOpInputChange?.(e.target.value)}
           />
         </div>
         {pathStep?.location && 'track' in pathStep.location ? (
           <div className="requested-point-block" />
         ) : (
-          <>
-            <div
-              className={cx('secondary-code', {
-                invalid: pathStepMetadata?.isInvalid,
-              })}
-            >
-              <Select
-                id={`pathStep-type-${pathStep?.id ?? 'empty'}`}
-                value={selectedSecondaryCodeOption}
-                options={secondaryCodeSuggestions}
-                getOptionLabel={(option) => option.label}
-                getOptionValue={(option) => option.id}
-                onChange={() => {}}
-                small
-                narrow
-                readOnly
-              />
-            </div>
-            <div
-              className={cx('track-name', {
-                invalid: pathStepMetadata?.isInvalid,
-              })}
-            >
-              <Select
-                id={`pathStep-status-${pathStep?.id ?? 'empty'}`}
-                value={selectedTrackNameOption}
-                options={trackNameSuggestions}
-                getOptionLabel={(option) => option.label}
-                getOptionValue={(option) => option.id}
-                onChange={() => {}}
-                small
-                narrow
-                readOnly
-              />
-            </div>
-          </>
+          <div
+            className={cx('track-name', {
+              invalid: isInvalidAndIsEditing,
+            })}
+          >
+            <Select
+              id={`pathStep-status-${pathStep?.id ?? 'empty'}`}
+              value={selectedTrackNameOption}
+              options={trackNameSuggestions}
+              getOptionLabel={(option) => option.label}
+              getOptionValue={(option) => option.id}
+              onChange={() => {}}
+              small
+              narrow
+            />
+          </div>
         )}
         <div className="map-interactions">
           {pathStep?.location && 'track' in pathStep.location ? (
@@ -291,8 +369,10 @@ const PathStepItem = ({
           </button>
         </div>
       </div>
-      {pathStepMetadata?.isInvalid && (
-        <span className="invalid-step-message">{getInvalidMessage()}</span>
+      {shouldShowInvalidMessage && (
+        <span className="invalid-step-message">
+          {getInvalidMessage(comboBoxValue ? comboBoxValue : '')}
+        </span>
       )}
     </div>
   );
