@@ -31,7 +31,6 @@ images:
   gateway: ghcr.io/openrailassociation/osrd-REPOSITORY_VERSION_REPLACE_ME/osrd-gateway:IMAGES_VERSION_REPLACE_ME-front
   core: ghcr.io/openrailassociation/osrd-REPOSITORY_VERSION_REPLACE_ME/osrd-core:IMAGES_VERSION_REPLACE_ME
   osrdyne: ghcr.io/openrailassociation/osrd-REPOSITORY_VERSION_REPLACE_ME/osrd-osrdyne:IMAGES_VERSION_REPLACE_ME
-  images: ghcr.io/openrailassociation/osrd-stable/osrd-images:v1.0.2
   openfga: openfga/openfga:v1.8.6
 
 # Services direct settings and overides
@@ -139,7 +138,7 @@ services:
         enabled: false
         prefix: "/railway-manager"
         upstream: ""
-      # secret_key: "NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET" # See https://github.com/OpenRailAssociation/osrd/blob/dev/gateway/README.md#config 
+      # secret_key: "NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET" # See https://github.com/OpenRailAssociation/osrd/blob/dev/gateway/README.md#config
       tracing:
         enabled: false
         type: ""

@@ -72,11 +72,6 @@ data:
     ]
     {{- end }}
 
-    [[targets]]
-    prefix = "/images"
-    upstream = "http://{{ include "osrd.fullname" . }}-images"
-    require_auth = true
-
     {{- if $config.auth }}
     [auth]
     {{- if $config.auth.default_provider }}

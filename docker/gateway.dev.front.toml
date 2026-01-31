@@ -22,12 +22,6 @@ tracing_name = "front"
 upstream = "http://osrd-front:3000"
 require_auth = false
 
-[[targets]]
-tracing_name = "images"
-prefix = "/images"
-upstream = "http://osrd-images:8075"
-require_auth = false
-
 [auth]
 default_provider = "mock"
 secure_cookies = false
