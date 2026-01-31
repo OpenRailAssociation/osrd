@@ -224,17 +224,6 @@ services:
     networks:
       - pr-tests
 
-  osrd-images:
-    image: ghcr.io/openrailassociation/osrd-stable/osrd-images:${TAG_IMAGES-v1.0.0}
-    container_name: osrd-images-pr-tests
-    platform: linux/x86_64
-    restart: unless-stopped
-    environment:
-      - NGINX_PORT=8076
-    ports: [ "8076:8076" ]
-    networks:
-      - pr-tests
-
   osrdyne:
     image: ghcr.io/openrailassociation/osrd-edge/osrd-osrdyne:${PR_NB}
     container_name: osrd-osrdyne-pr-tests

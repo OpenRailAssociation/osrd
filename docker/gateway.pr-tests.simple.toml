@@ -23,12 +23,6 @@ prefix = "/api"
 upstream = "http://editoast:8089"
 require_auth = true
 
-[[targets]]
-tracing_name = "images"
-prefix = "/images"
-upstream = "http://osrd-images:8076"
-require_auth = false
-
 
 [auth]
 default_provider = "mock"

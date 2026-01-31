@@ -1,5 +1,5 @@
 # This is an example production file. It's meant to be mounted inside the container at /gateway.toml
-# If you change the provider_id of the "Example User", don't forget to change it also on the docker-compose 
+# If you change the provider_id of the "Example User", don't forget to change it also on the docker-compose
 # in the editoast section
 
 secret_key = "NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET"
@@ -15,11 +15,6 @@ redirect_404_to_index = true
 prefix = "/api"
 upstream = "http://osrd-editoast:80"
 require_auth = true
-
-[[targets]]
-prefix = "/images"
-upstream = "http://osrd-images:8080"
-require_auth = false
 
 [auth]
 default_provider = "mock"

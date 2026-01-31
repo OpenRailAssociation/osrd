@@ -52,10 +52,6 @@ services:
     volumes:
       - "./docker/gateway.dev.host.toml:/srv/gateway.toml"
 
-  osrd-images:
-    ports: !reset []
-    network_mode: host
-
   rabbitmq:
     ports: !reset []
     network_mode: host
