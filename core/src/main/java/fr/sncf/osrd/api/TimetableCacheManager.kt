@@ -26,7 +26,6 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.cbor.Cbor
-import kotlinx.serialization.encodeToByteArray
 import org.slf4j.LoggerFactory
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
@@ -152,7 +151,7 @@ class TimetableCacheManager(
         if (!disableAllCaching) runBlocking { get(infra, timetableId) }
     }
 
-    @WithSpan(value = "Fetching timetable content", kind = SpanKind.SERVER)
+    @WithSpan(kind = SpanKind.SERVER)
     private suspend fun fetchTimetableRequirements(
         infra: FullInfra,
         timetableId: TimetableId,
@@ -214,6 +213,7 @@ class TimetableCacheManager(
      * Try to get the cached value from valkey, returns null if the value isn't cached or if an
      * error happened.
      */
+    @WithSpan(kind = SpanKind.SERVER)
     private suspend fun tryGetFromValkey(
         valkeyConnection: StatefulRedisConnection<ByteArray, ByteArray>,
         key: String,
@@ -221,20 +221,31 @@ class TimetableCacheManager(
         try {
             val async = valkeyConnection.async()
             val byteKey = key.encodeToByteArray()
-            val data = async.get(byteKey).await()?.decompress() ?: return null
-            logger.debug("valkey cache hit")
+            val data = async.get(byteKey).await()?.decompress()
 
-            val cbor = Cbor {}
-            val serializer = STDCMTimetableData.SerializableMap.serializer()
-            val serializableMap = cbor.decodeFromByteArray(serializer, data)
-            return serializableMap.toSTDCMRequirements()
+            val cacheHit = data != null
+            Span.current()?.setAttribute("cache-hit", cacheHit)
+            if (!cacheHit) return null
+
+            logger.debug("valkey cache hit at key $key")
+            return deserializeTimetable(data)
         } catch (e: Exception) {
             logger.warn("error when fetching valkey cache: ${e.message}")
             return null
         }
     }
 
+    /** Deserializes the raw bytes into timetable data. Useful for its span. */
+    @WithSpan(kind = SpanKind.SERVER)
+    private fun deserializeTimetable(bytes: ByteArray): STDCMTimetableData {
+        val cbor = Cbor {}
+        val serializer = STDCMTimetableData.SerializableMap.serializer()
+        val serializableMap = cbor.decodeFromByteArray(serializer, bytes)
+        return serializableMap.toSTDCMRequirements()
+    }
+
     /** Write the value to valkey, not blocking. */
+    @WithSpan(kind = SpanKind.SERVER)
     private fun writeCacheToValkey(
         valkeyConnection: StatefulRedisConnection<ByteArray, ByteArray>,
         key: String,
@@ -277,6 +288,7 @@ class TimetableCacheManager(
     }
 
     /** If there's no file yet with the given cache key, save the timetable in the s3 storage. */
+    @WithSpan(kind = SpanKind.SERVER)
     private fun saveToS3(cacheKey: String, requirements: STDCMTimetableData) {
         if (s3Context == null) return
 
