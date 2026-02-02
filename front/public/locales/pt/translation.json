@@ -47,13 +47,31 @@
           "name": "Rota inválida"
         },
         "invalid_switch_ports": {
+          "description": "A agulha/nó « {{obj_id}} » apresenta um ramal que não é compatível com o seu tipo de agulha/nó (que não existe no seu tipo de agulha/nó)",
           "name": "Ramo inválido da agulha ou nó"
+        },
+        "missing_buffer_stop": {
+          "description": "A extremidade « {{endpoint}} » da via « {{obj_id}} » não tem para-choques de via",
+          "name": "Para-choques de via em falta"
         },
         "missing_route": {
           "description": "A linha « {{obj_id}} » não tem nenhuma rota associada",
           "name": "Rota em falta"
         },
+        "node_endpoints_not_unique": {
+          "description": "Uma extremidade de via é utilisada por vários portos do nó « {{obj_id}} ».",
+          "name": "Extremidade de via de nó não única"
+        },
+        "object_out_of_path": {
+          "description": "A agulha/o nó ou o detetor « {{obj_id}} » do itinerário « {{reference.obj_id}} » não está contido no caminho correspondente",
+          "name": "Objeto fora do itinerário"
+        },
+        "odd_buffer_stop_location": {
+          "description": "O para-choques de via « {{obj_id}} » encontra-se numa posição estranha",
+          "name": "Posição estranha do para-choques de via"
+        },
         "out_of_range": {
+          "description": "O objeto « {{obj_id}} » tem o campo « {{field}} » com um valor inválido. O valor deve estar dentro do intervalo [{{expected_range}}].",
           "name": "Valor inválido"
         },
         "overlapping_electrifications": {
@@ -63,6 +81,17 @@
         "overlapping_speed_sections": {
           "description": "O limite da velocidade « {{obj_id}} » sobrepõe-se a « {{reference.obj_id}} »",
           "name": "Sobreposição dos limites de velocidade"
+        },
+        "overlapping_switches": {
+          "description": "AMVs « {{obj_id}} » e « {{reference.obj_id}} » conectam às mesmas extremidades",
+          "name": "Sobreposição de AMVs"
+        },
+        "unknown_port_name": {
+          "description": "AMV « {{obj_id}} » tem o ramal « {{port_name}} » que não existe",
+          "name": "Nome do ramal desconhecido"
+        },
+        "unused_port": {
+          "description": "O ramal « {{port_name}} » do tipo de AMV « {{obj_id}} » não é utilizado"
         }
       },
       "infra-locked": "Por favor, note que não poderá guardar quaisquer alterações.",
