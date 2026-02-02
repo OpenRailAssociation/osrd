@@ -520,75 +520,72 @@ impl TrainToProjectOnOperationalPoint {
         }
     }
 
-    /// Use the train schedule to build the projection and complete the last point with simulation information
-    fn new_from_input_and_completed<T: TrainScheduleLike>(
+    /// Case where the train doesn't respect their time
+    ///
+    /// We draw the space-time curve first using inputs, then using the simulation from the
+    /// last scheduled point to the destination.
+    fn new_from_invalid<T: TrainScheduleLike>(
         ts: &T,
         sim: SimulationResponseSuccess,
+        path: PathfindingResultSuccess,
     ) -> Self {
-        let mut input_only = Self::new_from_input(ts);
+        // Reuse the space-time curve from the track projection, so that scheduled
+        // `PathItemLocation::TrackOffset`s are visible on the STD even for invalid trains.
+        let space_time_curve = extract_curve_for_invalid_train_with_sim(ts, &sim, &path);
 
-        let Some((last_path_item_index, last_path_item_id, last_path_item_op_ref)) = ts
-            .path()
-            .iter()
-            .enumerate()
-            .rev()
-            .find_map(|(path_item_index, path_item)| match &path_item.location {
-                PathItemLocation::OperationalPointPartReference(op_ref) => Some((
-                    path_item_index,
-                    path_item.id.clone(),
-                    op_ref.operational_point.clone(),
-                )),
-                PathItemLocation::TrackOffset(_) => None,
-            })
-        else {
-            return input_only;
-        };
+        let last_path_item_id = &ts.path().last().unwrap().id;
+        let first_path_item_id = &ts.path().first().unwrap().id;
 
-        let last_scheduled_op_ref = &input_only.refs.last().unwrap().op_ref;
-        if last_scheduled_op_ref == &last_path_item_op_ref {
-            // The last operational point is already present
-            return input_only;
-        }
-
-        let stop_for = ts
+        // Contrary to the input-only projection, we only want to take into account all stops.
+        let stops_input: HashMap<_, _> = ts
             .schedule()
             .iter()
-            .rfind(|schedule_item| schedule_item.at == last_path_item_id)
-            .and_then(|schedule_item| schedule_item.stop_for)
-            .map(|stop_for| stop_for.num_milliseconds() as u64)
-            .unwrap_or_default();
+            .filter(|schedule| {
+                &schedule.at == last_path_item_id
+                    || &schedule.at == first_path_item_id
+                    || schedule.arrival.is_some()
+            })
+            .filter_map(|schedule| {
+                Some((&schedule.at, schedule.stop_for?.num_milliseconds() as u64))
+            })
+            .collect();
 
-        let last_scheduled_op_index = ts
+        let refs = ts
             .path()
             .iter()
-            .rposition(|path_item| match &path_item.location {
-                PathItemLocation::OperationalPointPartReference(op_ref) => {
-                    &op_ref.operational_point == last_scheduled_op_ref
-                }
-                _ => false,
-            })
-            .unwrap();
+            .zip(path.path_item_positions)
+            .filter_map(
+                |(path_item, path_item_position)| match &path_item.location {
+                    PathItemLocation::OperationalPointPartReference(op_ref) => {
+                        let arrival_time =
+                            space_time_curve.linear_interpolate_position(path_item_position);
+                        Some(OperationalPointRefAndTime {
+                            arrival_time,
+                            stop_for: stops_input.get(&path_item.id).copied().unwrap_or_default(),
+                            op_ref: op_ref.operational_point.clone(),
+                        })
+                    }
+                    _ => None,
+                },
+            )
+            .collect();
 
-        // `last_schedule_op_sim_time - last_schedule_op_time` is how off the simulation is
-        // compared to the time from the input. We use this value to offset the simulated time at
-        // the last operational point `last_op_sim_time`, to align the simulation with the input
-        // curve.
-        let last_op_sim_time = sim.final_output.report_train.path_item_times[last_path_item_index];
-        let last_schedule_op_time = input_only.refs.last().unwrap().arrival_time;
-        let last_schedule_op_sim_time =
-            sim.final_output.report_train.path_item_times[last_scheduled_op_index];
-
-        input_only.refs.push(OperationalPointRefAndTime {
-            arrival_time: last_op_sim_time + last_schedule_op_time - last_schedule_op_sim_time,
-            stop_for,
-            op_ref: last_path_item_op_ref,
-        });
-        input_only
+        Self {
+            space_time_curve: Some(space_time_curve),
+            refs,
+        }
     }
 
     /// Use the train simulation to build the projection input
-    fn new_from_simulation<T: TrainScheduleLike>(ts: &T, sim: simulation::Response) -> Self {
+    fn new_from_simulation<T: TrainScheduleLike>(
+        ts: &T,
+        sim: simulation::Response,
+        path: PathfindingResult,
+    ) -> Self {
         let simulation::Response::Success(sim) = sim else {
+            return Self::new_from_input(ts);
+        };
+        let PathfindingResult::Success(path) = path else {
             return Self::new_from_input(ts);
         };
         let respect_times = sim
@@ -596,7 +593,7 @@ impl TrainToProjectOnOperationalPoint {
             .into_iter()
             .all(|path_item| path_item);
         if !respect_times {
-            return Self::new_from_input_and_completed(ts, sim);
+            return Self::new_from_invalid(ts, sim, path);
         }
 
         let stops_input: HashMap<_, _> = ts
@@ -737,10 +734,11 @@ pub async fn compute_projected_train_path_op<T: TrainScheduleLike>(
         indexes: Vec<usize>,
         train_schedule: &'a T,
         simulation: simulation::Response,
+        pathfinding: PathfindingResult,
     }
 
     let mut to_compute = HashMap::new();
-    for ((idx, train_schedule), (simulation, _)) in train_schedules
+    for ((idx, train_schedule), (simulation, pathfinding)) in train_schedules
         .iter()
         .enumerate()
         .zip(simulations.into_iter())
@@ -751,6 +749,7 @@ pub async fn compute_projected_train_path_op<T: TrainScheduleLike>(
                 indexes: vec![],
                 train_schedule,
                 simulation: Arc::unwrap_or_clone(simulation),
+                pathfinding: Arc::unwrap_or_clone(pathfinding),
             })
             .indexes
             .push(idx);
@@ -761,6 +760,7 @@ pub async fn compute_projected_train_path_op<T: TrainScheduleLike>(
         let train_to_project = TrainToProjectOnOperationalPoint::new_from_simulation(
             context.train_schedule,
             context.simulation,
+            context.pathfinding,
         );
         let curves = Arc::new(project_train_path_op(
             &train_to_project,
