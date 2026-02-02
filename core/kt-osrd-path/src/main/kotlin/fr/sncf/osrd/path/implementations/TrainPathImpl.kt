@@ -21,10 +21,12 @@ import fr.sncf.osrd.utils.units.toDirected
 import kotlin.collections.flatMap
 
 /**
- * Basic path, does not support backtracks. Paths with backtracks are meant to be concatenated
- * versions of other path types.
+ * Default train path implementation. Other implementation may be views or similar.
+ *
+ * Keeps track of route / block / chunk range lists, and builds the rest of the requested data from
+ * there.
  */
-data class TrainPathNoBacktrack(
+data class TrainPathImpl(
     private val rawInfra: RawInfra,
     private val blockInfra: BlockInfra,
     private val routes: List<RouteRange>?,
@@ -33,9 +35,8 @@ data class TrainPathNoBacktrack(
     private val electricalProfileMapping: ElectricalProfileMapping?,
     private val backtrackLocations: List<Offset<PhysicsPath>>,
     // Set to true if the blocks have been generated from the track path. Throws an error if the
-    // routes are read. Note: we may eventually want to turn the error into a warning, if we do want
-    // approximate blocks along the path (when we lack context and don't have the actual ones).
-    // TODO: always forward actual blocks, from pathfinding to any Train Path constructor
+    // routes are read. The only case where this should be true (outside of tests) is in the path
+    // properties endpoint, where routes aren't necessary and would make the payload heavier.
     private val haveApproximateBlocks: Boolean,
 ) : TrainPath {
 
@@ -81,7 +82,7 @@ data class TrainPathNoBacktrack(
     override fun subPath(from: Offset<PhysicsPath>?, to: Offset<PhysicsPath>?): TrainPath {
         val fromDist = from?.cast<PhysicsPath>() ?: Offset(0.meters)
         val toDist = (to ?: getLength()).cast<PhysicsPath>()
-        return TrainPathNoBacktrack(
+        return TrainPathImpl(
             rawInfra = rawInfra,
             blockInfra = blockInfra,
             routes = routes?.subRange(fromDist, toDist, resetOffsets = true),
