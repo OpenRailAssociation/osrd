@@ -375,3 +375,10 @@ export type RoundTripCardExpected = {
   startTime: string;
   requestedArrivalTime: string;
 };
+
+export type PacedTrainOptions = {
+  copyTranslation?: string;
+  occurrenceData?: OccurrenceDetails[];
+  pacedTrainCardAlreadyOpen?: boolean;
+  occurrenceColor?: string;
+};

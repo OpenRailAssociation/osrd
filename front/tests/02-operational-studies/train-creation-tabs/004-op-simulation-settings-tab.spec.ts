@@ -9,6 +9,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 
 import { improbableRollingStockName } from '../../assets/constants/project-const';
+import { TRAIN_NAME, TRAIN_START_TIME } from '../../assets/operation-studies/train';
 import test from '../../page-object-fixture';
 import { waitForInfraStateToBeCached } from '../../utils';
 import { deleteApiRequest, getInfra, setElectricalProfile } from '../../utils/api-utils';
@@ -88,9 +89,9 @@ test.describe('@op @simulation-settings-tab', () => {
     });
     await test.step('Add a new train schedule, set its properties and perform pathfinding', async () => {
       await operationalStudiesPage.openTimetableItemForm();
-      await operationalStudiesPage.setTimetableItemName('Train-name-e2e-test');
+      await operationalStudiesPage.setTimetableItemName(TRAIN_NAME);
       await rollingStockSelector.selectRollingStock(improbableRollingStockName);
-      await operationalStudiesPage.setTimetableItemStartTime('11:22:40');
+      await operationalStudiesPage.setTimetableItemStartTime(TRAIN_START_TIME);
 
       await operationalStudiesPage.openRouteTab();
       await routeTab.performPathfindingByTrigram({
