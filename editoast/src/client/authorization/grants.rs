@@ -90,7 +90,7 @@ pub async fn set_grant(
 ) -> anyhow::Result<()> {
     let regulator = openfga_config.into_regulator(pool).await?;
     let subject = parse_and_fetch_subject(&subject, regulator.driver()).await?;
-    let new_grant = level.into();
+    let new_grant = authz::InfraGrant::from(level);
 
     match resource {
         Resource::Infra => {
