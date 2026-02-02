@@ -26,3 +26,7 @@ export const ADDED_AND_MODIFIED_EXCEPTION_MENU_BUTTONS: OccurrenceMenuButton[] =
 ];
 
 export const DISABLED_OCCURRENCE_MENU_BUTTONS: OccurrenceMenuButton[] = ['enable'];
+
+export const TIME_WINDOW = '240';
+export const INTERVAL = '20';
+export const EDITED_PACED_TRAIN_NAME = 'Paced train edited';

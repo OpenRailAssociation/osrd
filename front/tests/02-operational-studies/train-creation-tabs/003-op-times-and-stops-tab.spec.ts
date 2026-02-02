@@ -3,6 +3,7 @@ import { expect } from '@playwright/test';
 import type { Infra, Project, Scenario, Study } from 'common/api/osrdEditoastApi';
 
 import { dualModeRollingStockName } from '../../assets/constants/project-const';
+import { TRAIN_NAME, TRAIN_START_TIME } from '../../assets/operation-studies/train';
 import test from '../../page-object-fixture';
 import { waitForInfraStateToBeCached } from '../../utils';
 import { getInfra } from '../../utils/api-utils';
@@ -58,9 +59,9 @@ test.describe('@op @times-stops-tab', () => {
     });
     await test.step('Add a new train schedule and set its properties', async () => {
       await operationalStudiesPage.openTimetableItemForm();
-      await operationalStudiesPage.setTimetableItemStartTime('11:22:40');
+      await operationalStudiesPage.setTimetableItemStartTime(TRAIN_START_TIME);
       await rollingStockSelector.selectRollingStock(dualModeRollingStockName);
-      await operationalStudiesPage.setTimetableItemName('Train-name-e2e-test');
+      await operationalStudiesPage.setTimetableItemName(TRAIN_NAME);
     });
     await test.step('Perform pathfinding then navigate to Times and Stops tab', async () => {
       await operationalStudiesPage.openRouteTab();

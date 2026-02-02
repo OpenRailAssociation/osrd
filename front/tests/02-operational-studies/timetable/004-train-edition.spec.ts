@@ -4,6 +4,7 @@ import {
   timetableItemProjectName,
   timetableItemStudyName,
 } from '../../assets/constants/project-const';
+import { EDITED_PACED_TRAIN_NAME, INTERVAL, TIME_WINDOW } from '../../assets/paced-train/const';
 import test from '../../page-object-fixture';
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
 import { getInfra, getProject, getStudy } from '../../utils/api-utils';
