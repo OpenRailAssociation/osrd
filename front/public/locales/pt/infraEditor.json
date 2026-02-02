@@ -65,7 +65,62 @@
       "signaling_system": {
         "title": "Sistema de sinalização"
       }
+    },
+    "title": "Sinalização BAPR"
+  },
+  "BufferStop": {
+    "description": "Um para-choques ferroviário é um dispositivo colocado na extremidade de uma via terminal para impedir a progressão de material circulante em deriva. É caracterizado pelo seu identificador e pela via correspondente.",
+    "properties": {
+      "id": {
+        "description": "Identificador único do objeto",
+        "title": "Identificador"
+      },
+      "position": {
+        "description": "Distância relativamente ao início da secção de via correspondente (em metros)",
+        "title": "Posição"
+      },
+      "track": {
+        "description": "Referência à secção de via naquela o objeto se situa",
+        "title": "Via"
+      }
+    },
+    "title": "Para-choques de via"
+  },
+  "BufferStopExtensions": {
+    "title": "Extenções do para-choques de via"
+  },
+  "BufferStopReference": {
+    "properties": {
+      "id": {
+        "description": "Identificador do para-choques de via",
+        "title": "Identificador"
+      },
+      "type": {
+        "title": "Tipo"
+      }
+    },
+    "title": "Referência de para-choques de via"
+  },
+  "BufferStopSncfExtension": {
+    "properties": {
+      "kp": {
+        "description": "Ponto quilométrico naquele se situa o para-choques ferroviário",
+        "title": "PK"
+      }
     }
+  },
+  "ConditionalParameter": {
+    "properties": {
+      "on_route": {
+        "description": "Itinerário naquele os parâmetros são aplicados",
+        "title": "No itinerário"
+      },
+      "parameters": {
+        "description": "Lista de parâmetros valor chave, que são definidos por sistema de sinalização",
+        "title": "Parâmetros"
+      }
+    },
+    "title": "Parâmetro condicional"
   },
   "OperationalPointIdentifierExtension": {
     "properties": {
