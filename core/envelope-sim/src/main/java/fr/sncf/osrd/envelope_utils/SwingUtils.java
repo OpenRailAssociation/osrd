@@ -8,7 +8,7 @@ import java.util.function.Supplier;
 import javax.swing.*;
 
 @ExcludeFromGeneratedCodeCoverage
-@SuppressFBWarnings({"WA_AWAIT_NOT_IN_LOOP"})
+@SuppressFBWarnings({"WA_AWAIT_NOT_IN_LOOP", "CWO_CLOSED_WITHOUT_OPENED"})
 public class SwingUtils {
     /** Creates a new frame, adds a pane and synchronously wait for the frame to be closed */
     public static void debugPanel(String windowName, Supplier<JPanel> panelSupplier) {

@@ -71,6 +71,7 @@ public final class MRSPEnvelopeBuilder {
     }
 
     /** Add an envelope part to the envelope */
+    @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
     public MRSPEnvelopeBuilder addPart(EnvelopePart part) {
         assert part.stepCount() == 1;
         assert part.getMinSpeed() == part.getMaxSpeed();

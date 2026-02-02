@@ -192,6 +192,7 @@ allprojects {
         reportLevel = Confidence.valueOf('LOW')
         maxHeapSize = '1g'
         excludeFilter = rootProject.file('config/spotbugs/exclude.xml')
+        reportsDir = file("build/reports/spotbugs")
     }
 
     tasks.withType(com.github.spotbugs.snom.SpotBugsTask).tap {

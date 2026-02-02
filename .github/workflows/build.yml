@@ -481,7 +481,7 @@ jobs:
         if: failure()
         uses: jwgmeligmeyling/spotbugs-github-action@v1.2
         with:
-          path: "./output/reports/spotbugs/*.xml"
+          path: "./core/build/reports/spotbugs/*.xml"
 
   check_editoast_tests:
     runs-on: ubuntu-latest

@@ -1,7 +1,6 @@
 package fr.sncf.osrd.railjson.schema.rollingstock;
 
 import com.squareup.moshi.Json;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
 import java.util.Map;
 
@@ -12,7 +11,6 @@ public class RJSEffortCurves {
     @Json(name = "default_mode")
     public String defaultMode = null;
 
-    @SuppressFBWarnings("UWF_NULL_FIELD")
     public static final class RJSEffortCurve {
         public double[] speeds = null;
 

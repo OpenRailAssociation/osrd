@@ -4,6 +4,7 @@ import static fr.sncf.osrd.envelope_utils.DoubleUtils.clamp;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;
 import java.util.List;
 import org.jetbrains.annotations.Nullable;
@@ -136,6 +137,7 @@ public class EnvelopeConcat implements EnvelopeInterpolate {
     /**
      * Returns the index of the envelope at the given position.
      */
+    @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
     private int findEnvelopeIndexAt(double position, boolean searchLeft) {
         if (position < 0) return -1;
         var lowerBound = 0; // included
