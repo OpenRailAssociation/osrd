@@ -36,7 +36,14 @@
     "selectedFile": "Ficheiro selecionado: {{fileName}}",
     "status": {
       "invalidTimetableItems_one": "A circulação a importar não está no formato correto.",
-      "invalidTimetableItems_other": "As circulações a importar não estão no formato correto."
+      "invalidTimetableItems_other": "As circulações a importar não estão no formato correto.",
+      "successfulImport": "Todos os itens foram importados.",
+      "successfulImport_one": "O item foi importado."
+    },
+    "success": "Operação bem-sucedida",
+    "warningMessages": {
+      "alreadyPresentNode_one": "Um nó macroscópico já estava presente e não foi atualizado.",
+      "alreadyPresentNode_other": "{{count}} nós macroscópicos já estavam presentes e não foram atualizados."
     }
   }
 }
