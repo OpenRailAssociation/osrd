@@ -43,7 +43,30 @@
     "success": "Operação bem-sucedida",
     "warningMessages": {
       "alreadyPresentNode_one": "Um nó macroscópico já estava presente e não foi atualizado.",
-      "alreadyPresentNode_other": "{{count}} nós macroscópicos já estavam presentes e não foram atualizados."
+      "alreadyPresentNode_other": "{{count}} nós macroscópicos já estavam presentes e não foram atualizados.",
+      "warning": "Atenção"
+    }
+  },
+  "main": {
+    "Routing": "Itinerários",
+    "Spacing": "Espaçamento",
+    "conflicts": {
+      "conflictsCount_one": "{{count}} conflito",
+      "conflictsCount_other": "{{count}} conflitos",
+      "conflictsCount_zero": "nenhum conflito",
+      "filterWithSelectedTrain": "filtrar a lista com o comboio selecionado",
+      "for": "para",
+      "otherTrains": "+{{count}}",
+      "trainsInConflictTitle": "COMBOIO(S) EM CONFLITO"
+    },
+    "copyTimetable": {
+      "text_one": "Circulação copiada",
+      "text_other": "Circulações copiadas",
+      "title": "Exportação de circulações"
+    },
+    "cutTimetable": {
+      "text_one": "Circulação cortada",
+      "text_other": "Circulações cortadas"
     }
   }
 }
