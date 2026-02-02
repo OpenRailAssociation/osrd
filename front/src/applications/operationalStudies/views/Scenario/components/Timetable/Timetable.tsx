@@ -207,7 +207,7 @@ const Timetable = ({
                 const isIndeterminate =
                   !isSelected &&
                   trains.some((train) => selectedTimetableItemIds.includes(train.id));
-
+                const isCheckboxDisabled = trains.length === 0;
                 return (
                   <TrainScheduleSetTab
                     key={trainScheduleSet.id}
@@ -220,6 +220,7 @@ const Timetable = ({
                     isSelectMode={isSelectMode}
                     isSelected={isSelected}
                     isIndeterminate={isIndeterminate}
+                    isCheckboxDisabled={isCheckboxDisabled}
                     isTrainListOpen={expandedTrainScheduleSetIds.has(trainScheduleSet.id)}
                     catalogEntries={catalogEntries}
                     publishTrainScheduleSet={publishTrainScheduleSet}
