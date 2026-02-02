@@ -45,6 +45,22 @@
       "FixTrialFailure": "Falha ao aplicar os corretores",
       "MaximumIterationReached": "Número máximo de iterações atingido para corrigir a infraestrutura sem fornecer todas as correções possíveis",
       "MissingErrorObject": "Não foi possível encontrar o objeto do erro"
+    },
+    "cache_operation": {
+      "DuplicateIdsProvided": "{{obj_type}} {{obj_id}} : um duplicado já existe",
+      "ObjectNotFound": "{{obj_type}} {{obj_id}} não foi encontrado em nenhum lugar na cache da infraestrutura"
+    },
+    "catalog_entry": {
+      "Database": "Erro interno (base de dados)",
+      "NotFound": "Entrada do catálogo '{{catalog_entry_id}}' não encontrada"
+    },
+    "core": {
+      "pathfinding": {
+        "ZeroLengthPath": "O comprimento de um caminho não pode ser nulo."
+      }
+    },
+    "delimited_area": {
+      "InvalidLocations": "Certas localizações são inválidas"
     }
   }
 }
