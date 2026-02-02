@@ -33,6 +33,10 @@
       "errorInvalidFile": "Ficheiro inválido"
     },
     "failure": "A operação falhou",
-    "selectedFile": "Ficheiro selecionado: {{fileName}}"
+    "selectedFile": "Ficheiro selecionado: {{fileName}}",
+    "status": {
+      "invalidTimetableItems_one": "A circulação a importar não está no formato correto.",
+      "invalidTimetableItems_other": "As circulações a importar não estão no formato correto."
+    }
   }
 }
