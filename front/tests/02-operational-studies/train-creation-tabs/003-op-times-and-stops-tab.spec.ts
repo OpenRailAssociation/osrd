@@ -3,7 +3,7 @@ import { expect } from '@playwright/test';
 import type { Infra, Project, Scenario, Study } from 'common/api/osrdEditoastApi';
 
 import { dualModeRollingStockName } from '../../assets/constants/project-const';
-import { TRAIN_NAME, TRAIN_START_TIME } from '../../assets/operation-studies/train';
+import { TRAIN_NAME, TRAIN_START_TIME } from '../../assets/operation-studies/train-const';
 import test from '../../page-object-fixture';
 import { waitForInfraStateToBeCached } from '../../utils';
 import { getInfra } from '../../utils/api-utils';

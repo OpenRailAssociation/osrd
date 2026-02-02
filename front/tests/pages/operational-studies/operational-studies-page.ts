@@ -35,6 +35,7 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
   private readonly createTimetableItemButton: Locator;
   private readonly simulationSettingsTab: Locator;
   private readonly timesAndStopsTab: Locator;
+  private readonly categorySelector: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -62,6 +63,7 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
     this.timetableItemNameInput = page.getByTestId('timetable-item-name-input');
     this.initialSpeedInput = page.getByTestId('initial-speed-input');
     this.timetableItemTagsInput = page.getByTestId('chips-input');
+    this.categorySelector = page.getByTestId('category-selector-select');
   }
 
   // Click on the button to add a scenario timetable item.
@@ -107,6 +109,11 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
   async setFormattedStartTime(startTime: string) {
     await this.startTimeField.fill(startTime);
     await expect(this.startTimeField).toHaveValue(startTime);
+  }
+
+  async selectCategory(categoryName: string): Promise<void> {
+    await this.categorySelector.selectOption(categoryName);
+    await expect(this.categorySelector).toHaveValue(categoryName);
   }
 
   async returnSimulationResult() {

@@ -9,7 +9,11 @@ import type {
 } from 'common/api/osrdEditoastApi';
 
 import { improbableRollingStockName } from '../../assets/constants/project-const';
-import { TRAIN_NAME, TRAIN_START_TIME } from '../../assets/operation-studies/train';
+import {
+  FREIGHT_TRAIN,
+  TRAIN_NAME,
+  TRAIN_START_TIME,
+} from '../../assets/operation-studies/train-const';
 import test from '../../page-object-fixture';
 import { waitForInfraStateToBeCached } from '../../utils';
 import { deleteApiRequest, getInfra, setElectricalProfile } from '../../utils/api-utils';
@@ -92,7 +96,7 @@ test.describe('@op @simulation-settings-tab', () => {
       await operationalStudiesPage.setTimetableItemName(TRAIN_NAME);
       await rollingStockSelector.selectRollingStock(improbableRollingStockName);
       await operationalStudiesPage.setTimetableItemStartTime(TRAIN_START_TIME);
-
+      await operationalStudiesPage.selectCategory(FREIGHT_TRAIN.category);
       await operationalStudiesPage.openRouteTab();
       await routeTab.performPathfindingByTrigram({
         originTrigram: 'WS',
@@ -139,6 +143,7 @@ test.describe('@op @simulation-settings-tab', () => {
       await operationalStudiesPage.closeToastNotification();
       await operationalStudiesPage.returnSimulationResult();
       await scenarioTimetableSection.getTimetableItemArrivalTime('11:48');
+      await scenarioTimetableSection.verifyTrainColor(FREIGHT_TRAIN.color);
       await opSimulationResultPage.setTrainListVisible();
 
       await operationalStudiesPage.verifyTimesStopsDataSheetVisibility();

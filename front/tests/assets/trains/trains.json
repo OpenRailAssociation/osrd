@@ -49,6 +49,9 @@
     "paced": {
       "time_window": "PT2H",
       "interval": "PT1H"
+    },
+    "category": {
+      "main_category": "HIGH_SPEED_TRAIN"
     }
   },
   {

@@ -46,6 +46,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   private readonly timetableItemArrivalTime: Locator;
   private readonly timetableItemArrivalTimeLoader: Locator;
   private readonly invalidTimetableItemsReasons: Locator;
+  private readonly trainName: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -87,6 +88,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     this.timetableItemArrivalTime = page.getByTestId('timetable-item-arrival-time');
     this.timetableItemArrivalTimeLoader = page.getByTestId('arrival-time-loader');
     this.invalidTimetableItemsReasons = this.timetableItems.getByTestId('invalid-reason');
+    this.trainName = page.getByTestId('train-name');
   }
 
   private static getTrainScheduleButton(trainScheduleSelector: Locator): Locator {
@@ -415,6 +417,11 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   async verifyInvalidReasons(expectedReason: string[]): Promise<void> {
     await expect(this.invalidTimetableItemsReasons.first()).toBeVisible();
     await expect(this.invalidTimetableItemsReasons).toHaveText(expectedReason);
+  }
+
+  async verifyTrainColor(expectedColor: string, index = 0) {
+    await expect(this.trainName.nth(index)).toBeVisible();
+    await expect(this.trainName.nth(index)).toHaveCSS('color', expectedColor);
   }
 }
 
