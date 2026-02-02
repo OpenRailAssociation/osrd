@@ -894,16 +894,6 @@ mod tests {
         }
         .into();
 
-        let operational_point: InfraObject = OperationalPoint {
-            parts: vec![OperationalPointPart {
-                track: track.get_id().as_str().into(),
-                position: 1250.0,
-                ..Default::default()
-            }],
-            ..Default::default()
-        }
-        .into();
-
         let speed_section: InfraObject = SpeedSection {
             track_ranges: vec![ApplicableDirectionsTrackRange {
                 track: track.get_id().as_str().into(),
@@ -915,23 +905,7 @@ mod tests {
         }
         .into();
 
-        let level_crossing: InfraObject = LevelCrossing {
-            parts: vec![LevelCrossingPart {
-                track: track.get_id().as_str().into(),
-                position: 1250.0,
-                ..Default::default()
-            }],
-            ..Default::default()
-        }
-        .into();
-
-        for obj in [
-            &track,
-            &electrification,
-            &operational_point,
-            &speed_section,
-            &level_crossing,
-        ] {
+        for obj in [&track, &electrification, &speed_section] {
             apply_create_operation(obj, empty_infra_id, &mut db_pool.get_ok())
                 .await
                 .expect("Failed to create object");
@@ -943,13 +917,7 @@ mod tests {
             .assert_status(StatusCode::OK)
             .json_into();
 
-        for obj in [
-            &track,
-            &electrification,
-            &operational_point,
-            &speed_section,
-            &level_crossing,
-        ] {
+        for obj in [&track, &electrification, &speed_section] {
             assert!(!operations.contains(&Operation::Delete(DeleteOperation {
                 obj_id: obj.get_id().to_string(),
                 obj_type: obj.get_type(),
@@ -1021,6 +989,63 @@ mod tests {
                     obj_type: obj.get_type(),
                 })))
             }
+        }
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn out_of_range_must_be_updated() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let empty_infra_id = empty_infra.id;
+
+        let track: InfraObject = TrackSection {
+            id: "test_track".into(),
+            length: 1_000.0,
+            ..Default::default()
+        }
+        .into();
+
+        let operational_point: InfraObject = OperationalPoint {
+            parts: vec![OperationalPointPart {
+                track: track.get_id().as_str().into(),
+                position: 1250.0,
+                ..Default::default()
+            }],
+            ..Default::default()
+        }
+        .into();
+
+        let level_crossing: InfraObject = LevelCrossing {
+            parts: vec![LevelCrossingPart {
+                track: track.get_id().as_str().into(),
+                position: 1250.0,
+                ..Default::default()
+            }],
+            ..Default::default()
+        }
+        .into();
+
+        for obj in [&track, &operational_point, &level_crossing] {
+            apply_create_operation(obj, empty_infra_id, &mut db_pool.get_ok())
+                .await
+                .expect("Failed to create object");
+        }
+
+        let operations: Vec<Operation> = app
+            .fetch(app.auto_fixes_request(empty_infra_id))
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
+
+        for obj in [&operational_point, &level_crossing] {
+            assert!(operations.iter().any(|op| {
+                if let Operation::Update(update_op) = op {
+                    update_op.obj_id == *obj.get_id() && update_op.obj_type == obj.get_type()
+                } else {
+                    false
+                }
+            }))
         }
     }
 
