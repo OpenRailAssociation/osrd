@@ -5,6 +5,7 @@ import type {
   OccurrenceDetails,
   OccurrenceMenuButton,
   PacedTrainDetails,
+  PacedTrainOptions,
   TimetableFilterTranslations,
 } from '../../utils/types';
 import CommonPage from '../common-page';
@@ -94,16 +95,15 @@ class PacedTrainSection extends CommonPage {
   async verifyPacedTrainItemDetails(
     pacedTrainData: PacedTrainDetails,
     index: number,
-    {
+    options: PacedTrainOptions = {}
+  ) {
+    const {
       copyTranslation,
       occurrenceData,
-      pacedTrainCardAlreadyOpen,
-    }: {
-      copyTranslation?: string;
-      occurrenceData?: OccurrenceDetails[];
-      pacedTrainCardAlreadyOpen?: boolean;
-    } = {}
-  ) {
+      pacedTrainCardAlreadyOpen = false,
+      occurrenceColor,
+    } = options;
+
     const { name, labels, interval, expectedOccurrencesCount } = pacedTrainData;
 
     // In paced_trains.json, invalid paced trains are marked with an `Invalid` label
@@ -117,21 +117,15 @@ class PacedTrainSection extends CommonPage {
 
     if (expectedOccurrencesCount !== undefined) {
       await expect(this.testedPacedTrainOccurrences).toHaveCount(expectedOccurrencesCount);
-      await this.verifyOccurrencesCount(expectedOccurrencesCount, index);
+      await this.verifyOccurrencesCount(expectedOccurrencesCount, index, occurrenceColor);
     }
 
-    let expectedName = name;
-    if (copyTranslation) {
-      // duplicated train name should have format : "name (copy)"
-      expectedName = `${name} (${copyTranslation})`;
-    }
+    const expectedName = copyTranslation ? `${name} (${copyTranslation})` : name;
     await expect(this.testedPacedTrainName).toBeVisible();
     await expect(this.testedPacedTrainName).toHaveText(expectedName);
 
     await expect(this.testedPacedTrainInterval).toBeVisible();
-    await expect(this.testedPacedTrainInterval).toHaveText(
-      `${String.fromCodePoint(0x2014)} ${interval}min`
-    ); // UI format: "- Xmin"
+    await expect(this.testedPacedTrainInterval).toHaveText(`— ${interval}min`); // UI: "— Xmin"
 
     // Verify that the pace train item does not display the rolling stock
     await expect(this.testedPacedTrainRollingStock).not.toBeVisible();
@@ -148,10 +142,17 @@ class PacedTrainSection extends CommonPage {
     await this.collapsePacedTrainOccurrenceList(index);
   }
 
-  async verifyOccurrencesCount(expectedOccurrencesCount: number, index: number) {
+  async verifyOccurrencesCount(
+    expectedOccurrencesCount: number,
+    index: number,
+    occurrenceColor?: string
+  ) {
     const pacedTrainOccurrencesCount = this.occurrencesCount.nth(index);
-    await expect(pacedTrainOccurrencesCount).toBeVisible();
     await expect(pacedTrainOccurrencesCount).toHaveText(String(expectedOccurrencesCount));
+
+    if (occurrenceColor) {
+      await expect(pacedTrainOccurrencesCount).toHaveCSS('background-color', occurrenceColor);
+    }
   }
 
   async verifyOccurrenceName(

@@ -21,6 +21,7 @@ import {
   TOTAL_PACED_TRAINS,
   TOTAL_PACED_TRAINS_WITH_DUPLICATE,
 } from '../../assets/constants/timetable-items-count';
+import { FREIGHT_TRAIN, HIGH_SPEED_TRAIN_COLOR } from '../../assets/operation-studies/train-const';
 import test from '../../page-object-fixture';
 import { waitForInfraStateToBeCached } from '../../utils';
 import { getInfra } from '../../utils/api-utils';
@@ -179,6 +180,7 @@ test.describe('@op @paced-trains', () => {
     await test.step('Verify paced train card and first occurrence details', async () => {
       await pacedTrainSection.verifyPacedTrainItemDetails(NEW_PACED_TRAIN_SETTINGS, 0, {
         occurrenceData: ADD_PACED_TRAIN_OCCURRENCES_DETAILS[0],
+        occurrenceColor: FREIGHT_TRAIN.color,
       });
     });
 
@@ -231,6 +233,7 @@ test.describe('@op @paced-trains', () => {
       await pacedTrainSection.verifyPacedTrainItemDetails(DUPLICATED_PACED_TRAIN_DETAILS, 1, {
         occurrenceData: DUPLICATED_PACED_TRAIN_OCCURRENCES_DETAILS,
         copyTranslation: frTranslations.timetable.copy,
+        occurrenceColor: HIGH_SPEED_TRAIN_COLOR,
       });
     });
 

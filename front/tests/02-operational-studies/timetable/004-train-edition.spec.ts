@@ -4,7 +4,13 @@ import {
   timetableItemProjectName,
   timetableItemStudyName,
 } from '../../assets/constants/project-const';
-import { EDITED_PACED_TRAIN_NAME, INTERVAL, TIME_WINDOW } from '../../assets/paced-train/const';
+import { FREIGHT_TRAIN, HIGH_SPEED_TRAIN_COLOR } from '../../assets/operation-studies/train-const';
+import {
+  PACED_TRAIN_OCCURRENCE_COUNT,
+  EDITED_PACED_TRAIN_NAME,
+  INTERVAL,
+  TIME_WINDOW,
+} from '../../assets/paced-train/const';
 import test from '../../page-object-fixture';
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
 import { getInfra, getProject, getStudy } from '../../utils/api-utils';
@@ -34,10 +40,6 @@ const frTranslations = {
 };
 
 const trains: PacedTrain[] = readJsonFile('./tests/assets/trains/trains.json');
-
-const TIME_WINDOW = '240';
-const INTERVAL = '20';
-const EDITED_PACED_TRAIN_NAME = 'Paced train edited';
 
 test.describe('@op @paced-train @train-schedule', () => {
   let project: Project;
@@ -83,6 +85,11 @@ test.describe('@op @paced-train @train-schedule', () => {
     pacedTrainSection,
   }) => {
     await test.step('Open paced train edition page', async () => {
+      await pacedTrainSection.verifyOccurrencesCount(
+        PACED_TRAIN_OCCURRENCE_COUNT,
+        0,
+        HIGH_SPEED_TRAIN_COLOR
+      );
       await pacedTrainSection.openPacedTrainEditor();
     });
 
@@ -90,6 +97,7 @@ test.describe('@op @paced-train @train-schedule', () => {
       await operationalStudiesPage.setTimeWindow(TIME_WINDOW);
       await operationalStudiesPage.setInterval(INTERVAL);
       await operationalStudiesPage.setTimetableItemName(EDITED_PACED_TRAIN_NAME);
+      await operationalStudiesPage.selectCategory(FREIGHT_TRAIN.category);
     });
 
     await test.step('Save paced train and verify toast notification', async () => {
@@ -112,7 +120,7 @@ test.describe('@op @paced-train @train-schedule', () => {
           expectedOccurrencesCount: 12,
         },
         0,
-        { pacedTrainCardAlreadyOpen: true }
+        { pacedTrainCardAlreadyOpen: true, occurrenceColor: FREIGHT_TRAIN.color }
       );
     });
   });

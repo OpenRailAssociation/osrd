@@ -30,3 +30,4 @@ export const DISABLED_OCCURRENCE_MENU_BUTTONS: OccurrenceMenuButton[] = ['enable
 export const TIME_WINDOW = '240';
 export const INTERVAL = '20';
 export const EDITED_PACED_TRAIN_NAME = 'Paced train edited';
+export const PACED_TRAIN_OCCURRENCE_COUNT = 2;

@@ -209,7 +209,9 @@ const TrainScheduleItem = ({
                       <Manchette iconColor="var(--white100)" />
                     </div>
                   )}
-                  <span className="train-name">{train.name}</span>
+                  <span data-testid="train-name" className="train-name">
+                    {train.name}
+                  </span>
                 </div>
               </div>
             </div>
