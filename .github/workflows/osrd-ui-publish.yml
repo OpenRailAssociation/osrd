@@ -4,6 +4,10 @@ on:
   release:
     types: [released]
 
+permissions:
+  id-token: write  # Required for OIDC
+  contents: read
+
 jobs:
   publish:
     if: ${{ startsWith(github.ref, 'refs/tags/ui-v') }}
@@ -18,12 +22,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: "24"
-
-      - name: Authenticate with Registry
-        run: |
-          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Cache node_modules
         uses: actions/cache@v5
