@@ -1294,6 +1294,13 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/train_schedule_sets/${queryArg.id}`, method: 'DELETE' }),
         invalidatesTags: ['train_schedule_set'],
       }),
+      getTrainScheduleSetsByIdPacedTrains: build.query<
+        GetTrainScheduleSetsByIdPacedTrainsApiResponse,
+        GetTrainScheduleSetsByIdPacedTrainsApiArg
+      >({
+        query: (queryArg) => ({ url: `/train_schedule_sets/${queryArg.id}/paced_trains` }),
+        providesTags: ['train_schedule_set', 'paced_train'],
+      }),
       postTrainScheduleSetsByIdPacedTrains: build.mutation<
         PostTrainScheduleSetsByIdPacedTrainsApiResponse,
         PostTrainScheduleSetsByIdPacedTrainsApiArg
@@ -2536,6 +2543,12 @@ export type PutTrainScheduleSetsByIdApiArg = {
 };
 export type DeleteTrainScheduleSetsByIdApiResponse = unknown;
 export type DeleteTrainScheduleSetsByIdApiArg = {
+  /** A train schedule set ID */
+  id: number;
+};
+export type GetTrainScheduleSetsByIdPacedTrainsApiResponse =
+  /** status 200 The paced trains */ PacedTrainResponse[];
+export type GetTrainScheduleSetsByIdPacedTrainsApiArg = {
   /** A train schedule set ID */
   id: number;
 };
