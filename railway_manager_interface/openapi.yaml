@@ -216,7 +216,7 @@ components:
           title: Total Mass
           description: Total mass of the train in kg
         max_speed:
-          type: integer
+          type: number
           title: Max Speed
           description: Maximum speed in m/s
         total_length:
