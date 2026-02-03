@@ -68,7 +68,6 @@ const ItineraryModal = ({
 
   const [pathSteps, setPathSteps] = useState<PathStepV2[]>([]);
   const [categoryWarning, setCategoryWarning] = useState<string | undefined>(undefined);
-  const [inputCleared, setInputCleared] = useState<Record<string, boolean>>({});
   const {
     activeStepId,
     setActiveStepId,
@@ -274,7 +273,6 @@ const ItineraryModal = ({
     });
 
   const clearStep = (stepId: string) => {
-    setInputCleared((prev) => ({ ...prev, [stepId]: true }));
     setInputForStep(stepId, '');
     resetOpSuggestions();
 
@@ -369,9 +367,10 @@ const ItineraryModal = ({
                   onOpFocus={() => markEditing(pathStep.id)}
                   onOpInputChange={(value) => {
                     markEditing(pathStep.id);
-                    setInputCleared((prev) =>
-                      prev[pathStep.id] ? { ...prev, [pathStep.id]: false } : prev
-                    );
+                    if (value === '') {
+                      clearStep(pathStep.id);
+                      return;
+                    }
                     setInputForStep(pathStep.id, value);
                   }}
                   onTrackNameChange={(trackName) => {
@@ -398,8 +397,6 @@ const ItineraryModal = ({
                   onChevronClick={(queryValue) => {
                     reopenSuggestionsForStep(pathStep.id, queryValue);
                   }}
-                  onInputClear={() => clearStep(pathStep.id)}
-                  isCleared={!!inputCleared[pathStep.id]}
                   isInvalidAndIsEditing={isInvalid}
                 />
               );

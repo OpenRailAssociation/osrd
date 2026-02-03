@@ -56,8 +56,6 @@ const PathStepItem = ({
   onSelectOpSuggestion,
   resetOpSuggestions,
   onChevronClick,
-  onInputClear,
-  isCleared,
   isInvalidAndIsEditing,
 }: PathStepProps) => {
   const { t } = useTranslation('operational-studies', {
@@ -186,17 +184,14 @@ const PathStepItem = ({
   };
 
   const comboBoxValue = useMemo(() => {
-    if (isCleared) return '';
-    if (inputValue && inputValue.trim() !== '') {
-      return inputValue;
-    }
+    if (inputValue !== undefined) return inputValue;
 
     if (isOpRefMetadata(pathStepMetadata)) {
       return `${pathStepMetadata.name} ${pathStepMetadata.secondaryCode}`;
     }
 
     return undefined;
-  }, [inputValue, pathStepMetadata, isCleared]);
+  }, [inputValue, pathStepMetadata]);
 
   const maxVisibleSuggestions = 8;
   const visibleSuggestions = opSuggestions.slice(0, maxVisibleSuggestions);
@@ -257,7 +252,7 @@ const PathStepItem = ({
             }}
             onSelectSuggestion={(op) => {
               if (!op) {
-                onInputClear?.();
+                onOpInputChange?.('');
                 resetOpSuggestions?.();
                 return;
               }
