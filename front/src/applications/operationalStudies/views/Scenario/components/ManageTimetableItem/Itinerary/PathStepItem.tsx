@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import { ComboBox, Select, SegmentedControl } from '@osrd-project/ui-core';
 import {
@@ -8,6 +8,7 @@ import {
   ArrowRight,
   Square,
   KebabHorizontal,
+  X,
 } from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';
 import cx from 'classnames';
@@ -48,6 +49,11 @@ type PathStepProps = {
   onInputClear?: () => void;
   isCleared?: boolean;
   isInvalidAndIsEditing?: boolean;
+  connectorLong?: boolean;
+  onDelete?: () => void;
+  isTrailingPlaceHolder?: boolean;
+  isIndexed?: boolean;
+  isOnlyStep?: boolean;
 };
 
 const PathStepItem = ({
@@ -67,6 +73,10 @@ const PathStepItem = ({
   resetOpSuggestions,
   onChevronClick,
   isInvalidAndIsEditing,
+  connectorLong,
+  onDelete,
+  isTrailingPlaceHolder,
+  isOnlyStep,
 }: PathStepProps) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTimetableItem.itineraryModal',
@@ -75,11 +85,14 @@ const PathStepItem = ({
   const mapSettings = useMapSettings();
   const { updateViewport } = useMapSettingsActions();
 
+  const [hovered, setHovered] = useState(false);
+
   const blurActiveElement = () => {
     requestAnimationFrame(() => {
       (document.activeElement as HTMLElement | null)?.blur();
     });
   };
+  const isIndexed = !!index && !isTrailingPlaceHolder;
 
   const shouldShowInvalidMessage = !!pathStep && !!isInvalidAndIsEditing;
 
@@ -233,28 +246,45 @@ const PathStepItem = ({
     : visibleSuggestions.length;
 
   return (
-    <div className="path-step-wrapper">
-      <div className="path-step">
-        <div
+    <div className={cx('path-step-wrapper', { 'is-placeholder': isTrailingPlaceHolder })}>
+      <div
+        className={cx('path-step', {
+          'requested-point': pathStep?.location && 'track' in pathStep.location,
+        })}
+      >
+        <button
+          type="button"
           className={cx('path-step-counter', {
+            'delete-hovered': hovered && !isTrailingPlaceHolder && !isOnlyStep,
             invalid: isInvalidAndIsEditing,
-            index,
+            'is-only-step': isOnlyStep,
+            index: isIndexed,
             'pathfinding-line': !hidePathfindingLine,
             origin: index === 1,
             empty: !pathStep,
           })}
           style={{
             borderColor: !isInvalidAndIsEditing
-              ? index
+              ? isIndexed
                 ? categoryColors.background
                 : categoryColors.normal
               : '',
             // @ts-expect-error: variable CSS custom property to be used to style ::before
-            '--pathBackground': categoryColors.normal,
+            '--pathBackground': isTrailingPlaceHolder
+              ? 'rgba(0, 0, 0, 0.2)'
+              : categoryColors.normal,
+            '--counterLink': connectorLong ? '48px' : '28px',
           }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete?.();
+          }}
+          onPointerEnter={() => !isTrailingPlaceHolder && setHovered(true)}
+          onPointerLeave={() => !isTrailingPlaceHolder && setHovered(false)}
         >
-          {index}
-        </div>
+          {isTrailingPlaceHolder ? null : hovered && !isOnlyStep ? <X /> : index}
+        </button>
+
         <div
           role="button"
           tabIndex={0}

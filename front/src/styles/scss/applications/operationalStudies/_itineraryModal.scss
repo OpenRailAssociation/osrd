@@ -28,6 +28,11 @@
     background: var(--grey30);
   }
 
+  .ui-combo-box .clear-icon {
+    position: relative;
+    z-index: 10;
+  }
+
   .itinerary-modal-form {
     min-width: 628px;
     width: 50%;
@@ -120,7 +125,59 @@
         margin-top: 12px;
         margin-inline: 8px;
         padding-top: 16px;
+        .path-step-gap {
+          position: relative;
+          height: 28px;
+          margin-top: -28px;
+        }
 
+        .path-step-gap-hitbox {
+          position: absolute;
+          left: 0;
+          top: 12px;
+          width: 56px;
+          height: 100%;
+        }
+
+        .path-step-gap:has(.path-step-gap-hitbox:hover) {
+          height: 48px;
+        }
+
+        .path-step-gap:has(.path-step-gap-hitbox:hover)::after {
+          content: '';
+          position: absolute;
+          left: 30px;
+          right: calc(
+            var(--map-interactions-width) + var(--map-interactions-margin-left) +
+              var(--path-step-row-gap) + var(--path-step-wrapper-padding-right)
+          );
+          top: 34px;
+          height: 4px;
+          opacity: 0.5;
+          background-color: var(--grey30);
+          pointer-events: none;
+        }
+
+        .path-step-gap .add-pathitem {
+          position: absolute;
+          left: 12px;
+          top: 12px;
+          z-index: 2;
+          padding: 0;
+          margin: 0;
+          border: 0;
+          width: 24px;
+          height: 24px;
+          display: grid;
+          place-items: center;
+          cursor: pointer;
+          background: var(--primary60);
+          border-radius: 50%;
+
+          svg {
+            display: block !important;
+          }
+        }
         .reverse-itinerary-button {
           position: absolute;
           padding: 8px;
@@ -167,7 +224,11 @@
             margin-left: 1px;
           }
         }
-
+        .path-step-wrapper.is-placeholder {
+          .invalid-step-message {
+            display: none;
+          }
+        }
         // this wrapper is being used to display the "adding location on map" style
         .path-step-wrapper {
           padding-inline: var(--path-step-wrapper-padding-left)
@@ -188,6 +249,20 @@
             gap: 8px;
             padding-block: 8px;
 
+            &.requested-point {
+              grid-template-columns:
+                24px minmax(184px, 1fr) calc(
+                  var(--path-step-secondary-code-width) + var(--path-step-track-name-width) +
+                    var(--path-step-row-gap)
+                )
+                auto;
+            }
+
+            .path-step-counter.delete-hovered {
+              opacity: 1;
+              background-color: var(--error60) !important;
+              border-color: var(--error30) !important;
+            }
             .path-step-counter {
               position: relative;
               width: 24px;
@@ -198,6 +273,7 @@
               opacity: 0.5;
               background-color: var(--white100);
               margin-right: 4px;
+              z-index: 1;
 
               &.pathfinding-line::before {
                 content: '';
@@ -206,8 +282,9 @@
                 left: 50%;
                 transform: translateX(-50%) translateY(-100%);
                 width: 4px;
-                height: 28px;
+                height: var(--counterLink);
                 background-color: var(--pathBackground);
+                pointer-events: none;
               }
 
               &.origin::before {
@@ -224,7 +301,6 @@
                 font-size: 0.75rem;
                 font-weight: 600;
                 text-align: center;
-                padding-top: 1px;
                 width: 24px;
                 height: 24px;
                 border-width: 2px;
@@ -241,6 +317,9 @@
               &.invalid {
                 background-color: var(--error60);
                 border-color: var(--error30);
+              }
+              &.is-only-step {
+                pointer-events: none;
               }
             }
 

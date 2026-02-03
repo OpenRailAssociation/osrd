@@ -1,13 +1,12 @@
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
-import { ArrowSwitch, FrameAll } from '@osrd-project/ui-icons';
+import { ArrowSwitch, FrameAll, Plus } from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';
 import type { Position } from 'geojson';
 import { compact } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import { v4 as uuidV4 } from 'uuid';
 
 import useCategoryColors from 'applications/operationalStudies/hooks/useCategoryColors';
 import { useManageTimetableItemContext } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
@@ -29,6 +28,7 @@ import {
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { PathStep, PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
+import { addElementAtIndex } from 'utils/array';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 
 import { type OperationalPointSuggestion } from './ComboBoxCustomList/ListElementComponent';
@@ -38,6 +38,12 @@ import ItineraryModalMap from './ItineraryModalMap';
 import PathStepItem from './PathStepItem';
 import { computePathStepCoordinates } from './utils';
 import { MANAGE_TIMETABLE_ITEM_TYPES } from '../../../consts';
+import {
+  createEmptyPathStep,
+  ensureTrailingEmptyStep,
+  isEmptyStep,
+  deletePathStep,
+} from '../helpers/pathStepsActions';
 
 type ItineraryModalProps = {
   itineraryModalIsOpen: boolean;
@@ -68,6 +74,9 @@ const ItineraryModal = ({
 
   const [pathSteps, setPathSteps] = useState<PathStepV2[]>([]);
   const [categoryWarning, setCategoryWarning] = useState<string | undefined>(undefined);
+
+  const [hoveredGapIndex, setHoveredGapIndex] = useState<number | null>(null);
+
   const {
     activeStepId,
     setActiveStepId,
@@ -101,17 +110,51 @@ const ItineraryModal = ({
       },
     };
 
-    setPathSteps((prev) =>
-      prev.map((s) => (s.id === stepId ? { ...s, location: newLocation } : s))
-    );
+    setPathSteps((prev) => {
+      const next = prev.map((step) =>
+        step.id === stepId ? { ...step, location: newLocation } : step
+      );
+      return ensureTrailingEmptyStep(next);
+    });
 
     commitSelectionForStep(stepId, formatChosenValue(suggestion, chosenCh));
     resetOpSuggestions();
   };
 
-  const hasInvalidPathStep = Array.from(pathStepsMetadataById.values()).some(
-    (metadata) => metadata.isInvalid
-  );
+  const isOnlyStep = pathSteps.filter((s) => !isEmptyStep(s, getInputForStep(s.id))).length <= 1;
+
+  const hasInvalidPathStep = pathSteps.some((step) => {
+    if (isEmptyStep(step, getInputForStep(step.id))) return false;
+    const meta = pathStepsMetadataById.get(step.id);
+    return !meta || meta.isInvalid;
+  });
+
+  const handleDeletePathStep = (stepId: string) => {
+    resetOpSuggestions();
+
+    if (activeStepId === stepId) setActiveStepId('');
+
+    setPathSteps((prev) => {
+      const step = prev.find((s) => s.id === stepId);
+      if (!step) return prev;
+
+      const next = deletePathStep(prev, stepId);
+      return ensureTrailingEmptyStep(next);
+    });
+  };
+
+  const handleAddIntermediateStep = (insertIndex: number) => {
+    resetOpSuggestions();
+    setHoveredGapIndex(null);
+
+    const newStep = createEmptyPathStep();
+
+    setPathSteps((prev) => ensureTrailingEmptyStep(addElementAtIndex(prev, insertIndex, newStep)));
+
+    setActiveStepId(newStep.id);
+    setInputForStep(newStep.id, '');
+  };
+
   const editingStepIdRef = useRef<string>('');
 
   const isStepInvalidAndIsEditing = (step: PathStepV2, metadata?: PathStepMetadata) => {
@@ -176,17 +219,7 @@ const ItineraryModal = ({
       displayTimetableItemManagement === MANAGE_TIMETABLE_ITEM_TYPES.add
     ) {
       const formattedPathSteps = storePathSteps.map<PathStepV2>((pathStep) => {
-        // TODO : Remove this condition when PathStepV2 will be the default path step type in the store
-        if (!pathStep) {
-          return {
-            id: uuidV4(),
-            location: null,
-            arrival: null,
-            stopFor: null,
-            theoreticalMargin: null,
-            receptionSignal: null,
-          };
-        }
+        if (!pathStep) return createEmptyPathStep();
         return {
           id: pathStep.id,
           location: pathStep.location,
@@ -196,20 +229,27 @@ const ItineraryModal = ({
           receptionSignal: pathStep.receptionSignal ?? null,
         };
       });
-      setPathSteps(formattedPathSteps);
-    }
-  }, [storePathSteps]);
 
+      setPathSteps(ensureTrailingEmptyStep(formattedPathSteps));
+    }
+  }, [storePathSteps, displayTimetableItemManagement]);
+
+  const pathfindingSteps = pathSteps.filter((s) => {
+    if (!s.location) return false;
+    const meta = pathStepsMetadataById.get(s.id);
+    return !!meta && !meta.isInvalid;
+  });
+
+  const pathfindingLocations = pathfindingSteps.map((s) => s.location);
+
+  const metadataByPathStepId = new Map(
+    pathfindingSteps.map((s) => [s.id, pathStepsMetadataById.get(s.id)!])
+  );
   useEffect(() => {
-    if (
-      workerStatus === 'READY' &&
-      pathSteps.length >= 2 &&
-      pathStepsMetadataById.size === pathSteps.length &&
-      rollingStockId
-    ) {
+    if (workerStatus === 'READY' && pathfindingLocations.length >= 2 && rollingStockId) {
       launchPathfindingV2({
-        pathSteps: pathSteps.map((step) => step.location),
-        pathStepsMetadataById,
+        pathSteps: pathfindingLocations,
+        pathStepsMetadataById: metadataByPathStepId,
         rollingStockId,
         speedLimitTag,
       });
@@ -246,10 +286,10 @@ const ItineraryModal = ({
   };
 
   const buildPathSteps = (steps: PathStepV2[], metadataById: Map<string, PathStepMetadata>) =>
-    steps.map<PathStep | null>((s) => {
-      if (!s.location) return null;
+    steps.map<PathStep | null>((step) => {
+      if (!step.location) return null;
 
-      const metadata = metadataById.get(s.id);
+      const metadata = metadataById.get(step.id);
       if (!metadata || metadata.isInvalid) return null;
 
       const coordinates =
@@ -258,12 +298,12 @@ const ItineraryModal = ({
       const secondary_code = metadata.type === 'opRef' ? metadata.secondaryCode : undefined;
 
       return {
-        id: s.id,
-        location: s.location,
-        arrival: s.arrival,
-        stopFor: s.stopFor,
-        theoreticalMargin: s.theoreticalMargin ?? undefined,
-        receptionSignal: s.receptionSignal ?? undefined,
+        id: step.id,
+        location: step.location,
+        arrival: step.arrival,
+        stopFor: step.stopFor,
+        theoreticalMargin: step.theoreticalMargin ?? undefined,
+        receptionSignal: step.receptionSignal ?? undefined,
 
         name: metadata.type === 'opRef' ? metadata.name : undefined,
         uic: metadata.type === 'opRef' ? metadata.uic : undefined,
@@ -276,14 +316,20 @@ const ItineraryModal = ({
     setInputForStep(stepId, '');
     resetOpSuggestions();
 
-    setPathSteps((prev) => prev.map((s) => (s.id === stepId ? { ...s, location: null } : s)));
+    setPathSteps((prev) =>
+      prev.map((step) => (step.id === stepId ? { ...step, location: null } : step))
+    );
   };
 
   const reverseItinerary = () => {
-    const updatedPathSteps = buildPathSteps(pathSteps, pathStepsMetadataById);
+    const filledSteps = pathSteps.filter((step) => !isEmptyStep(step, getInputForStep(step.id)));
+    const updatedPathSteps = buildPathSteps(filledSteps, pathStepsMetadataById);
 
     // No step should be null when reverseItinerary is called (as start and arrival need to be defined), so compact should let the array unchanged but constrain the type
     const cPathSteps = compact(updatedPathSteps);
+
+    if (cPathSteps.length < 2) return;
+
     launchPathfinding(reversePathSteps(cPathSteps));
   };
 
@@ -292,12 +338,17 @@ const ItineraryModal = ({
       if (hasInvalidPathStep || pathfindingError) return;
     }
 
-    const updatedPathSteps = buildPathSteps(pathSteps, pathStepsMetadataById);
+    const filledSteps = pathSteps.filter((step) => !isEmptyStep(step, getInputForStep(step.id)));
+    if (filledSteps.length < 2) return;
 
-    dispatch(updatePathSteps(updatedPathSteps));
-    launchPathfinding(updatedPathSteps, rollingStockId, {
-      isInitialization: true,
-    });
+    const updatedPathSteps = buildPathSteps(filledSteps, pathStepsMetadataById);
+
+    const compacted = compact(updatedPathSteps);
+
+    if (compacted.length < 2) return;
+
+    dispatch(updatePathSteps(compacted));
+    launchPathfinding(compacted, rollingStockId, { isInitialization: true });
     closeModal();
   };
 
@@ -356,56 +407,91 @@ const ItineraryModal = ({
               const pathStepMetadata = pathStepsMetadataById.get(pathStep.id);
               const isInvalid = isStepInvalidAndIsEditing(pathStep, pathStepMetadata);
 
+              const previousPathStepMetadata = pathStepsMetadataById.get(pathSteps[i - 1]?.id);
+              const hideLine =
+                i > 0 && (pathStepMetadata?.isInvalid || previousPathStepMetadata?.isInvalid);
+              const isTrailingPlaceholder =
+                i === pathSteps.length - 1 && isEmptyStep(pathStep, getInputForStep(pathStep.id));
+
               return (
-                <PathStepItem
-                  key={pathStep.id}
-                  setPathSteps={setPathSteps}
-                  pathStep={pathStep}
-                  pathStepMetadata={pathStepMetadata}
-                  index={i + 1}
-                  categoryColors={categoryColors}
-                  hidePathfindingLine={i > 0 && isInvalid}
-                  onOpFocus={() => markEditing(pathStep.id)}
-                  onOpInputChange={(value) => {
-                    markEditing(pathStep.id);
-                    if (value === '') {
-                      clearStep(pathStep.id);
-                      return;
-                    }
-                    setInputForStep(pathStep.id, value);
-                  }}
-                  onTrackNameChange={(trackName) => {
-                    setPathSteps((prev) =>
-                      prev.map((step) => {
-                        if (step.id !== pathStep.id) return step;
-                        if (!step.location || !('operational_point' in step.location)) return step;
-                        return {
-                          ...step,
-                          location: {
-                            ...step.location,
-                            local_track_name: trackName || undefined,
-                          },
-                        };
-                      })
-                    );
-                  }}
-                  onOpBlur={() => unmarkEditing(pathStep.id)}
-                  inputValue={getInputForStep(pathStep.id)}
-                  opSuggestions={activeStepId === pathStep.id ? opSuggestions : []}
-                  onSelectOpSuggestion={(suggestion, chCode) => {
-                    applyOperationalPointToStep(pathStep.id, suggestion, chCode);
-                  }}
-                  onChevronClick={(queryValue) => {
-                    reopenSuggestionsForStep(pathStep.id, queryValue);
-                  }}
-                  isInvalidAndIsEditing={isInvalid}
-                />
+                <>
+                  <div>
+                    {!hideLine && (
+                      <div className="path-step-gap">
+                        <div
+                          className="path-step-gap-hitbox"
+                          onPointerEnter={() => setHoveredGapIndex(i)}
+                          onPointerLeave={() => setHoveredGapIndex(null)}
+                        >
+                          {hoveredGapIndex === i && (
+                            <button
+                              type="button"
+                              className="add-pathitem"
+                              onClick={() => handleAddIntermediateStep(i)}
+                            >
+                              <Plus iconColor="var(--white100)" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <PathStepItem
+                    key={pathStep.id}
+                    pathStep={pathStep}
+                    setPathSteps={setPathSteps}
+                    pathStepMetadata={pathStepMetadata}
+                    index={i + 1}
+                    categoryColors={categoryColors}
+                    hidePathfindingLine={i > 0 && isInvalid && !isTrailingPlaceholder}
+                    onDelete={() => {
+                      if (isOnlyStep) return;
+                      handleDeletePathStep(pathStep.id);
+                    }}
+                    onOpFocus={() => markEditing(pathStep.id)}
+                    onOpInputChange={(value) => {
+                      markEditing(pathStep.id);
+                      if (value === '') {
+                        clearStep(pathStep.id);
+                        return;
+                      }
+                      setInputForStep(pathStep.id, value);
+                    }}
+                    onTrackNameChange={(trackName) => {
+                      setPathSteps((prev) =>
+                        prev.map((step) => {
+                          if (step.id !== pathStep.id) return step;
+                          if (!step.location || !('operational_point' in step.location))
+                            return step;
+                          return {
+                            ...step,
+                            location: {
+                              ...step.location,
+                              local_track_name: trackName || undefined,
+                            },
+                          };
+                        })
+                      );
+                    }}
+                    onOpBlur={() => unmarkEditing(pathStep.id)}
+                    inputValue={getInputForStep(pathStep.id)}
+                    opSuggestions={activeStepId === pathStep.id ? opSuggestions : []}
+                    onSelectOpSuggestion={(suggestion, chCode) => {
+                      applyOperationalPointToStep(pathStep.id, suggestion, chCode);
+                    }}
+                    onChevronClick={(queryValue) => {
+                      reopenSuggestionsForStep(pathStep.id, queryValue);
+                    }}
+                    resetOpSuggestions={resetOpSuggestions}
+                    connectorLong={hoveredGapIndex === i}
+                    isTrailingPlaceHolder={isTrailingPlaceholder}
+                    isIndexed
+                    isOnlyStep={isOnlyStep}
+                    isInvalidAndIsEditing={isInvalid}
+                  />
+                </>
               );
             })}
-            <PathStepItem
-              hidePathfindingLine={pathSteps.length === 0}
-              categoryColors={categoryColors}
-            />
           </div>
         </div>
         <div className="itinerary-modal-form-footer">
