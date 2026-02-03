@@ -47,3 +47,5 @@
       - changed-files:
           - any-glob-to-any-file: "editoast/openapi.yaml"
           - any-glob-to-any-file: "front/src/reducers/osrdconf/infra_schema.json"
+"kind:backport":
+  - base-branch: "^staging$"
