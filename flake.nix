@@ -70,7 +70,7 @@
             fixedNode
 
             # Nix formatter
-            nixfmt-rfc-style
+            nixfmt
             nixd
 
             # OSRD dev scripts
@@ -80,7 +80,7 @@
           # Section added only on Linux systems
           ++ lib.optionals (!stdenv.isDarwin) [
             # Linker
-            mold-wrapped
+            mold
           ]
           # Section added only on Darwin (macOS) systems
           ++ lib.optionals stdenv.isDarwin [
