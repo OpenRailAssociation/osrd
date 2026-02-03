@@ -179,7 +179,7 @@ export const markSuggestions = (suggestions: OperationalPointSuggestion[], rawIn
   const markAllAsCandidates = (items: OperationalPointSuggestion[]) =>
     items.map((s) => ({
       ...s,
-      chList: s.secondaryCodeList.map((secondaryCode) => ({
+      secondaryCodeList: s.secondaryCodeList.map((secondaryCode) => ({
         ...secondaryCode,
         isCandidate: true,
         isBestSuggestion: false,
@@ -197,7 +197,7 @@ export const markSuggestions = (suggestions: OperationalPointSuggestion[], rawIn
 
   const marked = suggestions.map((s) => ({
     ...s,
-    chList: s.secondaryCodeList.map((secondaryCode) => {
+    secondaryCodeList: s.secondaryCodeList.map((secondaryCode) => {
       const isCandidate = toUpper(secondaryCode.code).startsWith(lastTokenUpper);
       if (isCandidate) hasAnyCandidate = true;
       return { ...secondaryCode, isCandidate, isBestSuggestion: false };
@@ -212,7 +212,7 @@ export const markSuggestions = (suggestions: OperationalPointSuggestion[], rawIn
   let count = 0;
 
   marked.forEach((s, sIndex) => {
-    s.chList.forEach((secondaryCode, chIndex) => {
+    s.secondaryCodeList.forEach((secondaryCode, chIndex) => {
       if (secondaryCode.isCandidate) {
         count += 1;
         if (count === 1) first = { sIndex, chIndex };
@@ -224,7 +224,7 @@ export const markSuggestions = (suggestions: OperationalPointSuggestion[], rawIn
 
   return marked.map((s, sIndex) => ({
     ...s,
-    chList: s.chList.map((secondaryCode, chIndex) => ({
+    secondaryCodeList: s.secondaryCodeList.map((secondaryCode, chIndex) => ({
       ...secondaryCode,
       isBestSuggestion: sIndex === first!.sIndex && chIndex === first!.chIndex,
     })),
