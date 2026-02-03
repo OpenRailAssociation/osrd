@@ -281,7 +281,7 @@ class SimulationReport(BaseModel):
     """
     Total mass of the train in kg
     """
-    max_speed: Annotated[int, Field(title="Max Speed")]
+    max_speed: Annotated[float, Field(title="Max Speed")]
     """
     Maximum speed in m/s
     """
