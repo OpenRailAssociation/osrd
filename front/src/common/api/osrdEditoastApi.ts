@@ -401,6 +401,9 @@ const osrdEditoastApi = generatedEditoastApi
       deleteTrainScheduleSetsById: {
         invalidatesTags: () => [],
       },
+      patchPacedTrainMove: {
+        invalidatesTags: () => [],
+      },
     },
   });
 
