@@ -51,7 +51,7 @@ function SelectSNCF<T extends string | SelectOptionObject>({
           onChange(item);
         }}
         className={cx(className, sm && 'sm')}
-        value={isString(value) ? value : value?.id}
+        value={value ? getOptionValue(value) : undefined}
         disabled={disabled}
       >
         {options.map((option) => (
