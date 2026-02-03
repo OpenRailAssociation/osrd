@@ -341,6 +341,49 @@ pub(in crate::views) async fn post_paced_train(
     Ok(Json(paced_trains.into_iter().map_into().collect()))
 }
 
+/// List paced trains for a train schedule set
+#[editoast_derive::route]
+#[utoipa::path(
+    get, path = "/paced_trains",
+    tags = ["train_schedule_set", "paced_train"],
+    params(TrainScheduleSetIdParam),
+    responses(
+        (status = 200, description = "The paced trains", body = Vec<PacedTrainResponse>),
+        (status = 404, description = "Train schedule set not found"),
+    )
+)]
+pub(in crate::views) async fn get_paced_trains(
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    Extension(auth): AuthenticationExt,
+    Path(TrainScheduleSetIdParam {
+        id: train_schedule_set_id,
+    }): Path<TrainScheduleSetIdParam>,
+) -> Result<Json<Vec<PacedTrainResponse>>> {
+    let authorized = auth
+        .check_roles([authz::Role::OperationalStudies].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    let conn = &mut db_pool.get().await?;
+
+    let train_schedule_set_exists = TrainScheduleSet::exists(conn, train_schedule_set_id).await?;
+    if !train_schedule_set_exists {
+        return Err(TrainScheduleSetError::NotFound {
+            train_schedule_set_id,
+        }
+        .into());
+    }
+
+    let settings = SelectionSettings::new()
+        .filter(move || models::PacedTrain::TRAIN_SCHEDULE_SET_ID.eq(train_schedule_set_id));
+
+    let paced_trains = models::PacedTrain::list(conn, settings).await?;
+    Ok(Json(paced_trains.into_iter().map_into().collect()))
+}
+
 #[cfg(test)]
 mod tests {
     use crate::models;
@@ -540,6 +583,51 @@ mod tests {
                 .unwrap()
                 .contains("Duplicate exception key: 'duplicated_key_1'")
         )
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn get_paced_trains_for_train_schedule_set() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
+        let paced_train_1 = simple_paced_train_base();
+        let mut paced_train_2 = simple_paced_train_base();
+        paced_train_2.paced.as_mut().unwrap().time_window =
+            Duration::minutes(90).try_into().unwrap();
+        paced_train_2.paced.as_mut().unwrap().interval = Duration::seconds(45).try_into().unwrap();
+
+        let request = app
+            .post(
+                format!(
+                    "/train_schedule_sets/{}/paced_trains",
+                    train_schedule_set.id
+                )
+                .as_str(),
+            )
+            .json(&vec![paced_train_1, paced_train_2]);
+
+        let _: Vec<PacedTrainResponse> = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
+
+        let request = app.get(
+            format!(
+                "/train_schedule_sets/{}/paced_trains",
+                train_schedule_set.id
+            )
+            .as_str(),
+        );
+
+        let response: Vec<PacedTrainResponse> = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
+
+        assert_eq!(response.len(), 2);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

@@ -436,6 +436,7 @@ fn service_router() -> router::DocumentedRouter {
                         path.route("/", get!(train_schedule_set::get_by_id))
                             .route("/", put!(train_schedule_set::put))
                             .route("/", delete!(train_schedule_set::delete))
+                            .route("/paced_trains", get!(train_schedule_set::get_paced_trains))
                             .route("/paced_trains", post!(train_schedule_set::post_paced_train))
                     })
             })
