@@ -14,12 +14,8 @@
         overflow: auto;
 
         .catalog-entry {
-          &:not(:first-child) {
-            .collapse-header {
-              border-top: 1px solid var(--color-black-25);
-            }
-          }
           .collapse-header {
+            border-bottom: 1px solid var(--color-black-25);
             button {
               font-weight: 600;
               padding: 8px 16px 8px 8px;
