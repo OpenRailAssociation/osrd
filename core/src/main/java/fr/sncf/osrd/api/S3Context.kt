@@ -4,6 +4,10 @@ import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.net.URI
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.regions.Region
@@ -21,23 +25,30 @@ val s3Logger = KotlinLogging.logger {}
  * Note: as this S3 is only used to generate data that helps with viewing and debugging, errors are
  * never critical. All operations are wrapped into try/catch blocks with error logging.
  */
-data class S3Context(val s3Client: S3Client, val bucketName: String) {
+data class S3Context(
+    val s3Client: S3Client,
+    val bucketName: String,
+    // Dispatchers.IO should dispatch tasks to different threads without blocking
+    val asyncDispatcher: CoroutineDispatcher = Dispatchers.IO,
+) {
 
     /** Write a new file for a given stdcm request. */
     @WithSpan(value = "Writing S3 file", kind = SpanKind.SERVER)
     fun writeSTDCMFile(fileName: String, content: String) {
-        try {
-            val traceId = Span.current().spanContext.traceId
-            s3Logger.info { "Request $traceId: writing $fileName" }
-            val putObjectRequest =
-                PutObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key("stdcm/requests/$traceId/$fileName")
-                    .build()
+        runAsync {
+            try {
+                val traceId = Span.current().spanContext.traceId
+                s3Logger.info { "Request $traceId: writing $fileName" }
+                val putObjectRequest =
+                    PutObjectRequest.builder()
+                        .bucket(bucketName)
+                        .key("stdcm/requests/$traceId/$fileName")
+                        .build()
 
-            s3Client.putObject(putObjectRequest, RequestBody.fromString(content))
-        } catch (e: Exception) {
-            s3Logger.error { e }
+                s3Client.putObject(putObjectRequest, RequestBody.fromString(content))
+            } catch (e: Exception) {
+                s3Logger.error { e }
+            }
         }
     }
 
@@ -62,6 +73,14 @@ data class S3Context(val s3Client: S3Client, val bucketName: String) {
             s3Logger.error { e }
             false
         }
+    }
+
+    /**
+     * Run an async task in a "fire and forger" way. Used to write files to the s3 when we don't
+     * need to wait for it to finish nor verify that it worked.
+     */
+    fun runAsync(func: suspend () -> Unit) {
+        CoroutineScope(asyncDispatcher).launch { func() }
     }
 }
 
