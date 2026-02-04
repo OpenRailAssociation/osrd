@@ -2,12 +2,11 @@ package fr.sncf.osrd.utils
 
 /** Removes consecutive duplicated values from a list. Keeps duplicates that aren't consecutive. */
 fun <T> List<T>.withoutConsecutiveDuplicates(): List<T> {
-    val res = mutableListOf<T>()
-    var last: T? = null
-    for (x in this) {
-        if (last != x) {
+    if (isEmpty()) return emptyList()
+    val res = mutableListOf(first())
+    for (x in dropSeq(1)) {
+        if (res.last() != x) {
             res.add(x)
-            last = x
         }
     }
     return res

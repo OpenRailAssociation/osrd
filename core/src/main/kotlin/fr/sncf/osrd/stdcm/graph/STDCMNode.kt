@@ -11,6 +11,8 @@ import fr.sncf.osrd.utils.cacheable
 import fr.sncf.osrd.utils.units.Offset
 import kotlin.math.min
 
+const val STDCM_COST_PER_TRACK_CHANGE = 10.0
+
 data class STDCMNode(
     val timeData: TimeData,
     // Speed at the end of the previous edge
@@ -49,17 +51,25 @@ data class STDCMNode(
      * path. We then explore them in that order.
      */
     override fun compareTo(other: STDCMNode): Int {
-        val runTimeEstimation = timeData.totalRunningTime + remainingTimeEstimation
-        val otherRunTimeEstimation = other.timeData.totalRunningTime + other.remainingTimeEstimation
+
         // First, minimize the total run time:
         // highest priority node takes the least time to complete the path
-        if (!areTimesEqual(runTimeEstimation, otherRunTimeEstimation))
-            return runTimeEstimation.compareTo(otherRunTimeEstimation)
+        val runTimeEstimation = timeData.totalRunningTime + remainingTimeEstimation
+        val otherRunTimeEstimation = other.timeData.totalRunningTime + other.remainingTimeEstimation
+
+        // Main cost, this is where "penalties" should be added.
+        // The rest only apply in case of equalities.
+        val cost =
+            runTimeEstimation + STDCM_COST_PER_TRACK_CHANGE * infraExplorer.getTrackChangeCount()
+        val otherCost =
+            otherRunTimeEstimation +
+                STDCM_COST_PER_TRACK_CHANGE * other.infraExplorer.getTrackChangeCount()
+        if (!areTimesEqual(cost, otherCost)) return cost.compareTo(otherCost)
 
         val plannedRelativeTimeDiff = getRelativeTimeDiff(timeData)
         val otherPlannedRelativeTimeDiff = other.getRelativeTimeDiff(other.timeData)
 
-        // If equal, minimise the difference with the planned arrival times
+        // If equal, minimize the difference with the planned arrival times
         return if (
             plannedRelativeTimeDiff != null &&
                 otherPlannedRelativeTimeDiff != null &&

@@ -150,8 +150,6 @@ class STDCMPathfinding(
                     comfort,
                     maxRunTime,
                     blockAvailability,
-                    graph.tag,
-                    temporarySpeedLimitManager,
                 ) ?: return null
         val travelTime = res.envelope.totalTime
         val stopTime = res.stopResults.sumOf { it.duration }

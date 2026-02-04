@@ -328,6 +328,7 @@ private fun parseRjsTrackSection(
     val trackSectionSlopes = getSlopes(rjsTrack)
     val trackSectionCurves = getCurves(rjsTrack)
     val trackSectionBlockedGauges = getBlockedGauge(rjsTrack)
+    val trackSectionNumber = rjsTrack.extensions?.sncf?.trackNumber
 
     val chunkBoundariesOffsets = mutableOffsetArrayListOf<TrackSection>(Offset.zero())
     val chunkBoundariesDetectors = mutableListOf<List<String>?>(null)
@@ -388,6 +389,7 @@ private fun parseRjsTrackSection(
                 Offset(chunkLength),
                 chunkStartOffset,
                 chunkBlockedGauges,
+                trackSectionNumber,
             )
         trackSectionChunks.add(chunkIdx)
     }

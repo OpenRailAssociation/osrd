@@ -104,6 +104,7 @@ class TrackChunkDescriptor(
     val electrificationVoltage: DistanceRangeMap<Set<String>>,
     val neutralSections: DirectionalMap<DistanceRangeMap<NeutralSection>>,
     val speedSections: DirectionalMap<DistanceRangeMap<SpeedSection>>,
+    val trackNumber: Int?,
 )
 
 class ZoneDescriptor(val movableElements: StaticIdxSortedSet<TrackNode>, var name: String = "")
@@ -491,6 +492,10 @@ class RawInfraImpl(
 
     override fun getTrackChunkGeom(trackChunk: TrackChunkId): LineString {
         return trackChunkPool[trackChunk].geo
+    }
+
+    override fun getTrackChunkTrackNumber(trackChunk: TrackChunkId): Int? {
+        return trackChunkPool[trackChunk].trackNumber
     }
 
     override fun getTrackChunkSlope(trackChunk: DirTrackChunkId): DistanceRangeMap<Double> {
