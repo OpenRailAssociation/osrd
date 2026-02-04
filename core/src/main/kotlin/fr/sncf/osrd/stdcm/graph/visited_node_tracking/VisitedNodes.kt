@@ -111,7 +111,7 @@ data class VisitedNodes(
 
                 val minTravelTime =
                     parameters.explorer.getRemainingBlocks().sumOf {
-                        maxSpeedEnvBuilder!!.getBlockTime(it, null)
+                        maxSpeedEnvBuilder!!.getBlockTime(it, null, null)
                     }
 
                 // We compare it to a scenario with the minimum amount of added travel time, and

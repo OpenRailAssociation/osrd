@@ -60,14 +60,14 @@ data class STDCMAStarHeuristic(
         // If we're at the destination, endSpeed should be 0.0 rather than null. However, if we are
         // at the destination, there'll be a stop which is taken into account in MaxSpeedEnvBuilder,
         // so it's fine as is.
-        var endSpeed = maxSpeedEnvBuilder.getMaxSpeedEnvelope(lastBlock).beginSpeed
+        var endSpeed = maxSpeedEnvBuilder.getMaxSpeedEnvelope(lastBlock, null).beginSpeed
         for (block in allBlocks.asReversed()) {
             timeUntilStartOfLastBlock +=
-                maxSpeedEnvBuilder.getBlockTime(block, null, allowanceValue, endSpeed)
+                maxSpeedEnvBuilder.getBlockTime(block, null, endSpeed, allowanceValue)
             endSpeed = maxSpeedEnvBuilder.getMaxSpeedEnvelope(block, endSpeed).beginSpeed
         }
         val timeSinceFirstBlock =
-            maxSpeedEnvBuilder.getBlockTime(edge.block, offset, allowanceValue)
+            maxSpeedEnvBuilder.getBlockTime(edge.block, offset, null, allowanceValue)
         timeUntilStartOfLastBlock -= timeSinceFirstBlock
 
         val remainingTime = timeUntilStartOfLastBlock + timeAfterStartOfLastBlock
@@ -154,7 +154,7 @@ class STDCMHeuristicBuilder(
                 val remainingTimeSinceBlockStart =
                     remainingTimeEstimations.first()[it.edge] ?: Double.POSITIVE_INFINITY
                 val timeSinceBlockStart =
-                    maxSpeedEnvBuilder.getBlockTime(it.edge, it.offset, allowance)
+                    maxSpeedEnvBuilder.getBlockTime(it.edge, it.offset, null, allowance)
                 remainingTimeSinceBlockStart - timeSinceBlockStart
             } ?: Double.POSITIVE_INFINITY
         logger.info(
@@ -250,7 +250,7 @@ class STDCMHeuristicBuilder(
         return PendingBlock(
             block,
             newIndex,
-            remainingTime + maxSpeedEnvBuilder.getBlockTime(block, offset, allowance, endSpeed),
+            remainingTime + maxSpeedEnvBuilder.getBlockTime(block, offset, endSpeed, allowance),
             endSpeed,
         )
     }
