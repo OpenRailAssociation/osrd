@@ -130,7 +130,7 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
 
       pathSteps.forEach((pathStep) => {
         const { location } = pathStep;
-
+        // TODO : we need to evaluate if we still need to invalidate a pathstep when it has no location
         if (!location) {
           newPathStepsMetadataById.set(pathStep.id, { isInvalid: true });
           return;
