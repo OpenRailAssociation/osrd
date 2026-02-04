@@ -1,6 +1,7 @@
 package fr.sncf.osrd.utils
 
 import fr.sncf.osrd.envelope.Envelope
+import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.envelope_sim.pipelines.SimStop
@@ -19,15 +20,20 @@ import fr.sncf.osrd.stdcm.graph.build
 import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
-import kotlin.collections.first
+import kotlin.math.min
+import kotlin.math.max
 
 /**
  * Used to compute block MaxSpeedEnvelopes and min time required to reach a point, with proper
  * caching.
  *
- * TODO: this ignores speed limits by route for now. It makes caching a lot less efficient though
+ * TODO: this ignores speed limits by route for now. It would make caching a lot less efficient though
  *   (can't just use block as key), it will have a significant performance cost. Should be supported
  *   once we import them, but not necessarily before that.
+ * TODO: rare/unlikely cases could lead to pessimistic evaluation (which could lead to A* providing a solution different from optimum). Both cases could happen on the same block or different blocks.
+ *   - If the path used for heuristic crosses the same stop multiple times (different OP parts) then we're applying the stop each time while the real simulation will only stop once.
+ *   - Same goes on the order of stops if crossing stop places in the wrong order for heuristic, we're applying too much stops and wrongly slowing down the heuristic.
+ *   /!\ Working on this requires benchmarking and evaluating possible bugs, the amount of work, technical debt.
  */
 data class CachedBlockMaxSpeedEnvBuilder(
     private val rawInfra: RawInfra,
@@ -41,8 +47,14 @@ data class CachedBlockMaxSpeedEnvBuilder(
         TemporarySpeedLimitManager(),
     private val addRollingStockLength: Boolean = true,
 ) {
-    private val maxSpeedEnvCache = mutableMapOf<BlockId, Envelope>()
+    private val maxSpeedEnvCache = mutableMapOf<CachedBlock, Envelope>()
+    private val mrspEnvCache = mutableMapOf<BlockId, CachedMrsp>()
     private val blockToStopMap = mutableMapOf<BlockId, MutableList<Offset<Block>>>()
+    private val blockToMaxSpeedMap = mutableMapOf<BlockId, Double>()
+
+    private data class CachedBlock(val block: BlockId, val endSpeed: Double?)
+
+    private data class CachedMrsp(val mrsp: Envelope, val context: EnvelopeSimContext)
 
     init {
         for (stop in steps.filter { it.stop }) {
@@ -53,35 +65,49 @@ data class CachedBlockMaxSpeedEnvBuilder(
                     blockToLocationMap[location.edge] = location.offset
             }
             blockToLocationMap.forEach { (block, stopOffset) ->
-                blockToStopMap.getOrPut(block) { mutableListOf<Offset<Block>>() }.add(stopOffset)
+                blockToStopMap.getOrPut(block) { mutableListOf() }.add(stopOffset)
             }
         }
     }
 
     /** Returns the max speed envelope/mrsp for the given block (cached). */
-    fun getMaxSpeedEnvelope(block: BlockId, endSpeed: Double? = null): Envelope {
-        return maxSpeedEnvCache.computeIfAbsent(block) {
-            // TODO: change input to infra explorers, and fetch last route there
-            val pathProps = buildTrainPathFromBlock(rawInfra, blockInfra, block, routes = listOf())
-            val mrsp =
-                computeMRSP(
-                    pathProps,
-                    rollingStock.maxSpeed,
-                    rollingStock.length,
-                    addRollingStockLength = addRollingStockLength,
-                    speedLimitTag,
-                    temporarySpeedLimitManager,
-                )
-            val context = build(rollingStock, pathProps, timeStep, comfort)
+    fun getMaxSpeedEnvelope(block: BlockId, endSpeed: Double?): Envelope {
+        if (endSpeed == null && blockToMaxSpeedMap.containsKey(block)) {
+            // Return fastest block envelope by maximising its end speed.
+            return maxSpeedEnvCache[CachedBlock(block, blockToMaxSpeedMap[block])]!!
+        }
+        val cachedMrsp =
+            mrspEnvCache.computeIfAbsent(block) {
+                // TODO: change input to infra explorers, and fetch last route there
+                val pathProps =
+                    buildTrainPathFromBlock(rawInfra, blockInfra, block, routes = listOf())
+                val context = build(rollingStock, pathProps, timeStep, comfort)
+                val mrsp =
+                    computeMRSP(
+                        pathProps,
+                        rollingStock.maxSpeed,
+                        rollingStock.length,
+                        addRollingStockLength = addRollingStockLength,
+                        speedLimitTag,
+                        temporarySpeedLimitManager,
+                    )
+                CachedMrsp(mrsp, context)
+            }
+        val actualEndSpeed = min(cachedMrsp.mrsp.endSpeed, endSpeed ?: Double.POSITIVE_INFINITY)
+        blockToMaxSpeedMap.compute(block) { _, oldSpeed ->
+            max(actualEndSpeed, oldSpeed ?: Double.NEGATIVE_INFINITY)
+        }
+        return maxSpeedEnvCache.computeIfAbsent(CachedBlock(block, actualEndSpeed)) {
             val stops =
                 blockToStopMap[block]?.map {
                     SimStop(Offset(it.distance), RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP)
                 } ?: listOf()
             val newMrsp =
-                if (endSpeed != null && endSpeed < mrsp.endSpeed)
-                    addEndBrakingPart(context, endSpeed, mrsp)
-                else mrsp
-            maxSpeedEnvelopeFrom(context, stops, newMrsp)
+                if (actualEndSpeed < cachedMrsp.mrsp.endSpeed)
+                    addEndBrakingPart(cachedMrsp.context, actualEndSpeed, cachedMrsp.mrsp)
+                else cachedMrsp.mrsp
+            // TODO: Look into adding accelerations to the max speed envelope and benchmark it to see if it improves the computing time.
+            maxSpeedEnvelopeFrom(cachedMrsp.context, stops, newMrsp)
         }
     }
 
@@ -89,13 +115,13 @@ data class CachedBlockMaxSpeedEnvBuilder(
     fun getBlockTime(
         block: BlockId,
         endOffset: Offset<Block>?,
+        endSpeed: Double?,
         allowanceValue: AllowanceValue? = null,
-        endSpeed: Double? = null,
     ): Double {
         if (endOffset?.distance == 0.meters) return 0.0
         val actualLength = endOffset ?: blockInfra.getBlockLength(block)
-        val maxSpeedEnvelope = getMaxSpeedEnvelope(block, endSpeed)
-        val time = maxSpeedEnvelope.interpolateArrivalAtClamp(actualLength.meters)
+        val time =
+            getMaxSpeedEnvelope(block, endSpeed).interpolateArrivalAtClamp(actualLength.meters)
         val allowanceTime = allowanceValue?.getAllowanceTime(time, actualLength.meters)
         return time + (allowanceTime ?: 0.0)
     }
