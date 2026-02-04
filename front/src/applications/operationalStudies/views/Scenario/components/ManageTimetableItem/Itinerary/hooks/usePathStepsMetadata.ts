@@ -217,7 +217,7 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
       setPathStepsMetadataById(newPathStepsMetadataById);
     };
     fetchAndSetMetadata();
-  }, [allOps]);
+  }, [allOps, pathSteps]);
 
   return { pathStepsMetadataById, setPathStepsMetadataById };
 };
