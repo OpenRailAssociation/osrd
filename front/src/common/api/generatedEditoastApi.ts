@@ -2069,7 +2069,14 @@ export type GetPacedTrainByIdApiArg = {
 export type PutPacedTrainByIdApiResponse = unknown;
 export type PutPacedTrainByIdApiArg = {
   id: number;
-  body: TrainSchedule & {
+  body: {
+    category?: null | TrainCategory;
+    comfort?: Comfort;
+    constraint_distribution: Distribution;
+    initial_speed?: number;
+    labels?: string[];
+    margins?: Margins;
+    options?: TrainScheduleOptions;
     paced?: null | {
       exceptions: PacedTrainException[];
       /** Time between two occurrences, an ISO 8601 format is expected */
@@ -2077,6 +2084,17 @@ export type PutPacedTrainByIdApiArg = {
       /** Duration of the paced train, an ISO 8601 format is expected */
       time_window: PositiveDuration;
     };
+    path: PathItem[];
+    power_restrictions?: {
+      from: string;
+      to: string;
+      value: string;
+    }[];
+    rolling_stock_name: string;
+    schedule?: ScheduleItem[];
+    speed_limit_tag?: null | string;
+    start_time: string;
+    train_name: string;
   };
 };
 export type GetPacedTrainByIdEtcsBrakingCurvesApiResponse =
@@ -3923,41 +3941,6 @@ export type TrainScheduleOptions = {
   use_electrical_profiles?: boolean;
   use_speed_limits_for_simulation?: boolean;
 };
-export type PathItem = {
-  /** The unique identifier of the path item.
-    This is used to reference path items in the train schedule. */
-  id: string;
-  location: PathItemLocation;
-};
-export type PositiveDuration = string;
-export type ReceptionSignal = 'OPEN' | 'STOP' | 'SHORT_SLIP_STOP';
-export type ScheduleItem = {
-  arrival?: null | PositiveDuration;
-  /** Position on the path of the schedule item. */
-  at: string;
-  reception_signal?: ReceptionSignal;
-  stop_for?: null | PositiveDuration;
-};
-export type TrainSchedule = {
-  category?: null | TrainCategory;
-  comfort?: Comfort;
-  constraint_distribution: Distribution;
-  initial_speed?: number;
-  labels?: string[];
-  margins?: Margins;
-  options?: TrainScheduleOptions;
-  path: PathItem[];
-  power_restrictions?: {
-    from: string;
-    to: string;
-    value: string;
-  }[];
-  rolling_stock_name: string;
-  schedule?: ScheduleItem[];
-  speed_limit_tag?: null | string;
-  start_time: string;
-  train_name: string;
-};
 export type ConstraintDistributionChangeGroup = {
   value: Distribution;
 };
@@ -3970,10 +3953,25 @@ export type LabelsChangeGroup = {
 export type OptionsChangeGroup = {
   value: TrainScheduleOptions;
 };
+export type PathItem = {
+  /** The unique identifier of the path item.
+    This is used to reference path items in the train schedule. */
+  id: string;
+  location: PathItemLocation;
+};
 export type PowerRestrictionItem = {
   from: string;
   to: string;
   value: string;
+};
+export type PositiveDuration = string;
+export type ReceptionSignal = 'OPEN' | 'STOP' | 'SHORT_SLIP_STOP';
+export type ScheduleItem = {
+  arrival?: null | PositiveDuration;
+  /** Position on the path of the schedule item. */
+  at: string;
+  reception_signal?: ReceptionSignal;
+  stop_for?: null | PositiveDuration;
 };
 export type PathAndScheduleChangeGroup = {
   margins: Margins;
@@ -4014,7 +4012,14 @@ export type PacedTrainException = {
   start_time?: StartTimeChangeGroup;
   train_name?: TrainNameChangeGroup;
 };
-export type PacedTrain = TrainSchedule & {
+export type PacedTrain = {
+  category?: null | TrainCategory;
+  comfort?: Comfort;
+  constraint_distribution: Distribution;
+  initial_speed?: number;
+  labels?: string[];
+  margins?: Margins;
+  options?: TrainScheduleOptions;
   paced?: null | {
     exceptions: PacedTrainException[];
     /** Time between two occurrences, an ISO 8601 format is expected */
@@ -4022,6 +4027,17 @@ export type PacedTrain = TrainSchedule & {
     /** Duration of the paced train, an ISO 8601 format is expected */
     time_window: PositiveDuration;
   };
+  path: PathItem[];
+  power_restrictions?: {
+    from: string;
+    to: string;
+    value: string;
+  }[];
+  rolling_stock_name: string;
+  schedule?: ScheduleItem[];
+  speed_limit_tag?: null | string;
+  start_time: string;
+  train_name: string;
 };
 export type PacedTrainResponse = PacedTrain & {
   id: number;

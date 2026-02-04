@@ -50,7 +50,7 @@ fn extract_occupancy_context<'a>(
     op_cache: &OperationalPointCache,
     simulation: &'a simulation::Response,
     pathfinding: &'a PathfindingResult,
-    train_schedule: &'a schemas::TrainSchedule,
+    train_schedule: &'a schemas::PacedTrain,
 ) -> OccupancyContext<'a> {
     let report_train = match simulation {
         simulation::Response::Success(simulation) => simulation
@@ -80,7 +80,7 @@ fn extract_occupancy_context<'a>(
 fn extract_occupancy_context_without_simulation<'a>(
     operational_point_id: &str,
     op_cache: &OperationalPointCache,
-    train_schedule: &'a schemas::TrainSchedule,
+    train_schedule: &'a schemas::PacedTrain,
 ) -> OccupancyContext<'a> {
     let matching_index =
         find_matching_path_item_index(&train_schedule.path, operational_point_id, op_cache);
@@ -140,7 +140,7 @@ fn get_track_section(
     context: &OccupancyContext,
     operational_point_track_offsets: &[TrackOffset],
     op_cache: &OperationalPointCache,
-    train_schedule: &schemas::TrainSchedule,
+    train_schedule: &schemas::PacedTrain,
 ) -> Option<String> {
     if let Some(pathfinding_success) = context.pathfinding_success {
         let path_projection = PathProjection::new(&pathfinding_success.path.track_section_ranges);
@@ -177,7 +177,7 @@ pub fn find_track_occupancy_for_operational_point(
     op_cache: &OperationalPointCache,
     simulation: &simulation::Response,
     pathfinding: &PathfindingResult,
-    train_schedule: &schemas::TrainSchedule,
+    train_schedule: &schemas::PacedTrain,
 ) -> Vec<TrackOccupancy> {
     let context = extract_occupancy_context(
         operational_point_id,
@@ -198,7 +198,7 @@ pub fn find_track_occupancy_for_operational_point_without_simulation(
     operational_point_id: &str,
     operational_point_track_offsets: &[TrackOffset],
     op_cache: &OperationalPointCache,
-    train_schedule: &schemas::TrainSchedule,
+    train_schedule: &schemas::PacedTrain,
 ) -> Vec<TrackOccupancy> {
     let context = extract_occupancy_context_without_simulation(
         operational_point_id,
@@ -217,7 +217,7 @@ fn find_track_occupancy_for_operational_point_with_context<'a>(
     context: OccupancyContext<'a>,
     operational_point_track_offsets: &[TrackOffset],
     op_cache: &OperationalPointCache,
-    train_schedule: &schemas::TrainSchedule,
+    train_schedule: &schemas::PacedTrain,
 ) -> Vec<TrackOccupancy> {
     let arrival_time = match get_arrival_time(&context, operational_point_track_offsets) {
         Some(time) => time,
@@ -326,7 +326,7 @@ pub mod tests {
 
         // Create a train schedule with path items and schedule items
         let start_time = DateTime::from_timestamp(1000000000, 0).unwrap();
-        let train_schedule = schemas::TrainSchedule {
+        let train_schedule = schemas::PacedTrain {
             start_time,
             path: vec![
                 PathItem {

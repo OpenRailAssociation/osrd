@@ -19,13 +19,12 @@ use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
 use request::Request;
 use request::convert_steps;
+use schemas::PacedTrain;
 use schemas::paced_train::MarginValue;
 use schemas::paced_train::Margins;
 use schemas::paced_train::ReceptionSignal;
 use schemas::paced_train::ScheduleItem;
 use schemas::primitives::PositiveDuration;
-
-use schemas::train_schedule::TrainSchedule;
 use serde::Deserialize;
 use serde::Serialize;
 use std::cmp::max;
@@ -374,7 +373,7 @@ impl VirtualTrainRun {
         let path = convert_steps(&stdcm_request.steps);
         let last_step = path.last().expect("empty step list");
 
-        let train_schedule = TrainSchedule {
+        let train_schedule = PacedTrain {
             train_name: "".to_string(),
             labels: vec![],
             rolling_stock_name: consist_parameters.traction_engine.name.clone(),
@@ -398,6 +397,7 @@ impl VirtualTrainRun {
             power_restrictions: vec![],
             options: Default::default(),
             category: None,
+            paced: None,
         };
 
         // Compute simulation of a train schedule

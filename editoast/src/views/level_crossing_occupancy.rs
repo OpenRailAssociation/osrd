@@ -27,7 +27,6 @@ use editoast_derive::EditoastError;
 use editoast_models::prelude::*;
 use editoast_models::rolling_stock::RollingStock;
 use itertools::Itertools;
-use schemas::TrainSchedule;
 use schemas::infra::Direction;
 use schemas::infra::LevelCrossing;
 use schemas::infra::TrackOffset;
@@ -196,7 +195,7 @@ pub(in crate::views) async fn occupancy(
 }
 
 async fn load_rolling_stock_lengths(
-    train_schedules: &[TrainSchedule],
+    train_schedules: &[schemas::PacedTrain],
     conn: &mut DbConnection,
 ) -> Result<HashMap<String, u64>> {
     let rolling_stocks_names = train_schedules.iter().map(|t| t.rolling_stock_name.clone());

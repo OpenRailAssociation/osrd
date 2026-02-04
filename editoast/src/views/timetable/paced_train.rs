@@ -253,7 +253,7 @@ pub(in crate::views) struct PacedTrainSummaryResponse {
 struct SimulationContext {
     paced_train_id: i64,
     exception_key: Option<String>,
-    train_schedule: schemas::TrainSchedule,
+    train_schedule: schemas::PacedTrain,
 }
 
 /// Associate each paced train id with its simulation summaries response
@@ -332,7 +332,7 @@ pub(in crate::views) async fn simulation_summary(
             })
             .collect();
 
-    let schedules: Vec<schemas::TrainSchedule> = simulation_contexts
+    let schedules: Vec<schemas::PacedTrain> = simulation_contexts
         .iter()
         .map(|ctx| ctx.train_schedule.clone())
         .collect();
@@ -1484,7 +1484,6 @@ mod tests {
     use schemas::paced_train::ScheduleItem;
     use schemas::paced_train::TrainNameChangeGroup;
     use schemas::rolling_stock::TrainCategory;
-    use schemas::train_schedule::TrainSchedule;
     use serde_json::json;
 
     use crate::error::InternalError;
@@ -1558,7 +1557,7 @@ mod tests {
 
         let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
         let mut paced_train_base = simple_paced_train_base();
-        paced_train_base.train_schedule_base.category = Some(TrainCategory::Sub {
+        paced_train_base.category = Some(TrainCategory::Sub {
             sub_category_code: created_sub_category.code.clone(),
         });
 
@@ -1594,7 +1593,7 @@ mod tests {
         let created_paced_train: schemas::paced_train::PacedTrain = created_paced_train.into();
 
         assert_eq!(
-            created_paced_train.train_schedule_base.category,
+            created_paced_train.category,
             Some(TrainCategory::Sub {
                 sub_category_code: created_sub_category.code.clone()
             })
@@ -1805,18 +1804,17 @@ mod tests {
         let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), "simulation_rolling_stock").await;
+
+        let paced = Some(Paced {
+            time_window: Duration::hours(1).try_into().unwrap(),
+            interval: Duration::minutes(15).try_into().unwrap(),
+            exceptions: vec![create_created_exception_with_change_groups(
+                "created_exception_key",
+            )],
+        });
         let paced_train_base = PacedTrain {
-            train_schedule_base: TrainSchedule {
-                rolling_stock_name: rolling_stock.name.clone(),
-                ..TrainSchedule::fake()
-            },
-            paced: Some(Paced {
-                time_window: Duration::hours(1).try_into().unwrap(),
-                interval: Duration::minutes(15).try_into().unwrap(),
-                exceptions: vec![create_created_exception_with_change_groups(
-                    "created_exception_key",
-                )],
-            }),
+            rolling_stock_name: rolling_stock.name.clone(),
+            ..PacedTrain::fake(paced)
         };
         let paced_train: PacedTrainChangeset = paced_train_base.into();
         let paced_train = paced_train

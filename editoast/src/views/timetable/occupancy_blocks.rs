@@ -7,7 +7,7 @@ use core_client::signal_projection::TrainSimulation;
 use core_client::simulation::SignalCriticalPosition;
 use core_client::simulation::ZoneUpdate;
 use database::DbConnection;
-use schemas::train_schedule::TrainScheduleLike;
+use schemas::paced_train::TrainScheduleLike;
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::collections::HashSet;

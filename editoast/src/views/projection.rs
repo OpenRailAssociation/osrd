@@ -10,7 +10,7 @@ use itertools::Itertools;
 use schemas::paced_train::OperationalPointReference;
 use schemas::paced_train::PathItemLocation;
 use schemas::paced_train::ScheduleItem;
-use schemas::train_schedule::TrainScheduleLike;
+use schemas::paced_train::TrainScheduleLike;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;

@@ -2617,29 +2617,90 @@ paths:
         content:
           application/json:
             schema:
-              allOf:
-              - $ref: '#/components/schemas/TrainSchedule'
-              - type: object
-                properties:
-                  paced:
-                    oneOf:
-                    - type: 'null'
-                    - type: object
-                      required:
-                      - time_window
-                      - interval
-                      - exceptions
-                      properties:
-                        exceptions:
-                          type: array
-                          items:
-                            $ref: '#/components/schemas/PacedTrainException'
-                        interval:
-                          $ref: '#/components/schemas/PositiveDuration'
-                          description: Time between two occurrences, an ISO 8601 format is expected
-                        time_window:
-                          $ref: '#/components/schemas/PositiveDuration'
-                          description: Duration of the paced train, an ISO 8601 format is expected
+              type: object
+              required:
+              - train_name
+              - rolling_stock_name
+              - start_time
+              - path
+              - constraint_distribution
+              properties:
+                category:
+                  oneOf:
+                  - type: 'null'
+                  - $ref: '#/components/schemas/TrainCategory'
+                comfort:
+                  $ref: '#/components/schemas/Comfort'
+                constraint_distribution:
+                  $ref: '#/components/schemas/Distribution'
+                initial_speed:
+                  type: number
+                  format: double
+                labels:
+                  type: array
+                  items:
+                    type: string
+                margins:
+                  $ref: '#/components/schemas/Margins'
+                options:
+                  $ref: '#/components/schemas/TrainScheduleOptions'
+                paced:
+                  oneOf:
+                  - type: 'null'
+                  - type: object
+                    required:
+                    - time_window
+                    - interval
+                    - exceptions
+                    properties:
+                      exceptions:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/PacedTrainException'
+                      interval:
+                        $ref: '#/components/schemas/PositiveDuration'
+                        description: Time between two occurrences, an ISO 8601 format is expected
+                      time_window:
+                        $ref: '#/components/schemas/PositiveDuration'
+                        description: Duration of the paced train, an ISO 8601 format is expected
+                path:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/PathItem'
+                power_restrictions:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                    - from
+                    - to
+                    - value
+                    properties:
+                      from:
+                        type: string
+                        minLength: 1
+                      to:
+                        type: string
+                        minLength: 1
+                      value:
+                        type: string
+                    additionalProperties: false
+                rolling_stock_name:
+                  type: string
+                schedule:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ScheduleItem'
+                speed_limit_tag:
+                  oneOf:
+                  - type: 'null'
+                  - type: string
+                    minLength: 1
+                start_time:
+                  type: string
+                  format: date-time
+                train_name:
+                  type: string
         required: true
       responses:
         '204':
@@ -10446,29 +10507,90 @@ components:
         value:
           $ref: '#/components/schemas/TrainScheduleOptions'
     PacedTrain:
-      allOf:
-      - $ref: '#/components/schemas/TrainSchedule'
-      - type: object
-        properties:
-          paced:
-            oneOf:
-            - type: 'null'
-            - type: object
-              required:
-              - time_window
-              - interval
-              - exceptions
-              properties:
-                exceptions:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/PacedTrainException'
-                interval:
-                  $ref: '#/components/schemas/PositiveDuration'
-                  description: Time between two occurrences, an ISO 8601 format is expected
-                time_window:
-                  $ref: '#/components/schemas/PositiveDuration'
-                  description: Duration of the paced train, an ISO 8601 format is expected
+      type: object
+      required:
+      - train_name
+      - rolling_stock_name
+      - start_time
+      - path
+      - constraint_distribution
+      properties:
+        category:
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/TrainCategory'
+        comfort:
+          $ref: '#/components/schemas/Comfort'
+        constraint_distribution:
+          $ref: '#/components/schemas/Distribution'
+        initial_speed:
+          type: number
+          format: double
+        labels:
+          type: array
+          items:
+            type: string
+        margins:
+          $ref: '#/components/schemas/Margins'
+        options:
+          $ref: '#/components/schemas/TrainScheduleOptions'
+        paced:
+          oneOf:
+          - type: 'null'
+          - type: object
+            required:
+            - time_window
+            - interval
+            - exceptions
+            properties:
+              exceptions:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PacedTrainException'
+              interval:
+                $ref: '#/components/schemas/PositiveDuration'
+                description: Time between two occurrences, an ISO 8601 format is expected
+              time_window:
+                $ref: '#/components/schemas/PositiveDuration'
+                description: Duration of the paced train, an ISO 8601 format is expected
+        path:
+          type: array
+          items:
+            $ref: '#/components/schemas/PathItem'
+        power_restrictions:
+          type: array
+          items:
+            type: object
+            required:
+            - from
+            - to
+            - value
+            properties:
+              from:
+                type: string
+                minLength: 1
+              to:
+                type: string
+                minLength: 1
+              value:
+                type: string
+            additionalProperties: false
+        rolling_stock_name:
+          type: string
+        schedule:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScheduleItem'
+        speed_limit_tag:
+          oneOf:
+          - type: 'null'
+          - type: string
+            minLength: 1
+        start_time:
+          type: string
+          format: date-time
+        train_name:
+          type: string
     PacedTrainException:
       allOf:
       - type: object
@@ -14219,72 +14341,6 @@ components:
       - value
       properties:
         value:
-          type: string
-    TrainSchedule:
-      type: object
-      required:
-      - train_name
-      - rolling_stock_name
-      - start_time
-      - path
-      - constraint_distribution
-      properties:
-        category:
-          oneOf:
-          - type: 'null'
-          - $ref: '#/components/schemas/TrainCategory'
-        comfort:
-          $ref: '#/components/schemas/Comfort'
-        constraint_distribution:
-          $ref: '#/components/schemas/Distribution'
-        initial_speed:
-          type: number
-          format: double
-        labels:
-          type: array
-          items:
-            type: string
-        margins:
-          $ref: '#/components/schemas/Margins'
-        options:
-          $ref: '#/components/schemas/TrainScheduleOptions'
-        path:
-          type: array
-          items:
-            $ref: '#/components/schemas/PathItem'
-        power_restrictions:
-          type: array
-          items:
-            type: object
-            required:
-            - from
-            - to
-            - value
-            properties:
-              from:
-                type: string
-                minLength: 1
-              to:
-                type: string
-                minLength: 1
-              value:
-                type: string
-            additionalProperties: false
-        rolling_stock_name:
-          type: string
-        schedule:
-          type: array
-          items:
-            $ref: '#/components/schemas/ScheduleItem'
-        speed_limit_tag:
-          oneOf:
-          - type: 'null'
-          - type: string
-            minLength: 1
-        start_time:
-          type: string
-          format: date-time
-        train_name:
           type: string
     TrainScheduleOptions:
       type: object
