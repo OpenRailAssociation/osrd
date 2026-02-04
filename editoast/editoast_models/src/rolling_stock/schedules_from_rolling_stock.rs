@@ -7,12 +7,12 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 use database::DbConnection;
-use database::tables::paced_train;
 use database::tables::project;
 use database::tables::rolling_stock;
 use database::tables::scenario;
 use database::tables::study;
 use database::tables::timetable_train_schedule_set;
+use database::tables::train_schedule;
 
 use super::RollingStock;
 
@@ -51,12 +51,12 @@ impl RollingStock {
         &self,
         conn: &mut DbConnection,
     ) -> Result<Vec<ScenarioReference>, database::DatabaseError> {
-        let schedules: Vec<_> = paced_train::table
+        let schedules: Vec<_> = train_schedule::table
             .inner_join(
-                rolling_stock::table.on(paced_train::rolling_stock_name.eq(rolling_stock::name)),
+                rolling_stock::table.on(train_schedule::rolling_stock_name.eq(rolling_stock::name)),
             )
             .inner_join(
-                timetable_train_schedule_set::table.on(paced_train::train_schedule_set_id
+                timetable_train_schedule_set::table.on(train_schedule::train_schedule_set_id
                     .eq(timetable_train_schedule_set::train_schedule_set_id)),
             )
             .inner_join(
@@ -73,7 +73,7 @@ impl RollingStock {
                 scenario::name,
             ))
             .filter(rolling_stock::id.eq(self.id))
-            .filter(paced_train::id.is_not_null())
+            .filter(train_schedule::id.is_not_null())
             .load::<SchedulesFromRollingStock>(conn.write().await.deref_mut())
             .await?;
         let schedules = schedules.into_iter().map_into().collect();

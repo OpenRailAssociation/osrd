@@ -718,7 +718,7 @@ pub(super) struct SearchResultItemScenario {
     #[search(sql = "infra.name")]
     infra_name: String,
     #[search(
-        sql = "(SELECT COUNT(trains.id) FROM paced_train AS trains WHERE scenario.timetable_id = trains.timetable_id)"
+        sql = "(SELECT COUNT(trains.id) FROM train_schedule AS trains WHERE scenario.timetable_id = trains.timetable_id)"
     )]
     paced_trains_count: u64,
     #[search(
@@ -736,41 +736,41 @@ pub(super) struct SearchResultItemScenario {
 #[derive(Search, Serialize, ToSchema)]
 #[cfg_attr(test, derive(serde::Deserialize))]
 #[search(
-    table = "paced_train",
+    table = "train_schedule",
     column(name = "train_schedule_set_id", data_type = "integer"),
     column(name = "train_name", data_type = "string")
 )]
 /// A search result item for a query with `object = "trainschedule"`
 pub(super) struct SearchResultItemTrainSchedule {
-    #[search(sql = "paced_train.id")]
+    #[search(sql = "train_schedule.id")]
     id: u64,
-    #[search(sql = "paced_train.train_name")]
+    #[search(sql = "train_schedule.train_name")]
     train_name: String,
-    #[search(sql = "paced_train.labels")]
+    #[search(sql = "train_schedule.labels")]
     labels: Vec<Option<String>>,
-    #[search(sql = "paced_train.rolling_stock_name")]
+    #[search(sql = "train_schedule.rolling_stock_name")]
     rolling_stock_name: String,
-    #[search(sql = "paced_train.train_schedule_set_id")]
+    #[search(sql = "train_schedule.train_schedule_set_id")]
     train_schedule_set_id: i64,
-    #[search(sql = "paced_train.start_time")]
+    #[search(sql = "train_schedule.start_time")]
     start_time: DateTime<Utc>,
-    #[search(sql = "paced_train.schedule")]
+    #[search(sql = "train_schedule.schedule")]
     schedule: Vec<ScheduleItem>,
-    #[search(sql = "paced_train.margins")]
+    #[search(sql = "train_schedule.margins")]
     margins: Margins,
-    #[search(sql = "paced_train.initial_speed")]
+    #[search(sql = "train_schedule.initial_speed")]
     initial_speed: f64,
-    #[search(sql = "paced_train.comfort")]
+    #[search(sql = "train_schedule.comfort")]
     comfort: i64,
-    #[search(sql = "paced_train.path")]
+    #[search(sql = "train_schedule.path")]
     path: Vec<PathItem>,
-    #[search(sql = "paced_train.constraint_distribution")]
+    #[search(sql = "train_schedule.constraint_distribution")]
     constraint_distribution: i64,
-    #[search(sql = "paced_train.speed_limit_tag")]
+    #[search(sql = "train_schedule.speed_limit_tag")]
     speed_limit_tag: Option<String>,
-    #[search(sql = "paced_train.power_restrictions")]
+    #[search(sql = "train_schedule.power_restrictions")]
     power_restrictions: Vec<PowerRestrictionItem>,
-    #[search(sql = "paced_train.options")]
+    #[search(sql = "train_schedule.options")]
     options: TrainScheduleOptions,
 }
 
