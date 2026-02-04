@@ -8,8 +8,10 @@ import {
   type TrainSchedule,
   type TrainScheduleSet,
 } from 'common/api/osrdEditoastApi';
+import { createPacedTrains } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItem } from 'reducers/osrdconf/types';
+import { useAppDispatch } from 'store';
 import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
 import { useScenarioContext } from './useScenarioContext';
@@ -43,8 +45,7 @@ export default function useScenarioTrainScheduleSet(
     {}
   );
 
-  const [createPacedTrains] =
-    osrdEditoastApi.endpoints.postTrainScheduleSetsByIdTrainSchedules.useMutation();
+  const dispatch = useAppDispatch();
 
   const [createCatalogEntryMutation] = osrdEditoastApi.endpoints.postCatalogEntries.useMutation();
 
@@ -190,14 +191,9 @@ export default function useScenarioTrainScheduleSet(
         });
 
       // create the trains and attach them to the new local tss
-      const createdTrains = await createPacedTrains({
-        id: newTss.id,
-        body: trainsToCopy,
-      }).unwrap();
+      const createdTrains = await createPacedTrains(dispatch, newTss.id, trainsToCopy);
 
-      upsertTimetableItems(
-        createdTrains.map((train) => ({ ...train, id: formatEditoastIdToPacedTrainId(train.id) }))
-      );
+      upsertTimetableItems(createdTrains);
     },
     [
       createTrainScheduleSetMutation,
@@ -296,17 +292,9 @@ export default function useScenarioTrainScheduleSet(
             train_schedule_set_id: newTss.id,
           }));
 
-          const createdTrains = await createPacedTrains({
-            id: newTss.id,
-            body: trainsWithoutIds,
-          }).unwrap();
+          const createdTrains = await createPacedTrains(dispatch, newTss.id, trainsWithoutIds);
 
-          const formattedCreatedTrains = createdTrains.map((train) => ({
-            ...train,
-            id: formatEditoastIdToPacedTrainId(train.id),
-          }));
-
-          allTrainsToUpsert.push(...formattedCreatedTrains);
+          allTrainsToUpsert.push(...createdTrains);
         }
       }
 
