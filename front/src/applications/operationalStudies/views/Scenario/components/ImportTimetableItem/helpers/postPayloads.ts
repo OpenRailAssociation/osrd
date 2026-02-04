@@ -5,41 +5,14 @@ import type {
   RoundTripsFromJson,
   TimetableJsonPayload,
 } from 'applications/operationalStudies/types';
-import {
-  osrdEditoastApi,
-  type MacroNodeForm,
-  type TrainSchedule,
-  type SubCategory,
-} from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type MacroNodeForm, type SubCategory } from 'common/api/osrdEditoastApi';
+import { createPacedTrains } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import { setWarning, setFailure } from 'reducers/main';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
-import { extractEditoastIdFromPacedTrainId, formatEditoastIdToPacedTrainId } from 'utils/trainId';
+import { extractEditoastIdFromPacedTrainId } from 'utils/trainId';
 
 import { generateRoundTripsPayload, generateTrainPayloads } from './generatePayloads';
-
-// TODO: delete this helper and use createPacedTrains (possibly adding if (payloads.length) to it) when the pr createPacedTrain -> createPacedTrains is merged
-export const postTimetableItems = async (
-  trainScheduleSetId: number,
-  payloads: TrainSchedule[],
-  dispatch: AppDispatch
-) => {
-  let timetableItems: TimetableItem[] = [];
-  if (payloads.length) {
-    const rawTimetableItems = await dispatch(
-      osrdEditoastApi.endpoints.postTrainScheduleSetsByIdTrainSchedules.initiate({
-        id: trainScheduleSetId,
-        body: payloads,
-      })
-    ).unwrap();
-
-    timetableItems = rawTimetableItems.map((timetableItem) => ({
-      ...timetableItem,
-      id: formatEditoastIdToPacedTrainId(timetableItem.id),
-    }));
-  }
-  return timetableItems;
-};
 
 const postRoundTrips = async (
   roundTrips: RoundTripsFromJson,
@@ -106,9 +79,9 @@ export const postFullImportPayload = async (
     const timetableItems: TimetableItem[] = [];
 
     const BATCH_SIZE = 1000;
-    const chunks = chunk(pacedTrains, BATCH_SIZE);
-    for (const c of chunks) {
-      timetableItems.push(...(await postTimetableItems(trainScheduleSetId, c, dispatch)));
+    const trainChunks = chunk(pacedTrains, BATCH_SIZE);
+    for (const trainChunk of trainChunks) {
+      timetableItems.push(...(await createPacedTrains(dispatch, trainScheduleSetId, trainChunk)));
     }
 
     if (round_trips) {
