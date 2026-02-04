@@ -377,6 +377,21 @@ const ItineraryModal = ({
                     );
                     setInputForStep(pathStep.id, value);
                   }}
+                  onTrackNameChange={(trackName) => {
+                    setPathSteps((prev) =>
+                      prev.map((step) => {
+                        if (step.id !== pathStep.id) return step;
+                        if (!step.location || !('operational_point' in step.location)) return step;
+                        return {
+                          ...step,
+                          location: {
+                            ...step.location,
+                            local_track_name: trackName || undefined,
+                          },
+                        };
+                      })
+                    );
+                  }}
                   onOpBlur={() => unmarkEditing(pathStep.id)}
                   inputValue={getInputForStep(pathStep.id)}
                   opSuggestions={activeStepId === pathStep.id ? opSuggestions : []}
