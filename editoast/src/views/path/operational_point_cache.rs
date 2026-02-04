@@ -3,10 +3,10 @@ use core_client::pathfinding::PathfindingInputError;
 use database::DbConnection;
 use schemas::infra::OperationalPoint;
 use schemas::infra::TrackOffset;
+use schemas::paced_train::OperationalPointPartReference;
+use schemas::paced_train::OperationalPointReference;
+use schemas::paced_train::PathItemLocation;
 use schemas::primitives::NonBlankString;
-use schemas::train_schedule::OperationalPointPartReference;
-use schemas::train_schedule::OperationalPointReference;
-use schemas::train_schedule::PathItemLocation;
 use std::collections::HashMap;
 use std::collections::HashSet;
 

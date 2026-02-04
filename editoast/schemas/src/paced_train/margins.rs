@@ -112,8 +112,8 @@ mod tests {
     use serde_json::from_str;
     use serde_json::to_string;
 
-    use crate::train_schedule::MarginValue;
-    use crate::train_schedule::Margins;
+    use crate::paced_train::MarginValue;
+    use crate::paced_train::Margins;
 
     /// Test that the `MarginValue` enum can be deserialized from a string
     #[test]

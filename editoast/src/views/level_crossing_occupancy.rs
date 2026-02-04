@@ -345,7 +345,7 @@ mod tests {
     use core_client::pathfinding::TrainPath;
     use reqwest::StatusCode;
     use schemas::infra::LevelCrossingPart;
-    use schemas::train_schedule::PathItem;
+    use schemas::paced_train::PathItem;
 
     #[test]
     fn test_find_level_crossing_intersection_found() {

@@ -7,9 +7,9 @@ use core_client::simulation::ReportTrain;
 use database::DbConnection;
 use editoast_derive::EditoastError;
 use itertools::Itertools;
-use schemas::train_schedule::OperationalPointReference;
-use schemas::train_schedule::PathItemLocation;
-use schemas::train_schedule::ScheduleItem;
+use schemas::paced_train::OperationalPointReference;
+use schemas::paced_train::PathItemLocation;
+use schemas::paced_train::ScheduleItem;
 use schemas::train_schedule::TrainScheduleLike;
 use serde::Deserialize;
 use serde::Serialize;
@@ -967,9 +967,9 @@ mod tests {
     use rstest::rstest;
     use schemas::infra::Direction;
     use schemas::infra::DirectionalTrackRange;
+    use schemas::paced_train::OperationalPointPartReference;
+    use schemas::paced_train::PathItemLocation;
     use schemas::primitives::Identifier;
-    use schemas::train_schedule::OperationalPointPartReference;
-    use schemas::train_schedule::PathItemLocation;
 
     #[rstest]
     #[case(1, 0)]

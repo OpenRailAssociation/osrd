@@ -8,18 +8,19 @@ use editoast_models::tags::Tags;
 use itertools::Itertools;
 use schemas;
 use schemas::paced_train;
+use schemas::paced_train::Comfort;
+use schemas::paced_train::Distribution;
 use schemas::paced_train::ExceptionType;
+use schemas::paced_train::Margins;
 use schemas::paced_train::Paced;
 use schemas::paced_train::PacedTrainException;
+use schemas::paced_train::PathItem;
+use schemas::paced_train::PowerRestrictionItem;
+use schemas::paced_train::ScheduleItem;
+use schemas::paced_train::TrainScheduleOptions;
 use schemas::rolling_stock::TrainCategory;
-use schemas::train_schedule::Comfort;
-use schemas::train_schedule::Distribution;
-use schemas::train_schedule::Margins;
-use schemas::train_schedule::PathItem;
-use schemas::train_schedule::PowerRestrictionItem;
-use schemas::train_schedule::ScheduleItem;
 use schemas::train_schedule::TrainSchedule;
-use schemas::train_schedule::TrainScheduleOptions;
+
 use serde::Deserialize;
 use serde::Serialize;
 use std::fmt::Display;
@@ -395,13 +396,13 @@ mod tests {
     use editoast_models::tags::Tags;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
+    use schemas::paced_train::Comfort;
+    use schemas::paced_train::Distribution;
+    use schemas::paced_train::Margins;
     use schemas::paced_train::PacedTrainException;
     use schemas::paced_train::RollingStockCategoryChangeGroup;
     use schemas::paced_train::StartTimeChangeGroup;
-    use schemas::train_schedule::Comfort;
-    use schemas::train_schedule::Distribution;
-    use schemas::train_schedule::Margins;
-    use schemas::train_schedule::TrainScheduleOptions;
+    use schemas::paced_train::TrainScheduleOptions;
 
     pub fn create_paced_train(exceptions: Vec<PacedTrainException>) -> PacedTrain {
         PacedTrain {

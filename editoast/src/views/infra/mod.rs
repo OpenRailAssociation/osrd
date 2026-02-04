@@ -59,7 +59,7 @@ use schemas::infra::OperationalPoint;
 use schemas::infra::OperationalPointExtensions;
 use schemas::infra::OperationalPointPart;
 use schemas::infra::builtin_node_types_list;
-use schemas::train_schedule::OperationalPointReference;
+use schemas::paced_train::OperationalPointReference;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "infra")]
@@ -963,7 +963,7 @@ pub mod tests {
     use crate::models::infra::DEFAULT_INFRA_VERSION;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
-    use schemas::train_schedule::OperationalPointReference;
+    use schemas::paced_train::OperationalPointReference;
 
     impl TestApp {
         fn delete_infra_request(&self, infra_id: i64) -> axum_test::TestRequest {

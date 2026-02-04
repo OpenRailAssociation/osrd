@@ -5,7 +5,7 @@ use serde::Serialize;
 use std::collections::BTreeMap;
 use utoipa::ToSchema;
 
-use crate::train_schedule::Comfort;
+use crate::paced_train::Comfort;
 
 #[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize, ToSchema, Hash)]
 #[serde(deny_unknown_fields)]

@@ -2,10 +2,10 @@ use chrono::Duration;
 use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::simulation::ReportTrain;
 use schemas::infra::TrackOffset;
+use schemas::paced_train::PathItem;
+use schemas::paced_train::PathItemLocation;
+use schemas::paced_train::ScheduleItem;
 use schemas::primitives::TimeWindow;
-use schemas::train_schedule::PathItem;
-use schemas::train_schedule::PathItemLocation;
-use schemas::train_schedule::ScheduleItem;
 
 use crate::views::path::operational_point_cache::OperationalPointCache;
 use crate::views::path::pathfinding::PathfindingResult;
@@ -261,11 +261,11 @@ pub mod tests {
     use rstest::rstest;
     use schemas::infra::Direction;
     use schemas::infra::TrackOffset;
+    use schemas::paced_train::OperationalPointPartReference;
+    use schemas::paced_train::OperationalPointReference;
+    use schemas::paced_train::ReceptionSignal;
     use schemas::primitives::Identifier;
     use schemas::primitives::PositiveDuration;
-    use schemas::train_schedule::OperationalPointPartReference;
-    use schemas::train_schedule::OperationalPointReference;
-    use schemas::train_schedule::ReceptionSignal;
     use std::collections::HashMap;
     use std::collections::HashSet;
 

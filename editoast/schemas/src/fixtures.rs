@@ -7,10 +7,14 @@ use chrono::Utc;
 use common::units;
 
 use crate::RollingStock;
+use crate::paced_train::Comfort;
 use crate::paced_train::ConstraintDistributionChangeGroup;
+use crate::paced_train::Distribution;
 use crate::paced_train::ExceptionType;
 use crate::paced_train::InitialSpeedChangeGroup;
 use crate::paced_train::LabelsChangeGroup;
+use crate::paced_train::MarginValue;
+use crate::paced_train::Margins;
 use crate::paced_train::OptionsChangeGroup;
 use crate::paced_train::PacedTrainException;
 use crate::paced_train::PathAndScheduleChangeGroup;
@@ -19,6 +23,7 @@ use crate::paced_train::RollingStockChangeGroup;
 use crate::paced_train::SpeedLimitTagChangeGroup;
 use crate::paced_train::StartTimeChangeGroup;
 use crate::paced_train::TrainNameChangeGroup;
+use crate::paced_train::TrainScheduleOptions;
 use crate::primitives::NonBlankString;
 use crate::rolling_stock::EffortCurves;
 use crate::rolling_stock::LoadingGaugeType;
@@ -27,11 +32,6 @@ use crate::rolling_stock::RollingResistancePerWeight;
 use crate::rolling_stock::TowedRollingStock;
 use crate::rolling_stock::TrainMainCategory;
 use crate::rolling_stock::default_rolling_stock_railjson_version;
-use crate::train_schedule::Comfort;
-use crate::train_schedule::Distribution;
-use crate::train_schedule::MarginValue;
-use crate::train_schedule::Margins;
-use crate::train_schedule::TrainScheduleOptions;
 
 pub fn simple_rolling_stock() -> RollingStock {
     RollingStock {

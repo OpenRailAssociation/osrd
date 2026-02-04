@@ -22,8 +22,8 @@ use database::DbConnection;
 use educe::Educe;
 use itertools::Itertools;
 use ordered_float::OrderedFloat;
+use schemas::paced_train::PathItemLocation;
 use schemas::rolling_stock::LoadingGaugeType;
-use schemas::train_schedule::PathItemLocation;
 use schemas::train_schedule::TrainScheduleLike;
 use serde::Deserialize;
 use serde::Serialize;
@@ -517,10 +517,10 @@ pub mod tests {
     use core_client::pathfinding::PathfindingResultSuccess;
     use core_client::pathfinding::TrainPath;
     use pretty_assertions::assert_eq;
+    use schemas::paced_train::OperationalPointPartReference;
+    use schemas::paced_train::OperationalPointReference;
+    use schemas::paced_train::PathItemLocation;
     use schemas::rolling_stock::LoadingGaugeType;
-    use schemas::train_schedule::OperationalPointPartReference;
-    use schemas::train_schedule::OperationalPointReference;
-    use schemas::train_schedule::PathItemLocation;
 
     use crate::models::fixtures::create_small_infra;
     use crate::views::path::pathfinding::PathfindingFailure;

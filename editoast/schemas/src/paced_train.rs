@@ -1,3 +1,42 @@
+mod margins;
+pub use margins::MarginValue;
+pub use margins::Margins;
+
+// 'pub' to remove when schemas/train_schedule.rs is deleted
+pub mod schedule_item;
+pub use schedule_item::ReceptionSignal;
+pub use schedule_item::ScheduleItem;
+
+// 'pub' to remove when schemas/train_schedule.rs is deleted
+pub mod path_item;
+pub use path_item::OperationalPointPartReference;
+pub use path_item::OperationalPointReference;
+pub use path_item::PathItem;
+pub use path_item::PathItemLocation;
+
+mod train_schedule_options;
+pub use train_schedule_options::TrainScheduleOptions;
+
+mod power_restriction_item;
+pub use power_restriction_item::PowerRestrictionItem;
+
+mod distribution;
+pub use distribution::Distribution;
+
+mod comfort;
+pub use comfort::Comfort;
+
+mod allowance;
+pub use allowance::Allowance;
+pub use allowance::AllowanceDistribution;
+pub use allowance::AllowanceValue;
+pub use allowance::EngineeringAllowance;
+pub use allowance::RangeAllowance;
+pub use allowance::StandardAllowance;
+
+mod rjs_power_restriction_range;
+pub use rjs_power_restriction_range::RjsPowerRestrictionRange;
+
 use std::collections::HashSet;
 
 use chrono::DateTime;
@@ -16,14 +55,7 @@ use utoipa::openapi::schema::Schema;
 use crate::primitives::NonBlankString;
 use crate::primitives::PositiveDuration;
 use crate::rolling_stock::TrainCategory;
-use crate::train_schedule::Comfort;
-use crate::train_schedule::Distribution;
-use crate::train_schedule::Margins;
-use crate::train_schedule::PathItem;
-use crate::train_schedule::PowerRestrictionItem;
-use crate::train_schedule::ScheduleItem;
 use crate::train_schedule::TrainSchedule;
-use crate::train_schedule::TrainScheduleOptions;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct Paced {

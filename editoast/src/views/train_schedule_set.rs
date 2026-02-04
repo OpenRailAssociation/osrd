@@ -403,10 +403,10 @@ mod tests {
     use schemas::fixtures::simple_created_exception_with_change_groups;
     use schemas::fixtures::simple_modified_exception_with_change_groups;
     use schemas::paced_train::ExceptionType;
+    use schemas::paced_train::MarginValue;
+    use schemas::paced_train::Margins;
     use schemas::paced_train::PacedTrainException;
     use schemas::paced_train::PathAndScheduleChangeGroup;
-    use schemas::train_schedule::MarginValue;
-    use schemas::train_schedule::Margins;
 
     async fn create_train_schedule_set_linked_to_catalog_entry(
         conn: &mut DbConnection,

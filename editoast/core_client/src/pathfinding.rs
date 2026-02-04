@@ -1,9 +1,9 @@
 use ordered_float::OrderedFloat;
 use schemas::infra::Direction;
 use schemas::infra::TrackOffset;
+use schemas::paced_train::PathItemLocation;
 use schemas::primitives::Identifier;
 use schemas::rolling_stock::LoadingGaugeType;
-use schemas::train_schedule::PathItemLocation;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;

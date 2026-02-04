@@ -1,4 +1,4 @@
-use schemas::train_schedule::Comfort;
+use schemas::paced_train::Comfort;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;

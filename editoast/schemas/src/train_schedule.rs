@@ -1,40 +1,3 @@
-mod margins;
-pub use margins::MarginValue;
-pub use margins::Margins;
-
-mod schedule_item;
-pub use schedule_item::ReceptionSignal;
-pub use schedule_item::ScheduleItem;
-
-mod path_item;
-pub use path_item::OperationalPointPartReference;
-pub use path_item::OperationalPointReference;
-pub use path_item::PathItem;
-pub use path_item::PathItemLocation;
-
-mod train_schedule_options;
-pub use train_schedule_options::TrainScheduleOptions;
-
-mod power_restriction_item;
-pub use power_restriction_item::PowerRestrictionItem;
-
-mod distribution;
-pub use distribution::Distribution;
-
-mod comfort;
-pub use comfort::Comfort;
-
-mod allowance;
-pub use allowance::Allowance;
-pub use allowance::AllowanceDistribution;
-pub use allowance::AllowanceValue;
-pub use allowance::EngineeringAllowance;
-pub use allowance::RangeAllowance;
-pub use allowance::StandardAllowance;
-
-mod rjs_power_restriction_range;
-pub use rjs_power_restriction_range::RjsPowerRestrictionRange;
-
 use std::collections::HashMap;
 use std::collections::HashSet;
 
@@ -47,6 +10,13 @@ use serde_with::DefaultOnNull;
 use serde_with::serde_as;
 use utoipa::ToSchema;
 
+use crate::paced_train::Comfort;
+use crate::paced_train::Distribution;
+use crate::paced_train::Margins;
+use crate::paced_train::PathItem;
+use crate::paced_train::PowerRestrictionItem;
+use crate::paced_train::ScheduleItem;
+use crate::paced_train::TrainScheduleOptions;
 use crate::primitives::NonBlankString;
 use crate::rolling_stock::TrainCategory;
 
@@ -224,6 +194,10 @@ impl Serialize for TrainSchedule {
 impl TrainSchedule {
     pub fn fake() -> Self {
         use crate::infra::TrackOffset;
+        use crate::paced_train::{
+            MarginValue, OperationalPointPartReference, OperationalPointReference,
+            PathItemLocation, ReceptionSignal,
+        };
         use crate::primitives::Identifier;
 
         Self {
@@ -336,13 +310,13 @@ mod tests {
     use serde_json::from_str;
     use serde_json::to_string;
 
-    use crate::train_schedule::Margins;
-    use crate::train_schedule::PathItemLocation;
-    use crate::train_schedule::ScheduleItem;
+    use crate::paced_train::Margins;
+    use crate::paced_train::PathItemLocation;
+    use crate::paced_train::ScheduleItem;
+    use crate::paced_train::path_item::OperationalPointPartReference;
+    use crate::paced_train::path_item::OperationalPointReference::Id;
+    use crate::paced_train::schedule_item::ReceptionSignal;
     use crate::train_schedule::TrainSchedule;
-    use crate::train_schedule::path_item::OperationalPointPartReference;
-    use crate::train_schedule::path_item::OperationalPointReference::Id;
-    use crate::train_schedule::schedule_item::ReceptionSignal;
 
     use super::PathItem;
 

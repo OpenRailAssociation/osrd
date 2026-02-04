@@ -7,12 +7,12 @@ use common::units;
 use core_client::pathfinding::PathfindingInputError;
 use database::DbConnection;
 
+use schemas::paced_train::Comfort;
+use schemas::paced_train::MarginValue;
+use schemas::paced_train::PathItem;
+use schemas::paced_train::PathItemLocation;
 use schemas::rolling_stock::LoadingGaugeType;
 use schemas::rolling_stock::RollingStock;
-use schemas::train_schedule::Comfort;
-use schemas::train_schedule::MarginValue;
-use schemas::train_schedule::PathItem;
-use schemas::train_schedule::PathItemLocation;
 use serde::Deserialize;
 use serde::Deserializer;
 use serde::Serialize;
