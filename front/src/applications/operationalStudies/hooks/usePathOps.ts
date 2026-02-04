@@ -9,8 +9,6 @@ import {
 } from 'common/api/osrdEditoastApi';
 import type { Train } from 'reducers/osrdconf/types';
 
-import { getStationFromOps } from '../utils';
-
 /**
  * Given a train's path, return the operational points corresponding to the pathSteps of this train
  */
@@ -18,7 +16,7 @@ const usePathOps = (
   infraId: number,
   path?: Train['path'],
   options?: {
-    returnAllOps: boolean;
+    ignoreSecondaryCode: boolean;
   }
 ): RelatedOperationalPoint[] => {
   const operationalPointReferences: OperationalPointReference[] = useMemo(
@@ -39,6 +37,7 @@ const usePathOps = (
             infraId,
             body: {
               operational_point_references: operationalPointReferences,
+              ignore_secondary_code: options?.ignoreSecondaryCode ?? false,
             },
           }
         : skipToken
@@ -51,16 +50,8 @@ const usePathOps = (
     )
       return [];
 
-    // To remove empty arrays related to invalid step
-    const allValidOps = operationalPoints.related_operational_points.filter(
-      (ops) => ops.length !== 0
-    );
-
-    if (options?.returnAllOps) {
-      return allValidOps.flat();
-    }
-
-    return allValidOps.map((matchingOps) => getStationFromOps(matchingOps)!);
+    // To remove empty arrays related to invalid step and flatten
+    return operationalPoints.related_operational_points.filter((ops) => ops.length !== 0).flat();
   }, [operationalPoints]);
 };
 

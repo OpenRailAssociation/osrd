@@ -1,15 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { skipToken } from '@reduxjs/toolkit/query';
 import type { Position } from 'geojson';
+import { v4 as uuid } from 'uuid';
 
 import usePathOps from 'applications/operationalStudies/hooks/usePathOps';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
-import {
-  osrdEditoastApi,
-  type OperationalPointReference,
-  type TrainSchedule,
-} from 'common/api/osrdEditoastApi';
+import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 import type { PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
 import { getPointOnTrackCoordinates } from 'utils/geometry';
 
@@ -25,45 +21,29 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
   );
 
   // 1. Extract the train path to extract its steps related operational points
-  const strippedTrainPath: TrainSchedule['path'] = useMemo(
+  const trainPath: TrainSchedule['path'] = useMemo(
     () =>
       pathSteps.reduce<TrainSchedule['path']>((acc, step) => {
-        if (!step.location) return acc;
-        if ('operational_point' in step.location) {
-          if (
-            step.location.operational_point.type === 'uic' ||
-            step.location.operational_point.type === 'trigram'
-          ) {
-            // strip location from its secondary_code so we can have all matchs for an uic or trigram
-            const { secondary_code: _secCode, ...operational_point } =
-              step.location.operational_point;
-            acc.push({
-              id: step.id,
-              location: {
-                operational_point,
-              },
-            });
-            return acc;
-          }
+        if (step.location) {
+          acc.push({
+            id: step.id,
+            location: step.location,
+          });
         }
-        acc.push({
-          id: step.id,
-          location: step.location,
-        });
         return acc;
       }, []),
     [pathSteps]
   );
 
-  const pathStepsOperationalPoints = usePathOps(infraId, strippedTrainPath, {
-    returnAllOps: true,
+  const pathStepsOperationalPoints = usePathOps(infraId, trainPath, {
+    ignoreSecondaryCode: true,
   });
 
   // 2. Since a path step containing 'operational_point' as location will have only one match
   // with postInfraByInfraIdMatchOperationalPoints, we need to call the endpoint again with
   // the opId corresponding uic in order to get all the possible matches and have
   // all the secondary codes and track names
-  const uicPayload: OperationalPointReference[] = useMemo(() => {
+  const uicTrainPath: TrainSchedule['path'] = useMemo(() => {
     const opIds = pathSteps.reduce<string[]>((acc, step) => {
       if (
         step.location &&
@@ -77,33 +57,27 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
 
     if (opIds.length === 0) return [];
 
-    return pathStepsOperationalPoints.reduce<OperationalPointReference[]>((acc, op) => {
-      const uic = op.extensions?.identifier?.uic;
-      if (uic && opIds.includes(op.id)) {
-        acc.push({ uic, type: 'uic' });
-      }
-      return acc;
-    }, []);
+    return pathStepsOperationalPoints
+      .filter((op) => op.extensions?.identifier?.uic)
+      .map((op) => ({
+        // The step id is required by the type but ignored by usePathOps
+        id: uuid(),
+        location: {
+          operational_point: {
+            type: 'uic' as const,
+            uic: op.extensions!.identifier!.uic,
+          },
+        },
+      }));
   }, [pathSteps, pathStepsOperationalPoints]);
 
-  const { currentData: allOpIdsOperationalPoints } =
-    osrdEditoastApi.endpoints.postInfraByInfraIdMatchOperationalPoints.useQuery(
-      uicPayload.length > 0
-        ? {
-            infraId,
-            body: {
-              operational_point_references: uicPayload,
-            },
-          }
-        : skipToken
-    );
+  const allOpIdsOperationalPoints = usePathOps(infraId, uicTrainPath, {
+    ignoreSecondaryCode: true,
+  });
 
   // 3. Merge both operational points lists to have all possible matches
   const allOps = useMemo(
-    () => [
-      ...pathStepsOperationalPoints,
-      ...(allOpIdsOperationalPoints?.related_operational_points || []).flat(),
-    ],
+    () => [...pathStepsOperationalPoints, ...allOpIdsOperationalPoints],
     [pathStepsOperationalPoints, allOpIdsOperationalPoints]
   );
 

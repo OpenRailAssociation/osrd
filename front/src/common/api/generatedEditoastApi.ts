@@ -1699,6 +1699,8 @@ export type PostInfraByInfraIdMatchOperationalPointsApiArg = {
   /** An existing infra ID */
   infraId: number;
   body: {
+    /** When true, ignores secondary_code matching and returns all OPs with the given trigram/UIC. */
+    ignore_secondary_code?: boolean;
     operational_point_references: OperationalPointReference[];
   };
 };

@@ -366,6 +366,7 @@ impl OperationalPointCache {
     pub fn get_reference(
         &self,
         op_ref: OperationalPointReference,
+        ignore_secondary_code: bool,
     ) -> Result<Vec<&OperationalPoint>> {
         let related_operational_points = match op_ref {
             OperationalPointReference::Id {
@@ -380,7 +381,13 @@ impl OperationalPointCache {
                 secondary_code,
             } => {
                 if let Some(op_models) = self.get_from_trigram(&trigram.0) {
-                    filter_by_secondary_code_and_retrieve_op(secondary_code, op_models)
+                    if ignore_secondary_code {
+                        op_models.map(|op_model| &op_model.schema).collect()
+                    } else {
+                        find_op_by_secondary_code(secondary_code.as_ref(), op_models.collect())
+                            .map(|op| vec![&op.schema])
+                            .unwrap_or_default()
+                    }
                 } else {
                     vec![]
                 }
@@ -390,7 +397,13 @@ impl OperationalPointCache {
                 secondary_code,
             } => {
                 if let Some(op_models) = self.get_from_uic(uic) {
-                    filter_by_secondary_code_and_retrieve_op(secondary_code, op_models)
+                    if ignore_secondary_code {
+                        op_models.map(|op_model| &op_model.schema).collect()
+                    } else {
+                        find_op_by_secondary_code(secondary_code.as_ref(), op_models.collect())
+                            .map(|op| vec![&op.schema])
+                            .unwrap_or_default()
+                    }
                 } else {
                     vec![]
                 }
@@ -471,23 +484,6 @@ fn find_op_by_secondary_code<'a>(
 ) -> Option<&'a OperationalPointModel> {
     ops.into_iter()
         .find(|op| secondary_code == op.extensions.sncf.as_ref().map(|sncf| &sncf.ch))
-}
-
-fn filter_by_secondary_code_and_retrieve_op<'a>(
-    secondary_code: Option<String>,
-    op_models: impl Iterator<Item = &'a OperationalPointModel>,
-) -> Vec<&'a OperationalPoint> {
-    op_models
-        .map(|op_model| &op_model.schema)
-        .filter(|op| match secondary_code.as_ref() {
-            Some(secondary_code) => op
-                .extensions
-                .sncf
-                .as_ref()
-                .is_some_and(|ext| &ext.ch == secondary_code),
-            None => true,
-        })
-        .collect::<Vec<_>>()
 }
 
 #[cfg(test)]
