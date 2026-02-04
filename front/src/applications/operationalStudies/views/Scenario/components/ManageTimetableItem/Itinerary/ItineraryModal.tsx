@@ -135,13 +135,7 @@ const ItineraryModal = ({
       ? pathProperties
       : undefined;
 
-  const filledStepsCount = pathSteps.filter((step) => {
-    if (step.location) return true;
-    const q = (getInputForStep(step.id) ?? '').trim();
-    return q.length > 0;
-  }).length;
-
-  const isNextDisabled = hasInvalidPathStepDisplay || !!pathfindingError || filledStepsCount < 2;
+  const isNextDisabled = hasInvalidPathStepDisplay || !!pathfindingError;
 
   const markEditing = (stepId: string) => {
     editingStepIdRef.current = stepId;
@@ -295,8 +289,9 @@ const ItineraryModal = ({
   };
 
   const submitItinerary = () => {
-    if (hasInvalidPathStep) return;
-    if (pathfindingError) return;
+    if (locatedStepsCount >= 2) {
+      if (hasInvalidPathStep || pathfindingError) return;
+    }
 
     const updatedPathSteps = buildPathSteps(pathSteps, pathStepsMetadataById);
 
