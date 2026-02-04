@@ -23,6 +23,7 @@ import { useRollingStockContext } from 'common/RollingStockContext';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import { getOccurrencesWorstStatus } from 'modules/timetableItem/helpers/pacedTrain';
 import {
+  createPacedTrains,
   deletePacedTrains,
   storePacedTrain,
 } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
@@ -46,7 +47,6 @@ import { useAppDispatch } from 'store';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
 import {
-  formatEditoastIdToPacedTrainId,
   extractEditoastIdFromPacedTrainId,
   extractPacedTrainIdFromOccurrenceId,
   isPacedTrainId,
@@ -149,8 +149,6 @@ const PacedTrainItem = ({
     upsertTimetableItems,
   });
 
-  const [postPacedTrain] =
-    osrdEditoastApi.endpoints.postTrainScheduleSetsByIdTrainSchedules.useMutation();
   const [getTrainScheduleById] = osrdEditoastApi.endpoints.getTrainSchedulesById.useLazyQuery();
 
   const selectPathProjection = async () => {
@@ -222,21 +220,9 @@ const PacedTrainItem = ({
       train_name: pacedTrainName,
     };
 
-    let pacedTrainResult;
-    try {
-      [pacedTrainResult] = await postPacedTrain({
-        id: pacedTrainDetail.train_schedule_set_id,
-        body: [newPacedTrain],
-      }).unwrap();
-    } catch (e) {
-      dispatch(setFailure(castErrorToFailure(e)));
-      return;
-    }
-
-    const formattedPacedTrainResponse: TimetableItem = {
-      ...pacedTrainResult,
-      id: formatEditoastIdToPacedTrainId(pacedTrainResult.id),
-    };
+    const formattedPacedTrainResponse: TimetableItem = (
+      await createPacedTrains(dispatch, pacedTrainDetail.train_schedule_set_id, [newPacedTrain])
+    )[0];
     upsertTimetableItems([formattedPacedTrainResponse]);
     dispatch(
       setSuccess({

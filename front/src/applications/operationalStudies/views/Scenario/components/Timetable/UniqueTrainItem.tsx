@@ -11,7 +11,10 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { SubCategory, TrainSchedule } from 'common/api/osrdEditoastApi';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import isMainCategory from 'modules/rollingStock/helpers/category';
-import { deletePacedTrains } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
+import {
+  createPacedTrains,
+  deletePacedTrains,
+} from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import { setFailure, setSuccess } from 'reducers/main';
 import type { TimetableItem, TimetableItemId, TrainId } from 'reducers/osrdconf/types';
@@ -25,7 +28,7 @@ import { useAppDispatch } from 'store';
 import { timeToLocaleStringRounded, useDateTimeLocale } from 'utils/date';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
-import { extractEditoastIdFromPacedTrainId, formatEditoastIdToPacedTrainId } from 'utils/trainId';
+import { extractEditoastIdFromPacedTrainId } from 'utils/trainId';
 
 import ArrivalTimeLoader from './ArrivalTimeLoader';
 import { TIMETABLE_ITEM_DELTA } from './consts';
@@ -69,8 +72,6 @@ const UniqueTrainItem = ({
   const dateTimeLocale = useDateTimeLocale();
   const dispatch = useAppDispatch();
 
-  const [postPacedTrain] =
-    osrdEditoastApi.endpoints.postTrainScheduleSetsByIdTrainSchedules.useMutation();
   const [getTrainSchedule] = osrdEditoastApi.endpoints.getTrainSchedulesById.useLazyQuery();
 
   const { summary } = train;
@@ -119,16 +120,12 @@ const UniqueTrainItem = ({
         train_name: trainName,
       };
 
-      const [newUniqueTrain] = await postPacedTrain({
-        id: trainDetail.train_schedule_set_id,
-        body: [newUniqueTrainPayload],
-      }).unwrap();
-
-      const formattedUniqueTrain: TimetableItem = {
-        ...newUniqueTrain,
-        id: formatEditoastIdToPacedTrainId(newUniqueTrain.id),
-      };
-      upsertUniqueTrains([formattedUniqueTrain]);
+      const newUniqueTrain: TimetableItem[] = await createPacedTrains(
+        dispatch,
+        trainDetail.train_schedule_set_id,
+        [newUniqueTrainPayload]
+      );
+      upsertUniqueTrains(newUniqueTrain);
       dispatch(
         setSuccess({
           title: t('timetable.trainAdded'),
