@@ -40,6 +40,7 @@ export async function createPacedTrains(
   trainScheduleSetId: number,
   pacedTrains: TrainSchedule[]
 ): Promise<TimetableItem[]> {
+  if (!pacedTrains.length) return [];
   const newPacedTrains = await dispatch(
     osrdEditoastApi.endpoints.postTrainScheduleSetsByIdTrainSchedules.initiate({
       id: trainScheduleSetId,
