@@ -3,15 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
+import { createPacedTrains } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import { setFailure, setSuccess } from 'reducers/main';
 import { clearAddedExceptionsList } from 'reducers/osrdconf/operationalStudiesConf';
 import { getOperationalStudiesConf } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
-import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
 import checkCurrentConfig from './helpers/checkCurrentConfig';
 import {
@@ -45,9 +44,6 @@ const CreateTimetableItemButton = ({
     rollingStockId: simulationConf.rollingStockID,
   });
 
-  const [postPacedTrain] =
-    osrdEditoastApi.endpoints.postTrainScheduleSetsByIdTrainSchedules.useMutation();
-
   const createTrainSchedules = async () => {
     if (!checkCurrentConfig(simulationConf, t, dispatch, rollingStock?.name)) return;
 
@@ -57,16 +53,10 @@ const CreateTimetableItemButton = ({
       const payload = isPacedTrainMode
         ? formatPacedTrainPayload(simulationConf, rollingStock!.name)
         : formatTimetableItemPayload(simulationConf, rollingStock!.name);
-      const newTimetableItem = await postPacedTrain({
-        id: sandboxId,
-        body: [payload],
-      }).unwrap();
 
-      // We can only add one paced train at a time
-      const formattedNewPacedTrain: TimetableItem = {
-        ...newTimetableItem.at(0)!,
-        id: formatEditoastIdToPacedTrainId(newTimetableItem.at(0)!.id),
-      };
+      const formattedNewPacedTrain: TimetableItem = (
+        await createPacedTrains(dispatch, sandboxId, [payload])
+      )[0];
 
       dispatch(
         setSuccess({
