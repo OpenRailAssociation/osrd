@@ -35,12 +35,12 @@ impl Timetable {
         timetable_id: i64,
         conn: &mut DbConnection,
     ) -> Result<i64, database::DatabaseError> {
-        use database::tables::paced_train;
         use database::tables::timetable_train_schedule_set;
+        use database::tables::train_schedule;
 
-        paced_train::dsl::paced_train
+        train_schedule::dsl::train_schedule
             .filter(
-                paced_train::dsl::train_schedule_set_id.eq_any(
+                train_schedule::dsl::train_schedule_set_id.eq_any(
                     timetable_train_schedule_set::dsl::timetable_train_schedule_set
                         .select(timetable_train_schedule_set::dsl::train_schedule_set_id)
                         .filter(timetable_train_schedule_set::dsl::timetable_id.eq(timetable_id)),
@@ -70,13 +70,13 @@ impl Timetable {
         timetable_id: i64,
         conn: &mut DbConnection,
     ) -> Result<Vec<DateTime<Utc>>, database::DatabaseError> {
-        use database::tables::paced_train;
         use database::tables::timetable_train_schedule_set;
+        use database::tables::train_schedule;
 
-        paced_train::dsl::paced_train
-            .select(paced_train::dsl::start_time)
+        train_schedule::dsl::train_schedule
+            .select(train_schedule::dsl::start_time)
             .filter(
-                paced_train::dsl::train_schedule_set_id.eq_any(
+                train_schedule::dsl::train_schedule_set_id.eq_any(
                     timetable_train_schedule_set::dsl::timetable_train_schedule_set
                         .select(timetable_train_schedule_set::dsl::train_schedule_set_id)
                         .filter(timetable_train_schedule_set::dsl::timetable_id.eq(timetable_id)),
@@ -170,10 +170,10 @@ impl TimetableWithTrains {
     ) -> Result<Option<Self>, DatabaseError> {
         let result = sql_query(
             "SELECT timetable.*,
-        array_remove(array_agg(paced_train.id), NULL) as paced_train_ids
+        array_remove(array_agg(train_schedule.id), NULL) as paced_train_ids
         FROM timetable
         JOIN timetable_train_schedule_set ON timetable.id = timetable_train_schedule_set.timetable_id
-        LEFT JOIN paced_train ON timetable_train_schedule_set.train_schedule_set_id = paced_train.train_schedule_set_id
+        LEFT JOIN train_schedule ON timetable_train_schedule_set.train_schedule_set_id = train_schedule.train_schedule_set_id
         WHERE timetable.id = $1
         GROUP BY timetable.id",
         )

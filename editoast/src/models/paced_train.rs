@@ -27,7 +27,7 @@ use utoipa::ToSchema;
 
 #[derive(Debug, Clone, Model)]
 #[cfg_attr(test, derive(Default, PartialEq))]
-#[model(table = database::tables::paced_train)]
+#[model(table = database::tables::train_schedule)]
 #[model(gen(ops = crud, batch_ops = crud, list))]
 pub struct PacedTrain {
     pub id: i64,

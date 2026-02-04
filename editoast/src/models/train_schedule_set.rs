@@ -25,9 +25,9 @@ impl TrainScheduleSet {
         train_schedule_set_id: i64,
         conn: &mut DbConnection,
     ) -> Result<i64, database::DatabaseError> {
-        use database::tables::paced_train::dsl;
+        use database::tables::train_schedule::dsl;
 
-        dsl::paced_train
+        dsl::train_schedule
             .filter(dsl::train_schedule_set_id.eq(train_schedule_set_id))
             .count()
             .get_result(conn.write().await.deref_mut())

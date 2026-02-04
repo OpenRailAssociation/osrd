@@ -11,7 +11,7 @@ use crate as editoast_models;
 
 #[derive(Clone, Debug, Model)]
 #[model(row(derive(QueryableByName)))]
-#[model(table = database::tables::paced_train_round_trips)]
+#[model(table = database::tables::train_schedule_round_trips)]
 #[model(gen(batch_ops = cd))]
 pub struct PacedTrainRoundTrips {
     pub id: i64,
@@ -35,21 +35,21 @@ impl PacedTrainRoundTrips {
         page: u64,
         page_size: u64,
     ) -> Result<(Vec<Self>, u64), database::DatabaseError> {
-        use database::tables::paced_train;
-        use database::tables::paced_train_round_trips;
         use database::tables::timetable_train_schedule_set;
+        use database::tables::train_schedule;
+        use database::tables::train_schedule_round_trips;
 
-        let query = paced_train_round_trips::table
-            .inner_join(paced_train::table)
-            .select(paced_train_round_trips::all_columns)
+        let query = train_schedule_round_trips::table
+            .inner_join(train_schedule::table)
+            .select(train_schedule_round_trips::all_columns)
             .filter(
-                paced_train::dsl::train_schedule_set_id.eq_any(
+                train_schedule::dsl::train_schedule_set_id.eq_any(
                     timetable_train_schedule_set::dsl::timetable_train_schedule_set
                         .select(timetable_train_schedule_set::dsl::train_schedule_set_id)
                         .filter(timetable_train_schedule_set::dsl::timetable_id.eq(timetable_id)),
                 ),
             )
-            .order_by(paced_train_round_trips::id.asc());
+            .order_by(train_schedule_round_trips::id.asc());
 
         let (results, count): (Vec<PacedTrainRoundTripsRow>, _) =
             load_for_pagination(conn, query, page, page_size).await?;
@@ -69,14 +69,14 @@ impl PacedTrainRoundTrips {
         conn: &mut DbConnection,
         paced_train_ids: I,
     ) -> Result<usize, database::DatabaseError> {
-        use database::tables::paced_train_round_trips::dsl;
+        use database::tables::train_schedule_round_trips::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use std::ops::DerefMut;
 
         let ids = paced_train_ids.into_iter().collect::<Vec<_>>();
         let nb = diesel::delete(
-            database::tables::paced_train_round_trips::table
+            database::tables::train_schedule_round_trips::table
                 .filter(dsl::left_id.eq_any(&ids).or(dsl::right_id.eq_any(&ids))),
         )
         .execute(conn.write().await.deref_mut())
@@ -91,13 +91,13 @@ impl PacedTrainRoundTrips {
         conn: &mut DbConnection,
         paced_train_ids: I,
     ) -> Result<Vec<Self>, database::DatabaseError> {
-        use database::tables::paced_train_round_trips::dsl;
+        use database::tables::train_schedule_round_trips::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use std::ops::DerefMut;
 
         let ids = paced_train_ids.into_iter().collect::<Vec<_>>();
-        let results = database::tables::paced_train_round_trips::table
+        let results = database::tables::train_schedule_round_trips::table
             .filter(dsl::left_id.eq_any(&ids).or(dsl::right_id.eq_any(&ids)))
             .load::<PacedTrainRoundTripsRow>(conn.write().await.deref_mut())
             .await?;
