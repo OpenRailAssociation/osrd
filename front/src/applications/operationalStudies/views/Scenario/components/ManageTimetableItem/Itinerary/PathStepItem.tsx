@@ -28,6 +28,7 @@ type PathStepProps = {
   hidePathfindingLine?: boolean;
   categoryColors: CategoryColors;
   onOpInputChange?: (value: string) => void;
+  onTrackNameChange?: (trackName: string) => void;
   onOpFocus?: () => void;
   onOpBlur?: () => void;
   inputValue?: string;
@@ -47,6 +48,7 @@ const PathStepItem = ({
   hidePathfindingLine,
   categoryColors,
   onOpInputChange,
+  onTrackNameChange,
   onOpFocus,
   onOpBlur,
   inputValue,
@@ -171,6 +173,7 @@ const PathStepItem = ({
       viewport = {
         longitude: coordinates[0][0],
         latitude: coordinates[0][1],
+        zoom: 16,
       };
     } else {
       const box = bbox({
@@ -334,7 +337,7 @@ const PathStepItem = ({
               options={trackNameSuggestions}
               getOptionLabel={(option) => option.label}
               getOptionValue={(option) => option.id}
-              onChange={() => {}}
+              onChange={(option) => onTrackNameChange?.(option?.label ?? '')}
               small
               narrow
             />
