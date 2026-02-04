@@ -149,9 +149,9 @@ const osrdEditoastApi = generatedEditoastApi
       }),
       matchAllOperationalPoints: builder.query<
         RelatedOperationalPoint[][],
-        { infraId: number; opRefs: OperationalPointReference[] }
+        { infraId: number; opRefs: OperationalPointReference[]; ignoreSecondaryCode?: boolean }
       >({
-        queryFn: async ({ infraId, opRefs }, { dispatch }) => {
+        queryFn: async ({ infraId, opRefs, ignoreSecondaryCode }, { dispatch }) => {
           const batchSize = 200;
           const result: RelatedOperationalPoint[][] = [];
 
@@ -165,6 +165,7 @@ const osrdEditoastApi = generatedEditoastApi
                   infraId,
                   body: {
                     operational_point_references: batch,
+                    ignore_secondary_code: ignoreSecondaryCode ?? false,
                   },
                 },
                 { subscribe: false }
