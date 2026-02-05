@@ -616,6 +616,7 @@ impl<'a> GroupBuilder<'a> {
 
 pub trait TestRequestExt {
     fn by_user(self, user: &impl AsRef<UserInfo>) -> Self;
+    fn skip_authz(self) -> Self;
 }
 
 impl TestRequestExt for TestRequest {
@@ -626,6 +627,10 @@ impl TestRequestExt for TestRequest {
             identities.first().expect("no identity provided"),
         )
         .add_header("x-remote-user-name", name)
+    }
+
+    fn skip_authz(self) -> Self {
+        self.add_header("x-osrd-skip-authz", "true")
     }
 }
 
