@@ -7,7 +7,7 @@ requires-python = ">=3.11"
 
 dependencies = [
   "osrd-schemas",
-  "pytest ~= 7.2.2",
+  "pytest ~= 9.0.2",
   "pytest-cov ~= 4.1.0",
   "railjson-generator",
   "requests ~= 2.32.2",
