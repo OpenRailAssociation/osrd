@@ -57,9 +57,9 @@ const useUpdateTimetableItem = (
     const updatedItem = await storePacedTrain(
       timetableItemId,
       // When editing an occurrence, timetableItemToEditData will contain the original paced train
-      // informations and the occurrence id being modified.
+      // information and the occurrence id being modified.
       // The user has modified some fields that have been saved in the store (simulationConf).
-      // The function will compare these original paced train informations with the one
+      // The function will compare this original paced train information with the one
       // from the store and save the differences in the exception property of the original paced train.
       {
         ...formatPacedTrainPayload(simulationConf, rollingStock!.name, timetableItemToEditData),

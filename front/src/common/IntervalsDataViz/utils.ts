@@ -88,7 +88,7 @@ export function isNilObject(
 
 /**
  * Function that check if value is not nil
- * with the good typesctipt type (usefull in filters on array)
+ * with the good typescript type (useful in filters on array)
  */
 export function notEmpty<T>(value: T | null | undefined): value is T {
   return !isNil(value);
@@ -97,7 +97,7 @@ export function notEmpty<T>(value: T | null | undefined): value is T {
 /**
  * Given a point (the provided coordinates), this function changes the position of the provided html element
  * so it's always on the user screen.
- * This funciton is really usefull when you want to display a tooltip near the mouse pointer.
+ * This function is really useful when you want to display a tooltip near the mouse pointer.
  *
  * @param coordinates Usually the coordinate of the mouse
  * @param element The html element to move (ie. the div of the tooltip)
@@ -147,7 +147,7 @@ export function tooltipPosition(coordinates: [number, number], element: HTMLElem
 
 /**
  * Just the event preventdefault.
- * Usefull for listeners.
+ * Useful for listeners.
  */
 export function preventDefault(e: Event): void {
   e.preventDefault();

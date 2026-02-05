@@ -55,15 +55,15 @@ const IntervalEditorComponent = (
   const { openModal, closeModal } = useModal();
   const { t } = useTranslation();
 
-  // Wich segment area is visible
+  // Which segment area is visible
   const [viewBox, setViewBox] = useState<[number, number] | null>(null);
   // Ref for the tooltip
   const tooltipRef = useRef<HTMLDivElement | null>(null);
-  // Wich segment is selected
+  // Which segment is selected
   const [selected, setSelected] = useState<number | null>(null);
   // Value of the selected item (needed for the its modification)
   const [selectedData, setSelectedData] = useState<LinearMetadataItem | null>(null);
-  // Wich segment is hovered
+  // Which segment is hovered
   const [hovered, setHovered] = useState<{ index: number; point: number } | null>(null);
   // Mode of the dataviz
   const [mode, setMode] = useState<'dragging' | 'resizing' | null>(null);

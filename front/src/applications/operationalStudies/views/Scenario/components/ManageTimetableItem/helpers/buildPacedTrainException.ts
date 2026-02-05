@@ -91,7 +91,7 @@ export function generatePacedTrainException(
   if (
     !isEqual(
       originalPacedTrain.speed_limit_tag ?? null,
-      // speed limit tag is instanciated with null if not present when formating the item
+      // speed limit tag is instantiated with null if not present when formatting the item
       updatedOccurrence.speed_limit_tag ?? null
     )
   ) {
@@ -246,7 +246,7 @@ export function checkChangeGroups(
       exception.speed_limit_tag &&
       isEqual(
         exception.speed_limit_tag.value ?? null,
-        // speed limit tag is instanciated with null if not present when formating the item
+        // speed limit tag is instantiated with null if not present when formatting the item
         updatedTrain.speed_limit_tag ?? null
       )
     ) {

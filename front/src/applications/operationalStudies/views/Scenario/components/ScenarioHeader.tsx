@@ -145,7 +145,7 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
           <div className="spacer" />
         </nav>
 
-        {/* user informations */}
+        {/* user information */}
         <div className="user-info">
           <div className="spacer" />
           {impersonatedUser && <Hubot size="lg" className="mr-2 text-black" />}

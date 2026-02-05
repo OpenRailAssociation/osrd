@@ -19,7 +19,7 @@ export function massWithOneDecimal(number: number) {
 }
 
 // On the next function, we need to check if the found index is included in the array
-// to prevent a white screen when datas are computing and synchronizing when switching the selected timetable item
+// to prevent a white screen when data are computing and synchronizing when switching the selected timetable item
 
 /**
  * Get the Vmax values at a givenPosition (in meters), using vmax (MRSP in m/s)

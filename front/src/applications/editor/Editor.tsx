@@ -439,7 +439,7 @@ const Editor = () => {
                 : actions;
             })}
           </div>
-          {/* we hide the panel instead of conditionaly rendering it to be able to keep the informations of the selected object inside the url*/}
+          {/* we hide the panel instead of conditionally rendering it to be able to keep the information of the selected object inside the url*/}
           <div className={cx('panel-container', { hidden: !showPanelContainer })}>
             <button
               type="button"

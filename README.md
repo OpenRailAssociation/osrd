@@ -80,7 +80,7 @@ xdg-open http://localhost:4000/
 
 ## Working on a single component
 
-Each component has a _justfile_ to run usual developpment tasks. Install [just](https://github.com/casey/just#installation) and run it to see available recipes. All the components include:
+Each component has a _justfile_ to run usual development tasks. Install [just](https://github.com/casey/just#installation) and run it to see available recipes. All the components include:
 
 * run
 * install

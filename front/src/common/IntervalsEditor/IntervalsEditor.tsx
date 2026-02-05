@@ -31,7 +31,7 @@ import { createEmptySegmentAt, removeSegment } from './utils';
 import ZoomButtons from './ZoomButtons';
 
 export type IntervalsEditorProps = {
-  /** Additionnal read-only data that will be displayed along the path, below the intervals editor */
+  /** Additional read-only data that will be displayed along the path, below the intervals editor */
   additionalData?: AdditionalDataItem[];
   /** Default value used when a new range is created */
   defaultValue: number | string;

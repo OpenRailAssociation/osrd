@@ -166,7 +166,7 @@ describe('useDatePicker', () => {
         expect(onDayChange).toHaveBeenCalledWith(undefined);
       });
 
-      it('should update the parent value is the date is valid', () => {
+      it('should update the parent value if the date is valid', () => {
         const { result } = renderHook(() =>
           useDatePicker({
             inputProps: { id: 'id', label: 'label' },

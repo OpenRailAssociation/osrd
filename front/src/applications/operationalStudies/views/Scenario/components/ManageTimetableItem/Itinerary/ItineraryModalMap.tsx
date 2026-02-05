@@ -201,7 +201,7 @@ const ItineraryModalMap = ({
                 coordinates = trackMetadata?.coordinates;
               }
             } else {
-              // If not, we use the input informations to compute them
+              // If not, we use the input information to compute them
               const allCoordinates = computePathStepCoordinates(pathStepMetadata);
 
               coordinates =
