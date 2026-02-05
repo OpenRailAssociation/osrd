@@ -1,1 +1,36 @@
-{}
+{
+  "boards": {
+    "conflicts": "Conflicten",
+    "macro": "Macro",
+    "map": "Kaart",
+    "sdd": "GEB",
+    "std": "STB",
+    "tables": "Tabellen",
+    "trains": "Treinen"
+  },
+  "importTrainScheduleSet": {
+    "cancel": "Annuleer",
+    "cartEmpty": "Lege selectie",
+    "import": "Importeer",
+    "importType": {
+      "copy": "Importeer via kopie",
+      "reference": "Importeer via referentie"
+    },
+    "title": "Treinpakketten importeren",
+    "trainScheduleSet": "Pakket",
+    "trainScheduleSetAlreadyImported": "Dit pakket is al aanwezig in uw scenario als referentie",
+    "trainScheduleSetsSelected_one": "{{count}} pakket geselecteerd",
+    "trainScheduleSetsSelected_other": "{{count}} pakketten geselecteerd",
+    "trainSchedulesCount_one": "{{count}} trein",
+    "trainSchedulesCount_other": "{{count}} treinen"
+  },
+  "importTrains": {
+    "cancel": "Annuleer",
+    "chooseFile": "Bladeren… Geen bestand geselecteerd.",
+    "download": "Downloaden",
+    "errorMessages": {
+      "error": "Er is een fout opgetreden",
+      "errorInvalidFile": "Ongeldig bestand"
+    }
+  }
+}
