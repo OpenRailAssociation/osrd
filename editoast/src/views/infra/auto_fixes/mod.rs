@@ -982,7 +982,7 @@ mod tests {
 
         assert_eq!(operations.len(), error_count);
 
-        if !operations.len() == 5 {
+        if operations.len() == 5 {
             for obj in [&signal, &detector, &buffer_stop] {
                 assert!(operations.contains(&Operation::Delete(DeleteOperation {
                     obj_id: obj.get_id().to_string(),
