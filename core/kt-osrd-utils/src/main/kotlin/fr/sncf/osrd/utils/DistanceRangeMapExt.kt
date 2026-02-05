@@ -35,7 +35,7 @@ fun <T : Any> DistanceRangeMapImpl.Companion.toRangeMap(
 ): RangeMap<Distance, T> {
     val rangeMap = TreeRangeMap.create<Distance, T>()
     for (entry in distanceRangeMap.asList()) {
-        rangeMap.put(Range.closed(entry.lower, entry.upper), entry.value)
+        rangeMap.put(Range.closedOpen(entry.lower, entry.upper), entry.value)
     }
     return rangeMap
 }

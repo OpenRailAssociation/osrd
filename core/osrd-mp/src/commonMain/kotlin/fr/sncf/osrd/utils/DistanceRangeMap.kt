@@ -17,10 +17,25 @@ import fr.sncf.osrd.utils.units.Distance
  */
 interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
 
-    /** When iterating over the values of the map, this represents one range of constant value */
-    data class RangeMapEntry<T>(val lower: Distance, val upper: Distance, val value: T)
+    /** One range of constant value */
+    data class RangeMapEntry<T>(
+        /** The lower bound of the range. Always included. */
+        val lower: Distance,
+        /** The lower bound of the range. Always excluded. */
+        val upper: Distance,
+        val value: T,
+    ) {
+        fun isEmpty(): Boolean = lower >= upper
+    }
 
-    /** Sets the value between the lower and upper distances */
+    /**
+     * Sets the value between the [lower] and [upper] distances.
+     *
+     * [lower] is always included and [upper] is always excluded. If you want to exclude [lower] or
+     * include [upper], use [Distance.nextUp] or [Distance.nextDown].
+     *
+     * If the range between [lower] and [upper] is empty, this method has no effect.
+     */
     fun put(lower: Distance, upper: Distance, value: T)
 
     /** Sets many values more efficiently than many calls to `put` */
@@ -29,10 +44,20 @@ interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
     /** Returns a list of the entries in the map */
     fun asList(): List<RangeMapEntry<T>>
 
-    /** Lower bound of the entry with the smallest distance */
+    /**
+     * Lower bound of the entry with the smallest distance.
+     *
+     * This method throws an exception when called on an empty map. Otherwise, because lower bounds
+     * are always excluded, `get(lowerBound())` will always be non-null.
+     */
     fun lowerBound(): Distance
 
-    /** Upper bound of the entry with the highest distance */
+    /**
+     * Upper bound of the entry with the highest distance
+     *
+     * This method throws an exception when called on an empty map. Otherwise, because upper bounds
+     * are always excluded, `get(upperBound())` will always be null.
+     */
     fun upperBound(): Distance
 
     /** Removes all values outside the given range */
@@ -53,7 +78,10 @@ interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
     /** Returns a deep copy of the map */
     fun clone(): DistanceRangeMap<T>
 
-    /** Returns a new DistanceRangeMap of the ranges between lower and upper */
+    /**
+     * Returns a new [DistanceRangeMap] where only the ranges between [lower] (included) and [upper]
+     * (excluded) are kept.
+     */
     fun subMap(lower: Distance, upper: Distance): DistanceRangeMap<T>
 
     /**

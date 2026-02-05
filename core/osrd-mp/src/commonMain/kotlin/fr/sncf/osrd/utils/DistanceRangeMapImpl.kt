@@ -192,7 +192,7 @@ data class DistanceRangeMapImpl<T>(
     override fun get(offset: Distance): T? {
         // TODO: use a binary search
         for (entry in this.reversed()) {
-            if (entry.lower <= offset && offset <= entry.upper) return entry.value
+            if (entry.lower <= offset && offset < entry.upper) return entry.value
         }
         return null
     }

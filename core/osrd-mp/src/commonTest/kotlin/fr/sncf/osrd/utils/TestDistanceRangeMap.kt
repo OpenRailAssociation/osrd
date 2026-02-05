@@ -5,6 +5,7 @@ import fr.sncf.osrd.utils.units.meters
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -16,15 +17,36 @@ class TestDistanceRangeMap {
         expected: List<DistanceRangeMap.RangeMapEntry<T>> = entries,
     ) {
         val rangeMap = distanceRangeMapOf<T>()
-        for (entry in entries) rangeMap.put(entry.lower, entry.upper, entry.value)
+        for (entry in entries) {
+            val upperValue = rangeMap.get(entry.upper)
+            rangeMap.put(entry.lower, entry.upper, entry.value)
+            if (!entry.isEmpty()) {
+                assertEquals(rangeMap.get(entry.lower), entry.value)
+                assertEquals(rangeMap.get(entry.upper.nextDown), entry.value)
+                // upper bound is excluded, check that [put] didn't update its value
+                assertEquals(rangeMap.get(entry.upper), upperValue)
+            }
+        }
         assertEquals(expected, rangeMap.asList())
+        if (!rangeMap.isEmpty()) {
+            assertNotNull(rangeMap.get(rangeMap.lowerBound()))
+            assertNull(rangeMap.get(rangeMap.upperBound()))
+        }
 
         val rangeMapMany = distanceRangeMapOf<T>()
         rangeMapMany.putMany(entries)
         assertEquals(expected, rangeMapMany.asList())
+        if (!rangeMap.isEmpty()) {
+            assertNotNull(rangeMapMany.get(rangeMap.lowerBound()))
+            assertNull(rangeMapMany.get(rangeMapMany.upperBound()))
+        }
 
         val rangeMapCtor = DistanceRangeMapImpl(entries)
         assertEquals(expected, rangeMapCtor.asList())
+        if (!rangeMap.isEmpty()) {
+            assertNotNull(rangeMapCtor.get(rangeMap.lowerBound()))
+            assertNull(rangeMapCtor.get(rangeMapCtor.upperBound()))
+        }
     }
 
     @Test

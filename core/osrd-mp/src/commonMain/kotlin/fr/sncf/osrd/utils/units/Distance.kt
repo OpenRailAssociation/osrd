@@ -83,6 +83,14 @@ value class Distance(val millimeters: Long) : Comparable<Distance> {
         millimeters.toDouble() / distance.millimeters.toDouble()
 
     operator fun times(d: Double): Distance = Distance(round(millimeters * d).toLong())
+
+    /** The closest [Distance] larger than `this` */
+    val nextUp: Distance
+        get() = Distance(millimeters = millimeters + 1)
+
+    /** The closest [Distance] smaller than `this` */
+    val nextDown: Distance
+        get() = Distance(millimeters = millimeters - 1)
 }
 
 val Double.meters: Distance
