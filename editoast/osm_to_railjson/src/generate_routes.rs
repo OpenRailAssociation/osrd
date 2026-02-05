@@ -49,7 +49,7 @@ enum EdgeType {
 
 /// In order to find routes, we build a graph to ease the search of successors of a Node
 /// A node can be a trackendpoint (intermediary node), but also a detector or a buffer stop (start or end node of a route)
-/// The graph is therefor expanded and has more Edges than the Railjson has TrackSections
+/// The graph is therefore expanded and has more Edges than the Railjson has TrackSections
 #[derive(Default)]
 struct Graph {
     successors: HashMap<Node, Vec<Node>>,

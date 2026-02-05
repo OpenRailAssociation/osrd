@@ -12,7 +12,7 @@ pub const OBJECT_GENERATORS: [ObjectErrorGenerator<NoContext>; 2] = [
     ObjectErrorGenerator::new(2, check_out_of_range),
 ];
 
-/// Retrieve invalide ref error for detectors
+/// Retrieve invalid ref error for detectors
 pub fn check_invalid_ref(
     detector: &ObjectCache,
     infra_cache: &InfraCache,

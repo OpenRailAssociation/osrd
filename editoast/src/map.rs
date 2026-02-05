@@ -63,7 +63,7 @@ async fn invalidate_full_layer_cache(
 ///
 /// * `valkey` - Pool to use to connect to the valkey
 /// * `layers` - Layers to invalidate
-/// * `infra_id` - Infra to on which layers must be invalidated
+/// * `infra_id` - Infra on which layers must be invalidated
 /// * `app_version` - Application version for cache key generation
 ///
 /// Panics if fail

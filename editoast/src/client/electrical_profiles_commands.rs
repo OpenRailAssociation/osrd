@@ -43,7 +43,7 @@ pub struct DeleteProfileSetArgs {
     long_about = "List electrical profile sets in the database, <id> - <name>"
 )]
 pub struct ListProfileSetArgs {
-    // Wether to display the list in a ready to parse format
+    // Whether to display the list in a ready to parse format
     #[arg(long, default_value_t = false)]
     quiet: bool,
 }

@@ -22,7 +22,7 @@ pub fn check_empty(op: &ObjectCache, _: &InfraCache, _: &Graph) -> Vec<InfraErro
     }
 }
 
-/// Retrieve invalide ref and out of range errors for operational points
+/// Retrieve invalid ref and out of range errors for operational points
 pub fn check_op_parts(op: &ObjectCache, infra_cache: &InfraCache, _: &Graph) -> Vec<InfraError> {
     let mut infra_errors = vec![];
     let op = op.unwrap_operational_point();

@@ -31,7 +31,7 @@ use tracing::error;
 use tracing::warn;
 
 // Given an edge and a coordinate, returns the coordinates used to compute the angle
-// It uses the nearest OpenStreetMap node, and the other as the the rails might do a loop
+// It uses the nearest OpenStreetMap node, and the other as the rails might do a loop
 // that would result in a bad angle
 // However, sometimes nodes can be stacked at the same coordinates (e.g. to have different signals at the end of the way)
 // That is why look for the first node that is at least 1m away from the edge start
