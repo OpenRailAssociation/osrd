@@ -2553,7 +2553,7 @@ export type GetTrainScheduleSetsByIdPacedTrainsApiArg = {
   id: number;
 };
 export type PostTrainScheduleSetsByIdPacedTrainsApiResponse =
-  /** status 200 The created paced trains */ PacedTrainResponse[];
+  /** status 201 The created paced trains */ PacedTrainResponse[];
 export type PostTrainScheduleSetsByIdPacedTrainsApiArg = {
   /** A train schedule set ID */
   id: number;

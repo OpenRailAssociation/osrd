@@ -4567,7 +4567,7 @@ paths:
                 $ref: '#/components/schemas/PacedTrain'
         required: true
       responses:
-        '200':
+        '201':
           description: The created paced trains
           content:
             application/json:
