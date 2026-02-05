@@ -86,7 +86,7 @@ const cutSpaceTimeCurves = (
 
         const interpolatedRange = cutSpaceTimeRect(currentRange, firstPosition, lastPosition);
 
-        // TODO : remove reformatting the datas when https://github.com/OpenRailAssociation/osrd-ui/issues/694 is merged
+        // TODO : remove reformatting the data when https://github.com/OpenRailAssociation/osrd-ui/issues/694 is merged
         if (!interpolatedRange) continue;
 
         if (i === 1 || cutPositions.length === 0) {
@@ -117,7 +117,7 @@ const cutSpaceTimeCurves = (
 
         if (!updatedSignalRange) return null;
 
-        // TODO : remove reformatting the datas when https://github.com/OpenRailAssociation/osrd-ui/issues/694 is merged
+        // TODO : remove reformatting the data when https://github.com/OpenRailAssociation/osrd-ui/issues/694 is merged
         return {
           ...signal,
           position_start: updatedSignalRange.spaceStart,

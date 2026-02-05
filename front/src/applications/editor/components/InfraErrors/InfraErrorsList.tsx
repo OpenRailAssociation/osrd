@@ -35,7 +35,7 @@ const InfraErrorsList = ({ infraID, onErrorClick }: InfraErrorsListProps) => {
 
   // list of issues
   const [errors, setErrors] = useState<Array<InfraError>>([]);
-  // Error types filtered in correlatino with error level
+  // Error types filtered in correlation with error level
   const [errorTypeList, setErrorTypeList] = useState<InfraErrorTypeLabel[]>(INFRA_ERRORS);
 
   // Query to retrieve the issue with the API

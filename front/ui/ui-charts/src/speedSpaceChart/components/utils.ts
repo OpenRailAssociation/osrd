@@ -139,7 +139,7 @@ export const drawLinearLayerBackground = (
 };
 
 /**
- * Return wether a layer should be active or not.
+ * Return whether a layer should be active or not.
  * Depending on the available data, some layers should be disabled.
  */
 export const isLayerActive = (store: Store, selection: (typeof LAYERS_SELECTION)[number]) => {

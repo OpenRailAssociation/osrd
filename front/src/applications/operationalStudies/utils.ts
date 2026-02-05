@@ -39,7 +39,7 @@ import type {
 } from './types';
 
 /**
- * Transform datas received with boundaries / values format :
+ * Transform data received with boundaries / values format :
  *  - boundaries : List of `n` boundaries of the ranges. A boundary is a distance
  * from the beginning of the path in mm.
     - values : List of `n+1` values associated to the ranges.
