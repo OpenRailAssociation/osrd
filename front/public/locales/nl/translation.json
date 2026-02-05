@@ -1,1 +1,131 @@
-{}
+{
+  "Editor": {
+    "directions": {
+      "BOTH": "Beide",
+      "START_TO_STOP": "Vertrek tot aankomst",
+      "STOP_TO_START": "Aankomst tot vertrek"
+    },
+    "entities": {
+      "errors-linked": "Gekoppelde problemen"
+    },
+    "infra-errors": {
+      "corrector-modal": {
+        "create-actions": "{{creation_count}} aangemaakte objecten",
+        "delete-actions": "verwijderde objecten",
+        "loading-loader": "Mogelijke oplossingen berekenen",
+        "no-fixes-found": "Geen oplossingen gevonden.",
+        "saving-loader": "Correcties toepassen aan de infrastructuur.",
+        "title": "Automatische foutcorrector",
+        "update-actions": "{{update_count}} aanpassingen op bestaande objecten"
+      },
+      "error-level": {
+        "all": "Alles",
+        "errors": "Fouten",
+        "warnings": "Waarschuwingen"
+      },
+      "error-type": {
+        "all": "Alles",
+        "empty_object": {
+          "name": "Leeg object"
+        },
+        "invalid_reference": {
+          "name": "Ongeldige referentie"
+        },
+        "invalid_route": {
+          "description": "De route « {{obj_id}} » is ongeldig, het aangevraagde pad is niet consistent",
+          "name": "Ongeldige route"
+        },
+        "invalid_switch_ports": {
+          "description": "De wissel / het knooppunt « {{obj_id}} » heeft een aftakking die niet compatibel is met zijn wissel‑ of knooppunttype (een aftakking die binnen dat type niet voorkomt)",
+          "name": "Ongeldige wissel- of knooppuntaftakking"
+        },
+        "missing_buffer_stop": {
+          "description": "Het uiteinde « {{endpoint}} » van spoor « {{obj_id}} » heeft geen stootjuk",
+          "name": "Ontbrekend stootjuk"
+        },
+        "missing_route": {
+          "description": "Het spoor « {{obj_id}} » heeft geen enkel gekoppeld rijwegtraject",
+          "name": "Ontbrekende rijweg"
+        },
+        "node_endpoints_not_unique": {
+          "description": "Een spooruiteinde wordt door meerdere aansluitingen van knooppunt « {{obj_id}} » gebruikt.",
+          "name": "Niet‑uniek spooruiteinde van een knooppunt"
+        },
+        "object_out_of_path": {
+          "description": "Object « {{obj_id}} » van spoor « {{reference.obj_id}} » bevindt zich niet in het bijbehorende traject",
+          "name": "Object buiten de rijweg"
+        },
+        "odd_buffer_stop_location": {
+          "description": "Het stootjuk « {{obj_id}} » bevindt zich op een vreemde positie",
+          "name": "Vreemde stootjukpositie"
+        },
+        "out_of_range": {
+          "description": "Het object « {{obj_id}} » heeft het veld « {{field}} » met een ongeldige waarde. De waarde moet binnen bereik [{{expected_range}}] liggen.",
+          "name": "Ongeldige waarde"
+        },
+        "overlapping_electrifications": {
+          "description": "Elektrificatie « {{obj_id}} » overlapt elektrificatie « {{reference.obj_id}} » op hetzelfde spoor en met dezelfde spanning",
+          "name": "Overlappende elektrificatiezones"
+        },
+        "overlapping_speed_sections": {
+          "description": "Snelheidlimiet « {{obj_id}} » overlapt « {{reference.obj_id}} »",
+          "name": "Overlappende snelheidslimieten"
+        },
+        "overlapping_switches": {
+          "description": "De wissel/het knooppunt « {{obj_id}} » en de wissel/het knooppunt « {{reference.obj_id}} » verbinden dezelfde spooruiteinden",
+          "name": "Overlappende wissels/knooppunten"
+        },
+        "unknown_port_name": {
+          "description": "De wissel/het knooppunt « {{obj_id}} » heeft de aftakking « {{port_name}} » die niet bestaat",
+          "name": "Onbekende taknaam"
+        },
+        "unused_port": {
+          "description": "De in het type wissel/knooppunt « {{obj_id}} » gedefinieerde aftakking « {{port_name}} » wordt niet gebruikt in de configuraties van dit type",
+          "name": "Ongebruikte tak"
+        }
+      },
+      "infra-locked": "Houd er rekening mee dat u geen wijzigingen kunt opslaan.",
+      "infra-readonly": "Houd er rekening mee dat u zich in de alleen-lezenmodus bevindt op deze infrastructuur",
+      "label": {
+        "title-with-filter_one": "{{count}} problemen op {{total}}",
+        "title-with-filter_other": "{{count}} problemen op {{total}}",
+        "title-with-filter_zero": "geen problemen op {{total}}",
+        "title_one": "{{count}} probleem",
+        "title_other": "{{count}} problemen",
+        "title_zero": "Geen probleem"
+      },
+      "list": {
+        "filter-type": "Type fout",
+        "goto-error": "Selecteer en bekijk op de kaart",
+        "total-all_one": "Een fout of waarschuwing gevonden",
+        "total-all_other": "{{count}} foutmeldingen en waarschuwingen gevonden",
+        "total-all_zero": "Geen foutmeldingen en waarschuwingen gevonden",
+        "total-errors_one": "Een fout gevonden",
+        "total-errors_other": "{{count}} fouten gevonden",
+        "total-errors_zero": "Geen foutmeldingen gevonden",
+        "total-warnings_one": "Een waarschuwing gevonden",
+        "total-warnings_other": "{{count}} waarschuwingen gevonden",
+        "total-warnings_zero": "Geen waarschuwingen gevonden"
+      },
+      "modal": {
+        "title": "Infrastructuur foutenlijst {{id}}"
+      }
+    },
+    "item-statuses": {
+      "edited": "wordt momenteel bewerkt",
+      "selected": "Geselecteerd"
+    },
+    "layers": {
+      "buffer_stops": "Stootjukken",
+      "detectors": "Detectoren",
+      "electrifications": "Elektrificatie",
+      "errors": "Fouten",
+      "level_crossings": "Overwegen",
+      "neutral_sections": "Neutrale secties",
+      "operational_points": "Operationele punten",
+      "platforms": "Perrons",
+      "routes": "Rijwegen",
+      "signals": "Seinen"
+    }
+  }
+}
