@@ -130,35 +130,35 @@ type TimetableExportPayload = {
 export const buildTimetableExportPayload = (
   timetableItems: TimetableItem[],
   selectedTimeTableIdsFromClick: TimetableItemId[],
-  pacedTrainRoundTrips?: RoundTrips
+  roundTrips?: RoundTrips
 ): TimetableExportPayload => {
   const { formattedTimetableItems, pacedTrainIndexByEditoastId } = formatTimetableItemsForExport(
     timetableItems,
     selectedTimeTableIdsFromClick
   );
 
-  const roundTrips: RoundTripsFromJson = {
-    paced_trains: mapRoundTripsToIndexes(pacedTrainRoundTrips, pacedTrainIndexByEditoastId),
+  const mappedRoundTrips: RoundTripsFromJson = mapRoundTripsToIndexes(
+    roundTrips,
+    pacedTrainIndexByEditoastId
+  );
+
+  return {
+    paced_trains: formattedTimetableItems,
+    round_trips: (mappedRoundTrips?.length ?? 0) > 0 ? mappedRoundTrips : undefined,
   };
-
-  if (roundTrips.paced_trains.length === 0) {
-    return { paced_trains: formattedTimetableItems };
-  }
-
-  return { paced_trains: formattedTimetableItems, round_trips: roundTrips };
 };
 
 export const exportTimetableItems = (
   selectedTimeTableIdsFromClick: TimetableItemId[],
   timetableItems: TimetableItem[],
-  pacedTrainRoundTrips?: RoundTrips
+  roundTrips?: RoundTrips
 ) => {
   if (!timetableItems) return;
 
   const payload = buildTimetableExportPayload(
     timetableItems,
     selectedTimeTableIdsFromClick,
-    pacedTrainRoundTrips
+    roundTrips
   );
 
   const jsonString = JSON.stringify(payload);

@@ -46,9 +46,9 @@ const postRoundTrips = async (
   formattedPacedTrains: TimetableItem[],
   dispatch: AppDispatch
 ): Promise<void> => {
-  if (roundTrips.paced_trains.length > 0) {
+  if (roundTrips.length > 0) {
     const payload = generateRoundTripsPayload(
-      roundTrips.paced_trains,
+      roundTrips,
       formattedPacedTrains,
       extractEditoastIdFromPacedTrainId
     );

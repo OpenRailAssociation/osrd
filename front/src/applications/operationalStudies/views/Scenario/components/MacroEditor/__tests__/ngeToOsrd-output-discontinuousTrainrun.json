@@ -233,10 +233,8 @@
       "train_name": "Carotte-2"
     }
   ],
-  "round_trips": {
-    "paced_trains": [
-      [0, 1],
-      [2, 3]
-    ]
-  }
+  "round_trips": [
+    [0, 1],
+    [2, 3]
+  ]
 }

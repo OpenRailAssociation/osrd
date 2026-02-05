@@ -41,9 +41,7 @@ export type PacedTrainFromJson = Omit<PacedTrain, 'category'> & {
   category?: TrainCategory | string | null;
 };
 
-export type RoundTripsFromJson = {
-  paced_trains: ([number, number] | [number, null])[];
-};
+export type RoundTripsFromJson = ([number, number] | [number, null])[];
 
 export type TimetableJsonPayload = {
   paced_trains: PacedTrainFromJson[];

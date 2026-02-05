@@ -45,9 +45,7 @@ describe('processJsonFile', () => {
           paced_trains: payloadItems.map(
             ({ id: _id, train_schedule_set_id: _train_schedule_set_id, ...rest }) => rest
           ),
-          round_trips: {
-            paced_trains: [[0, 1]],
-          },
+          round_trips: [[0, 1]],
         })
       );
     });
@@ -57,36 +55,28 @@ describe('processJsonFile', () => {
     it('should keep one ways when importing valid JSON', () => {
       const payload: TimetableJsonPayload = {
         paced_trains: [train0],
-        round_trips: {
-          paced_trains: [[0, null]],
-        },
+        round_trips: [[0, null]],
       };
 
       const rawPayload = processJsonFile(JSON.stringify(payload), 'application/json', tMock);
 
       expect(rawPayload).toEqual(
         expect.objectContaining({
-          round_trips: {
-            paced_trains: [[0, null]],
-          },
+          round_trips: [[0, null]],
         })
       );
     });
     it('should keep round trips when importing valid JSON', () => {
       const payload: TimetableJsonPayload = {
         paced_trains: [train0, train1],
-        round_trips: {
-          paced_trains: [[0, 1]],
-        },
+        round_trips: [[0, 1]],
       };
 
       const rawPayload = processJsonFile(JSON.stringify(payload), 'application/json', tMock);
 
       expect(rawPayload).toEqual(
         expect.objectContaining({
-          round_trips: {
-            paced_trains: [[0, 1]],
-          },
+          round_trips: [[0, 1]],
         })
       );
     });
