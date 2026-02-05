@@ -301,7 +301,7 @@ pub(in crate::views) async fn delete(
     params(TrainScheduleSetIdParam),
     request_body = Vec<PacedTrain>,
     responses(
-        (status = 200, description = "The created paced trains", body = Vec<PacedTrainResponse>)
+        (status = 201, description = "The created paced trains", body = Vec<PacedTrainResponse>)
     )
 )]
 pub(in crate::views) async fn post_paced_train(
@@ -311,7 +311,7 @@ pub(in crate::views) async fn post_paced_train(
         id: train_schedule_set_id,
     }): Path<TrainScheduleSetIdParam>,
     Json(paced_trains): Json<Vec<PacedTrain>>,
-) -> Result<Json<Vec<PacedTrainResponse>>> {
+) -> Result<impl IntoResponse> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())
         .await
@@ -338,7 +338,9 @@ pub(in crate::views) async fn post_paced_train(
 
     // Create a batch of paced trains
     let paced_trains: Vec<_> = models::PacedTrain::create_batch(conn, changesets).await?;
-    Ok(Json(paced_trains.into_iter().map_into().collect()))
+    let response: Vec<PacedTrainResponse> = paced_trains.into_iter().map_into().collect();
+
+    Ok((StatusCode::CREATED, Json(response)))
 }
 
 /// List paced trains for a train schedule set
@@ -448,7 +450,7 @@ mod tests {
         let response: Vec<PacedTrainResponse> = app
             .fetch(request)
             .await
-            .assert_status(StatusCode::OK)
+            .assert_status(StatusCode::CREATED)
             .json_into();
 
         assert!(response.len() == 2);
@@ -534,7 +536,7 @@ mod tests {
         let _: Vec<PacedTrainResponse> = app
             .fetch(request)
             .await
-            .assert_status(StatusCode::OK)
+            .assert_status(StatusCode::CREATED)
             .json_into();
 
         let settings = SelectionSettings::default()
@@ -610,7 +612,7 @@ mod tests {
         let _: Vec<PacedTrainResponse> = app
             .fetch(request)
             .await
-            .assert_status(StatusCode::OK)
+            .assert_status(StatusCode::CREATED)
             .json_into();
 
         let request = app.get(

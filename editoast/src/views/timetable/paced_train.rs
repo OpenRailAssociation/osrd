@@ -1538,7 +1538,7 @@ mod tests {
         let response: Vec<PacedTrainResponse> = app
             .fetch(request)
             .await
-            .assert_status(StatusCode::OK)
+            .assert_status(StatusCode::CREATED)
             .json_into();
         assert_eq!(response.len(), 1);
     }
@@ -1576,7 +1576,7 @@ mod tests {
         let response: Vec<PacedTrainResponse> = app
             .fetch(request)
             .await
-            .assert_status(StatusCode::OK)
+            .assert_status(StatusCode::CREATED)
             .json_into();
 
         assert_eq!(response.len(), 1);
