@@ -1,1 +1,25 @@
-{}
+{
+  "ApplicableDirections": {
+    "description": "Dit wordt gebruikt om de toepassingsrichting van bepaalde objecten te bepalen",
+    "title": "Toepasbare richtingen"
+  },
+  "ApplicableDirectionsTrackRange": {
+    "description": "Een baanvak met bijbehorende rijrichtingen.",
+    "properties": {
+      "applicable_directions": {
+        "description": "Richting waarin het betreffende object wordt toegepast"
+      },
+      "begin": {
+        "description": "Beginpositie in meters van het betreffende baanvak",
+        "title": "Begin"
+      },
+      "end": {
+        "description": "Eindpositie in meters van het betreffende baanvak",
+        "title": "Einde"
+      },
+      "track": {
+        "description": "Identificatiecode van het spoorgedeelte"
+      }
+    }
+  }
+}
