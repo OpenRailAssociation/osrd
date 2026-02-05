@@ -40,7 +40,7 @@ pub enum Operation {
 //   different meaning
 // - We also can't `#[schema(inline)]` them because utoipa doesn't allow inlining the content of enum variants :'(
 // - We also can't change the schema of `Operation` to please utoipa's macros because the frontend is
-//   quite dependant on the current schema
+//   quite dependent on the current schema
 // - So we have to manually define the schema for the `Operation` to keep the current schema but without
 //   the need to declare `UpdateOperation` and `DeleteOperation` as components
 impl utoipa::PartialSchema for Operation {

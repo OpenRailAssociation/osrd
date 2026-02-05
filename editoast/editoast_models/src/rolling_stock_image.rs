@@ -1,7 +1,7 @@
 //! This module manage rolling stock images in the database.
 //!
 //! A rolling stock can have several liveries, and each livery can have one or several separated
-//! images and one compound image (created by aggregating the seperated images together).
+//! images and one compound image (created by aggregating the separated images together).
 
 use editoast_derive::Model;
 use serde::Serialize;

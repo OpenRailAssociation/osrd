@@ -469,7 +469,7 @@ impl Client {
     /// 1. If you only have one check to perform, use [Client::check].
     /// 2. If you know which checks you want to perform at compile time and want the result
     ///    of each check in its own binding, use [Client::checks].
-    /// 3. Otherwise (you dont know how many checks you will perform at compile time, or you
+    /// 3. Otherwise (you don't know how many checks you will perform at compile time, or you
     ///    don't care about each result individually), use [Client::prepare_checks].
     ///
     /// # Example
