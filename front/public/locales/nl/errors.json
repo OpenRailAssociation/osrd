@@ -1,1 +1,14 @@
-{}
+{
+  "401": "Niet-geauthenticeerde gebruiker",
+  "403": "Toegang geweigerd",
+  "404": "Bron niet gevonden",
+  "500": "Serverfouten",
+  "502": "Serverfouten",
+  "503": "Serverfouten",
+  "504": "De server reageerde niet.",
+  "core": {
+    "assert_error": "Controlefout op {{file_location}}: {{assert_message}}",
+    "missing_last_stdcm_stop": "STDCM-verzoeken die niet eindigen met een stopteken worden momenteel niet ondersteund."
+  },
+  "default": "Er is een fout opgetreden."
+}
