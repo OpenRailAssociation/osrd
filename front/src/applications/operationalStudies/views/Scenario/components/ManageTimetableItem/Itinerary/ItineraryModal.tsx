@@ -116,6 +116,7 @@ const ItineraryModal = ({
   const editingStepIdRef = useRef<string>('');
 
   const isStepInvalidAndIsEditing = (step: PathStepV2, metadata?: PathStepMetadata) => {
+    if (step.location) return false;
     if (!metadata?.isInvalid) return false;
 
     const query = (getInputForStep(step.id) ?? '').trim();
