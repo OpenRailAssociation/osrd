@@ -20,6 +20,7 @@ const TRAIN_SCHEDULE_COMPULSORY_KEYS: (keyof TrainSchedule)[] = [
 
 export type RoundTripsFromJsonCompat = RoundTripsFromJson & {
   train_schedules?: ([number, number] | [number, null])[];
+  paced_trains?: ([number, number] | [number, null])[];
 };
 
 /**
@@ -35,26 +36,24 @@ const validateRoundTrips = (roundTrips: unknown): RoundTripsFromJson | undefined
   if (roundTrips === undefined || roundTrips === null) {
     return;
   }
-  if (typeof roundTrips !== 'object') {
-    throw new Error('Invalid round trips configuration');
+
+  if (Array.isArray(roundTrips)) {
+    return roundTrips as RoundTripsFromJson;
   }
 
-  const { paced_trains: pacedTrainPairs, train_schedules: trainSchedulesPairs } =
-    roundTrips as Partial<RoundTripsFromJsonCompat>;
+  // Backward compatibility mode
+  if (typeof roundTrips === 'object') {
+    const { paced_trains, train_schedules } = roundTrips as Partial<RoundTripsFromJsonCompat>;
 
-  if (pacedTrainPairs && !Array.isArray(pacedTrainPairs)) {
-    throw new Error('Invalid round trips configuration');
+    const combinedRoundTrips: RoundTripsFromJson = [
+      ...(Array.isArray(paced_trains) ? paced_trains : []),
+      ...(Array.isArray(train_schedules) ? train_schedules : []),
+    ];
+
+    return combinedRoundTrips.length > 0 ? combinedRoundTrips : undefined;
   }
 
-  // For backward compatibility, we combine the two fields
-  const allRoundTrips = [
-    ...(pacedTrainPairs ?? []),
-    ...(Array.isArray(trainSchedulesPairs) ? trainSchedulesPairs : []),
-  ];
-
-  return {
-    paced_trains: allRoundTrips,
-  };
+  throw new Error('Invalid round trips configuration');
 };
 
 export const validateTimetableJsonPayload = (importedItems: unknown): TimetableJsonPayload => {

@@ -225,6 +225,6 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto): TimetableJsonPayload =>
     macro_nodes: macroNodes,
     macro_notes: macroNotes,
     paced_trains: pacedTrains,
-    round_trips: { paced_trains: pacedTrainsRoundTrips },
+    round_trips: pacedTrainsRoundTrips,
   };
 };

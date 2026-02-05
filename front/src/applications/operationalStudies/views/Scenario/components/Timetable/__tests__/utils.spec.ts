@@ -22,8 +22,7 @@ describe('buildTimetableExportPayload', () => {
       roundTrips
     );
 
-    expect(payload.round_trips).toBeDefined();
-    expect(payload.round_trips!.paced_trains).toEqual([[0, null]]);
+    expect(payload.round_trips).toEqual([[0, null]]);
   });
 
   it('includes round trip indexes only when both directions are selected', () => {
@@ -36,7 +35,7 @@ describe('buildTimetableExportPayload', () => {
       ['paced_21' as PacedTrainId, 'paced_42' as PacedTrainId],
       roundTrips
     );
-    expect(payloadWithBoth.round_trips?.paced_trains).toEqual([[0, 1]]);
+    expect(payloadWithBoth.round_trips).toEqual([[0, 1]]);
 
     const payloadWithSingle = buildTimetableExportPayload(
       [trainA],
@@ -52,6 +51,6 @@ describe('buildTimetableExportPayload', () => {
       one_ways: [7],
     });
 
-    expect(payload.round_trips?.paced_trains).toEqual([[0, null]]);
+    expect(payload.round_trips).toEqual([[0, null]]);
   });
 });

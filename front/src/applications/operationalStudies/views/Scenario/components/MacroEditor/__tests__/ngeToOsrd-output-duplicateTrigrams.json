@@ -93,7 +93,5 @@
       ]
     }
   ],
-  "round_trips": {
-    "paced_trains": [[0, null]]
-  }
+  "round_trips": [[0, null]]
 }
