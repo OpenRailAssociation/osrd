@@ -9,6 +9,7 @@ use ::authz;
 use ::authz::InfraGrant;
 use ::authz::InfraPrivilege;
 use ::authz::Role;
+use authz::Authorization;
 use axum::Extension;
 use axum::extract::Path;
 use axum::extract::State;
@@ -601,12 +602,12 @@ pub(in crate::views) enum BodyUpdateGrants {
     ),
 )]
 pub(in crate::views) async fn update_grants(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        db_pool, regulator, ..
+    }): State<AppState>,
     Extension(auth): AuthenticationExt,
     Json(body): Json<BodyUpdateGrants>,
 ) -> Result<impl IntoResponse> {
-    let authorizer = auth.authorizer()?;
-
     // Fetch subjects from the database and determine whether they're a user or a group.
     let subjects = {
         let subjects_id = match &body {
@@ -652,10 +653,25 @@ pub(in crate::views) async fn update_grants(
                     .ok_or_else(|| AuthzError::UnknownSubject { subject_id })?;
                 match resource_type {
                     ResourceType::Infra => {
-                        authorizer
-                            .give_infra_grant(subject, &authz::Infra(resource_id), grant)
-                            .await?
-                            .allowed()?;
+                        match &auth {
+                            Authentication::Authenticated(authorizer) => {
+                                authorizer
+                                    .give_infra_grant(subject, &authz::Infra(resource_id), grant)
+                                    .await
+                            }
+                            Authentication::SkipAuthorization { .. } => regulator
+                                .give_infra_grant_unchecked(
+                                    subject,
+                                    &authz::Infra(resource_id),
+                                    grant,
+                                )
+                                .await
+                                .map(Authorization::Granted),
+                            Authentication::Unauthenticated => {
+                                return Err(AuthorizationError::Unauthorized.into());
+                            }
+                        }?
+                        .allowed()?;
                     }
                 }
             }
@@ -673,10 +689,21 @@ pub(in crate::views) async fn update_grants(
                     .ok_or_else(|| AuthzError::UnknownSubject { subject_id })?;
                 match resource_type {
                     ResourceType::Infra => {
-                        authorizer
-                            .revoke_infra_grants(subject, &authz::Infra(resource_id))
-                            .await?
-                            .allowed()?;
+                        match &auth {
+                            Authentication::Authenticated(authorizer) => {
+                                authorizer
+                                    .revoke_infra_grants(subject, &authz::Infra(resource_id))
+                                    .await
+                            }
+                            Authentication::SkipAuthorization { .. } => regulator
+                                .revoke_infra_grants_unchecked(subject, &authz::Infra(resource_id))
+                                .await
+                                .map(Authorization::Granted),
+                            Authentication::Unauthenticated => {
+                                return Err(AuthorizationError::Unauthorized.into());
+                            }
+                        }?
+                        .allowed()?;
                     }
                 }
             }
@@ -1180,6 +1207,51 @@ mod tests {
         app.fetch(request_revoke)
             .await
             .assert_status(StatusCode::CREATED);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn skipped_authz_can_set_and_remove_grants() {
+        let app = test_app!().enable_authorization(true).build();
+        let db_pool = app.db_pool();
+        let infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let user = app
+            .user("authz", "Authz")
+            .with_infra_grant(infra.id, InfraGrant::Owner)
+            .create()
+            .await;
+
+        // Adding OWNER on the same user/infra
+        let request_grant = app.post("/authz/grants").skip_authz().json(&json!({
+            "grant": [
+                {
+                    "subject_id": user.id,
+                    "resource_type": ResourceType::Infra,
+                    "resource_id": infra.id,
+                    "grant": InfraGrant::Owner
+                }
+            ]
+        }));
+        app.fetch(request_grant)
+            .await
+            .assert_status(StatusCode::CREATED);
+
+        app.assert_infra_direct_grant(infra.id, user.id, Some(InfraGrant::Owner));
+
+        // Remove the grant
+        let request_revoke = app.post("/authz/grants").skip_authz().json(&json!({
+            "revoke": [
+                {
+                    "subject_id": user.id,
+                    "resource_type": ResourceType::Infra,
+                    "resource_id": infra.id
+                }
+            ]
+        }));
+        app.fetch(request_revoke)
+            .await
+            .assert_status(StatusCode::NO_CONTENT);
+
+        app.assert_infra_direct_grant(infra.id, user.id, None);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
