@@ -5,6 +5,8 @@ import fr.sncf.osrd.railjson.schema.infra.RJSInfra
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage
+import io.opentelemetry.api.trace.SpanKind
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.BiConsumer
@@ -80,6 +82,7 @@ class InfraManager(baseUrl: String, authorizationToken: String?, httpClient: OkH
     }
 
     @Throws(OSRDError::class)
+    @WithSpan(kind = SpanKind.SERVER)
     private fun downloadInfra(cacheEntry: InfraCacheEntry, infraId: String): FullInfra {
         // create a request
         val endpointPath = String.format("infra/%s/railjson/", infraId)
@@ -175,6 +178,7 @@ class InfraManager(baseUrl: String, authorizationToken: String?, httpClient: OkH
     /** Load an infra given an id. Cache infra for optimized future call */
     @ExcludeFromGeneratedCodeCoverage
     @Throws(OSRDError::class, InterruptedException::class)
+    @WithSpan(kind = SpanKind.SERVER)
     fun load(infraId: String, expectedVersion: Int?): FullInfra {
         try {
             infraCache.putIfAbsent(infraId, InfraCacheEntry())
@@ -215,6 +219,7 @@ class InfraManager(baseUrl: String, authorizationToken: String?, httpClient: OkH
     }
 
     @Throws(OSRDError::class, InterruptedException::class)
+    @WithSpan(kind = SpanKind.SERVER)
     override fun getInfra(infraId: String, expectedVersion: Int?): FullInfra {
         try {
             val cacheEntry = infraCache.get(infraId)
