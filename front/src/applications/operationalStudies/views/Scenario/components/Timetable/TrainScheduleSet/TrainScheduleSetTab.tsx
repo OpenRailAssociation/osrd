@@ -44,6 +44,7 @@ type TrainScheduleSetTabProps = PropsWithChildren<{
   isSelectMode: boolean;
   isSelected: boolean;
   isIndeterminate: boolean;
+  isCheckboxDisabled: boolean;
   isTrainListOpen: boolean;
   catalogEntries: CatalogEntry[];
   publishTrainScheduleSet: ReturnType<
@@ -67,6 +68,7 @@ const TrainScheduleSetTab = ({
   isSelectMode,
   isSelected,
   isIndeterminate,
+  isCheckboxDisabled,
   isTrainListOpen,
   children,
   catalogEntries,
@@ -145,13 +147,17 @@ const TrainScheduleSetTab = ({
           className="train-schedule-set-tab"
           role="button"
           tabIndex={0}
-          onClick={() => handleClickTrainScheduleSet(trainScheduleSet.id)}
+          onClick={() => {
+            if (isCheckboxDisabled && isSelectMode) return;
+            handleClickTrainScheduleSet(trainScheduleSet.id);
+          }}
         >
           {isSelectMode && (
             <Checkbox
               label=""
               checked={isSelected}
               isIndeterminate={isIndeterminate}
+              disabled={isCheckboxDisabled}
               onChange={handleSelectTrainScheduleSet}
               small
             />
