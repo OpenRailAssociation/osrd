@@ -341,7 +341,7 @@ jobs:
           enable-cache: true
       - name: Install dependencies
         run: |
-          uv --directory tests/ sync --extra check
+          uv --directory tests/ sync --extra check --locked
       - name: Ruff
         run: |
           uv --directory tests/ run ruff check
@@ -827,7 +827,7 @@ jobs:
           enable-cache: true
       - name: Install dependencies
         run: |
-          uv --directory tests/ sync
+          uv --directory tests/ sync --locked
 
       - name: Startup the test infrastructure
         id: start_integration_worker
