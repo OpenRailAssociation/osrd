@@ -63,8 +63,12 @@ class TestDistanceRangeMap {
     }
 
     @Test
-    fun testEmptyEntry() {
-        val entries = listOf(DistanceRangeMap.RangeMapEntry(Distance(100), Distance(100), 42))
+    fun testEmptyEntries() {
+        val entries =
+            listOf(
+                DistanceRangeMap.RangeMapEntry(Distance(100), Distance(100), 42),
+                DistanceRangeMap.RangeMapEntry(Distance(256), Distance(128), 42),
+            )
 
         testPut(entries, emptyList())
     }

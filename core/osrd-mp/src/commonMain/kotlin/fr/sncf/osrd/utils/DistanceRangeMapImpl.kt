@@ -90,7 +90,7 @@ data class DistanceRangeMapImpl<T>(
 
         // Order matters and existing entries should come first.
         // E.g. allEntries = [(lower=0, upper=5, value=1), (lower=5, upper=10, value=1)]
-        val allEntries = asList() + entries
+        val allEntries = asList() + entries.filter { !it.isEmpty() }
 
         // Start from scratch.
         values.clear()
@@ -367,6 +367,9 @@ data class DistanceRangeMapImpl<T>(
      * values, used to delete ranges
      */
     private fun putOptional(lower: Distance, upper: Distance, value: T?) {
+        if (lower >= upper) {
+            return
+        }
         if (bounds.size == 0) {
             bounds.add(lower)
             bounds.add(upper)
