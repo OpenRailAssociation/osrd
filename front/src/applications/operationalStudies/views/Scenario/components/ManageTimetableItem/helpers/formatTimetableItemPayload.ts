@@ -2,7 +2,7 @@ import { compact } from 'lodash';
 import { v4 as uuidV4 } from 'uuid';
 
 import type { PacedTrainWithPaced } from 'applications/operationalStudies/types';
-import type { PacedTrain, TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { PacedTrain } from 'common/api/osrdEditoastApi';
 import getStepLocation from 'modules/pathfinding/helpers/getStepLocation';
 import {
   findExceptionWithOccurrenceId,
@@ -33,7 +33,7 @@ export function formatTimetableItemPayload(
   osrdconf: OperationalStudiesConfState,
   // TODO TS2 : remove this when rollingStockName will replace rollingStockId in the store
   rollingStockName: string
-): TrainSchedule {
+): PacedTrain {
   return {
     category: osrdconf.category,
     comfort: osrdconf.rollingStockComfort,
