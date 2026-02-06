@@ -237,7 +237,7 @@ jobs:
 
       - name: Install railjson_generator dependencies
         run: |
-          uv --directory python/railjson_generator/ sync
+          uv --directory python/railjson_generator/ sync --locked
 
       - name: Generate railjson
         run: |
@@ -260,7 +260,7 @@ jobs:
 
       - name: Install railjson_generator dependencies
         run: |
-          uv --directory python/railjson_generator/ sync --extra check
+          uv --directory python/railjson_generator/ sync --extra check --locked
 
       - name: Ruff
         run: |
