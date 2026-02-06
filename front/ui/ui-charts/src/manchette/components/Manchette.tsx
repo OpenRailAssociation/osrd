@@ -23,6 +23,7 @@ export type ManchetteProps = {
   testIdPrefix?: string;
   toggleMode: () => void;
   hidePositions?: boolean;
+  translations?: { linearMode: string };
 };
 
 const Manchette = ({
@@ -39,6 +40,7 @@ const Manchette = ({
   height = INITIAL_OP_LIST_HEIGHT,
   width = 295,
   hidePositions = false,
+  translations,
 }: ManchetteProps) => (
   <div className="ui-manchette-container" style={{ width: `${width}px` }}>
     <div
@@ -102,7 +104,7 @@ const Manchette = ({
               className={cx({ 'text-grey-30': isProportional })}
               data-testid="linear-mode-button"
             >
-              Linéaire
+              {translations?.linearMode || 'Linear'}
             </span>
           </div>
         </button>

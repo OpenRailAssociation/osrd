@@ -23,6 +23,7 @@ import {
 import { Slider } from '@osrd-project/ui-core';
 import cx from 'classnames';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import upward from 'assets/pictures/workSchedules/ScheduledMaintenanceUp.svg';
@@ -137,6 +138,7 @@ const SpaceTimeChartWrapper = ({
   setWaypointsPanelIsOpen,
   pathfindingHasFailed = false,
 }: SpaceTimeChartWrapperProps) => {
+  const { t } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
   const hoveredTrainId = useSelector(getHoveredTrainId);
   const isSimulationEnabled = useSelector(getIsSimulationEnabled);
@@ -146,6 +148,8 @@ const SpaceTimeChartWrapper = ({
 
   const [hoveredItem, setHoveredItem] = useState<null | HoveredItem>(null);
   const [draggingState, setDraggingState] = useState<DraggingState>();
+
+  const translations = { linearMode: t('main.linearMode') };
 
   const isTimetableItemValid = useMemo(() => {
     const selectedItemId = isOccurrenceId(selectedProjectionId)
@@ -397,7 +401,11 @@ const SpaceTimeChartWrapper = ({
         style={{ height }}
         onScroll={handleScroll}
       >
-        <Manchette {...manchettePropsWithWaypointMenu} hidePositions={pathfindingHasFailed} />
+        <Manchette
+          {...manchettePropsWithWaypointMenu}
+          hidePositions={pathfindingHasFailed}
+          translations={translations}
+        />
         {waypointMenu}
         <div
           ref={spaceTimeChartRef}
