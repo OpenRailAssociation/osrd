@@ -82,6 +82,7 @@
     "filterPlaceholder": "Filter, tags",
     "infrastructure": "Infrastructure",
     "lessDetails": "Display less details",
+    "linearMode": "Linear",
     "loadingConflicts": "Loading conflicts…",
     "loadingMacroEditor": "Loading macroscopic editor…",
     "macroEditor": {

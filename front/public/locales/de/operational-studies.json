@@ -54,6 +54,7 @@
     "filterPlaceholder": "Filter, Tags",
     "infrastructure": "Netz",
     "lessDetails": "Weniger Details anzeigen",
+    "linearMode": "Linear",
     "macroEditor": {
       "intervalXmin": "Intervall {{minutes}}min",
       "trainCategory": {
