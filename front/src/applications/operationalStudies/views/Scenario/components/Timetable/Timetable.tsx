@@ -270,7 +270,11 @@ const Timetable = ({
           trainScheduleSets={timetableItemsByTrainScheduleSets.map((tss) => tss.trainScheduleSet)}
           setTrainScheduleSetIdSelected={setTrainScheduleSetIdSelected}
           trainScheduleSetIdSelected={trainScheduleSetIdSelected}
-          catalogEntries={catalogEntries}
+          catalogEntries={catalogEntries.filter((entry) =>
+            timetableItemsByTrainScheduleSets.some(
+              (tss) => tss.trainScheduleSet.catalog_entry_id === entry.id
+            )
+          )}
           labels={{
             title: t('trainScheduleSets.movingToAnotherPackage'),
             submit: t('trainScheduleSets.moveToSelectPackage'),
