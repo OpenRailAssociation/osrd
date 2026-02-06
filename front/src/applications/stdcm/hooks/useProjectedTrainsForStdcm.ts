@@ -126,7 +126,7 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
 
   return {
     spaceTimeData,
-    projectionLoaderData: { allTrainsProjected, totalTrains: trainSchedules?.length ?? 0 },
+    projectionLoaderData: { allTrainsProjected, totalTrains: trainSchedules.length },
   };
 };
 

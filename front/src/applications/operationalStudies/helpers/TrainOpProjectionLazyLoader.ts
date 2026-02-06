@@ -64,7 +64,7 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
                 occupancyBlockForm: {
                   infra_id: infraId,
                   path,
-                  ids: ids,
+                  ids,
                   electrical_profile_set_id: electricalProfileSetId,
                 },
               },

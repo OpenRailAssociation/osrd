@@ -5,7 +5,6 @@ import type {
   OperationalPoint,
   PathItemLocation,
 } from 'common/api/osrdEditoastApi';
-import type {} from 'reducers/osrdconf/types';
 
 import type { TrainrunCategory, TrainrunFrequency } from '../NGE/types';
 

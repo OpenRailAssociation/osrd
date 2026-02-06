@@ -118,18 +118,18 @@ const SimulationResults = ({
     if (!selectedTrainId) return undefined;
 
     if (!isOccurrenceId(selectedTrainId)) {
-      const selectedTrainScheduleId = extractEditoastIdFromPacedTrainId(selectedTrainId);
+      const selectedPacedTrainId = extractEditoastIdFromPacedTrainId(selectedTrainId);
       return timetableItemsWithDetails.find(
-        (timetableItem) => timetableItem.id === selectedTrainScheduleId
+        (timetableItem) => timetableItem.id === selectedPacedTrainId
       )?.summary;
     }
 
-    const selectedTrainScheduleId = extractEditoastIdFromPacedTrainId(
+    const selectedPacedTrainId = extractEditoastIdFromPacedTrainId(
       extractPacedTrainIdFromOccurrenceId(selectedTrainId)
     );
 
     const pacedTrain = timetableItemsWithDetails.find(
-      (timetableItem) => timetableItem.id === selectedTrainScheduleId
+      (timetableItem) => timetableItem.id === selectedPacedTrainId
     );
     // WARNING TODO: race condition here, to fix
     // When turning a train into a service, then pacedTrain and selectedTrainId may be desynchronized.
