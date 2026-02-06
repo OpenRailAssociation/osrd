@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { Pencil } from '@osrd-project/ui-icons';
 import { skipToken } from '@reduxjs/toolkit/query';
+import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { BiTargetLock } from 'react-icons/bi';
 import ReactMarkdown from 'react-markdown';
@@ -347,7 +348,11 @@ const ProjectView = () => {
               dataTestId="deleteStudies"
             />
           )}
-          <div className="studies-list">
+          <div
+            className={cx('studies-list', {
+              'selection-mode': selectedStudyIds.length > 0,
+            })}
+          >
             {useMemo(() => displayStudiesList(), [studiesList, selectedStudyIds])}
           </div>
         </div>

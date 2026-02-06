@@ -185,5 +185,9 @@
     max-height: 50vh;
     margin-inline: -8px;
     padding: 16px 8px 0;
+
+    &.selection-mode {
+      max-height: calc(50vh - var(--selection-toolbar-height));
+    }
   }
 }

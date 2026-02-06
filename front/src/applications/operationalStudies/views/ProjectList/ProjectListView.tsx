@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 
+import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -127,7 +128,11 @@ const ProjectListView = () => {
 
   function displayCards() {
     return !isLoading ? (
-      <div className="projects-list row">
+      <div
+        className={cx('projects-list row', {
+          'selection-mode': selectedProjectIds.length > 0,
+        })}
+      >
         <div className="col-hdp-2 col-lg-3 col-md-4 col-sm-6">
           <AddNewCard
             testId="add-project"
