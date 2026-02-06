@@ -30,6 +30,8 @@
     min-width: 628px;
     width: 50%;
     height: 100%;
+    display: flex;
+    flex-direction: column;
     flex-shrink: 0;
     flex-grow: 1;
 
@@ -38,7 +40,8 @@
       flex-direction: column;
       height: var(--header-height);
       border-bottom: 1px solid var(--gray-30);
-
+      box-sizing: border-box;
+      padding-bottom: 30px;
       .category-row {
         display: flex;
         align-items: center;
@@ -93,10 +96,9 @@
     }
 
     .itinerary-modal-form-body {
-      height: calc(
-        100% - var(--header-height) - var(--footer-height) - var(--footer-box-shadow-height)
-      );
-      overflow-y: visible;
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
       background-color: var(--ambientB10);
       box-shadow: 0 calc(-1 * var(--footer-box-shadow-height)) 0 0 var(--black10);
 
@@ -298,7 +300,8 @@
     }
 
     .itinerary-modal-form-footer {
-      height: 96px;
+      height: var(--footer-height);
+      min-height: var(--footer-height);
       display: flex;
       justify-content: end;
       align-items: center;
