@@ -1,5 +1,10 @@
 @use './projectCard';
 
+.projects-list {
+  max-height: calc(100vh - 149px); // Height of the navbar + project toolbar + padding
+  overflow: auto;
+}
+
 .projects-toolbar {
   display: flex;
   align-items: center;
