@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { Pencil } from '@osrd-project/ui-icons';
 import { skipToken } from '@reduxjs/toolkit/query';
+import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 
@@ -374,7 +375,11 @@ const StudyView = () => {
             />
           )}
 
-          <div className="scenarios-list">
+          <div
+            className={cx('scenarios-list', {
+              'selection-mode': selectedScenarioIds.length > 0,
+            })}
+          >
             {useMemo(() => displayScenariosList(), [scenariosList, selectedScenarioIds])}
           </div>
         </div>

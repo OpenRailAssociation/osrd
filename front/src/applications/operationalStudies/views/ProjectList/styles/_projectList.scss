@@ -3,6 +3,11 @@
 .projects-list {
   max-height: calc(100vh - 149px); // Height of the navbar + project toolbar + padding
   overflow: auto;
+
+  &.selection-mode {
+    padding-top: 11px;
+    max-height: calc(100vh - 149px - var(--selection-toolbar-height));
+  }
 }
 
 .projects-toolbar {
