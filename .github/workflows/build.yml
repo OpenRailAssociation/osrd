@@ -205,7 +205,7 @@ jobs:
           enable-cache: true
       - name: Install dependencies
         run: |
-          uv --directory railway_manager_interface/ sync
+          uv --directory railway_manager_interface/ sync --locked
       - name: Generate models.py
         run: |
           cd railway_manager_interface
