@@ -1,4 +1,4 @@
-import readJsonFile from '../../utils/file-utils';
+import { readJsonFile } from '../../utils/file-utils';
 import { requestedPoint, type Waypoint } from '../../utils/manchette';
 import type { TimetableFilterTranslations } from '../../utils/types';
 const frScenarioTranslations: TimetableFilterTranslations = readJsonFile<{
