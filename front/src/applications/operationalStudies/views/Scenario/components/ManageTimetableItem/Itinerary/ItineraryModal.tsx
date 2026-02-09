@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useRef, useState } from 'react';
+import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
 import { ArrowSwitch, FrameAll } from '@osrd-project/ui-icons';
@@ -154,13 +154,15 @@ const ItineraryModal = ({
     if (activeStepId === stepId) setActiveStepId('');
   };
 
-  const frameAllPathSteps = () => {
+  const frameAllPathSteps = useCallback(() => {
     if (pathProperties && pathProperties.geometry) {
       const newViewport = computeBBoxViewport(bbox(pathProperties.geometry), mapSettings.viewport, {
         padding: 64,
       });
       dispatch(updateViewport(newViewport));
     } else {
+      if (pathStepsMetadataById.values().every((metadata) => metadata.isInvalid)) return;
+
       // Zoom on all path steps markers
       const allMarkersCoordinates = pathStepsMetadataById
         .values()
@@ -175,7 +177,7 @@ const ItineraryModal = ({
       const newViewport = computeBBoxViewport(box, mapSettings.viewport, { padding: 64 });
       dispatch(updateViewport(newViewport));
     }
-  };
+  }, [pathProperties, pathStepsMetadataById, mapSettings.viewport]);
 
   useEffect(() => {
     if (
