@@ -48,7 +48,7 @@ bytestring = "1"
 ipnet = "2.11"
 percent-encoding = "2.3"
 phf = "0.13"
-regex = "1.12.2"
+regex = "1.12.3"
 
 # actix_auth
 actix-web-httpauth = "0.8"
