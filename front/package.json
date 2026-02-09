@@ -99,7 +99,7 @@
   "devDependencies": {
     "@apidevtools/swagger-parser": "^12.1.0",
     "@eslint/js": "^9.39.2",
-    "@playwright/test": "^1.57.0",
+    "@playwright/test": "^1.58.1",
     "@rtk-query/codegen-openapi": "^2.2.0",
     "@tailwindcss/postcss": "^4.1.18",
     "@testing-library/dom": "^10.4.0",
