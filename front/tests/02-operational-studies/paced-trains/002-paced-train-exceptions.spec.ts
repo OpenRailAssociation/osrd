@@ -12,7 +12,7 @@ import { ADDED_EXCEPTION_MENU_BUTTONS } from '../../assets/paced-train/const';
 import test from '../../page-object-fixture';
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
 import { getInfra, getProject, getStudy } from '../../utils/api-utils';
-import readJsonFile from '../../utils/file-utils';
+import { readJsonFile } from '../../utils/file-utils';
 import createScenario from '../../utils/scenario';
 import sendTrains from '../../utils/send-trains';
 import { deleteScenario } from '../../utils/teardown-utils';

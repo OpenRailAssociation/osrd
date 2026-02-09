@@ -1,5 +1,5 @@
 import { getLocalizedDateString } from '../../utils/date-utils';
-import readJsonFile from '../../utils/file-utils';
+import { readJsonFile } from '../../utils/file-utils';
 import type { FlatTranslations, PdfSimulationContent } from '../../utils/types';
 
 const frTranslations: FlatTranslations = readJsonFile<Record<string, FlatTranslations>>(

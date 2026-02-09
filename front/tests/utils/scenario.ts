@@ -10,7 +10,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 
 import { postApiRequest, getInfra, getProject, getStudy } from './api-utils';
-import readJsonFile from './file-utils';
+import { readJsonFile } from './file-utils';
 import type { ScenarioData } from './types';
 
 const scenarioData: ScenarioData = readJsonFile('tests/assets/operation-studies/scenario.json');

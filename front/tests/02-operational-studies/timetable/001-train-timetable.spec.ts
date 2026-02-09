@@ -19,7 +19,7 @@ import {
 import test from '../../page-object-fixture';
 import { waitForInfraStateToBeCached } from '../../utils';
 import { getInfra, getProject, getScenario, getStudy } from '../../utils/api-utils';
-import readJsonFile from '../../utils/file-utils';
+import { readJsonFile } from '../../utils/file-utils';
 import type { CommonTranslations, TimetableFilterTranslations } from '../../utils/types';
 
 const frScenarioTranslations: TimetableFilterTranslations = readJsonFile<{

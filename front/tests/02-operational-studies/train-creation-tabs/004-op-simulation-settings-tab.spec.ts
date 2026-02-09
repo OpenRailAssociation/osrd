@@ -18,7 +18,7 @@ import test from '../../page-object-fixture';
 import { waitForInfraStateToBeCached } from '../../utils';
 import { deleteApiRequest, getInfra, setElectricalProfile } from '../../utils/api-utils';
 import { cleanWhitespace } from '../../utils/data-normalizer';
-import readJsonFile from '../../utils/file-utils';
+import { readJsonFile } from '../../utils/file-utils';
 import createScenario from '../../utils/scenario';
 import { deleteScenario } from '../../utils/teardown-utils';
 import type { FlatTranslations, StationData } from '../../utils/types';

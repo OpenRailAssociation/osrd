@@ -1,4 +1,4 @@
-import readJsonFile from '../../../utils/file-utils';
+import { readJsonFile } from '../../../utils/file-utils';
 import type { FlatTranslations, RoundTripCardExpected } from '../../../utils/types';
 
 const frTranslations: FlatTranslations = readJsonFile<{

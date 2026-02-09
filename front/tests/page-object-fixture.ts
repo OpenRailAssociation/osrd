@@ -3,7 +3,7 @@ import type { Page } from '@playwright/test';
 import testWithLogging from './logging-fixture';
 import HomePage from './pages/home-page';
 import GetManchetteComponent from './pages/operational-studies/get-manchette-component';
-import ImportPage from './pages/operational-studies/import-page';
+import ImportExportPage from './pages/operational-studies/import-export-page';
 import NGEPage from './pages/operational-studies/nge-page';
 import OperationalStudiesPage from './pages/operational-studies/operational-studies-page';
 import PacedTrainSection from './pages/operational-studies/paced-train-section';
@@ -45,7 +45,7 @@ type Fixtures = {
   getManchetteComponent: GetManchetteComponent;
   ngePage: NGEPage;
   roundTripPage: RoundTripPage;
-  importPage: ImportPage;
+  importExportPage: ImportExportPage;
 
   // Rolling stock
   rollingStockSelector: RollingStockSelector;
@@ -163,8 +163,8 @@ const test = testWithLogging.extend<Fixtures>({
   homePage: async ({ page }, use) => {
     await use(new HomePage(page));
   },
-  importPage: async ({ page }, use) => {
-    await use(new ImportPage(page));
+  importExportPage: async ({ page }, use) => {
+    await use(new ImportExportPage(page));
   },
 
   // Second TAB fixtures for multi-tab tests

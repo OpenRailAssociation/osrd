@@ -1,6 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import readJsonFile from '../../utils/file-utils';
+import { readJsonFile } from '../../utils/file-utils';
 import type { FlatTranslations } from '../../utils/types';
 
 const frTranslations: FlatTranslations = readJsonFile<{ manageTimetableItem: FlatTranslations }>(

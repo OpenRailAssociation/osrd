@@ -22,7 +22,7 @@ import {
 } from '../../pages/operational-studies/std-manchette';
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
 import { getInfra, getProject, getStudy } from '../../utils/api-utils';
-import readJsonFile from '../../utils/file-utils';
+import { readJsonFile } from '../../utils/file-utils';
 import { verifyWaypointsData } from '../../utils/manchette';
 import createScenario from '../../utils/scenario';
 import sendTrains from '../../utils/send-trains';

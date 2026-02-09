@@ -10,7 +10,7 @@ import { electricRollingStockName } from './../assets/constants/project-const';
 import test from './../page-object-fixture';
 import { waitForInfraStateToBeCached } from './../utils';
 import { getInfra } from './../utils/api-utils';
-import readJsonFile from './../utils/file-utils';
+import { readJsonFile } from './../utils/file-utils';
 import type { StdcmTranslations } from './../utils/types';
 
 const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');

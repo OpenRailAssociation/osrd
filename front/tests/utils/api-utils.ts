@@ -31,7 +31,7 @@ import {
   infrastructureName,
 } from '../assets/constants/project-const';
 import { logger } from '../logging-fixture';
-import readJsonFile from './file-utils';
+import { readJsonFile } from './file-utils';
 
 /**
  * Initialize a new API request context with the base URL.
