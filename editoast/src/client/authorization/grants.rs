@@ -187,7 +187,7 @@ pub async fn list_subjects(
                     info!("Subject {subject} from OpenFGA does not exist anymore");
                     continue;
                 };
-                println!("{subject}:\t{grant}");
+                println!("[{grant:<6}]: {subject}");
             }
         }
     }
@@ -215,8 +215,8 @@ pub async fn list_resources(
                         if infras.is_empty() {
                             info!("{subject} does not have any grant on infras");
                         }
-                        for infra in infras {
-                            println!("{}", infra.0);
+                        for authz::Infra(infra) in infras {
+                            println!("{infra}");
                         }
                     }
                     Authorization::Denied { .. } => unreachable!("no access to deny here"),
