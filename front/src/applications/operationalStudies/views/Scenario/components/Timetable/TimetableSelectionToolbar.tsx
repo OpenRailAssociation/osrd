@@ -50,6 +50,7 @@ const TimetableSelectionToolbar = ({
       {selectedTimetableItemIds.length > 0 && (
         <>
           <button
+            data-testid="export-selection-button"
             className="export-selection-button"
             title={t('timetable.exportSelection')}
             onClick={handleExportTimetableItems}

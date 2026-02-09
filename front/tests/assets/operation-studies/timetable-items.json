@@ -10,14 +10,14 @@
           "id": "id227",
           "location": {
             "operational_point": { "uic": 8766, "secondary_code": "BV", "type": "uic" },
-            "local_track_name": null
+            "track_reference": null
           }
         },
         {
           "id": "id228",
           "location": {
             "operational_point": { "uic": 8755, "secondary_code": "BV", "type": "uic" },
-            "local_track_name": null
+            "track_reference": null
           }
         }
       ],
@@ -47,27 +47,16 @@
       }
     },
     {
-      "category": {
-        "main_category": "REGIONAL_TRAIN"
-      },
-      "comfort": "STANDARD",
-      "constraint_distribution": "MARECO",
-      "initial_speed": 33.333333333333336,
+      "train_name": "Train2",
       "labels": ["Tag-2", "WS-SES"],
-      "margins": {
-        "boundaries": ["id478"],
-        "values": ["5%", "0%"]
-      },
-      "options": {
-        "use_electrical_profiles": true,
-        "use_speed_limits_for_simulation": true
-      },
+      "rolling_stock_name": "ELECTRIC_RS_E2E",
+      "start_time": "2024-10-17T03:15:00.000Z",
       "path": [
         {
           "id": "id477",
           "location": {
             "operational_point": { "uic": 8722, "secondary_code": "BV", "type": "uic" },
-            "local_track_name": null
+            "track_reference": null
           }
         },
         {
@@ -78,19 +67,17 @@
           "id": "id498",
           "location": {
             "operational_point": { "uic": 8744, "secondary_code": "BV", "type": "uic" },
-            "local_track_name": null
+            "track_reference": null
           }
         },
         {
           "id": "id478",
           "location": {
             "operational_point": { "uic": 8788, "secondary_code": "BV", "type": "uic" },
-            "local_track_name": null
+            "track_reference": null
           }
         }
       ],
-      "power_restrictions": [],
-      "rolling_stock_name": "ELECTRIC_RS_E2E",
       "schedule": [
         {
           "at": "id498",
@@ -103,10 +90,22 @@
           "stop_for": "P0D"
         }
       ],
+      "margins": {
+        "boundaries": ["id478"],
+        "values": ["5%", "0%"]
+      },
+      "initial_speed": 33.333333333333336,
+      "comfort": "STANDARD",
+      "constraint_distribution": "MARECO",
       "speed_limit_tag": "MA90",
-      "start_time": "2024-10-17T03:15:00.000Z",
-      "train_name": "Train2",
-      "timetable_id": 597
+      "power_restrictions": [],
+      "options": {
+        "use_electrical_profiles": true,
+        "use_speed_limits_for_simulation": true
+      },
+      "category": {
+        "main_category": "REGIONAL_TRAIN"
+      }
     },
     {
       "train_name": "Train3",
@@ -122,14 +121,14 @@
           "id": "id765",
           "location": {
             "operational_point": { "uic": 8744, "secondary_code": "BV", "type": "uic" },
-            "local_track_name": null
+            "track_reference": null
           }
         },
         {
           "id": "id745",
           "location": {
             "operational_point": { "uic": 8777, "secondary_code": "BV", "type": "uic" },
-            "local_track_name": null
+            "track_reference": null
           }
         }
       ],
@@ -165,39 +164,26 @@
       }
     },
     {
-      "category": {
-        "main_category": "WORK_TRAIN"
-      },
-      "comfort": "STANDARD",
-      "constraint_distribution": "MARECO",
-      "initial_speed": 16.666666666666668,
+      "train_name": "Train4",
       "labels": ["MWS-NES", "Tag-4"],
-      "margins": {
-        "boundaries": [],
-        "values": ["0%"]
-      },
-      "options": {
-        "use_electrical_profiles": true,
-        "use_speed_limits_for_simulation": true
-      },
+      "rolling_stock_name": "ELECTRIC_RS_E2E",
+      "start_time": "2024-10-17T09:35:59.000Z",
       "path": [
         {
           "id": "id2854",
           "location": {
             "operational_point": { "uic": 8733, "secondary_code": "BV", "type": "uic" },
-            "local_track_name": null
+            "track_reference": null
           }
         },
         {
           "id": "id2855",
           "location": {
             "operational_point": { "uic": 8777, "secondary_code": "BV", "type": "uic" },
-            "local_track_name": null
+            "track_reference": null
           }
         }
       ],
-      "power_restrictions": [],
-      "rolling_stock_name": "ELECTRIC_RS_E2E",
       "schedule": [
         {
           "at": "id2855",
@@ -206,10 +192,23 @@
           "stop_for": "P0D"
         }
       ],
+      "margins": {
+        "boundaries": [],
+        "values": ["0%"]
+      },
+      "initial_speed": 16.666666666666668,
+      "comfort": "STANDARD",
+      "constraint_distribution": "MARECO",
       "speed_limit_tag": "MA100",
-      "start_time": "2024-10-17T09:35:59.000Z",
-      "train_name": "Train4",
-      "timetable_id": 597
+      "power_restrictions": [],
+      "options": {
+        "use_electrical_profiles": true,
+        "use_speed_limits_for_simulation": true
+      },
+
+      "category": {
+        "main_category": "WORK_TRAIN"
+      }
     },
     {
       "train_name": "Train5",
@@ -258,19 +257,10 @@
       "category": null
     },
     {
-      "category": null,
-      "comfort": "STANDARD",
-      "constraint_distribution": "STANDARD",
-      "initial_speed": 0,
+      "train_name": "Train6",
       "labels": ["Tag-6"],
-      "margins": {
-        "boundaries": [],
-        "values": ["0%"]
-      },
-      "options": {
-        "use_electrical_profiles": true,
-        "use_speed_limits_for_simulation": true
-      },
+      "rolling_stock_name": "IMPROBABLE_RS_E2E",
+      "start_time": "2024-10-17T12:30:00.000Z",
       "path": [
         {
           "id": "id1073",
@@ -285,8 +275,6 @@
           "location": { "track": "TH1", "offset": 3761000 }
         }
       ],
-      "power_restrictions": [],
-      "rolling_stock_name": "IMPROBABLE_RS_E2E",
       "schedule": [
         {
           "at": "id1109",
@@ -294,39 +282,38 @@
           "stop_for": "P0D"
         }
       ],
-      "start_time": "2024-10-17T12:30:00.000Z",
-      "train_name": "Train6",
-      "timetable_id": 597
-    },
-    {
-      "category": {
-        "main_category": "FREIGHT_TRAIN"
-      },
-      "comfort": "STANDARD",
-      "constraint_distribution": "MARECO",
-      "initial_speed": 27.777777777777779,
-      "labels": ["NWS-NES", "Tag-7"],
       "margins": {
         "boundaries": [],
         "values": ["0%"]
       },
+      "initial_speed": 0,
+      "comfort": "STANDARD",
+      "constraint_distribution": "STANDARD",
+      "power_restrictions": [],
       "options": {
-        "use_electrical_profiles": false,
+        "use_electrical_profiles": true,
         "use_speed_limits_for_simulation": true
       },
+      "category": null
+    },
+    {
+      "train_name": "Train7",
+      "labels": ["NWS-NES", "Tag-7"],
+      "rolling_stock_name": "ELECTRIC_RS_E2E",
+      "start_time": "2024-10-17T19:05:00.000Z",
       "path": [
         {
           "id": "b4df37d0-ffe2-4166-b7b6-8c0c5a47e9b0",
           "location": {
             "operational_point": { "uic": 8777, "secondary_code": "BV", "type": "uic" },
-            "local_track_name": null
+            "track_reference": null
           }
         },
         {
           "id": "id2659",
           "location": {
             "operational_point": { "uic": 8744, "secondary_code": "BV", "type": "uic" },
-            "local_track_name": null
+            "track_reference": null
           }
         },
         {
@@ -337,19 +324,17 @@
           "id": "id2570",
           "location": {
             "operational_point": { "uic": 8733, "secondary_code": "BV", "type": "uic" },
-            "local_track_name": null
+            "track_reference": null
           }
         },
         {
           "id": "dbc7c80b-aee0-4835-8857-63863dae2ff1",
           "location": {
             "operational_point": { "uic": 8799, "secondary_code": "BC", "type": "uic" },
-            "local_track_name": null
+            "track_reference": null
           }
         }
       ],
-      "power_restrictions": [],
-      "rolling_stock_name": "ELECTRIC_RS_E2E",
       "schedule": [
         {
           "at": "id2659",
@@ -368,10 +353,22 @@
           "stop_for": "P0D"
         }
       ],
+      "margins": {
+        "boundaries": [],
+        "values": ["0%"]
+      },
+      "initial_speed": 27.777777777777779,
+      "comfort": "STANDARD",
+      "constraint_distribution": "MARECO",
       "speed_limit_tag": "MA100",
-      "start_time": "2024-10-17T19:05:00.000Z",
-      "train_name": "Train7",
-      "timetable_id": 597
+      "power_restrictions": [],
+      "options": {
+        "use_electrical_profiles": false,
+        "use_speed_limits_for_simulation": true
+      },
+      "category": {
+        "main_category": "FREIGHT_TRAIN"
+      }
     },
     {
       "train_name": "Paced Train - Updated exception (RS)",
@@ -383,21 +380,21 @@
           "id": "id744",
           "location": {
             "operational_point": { "uic": 8733, "secondary_code": "BV", "type": "uic" },
-            "local_track_name": null
+            "track_reference": null
           }
         },
         {
           "id": "id765",
           "location": {
             "operational_point": { "uic": 8744, "secondary_code": "BV", "type": "uic" },
-            "local_track_name": null
+            "track_reference": null
           }
         },
         {
           "id": "id745",
           "location": {
             "operational_point": { "uic": 8777, "secondary_code": "BV", "type": "uic" },
-            "local_track_name": null
+            "track_reference": null
           }
         }
       ],
@@ -513,14 +510,14 @@
           "id": "a414e7d1-32a5-4f41-94b1-feb7f8876d2d",
           "location": {
             "operational_point": { "uic": 8711, "secondary_code": "BV", "type": "uic" },
-            "local_track_name": null
+            "track_reference": null
           }
         },
         {
           "id": "4131eb71-da70-4f86-a713-78d812699558",
           "location": {
             "operational_point": { "uic": 8777, "secondary_code": "BV", "type": "uic" },
-            "local_track_name": null
+            "track_reference": null
           }
         }
       ],
@@ -581,7 +578,7 @@
           "id": "8bf52569-50a5-46a5-8e62-b5626460cfba",
           "location": {
             "operational_point": { "uic": 8777, "secondary_code": "BV", "type": "uic" },
-            "local_track_name": null
+            "track_reference": null
           }
         },
         {
@@ -647,14 +644,14 @@
                   "id": "id2570",
                   "location": {
                     "operational_point": { "uic": 8733, "secondary_code": "BV", "type": "uic" },
-                    "local_track_name": null
+                    "track_reference": null
                   }
                 },
                 {
                   "id": "8369cfc6-e667-4b6b-965a-79795c94dd18",
                   "location": {
                     "operational_point": { "uic": 8799, "secondary_code": "BV", "type": "uic" },
-                    "local_track_name": null
+                    "track_reference": null
                   }
                 }
               ],
@@ -697,7 +694,7 @@
                   "id": "id2659",
                   "location": {
                     "operational_point": { "uic": 8744, "secondary_code": "BV", "type": "uic" },
-                    "local_track_name": null
+                    "track_reference": null
                   }
                 },
                 {
@@ -708,14 +705,14 @@
                   "id": "id2570",
                   "location": {
                     "operational_point": { "uic": 8733, "secondary_code": "BV", "type": "uic" },
-                    "local_track_name": null
+                    "track_reference": null
                   }
                 },
                 {
                   "id": "b174dfa7-f6e7-45d9-9545-469a64e675b9",
                   "location": {
                     "operational_point": { "uic": 8799, "secondary_code": "BC", "type": "uic" },
-                    "local_track_name": null
+                    "track_reference": null
                   }
                 }
               ],

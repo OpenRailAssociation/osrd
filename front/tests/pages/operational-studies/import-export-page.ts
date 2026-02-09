@@ -1,8 +1,14 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import OperationalStudiesPage from './operational-studies-page';
+import ScenarioTimetableSection from './scenario-timetable-section';
+import { logger } from '../../logging-fixture';
+import {
+  assertSuggestedFilename,
+  saveDownloadToDir,
+  triggerFileDownload,
+} from '../../utils/file-utils';
 
-class ImportPage extends OperationalStudiesPage {
+class ImportExportPage extends ScenarioTimetableSection {
   private readonly importTimetableMenuButton: Locator;
   private readonly importTimetableItemButton: Locator;
   private readonly uploadFileDropzone: Locator;
@@ -35,5 +41,16 @@ class ImportPage extends OperationalStudiesPage {
     await this.uploadFileDownloadButton.click();
     await this.checkToastHasBeenLaunched(toastMessage);
   }
+
+  async exportTimetableItems(downloadDir: string): Promise<string> {
+    const download = await triggerFileDownload(this.page, this.exportTimetableItemButton);
+
+    assertSuggestedFilename(download, /^timetable.*\.json$/);
+
+    const downloadPath = await saveDownloadToDir(download, downloadDir);
+
+    logger.info(`The JSON file was successfully downloaded to: ${downloadPath}`);
+    return downloadPath;
+  }
 }
-export default ImportPage;
+export default ImportExportPage;
