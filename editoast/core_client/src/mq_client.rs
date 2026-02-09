@@ -5,7 +5,6 @@ use deadpool::managed::Pool;
 use deadpool::managed::RecycleError;
 use deadpool::managed::RecycleResult;
 use educe::Educe;
-use futures_util::StreamExt;
 use itertools::Itertools;
 use lapin::BasicProperties;
 use lapin::Channel;
@@ -23,12 +22,15 @@ use std::fmt::Debug;
 use std::sync::Arc;
 use thiserror::Error;
 use tokio::sync::RwLock;
-use tokio::sync::oneshot;
+use tokio::sync::mpsc;
 use tokio::task;
 use tokio::time::Duration;
+use tokio_stream::StreamExt;
 use tracing::Instrument;
 use url::Url;
 use uuid::Uuid;
+
+const NON_FINAL_MESSAGE_HEADER: &str = "x-non-final-message";
 
 #[derive(Debug, Clone)]
 pub struct RabbitMQClient {
@@ -42,7 +44,7 @@ pub struct RabbitMQClient {
 pub struct ChannelManager {
     connection: Arc<RwLock<Option<Connection>>>,
     hostname: String,
-    response_tracker: Arc<DashMap<String, oneshot::Sender<Delivery>>>,
+    response_tracker: Arc<DashMap<String, mpsc::Sender<Delivery>>>,
 }
 
 impl ChannelManager {
@@ -100,7 +102,7 @@ impl Manager for ChannelManager {
 #[derive(Debug)]
 pub struct ChannelWorker {
     channel: Arc<Channel>,
-    response_tracker: Arc<DashMap<String, oneshot::Sender<Delivery>>>,
+    response_tracker: Arc<DashMap<String, mpsc::Sender<Delivery>>>,
     consumer_tag: String,
 }
 
@@ -108,7 +110,7 @@ impl ChannelWorker {
     pub async fn new(
         channel: Arc<Channel>,
         hostname: String,
-        response_tracker: Arc<DashMap<String, oneshot::Sender<Delivery>>>,
+        response_tracker: Arc<DashMap<String, mpsc::Sender<Delivery>>>,
     ) -> Self {
         let worker = ChannelWorker {
             channel,
@@ -126,7 +128,7 @@ impl ChannelWorker {
     pub async fn register_response_tracker(
         &self,
         correlation_id: String,
-        tx: oneshot::Sender<Delivery>,
+        tx: mpsc::Sender<Delivery>,
     ) {
         self.response_tracker.insert(correlation_id, tx);
     }
@@ -156,12 +158,39 @@ impl ChannelWorker {
         task::spawn(async move {
             while let Some(delivery) = consumer.next().await {
                 let delivery = delivery.expect("Error in receiving message");
-                if let Some(correlation_id) = delivery.properties.correlation_id().as_ref() {
-                    if let Some((_, sender)) = response_tracker.remove(correlation_id.as_str()) {
-                        let _ = sender.send(delivery);
-                    }
-                } else {
+                let Some(correlation_id) = delivery
+                    .properties
+                    .correlation_id()
+                    .as_ref()
+                    .map(|s| s.to_string())
+                else {
                     tracing::error!("Received message without correlation_id");
+                    continue;
+                };
+
+                let final_message = !delivery
+                    .properties
+                    .headers()
+                    .as_ref()
+                    .and_then(|f| f.inner().get(NON_FINAL_MESSAGE_HEADER))
+                    .and_then(|s| s.as_bool())
+                    .unwrap_or(true);
+
+                let Some(sender_entry) = response_tracker
+                    .get(correlation_id.as_str())
+                    .map(|entry| entry.value().clone())
+                else {
+                    tracing::error!(
+                        "Received message with unknown correlation_id: {}",
+                        correlation_id
+                    );
+                    continue;
+                };
+
+                let response = sender_entry.send(delivery).await;
+                if response.is_err() || final_message {
+                    // Response channel is closed or it was the last response
+                    response_tracker.remove(correlation_id.as_str());
                 }
             }
         });
@@ -430,7 +459,7 @@ impl RabbitMQClient {
             .with_expiration(timeout.as_millis().to_string().into())
             .with_headers(headers);
 
-        let (tx, rx) = oneshot::channel();
+        let (tx, mut rx) = mpsc::channel(10);
         channel_worker
             .register_response_tracker(correlation_id.clone(), tx)
             .await;
@@ -454,8 +483,8 @@ impl RabbitMQClient {
         // Release from the pool
         drop(channel_worker);
 
-        match tokio::time::timeout(timeout, rx).await {
-            Ok(Ok(delivery)) => {
+        match tokio::time::timeout(timeout, rx.recv()).await {
+            Ok(Some(delivery)) => {
                 let status = delivery
                     .properties
                     .headers()
@@ -470,9 +499,114 @@ impl RabbitMQClient {
                     status,
                 })
             }
-            Ok(Err(_)) => Err(MqClientError::ResponseChannelClosed),
+            Ok(None) => Err(MqClientError::ResponseChannelClosed),
             Err(_) => Err(MqClientError::ResponseTimeout),
         }
+    }
+
+    pub async fn call_with_multiple_responses<T>(
+        &self,
+        routing_key: String,
+        path: &str,
+        published_payload: Option<&T>,
+        mandatory: bool,
+        override_timeout: Option<Duration>,
+    ) -> Result<impl tokio_stream::Stream<Item = Result<MQResponse, MqClientError>>, MqClientError>
+    where
+        T: Serialize,
+    {
+        let correlation_id = Uuid::new_v4().to_string();
+        let timeout = override_timeout.unwrap_or_else(|| Duration::from_secs(self.timeout));
+
+        // Get the next channel
+        let channel_worker = self
+            .pool
+            .get()
+            .await
+            .map_err(|_| MqClientError::PoolChannelFail)?;
+        let channel = channel_worker.get_channel();
+
+        let serialized_payload_vec =
+            to_vec(&published_payload).map_err(MqClientError::Serialization)?;
+        let serialized_payload = serialized_payload_vec.as_slice();
+
+        let options = BasicPublishOptions {
+            mandatory,
+            ..Default::default()
+        };
+
+        let path: ByteArray = path.bytes().collect_vec().into();
+        let mut headers = FieldTable::default();
+        headers.insert("x-rpc-path".into(), path.into());
+        attach_tracing_info(&mut headers);
+
+        let properties = BasicProperties::default()
+            .with_reply_to(ShortString::from("amq.rabbitmq.reply-to"))
+            .with_correlation_id(ShortString::from(correlation_id.as_str()))
+            .with_expiration(timeout.as_millis().to_string().into())
+            .with_headers(headers);
+
+        let (tx, rx) = mpsc::channel(10);
+        channel_worker
+            .register_response_tracker(correlation_id.clone(), tx)
+            .await;
+
+        // Publish the message
+        channel
+            .basic_publish(
+                self.exchange.clone().into(),
+                if self.single_worker {
+                    SINGLE_WORKER_KEY.into()
+                } else {
+                    routing_key.into()
+                },
+                options,
+                serialized_payload,
+                properties,
+            )
+            .await
+            .map_err(MqClientError::Lapin)?;
+
+        // Release from the pool
+        drop(channel_worker);
+
+        let mut finished = false;
+
+        let stream = tokio_stream::wrappers::ReceiverStream::new(rx)
+            .timeout(timeout)
+            .map(|result| match result {
+                Ok(delivery) => {
+                    let headers = delivery.properties.headers().as_ref();
+                    let status = headers
+                        .and_then(|f| f.inner().get("x-status"))
+                        .and_then(|s| s.as_byte_array())
+                        .map(|s| Ok(s.as_slice().to_owned()))
+                        .unwrap_or(Err(MqClientError::StatusParsing));
+
+                    let final_message = headers
+                        .and_then(|f| f.inner().get(NON_FINAL_MESSAGE_HEADER))
+                        .and_then(|s| s.as_bool())
+                        .unwrap_or(true);
+
+                    (
+                        status.map(|status| MQResponse {
+                            payload: delivery.data,
+                            status,
+                        }),
+                        final_message,
+                    )
+                }
+                Err(_) => (Err(MqClientError::ResponseTimeout), true),
+            })
+            .map_while(move |(payload, final_message)| {
+                if finished {
+                    return None;
+                }
+                finished = final_message;
+                Some(payload)
+            });
+
+        Ok(stream)
     }
 }
 
