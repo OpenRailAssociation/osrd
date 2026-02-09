@@ -236,7 +236,7 @@ data class TrainPathImpl(
         }
         return getRangeMap { dirChunkId ->
             val routeOnChunk =
-                rawInfra.getRoutesOnTrackChunk(dirChunkId).filter { route ->
+                rawInfra.getRoutesOnTrackChunk(dirChunkId).firstOrNull { route ->
                     routes!!.any { it.value == route }
                 }
             // TODO: add a warning.
@@ -248,8 +248,7 @@ data class TrainPathImpl(
             //         end
             //           \
             // - start - - - commonChunk - ->
-            val route =
-                routeOnChunk.firstOrNull()?.let { routeId -> rawInfra.getRouteName(routeId) }
+            val route = routeOnChunk?.let { routeId -> rawInfra.getRouteName(routeId) }
             val permanentSpeedLimits =
                 rawInfra.getTrackChunkSpeedLimitProperties(dirChunkId, trainTag, route)
             if (temporarySpeedLimitManager != null) {
@@ -304,8 +303,11 @@ data class TrainPathImpl(
     private fun <T> getRangeMap(
         getData: (dirChunkId: DirTrackChunkId) -> DistanceRangeMap<T>
     ): DistanceRangeMap<T> {
+        // TODO: reduce allocations (subMap allocates -too much- before truncate, then asList
+        //       allocates again)
         val entries =
             chunks
+                .asSequence()
                 .filter { !it.isSinglePoint() }
                 .flatMap {
                     getData(it.value)
@@ -313,7 +315,7 @@ data class TrainPathImpl(
                         .shiftPositions(it.pathBegin.distance - it.objectBegin.distance)
                         .asList()
                 }
-        return distanceRangeMapOf(entries)
+        return distanceRangeMapOf(entries.toList())
     }
 
     private fun getTrackRanges(): List<DirTrackRange> {

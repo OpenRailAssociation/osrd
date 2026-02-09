@@ -8,11 +8,9 @@ import fr.sncf.osrd.utils.units.Offset
 fun getNextStopOnCurrentBlock(infraExplorer: InfraExplorer): Offset<Block>? {
     return infraExplorer
         .getStepTracker()
-        .getStepsInLookahead()
-        .filter { it.originalStep.stop }
-        .filter { it.location.edge == infraExplorer.getCurrentBlock() }
-        .map { it.location.offset }
-        .minOrNull()
+        .iterateStepsInLookaheadBackwards()
+        .filter { it.originalStep.stop && it.location.edge == infraExplorer.getCurrentBlock() }
+        .minOfOrNull { it.location.offset }
 }
 
 /**
@@ -43,7 +41,7 @@ fun <T> checkPlannedStepsAndMaybeIndex(input: List<T>): Pair<Boolean, Int?> {
     if (filteredIndices.size > 1) {
         return Pair(false, null)
     }
-    if (filteredIndices.size == 0) {
+    if (filteredIndices.isEmpty()) {
         // Should not be valid, but happens in tests
         return Pair(true, null)
     }

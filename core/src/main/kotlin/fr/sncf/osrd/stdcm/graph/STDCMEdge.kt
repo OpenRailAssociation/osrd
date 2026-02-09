@@ -82,7 +82,8 @@ data class STDCMEdge(
             )
         } else {
             // New edge on the same block, after a stop
-            val nextStop = stepTracker.getStepsInLookahead().first { it.originalStep.stop }
+            val nextStop =
+                stepTracker.iterateStepsInLookaheadBackwards().last { it.originalStep.stop }
             val stopDuration = nextStop.originalStep.duration
             val locationOnEdge = envelopeStartOffset + length.distance
 

@@ -11,7 +11,6 @@ import fr.sncf.osrd.standalone_sim.CLOSED_SIGNAL_RESERVATION_MARGIN
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.infra_exploration.LocatedStep
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
-import fr.sncf.osrd.utils.dropSeq
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -102,9 +101,9 @@ data class BlockAvailability(
         var maximumDelayToStayAvailable = Double.POSITIVE_INFINITY
         var timeOfNextUnavailability = Double.POSITIVE_INFINITY
 
-        val reversedSteps = infraExplorer.getStepTracker().getSeenSteps().reversed()
+        val seenSteps = infraExplorer.getStepTracker().getSeenSteps()
 
-        for (step in reversedSteps) {
+        for (step in seenSteps.iterateBackwards()) {
             val availabilityProperties =
                 getStepAvailabilityProperties(
                     step,
@@ -217,13 +216,13 @@ data class BlockAvailability(
         // Ensures that we account for the 20s margin where a train must see a green signal before
         // its departure: when the current segment starts at a stop, we want to consider conflicts
         // up to 20s before the "start time".
+        val seenSteps = infraExplorer.getStepTracker().getSeenSteps()
         val startsAtStop =
-            infraExplorer
-                .getStepTracker()
-                .getSeenSteps()
-                .dropSeq(1) // Skip departure step
-                .filter { it.originalStep.stop }
-                .map { it.travelledPathOffset }
+            seenSteps
+                .iterateIndexedBackwards()
+                .take(seenSteps.size - 1) // Skip departure step
+                .filter { it.value.originalStep.stop }
+                .map { it.value.travelledPathOffset }
                 .contains(startOffset)
         var minRelevantTime = startTime
         if (startsAtStop) {

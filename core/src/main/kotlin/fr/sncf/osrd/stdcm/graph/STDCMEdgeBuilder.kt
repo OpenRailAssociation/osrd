@@ -151,9 +151,9 @@ internal constructor(
     private fun getEndOfEdgeStopDuration(): Double? {
         return prevNode.infraExplorer
             .getStepTracker()
-            .getStepsInLookahead()
+            .iterateStepsInLookaheadBackwards()
             .filter { it.location.edge == infraExplorer.getCurrentBlock() }
-            .firstOrNull { it.originalStep.stop }
+            .lastOrNull { it.originalStep.stop }
             ?.originalStep
             ?.duration
     }

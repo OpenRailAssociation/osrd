@@ -58,8 +58,14 @@ data class InfraExplorerWithEnvelopeImpl(
     }
 
     override fun generateReachedTrainStops(): List<TrainStop> {
-        val steps = getStepTracker().getSeenSteps()
-        val stopOffsets = steps.filter { it.originalStep.stop }.map { it.travelledPathOffset }
+        val seenSteps = getStepTracker().getSeenSteps()
+        val stopOffsets =
+            seenSteps
+                .iterateBackwards()
+                .filter { it.originalStep.stop }
+                .map { it.travelledPathOffset }
+                .toList()
+                .reversed()
         val stopDurations = stopTimeData.map { it.currentDuration }
 
         // Stop offsets include the lookahead while stop durations doesn't.
@@ -201,8 +207,9 @@ data class InfraExplorerWithEnvelopeImpl(
     }
 
     override fun endAtStop(): Boolean {
-        val steps = getStepTracker().getSeenSteps()
-        return steps
+        val seenSteps = getStepTracker().getSeenSteps()
+        return seenSteps
+            .iterateBackwards()
             .filter { it.originalStep.stop }
             .any { it.travelledPathOffset == getSimulatedLength() }
     }

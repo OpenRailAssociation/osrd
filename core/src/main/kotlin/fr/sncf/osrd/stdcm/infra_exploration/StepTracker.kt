@@ -33,9 +33,9 @@ class StepTracker(
     // Used to compute path offsets
     private var currentPathOffset: Offset<PhysicsPath> = Offset.zero()
 
-    /** Returns all the steps that have been passed on the path, in order. */
-    fun getSeenSteps(): List<LocatedStep> {
-        return seenSteps.toList()
+    /** Returns all the steps that have been passed on the path. */
+    fun getSeenSteps(): AppendOnlyLinkedList<LocatedStep> {
+        return seenSteps
     }
 
     /** True if the last step has been encountered (including lookahead). */
@@ -80,23 +80,25 @@ class StepTracker(
 
     /** Integrate a part of the lookahead into the "actually visited" steps. */
     fun moveForward(block: BlockId, start: Offset<Block>, end: Offset<Block>) {
-        nStepsExcludingLookahead +=
-            getStepsInLookahead()
-                .takeWhile { it.location.edge == block && it.location.offset in start..end }
-                .count()
+        val nStepsStillInLookahead =
+            1 +
+                iterateStepsInLookaheadBackwards().indexOfLast {
+                    !(it.location.edge == block && it.location.offset in start..end)
+                }
+        nStepsExcludingLookahead = nSeenSteps - nStepsStillInLookahead
     }
 
     /**
      * Returns the steps that are present in the lookahead (not "reached" yet by the simulation, but
-     * we know their path offset)
+     * we know their path offset), in reverse order
      */
-    fun getStepsInLookahead(): Sequence<LocatedStep> {
-        return seenSteps.toList().dropSeq(nStepsExcludingLookahead)
+    fun iterateStepsInLookaheadBackwards(): Sequence<LocatedStep> {
+        return seenSteps.iterateBackwards().take(seenSteps.size - nStepsExcludingLookahead)
     }
 
-    /** Returns all the steps excluding lookahead, in order. */
-    fun getReachedSteps(): List<LocatedStep> {
-        return getSeenSteps().take(nStepsExcludingLookahead)
+    /** Returns all the steps excluding lookahead, in reverse order. */
+    fun iterateReachedStepsBackwards(): Sequence<LocatedStep> {
+        return seenSteps.iterateBackwards().drop(seenSteps.size - nStepsExcludingLookahead)
     }
 
     /**

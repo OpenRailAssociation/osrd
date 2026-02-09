@@ -44,7 +44,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
     ): STDCMResult? {
         val edges = path.edges
         val lastExplorer = edges.last().infraExplorer
-        val blockRanges = lastExplorer.getAllBlocks()
+        val blockRanges = lastExplorer.getAllBlocks().toList()
         val routes = lastExplorer.getExploredRoutes()
         val trainPath =
             buildTrainPathFromBlockRanges(
@@ -79,7 +79,9 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
                 // Allow us to display OP, a hack that will be fixed
                 // after the redesign of simulation data models
                 makePathStops(stops, trainPath),
-                lastExplorer.getStepTracker().getSeenSteps().map { it.travelledPathOffset },
+                lastExplorer.getStepTracker().getSeenSteps().toList().map {
+                    it.travelledPathOffset
+                },
                 withAllowance.engineeringAllowanceRanges,
             )
         return if (res.envelope.totalTime > maxRunTime) {
