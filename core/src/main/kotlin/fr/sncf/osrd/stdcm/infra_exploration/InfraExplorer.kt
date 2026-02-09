@@ -78,7 +78,9 @@ interface InfraExplorer {
     /** Returns the current block. */
     fun getCurrentBlockRange(): BlockRange
 
-    fun getAllBlocks(): List<BlockRange>
+    fun isLookaheadEmpty(): Boolean
+
+    fun getAllBlocks(): AppendOnlyLinkedList<BlockRange>
 
     /** Returns the length of the current block. */
     fun getCurrentBlockLength(): Length<Block>
@@ -275,8 +277,12 @@ private class InfraExplorerImpl(
         return blockRanges[currentIndex]
     }
 
-    override fun getAllBlocks(): List<BlockRange> {
-        return blockRanges.toList()
+    override fun isLookaheadEmpty(): Boolean {
+        return currentIndex >= blockRanges.size - 1
+    }
+
+    override fun getAllBlocks(): AppendOnlyLinkedList<BlockRange> {
+        return blockRanges
     }
 
     override fun getCurrentBlockLength(): Length<Block> {

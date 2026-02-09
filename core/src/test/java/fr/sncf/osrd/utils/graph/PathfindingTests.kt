@@ -70,7 +70,7 @@ class PathfindingTests {
                 ),
                 BlockRange(block34, Offset(0.meters), Offset(20.meters), 0.meters, Length(0.meters)),
             ),
-            res!!.getAllBlocks(),
+            res!!.getAllBlocks().toList(),
         )
     }
 
@@ -106,7 +106,7 @@ class PathfindingTests {
                 ),
                 BlockRange(block34, Offset(0.meters), Offset(19.meters), 0.meters, Length(0.meters)),
             ),
-            res!!.getAllBlocks(),
+            res!!.getAllBlocks().toList(),
         )
     }
 
@@ -172,7 +172,7 @@ class PathfindingTests {
                     Length(2000.meters),
                 ),
             ),
-            res!!.getAllBlocks(),
+            res!!.getAllBlocks().toList(),
         )
     }
 
@@ -214,7 +214,7 @@ class PathfindingTests {
                     Length(10.meters),
                 ),
             ),
-            res!!.getAllBlocks(),
+            res!!.getAllBlocks().toList(),
         )
     }
 
@@ -251,7 +251,7 @@ class PathfindingTests {
                 BlockRange(block45, Offset(0.meters), Offset(5.meters), 4.meters, Length(4.meters)),
                 BlockRange(block56, Offset(0.meters), Offset(9.meters), 0.meters, Length(0.meters)),
             ),
-            res!!.getAllBlocks(),
+            res!!.getAllBlocks().toList(),
         )
     }
 
@@ -287,7 +287,7 @@ class PathfindingTests {
                 BlockRange(block45, Offset(0.meters), Offset(4.meters), 5.meters, Length(5.meters)),
                 BlockRange(block56, Offset(0.meters), Offset(9.meters), 0.meters, Length(0.meters)),
             ),
-            res!!.getAllBlocks(),
+            res!!.getAllBlocks().toList(),
         )
     }
 
@@ -326,7 +326,7 @@ class PathfindingTests {
                     Length(100.meters),
                 ),
             ),
-            res!!.getAllBlocks(),
+            res!!.getAllBlocks().toList(),
         )
     }
 
@@ -455,7 +455,7 @@ class PathfindingTests {
                     Length(100.meters),
                 ),
             ),
-            res!!.getAllBlocks(),
+            res!!.getAllBlocks().toList(),
         )
     }
 
@@ -501,7 +501,7 @@ class PathfindingTests {
                     Length(1000.meters),
                 ),
             ),
-            res!!.getAllBlocks(),
+            res!!.getAllBlocks().toList(),
         )
     }
 
@@ -566,7 +566,7 @@ class PathfindingTests {
                     Length(10.meters),
                 ),
             ),
-            res!!.getAllBlocks(),
+            res!!.getAllBlocks().toList(),
         )
     }
 
@@ -632,7 +632,7 @@ class PathfindingTests {
                     Length(0.meters),
                 ),
             ),
-            res!!.getAllBlocks(),
+            res!!.getAllBlocks().toList(),
         )
     }
 
@@ -704,7 +704,7 @@ class PathfindingTests {
                     Length(100.meters),
                 )
             ),
-            res!!.getAllBlocks(),
+            res!!.getAllBlocks().toList(),
         )
     }
 
@@ -752,7 +752,7 @@ class PathfindingTests {
                     Length(100.meters),
                 ),
             ),
-            res!!.getAllBlocks(),
+            res!!.getAllBlocks().toList(),
         )
     }
 
@@ -825,7 +825,7 @@ class PathfindingTests {
                     Length(100.meters),
                 )
             ),
-            res!!.getAllBlocks(),
+            res!!.getAllBlocks().toList(),
         )
     }
 
@@ -897,7 +897,7 @@ class PathfindingTests {
                     Length(10000.meters),
                 )
             ),
-            res!!.getAllBlocks(),
+            res!!.getAllBlocks().toList(),
         )
     }
 
@@ -924,7 +924,7 @@ class PathfindingTests {
                         Length(100.meters),
                     )
                 ),
-                res!!.getAllBlocks(),
+                res!!.getAllBlocks().toList(),
             )
         } else {
             AssertionsForClassTypes.assertThatThrownBy {
@@ -983,7 +983,7 @@ class PathfindingTests {
                     Length(100.meters),
                 ),
             ),
-            res!!.getAllBlocks(),
+            res!!.getAllBlocks().toList(),
         )
     }
 
@@ -1104,7 +1104,7 @@ class PathfindingTests {
                     getBlockLength(bF2Blocks[2]),
                 ),
             ),
-            res2Routes!!.getAllBlocks(),
+            res2Routes!!.getAllBlocks().toList(),
         )
 
         // ---------- ----------- ----------
@@ -1205,7 +1205,7 @@ class PathfindingTests {
                     getBlockLength(f2K1Blocks[2]),
                 ),
             ),
-            res3routes!!.getAllBlocks(),
+            res3routes!!.getAllBlocks().toList(),
         )
 
         // ---------- ----------- ----------

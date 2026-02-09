@@ -238,7 +238,8 @@ private fun processPathfindingResponse(
     explorer: InfraExplorer,
 ): ProcessedPathfindingResponse {
     val trainPath = explorer.buildFullPath(infra.rawInfra, infra.blockInfra)
-    val stepOffsets = explorer.getStepTracker().getSeenSteps().map { it.travelledPathOffset }
+    val stepOffsets =
+        explorer.getStepTracker().getSeenSteps().toList().map { it.travelledPathOffset }
     return ProcessedPathfindingResponse(trainPath, stepOffsets)
 }
 

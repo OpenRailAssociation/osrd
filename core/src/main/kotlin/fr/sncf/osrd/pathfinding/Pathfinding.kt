@@ -251,7 +251,7 @@ class Pathfinding(
     ) {
         var establishedCost = prevEstablishedCost
         var establishedLength = prevEstablishedLength
-        while (infraExplorer.getLookahead().isNotEmpty()) {
+        while (!infraExplorer.isLookaheadEmpty()) {
             // Move forward and add new current block's estimated cost.
             infraExplorer.moveForward()
             val currentBlockRange = infraExplorer.getCurrentBlockRange()

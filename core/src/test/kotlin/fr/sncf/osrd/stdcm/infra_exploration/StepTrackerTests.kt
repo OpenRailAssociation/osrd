@@ -61,7 +61,7 @@ class StepTrackerTests {
         assertTrue { tracker.hasSeenDestination() }
         assertEquals(
             expectedFirstSteps.plus(expectedSecond).plus(expectedThird),
-            tracker.getSeenSteps(),
+            tracker.getSeenSteps().toList(),
         )
     }
 }

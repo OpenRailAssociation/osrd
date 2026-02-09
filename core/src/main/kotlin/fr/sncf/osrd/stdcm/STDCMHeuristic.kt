@@ -88,7 +88,7 @@ data class STDCMAStarHeuristic(
         for (block in blocks) {
             stepTrackerCopy.moveForward(block, Offset.zero(), blockInfra.getBlockLength(block))
         }
-        val nPlannedSteps = stepTrackerCopy.getReachedSteps().count { it.isPlanned }
+        val nPlannedSteps = stepTrackerCopy.iterateReachedStepsBackwards().count { it.isPlanned }
         val res = max(0, nPlannedSteps - 1) // Accounts for the departure step
         return res
     }
