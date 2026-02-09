@@ -231,8 +231,8 @@ async fn run() -> anyhow::Result<()> {
             GrantsCommand::Set(set_args) => {
                 grants::set_grant(set_args, Arc::new(db_pool), openfga_config).await
             }
-            GrantsCommand::Revoke(revoke_args) => {
-                grants::revoke_grant(revoke_args, Arc::new(db_pool), openfga_config).await
+            GrantsCommand::Unset(revoke_args) => {
+                grants::unset_grant(revoke_args, Arc::new(db_pool), openfga_config).await
             }
             GrantsCommand::ListSubjects(list_args) => {
                 grants::list_subjects(list_args, Arc::new(db_pool), openfga_config).await

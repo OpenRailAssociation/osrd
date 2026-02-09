@@ -20,8 +20,8 @@ use crate::client::openfga_config::OpenfgaConfig;
 pub enum GrantsCommand {
     /// Set a grant on a resource for a subject
     Set(SetArgs),
-    /// Revoke a grant on a resource from a subject
-    Revoke(RevokeArgs),
+    /// Unset a grant on a resource from a subject
+    Unset(UnsetArgs),
     /// List all subjects with their grant level on a resource
     ListSubjects(ListSubjectsArgs),
     /// List all resources a subject has grants on
@@ -60,7 +60,7 @@ pub struct SetArgs {
 }
 
 #[derive(Debug, Args)]
-pub struct RevokeArgs {
+pub struct UnsetArgs {
     resource: Resource,
     subject: String,
     resource_id: i64,
@@ -108,12 +108,12 @@ pub async fn set_grant(
     Ok(())
 }
 
-pub async fn revoke_grant(
-    RevokeArgs {
+pub async fn unset_grant(
+    UnsetArgs {
         resource,
         subject,
         resource_id,
-    }: RevokeArgs,
+    }: UnsetArgs,
     pool: Arc<DbConnectionPoolV2>,
     openfga_config: OpenfgaConfig,
 ) -> anyhow::Result<()> {
@@ -124,7 +124,7 @@ pub async fn revoke_grant(
         Resource::Infra => {
             let infra = authz::Infra(resource_id);
 
-            info!("Revoking grants on infra {resource_id} from {subject}");
+            info!("Unsetting grants on infra {resource_id} from {subject}");
             regulator
                 .revoke_infra_grants_unchecked(&subject.to_authz(), &infra)
                 .await?;
