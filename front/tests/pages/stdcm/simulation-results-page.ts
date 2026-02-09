@@ -1,10 +1,12 @@
-import fs from 'fs';
-import path from 'path';
-
 import { expect, type Locator, type Page } from '@playwright/test';
 
 import { logger } from '../../logging-fixture';
-import readJsonFile from '../../utils/file-utils';
+import {
+  assertSuggestedFilename,
+  readJsonFile,
+  saveDownloadToDir,
+  triggerFileDownload,
+} from '../../utils/file-utils';
 import type { STDCMResultTableRow, StdcmTranslations } from '../../utils/types';
 
 const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');
@@ -122,18 +124,11 @@ class SimulationResultPage {
   async downloadSimulation(downloadDir: string): Promise<void> {
     await expect(this.downloadLink).toBeVisible();
 
-    const [download] = await Promise.all([
-      this.page.waitForEvent('download'),
-      this.downloadLink.click(),
-    ]);
+    const download = await triggerFileDownload(this.page, this.downloadLink);
 
-    const suggestedFilename = download.suggestedFilename();
-    expect(suggestedFilename).toMatch(/^Stdcm.*\.pdf$/);
+    assertSuggestedFilename(download, /^Stdcm.*\.pdf$/);
 
-    await fs.promises.mkdir(downloadDir, { recursive: true });
-
-    const downloadPath = path.join(downloadDir, suggestedFilename);
-    await download.saveAs(downloadPath);
+    const downloadPath = await saveDownloadToDir(download, downloadDir);
 
     logger.info(`The PDF was successfully downloaded to: ${downloadPath}`);
   }
