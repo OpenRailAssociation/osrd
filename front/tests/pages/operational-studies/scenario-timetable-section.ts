@@ -2,7 +2,7 @@ import { type Locator, type Page, expect } from '@playwright/test';
 
 import PacedTrainSection from './paced-train-section';
 import OpSimulationResultPage from './simulation-results-page';
-import readJsonFile from '../../utils/file-utils';
+import { readJsonFile } from '../../utils/file-utils';
 import type {
   CommonTranslations,
   FlatTranslations,

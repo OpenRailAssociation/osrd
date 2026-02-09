@@ -2,7 +2,7 @@ import { expect } from '@playwright/test';
 
 import { electricRollingStockName } from './../assets/constants/project-const';
 import test from './../page-object-fixture';
-import readJsonFile from './../utils/file-utils';
+import { readJsonFile } from './../utils/file-utils';
 import {
   generateUniqueName,
   verifyAndCheckInputById,

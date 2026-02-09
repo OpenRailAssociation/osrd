@@ -6,7 +6,7 @@ import {
   DESTINATION_DETAILS,
   LIGHT_DESTINATION_DETAILS,
 } from '../../assets/constants/stdcm-const';
-import readJsonFile from '../../utils/file-utils';
+import { readJsonFile } from '../../utils/file-utils';
 import type { StdcmTranslations } from '../../utils/types';
 
 const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');

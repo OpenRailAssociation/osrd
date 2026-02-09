@@ -7,7 +7,7 @@ import {
   VIA_STOP_TIMES,
   VIA_STOP_TYPES,
 } from '../../assets/constants/stdcm-const';
-import readJsonFile from '../../utils/file-utils';
+import { readJsonFile } from '../../utils/file-utils';
 import type { StdcmTranslations } from '../../utils/types';
 
 const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');

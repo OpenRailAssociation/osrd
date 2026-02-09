@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 
-import readJsonFile from './file-utils';
+import { readJsonFile } from './file-utils';
 import type { TimetableFilterTranslations } from './types';
 const frScenarioTranslations: TimetableFilterTranslations = readJsonFile<{
   main: TimetableFilterTranslations;

@@ -12,7 +12,7 @@ import {
 import test from '../../page-object-fixture';
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
 import { getInfra, getProject, getStudy } from '../../utils/api-utils';
-import readJsonFile from '../../utils/file-utils';
+import { readJsonFile } from '../../utils/file-utils';
 import createScenario from '../../utils/scenario';
 import sendTrains from '../../utils/send-trains';
 import { deleteScenario } from '../../utils/teardown-utils';
@@ -75,7 +75,7 @@ test.describe('@op @timetable-items @timetable-multiselection', () => {
     });
 
     await test.step('Select all timetable items', async () => {
-      await scenarioTimetableSection.selectAllTimetableItems(frTranslations, {
+      await scenarioTimetableSection.selectAllTimetableItemsAndVerifySelection(frTranslations, {
         totalPacedTrainCount: TOTAL_PACED_TRAINS,
         totalUniqueTrainCount: TOTAL_UNIQUE_TRAINS,
       });

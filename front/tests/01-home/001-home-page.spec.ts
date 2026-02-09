@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test';
 
 import test from './../page-object-fixture';
-import readJsonFile from '../utils/file-utils';
+import { readJsonFile } from '../utils/file-utils';
 import type { FlatTranslations } from '../utils/types';
 
 const frTranslations: { applications: FlatTranslations } = readJsonFile(

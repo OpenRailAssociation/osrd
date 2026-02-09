@@ -2,7 +2,7 @@ import type { Project } from 'common/api/osrdEditoastApi';
 
 import test from '../../page-object-fixture';
 import { generateUniqueName } from '../../utils';
-import readJsonFile from '../../utils/file-utils';
+import { readJsonFile } from '../../utils/file-utils';
 import { createProject } from '../../utils/setup-utils';
 import { deleteProject } from '../../utils/teardown-utils';
 import type { ProjectData } from '../../utils/types';

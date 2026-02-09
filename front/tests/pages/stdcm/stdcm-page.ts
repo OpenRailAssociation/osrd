@@ -1,6 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import readJsonFile from '../../utils/file-utils';
+import { readJsonFile } from '../../utils/file-utils';
 import type { StdcmTranslations } from '../../utils/types';
 
 const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');

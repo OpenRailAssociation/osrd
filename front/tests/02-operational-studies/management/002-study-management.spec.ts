@@ -6,7 +6,7 @@ import test from '../../page-object-fixture';
 import { generateUniqueName } from '../../utils';
 import { getProject } from '../../utils/api-utils';
 import { formatDateToDayMonthYear } from '../../utils/date-utils';
-import readJsonFile from '../../utils/file-utils';
+import { readJsonFile } from '../../utils/file-utils';
 import { createStudy } from '../../utils/setup-utils';
 import { deleteStudy } from '../../utils/teardown-utils';
 import type { StudyData, StudyFrTranslations } from '../../utils/types';

@@ -1,7 +1,7 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
 import { normalizeStationData } from '../../utils/data-normalizer';
-import readJsonFile from '../../utils/file-utils';
+import { readJsonFile } from '../../utils/file-utils';
 import type { FlatTranslations, StationData } from '../../utils/types';
 
 const frTranslations = readJsonFile<Record<string, FlatTranslations>>(

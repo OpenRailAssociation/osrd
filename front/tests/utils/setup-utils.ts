@@ -20,7 +20,7 @@ import {
   createStdcmEnvironment,
 } from './api-utils';
 import { createDateInSpecialTimeZone } from './date-utils';
-import readJsonFile from './file-utils';
+import { readJsonFile } from './file-utils';
 import createScenario from './scenario';
 import sendTrains from './send-trains';
 import type { ProjectData, StudyData } from './types';

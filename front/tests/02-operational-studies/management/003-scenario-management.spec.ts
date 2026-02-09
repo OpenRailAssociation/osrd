@@ -18,7 +18,7 @@ import {
   getStudy,
   setElectricalProfile,
 } from '../../utils/api-utils';
-import readJsonFile from '../../utils/file-utils';
+import { readJsonFile } from '../../utils/file-utils';
 import createScenario from '../../utils/scenario';
 import { deleteScenario } from '../../utils/teardown-utils';
 import type { ScenarioData } from '../../utils/types';
