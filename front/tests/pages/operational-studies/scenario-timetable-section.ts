@@ -46,6 +46,8 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   private readonly timetableItemArrivalTime: Locator;
   private readonly timetableItemArrivalTimeLoader: Locator;
   private readonly invalidTimetableItemsReasons: Locator;
+  private readonly unselectTTimetableItemsButton: Locator;
+  readonly exportTimetableItemButton: Locator;
   private readonly trainName: Locator;
 
   constructor(page: Page) {
@@ -88,6 +90,8 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     this.timetableItemArrivalTime = page.getByTestId('timetable-item-arrival-time');
     this.timetableItemArrivalTimeLoader = page.getByTestId('arrival-time-loader');
     this.invalidTimetableItemsReasons = this.timetableItems.getByTestId('invalid-reason');
+    this.exportTimetableItemButton = page.getByTestId('export-selection-button');
+    this.unselectTTimetableItemsButton = page.getByTestId('scenarios-unselect-all-button');
     this.trainName = page.getByTestId('train-name');
   }
 
@@ -355,7 +359,14 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
       .toBe(expectedArrivalTime);
   }
 
-  async selectAllTimetableItems(
+  async selectAllTimetableItems() {
+    await this.timetableSelectAllButton.click();
+    await expect(this.exportTimetableItemButton).toBeVisible();
+    await expect(this.unselectTTimetableItemsButton).toBeVisible();
+    await expect(this.deleteAllTimetableItemsButton).toBeVisible();
+  }
+
+  async selectAllTimetableItemsAndVerifySelection(
     translations: TimetableFilterTranslations & CommonTranslations,
     itemCounts: {
       totalPacedTrainCount: number;
@@ -364,7 +375,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   ) {
     await this.timetableSelectOptionsButton.click();
     await expect(this.timetableSelectAllButton).toBeVisible();
-    await this.timetableSelectAllButton.click();
+    await this.selectAllTimetableItems();
 
     const { totalPacedTrainCount, totalUniqueTrainCount } = itemCounts;
     await expect(this.timetableTotalItemLabel).toBeVisible();
