@@ -276,12 +276,14 @@ pub(in crate::views) async fn stdcm_handler(
     )
     .await?;
 
-    // Only the success variant of the simulation response contains the simulation run time.
-    let Some(simulation_run_time) = virtual_train_run.simulation.simulation_run_time() else {
+    let Some(simulation_run_time) = virtual_train_run.simulation.simulation_run_time().or_else(||
+        // Default 12h value when the simulation fails
+        matches!(virtual_train_run.simulation, simulation::Response::SimulationFailed { .. }).then_some(12 * 3_600_000))
+    else {
         return Ok(Json(StdcmResponse::PreprocessingSimulationError {
             error: virtual_train_run.simulation,
             core_payload: None,
-        }));
+        }))
     };
 
     let earliest_departure_time = request.get_earliest_departure_time(simulation_run_time);
