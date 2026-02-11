@@ -1,6 +1,7 @@
 use anyhow::anyhow;
 use anyhow::bail;
 use authz::Group;
+use authz::v2::Authorizer;
 use clap::Args;
 use clap::Subcommand;
 
@@ -16,6 +17,9 @@ use std::sync::Arc;
 
 use editoast_models::PgAuthDriver;
 
+use crate::authorizers::Rejection;
+use crate::authorizers::SystemAuthorizer;
+
 use super::openfga_config::OpenfgaConfig;
 
 #[derive(Debug, Subcommand)]
@@ -24,7 +28,7 @@ pub enum GroupCommand {
     Create(CreateArgs),
     /// List groups
     List,
-    /// Get a group's informations
+    /// Get group information
     Info(InfoArgs),
     /// Add members to a group
     Include(IncludeArgs),
@@ -166,6 +170,10 @@ pub async fn include_group(
 
     let regulator = openfga_config.into_regulator(pool.clone()).await?;
     let driver = regulator.driver();
+    let system = SystemAuthorizer {
+        openfga: regulator.openfga(),
+        conn: pool.get().await?,
+    };
 
     let Some(group_id) = driver.get_group_id(&group_name).await? else {
         bail!("No such group: '{group_name}'");
@@ -182,10 +190,12 @@ pub async fn include_group(
         authz_users.insert(authz::User(uid));
     }
 
-    regulator
-        .add_members(&authz::Group(group_id), authz_users)
-        .await?;
-    Ok(())
+    let add_member = authz::v2::add_members(authz::Group(group_id), authz_users);
+    match system.authorize(add_member).await?.access().await? {
+        Ok(()) => Ok(()),
+        Err(Rejection::NoSuchGroup(_)) => unreachable!("tested above"),
+        Err(Rejection::NoSuchUser(user_id)) => bail!("No such user {user_id}"),
+    }
 }
 
 pub async fn delete_group(

@@ -2,6 +2,7 @@ mod authorizer;
 pub mod identity;
 mod model;
 mod regulator;
+pub mod v2;
 
 pub use authorizer::Authorizer;
 pub use regulator::Regulator;
