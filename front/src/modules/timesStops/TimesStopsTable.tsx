@@ -7,6 +7,7 @@ import {
   useReactTable,
   type RowData,
 } from '@tanstack/react-table';
+import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import { Loader } from 'common/Loaders/Loader';
@@ -26,12 +27,15 @@ declare module '@tanstack/react-table' {
 type TimesStopsTableProps = {
   rows: TimesStopsRowNew[];
   dataIsLoading: boolean;
+  isValid: boolean;
 };
 
 const columnHelper = createColumnHelper<TimesStopsRowNew>();
 
-const TimesStopsTable = ({ rows, dataIsLoading }: TimesStopsTableProps) => {
+const TimesStopsTable = ({ rows, dataIsLoading, isValid }: TimesStopsTableProps) => {
   const { t } = useTranslation('translation', { keyPrefix: 'timeStopTable' });
+
+  const scheduleNotHonored = rows.some((row) => row.scheduleNotHonored);
 
   const columns = useMemo(
     () => [
@@ -141,7 +145,11 @@ const TimesStopsTable = ({ rows, dataIsLoading }: TimesStopsTableProps) => {
             </tr>
           ))}
         </thead>
-        <tbody>
+        <tbody
+          className={cx({
+            invalid: !isValid || scheduleNotHonored,
+          })}
+        >
           {table.getRowModel().rows.map((row) => (
             <tr key={row.id}>
               {row.getVisibleCells().map((cell) => (
