@@ -320,6 +320,7 @@ const SimulationResults = ({
                 </div>
               )
             }
+            withFooter
           >
             <div data-testid="time-stop-outputs" className="time-stop-outputs">
               <TimesStopsOutput
