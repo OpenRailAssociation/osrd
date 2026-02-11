@@ -60,7 +60,9 @@ const TimesStopsOutput = ({
   );
 
   if (useNewTimesStopsTable) {
-    return <TimesStopsTable rows={newRows} dataIsLoading={newRows.length === 0} />;
+    return (
+      <TimesStopsTable rows={newRows} dataIsLoading={newRows.length === 0} isValid={isValid} />
+    );
   }
 
   return (

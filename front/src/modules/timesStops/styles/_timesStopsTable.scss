@@ -1,5 +1,6 @@
 .times-stops-table-new {
   .table-container {
+    position: relative;
     thead {
       th {
         background: color-mix(in srgb, var(--black100) 5%, var(--ambientB5) 100%);
@@ -14,6 +15,16 @@
         &:nth-child(even) {
           background: var(--ambientB15);
         }
+      }
+      &.invalid::after {
+        position: absolute;
+        top: 40px; // Hardcoding this is awful, but setting position: relative in tbody instead of table-container bugs borders in firefox
+        left: 0;
+        box-shadow: 0 0 0 8px var(--black10) inset;
+        content: '';
+        height: calc(100% - 40px);
+        width: 100%;
+        z-index: 20;
       }
     }
     td.col-index {
