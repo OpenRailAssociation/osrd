@@ -9,6 +9,7 @@ from osrd_schemas.infra import (
     Direction,
     Electrification,
     Endpoint,
+    LevelCrossing,
     NeutralSection,
     OperationalPoint,
     RailJsonInfra,
@@ -61,6 +62,10 @@ def truncate_infra(infra: RailJsonInfra, boundary: Polygon) -> RailJsonInfra:
         infra.operational_points, track_section_ids_to_keep
     )
 
+    new_infra.level_crossings = filter_level_crossings(
+        infra.level_crossings, track_section_ids_to_keep
+    )
+
     new_infra.electrifications = filter_electrifications(
         infra.electrifications, track_section_ids_to_keep
     )
@@ -95,6 +100,19 @@ def filter_operational_points(
         if included_parts:
             new_op = op.model_copy(update={"parts": included_parts})
             res.append(new_op)
+
+    return res
+
+
+def filter_level_crossings(
+    level_crossings: list[LevelCrossing], track_section_ids: set[str]
+) -> list[LevelCrossing]:
+    res = []
+    for lc in level_crossings:
+        included_parts = [part for part in lc.parts if part.track in track_section_ids]
+        if included_parts:
+            new_lc = lc.model_copy(update={"parts": included_parts})
+            res.append(new_lc)
 
     return res
 

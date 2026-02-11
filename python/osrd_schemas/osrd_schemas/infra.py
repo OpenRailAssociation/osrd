@@ -631,6 +631,7 @@ class RailJsonInfra(BaseModel):
     def empty() -> "RailJsonInfra":
         return RailJsonInfra(
             operational_points=[],
+            level_crossings=[],
             routes=[],
             switches=[],
             track_sections=[],
@@ -645,6 +646,7 @@ class RailJsonInfra(BaseModel):
     def __repr__(self):
         return (
             f"RailJsonInfra(operational_points={len(self.operational_points)}, "
+            f"level_crossings={len(self.level_crossings)}, "
             f"routes={len(self.routes)}, switches={len(self.switches)}, "
             f"track_sections={len(self.track_sections)}, speed_sections={len(self.speed_sections)}, "
             f"electrifications={len(self.electrifications)}, signals={len(self.signals)}, "
