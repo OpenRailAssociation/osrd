@@ -27,7 +27,7 @@ jobs:
           - [core-build, core]
           - [editoast, editoast-test]
           - [gateway-test, gateway-standalone, gateway-front]
-          - [front-tests]
+          - [front-devel, front-tests]
           - [osrdyne, osrdyne-test]
     steps:
       - name: Checkout
