@@ -53,6 +53,8 @@ npx playwright test
 
 # 🤖 1.2 Run Tests in OSRD's Playwright Container
 
+It is recommended to use it if you are running a Linux distribution that is not officially supported by Playwright (Playwright supports only Windows, macOS, and Ubuntu/Debian)
+
 Start the Playwright container only:
 
 ```bash
@@ -94,18 +96,21 @@ clean up first:
     tests/
       01-home/
         001-home-page.spec.ts
+        ...
 
-      02-op/
+      02-operational-studies/
         management/
           001-project-management.spec.ts
           002-study-management.spec.ts
           003-scenario-management.spec.ts
+          ...
 
         train-creation-tabs/
           001-op-rolling-stock-tab.spec.ts
           002-op-route-tab.spec.ts
           003-op-times-and-stops-tab.spec.ts
           004-op-simulation-settings-tab.spec.ts
+          ...
 
         timetable/
           001-train-timetable.spec.ts
@@ -113,32 +118,35 @@ clean up first:
           003-train-edition.spec.ts
           004-train-timetable-multiselection.spec.ts
           005-scenario-page-synchronization.spec.ts
+          ...
 
         paced-trains/
           001-paced-train-management.spec.ts
           002-paced-train-exceptions.spec.ts
           003-paced-train-occurrence-edition.spec.ts
+          ...
 
         simulation-result/
           001-get-manchette.spec.ts
-
-        round-trips/
-          001-round-trips.spec.ts
+          ...
 
         nge/
           001-osrd-nge.spec.ts
           002-nge-osrd.spec.ts
+          ...
 
-      03-rolling-stock-editor/
-        001-rolling-stock-editor.spec.ts
-        002-rolling-stock-filter.spec.ts
-
-      04-stdcm/
+      03-stdcm/
         001-stdcm.spec.ts
         002-stdcm-simulation-sheet.spec.ts
         003-stdcm-feedback-mail.spec.ts
         004-stdcm-linked-train.spec.ts
         005-stdcm-missing-fields.spec.ts
+        ...
+
+      04-rolling-stock-editor/
+        001-rolling-stock-editor.spec.ts
+        002-rolling-stock-filter.spec.ts
+        ...
 
       utils/
       reporter/
@@ -152,6 +160,9 @@ clean up first:
 - Assets must never be mixed with test files.
 - Utilities and Page Objects stay in their dedicated folders.
 - Every test file is **incrementally numbered**.
+- Page Object = behavior + locators
+- Test = data + expectations
+
 
 ---
 
@@ -259,11 +270,21 @@ npx playwright test --ui
 
 Update snapshots:
 
+If visual comparison tests fail due to UI changes, new snapshots must be generated as the new baseline.
+
+You can automatically update snapshots by running:
+ 
+
 ```bash
 npx playwright test --update-snapshots
 ```
 
-Debug mode:
+ℹ️ Snapshot files include the operating system name in their filename.
+For example, if you generate snapshots on macOS, the files will end with `-darwin.png`.
+Since CI runs on Linux, you must rename the files to use `-linux.png` before committing them.
+
+Debug in UI mode:
+You can easily walk through each step of the test and visually see what was happening before, during, and after each step
 
 ```bash
 npx playwright test --debug
@@ -286,6 +307,9 @@ npx playwright test --project=chromium --retries=1 --workers=2
 ℹ️ All commands above also work when running tests inside the Playwright container by replacing  
  `npx playwright test` with `./scripts/run-front-playwright-container.sh`.
 
+You may also want to explore [Playwright documentation](https://playwright.dev/docs/intro) for more
+insights. 
+
 ---
 
 # 🎥 6. Debugging Failures (Videos, Traces, Screenshots)
@@ -302,6 +326,7 @@ They are available under:
 
 Open traces via: https://trace.playwright.dev/
 
+In the CI those files are available as artifacts. You can view them in the Github summary.
 ---
 
 # ⚙️ 7. Playwright Configuration Summary

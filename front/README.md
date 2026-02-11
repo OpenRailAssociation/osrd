@@ -55,47 +55,9 @@ Launches end to end tests.
 It requires:
 
 - Install Playwright dependencies `cd ./front/ && npx playwright install --with-deps`
-- Backend containers to be up with authorization disabled:
-
-  `docker compose up --no-build --detach valkey postgres gateway core editoast`
-
-- Running front with `docker compose up --build --detach front`
-
-Now you can run the test with `cd front/ && npm run e2e-tests`.
-
-If you are using a Linux distribution not supported by Playwright (Playwright only supports Windows,
-macOS and Ubuntu/Debian), you can start the tests inside a Docker container.
-
-First start the playwright container using `./osrd-compose playwright up playwright`. You can also
-start all back and front containers at the same time as the playwright container, for example using
-`./osrd-compose playwright dev-front up`.
-
-Then you can run the tests using `osrd/scripts/run-front-playwright-container.sh`. This script
-accepts the same options and arguments as `npm run e2e-tests` or `npx playwright test`.
-
-> [!CAUTION]
-> If you try to run `npm run start` instead of running it through docker, you'll notice
-> it doesn't work because the gateway can't access your local port from inside a container. 2
-> solutions:
->
-> - Run all the components locally (you might keep Postgres and Valkey in containers)
-> - If on Linux, you can also launch all the containers on the host network: you can replace the
->   `docker compose <something>` above with `osrd/osrd-compose host <something>`
-
-If the tests fail, a `front/test-results` folder will be created, containing videos and traces of
-the failed test executions. These files can help you understand what went wrong. Additionally, the
-CI system exports these videos and traces as artifacts. You can view the trace files using the
-[Playwright trace viewer](https://trace.playwright.dev/).
-
-If visual comparisons tests fail due to UI changes, new snapshots are required as the baseline. You
-can automatically update snapshots by running tests with the `--update-snapshots` flag:
-`npx playwright test --update-snapshots`.
-
-You may also want to explore [Playwright documentation](https://playwright.dev/docs/intro) for more
-insights. For example: Launch each test independently using: `npx playwright test --ui`. Debug a
-test with: `npx playwright test --debug`. Run a specific test in a specific test file with a
-specific browser and no retries using:
-`npx playwright test 011-op-times-and-stops-tab.spec.ts -g "should correctly set and display times and stops tables" --project=firefox  --retries=0`.
+- Ensure backend containers are running
+Then run the tests with: `cd front/ && npm run e2e-tests`.
+For more details, or if you're using a Linux distribution other than Ubuntu or Debian, refer to the README located in `front/tests`.
 
 ## Design rules
 
