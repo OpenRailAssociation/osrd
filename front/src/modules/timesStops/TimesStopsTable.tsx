@@ -151,7 +151,12 @@ const TimesStopsTable = ({ rows, dataIsLoading, isValid }: TimesStopsTableProps)
           })}
         >
           {table.getRowModel().rows.map((row) => (
-            <tr key={row.id}>
+            <tr
+              key={row.id}
+              className={cx({
+                'invalid-path-step': row.original.invalidPathStep,
+              })}
+            >
               {row.getVisibleCells().map((cell) => (
                 <td key={cell.id} className={cell.column.columnDef.meta?.className}>
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
