@@ -16,6 +16,10 @@
           background: var(--ambientB15);
         }
 
+        &.invalid-path-step {
+          background: var(--grey10);
+        }
+
         &:hover {
           background: var(--white50);
         }
@@ -114,7 +118,12 @@
     }
 
     td.uncomputed::before {
+      // TODO: The color used here is suspicious, check with mock ups before usage
       background: var(--white100);
+    }
+
+    tr.invalid-path-step td::before {
+      background: transparent;
     }
 
     /* Input focus inside cell */
