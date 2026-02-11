@@ -24,6 +24,7 @@ type TimesStopsOutputProps = {
   simulatedTrain?: SimulationResponseSuccess['final_output'];
   simulatedPath?: CorePathfindingResultSuccess;
   simulatedPathItemTimes?: Extract<SimulationSummary, { isValid: true }>['pathItemTimes'];
+  simulatedPathItemRespect?: Extract<SimulationSummary, { isValid: true }>['pathItemRespect'];
   operationalPointsOnPath?: PathPropertiesFormatted['operationalPoints'];
 };
 
@@ -33,6 +34,7 @@ const TimesStopsOutput = ({
   selectedTrain,
   simulatedTrain,
   simulatedPathItemTimes,
+  simulatedPathItemRespect,
   operationalPointsOnPath,
 }: TimesStopsOutputProps) => {
   const useNewTimesStopsTable = useSelector(getUseNewTimesStopsTable);
@@ -53,6 +55,7 @@ const TimesStopsOutput = ({
     selectedTrain,
     useNewTimesStopsTable ? simulatedTrain : undefined,
     useNewTimesStopsTable ? simulatedPathItemTimes : undefined,
+    useNewTimesStopsTable ? simulatedPathItemRespect : undefined,
     useNewTimesStopsTable ? operationalPointsOnPath : undefined
   );
 

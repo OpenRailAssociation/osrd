@@ -32,6 +32,8 @@ type BuildTableRowParams = {
   startDate: Date;
   schedule?: ScheduleItem;
   computedArrival?: Duration;
+  scheduleNotHonored?: boolean;
+  marginNotHonored?: boolean;
 };
 
 const buildTableRow = ({
@@ -43,6 +45,8 @@ const buildTableRow = ({
   startDate,
   schedule,
   computedArrival,
+  scheduleNotHonored,
+  marginNotHonored,
 }: BuildTableRowParams): TimesStopsRowNew => {
   const requestedArrival = schedule?.arrival
     ? new Date(startDate.getTime() + Duration.parse(schedule.arrival).ms)
@@ -78,6 +82,8 @@ const buildTableRow = ({
     stopDuration,
     requestedDeparture,
     computedDeparture,
+    scheduleNotHonored,
+    marginNotHonored,
   };
 };
 
@@ -92,6 +98,7 @@ const useTimesStopsTableData = (
   selectedTrain: Train,
   simulatedTrain?: SimulationResponseSuccess['final_output'],
   simulatedPathItemTimes?: Extract<SimulationSummary, { isValid: true }>['pathItemTimes'],
+  simulatedPathItemRespect?: Extract<SimulationSummary, { isValid: true }>['pathItemRespect'],
   operationalPointsOnPath?: PathPropertiesFormatted['operationalPoints']
 ): TimesStopsRowNew[] => {
   const { t } = useTranslation('operational-studies');
@@ -147,6 +154,8 @@ const useTimesStopsTableData = (
           simulatedPathItemTimes?.final[stepIndex] !== undefined
             ? new Duration({ milliseconds: simulatedPathItemTimes.final[stepIndex] })
             : undefined;
+        const scheduleNotHonored = !simulatedPathItemRespect?.times[stepIndex];
+        const marginNotHonored = !simulatedPathItemRespect?.margins[stepIndex];
 
         const row = buildTableRow({
           id: pathStep.id,
@@ -158,6 +167,8 @@ const useTimesStopsTableData = (
           startDate,
           schedule,
           computedArrival,
+          scheduleNotHonored,
+          marginNotHonored,
         });
 
         return [pathStep.id, row];
