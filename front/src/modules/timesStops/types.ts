@@ -19,6 +19,7 @@ export type TimesStopsRowNew = {
   stopDuration: Duration | null;
   requestedDeparture: Date | null;
   computedDeparture: Date | null;
+  invalidPathStep: boolean | undefined;
   scheduleNotHonored: boolean | undefined;
   marginNotHonored: boolean | undefined;
 };
