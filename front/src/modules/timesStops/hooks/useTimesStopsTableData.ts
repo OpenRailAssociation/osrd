@@ -32,6 +32,7 @@ type BuildTableRowParams = {
   startDate: Date;
   schedule?: ScheduleItem;
   computedArrival?: Duration;
+  invalidPathStep?: boolean;
   scheduleNotHonored?: boolean;
   marginNotHonored?: boolean;
 };
@@ -45,6 +46,7 @@ const buildTableRow = ({
   startDate,
   schedule,
   computedArrival,
+  invalidPathStep,
   scheduleNotHonored,
   marginNotHonored,
 }: BuildTableRowParams): TimesStopsRowNew => {
@@ -82,6 +84,7 @@ const buildTableRow = ({
     stopDuration,
     requestedDeparture,
     computedDeparture,
+    invalidPathStep,
     scheduleNotHonored,
     marginNotHonored,
   };
@@ -167,6 +170,7 @@ const useTimesStopsTableData = (
           startDate,
           schedule,
           computedArrival,
+          invalidPathStep: !matchingOp,
           scheduleNotHonored,
           marginNotHonored,
         });
