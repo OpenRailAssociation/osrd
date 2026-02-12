@@ -36,6 +36,8 @@ import StdcmResultsTable from './StdcmResultsTable';
 import StdcmSimulationNavigator from './StdcmSimulationNavigator';
 import StdcmSimulationReportSheet from './StdcmSimulationReportSheet';
 
+const MINIMUM_OP_WEIGHT = 10;
+
 type StdcmResultsProps = {
   isCalculationFailed: boolean;
   isDebugMode: boolean;
@@ -97,12 +99,13 @@ const StdcmResults = ({
   const operationalPointsList = useMemo(() => {
     if (!hasSimulationResults) return [];
     return getOperationalPointsWithTimes({
-      operationalPoints: outputs.pathProperties?.suggestedOperationalPoints || [],
+      operationalPoints: outputs.pathProperties?.operational_points || [],
+      suggestedOperationalPoints: outputs.pathProperties?.suggestedOperationalPoints || [],
       opIdsToExclude,
       simulation: outputs.results.simulation,
       simulationPathSteps: outputs.results.simulationPathSteps,
       departureTime: new Date(outputs.results.departure_time),
-    });
+    }).filter(({ weight, stopType }) => stopType || (weight && weight >= MINIMUM_OP_WEIGHT));
   }, [outputs]);
 
   const markersInfo = useMemo(() => {

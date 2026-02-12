@@ -67,6 +67,7 @@ export type StdcmResultsOperationalPoint = {
   trackName?: string;
   stopType?: StdcmStopTypes;
   stopRequested: boolean;
+  weight: number | null;
 };
 
 export type FieldError = {

@@ -59,6 +59,7 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
     duration: null,
     stopEndTime: '10:00',
     stopRequested: false,
+    weight: 10,
   };
   const opB = {
     opId: 'B',
@@ -67,6 +68,7 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
     duration: null,
     stopEndTime: '10:10',
     stopRequested: false,
+    weight: 10,
   };
   const opC = {
     opId: 'C',
@@ -75,6 +77,7 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
     duration: null,
     stopEndTime: '10:20',
     stopRequested: false,
+    weight: 10,
   };
   const opD = {
     opId: 'D',
@@ -83,6 +86,7 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
     duration: null,
     stopEndTime: '10:30',
     stopRequested: false,
+    weight: 10,
   };
   const opAwStop = {
     ...opA,
@@ -169,6 +173,7 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
         time: '10:15',
         stopEndTime: '10:16',
         stopRequested: false,
+        weight: null,
       },
       opCwStop,
       {
@@ -178,6 +183,7 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
         time: '10:25',
         stopEndTime: '10:26',
         stopRequested: false,
+        weight: null,
       },
       opD,
     ]);
