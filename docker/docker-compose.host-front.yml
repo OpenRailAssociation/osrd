@@ -27,6 +27,10 @@ services:
     ports: [ "3000:3000" ]
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:3000" ]
-      start_period: 4s
+      start_period: 5m
       interval: 5s
       retries: 6
+
+  wait-healthy:
+    depends_on:
+      front: { condition: service_healthy }
