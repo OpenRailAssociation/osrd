@@ -9,18 +9,20 @@ export type TimeExtraDays = {
   dayDisplayed?: boolean;
 };
 
-export enum ScheduleRespectStatus {
-  Green = 'green', // Schedule AND margin met
-  Orange = 'orange', // Schedule not met but margin met
-  Red = 'red', // Margin not met
-  None = 'none', // No data
-}
+export type StepStatus =
+  | 'invalidPathStep'
+  | 'noSimulation'
+  | 'scheduleNotHonored'
+  | 'marginNotHonored'
+  | 'allHonored';
 
 export type TimesStopsRowNew = {
   // Identification
   id: string;
   opOnPathIndex: number;
-  scheduleNotHonored: boolean | undefined;
+
+  // Schedule information
+  stepStatus: StepStatus;
 
   // Stop information
   name: string;
@@ -52,7 +54,6 @@ export type TimesStopsRowNew = {
   // Margins
   requestedTheoreticalMargin: string | null;
   isTheoreticalMarginBoundary: boolean;
-  marginNotHonored: boolean | undefined;
   computedTheoreticalMarginSeconds: number | null;
   realMargin: Duration | null;
   marginsDifference: Duration | null;
