@@ -8,7 +8,7 @@ services:
         SKIP_FRONT: "1"
 
   front:
-    image: ghcr.io/openrailassociation/osrd-${RELEASE_CHANNEL-edge}/osrd-front:${TAG-dev}-dev
+    image: ghcr.io/openrailassociation/osrd-${RELEASE_CHANNEL-edge}/osrd-front:${TAG-dev}-devel
     container_name: osrd-front
     build:
       context: front
