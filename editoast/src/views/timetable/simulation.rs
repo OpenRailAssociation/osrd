@@ -687,33 +687,33 @@ fn compute_train_simulation_hash_with_versioning(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use schemas::TrainSchedule;
+    use schemas::TrainOccurrence;
 
     // Test data
     // The simulation responses contain just enough data to compute
     // `path_items_respect_{times,margins}`.
 
-    fn train_schedule_too_fast() -> TrainSchedule {
+    fn train_schedule_too_fast() -> TrainOccurrence {
         const JSON: &str = include_str!("tests/train_schedule_too_fast.json");
         serde_json::from_str(JSON).unwrap()
     }
 
-    fn train_schedule_too_fast_on_interval() -> TrainSchedule {
+    fn train_schedule_too_fast_on_interval() -> TrainOccurrence {
         const JSON: &str = include_str!("tests/train_schedule_too_fast_on_interval.json");
         serde_json::from_str(JSON).unwrap()
     }
 
-    fn train_schedule_not_honored() -> TrainSchedule {
+    fn train_schedule_not_honored() -> TrainOccurrence {
         const JSON: &str = include_str!("tests/train_schedule_not_honored.json");
         serde_json::from_str(JSON).unwrap()
     }
 
-    fn train_schedule_honored() -> TrainSchedule {
+    fn train_schedule_honored() -> TrainOccurrence {
         const JSON: &str = include_str!("tests/train_schedule_honored.json");
         serde_json::from_str(JSON).unwrap()
     }
 
-    fn train_schedule_no_schedule() -> TrainSchedule {
+    fn train_schedule_no_schedule() -> TrainOccurrence {
         const JSON: &str = include_str!("tests/train_schedule_no_schedule.json");
         serde_json::from_str(JSON).unwrap()
     }

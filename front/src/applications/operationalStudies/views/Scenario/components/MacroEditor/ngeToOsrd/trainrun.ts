@@ -2,7 +2,6 @@ import { compact, uniq } from 'lodash';
 
 import {
   type PacedTrain,
-  type TrainSchedule,
   type PathItemLocation,
   type PacedTrainResponse,
 } from 'common/api/osrdEditoastApi';
@@ -143,7 +142,7 @@ const createPathItemFromNode = (
   node: NodeDto,
   index: number,
   state?: MacroEditorState
-): TrainSchedule['path'][number] => {
+): PacedTrain['path'][number] => {
   let pathItemLocation: PathItemLocation;
   if (state) {
     const indexedNode = state.getNodeByNgeId(node.id)!;
@@ -183,7 +182,7 @@ export const generatePath = (
   nodes: NodeDto[],
   trainrunDirection: TRAINRUN_DIRECTIONS,
   state?: MacroEditorState
-): TrainSchedule['path'] => {
+): PacedTrain['path'] => {
   const isForward = trainrunDirection === TRAINRUN_DIRECTIONS.FORWARD;
   const path = trainrunSections.map((section, index) => {
     const fromNode = getNodeById(nodes, isForward ? section.sourceNodeId : section.targetNodeId);
@@ -227,7 +226,7 @@ const generateSchedule = (
   nodes: NodeDto[],
   startDate: Date,
   trainrunDirection: TRAINRUN_DIRECTIONS
-): TrainSchedule['schedule'] => {
+): PacedTrain['schedule'] => {
   const isForward = trainrunDirection === TRAINRUN_DIRECTIONS.FORWARD;
   return trainrunSections.flatMap((section, index) => {
     const nextSection = trainrunSections[index + 1];
@@ -342,7 +341,7 @@ export const generatePathAndSchedule = (
 // TODO: drop this function once this PR is merged:
 // https://github.com/OpenRailAssociation/osrd/pull/10325
 const populateSecondaryCodesInPath = async (
-  path: TrainSchedule['path'],
+  path: PacedTrain['path'],
   infraId: number,
   dispatch: AppDispatch
 ) => {

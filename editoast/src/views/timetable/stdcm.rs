@@ -24,7 +24,7 @@ use schemas::train_schedule::MarginValue;
 use schemas::train_schedule::Margins;
 use schemas::train_schedule::ReceptionSignal;
 use schemas::train_schedule::ScheduleItem;
-use schemas::train_schedule::TrainSchedule;
+use schemas::train_schedule::TrainOccurrence;
 use serde::Deserialize;
 use serde::Serialize;
 use std::cmp::max;
@@ -375,7 +375,7 @@ impl VirtualTrainRun {
         let path = convert_steps(&stdcm_request.steps);
         let last_step = path.last().expect("empty step list");
 
-        let train_schedule = TrainSchedule {
+        let train_schedule = TrainOccurrence {
             train_name: "".to_string(),
             labels: vec![],
             rolling_stock_name: consist_parameters.traction_engine.name.clone(),

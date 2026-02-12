@@ -5,7 +5,7 @@ import type { PathPropertiesFormatted } from 'applications/operationalStudies/ty
 import type {
   CorePathfindingResultSuccess,
   RollingStock,
-  TrainSchedule,
+  PacedTrain,
 } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
 import { getRollingStockPowerRestrictionsByMode } from 'modules/rollingStock/helpers/powerRestrictions';
@@ -16,8 +16,8 @@ import { mmToKm, mToMm } from 'utils/physics';
  * Format power restrictions data to ranges data base on path steps position
  */
 export const formatPowerRestrictionRanges = (
-  powerRestrictions: NonNullable<TrainSchedule['power_restrictions']>,
-  path: TrainSchedule['path'],
+  powerRestrictions: NonNullable<PacedTrain['power_restrictions']>,
+  path: PacedTrain['path'],
   stepsPathPositions: CorePathfindingResultSuccess['path_item_positions']
 ): LayerData<Omit<PowerRestrictionValues, 'handled'>>[] =>
   compact(

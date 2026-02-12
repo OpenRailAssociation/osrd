@@ -53,7 +53,7 @@ use crate::rolling_stock::TrainCategory;
 #[serde_as]
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 #[serde(remote = "Self")]
-pub struct TrainSchedule {
+pub struct TrainOccurrence {
     pub train_name: String,
     #[serde(default)]
     #[serde_as(as = "DefaultOnNull")]
@@ -101,7 +101,7 @@ pub trait TrainScheduleLike: Clone + Send + Sync + 'static {
     fn options(&self) -> &TrainScheduleOptions;
 }
 
-impl TrainScheduleLike for TrainSchedule {
+impl TrainScheduleLike for TrainOccurrence {
     fn rolling_stock_name(&self) -> &str {
         &self.rolling_stock_name
     }
@@ -147,12 +147,12 @@ impl TrainScheduleLike for TrainSchedule {
     }
 }
 
-impl<'de> Deserialize<'de> for TrainSchedule {
-    fn deserialize<D>(deserializer: D) -> Result<TrainSchedule, D::Error>
+impl<'de> Deserialize<'de> for TrainOccurrence {
+    fn deserialize<D>(deserializer: D) -> Result<TrainOccurrence, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
-        let train_schedule = TrainSchedule::deserialize(deserializer)?;
+        let train_schedule = TrainOccurrence::deserialize(deserializer)?;
 
         // Look for invalid path waypoint reference
         let path_ids: HashSet<_> = train_schedule.path.iter().map(|p| &p.id).collect();
@@ -211,17 +211,17 @@ impl<'de> Deserialize<'de> for TrainSchedule {
     }
 }
 
-impl Serialize for TrainSchedule {
+impl Serialize for TrainOccurrence {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
     {
-        TrainSchedule::serialize(self, serializer)
+        TrainOccurrence::serialize(self, serializer)
     }
 }
 
 #[cfg(any(test, feature = "testing"))]
-impl TrainSchedule {
+impl TrainOccurrence {
     pub fn fake() -> Self {
         use crate::infra::TrackOffset;
         use crate::primitives::Identifier;
@@ -339,7 +339,7 @@ mod tests {
     use crate::train_schedule::Margins;
     use crate::train_schedule::PathItemLocation;
     use crate::train_schedule::ScheduleItem;
-    use crate::train_schedule::TrainSchedule;
+    use crate::train_schedule::TrainOccurrence;
     use crate::train_schedule::path_item::OperationalPointPartReference;
     use crate::train_schedule::path_item::OperationalPointReference::Id;
     use crate::train_schedule::schedule_item::ReceptionSignal;
@@ -360,29 +360,29 @@ mod tests {
             id: "a".into(),
             location,
         };
-        let train_schedule = TrainSchedule {
+        let train_schedule = TrainOccurrence {
             path: vec![path_item.clone(), path_item.clone()],
             ..Default::default()
         };
         let invalid_str = to_string(&train_schedule).unwrap();
-        assert!(from_str::<TrainSchedule>(&invalid_str).is_err());
+        assert!(from_str::<TrainOccurrence>(&invalid_str).is_err());
     }
 
     /// Test deserialize an invalid train schedule
     #[test]
     fn deserialize_schedule_point_not_found_train_schedule() {
-        let train_schedule = TrainSchedule {
+        let train_schedule = TrainOccurrence {
             schedule: vec![Default::default()],
             ..Default::default()
         };
         let invalid_str = to_string(&train_schedule).unwrap();
-        assert!(from_str::<TrainSchedule>(&invalid_str).is_err());
+        assert!(from_str::<TrainOccurrence>(&invalid_str).is_err());
     }
 
     /// Test deserialize an invalid train schedule
     #[test]
     fn deserialize_boundary_not_found_train_schedule() {
-        let train_schedule = TrainSchedule {
+        let train_schedule = TrainOccurrence {
             margins: Margins {
                 boundaries: vec![Default::default()],
                 ..Default::default()
@@ -390,18 +390,18 @@ mod tests {
             ..Default::default()
         };
         let invalid_str = to_string(&train_schedule).unwrap();
-        assert!(from_str::<TrainSchedule>(&invalid_str).is_err());
+        assert!(from_str::<TrainOccurrence>(&invalid_str).is_err());
     }
 
     /// Test deserialize an invalid train schedule
     #[test]
     fn deserialize_power_restriction_train_schedule() {
-        let train_schedule = TrainSchedule {
+        let train_schedule = TrainOccurrence {
             power_restrictions: vec![Default::default()],
             ..Default::default()
         };
         let invalid_str = to_string(&train_schedule).unwrap();
-        assert!(from_str::<TrainSchedule>(&invalid_str).is_err());
+        assert!(from_str::<TrainOccurrence>(&invalid_str).is_err());
     }
 
     /// Test deserialize an invalid train schedule
@@ -418,7 +418,7 @@ mod tests {
             id: "a".into(),
             location,
         };
-        let train_schedule = TrainSchedule {
+        let train_schedule = TrainOccurrence {
             path: vec![path_item.clone(), path_item.clone()],
             schedule: vec![
                 ScheduleItem {
@@ -437,7 +437,7 @@ mod tests {
             ..Default::default()
         };
         let invalid_str = to_string(&train_schedule).unwrap();
-        assert!(from_str::<TrainSchedule>(&invalid_str).is_err());
+        assert!(from_str::<TrainOccurrence>(&invalid_str).is_err());
     }
 
     /// Test deserialize an invalid train schedule
@@ -454,7 +454,7 @@ mod tests {
             id: "a".into(),
             location,
         };
-        let train_schedule = TrainSchedule {
+        let train_schedule = TrainOccurrence {
             path: vec![path_item.clone(), path_item.clone()],
             schedule: vec![ScheduleItem {
                 at: "a".into(),
@@ -465,6 +465,6 @@ mod tests {
             ..Default::default()
         };
         let invalid_str = to_string(&train_schedule).unwrap();
-        assert!(from_str::<TrainSchedule>(&invalid_str).is_err());
+        assert!(from_str::<TrainOccurrence>(&invalid_str).is_err());
     }
 }

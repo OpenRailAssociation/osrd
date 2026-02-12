@@ -20,7 +20,7 @@ const TrainScheduleSetsCart = ({
   const { t } = useTranslation('operational-studies', { keyPrefix: 'importTrainScheduleSet' });
 
   /**
-   * List of TrainSchedule sets in the cart
+   * List of train schedule sets in the cart
    */
   const trainScheduleSetsInCart = useMemo(
     () =>

@@ -18,7 +18,7 @@ use schemas::train_schedule::Margins;
 use schemas::train_schedule::PathItem;
 use schemas::train_schedule::PowerRestrictionItem;
 use schemas::train_schedule::ScheduleItem;
-use schemas::train_schedule::TrainSchedule;
+use schemas::train_schedule::TrainOccurrence;
 use schemas::train_schedule::TrainScheduleOptions;
 use serde::Deserialize;
 use serde::Serialize;
@@ -65,7 +65,7 @@ pub struct PacedTrain {
 }
 
 impl PacedTrain {
-    pub fn apply_exception(&self, exception: &PacedTrainException) -> TrainSchedule {
+    pub fn apply_exception(&self, exception: &PacedTrainException) -> TrainOccurrence {
         let mut train_schedule = self.clone().into_train_schedule();
 
         if let Some(change_group) = &exception.train_name {
@@ -111,8 +111,8 @@ impl PacedTrain {
         train_schedule
     }
 
-    pub fn into_train_schedule(self) -> TrainSchedule {
-        TrainSchedule {
+    pub fn into_train_schedule(self) -> TrainOccurrence {
+        TrainOccurrence {
             train_name: self.train_name,
             labels: self.labels.to_vec(),
             rolling_stock_name: self.rolling_stock_name,
@@ -136,7 +136,7 @@ impl PacedTrain {
     /// Returns an iterator over "created" train exceptions with their IDs and schedules.
     fn get_created_occurrences_exceptions(
         &self,
-    ) -> impl Iterator<Item = (OccurrenceId, TrainSchedule)> {
+    ) -> impl Iterator<Item = (OccurrenceId, TrainOccurrence)> {
         self.exceptions
             .iter()
             .filter(|exception| matches!(exception.exception_type, ExceptionType::Created { .. }))
@@ -159,12 +159,12 @@ impl PacedTrain {
 
     /// Returns all base train occurrences without any exceptions applied.
     /// If it's not a paced train, this will return a vector with a single train schedule.
-    fn get_base_occurrences(&self) -> Vec<(OccurrenceId, TrainSchedule)> {
+    fn get_base_occurrences(&self) -> Vec<(OccurrenceId, TrainOccurrence)> {
         (0..self.num_base_occurrences())
             .map(move |occurrence_idx| {
                 let base_start_time = self.get_occurrence_start_time(occurrence_idx);
                 let occurrence = OccurrenceId::new_base(self.id, occurrence_idx);
-                let train_schedule = TrainSchedule {
+                let train_schedule = TrainOccurrence {
                     start_time: base_start_time,
                     ..self.clone().into_train_schedule()
                 };
@@ -184,7 +184,7 @@ impl PacedTrain {
     /// and appends any `Created` exceptions as new trains.
     ///
     /// The result is sorted by `start_time` to reflect the chronological order of the trains.
-    pub fn iter_occurrences(&self) -> impl Iterator<Item = (OccurrenceId, TrainSchedule)> {
+    pub fn iter_occurrences(&self) -> impl Iterator<Item = (OccurrenceId, TrainOccurrence)> {
         let mut base_occurrences = self.get_base_occurrences();
 
         let modified_exceptions = self
@@ -248,24 +248,24 @@ impl PacedTrain {
 impl From<paced_train::PacedTrain> for PacedTrainChangeset {
     fn from(
         paced_train::PacedTrain {
-            train_schedule_base,
+            train_occurrence,
             paced,
         }: paced_train::PacedTrain,
     ) -> Self {
         let changeset = PacedTrain::changeset()
-            .comfort(train_schedule_base.comfort)
-            .constraint_distribution(train_schedule_base.constraint_distribution)
-            .initial_speed(train_schedule_base.initial_speed)
-            .labels(Tags::new(train_schedule_base.labels))
-            .margins(train_schedule_base.margins)
-            .path(train_schedule_base.path)
-            .power_restrictions(train_schedule_base.power_restrictions)
-            .rolling_stock_name(train_schedule_base.rolling_stock_name)
-            .schedule(train_schedule_base.schedule)
-            .speed_limit_tag(train_schedule_base.speed_limit_tag.map(|s| s.0))
-            .start_time(train_schedule_base.start_time)
-            .train_name(train_schedule_base.train_name)
-            .options(train_schedule_base.options)
+            .comfort(train_occurrence.comfort)
+            .constraint_distribution(train_occurrence.constraint_distribution)
+            .initial_speed(train_occurrence.initial_speed)
+            .labels(Tags::new(train_occurrence.labels))
+            .margins(train_occurrence.margins)
+            .path(train_occurrence.path)
+            .power_restrictions(train_occurrence.power_restrictions)
+            .rolling_stock_name(train_occurrence.rolling_stock_name)
+            .schedule(train_occurrence.schedule)
+            .speed_limit_tag(train_occurrence.speed_limit_tag.map(|s| s.0))
+            .start_time(train_occurrence.start_time)
+            .train_name(train_occurrence.train_name)
+            .options(train_occurrence.options)
             .time_window(
                 paced
                     .as_ref()
@@ -275,7 +275,7 @@ impl From<paced_train::PacedTrain> for PacedTrainChangeset {
             .interval(paced.as_ref().map(|p| p.interval).map(ChronoDuration::from))
             .exceptions(paced.map(|p| p.exceptions).unwrap_or_default());
 
-        match train_schedule_base.category {
+        match train_occurrence.category {
             Some(TrainCategory::Main { main_category }) => changeset
                 .main_category(Some(TrainMainCategory(main_category)))
                 .sub_category(None),
@@ -290,7 +290,7 @@ impl From<paced_train::PacedTrain> for PacedTrainChangeset {
 impl From<PacedTrain> for paced_train::PacedTrain {
     fn from(paced_train: PacedTrain) -> Self {
         Self {
-            train_schedule_base: schemas::TrainSchedule {
+            train_occurrence: schemas::TrainOccurrence {
                 train_name: paced_train.train_name,
                 labels: paced_train.labels.to_vec(),
                 rolling_stock_name: paced_train.rolling_stock_name,

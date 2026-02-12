@@ -12,7 +12,7 @@ import type {
   PathProperties,
   RollingStockWithLiveries,
   SimulationResponseSuccess,
-  TrainSchedule,
+  PacedTrain,
   PathItem,
 } from 'common/api/osrdEditoastApi';
 import type { PacedTrainWithDetails } from 'modules/timetableItem/types';
@@ -96,7 +96,7 @@ export type WaypointsPanelData = {
   setFilteredWaypoints: Dispatch<SetStateAction<PathOperationalPoint[]>>;
   deployedWaypoints: Set<string>;
   toggleDeployedWaypoint: (waypointId: string, deployed?: boolean) => void;
-  projectionPath: TrainSchedule['path'];
+  projectionPath: PacedTrain['path'];
 };
 
 export type LayerRangeData = {

@@ -11,7 +11,7 @@ import type {
   RoundTrips,
   SimulationResponseSuccess,
   SimulationSummaryResult,
-  TrainSchedule,
+  PacedTrain,
 } from 'common/api/osrdEditoastApi';
 import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
 import { isPacedTrain } from 'modules/timetableItem/helpers/pacedTrain';
@@ -156,7 +156,7 @@ export const preparePathPropertiesData = (
   electricalProfiles: SimulationResponseSuccess['electrical_profiles'],
   { slopes, curves, electrifications, operational_points, geometry }: PathProperties,
   { path_item_positions, length }: CorePathfindingResultSuccess,
-  trainSchedulePath: TrainSchedule['path'],
+  trainSchedulePath: PacedTrain['path'],
   t: TFunction<'operational-studies'>
 ): PathPropertiesFormatted => {
   const formattedSlopes = transformBoundariesDataToPositionDataArray(slopes, length, 'gradient');
