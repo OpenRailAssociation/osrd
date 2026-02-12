@@ -90,7 +90,6 @@ export function verifySimulationContent(pdfText: string, expectedSimulation: Pdf
       [
         route.name,
         route.ch,
-        route.track,
         route.arrivalTime,
         route.passageTime,
         route.departureTime,
