@@ -3,6 +3,7 @@ import type { TFunction } from 'i18next';
 import type { TimingContext } from 'applications/stdcm/components/StdcmResults/SendToRailwayManagerModal';
 import {
   type SimilarTrainWithSecondaryCode,
+  type StdcmPathProperties,
   type StdcmResultsOperationalPoint,
   StdcmStopTypes,
 } from 'applications/stdcm/types';
@@ -139,24 +140,27 @@ function formatMinimalOperationalPointWithTimes(
     duration,
     stopEndTime: durationToHHMM(stopEnd),
     stopRequested: false,
+    weight: null,
   };
 }
 
 /**
- * @param op Operational point to format
+ * @param suggestedOp Suggested operational point to format
+ * @param operationalPoints List of all operational points to retrieve the weight of the formatted OP
  * @param train Object containing simulated train positions, times, and departure time
  * @param simulationPathSteps List of simulation path steps
  * @returns A fully formatted operational point with calculated stop duration and departure time
  */
-function formatOperationalPointWithTimes(
-  op: SuggestedOP,
+function formatOperationalPointWithTimesAndWeight(
+  suggestedOp: SuggestedOP,
+  operationalPoints: StdcmPathProperties['operational_points'],
   train: TrainSimulation,
   simulationPathSteps: StdcmPathStep[]
 ): StdcmResultsOperationalPoint {
-  const partiallyFormattedOp = formatMinimalOperationalPointWithTimes(op, train);
+  const partiallyFormattedOp = formatMinimalOperationalPointWithTimes(suggestedOp, train);
   // Find the corresponding stopType from pathSteps
   const correspondingStep = simulationPathSteps.find(
-    (step) => step.operationalPoint && step.operationalPoint.id === op.opId
+    (step) => step.operationalPoint && step.operationalPoint.id === suggestedOp.opId
   );
   let stopType;
   if (correspondingStep) {
@@ -169,11 +173,12 @@ function formatOperationalPointWithTimes(
 
   return {
     ...partiallyFormattedOp,
-    name: op.name,
-    ch: op.ch,
-    trackName: op.metadata?.trackName,
+    name: suggestedOp.name,
+    ch: suggestedOp.ch,
+    trackName: suggestedOp.metadata?.trackName,
     stopType,
     stopRequested,
+    weight: operationalPoints.find((op) => op.id === suggestedOp.opId)?.weight ?? null,
   };
 }
 
@@ -278,21 +283,24 @@ export function consolidateOvertakesToSingleSteps(
 }
 
 /**
- * @param operationalPoints List of operational points to be formated and enriched
+ * @param operationalPoints List of operational points
+ * @param suggestedOperationalPoints List of suggested operational points to be formated and enriched
  * @param opIdsToExclude List of operational point IDs to exclude from the simulation sheet (e.g., service track OPs that cannot be modeled). Exception: OPs explicitly requested by the user (origin, destination, via points, or stops) are never excluded.
  * @param simulation Simulation response containing final output positions and times
  * @param simulationPathSteps List of simulation path steps
  * @param departureTime Departure time in hh:mm format
- * @returns A list of formated operational points with times and stop durations
+ * @returns A list of formated operational points with weight, times and stop durations
  */
 export function getOperationalPointsWithTimes({
   operationalPoints,
+  suggestedOperationalPoints,
   opIdsToExclude,
   simulation,
   simulationPathSteps,
   departureTime,
 }: {
-  operationalPoints: SuggestedOP[];
+  operationalPoints: StdcmPathProperties['operational_points'];
+  suggestedOperationalPoints: SuggestedOP[];
   opIdsToExclude: string[];
   simulation: SimulationResponseSuccess;
   simulationPathSteps: StdcmPathStep[];
@@ -303,22 +311,23 @@ export function getOperationalPointsWithTimes({
   const departureHour = departureTime.getHours();
   const departureMinute = departureTime.getMinutes();
 
-  const formattedOps = operationalPoints
-    .filter((op) => {
+  const formattedOps = suggestedOperationalPoints
+    .filter((suggestedOp) => {
       // Keep if the OP is not in the exclusion list
-      if (!op.opId || !opIdsToExclude.includes(op.opId)) return true;
+      if (!suggestedOp.opId || !opIdsToExclude.includes(suggestedOp.opId)) return true;
       // Keep if explicitly requested by the user (origin, destination, via point or stop)
 
       const isRequestedPoint = simulationPathSteps.some(
-        (step) => step.operationalPoint && step.operationalPoint.id === op.opId
+        (step) => step.operationalPoint && step.operationalPoint.id === suggestedOp.opId
       );
 
       return isRequestedPoint;
     })
     // Map operational points with their positions, times, and stop durations
-    .map((op) =>
-      formatOperationalPointWithTimes(
-        op,
+    .map((suggestedOp) =>
+      formatOperationalPointWithTimesAndWeight(
+        suggestedOp,
+        operationalPoints,
         { positions, times, speeds, departureHour, departureMinute },
         simulationPathSteps
       )
