@@ -38,6 +38,7 @@ TARGETS = [
     Target(name="editoast", image="editoast", release=True),
     Target(name="editoast-test", image="editoast", variant="test"),
 
+    Target(name="front-devel", image="front", variant="devel"),
     Target(name="front-tests", image="front", variant="tests"),
 
     Target(name="gateway-standalone", image="gateway", variant="standalone"),
