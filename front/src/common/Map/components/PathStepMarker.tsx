@@ -23,7 +23,7 @@ const MARKER_IMAGES = {
   [PATH_STEP_MARKER_STATE.HOVER]: hoverSVG,
 };
 
-type PathStepsMarkerProps = {
+export type PathStepsMarkerProps = {
   id: string;
   markerIndicator: string;
   name: string;
