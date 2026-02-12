@@ -60,7 +60,7 @@ class OpSimulationResultPage extends ScenarioPage {
       expect(this.spaceTimeChart).toBeVisible(),
       expect(this.timesStopsDataSheet).toBeVisible(),
       expect(this.speedSpaceChart).toBeHidden(),
-      expect(this.simulationMap).toBeHidden(),
+      expect(this.simulationMap).toBeVisible(),
     ]);
   }
 

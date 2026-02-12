@@ -277,19 +277,21 @@ const SimulationResults = ({
                   </div>
                 </BoardWrapper>
               )}
-
-              {/* SIMULATION : MAP */}
-              <BoardWrapper hidden={!activeBoards.has('map')} name={t('boards.map')} withFooter>
-                <div data-testid="simulation-map" className="simulation-map">
-                  <SimulationResultsMap
-                    pathSteps={simulationResults.train.path}
-                    pathProperties={simulationResults.pathProperties}
-                    setMapCanvas={setMapCanvas}
-                  />
-                </div>
-              </BoardWrapper>
             </>
           )}
+
+          {/* SIMULATION : MAP */}
+          <BoardWrapper hidden={!activeBoards.has('map')} name={t('boards.map')} withFooter>
+            <div data-testid="simulation-map" className="simulation-map">
+              <SimulationResultsMap
+                pathSteps={simulationResults.train.path}
+                pathProperties={
+                  simulationResults.isValid ? simulationResults.pathProperties : undefined
+                }
+                setMapCanvas={setMapCanvas}
+              />
+            </div>
+          </BoardWrapper>
 
           {/* TIME STOPS TABLE */}
           <BoardWrapper
