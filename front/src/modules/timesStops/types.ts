@@ -9,26 +9,57 @@ export type TimeExtraDays = {
   dayDisplayed?: boolean;
 };
 
+export enum ScheduleRespectStatus {
+  Green = 'green', // Schedule AND margin met
+  Orange = 'orange', // Schedule not met but margin met
+  Red = 'red', // Margin not met
+  None = 'none', // No data
+}
+
 export type TimesStopsRowNew = {
+  // Identification
   id: string;
   opOnPathIndex: number;
+  scheduleNotHonored: boolean | undefined;
+
+  // Stop information
   name: string;
   secondaryCode: string;
   track: string;
-  requestedArrival: Date | null;
-  computedArrival: Date | null;
-  stopDuration: Duration | null;
-  requestedDeparture: Date | null;
-  computedDeparture: Date | null;
-  invalidPathStep: boolean | undefined;
-  scheduleNotHonored: boolean | undefined;
-  marginNotHonored: boolean | undefined;
+
+  // Path information
   /** True if this row corresponds to a pathStep input, false if it's just a waypoint */
   isPathStep: boolean;
   /** True if the pathStep had an explicit track in its location (TrackOffset or local_track_name) */
   hasRequestedTrack: boolean;
   /** Location info to create a new PathItem when editing a waypoint that's not yet a pathStep */
   location: PathItemLocation;
+
+  // Times
+  requestedArrival: Date | null;
+  computedArrival: Date | null;
+  stopDuration: Duration | null;
+  requestedDeparture: Date | null;
+  computedDeparture: Date | null;
+
+  // Signaling options
+  closedSignal: boolean;
+  shortSlipDistance: boolean;
+
+  // Power restrictions
+  powerRestriction: string | null;
+
+  // Margins
+  requestedTheoreticalMargin: string | null;
+  isTheoreticalMarginBoundary: boolean;
+  marginNotHonored: boolean | undefined;
+  computedTheoreticalMarginSeconds: number | null;
+  realMargin: Duration | null;
+  marginsDifference: Duration | null;
+
+  // Travel Times
+  timeFromPreviousOp: Duration | null;
+  totalTravelTime: Duration | null;
 };
 
 export type TimesStopsRow = {
