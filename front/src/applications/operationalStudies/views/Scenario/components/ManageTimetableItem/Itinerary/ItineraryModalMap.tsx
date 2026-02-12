@@ -8,6 +8,7 @@ import { matchOpRefAndOp } from 'applications/operationalStudies/utils';
 import type { PathProperties } from 'common/api/osrdEditoastApi';
 import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
+import PathStepMarker from 'common/Map/components/PathStepMarker';
 import { MapContextProvider } from 'common/Map/useMapContext';
 import { useInfraID } from 'common/osrdContext';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
@@ -20,7 +21,6 @@ import { getBarycenter } from 'utils/geometry';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
 import type { FeatureInfoClick } from '../types';
-import PathStepMarker from './PathStepMarker';
 import { computePathStepCoordinates } from './utils';
 
 const OPERATIONAL_POINT_LAYERS = [
