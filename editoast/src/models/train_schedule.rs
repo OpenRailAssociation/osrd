@@ -386,7 +386,7 @@ mod tests {
     use crate::models::fixtures::create_timetable;
     use crate::models::fixtures::simple_paced_train_changeset;
     use crate::models::fixtures::simple_sub_category;
-    use crate::models::paced_train::OccurrenceId;
+    use crate::models::train_schedule::OccurrenceId;
     use chrono::DateTime;
     use chrono::Utc;
     use database::DbConnectionPoolV2;

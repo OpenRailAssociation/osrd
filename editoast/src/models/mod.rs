@@ -4,14 +4,14 @@ pub mod infra;
 pub mod infra_objects;
 pub mod macro_node;
 pub mod macro_note;
-pub mod paced_train;
 pub mod railjson;
 pub mod stdcm_search_environment;
+pub mod train_schedule;
 pub mod train_schedule_set;
 
 pub use infra::Infra;
 pub use infra_objects::*;
-pub use paced_train::TrainSchedule;
+pub use train_schedule::TrainSchedule;
 
 #[cfg(test)]
 mod tests {

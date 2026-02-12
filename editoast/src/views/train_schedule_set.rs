@@ -11,7 +11,7 @@ use utoipa::ToSchema;
 
 use crate::error::Result;
 use crate::models;
-use crate::models::paced_train::TrainScheduleChangeset;
+use crate::models::train_schedule::TrainScheduleChangeset;
 use crate::models::train_schedule_set::TrainScheduleSet;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;

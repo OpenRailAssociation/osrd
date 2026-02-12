@@ -63,7 +63,7 @@ use crate::AppState;
 use crate::error::Result;
 use crate::models;
 use crate::models::Infra;
-use crate::models::paced_train::OccurrenceId;
+use crate::models::train_schedule::OccurrenceId;
 use crate::models::train_schedule_set::TrainScheduleSet;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
@@ -923,7 +923,7 @@ mod tests {
     use crate::models::fixtures::create_timetable_with_train_schedule_set;
     use crate::models::fixtures::create_train_schedule_set;
     use crate::models::fixtures::simple_paced_train_base;
-    use crate::models::paced_train::TrainScheduleChangeset;
+    use crate::models::train_schedule::TrainScheduleChangeset;
     use crate::views::test_app::TestAppBuilder;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
