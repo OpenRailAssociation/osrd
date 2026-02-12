@@ -22,7 +22,7 @@ use crate::train_schedule::Margins;
 use crate::train_schedule::PathItem;
 use crate::train_schedule::PowerRestrictionItem;
 use crate::train_schedule::ScheduleItem;
-use crate::train_schedule::TrainSchedule;
+use crate::train_schedule::TrainOccurrence;
 use crate::train_schedule::TrainScheduleOptions;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
@@ -39,7 +39,8 @@ pub struct Paced {
 #[derive(Debug, Clone, Serialize, PartialEq, ToSchema)]
 pub struct PacedTrain {
     #[serde(flatten)]
-    pub train_schedule_base: TrainSchedule,
+    #[schema(inline)]
+    pub train_occurrence: TrainOccurrence,
     #[schema(inline)]
     pub paced: Option<Paced>,
 }
@@ -52,7 +53,7 @@ impl<'de> Deserialize<'de> for PacedTrain {
         #[derive(Deserialize)]
         struct PacedTrainJson {
             #[serde(flatten)]
-            pub train_schedule_base: TrainSchedule,
+            pub train_occurrence: TrainOccurrence,
             pub paced: Option<Paced>,
         }
         let raw = PacedTrainJson::deserialize(deserializer)?;
@@ -84,7 +85,7 @@ impl<'de> Deserialize<'de> for PacedTrain {
             }
         }
         Ok(PacedTrain {
-            train_schedule_base: raw.train_schedule_base,
+            train_occurrence: raw.train_occurrence,
             paced: raw.paced,
         })
     }

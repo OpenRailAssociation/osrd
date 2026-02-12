@@ -8,7 +8,7 @@ import { useScenarioContext } from 'applications/operationalStudies/hooks/useSce
 import {
   osrdEditoastApi,
   type OperationalPointReference,
-  type TrainSchedule,
+  type PacedTrain,
 } from 'common/api/osrdEditoastApi';
 import type { PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
 import { getPointOnTrackCoordinates } from 'utils/geometry';
@@ -25,9 +25,9 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
   );
 
   // 1. Extract the train path to extract its steps related operational points
-  const strippedTrainPath: TrainSchedule['path'] = useMemo(
+  const strippedTrainPath: PacedTrain['path'] = useMemo(
     () =>
-      pathSteps.reduce<TrainSchedule['path']>((acc, step) => {
+      pathSteps.reduce<PacedTrain['path']>((acc, step) => {
         if (!step.location) return acc;
         if ('operational_point' in step.location) {
           if (

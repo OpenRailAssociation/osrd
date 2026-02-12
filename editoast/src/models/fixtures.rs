@@ -228,7 +228,7 @@ pub fn create_modified_exception_with_change_groups(
 
 pub fn simple_paced_train_base() -> PacedTrain {
     PacedTrain {
-        train_schedule_base: schemas::TrainSchedule::fake(),
+        train_occurrence: schemas::TrainOccurrence::fake(),
         paced: Some(Paced {
             time_window: ChronoDuration::hours(2).try_into().unwrap(),
             interval: ChronoDuration::minutes(15).try_into().unwrap(),

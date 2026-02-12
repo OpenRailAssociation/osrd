@@ -164,7 +164,7 @@ pub(in crate::views) async fn get_by_id(
     put, path = "",
     tags = ["timetable", "paced_train"],
     params(PacedTrainIdParam),
-    request_body = inline(PacedTrain),
+    request_body = PacedTrain,
     responses(
         (status = 204, description = "The paced train has been updated")
     )
@@ -253,7 +253,7 @@ pub(in crate::views) struct PacedTrainSummaryResponse {
 struct SimulationContext {
     paced_train_id: i64,
     exception_key: Option<String>,
-    train_schedule: schemas::TrainSchedule,
+    train_schedule: schemas::TrainOccurrence,
 }
 
 /// Associate each paced train id with its simulation summaries response
@@ -332,7 +332,7 @@ pub(in crate::views) async fn simulation_summary(
             })
             .collect();
 
-    let schedules: Vec<schemas::TrainSchedule> = simulation_contexts
+    let schedules: Vec<schemas::TrainOccurrence> = simulation_contexts
         .iter()
         .map(|ctx| ctx.train_schedule.clone())
         .collect();
@@ -1484,7 +1484,7 @@ mod tests {
     use schemas::train_schedule::Comfort;
     use schemas::train_schedule::PathItem;
     use schemas::train_schedule::ScheduleItem;
-    use schemas::train_schedule::TrainSchedule;
+    use schemas::train_schedule::TrainOccurrence;
     use serde_json::json;
 
     use crate::error::InternalError;
@@ -1558,7 +1558,7 @@ mod tests {
 
         let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
         let mut paced_train_base = simple_paced_train_base();
-        paced_train_base.train_schedule_base.category = Some(TrainCategory::Sub {
+        paced_train_base.train_occurrence.category = Some(TrainCategory::Sub {
             sub_category_code: created_sub_category.code.clone(),
         });
 
@@ -1594,7 +1594,7 @@ mod tests {
         let created_paced_train: schemas::paced_train::PacedTrain = created_paced_train.into();
 
         assert_eq!(
-            created_paced_train.train_schedule_base.category,
+            created_paced_train.train_occurrence.category,
             Some(TrainCategory::Sub {
                 sub_category_code: created_sub_category.code.clone()
             })
@@ -1806,9 +1806,9 @@ mod tests {
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), "simulation_rolling_stock").await;
         let paced_train_base = PacedTrain {
-            train_schedule_base: TrainSchedule {
+            train_occurrence: TrainOccurrence {
                 rolling_stock_name: rolling_stock.name.clone(),
-                ..TrainSchedule::fake()
+                ..TrainOccurrence::fake()
             },
             paced: Some(Paced {
                 time_window: Duration::hours(1).try_into().unwrap(),

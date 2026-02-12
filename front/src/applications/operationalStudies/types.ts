@@ -7,7 +7,6 @@ import type {
   CorePathfindingResultSuccess,
   SimulationResponse,
   SimulationResponseSuccess,
-  TrainSchedule,
   MacroNodeForm,
   RollingStockWithLiveries,
   TrainCategory,
@@ -115,7 +114,7 @@ export type PathPropertiesFormatted = {
   voltages: RangedValue[];
 };
 
-export type PowerRestriction = ArrayElement<TrainSchedule['power_restrictions']>;
+export type PowerRestriction = ArrayElement<PacedTrain['power_restrictions']>;
 
 export type ElectrificationVoltage = {
   type: string;

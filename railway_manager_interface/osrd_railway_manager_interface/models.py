@@ -131,6 +131,24 @@ class Paced(BaseModel):
     """
 
 
+class PacedTrain(BaseModel):
+    category: TrainCategoryMain | TrainCategorySub | None = None
+    comfort: Comfort | None = None
+    constraint_distribution: Distribution
+    initial_speed: float | None = None
+    labels: list[str] | None = None
+    margins: Margins | None = None
+    options: TrainScheduleOptions | None = None
+    path: list[PathItem]
+    power_restrictions: list[PowerRestriction] | None = None
+    rolling_stock_name: str
+    schedule: list[ScheduleItem] | None = None
+    speed_limit_tag: SpeedLimitTag | None = None
+    start_time: AwareDatetime
+    train_name: str
+    paced: Paced | None = None
+
+
 class PacedTrainException(BaseModel):
     """
     Represents an exception for a paced train occurrence.
@@ -396,23 +414,6 @@ class TrainNameChangeGroup(BaseModel):
     value: str
 
 
-class TrainSchedule(BaseModel):
-    category: TrainCategoryMain | TrainCategorySub | None = None
-    comfort: Comfort | None = None
-    constraint_distribution: Distribution
-    initial_speed: float | None = None
-    labels: list[str] | None = None
-    margins: Margins | None = None
-    options: TrainScheduleOptions | None = None
-    path: list[PathItem]
-    power_restrictions: list[PowerRestriction] | None = None
-    rolling_stock_name: str
-    schedule: list[ScheduleItem] | None = None
-    speed_limit_tag: SpeedLimitTag | None = None
-    start_time: AwareDatetime
-    train_name: str
-
-
 class TrainScheduleOptions(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -435,7 +436,3 @@ class TransformTimetableResponse(BaseModel):
 
 class Value(RootModel[str]):
     root: Annotated[str, Field(min_length=1)]
-
-
-class PacedTrain(TrainSchedule):
-    paced: Paced | None = None

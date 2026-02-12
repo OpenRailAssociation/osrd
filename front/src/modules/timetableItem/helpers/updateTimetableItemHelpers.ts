@@ -56,7 +56,7 @@ async function updatePacedTrain(dispatch: AppDispatch, id: PacedTrainId, pacedTr
   await dispatch(
     osrdEditoastApi.endpoints.putPacedTrainById.initiate({
       id: extractEditoastIdFromPacedTrainId(id),
-      body: pacedTrain,
+      pacedTrain,
     })
   ).unwrap();
 }

@@ -10,4 +10,4 @@ pub mod fixtures;
 
 pub use rolling_stock::RollingStock;
 pub use rolling_stock::TowedRollingStock;
-pub use train_schedule::TrainSchedule;
+pub use train_schedule::TrainOccurrence;

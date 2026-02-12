@@ -1021,7 +1021,7 @@ mod tests {
 
         let paced_train_1 = simple_paced_train_base();
         let mut paced_train_2 = simple_paced_train_base();
-        paced_train_2.train_schedule_base.start_time += Duration::minutes(200);
+        paced_train_2.train_occurrence.start_time += Duration::minutes(200);
         paced_train_2.paced.as_mut().unwrap().time_window =
             Duration::minutes(120).try_into().unwrap();
         paced_train_2.paced.as_mut().unwrap().interval = Duration::seconds(30).try_into().unwrap();

@@ -1,6 +1,6 @@
 import { beforeEach, it, expect } from 'vitest';
 
-import type { Distribution, TrainCategory, TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { Distribution, TrainCategory, PacedTrain } from 'common/api/osrdEditoastApi';
 import {
   operationalStudiesConfSlice,
   operationalStudiesInitialConf,
@@ -89,7 +89,7 @@ const testTrainSettingsReducer = () => {
   });
 
   it('should handle updateRollingStockComfort', () => {
-    const newRollingStockComfort: TrainSchedule['comfort'] = 'AIR_CONDITIONING';
+    const newRollingStockComfort: PacedTrain['comfort'] = 'AIR_CONDITIONING';
     defaultStore.dispatch(updateRollingStockComfort(newRollingStockComfort));
     const state = getState();
     expect(state.rollingStockComfort).toBe(newRollingStockComfort);

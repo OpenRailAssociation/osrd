@@ -709,7 +709,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/paced_train/${queryArg.id}`,
           method: 'PUT',
-          body: queryArg.body,
+          body: queryArg.pacedTrain,
         }),
         invalidatesTags: ['timetable', 'paced_train'],
       }),
@@ -2069,15 +2069,7 @@ export type GetPacedTrainByIdApiArg = {
 export type PutPacedTrainByIdApiResponse = unknown;
 export type PutPacedTrainByIdApiArg = {
   id: number;
-  body: TrainSchedule & {
-    paced?: null | {
-      exceptions: PacedTrainException[];
-      /** Time between two occurrences, an ISO 8601 format is expected */
-      interval: PositiveDuration;
-      /** Duration of the paced train, an ISO 8601 format is expected */
-      time_window: PositiveDuration;
-    };
-  };
+  pacedTrain: PacedTrain;
 };
 export type GetPacedTrainByIdEtcsBrakingCurvesApiResponse =
   /** status 200 ETCS Braking Curves Output */ CoreEtcsBrakingCurvesResponse;
@@ -3879,26 +3871,6 @@ export type ScheduleItem = {
   reception_signal?: ReceptionSignal;
   stop_for?: null | PositiveDuration;
 };
-export type TrainSchedule = {
-  category?: null | TrainCategory;
-  comfort?: Comfort;
-  constraint_distribution: Distribution;
-  initial_speed?: number;
-  labels?: string[];
-  margins?: Margins;
-  options?: TrainScheduleOptions;
-  path: PathItem[];
-  power_restrictions?: {
-    from: string;
-    to: string;
-    value: string;
-  }[];
-  rolling_stock_name: string;
-  schedule?: ScheduleItem[];
-  speed_limit_tag?: null | string;
-  start_time: string;
-  train_name: string;
-};
 export type ConstraintDistributionChangeGroup = {
   value: Distribution;
 };
@@ -3955,7 +3927,26 @@ export type PacedTrainException = {
   start_time?: StartTimeChangeGroup;
   train_name?: TrainNameChangeGroup;
 };
-export type PacedTrain = TrainSchedule & {
+export type PacedTrain = {
+  category?: null | TrainCategory;
+  comfort?: Comfort;
+  constraint_distribution: Distribution;
+  initial_speed?: number;
+  labels?: string[];
+  margins?: Margins;
+  options?: TrainScheduleOptions;
+  path: PathItem[];
+  power_restrictions?: {
+    from: string;
+    to: string;
+    value: string;
+  }[];
+  rolling_stock_name: string;
+  schedule?: ScheduleItem[];
+  speed_limit_tag?: null | string;
+  start_time: string;
+  train_name: string;
+} & {
   paced?: null | {
     exceptions: PacedTrainException[];
     /** Time between two occurrences, an ISO 8601 format is expected */
