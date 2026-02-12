@@ -282,9 +282,9 @@ const SimulationResults = ({
               <BoardWrapper hidden={!activeBoards.has('map')} name={t('boards.map')} withFooter>
                 <div data-testid="simulation-map" className="simulation-map">
                   <SimulationResultsMap
-                    geometry={simulationResults.pathProperties.geometry}
+                    pathSteps={simulationResults.train.path}
+                    pathProperties={simulationResults.pathProperties}
                     setMapCanvas={setMapCanvas}
-                    pathfindingResult={simulationResults.path}
                   />
                 </div>
               </BoardWrapper>
