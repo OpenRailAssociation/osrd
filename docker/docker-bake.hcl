@@ -6,6 +6,7 @@ group "default" {
     "core-build",
     "editoast",
     "editoast-test",
+    "front-devel",
     "front-tests",
     "gateway-standalone",
     "gateway-test",
@@ -132,6 +133,13 @@ target "gateway-front" {
 #########
 # Front #
 #########
+
+target "base-front-devel" {}
+target "front-devel" {
+  inherits = ["base", "base-front-devel"]
+  context = "front"
+  dockerfile = "docker/Dockerfile.devel"
+}
 
 target "base-front-tests" {}
 target "front-tests" {
