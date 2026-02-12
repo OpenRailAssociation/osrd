@@ -29,7 +29,7 @@ use utoipa::ToSchema;
 #[cfg_attr(test, derive(Default, PartialEq))]
 #[model(table = database::tables::train_schedule)]
 #[model(gen(ops = crud, batch_ops = crud, list))]
-pub struct PacedTrain {
+pub struct TrainSchedule {
     pub id: i64,
     pub train_name: String,
     #[model(remote = "Vec<Option<String>>")]
@@ -64,7 +64,7 @@ pub struct PacedTrain {
     pub exceptions: Vec<PacedTrainException>,
 }
 
-impl PacedTrain {
+impl TrainSchedule {
     pub fn apply_exception(&self, exception: &PacedTrainException) -> TrainOccurrence {
         let mut train_schedule = self.clone().into_train_schedule();
 
@@ -245,14 +245,14 @@ impl PacedTrain {
     }
 }
 
-impl From<paced_train::PacedTrain> for PacedTrainChangeset {
+impl From<paced_train::PacedTrain> for TrainScheduleChangeset {
     fn from(
         paced_train::PacedTrain {
             train_occurrence,
             paced,
         }: paced_train::PacedTrain,
     ) -> Self {
-        let changeset = PacedTrain::changeset()
+        let changeset = TrainSchedule::changeset()
             .comfort(train_occurrence.comfort)
             .constraint_distribution(train_occurrence.constraint_distribution)
             .initial_speed(train_occurrence.initial_speed)
@@ -287,33 +287,33 @@ impl From<paced_train::PacedTrain> for PacedTrainChangeset {
     }
 }
 
-impl From<PacedTrain> for paced_train::PacedTrain {
-    fn from(paced_train: PacedTrain) -> Self {
+impl From<TrainSchedule> for paced_train::PacedTrain {
+    fn from(train_schedule: TrainSchedule) -> Self {
         Self {
             train_occurrence: schemas::TrainOccurrence {
-                train_name: paced_train.train_name,
-                labels: paced_train.labels.to_vec(),
-                rolling_stock_name: paced_train.rolling_stock_name,
-                start_time: paced_train.start_time,
-                schedule: paced_train.schedule,
-                margins: paced_train.margins,
-                initial_speed: paced_train.initial_speed,
-                comfort: paced_train.comfort,
-                path: paced_train.path,
-                constraint_distribution: paced_train.constraint_distribution,
-                speed_limit_tag: paced_train.speed_limit_tag.map(Into::into),
-                power_restrictions: paced_train.power_restrictions,
-                options: paced_train.options,
-                category: paced_train
+                train_name: train_schedule.train_name,
+                labels: train_schedule.labels.to_vec(),
+                rolling_stock_name: train_schedule.rolling_stock_name,
+                start_time: train_schedule.start_time,
+                schedule: train_schedule.schedule,
+                margins: train_schedule.margins,
+                initial_speed: train_schedule.initial_speed,
+                comfort: train_schedule.comfort,
+                path: train_schedule.path,
+                constraint_distribution: train_schedule.constraint_distribution,
+                speed_limit_tag: train_schedule.speed_limit_tag.map(Into::into),
+                power_restrictions: train_schedule.power_restrictions,
+                options: train_schedule.options,
+                category: train_schedule
                     .main_category
                     .map(|main_category| TrainCategory::main(main_category.0))
-                    .xor(paced_train.sub_category.map(TrainCategory::sub)),
+                    .xor(train_schedule.sub_category.map(TrainCategory::sub)),
             },
-            paced: paced_train.time_window.and_then(|time_window| {
-                paced_train.interval.map(|interval| Paced {
+            paced: train_schedule.time_window.and_then(|time_window| {
+                train_schedule.interval.map(|interval| Paced {
                     time_window: time_window.try_into().unwrap(),
                     interval: interval.try_into().unwrap(),
-                    exceptions: paced_train.exceptions,
+                    exceptions: train_schedule.exceptions,
                 })
             }),
         }
@@ -380,7 +380,7 @@ impl Display for OccurrenceId {
 mod tests {
     use std::str::FromStr;
 
-    use crate::models::PacedTrain;
+    use crate::models::TrainSchedule;
     use crate::models::fixtures::create_created_exception_with_change_groups;
     use crate::models::fixtures::create_modified_exception_with_change_groups;
     use crate::models::fixtures::create_timetable;
@@ -403,8 +403,8 @@ mod tests {
     use schemas::train_schedule::Margins;
     use schemas::train_schedule::TrainScheduleOptions;
 
-    pub fn create_paced_train(exceptions: Vec<PacedTrainException>) -> PacedTrain {
-        PacedTrain {
+    pub fn create_paced_train(exceptions: Vec<PacedTrainException>) -> TrainSchedule {
+        TrainSchedule {
             id: 1,
             train_schedule_set_id: 1,
             train_name: "train_name".to_string(),

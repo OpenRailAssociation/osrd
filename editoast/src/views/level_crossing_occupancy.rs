@@ -2,7 +2,7 @@ use crate::AppState;
 use crate::error::Result;
 use crate::models::Infra;
 use crate::models::LevelCrossingModel;
-use crate::models::PacedTrain;
+use crate::models::TrainSchedule;
 use crate::models::paced_train::OccurrenceId;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
@@ -131,12 +131,13 @@ pub(in crate::views) async fn occupancy(
         })
         .await?;
 
-    let trains: Vec<PacedTrain> = PacedTrain::retrieve_batch_or_fail(conn, train_ids, |missing| {
-        LevelCrossingError::TrainBatchNotFound {
-            count: missing.len(),
-        }
-    })
-    .await?;
+    let trains: Vec<TrainSchedule> =
+        TrainSchedule::retrieve_batch_or_fail(conn, train_ids, |missing| {
+            LevelCrossingError::TrainBatchNotFound {
+                count: missing.len(),
+            }
+        })
+        .await?;
 
     // Collect all occurrences from all trains
     let train_occurrences = trains
@@ -488,7 +489,7 @@ mod tests {
         lc_position: f64,
         lc_id: &str,
         track: &str,
-    ) -> (TestResponse, i64, PacedTrain) {
+    ) -> (TestResponse, i64, TrainSchedule) {
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
             .response(StatusCode::OK)
@@ -507,7 +508,7 @@ mod tests {
         lc_id: &str,
         track: &str,
         lc_position: f64,
-    ) -> (TestResponse, i64, PacedTrain) {
+    ) -> (TestResponse, i64, TrainSchedule) {
         let app = TestAppBuilder::new().core_client(core.into()).build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
@@ -535,7 +536,7 @@ mod tests {
             .await
             .expect("Failed to create level crossing");
 
-        let train = crate::models::PacedTrain::default()
+        let train = crate::models::TrainSchedule::default()
             .into_changeset()
             .train_schedule_set_id(train_schedule_set.id)
             .rolling_stock_name(rolling_stock.name)

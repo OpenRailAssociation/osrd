@@ -11,7 +11,7 @@ use utoipa::ToSchema;
 
 use crate::error::Result;
 use crate::models;
-use crate::models::paced_train::PacedTrainChangeset;
+use crate::models::paced_train::TrainScheduleChangeset;
 use crate::models::train_schedule_set::TrainScheduleSet;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
@@ -332,12 +332,12 @@ pub(in crate::views) async fn post_paced_train(
 
     let changesets = paced_trains
         .into_iter()
-        .map(PacedTrainChangeset::from)
+        .map(TrainScheduleChangeset::from)
         .map(|cs| cs.train_schedule_set_id(train_schedule_set_id))
         .collect::<Vec<_>>();
 
     // Create a batch of paced trains
-    let paced_trains: Vec<_> = models::PacedTrain::create_batch(conn, changesets).await?;
+    let paced_trains: Vec<_> = models::TrainSchedule::create_batch(conn, changesets).await?;
     let response: Vec<PacedTrainResponse> = paced_trains.into_iter().map_into().collect();
 
     Ok((StatusCode::CREATED, Json(response)))
@@ -380,9 +380,9 @@ pub(in crate::views) async fn get_paced_trains(
     }
 
     let settings = SelectionSettings::new()
-        .filter(move || models::PacedTrain::TRAIN_SCHEDULE_SET_ID.eq(train_schedule_set_id));
+        .filter(move || models::TrainSchedule::TRAIN_SCHEDULE_SET_ID.eq(train_schedule_set_id));
 
-    let paced_trains = models::PacedTrain::list(conn, settings).await?;
+    let paced_trains = models::TrainSchedule::list(conn, settings).await?;
     Ok(Json(paced_trains.into_iter().map_into().collect()))
 }
 
@@ -456,11 +456,11 @@ mod tests {
         assert!(response.len() == 2);
 
         let settings = SelectionSettings::default()
-            .filter(move || models::PacedTrain::TRAIN_SCHEDULE_SET_ID.eq(train_schedule_set.id))
+            .filter(move || models::TrainSchedule::TRAIN_SCHEDULE_SET_ID.eq(train_schedule_set.id))
             .limit(25)
             .offset(0);
 
-        let list_result = models::PacedTrain::list(&mut pool.get_ok(), settings)
+        let list_result = models::TrainSchedule::list(&mut pool.get_ok(), settings)
             .await
             .expect("Failed to fetch paced trains");
 
@@ -540,11 +540,11 @@ mod tests {
             .json_into();
 
         let settings = SelectionSettings::default()
-            .filter(move || models::PacedTrain::TRAIN_SCHEDULE_SET_ID.eq(train_schedule_set.id))
+            .filter(move || models::TrainSchedule::TRAIN_SCHEDULE_SET_ID.eq(train_schedule_set.id))
             .limit(25)
             .offset(0);
 
-        let list_result = models::PacedTrain::list(&mut pool.get_ok(), settings)
+        let list_result = models::TrainSchedule::list(&mut pool.get_ok(), settings)
             .await
             .expect("Failed to fetch paced trains");
 

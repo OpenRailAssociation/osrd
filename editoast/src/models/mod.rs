@@ -11,7 +11,7 @@ pub mod train_schedule_set;
 
 pub use infra::Infra;
 pub use infra_objects::*;
-pub use paced_train::PacedTrain;
+pub use paced_train::TrainSchedule;
 
 #[cfg(test)]
 mod tests {
