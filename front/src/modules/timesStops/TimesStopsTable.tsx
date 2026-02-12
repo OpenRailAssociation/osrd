@@ -14,7 +14,7 @@ import { formatLocalTime } from 'utils/date';
 
 import DurationCell from './DurationCell';
 import TimeCell from './TimeCell';
-import type { TimesStopsRowNew } from './types';
+import { type TimesStopsRowNew } from './types';
 
 declare module '@tanstack/react-table' {
   // eslint-disable-next-line @typescript-eslint/consistent-type-definitions, @typescript-eslint/no-unused-vars
@@ -88,7 +88,7 @@ const TimesStopsTable = ({
 }: TimesStopsTableProps) => {
   const { t } = useTranslation('translation', { keyPrefix: 'timeStopTable' });
 
-  const isScheduleNotHonored = rows.some((row) => row.scheduleNotHonored);
+  const scheduleNotHonored = rows.some((row) => row.stepStatus === 'scheduleNotHonored');
 
   const columns = useMemo(
     () => [
@@ -108,21 +108,18 @@ const TimesStopsTable = ({
             return <span>&nbsp;</span>;
           }
 
-          const {
-            marginNotHonored,
-            scheduleNotHonored,
-            invalidPathStep,
-            computedArrival,
-            isPathStep,
-          } = info.row.original;
+          const { stepStatus, computedArrival, isPathStep } = info.row.original;
 
-          const isSuccessSchedule = computedArrival && !marginNotHonored && !scheduleNotHonored;
+          const isSuccessSchedule =
+            computedArrival &&
+            !(stepStatus === 'marginNotHonored') &&
+            !(stepStatus === 'scheduleNotHonored');
 
           const className = cx({
             'success-schedule': isPathStep && isSuccessSchedule,
-            'warning-schedule': isPathStep && scheduleNotHonored,
-            'warning-margin': isPathStep && marginNotHonored && !scheduleNotHonored,
-            'invalid-path-step': invalidPathStep,
+            'warning-schedule': isPathStep && stepStatus === 'scheduleNotHonored',
+            'warning-margin': isPathStep && stepStatus === 'marginNotHonored',
+            'invalid-path-step': stepStatus === 'invalidPathStep',
           });
 
           return <span className={className}>&nbsp;</span>;
@@ -241,6 +238,67 @@ const TimesStopsTable = ({
           className: 'col-computed-departure computed',
         },
       }),
+      columnHelper.accessor('closedSignal', {
+        header: () => t('receptionOnClosedSignal'),
+        cell: (info) => <input type="checkbox" checked={info.getValue()} readOnly />,
+        meta: {
+          className: 'col-closed-signal',
+        },
+      }),
+      columnHelper.accessor('shortSlipDistance', {
+        header: () => t('shortSlipDistance'),
+        cell: (info) => {
+          const { closedSignal, shortSlipDistance } = info.row.original;
+          return (
+            <input type="checkbox" checked={shortSlipDistance} disabled={!closedSignal} readOnly />
+          );
+        },
+        meta: {
+          className: 'col-short-slip-distance',
+        },
+      }),
+      columnHelper.accessor('powerRestriction', {
+        header: () => t('powerRestriction'),
+        meta: {
+          className: 'col-power-restriction',
+        },
+      }),
+      columnHelper.accessor('requestedTheoreticalMargin', {
+        header: () => t('requestedTheoreticalMargin'),
+        meta: {
+          className: 'col-requested-theoretical-margin',
+        },
+      }),
+      columnHelper.accessor('computedTheoreticalMarginSeconds', {
+        header: () => t('computedTheoreticalMargin'),
+        meta: {
+          className: 'col-computed-theoretical-margin computed',
+        },
+      }),
+      columnHelper.accessor('realMargin', {
+        header: () => t('realMargin'),
+        meta: {
+          className: 'col-real-margin computed',
+        },
+      }),
+      columnHelper.accessor('marginsDifference', {
+        header: () => t('diffMargins'),
+        meta: {
+          className: 'col-margins-difference computed',
+        },
+      }),
+      columnHelper.accessor('timeFromPreviousOp', {
+        header: () => t('timeFromPreviousOp'),
+        meta: {
+          className: 'col-time-from-previous-op computed',
+        },
+      }),
+      columnHelper.accessor('totalTravelTime', {
+        header: () => t('totalTravelTime'),
+        meta: {
+          className: 'col-total-travel-time computed',
+        },
+      }),
     ],
     [startTime, isComputedDataPending]
   );
@@ -286,14 +344,14 @@ const TimesStopsTable = ({
         </thead>
         <tbody
           className={cx({
-            invalid: !isValid || isScheduleNotHonored,
+            invalid: !isValid || scheduleNotHonored,
           })}
         >
           {table.getRowModel().rows.map((row) => (
             <tr
               key={row.id}
               className={cx({
-                'invalid-path-step': row.original.invalidPathStep,
+                'invalid-path-step': row.original.stepStatus === 'invalidPathStep',
               })}
             >
               {row.getVisibleCells().map((cell) => (

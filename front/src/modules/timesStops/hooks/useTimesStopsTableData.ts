@@ -21,7 +21,7 @@ import { getDisplayOnlyPathSteps } from 'reducers/simulationResults/selectors';
 import { Duration } from 'utils/duration';
 
 import { buildOpMatchParams, getOperationalPointName } from '../helpers/utils';
-import type { TimesStopsRowNew } from '../types';
+import { type StepStatus, type TimesStopsRowNew } from '../types';
 
 type BuildTableRowParams = {
   id: string;
@@ -77,8 +77,19 @@ const buildTableRow = ({
       ? new Date(computedArrivalDate.getTime() + stopDuration.ms)
       : null;
 
+  let stepStatus: StepStatus = 'allHonored';
+
+  if (invalidPathStep) {
+    stepStatus = 'invalidPathStep';
+  } else if (scheduleNotHonored) {
+    stepStatus = 'scheduleNotHonored';
+  } else if (marginNotHonored) {
+    stepStatus = 'marginNotHonored';
+  }
+
   return {
     id,
+    stepStatus,
     opOnPathIndex,
     name: name ?? '',
     secondaryCode: secondaryCode ?? '',
@@ -88,12 +99,19 @@ const buildTableRow = ({
     stopDuration,
     requestedDeparture,
     computedDeparture,
-    invalidPathStep,
-    scheduleNotHonored,
-    marginNotHonored,
     isPathStep: true,
     hasRequestedTrack,
     location,
+    closedSignal: false, // TODO : Implementation to be done with the integration of the new columns
+    shortSlipDistance: false, // TODO : Idem
+    powerRestriction: null, // TODO : Idem
+    requestedTheoreticalMargin: null, // TODO : Idem
+    isTheoreticalMarginBoundary: false, // TODO : Idem
+    computedTheoreticalMarginSeconds: null, // TODO : Idem
+    realMargin: null, // TODO : Idem
+    marginsDifference: null, // TODO : Idem
+    timeFromPreviousOp: null, // TODO : Idem
+    totalTravelTime: null, // TODO : Idem
   };
 };
 
