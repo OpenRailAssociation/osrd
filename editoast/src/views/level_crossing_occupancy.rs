@@ -3,7 +3,7 @@ use crate::error::Result;
 use crate::models::Infra;
 use crate::models::LevelCrossingModel;
 use crate::models::TrainSchedule;
-use crate::models::paced_train::OccurrenceId;
+use crate::models::train_schedule::OccurrenceId;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::path::pathfinding::PathfindingResult;
