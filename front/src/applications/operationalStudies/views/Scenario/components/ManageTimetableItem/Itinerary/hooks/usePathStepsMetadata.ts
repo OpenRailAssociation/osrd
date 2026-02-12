@@ -8,6 +8,7 @@ import { useScenarioContext } from 'applications/operationalStudies/hooks/useSce
 import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 import type { PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
 import { getPointOnTrackCoordinates } from 'utils/geometry';
+import { mToMm } from 'utils/physics';
 
 /**
  * For each path step, get all its secondary codes and track names to display in the form
@@ -117,7 +118,7 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
           const coordinates = correspondingTrack
             ? getPointOnTrackCoordinates(
                 correspondingTrack.geo,
-                correspondingTrack.length,
+                mToMm(correspondingTrack.length),
                 location.offset
               )
             : null;
