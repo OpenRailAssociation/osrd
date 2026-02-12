@@ -36,7 +36,7 @@ use crate::error::Result;
 use crate::models;
 use crate::models::Infra;
 use crate::models::paced_train::OccurrenceId;
-use crate::models::paced_train::PacedTrainChangeset;
+use crate::models::paced_train::TrainScheduleChangeset;
 use crate::models::train_schedule_set::TrainScheduleSet;
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraIdQueryParam;
@@ -108,8 +108,8 @@ pub(in crate::views) struct PacedTrainResponse {
     paced_train: PacedTrain,
 }
 
-impl From<models::PacedTrain> for PacedTrainResponse {
-    fn from(value: models::PacedTrain) -> Self {
+impl From<models::TrainSchedule> for PacedTrainResponse {
+    fn from(value: models::TrainSchedule) -> Self {
         Self {
             id: value.id,
             train_schedule_set_id: value.train_schedule_set_id,
@@ -148,7 +148,7 @@ pub(in crate::views) async fn get_by_id(
 
     let conn = &mut db_pool.get().await?;
 
-    let paced_train = models::PacedTrain::retrieve_or_fail(conn.clone(), paced_train_id, || {
+    let paced_train = models::TrainSchedule::retrieve_or_fail(conn.clone(), paced_train_id, || {
         PacedTrainError::NotFound { paced_train_id }
     })
     .await?;
@@ -184,7 +184,7 @@ pub(in crate::views) async fn update_paced_train(
     }
 
     let conn = &mut db_pool.get().await?;
-    let paced_train_changeset: PacedTrainChangeset = paced_train_base.into();
+    let paced_train_changeset: TrainScheduleChangeset = paced_train_base.into();
     paced_train_changeset
         .update_or_fail(conn, paced_train_id, || PacedTrainError::NotFound {
             paced_train_id,
@@ -225,7 +225,7 @@ pub(in crate::views) async fn delete(
     }
 
     let conn = &mut db_pool.get().await?;
-    models::PacedTrain::delete_batch_or_fail(conn, paced_train_ids, |count| {
+    models::TrainSchedule::delete_batch_or_fail(conn, paced_train_ids, |count| {
         PacedTrainError::BatchNotFound { count }
     })
     .await?;
@@ -305,8 +305,8 @@ pub(in crate::views) async fn simulation_summary(
     })
     .await?;
 
-    let paced_trains: Vec<models::PacedTrain> =
-        models::PacedTrain::retrieve_batch_or_fail(conn, paced_train_ids, |missing| {
+    let paced_trains: Vec<models::TrainSchedule> =
+        models::TrainSchedule::retrieve_batch_or_fail(conn, paced_train_ids, |missing| {
             PacedTrainError::BatchNotFound {
                 count: missing.len(),
             }
@@ -441,7 +441,7 @@ pub(in crate::views) async fn get_path(
     })
     .await?;
 
-    let paced_train = models::PacedTrain::retrieve_or_fail(conn.clone(), paced_train_id, || {
+    let paced_train = models::TrainSchedule::retrieve_or_fail(conn.clone(), paced_train_id, || {
         PacedTrainError::NotFound { paced_train_id }
     })
     .await?;
@@ -530,7 +530,7 @@ pub(in crate::views) async fn simulation(
 
     // Retrieve paced_train or fail
     let paced_train =
-        models::PacedTrain::retrieve_or_fail(db_pool.get().await?, paced_train_id, || {
+        models::TrainSchedule::retrieve_or_fail(db_pool.get().await?, paced_train_id, || {
             PacedTrainError::NotFound { paced_train_id }
         })
         .await?;
@@ -617,7 +617,7 @@ pub(in crate::views) async fn etcs_braking_curves(
 
     // Retrieve paced_train or fail
     let paced_train =
-        models::PacedTrain::retrieve_or_fail(db_pool.get().await?, paced_train_id, || {
+        models::TrainSchedule::retrieve_or_fail(db_pool.get().await?, paced_train_id, || {
             PacedTrainError::NotFound { paced_train_id }
         })
         .await?;
@@ -779,8 +779,8 @@ pub(in crate::views) async fn project_path(
 
     let conn = &mut db_pool.get().await?;
 
-    let paced_trains: Vec<models::PacedTrain> =
-        models::PacedTrain::retrieve_batch_or_fail(conn, paced_train_ids, |missing| {
+    let paced_trains: Vec<models::TrainSchedule> =
+        models::TrainSchedule::retrieve_batch_or_fail(conn, paced_train_ids, |missing| {
             PacedTrainError::BatchNotFound {
                 count: missing.len(),
             }
@@ -916,8 +916,8 @@ pub(in crate::views) async fn project_path_op(
 
     let conn = &mut db_pool.get().await?;
 
-    let paced_trains: Vec<models::PacedTrain> =
-        models::PacedTrain::retrieve_batch_or_fail(conn, train_ids, |missing| {
+    let paced_trains: Vec<models::TrainSchedule> =
+        models::TrainSchedule::retrieve_batch_or_fail(conn, train_ids, |missing| {
             PacedTrainError::BatchNotFound {
                 count: missing.len(),
             }
@@ -1096,7 +1096,7 @@ pub(in crate::views) async fn occupancy_blocks(
     let conn = &mut db_pool.get().await?;
 
     let paced_trains: Vec<_> =
-        models::PacedTrain::retrieve_batch_or_fail(conn, paced_train_ids, |missing| {
+        models::TrainSchedule::retrieve_batch_or_fail(conn, paced_train_ids, |missing| {
             PacedTrainError::BatchNotFound {
                 count: missing.len(),
             }
@@ -1239,8 +1239,8 @@ pub(in crate::views) async fn track_occupancy(
 
     let conn = &mut db_pool.get().await?;
 
-    let paced_trains: Vec<models::PacedTrain> =
-        models::PacedTrain::retrieve_batch_or_fail(conn, paced_train_ids, |missing| {
+    let paced_trains: Vec<models::TrainSchedule> =
+        models::TrainSchedule::retrieve_batch_or_fail(conn, paced_train_ids, |missing| {
             PacedTrainError::BatchNotFound {
                 count: missing.len(),
             }
@@ -1396,7 +1396,7 @@ pub(in crate::views) async fn move_paced_trains_to_another_train_schedule_set(
     })
     .await?;
 
-    let paced_trains: Vec<_> = models::PacedTrain::retrieve_batch_or_fail(
+    let paced_trains: Vec<_> = models::TrainSchedule::retrieve_batch_or_fail(
         &mut db_pool.get().await?,
         paced_train_ids.clone(),
         |missing| PacedTrainError::BatchNotFound {
@@ -1440,7 +1440,7 @@ pub(in crate::views) async fn move_paced_trains_to_another_train_schedule_set(
     PacedTrainRoundTrips::delete_batch(&mut db_pool.get().await?, to_break).await?;
 
     // Update the train_schedule_set_id of the paced trains
-    let _: (Vec<_>, _) = models::PacedTrain::changeset()
+    let _: (Vec<_>, _) = models::TrainSchedule::changeset()
         .train_schedule_set_id(train_schedule_set_id)
         .update_batch(&mut db_pool.get().await?, paced_train_ids)
         .await?;
@@ -1498,7 +1498,7 @@ mod tests {
     use crate::models::fixtures::simple_paced_train_base;
     use crate::models::fixtures::simple_paced_train_changeset;
     use crate::models::fixtures::simple_sub_category;
-    use crate::models::paced_train::PacedTrainChangeset;
+    use crate::models::paced_train::TrainScheduleChangeset;
     use crate::views::path::pathfinding::PathfindingFailure;
     use crate::views::path::pathfinding::PathfindingResult;
     use crate::views::test_app::TestApp;
@@ -1582,7 +1582,7 @@ mod tests {
         assert_eq!(response.len(), 1);
 
         let created_paced_train =
-            models::PacedTrain::retrieve(pool.get_ok(), response.first().unwrap().id)
+            models::TrainSchedule::retrieve(pool.get_ok(), response.first().unwrap().id)
                 .await
                 .expect("Failed to retrieve updated paced train")
                 .expect("Updated paced train not found");
@@ -1630,7 +1630,7 @@ mod tests {
             .assert_status(StatusCode::NO_CONTENT);
 
         let created_paced_train =
-            models::PacedTrain::retrieve(pool.get_ok(), simple_paced_train.id)
+            models::TrainSchedule::retrieve(pool.get_ok(), simple_paced_train.id)
                 .await
                 .expect("Failed to retrieve updated paced train")
                 .expect("Updated paced train not found");
@@ -1665,7 +1665,7 @@ mod tests {
             .await
             .assert_status(StatusCode::NO_CONTENT);
 
-        let updated_paced_train = models::PacedTrain::retrieve(pool.get_ok(), paced_train.id)
+        let updated_paced_train = models::TrainSchedule::retrieve(pool.get_ok(), paced_train.id)
             .await
             .expect("Failed to retrieve updated paced train")
             .expect("Updated paced train not found");
@@ -1758,7 +1758,7 @@ mod tests {
             .await
             .assert_status(StatusCode::NO_CONTENT);
 
-        let exists = models::PacedTrain::exists(&mut pool.get_ok(), paced_train.id)
+        let exists = models::TrainSchedule::exists(&mut pool.get_ok(), paced_train.id)
             .await
             .expect("Failed to retrieve paced_train");
 
@@ -1818,7 +1818,7 @@ mod tests {
                 )],
             }),
         };
-        let paced_train: PacedTrainChangeset = paced_train_base.into();
+        let paced_train: TrainScheduleChangeset = paced_train_base.into();
         let paced_train = paced_train
             .train_schedule_set_id(train_schedule_set.id)
             .create(&mut db_pool.get_ok())
@@ -2494,7 +2494,7 @@ mod tests {
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), "simulation_rolling_stock").await;
         let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
-        let paced_train = models::PacedTrain::default()
+        let paced_train = models::TrainSchedule::default()
             .into_changeset()
             .train_schedule_set_id(train_schedule_set.id)
             .rolling_stock_name(rolling_stock.name)
@@ -2580,7 +2580,7 @@ mod tests {
             .await
             .assert_status(StatusCode::NO_CONTENT);
 
-        let paced_train = models::PacedTrain::retrieve(db_pool.get_ok(), paced_train.id)
+        let paced_train = models::TrainSchedule::retrieve(db_pool.get_ok(), paced_train.id)
             .await
             .expect("Failed to retrieve paced train");
         assert_eq!(

@@ -219,11 +219,11 @@ pub(in crate::views) async fn get_paced_trains(
     let settings = pagination_params
         .into_selection_settings()
         .filter(move || {
-            models::PacedTrain::TRAIN_SCHEDULE_SET_ID.eq_any(train_schedule_set_ids.clone())
+            models::TrainSchedule::TRAIN_SCHEDULE_SET_ID.eq_any(train_schedule_set_ids.clone())
         })
-        .order_by(move || models::PacedTrain::ID.asc());
+        .order_by(move || models::TrainSchedule::ID.asc());
 
-    let (paced_trains, stats) = models::PacedTrain::list_paginated(conn, settings).await?;
+    let (paced_trains, stats) = models::TrainSchedule::list_paginated(conn, settings).await?;
 
     let results = paced_trains.into_iter().map_into().collect();
 
@@ -402,15 +402,17 @@ pub(in crate::views) async fn conflicts(
 async fn retrieve_trains(
     mut conn: DbConnection,
     timetable_id: i64,
-) -> Result<Vec<models::PacedTrain>> {
+) -> Result<Vec<models::TrainSchedule>> {
     let timetable_trains =
         TimetableWithTrains::retrieve_or_fail(conn.clone(), timetable_id, || {
             TimetableError::NotFound { timetable_id }
         })
         .await?;
-    let trains =
-        models::PacedTrain::retrieve_batch_unchecked(&mut conn, timetable_trains.paced_train_ids)
-            .await?;
+    let trains = models::TrainSchedule::retrieve_batch_unchecked(
+        &mut conn,
+        timetable_trains.paced_train_ids,
+    )
+    .await?;
 
     Ok(trains)
 }
@@ -499,14 +501,14 @@ pub(in crate::views) async fn requirements(
         Timetable::get_train_schedule_set_ids_from_timetable(timetable_id, conn).await?;
 
     // List trains and paced trains
-    let (paced_trains, stats) = models::PacedTrain::list_paginated(
+    let (paced_trains, stats) = models::TrainSchedule::list_paginated(
         conn,
         page_settings
             .into_selection_settings()
             .filter(move || {
-                models::PacedTrain::TRAIN_SCHEDULE_SET_ID.eq_any(train_schedule_sets_ids.clone())
+                models::TrainSchedule::TRAIN_SCHEDULE_SET_ID.eq_any(train_schedule_sets_ids.clone())
             })
-            .order_by(move || models::PacedTrain::ID.asc()),
+            .order_by(move || models::TrainSchedule::ID.asc()),
     )
     .await?;
 
@@ -921,7 +923,7 @@ mod tests {
     use crate::models::fixtures::create_timetable_with_train_schedule_set;
     use crate::models::fixtures::create_train_schedule_set;
     use crate::models::fixtures::simple_paced_train_base;
-    use crate::models::paced_train::PacedTrainChangeset;
+    use crate::models::paced_train::TrainScheduleChangeset;
     use crate::views::test_app::TestAppBuilder;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1030,12 +1032,12 @@ mod tests {
 
         let changesets = paced_trains
             .into_iter()
-            .map(PacedTrainChangeset::from)
+            .map(TrainScheduleChangeset::from)
             .map(|cs| cs.train_schedule_set_id(train_schedule_set.id))
             .collect::<Vec<_>>();
 
         let _paced_trains: Vec<_> =
-            models::PacedTrain::create_batch(&mut pool.get_ok(), changesets)
+            models::TrainSchedule::create_batch(&mut pool.get_ok(), changesets)
                 .await
                 .expect("Failed to create paced trains");
 

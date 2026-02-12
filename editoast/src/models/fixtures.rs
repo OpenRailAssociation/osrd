@@ -240,15 +240,17 @@ pub fn simple_paced_train_base() -> PacedTrain {
     }
 }
 
-pub fn simple_paced_train_changeset(train_schedule_set_id: i64) -> Changeset<models::PacedTrain> {
-    Changeset::<models::PacedTrain>::from(simple_paced_train_base())
+pub fn simple_paced_train_changeset(
+    train_schedule_set_id: i64,
+) -> Changeset<models::TrainSchedule> {
+    Changeset::<models::TrainSchedule>::from(simple_paced_train_base())
         .train_schedule_set_id(train_schedule_set_id)
 }
 
 pub async fn create_simple_paced_train(
     conn: &mut DbConnection,
     train_schedule_set_id: i64,
-) -> models::PacedTrain {
+) -> models::TrainSchedule {
     simple_paced_train_changeset(train_schedule_set_id)
         .create(conn)
         .await
@@ -259,7 +261,7 @@ pub async fn create_paced_train_with_exceptions(
     conn: &mut DbConnection,
     train_schedule_set_id: i64,
     exceptions: Vec<PacedTrainException>,
-) -> models::PacedTrain {
+) -> models::TrainSchedule {
     let paced_train = simple_paced_train_changeset(train_schedule_set_id).exceptions(exceptions);
     paced_train
         .create(conn)

@@ -182,17 +182,17 @@ async fn delete_sub_category_and_fallback_to_main(
         .await?;
 
     let sub_category_code = Some(sub_category.code.clone());
-    let paced_trains_ids: Vec<i64> = models::PacedTrain::list(
+    let paced_trains_ids: Vec<i64> = models::TrainSchedule::list(
         conn,
         SelectionSettings::new()
-            .filter(move || models::PacedTrain::SUB_CATEGORY.eq(sub_category_code.clone())),
+            .filter(move || models::TrainSchedule::SUB_CATEGORY.eq(sub_category_code.clone())),
     )
     .await?
     .into_iter()
     .map(|paced_train| paced_train.id)
     .collect();
 
-    let _: (Vec<_>, _) = models::PacedTrain::changeset()
+    let _: (Vec<_>, _) = models::TrainSchedule::changeset()
         .main_category(Some(sub_category.main_category.clone()))
         .sub_category(None)
         .update_batch(conn, paced_trains_ids)
@@ -374,12 +374,12 @@ pub mod tests {
             .await
             .assert_status(StatusCode::NO_CONTENT);
 
-        let paced_train_1 = models::PacedTrain::retrieve(db_pool.get_ok(), paced_train_1.id)
+        let paced_train_1 = models::TrainSchedule::retrieve(db_pool.get_ok(), paced_train_1.id)
             .await
             .expect("Failed to retrieve paced train")
             .expect("Paced train 1 not found");
 
-        let paced_train_2 = models::PacedTrain::retrieve(db_pool.get_ok(), paced_train_2.id)
+        let paced_train_2 = models::TrainSchedule::retrieve(db_pool.get_ok(), paced_train_2.id)
             .await
             .expect("Failed to retrieve paced train")
             .expect("Paced train 2 not found");
