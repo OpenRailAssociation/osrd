@@ -48,9 +48,11 @@ const SimulationTable = ({
             <View style={styles.simulation.chWidth}>
               <TD>{t('reportSheet.code')}</TD>
             </View>
-            <View style={styles.simulation.trackWidth}>
-              <TD>{t('reportSheet.track')}</TD>
-            </View>
+            {!isStdcm && (
+              <View style={styles.simulation.trackWidth}>
+                <TD>{t('reportSheet.track')}</TD>
+              </View>
+            )}
             <View style={styles.simulation.endWidth}>
               <TD>{t('reportSheet.endStop')}</TD>
             </View>
@@ -96,9 +98,11 @@ const SimulationTable = ({
               <View style={styles.simulation.chWidth}>
                 <TD style={row.stylesByColumn.ch}>{row.ch}</TD>
               </View>
-              <View style={styles.simulation.trackWidth}>
-                <TD style={styles.simulation.td}>{row.trackName}</TD>
-              </View>
+              {!isStdcm && (
+                <View style={styles.simulation.trackWidth}>
+                  <TD style={styles.simulation.td}>{row.trackName}</TD>
+                </View>
+              )}
               <View style={styles.simulation.endWidth}>
                 <TD style={styles.simulation.stopColumn}>{String(row.endTime)}</TD>
               </View>
