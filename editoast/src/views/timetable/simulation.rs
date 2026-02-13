@@ -133,7 +133,7 @@ pub fn path_item_respect_margins<T: TrainScheduleLike>(
 
     let mut res = vec![true; path_item_times_final.len()];
 
-    let path_item_ids_to_check = train_schedule
+    train_schedule
         .path()
         .first() // unconditionally include, will filter later down
         .map(|first_path_item| &first_path_item.id)
@@ -156,15 +156,8 @@ pub fn path_item_respect_margins<T: TrainScheduleLike>(
                 .last() // unconditionally include, will filter later down
                 .map(|last_path_item| &last_path_item.id),
         )
-        // TODO use https://doc.rust-lang.org/stable/std/iter/trait.Iterator.html#method.map_windows
-        .collect::<Vec<&NonBlankString>>();
-    path_item_ids_to_check
-        .windows(2)
-        .for_each(|path_item_id_couple| {
-            let [prev_path_item_id, path_item_id] = *path_item_id_couple else {
-                // TODO use https://doc.rust-lang.org/stable/std/primitive.slice.html#method.array_windows
-                unreachable!()
-            };
+        .tuple_windows()
+        .for_each(|(prev_path_item_id, path_item_id)| {
             if prev_path_item_id == path_item_id {
                 // Because we unconditionally iterate over the first and last item of the path,
                 // in case they are not present in the train schedule, we might end up with
