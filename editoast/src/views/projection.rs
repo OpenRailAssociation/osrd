@@ -588,10 +588,12 @@ impl TrainToProjectOnOperationalPoint {
         let PathfindingResult::Success(path) = path else {
             return Self::new_from_input(ts);
         };
-        let respect_times = sim
-            .path_item_respect_times(ts)
-            .into_iter()
-            .all(|path_item| path_item);
+        let respect_times = simulation::SimulationResponseSuccess::path_item_respect_times(
+            &sim.final_output.report_train.path_item_times,
+            ts,
+        )
+        .into_iter()
+        .all(|path_item| path_item);
         if !respect_times {
             return Self::new_from_invalid(ts, sim, path);
         }
@@ -936,10 +938,12 @@ pub async fn extract_train_details<T: TrainScheduleLike>(
             let simulation::Response::Success(sim) = sim.as_ref() else {
                 return None;
             };
-            let respect_times = sim
-                .path_item_respect_times(train_schedule)
-                .into_iter()
-                .all(|path_item| path_item);
+            let respect_times = simulation::SimulationResponseSuccess::path_item_respect_times(
+                &sim.final_output.report_train.path_item_times,
+                train_schedule,
+            )
+            .into_iter()
+            .all(|path_item| path_item);
 
             let curve = if respect_times {
                 SpaceTimeCurve {
