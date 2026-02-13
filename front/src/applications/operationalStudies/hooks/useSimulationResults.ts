@@ -24,7 +24,10 @@ import { useScenarioContext } from './useScenarioContext';
 /**
  * Prepare data to be used in simulation results
  */
-const useSimulationResults = (): SimulationResults | undefined => {
+const useSimulationResults = (): {
+  results: SimulationResults | undefined;
+  isSimulationDataLoading: boolean;
+} => {
   const { t } = useTranslation('operational-studies');
 
   const { infraId, electricalProfileSetId } = useScenarioContext();
@@ -70,26 +73,28 @@ const useSimulationResults = (): SimulationResults | undefined => {
     return findExceptionWithOccurrenceId(timetableItem.paced.exceptions, selectedTrainId);
   }, [selectedTrainId, timetableItem]);
 
-  const { currentData: pathfinding } = osrdEditoastApi.endpoints.getTrainPath.useQuery(
-    selectedTrainId
-      ? {
-          id: selectedTrainId,
-          infraId,
-          exceptionKey: exception?.key,
-        }
-      : skipToken
-  );
+  const { currentData: pathfinding, isFetching: isPathfindingFetching } =
+    osrdEditoastApi.endpoints.getTrainPath.useQuery(
+      selectedTrainId
+        ? {
+            id: selectedTrainId,
+            infraId,
+            exceptionKey: exception?.key,
+          }
+        : skipToken
+    );
 
-  const { currentData: simulation } = osrdEditoastApi.endpoints.getTrainSimulation.useQuery(
-    selectedTrainId
-      ? {
-          id: selectedTrainId,
-          infraId,
-          electricalProfileSetId,
-          exceptionKey: exception?.key,
-        }
-      : skipToken
-  );
+  const { currentData: simulation, isFetching: isSimulationFetching } =
+    osrdEditoastApi.endpoints.getTrainSimulation.useQuery(
+      selectedTrainId
+        ? {
+            id: selectedTrainId,
+            infraId,
+            electricalProfileSetId,
+            exceptionKey: exception?.key,
+          }
+        : skipToken
+    );
 
   // TODO: replace this API call by extracting the rolling stock from the rolling
   // stocks list
@@ -102,7 +107,7 @@ const useSimulationResults = (): SimulationResults | undefined => {
         : skipToken
     );
 
-  const { currentData: rawPathProperties } =
+  const { currentData: rawPathProperties, isFetching: isPathPropertiesFetching } =
     osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useQuery(
       pathfinding?.status === 'success'
         ? {
@@ -114,8 +119,11 @@ const useSimulationResults = (): SimulationResults | undefined => {
         : skipToken
     );
 
+  const isSimulationDataLoading =
+    isPathfindingFetching || isSimulationFetching || isPathPropertiesFetching;
+
   if (!train || exception?.disabled) {
-    return undefined;
+    return { results: undefined, isSimulationDataLoading };
   }
 
   if (
@@ -124,7 +132,10 @@ const useSimulationResults = (): SimulationResults | undefined => {
     !rawPathProperties ||
     !rollingStock
   ) {
-    return { isValid: false, train, rollingStock };
+    return {
+      results: { isValid: false, train, rollingStock },
+      isSimulationDataLoading,
+    };
   }
 
   const pathProperties = preparePathPropertiesData(
@@ -144,13 +155,16 @@ const useSimulationResults = (): SimulationResults | undefined => {
     }) ?? [];
 
   return {
-    isValid: true,
-    train,
-    rollingStock,
-    simulation,
-    path: pathfinding,
-    pathProperties,
-    powerRestrictions,
+    results: {
+      isValid: true,
+      train,
+      rollingStock,
+      simulation,
+      path: pathfinding,
+      pathProperties,
+      powerRestrictions,
+    },
+    isSimulationDataLoading,
   };
 };
 

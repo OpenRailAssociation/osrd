@@ -37,6 +37,7 @@ type TimesStopsOutputProps = {
   simulatedPathItemTimes?: Extract<SimulationSummary, { isValid: true }>['pathItemTimes'];
   simulatedPathItemRespect?: Extract<SimulationSummary, { isValid: true }>['pathItemRespect'];
   operationalPointsOnPath?: PathPropertiesFormatted['operationalPoints'];
+  isSimulationDataLoading?: boolean;
 };
 
 const TimesStopsOutput = ({
@@ -49,11 +50,15 @@ const TimesStopsOutput = ({
   simulatedPathItemTimes,
   simulatedPathItemRespect,
   operationalPointsOnPath,
+  isSimulationDataLoading = false,
 }: TimesStopsOutputProps) => {
   const useNewTimesStopsTable = useSelector(getUseNewTimesStopsTable);
 
-  // Store the simulatedPathItemTimes reference before an edit to detect when new simulation arrives
+  // Refs used to track simulation refresh after a user edit (see isAwaitingSimulation):
+  //   - preEditPathItemTimesRef: batch summary (simulatedPathItemTimes reference)
+  //   - isTrainSimulationPendingRef: all simulation queries (isSimulationDataLoading)
   const preEditPathItemTimesRef = useRef<typeof simulatedPathItemTimes>(undefined);
+  const isTrainSimulationPendingRef = useRef(false);
 
   // Store pending edit for optimistic UI update (state to trigger re-render)
   const [pendingEdit, setPendingEdit] = useState<PendingEdit | null>(null);
@@ -68,9 +73,10 @@ const TimesStopsOutput = ({
     useNewTimesStopsTable ? undefined : operationalPointsOnPath
   );
 
-  const newRows = useTimesStopsTableData(
+  const { rows: newRows, stableIsValid } = useTimesStopsTableData(
     infraId,
     isValid,
+    isSimulationDataLoading,
     selectedTrain,
     useNewTimesStopsTable ? simulatedTrain : undefined,
     useNewTimesStopsTable ? simulatedPathItemTimes : undefined,
@@ -87,40 +93,58 @@ const TimesStopsOutput = ({
     upsertTimetableItems
   );
 
-  // Are we waiting for simulation to refresh after a user edit?
+  // True if we are still waiting for fresh simulation data after a user edit.
+  // Both pipelines must finish before we clear the loading state:
+  //   - Condition 1 (batch summary): wait until simulatedPathItemTimes gets a new reference.
+  //   - Condition 2 (all simulation queries): wait until isSimulationDataLoading is false.
   const isAwaitingSimulation =
-    preEditPathItemTimesRef.current !== undefined &&
-    simulatedPathItemTimes === preEditPathItemTimesRef.current;
+    (preEditPathItemTimesRef.current !== undefined &&
+      simulatedPathItemTimes === preEditPathItemTimesRef.current) ||
+    (isTrainSimulationPendingRef.current && isSimulationDataLoading);
 
-  // Clear refs/state when fresh simulation data arrives
+  // Reset refs and pending edit once both pipelines are done
   useEffect(() => {
-    if (!isAwaitingSimulation && preEditPathItemTimesRef.current !== undefined) {
+    if (
+      !isAwaitingSimulation &&
+      (preEditPathItemTimesRef.current !== undefined || isTrainSimulationPendingRef.current)
+    ) {
       preEditPathItemTimesRef.current = undefined;
+      isTrainSimulationPendingRef.current = false;
       setPendingEdit(null);
     }
   }, [isAwaitingSimulation]);
 
+  // Call this before any edit to start tracking simulation refresh.
+  const startSimulationTracking = (pendingEditValue: PendingEdit) => {
+    preEditPathItemTimesRef.current = simulatedPathItemTimes;
+    isTrainSimulationPendingRef.current = true;
+    setPendingEdit(pendingEditValue);
+  };
+
+  // Call this on error to cancel the tracking started by startSimulationTracking.
+  const cancelSimulationTracking = () => {
+    preEditPathItemTimesRef.current = undefined;
+    isTrainSimulationPendingRef.current = false;
+    setPendingEdit(null);
+  };
+
   const handleArrivalChange = async (row: TimesStopsRowNew, arrival: Date | null) => {
     if (isAwaitingSimulation) return;
-    preEditPathItemTimesRef.current = simulatedPathItemTimes;
-    setPendingEdit({ rowId: row.id, field: 'requestedArrival', value: arrival });
+    startSimulationTracking({ rowId: row.id, field: 'requestedArrival', value: arrival });
     try {
       await updateArrival(row, arrival);
     } catch {
-      preEditPathItemTimesRef.current = undefined;
-      setPendingEdit(null);
+      cancelSimulationTracking();
     }
   };
 
   const handleDepartureChange = async (row: TimesStopsRowNew, departure: Date | null) => {
     if (isAwaitingSimulation) return;
-    preEditPathItemTimesRef.current = simulatedPathItemTimes;
-    setPendingEdit({ rowId: row.id, field: 'requestedDeparture', value: departure });
+    startSimulationTracking({ rowId: row.id, field: 'requestedDeparture', value: departure });
     try {
       await updateDeparture(row, departure);
     } catch {
-      preEditPathItemTimesRef.current = undefined;
-      setPendingEdit(null);
+      cancelSimulationTracking();
     }
   };
 
@@ -129,8 +153,7 @@ const TimesStopsOutput = ({
     durationSeconds: number | null
   ) => {
     if (isAwaitingSimulation) return;
-    preEditPathItemTimesRef.current = simulatedPathItemTimes;
-    setPendingEdit({
+    startSimulationTracking({
       rowId: row.id,
       field: 'stopDuration',
       value: durationSeconds !== null ? new Duration({ seconds: durationSeconds }) : null,
@@ -138,8 +161,7 @@ const TimesStopsOutput = ({
     try {
       await updateStopDuration(row, durationSeconds);
     } catch {
-      preEditPathItemTimesRef.current = undefined;
-      setPendingEdit(null);
+      cancelSimulationTracking();
     }
   };
 
@@ -158,8 +180,7 @@ const TimesStopsOutput = ({
       <TimesStopsTable
         rows={displayRows}
         startTime={startTime}
-        dataIsLoading={newRows.length === 0}
-        isValid={isValid}
+        isValid={stableIsValid}
         isComputedDataPending={isAwaitingSimulation}
         onArrivalChange={handleArrivalChange}
         onStopDurationChange={handleStopDurationChange}

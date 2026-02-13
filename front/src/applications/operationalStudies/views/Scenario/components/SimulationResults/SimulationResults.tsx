@@ -63,7 +63,7 @@ const SimulationResults = ({
   const dispatch = useAppDispatch();
   const { infraId, timetableId } = useScenarioContext();
 
-  const simulationResults = useSimulationResults();
+  const { results: simulationResults, isSimulationDataLoading } = useSimulationResults();
   const selectedTrainId = simulationResults?.train.id;
 
   const displayOnlyPathSteps = useSelector(getDisplayOnlyPathSteps);
@@ -334,6 +334,7 @@ const SimulationResults = ({
                 selectedTrain={simulationResults?.train}
                 timetableItemsWithDetails={timetableItemsWithDetails}
                 upsertTimetableItems={upsertTimetableItems}
+                isSimulationDataLoading={isSimulationDataLoading}
                 {...(simulationResults?.isValid &&
                   simulationSummary?.isValid && {
                     isValid: true,

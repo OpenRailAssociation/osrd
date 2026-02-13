@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 
 import { keyBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -103,15 +103,59 @@ const buildTableRow = ({
 const useTimesStopsTableData = (
   infraId: number,
   isValid: boolean,
+  isSimulationDataLoading: boolean,
   selectedTrain: Train,
   simulatedTrain?: SimulationResponseSuccess['final_output'],
   simulatedPathItemTimes?: Extract<SimulationSummary, { isValid: true }>['pathItemTimes'],
   simulatedPathItemRespect?: Extract<SimulationSummary, { isValid: true }>['pathItemRespect'],
   operationalPointsOnPath?: PathPropertiesFormatted['operationalPoints']
-): TimesStopsRowNew[] => {
+): { rows: TimesStopsRowNew[]; stableIsValid: boolean } => {
   const { t } = useTranslation('operational-studies');
   const { getTrackSectionsByIds } = useScenarioContext();
   const displayOnlyPathSteps = useSelector(getDisplayOnlyPathSteps);
+
+  // Stale-while-revalidate: keep the last known-good simulation props in a ref so the table
+  // doesn't flash back to path-step-only view during the brief window where RTK Query sets
+  // currentData = undefined while refetching (e.g. operationalPointsOnPath goes undefined
+  // between a path change and the new response arriving).
+  // Three cases:
+  //   isValid=true              → snapshot the props (they are consistent)
+  //   isValid=false, fetching   → use the snapshot (transitional, data is reloading)
+  //   isValid=false, not fetching → clear the snapshot (genuinely invalid simulation)
+  const lastSimRef = useRef<{
+    simulatedTrain: typeof simulatedTrain;
+    simulatedPathItemTimes: typeof simulatedPathItemTimes;
+    simulatedPathItemRespect: typeof simulatedPathItemRespect;
+    operationalPointsOnPath: typeof operationalPointsOnPath;
+  } | null>(null);
+
+  // Invalidate the snapshot on train switch to avoid briefly showing the previous train's data.
+  const prevTrainIdRef = useRef(selectedTrain.id);
+  if (prevTrainIdRef.current !== selectedTrain.id) {
+    prevTrainIdRef.current = selectedTrain.id;
+    lastSimRef.current = null;
+  }
+
+  if (isValid) {
+    lastSimRef.current = {
+      simulatedTrain,
+      simulatedPathItemTimes,
+      simulatedPathItemRespect,
+      operationalPointsOnPath,
+    };
+  } else if (!isSimulationDataLoading) {
+    // Not fetching and not valid — the simulation is genuinely invalid, discard stale data.
+    lastSimRef.current = null;
+  }
+
+  // Only use the snapshot while a fetch is in progress (transitional invalid state).
+  const snapshot = isSimulationDataLoading ? lastSimRef.current : undefined;
+  const stableIsValid = isValid || !!snapshot;
+
+  const stableTrain = simulatedTrain ?? snapshot?.simulatedTrain;
+  const stablePathItemTimes = simulatedPathItemTimes ?? snapshot?.simulatedPathItemTimes;
+  const stablePathItemRespect = simulatedPathItemRespect ?? snapshot?.simulatedPathItemRespect;
+  const stableOPs = operationalPointsOnPath ?? snapshot?.operationalPointsOnPath;
 
   const pathStepOps = usePathOps(infraId, selectedTrain.path);
 
@@ -159,15 +203,15 @@ const useTimesStopsTableData = (
 
         const schedule = scheduleByAt[pathStep.id];
         const computedArrival =
-          simulatedPathItemTimes?.final[stepIndex] !== undefined
-            ? new Duration({ milliseconds: simulatedPathItemTimes.final[stepIndex] })
+          stablePathItemTimes?.final[stepIndex] !== undefined
+            ? new Duration({ milliseconds: stablePathItemTimes.final[stepIndex] })
             : undefined;
-        const scheduleNotHonored = isValid && !simulatedPathItemRespect?.times[stepIndex];
+        const scheduleNotHonored = stableIsValid && !stablePathItemRespect?.times[stepIndex];
         // The back end returns the status at the end of the interval but we want to display the information at the beginning of the interval so we check the next path items status
         const marginNotHonored =
-          isValid &&
+          stableIsValid &&
           stepIndex < selectedTrain.path.length - 1 &&
-          !simulatedPathItemRespect?.margins[stepIndex + 1];
+          !stablePathItemRespect?.margins[stepIndex + 1];
 
         const row = buildTableRow({
           id: pathStep.id,
@@ -192,8 +236,8 @@ const useTimesStopsTableData = (
     let formattedRows: TimesStopsRowNew[] = [];
 
     // Case 1: Valid train with simulation results
-    if (isValid && simulatedTrain && operationalPointsOnPath) {
-      operationalPointsOnPath.forEach((op, opIndex) => {
+    if (stableIsValid && stableTrain && stableOPs) {
+      stableOPs.forEach((op, opIndex) => {
         const trackName = op.part.local_track_name;
 
         const matchingPathStep = selectedTrain.path.find((pathStep) =>
@@ -211,13 +255,13 @@ const useTimesStopsTableData = (
             opOnPathIndex: opIndex,
           });
         } else if (!displayOnlyPathSteps) {
-          const matchingReportTrainIndex = simulatedTrain.positions.findIndex(
+          const matchingReportTrainIndex = stableTrain.positions.findIndex(
             (position) => position === op.position
           );
           const computedArrivalMs =
             matchingReportTrainIndex === -1
-              ? interpolateValue(simulatedTrain, op.position, 'times')
-              : simulatedTrain.times[matchingReportTrainIndex];
+              ? interpolateValue(stableTrain, op.position, 'times')
+              : stableTrain.times[matchingReportTrainIndex];
           const computedArrival =
             computedArrivalMs !== undefined
               ? new Duration({ milliseconds: computedArrivalMs })
@@ -262,17 +306,18 @@ const useTimesStopsTableData = (
     return formattedRows;
   }, [
     selectedTrain,
-    isValid,
-    simulatedTrain,
-    operationalPointsOnPath,
-    simulatedPathItemTimes,
+    stableIsValid,
+    stableTrain,
+    stableOPs,
+    stablePathItemTimes,
+    stablePathItemRespect,
     trackSections,
     pathStepOps,
     displayOnlyPathSteps,
     t,
   ]);
 
-  return rows;
+  return { rows, stableIsValid };
 };
 
 export default useTimesStopsTableData;
