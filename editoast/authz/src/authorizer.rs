@@ -138,6 +138,8 @@ mod tests {
     use crate::mock_driver::MockAuthDriver;
     use crate::model;
     use crate::model::Group;
+    use crate::v2;
+    use crate::v2::test_authorizers;
     use pretty_assertions::assert_eq;
 
     #[tokio::test]
@@ -305,10 +307,12 @@ mod tests {
         );
 
         // add members
-        regulator()
-            .add_members(&friends, HashSet::from([User(alice_id), User(bob_id)]))
+        v2::add_members(friends, HashSet::from([User(alice_id), User(bob_id)]))
+            .authorize(&test_authorizers::Authorize(regulator().openfga()))
             .await
-            .expect("members should be added");
+            .expect("members should be added")
+            .unwrap_authorized()
+            .await;
 
         // setup roles
         regulator()

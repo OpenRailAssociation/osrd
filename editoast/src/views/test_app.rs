@@ -2,6 +2,8 @@
 //! test axum server, database connection pool, and different mocking
 //! components.
 
+use authz::v2;
+use authz::v2::test_authorizers;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::path::PathBuf;
@@ -591,16 +593,18 @@ impl<'a> GroupBuilder<'a> {
                 .await
                 .expect("roles should be granted successfully");
 
-            regulator
-                .add_members(
-                    &group_auth,
-                    members
-                        .into_iter()
-                        .map(|authz::identity::User { id, .. }| authz::User(*id))
-                        .collect(),
-                )
-                .await
-                .expect("members should be added successfully");
+            v2::add_members(
+                group_auth,
+                members
+                    .into_iter()
+                    .map(|authz::identity::User { id, .. }| authz::User(*id))
+                    .collect(),
+            )
+            .authorize(&test_authorizers::Authorize(regulator.openfga()))
+            .await
+            .expect("members should be added successfully")
+            .unwrap_authorized()
+            .await;
 
             let subject = authz::Subject::Group(group_auth);
             for (infra_id, grant) in infras_grant.into_iter() {

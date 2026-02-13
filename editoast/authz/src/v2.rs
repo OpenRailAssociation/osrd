@@ -27,12 +27,22 @@ pub struct Protected<'a, T> {
     pub sanity_checks: HashSet<SanityCheck>,
 }
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+/// A check to ensure the permission workflow of editoast is respected
+///
+/// For example, one cannot share a resource to a level higher that their own.
+///
+/// Not to be confused with [SanityCheck]s, which are checks that ensure the consistency of the data in OpenFGA and PostgreSQL.
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub enum Guardrail {
     IssuerHasRole(Role),
 }
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+/// A check to ensure the consistency of the data in OpenFGA and PostgreSQL
+///
+/// For example, one cannot add a user to a group if the user doesn't exist in PostgreSQL, even if it doesn't cause any issue in OpenFGA.
+///
+/// Not to be confused with [Guardrail]s, which are checks to ensure the permission workflow of editoast is respected.
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub enum SanityCheck {
     UserExists(User),
     GroupExists(Group),
@@ -75,6 +85,17 @@ impl<'a, T> Protected<'a, T> {
         }
     }
 
+    /// For convenient chaining
+    pub async fn authorize<A: Authorizer<'a>>(
+        self,
+        authorizer: &A,
+    ) -> Result<Access<'a, T, A::Rejection>, A::Error> {
+        authorizer.authorize(self).await
+    }
+
+    /// Consumes the protection and produces an [Access::Authorized] without performing any check
+    ///
+    /// Only use this in trusted context or in an [Authorizer] implementation after performing the necessary checks.
     pub fn blindly_authorize<R>(self, openfga: &'a fga::Client) -> Access<'a, T, R> {
         Access::Authorized((self.op)(openfga))
     }
@@ -112,6 +133,16 @@ impl<'a, T, R> Access<'a, T, R> {
                 tracing::warn!(reason, "using admin bypass");
                 Ok(Ok(value))
             }
+        }
+    }
+}
+
+impl<'a, T, R: std::fmt::Debug> Access<'a, T, R> {
+    pub async fn unwrap_authorized(self) -> T {
+        match self.access().await {
+            Ok(Ok(value)) => value,
+            Ok(Err(rejection)) => panic!("authorization failed: {:?}", rejection),
+            Err(error) => panic!("authorization error: {:?}", error),
         }
     }
 }
@@ -154,4 +185,44 @@ pub fn add_members<'a>(group: Group, members: HashSet<User>) -> Protected<'a, ()
     .with_check(SanityCheck::GroupExists(group))
     .with_check_iter(user_exists_checks)
     .with_guardrail(Guardrail::IssuerHasRole(Role::Admin))
+}
+
+pub mod test_authorizers {
+    use std::convert::Infallible;
+
+    use crate::v2::Access;
+    use crate::v2::Protected;
+
+    use super::Authorizer;
+
+    /// Always authorizes without performing any check
+    pub struct Authorize<'a>(pub &'a fga::Client);
+    /// Always rejects with the given rejection reason
+    pub struct Reject<Rejection>(Rejection);
+
+    impl<'a> Authorizer<'a> for Authorize<'a> {
+        type Rejection = ();
+        type Error = Infallible;
+
+        async fn authorize<T>(
+            &self,
+            data: Protected<'a, T>,
+        ) -> Result<Access<'a, T, Self::Rejection>, Self::Error> {
+            Ok(data.blindly_authorize(self.0))
+        }
+    }
+
+    impl<'a, Rejection: Clone> Authorizer<'a> for Reject<Rejection> {
+        type Rejection = Rejection;
+        type Error = Infallible;
+
+        async fn authorize<T>(
+            &self,
+            _data: Protected<'a, T>,
+        ) -> Result<Access<'a, T, Self::Rejection>, Self::Error> {
+            Ok(Access::Denied {
+                rejection: self.0.clone(),
+            })
+        }
+    }
 }

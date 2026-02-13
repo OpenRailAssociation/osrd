@@ -185,27 +185,6 @@ impl<S: StorageDriver> Regulator<S> {
         Ok(members.users.into_iter().collect())
     }
 
-    /// Adds some users to a group
-    #[tracing::instrument(skip_all, fields(group, ?members), ret(level = Level::DEBUG), err)]
-    pub async fn add_members(
-        &self,
-        group: &Group,
-        members: HashSet<User>,
-    ) -> Result<(), Error<S::Error>> {
-        let existing_members = self.group_members(group).await?;
-        let new_members = members.difference(&existing_members);
-        let mut writes = self.openfga.prepare_writes();
-        for user in new_members {
-            if !self.user_exists(user.0).await? {
-                return Err(Error::UnknownSubject(user.0));
-            }
-            writes.push(&Group::member().tuple(user, group));
-            writes.push(&User::group().tuple(group, user));
-        }
-        writes.execute().await?;
-        Ok(())
-    }
-
     /// Removes some users from a group
     #[tracing::instrument(skip_all, fields(group, ?members), ret(level = Level::DEBUG), err)]
     pub async fn remove_members(
