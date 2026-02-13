@@ -78,7 +78,10 @@ impl SimulationResponseSuccess {
     /// This function can panic in the following cases:
     /// - the simulation response isn't derived from the given train schedule,
     /// - some of the final path item times exceed `i64::MAX`
-    pub fn path_item_respect_times<T: TrainScheduleLike>(&self, train_schedule: &T) -> Vec<bool> {
+    pub fn path_item_respect_times<T: TrainScheduleLike>(
+        path_item_times_final: &[u64],
+        train_schedule: &T,
+    ) -> Vec<bool> {
         let path_item_id_to_index: HashMap<&NonBlankString, usize> = train_schedule
             .path()
             .iter()
@@ -86,7 +89,6 @@ impl SimulationResponseSuccess {
             .map(|(i, path_item)| (&path_item.id, i))
             .collect();
 
-        let path_item_times_final = &*self.final_output.report_train.path_item_times;
         let mut res = vec![true; path_item_times_final.len()];
 
         for schedule_item in train_schedule.schedule() {
@@ -116,9 +118,11 @@ impl SimulationResponseSuccess {
     /// This function can panic in the following cases:
     /// - the simulation response isn't derived from the given train schedule,
     /// - some of the final or provisional path item times exceed `i64::MAX`
-    pub fn path_item_respect_margins<T: TrainScheduleLike>(&self, train_schedule: &T) -> Vec<bool> {
-        let path_item_times_final = &*self.final_output.report_train.path_item_times;
-        let path_item_times_provisional = &*self.provisional.path_item_times;
+    pub fn path_item_respect_margins<T: TrainScheduleLike>(
+        path_item_times_final: &[u64],
+        path_item_times_provisional: &[u64],
+        train_schedule: &T,
+    ) -> Vec<bool> {
         let margin_boundary_set = &*train_schedule.margins().boundaries;
 
         let path_item_id_to_index: HashMap<&NonBlankString, usize> = train_schedule
@@ -302,8 +306,16 @@ impl SummaryResponse {
     ) -> Self {
         match response {
             simulation::Response::Success(sim) => {
-                let path_item_respect_times = sim.path_item_respect_times(train_schedule);
-                let path_item_respect_margins = sim.path_item_respect_margins(train_schedule);
+                let path_item_respect_times = SimulationResponseSuccess::path_item_respect_times(
+                    &sim.final_output.report_train.path_item_times,
+                    train_schedule,
+                );
+                let path_item_respect_margins =
+                    SimulationResponseSuccess::path_item_respect_margins(
+                        &sim.final_output.report_train.path_item_times,
+                        &sim.provisional.path_item_times,
+                        train_schedule,
+                    );
 
                 let SimulationResponseSuccess {
                     final_output: CompleteReportTrain { report_train, .. },
@@ -796,7 +808,11 @@ mod tests {
     fn test_too_fast() {
         let schedule = train_schedule_too_fast();
         let sim = shallow_sim_too_fast();
-        let respect = sim.path_item_respect_margins(&schedule);
+        let respect = SimulationResponseSuccess::path_item_respect_margins(
+            &sim.final_output.report_train.path_item_times,
+            &sim.provisional.path_item_times,
+            &schedule,
+        );
         assert_eq!(*respect, [true, false, true]);
     }
 
@@ -804,7 +820,11 @@ mod tests {
     fn test_too_fast_on_interval() {
         let schedule = train_schedule_too_fast_on_interval();
         let sim = shallow_sim_too_fast_on_interval();
-        let respect = sim.path_item_respect_margins(&schedule);
+        let respect = SimulationResponseSuccess::path_item_respect_margins(
+            &sim.final_output.report_train.path_item_times,
+            &sim.provisional.path_item_times,
+            &schedule,
+        );
         assert_eq!(*respect, [true, true, false]);
     }
 
@@ -812,7 +832,11 @@ mod tests {
     fn test_not_too_fast_if_honored() {
         let schedule = train_schedule_honored();
         let sim = shallow_sim_honored();
-        let respect = sim.path_item_respect_margins(&schedule);
+        let respect = SimulationResponseSuccess::path_item_respect_margins(
+            &sim.final_output.report_train.path_item_times,
+            &sim.provisional.path_item_times,
+            &schedule,
+        );
         assert_eq!(*respect, [true, true]);
     }
 
@@ -820,7 +844,10 @@ mod tests {
     fn test_times_honored() {
         let schedule = train_schedule_honored();
         let sim = shallow_sim_honored();
-        let respect: Vec<bool> = sim.path_item_respect_times(&schedule);
+        let respect: Vec<bool> = SimulationResponseSuccess::path_item_respect_times(
+            &sim.final_output.report_train.path_item_times,
+            &schedule,
+        );
         assert_eq!(*respect, [true, true]);
     }
 
@@ -828,7 +855,10 @@ mod tests {
     fn test_times_no_schedule() {
         let schedule = train_schedule_no_schedule();
         let sim = shallow_sim_honored();
-        let respect: Vec<bool> = sim.path_item_respect_times(&schedule);
+        let respect: Vec<bool> = SimulationResponseSuccess::path_item_respect_times(
+            &sim.final_output.report_train.path_item_times,
+            &schedule,
+        );
         assert_eq!(*respect, [true, true]);
     }
 
@@ -836,7 +866,10 @@ mod tests {
     fn test_times_not_honored() {
         let schedule = train_schedule_not_honored();
         let sim = shallow_sim_not_honored();
-        let respect: Vec<bool> = sim.path_item_respect_times(&schedule);
+        let respect: Vec<bool> = SimulationResponseSuccess::path_item_respect_times(
+            &sim.final_output.report_train.path_item_times,
+            &schedule,
+        );
         assert_eq!(*respect, [true, false, true]);
     }
 }
