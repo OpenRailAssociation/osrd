@@ -400,7 +400,7 @@ const osrdEditoastApi = generatedEditoastApi
         invalidatesTags: (_result, _error, args) => [{ type: 'train_schedule_set', id: args.id }],
       },
       deleteTrainScheduleSetsById: {
-        invalidatesTags: () => [],
+        invalidatesTags: () => [{ type: 'train_schedule_set', id: 'LIST' }],
       },
     },
   });
