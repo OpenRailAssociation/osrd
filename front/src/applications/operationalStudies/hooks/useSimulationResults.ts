@@ -24,7 +24,10 @@ import { useScenarioContext } from './useScenarioContext';
 /**
  * Prepare data to be used in simulation results
  */
-const useSimulationResults = (): SimulationResults | undefined => {
+const useSimulationResults = (): {
+  results: SimulationResults | undefined;
+  isSimulationFetching: boolean;
+} => {
   const { t } = useTranslation('operational-studies');
 
   const { infraId, electricalProfileSetId } = useScenarioContext();
@@ -80,16 +83,17 @@ const useSimulationResults = (): SimulationResults | undefined => {
       : skipToken
   );
 
-  const { currentData: simulation } = osrdEditoastApi.endpoints.getTrainSimulation.useQuery(
-    selectedTrainId
-      ? {
-          id: selectedTrainId,
-          infraId,
-          electricalProfileSetId,
-          exceptionKey: exception?.key,
-        }
-      : skipToken
-  );
+  const { currentData: simulation, isFetching: isSimulationFetching } =
+    osrdEditoastApi.endpoints.getTrainSimulation.useQuery(
+      selectedTrainId
+        ? {
+            id: selectedTrainId,
+            infraId,
+            electricalProfileSetId,
+            exceptionKey: exception?.key,
+          }
+        : skipToken
+    );
 
   // TODO: replace this API call by extracting the rolling stock from the rolling
   // stocks list
@@ -115,7 +119,7 @@ const useSimulationResults = (): SimulationResults | undefined => {
     );
 
   if (!train || exception?.disabled) {
-    return undefined;
+    return { results: undefined, isSimulationFetching };
   }
 
   if (
@@ -124,7 +128,7 @@ const useSimulationResults = (): SimulationResults | undefined => {
     !rawPathProperties ||
     !rollingStock
   ) {
-    return { isValid: false, train, rollingStock };
+    return { results: { isValid: false, train, rollingStock }, isSimulationFetching };
   }
 
   const pathProperties = preparePathPropertiesData(
@@ -144,13 +148,16 @@ const useSimulationResults = (): SimulationResults | undefined => {
     }) ?? [];
 
   return {
-    isValid: true,
-    train,
-    rollingStock,
-    simulation,
-    path: pathfinding,
-    pathProperties,
-    powerRestrictions,
+    results: {
+      isValid: true,
+      train,
+      rollingStock,
+      simulation,
+      path: pathfinding,
+      pathProperties,
+      powerRestrictions,
+    },
+    isSimulationFetching,
   };
 };
 
