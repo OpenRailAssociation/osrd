@@ -134,11 +134,11 @@ test.describe('@op @nge', () => {
       await ngePage.deleteNodeByIndexViaDialog(0, { nodes: 2, lines: 1 });
     });
 
-    await test.step('Delete next node via dialog (expect 1 node, 0 line)', async () => {
+    await test.step('Delete next node via dialog (expect 1 node, 0 lines)', async () => {
       await ngePage.deleteNodeByIndexViaDialog(0, { nodes: 1, lines: 0 });
     });
 
-    await test.step('Delete last node using keyboard (expect 0 nodes, 0 line)', async () => {
+    await test.step('Delete last node using keyboard (expect 0 nodes, 0 lines)', async () => {
       await ngePage.deleteFocusedNodeWithKeyboard({ nodes: 0, lines: 0 });
     });
 
@@ -151,9 +151,9 @@ test.describe('@op @nge', () => {
       await scenarioTimetableSection.verifyTimetableIsEmpty(frTranslations.timetable.noItem);
     });
 
-    await test.step('Re-toggle macro layout and re-assert graph is empty (no lines, nodes are persisted)', async () => {
+    await test.step('Re-toggle macro layout and re-assert graph is empty (expect 0 nodes, 0 lines)', async () => {
       await ngePage.enableMacroViewWithDefaultTrainList();
-      await ngePage.verifyNodeAndLinesCount({ nodes: 3, lines: 0 });
+      await ngePage.verifyNodeAndLinesCount({ nodes: 0, lines: 0 });
     });
   });
 });
