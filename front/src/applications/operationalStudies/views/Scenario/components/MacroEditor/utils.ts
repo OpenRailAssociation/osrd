@@ -113,7 +113,7 @@ export const storeRoundTrip = async (
 
 /**
  * Check if every new nodes (from import) are already in the DB (by path_item_key).
- * If not we persist them.
+ * If not we persist them and update the state with their dbIds.
  */
 export const storeTrainPathNodes = async (state: MacroEditorState, dispatch: AppDispatch) => {
   const allNodes = state.nodes.filter((n) => n && !n.dbId);
@@ -122,11 +122,17 @@ export const storeTrainPathNodes = async (state: MacroEditorState, dispatch: App
 
   const payload = allNodes.map((n) => omit(n, ['ngeId', 'geocoord']));
 
-  await dispatch(
+  const result = await dispatch(
     osrdEditoastApi.endpoints.postMacroNodes.initiate({
       macroNodeBatchForm: { macro_nodes: payload, scenario_id: state.scenarioId },
     })
   ).unwrap();
+
+  result.macro_nodes.forEach((createdNode) => {
+    state.updateNodeDataByKey(createdNode.path_item_key, {
+      dbId: createdNode.id,
+    });
+  });
 };
 
 /**
