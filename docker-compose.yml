@@ -89,20 +89,22 @@ services:
     image: rustfs/rustfs
     container_name: s3
     ports:
-      - 9000:9000
-      - 9001:9001
+      - 9900:9900
+      - 9901:9901
     volumes:
       - s3_data:/data
     environment:
       RUSTFS_ACCESS_KEY: access_key
       RUSTFS_SECRET_KEY: secret_key
+      RUSTFS_ADDRESS: ":9900"
+      RUSTFS_CONSOLE_ADDRESS: ":9901"
     healthcheck:
       test:
         [
           "CMD",
           "curl", "--fail", "--fail-early",
-          "http://localhost:9000/health",
-          "http://localhost:9001/rustfs/console/health",
+          "http://localhost:9900/health",
+          "http://localhost:9901/rustfs/console/health",
         ]
       interval: 30s
       timeout: 10s
@@ -119,7 +121,7 @@ services:
     environment:
       AWS_ACCESS_KEY_ID: access_key
       AWS_SECRET_ACCESS_KEY: secret_key
-      AWS_ENDPOINT_URL_S3: http://s3:9000
+      AWS_ENDPOINT_URL_S3: http://s3:9900
     entrypoint: ["/create_bucket.sh", "osrd"]
 
   core:
@@ -151,7 +153,7 @@ services:
       VALKEY_URL: "redis://valkey"
       AWS_ACCESS_KEY_ID: access_key
       AWS_SECRET_ACCESS_KEY: secret_key
-      AWS_ENDPOINT_URL_S3: http://s3:9000
+      AWS_ENDPOINT_URL_S3: http://s3:9900
       BUCKET_NAME: osrd
     restart: "no"
     command: "true"
