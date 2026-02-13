@@ -352,7 +352,7 @@ pub(in crate::views) async fn simulation_summary(
     let mut base_simulation = Arc::clone(&simulations[0].0);
     let results = simulation_contexts.into_iter().zip(simulations).fold(
         HashMap::<i64, PacedTrainSummaryResponse>::new(),
-        |mut map, (simulation_context, (simulation, path))| {
+        |mut map, (simulation_context, (simulation, _path))| {
             if let Some(exception_key) = &simulation_context.exception_key {
                 if !Arc::ptr_eq(&base_simulation, &simulation) {
                     map.entry(simulation_context.paced_train_id)
@@ -361,7 +361,6 @@ pub(in crate::views) async fn simulation_summary(
                                 exception_key.to_string(),
                                 SummaryResponse::summarize_simulation(
                                     Arc::unwrap_or_clone(simulation),
-                                    Arc::unwrap_or_clone(path),
                                     &simulation_context.train_schedule,
                                 ),
                             );
@@ -374,7 +373,6 @@ pub(in crate::views) async fn simulation_summary(
                     PacedTrainSummaryResponse {
                         paced_train: SummaryResponse::summarize_simulation(
                             Arc::unwrap_or_clone(simulation),
-                            Arc::unwrap_or_clone(path),
                             &simulation_context.train_schedule,
                         ),
                         exceptions: HashMap::new(),
@@ -2065,7 +2063,6 @@ mod tests {
                     path_item_times_base: vec![0, 1, 2, 3],
                     path_item_respect_times: vec![true, false, true, false],
                     path_item_respect_margins: vec![true, true, true, true],
-                    path_item_positions: vec![0, 1, 2, 3]
                 },
                 exceptions: [(
                     "change_initial_speed".to_string(),
@@ -2080,7 +2077,6 @@ mod tests {
                         path_item_times_base: vec![0, 1, 2, 3],
                         path_item_respect_times: vec![true, false, true, false],
                         path_item_respect_margins: vec![true, true, true, true],
-                        path_item_positions: vec![0, 1, 2, 3]
                     }
                 )]
                 .into_iter()

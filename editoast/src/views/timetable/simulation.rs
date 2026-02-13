@@ -284,10 +284,6 @@ pub enum SummaryResponse {
         /// The length of this array is the number of path items in the train schedule used as input for the simulation.
         /// Important: `true` means the provisional time is acceptable margin-wise, not *precisely* respecting the margin.
         path_item_respect_margins: Vec<bool>,
-        /// The path offset in mm of each path item given as input of the pathfinding
-        /// The length of this array is the number of path items in the train schedule used as input for the simulation.
-        /// The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm
-        path_item_positions: Vec<u64>,
     },
     /// Pathfinding not found
     PathfindingNotFound(PathfindingNotFound),
@@ -302,19 +298,10 @@ pub enum SummaryResponse {
 impl SummaryResponse {
     pub fn summarize_simulation<T: TrainScheduleLike>(
         response: simulation::Response,
-        path: PathfindingResult,
         train_schedule: &T,
     ) -> Self {
         match response {
             simulation::Response::Success(sim) => {
-                let PathfindingResult::Success(PathfindingResultSuccess {
-                    path_item_positions,
-                    ..
-                }) = path
-                else {
-                    panic!("Pathfinding cannnot fail if the simulation has succeeded")
-                };
-
                 let path_item_respect_times = sim.path_item_respect_times(train_schedule);
                 let path_item_respect_margins = sim.path_item_respect_margins(train_schedule);
 
@@ -334,7 +321,6 @@ impl SummaryResponse {
                     path_item_times_base: base.path_item_times.clone(),
                     path_item_respect_times,
                     path_item_respect_margins,
-                    path_item_positions: path_item_positions.clone(),
                 }
             }
             simulation::Response::PathfindingFailed { pathfinding_failed } => {

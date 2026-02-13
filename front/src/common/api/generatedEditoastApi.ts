@@ -3787,10 +3787,6 @@ export type SimulationSummaryResult =
       energy_consumption: number;
       /** Length of a path in mm */
       length: number;
-      /** The path offset in mm of each path item given as input of the pathfinding
-    The length of this array is the number of path items in the train schedule used as input for the simulation.
-    The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm */
-      path_item_positions: number[];
       /** Whether the final path times respect the input margins for each train schedule path item.
     The length of this array is the number of path items in the train schedule used as input for the simulation.
     Important: `true` means the provisional time is acceptable margin-wise, not *precisely* respecting the margin. */

@@ -321,7 +321,6 @@ export const trainSummaryTooFast: Extract<SimulationSummaryResult, { status: 'su
   path_item_times_base: [0, 1444453, 2491479],
   path_item_respect_times: [true, true, true],
   path_item_respect_margins: [true, false, true],
-  path_item_positions: [0, 1000, 2000],
 };
 
 export const trainSummaryTooFastOnInterval: Extract<
@@ -337,7 +336,6 @@ export const trainSummaryTooFastOnInterval: Extract<
   path_item_times_base: [0, 4730243, 13828795],
   path_item_respect_times: [true, true, true],
   path_item_respect_margins: [true, true, false],
-  path_item_positions: [0, 1000, 2000],
 };
 
 export const trainSummaryNotHonored: Extract<SimulationSummaryResult, { status: 'success' }> = {
@@ -350,7 +348,6 @@ export const trainSummaryNotHonored: Extract<SimulationSummaryResult, { status: 
   path_item_times_base: [0, 1425534, 2186885],
   path_item_respect_times: [true, false, true],
   path_item_respect_margins: [true, true, true],
-  path_item_positions: [0, 1000, 2000],
 };
 
 export const trainScheduleHonored: TimetableItem = {
@@ -420,5 +417,4 @@ export const trainSummaryHonored: Extract<SimulationSummaryResult, { status: 'su
   path_item_times_base: [0, 2186885],
   path_item_respect_times: [true, true],
   path_item_respect_margins: [true, true],
-  path_item_positions: [0, 1000],
 };
