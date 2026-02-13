@@ -10,7 +10,6 @@ import {
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
-import { Loader } from 'common/Loaders/Loader';
 import { formatLocalTime } from 'utils/date';
 
 import DurationCell from './DurationCell';
@@ -69,7 +68,6 @@ const getDepartureReferenceDate = (row: TimesStopsRowNew, startTime: Date): Date
 type TimesStopsTableProps = {
   rows: TimesStopsRowNew[];
   startTime: Date;
-  dataIsLoading?: boolean;
   isValid: boolean;
   isComputedDataPending?: boolean;
   onArrivalChange: (row: TimesStopsRowNew, arrival: Date | null) => void;
@@ -82,7 +80,6 @@ const columnHelper = createColumnHelper<TimesStopsRowNew>();
 const TimesStopsTable = ({
   rows,
   startTime,
-  dataIsLoading,
   isValid,
   isComputedDataPending,
   onArrivalChange,
@@ -245,14 +242,6 @@ const TimesStopsTable = ({
       onDepartureChange,
     },
   });
-
-  if (dataIsLoading) {
-    return (
-      <div className="times-stops-table-new-loader">
-        <Loader />
-      </div>
-    );
-  }
 
   if (rows.length === 0) {
     return (
