@@ -299,60 +299,6 @@ pub enum SummaryResponse {
 }
 
 impl SummaryResponse {
-    pub fn summarize_simulation<T: TrainScheduleLike>(
-        response: simulation::Response,
-        train_schedule: &T,
-    ) -> Self {
-        match response {
-            simulation::Response::Success(sim) => {
-                let path_item_respect_times = path_item_respect_times(
-                    &sim.final_output.report_train.path_item_times,
-                    train_schedule,
-                );
-                let path_item_respect_margins = path_item_respect_margins(
-                    &sim.final_output.report_train.path_item_times,
-                    &sim.provisional.path_item_times,
-                    train_schedule,
-                );
-
-                let SimulationResponseSuccess {
-                    final_output: CompleteReportTrain { report_train, .. },
-                    provisional,
-                    base,
-                    ..
-                } = sim;
-
-                Self::Success {
-                    length: *report_train.positions.last().unwrap(),
-                    time: *report_train.path_item_times.last().unwrap(),
-                    energy_consumption: report_train.energy_consumption,
-                    path_item_times_final: report_train.path_item_times,
-                    path_item_times_provisional: provisional.path_item_times,
-                    path_item_times_base: base.path_item_times.clone(),
-                    path_item_respect_times,
-                    path_item_respect_margins,
-                }
-            }
-            simulation::Response::PathfindingFailed { pathfinding_failed } => {
-                match pathfinding_failed {
-                    PathfindingFailure::InternalError { core_error } => {
-                        Self::PathfindingFailure { core_error }
-                    }
-
-                    PathfindingFailure::PathfindingInputError(input_error) => {
-                        Self::PathfindingInputError(input_error)
-                    }
-
-                    PathfindingFailure::PathfindingNotFound(not_found) => {
-                        Self::PathfindingNotFound(not_found)
-                    }
-                }
-            }
-            simulation::Response::SimulationFailed { core_error } => Self::SimulationFailed {
-                error_type: core_error.error_type,
-            },
-        }
-    }
     pub fn from_simulation_output(
         simulation_output: &core_task::SimulationOutput,
         train_occurrence: &TrainOccurrence,
