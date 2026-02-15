@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 
 import { Button } from '@osrd-project/ui-core';
 import cx from 'classnames';
+import type { FeatureCollection } from 'geojson';
 import { isEqual } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -36,6 +37,7 @@ import StdcmConsist from './StdcmConsist';
 import StdcmDestination from './StdcmDestination';
 import StdcmLinkedTrainSearch from './StdcmLinkedTrainSearch';
 import StdcmOrigin from './StdcmOrigin';
+import GeoJSONPointsLayer from '../../../../common/Map/Layers/GeoJSONPointsLayer';
 import useStaticPathfinding from '../../hooks/useStaticPathfinding';
 import type { StdcmConfigErrors, ConsistErrors } from '../../types';
 import StdcmSimulationParams from '../StdcmSimulationParams';
@@ -66,6 +68,9 @@ type StdcmConfigProps = {
   launchStdcmRequest: () => Promise<void>;
   cancelStdcmRequest: () => void;
   setSkipPathfindingStatusMessage: (value: boolean) => void;
+  currentRequestId: string | null;
+  progressGeom: FeatureCollection | null;
+  setProgressGeom: (value: FeatureCollection) => void;
 };
 
 const StdcmConfig = ({
@@ -78,6 +83,9 @@ const StdcmConfig = ({
   setSkipPathfindingStatusMessage,
   cancelStdcmRequest,
   launchStdcmRequest,
+  currentRequestId,
+  progressGeom,
+  setProgressGeom,
 }: StdcmConfigProps) => {
   const { t } = useTranslation('stdcm');
   const dateTimeLocale = useDateTimeLocale();
@@ -368,6 +376,8 @@ const StdcmConfig = ({
                   cancelStdcmRequest={cancelStdcmRequest}
                   launchButtonRef={launchButtonRef}
                   formRef={formRef}
+                  currentRequestId={currentRequestId}
+                  setProgressGeom={setProgressGeom}
                 />
               )}
             </div>
@@ -388,7 +398,9 @@ const StdcmConfig = ({
             mapSettings={{ ...mapSettings, viewport: stdcmConfigViewport }}
             updateMapSettings={updateMapSettings}
             updateViewport={updateViewport}
-          />
+          >
+            {progressGeom ? <GeoJSONPointsLayer geometries={progressGeom} /> : null}
+          </DefaultBaseMap>
         </div>
       </div>
     </div>

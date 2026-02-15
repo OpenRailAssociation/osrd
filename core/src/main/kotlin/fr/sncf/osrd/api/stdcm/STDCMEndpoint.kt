@@ -40,6 +40,8 @@ import fr.sncf.osrd.standalone_sim.makeElectricalProfiles
 import fr.sncf.osrd.standalone_sim.makeMRSPResponse
 import fr.sncf.osrd.standalone_sim.result.ElectrificationRange
 import fr.sncf.osrd.standalone_sim.runScheduleMetadataExtractor
+import fr.sncf.osrd.stdcm.ProgressCallback
+import fr.sncf.osrd.stdcm.STDCMProgressSample
 import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.graph.STDCMGraph
 import fr.sncf.osrd.stdcm.graph.checkPlannedStepsAndMaybeIndex
@@ -55,6 +57,7 @@ import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.DistanceRangeMap.RangeMapEntry
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.units.*
+import io.lettuce.core.api.StatefulRedisConnection
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -72,6 +75,7 @@ class STDCMEndpoint(
     private val infraManager: InfraProvider,
     private val timetableCacheManager: TimetableCacheManager,
     private val s3Context: S3Context? = null,
+    private val valkeyConnection: StatefulRedisConnection<ByteArray, ByteArray>? = null,
 ) : Take {
     @Throws(OSRDError::class)
     override fun act(req: Request): Response {
@@ -124,6 +128,12 @@ class STDCMEndpoint(
             val requirements = getRequirements(request, infra, timetableCacheManager)
             val allowedTrackSections = parseTrackSectionIds(infra, request.allowedTrackSections)
 
+            var callback: ProgressCallback? = null
+            if (valkeyConnection != null && request.requestId != null) {
+                logger.info("Logging progress, request ID = ${request.requestId}")
+                callback = { progressCallback(valkeyConnection, request.requestId, it) }
+            }
+
             // Run the STDCM pathfinding
             val path =
                 findPath(
@@ -147,6 +157,7 @@ class STDCMEndpoint(
                     temporarySpeedLimitManager,
                     allowedTrackSections,
                     STDCMGraph.SearchMetadata(request.startTime, requirements.metadata, s3Context),
+                    callback,
                 )
             if (path == null || hasDuplicateTracks(infra, path.trainPath)) {
                 val response = PathNotFound()
@@ -512,4 +523,20 @@ private fun parseSimulationScheduleItems(
 
 fun parseTrackSectionIds(infra: FullInfra, trackSectionName: Set<String>?): Set<TrackSectionId>? {
     return trackSectionName?.mapNotNull { infra.rawInfra.getTrackSectionFromName(it) }?.toSet()
+}
+
+private fun progressCallback(
+    valkeyConnection: StatefulRedisConnection<ByteArray, ByteArray>,
+    requestId: String,
+    data: STDCMProgressSample,
+) {
+    val expiration = 15 * 60L // 15min
+    val key = "CORE_STDCM_PROGRESS_${requestId}"
+    val value = STDCMProgressSample.adapter.toJson(data)
+    val async = valkeyConnection.async()
+    async.rpush(key.encodeToByteArray(), value.encodeToByteArray()).exceptionally {
+        logger.error("failed to send progress to valkey: ", it)
+        null
+    }
+    async.expire(key.encodeToByteArray(), expiration)
 }

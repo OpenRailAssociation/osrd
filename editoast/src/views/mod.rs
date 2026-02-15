@@ -222,6 +222,14 @@ fn service_router() -> router::DocumentedRouter {
             //
             .nests("/timetable", |path| {
                 path.route("/", post!(timetable::post))
+                    .route(
+                        "/stdcm_get_async_result",
+                        get!(timetable::stdcm::stdcm_get_async_result),
+                    )
+                    .route(
+                        "/stdcm_get_async_progress",
+                        get!(timetable::stdcm::stdcm_get_async_progress),
+                    )
                     .nests("/{id}", |path| {
                         path.route("/", delete!(timetable::delete))
                             .route(
@@ -235,6 +243,7 @@ fn service_router() -> router::DocumentedRouter {
                             .route("/conflicts", get!(timetable::conflicts))
                             .route("/requirements", get!(timetable::requirements))
                             .route("/stdcm", post!(timetable::stdcm::stdcm))
+                            .route("/stdcm_async", post!(timetable::stdcm::stdcm_async))
                             .nests("/paced_trains", |path| {
                                 path.route("/", get!(timetable::get_paced_trains))
                             })

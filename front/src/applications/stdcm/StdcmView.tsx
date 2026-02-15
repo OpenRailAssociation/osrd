@@ -69,6 +69,9 @@ const StdcmViewContent = ({
     isRejected,
     isCanceled,
     isCalculationCompleted,
+    currentRequestId,
+    progressGeom,
+    setProgressGeom,
   } = useStdcm({ showFailureNotification: false });
 
   const dispatch = useAppDispatch();
@@ -191,6 +194,9 @@ const StdcmViewContent = ({
         setSkipPathfindingStatusMessage={setSkipPathfindingStatusMessage}
         launchStdcmRequest={launchStdcmRequest}
         cancelStdcmRequest={cancelStdcmRequest}
+        currentRequestId={currentRequestId}
+        progressGeom={progressGeom}
+        setProgressGeom={setProgressGeom}
       />
 
       {showStatusBanner && <StdcmStatusBanner isFailed={isRejected} />}

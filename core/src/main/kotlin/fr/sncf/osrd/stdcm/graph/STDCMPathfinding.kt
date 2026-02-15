@@ -12,6 +12,7 @@ import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.TrackSectionId
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
+import fr.sncf.osrd.stdcm.ProgressCallback
 import fr.sncf.osrd.stdcm.ProgressLogger
 import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
@@ -62,6 +63,7 @@ fun findPath(
     temporarySpeedLimitManager: TemporarySpeedLimitManager,
     allowedTrackSections: Set<TrackSectionId>? = null,
     searchMetadata: STDCMGraph.SearchMetadata? = null,
+    progressCallback: ProgressCallback? = null,
 ): STDCMResult? {
     return STDCMPathfinding(
             fullInfra,
@@ -79,6 +81,7 @@ fun findPath(
             temporarySpeedLimitManager,
             allowedTrackSections,
             searchMetadata,
+            progressCallback,
         )
         .findPath()
 }
@@ -99,6 +102,7 @@ class STDCMPathfinding(
     private val temporarySpeedLimitManager: TemporarySpeedLimitManager,
     private val allowedTrackSections: Set<TrackSectionId>?,
     private val searchMetadata: STDCMGraph.SearchMetadata?,
+    private val progressCallback: ProgressCallback? = null,
 ) {
 
     private var starts: Set<STDCMNode> = HashSet()
@@ -123,6 +127,7 @@ class STDCMPathfinding(
             temporarySpeedLimitManager,
             constraints,
             searchMetadata,
+            progressCallback,
         )
 
     @WithSpan(value = "STDCM pathfinding", kind = SpanKind.SERVER)
@@ -202,7 +207,7 @@ class STDCMPathfinding(
     private fun findPathImpl(): Result? {
         val queue = PriorityQueue<STDCMNode>()
 
-        val progressLogger = ProgressLogger(graph)
+        val progressLogger = ProgressLogger(graph, callback = progressCallback)
         val fValueLogger = LogAggregator({ logger.error(it) })
 
         for (location in starts) {
@@ -210,6 +215,7 @@ class STDCMPathfinding(
         }
         val start = Instant.now()
         var lastFValue = Double.NEGATIVE_INFINITY
+        var totalSimulatedTime = 0.0
         while (true) {
             if (Duration.between(start, Instant.now()).toSeconds() >= pathfindingTimeout)
                 throw OSRDError(ErrorType.PathfindingTimeoutError)
@@ -220,6 +226,7 @@ class STDCMPathfinding(
             }
             if (endNode.getMinTotalSimulationTime(graph.remainingTimeEstimator) > maxRunTime)
                 continue
+            totalSimulatedTime += endNode.previousEdge?.totalTime ?: 0.0
 
             // Checks that the f-value (best anticipated final value on path) only goes up,
             // otherwise the A* heuristic isn't admissible
@@ -230,7 +237,7 @@ class STDCMPathfinding(
             }
             lastFValue = fValue
 
-            progressLogger.processNode(endNode)
+            progressLogger.processNode(endNode, totalSimulatedTime)
             if (endNode.infraExplorer.getStepTracker().hasReachedDestination()) {
                 return buildResult(endNode)
             }
