@@ -8,7 +8,7 @@ import fr.sncf.osrd.envelope_sim.etcs.EoaType
 import fr.sncf.osrd.path.interfaces.BlockRange
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.RouteRange
-import fr.sncf.osrd.path.interfaces.ZoneRange
+import fr.sncf.osrd.path.interfaces.ZonePathRange
 import fr.sncf.osrd.path.interfaces.addLinearObjects
 import fr.sncf.osrd.path.interfaces.mapPointObjects
 import fr.sncf.osrd.path.interfaces.mapSubObjects
@@ -24,8 +24,8 @@ import fr.sncf.osrd.sim_infra.api.LoadedSignalInfra
 import fr.sncf.osrd.sim_infra.api.LogicalSignalId
 import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.api.RouteId
-import fr.sncf.osrd.sim_infra.api.Zone
 import fr.sncf.osrd.sim_infra.api.ZoneId
+import fr.sncf.osrd.sim_infra.api.ZonePathId
 import fr.sncf.osrd.sim_infra.api.getLogicalSignalName
 import fr.sncf.osrd.sim_infra.api.getZonePathZone
 import fr.sncf.osrd.standalone_sim.CLOSED_SIGNAL_RESERVATION_MARGIN
@@ -103,10 +103,12 @@ data class SpacingResourceGenerator(
     // train moves past the given objects.
     private val blockRanges = ArrayDeque<BlockRange>()
     private val routeRanges = ArrayDeque<RouteRange>()
-    private val zoneRanges = ArrayDeque<ZoneRange>()
+    private val zoneRanges = ArrayDeque<ZonePathRange>()
     private val stops = ArrayDeque<PathStop>()
     private val pendingSignals = ArrayDeque<PendingSignalData>()
-    private val ongoingZoneRequirements = mutableMapOf<ZoneId, OngoingZoneRequirement>()
+    // It's tempting to use zone id instead of zone path ids here,
+    // but data for the same zone in different directions can't be merged
+    private val ongoingZoneRequirements = mutableMapOf<ZonePathId, OngoingZoneRequirement>()
 
     private var isPathComplete: Boolean = false
     private var reachedFirstSignal: Boolean = false
@@ -135,9 +137,7 @@ data class SpacingResourceGenerator(
         if (emptyPathExtension) return
 
         val newZoneRanges =
-            newBlockRanges
-                .mapSubObjects(blockInfra::getBlockZonePaths, rawInfra::getZonePathLength)
-                .map { it.mapValue<ZoneId, Zone>(rawInfra.getZonePathZone(it.value)) }
+            newBlockRanges.mapSubObjects(blockInfra::getBlockZonePaths, rawInfra::getZonePathLength)
         require(newPathEnd == newZoneRanges.last().pathEnd)
         val signals =
             newBlockRanges.mapPointObjects(
@@ -321,12 +321,17 @@ data class SpacingResourceGenerator(
     private fun yieldCurrentRequirements(): List<SpacingRequirement> {
         val callbacks = callbacks!!
         val res = mutableListOf<SpacingRequirement>()
-        for ((zone, ongoingRequirementData) in ongoingZoneRequirements) {
-            val requirement = ongoingRequirementData.generateRequirement(zone, callbacks, stops)
-            if (requirement != null) res.add(requirement)
+        val zonePathsToRemove = mutableListOf<ZonePathId>()
+        for ((zonePath, ongoingRequirementData) in ongoingZoneRequirements) {
+            val zoneId = rawInfra.getZonePathZone(zonePath)
+            val requirement = ongoingRequirementData.generateRequirement(zoneId, callbacks, stops)
+            if (requirement != null) {
+                res.add(requirement)
+                if (requirement.isComplete) zonePathsToRemove.add(zonePath)
+            }
         }
-        for (requirement in res) { // Avoid modifying while iterating
-            if (requirement.isComplete) ongoingZoneRequirements.remove(requirement.zone)
+        for (zonePath in zonePathsToRemove) { // Avoid modifying while iterating
+            ongoingZoneRequirements.remove(zonePath)
         }
         stops.removeWhile { it.pathOffset < callbacks.currentPathOffset }
         return res
@@ -458,6 +463,8 @@ data class SpacingResourceGenerator(
                 // Otherwise we rely on the `followingZoneState` of `simulator.evaluate`
                 mapOf()
             }
+        val firstZonePath = zoneRanges.first().value
+        val firstZone = rawInfra.getZonePathZone(firstZonePath)
         val simulatedSignalStates =
             simulator.evaluate(
                 rawInfra,
@@ -468,7 +475,7 @@ data class SpacingResourceGenerator(
                 simulationData.blockIds.size,
                 zoneStates,
                 ZoneStatus.OCCUPIED,
-                firstZone = zoneRanges.first().value,
+                firstZone = firstZone,
             )
         val signalState = simulatedSignalStates[signal]!!
 

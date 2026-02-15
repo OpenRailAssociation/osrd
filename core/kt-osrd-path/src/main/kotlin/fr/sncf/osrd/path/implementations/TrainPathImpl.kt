@@ -79,15 +79,41 @@ data class TrainPathImpl(
         checkRangeList(chunks) { rawInfra.getTrackChunkLength(it.value).forceDirected() }
     }
 
-    override fun subPath(from: Offset<PhysicsPath>?, to: Offset<PhysicsPath>?): TrainPath {
-        val fromDist = from?.cast<PhysicsPath>() ?: Offset(0.meters)
-        val toDist = (to ?: getLength()).cast<PhysicsPath>()
+    override fun subPath(
+        from: Offset<PhysicsPath>?,
+        to: Offset<PhysicsPath>?,
+        includeExactStart: Boolean,
+        includeExactEnd: Boolean,
+    ): TrainPath {
+        val fromDist = from ?: Offset(0.meters)
+        val toDist = to ?: getLength()
         return TrainPathImpl(
             rawInfra = rawInfra,
             blockInfra = blockInfra,
-            routes = routes?.subRange(fromDist, toDist, resetOffsets = true),
-            blocks = blocks.subRange(fromDist, toDist, resetOffsets = true),
-            chunks = chunks.subRange(fromDist, toDist, resetOffsets = true),
+            routes =
+                routes?.subRange(
+                    fromDist,
+                    toDist,
+                    resetOffsets = true,
+                    includeExactStart = includeExactStart,
+                    includeExactEnd = includeExactEnd,
+                ),
+            blocks =
+                blocks.subRange(
+                    fromDist,
+                    toDist,
+                    resetOffsets = true,
+                    includeExactStart = includeExactStart,
+                    includeExactEnd = includeExactEnd,
+                ),
+            chunks =
+                chunks.subRange(
+                    fromDist,
+                    toDist,
+                    resetOffsets = true,
+                    includeExactStart = includeExactStart,
+                    includeExactEnd = includeExactEnd,
+                ),
             electricalProfileMapping = electricalProfileMapping,
             haveApproximateBlocks = haveApproximateBlocks,
             backtrackLocations = backtrackLocations.filter { it.cast() in fromDist..toDist },
