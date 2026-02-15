@@ -54,3 +54,19 @@ export function getVisibilityClass(isVisible: boolean): 'visible' | 'none' {
 export function gpsRound(val: number) {
   return Math.round(val * 10000) / 10000;
 }
+
+/**
+ * Creates a search datetime window from tomorrow (J+1) to 8 days from now (J+8)
+ * @returns Object with begin and end dates
+ */
+export const getDefaultSearchDatetimeWindow = () => {
+  const today = new Date();
+
+  const begin = new Date(today);
+  begin.setDate(begin.getDate() + 1);
+
+  const end = new Date(today);
+  end.setDate(end.getDate() + 8);
+
+  return { begin, end };
+};

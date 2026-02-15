@@ -16,6 +16,7 @@ import type { OsrdStdcmConfState, StdcmPathStep } from 'reducers/osrdconf/types'
 import { addElementAtIndex } from 'utils/array';
 import { isArrivalDateInSearchTimeWindow } from 'utils/date';
 import { Duration } from 'utils/duration';
+import { getDefaultSearchDatetimeWindow } from 'utils/helpers';
 import type { ArrayElement, PickAndNonNullableFields } from 'utils/types';
 
 const DEFAULT_TOLERANCE = new Duration({ minutes: 30 });
@@ -171,7 +172,9 @@ export const stdcmConfSlice = createSlice({
         > & { defaultSpeedLimitTag?: string }
       >
     ) {
-      const { searchDatetimeWindow, speedLimitsByTag, defaultSpeedLimitTag } = action.payload;
+      const { speedLimitsByTag, defaultSpeedLimitTag } = action.payload;
+      const searchDatetimeWindow = getDefaultSearchDatetimeWindow();
+
       state.infraID = action.payload.infraID;
       state.timetableID = action.payload.timetableID;
       state.electricalProfileSetId = action.payload.electricalProfileSetId;
