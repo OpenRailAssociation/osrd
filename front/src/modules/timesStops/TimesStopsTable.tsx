@@ -47,6 +47,13 @@ const TimesStopsTable = ({ rows, dataIsLoading, isValid }: TimesStopsTableProps)
           className: 'col-index computed',
         },
       }),
+      columnHelper.display({
+        id: 'opOnPathIndex',
+        header: '',
+        meta: {
+          className: 'col-scheduled-index',
+        },
+      }),
       columnHelper.accessor('name', {
         header: () => t('operational_point'),
         cell: (info) => {

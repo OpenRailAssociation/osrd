@@ -69,6 +69,11 @@
       color: var(--grey50);
     }
 
+    td.col-scheduled-index {
+      padding-inline: 0px;
+      width: 8px;
+    }
+
     td.col-name {
       text-align: left;
 
@@ -122,6 +127,11 @@
         width: 36px;
       }
 
+      td.col-scheduled-index {
+        padding-inline: 0px;
+        width: 16px;
+      }
+
       td.col-track {
         width: 79px;
         font-size: 0.875rem;
@@ -138,7 +148,7 @@
         width: 103px;
       }
 
-      td[class^='col-']:not(.col-index) {
+      td[class^='col-']:not(.col-index, .col-scheduled-index) {
         padding-inline: 12px;
       }
     }
