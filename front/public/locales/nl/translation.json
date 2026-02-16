@@ -11,7 +11,7 @@
     "infra-errors": {
       "corrector-modal": {
         "create-actions": "{{creation_count}} aangemaakte objecten",
-        "delete-actions": "verwijderde objecten",
+        "delete-actions": "{{deletion_count}} verwijderde objecten",
         "loading-loader": "Mogelijke oplossingen berekenen",
         "no-fixes-found": "Geen oplossingen gevonden.",
         "saving-loader": "Correcties toepassen aan de infrastructuur.",
