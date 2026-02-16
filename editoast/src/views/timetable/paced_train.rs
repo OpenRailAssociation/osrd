@@ -320,7 +320,7 @@ pub(in crate::views) async fn simulation_summary(
                 std::iter::once(SimulationContext {
                     paced_train_id: paced_train.id,
                     exception_key: None,
-                    train_schedule: paced_train.clone().into_train_schedule(),
+                    train_schedule: paced_train.clone().into_train_occurrence(),
                 })
                 .chain(paced_train.exceptions.iter().map(|exception| {
                     SimulationContext {
@@ -458,7 +458,7 @@ pub(in crate::views) async fn get_path(
 
             paced_train.apply_exception(exception)
         }
-        None => paced_train.into_train_schedule(),
+        None => paced_train.into_train_occurrence(),
     };
 
     Ok(Json(
@@ -547,7 +547,7 @@ pub(in crate::views) async fn simulation(
 
             paced_train.apply_exception(exception)
         }
-        None => paced_train.into_train_schedule(),
+        None => paced_train.into_train_occurrence(),
     };
 
     // Compute simulation of a paced_train
@@ -634,7 +634,7 @@ pub(in crate::views) async fn etcs_braking_curves(
 
             paced_train.apply_exception(exception)
         }
-        None => paced_train.into_train_schedule(),
+        None => paced_train.into_train_occurrence(),
     };
 
     // Compute simulation of a train schedule
@@ -794,7 +794,7 @@ pub(in crate::views) async fn project_path(
                 std::iter::once(SimulationContext {
                     paced_train_id: paced_train.id,
                     exception_key: None,
-                    train_schedule: paced_train.clone().into_train_schedule(),
+                    train_schedule: paced_train.clone().into_train_occurrence(),
                 })
                 .chain(paced_train.exceptions.iter().map(|exception| {
                     SimulationContext {
@@ -931,7 +931,7 @@ pub(in crate::views) async fn project_path_op(
                 BaseOrExceptionId::PacedTrain {
                     paced_train_id: paced_train.id,
                 },
-                paced_train.clone().into_train_schedule(),
+                paced_train.clone().into_train_occurrence(),
             ))
             .chain(paced_train.exceptions.iter().map(|exception| {
                 (
@@ -1110,7 +1110,7 @@ pub(in crate::views) async fn occupancy_blocks(
                 std::iter::once(SimulationContext {
                     paced_train_id: paced_train.id,
                     exception_key: None,
-                    train_schedule: paced_train.clone().into_train_schedule(),
+                    train_schedule: paced_train.clone().into_train_occurrence(),
                 })
                 .chain(paced_train.exceptions.iter().map(|exception| {
                     SimulationContext {
