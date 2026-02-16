@@ -5,12 +5,12 @@ import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.DirDetectorId
 import fr.sncf.osrd.sim_infra.utils.getBlockEntry
 import fr.sncf.osrd.sim_infra.utils.getBlockExit
+import fr.sncf.osrd.stdcm.CachedBlockMaxSpeedEnvBuilder
 import fr.sncf.osrd.stdcm.graph.TimeData
 import fr.sncf.osrd.stdcm.graph.visited_node_tracking.VisitedNodes.Parameters
 import fr.sncf.osrd.stdcm.infra_exploration.EdgeIdentifier
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.stdcm.infra_exploration.getRemainingBlocks
-import fr.sncf.osrd.utils.CachedBlockMaxSpeedEnvBuilder
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.meters
 import kotlin.math.min

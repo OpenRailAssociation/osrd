@@ -1,4 +1,4 @@
-package fr.sncf.osrd.utils
+package fr.sncf.osrd.stdcm
 
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
@@ -20,20 +20,24 @@ import fr.sncf.osrd.stdcm.graph.build
 import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
-import kotlin.math.min
 import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Used to compute block MaxSpeedEnvelopes and min time required to reach a point, with proper
  * caching.
  *
- * TODO: this ignores speed limits by route for now. It would make caching a lot less efficient though
- *   (can't just use block as key), it will have a significant performance cost. Should be supported
- *   once we import them, but not necessarily before that.
- * TODO: rare/unlikely cases could lead to pessimistic evaluation (which could lead to A* providing a solution different from optimum). Both cases could happen on the same block or different blocks.
- *   - If the path used for heuristic crosses the same stop multiple times (different OP parts) then we're applying the stop each time while the real simulation will only stop once.
- *   - Same goes on the order of stops if crossing stop places in the wrong order for heuristic, we're applying too much stops and wrongly slowing down the heuristic.
- *   /!\ Working on this requires benchmarking and evaluating possible bugs, the amount of work, technical debt.
+ * TODO: this ignores speed limits by route for now. It would make caching a lot less efficient
+ *   though (can't just use block as key), it will have a significant performance cost. Should be
+ *   supported once we import them, but not necessarily before that.
+ * TODO: rare/unlikely cases could lead to pessimistic evaluation (which could lead to A* providing
+ *   a solution different from optimum). Both cases could happen on the same block or different
+ *   blocks. /!\ Working on this requires benchmarking and evaluating possible bugs, the amount of
+ *   work, technical debt.
+ *     - If the path used for heuristic crosses the same stop multiple times (different OP parts)
+ *       then we're applying the stop each time while the real simulation will only stop once.
+ *     - Same goes on the order of stops if crossing stop places in the wrong order for heuristic,
+ *       we're applying too much stops and wrongly slowing down the heuristic.
  */
 data class CachedBlockMaxSpeedEnvBuilder(
     private val rawInfra: RawInfra,
@@ -106,7 +110,8 @@ data class CachedBlockMaxSpeedEnvBuilder(
                 if (actualEndSpeed < cachedMrsp.mrsp.endSpeed)
                     addEndBrakingPart(cachedMrsp.context, actualEndSpeed, cachedMrsp.mrsp)
                 else cachedMrsp.mrsp
-            // TODO: Look into adding accelerations to the max speed envelope and benchmark it to see if it improves the computing time.
+            // TODO: Look into adding accelerations to the max speed envelope and benchmark it to
+            // see if it improves the computing time.
             maxSpeedEnvelopeFrom(cachedMrsp.context, stops, newMrsp)
         }
     }
