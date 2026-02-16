@@ -52,24 +52,30 @@ impl From<InfraGrantArg> for authz::InfraGrant {
 }
 
 #[derive(Debug, Args)]
+struct IdentifiedResource {
+    r#type: Resource,
+    resource_id: i64,
+}
+
+#[derive(Debug, Args)]
 pub struct SetArgs {
-    resource: Resource,
+    #[clap(flatten)]
+    resource: IdentifiedResource,
     level: InfraGrantArg,
     subject: String,
-    resource_id: i64,
 }
 
 #[derive(Debug, Args)]
 pub struct UnsetArgs {
-    resource: Resource,
+    #[clap(flatten)]
+    resource: IdentifiedResource,
     subject: String,
-    resource_id: i64,
 }
 
 #[derive(Debug, Args)]
 pub struct ListSubjectsArgs {
-    resource: Resource,
-    resource_id: i64,
+    #[clap(flatten)]
+    resource: IdentifiedResource,
 }
 
 #[derive(Debug, Args)]
@@ -80,10 +86,13 @@ pub struct ListResourcesArgs {
 
 pub async fn set_grant(
     SetArgs {
-        resource,
         level,
         subject,
-        resource_id,
+        resource:
+            IdentifiedResource {
+                r#type: resource,
+                resource_id,
+            },
     }: SetArgs,
     pool: Arc<DbConnectionPoolV2>,
     openfga_config: OpenfgaConfig,
@@ -110,9 +119,12 @@ pub async fn set_grant(
 
 pub async fn unset_grant(
     UnsetArgs {
-        resource,
         subject,
-        resource_id,
+        resource:
+            IdentifiedResource {
+                r#type: resource,
+                resource_id,
+            },
     }: UnsetArgs,
     pool: Arc<DbConnectionPoolV2>,
     openfga_config: OpenfgaConfig,
@@ -148,8 +160,11 @@ async fn warn_about_orphaned_infra(
 
 pub async fn list_subjects(
     ListSubjectsArgs {
-        resource,
-        resource_id,
+        resource:
+            IdentifiedResource {
+                r#type: resource,
+                resource_id,
+            },
     }: ListSubjectsArgs,
     pool: Arc<DbConnectionPoolV2>,
     openfga_config: OpenfgaConfig,
