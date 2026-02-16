@@ -89,7 +89,7 @@
     font-size: 1rem;
     font-weight: 600;
     width: calc(100% - 196px);
-    height: 24px;
+    height: 42px;
     width: 100%;
     align-items: center;
     overflow: hidden;
@@ -106,11 +106,21 @@
       display: flex;
       align-items: center;
       min-width: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
       .train-name {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
+    }
+
+    .toggle-occurrences-list {
+      display: flex;
+      height: 100%;
+      margin-right: 4px;
+      cursor: pointer;
     }
   }
 
@@ -120,11 +130,15 @@
   }
 
   .base-info {
-    padding: 12px 0px 12px 4px;
+    padding: 3px 0px 3px 4px;
     position: relative;
 
-    &:hover {
+    &:hover:not(.selected) {
       background-color: var(--ambientB15);
+    }
+
+    &.selected {
+      background-color: var(--selection20);
     }
 
     &.warning {
@@ -445,7 +459,7 @@
   }
 
   .toggle-icon {
-    margin-right: 6px;
+    margin-right: 2px;
   }
 
   &.closed {

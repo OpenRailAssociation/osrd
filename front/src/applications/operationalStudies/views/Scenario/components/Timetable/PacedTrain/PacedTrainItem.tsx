@@ -38,6 +38,7 @@ import type {
 import {
   updateHoveredTrainId,
   updateProjectionType,
+  updateSelectedTrainId,
   updateTrainIdUsedForProjection,
 } from 'reducers/simulationResults';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
@@ -173,6 +174,10 @@ const PacedTrainItem = ({
     }
   };
 
+  const selectPacedTrainId = (pacedId: PacedTrainId) => {
+    dispatch(updateSelectedTrainId(pacedId));
+  };
+
   async function deleteExceptions() {
     const updatedPacedTrainPayload = formatPacedTrainWithDetailsToPacedTrainPayload({
       ...pacedTrain,
@@ -269,6 +274,7 @@ const PacedTrainItem = ({
           invalid: summary && !summary.isValid,
           warning: !!worstCase,
           [`warning-${worstCase}`]: !!worstCase,
+          selected: selectedTrainId === pacedTrain.id,
         })}
         onMouseEnter={() => dispatch(updateHoveredTrainId(pacedTrain.id))}
         onMouseLeave={() => dispatch(updateHoveredTrainId(undefined))}
@@ -294,7 +300,7 @@ const PacedTrainItem = ({
             </div>
           )}
           <div
-            className="d-flex"
+            className="toggle-occurrences-list"
             role="button"
             onClick={() => handleOpenOccurrencesList(pacedTrain.id)}
             tabIndex={0}
@@ -316,7 +322,13 @@ const PacedTrainItem = ({
               <ChevronRight dataTestId="toggle-icon-open" className="toggle-icon center-icon" />
             )}
           </div>
-          <div className="train-info">
+          <div
+            className="train-info"
+            data-testid="selected-paced-train-area"
+            role="button"
+            onClick={() => selectPacedTrainId(pacedTrain.id)}
+            tabIndex={0}
+          >
             <span
               data-testid="paced-train-name"
               className={cx('train-name', getTrainCategoryClassName(pacedTrain.category, 'text'))}
