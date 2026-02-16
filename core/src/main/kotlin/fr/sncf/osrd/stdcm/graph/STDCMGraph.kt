@@ -12,6 +12,7 @@ import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.ZoneId
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
+import fr.sncf.osrd.stdcm.CachedBlockMaxSpeedEnvBuilder
 import fr.sncf.osrd.stdcm.STDCMAStarHeuristic
 import fr.sncf.osrd.stdcm.STDCMHeuristicBuilder
 import fr.sncf.osrd.stdcm.graph.engineering_allowance.EngineeringAllowanceManager
@@ -20,7 +21,6 @@ import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
-import fr.sncf.osrd.utils.CachedBlockMaxSpeedEnvBuilder
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.units.meters
 import java.lang.Double.isFinite
