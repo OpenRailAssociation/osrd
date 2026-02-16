@@ -16,6 +16,7 @@ import {
   type LoadingGaugeType,
   type PostSendLastMinuteRequestApiArg,
   type SimulationReport,
+  type SendLastMinuteRequestResponse,
 } from 'common/api/osrdRailwayManagerApi';
 import {
   createSimilarTrainPayload,
@@ -38,7 +39,7 @@ import { castErrorToFailure } from 'utils/error';
 import { kmhToMs, tToKg } from 'utils/physics';
 
 type SendToRailwayManagerModalProps = {
-  onSuccess: (isSuccessful: boolean, request_identifier?: string) => void;
+  onSuccess: (isSuccessful: boolean, data: SendLastMinuteRequestResponse) => void;
   onClose: () => void;
   consist: StdcmSimulationInputs['consist'];
   stdcmData: StdcmSuccessResponse;
@@ -313,7 +314,7 @@ const SendToRailwayManagerModal = ({
 
   useEffect(() => {
     if (isSuccess) {
-      onSuccess(isSuccess, data.request_identifier);
+      onSuccess(isSuccess, data);
     }
   }, [isSuccess, data]);
 
@@ -554,9 +555,20 @@ const SendToRailwayManagerModal = ({
         <div className="actions">
           {isSuccess && (
             <div>
-              <span className="success-message">
-                {t('modal.successMessage', { demandNumber: data.request_identifier })}
-              </span>
+              {data.created_request_url ? (
+                <a
+                  href={data.created_request_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="success-message"
+                >
+                  {t('modal.successMessage', { demandNumber: data.request_identifier })}
+                </a>
+              ) : (
+                <span className="success-message">
+                  {t('modal.successMessage', { demandNumber: data.request_identifier })}
+                </span>
+              )}
               <span className="success-icon">
                 <CheckCircle variant="fill" />
               </span>

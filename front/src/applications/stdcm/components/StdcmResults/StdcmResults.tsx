@@ -12,6 +12,7 @@ import { extractMarkersInfo, mergeSimilarTrainSegments } from 'applications/stdc
 import { addSecondaryCodesToSimilarTrains } from 'applications/stdcm/utils/addSecondaryCodesToSimilarTrains';
 import { hasResults } from 'applications/stdcm/utils/simulationOutputUtils';
 import { osrdEditoastApi, type PostSimilarTrainsApiResponse } from 'common/api/osrdEditoastApi';
+import { type SendLastMinuteRequestResponse } from 'common/api/osrdRailwayManagerApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import DefaultBaseMap from 'common/Map/DefaultBaseMap';
 import {
@@ -64,6 +65,7 @@ const StdcmResults = ({
   const railwayManagerUrl = useSelector(getRailwayManagerInterfaceUrl);
   const [isRailwayRequestSuccessful, setIsRailwayRequestSuccessful] = useState(false);
   const [railwayDemandId, setRailwayDemandId] = useState<string>();
+  const [railwayRequestUrl, setRailwayRequestUrl] = useState<string | null>();
 
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
 
@@ -120,10 +122,14 @@ const StdcmResults = ({
 
   const [postSimilarTrains] = osrdEditoastApi.endpoints.postSimilarTrains.useMutation();
 
-  const handleSubmitSuccess = (isSuccessful: boolean, request_identifier?: string) => {
+  const handleSubmitSuccess = (
+    isSuccessful: boolean,
+    railwayResponse: SendLastMinuteRequestResponse
+  ) => {
     if (isSuccessful) {
       setIsRailwayRequestSuccessful(isSuccessful);
-      setRailwayDemandId(request_identifier);
+      setRailwayDemandId(railwayResponse.request_identifier);
+      setRailwayRequestUrl(railwayResponse.created_request_url);
     }
   };
 
@@ -351,9 +357,28 @@ const StdcmResults = ({
                             }
                           />
                         ) : (
-                          <div className="success-message">
-                            {t('modal.successMessage', { demandNumber: railwayDemandId })}
-                            <CheckCircle className="check-circle" variant="fill" />
+                          <div>
+                            {railwayRequestUrl ? (
+                              <a
+                                href={railwayRequestUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="success-message"
+                              >
+                                {t('modal.successMessage', {
+                                  demandNumber: railwayDemandId,
+                                })}
+                              </a>
+                            ) : (
+                              <span className="success-message">
+                                {t('modal.successMessage', {
+                                  demandNumber: railwayDemandId,
+                                })}
+                              </span>
+                            )}
+                            <span className="success-icon">
+                              <CheckCircle variant="fill" />
+                            </span>
                           </div>
                         ))}
                     </div>
