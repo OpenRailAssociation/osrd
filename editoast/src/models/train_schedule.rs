@@ -66,7 +66,7 @@ pub struct TrainSchedule {
 
 impl TrainSchedule {
     pub fn apply_exception(&self, exception: &PacedTrainException) -> TrainOccurrence {
-        let mut train_schedule = self.clone().into_train_schedule();
+        let mut train_schedule = self.clone().into_train_occurrence();
 
         if let Some(change_group) = &exception.train_name {
             train_schedule.train_name = change_group.value.clone();
@@ -111,7 +111,7 @@ impl TrainSchedule {
         train_schedule
     }
 
-    pub fn into_train_schedule(self) -> TrainOccurrence {
+    pub fn into_train_occurrence(self) -> TrainOccurrence {
         TrainOccurrence {
             train_name: self.train_name,
             labels: self.labels.to_vec(),
@@ -166,7 +166,7 @@ impl TrainSchedule {
                 let occurrence = OccurrenceId::new_base(self.id, occurrence_idx);
                 let train_schedule = TrainOccurrence {
                     start_time: base_start_time,
-                    ..self.clone().into_train_schedule()
+                    ..self.clone().into_train_occurrence()
                 };
                 (occurrence, train_schedule)
             })
