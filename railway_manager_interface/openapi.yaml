@@ -295,11 +295,17 @@ components:
         request_identifier:
           type: string
           title: Request Identifier
+        created_request_url:
+          type:
+          - string
+          - 'null'
+          title: Created Request URL
       type: object
       required:
       - status
       - message
       - request_identifier
+      - created_request_url
       title: SendLastMinuteRequestResponse
       description: Response model to validate and return when a last-minute request
         has been successfully sent.

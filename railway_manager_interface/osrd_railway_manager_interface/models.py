@@ -252,6 +252,9 @@ class SendLastMinuteRequestResponse(BaseModel):
     status: Annotated[str, Field(title="Status")]
     message: Annotated[str, Field(title="Message")]
     request_identifier: Annotated[str, Field(title="Request Identifier")]
+    created_request_url: Annotated[str | None, Field(title="Created Request URL")] = (
+        None
+    )
 
 
 class SimilarTrain(BaseModel):
