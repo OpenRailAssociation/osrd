@@ -282,6 +282,7 @@ export type SendLastMinuteRequestResponse = {
   status: string;
   message: string;
   request_identifier: string;
+  created_request_url: string | null;
 };
 export type LoadingGaugeType = 'GA' | 'GB';
 export type Location = {
