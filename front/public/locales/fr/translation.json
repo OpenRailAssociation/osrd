@@ -665,11 +665,11 @@
     "disconnect": "Déconnexion",
     "help": "Aide",
     "impersonation": "Se faire passer pour un utilisateur",
-    "informations": {
+    "information": {
       "application": "Application",
       "collaborations": "Collaborations",
       "dataSources": "Sources de données",
-      "librairies": "Librairies & licences",
+      "libraries": "Librairies & licences",
       "version": "Version"
     },
     "languages": "Langues",
@@ -732,7 +732,7 @@
       "minRangeError": "La valeur doit être supérieure ou égale à {{min}}",
       "missingConversion": "Cette conversion n'existe pas dans le schéma. La valeur n'a pas été modifiée.",
       "missingInformation": "Informations manquantes",
-      "ressourcesNotFound": "Ressources introuvables",
+      "resourcesNotFound": "Ressources introuvables",
       "rollingStockUsed": "Le Matériel roulant est utilisé dans les scénarios suivants :",
       "unableToRetrieveRollingStock": "Récupération matériel impossible",
       "unableToRetrieveRollingStockMessage": "Une erreur est survenue"

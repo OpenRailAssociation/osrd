@@ -83,7 +83,7 @@
           "name": "Overlapping of speed limits"
         },
         "overlapping_switches": {
-          "description": "Switches « {{obj_id}} » and « {{reference.obj_id}} » have the same extremeties",
+          "description": "Switches « {{obj_id}} » and « {{reference.obj_id}} » have the same extremities",
           "name": "Overlapping of switches"
         },
         "unknown_port_name": {
@@ -91,7 +91,7 @@
           "name": "Unknown branch name"
         },
         "unused_port": {
-          "description": "Branch « {{port_name}} » of switch type « {{obj_id}} » is nerver used",
+          "description": "Branch « {{port_name}} » of switch type « {{obj_id}} » is never used",
           "name": "Unused branch"
         }
       },
@@ -270,7 +270,7 @@
         "label": "Route tool",
         "locked-release-detectors": "This property can not be disabled after saving",
         "no-route-found": "No compatible route found",
-        "no-waypoint-picked-yet": "Click the button to select a detector or a bufferstop on the map",
+        "no-waypoint-picked-yet": "Click the button to select a detector or a buffer stop on the map",
         "preview-candidate": "Select",
         "search-routes": "Search for compatible routes",
         "search-routes-alt": "Search for alternative routes",
@@ -349,7 +349,7 @@
         "move-range-extremity": "Click to move the end:",
         "new-tag": "Composition code",
         "ralen-30-60": "Speed restriction",
-        "remove-track-range": "Click to detatch from:",
+        "remove-track-range": "Click to detach from:",
         "search-routes": "Search for compatible routes",
         "select-route": "Select a route",
         "select-switches-to-get-route": "Select switches and their position to search for routes",
@@ -512,7 +512,7 @@
         "title": "Modifications saved"
       }
     },
-    "toggleInfraErrors": "Toggler infra errors layer",
+    "toggleInfraErrors": "Toggle infra errors layer",
     "units": {
       "day": "d",
       "hour": "h",
@@ -575,7 +575,7 @@
   "jsonUpload": {
     "badJSON": "Invalid content. Only RailJSON files are supported (usually .json or .railjson extensions)",
     "emptyFile": "The file is empty",
-    "uploadError": "Error occurred while upload the file"
+    "uploadError": "Error occurred while uploading the file"
   },
   "map": {
     "layers-modal": {
@@ -665,11 +665,11 @@
     "disconnect": "Sign out",
     "help": "Help",
     "impersonation": "Impersonate user",
-    "informations": {
+    "information": {
       "application": "Application",
       "collaborations": "Collaborations",
       "dataSources": "Data sources",
-      "librairies": "Libraries & licenses",
+      "libraries": "Libraries & licenses",
       "version": "Version"
     },
     "languages": "Languages",
@@ -699,7 +699,7 @@
       "choose": "Choose a category",
       "noCategory": "No category"
     },
-    "chooseRollingStock": "Select a rolling stock to display informations",
+    "chooseRollingStock": "Select a rolling stock to display information",
     "comfort": "Comfort",
     "comfortAcceleration": "Comfort acceleration",
     "comfortLevels": "Comfort levels",
@@ -731,8 +731,8 @@
       "minMaxRangeError": "The value must be between {{min}} and {{max}}",
       "minRangeError": "The value must be greater than {{min}}",
       "missingConversion": "This conversion doesn't exist in the schema. Value hasn't been changed.",
-      "missingInformation": "Missing informations",
-      "ressourcesNotFound": "Resources not found",
+      "missingInformation": "Missing information",
+      "resourcesNotFound": "Resources not found",
       "rollingStockUsed": "This rolling stock is used in the following scenarios:",
       "unableToRetrieveRollingStock": "Cannot fetch rolling stock",
       "unableToRetrieveRollingStockMessage": "An error has occurred"

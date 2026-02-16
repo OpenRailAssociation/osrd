@@ -84,19 +84,19 @@ const LicenseAttributions = () => {
 
   return (
     <div className="col-md-6 h-100 d-flex flex-column">
-      <h2 className="text-center mb-4">{t('nav-bar.informations.collaborations')}</h2>
+      <h2 className="text-center mb-4">{t('nav-bar.information.collaborations')}</h2>
       <div className="license-attributions">
         {COLLABORATIONS.map((dataSource) => (
           <LicenseCard attribution={dataSource} key={dataSource.name} />
         ))}
       </div>
-      <h2 className="text-center my-4">{t('nav-bar.informations.dataSources')}</h2>
+      <h2 className="text-center my-4">{t('nav-bar.information.dataSources')}</h2>
       <div className="license-attributions">
         {DATA_SOURCES.map((dataSource) => (
           <LicenseCard attribution={dataSource} key={dataSource.name} />
         ))}
       </div>
-      <h2 className="text-center my-4">{t('nav-bar.informations.librairies')}</h2>
+      <h2 className="text-center my-4">{t('nav-bar.information.libraries')}</h2>
       <div className="license-attributions licenses">
         {licences.map((attribution) => (
           <LicenseCard attribution={attribution} key={attribution.name + attribution.version} />

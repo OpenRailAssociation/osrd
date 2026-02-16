@@ -128,11 +128,11 @@
     "about": "Über OSRD",
     "disconnect": "Abmelden",
     "help": "Hilfe",
-    "informations": {
+    "information": {
       "application": "Anwendung",
       "collaborations": "Kooperationen",
       "dataSources": "Datenquellen",
-      "librairies": "Versionsinformationen",
+      "libraries": "Versionsinformationen",
       "version": "Version"
     },
     "languages": "Spraches",
