@@ -154,3 +154,5 @@ variables to true: `LOG_STDCM_REQUESTS`, `LOG_PATHFINDING_REQUESTS`,
 `LOG_SIMULATION_REQUESTS`. Though be careful, STDCM payload can be large
 (possibly in the 100s of MB). They can then be reproduced by the
 `reproduce-request` CLI command.
+
+Some common workflows have been moved to scripts, in the `scripts` directory.
