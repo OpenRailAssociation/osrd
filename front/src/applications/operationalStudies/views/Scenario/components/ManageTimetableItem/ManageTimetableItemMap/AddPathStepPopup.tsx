@@ -143,6 +143,7 @@ const AddPathStepPopup = ({
 
       setClickedOp({
         id: uuidV4(),
+        name: operationalPoint.extensions?.identifier?.name,
         location: {
           operational_point: {
             secondary_code: operationalPoint.extensions!.sncf!.ch,
