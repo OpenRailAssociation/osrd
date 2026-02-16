@@ -283,13 +283,7 @@ const PacedTrainItem = ({
             />
           </div>
         )}
-        <div
-          title={pacedTrain.name}
-          className="paced-train-main-info"
-          onClick={() => handleOpenOccurrencesList(pacedTrain.id)}
-          role="button"
-          tabIndex={0}
-        >
+        <div title={pacedTrain.name} className="paced-train-main-info">
           {infraIsCached && showPacedTrainProjectionIcon && (
             <div
               className={cx('train-projected', {
@@ -300,21 +294,28 @@ const PacedTrainItem = ({
             </div>
           )}
           <div
-            data-testid="occurrences-count"
-            className={cx(
-              'occurrences-count',
-              getTrainCategoryClassName(pacedTrain.category, 'bg')
-            )}
-            style={{ backgroundColor: currentSubCategory?.color }}
+            className="d-flex"
+            role="button"
+            onClick={() => handleOpenOccurrencesList(pacedTrain.id)}
+            tabIndex={0}
           >
-            {occurrencesCount}
-          </div>
+            <div
+              data-testid="occurrences-count"
+              className={cx(
+                'occurrences-count',
+                getTrainCategoryClassName(pacedTrain.category, 'bg')
+              )}
+              style={{ backgroundColor: currentSubCategory?.color }}
+            >
+              {occurrencesCount}
+            </div>
 
-          {isOccurrencesListOpen ? (
-            <ChevronDown dataTestId="toggle-icon-close" className="toggle-icon center-icon" />
-          ) : (
-            <ChevronRight dataTestId="toggle-icon-open" className="toggle-icon center-icon" />
-          )}
+            {isOccurrencesListOpen ? (
+              <ChevronDown dataTestId="toggle-icon-close" className="toggle-icon center-icon" />
+            ) : (
+              <ChevronRight dataTestId="toggle-icon-open" className="toggle-icon center-icon" />
+            )}
+          </div>
           <div className="train-info">
             <span
               data-testid="paced-train-name"
