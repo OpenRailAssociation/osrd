@@ -101,7 +101,7 @@ pub async fn set_grant(
                 .give_infra_grant_unchecked(&subject.to_authz(), &infra, new_grant)
                 .await?;
 
-            warn_about_last_owner(regulator, &infra).await?;
+            warn_about_orphaned_infra(regulator, &infra).await?;
         }
     }
 
@@ -129,19 +129,19 @@ pub async fn unset_grant(
                 .revoke_infra_grants_unchecked(&subject.to_authz(), &infra)
                 .await?;
 
-            warn_about_last_owner(regulator, &infra).await?;
+            warn_about_orphaned_infra(regulator, &infra).await?;
         }
     }
 
     Ok(())
 }
 
-async fn warn_about_last_owner(
+async fn warn_about_orphaned_infra(
     regulator: Regulator<PgAuthDriver>,
     infra: &authz::Infra,
 ) -> anyhow::Result<()> {
     if regulator.get_infra_owners(infra).await?.is_empty() {
-        warn!("Infra {} now has no owner", infra.0);
+        warn!("Infra {} has no owner", infra.0);
     }
     Ok(())
 }
