@@ -45,6 +45,7 @@ export function buildSplitPoints(
   selectedTrainId?: TrainId,
   onCloseOccupancyLayer?: (waypointId: string) => void,
   handleWaypointClick?: (waypointId: string) => void,
+  activeWaypointId?: string,
   hoveredTrainIdForChart?: TrainId,
   hoveredTrainId?: TrainId
 ): SplitPoint[] {
@@ -138,8 +139,8 @@ export function buildSplitPoints(
               position: operationalPointPosition,
               onClick: handleWaypointClick,
             }}
-            waypointRef={activeWaypointRef}
-            isActive={false}
+            waypointRef={waypointId == activeWaypointId ? activeWaypointRef : undefined}
+            isActive={waypointId == activeWaypointId}
             isMenuActive={false}
           />
         </TrackOccupancyManchette>

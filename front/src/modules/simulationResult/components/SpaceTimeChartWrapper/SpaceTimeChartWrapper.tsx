@@ -246,6 +246,7 @@ const SpaceTimeChartWrapper = ({
         selectedTrainId,
         onCloseOccupancyLayer,
         handleWaypointClick,
+        activeWaypointId,
         hoveredTrainIdForChart,
         hoveredTrainId
       ),
