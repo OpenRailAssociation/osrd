@@ -2,7 +2,7 @@
   "name": "@osrd-project/storybook",
   "private": true,
   "devDependencies": {
-    "@chromatic-com/storybook": "^5.0.0",
+    "@chromatic-com/storybook": "^5.0.1",
     "@storybook/addon-docs": "^10.2.6",
     "@storybook/addon-links": "^10.2.6",
     "@storybook/addon-onboarding": "^10.2.6",
@@ -24,7 +24,7 @@
     "@osrd-project/ui-core": "0.0.1-dev",
     "@osrd-project/ui-icons": "0.0.1-dev",
     "@osrd-project/ui-warped-map": "0.0.1-dev",
-    "@turf/helpers": "^7.3.3",
+    "@turf/helpers": "^7.3.4",
     "classnames": "^2.5.1",
     "file-saver": "^2.0.5",
     "lodash": "^4.17.23",
