@@ -78,6 +78,12 @@ xdg-open http://localhost:4000/
 
 (Linux or WSL users can use `./osrd-compose host` instead of `docker compose` to enable host networking - useful to launch services in a debugger)
 
+The last-minute train (STDCM) module needs additional setup: start by creating a scenario, copy its ID from its URL, then run:
+
+```sh
+docker compose exec editoast editoast stdcm-search-env set-from-scenario <id>
+```
+
 ## Working on a single component
 
 Each component has a _justfile_ to run usual development tasks. Install [just](https://github.com/casey/just#installation) and run it to see available recipes. All the components include:
