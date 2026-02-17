@@ -186,15 +186,15 @@ async fn update_queue(
             debug!(?key, "declaring and binding queue");
 
             chan.queue_declare(
-                &queue_name,
+                queue_name.clone().into(),
                 QueueDeclareOptions::default(),
                 FieldTable::default(),
             )
             .await?;
             chan.queue_bind(
-                &queue_name,
-                &pool.request_xchg,
-                key.encode(),
+                queue_name.clone().into(),
+                pool.request_xchg.clone().into(),
+                key.encode().to_string().into(),
                 QueueBindOptions::default(),
                 FieldTable::default(),
             )
@@ -204,15 +204,15 @@ async fn update_queue(
             debug!(?key, "declaring and unbinding queue");
 
             chan.queue_declare(
-                &queue_name,
+                queue_name.clone().into(),
                 QueueDeclareOptions::default(),
                 FieldTable::default(),
             )
             .await?;
             chan.queue_unbind(
-                &queue_name,
-                &pool.request_xchg,
-                key.encode(),
+                queue_name.clone().into(),
+                pool.request_xchg.clone().into(),
+                key.encode().to_string().into(),
                 FieldTable::default(),
             )
             .await?;
@@ -221,15 +221,15 @@ async fn update_queue(
             debug!(?key, "deleting queue");
 
             chan.queue_unbind(
-                &queue_name,
-                &pool.request_xchg,
-                key.encode(),
+                queue_name.clone().into(),
+                pool.request_xchg.clone().into(),
+                key.encode().to_string().into(),
                 FieldTable::default(),
             )
             .await?;
             match chan
                 .queue_delete(
-                    &queue_name,
+                    queue_name.clone().into(),
                     QueueDeleteOptions {
                         if_empty: true,
                         ..Default::default()

@@ -109,28 +109,28 @@ impl Pool {
         // create exchanges
         let chan = conn.create_channel().await?;
         chan.exchange_declare(
-            &self.request_xchg,
+            self.request_xchg.clone().into(),
             Direct,
             ExchangeDeclareOptions::default(),
             FieldTable::default(),
         )
         .await?;
         chan.exchange_declare(
-            &self.orphan_xchg,
+            self.orphan_xchg.clone().into(),
             Fanout,
             ExchangeDeclareOptions::default(),
             FieldTable::default(),
         )
         .await?;
         chan.exchange_declare(
-            &self.deadletter_xchg,
+            self.deadletter_xchg.clone().into(),
             Fanout,
             ExchangeDeclareOptions::default(),
             FieldTable::default(),
         )
         .await?;
         chan.exchange_declare(
-            &self.activity_xchg,
+            self.activity_xchg.clone().into(),
             Fanout,
             ExchangeDeclareOptions::default(),
             FieldTable::default(),
@@ -186,36 +186,52 @@ impl Pool {
             auto_delete: false,
             ..Default::default()
         };
-        chan.queue_declare(&self.orphan_queue, exclusive, FieldTable::default())
-            .await?;
-        chan.queue_declare(&self.deadletter_queue, exclusive, FieldTable::default())
-            .await?;
-        chan.queue_declare(&self.activity_queue, exclusive, FieldTable::default())
-            .await?;
-        chan.queue_declare(&self.poison_queue, exclusive, FieldTable::default())
-            .await?;
+        chan.queue_declare(
+            self.orphan_queue.clone().into(),
+            exclusive,
+            FieldTable::default(),
+        )
+        .await?;
+        chan.queue_declare(
+            self.deadletter_queue.clone().into(),
+            exclusive,
+            FieldTable::default(),
+        )
+        .await?;
+        chan.queue_declare(
+            self.activity_queue.clone().into(),
+            exclusive,
+            FieldTable::default(),
+        )
+        .await?;
+        chan.queue_declare(
+            self.poison_queue.clone().into(),
+            exclusive,
+            FieldTable::default(),
+        )
+        .await?;
 
         // bind queues to exchanges
         chan.queue_bind(
-            &self.orphan_queue,
-            &self.orphan_xchg,
-            "",
+            self.orphan_queue.clone().into(),
+            self.orphan_xchg.clone().into(),
+            "".to_string().into(),
             QueueBindOptions::default(),
             FieldTable::default(),
         )
         .await?;
         chan.queue_bind(
-            &self.deadletter_queue,
-            &self.deadletter_xchg,
-            "",
+            self.deadletter_queue.clone().into(),
+            self.deadletter_xchg.clone().into(),
+            "".to_string().into(),
             QueueBindOptions::default(),
             FieldTable::default(),
         )
         .await?;
         chan.queue_bind(
-            &self.activity_queue,
-            &self.activity_xchg,
-            "",
+            self.activity_queue.clone().into(),
+            self.activity_xchg.clone().into(),
+            "".to_string().into(),
             QueueBindOptions::default(),
             FieldTable::default(),
         )
@@ -331,8 +347,8 @@ async fn orphan_processor(
     };
     let mut consumer = chan
         .basic_consume(
-            &pool.orphan_queue,
-            &consumer_tag,
+            pool.orphan_queue.clone().into(),
+            consumer_tag.clone().into(),
             options,
             FieldTable::default(),
         )
@@ -359,8 +375,8 @@ async fn orphan_processor(
 
         // Republish message
         chan.basic_publish(
-            &pool.request_xchg,
-            routing_key,
+            pool.request_xchg.clone().into(),
+            routing_key.to_string().into(),
             BasicPublishOptions::default(),
             &delivery.data,
             delivery.properties,
@@ -388,8 +404,8 @@ async fn activity_processor(
     };
     let mut consumer = chan
         .basic_consume(
-            &pool.activity_queue,
-            &consumer_tag,
+            pool.activity_queue.clone().into(),
+            consumer_tag.clone().into(),
             options,
             FieldTable::default(),
         )
@@ -527,8 +543,8 @@ async fn deadletter_responder(pool: Arc<Pool>, chan: Channel) -> anyhow::Result<
     };
     let mut consumer = chan
         .basic_consume(
-            &pool.deadletter_queue,
-            &consumer_tag,
+            pool.deadletter_queue.clone().into(),
+            consumer_tag.clone().into(),
             options,
             FieldTable::default(),
         )
@@ -556,8 +572,8 @@ async fn deadletter_responder(pool: Arc<Pool>, chan: Channel) -> anyhow::Result<
         // FIXME: design the response protocol...
         let payload = b"";
         chan.basic_publish(
-            "",
-            reply_to.as_str(),
+            "".to_string().into(),
+            reply_to.clone(),
             BasicPublishOptions::default(),
             payload,
             BasicProperties::default().with_headers(headers),
