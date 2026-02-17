@@ -2,7 +2,7 @@ import { compact } from 'lodash';
 import { v4 as uuidV4 } from 'uuid';
 
 import type { PacedTrainWithPaced } from 'applications/operationalStudies/types';
-import type { PacedTrain } from 'common/api/osrdEditoastApi';
+import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 import getStepLocation from 'modules/pathfinding/helpers/getStepLocation';
 import {
   findExceptionWithOccurrenceId,
@@ -33,7 +33,7 @@ export function formatTimetableItemPayload(
   osrdconf: OperationalStudiesConfState,
   // TODO TS2 : remove this when rollingStockName will replace rollingStockId in the store
   rollingStockName: string
-): PacedTrain {
+): TrainSchedule {
   return {
     category: osrdconf.category,
     comfort: osrdconf.rollingStockComfort,
@@ -63,7 +63,7 @@ export function formatTimetableItemPayload(
 // necessary properties and formatting the date fields to ISO strings.
 export function formatPacedTrainWithDetailsToPacedTrainPayload(
   pacedTrainWithDetails: PacedTrainWithDetails
-): PacedTrain {
+): TrainSchedule {
   return {
     category: pacedTrainWithDetails.category,
     comfort: pacedTrainWithDetails.comfort,
@@ -106,7 +106,7 @@ export function formatPacedTrainPayload(
   // TODO TS2 : remove this when rollingStockName will replace rollingStockId in the store
   rollingStockName: string,
   timetableItemToEditData?: TimetableItemToEditData
-): PacedTrain {
+): TrainSchedule {
   const baseTrain = formatTimetableItemPayload(osrdconf, rollingStockName);
 
   if (osrdconf.editingItemType === 'uniqueTrain') return baseTrain;

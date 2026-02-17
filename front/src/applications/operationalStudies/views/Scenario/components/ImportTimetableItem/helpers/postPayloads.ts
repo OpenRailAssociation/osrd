@@ -8,7 +8,7 @@ import type {
 import {
   osrdEditoastApi,
   type MacroNodeForm,
-  type PacedTrain,
+  type TrainSchedule,
   type SubCategory,
 } from 'common/api/osrdEditoastApi';
 import { setWarning, setFailure } from 'reducers/main';
@@ -21,7 +21,7 @@ import { generateRoundTripsPayload, generateTrainPayloads } from './generatePayl
 // TODO: delete this helper and use createPacedTrains (possibly adding if (payloads.length) to it) when the pr createPacedTrain -> createPacedTrains is merged
 export const postTimetableItems = async (
   trainScheduleSetId: number,
-  payloads: PacedTrain[],
+  payloads: TrainSchedule[],
   dispatch: AppDispatch
 ) => {
   let timetableItems: TimetableItem[] = [];

@@ -206,7 +206,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
 
       await putPacedTrainById({
         id: editoastPacedTrainId,
-        pacedTrain: {
+        trainSchedule: {
           ...timetableItem,
           start_time: newDeparture.toISOString(),
         },

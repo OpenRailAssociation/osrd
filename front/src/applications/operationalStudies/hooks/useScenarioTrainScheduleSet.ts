@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import {
   osrdEditoastApi,
   type CatalogEntry,
-  type PacedTrain,
+  type TrainSchedule,
   type TrainScheduleSet,
 } from 'common/api/osrdEditoastApi';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
@@ -170,7 +170,7 @@ export default function useScenarioTrainScheduleSet(
       }).unwrap();
 
       // copy all the trains that were attached to the old published tss
-      const trainsToCopy: PacedTrain[] = timetableItems
+      const trainsToCopy: TrainSchedule[] = timetableItems
         .filter((item) => item.train_schedule_set_id === trainScheduleSet.id)
         .map((item) => {
           const { id: __id, train_schedule_set_id: _train_schedule_set_id, ...rest } = item;

@@ -6,7 +6,7 @@ import type {
   PacedTrainWithPaced,
   TimetableJsonPayload,
 } from 'applications/operationalStudies/types';
-import type { PacedTrain, PacedTrainException } from 'common/api/osrdEditoastApi';
+import type { TrainSchedule, PacedTrainException } from 'common/api/osrdEditoastApi';
 import { addDurationToDate, Duration } from 'utils/duration';
 
 import { buildSteps, cleanTimeFormat } from './buildStepsFromOcp';
@@ -19,7 +19,7 @@ const extractCiChCode = (code: string) => {
 };
 
 const uniqueTrainToPacedTrain = (
-  uniqueTrain: PacedTrain,
+  uniqueTrain: TrainSchedule,
   pacedTrainId: string,
   intervalDuration: Duration,
   timeWindowDuration: Duration
@@ -33,7 +33,7 @@ const uniqueTrainToPacedTrain = (
   },
 });
 
-const mapTrainNames = (uniqueTrains: PacedTrain[], trains: Element[]): PacedTrain[] => {
+const mapTrainNames = (uniqueTrains: TrainSchedule[], trains: Element[]): TrainSchedule[] => {
   const trainPartToTrainMap: Record<string, string> = {};
 
   trains.forEach((train) => {
@@ -56,7 +56,7 @@ const mapTrainNames = (uniqueTrains: PacedTrain[], trains: Element[]): PacedTrai
   return updatedUniqueTrains;
 };
 
-export const getMostFrequentInterval = (schedules: PacedTrain[]): Duration => {
+export const getMostFrequentInterval = (schedules: TrainSchedule[]): Duration => {
   const departureTimes = schedules
     .map((s) => new Date(s.start_time))
     .sort((a, b) => a.getTime() - b.getTime());
@@ -97,10 +97,10 @@ export const getMostFrequentInterval = (schedules: PacedTrain[]): Duration => {
 
 const reconcilePacedTrainOccurrences = (
   pacedTrainId: string,
-  importedTrainSchedules: PacedTrain[],
-  modelTrainSchedule: PacedTrain,
+  importedTrainSchedules: TrainSchedule[],
+  modelTrainSchedule: TrainSchedule,
   intervalDuration: Duration
-): PacedTrain | null => {
+): TrainSchedule | null => {
   if (importedTrainSchedules.length < 2) {
     console.warn(`Not enough schedules to build a paced train for ${pacedTrainId}.`);
     return null;
@@ -141,7 +141,7 @@ const reconcilePacedTrainOccurrences = (
 
   const osrdDefaultOccurrences: {
     startTime: Date;
-    matchedImportedSchedule: PacedTrain | null;
+    matchedImportedSchedule: TrainSchedule | null;
   }[] = [];
   for (let i = 0; i < numberOfExpectedOccurrences; i += 1) {
     const expectedDepartureTime = addDurationToDate(
@@ -155,12 +155,12 @@ const reconcilePacedTrainOccurrences = (
   }
 
   const matchedImportedScheduleKeys = new Set<string>();
-  const getScheduleKey = (s: PacedTrain) => `${s.start_time}`;
+  const getScheduleKey = (s: TrainSchedule) => `${s.start_time}`;
   const exceptions: PacedTrainException[] = [];
 
   // Match OSRD Default Occurrences to imported Trains
   osrdDefaultOccurrences.forEach((osrdOccurrence, index) => {
-    let bestCandidate: PacedTrain | null = null;
+    let bestCandidate: TrainSchedule | null = null;
     let minTimeDifference = Infinity;
 
     const availableImportedSchedules = sortedImportedSchedules.filter(
@@ -230,7 +230,7 @@ const reconcilePacedTrainOccurrences = (
 };
 
 const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
-  const trainSchedules: PacedTrain[] = [];
+  const trainSchedules: TrainSchedule[] = [];
 
   // Initialize localCichDict
   const localCichDict: Record<string, CichDictValue> = {};
@@ -251,10 +251,10 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
     });
   });
 
-  const pacedTrains: Record<string, PacedTrain[]> = {};
+  const pacedTrains: Record<string, TrainSchedule[]> = {};
   const trainGroups = Array.from(xmlDoc.getElementsByTagName('trainGroup'));
 
-  const uniqueTrainsByTrainPartId: Record<string, PacedTrain> = {};
+  const uniqueTrainsByTrainPartId: Record<string, TrainSchedule> = {};
   const trainParts = Array.from(xmlDoc.getElementsByTagName('trainPart'));
   const period = xmlDoc.getElementsByTagName('timetablePeriod')[0];
   const startDate = period ? period.getAttribute('startDate') : null;
@@ -290,7 +290,7 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
     // Build steps using the fully populated localCichDict
     const { path, schedule } = buildSteps(ocpSteps, localCichDict, new Date(startDate));
 
-    const uniqueTrain: PacedTrain = {
+    const uniqueTrain: TrainSchedule = {
       train_name: trainNumber,
       rolling_stock_name: rollingStockName || formationRef || '', // RollingStocks in xml files rarely have the correct format
       start_time: new Date(`${startDate} ${firstDepartureTimeformatted}`).toISOString(),
@@ -328,7 +328,7 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
 
   const pacedTrainMostFrequentSchedules: Record<
     string,
-    { schedule: PacedTrain | null; count: number }
+    { schedule: TrainSchedule | null; count: number }
   > = {};
 
   Object.entries(pacedTrains).forEach(([pacedTrainId, schedules]) => {
@@ -339,7 +339,7 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
     };
   });
 
-  const importedPacedTrains: PacedTrain[] = [];
+  const importedPacedTrains: TrainSchedule[] = [];
   Object.entries(pacedTrains).forEach(([pacedTrainId, pacedTrainSchedules]) => {
     const modelPacedTrainSchedule = pacedTrainMostFrequentSchedules[pacedTrainId].schedule;
 

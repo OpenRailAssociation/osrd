@@ -12,7 +12,7 @@ import { EditedElementContainerContext } from 'applications/operationalStudies/v
 import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/formatTimetableItemPayload';
 import {
   osrdEditoastApi,
-  type PacedTrain,
+  type TrainSchedule,
   type TrainScheduleResponse,
   type SubCategory,
 } from 'common/api/osrdEditoastApi';
@@ -216,7 +216,7 @@ const PacedTrainItem = ({
       new Date(pacedTrainDetail.start_time),
       new Duration({ minutes: TIMETABLE_ITEM_DELTA })
     );
-    const newPacedTrain: PacedTrain = {
+    const newPacedTrain: TrainSchedule = {
       ...omit(pacedTrainDetail, ['id', 'train_schedule_set_id']),
       start_time: startTime.toISOString(),
       train_name: pacedTrainName,

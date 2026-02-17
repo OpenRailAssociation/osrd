@@ -1,6 +1,6 @@
 import {
   osrdEditoastApi,
-  type PacedTrain,
+  type TrainSchedule,
   type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import type { PacedTrainId, TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
@@ -38,7 +38,7 @@ export async function fetchTimetableItem(
 export async function createPacedTrains(
   dispatch: AppDispatch,
   trainScheduleSetId: number,
-  pacedTrains: PacedTrain[]
+  pacedTrains: TrainSchedule[]
 ): Promise<TimetableItem[]> {
   const newPacedTrains = await dispatch(
     osrdEditoastApi.endpoints.postTrainScheduleSetsByIdPacedTrains.initiate({
@@ -52,11 +52,15 @@ export async function createPacedTrains(
   }));
 }
 
-async function updatePacedTrain(dispatch: AppDispatch, id: PacedTrainId, pacedTrain: PacedTrain) {
+async function updatePacedTrain(
+  dispatch: AppDispatch,
+  id: PacedTrainId,
+  trainSchedule: TrainSchedule
+) {
   await dispatch(
     osrdEditoastApi.endpoints.putPacedTrainById.initiate({
       id: extractEditoastIdFromPacedTrainId(id),
-      pacedTrain,
+      trainSchedule,
     })
   ).unwrap();
 }

@@ -5,7 +5,7 @@ import { v4 as uuidV4 } from 'uuid';
 
 import { updatePacedTrainExceptionsList } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/buildPacedTrainException';
 import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/formatTimetableItemPayload';
-import type { PacedTrain } from 'common/api/osrdEditoastApi';
+import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 import {
   findExceptionWithOccurrenceId,
   extractOccurrenceDetailsFromPacedTrain,
@@ -62,7 +62,7 @@ const useOccurrenceActions = ({
         editedOccurrence.id
       );
 
-      const rawPacedTrain: Omit<PacedTrain, 'paced'> = {
+      const rawPacedTrain: Omit<TrainSchedule, 'paced'> = {
         ...pacedTrain,
         train_name: editedOccurrence.trainName,
         speed_limit_tag: pacedTrain.speedLimitTag,

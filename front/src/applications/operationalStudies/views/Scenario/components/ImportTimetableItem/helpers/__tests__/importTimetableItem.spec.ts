@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
 import type { CichDictValue } from 'applications/operationalStudies/types';
-import type { PacedTrain } from 'common/api/osrdEditoastApi';
+import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 
 import { buildSteps } from '../buildStepsFromOcp';
 import findMostFrequentScheduleInPacedTrain from '../findMostFrequentXmlSchedule';
@@ -72,7 +72,7 @@ describe('buildSteps', () => {
   });
 });
 
-function buildSchedule(id: string, timeOffsetSeconds: number = 0): PacedTrain {
+function buildSchedule(id: string, timeOffsetSeconds: number = 0): TrainSchedule {
   const baseDate = new Date('2025-01-01T08:00:00');
   const departureDate = new Date(baseDate.getTime() + timeOffsetSeconds * 1000);
 
@@ -156,7 +156,7 @@ describe('findMostFrequentScheduleInPacedTrain', () => {
 
 describe('getMostFrequentInterval', () => {
   it('returns 60 min when 60 and 120 are equally frequent', () => {
-    const schedules: PacedTrain[] = [
+    const schedules: TrainSchedule[] = [
       buildSchedule('s1', 0),
       buildSchedule('s2', 3600),
       buildSchedule('s3', 10800),

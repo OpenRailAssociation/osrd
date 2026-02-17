@@ -1,4 +1,4 @@
-import type { PacedTrain } from 'common/api/osrdEditoastApi';
+import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 
@@ -19,7 +19,7 @@ const findCorrespondingMargin = (
  * Given a timetable item and a path item index, aggregate schedule, margins and the corresponding path item to return a PathStep
  */
 const computeBasePathStep = (
-  timetableItem: Pick<PacedTrain, 'path' | 'schedule' | 'margins'>,
+  timetableItem: Pick<TrainSchedule, 'path' | 'schedule' | 'margins'>,
   pathItemIndex: number
 ): PathStep => {
   const { id, location } = timetableItem.path[pathItemIndex];

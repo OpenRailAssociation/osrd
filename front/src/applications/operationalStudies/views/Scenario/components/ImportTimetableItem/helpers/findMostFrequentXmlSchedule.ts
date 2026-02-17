@@ -1,8 +1,8 @@
-import type { PacedTrain } from 'common/api/osrdEditoastApi';
+import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 
-function getRelativeStepsTimeAndNames(pacedTrain: PacedTrain): string {
-  const stepsWithRelativeTimesAndNames = pacedTrain.schedule!.map((step) => ({
-    ...pacedTrain.path.find((pathStep) => pathStep.id === step.at),
+function getRelativeStepsTimeAndNames(trainSchedule: TrainSchedule): string {
+  const stepsWithRelativeTimesAndNames = trainSchedule.schedule!.map((step) => ({
+    ...trainSchedule.path.find((pathStep) => pathStep.id === step.at),
     arrival: step.arrival,
     stop_for: step.stop_for,
   }));
@@ -10,8 +10,8 @@ function getRelativeStepsTimeAndNames(pacedTrain: PacedTrain): string {
   return JSON.stringify(stepsWithRelativeTimesAndNames);
 }
 
-export default function findMostFrequentScheduleInPacedTrain(schedules: PacedTrain[]) {
-  const scheduleOccurrences = new Map<string, { count: number; schedule: PacedTrain }>();
+export default function findMostFrequentScheduleInPacedTrain(schedules: TrainSchedule[]) {
+  const scheduleOccurrences = new Map<string, { count: number; schedule: TrainSchedule }>();
 
   schedules.forEach((schedule) => {
     const relativeSteps = getRelativeStepsTimeAndNames(schedule);
@@ -23,7 +23,7 @@ export default function findMostFrequentScheduleInPacedTrain(schedules: PacedTra
     }
   });
 
-  let mostFrequent: PacedTrain | null = null;
+  let mostFrequent: TrainSchedule | null = null;
   let highestCount = 0;
 
   for (const { count, schedule } of scheduleOccurrences.values()) {

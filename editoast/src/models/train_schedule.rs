@@ -245,12 +245,12 @@ impl TrainSchedule {
     }
 }
 
-impl From<paced_train::PacedTrain> for TrainScheduleChangeset {
+impl From<paced_train::TrainSchedule> for TrainScheduleChangeset {
     fn from(
-        paced_train::PacedTrain {
+        paced_train::TrainSchedule {
             train_occurrence,
             paced,
-        }: paced_train::PacedTrain,
+        }: paced_train::TrainSchedule,
     ) -> Self {
         let changeset = TrainSchedule::changeset()
             .comfort(train_occurrence.comfort)
@@ -287,7 +287,7 @@ impl From<paced_train::PacedTrain> for TrainScheduleChangeset {
     }
 }
 
-impl From<TrainSchedule> for paced_train::PacedTrain {
+impl From<TrainSchedule> for paced_train::TrainSchedule {
     fn from(train_schedule: TrainSchedule) -> Self {
         Self {
             train_occurrence: schemas::TrainOccurrence {

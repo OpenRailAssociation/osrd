@@ -1,4 +1,4 @@
-import type { Scenario, Project, Study, Infra, PacedTrain } from 'common/api/osrdEditoastApi';
+import type { Scenario, Project, Study, Infra, TrainSchedule } from 'common/api/osrdEditoastApi';
 
 import {
   timetableItemProjectName,
@@ -13,7 +13,7 @@ import sendTrains from '../../utils/send-trains';
 import { deleteScenario } from '../../utils/teardown-utils';
 import type { TimetableFilterTranslations } from '../../utils/types';
 
-const trains: PacedTrain[] = readJsonFile('./tests/assets/trains/trains.json');
+const trains: TrainSchedule[] = readJsonFile('./tests/assets/trains/trains.json');
 
 const frTranslations: TimetableFilterTranslations = readJsonFile<{
   main: TimetableFilterTranslations;
