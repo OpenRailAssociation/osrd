@@ -1,7 +1,7 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { Draft } from 'immer';
 
-import type { OccurrenceId, PacedTrainId, TrainId, TrainScheduleId } from 'reducers/osrdconf/types';
+import type { OccurrenceId, PacedTrainId, TrainId } from 'reducers/osrdconf/types';
 import type { ProjectionType, SimulationResultsState } from 'reducers/simulationResults/types';
 import { extractPacedTrainIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
 
@@ -78,9 +78,7 @@ export const simulationResultsSlice = createSlice({
     ) {
       const { pacedTrainId, occurrencesPresent } = action.payload;
 
-      const isIdMatchingMissingOccurence = (
-        id: TrainScheduleId | OccurrenceId | PacedTrainId | undefined
-      ) =>
+      const isIdMatchingMissingOccurence = (id: TrainId | undefined) =>
         id &&
         isOccurrenceId(id) &&
         extractPacedTrainIdFromOccurrenceId(id) === pacedTrainId &&
