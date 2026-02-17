@@ -58,9 +58,7 @@ const formatSummary = (summary?: SimulationSummaryResult): SimulationSummary | u
 const extractBaseTimetableItemProps = (timetableItem: TimetableItem) => ({
   name: timetableItem.train_name,
   startTime: new Date(timetableItem.start_time),
-  stopsCount:
-    (timetableItem.schedule?.filter((step) => step.stop_for && Duration.parse(step.stop_for).ms > 0)
-      .length ?? 0) + 1, // +1 to take the final stop (destination) into account
+  stopsCount: timetableItem.schedule?.filter((step) => step.stop_for).length ?? 0,
   rollingStockName: timetableItem.rolling_stock_name,
   speedLimitTag: timetableItem.speed_limit_tag ?? null,
   labels: timetableItem.labels ?? [],
