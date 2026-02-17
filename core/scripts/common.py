@@ -1,0 +1,64 @@
+import asyncio
+import ssl
+from typing import List, Dict
+
+import aiohttp
+from aiohttp import ClientSession
+
+
+def make_connector(gateway_cookie):
+    if gateway_cookie is not None:
+        cookies = {"gateway": gateway_cookie}
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+        connector = aiohttp.TCPConnector(ssl=ssl_context)
+    else:
+        cookies = None
+        connector = None
+    return cookies, connector
+
+
+async def get_paginated(
+    url: str, session: ClientSession, n_workers: int = 5
+) -> List[Dict]:
+    initial_url = url.replace("$page", "1")
+    print("downloading first page")
+    initial_response = await get_with_retries(session, initial_url)
+    page_count = initial_response["page_count"]
+    print(f"first page done, {page_count} total pages")
+
+    semaphore = asyncio.Semaphore(n_workers)
+
+    async def fetch_page(page):
+        async with semaphore:
+            url_page = url.replace("$page", str(page))
+            print(f"downloading page {page}/{page_count}")
+            json_response = await get_with_retries(session, url_page)
+            return json_response["results"]
+
+    all_pages = list(range(2, page_count + 1))
+    tasks = [fetch_page(page) for page in all_pages]
+    page_contents = await asyncio.gather(*tasks)
+
+    res = initial_response["results"]
+    for page_content in page_contents:
+        res += page_content
+    return res
+
+
+async def get_with_retries(
+    session: aiohttp.ClientSession, url: str, n_retries: int = 5
+) -> dict:
+    retry = 0
+    while True:
+        try:
+            async with session.get(url) as response:
+                return await response.json()
+        except aiohttp.ClientResponseError as e:
+            if e.status // 100 == 5 and retry < n_retries:
+                retry += 1
+                print(f"http error, trying again in a few seconds: {e}")
+                await asyncio.sleep(10.0)
+            else:
+                raise e
