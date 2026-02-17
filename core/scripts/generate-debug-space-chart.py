@@ -12,6 +12,8 @@ from dateutil import tz
 from bokeh.models import DatetimeTickFormatter
 import click
 
+from common import open_html
+
 
 @click.command(
     help="""
@@ -67,6 +69,7 @@ def main(input_location, output_location):
     output_file(output_location)
     save(fig)
     print(f"file://{os.path.abspath(output_location)}")
+    open_html(output_location)
 
 
 def convert_times(departure_time: datetime, times: List[int]) -> List[datetime]:
