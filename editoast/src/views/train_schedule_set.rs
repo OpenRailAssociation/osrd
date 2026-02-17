@@ -15,7 +15,7 @@ use crate::models::train_schedule::TrainScheduleChangeset;
 use crate::models::train_schedule_set::TrainScheduleSet;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::timetable::paced_train::PacedTrainResponse;
+use crate::views::timetable::paced_train::TrainScheduleResponse;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -301,7 +301,7 @@ pub(in crate::views) async fn delete(
     params(TrainScheduleSetIdParam),
     request_body = Vec<PacedTrain>,
     responses(
-        (status = 201, description = "The created paced trains", body = Vec<PacedTrainResponse>)
+        (status = 201, description = "The created paced trains", body = Vec<TrainScheduleResponse>)
     )
 )]
 pub(in crate::views) async fn post_paced_train(
@@ -338,7 +338,7 @@ pub(in crate::views) async fn post_paced_train(
 
     // Create a batch of paced trains
     let paced_trains: Vec<_> = models::TrainSchedule::create_batch(conn, changesets).await?;
-    let response: Vec<PacedTrainResponse> = paced_trains.into_iter().map_into().collect();
+    let response: Vec<TrainScheduleResponse> = paced_trains.into_iter().map_into().collect();
 
     Ok((StatusCode::CREATED, Json(response)))
 }
@@ -350,7 +350,7 @@ pub(in crate::views) async fn post_paced_train(
     tags = ["train_schedule_set", "paced_train"],
     params(TrainScheduleSetIdParam),
     responses(
-        (status = 200, description = "The paced trains", body = Vec<PacedTrainResponse>),
+        (status = 200, description = "The paced trains", body = Vec<TrainScheduleResponse>),
         (status = 404, description = "Train schedule set not found"),
     )
 )]
@@ -360,7 +360,7 @@ pub(in crate::views) async fn get_paced_trains(
     Path(TrainScheduleSetIdParam {
         id: train_schedule_set_id,
     }): Path<TrainScheduleSetIdParam>,
-) -> Result<Json<Vec<PacedTrainResponse>>> {
+) -> Result<Json<Vec<TrainScheduleResponse>>> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())
         .await
@@ -394,7 +394,7 @@ mod tests {
     use crate::models::fixtures::simple_paced_train_base;
     use crate::models::train_schedule_set::TrainScheduleSet;
     use crate::views::test_app::TestAppBuilder;
-    use crate::views::timetable::paced_train::PacedTrainResponse;
+    use crate::views::timetable::paced_train::TrainScheduleResponse;
     use crate::views::train_schedule_set::TrainScheduleSetForm;
     use crate::views::train_schedule_set::TrainScheduleSetResponse;
     use chrono::Duration;
@@ -447,7 +447,7 @@ mod tests {
             )
             .json(&paced_trains);
 
-        let response: Vec<PacedTrainResponse> = app
+        let response: Vec<TrainScheduleResponse> = app
             .fetch(request)
             .await
             .assert_status(StatusCode::CREATED)
@@ -533,7 +533,7 @@ mod tests {
             )
             .json(&vec![paced_train_1.clone()]);
 
-        let _: Vec<PacedTrainResponse> = app
+        let _: Vec<TrainScheduleResponse> = app
             .fetch(request)
             .await
             .assert_status(StatusCode::CREATED)
@@ -609,7 +609,7 @@ mod tests {
             )
             .json(&vec![paced_train_1, paced_train_2]);
 
-        let _: Vec<PacedTrainResponse> = app
+        let _: Vec<TrainScheduleResponse> = app
             .fetch(request)
             .await
             .assert_status(StatusCode::CREATED)
@@ -623,7 +623,7 @@ mod tests {
             .as_str(),
         );
 
-        let response: Vec<PacedTrainResponse> = app
+        let response: Vec<TrainScheduleResponse> = app
             .fetch(request)
             .await
             .assert_status(StatusCode::OK)

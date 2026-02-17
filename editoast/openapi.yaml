@@ -2586,7 +2586,7 @@ paths:
       tags:
       - timetable
       - paced_train
-      summary: Get a paced train by its ID
+      summary: Get a train schedule by its ID
       parameters:
       - name: id
         in: path
@@ -2600,7 +2600,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PacedTrainResponse'
+                $ref: '#/components/schemas/TrainScheduleResponse'
     put:
       tags:
       - timetable
@@ -3851,7 +3851,7 @@ paths:
                     results:
                       type: array
                       items:
-                        $ref: '#/components/schemas/PacedTrainResponse'
+                        $ref: '#/components/schemas/TrainScheduleResponse'
         '404':
           description: Timetable not found
   /timetable/{id}/requirements:
@@ -4520,7 +4520,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/PacedTrainResponse'
+                  $ref: '#/components/schemas/TrainScheduleResponse'
         '404':
           description: Train schedule set not found
     post:
@@ -4552,7 +4552,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/PacedTrainResponse'
+                  $ref: '#/components/schemas/TrainScheduleResponse'
   /version:
     get:
       responses:
@@ -10522,20 +10522,6 @@ components:
         that may deviate from the paced train.
         - Created: A new occurrence manually added by the user, not originally present in the automatically generated occurrences based on the paced train.
         - Modified: An existing occurrence that has been changed
-    PacedTrainResponse:
-      allOf:
-      - $ref: '#/components/schemas/PacedTrain'
-      - type: object
-        required:
-        - id
-        - train_schedule_set_id
-        properties:
-          id:
-            type: integer
-            format: int64
-          train_schedule_set_id:
-            type: integer
-            format: int64
     PacedTrainSimulationSummaryResult:
       type: object
       required:
@@ -14229,6 +14215,20 @@ components:
         use_speed_limits_for_simulation:
           type: boolean
       additionalProperties: false
+    TrainScheduleResponse:
+      allOf:
+      - $ref: '#/components/schemas/PacedTrain'
+      - type: object
+        required:
+        - id
+        - train_schedule_set_id
+        properties:
+          id:
+            type: integer
+            format: int64
+          train_schedule_set_id:
+            type: integer
+            format: int64
     TrainScheduleSet:
       type: object
       required:

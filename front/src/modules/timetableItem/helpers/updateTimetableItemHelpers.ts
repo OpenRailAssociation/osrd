@@ -1,7 +1,7 @@
 import {
   osrdEditoastApi,
   type PacedTrain,
-  type PacedTrainResponse,
+  type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import type { PacedTrainId, TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 import {
@@ -72,7 +72,7 @@ export async function deletePacedTrains(dispatch: AppDispatch, ids: PacedTrainId
 
 export async function storePacedTrain(
   timetableItemIdToUpdate: TimetableItemId,
-  pacedTrain: Omit<PacedTrainResponse, 'id'>,
+  pacedTrain: Omit<TrainScheduleResponse, 'id'>,
   dispatch: AppDispatch,
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void
 ): Promise<TimetableItem> {

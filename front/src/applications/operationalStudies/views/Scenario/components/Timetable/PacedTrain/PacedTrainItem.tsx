@@ -13,7 +13,7 @@ import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'applications/ope
 import {
   osrdEditoastApi,
   type PacedTrain,
-  type PacedTrainResponse,
+  type TrainScheduleResponse,
   type SubCategory,
 } from 'common/api/osrdEditoastApi';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -195,7 +195,7 @@ const PacedTrainItem = ({
 
     const editoastTrainId = extractEditoastIdFromPacedTrainId(pacedTrain.id);
 
-    let pacedTrainDetail: PacedTrainResponse;
+    let pacedTrainDetail: TrainScheduleResponse;
     try {
       const pacedTrainDetailPromise = getPacedTrainById({
         id: editoastTrainId,
