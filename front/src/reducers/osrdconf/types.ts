@@ -179,11 +179,6 @@ export type StdcmPathStep = {
 );
 
 /**
- * Each train schedule id should follow this syntax : trainschedule_{id}
- */
-export type TrainScheduleId = string & { readonly __type: unique symbol };
-
-/**
  * Each regular occurrence id should follow this syntax : indexedoccurrence_{pacedTrainId}_{occurrenceIndex}
  * A regular occurrence is an occurrence that was originally part of the paced train.
  * It can have been disabled or turned into an exception by being modified (and disabled).
