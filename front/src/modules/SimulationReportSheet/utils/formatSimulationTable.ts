@@ -121,14 +121,14 @@ export const formatOperationalStudiesDataForSimulationTable = (
     const isLast = index === operationalPointsList.length - 1;
     const previousStep = operationalPointsList[index - 1];
 
-    const isStop = !isFirst && !isLast && !!step.duration;
     const isVia = pathItemPositions.slice(1, -1).some((p) => p / 1000 === step.position);
     const isPathStep = isFirst || isVia || isLast;
 
-    const endTime = isLast || isStop ? timeToLocaleStringRounded(step.time, dateTimeLocale) : '';
+    const endTime =
+      !isFirst && !!step.duration ? timeToLocaleStringRounded(step.time, dateTimeLocale) : '';
 
     let passageStop = '';
-    if (!isFirst && !isLast) {
+    if (!isFirst && (!isLast || !step.duration)) {
       // display the stop duration if is a stop, the passage time if not
       passageStop = step.duration
         ? getStopDurationTime(step.duration)
@@ -136,7 +136,7 @@ export const formatOperationalStudiesDataForSimulationTable = (
     }
 
     const startTime =
-      isFirst || isStop
+      isFirst || (!isLast && !!step.duration)
         ? timeToLocaleStringRounded(
             addDurationToDate(step.time, step.duration ?? Duration.zero),
             dateTimeLocale
