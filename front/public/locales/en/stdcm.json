@@ -150,6 +150,7 @@
         "convoy": "CONVOY",
         "createRailManagerRequest": "Create the GESICO request",
         "csCode": "CS code",
+        "date": "Date",
         "departurePoint": "Departure {{departureAt}}",
         "departureTime": "Departure of the retained simulation",
         "departureTiming": "Departure time constraint",

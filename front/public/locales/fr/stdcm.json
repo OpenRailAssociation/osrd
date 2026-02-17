@@ -150,6 +150,7 @@
         "convoy": "CONVOI",
         "createRailManagerRequest": "Créer la demande GESICO",
         "csCode": "Code CS",
+        "date": "Date",
         "departurePoint": "Départ {{departureAt}}",
         "departureTime": "Départ de la simulation retenue",
         "departureTiming": "CONTRAINTE HORAIRE DE DÉPART",

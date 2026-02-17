@@ -338,6 +338,13 @@ const SendToRailwayManagerModal = ({
           <section className="requested-route">
             <h3>{t('modal.requestedRoute')}</h3>
             <ul>
+              <li>
+                {`${t('modal.date')} : ${realDepartureTime.toLocaleDateString(dateTimeLocale, {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric',
+                })}`}
+              </li>
               {linkedTrains.anteriorTrain && (
                 <span className="linked-train-infos">
                   <li>{`${t('modal.from')} : ${linkedTrains.anteriorTrain.trainName}`}</li>
