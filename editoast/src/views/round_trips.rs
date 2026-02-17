@@ -14,7 +14,7 @@ use axum::response::IntoResponse;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
 use editoast_models::prelude::*;
-use editoast_models::round_trips::PacedTrainRoundTrips;
+use editoast_models::round_trips::TrainScheduleRoundTrips;
 use editoast_models::timetable::Timetable;
 use itertools::Itertools;
 use serde::Deserialize;
@@ -124,7 +124,7 @@ pub(in crate::views) async fn post_paced_trains(
         .round_trips
         .iter()
         .map(|&(l, r)| {
-            PacedTrainRoundTrips::changeset()
+            TrainScheduleRoundTrips::changeset()
                 .left_id(l.min(r))
                 .right_id(Some(l.max(r)))
         })
@@ -132,15 +132,15 @@ pub(in crate::views) async fn post_paced_trains(
             round_trips
                 .one_ways
                 .iter()
-                .map(|&id| PacedTrainRoundTrips::changeset().left_id(id)),
+                .map(|&id| TrainScheduleRoundTrips::changeset().left_id(id)),
         );
 
     db_pool
         .get()
         .await?
         .transaction::<_, crate::error::InternalError, _, _>(async move |mut conn| {
-            PacedTrainRoundTrips::delete_batch_train_ids(&mut conn, to_remove).await?;
-            PacedTrainRoundTrips::create_batch::<_, Vec<_>>(&mut conn, round_trips_changesets)
+            TrainScheduleRoundTrips::delete_batch_train_ids(&mut conn, to_remove).await?;
+            TrainScheduleRoundTrips::create_batch::<_, Vec<_>>(&mut conn, round_trips_changesets)
                 .await?;
             Ok(())
         })
@@ -174,7 +174,7 @@ pub(in crate::views) async fn delete_paced_trains(
     }
 
     let conn = &mut db_pool.get().await?;
-    PacedTrainRoundTrips::delete_batch_train_ids(conn, train_schedule_ids).await?;
+    TrainScheduleRoundTrips::delete_batch_train_ids(conn, train_schedule_ids).await?;
 
     Ok(axum::http::StatusCode::NO_CONTENT)
 }
@@ -217,7 +217,7 @@ pub(in crate::views) async fn list_paced_trains(
     .await?;
 
     let (round_trips, count) =
-        PacedTrainRoundTrips::list_paginated(conn, timetable_id, page, page_size).await?;
+        TrainScheduleRoundTrips::list_paginated(conn, timetable_id, page, page_size).await?;
     let stats = PaginationStats::new(round_trips.len() as u64, count, page, page_size);
 
     let results = round_trips

@@ -16,7 +16,7 @@ use core_client::simulation::PhysicsConsist;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
 use editoast_models::prelude::*;
-use editoast_models::round_trips::PacedTrainRoundTrips;
+use editoast_models::round_trips::TrainScheduleRoundTrips;
 use itertools::Itertools;
 use itertools::izip;
 use reqwest::StatusCode;
@@ -1418,7 +1418,7 @@ pub(in crate::views) async fn move_paced_trains_to_another_train_schedule_set(
         .collect_vec();
 
     // Check if some paced trains are part of a round_trips
-    let round_trips = PacedTrainRoundTrips::retrieve_from_paced_train_ids(
+    let round_trips = TrainScheduleRoundTrips::retrieve_from_train_schedule_ids(
         &mut db_pool.get().await?,
         paced_train_ids.clone(),
     )
@@ -1437,7 +1437,7 @@ pub(in crate::views) async fn move_paced_trains_to_another_train_schedule_set(
         }
     }
 
-    PacedTrainRoundTrips::delete_batch(&mut db_pool.get().await?, to_break).await?;
+    TrainScheduleRoundTrips::delete_batch(&mut db_pool.get().await?, to_break).await?;
 
     // Update the train_schedule_set_id of the paced trains
     let _: (Vec<_>, _) = models::TrainSchedule::changeset()

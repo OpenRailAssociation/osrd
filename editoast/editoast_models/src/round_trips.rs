@@ -13,7 +13,7 @@ use crate as editoast_models;
 #[model(row(derive(QueryableByName)))]
 #[model(table = database::tables::train_schedule_round_trips)]
 #[model(gen(batch_ops = cd))]
-pub struct PacedTrainRoundTrips {
+pub struct TrainScheduleRoundTrips {
     pub id: i64,
     /// First ID of the paced train of this round trip
     pub left_id: i64,
@@ -22,9 +22,9 @@ pub struct PacedTrainRoundTrips {
     pub right_id: Option<i64>,
 }
 
-impl PacedTrainRoundTrips {
+impl TrainScheduleRoundTrips {
     #[tracing::instrument(
-        name = "list_paginated<PacedTrainRoundTrips>",
+        name = "list_paginated<TrainScheduleRoundTrips>",
         skip_all,
         err,
         fields(timetable_id, limit, offset)
@@ -51,7 +51,7 @@ impl PacedTrainRoundTrips {
             )
             .order_by(train_schedule_round_trips::id.asc());
 
-        let (results, count): (Vec<PacedTrainRoundTripsRow>, _) =
+        let (results, count): (Vec<TrainScheduleRoundTripsRow>, _) =
             load_for_pagination(conn, query, page, page_size).await?;
         Ok((results.into_iter().map_into().collect(), count))
     }
@@ -60,21 +60,21 @@ impl PacedTrainRoundTrips {
     ///
     /// **IMPORTANT**: This function does not take ids of round trips, but rather the IDs of the paced trains
     #[tracing::instrument(
-        name = "delete_batch_train_ids<PacedTrainRoundTrips>",
+        name = "delete_batch_train_ids<TrainScheduleRoundTrips>",
         skip_all,
         err,
-        fields(paced_train_ids)
+        fields(train_schedule_ids)
     )]
     pub async fn delete_batch_train_ids<I: IntoIterator<Item = i64> + Send>(
         conn: &mut DbConnection,
-        paced_train_ids: I,
+        train_schedule_ids: I,
     ) -> Result<usize, database::DatabaseError> {
         use database::tables::train_schedule_round_trips::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use std::ops::DerefMut;
 
-        let ids = paced_train_ids.into_iter().collect::<Vec<_>>();
+        let ids = train_schedule_ids.into_iter().collect::<Vec<_>>();
         let nb = diesel::delete(
             database::tables::train_schedule_round_trips::table
                 .filter(dsl::left_id.eq_any(&ids).or(dsl::right_id.eq_any(&ids))),
@@ -87,7 +87,7 @@ impl PacedTrainRoundTrips {
     /// Retrieves a batch of paced train round trips given a list of paced train IDs
     ///
     /// **IMPORTANT**: This function does not take ids of round trips, but rather the IDs of the paced trains
-    pub async fn retrieve_from_paced_train_ids<I: IntoIterator<Item = i64> + Send>(
+    pub async fn retrieve_from_train_schedule_ids<I: IntoIterator<Item = i64> + Send>(
         conn: &mut DbConnection,
         paced_train_ids: I,
     ) -> Result<Vec<Self>, database::DatabaseError> {
@@ -99,7 +99,7 @@ impl PacedTrainRoundTrips {
         let ids = paced_train_ids.into_iter().collect::<Vec<_>>();
         let results = database::tables::train_schedule_round_trips::table
             .filter(dsl::left_id.eq_any(&ids).or(dsl::right_id.eq_any(&ids)))
-            .load::<PacedTrainRoundTripsRow>(conn.write().await.deref_mut())
+            .load::<TrainScheduleRoundTripsRow>(conn.write().await.deref_mut())
             .await?;
         Ok(results.into_iter().map_into().collect())
     }
