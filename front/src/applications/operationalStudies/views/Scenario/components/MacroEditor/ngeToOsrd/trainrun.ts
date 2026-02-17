@@ -3,7 +3,7 @@ import { compact, uniq } from 'lodash';
 import {
   type PacedTrain,
   type PathItemLocation,
-  type PacedTrainResponse,
+  type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import {
   createPacedTrains,
@@ -532,7 +532,7 @@ export const handleUpdateTimetableItem = async ({
 
   const paced = createPacedAttributesFromTrainrun(trainrun, netzgrafikDto);
 
-  const newForwardTrainBase: Omit<PacedTrainResponse, 'id'> = {
+  const newForwardTrainBase: Omit<TrainScheduleResponse, 'id'> = {
     ...timetableItemBase,
     train_name: trainrun.name,
     labels,
@@ -589,7 +589,7 @@ export const handleUpdateTimetableItem = async ({
     // update return if already present
     const oldReturnTimetableItem = await fetchTimetableItem(timetableItemIds[1], dispatch);
     const { id: _return_id, ...oldReturnTrainBase } = oldReturnTimetableItem;
-    const newReturnTrainBase: Omit<PacedTrainResponse, 'id'> = {
+    const newReturnTrainBase: Omit<TrainScheduleResponse, 'id'> = {
       ...oldReturnTrainBase,
       train_name: trainrun.name,
       labels,

@@ -101,14 +101,14 @@ enum PacedTrainError {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
-pub(in crate::views) struct PacedTrainResponse {
+pub(in crate::views) struct TrainScheduleResponse {
     id: i64,
     train_schedule_set_id: i64,
     #[serde(flatten)]
     paced_train: PacedTrain,
 }
 
-impl From<models::TrainSchedule> for PacedTrainResponse {
+impl From<models::TrainSchedule> for TrainScheduleResponse {
     fn from(value: models::TrainSchedule) -> Self {
         Self {
             id: value.id,
@@ -123,14 +123,14 @@ pub(in crate::views) struct PacedTrainIdParam {
     id: i64,
 }
 
-/// Get a paced train by its ID
+/// Get a train schedule by its ID
 #[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tags = ["timetable", "paced_train"],
     params(PacedTrainIdParam),
     responses(
-        (status = 200, body = PacedTrainResponse, description = "The requested paced train")
+        (status = 200, body = TrainScheduleResponse, description = "The requested paced train")
     )
 )]
 pub(in crate::views) async fn get_by_id(
@@ -148,14 +148,15 @@ pub(in crate::views) async fn get_by_id(
 
     let conn = &mut db_pool.get().await?;
 
-    let paced_train = models::TrainSchedule::retrieve_or_fail(conn.clone(), paced_train_id, || {
-        PacedTrainError::NotFound { paced_train_id }
-    })
-    .await?;
+    let train_schedule =
+        models::TrainSchedule::retrieve_or_fail(conn.clone(), paced_train_id, || {
+            PacedTrainError::NotFound { paced_train_id }
+        })
+        .await?;
 
-    let paced_train: PacedTrainResponse = paced_train.into();
+    let train_schedule: TrainScheduleResponse = train_schedule.into();
 
-    Ok(Json(paced_train))
+    Ok(Json(train_schedule))
 }
 
 /// Update a paced train
@@ -1507,11 +1508,11 @@ mod tests {
     use crate::views::tests::mocked_core_pathfinding_sim_and_proj;
     use crate::views::timetable::paced_train::MovePacedTrainsForm;
     use crate::views::timetable::paced_train::OccupancyBlocksPacedTrainResult;
-    use crate::views::timetable::paced_train::PacedTrainResponse;
     use crate::views::timetable::paced_train::PacedTrainSummaryResponse;
     use crate::views::timetable::paced_train::ProjectPathPacedTrainResult;
     use crate::views::timetable::paced_train::TrackOccupancy;
     use crate::views::timetable::paced_train::TrackOccupancyForm;
+    use crate::views::timetable::paced_train::TrainScheduleResponse;
     use crate::views::timetable::simulation;
     use crate::views::timetable::simulation::SimulationResponseSuccess;
     use crate::views::timetable::simulation::SummaryResponse;
@@ -1535,7 +1536,7 @@ mod tests {
             )
             .json(&json!(vec![paced_train_base]));
 
-        let response: Vec<PacedTrainResponse> = app
+        let response: Vec<TrainScheduleResponse> = app
             .fetch(request)
             .await
             .assert_status(StatusCode::CREATED)
@@ -1573,7 +1574,7 @@ mod tests {
             )
             .json(&json!(vec![paced_train_base]));
 
-        let response: Vec<PacedTrainResponse> = app
+        let response: Vec<TrainScheduleResponse> = app
             .fetch(request)
             .await
             .assert_status(StatusCode::CREATED)
@@ -1794,7 +1795,7 @@ mod tests {
             .fetch(request)
             .await
             .assert_status(StatusCode::OK)
-            .json_into::<PacedTrainResponse>();
+            .json_into::<TrainScheduleResponse>();
 
         assert_eq!(response.paced_train, paced_train.into());
     }
@@ -1931,7 +1932,7 @@ mod tests {
         let (app, infra_id, train_schedule_id) =
             app_infra_id_paced_train_id_for_simulation_tests().await;
         let request = app.get(format!("/paced_train/{train_schedule_id}").as_str());
-        let mut paced_train_response: PacedTrainResponse = app
+        let mut paced_train_response: TrainScheduleResponse = app
             .fetch(request)
             .await
             .assert_status(StatusCode::OK)
@@ -1996,7 +1997,7 @@ mod tests {
         let (app, infra_id, paced_train_id) =
             app_infra_id_paced_train_id_for_simulation_tests().await;
         let request = app.get(format!("/paced_train/{paced_train_id}").as_str());
-        let mut paced_train_response: PacedTrainResponse = app
+        let mut paced_train_response: TrainScheduleResponse = app
             .fetch(request)
             .await
             .assert_status(StatusCode::OK)
@@ -2388,7 +2389,7 @@ mod tests {
             app_infra_id_paced_train_id_for_simulation_tests().await;
 
         let request = app.get(format!("/paced_train/{paced_train_id}").as_str());
-        let mut paced_train_response: PacedTrainResponse = app
+        let mut paced_train_response: TrainScheduleResponse = app
             .fetch(request)
             .await
             .assert_status(StatusCode::OK)

@@ -17,7 +17,7 @@ import type {
   PathItem,
   OperationalPointReference,
   MacroNoteForm,
-  PacedTrainResponse,
+  TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
 import type { PathOperationalPoint } from 'modules/simulationResult/types';
@@ -28,8 +28,8 @@ import type { ArrayElement } from 'utils/types';
 
 export type Board = 'trains' | 'map' | 'macro' | 'std' | 'sdd' | 'tables' | 'conflicts';
 
-export type PacedTrainWithPaced = Omit<PacedTrainResponse, 'id' | 'paced'> & {
-  paced: NonNullable<PacedTrainResponse['paced']>;
+export type PacedTrainWithPaced = Omit<TrainScheduleResponse, 'id' | 'paced'> & {
+  paced: NonNullable<TrainScheduleResponse['paced']>;
 };
 
 export type PacedTrainResponseWithPaced = PacedTrainWithPaced & {

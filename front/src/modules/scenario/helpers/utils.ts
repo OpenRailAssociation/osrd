@@ -1,5 +1,5 @@
 import { isInvalidName } from 'applications/operationalStudies/utils';
-import type { PacedTrainResponse } from 'common/api/osrdEditoastApi';
+import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import { SMALL_TEXT_AREA_MAX_LENGTH, isInvalidString } from 'utils/strings';
 
 import type { ScenarioForm } from '../components/AddOrEditScenarioModal';
@@ -9,7 +9,7 @@ import type { ScenarioForm } from '../components/AddOrEditScenarioModal';
  * @param trainsDetails - An array of TrainScheduleResponse objects containing train details.
  * @returns An object representing the datetime window of the scenario, with `begin` and `end` properties.
  */
-export const getScenarioDatetimeWindow = (trainsDetails: PacedTrainResponse[]) => {
+export const getScenarioDatetimeWindow = (trainsDetails: TrainScheduleResponse[]) => {
   if (trainsDetails.length === 0) {
     return {
       begin: new Date(new Date().setHours(0, 0, 0, 0)),

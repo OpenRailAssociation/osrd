@@ -40,7 +40,7 @@ use editoast_models::timetable::Timetable;
 use editoast_models::timetable::TimetableWithTrains;
 use itertools::Itertools;
 use itertools::izip;
-use paced_train::PacedTrainResponse;
+use paced_train::TrainScheduleResponse;
 use schemas::rolling_stock::EtcsBrakeParams;
 use schemas::rolling_stock::RollingResistance;
 use schemas::rolling_stock::RollingStock;
@@ -175,8 +175,8 @@ pub(in crate::views) async fn delete(
 #[derive(Serialize, ToSchema, Debug)]
 #[cfg_attr(test, derive(Deserialize))]
 pub(in crate::views) struct ListPacedTrainsResponse {
-    #[schema(value_type = Vec<PacedTrainResponse>)]
-    results: Vec<PacedTrainResponse>,
+    #[schema(value_type = Vec<TrainScheduleResponse>)]
+    results: Vec<TrainScheduleResponse>,
     #[serde(flatten)]
     stats: PaginationStats,
 }

@@ -2062,7 +2062,7 @@ export type PostPacedTrainTrackOccupancyApiArg = {
   };
 };
 export type GetPacedTrainByIdApiResponse =
-  /** status 200 The requested paced train */ PacedTrainResponse;
+  /** status 200 The requested paced train */ TrainScheduleResponse;
 export type GetPacedTrainByIdApiArg = {
   id: number;
 };
@@ -2359,7 +2359,7 @@ export type GetTimetableByIdConflictsApiArg = {
 };
 export type GetTimetableByIdPacedTrainsApiResponse =
   /** status 200 Timetable with paced train ids */ PaginationStats & {
-    results: PacedTrainResponse[];
+    results: TrainScheduleResponse[];
   };
 export type GetTimetableByIdPacedTrainsApiArg = {
   /** A timetable ID */
@@ -2539,13 +2539,13 @@ export type DeleteTrainScheduleSetsByIdApiArg = {
   id: number;
 };
 export type GetTrainScheduleSetsByIdPacedTrainsApiResponse =
-  /** status 200 The paced trains */ PacedTrainResponse[];
+  /** status 200 The paced trains */ TrainScheduleResponse[];
 export type GetTrainScheduleSetsByIdPacedTrainsApiArg = {
   /** A train schedule set ID */
   id: number;
 };
 export type PostTrainScheduleSetsByIdPacedTrainsApiResponse =
-  /** status 201 The created paced trains */ PacedTrainResponse[];
+  /** status 201 The created paced trains */ TrainScheduleResponse[];
 export type PostTrainScheduleSetsByIdPacedTrainsApiArg = {
   /** A train schedule set ID */
   id: number;
@@ -3955,7 +3955,7 @@ export type PacedTrain = {
     time_window: PositiveDuration;
   };
 };
-export type PacedTrainResponse = PacedTrain & {
+export type TrainScheduleResponse = PacedTrain & {
   id: number;
   train_schedule_set_id: number;
 };

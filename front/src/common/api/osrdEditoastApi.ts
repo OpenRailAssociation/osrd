@@ -15,7 +15,7 @@ import {
   type GetSpritesSignalingSystemsApiResponse,
   type MacroNodeResponse,
   type OperationalPointReference,
-  type PacedTrainResponse,
+  type TrainScheduleResponse,
   type PathfindingResult,
   type PostTimetableByIdStdcmApiResponse,
   type RelatedOperationalPoint,
@@ -30,12 +30,15 @@ export type PostTimetableByIdStdcmApiResponseWithTraceId = PostTimetableByIdStdc
 const osrdEditoastApi = generatedEditoastApi
   .injectEndpoints({
     endpoints: (builder) => ({
-      getAllTimetableByIdPacedTrains: builder.query<PacedTrainResponse[], { timetableId: number }>({
+      getAllTimetableByIdPacedTrains: builder.query<
+        TrainScheduleResponse[],
+        { timetableId: number }
+      >({
         queryFn: async ({ timetableId }, { dispatch }) => {
           const pageSize = 200;
           let page = 1;
           let reachEnd = false;
-          const result: PacedTrainResponse[] = [];
+          const result: TrainScheduleResponse[] = [];
           while (!reachEnd) {
             const data = await dispatch(
               osrdEditoastApi.endpoints.getTimetableByIdPacedTrains.initiate(
