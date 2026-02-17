@@ -15,6 +15,10 @@
         &:nth-child(even) {
           background: var(--ambientB15);
         }
+
+        &:hover {
+          background: var(--white50);
+        }
       }
       &.invalid::after {
         position: absolute;
@@ -111,11 +115,6 @@
 
     td.uncomputed::before {
       background: var(--white100);
-    }
-
-    /* Hover per cell only */
-    td[class^='col-']:hover::before {
-      background: var(--white50);
     }
 
     /* Input focus inside cell */
