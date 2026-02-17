@@ -226,3 +226,81 @@ pub mod test_authorizers {
         }
     }
 }
+
+pub trait TestClientExt {
+    async fn group_members(&self, group: &Group) -> HashSet<User>;
+}
+
+impl TestClientExt for fga::Client {
+    async fn group_members(&self, group: &Group) -> HashSet<User> {
+        self.list_users(Group::member().query_users(group))
+            .await
+            .unwrap()
+            .users
+            .into_iter()
+            .collect()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::v2::test_authorizers::Authorize;
+
+    use super::*;
+
+    #[tokio::test]
+    async fn add_members_idempotent() {
+        let openfga = crate::authz_client!();
+        let authorize = Authorize(&openfga);
+
+        add_members(Group(1), HashSet::from_iter([User(1), User(2)]))
+            .authorize(&authorize)
+            .await
+            .unwrap()
+            .unwrap_authorized()
+            .await;
+        assert_eq!(
+            openfga.group_members(&Group(1)).await,
+            HashSet::from_iter([User(1), User(2)])
+        );
+
+        add_members(Group(1), HashSet::from_iter([User(1), User(2)]))
+            .authorize(&authorize)
+            .await
+            .unwrap()
+            .unwrap_authorized()
+            .await;
+        assert_eq!(
+            openfga.group_members(&Group(1)).await,
+            HashSet::from_iter([User(1), User(2)])
+        );
+    }
+
+    #[tokio::test]
+    async fn add_members_intersecting_calls() {
+        let openfga = crate::authz_client!();
+        let authorize = Authorize(&openfga);
+
+        add_members(Group(1), HashSet::from_iter([User(1), User(2)]))
+            .authorize(&authorize)
+            .await
+            .unwrap()
+            .unwrap_authorized()
+            .await;
+        assert_eq!(
+            openfga.group_members(&Group(1)).await,
+            HashSet::from_iter([User(1), User(2)])
+        );
+
+        add_members(Group(1), HashSet::from_iter([User(1), User(3)]))
+            .authorize(&authorize)
+            .await
+            .unwrap()
+            .unwrap_authorized()
+            .await;
+        assert_eq!(
+            openfga.group_members(&Group(1)).await,
+            HashSet::from_iter([User(1), User(2), User(3)])
+        );
+    }
+}
