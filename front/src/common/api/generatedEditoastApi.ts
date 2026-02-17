@@ -709,7 +709,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/paced_train/${queryArg.id}`,
           method: 'PUT',
-          body: queryArg.pacedTrain,
+          body: queryArg.trainSchedule,
         }),
         invalidatesTags: ['timetable', 'paced_train'],
       }),
@@ -2069,7 +2069,7 @@ export type GetPacedTrainByIdApiArg = {
 export type PutPacedTrainByIdApiResponse = unknown;
 export type PutPacedTrainByIdApiArg = {
   id: number;
-  pacedTrain: PacedTrain;
+  trainSchedule: TrainSchedule;
 };
 export type GetPacedTrainByIdEtcsBrakingCurvesApiResponse =
   /** status 200 ETCS Braking Curves Output */ CoreEtcsBrakingCurvesResponse;
@@ -2549,7 +2549,7 @@ export type PostTrainScheduleSetsByIdPacedTrainsApiResponse =
 export type PostTrainScheduleSetsByIdPacedTrainsApiArg = {
   /** A train schedule set ID */
   id: number;
-  body: PacedTrain[];
+  body: TrainSchedule[];
 };
 export type GetVersionApiResponse = /** status 200 Return the service version */ Version;
 export type GetVersionApiArg = void;
@@ -3923,7 +3923,7 @@ export type PacedTrainException = {
   start_time?: StartTimeChangeGroup;
   train_name?: TrainNameChangeGroup;
 };
-export type PacedTrain = {
+export type TrainSchedule = {
   category?: null | TrainCategory;
   comfort?: Comfort;
   constraint_distribution: Distribution;
@@ -3951,7 +3951,7 @@ export type PacedTrain = {
     time_window: PositiveDuration;
   };
 };
-export type TrainScheduleResponse = PacedTrain & {
+export type TrainScheduleResponse = TrainSchedule & {
   id: number;
   train_schedule_set_id: number;
 };

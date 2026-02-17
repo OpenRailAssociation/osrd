@@ -37,7 +37,7 @@ pub struct Paced {
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, ToSchema)]
-pub struct PacedTrain {
+pub struct TrainSchedule {
     #[serde(flatten)]
     #[schema(inline)]
     pub train_occurrence: TrainOccurrence,
@@ -45,7 +45,7 @@ pub struct PacedTrain {
     pub paced: Option<Paced>,
 }
 
-impl<'de> Deserialize<'de> for PacedTrain {
+impl<'de> Deserialize<'de> for TrainSchedule {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
@@ -84,7 +84,7 @@ impl<'de> Deserialize<'de> for PacedTrain {
                 }
             }
         }
-        Ok(PacedTrain {
+        Ok(TrainSchedule {
             train_occurrence: raw.train_occurrence,
             paced: raw.paced,
         })

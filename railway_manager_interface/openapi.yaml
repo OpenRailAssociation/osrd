@@ -87,7 +87,7 @@ components:
           type: array
           description: List of paced trains
           items:
-            $ref: '../editoast/openapi.yaml#/components/schemas/PacedTrain'
+            $ref: '../editoast/openapi.yaml#/components/schemas/TrainSchedule'
     ErrorResponse:
       type: object
       properties:

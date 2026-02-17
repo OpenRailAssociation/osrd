@@ -2,7 +2,7 @@ import { expect } from '@playwright/test';
 
 import type {
   Infra,
-  PacedTrain,
+  TrainSchedule,
   Project,
   Scenario,
   Study,
@@ -67,7 +67,7 @@ const initialInputsData: CellData[] = readJsonFile(
 const expectedOutputData: { pacedTrain: StationData[]; secondOccurrence: StationData[] } =
   readJsonFile('./tests/assets/paced-train/output-table-data.json');
 
-const trains: [PacedTrain] = readJsonFile('./tests/assets/trains/trains.json');
+const trains: [TrainSchedule] = readJsonFile('./tests/assets/trains/trains.json');
 
 test.describe('@op @paced-trains', () => {
   let project: Project;

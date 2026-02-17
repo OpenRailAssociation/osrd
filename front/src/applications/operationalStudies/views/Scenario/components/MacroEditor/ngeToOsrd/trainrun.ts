@@ -1,7 +1,7 @@
 import { compact, uniq } from 'lodash';
 
 import {
-  type PacedTrain,
+  type TrainSchedule,
   type PathItemLocation,
   type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
@@ -142,7 +142,7 @@ const createPathItemFromNode = (
   node: NodeDto,
   index: number,
   state?: MacroEditorState
-): PacedTrain['path'][number] => {
+): TrainSchedule['path'][number] => {
   let pathItemLocation: PathItemLocation;
   if (state) {
     const indexedNode = state.getNodeByNgeId(node.id)!;
@@ -182,7 +182,7 @@ export const generatePath = (
   nodes: NodeDto[],
   trainrunDirection: TRAINRUN_DIRECTIONS,
   state?: MacroEditorState
-): PacedTrain['path'] => {
+): TrainSchedule['path'] => {
   const isForward = trainrunDirection === TRAINRUN_DIRECTIONS.FORWARD;
   const path = trainrunSections.map((section, index) => {
     const fromNode = getNodeById(nodes, isForward ? section.sourceNodeId : section.targetNodeId);
@@ -226,7 +226,7 @@ const generateSchedule = (
   nodes: NodeDto[],
   startDate: Date,
   trainrunDirection: TRAINRUN_DIRECTIONS
-): PacedTrain['schedule'] => {
+): TrainSchedule['schedule'] => {
   const isForward = trainrunDirection === TRAINRUN_DIRECTIONS.FORWARD;
   return trainrunSections.flatMap((section, index) => {
     const nextSection = trainrunSections[index + 1];
@@ -341,7 +341,7 @@ export const generatePathAndSchedule = (
 // TODO: drop this function once this PR is merged:
 // https://github.com/OpenRailAssociation/osrd/pull/10325
 const populateSecondaryCodesInPath = async (
-  path: PacedTrain['path'],
+  path: TrainSchedule['path'],
   infraId: number,
   dispatch: AppDispatch
 ) => {
@@ -366,7 +366,7 @@ const populateSecondaryCodesInPath = async (
 export const createPacedAttributesFromTrainrun = (
   trainrun: TrainrunDto,
   dto: NetzgrafikDto
-): PacedTrain['paced'] => {
+): TrainSchedule['paced'] => {
   const freq = getFrequencyFromFrequencyId(dto.metadata.trainrunFrequencies, trainrun.frequencyId);
   const interval = new Duration({ minutes: freq.frequency });
   if (interval >= new Duration({ hours: 24 })) {
@@ -425,7 +425,7 @@ const handleCreateTimetableItem = async (
 
   const paced = createPacedAttributesFromTrainrun(trainrun, netzgrafikDto);
 
-  const forwardTrip: PacedTrain = {
+  const forwardTrip: TrainSchedule = {
     ...DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
     paced,
     train_name: trainrun.name,
@@ -583,7 +583,7 @@ export const handleUpdateTimetableItem = async ({
   await populateSecondaryCodesInPath(returnPathAndSchedule.path, infraId, dispatch);
 
   let newReturnTimetableItem: TimetableItem;
-  const returnPaced: PacedTrain['paced'] = paced ? { ...paced, exceptions: [] } : null;
+  const returnPaced: TrainSchedule['paced'] = paced ? { ...paced, exceptions: [] } : null;
 
   if (timetableItemIds[1]) {
     // update return if already present
@@ -623,7 +623,7 @@ export const handleUpdateTimetableItem = async ({
     const { train_schedule_set_id: _trainScheduleSetId, ...pacedTrainWithoutTrainScheduleSetId } =
       newForwardTrainBase;
 
-    const returnPacedTrain: PacedTrain = {
+    const returnPacedTrain: TrainSchedule = {
       ...pacedTrainWithoutTrainScheduleSetId,
       ...returnPathAndSchedule,
       paced: returnPaced,

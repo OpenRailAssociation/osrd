@@ -8,9 +8,9 @@ import type {
 } from 'applications/operationalStudies/types';
 import { convertNgeDtoToOsrd } from 'applications/operationalStudies/views/Scenario/components/MacroEditor/ngeToOsrd';
 import type { NetzgrafikDto } from 'applications/operationalStudies/views/Scenario/components/NGE/types';
-import { type PacedTrain } from 'common/api/osrdEditoastApi';
+import { type TrainSchedule } from 'common/api/osrdEditoastApi';
 
-const TRAIN_SCHEDULE_COMPULSORY_KEYS: (keyof PacedTrain)[] = [
+const TRAIN_SCHEDULE_COMPULSORY_KEYS: (keyof TrainSchedule)[] = [
   'constraint_distribution',
   'path',
   'rolling_stock_name',

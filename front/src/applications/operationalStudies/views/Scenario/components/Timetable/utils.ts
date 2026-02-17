@@ -3,7 +3,7 @@ import { omit } from 'lodash';
 
 import type { RoundTripsFromJson } from 'applications/operationalStudies/types';
 import type {
-  PacedTrain,
+  TrainSchedule,
   SubCategory,
   TrainMainCategory,
   RoundTrips,
@@ -53,7 +53,7 @@ const formatTimetableItemsForExport = (
 
   const pacedTrains = timetableItems
     .filter(({ id }) => selectedTimeTableIdsFromClick.includes(id))
-    .reduce<PacedTrain[]>((acc, timetableItem) => {
+    .reduce<TrainSchedule[]>((acc, timetableItem) => {
       const pacedTrainEditoastId = extractEditoastIdFromPacedTrainId(timetableItem.id);
       pacedTrainIndexByEditoastId.set(pacedTrainEditoastId, acc.length);
       acc.push(omit(timetableItem, ['id', 'train_schedule_set_id']));
@@ -123,7 +123,7 @@ function mapRoundTripsToIndexes(
 }
 
 type TimetableExportPayload = {
-  paced_trains: PacedTrain[];
+  paced_trains: TrainSchedule[];
   round_trips?: RoundTripsFromJson;
 };
 
@@ -180,7 +180,7 @@ export function extractCategoryId(fullId: string): TrainMainCategory[] | SubCate
   throw new Error(`Unknown category prefix: ${prefix}`);
 }
 export const getTrainCategoryClassName = (
-  trainCategory: PacedTrain['category'],
+  trainCategory: TrainSchedule['category'],
   type: 'bg' | 'text'
 ) => {
   if (!trainCategory) return `train-category-${type}-none`;

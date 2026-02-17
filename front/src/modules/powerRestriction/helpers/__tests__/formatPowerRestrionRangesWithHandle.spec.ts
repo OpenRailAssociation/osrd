@@ -1,7 +1,7 @@
 import type { LayerData, PowerRestrictionValues } from '@osrd-project/ui-charts';
 import { describe, it, expect } from 'vitest';
 
-import type { PacedTrain } from 'common/api/osrdEditoastApi';
+import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
 
 import {
@@ -12,7 +12,7 @@ import generateEffortCurvesForTests from './generateEffortCurvesForTests';
 
 describe('formatPowerRestrictionRanges', () => {
   it('should properly format power restrictions ranges', () => {
-    const powerRestrictions: NonNullable<PacedTrain['power_restrictions']> = [
+    const powerRestrictions: NonNullable<TrainSchedule['power_restrictions']> = [
       {
         from: 'step1',
         to: 'step2',
@@ -24,7 +24,7 @@ describe('formatPowerRestrictionRanges', () => {
         value: 'code2',
       },
     ];
-    const pathSteps: PacedTrain['path'] = [
+    const pathSteps: TrainSchedule['path'] = [
       {
         location: { operational_point: { uic: 12345, type: 'uic', secondary_code: null } },
         id: 'step1',

@@ -1,6 +1,6 @@
 import type { PacedTrainFromJson } from 'applications/operationalStudies/types';
 import type {
-  PacedTrain,
+  TrainSchedule,
   SubCategory,
   TrainCategory,
   TrainMainCategory,
@@ -94,7 +94,7 @@ const buildLabels = (
 export function generateTrainPayloads(
   parsedPacedTrains: PacedTrainFromJson[],
   allowedSubCategories: SubCategory[]
-): PacedTrain[] {
+): TrainSchedule[] {
   return parsedPacedTrains.map((pacedTrain) => ({
     ...pacedTrain,
     category: checkCategory(pacedTrain.category, allowedSubCategories),

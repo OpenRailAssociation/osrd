@@ -1,7 +1,7 @@
 import { v4 as uuidV4 } from 'uuid';
 
 import type { CichDictValue } from 'applications/operationalStudies/types';
-import type { PacedTrain } from 'common/api/osrdEditoastApi';
+import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 import { Duration } from 'utils/duration';
 import { time2sec } from 'utils/timeManipulation';
 
@@ -11,7 +11,7 @@ export const buildSteps = (
   ocpTTs: Element[],
   cichDict: Record<string, CichDictValue>,
   startDate: Date
-): Required<Pick<PacedTrain, 'path' | 'schedule'>> => {
+): Required<Pick<TrainSchedule, 'path' | 'schedule'>> => {
   let dayOffset = 0;
 
   let previousDepartureSeconds: number | null = null;
@@ -83,8 +83,8 @@ export const buildSteps = (
     })
     .filter((step) => step !== null);
 
-  const path: PacedTrain['path'] = [];
-  const schedule: PacedTrain['schedule'] = [];
+  const path: TrainSchedule['path'] = [];
+  const schedule: TrainSchedule['schedule'] = [];
   const departureTime = steps[0].departureDate;
   for (const step of steps) {
     const id = uuidV4();

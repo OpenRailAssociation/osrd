@@ -20,7 +20,7 @@ use editoast_models::round_trips::TrainScheduleRoundTrips;
 use itertools::Itertools;
 use itertools::izip;
 use reqwest::StatusCode;
-use schemas::paced_train::PacedTrain;
+use schemas::paced_train::TrainSchedule;
 use schemas::primitives::TimeWindow;
 use schemas::train_schedule::OperationalPointPartReference;
 use schemas::train_schedule::PathItemLocation;
@@ -105,7 +105,7 @@ pub(in crate::views) struct TrainScheduleResponse {
     id: i64,
     train_schedule_set_id: i64,
     #[serde(flatten)]
-    paced_train: PacedTrain,
+    paced_train: TrainSchedule,
 }
 
 impl From<models::TrainSchedule> for TrainScheduleResponse {
@@ -165,7 +165,7 @@ pub(in crate::views) async fn get_by_id(
     put, path = "",
     tags = ["timetable", "paced_train"],
     params(PacedTrainIdParam),
-    request_body = PacedTrain,
+    request_body = TrainSchedule,
     responses(
         (status = 204, description = "The paced train has been updated")
     )
@@ -174,7 +174,7 @@ pub(in crate::views) async fn update_paced_train(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(PacedTrainIdParam { id: paced_train_id }): Path<PacedTrainIdParam>,
-    Json(paced_train_base): Json<PacedTrain>,
+    Json(paced_train_base): Json<TrainSchedule>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())
@@ -1475,10 +1475,10 @@ mod tests {
     use schemas::paced_train::ExceptionType;
     use schemas::paced_train::InitialSpeedChangeGroup;
     use schemas::paced_train::Paced;
-    use schemas::paced_train::PacedTrain;
     use schemas::paced_train::PacedTrainException;
     use schemas::paced_train::RollingStockChangeGroup;
     use schemas::paced_train::TrainNameChangeGroup;
+    use schemas::paced_train::TrainSchedule;
     use schemas::rolling_stock::TrainCategory;
     use schemas::train_schedule::Comfort;
     use schemas::train_schedule::PathItem;
@@ -1590,7 +1590,7 @@ mod tests {
             created_paced_train.sub_category,
             Some(created_sub_category.code.clone())
         );
-        let created_paced_train: schemas::paced_train::PacedTrain = created_paced_train.into();
+        let created_paced_train: schemas::paced_train::TrainSchedule = created_paced_train.into();
 
         assert_eq!(
             created_paced_train.train_occurrence.category,
@@ -1618,7 +1618,7 @@ mod tests {
         simple_paced_train.exceptions = vec![simple_created_exception_with_change_groups(
             "exception_key_1",
         )];
-        let paced_train: PacedTrain = simple_paced_train.clone().into();
+        let paced_train: TrainSchedule = simple_paced_train.clone().into();
 
         let request = app
             .put(format!("/paced_train/{}", simple_paced_train.id).as_str())
@@ -1804,7 +1804,7 @@ mod tests {
         let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), "simulation_rolling_stock").await;
-        let paced_train_base = PacedTrain {
+        let paced_train_base = TrainSchedule {
             train_occurrence: TrainOccurrence {
                 rolling_stock_name: rolling_stock.name.clone(),
                 ..TrainOccurrence::fake()

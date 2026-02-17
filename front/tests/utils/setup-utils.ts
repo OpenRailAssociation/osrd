@@ -2,7 +2,7 @@ import { expect } from '@playwright/test';
 
 import type {
   Infra,
-  PacedTrain,
+  TrainSchedule,
   PostInfraRailjsonApiResponse,
   Project,
   ProjectCreateForm,
@@ -157,7 +157,7 @@ export async function createStudy(projectId: number, studyName = globalStudyName
  * project, study, and scenario.
  */
 export async function createDataForTests(): Promise<void> {
-  const trains: PacedTrain[] = readJsonFile('./tests/assets/trains/trains.json');
+  const trains: TrainSchedule[] = readJsonFile('./tests/assets/trains/trains.json');
 
   try {
     // Step 1: Create infrastructure

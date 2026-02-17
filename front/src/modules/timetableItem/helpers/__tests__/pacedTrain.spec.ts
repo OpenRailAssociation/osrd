@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import type { PacedTrain, PacedTrainException } from 'common/api/osrdEditoastApi';
+import type { TrainSchedule, PacedTrainException } from 'common/api/osrdEditoastApi';
 import type { SimulatedException, SimulationSummary } from 'modules/timetableItem/types';
 import { Duration } from 'utils/duration';
 
@@ -43,7 +43,7 @@ describe('getOccurrencesNb', () => {
 });
 
 describe('extractOccurrenceDetailsFromPacedTrain', () => {
-  const pacedTrain: Omit<PacedTrain, 'paced' | 'exceptions'> = {
+  const pacedTrain: Omit<TrainSchedule, 'paced' | 'exceptions'> = {
     train_name: '8608',
     labels: ['Paced-Train-Tag-1', 'SS-NS', 'Valid'],
     rolling_stock_name: '',

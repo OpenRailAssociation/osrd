@@ -2,7 +2,7 @@ import type {
   PacedTrainResponseWithPaced,
   PacedTrainWithPaced,
 } from 'applications/operationalStudies/types';
-import type { PacedTrain, PacedTrainException } from 'common/api/osrdEditoastApi';
+import type { TrainSchedule, PacedTrainException } from 'common/api/osrdEditoastApi';
 import type {
   OccurrenceId,
   PacedTrainId,
@@ -26,7 +26,7 @@ import type {
   TimetableItemWithDetails,
 } from '../types';
 
-export const isPacedTrainBase = (pacedTrain: PacedTrain): pacedTrain is PacedTrainWithPaced =>
+export const isPacedTrainBase = (pacedTrain: TrainSchedule): pacedTrain is PacedTrainWithPaced =>
   !!pacedTrain.paced;
 
 export const isPacedTrain = (
@@ -71,7 +71,7 @@ export const findExceptionWithOccurrenceId = <T extends PacedTrainException>(
 };
 
 export const extractOccurrenceDetailsFromPacedTrain = <
-  T extends Omit<PacedTrain, 'paced' | 'exceptions'>,
+  T extends Omit<TrainSchedule, 'paced' | 'exceptions'>,
 >(
   pacedTrain: T,
   exceptionChangeGroups: ExceptionChangeGroups | undefined

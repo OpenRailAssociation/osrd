@@ -1,7 +1,7 @@
 import { isEmpty, isEqual, omit } from 'lodash';
 
 import type { PacedTrainWithPaced } from 'applications/operationalStudies/types';
-import type { PacedTrain, PacedTrainException } from 'common/api/osrdEditoastApi';
+import type { TrainSchedule, PacedTrainException } from 'common/api/osrdEditoastApi';
 import computeBasePathStep from 'modules/timetableItem/helpers/computeBasePathStep';
 import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
 import {
@@ -23,7 +23,7 @@ import {
  * the caller is responsible for generating the exception key and occurrence index.
  */
 export function generatePacedTrainException(
-  updatedOccurrence: PacedTrain,
+  updatedOccurrence: TrainSchedule,
   originalPacedTrain: Omit<PacedTrainWithPaced, 'train_schedule_set_id'>,
   occurrenceIndex: number | null = null
 ): Omit<PacedTrainException, 'key' | 'occurrence_index'> {
@@ -179,8 +179,8 @@ export function updatePacedTrainExceptionsList<T extends PacedTrainException>(
  * If the exceptions as no change group after those checks, the exception is removed.
  */
 export function checkChangeGroups(
-  updatedTrain: PacedTrain,
-  paced: NonNullable<PacedTrain['paced']>,
+  updatedTrain: TrainSchedule,
+  paced: NonNullable<TrainSchedule['paced']>,
   originalExceptions: PacedTrainException[]
 ): PacedTrainException[] {
   return originalExceptions.reduce<PacedTrainException[]>((acc, exception) => {

@@ -11,7 +11,7 @@ import type {
   RoundTrips,
   SimulationResponseSuccess,
   SimulationSummaryResult,
-  PacedTrain,
+  TrainSchedule,
   ScheduleItem,
   PathItem,
 } from 'common/api/osrdEditoastApi';
@@ -184,7 +184,7 @@ export const preparePathPropertiesData = (
   electricalProfiles: SimulationResponseSuccess['electrical_profiles'],
   { slopes, curves, electrifications, operational_points, geometry }: PathProperties,
   { path_item_positions, length }: CorePathfindingResultSuccess,
-  trainSchedulePath: PacedTrain['path'],
+  trainSchedulePath: TrainSchedule['path'],
   t: TFunction<'operational-studies'>
 ): PathPropertiesFormatted => {
   const formattedSlopes = transformBoundariesDataToPositionDataArray(slopes, length, 'gradient');

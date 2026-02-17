@@ -30,7 +30,6 @@ use schemas::paced_train::InitialSpeedChangeGroup;
 use schemas::paced_train::LabelsChangeGroup;
 use schemas::paced_train::OptionsChangeGroup;
 use schemas::paced_train::Paced;
-use schemas::paced_train::PacedTrain;
 use schemas::paced_train::PacedTrainException;
 use schemas::paced_train::PathAndScheduleChangeGroup;
 use schemas::paced_train::RollingStockCategoryChangeGroup;
@@ -38,6 +37,7 @@ use schemas::paced_train::RollingStockChangeGroup;
 use schemas::paced_train::SpeedLimitTagChangeGroup;
 use schemas::paced_train::StartTimeChangeGroup;
 use schemas::paced_train::TrainNameChangeGroup;
+use schemas::paced_train::TrainSchedule;
 use schemas::primitives::Identifier;
 use schemas::primitives::NonBlankString;
 use schemas::primitives::OSRDObject;
@@ -226,8 +226,8 @@ pub fn create_modified_exception_with_change_groups(
     exception
 }
 
-pub fn simple_paced_train_base() -> PacedTrain {
-    PacedTrain {
+pub fn simple_paced_train_base() -> TrainSchedule {
+    TrainSchedule {
         train_occurrence: schemas::TrainOccurrence::fake(),
         paced: Some(Paced {
             time_window: ChronoDuration::hours(2).try_into().unwrap(),

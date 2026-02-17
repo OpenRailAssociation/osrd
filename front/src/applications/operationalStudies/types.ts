@@ -2,7 +2,7 @@ import type { LayerData, PowerRestrictionValues } from '@osrd-project/ui-charts'
 
 import type {
   CoreIncompatibleConstraints,
-  PacedTrain,
+  TrainSchedule,
   PathProperties,
   CorePathfindingResultSuccess,
   SimulationResponse,
@@ -36,7 +36,7 @@ export type PacedTrainResponseWithPaced = PacedTrainWithPaced & {
   id: PacedTrainId;
 };
 
-export type PacedTrainFromJson = Omit<PacedTrain, 'category'> & {
+export type PacedTrainFromJson = Omit<TrainSchedule, 'category'> & {
   category?: TrainCategory | string | null;
 };
 
@@ -114,7 +114,7 @@ export type PathPropertiesFormatted = {
   voltages: RangedValue[];
 };
 
-export type PowerRestriction = ArrayElement<PacedTrain['power_restrictions']>;
+export type PowerRestriction = ArrayElement<TrainSchedule['power_restrictions']>;
 
 export type ElectrificationVoltage = {
   type: string;

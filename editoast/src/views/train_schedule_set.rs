@@ -4,7 +4,7 @@ use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
 use editoast_models::prelude::*;
 use itertools::Itertools;
-use schemas::paced_train::PacedTrain;
+use schemas::paced_train::TrainSchedule;
 use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
@@ -299,7 +299,7 @@ pub(in crate::views) async fn delete(
     post, path = "",
     tags = ["train_schedule_set", "paced_train"],
     params(TrainScheduleSetIdParam),
-    request_body = Vec<PacedTrain>,
+    request_body = Vec<TrainSchedule>,
     responses(
         (status = 201, description = "The created paced trains", body = Vec<TrainScheduleResponse>)
     )
@@ -310,7 +310,7 @@ pub(in crate::views) async fn post_paced_train(
     Path(TrainScheduleSetIdParam {
         id: train_schedule_set_id,
     }): Path<TrainScheduleSetIdParam>,
-    Json(paced_trains): Json<Vec<PacedTrain>>,
+    Json(paced_trains): Json<Vec<TrainSchedule>>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())

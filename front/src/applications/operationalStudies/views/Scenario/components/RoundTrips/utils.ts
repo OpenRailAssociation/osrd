@@ -6,7 +6,7 @@ import {
   checkRoundTripCompatible,
   getStationFromOps,
 } from 'applications/operationalStudies/utils';
-import type { OperationalPoint, PacedTrain, RoundTrips } from 'common/api/osrdEditoastApi';
+import type { OperationalPoint, TrainSchedule, RoundTrips } from 'common/api/osrdEditoastApi';
 import { isPacedTrain } from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItemWithPathOps } from 'reducers/osrdconf/types';
 import { addDurationToDate, Duration } from 'utils/duration';
@@ -16,8 +16,8 @@ import type { PairingItem } from './types';
 
 const getStepLabels = (
   ops: (OperationalPoint[] | null)[],
-  steps: PacedTrain['path'],
-  schedule: PacedTrain['schedule'],
+  steps: TrainSchedule['path'],
+  schedule: TrainSchedule['schedule'],
   t: TFunction<'operational-studies', 'main'>
 ) =>
   steps.reduce<string[]>((acc, step, index) => {

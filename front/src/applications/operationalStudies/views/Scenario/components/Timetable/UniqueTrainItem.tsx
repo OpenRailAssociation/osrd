@@ -8,7 +8,7 @@ import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { SubCategory, PacedTrain } from 'common/api/osrdEditoastApi';
+import type { SubCategory, TrainSchedule } from 'common/api/osrdEditoastApi';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import { deletePacedTrains } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
@@ -113,7 +113,7 @@ const UniqueTrainItem = ({
         new Duration({ minutes: TIMETABLE_ITEM_DELTA })
       );
 
-      const newUniqueTrainPayload: PacedTrain = {
+      const newUniqueTrainPayload: TrainSchedule = {
         ...omit(trainDetail, ['id', 'train_schedule_set_id']),
         start_time: startTime.toISOString(),
         train_name: trainName,

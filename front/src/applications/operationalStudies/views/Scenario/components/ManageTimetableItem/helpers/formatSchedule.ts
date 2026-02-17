@@ -1,9 +1,9 @@
 import { compact } from 'lodash';
 
-import type { PacedTrain } from 'common/api/osrdEditoastApi';
+import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 import type { PathStep } from 'reducers/osrdconf/types';
 
-const formatSchedule = (pathSteps: PathStep[]): PacedTrain['schedule'] => {
+const formatSchedule = (pathSteps: PathStep[]): TrainSchedule['schedule'] => {
   const schedules = pathSteps.map((step) => {
     if (step?.arrival || step.stopFor) {
       return {

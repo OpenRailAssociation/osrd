@@ -1,4 +1,4 @@
-import type { TrainMainCategory, PacedTrain } from 'common/api/osrdEditoastApi';
+import type { TrainMainCategory, TrainSchedule } from 'common/api/osrdEditoastApi';
 import { Duration } from 'utils/duration';
 
 import type {
@@ -154,7 +154,7 @@ export const DEFAULT_TIME_LOCK: TimeLockDto = {
 };
 
 export const DEFAULT_TRAIN_SCHEDULE_PAYLOAD: Pick<
-  PacedTrain,
+  TrainSchedule,
   'constraint_distribution' | 'rolling_stock_name'
 > = {
   constraint_distribution: 'STANDARD',
