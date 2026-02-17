@@ -171,6 +171,7 @@
       "showValidTrains": "Gültig",
       "stopsCount_one": "1 Stop",
       "stopsCount_other": "{{ count }} Stops",
+      "stopsCount_zero": "0 Stops",
       "toggleFilters": "Filteranzeige umschalten",
       "trainAdded": "Zug hinzugefügt",
       "trainDeleted": "Zug „{{ name }}“ ist gelöscht worden.",

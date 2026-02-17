@@ -269,6 +269,7 @@
       "speedLimitTags": "Codes de composition",
       "stopsCount_one": "1 arrêt",
       "stopsCount_other": "{{count}} arrêts",
+      "stopsCount_zero": "0 arrêt",
       "toggleFilters": "Afficher ou masquer les filtres",
       "trainAdded": "Train ajouté",
       "trainCategories": "Catégorie de train",

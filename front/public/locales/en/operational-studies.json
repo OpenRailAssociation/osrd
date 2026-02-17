@@ -269,6 +269,7 @@
       "speedLimitTags": "Composition codes",
       "stopsCount_one": "1 stop",
       "stopsCount_other": "{{ count }} stops",
+      "stopsCount_zero": "0 stops",
       "toggleFilters": "Toggle filters display",
       "trainAdded": "Train added",
       "trainCategories": "Train categories",
