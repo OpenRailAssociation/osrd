@@ -121,6 +121,6 @@ export default function useLazySimulateTrains({
     simulateTimetableItems,
     removeSimulatedTimetableItems,
     updateSimulatedTimetableItemDepartureTime,
-    allTrainsSimulated: loaderRef.current && loaderRef.current.pending.length === 0,
+    allTrainsSimulated: loaderRef.current && !loaderRef.current.loading,
   };
 }

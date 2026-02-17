@@ -28,9 +28,13 @@ export default class TrainSimulationLazyLoader {
 
   pending: TimetableItemId[] = [];
 
-  prevPromise: Promise<void> = Promise.resolve();
+  promise: Promise<void> | undefined = undefined;
 
   cancelled = false;
+
+  get loading() {
+    return !!this.promise;
+  }
 
   /**
    * Create a new loader. Options are immutable for the lifetime of the loader.
@@ -47,7 +51,7 @@ export default class TrainSimulationLazyLoader {
       throw new Error('simulateTimetableItems() called after cancel()');
     }
     this.pending.push(...ids);
-    this.prevPromise = this.prevPromise.finally(() => this.processPending());
+    this.promise ??= this.processPending();
   }
 
   /**
@@ -65,6 +69,10 @@ export default class TrainSimulationLazyLoader {
       this.pending = this.pending.slice(BATCH_SIZE);
       await this.processBatch(batch);
     }
+    // We assume to be in a single-threaded context and that the VM can
+    // only switch execution between promises during await points, so
+    // this.pending is guaranteed to be empty here.
+    this.promise = undefined;
   }
 
   async processBatch(batch: TimetableItemId[]) {
