@@ -191,7 +191,7 @@ All common code (and shared components) supposed to be in `common/`.
 
 Any translation key used in the code must at least be present in `/public/locales/en` and
 `/public/locales/fr`, other languages are work in progress. You can use
-`npm run-script i18n-checker.ts` to see a complete list of unused and missing French and English
+`npm run i18n-checker` to see a complete list of unused and missing French and English
 keys. You can use `./scripts/i18n-order-checker.sh --fix` to automatically sort translation keys.
 
 # Other
