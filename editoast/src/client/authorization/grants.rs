@@ -1,12 +1,15 @@
+use std::collections::HashMap;
 use std::sync::Arc;
 
 use anyhow::bail;
-use authz::Authorization;
 use authz::Regulator;
 use clap::Args;
 use clap::Subcommand;
 use clap::ValueEnum;
 use editoast_models::PgAuthDriver;
+use editoast_models::prelude::*;
+use fga::client::Request;
+use fga::model::Relation;
 use tracing::info;
 
 use database::DbConnectionPoolV2;
@@ -105,7 +108,7 @@ pub async fn set_grant(
         Resource::Infra => {
             let infra = authz::Infra(resource_id);
 
-            info!("Granting {new_grant} on infra {resource_id} to {subject}");
+            info!("Granting {new_grant} on Infra#{resource_id} to {subject}");
             regulator
                 .give_infra_grant_unchecked(&subject.to_authz(), &infra, new_grant)
                 .await?;
@@ -136,7 +139,7 @@ pub async fn unset_grant(
         Resource::Infra => {
             let infra = authz::Infra(resource_id);
 
-            info!("Unsetting grants on infra {resource_id} from {subject}");
+            info!("Unsetting grants on Infra#{resource_id} from {subject}");
             regulator
                 .revoke_infra_grants_unchecked(&subject.to_authz(), &infra)
                 .await?;
@@ -153,7 +156,7 @@ async fn warn_about_orphaned_infra(
     infra: &authz::Infra,
 ) -> anyhow::Result<()> {
     if regulator.get_infra_owners(infra).await?.is_empty() {
-        warn!("Infra {} has no owner", infra.0);
+        warn!("Infra#{} has no owner", infra.0);
     }
     Ok(())
 }
@@ -180,20 +183,19 @@ pub async fn list_subjects(
                 regulator.get_infra_readers(&infra)
             )?;
 
-            use std::collections::HashMap;
             let mut grants: HashMap<&authz::Subject, authz::InfraGrant> = HashMap::new();
-            for subject in &readers {
-                grants.insert(subject, authz::InfraGrant::Reader);
+            for subject in &owners {
+                grants.insert(subject, authz::InfraGrant::Owner);
             }
             for subject in &writers {
                 grants.insert(subject, authz::InfraGrant::Writer);
             }
-            for subject in &owners {
-                grants.insert(subject, authz::InfraGrant::Owner);
+            for subject in &readers {
+                grants.insert(subject, authz::InfraGrant::Reader);
             }
 
             if grants.is_empty() {
-                info!("No grants found for infra {resource_id}");
+                info!("No grants found for Infra#{resource_id}");
             }
             for (subject, grant) in grants {
                 let Some(subject) =
@@ -215,26 +217,48 @@ pub async fn list_resources(
     pool: Arc<DbConnectionPoolV2>,
     openfga_config: OpenfgaConfig,
 ) -> anyhow::Result<()> {
-    let regulator = openfga_config.into_regulator(pool).await?;
+    let regulator = openfga_config.into_regulator(pool.clone()).await?;
     let subject = parse_and_fetch_subject(&subject, regulator.driver()).await?;
 
     match resource {
         Resource::Infra => match subject.to_authz() {
             authz::Subject::User(user) => {
-                let result = regulator.list_authorized_infra(&user).await?;
-                match result {
-                    Authorization::Bypassed => {
-                        info!("Admin bypass: user can access all infrastructures");
+                if regulator.is_admin(&user).await? {
+                    info!("User {user} is an admin and has access to all infrastructures");
+                    return Ok(());
+                }
+                let (readers, writers, owners) = tokio::try_join!(
+                    authz::Infra::reader()
+                        .query_objects(&user)
+                        .fetch(regulator.openfga()),
+                    authz::Infra::writer()
+                        .query_objects(&user)
+                        .fetch(regulator.openfga()),
+                    authz::Infra::owner()
+                        .query_objects(&user)
+                        .fetch(regulator.openfga())
+                )?;
+
+                let mut grants = HashMap::new();
+                for authz::Infra(infra) in readers {
+                    grants.insert(infra, authz::InfraGrant::Reader);
+                }
+                for authz::Infra(infra) in writers {
+                    grants.insert(infra, authz::InfraGrant::Writer);
+                }
+                for authz::Infra(infra) in owners {
+                    grants.insert(infra, authz::InfraGrant::Owner);
+                }
+
+                let conn = pool.get().await?;
+                for (infra, grant) in grants {
+                    if let Some(crate::models::Infra { name, .. }) =
+                        crate::models::Infra::retrieve(conn.clone(), infra).await?
+                    {
+                        println!("[{grant:<6}]: Infra#{infra}({name})");
+                    } else {
+                        warn!(infra, ?grant, "stale grant found");
                     }
-                    Authorization::Granted(infras) => {
-                        if infras.is_empty() {
-                            info!("{subject} does not have any grant on infras");
-                        }
-                        for authz::Infra(infra) in infras {
-                            println!("{infra}");
-                        }
-                    }
-                    Authorization::Denied { .. } => unreachable!("no access to deny here"),
                 }
             }
             authz::Subject::Group(_) => {
