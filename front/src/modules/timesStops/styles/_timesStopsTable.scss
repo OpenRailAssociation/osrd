@@ -24,6 +24,7 @@
         content: '';
         height: calc(100% - 40px);
         width: 100%;
+        pointer-events: none;
       }
     }
     td.col-index {
