@@ -4,7 +4,7 @@
 # as a JSON file that can be re-imported in OSRD.
 #
 # /// script
-# dependencies = ["click", "aiohttp"]
+# dependencies = ["click", "aiohttp", "python-dotenv"]
 # ///
 import asyncio
 
@@ -12,20 +12,20 @@ import aiohttp
 import json
 from typing import Dict
 
-from download_stdcm_requirements import get_paginated, make_connector
+import click
+from dotenv import load_dotenv
 
-EDITOAST_URL = "https://rec-osrd.reseau.sncf.fr/"
-COOKIES = {
-    # Connect to the front-end and look through the "cookies" part of any sent request
-    "gateway" : ""
-}
-TIMETABLE_ID = 1
-OUT_PATH = "timetable.json"
+from common import get_paginated, make_connector
 
 
-async def download_timetable(timetable_id: int) -> Dict:
-    paced_trains_url = f"{EDITOAST_URL}api/timetable/{timetable_id}/paced_trains/?page=$page"
-    cookies, connector = make_connector(COOKIES["gateway"])
+async def download_timetable(
+    timetable_id: int,
+    editoast_url: str,
+    page_size: int,
+    gateway_cookie: str,
+) -> Dict:
+    paced_trains_url = f"{editoast_url}api/timetable/{timetable_id}/paced_trains/?page=$page&{page_size=}"
+    cookies, connector = make_connector(gateway_cookie)
     async with aiohttp.ClientSession(
         trust_env=True, raise_for_status=True, cookies=cookies, connector=connector
     ) as session:
@@ -37,13 +37,32 @@ async def download_timetable(timetable_id: int) -> Dict:
         paced_trains.append(paced_train)
     return {
         "train_schedules": [],
-        "paced_trains":paced_trains,
+        "paced_trains": paced_trains,
     }
 
 
-if __name__ == "__main__":
-    trains = asyncio.run(download_timetable(TIMETABLE_ID))
-    with open(OUT_PATH, "w", encoding="utf-8") as jsonfile:
+@click.command(
+    help="""
+Downloads a full timetable into a json file that can be reimported in OSRD operational studies.
+"""
+)
+@click.option("--editoast-url", "-e", default="https://dev-osrd.reseau.sncf.fr/")
+@click.option("--timetable-id", "-t", required=True, type=int)
+@click.option("--path", "-p", default="requirements.json")
+@click.option("--gateway-cookie", "-c", envvar="GATEWAY_COOKIE")
+@click.option("--page-size", "-s", default=100)
+def main(editoast_url, timetable_id, path, gateway_cookie, page_size):
+    trains = asyncio.run(
+        download_timetable(timetable_id, editoast_url, page_size, gateway_cookie)
+    )
+    with open(path, "w", encoding="utf-8") as jsonfile:
         json.dump(trains, jsonfile, ensure_ascii=False, indent=4)
-    print(f"dumped timetable {TIMETABLE_ID} to {OUT_PATH}")
-    print(f"{len(trains['train_schedules'])} trains, {len(trains['paced_trains'])} paced trains")
+    print(f"dumped timetable {timetable_id} to {path}")
+    print(
+        f"{len(trains['train_schedules'])} trains, {len(trains['paced_trains'])} paced trains"
+    )
+
+
+if __name__ == "__main__":
+    load_dotenv()
+    main()
