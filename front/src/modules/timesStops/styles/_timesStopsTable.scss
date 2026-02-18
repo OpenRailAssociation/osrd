@@ -4,10 +4,26 @@
     thead {
       th {
         background: color-mix(in srgb, var(--black100) 5%, var(--ambientB5) 100%);
+
+        .th-content {
+          overflow: hidden;
+          display: -webkit-box;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 2;
+          line-clamp: 2;
+          mask-image: linear-gradient(to right, black 80%, transparent 100%);
+        }
       }
     }
     tbody {
       tr {
+        height: 40px;
+        td {
+          max-height: 40px;
+          white-space: nowrap;
+          overflow: hidden;
+        }
+
         &:nth-child(odd) {
           background: var(--ambientB10);
         }
@@ -24,6 +40,11 @@
           background: var(--white50);
         }
       }
+      td {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
       &.invalid::after {
         position: absolute;
         top: 40px; // Hardcoding this is awful, but setting position: relative in tbody instead of table-container bugs borders in firefox
@@ -33,6 +54,7 @@
         height: calc(100% - 40px);
         width: 100%;
         pointer-events: none;
+        z-index: 1;
       }
     }
     td.col-index {
@@ -46,9 +68,13 @@
       text-align: left;
       padding-left: 8px;
 
+      div {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
       .secondary-code {
-        float: right;
-        padding-right: 16px;
         font-size: 0.875rem;
         color: var(--grey50);
       }
