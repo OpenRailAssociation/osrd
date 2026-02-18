@@ -291,7 +291,23 @@ class WorkerCommand : CliCommand {
                     var status: ByteArray
                     try {
                         span.makeCurrent().use { scope ->
-                            val response = endpoint.act(MQRequest(body))
+                            val getResponse = {
+                                // Only the STDCMEndpoint requires access to the queue for now.
+                                // This avoids systematically creating a channel that will almost
+                                // always be unused.
+                                if (endpoint.requiresQueueCtx()) {
+                                    it.createChannel().use { chan ->
+                                        endpoint.act(
+                                            MQRequest(body),
+                                            Take.QueueContext(chan, replyTo, correlationId),
+                                        )
+                                    }
+                                } else {
+                                    endpoint.act(MQRequest(body))
+                                }
+                            }
+
+                            val response = getResponse()
                             payload = response.body().toByteArray()
                             val statusCode = response.statusCode()
                             status =
@@ -318,7 +334,12 @@ class WorkerCommand : CliCommand {
                             AMQP.BasicProperties()
                                 .builder()
                                 .correlationId(correlationId)
-                                .headers(mapOf("x-status" to status))
+                                .headers(
+                                    mapOf(
+                                        "x-status" to status,
+                                        "x-non-terminating-response" to false,
+                                    )
+                                )
                                 .build()
                         channel.basicPublish("", replyTo, properties, payload)
                     }
@@ -401,7 +422,24 @@ interface Request {
 }
 
 interface Take {
-    fun act(req: Request): Response
+    data class QueueContext(val chan: Channel, val replyTo: String, val correlationId: String)
+
+    /**
+     * This function processes the `request` and returns a [Response].
+     *
+     * It can optionally take a [QueueContext] to publish messages to a RabbitMQ queue. An example
+     * can be found in the [STDCMEndpoint] class.
+     */
+    fun act(req: Request, ctx: QueueContext? = null): Response
+
+    /**
+     * This function is responsible for telling the caller whether the associated endpoint needs
+     * access to the queue. Since this is only used in STDCMEndpoint right now, it defaults to
+     * false.
+     */
+    fun requiresQueueCtx(): Boolean {
+        return false
+    }
 }
 
 interface Response {

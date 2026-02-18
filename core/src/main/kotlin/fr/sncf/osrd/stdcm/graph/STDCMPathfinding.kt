@@ -15,6 +15,7 @@ import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.stdcm.tracing.FailureExplainer
+import fr.sncf.osrd.stdcm.tracing.ProgressCallback
 import fr.sncf.osrd.stdcm.tracing.ProgressLogger
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.LogAggregator
@@ -61,6 +62,7 @@ fun findPath(
     allowedTrackSections: Set<TrackSectionId>? = null,
     searchMetadata: STDCMGraph.SearchMetadata? = null,
     failureExplainer: FailureExplainer? = null,
+    progressCallback: ProgressCallback? = null,
 ): STDCMResult? {
     return STDCMPathfinding(
             fullInfra,
@@ -79,6 +81,7 @@ fun findPath(
             allowedTrackSections,
             searchMetadata,
             failureExplainer,
+            progressCallback,
         )
         .findPath()
 }
@@ -100,6 +103,7 @@ class STDCMPathfinding(
     private val allowedTrackSections: Set<TrackSectionId>?,
     private val searchMetadata: STDCMGraph.SearchMetadata?,
     private val failureExplainer: FailureExplainer?,
+    private val progressCallback: ProgressCallback? = null,
 ) {
 
     private var starts: Set<STDCMNode> = HashSet()
@@ -202,7 +206,7 @@ class STDCMPathfinding(
     private fun findPathImpl(): Result? {
         val queue = PriorityQueue<STDCMNode>()
 
-        val progressLogger = ProgressLogger(graph)
+        val progressLogger = ProgressLogger(graph, callback = progressCallback)
         val fValueLogger = LogAggregator({ logger.error(it) })
 
         for (location in starts) {
