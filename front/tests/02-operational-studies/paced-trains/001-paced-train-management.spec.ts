@@ -64,9 +64,8 @@ const initialInputsData: CellData[] = readJsonFile(
   './tests/assets/operation-studies/times-and-stops/initial-inputs.json'
 );
 
-const expectedOutputData: StationData[] = readJsonFile(
-  './tests/assets/paced-train/output-table-data.json'
-);
+const expectedOutputData: { pacedTrain: StationData[]; secondOccurrence: StationData[] } =
+  readJsonFile('./tests/assets/paced-train/output-table-data.json');
 
 const trains: [PacedTrain] = readJsonFile('./tests/assets/trains/trains.json');
 
@@ -177,6 +176,14 @@ test.describe('@op @paced-trains', () => {
       await scenarioTimetableSection.verifyTimetableItemsCount(1);
     });
 
+    await test.step('Verify paced train is selected when clicked', async () => {
+      await pacedTrainSection.verifyPacedTrainSelected(0);
+    });
+
+    await test.step('Verify result in output table is paced train result', async () => {
+      await timeAndStopSimulationOutputs.getOutputTableData(expectedOutputData.pacedTrain);
+    });
+
     await test.step('Verify paced train card and first occurrence details', async () => {
       await pacedTrainSection.verifyPacedTrainItemDetails(NEW_PACED_TRAIN_SETTINGS, 0, {
         occurrenceData: ADD_PACED_TRAIN_OCCURRENCES_DETAILS[0],
@@ -185,14 +192,14 @@ test.describe('@op @paced-trains', () => {
     });
 
     await test.step('Open first occurrence and verify its simulation results (screenshot comparison for the GEV)', async () => {
-      await pacedTrainSection.selectOccurrence({ pacedTrainIndex: 0, occurrenceIndex: 0 });
+      await pacedTrainSection.selectOccurrence({ pacedTrainIndex: 0, occurrenceIndex: 1 });
       await opSimulationResultPage.setTrainListVisible();
       if (browserName === 'chromium') {
         await expect(opSimulationResultPage.speedSpaceChart).toHaveScreenshot(
           'SpeedSpaceChart-InitialInputs.png'
         );
       }
-      await timeAndStopSimulationOutputs.getOutputTableData(expectedOutputData);
+      await timeAndStopSimulationOutputs.getOutputTableData(expectedOutputData.secondOccurrence);
     });
   });
 
