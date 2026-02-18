@@ -338,6 +338,17 @@ const computeFocusState = (state: TimeState, section: Section): TimeState => ({
   hasTyped: state.empty || false,
 });
 
+const handleFocusedWithPrefill = (
+  state: TimeState,
+  section: Section,
+  prefillValue: Date
+): TimeState => ({
+  ...parseTimeState(prefillValue),
+  focusedSection: section,
+  empty: false,
+  hasTyped: state.empty || false,
+});
+
 const computeSectionClickState = (state: TimeState, section: Section): TimeState => ({
   ...state,
   focusedSection: section,
