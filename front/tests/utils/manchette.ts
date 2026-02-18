@@ -13,42 +13,9 @@ export type Waypoint = {
   checked?: boolean;
 };
 
-export const requestedDestination = frScenarioTranslations.requestedDestination;
-
 export function requestedPoint(number: string): string {
   return frScenarioTranslations.requestedPoint.replaceAll('{{ count }}', number);
 }
-
-export const expectedWaypointsPanelDataForUniqueTrain: Record<string, Partial<Waypoint>> = {
-  North_East_station: { ch: 'BV', offset: '0.0', checked: true },
-  Mid_East_station: { ch: 'BV', offset: '19.55', checked: true },
-  [requestedPoint('2')]: { offset: '22.47', checked: true },
-  Mid_West_station: { ch: 'BV', offset: '34.0', checked: true },
-  North_West_station: { ch: 'BC', offset: '47.55', checked: true },
-};
-
-export const expectedWaypointsPanelDataForPacedTrain: Record<string, Partial<Waypoint>> = {
-  North_East_station: { ch: 'BV', offset: '0.0', checked: true },
-  Mid_East_station: { ch: 'BV', offset: '19.55', checked: true },
-  [requestedPoint('1')]: { offset: '22.47', checked: true },
-  Mid_West_station: { ch: 'BV', offset: '34.0', checked: true },
-  North_West_station: { ch: 'BV', offset: '47.60', checked: true },
-  [requestedDestination]: { offset: '47.65', checked: true },
-};
-
-export const expectedWaypointsListDataForPacedTrain: Record<string, Partial<Waypoint>> = {
-  North_East_station: { ch: 'BV', offset: '0' },
-  [requestedPoint('1')]: { offset: '22.5' },
-  Mid_West_station: { ch: 'BV', offset: '34' },
-  [requestedDestination]: { offset: '47.7' },
-};
-
-export const expectedWaypointsListDataForUniqueTrain: Record<string, Partial<Waypoint>> = {
-  North_East_station: { ch: 'BV', offset: '0' },
-  Mid_East_station: { ch: 'BV', offset: '19.6' },
-  Mid_West_station: { ch: 'BV', offset: '34' },
-  North_West_station: { ch: 'BC', offset: '47.6' },
-};
 
 export function verifyWaypointsData(
   actualWaypoints: Waypoint[],

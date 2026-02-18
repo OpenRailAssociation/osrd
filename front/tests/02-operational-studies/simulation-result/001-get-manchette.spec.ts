@@ -12,16 +12,16 @@ import {
   EXCEPTION_ACTIVE_OCCURRENCE_MENU_BUTTONS,
 } from '../../assets/paced-train/const';
 import test from '../../page-object-fixture';
+import {
+  expectedWaypointsListDataForPacedTrain,
+  expectedWaypointsListDataForUniqueTrain,
+  expectedWaypointsPanelDataForPacedTrain,
+  expectedWaypointsPanelDataForUniqueTrain,
+} from '../../pages/operational-studies/std-manchette';
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
 import { getInfra, getProject, getStudy } from '../../utils/api-utils';
 import readJsonFile from '../../utils/file-utils';
-import {
-  expectedWaypointsListDataForUniqueTrain,
-  expectedWaypointsListDataForPacedTrain,
-  expectedWaypointsPanelDataForUniqueTrain,
-  expectedWaypointsPanelDataForPacedTrain,
-  verifyWaypointsData,
-} from '../../utils/manchette';
+import { verifyWaypointsData } from '../../utils/manchette';
 import createScenario from '../../utils/scenario';
 import sendTrains from '../../utils/send-trains';
 import { deleteScenario } from '../../utils/teardown-utils';
