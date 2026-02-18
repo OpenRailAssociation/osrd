@@ -3,6 +3,7 @@ import { expect, type Locator, type Page } from '@playwright/test';
 import OpSimulationResultPage from './simulation-results-page';
 import { getCleanText, isGreyed, isOverflowing } from '../../utils';
 import type { Waypoint } from '../../utils/manchette';
+import type { SimulationResultsTranslations } from '../../utils/types';
 
 class GetManchetteComponent extends OpSimulationResultPage {
   private readonly spaceTimeChartMenuButton: Locator;
@@ -29,6 +30,10 @@ class GetManchetteComponent extends OpSimulationResultPage {
   private readonly warpedMapButton: Locator;
   private readonly simulationWarpedMap: Locator;
   private readonly manchetteSpaceTimeDiagramRef: Locator;
+  private readonly hideWaypointMenuButton: Locator;
+  private readonly occupancyMenuButton: Locator;
+  private readonly closeTrackOccupancyPanelButton: Locator;
+  private readonly trackOccupancyManchette: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -57,10 +62,14 @@ class GetManchetteComponent extends OpSimulationResultPage {
     this.warpedMapButton = page.getByTestId('warped-map-button');
     this.simulationWarpedMap = page.getByTestId('simulation-warped-map');
     this.manchetteSpaceTimeDiagramRef = page.getByTestId('manchette-spacetimediagram-ref');
+    this.hideWaypointMenuButton = page.getByTestId('hide-waypoint-menu-button');
+    this.occupancyMenuButton = page.getByTestId('occupancy-menu-button');
+    this.closeTrackOccupancyPanelButton = page.getByTestId('close-track-occupancy-panel');
+    this.trackOccupancyManchette = page.getByTestId('track-occupancy-manchette');
   }
 
   private getWaypointNameListLocator(index: number): Locator {
-    return this.waypointsList.nth(index).getByTestId('waypoint-name');
+    return this.page.getByTestId('waypoint-name').nth(index);
   }
 
   private getWaypointChListLocator(index: number): Locator {
@@ -127,6 +136,7 @@ class GetManchetteComponent extends OpSimulationResultPage {
       })
     );
   }
+
   async getWaypointsListData(expectedCount: number): Promise<Waypoint[]> {
     await expect(this.waypointsList.first()).toBeVisible();
     await expect(this.waypointsList).toHaveCount(expectedCount);
@@ -191,6 +201,7 @@ class GetManchetteComponent extends OpSimulationResultPage {
       .poll(async () => Number(await this.speedSpaceChartRangerSlider.inputValue()))
       .toBeCloseTo(64); //("63.81344412635098 default value ")
   }
+
   async setRangeSliderValue(value: string): Promise<void> {
     await expect(this.speedSpaceChartRangerSlider).toBeVisible();
     await this.speedSpaceChartRangerSlider.fill(value);
@@ -228,6 +239,54 @@ class GetManchetteComponent extends OpSimulationResultPage {
     await this.manchetteKmModeButton.click();
     expect(await isGreyed(this.manchetteKmModeButton)).toBe(false);
     expect(await isGreyed(this.manchetteLinearModeButton)).toBe(true);
+  }
+
+  async openWayPointMenu(index = 0, isRequestedPoint = false) {
+    await this.getWaypointNameListLocator(index).click();
+    await expect(this.hideWaypointMenuButton).toBeVisible();
+    if (isRequestedPoint) {
+      await expect(this.occupancyMenuButton).toBeHidden();
+    } else {
+      await expect(this.occupancyMenuButton).toBeVisible();
+    }
+  }
+
+  async openTrackOccupancyPanel(index = 0, translations: SimulationResultsTranslations) {
+    await this.openWayPointMenu(index);
+    await expect(this.occupancyMenuButton).toHaveText(translations.waypointMenu.showOccupancy);
+    await this.occupancyMenuButton.click();
+    await expect(this.trackOccupancyManchette).toBeVisible();
+    await expect(this.closeTrackOccupancyPanelButton).toBeVisible();
+  }
+
+  async closeTrackOccupancyPanel(index = 0, translations: SimulationResultsTranslations) {
+    await this.openWayPointMenu(index);
+    await expect(this.occupancyMenuButton).toHaveText(translations.waypointMenu.hideOccupancy);
+    await this.occupancyMenuButton.click();
+    await expect(this.trackOccupancyManchette).toBeHidden();
+    await expect(this.closeTrackOccupancyPanelButton).toBeHidden();
+  }
+
+  async hideWaypoint(waypointIndex = 0, isRequestedPoint = false) {
+    await this.openWayPointMenu(waypointIndex, isRequestedPoint);
+    await this.hideWaypointMenuButton.click();
+  }
+
+  async verifyVisibleWaypointsCount(expectedWaypoints: number) {
+    await expect(this.waypointsList).toHaveCount(expectedWaypoints);
+  }
+
+  async verifyWaypointsCheckedState(expectedChecked: number, expectedTotal: number) {
+    const totalWaypoints = await this.waypointItems.count();
+    let checkedWaypoints = 0;
+
+    for (let index = 0; index < totalWaypoints; index++) {
+      const checkbox = this.getWaypointCheckboxLocator(index);
+      if (await checkbox.isChecked()) checkedWaypoints++;
+    }
+
+    expect(totalWaypoints, 'Total waypoint items').toBe(expectedTotal);
+    expect(checkedWaypoints, 'Checked waypoint items').toBe(expectedChecked);
   }
 }
 

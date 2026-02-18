@@ -279,6 +279,10 @@ export type RoundTripsModalTranslations = FlatTranslations & {
   roundTripsModal: FlatTranslations;
 };
 
+export type SimulationResultsTranslations = FlatTranslations & {
+  waypointMenu: FlatTranslations;
+};
+
 export type TimetableFilterTranslations = FlatTranslations & {
   timetable: FlatTranslations & {
     occurrenceType: FlatTranslations;
