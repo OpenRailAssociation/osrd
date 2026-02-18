@@ -47,7 +47,7 @@ class NoPathFoundException(val response: PathfindingBlockResponse) : Exception()
 val pathfindingLogger: Logger = LoggerFactory.getLogger("Pathfinding")
 
 class PathfindingBlocksEndpoint(private val infraManager: InfraProvider) : Take {
-    override fun act(req: Request): Response {
+    override fun act(req: Request, ctx: Take.QueueContext?): Response {
         val body = req.body()
         val request =
             pathfindingRequestAdapter.fromJson(body)

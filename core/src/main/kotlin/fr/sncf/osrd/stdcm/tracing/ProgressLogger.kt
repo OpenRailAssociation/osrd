@@ -1,5 +1,9 @@
 package fr.sncf.osrd.stdcm.tracing
 
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
 import fr.sncf.osrd.stdcm.graph.STDCMGraph
 import fr.sncf.osrd.stdcm.graph.STDCMNode
@@ -19,6 +23,7 @@ data class ProgressLogger(
     val graph: STDCMGraph,
     val nStepsProgress: Int = 10,
     val memoryReportTimeInterval: Duration = 10.seconds,
+    val callback: ProgressCallback?,
 ) {
     private val thresholdDistance = 1.0 / nStepsProgress.toDouble()
     private var nSamplesReached = 1 // Avoids first node
@@ -65,6 +70,8 @@ data class ProgressLogger(
             while (progress >= thresholdDistance * nSamplesReached) nSamplesReached++
         }
 
+        logNode(node)
+
         if (Instant.now() >= nextMemoryReport) {
             nextMemoryReport += java.time.Duration.ofMillis(memoryReportTimeInterval.milliseconds)
             val rt = Runtime.getRuntime()
@@ -79,4 +86,47 @@ data class ProgressLogger(
             logger.info(str)
         }
     }
+
+    fun logNode(node: STDCMNode): STDCMProgress {
+        val block = node.infraExplorer.getCurrentBlock()
+        val geo =
+            buildTrainPathFromBlock(graph.rawInfra, graph.blockInfra, block).getGeo().getPoints()[0]
+        val bestTravelTime =
+            (node.timeData.earliestReachableTime + node.remainingTimeEstimation).toLong()
+        val data =
+            STDCMProgress(
+                status = STDCMProgressStatus.IN_PROGRESS,
+                point = STDCMProgress.STDCMProgressSampleCoordinates(geo.lat, geo.lon),
+                bestTravelTime = bestTravelTime,
+            )
+
+        callback?.let { it(data) }
+        return data
+    }
 }
+
+data class STDCMProgress(
+    @Json(name = "status") val status: STDCMProgressStatus,
+    @Json(name = "point") val point: STDCMProgressSampleCoordinates,
+    @Json(name = "best_travel_time") val bestTravelTime: Long,
+) {
+    data class STDCMProgressSampleCoordinates(
+        @Json(name = "lat") val lat: Double,
+        @Json(name = "lon") val lon: Double,
+    )
+
+    companion object {
+        val adapter: JsonAdapter<STDCMProgress> =
+            Moshi.Builder()
+                .addLast(KotlinJsonAdapterFactory())
+                .build()
+                .adapter(STDCMProgress::class.java)
+    }
+}
+
+enum class STDCMProgressStatus {
+    IN_PROGRESS,
+    DONE,
+}
+
+typealias ProgressCallback = (STDCMProgress) -> Unit

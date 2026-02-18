@@ -131,7 +131,7 @@ class ReproduceRequest : CliCommand {
                 if (stdcmPayloadPath != null) {
                     logger.info("running stdcm request at $stdcmPayloadPath")
                     STDCMEndpoint(infraManager, cacheManager)
-                        .run(loadRequest(stdcmPayloadPath!!, stdcmRequestAdapter))
+                        .run(loadRequest(stdcmPayloadPath!!, stdcmRequestAdapter), null)
                 }
                 if (pathfindingPayloadPath != null) {
                     logger.info("running pathfinding request at $pathfindingPayloadPath")
