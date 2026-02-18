@@ -224,7 +224,7 @@ impl TrainSchedule {
     }
 
     /// Returns whether this train has paced occurrences.
-    fn is_paced(&self) -> bool {
+    pub fn is_paced(&self) -> bool {
         self.time_window.is_some() && self.interval.is_some()
     }
 
