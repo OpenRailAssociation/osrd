@@ -369,7 +369,7 @@ pub(in crate::views) async fn conflicts(
             let simulation::Response::Success(simulation) = simulation.as_ref() else {
                 return None;
             };
-            let respect_times = simulation::SimulationResponseSuccess::path_item_respect_times(
+            let respect_times = simulation::path_item_respect_times(
                 &simulation.final_output.report_train.path_item_times,
                 &train_schedule,
             )
