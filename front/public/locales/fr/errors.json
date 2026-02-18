@@ -154,7 +154,7 @@
       "ExceptionNotFound": "Exception '{{exception_key}}' non trouvée",
       "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
       "NotFound": "Mission '{{paced_train_id}}' non trouvée",
-      "OperationalPointNotFound": "Point remarquable '{{operational_point_id}}' non trouvé",
+      "OperationalPointNotFound": "Point remarquable '{{reference}}' non trouvé",
       "PathfindingFailed": "La recherche de chemin n'a pas abouti pour la mission '{{paced_train_id}}'",
       "RollingStockNotFound": "Matériel roulant '{{rolling_stock_name}}' non trouvé",
       "SimulationFailed": "La simulation n'a pas abouti pour la mission '{{paced_train_id}}'",

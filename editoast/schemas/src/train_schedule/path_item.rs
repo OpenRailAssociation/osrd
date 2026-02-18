@@ -75,3 +75,27 @@ pub enum OperationalPointReference {
         secondary_code: Option<String>,
     },
 }
+
+impl std::fmt::Display for OperationalPointReference {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Id { operational_point } => write!(f, "id:{operational_point}"),
+            Self::Trigram {
+                trigram,
+                secondary_code: None,
+            } => write!(f, "trigram:{trigram}"),
+            Self::Trigram {
+                trigram,
+                secondary_code: Some(secondary_code),
+            } => write!(f, "trigram:{trigram}:{secondary_code}"),
+            Self::Uic {
+                uic,
+                secondary_code: None,
+            } => write!(f, "uic:{uic}"),
+            Self::Uic {
+                uic,
+                secondary_code: Some(secondary_code),
+            } => write!(f, "uic:{uic}:{secondary_code}"),
+        }
+    }
+}

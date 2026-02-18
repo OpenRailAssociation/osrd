@@ -23,6 +23,7 @@ use reqwest::StatusCode;
 use schemas::paced_train::TrainSchedule;
 use schemas::primitives::TimeWindow;
 use schemas::train_schedule::OperationalPointPartReference;
+use schemas::train_schedule::OperationalPointReference;
 use schemas::train_schedule::PathItemLocation;
 use serde::Deserialize;
 use serde::Serialize;
@@ -79,9 +80,11 @@ enum PacedTrainError {
     #[error("Exception '{exception_key}', could not be found")]
     #[editoast_error(status = 404)]
     ExceptionNotFound { exception_key: String },
-    #[error("Operational point '{operational_point_id}', could not be found")]
+    #[error("Operational point '{reference}' could not be found")]
     #[editoast_error(status = 404)]
-    OperationalPointNotFound { operational_point_id: String },
+    OperationalPointNotFound {
+        reference: OperationalPointReference,
+    },
     #[error("Rolling stock '{rolling_stock_name}', could not be found")]
     #[editoast_error(status = 404)]
     RollingStockNotFound { rolling_stock_name: String },
@@ -1196,7 +1199,7 @@ pub(in crate::views) async fn occupancy_blocks(
 #[schema(as = PacedTrainTrackOccupancyForm)]
 pub(in crate::views) struct TrackOccupancyForm {
     paced_train_ids: Vec<i64>,
-    operational_point_id: String,
+    operational_point_reference: OperationalPointReference,
     infra_id: i64,
     electrical_profile_set_id: Option<i64>,
     use_simulation: bool,
@@ -1213,6 +1216,33 @@ pub(in crate::views) struct TrackOccupancy {
     time_window: TimeWindow,
 }
 
+#[derive(Debug, Serialize, ToSchema)]
+#[serde(tag = "type", rename_all = "snake_case")]
+#[cfg_attr(test, derive(Deserialize, PartialEq))]
+pub(in crate::views) enum TrackReference {
+    TrackId {
+        id: String,
+    },
+    #[cfg_attr(not(test), expect(dead_code))]
+    TrackName {
+        name: String,
+    },
+}
+
+#[derive(Debug, Serialize, ToSchema)]
+#[cfg_attr(test, derive(Deserialize))]
+pub(in crate::views) struct TrackSectionOccupancy {
+    /// Which track section the train is on at the queried operational point.
+    ///
+    /// - `null`: no track could be determined (trains are in no-simulation, no `local_track_name`)
+    /// - `track_id`: track resolved via pathfinding or `local_track_name` lookup
+    /// - `track_name`: `local_track_name` given but not matched to any track ID
+    #[schema(inline)]
+    track_reference: Option<TrackReference>,
+    #[schema(inline)]
+    trains: Vec<TrackOccupancy>,
+}
+
 #[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
@@ -1220,7 +1250,7 @@ pub(in crate::views) struct TrackOccupancy {
     request_body = inline(TrackOccupancyForm),
     responses(
         (status = 200, description = "Track section occupancy periods for paced trains",
-         body = inline(HashMap<String, Vec<TrackOccupancy>>)),
+         body = inline(Vec<TrackSectionOccupancy>)),
     ),
 )]
 pub(in crate::views) async fn track_occupancy(
@@ -1234,12 +1264,12 @@ pub(in crate::views) async fn track_occupancy(
     Extension(auth): AuthenticationExt,
     Json(TrackOccupancyForm {
         paced_train_ids,
-        operational_point_id,
+        operational_point_reference,
         infra_id,
         electrical_profile_set_id,
         use_simulation,
     }): Json<TrackOccupancyForm>,
-) -> Result<Json<HashMap<String, Vec<TrackOccupancy>>>> {
+) -> Result<Json<Vec<TrackSectionOccupancy>>> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())
         .await
@@ -1272,14 +1302,8 @@ pub(in crate::views) async fn track_occupancy(
         .await?;
 
     // Get the operational point
-    let operational_point = models::OperationalPointModel::retrieve_or_fail(
-        db_pool.get().await?,
-        (infra_id, operational_point_id.clone()),
-        || PacedTrainError::OperationalPointNotFound {
-            operational_point_id: operational_point_id.clone(),
-        },
-    )
-    .await?;
+    let operational_point =
+        get_operational_point(db_pool.clone(), infra_id, operational_point_reference).await?;
 
     // Collect all occurrences from all paced trains using iter_occurrences()
     let (train_ids, trains): (Vec<_>, Vec<_>) = paced_trains
@@ -1315,7 +1339,7 @@ pub(in crate::views) async fn track_occupancy(
         izip!(train_ids, trains, simulations_result)
             .flat_map(|(train_id, train, (simulation, pathfinding))| {
                 track_occupancy::find_track_occupancy_for_operational_point(
-                    &operational_point_id,
+                    &operational_point.obj_id,
                     &operational_point_track_offsets,
                     &op_cache,
                     &simulation,
@@ -1344,7 +1368,7 @@ pub(in crate::views) async fn track_occupancy(
         izip!(train_ids, trains)
             .flat_map(|(train_id, train_schedule)| {
                 track_occupancy::find_track_occupancy_for_operational_point_without_simulation(
-                    &operational_point_id,
+                    &operational_point.obj_id,
                     &operational_point_track_offsets,
                     &op_cache,
                     &train_schedule,
@@ -1370,15 +1394,81 @@ pub(in crate::views) async fn track_occupancy(
     };
 
     // Group occupancies by track section
-    let results: HashMap<String, Vec<TrackOccupancy>> =
-        all_occupancies
-            .into_iter()
-            .fold(HashMap::new(), |mut map, (track_section, occupancy)| {
-                map.entry(track_section).or_default().push(occupancy);
-                map
-            });
+    let results: Vec<TrackSectionOccupancy> = all_occupancies
+        .into_iter()
+        .into_group_map()
+        .into_iter()
+        .map(|(track_reference, trains)| TrackSectionOccupancy {
+            track_reference: Some(TrackReference::TrackId {
+                id: track_reference,
+            }),
+            trains,
+        })
+        .collect();
 
     Ok(Json(results))
+}
+
+async fn get_operational_point(
+    db_pool: Arc<DbConnectionPoolV2>,
+    infra_id: i64,
+    operational_point_reference: OperationalPointReference,
+) -> Result<models::OperationalPointModel> {
+    match &operational_point_reference {
+        OperationalPointReference::Id { operational_point } => {
+            models::OperationalPointModel::retrieve_or_fail(
+                db_pool.get().await?,
+                (infra_id, operational_point.to_string()),
+                || {
+                    PacedTrainError::OperationalPointNotFound {
+                        reference: operational_point_reference.clone(),
+                    }
+                    .into()
+                },
+            )
+            .await
+        }
+        OperationalPointReference::Trigram {
+            trigram,
+            secondary_code,
+        } => models::OperationalPointModel::retrieve_from_trigrams(
+            &mut db_pool.get().await?,
+            infra_id,
+            &[trigram.to_string()],
+        )
+        .await
+        .map_err(|e| PacedTrainError::Database(e.into()))?
+        .into_iter()
+        .find(|op| {
+            op.schema.extensions.sncf.as_ref().map(|s| s.ch.as_str()) == secondary_code.as_deref()
+        })
+        .ok_or_else(|| {
+            PacedTrainError::OperationalPointNotFound {
+                reference: operational_point_reference.clone(),
+            }
+            .into()
+        }),
+        OperationalPointReference::Uic {
+            uic,
+            secondary_code,
+        } => models::OperationalPointModel::retrieve_from_uic(
+            &mut db_pool.get().await?,
+            infra_id,
+            &[*uic],
+        )
+        .await
+        .map_err(|e| PacedTrainError::Database(e.into()))?
+        .into_iter()
+        .find(|op| {
+            op.schema.extensions.sncf.as_ref().map(|s| s.ch.as_str()) == secondary_code.as_deref()
+        })
+        .ok_or_else(|| {
+            PacedTrainError::OperationalPointNotFound {
+                reference: operational_point_reference.clone(),
+            }
+            .into()
+        }),
+    }
 }
 
 #[cfg_attr(test, derive(serde::Serialize))]
@@ -1507,6 +1597,7 @@ mod tests {
     use schemas::paced_train::TrainSchedule;
     use schemas::rolling_stock::TrainCategory;
     use schemas::train_schedule::Comfort;
+    use schemas::train_schedule::OperationalPointReference;
     use schemas::train_schedule::PathItem;
     use schemas::train_schedule::ScheduleItem;
     use schemas::train_schedule::TrainOccurrence;
@@ -1534,8 +1625,9 @@ mod tests {
     use crate::views::timetable::paced_train::OccupancyBlocksPacedTrainResult;
     use crate::views::timetable::paced_train::PacedTrainSummaryResponse;
     use crate::views::timetable::paced_train::ProjectPathPacedTrainResult;
-    use crate::views::timetable::paced_train::TrackOccupancy;
     use crate::views::timetable::paced_train::TrackOccupancyForm;
+    use crate::views::timetable::paced_train::TrackReference;
+    use crate::views::timetable::paced_train::TrackSectionOccupancy;
     use crate::views::timetable::paced_train::TrainScheduleResponse;
     use crate::views::timetable::simulation;
     use crate::views::timetable::simulation::SimulationResponseSuccess;
@@ -2513,7 +2605,7 @@ mod tests {
 
     async fn init_paced_train_test(
         exceptions: Vec<PacedTrainException>,
-        operational_point_id: String,
+        operational_point_reference: OperationalPointReference,
     ) -> TestResponse {
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
@@ -2553,7 +2645,7 @@ mod tests {
             .post("/paced_train/track_occupancy")
             .json(&TrackOccupancyForm {
                 paced_train_ids: vec![paced_train.id],
-                operational_point_id,
+                operational_point_reference,
                 infra_id: small_infra.id,
                 electrical_profile_set_id: None,
                 use_simulation: true,
@@ -2573,24 +2665,37 @@ mod tests {
         #[case] exceptions: Vec<PacedTrainException>,
         #[case] paced_trains: usize,
     ) {
-        let response = init_paced_train_test(exceptions, "Mid_West_station".to_string());
-        let track_occupancies: HashMap<String, Vec<TrackOccupancy>> =
+        let response = init_paced_train_test(
+            exceptions,
+            OperationalPointReference::Id {
+                operational_point: "Mid_West_station".into(),
+            },
+        );
+        let track_occupancies: Vec<TrackSectionOccupancy> =
             response.await.assert_status(StatusCode::OK).json_into();
 
         assert_eq!(track_occupancies.len(), 1);
-        assert_eq!(
-            track_occupancies
-                .get("TC1")
-                .expect("Expected track occupancies for TC1 but none were found")
-                .len(),
-            paced_trains
-        );
+        let tc1_item = track_occupancies
+            .iter()
+            .find(|x| {
+                x.track_reference
+                    == Some(TrackReference::TrackId {
+                        id: "TC1".to_string(),
+                    })
+            })
+            .expect("TC1 track reference not found");
+        assert_eq!(tc1_item.trains.len(), paced_trains);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn paced_train_returns_empty_track_occupancies() {
-        let response = init_paced_train_test(Vec::new(), "West_station".to_string());
-        let track_occupancies: HashMap<String, Vec<TrackOccupancy>> =
+        let response = init_paced_train_test(
+            Vec::new(),
+            OperationalPointReference::Id {
+                operational_point: "West_station".into(),
+            },
+        );
+        let track_occupancies: Vec<TrackSectionOccupancy> =
             response.await.assert_status(StatusCode::OK).json_into();
 
         assert!(track_occupancies.is_empty());
