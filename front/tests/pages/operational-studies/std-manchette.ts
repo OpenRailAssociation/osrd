@@ -36,3 +36,18 @@ export const expectedWaypointsListDataForUniqueTrain: Record<string, Partial<Way
   Mid_West_station: { ch: 'BV', offset: '34' },
   North_West_station: { ch: 'BC', offset: '47.6' },
 };
+
+export const WAYPOINT_CHECKBOX_STATE = { checked: 3, total: 5 };
+export const STD_MANCHETTE = {
+  occupancyWaypointIndex: 1,
+  requestedWaypointIndex: 2,
+  normalWaypointIndex: 3,
+
+  initialVisibleWaypoints: 4,
+  visibleAfterHidingRequested: 3,
+
+  waypointPanel: {
+    expectedChecked: 3,
+    expectedTotal: 5,
+  },
+};
