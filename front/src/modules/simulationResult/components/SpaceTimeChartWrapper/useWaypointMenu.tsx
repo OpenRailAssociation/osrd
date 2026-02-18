@@ -58,6 +58,7 @@ const useWaypointMenu = (
 
   const menuItems: OSRDMenuItem[] = [
     {
+      dataTestID: 'hide-waypoint-menu-button',
       title: t('simulationResults.waypointMenu.hide'),
       icon: <EyeClosed />,
       disabled: filteredWaypoints ? filteredWaypoints.length <= 2 : false,
@@ -70,7 +71,7 @@ const useWaypointMenu = (
           );
 
           // TODO : when switching to the manchette back-end manager, remove all logic using
-          // cleanScenarioLocalStorage from projet/study/scenario components (single/multi select)
+          // cleanScenarioLocalStorage from project/study/scenario components (single/multi select)
           localStorage.setItem(
             getWaypointsLocalStorageKey(timetableId, projectionPath),
             JSON.stringify(newFilteredWaypoints)
@@ -98,6 +99,7 @@ const useWaypointMenu = (
       const isDeployed = deployedWaypoints.has(activeWaypointId);
 
       menuItems.push({
+        dataTestID: 'occupancy-menu-button',
         disabled: pathfindingHasFailed || (!isDeployed && !allTrainsProjected),
         title: isDeployed
           ? t('simulationResults.waypointMenu.hideOccupancy')
