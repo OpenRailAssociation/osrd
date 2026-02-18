@@ -37,26 +37,20 @@ const Waypoint = ({
   >
     {!hidePositions && (
       <div
-        data-testid={testIdPrefix ? `${testIdPrefix}-position` : undefined}
+        data-testid="waypoint-position"
         className="waypoint-position justify-self-start text-end"
       >
         {positionMmToKm(position)}
       </div>
     )}
 
-    <div
-      data-testid={testIdPrefix ? `${testIdPrefix}-name` : undefined}
-      className="waypoint-name mx-2 justify-self-start"
-    >
+    <div data-testid="waypoint-name" className="waypoint-name mx-2 justify-self-start">
       {name}
     </div>
     <div className="waypoint-separator" />
     {secondaryCode && (
       <>
-        <div
-          data-testid={testIdPrefix ? `${testIdPrefix}-ch` : undefined}
-          className="waypoint-ch font-mono justify-self-end"
-        >
+        <div data-testid="waypoint-ch" className="waypoint-ch font-mono justify-self-end">
           {secondaryCode}
         </div>
         <div className="waypoint-separator" />
