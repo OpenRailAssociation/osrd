@@ -33,7 +33,6 @@ async def download_timetable(
     paced_trains = []
     for paced_train in raw_paced_trains:
         del paced_train["id"]
-        del paced_train["timetable_id"]
         paced_trains.append(paced_train)
     return {
         "train_schedules": [],
