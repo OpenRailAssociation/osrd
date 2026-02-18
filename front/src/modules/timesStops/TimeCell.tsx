@@ -34,6 +34,7 @@ type TimeAction =
   | { type: 'ENTER_PRESSED' }
   | { type: 'SECTION_CLICKED'; section: Section }
   | { type: 'FOCUSED'; section: Section }
+  | { type: 'FOCUSED_WITH_PREFILL'; section: Section; prefillValue: Date }
   | { type: 'LEFT_ARROW_PRESSED' }
   | { type: 'RIGHT_ARROW_PRESSED' }
   | { type: 'BLURRED' }
@@ -329,6 +330,17 @@ const handleFocused = (state: TimeState, section: Section): TimeState => ({
   hasTyped: state.empty || false,
 });
 
+const handleFocusedWithPrefill = (
+  state: TimeState,
+  section: Section,
+  prefillValue: Date
+): TimeState => ({
+  ...parseTimeState(prefillValue),
+  focusedSection: section,
+  empty: false,
+  hasTyped: state.empty || false,
+});
+
 const handleSectionClicked = (state: TimeState, section: Section): TimeState => ({
   ...state,
   focusedSection: section,
@@ -387,6 +399,8 @@ const timeReducer = (state: TimeState, action: TimeAction): TimeState => {
       return handleBlurred(state);
     case 'FOCUSED':
       return handleFocused(state, action.section);
+    case 'FOCUSED_WITH_PREFILL':
+      return handleFocusedWithPrefill(state, action.section, action.prefillValue);
     case 'SECTION_CLICKED':
       return handleSectionClicked(state, action.section);
     case 'ENTER_PRESSED':
@@ -454,10 +468,19 @@ type TimeCellProps = CellContext<TimesStopsRowNew, Date | null> &
   React.InputHTMLAttributes<HTMLInputElement> & {
     /** Reference date used as the calendar day base. If the entered time is before this date, the next day is assumed. */
     referenceDate?: Date;
+    /** When the cell is empty, pre-fill the input with this value when the user focuses to edit. */
+    computedValue?: Date | null;
     onCommit?: (date: Date | null) => void;
   };
 
-const TimeCell = ({ getValue, referenceDate, onCommit, ...props }: TimeCellProps) => {
+const TimeCell = ({
+  getValue,
+  referenceDate,
+  computedValue,
+  onCommit,
+  disabled,
+  ...props
+}: TimeCellProps) => {
   const { onKeyDown, onBlur, onFocus, onChange, ...userProps } = props || {};
 
   const controlledValue = getValue();
@@ -519,6 +542,10 @@ const TimeCell = ({ getValue, referenceDate, onCommit, ...props }: TimeCellProps
   };
 
   const handlePlaceholderClick = () => {
+    if (disabled) return;
+    if (state.empty && computedValue) {
+      dispatch({ type: 'FOCUSED_WITH_PREFILL', section: 'minutes', prefillValue: computedValue });
+    }
     inputRef.current?.focus();
   };
 
@@ -526,6 +553,11 @@ const TimeCell = ({ getValue, referenceDate, onCommit, ...props }: TimeCellProps
     let section: Section;
     if (state.empty) {
       section = 'minutes';
+      if (computedValue) {
+        dispatch({ type: 'FOCUSED_WITH_PREFILL', section, prefillValue: computedValue });
+        onFocus?.(e);
+        return;
+      }
     } else {
       const position = e.currentTarget.selectionStart || 0;
       section = getSectionFromPosition(position);
