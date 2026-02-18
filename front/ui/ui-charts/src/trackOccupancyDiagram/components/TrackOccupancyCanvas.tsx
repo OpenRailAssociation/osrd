@@ -12,6 +12,7 @@ const CloseButton = ({ position, onClose }: { position: number; onClose: () => v
 
   return (
     <button
+      data-testid="close-track-occupancy-panel"
       className="close-track-occupancy-panel"
       onClick={() => onClose()}
       style={{

@@ -4,7 +4,7 @@ import { TRACK_HEIGHT_CONTAINER } from '../lib/consts';
 import type { Track } from '../lib/types';
 
 const TrackOccupancyManchette = ({ tracks, children }: PropsWithChildren<{ tracks: Track[] }>) => (
-  <div className="track-occupancy-manchette">
+  <div data-testid="track-occupancy-manchette" className="track-occupancy-manchette">
     {children}
     {tracks.map((track) => (
       // height is shared between manchette and canvas components
