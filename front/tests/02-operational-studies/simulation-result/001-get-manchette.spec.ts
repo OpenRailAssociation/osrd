@@ -17,6 +17,8 @@ import {
   expectedWaypointsListDataForUniqueTrain,
   expectedWaypointsPanelDataForPacedTrain,
   expectedWaypointsPanelDataForUniqueTrain,
+  STD_MANCHETTE,
+  WAYPOINT_CHECKBOX_STATE,
 } from '../../pages/operational-studies/std-manchette';
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
 import { getInfra, getProject, getStudy } from '../../utils/api-utils';
@@ -29,6 +31,7 @@ import type {
   CommonTranslations,
   ManageTimetableItemTranslations,
   TimetableFilterTranslations,
+  SimulationResultsTranslations,
 } from '../../utils/types';
 
 const frManageTimetableItemTranslations: ManageTimetableItemTranslations = readJsonFile<{
@@ -39,10 +42,15 @@ const frScenarioTranslations: TimetableFilterTranslations = readJsonFile<{
   main: TimetableFilterTranslations;
 }>('public/locales/fr/operational-studies.json').main;
 
+const frSimulationResultTranslations: SimulationResultsTranslations = readJsonFile<{
+  simulationResults: SimulationResultsTranslations;
+}>('public/locales/fr/operational-studies.json').simulationResults;
+
 const frCommonTranslations: CommonTranslations = readJsonFile('public/locales/fr/translation.json');
 const frTranslations = {
   ...frManageTimetableItemTranslations,
   ...frScenarioTranslations,
+  ...frSimulationResultTranslations,
   ...frCommonTranslations,
 };
 
@@ -115,6 +123,38 @@ test.describe('@op @manchette @std', () => {
 
     await test.step('Zoom controls on Manchette', async () => {
       await getManchetteComponent.zoomInAndResetManchette();
+    });
+
+    await test.step('Tracks occupancy panel can open/close', async () => {
+      await getManchetteComponent.openTrackOccupancyPanel(
+        STD_MANCHETTE.occupancyWaypointIndex,
+        frTranslations
+      );
+      await getManchetteComponent.closeTrackOccupancyPanel(
+        STD_MANCHETTE.occupancyWaypointIndex,
+        frTranslations
+      );
+    });
+
+    await test.step('Show and hide waypoints', async () => {
+      await getManchetteComponent.verifyVisibleWaypointsCount(
+        STD_MANCHETTE.initialVisibleWaypoints
+      );
+      await getManchetteComponent.hideWaypoint(STD_MANCHETTE.normalWaypointIndex);
+      // After hiding the normal waypoint the requested point is displayed instead
+      await getManchetteComponent.verifyVisibleWaypointsCount(
+        STD_MANCHETTE.initialVisibleWaypoints
+      );
+      await getManchetteComponent.hideWaypoint(STD_MANCHETTE.requestedWaypointIndex, true);
+      await getManchetteComponent.verifyVisibleWaypointsCount(
+        STD_MANCHETTE.visibleAfterHidingRequested
+      );
+      await getManchetteComponent.openManchettePanel();
+      await getManchetteComponent.verifyWaypointsCheckedState(
+        WAYPOINT_CHECKBOX_STATE.checked,
+        WAYPOINT_CHECKBOX_STATE.total
+      );
+      await getManchetteComponent.closeWaypointPanel();
     });
   });
 
