@@ -54,7 +54,7 @@ function getTimeToPosition(
 export function getMovableOccupancyZone(
   trackId: string,
   trainId: TrainId,
-  occupation: PostPacedTrainTrackOccupancyApiResponse[string][number],
+  occupation: PostPacedTrainTrackOccupancyApiResponse[number]['trains'][number],
   spaceTimeCurves: BaseTrainProjection['spaceTimeCurves'],
   trainName: string,
   departureTime: Date,

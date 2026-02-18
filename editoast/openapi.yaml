@@ -2486,7 +2486,7 @@ paths:
               type: object
               required:
               - paced_train_ids
-              - operational_point_id
+              - operational_point_reference
               - infra_id
               - use_simulation
               properties:
@@ -2498,8 +2498,8 @@ paths:
                 infra_id:
                   type: integer
                   format: int64
-                operational_point_id:
-                  type: string
+                operational_point_reference:
+                  $ref: '#/components/schemas/OperationalPointReference'
                 paced_train_ids:
                   type: array
                   items:
@@ -2514,76 +2514,111 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties:
-                  type: array
-                  items:
-                    allOf:
-                    - oneOf:
-                      - type: object
-                        required:
-                        - id
-                        - index
-                        - type
-                        properties:
-                          id:
-                            type: integer
-                            format: int64
-                          index:
-                            type: integer
-                            minimum: 0
-                          type:
-                            type: string
-                            enum:
-                            - base
-                      - type: object
-                        required:
-                        - id
-                        - index
-                        - exception_key
-                        - type
-                        properties:
-                          exception_key:
-                            type: string
-                          id:
-                            type: integer
-                            format: int64
-                          index:
-                            type: integer
-                            minimum: 0
-                          type:
-                            type: string
-                            enum:
-                            - modified
-                      - type: object
-                        required:
-                        - id
-                        - exception_key
-                        - type
-                        properties:
-                          exception_key:
-                            type: string
-                          id:
-                            type: integer
-                            format: int64
-                          type:
-                            type: string
-                            enum:
-                            - created
-                      description: This ID is used to identify paced train occurrences and exceptions when sending them to the core API for conflict detection.
-                    - type: object
-                      required:
-                      - time_begin
-                      - duration
-                      properties:
-                        duration:
-                          type: string
-                          example: PT5M
-                        time_begin:
-                          type: string
-                          format: date-time
-                propertyNames:
-                  type: string
+                type: array
+                items:
+                  type: object
+                  required:
+                  - trains
+                  properties:
+                    track_reference:
+                      oneOf:
+                      - type: 'null'
+                      - oneOf:
+                        - type: object
+                          required:
+                          - id
+                          - type
+                          properties:
+                            id:
+                              type: string
+                            type:
+                              type: string
+                              enum:
+                              - track_id
+                        - type: object
+                          required:
+                          - name
+                          - type
+                          properties:
+                            name:
+                              type: string
+                            type:
+                              type: string
+                              enum:
+                              - track_name
+                      description: |-
+                        Which track section the train is on at the queried operational point.
+
+                        - `null`: no track could be determined (trains are in no-simulation, no `local_track_name`)
+                        - `track_id`: track resolved via pathfinding or `local_track_name` lookup
+                        - `track_name`: `local_track_name` given but not matched to any track ID
+                    trains:
+                      type: array
+                      items:
+                        allOf:
+                        - oneOf:
+                          - type: object
+                            required:
+                            - id
+                            - index
+                            - type
+                            properties:
+                              id:
+                                type: integer
+                                format: int64
+                              index:
+                                type: integer
+                                minimum: 0
+                              type:
+                                type: string
+                                enum:
+                                - base
+                          - type: object
+                            required:
+                            - id
+                            - index
+                            - exception_key
+                            - type
+                            properties:
+                              exception_key:
+                                type: string
+                              id:
+                                type: integer
+                                format: int64
+                              index:
+                                type: integer
+                                minimum: 0
+                              type:
+                                type: string
+                                enum:
+                                - modified
+                          - type: object
+                            required:
+                            - id
+                            - exception_key
+                            - type
+                            properties:
+                              exception_key:
+                                type: string
+                              id:
+                                type: integer
+                                format: int64
+                              type:
+                                type: string
+                                enum:
+                                - created
+                          description: This ID is used to identify paced train occurrences and exceptions when sending them to the core API for conflict detection.
+                        - type: object
+                          required:
+                          - time_begin
+                          - duration
+                          properties:
+                            duration:
+                              type: string
+                              example: PT5M
+                            time_begin:
+                              type: string
+                              format: date-time
   /paced_train/{id}:
     get:
       tags:
@@ -6980,10 +7015,10 @@ components:
         context:
           type: object
           required:
-          - operational_point_id
+          - reference
           properties:
-            operational_point_id:
-              type: string
+            reference:
+              type: object
         message:
           type: string
         status:

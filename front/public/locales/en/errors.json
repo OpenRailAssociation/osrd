@@ -154,7 +154,7 @@
       "ExceptionNotFound": "Exception '{{exception_key}}' could not be found",
       "InfraNotFound": "Infrastructure '{{infra_id}}' could not be found",
       "NotFound": "Paced train '{{paced_train_id}}' could not be found",
-      "OperationalPointNotFound": "Operational point '{{operational_point_id}}' could not be found",
+      "OperationalPointNotFound": "Operational point '{{reference}}' could not be found",
       "PathfindingFailed": "Pathfinding failed for paced train '{{paced_train_id}}'",
       "RollingStockNotFound": "Rolling Stock '{{rolling_stock_name}}' could not be found",
       "SimulationFailed": "Simulation failed for paced train '{{paced_train_id}}'",

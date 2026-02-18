@@ -2044,7 +2044,24 @@ export type PostPacedTrainSimulationSummaryApiArg = {
 };
 export type PostPacedTrainTrackOccupancyApiResponse =
   /** status 200 Track section occupancy periods for paced trains */ {
-    [key: string]: ((
+    /** Which track section the train is on at the queried operational point.
+    
+    - `null`: no track could be determined (trains are in no-simulation, no `local_track_name`)
+    - `track_id`: track resolved via pathfinding or `local_track_name` lookup
+    - `track_name`: `local_track_name` given but not matched to any track ID */
+    track_reference?:
+      | null
+      | (
+          | {
+              id: string;
+              type: 'track_id';
+            }
+          | {
+              name: string;
+              type: 'track_name';
+            }
+        );
+    trains: ((
       | {
           id: number;
           index: number;
@@ -2065,12 +2082,12 @@ export type PostPacedTrainTrackOccupancyApiResponse =
       duration: string;
       time_begin: string;
     })[];
-  };
+  }[];
 export type PostPacedTrainTrackOccupancyApiArg = {
   body: {
     electrical_profile_set_id?: number | null;
     infra_id: number;
-    operational_point_id: string;
+    operational_point_reference: OperationalPointReference;
     paced_train_ids: number[];
     use_simulation: boolean;
   };
