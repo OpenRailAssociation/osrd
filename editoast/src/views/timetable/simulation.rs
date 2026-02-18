@@ -122,7 +122,7 @@ pub fn path_item_respect_margins<T: TrainScheduleLike>(
     path_item_times_provisional: &[u64],
     train_schedule: &T,
 ) -> Vec<bool> {
-    let margin_boundary_set = &*train_schedule.margins().boundaries;
+    let margin_boundary_set = train_schedule.margins().boundaries.as_slice();
 
     let path_item_id_to_index: HashMap<&NonBlankString, usize> = train_schedule
         .path()
