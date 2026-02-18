@@ -247,6 +247,15 @@ fn service_router() -> router::DocumentedRouter {
                             })
                     })
             })
+            //
+            // train schedule exception
+            //
+            .nests("/train_schedule_exception", |path| {
+                path.route(
+                    "/{id}",
+                    delete!(timetable::train_schedule_exceptions::delete),
+                )
+            })
             .route(
                 "/similar_trains",
                 post!(timetable::similar_trains::similar_trains),

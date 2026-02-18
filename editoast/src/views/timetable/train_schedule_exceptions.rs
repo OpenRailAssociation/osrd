@@ -5,6 +5,7 @@ use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
+use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
@@ -27,6 +28,8 @@ use crate::views::AuthorizationError;
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "train_schedule_exception")]
 pub enum TrainScheduleExceptionError {
+    #[error("Train schedule exception ’{exception_id}’ could not be found")]
+    NotFound { exception_id: i64 },
     #[error("Timetable '{timetable_id}' not found")]
     #[editoast_error(status = 404)]
     TimetableNotFound { timetable_id: i64 },
@@ -43,6 +46,11 @@ pub enum TrainScheduleExceptionError {
 #[derive(IntoParams, Deserialize)]
 pub(in crate::views) struct TimetableIdParam {
     /// A timetable ID
+    pub id: i64,
+}
+#[derive(IntoParams, Deserialize)]
+pub(in crate::views) struct TrainScheduleExceptionIdParam {
+    /// A train schedule exception ID
     pub id: i64,
 }
 
@@ -116,6 +124,39 @@ pub(in crate::views) async fn create_train_schedule_exception(
         .into();
 
     Ok(Json(train_schedule_exception))
+}
+
+/// Delete a train schedule exception
+#[editoast_derive::route]
+#[utoipa::path(
+    delete, path = "",
+    tags = ["train_schedule_exceptions"],
+    params(TrainScheduleExceptionIdParam),
+    responses(
+        (status = 204, description = "The train schedule exception was deleted successfully"),
+    )
+)]
+pub(in crate::views) async fn delete(
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    Extension(auth): AuthenticationExt,
+    Path(TrainScheduleExceptionIdParam { id: exception_id }): Path<TrainScheduleExceptionIdParam>,
+) -> Result<impl IntoResponse> {
+    let authorized = auth
+        .check_roles([authz::Role::OperationalStudies].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    let conn = &mut db_pool.get().await?;
+
+    editoast_models::TrainScheduleException::delete_static_or_fail(conn, exception_id, || {
+        TrainScheduleExceptionError::NotFound { exception_id }
+    })
+    .await?;
+
+    Ok(StatusCode::NO_CONTENT)
 }
 
 #[cfg(test)]

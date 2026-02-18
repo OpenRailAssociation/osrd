@@ -4431,6 +4431,22 @@ paths:
       responses:
         '204':
           description: No content when successful
+  /train_schedule_exception/{id}:
+    delete:
+      tags:
+      - train_schedule_exceptions
+      summary: Delete a train schedule exception
+      parameters:
+      - name: id
+        in: path
+        description: A train schedule exception ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '204':
+          description: The train schedule exception was deleted successfully
   /train_schedule_sets:
     get:
       tags:
@@ -6200,6 +6216,7 @@ components:
       - $ref: '#/components/schemas/EditoastTowedRollingStockErrorIdNotFound'
       - $ref: '#/components/schemas/EditoastTowedRollingStockErrorIsLocked'
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorDatabase'
+      - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorNotPacedTrain'
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorTimetableNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorTrainScheduleNotFound'
@@ -8516,6 +8533,30 @@ components:
           type: string
           enum:
           - editoast:train_schedule_exception:Database
+    EditoastTrainScheduleExceptionErrorNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - exception_id
+          properties:
+            exception_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:train_schedule_exception:NotFound
     EditoastTrainScheduleExceptionErrorNotPacedTrain:
       type: object
       required:
