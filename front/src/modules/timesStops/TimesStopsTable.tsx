@@ -165,12 +165,14 @@ const TimesStopsTable = ({
       columnHelper.accessor('requestedArrival', {
         header: () => t('arrivalTime'),
         cell: (info) => {
+          const row = info.row.original;
           const { allRows, onArrivalChange: onArrival } = info.table.options.meta!;
           return (
             <TimeCell
               {...info}
-              referenceDate={getArrivalReferenceDate(info.row.original, allRows, startTime)}
-              onCommit={(date) => onArrival(info.row.original, date)}
+              referenceDate={getArrivalReferenceDate(row, allRows, startTime)}
+              computedValue={row.computedArrival}
+              onCommit={(date) => onArrival(row, date)}
             />
           );
         },
@@ -218,6 +220,7 @@ const TimesStopsTable = ({
             <TimeCell
               {...info}
               referenceDate={getDepartureReferenceDate(row, startTime)}
+              computedValue={row.computedDeparture}
               onCommit={(date) => info.table.options.meta!.onDepartureChange(row, date)}
             />
           );
