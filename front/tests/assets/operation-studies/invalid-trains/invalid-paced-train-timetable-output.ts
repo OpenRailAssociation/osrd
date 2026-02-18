@@ -1,4 +1,5 @@
-import { requestedDestination, requestedPoint } from '../../../utils/manchette';
+import { requestedDestination } from '../../../pages/operational-studies/std-manchette';
+import { requestedPoint } from '../../../utils/manchette';
 import type { StationData } from '../../../utils/types';
 
 export const invalidPacedTrainTimetableOutput: StationData[] = [
