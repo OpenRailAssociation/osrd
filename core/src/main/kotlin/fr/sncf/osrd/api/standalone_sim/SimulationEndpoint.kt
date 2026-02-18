@@ -20,7 +20,7 @@ class SimulationEndpoint(
     private val infraManager: InfraProvider,
     private val electricalProfileSetManager: ElectricalProfileSetManager,
 ) : Take {
-    override fun act(req: Request): Response {
+    override fun act(req: Request, ctx: Take.QueueContext?): Response {
         // Parse request input
         val body = req.body()
         val request =

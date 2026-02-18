@@ -19,7 +19,7 @@ import java.time.Duration
 import java.time.ZonedDateTime
 
 class ConflictDetectionEndpoint(private val infraManager: InfraProvider) : Take {
-    override fun act(req: Request): Response {
+    override fun act(req: Request, ctx: Take.QueueContext?): Response {
         return try {
             val body = req.body()
             val request =
