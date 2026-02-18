@@ -46,7 +46,7 @@ async fn extract_block_occupancy_details<T: TrainScheduleLike>(
                 // TODO: We should project as input mode
                 return None;
             };
-            let respect_times = simulation::SimulationResponseSuccess::path_item_respect_times(
+            let respect_times = simulation::path_item_respect_times(
                 &sim.final_output.report_train.path_item_times,
                 train_schedule,
             )
