@@ -17,7 +17,7 @@ class WorkerLoadEndpoint(
     private val infraManager: InfraManager,
     private val timetableManager: TimetableCacheManager,
 ) : Take {
-    override fun act(req: Request): Response {
+    override fun act(req: Request, ctx: Take.QueueContext?): Response {
         try {
             // Parse request input
             val body = req.body()

@@ -4,19 +4,19 @@ package fr.sncf.osrd.api.stdcm
 
 import com.google.common.collect.Range
 import com.google.common.collect.TreeRangeSet
+import com.rabbitmq.client.AMQP
+import com.rabbitmq.client.Channel
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.*
 import fr.sncf.osrd.api.pathfinding.findStopPositionAtEndOfBlockConsideringRollingStock
 import fr.sncf.osrd.api.pathfinding.findWaypointBlocks
 import fr.sncf.osrd.api.pathfinding.hasDuplicateTracks
 import fr.sncf.osrd.api.pathfinding.runPathfindingBlockPostProcessing
 import fr.sncf.osrd.api.standalone_sim.*
-import fr.sncf.osrd.cli.Request
-import fr.sncf.osrd.cli.Response
-import fr.sncf.osrd.cli.RsJson
-import fr.sncf.osrd.cli.RsText
-import fr.sncf.osrd.cli.RsWithBody
-import fr.sncf.osrd.cli.RsWithStatus
-import fr.sncf.osrd.cli.Take
+import fr.sncf.osrd.cli.*
 import fr.sncf.osrd.conflicts.ParsedRequirements
 import fr.sncf.osrd.envelope_sim.Comfort
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
@@ -29,11 +29,7 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
-import fr.sncf.osrd.sim_infra.api.DirTrackChunkId
-import fr.sncf.osrd.sim_infra.api.RawInfra
-import fr.sncf.osrd.sim_infra.api.SpeedLimitProperty
-import fr.sncf.osrd.sim_infra.api.TrackSectionId
-import fr.sncf.osrd.sim_infra.api.ZoneId
+import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.standalone_sim.makeElectricalProfiles
 import fr.sncf.osrd.standalone_sim.makeMRSPResponse
@@ -48,6 +44,9 @@ import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.PlannedTimingData
 import fr.sncf.osrd.stdcm.preprocessing.implementation.makeBlockAvailability
 import fr.sncf.osrd.stdcm.tracing.FailureExplainer
+import fr.sncf.osrd.stdcm.tracing.ProgressCallback
+import fr.sncf.osrd.stdcm.tracing.STDCMProgress
+import fr.sncf.osrd.stdcm.tracing.STDCMProgressStatus
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.Direction
@@ -65,7 +64,7 @@ import java.time.Duration.ofMillis
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import java.util.TreeMap
+import java.util.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 
@@ -74,8 +73,27 @@ class STDCMEndpoint(
     private val timetableCacheManager: TimetableCacheManager,
     private val s3Context: S3Context? = null,
 ) : Take {
+    data class STDCMFinalResult(
+        @Json(name = "status") val status: STDCMProgressStatus,
+        @Json(name = "result") val result: STDCMResponse,
+    ) {
+        companion object {
+            val adapter: JsonAdapter<STDCMFinalResult> =
+                Moshi.Builder()
+                    .addLast(STDCMResponse::class.java, stdcmResponseAdapter)
+                    .addLast(KotlinJsonAdapterFactory())
+                    .build()
+                    .adapter(STDCMFinalResult::class.java)
+        }
+    }
+
+    override fun requiresQueueCtx(): Boolean {
+        // We need access to the queue to send the intermediate STDCM progress payloads
+        return true
+    }
+
     @Throws(OSRDError::class)
-    override fun act(req: Request): Response {
+    override fun act(req: Request, ctx: Take.QueueContext?): Response {
         // Parse request input
         val request = readRequest(req) ?: return RsWithStatus(RsText("missing request body"), 400)
 
@@ -92,7 +110,7 @@ class STDCMEndpoint(
 
         s3Context?.writeSTDCMFile("input_payload.json") { stdcmRequestAdapter.toJson(request) }
 
-        return run(request)
+        return run(request, ctx)
     }
 
     @WithSpan(value = "Reading request content", kind = SpanKind.SERVER)
@@ -103,7 +121,7 @@ class STDCMEndpoint(
 
     /** Process the given parsed request */
     @WithSpan(value = "Processing STDCM request", kind = SpanKind.SERVER)
-    fun run(request: STDCMRequest): Response {
+    fun run(request: STDCMRequest, ctx: Take.QueueContext?): Response {
         logger.info(
             "Request received: start=${request.startTime}, max duration=${request.maximumRunTime}"
         )
@@ -126,6 +144,11 @@ class STDCMEndpoint(
             val allowedTrackSections = parseTrackSectionIds(infra, request.allowedTrackSections)
             val failureExplainer =
                 FailureExplainer(request.startTime, infra.rawInfra, infra.blockInfra)
+
+            var callback: ProgressCallback? = null
+            if (ctx != null) {
+                callback = { progressCallback(ctx.chan, ctx.replyTo, ctx.correlationId, it) }
+            }
 
             // Run the STDCM pathfinding
             val path =
@@ -152,11 +175,13 @@ class STDCMEndpoint(
                     allowedTrackSections,
                     STDCMGraph.SearchMetadata(request.startTime, requirements.metadata, s3Context),
                     failureExplainer = failureExplainer,
+                    callback,
                 )
             if (path == null || hasDuplicateTracks(infra, path.trainPath)) {
                 failureExplainer.saveReport(s3Context)
-                val response = PathNotFound()
-                return RsJson(RsWithBody(stdcmResponseAdapter.toJson(response)))
+                val result = PathNotFound()
+                val response = STDCMFinalResult(status = STDCMProgressStatus.DONE, result = result)
+                return RsJson(RsWithBody(STDCMFinalResult.adapter.toJson(response)))
             }
             val pathfindingResponse =
                 runPathfindingBlockPostProcessing(infra, path.trainPath, path.waypointOffsets)
@@ -182,8 +207,9 @@ class STDCMEndpoint(
                 requirements.metadata,
             )
 
-            val response = STDCMSuccess(simulationResponse, pathfindingResponse, departureTime)
-            RsJson(RsWithBody(stdcmResponseAdapter.toJson(response)))
+            val result = STDCMSuccess(simulationResponse, pathfindingResponse, departureTime)
+            val response = STDCMFinalResult(status = STDCMProgressStatus.DONE, result = result)
+            RsJson(RsWithBody(STDCMFinalResult.adapter.toJson(response)))
         } catch (ex: Throwable) {
             ExceptionHandler.handle(ex)
         }
@@ -496,9 +522,11 @@ fun parseMarginValue(margin: MarginValue): AllowanceValue? {
         is MarginValue.MinPer100Km -> {
             TimePerDistance(margin.value)
         }
+
         is MarginValue.Percentage -> {
             Percentage(margin.percentage)
         }
+
         is MarginValue.None -> {
             null
         }
@@ -518,4 +546,23 @@ private fun parseSimulationScheduleItems(
 
 fun parseTrackSectionIds(infra: FullInfra, trackSectionName: Set<String>?): Set<TrackSectionId>? {
     return trackSectionName?.mapNotNull { infra.rawInfra.getTrackSectionFromName(it) }?.toSet()
+}
+
+private fun progressCallback(
+    channel: Channel,
+    replyTo: String,
+    correlationId: String,
+    data: STDCMProgress,
+) {
+    val properties =
+        AMQP.BasicProperties()
+            .builder()
+            .headers(
+                mapOf("x-non-terminating-response" to true, "x-status" to "ok".encodeToByteArray())
+            )
+            .correlationId(correlationId)
+            .build()
+    val body = STDCMProgress.adapter.toJson(data).encodeToByteArray()
+
+    channel.basicPublish("", replyTo, properties, body)
 }

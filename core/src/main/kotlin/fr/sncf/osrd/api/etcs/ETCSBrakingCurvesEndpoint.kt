@@ -33,7 +33,7 @@ class ETCSBrakingCurvesEndpoint(
     private val infraManager: InfraProvider,
     private val electricalProfileSetManager: ElectricalProfileSetManager,
 ) : Take {
-    override fun act(req: Request): Response {
+    override fun act(req: Request, ctx: Take.QueueContext?): Response {
         val request = readRequest(req) ?: return RsWithStatus(RsText("Missing request body"), 400)
         return run(request)
     }

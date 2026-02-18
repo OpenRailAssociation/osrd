@@ -24,7 +24,7 @@ import fr.sncf.osrd.utils.units.forceDirected
 import fr.sncf.osrd.utils.units.toDirected
 
 class PathPropEndpoint(private val infraManager: InfraProvider) : Take {
-    override fun act(req: Request): Response {
+    override fun act(req: Request, ctx: Take.QueueContext?): Response {
         return try {
             val body = req.body()
             val request =
