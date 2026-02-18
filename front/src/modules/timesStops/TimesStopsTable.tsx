@@ -139,7 +139,9 @@ const TimesStopsTable = ({ rows, dataIsLoading, isValid }: TimesStopsTableProps)
             <tr key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
                 <th key={header.id} className={header.column.columnDef.meta?.className}>
-                  {flexRender(header.column.columnDef.header, header.getContext())}
+                  <div className="th-content">
+                    {flexRender(header.column.columnDef.header, header.getContext())}
+                  </div>
                 </th>
               ))}
             </tr>
