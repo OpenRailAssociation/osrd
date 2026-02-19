@@ -32,6 +32,7 @@ type TimeAction =
   | { type: 'DIGIT_PRESSED'; digit: string }
   | { type: 'BACKSPACE_PRESSED' }
   | { type: 'ENTER_PRESSED' }
+  | { type: 'ESCAPE_PRESSED'; value: Date | null }
   | { type: 'SECTION_CLICKED'; section: Section }
   | { type: 'FOCUSED'; section: Section }
   | { type: 'FOCUSED_WITH_PREFILL'; section: Section; prefillValue: Date }
@@ -405,6 +406,8 @@ const timeReducer = (state: TimeState, action: TimeAction): TimeState => {
       return handleSectionClicked(state, action.section);
     case 'ENTER_PRESSED':
       return handleBlurred(state);
+    case 'ESCAPE_PRESSED':
+      return initialTimeState(action.value);
     case 'LEFT_ARROW_PRESSED':
       return handleHorizontalArrow(state, 'left');
     case 'RIGHT_ARROW_PRESSED':
@@ -495,6 +498,7 @@ const TimeCell = ({
   const controlledValue = getValue();
   const inputRef = useRef<HTMLInputElement>(null);
   const blurTriggeredByEnterRef = useRef(false);
+  const blurTriggeredByEscapeRef = useRef(false);
 
   const [state, dispatch] = useReducer(timeReducer, controlledValue, initialTimeState);
 
@@ -529,6 +533,12 @@ const TimeCell = ({
         e.preventDefault();
         blurTriggeredByEnterRef.current = true;
         onEnterKeyDown?.();
+        e.currentTarget.blur();
+        break;
+      case 'Escape':
+        e.preventDefault();
+        blurTriggeredByEscapeRef.current = true;
+        dispatch({ type: 'ESCAPE_PRESSED', value: controlledValue });
         e.currentTarget.blur();
         break;
       case 'Backspace':
@@ -588,6 +598,14 @@ const TimeCell = ({
   };
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (blurTriggeredByEscapeRef.current) {
+      blurTriggeredByEscapeRef.current = false;
+      blurTriggeredByEnterRef.current = false;
+      dispatch({ type: 'ESCAPE_PRESSED', value: controlledValue });
+      onBlur?.(e);
+      return;
+    }
+
     dispatch({ type: 'BLURRED' });
 
     if (onCommit && referenceDate) {
