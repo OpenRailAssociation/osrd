@@ -220,6 +220,7 @@ const OccurrenceItem = ({
     >
       <div
         className={cx('main', {
+          invalid: !disabled && summary && !summary.isValid,
           warning: !disabled && summary && (!summary.isValid || !!summary.notHonoredReason),
           'not-honored': !disabled && summary?.isValid && !!summary.notHonoredReason,
         })}
