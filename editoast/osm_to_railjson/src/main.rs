@@ -1,5 +1,6 @@
 use clap::Parser;
 use std::path::PathBuf;
+use tracing_subscriber::EnvFilter;
 
 #[derive(Parser)]
 #[command(about, long_about = "Extracts a railjson from OpenStreetMap data")]
@@ -11,6 +12,10 @@ pub struct OsmToRailjsonArgs {
 }
 
 fn main() {
+    tracing_subscriber::fmt()
+        .with_env_filter(EnvFilter::from_default_env())
+        .init();
+
     let args = OsmToRailjsonArgs::parse();
     osm_to_railjson::osm_to_railjson(args.osm_pbf_in, args.railjson_out)
         .expect("Could not convert osm to railjson");
