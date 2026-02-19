@@ -1,11 +1,3 @@
-#! /usr/bin/env -S uv run --script
-#
-# This script can be used to download the content of a timetable knowing only its ID,
-# as a JSON file that can be re-imported in OSRD.
-#
-# /// script
-# dependencies = ["click", "aiohttp", "python-dotenv"]
-# ///
 import asyncio
 
 import aiohttp

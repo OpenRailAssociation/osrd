@@ -1,11 +1,3 @@
-#! /usr/bin/env -S uv run --script
-# This script can be used to download the requirements in a timetable,
-# used to reproduce stdcm requests.
-# `uv run download_stdcm_requirements.py` handles all the dependencies with the following block:
-#
-# /// script
-# dependencies = ["click", "aiohttp", "python-dotenv"]
-# ///
 import asyncio
 import json
 

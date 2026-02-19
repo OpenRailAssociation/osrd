@@ -1,9 +1,7 @@
 This directory contains a few scripts with some usual workflows,
 especially to deal with the production environments.
 
-They're meant to be used either directly as executable files (`./script.py`), or with `uv run script.py`.
-`uv` then handles all the dependencies.
-
+Run with `uv run script.py`.
 
 * `download-stdcm-requirements.py`: downloads the requirements for a given timetable, can be run to reproduce stdcm requests without loading the entire timetable
 * `download-timetable.py`: downloads a timetable that can be loaded in the scenario page
@@ -12,3 +10,5 @@ They're meant to be used either directly as executable files (`./script.py`), or
 Some scripts can interact with production environments. This requires a gateway cookie.
 It can be obtained by visiting the web UI and looking for a `"gateway": "..."` cookie.
 It should then be placed in a .env file containing `GATEWAY_COOKIE="..."`
+
+Files can be formatted with `uv run ruff format`.
