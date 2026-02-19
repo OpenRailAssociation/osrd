@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 
 import { omit, sortBy } from 'lodash';
 
+import { intermediateStopsCount } from 'applications/operationalStudies/utils';
 import { type LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
 import {
@@ -57,7 +58,7 @@ const useOccurrences = (
         rollingStock: occurrenceRollingStock,
         startTime,
         stopsCount: correspondingException?.path_and_schedule
-          ? correspondingException.path_and_schedule.schedule.filter((step) => step.stop_for).length
+          ? intermediateStopsCount(correspondingException.path_and_schedule)
           : stopsCount,
         disabled: correspondingException?.disabled,
         // In the model, we can currently have a null category value so we need to handle this case
@@ -91,7 +92,7 @@ const useOccurrences = (
         rollingStock: occurrenceRollingStock,
         startTime,
         stopsCount: exception.path_and_schedule
-          ? exception.path_and_schedule.schedule.filter((step) => step.stop_for).length
+          ? intermediateStopsCount(exception.path_and_schedule)
           : stopsCount,
         // In the model, we can currently have a null category value so we need to handle this case
         category: exception.rolling_stock_category

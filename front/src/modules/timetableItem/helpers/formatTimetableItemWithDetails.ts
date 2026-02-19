@@ -1,4 +1,8 @@
-import { isTooFast, isScheduledPointsNotHonored } from 'applications/operationalStudies/utils';
+import {
+  isTooFast,
+  isScheduledPointsNotHonored,
+  intermediateStopsCount,
+} from 'applications/operationalStudies/utils';
 import type {
   LightRollingStockWithLiveries,
   SimulationSummaryResult,
@@ -58,7 +62,7 @@ const formatSummary = (summary?: SimulationSummaryResult): SimulationSummary | u
 const extractBaseTimetableItemProps = (timetableItem: TimetableItem) => ({
   name: timetableItem.train_name,
   startTime: new Date(timetableItem.start_time),
-  stopsCount: timetableItem.schedule?.filter((step) => step.stop_for).length ?? 0,
+  stopsCount: intermediateStopsCount(timetableItem),
   rollingStockName: timetableItem.rolling_stock_name,
   speedLimitTag: timetableItem.speed_limit_tag ?? null,
   labels: timetableItem.labels ?? [],
