@@ -21,16 +21,17 @@ function itemStops(number: string): string {
 }
 
 const itemStopSingular = frScenarioTranslations.timetable.stopsCount_one;
+const itemStopZero = frScenarioTranslations.timetable.stopsCount_zero;
 
 export const PACED_DETAILS: DetailRow[] = [
   {
-    stopsCount: itemStops('2'),
+    stopsCount: itemStopSingular,
     pathLength: '34.0 km',
     energyConsumed: '808 kWh',
     durationTime: '00h19',
   },
   {
-    stopsCount: itemStops('2'),
+    stopsCount: itemStopSingular,
     pathLength: '47.7 km',
     energyConsumed: '558 kWh',
     durationTime: '00h21',
@@ -39,25 +40,25 @@ export const PACED_DETAILS: DetailRow[] = [
 
 export const TRAIN_SCHEDULE_DETAILS: DetailRow[] = [
   {
-    stopsCount: itemStopSingular,
+    stopsCount: itemStopZero,
     pathLength: '6.8 km',
     energyConsumed: '11 kWh',
     durationTime: '00h06',
   },
   {
-    stopsCount: itemStops('2'),
+    stopsCount: itemStopSingular,
     pathLength: '45.9 km',
     energyConsumed: '1390 kWh',
     durationTime: '00h18',
   },
   {
-    stopsCount: itemStopSingular,
+    stopsCount: itemStopZero,
     pathLength: '34.0 km',
     energyConsumed: '1459 kWh',
     durationTime: '00h09',
   },
   {
-    stopsCount: itemStops('3'),
+    stopsCount: itemStops('2'),
     pathLength: '47.5 km',
     energyConsumed: '912 kWh',
     durationTime: '03h11',
