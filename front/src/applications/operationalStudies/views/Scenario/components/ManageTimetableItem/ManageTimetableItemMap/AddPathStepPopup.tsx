@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 
-import { point } from '@turf/helpers';
 import type { Position } from 'geojson';
 import { useTranslation } from 'react-i18next';
 import { IoFlag } from 'react-icons/io5';
@@ -9,9 +8,6 @@ import { Popup } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 import { v4 as uuidV4 } from 'uuid';
 
-import { editoastToEditorEntity } from 'applications/editor/data/api';
-import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
-import { calculateDistanceAlongTrack } from 'applications/editor/tools/utils';
 import { useManageTimetableItemContext } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { MapPathProperties } from 'applications/operationalStudies/types';
@@ -19,11 +15,11 @@ import { osrdEditoastApi, type OperationalPoint } from 'common/api/osrdEditoastA
 import { getOrigin, getDestination } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { getPointOnTrackCoordinates } from 'utils/geometry';
-import { mToMm } from 'utils/physics';
 
 import type { FeatureInfoClick } from '../types';
 import OperationalPointPopupDetails from './OperationalPointPopupDetails';
 import { setPointIti } from './setPointIti';
+import useMapTrackSelection from '../hooks/useMapTrackSelection';
 
 type AddPathStepPopupProps = {
   infraId: number | undefined;
@@ -59,43 +55,21 @@ const AddPathStepPopup = ({
   }>();
   const [newPathStep, setNewPathStep] = useState<PathStep>();
 
+  const { convertFeatureClickToLocation } = useMapTrackSelection(infraId);
+
   const [getInfraObjectEntity] =
     osrdEditoastApi.endpoints.postInfraByInfraIdObjectsAndObjectType.useLazyQuery();
 
   useEffect(() => {
     const handleTrack = async () => {
-      const objectId = featureInfoClick.feature.properties?.id;
-
-      const result = await getInfraObjectEntity({
-        infraId: infraId!,
-        objectType: 'TrackSection',
-        body: [objectId],
-      }).unwrap();
-
-      if (!result.length) {
-        console.error('No track found');
-        return;
-      }
-
-      // trackEntity length is in meters, so a conversion in mm is needed here
-      const trackEntity = editoastToEditorEntity<TrackSectionEntity>(result[0], 'TrackSection');
-      const offset = mToMm(
-        calculateDistanceAlongTrack(
-          trackEntity,
-          point(featureInfoClick.coordinates.slice(0, 2)).geometry
-        )
-      );
-
-      if (!featureInfoClick.feature.properties) return;
+      const location = await convertFeatureClickToLocation(featureInfoClick);
+      if (!location || !featureInfoClick.feature.properties) return;
 
       const { properties } = featureInfoClick.feature;
       setNewPathStep({
         id: uuidV4(),
         coordinates: featureInfoClick.coordinates.slice(0, 2),
-        location: {
-          track: properties.id,
-          offset: Math.round(offset),
-        },
+        location,
         kp: properties.kp,
         metadata: {
           lineCode: properties.extensions_sncf_line_code,

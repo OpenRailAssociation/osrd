@@ -1,8 +1,9 @@
-import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 
-import { Button } from '@osrd-project/ui-core';
+import { Button, Input } from '@osrd-project/ui-core';
 import { ArrowSwitch, FrameAll, Plus } from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';
+import cx from 'classnames';
 import type { Position } from 'geojson';
 import { compact } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +16,7 @@ import { useScenarioContext } from 'applications/operationalStudies/hooks/useSce
 import AlertBox from 'common/AlertBox';
 import { type PathProperties, type PathItemLocation } from 'common/api/osrdEditoastApi';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
+import { useInfraID } from 'common/osrdContext';
 import IncompatibleConstraints from 'modules/pathfinding/components/IncompatibleConstraints';
 import reversePathSteps from 'modules/pathfinding/helpers/reversePathSteps';
 import usePathfindingV2 from 'modules/pathfinding/hooks/usePathfindingV2';
@@ -33,12 +35,14 @@ import { Duration } from 'utils/duration';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 
 import { type OperationalPointSuggestion } from './ComboBoxCustomList/ListElementComponent';
+import useMapTrackSelection from '../hooks/useMapTrackSelection';
 import { usePathStepsMetadata } from './hooks/usePathStepsMetadata';
 import ItineraryModalFormHeader from './ItineraryModalFormHeader';
 import ItineraryModalMap from './ItineraryModalMap';
 import PathStepItem from './PathStepItem';
-import { computePathStepCoordinates } from './utils';
+import { computePathStepCoordinates, computeViewportForCoordinates } from './utils';
 import { MANAGE_TIMETABLE_ITEM_TYPES } from '../../../consts';
+import type { FeatureInfoClick } from '../types';
 import {
   createEmptyPathStep,
   ensureTrailingEmptyStep,
@@ -68,6 +72,7 @@ const ItineraryModal = ({
   const mapSettings = useMapSettings();
   const dispatch = useAppDispatch();
   const { updateViewport } = useMapSettingsActions();
+  const infraId = useInfraID();
 
   const { categoryColors, currentSubCategory } = useCategoryColors(category);
 
@@ -77,6 +82,10 @@ const ItineraryModal = ({
   const [categoryWarning, setCategoryWarning] = useState<string | undefined>(undefined);
 
   const [hoveredGapIndex, setHoveredGapIndex] = useState<number | null>(null);
+  const [mapSelectionStepId, setMapSelectionStepId] = useState<string | null>(null);
+  const [pendingLabelStepId, setPendingLabelStepId] = useState<string | null>(null);
+  const [pendingLabel, setPendingLabel] = useState('');
+  const [shakingStepId, setShakingStepId] = useState<string | null>(null);
 
   const {
     activeStepId,
@@ -93,8 +102,10 @@ const ItineraryModal = ({
 
   const { launchPathfinding } = useManageTimetableItemContext();
 
-  const { pathStepsMetadataById } = usePathStepsMetadata(pathSteps);
+  const { pathStepsMetadataById, setPathStepsMetadataById } = usePathStepsMetadata(pathSteps);
   const { launchPathfindingV2, pathProperties, pathfindingError } = usePathfindingV2();
+  const { convertFeatureClickToLocation } = useMapTrackSelection(infraId);
+
   const applyOperationalPointToStep = (
     stepId: string,
     suggestion: OperationalPointSuggestion,
@@ -121,6 +132,19 @@ const ItineraryModal = ({
     commitSelectionForStep(stepId, formatChosenValue(suggestion, chosenCh));
     resetOpSuggestions();
   };
+
+  const updateTrackOffsetLabel = useCallback(
+    (stepId: string, label: string) => {
+      setPathStepsMetadataById((prev) => {
+        const meta = prev.get(stepId);
+        if (!meta || meta.isInvalid || meta.type !== 'trackOffset') return prev;
+        const newMap = new Map(prev);
+        newMap.set(stepId, { ...meta, label });
+        return newMap;
+      });
+    },
+    [setPathStepsMetadataById]
+  );
 
   const isOnlyStep = pathSteps.filter((s) => !isEmptyStep(s, getInputForStep(s.id))).length <= 1;
 
@@ -188,6 +212,85 @@ const ItineraryModal = ({
     if (editingStepIdRef.current === stepId) editingStepIdRef.current = '';
     if (activeStepId === stepId) setActiveStepId('');
   };
+
+  const triggerShake = useCallback((stepId: string) => {
+    setShakingStepId(stepId);
+    setTimeout(() => setShakingStepId(null), 600);
+  }, []);
+
+  const zoomToStep = useCallback(
+    (stepId: string) => {
+      const metadata = pathStepsMetadataById.get(stepId);
+      if (!metadata) return;
+
+      const coordinates = computePathStepCoordinates(metadata);
+      const viewport = computeViewportForCoordinates(coordinates, mapSettings.viewport);
+      if (viewport) dispatch(updateViewport(viewport));
+    },
+    [pathStepsMetadataById, mapSettings.viewport, dispatch, updateViewport]
+  );
+
+  const handleStartMapSelection = useCallback(
+    (stepId: string) => {
+      setMapSelectionStepId(stepId);
+      resetOpSuggestions();
+      zoomToStep(stepId);
+    },
+    [resetOpSuggestions, zoomToStep]
+  );
+
+  const handleCancelMapSelection = useCallback(() => {
+    setMapSelectionStepId(null);
+  }, []);
+
+  const handleOutsideMapClick = useCallback(() => {
+    if (mapSelectionStepId) {
+      triggerShake(mapSelectionStepId);
+    }
+  }, [mapSelectionStepId, triggerShake]);
+
+  const handleConfirmMapPointLabel = useCallback(
+    (stepId: string, label: string) => {
+      updateTrackOffsetLabel(stepId, label);
+      setPendingLabelStepId(null);
+    },
+    [updateTrackOffsetLabel]
+  );
+
+  const handleCancelMapPointLabel = useCallback((stepId: string) => {
+    setPathSteps((prev) => prev.map((s) => (s.id === stepId ? { ...s, location: null } : s)));
+    setPendingLabelStepId(null);
+  }, []);
+
+  const handleMapSelectionClick = useCallback(
+    async (featureInfoClick: FeatureInfoClick) => {
+      if (!mapSelectionStepId) return;
+
+      const location = await convertFeatureClickToLocation(featureInfoClick);
+      if (!location) return;
+
+      const stepId = mapSelectionStepId;
+      setPathSteps((prev) => prev.map((s) => (s.id === stepId ? { ...s, location } : s)));
+      setInputForStep(stepId, '');
+      setMapSelectionStepId(null);
+      setPendingLabel('');
+      setPendingLabelStepId(stepId);
+    },
+    [mapSelectionStepId, convertFeatureClickToLocation, setInputForStep]
+  );
+
+  const handlePathStepDragEnd = useCallback(
+    async (stepId: string, featureInfoClick: FeatureInfoClick) => {
+      const location = await convertFeatureClickToLocation(featureInfoClick);
+      if (!location) return;
+
+      setPathSteps((prev) =>
+        prev.map((step) => (step.id === stepId ? { ...step, location } : step))
+      );
+      setInputForStep(stepId, '');
+    },
+    [convertFeatureClickToLocation, setInputForStep]
+  );
 
   const frameAllPathSteps = () => {
     if (pathProperties && pathProperties.geometry) {
@@ -384,7 +487,7 @@ const ItineraryModal = ({
 
   return (
     <dialog ref={modalRef} className="itinerary-modal">
-      <div className="itinerary-modal-form">
+      <div className="itinerary-modal-form" onClick={handleOutsideMapClick} role="presentation">
         <div className="itinerary-modal-form-header">
           <ItineraryModalFormHeader
             onCategoryWarningChange={setCategoryWarning}
@@ -421,6 +524,7 @@ const ItineraryModal = ({
             {pathSteps.map((pathStep, i) => {
               const pathStepMetadata = pathStepsMetadataById.get(pathStep.id);
               const isInvalid = isStepInvalidAndIsEditing(pathStep, pathStepMetadata);
+              const isSelecting = mapSelectionStepId === pathStep.id;
 
               const previousPathStepMetadata = pathStepsMetadataById.get(pathSteps[i - 1]?.id);
               const hideLine =
@@ -502,6 +606,11 @@ const ItineraryModal = ({
                     isTrailingPlaceHolder={isTrailingPlaceholder}
                     isOnlyStep={isOnlyStep}
                     isInvalidAndIsEditing={isInvalid}
+                    isMapSelectionMode={isSelecting}
+                    isShaking={shakingStepId === pathStep.id}
+                    onStartMapSelection={() => handleStartMapSelection(pathStep.id)}
+                    onCancelMapSelection={handleCancelMapSelection}
+                    onTrackOffsetLabelChange={(label) => updateTrackOffsetLabel(pathStep.id, label)}
                   />
                 </>
               );
@@ -513,11 +622,20 @@ const ItineraryModal = ({
           <Button label={t('next')} variant="Primary" size="medium" onClick={submitItinerary} />
         </div>
       </div>
-      <div className="itinerary-modal-map">
+      <div
+        className={cx('itinerary-modal-map', {
+          'map-selection-active': mapSelectionStepId !== null,
+          'pending-label-mode': pendingLabelStepId !== null,
+        })}
+      >
         <ItineraryModalMap
           pathSteps={pathSteps}
           pathStepsMetadata={pathStepsMetadataById}
           pathProperties={displayedPathProperties}
+          selectedStepId={mapSelectionStepId || undefined}
+          isMapSelectionMode={mapSelectionStepId !== null}
+          onMapSelectionClick={handleMapSelectionClick}
+          onPathStepDragEnd={handlePathStepDragEnd}
         >
           <IncompatibleConstraints
             geometry={pathProperties?.geometry}
@@ -525,6 +643,46 @@ const ItineraryModal = ({
             incompatibleConstraints={pathProperties?.incompatibleConstraints}
           />
         </ItineraryModalMap>
+        {pendingLabelStepId && (
+          <div
+            className="map-label-popup-overlay"
+            role="presentation"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="map-label-popup">
+              <Input
+                id="map-label-popup-input"
+                type="text"
+                value={pendingLabel}
+                label={t('addLabel')}
+                onChange={(e) => setPendingLabel(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter')
+                    handleConfirmMapPointLabel(pendingLabelStepId, pendingLabel);
+                  if (e.key === 'Escape') handleCancelMapPointLabel(pendingLabelStepId);
+                }}
+                // eslint-disable-next-line jsx-a11y/no-autofocus
+                autoFocus
+              />
+              <div className="map-label-popup-actions">
+                <Button
+                  type="button"
+                  id="map-label-cancel-button"
+                  onClick={() => handleCancelMapPointLabel(pendingLabelStepId)}
+                  label={t('cancelMapSelection')}
+                  variant="Cancel"
+                />
+
+                <Button
+                  type="button"
+                  id="map-label-confirm-button"
+                  onClick={() => handleConfirmMapPointLabel(pendingLabelStepId, pendingLabel)}
+                  label={t('addPoint')}
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </dialog>
   );

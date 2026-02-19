@@ -236,8 +236,17 @@
           border-radius: 6px;
           padding-bottom: 4px;
 
+          &.map-selection-active {
+            background-color: var(--white100);
+            box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.08);
+          }
+
           &:last-child {
             padding-bottom: 14px;
+          }
+
+          &.shaking {
+            animation: tilt-shaking 0.5s ease;
           }
 
           .path-step {
@@ -249,13 +258,40 @@
             gap: 8px;
             padding-block: 8px;
 
-            &.requested-point {
-              grid-template-columns:
-                24px minmax(184px, 1fr) calc(
-                  var(--path-step-secondary-code-width) + var(--path-step-track-name-width) +
-                    var(--path-step-row-gap)
-                )
-                auto;
+            &.map-selection-mode {
+              .segmented-control {
+                display: none;
+              }
+
+              .map-selection-message {
+                grid-column: 2 / -2;
+                display: flex;
+                width: 100%;
+                align-items: center;
+                gap: 8px;
+                padding-left: 4px;
+                min-width: 0;
+
+                .map-selection-text {
+                  font-size: 0.875rem;
+                  color: var(--grey50);
+                  white-space: nowrap;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                }
+
+                .cancel-map-selection-button {
+                  font-size: 0.75rem;
+                  color: var(--grey50);
+                  white-space: nowrap;
+                  flex-shrink: 0;
+                  margin-left: auto;
+
+                  &:hover {
+                    color: var(--grey80);
+                  }
+                }
+              }
             }
 
             .path-step-counter.delete-hovered {
@@ -263,6 +299,7 @@
               background-color: var(--error60) !important;
               border-color: var(--error30) !important;
             }
+
             .path-step-counter {
               position: relative;
               width: 24px;
@@ -330,6 +367,14 @@
                 border-radius: 3px;
                 box-shadow: 0 0 0 1.5px rgba(255, 104, 104, 1);
               }
+
+            }
+
+            .track-name {
+              &.invalid {
+                border-radius: 4px;
+                box-shadow: 0 0 0 1.5px rgba(255, 104, 104, 1);
+              }
             }
 
             .requested-point-block {
@@ -342,10 +387,31 @@
               margin-left: 5px;
               color: var(--primary60);
 
-              .added-location-icon svg {
-                fill: var(--grey60);
+              .select-location-button {
+                color: var(--primary60);
 
-                &:hover {
+                &.active {
+                  color: var(--primary80);
+                }
+
+                &:not([disabled]):hover {
+                  color: var(--primary80);
+                }
+
+                &[disabled] {
+                  color: var(--primary20);
+                  cursor: default;
+                }
+
+                .added-location-icon svg {
+                  fill: var(--grey60);
+                }
+
+                &.active .added-location-icon svg {
+                  fill: var(--primary60);
+                }
+
+                &:not([disabled]):hover .added-location-icon svg {
                   fill: var(--black100);
                 }
               }
@@ -389,6 +455,57 @@
     box-shadow: inset (var(--footer-box-shadow-height)) 0 0 0 var(--black25);
     padding-left: 1px;
 
+    &.pending-label-mode {
+      position: relative;
+
+      .map-label-popup-overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .map-label-popup {
+          background: var(--white100);
+          border-radius: 8px;
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+          min-width: 240px;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          background-color: var(--ambientB10);
+
+          .map-label-popup-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            padding: 16px;
+            background-color: white;
+            border-radius: 0 0 0.5rem 0.5rem;
+          }
+
+          .ui-label-wrapper > label {
+            margin-bottom: 0;
+          }
+        }
+      }
+    }
+
+    &.map-selection-active {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid #3734e6;
+
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 28px;
+        box-shadow: 0 0 0 9999px rgba(38, 132, 255, 0.15); // Big outer overlay
+        pointer-events: none;
+      }
+    }
+
     .layers-modal {
       position: fixed;
       top: 50%;
@@ -401,6 +518,12 @@
 
     .path-step-marker {
       @extend %path-step-marker;
+
+      .indicator {
+        &.active {
+          top: 4px;
+        }
+      }
     }
   }
 }

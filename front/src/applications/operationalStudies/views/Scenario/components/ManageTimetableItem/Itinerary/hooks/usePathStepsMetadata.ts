@@ -189,7 +189,22 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
         });
       });
 
-      setPathStepsMetadataById(newPathStepsMetadataById);
+      setPathStepsMetadataById((prevMap) => {
+        newPathStepsMetadataById.forEach((meta, id) => {
+          if (!meta.isInvalid && meta.type === 'trackOffset') {
+            const prevMeta = prevMap.get(id);
+            if (
+              prevMeta &&
+              !prevMeta.isInvalid &&
+              prevMeta.type === 'trackOffset' &&
+              prevMeta.label
+            ) {
+              newPathStepsMetadataById.set(id, { ...meta, label: prevMeta.label });
+            }
+          }
+        });
+        return newPathStepsMetadataById;
+      });
     };
     fetchAndSetMetadata();
   }, [allOps, pathSteps]);
