@@ -215,8 +215,16 @@ const SimulationResultMap = ({
     if (geojsonPath) {
       const newViewport = computeBBoxViewport(bbox(geojsonPath), viewport);
       updateViewportChange(newViewport);
+    } else if (mapMarkers.length > 0) {
+      const allMarkersCoordinates = mapMarkers.map((marker) => marker.coordinates);
+      const box = bbox({
+        type: 'MultiPoint',
+        coordinates: allMarkersCoordinates,
+      });
+      const newViewport = computeBBoxViewport(box, viewport);
+      updateViewportChange(newViewport);
     }
-  }, [geojsonPath]);
+  }, [geojsonPath, mapMarkers]);
 
   return (
     <MapContextProvider
