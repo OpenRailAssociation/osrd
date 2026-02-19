@@ -470,6 +470,12 @@ type TimeCellProps = CellContext<TimesStopsRowNew, Date | null> &
     referenceDate?: Date;
     /** When the cell is empty, pre-fill the input with this value when the user focuses to edit. */
     computedValue?: Date | null;
+    /** Called after Enter validates the input. Use to move focus (e.g. to the cell below). */
+    onEnterKeyDown?: () => void;
+    /** Row index in the table. Used for focus targeting to the next row. */
+    rowIndex?: number;
+    /** Column id in the table. Used for focus targeting to the next row. */
+    columnId?: string;
     onCommit?: (date: Date | null) => void;
   };
 
@@ -477,6 +483,9 @@ const TimeCell = ({
   getValue,
   referenceDate,
   computedValue,
+  onEnterKeyDown,
+  rowIndex = 0,
+  columnId = '',
   onCommit,
   disabled,
   ...props
@@ -485,6 +494,7 @@ const TimeCell = ({
 
   const controlledValue = getValue();
   const inputRef = useRef<HTMLInputElement>(null);
+  const blurTriggeredByEnterRef = useRef(false);
 
   const [state, dispatch] = useReducer(timeReducer, controlledValue, initialTimeState);
 
@@ -506,8 +516,19 @@ const TimeCell = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (disabled) {
+      if (e.key !== 'Tab') {
+        e.preventDefault();
+      }
+      onKeyDown?.(e);
+      return;
+    }
+
     switch (e.key) {
       case 'Enter':
+        e.preventDefault();
+        blurTriggeredByEnterRef.current = true;
+        onEnterKeyDown?.();
         e.currentTarget.blur();
         break;
       case 'Backspace':
@@ -573,9 +594,15 @@ const TimeCell = ({
       const newDate = buildDateFromState(state, referenceDate);
       const hasChanged = newDate?.getTime() !== controlledValue?.getTime();
       if (hasChanged) {
-        onCommit(newDate);
+        if (blurTriggeredByEnterRef.current) {
+          setTimeout(() => onCommit(newDate), 0);
+        } else {
+          onCommit(newDate);
+        }
       }
     }
+
+    blurTriggeredByEnterRef.current = false;
 
     onBlur?.(e);
   };
@@ -603,6 +630,8 @@ const TimeCell = ({
     <div className={`time-cell ${state.empty ? 'time-cell--empty' : ''}`}>
       <input
         ref={inputRef}
+        data-time-cell-row-index={rowIndex}
+        data-time-cell-column-id={columnId}
         value={state.empty ? 'hh:mm:ss' : formatDisplay(state)}
         className="time-cell__input"
         style={{ pointerEvents: state.empty ? 'none' : 'auto' }}

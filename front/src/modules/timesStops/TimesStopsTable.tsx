@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useRef } from 'react';
 
 import {
   createColumnHelper,
@@ -89,6 +89,41 @@ const TimesStopsTable = ({
   const { t } = useTranslation('translation', { keyPrefix: 'timeStopTable' });
 
   const isScheduleNotHonored = rows.some((row) => row.scheduleNotHonored);
+  const pendingFocusKeyRef = useRef<string | null>(null);
+
+  const focusCellByKey = useCallback((key: string) => {
+    const [rowIndex, ...columnIdParts] = key.split('-');
+    const columnId = columnIdParts.join('-');
+
+    const target = document.querySelector<HTMLInputElement>(
+      `input[data-time-cell-row-index="${rowIndex}"][data-time-cell-column-id="${columnId}"]`
+    );
+
+    target?.focus();
+
+    return document.activeElement === target;
+  }, []);
+
+  const focusCellBelow = useCallback(
+    (rowIndex: number, columnId: string) => {
+      const key = `${rowIndex + 1}-${columnId}`;
+      pendingFocusKeyRef.current = key;
+
+      focusCellByKey(key);
+    },
+    [focusCellByKey]
+  );
+
+  useLayoutEffect(() => {
+    const pendingKey = pendingFocusKeyRef.current;
+    if (!pendingKey) return;
+
+    const focused = focusCellByKey(pendingKey);
+
+    if (focused && !isComputedDataPending) {
+      pendingFocusKeyRef.current = null;
+    }
+  }, [rows, isComputedDataPending, focusCellByKey]);
 
   const columns = useMemo(
     () => [
@@ -159,6 +194,9 @@ const TimesStopsTable = ({
               {...info}
               referenceDate={getArrivalReferenceDate(row, allRows, startTime)}
               computedValue={row.computedArrival}
+              rowIndex={info.row.index}
+              columnId="requestedArrival"
+              onEnterKeyDown={() => focusCellBelow(info.row.index, 'requestedArrival')}
               onCommit={(date) => onArrival(row, date)}
             />
           );
@@ -208,6 +246,9 @@ const TimesStopsTable = ({
               {...info}
               referenceDate={getDepartureReferenceDate(row, startTime)}
               computedValue={row.computedDeparture}
+              rowIndex={info.row.index}
+              columnId="requestedDeparture"
+              onEnterKeyDown={() => focusCellBelow(info.row.index, 'requestedDeparture')}
               onCommit={(date) => info.table.options.meta!.onDepartureChange(row, date)}
             />
           );
@@ -230,7 +271,7 @@ const TimesStopsTable = ({
         },
       }),
     ],
-    [startTime, isComputedDataPending]
+    [startTime, isComputedDataPending, focusCellBelow]
   );
 
   // eslint-disable-next-line react-hooks/incompatible-library
