@@ -1,11 +1,3 @@
-#! /usr/bin/env -S uv run --script
-# This script generates a basic space-time chart using stdcm debug data.
-# Meant to be used as `uv run generate-debug-space-chart.py`, or directly as an executable file.
-#
-# /// script
-# dependencies = ["bokeh", "click"]
-# ///
-
 import json
 import os.path
 import sys
