@@ -370,7 +370,7 @@ pub(in crate::views) async fn delete(
 pub mod test {
     use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
-    use rand::Rng;
+    use rand::RngExt as _;
     use rand::rng;
 
     use super::*;

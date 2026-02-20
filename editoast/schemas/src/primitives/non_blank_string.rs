@@ -3,7 +3,7 @@ use std::fmt::Display;
 use std::ops::Deref;
 use std::ops::DerefMut;
 
-use rand::Rng;
+use rand::RngExt as _;
 use rand::distr::Alphanumeric;
 use rand::rng;
 use serde::Deserialize;
@@ -78,8 +78,10 @@ impl Default for NonBlankString {
     /// Give a random value of length 10.
     fn default() -> Self {
         NonBlankString(
-            (0..10)
-                .map(|_| rng().sample(Alphanumeric) as char)
+            rng()
+                .sample_iter(Alphanumeric)
+                .take(10)
+                .map(char::from)
                 .collect::<String>(),
         )
     }

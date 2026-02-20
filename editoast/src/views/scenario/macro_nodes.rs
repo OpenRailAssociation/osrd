@@ -386,7 +386,7 @@ pub(in crate::views) async fn delete(
 #[cfg(test)]
 pub mod test {
     use pretty_assertions::assert_eq;
-    use rand::Rng;
+    use rand::RngExt as _;
     use rand::distr::Alphanumeric;
     use rand::rng;
 
