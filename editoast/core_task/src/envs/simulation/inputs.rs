@@ -1,4 +1,5 @@
 use core_client::simulation::PhysicsConsist;
+use itertools::MultiUnzip as _;
 use schemas::primitives::NonBlankString;
 use schemas::train_schedule::Comfort;
 use schemas::train_schedule::Distribution;
@@ -292,32 +293,33 @@ where
     Train: Clone + std::hash::Hash + Eq + Send + Sync + 'static,
 {
     fn extend<T: IntoIterator<Item = (Train, SimulationTrain)>>(&mut self, iter: T) {
-        let iter = iter.into_iter().map(
-            |(
-                train,
-                SimulationTrain {
-                    simulation_consist,
-                    pathfinding_consist,
-                    parameters,
-                    path_constraints,
-                    schedule_item_to_index: _,
-                },
-            )| {
-                (
-                    (train.clone(), Arc::new(simulation_consist)),
-                    (train.clone(), Arc::new(parameters)),
-                    (
-                        train,
-                        PathfindingTrain {
-                            consist: pathfinding_consist,
-                            constraints: path_constraints,
-                        },
-                    ),
-                )
-            },
-        );
         let (simulation_consists, simulation_params, pathfinding_trains): (Vec<_>, Vec<_>, Vec<_>) =
-            itertools::multiunzip(iter);
+            iter.into_iter()
+                .map(
+                    |(
+                        train,
+                        SimulationTrain {
+                            simulation_consist,
+                            pathfinding_consist,
+                            parameters,
+                            path_constraints,
+                            schedule_item_to_index: _,
+                        },
+                    )| {
+                        (
+                            (train.clone(), Arc::new(simulation_consist)),
+                            (train.clone(), Arc::new(parameters)),
+                            (
+                                train,
+                                PathfindingTrain {
+                                    consist: pathfinding_consist,
+                                    constraints: path_constraints,
+                                },
+                            ),
+                        )
+                    },
+                )
+                .multiunzip();
         self.pathfinding_env.extend(pathfinding_trains);
         self.inputs.consists.extend(simulation_consists);
         self.inputs.parameters.extend(simulation_params);
