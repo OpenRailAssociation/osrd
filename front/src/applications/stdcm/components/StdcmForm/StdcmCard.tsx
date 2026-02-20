@@ -2,7 +2,7 @@ import cx from 'classnames';
 
 export type StdcmCardProps = {
   name?: string;
-  tip?: 'bottom' | undefined;
+  tip?: 'bottom' | 'right' | undefined;
   disabled?: boolean;
   title?: React.ReactNode;
   children: React.ReactNode;

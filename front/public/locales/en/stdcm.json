@@ -257,8 +257,9 @@
       "bothPointAreScheduled": "The calculation cannot take into account both an origin and a destination schedule. You have to choose one or the other:",
       "global": "Please check the errors related to the following route:",
       "noScheduledPoint": "The calculation requires either the origin or destination schedule.",
+      "viaStopDurationConsistChangeTooShort": "Consist changes should take at least 30 minutes.",
+      "viaStopDurationDriverSwitchTooShort": "The driver switch stop time is usually at least 3 minutes.",
       "viaStopDurationMissing": "Please specify the stop duration for the intermediate OP.",
-      "viaStopDurationTooShort": "The driver switch stop time is usually at least 3 minutes.",
       "zeroLengthPath": "Origin and destination cannot be the same."
     }
   },
@@ -267,6 +268,9 @@
     "asSoonAsPossible": "as soon as possible",
     "ch": "CH",
     "ci": "CI",
+    "consistChange": {
+      "add": "Edit consist"
+    },
     "date": "Date",
     "destination": "Destination",
     "linkedTrain": {
