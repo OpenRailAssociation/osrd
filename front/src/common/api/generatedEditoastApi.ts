@@ -29,6 +29,7 @@ export const addTagTypes = [
   'studies',
   'sub_categories',
   'temporary_speed_limits',
+  'train_schedule_exceptions',
   'train_schedule_set',
   'work_schedules',
   'worker',
@@ -1170,6 +1171,17 @@ const injectedRtkApi = api
           },
         }),
         invalidatesTags: ['stdcm'],
+      }),
+      postTimetableByIdTrainScheduleException: build.mutation<
+        PostTimetableByIdTrainScheduleExceptionApiResponse,
+        PostTimetableByIdTrainScheduleExceptionApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/timetable/${queryArg.id}/train_schedule_exception`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['train_schedule_exceptions'],
       }),
       getTimetableByIdTrainScheduleSets: build.query<
         GetTimetableByIdTrainScheduleSetsApiResponse,
@@ -2456,6 +2468,18 @@ export type PostTimetableByIdStdcmApiArg = {
     total_mass?: number | null;
     towed_rolling_stock_id?: number | null;
     work_schedule_group_id?: number | null;
+  };
+};
+export type PostTimetableByIdTrainScheduleExceptionApiResponse =
+  /** status 200 The train schedule exception has been created */ TrainScheduleException;
+export type PostTimetableByIdTrainScheduleExceptionApiArg = {
+  /** A timetable ID */
+  id: number;
+  body: {
+    change_groups: TrainScheduleExceptionChangeGroups;
+    disabled: boolean;
+    occurrence_index?: number | null;
+    train_schedule_id: number;
   };
 };
 export type GetTimetableByIdTrainScheduleSetsApiResponse =
@@ -4823,6 +4847,29 @@ export type PathfindingItem = {
     /** The train may arrive up to this duration before the expected arrival time */
     arrival_time_tolerance_before: number;
   };
+};
+export type TrainScheduleExceptionChangeGroups = {
+  constraint_distribution?: ConstraintDistributionChangeGroup;
+  disabled?: boolean;
+  initial_speed?: InitialSpeedChangeGroup;
+  labels?: LabelsChangeGroup;
+  options?: OptionsChangeGroup;
+  path_and_schedule?: PathAndScheduleChangeGroup;
+  rolling_stock?: RollingStockChangeGroup;
+  rolling_stock_category?: RollingStockCategoryChangeGroup;
+  speed_limit_tag?: SpeedLimitTagChangeGroup;
+  start_time?: StartTimeChangeGroup;
+  train_name?: TrainNameChangeGroup;
+};
+export type TrainScheduleException = {
+  change_groups: TrainScheduleExceptionChangeGroups;
+  disabled: boolean;
+  id: number;
+  key?: string | null;
+  /** If None the exception is created, otherwise it is a modified exception */
+  occurrence_index?: number | null;
+  timetable_id: number;
+  train_schedule_id: number;
 };
 export type RollingResistancePerWeight = {
   /**  Solid friction in N·kg⁻¹; N = kg⋅m⋅s⁻²

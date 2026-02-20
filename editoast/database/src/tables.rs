@@ -866,6 +866,21 @@ diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
+    train_schedule_exception (id) {
+        id -> Int8,
+        key -> Nullable<Text>,
+        occurrence_index -> Nullable<Int8>,
+        disabled -> Bool,
+        change_groups -> Jsonb,
+        timetable_id -> Int8,
+        train_schedule_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
     train_schedule_round_trips (id) {
         id -> Int8,
         left_id -> Int8,
@@ -968,6 +983,8 @@ diesel::joinable!(temporary_speed_limit -> temporary_speed_limit_group (temporar
 diesel::joinable!(timetable_train_schedule_set -> timetable (timetable_id));
 diesel::joinable!(timetable_train_schedule_set -> train_schedule_set (train_schedule_set_id));
 diesel::joinable!(train_schedule -> train_schedule_set (train_schedule_set_id));
+diesel::joinable!(train_schedule_exception -> timetable (timetable_id));
+diesel::joinable!(train_schedule_exception -> train_schedule (train_schedule_id));
 diesel::joinable!(train_schedule_set -> catalog_entry (catalog_entry_id));
 diesel::joinable!(work_schedule -> work_schedule_group (work_schedule_group_id));
 
@@ -1027,6 +1044,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     timetable_train_schedule_set,
     towed_rolling_stock,
     train_schedule,
+    train_schedule_exception,
     train_schedule_round_trips,
     train_schedule_set,
     work_schedule,

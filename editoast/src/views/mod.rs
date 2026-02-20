@@ -232,6 +232,10 @@ fn service_router() -> router::DocumentedRouter {
                                 "/train_schedule_sets",
                                 post!(timetable::set_links_train_schedule_sets_to_timetable),
                             )
+                            .route(
+                                "/train_schedule_exception",
+                                post!(timetable::train_schedule_exceptions::create_train_schedule_exception),
+                            )
                             .route("/conflicts", get!(timetable::conflicts))
                             .route("/requirements", get!(timetable::requirements))
                             .route("/stdcm", post!(timetable::stdcm::stdcm))

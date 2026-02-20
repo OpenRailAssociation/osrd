@@ -4,6 +4,7 @@ pub mod similar_trains;
 pub mod simulation;
 pub mod stdcm;
 mod track_occupancy;
+pub mod train_schedule_exceptions;
 
 use std::collections::HashMap;
 use std::collections::HashSet;
