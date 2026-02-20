@@ -115,6 +115,18 @@ updates:
       - "dependencies"
       - "area:railjson"
   - package-ecosystem: "uv"
+    directory: "/core/scripts/"
+    schedule:
+      interval: "daily"
+    cooldown:
+      default-days: 5
+    commit-message:
+      prefix: "core: scripts:"
+    open-pull-requests-limit: 100
+    labels:
+      - "dependencies"
+      - "area:core"
+  - package-ecosystem: "uv"
     directory: "/tests/"
     schedule:
       interval: "daily"
