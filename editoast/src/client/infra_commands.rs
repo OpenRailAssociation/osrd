@@ -266,7 +266,7 @@ async fn batch_retrieve_infras(conn: &mut DbConnection, ids: &[u64]) -> anyhow::
 
 #[cfg(test)]
 mod tests {
-    use rand::Rng as _;
+    use rand::RngExt as _;
     use rand::distr::Alphanumeric;
     use rand::rng;
 
@@ -300,8 +300,10 @@ mod tests {
         let infra_name = format!(
             "{}_{}",
             "infra",
-            (0..10)
-                .map(|_| rng().sample(Alphanumeric) as char)
+            rng()
+                .sample_iter(Alphanumeric)
+                .take(10)
+                .map(char::from)
                 .collect::<String>(),
         );
         let args: ImportRailjsonArgs = ImportRailjsonArgs {
