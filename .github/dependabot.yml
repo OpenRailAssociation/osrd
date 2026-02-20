@@ -110,7 +110,7 @@ updates:
       default-days: 5
     commit-message:
       prefix: "python:"
-    open-pull-requests-limit: 0
+    open-pull-requests-limit: 100
     labels:
       - "dependencies"
       - "area:railjson"
@@ -134,7 +134,7 @@ updates:
       default-days: 5
     commit-message:
       prefix: "tests:"
-    open-pull-requests-limit: 0
+    open-pull-requests-limit: 100
     labels:
       - "dependencies"
       - "area:integration-tests"
@@ -175,7 +175,7 @@ updates:
       default-days: 5
     commit-message:
       prefix: "railway_manager_interface:"
-    open-pull-requests-limit: 0
+    open-pull-requests-limit: 100
     labels:
       - "dependencies"
       - "area:railway-manager-interface"
