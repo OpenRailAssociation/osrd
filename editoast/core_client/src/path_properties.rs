@@ -11,9 +11,7 @@ use crate::Json;
 use crate::WorkerKey;
 use crate::pathfinding::TrackRange;
 
-#[cfg(feature = "mocking_client")]
 use schemas::infra::OperationalPointPartExtension;
-#[cfg(feature = "mocking_client")]
 use schemas::infra::OperationalPointSncfExtension;
 
 #[derive(Debug, Hash, Serialize)]
@@ -43,7 +41,7 @@ pub struct PathPropertiesResponse {
 /// Property f64 values along a path. Each value is associated to a range of the path.
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 #[schema(as = core::PropertyValuesF64)]
-#[cfg_attr(feature = "mocking_client", derive(PartialEq))]
+#[derive(PartialEq)]
 pub struct PropertyValuesF64 {
     /// List of `n` boundaries of the ranges.
     /// A boundary is a distance from the beginning of the path in mm.
@@ -52,7 +50,6 @@ pub struct PropertyValuesF64 {
     values: Vec<f64>,
 }
 
-#[cfg(feature = "mocking_client")]
 impl PropertyValuesF64 {
     pub fn new(boundaries: Vec<u64>, values: Vec<f64>) -> Self {
         assert!(boundaries.len() == values.len() + 1);
@@ -63,7 +60,7 @@ impl PropertyValuesF64 {
 /// Electrification property along a path. Each value is associated to a range of the path.
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 #[schema(as = core::PropertyElectrificationValues)]
-#[cfg_attr(feature = "mocking_client", derive(PartialEq))]
+#[derive(PartialEq)]
 pub struct PropertyElectrificationValues {
     /// List of `n` boundaries of the ranges.
     /// A boundary is a distance from the beginning of the path in mm.
@@ -73,7 +70,6 @@ pub struct PropertyElectrificationValues {
     values: Vec<PropertyElectrificationValue>,
 }
 
-#[cfg(feature = "mocking_client")]
 impl PropertyElectrificationValues {
     pub fn new(boundaries: Vec<u64>, values: Vec<PropertyElectrificationValue>) -> Self {
         assert!(boundaries.len() == values.len() + 1);
@@ -83,7 +79,7 @@ impl PropertyElectrificationValues {
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 #[schema(as = core::PropertyElectrificationValue)]
-#[cfg_attr(feature = "mocking_client", derive(PartialEq))]
+#[derive(PartialEq)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum PropertyElectrificationValue {
     /// Electrified section with a given voltage
@@ -97,7 +93,7 @@ pub enum PropertyElectrificationValue {
 /// Operational point along a path.
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 #[schema(as = core::OperationalPointOnPath)]
-#[cfg_attr(feature = "mocking_client", derive(PartialEq))]
+#[derive(PartialEq)]
 pub struct OperationalPointOnPath {
     /// Id of the operational point
     #[schema(inline)]
@@ -114,7 +110,6 @@ pub struct OperationalPointOnPath {
     pub weight: Option<u8>,
 }
 
-#[cfg(feature = "mocking_client")]
 impl OperationalPointOnPath {
     pub fn new_test(id: &str, ci: i64, trigram: &str) -> Self {
         OperationalPointOnPath {
@@ -146,7 +141,6 @@ pub struct PropertyZoneValues {
     values: Vec<String>,
 }
 
-#[cfg(feature = "mocking_client")]
 impl PropertyZoneValues {
     pub fn new(boundaries: Vec<u64>, values: Vec<String>) -> Self {
         assert!(boundaries.len() == values.len() + 1);
