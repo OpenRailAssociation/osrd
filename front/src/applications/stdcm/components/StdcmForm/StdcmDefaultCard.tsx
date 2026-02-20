@@ -3,7 +3,7 @@ import StdcmCard from './StdcmCard';
 type StdcmCardProps = {
   text: string;
   Icon: React.ReactNode;
-  hasTip?: boolean;
+  tip?: 'bottom' | undefined;
   disabled?: boolean;
   onClick?: () => void;
   className?: string;
@@ -11,13 +11,13 @@ type StdcmCardProps = {
 const StdcmDefaultCard = ({
   text,
   Icon,
-  hasTip = false,
+  tip = undefined,
   onClick,
   disabled = false,
   className = 'add-via',
 }: StdcmCardProps) => (
   <button type="button" disabled={disabled} onClick={onClick}>
-    <StdcmCard hasTip={hasTip} disabled={disabled} className={className}>
+    <StdcmCard tip={tip} disabled={disabled} className={className}>
       <span className="stdcm-default-card-icon">{Icon}</span>
       <span className="stdcm-default-card-button">{text}</span>
     </StdcmCard>
