@@ -108,7 +108,7 @@ pub enum PathfindingCoreResult {
 /// A successful pathfinding result. This is also used for STDCM response.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
 #[schema(as = core::PathfindingResultSuccess)]
-#[cfg_attr(feature = "mocking_client", derive(Default))]
+#[derive(Default)]
 pub struct PathfindingResultSuccess {
     /// Full description of the path data
     pub path: TrainPath,
@@ -172,7 +172,6 @@ pub struct TrackRange {
     pub direction: Direction,
 }
 
-#[cfg(feature = "mocking_client")]
 impl TrackRange {
     pub fn new(track_section: &str, begin: u64, end: u64, direction: Direction) -> Self {
         Self {

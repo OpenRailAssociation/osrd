@@ -169,7 +169,7 @@ chrono.workspace = true
 clap.workspace = true
 colored = "3.0.0"
 common = { workspace = true }
-core_client = { workspace = true, features = ["mocking_client"] }
+core_client = { workspace = true }
 core_task = { path = "./core_task" }
 dashmap.workspace = true
 database.workspace = true
@@ -243,7 +243,7 @@ axum = { version = "0.8.4", default-features = false, features = [
   "multipart",
   "tracing",
 ] }
-core_client = { workspace = true, features = ["mocking_client"] }
+core_client = { workspace = true }
 database = { workspace = true, features = ["testing"] }
 editoast_models = { workspace = true, features = ["testing"] }
 fga = { path = "./fga", features = ["test_utilities"] }

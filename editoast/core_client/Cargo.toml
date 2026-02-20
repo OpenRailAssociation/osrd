@@ -4,9 +4,6 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 
-[features]
-mocking_client = ["dep:http"]
-
 [dependencies]
 chrono.workspace = true
 common = { workspace = true }
@@ -14,9 +11,10 @@ dashmap.workspace = true
 deadpool.workspace = true
 editoast_derive.workspace = true
 educe.workspace = true
+futures.workspace = true
 futures-util.workspace = true
 hostname.workspace = true
-http = { workspace = true, optional = true }
+http = { workspace = true }
 itertools.workspace = true
 lapin.workspace = true
 opentelemetry.workspace = true
@@ -34,7 +32,6 @@ utoipa.workspace = true
 uuid.workspace = true
 
 [dev-dependencies]
-core_client = { path = "./", features = ["mocking_client"] }
 pretty_assertions.workspace = true
 schemas = { workspace = true, features = ["testing"] }
 

@@ -1,5 +1,6 @@
 pub mod conflict_detection;
 pub mod etcs_braking_curves;
+pub mod mocking;
 pub mod mq_client;
 pub mod path_properties;
 pub mod pathfinding;
@@ -8,9 +9,10 @@ pub mod simulation;
 pub mod stdcm;
 pub mod worker_load;
 
-#[cfg(feature = "mocking_client")]
-pub mod mocking;
-
+use futures::Stream;
+use futures::StreamExt as _;
+use futures::future::Either;
+use futures::stream;
 use mq_client::MqClientError;
 use serde::Deserialize;
 use serde::Serialize;
@@ -18,6 +20,7 @@ use serde::de::DeserializeOwned;
 use std::collections::HashMap;
 use std::fmt::Display;
 use std::marker::PhantomData;
+use std::pin::pin;
 use std::time::Duration;
 use thiserror::Error;
 use tracing::trace;
@@ -51,7 +54,6 @@ impl Display for WorkerKey {
 #[derive(Debug, Clone)]
 pub enum CoreClient {
     MessageQueue(RabbitMQClient),
-    #[cfg(feature = "mocking_client")]
     Mocked(mocking::MockingClient),
 }
 
@@ -71,7 +73,6 @@ impl CoreClient {
             CoreClient::MessageQueue(mq_client) => {
                 mq_client.ping().await.map_err(|_| Error::BrokenPipe)
             }
-            #[cfg(feature = "mocking_client")]
             CoreClient::Mocked(_) => Ok(true),
         }
     }
@@ -82,40 +83,84 @@ impl CoreClient {
         skip(self, body),
         err
     )]
-    async fn fetch<B: Serialize, R: CoreResponse>(
+    async fn fetch<B, R>(
         &self,
         path: &str,
         body: Option<&B>,
         worker_key: WorkerKey,
         override_timeout: Option<Duration>,
-    ) -> Result<R::Response, Error> {
+    ) -> Result<R::Response, Error>
+    where
+        B: Serialize,
+        R: CoreResponse,
+        <R as CoreResponse>::Response: std::marker::Send,
+    {
+        let stream = self
+            .fetch_streaming::<B, R>(path, body, worker_key, override_timeout)
+            .await?;
+
+        pin!(stream)
+            .next()
+            .await
+            .ok_or(Error::UnparsableErrorOutput)?
+    }
+
+    #[tracing::instrument(
+        target = "editoast::coreclient",
+        name = "core:fetch_streaming",
+        skip(self, body),
+        err
+    )]
+    async fn fetch_streaming<B, R>(
+        &self,
+        path: &str,
+        body: Option<&B>,
+        worker_key: WorkerKey,
+        override_timeout: Option<Duration>,
+    ) -> Result<impl Stream<Item = Result<<R as CoreResponse>::Response, Error>>, Error>
+    where
+        B: Serialize,
+        R: CoreResponse,
+        <R as CoreResponse>::Response: std::marker::Send,
+    {
         trace!(
             target: "editoast::coreclient",
             body = body.and_then(|b| serde_json::to_string_pretty(b).ok()).unwrap_or_default(),
             "Request content");
+
         match self {
             CoreClient::MessageQueue(client) => {
                 // TODO: maybe implement retry?
                 // TODO: tracing: use correlation id
-
-                let response = client
-                    .call_with_response(worker_key.to_string(), path, body, true, override_timeout)
+                let stream = client
+                    .call_with_multiple_responses(
+                        worker_key.to_string(),
+                        path,
+                        body,
+                        true,
+                        override_timeout,
+                    )
                     .await
                     .map_err(Error::MqClientError)?;
 
-                if response.status == b"ok" {
-                    return R::from_bytes(&response.payload);
-                }
+                let owned_path = path.to_string();
 
-                if response.status == b"core_error" {
-                    return Err(Error::parse(&response.payload, path.to_string()));
-                }
+                Ok(Either::Left(stream.map(move |result| {
+                    let response = result.map_err(Error::MqClientError)?;
 
-                todo!("TODO: handle protocol errors")
+                    if response.status == b"ok" {
+                        return R::from_bytes(&response.payload);
+                    }
+
+                    if response.status == b"core_error" {
+                        return Err(Error::parse(&response.payload, owned_path.clone()));
+                    }
+
+                    todo!("TODO: handle protocol errors")
+                })))
             }
-            #[cfg(feature = "mocking_client")]
             CoreClient::Mocked(client) => match client.fetch_mocked::<_, B, R>(path, body) {
-                Ok(Some(response)) => Ok(response),
+                Ok(Some(response)) => Ok(Either::Right(stream::once(async { Ok(response) }))),
                 Ok(None) => Err(Error::NoResponseContent),
                 Err(mocking::MockingError { bytes, url }) => Err(Error::parse(&bytes, url)),
             },
@@ -162,6 +207,7 @@ pub trait AsCoreRequest<R>
 where
     Self: Serialize + Sized + Sync,
     R: CoreResponse,
+    <R as CoreResponse>::Response: std::marker::Send,
 {
     /// The URL path of this request
     const URL_PATH: &'static str;
@@ -181,6 +227,23 @@ where
     /// to CoreError and a trait function handle_errors would suffice?
     async fn fetch(&self, core: &CoreClient) -> Result<R::Response, Error> {
         core.fetch::<Self, R>(
+            Self::URL_PATH,
+            Some(self),
+            self.worker_key(),
+            Self::OVERRIDE_TIMEOUT,
+        )
+        .await
+    }
+
+    async fn fetch_streaming<'a, S>(
+        &'a self,
+        core: &CoreClient,
+    ) -> Result<impl Stream<Item = Result<S::Response, Error>>, Error>
+    where
+        S: CoreResponse,
+        <S as CoreResponse>::Response: 'a + Send,
+    {
+        core.fetch_streaming::<Self, S>(
             Self::URL_PATH,
             Some(self),
             self.worker_key(),
@@ -249,7 +312,6 @@ pub enum Error {
     #[error(transparent)]
     RawError(#[from] RawError),
 
-    #[cfg(feature = "mocking_client")]
     #[error(
         "The mocked response had no body configured - check out StubResponseBuilder::body if this is unexpected"
     )]
@@ -277,7 +339,6 @@ impl Clone for Error {
             Self::UnparsableErrorOutput => Self::UnparsableErrorOutput,
             Self::BrokenPipe => Self::BrokenPipe,
             Self::RawError(err) => Self::RawError(err.clone()),
-            #[cfg(feature = "mocking_client")]
             Self::NoResponseContent => Self::NoResponseContent,
             Self::MqClientError(err) => Self::MqClientError(match err {
                 MqClientError::Lapin(error) => MqClientError::Lapin(error.clone()),
