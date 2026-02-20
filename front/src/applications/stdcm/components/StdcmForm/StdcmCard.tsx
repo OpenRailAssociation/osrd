@@ -2,7 +2,7 @@ import cx from 'classnames';
 
 export type StdcmCardProps = {
   name?: string;
-  hasTip?: boolean;
+  tip?: 'bottom' | undefined;
   disabled?: boolean;
   title?: React.ReactNode;
   children: React.ReactNode;
@@ -12,14 +12,20 @@ export type StdcmCardProps = {
 
 const StdcmCard = ({
   name,
-  hasTip = false,
+  tip = undefined,
   disabled = false,
   title,
   children,
   className = '',
   testId,
 }: StdcmCardProps) => (
-  <div data-testid={testId} className={cx('stdcm-card', { 'has-tip': hasTip, disabled })}>
+  <div
+    data-testid={testId}
+    className={cx('stdcm-card', {
+      [`tip-${tip}`]: tip,
+      disabled,
+    })}
+  >
     {name && (
       <div
         className={cx(

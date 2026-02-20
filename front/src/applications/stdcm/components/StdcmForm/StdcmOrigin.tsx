@@ -20,7 +20,7 @@ const StdcmOrigin = ({ disabled = false, onItineraryChange }: StdcmItineraryProp
       title={<img src={OriginIcon} alt="origin" className="stdcm-origin-icon" />}
       className="extremity"
       disabled={disabled}
-      hasTip
+      tip="bottom"
       testId="stdcm-card-origin"
     >
       <StdcmOperationalPoint

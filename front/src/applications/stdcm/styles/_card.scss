@@ -31,7 +31,7 @@
     }
   }
 
-  &.has-tip::after {
+  &.tip-bottom::after {
     content: '';
     position: absolute;
     top: 100%;
