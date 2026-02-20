@@ -4140,6 +4140,49 @@ paths:
                       type: string
                       enum:
                       - preprocessing_simulation_error
+  /timetable/{id}/train_schedule_exception:
+    post:
+      tags:
+      - train_schedule_exceptions
+      summary: Create a train schedule exception
+      parameters:
+      - name: id
+        in: path
+        description: A timetable ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - train_schedule_id
+              - disabled
+              - change_groups
+              properties:
+                change_groups:
+                  $ref: '#/components/schemas/TrainScheduleExceptionChangeGroups'
+                disabled:
+                  type: boolean
+                occurrence_index:
+                  type:
+                  - integer
+                  - 'null'
+                  format: int64
+                train_schedule_id:
+                  type: integer
+                  format: int64
+        required: true
+      responses:
+        '200':
+          description: The train schedule exception has been created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainScheduleException'
   /timetable/{id}/train_schedule_sets:
     get:
       tags:
@@ -6156,6 +6199,10 @@ components:
       - $ref: '#/components/schemas/EditoastTowedRollingStockErrorDatabase'
       - $ref: '#/components/schemas/EditoastTowedRollingStockErrorIdNotFound'
       - $ref: '#/components/schemas/EditoastTowedRollingStockErrorIsLocked'
+      - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorDatabase'
+      - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorNotPacedTrain'
+      - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorTimetableNotFound'
+      - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorTrainScheduleNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleSetErrorDatabase'
       - $ref: '#/components/schemas/EditoastTrainScheduleSetErrorNotFound'
       - $ref: '#/components/schemas/EditoastWorkScheduleErrorDatabase'
@@ -8450,6 +8497,97 @@ components:
           type: string
           enum:
           - editoast:towedrollingstocks:IsLocked
+    EditoastTrainScheduleExceptionErrorDatabase:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:train_schedule_exception:Database
+    EditoastTrainScheduleExceptionErrorNotPacedTrain:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - train_schedule_id
+          properties:
+            train_schedule_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:train_schedule_exception:NotPacedTrain
+    EditoastTrainScheduleExceptionErrorTimetableNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - timetable_id
+          properties:
+            timetable_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:train_schedule_exception:TimetableNotFound
+    EditoastTrainScheduleExceptionErrorTrainScheduleNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - train_schedule_id
+          properties:
+            train_schedule_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:train_schedule_exception:TrainScheduleNotFound
     EditoastTrainScheduleSetErrorDatabase:
       type: object
       required:
@@ -14208,6 +14346,63 @@ components:
                 time_window:
                   $ref: '#/components/schemas/PositiveDuration'
                   description: Duration of the paced train, an ISO 8601 format is expected
+    TrainScheduleException:
+      type: object
+      required:
+      - id
+      - timetable_id
+      - train_schedule_id
+      - disabled
+      - change_groups
+      properties:
+        change_groups:
+          $ref: '#/components/schemas/TrainScheduleExceptionChangeGroups'
+        disabled:
+          type: boolean
+        id:
+          type: integer
+          format: int64
+        key:
+          type:
+          - string
+          - 'null'
+        occurrence_index:
+          type:
+          - integer
+          - 'null'
+          format: int64
+          description: If None the exception is created, otherwise it is a modified exception
+        timetable_id:
+          type: integer
+          format: int64
+        train_schedule_id:
+          type: integer
+          format: int64
+    TrainScheduleExceptionChangeGroups:
+      type: object
+      properties:
+        constraint_distribution:
+          $ref: '#/components/schemas/ConstraintDistributionChangeGroup'
+        disabled:
+          type: boolean
+        initial_speed:
+          $ref: '#/components/schemas/InitialSpeedChangeGroup'
+        labels:
+          $ref: '#/components/schemas/LabelsChangeGroup'
+        options:
+          $ref: '#/components/schemas/OptionsChangeGroup'
+        path_and_schedule:
+          $ref: '#/components/schemas/PathAndScheduleChangeGroup'
+        rolling_stock:
+          $ref: '#/components/schemas/RollingStockChangeGroup'
+        rolling_stock_category:
+          $ref: '#/components/schemas/RollingStockCategoryChangeGroup'
+        speed_limit_tag:
+          $ref: '#/components/schemas/SpeedLimitTagChangeGroup'
+        start_time:
+          $ref: '#/components/schemas/StartTimeChangeGroup'
+        train_name:
+          $ref: '#/components/schemas/TrainNameChangeGroup'
     TrainScheduleOptions:
       type: object
       properties:
