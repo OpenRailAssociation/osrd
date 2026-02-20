@@ -180,7 +180,7 @@ const Timetable = ({
           upsertTimetableItems={upsertTimetableItems}
         />
         {timetableMode === 'calendar' && (
-          <Virtualizer overscan={15}>
+          <Virtualizer>
             <CalendarTrainList
               setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
               upsertTimetableItems={upsertTimetableItems}
@@ -198,7 +198,7 @@ const Timetable = ({
         )}
         {timetableMode === 'trainScheduleSet' &&
           (timetableItemsByTrainScheduleSets ? (
-            <Virtualizer overscan={15}>
+            <Virtualizer>
               {timetableItemsByTrainScheduleSets.map(({ trainScheduleSet, catalog, trains }) => {
                 const trainScheduleSetTrainsIds = trains.map((train) => train.id);
                 const isSelected =
