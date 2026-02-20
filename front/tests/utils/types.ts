@@ -256,7 +256,7 @@ export type StdcmTranslations = {
       global: string;
       noScheduledPoint: string;
       viaStopDurationMissing: string;
-      viaStopDurationTooShort: string;
+      viaStopDurationDriverSwitchTooShort: string;
       zeroLengthPath: string;
     };
   };

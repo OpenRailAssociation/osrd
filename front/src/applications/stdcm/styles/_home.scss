@@ -70,6 +70,16 @@
             height: 20px;
           }
         }
+
+        .stdcm-consist-change-button-wrapper {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .stdcm-consist-change-item {
+          margin-block: 16px;
+          margin-left: auto;
+        }
       }
 
       .stdcm__separator {

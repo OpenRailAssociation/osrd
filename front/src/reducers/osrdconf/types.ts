@@ -168,7 +168,7 @@ export type StdcmPathStep = {
     coordinates: [number, number];
   };
 } & (
-  | { isVia: true; stopType: StdcmStopTypes; stopFor?: Duration }
+  | { isVia: true; stopType: StdcmStopTypes; stopFor?: Duration; hasConsistChange: boolean }
   | {
       isVia: false;
       arrivalType: ArrivalTimeTypes;

@@ -3,7 +3,7 @@ import StdcmCard from './StdcmCard';
 type StdcmCardProps = {
   text: string;
   Icon: React.ReactNode;
-  tip?: 'bottom' | undefined;
+  tip?: 'bottom' | 'right' | undefined;
   disabled?: boolean;
   onClick?: () => void;
   className?: string;

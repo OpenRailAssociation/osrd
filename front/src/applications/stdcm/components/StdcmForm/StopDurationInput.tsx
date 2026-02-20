@@ -25,18 +25,33 @@ const StopDurationInput = ({ pathStep }: StopDurationInputProps) => {
   );
   const debouncedStopDuration = useDebounce(stopDuration, 300);
 
-  const stopWarning: StatusWithMessage | undefined = useMemo(
-    () =>
+  const stopWarning: StatusWithMessage | undefined = useMemo(() => {
+    const isInvalidDriverStop =
       pathStep.stopType === StdcmStopTypes.DRIVER_SWITCH &&
       pathStep.stopFor !== undefined &&
-      pathStep.stopFor < new Duration({ minutes: 3 })
-        ? {
-            status: 'warning',
-            message: t('stdcmErrors.routeErrors.viaStopDurationTooShort'),
-          }
-        : undefined,
-    [pathStep.stopType, pathStep.stopFor]
-  );
+      pathStep.stopFor < new Duration({ minutes: 3 });
+
+    const isInvalidConsistChange =
+      pathStep.stopFor !== undefined &&
+      pathStep.hasConsistChange &&
+      pathStep.stopFor < new Duration({ minutes: 30 });
+
+    if (isInvalidDriverStop) {
+      return {
+        status: 'warning',
+        message: t('stdcmErrors.routeErrors.viaStopDurationDriverSwitchTooShort'),
+      };
+    }
+
+    if (isInvalidConsistChange) {
+      return {
+        status: 'warning',
+        message: t('stdcmErrors.routeErrors.viaStopDurationConsistChangeTooShort'),
+      };
+    }
+
+    return undefined;
+  }, [pathStep.stopType, pathStep.stopFor, pathStep.hasConsistChange]);
 
   useEffect(() => {
     setStopDuration(pathStep.stopFor !== undefined ? `${pathStep.stopFor.total('minute')}` : '');

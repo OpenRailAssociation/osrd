@@ -40,10 +40,16 @@ const StdcmVias = ({ disabled = false, skipAnimation, onItineraryChange }: Stdcm
     } else if (newStopType === StdcmStopTypes.SERVICE_STOP) {
       defaultStopTime = Duration.zero;
     }
+
+    let hasConsistChange = pathStep.isVia && pathStep.hasConsistChange;
+    if (newStopType !== StdcmStopTypes.SERVICE_STOP && hasConsistChange) {
+      hasConsistChange = false;
+    }
+
     dispatch(
       updateStdcmPathStep({
         id: pathStep.id,
-        updates: { stopType: newStopType, stopFor: defaultStopTime },
+        updates: { stopType: newStopType, stopFor: defaultStopTime, hasConsistChange },
       })
     );
   };

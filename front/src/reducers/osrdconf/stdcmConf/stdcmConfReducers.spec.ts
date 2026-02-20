@@ -104,6 +104,7 @@ const stdcmPathSteps: StdcmPathStep[] = [
     id: '1',
     isVia: true,
     stopType: StdcmStopTypes.PASSAGE_TIME,
+    hasConsistChange: false,
   },
   {
     operationalPoint: {
@@ -117,6 +118,7 @@ const stdcmPathSteps: StdcmPathStep[] = [
     id: '2',
     isVia: true,
     stopType: StdcmStopTypes.PASSAGE_TIME,
+    hasConsistChange: false,
   },
   {
     operationalPoint: {
@@ -130,6 +132,7 @@ const stdcmPathSteps: StdcmPathStep[] = [
     id: '3',
     isVia: true,
     stopType: StdcmStopTypes.PASSAGE_TIME,
+    hasConsistChange: false,
   },
   {
     operationalPoint: {
