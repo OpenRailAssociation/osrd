@@ -222,12 +222,20 @@ fun hasDuplicateTracks(infra: FullInfra, path: TrainPath): Boolean {
 }
 
 const val SIGNALING_SYSTEM_COST_WEIGHTING = 1e-2
+const val COST_PER_TRACK_CHANGE = 10.0
 
 private fun getRangeCost(
     range: EdgeRange<PathfindingEdge>,
     mrspBuilder: CachedBlockMRSPBuilder,
     infra: FullInfra,
 ): Double {
+    val trackNumbers =
+        infra.blockInfra
+            .getBlockZonePaths(range.edge.block)
+            .flatMap { infra.rawInfra.getZonePathChunks(it) }
+            .map { infra.rawInfra.getTrackChunkTrackNumber(it.value) }
+            .withoutConsecutiveDuplicates()
+    val trackChanges = trackNumbers.size - 1
     val edgeDuration =
         mrspBuilder.getBlockTime(range.edge.block, range.end) -
             mrspBuilder.getBlockTime(range.edge.block, range.start)
@@ -236,7 +244,8 @@ private fun getRangeCost(
             infra.signalingSimulator.sigModuleManager.getCost(
                 infra.blockInfra.getBlockSignalingSystem(range.edge.block)
             )
-    return (edgeDuration) * (1 + signalingSystemPenaltyFactor)
+    return (edgeDuration) * (1 + signalingSystemPenaltyFactor) +
+        COST_PER_TRACK_CHANGE * trackChanges
 }
 
 @WithSpan(value = "Identifying why no path was found")

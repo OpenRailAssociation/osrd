@@ -463,6 +463,7 @@ class RawInfraBuilder {
         length: Length<TrackChunk>,
         offset: Offset<TrackSection>,
         loadingGaugeConstraints: DistanceRangeMap<LoadingGaugeConstraint>,
+        trackNumber: Int?,
     ): TrackChunkId {
         val initSpeedSections = {
             distanceRangeMapOf(
@@ -498,6 +499,7 @@ class RawInfraBuilder {
                 DirectionalMap(distanceRangeMapOf(), distanceRangeMapOf()),
                 // SpeedSections will be filled later on,
                 DirectionalMap(initSpeedSections(), initSpeedSections()),
+                trackNumber,
             )
         )
     }

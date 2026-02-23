@@ -7,7 +7,6 @@ import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.OPEN
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
-import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
@@ -39,8 +38,6 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         comfort: Comfort?,
         maxRunTime: Double,
         blockAvailability: BlockAvailabilityInterface,
-        trainTag: String?,
-        temporarySpeedLimitManager: TemporarySpeedLimitManager,
     ): STDCMResult? {
         val edges = path.edges
         val lastExplorer = edges.last().infraExplorer

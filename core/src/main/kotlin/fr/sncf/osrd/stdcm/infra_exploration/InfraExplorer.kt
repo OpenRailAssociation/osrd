@@ -138,6 +138,8 @@ interface InfraExplorer {
      * of the currently known path.
      */
     fun getLookaheadEndOffset(): Offset<PhysicsPath>
+
+    fun getTrackChangeCount(): Int
 }
 
 /** Returns the current block and the lookahead blocks */
@@ -187,7 +189,6 @@ fun initInfraExplorers(
                 appendOnlyLinkedListOf(),
                 appendOnlyLinkedListOf(),
                 appendOnlyMapOf(),
-                null,
                 blockToPathProperties,
                 stepTracker = StepTracker(steps),
                 constraints = constraints,
@@ -204,12 +205,13 @@ private class InfraExplorerImpl(
     private var blockRanges: AppendOnlyLinkedList<BlockRange>,
     private var routes: AppendOnlyLinkedList<RouteRange>,
     private var blockRoutes: AppendOnlyMap<BlockId, RouteId>,
-    private var lastTrack: TrackSectionId?,
     private var trainPathCache: MutableMap<BlockId, TrainPath>,
     private var currentIndex: Int = 0,
     private var stepTracker: StepTracker,
     private var constraints: List<PathfindingConstraint<Block>>,
     override var isPathComplete: Boolean = false,
+    private var trackChangeCount: Int = 0,
+    private var lastTrackNumber: Int? = null,
 ) : InfraExplorer {
     override fun getCurrentEdgePathProperties(offset: Offset<Block>, length: Distance?): TrainPath {
         // We re-compute the routes of the current path since the cache may be incorrect
@@ -302,12 +304,13 @@ private class InfraExplorerImpl(
             this.blockRanges.shallowCopy(),
             this.routes.shallowCopy(),
             this.blockRoutes.shallowCopy(),
-            this.lastTrack,
             this.trainPathCache,
             this.currentIndex,
             this.stepTracker.clone(),
             this.constraints,
             this.isPathComplete,
+            trackChangeCount = this.trackChangeCount,
+            lastTrackNumber = this.lastTrackNumber,
         )
     }
 
@@ -378,6 +381,10 @@ private class InfraExplorerImpl(
 
     override fun getLookaheadEndOffset(): Offset<PhysicsPath> =
         blockRanges.lastOrNull()?.pathEnd ?: Offset.zero()
+
+    override fun getTrackChangeCount(): Int {
+        return trackChangeCount
+    }
 
     /**
      * Updates `incrementalPath`, `routes`, `blocks` and returns true if route can be explored.
@@ -453,6 +460,17 @@ private class InfraExplorerImpl(
                 if (isPathComplete) break // Can't extend any further
             }
         }
+
+        for (zonePath in rawInfra.getRoutePath(route)) {
+            for (chunk in rawInfra.getZonePathChunks(zonePath)) {
+                val trackNumber = rawInfra.getTrackChunkTrackNumber(chunk.value)
+                if (trackNumber != lastTrackNumber) {
+                    lastTrackNumber = trackNumber
+                    trackChangeCount++
+                }
+            }
+        }
+
         assert(seenFirstBlock)
         return true
     }

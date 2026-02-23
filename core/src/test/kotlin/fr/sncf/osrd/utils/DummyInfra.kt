@@ -461,6 +461,10 @@ class DummyInfra : RawInfra, BlockInfra {
         return LineString.make(entry, exit)
     }
 
+    override fun getTrackChunkTrackNumber(trackChunk: TrackChunkId): Int? {
+        return null
+    }
+
     override fun getTrackChunkOperationalPointParts(
         trackChunk: TrackChunkId
     ): List<OperationalPointPartId> {

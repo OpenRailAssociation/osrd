@@ -87,6 +87,8 @@ interface TrackProperties {
 
     fun getTrackChunkGeom(trackChunk: TrackChunkId): LineString
 
+    fun getTrackChunkTrackNumber(trackChunk: TrackChunkId): Int?
+
     // Operational points
     fun getTrackChunkOperationalPointParts(trackChunk: TrackChunkId): List<OperationalPointPartId>
 
