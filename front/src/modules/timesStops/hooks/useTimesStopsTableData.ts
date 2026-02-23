@@ -7,7 +7,6 @@ import { useSelector } from 'react-redux';
 import usePathOps from 'applications/operationalStudies/hooks/usePathOps';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
-import { matchOpRefAndOp } from 'applications/operationalStudies/utils';
 import type {
   PathItemLocation,
   SimulationResponseSuccess,
@@ -183,7 +182,7 @@ const useTimesStopsTableData = (
 
     const pathStepRowsById = new Map(
       selectedTrain.path.map((pathStep, stepIndex) => {
-        const matchingOp = pathStepOps.find((op) => matchOpRefAndOp(pathStep.location, op));
+        const matchingOp = pathStepOps.get(pathStep.id)?.at(0);
 
         const name = getOperationalPointName(
           matchingOp,
