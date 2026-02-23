@@ -2357,7 +2357,7 @@ export type PostTemporarySpeedLimitGroupApiArg = {
   };
 };
 export type PostTimetableApiResponse =
-  /** status 200 Timetable with train schedule ids */ TimetableResult;
+  /** status 201 Timetable with train schedule ids */ TimetableResult;
 export type PostTimetableApiArg = void;
 export type DeleteTimetableByIdApiResponse = unknown;
 export type DeleteTimetableByIdApiArg = {
