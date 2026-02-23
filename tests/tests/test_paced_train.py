@@ -267,7 +267,7 @@ def test_etcs_paced_train_braking_curves_endpoint(
     )
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     ts_response = session.post(
-        f"{EDITOAST_URL}train_schedule_sets/{etcs_scenario.train_schedule_set}/paced_trains/",
+        f"{EDITOAST_URL}train_schedule_sets/{etcs_scenario.train_schedule_set}/train_schedules/",
         json=[
             {
                 **_get_etcs_braking_curves_train_data(etcs_rolling_stock_name),

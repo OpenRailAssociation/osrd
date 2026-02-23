@@ -278,7 +278,7 @@ def _test_new_train(
     r = _post_with_timeout(
         session,
         editoast_url
-        + f"/train_schedule_sets/{scenario.train_schedule_set}/paced_trains/",
+        + f"/train_schedule_sets/{scenario.train_schedule_set}/train_schedules/",
         json=schedule_payload,
     )
     if r.status_code // 100 != 2:

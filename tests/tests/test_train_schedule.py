@@ -121,7 +121,7 @@ def test_etcs_schedule_stop_brakes_result_never_reach_mrsp(
     )
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     ts_response = session.post(
-        f"{EDITOAST_URL}train_schedule_sets/{etcs_scenario.train_schedule_set}/paced_trains/",
+        f"{EDITOAST_URL}train_schedule_sets/{etcs_scenario.train_schedule_set}/train_schedules/",
         json=[
             {
                 "train_name": "nearby EoAs + brake uphill/downhill grade + no LoA",
@@ -287,7 +287,7 @@ def test_etcs_schedule_result_stop_brake_from_mrsp(
     )
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     ts_response = session.post(
-        f"{EDITOAST_URL}train_schedule_sets/{etcs_scenario.train_schedule_set}/paced_trains/",
+        f"{EDITOAST_URL}train_schedule_sets/{etcs_scenario.train_schedule_set}/train_schedules/",
         json=[
             {
                 "train_name": "brake from MRSP: max_speed + after slowdown of the MRSP",
@@ -402,7 +402,7 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_same_location(
     )
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     ts_response = session.post(
-        f"{EDITOAST_URL}train_schedule_sets/{etcs_scenario.train_schedule_set}/paced_trains/",
+        f"{EDITOAST_URL}train_schedule_sets/{etcs_scenario.train_schedule_set}/train_schedules/",
         json=[
             {
                 "train_name": "brake from MRSP: max_speed + EoA and SvL at same location",
@@ -519,7 +519,7 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_different_locations(
     )
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     ts_response = session.post(
-        f"{EDITOAST_URL}train_schedule_sets/{etcs_scenario.train_schedule_set}/paced_trains/",
+        f"{EDITOAST_URL}train_schedule_sets/{etcs_scenario.train_schedule_set}/train_schedules/",
         json=[
             {
                 "train_name": "brake from MRSP: max_speed + EoA and SvL 100m after EoA",
@@ -658,7 +658,7 @@ def test_etcs_schedule_result_stop_on_open_signal(
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
 
     ts_response = session.post(
-        f"{EDITOAST_URL}train_schedule_sets/{etcs_scenario.train_schedule_set}/paced_trains/",
+        f"{EDITOAST_URL}train_schedule_sets/{etcs_scenario.train_schedule_set}/train_schedules/",
         json=[
             {
                 "train_name": (
@@ -789,7 +789,7 @@ def test_etcs_schedule_result_slowdowns(
     )
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     ts_response = session.post(
-        f"{EDITOAST_URL}train_schedule_sets/{etcs_scenario.train_schedule_set}/paced_trains/",
+        f"{EDITOAST_URL}train_schedule_sets/{etcs_scenario.train_schedule_set}/train_schedules/",
         json=[
             {
                 "train_name": "slowdowns to respect MRSP and ETCS",
@@ -988,7 +988,7 @@ def test_etcs_schedule_result_slowdowns_with_stop(
     )
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     ts_response = session.post(
-        f"{EDITOAST_URL}train_schedule_sets/{etcs_scenario.train_schedule_set}/paced_trains/",
+        f"{EDITOAST_URL}train_schedule_sets/{etcs_scenario.train_schedule_set}/train_schedules/",
         json=[
             {
                 "train_name": "slowdowns to respect MRSP and ETCS with intermediate stop",
@@ -1106,7 +1106,7 @@ def test_etcs_spacing_req(
     )
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     ts_response = session.post(
-        f"{EDITOAST_URL}train_schedule_sets/{etcs_scenario.train_schedule_set}/paced_trains/",
+        f"{EDITOAST_URL}train_schedule_sets/{etcs_scenario.train_schedule_set}/train_schedules/",
         json=[
             {
                 "train_name": "slowdowns to respect MRSP and ETCS with intermediate stop",
@@ -1214,7 +1214,7 @@ def test_etcs_routing_req(
     )
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     ts_response = session.post(
-        f"{EDITOAST_URL}train_schedule_sets/{etcs_scenario.train_schedule_set}/paced_trains/",
+        f"{EDITOAST_URL}train_schedule_sets/{etcs_scenario.train_schedule_set}/train_schedules/",
         json=[
             {
                 "train_name": "slowdowns to respect MRSP and ETCS with intermediate stop",
@@ -1332,7 +1332,7 @@ def test_etcs_stop_at_requirements_eoa(
     )
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     ts_response = session.post(
-        f"{EDITOAST_URL}train_schedule_sets/{etcs_scenario.train_schedule_set}/paced_trains/",
+        f"{EDITOAST_URL}train_schedule_sets/{etcs_scenario.train_schedule_set}/train_schedules/",
         json=[
             {
                 "train_name": "stop exactly at EoA from requirements",
@@ -1427,7 +1427,7 @@ def test_etcs_train_schedule_with_margins(
     )
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     ts_response = session.post(
-        f"{EDITOAST_URL}/train_schedule_sets/{etcs_scenario.train_schedule_set}/paced_trains/",
+        f"{EDITOAST_URL}/train_schedule_sets/{etcs_scenario.train_schedule_set}/train_schedules/",
         json=[
             {
                 "train_name": "etcs train with margins",
@@ -1486,7 +1486,7 @@ def test_etcs_schedule_braking_curves_endpoint(
     )
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     ts_response = session.post(
-        f"{EDITOAST_URL}train_schedule_sets/{etcs_scenario.train_schedule_set}/paced_trains/",
+        f"{EDITOAST_URL}train_schedule_sets/{etcs_scenario.train_schedule_set}/train_schedules/",
         json=[_get_etcs_braking_curves_train_data(etcs_rolling_stock_name)],
     )
 

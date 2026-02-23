@@ -293,7 +293,7 @@ pub(in crate::views) async fn delete(
     Ok(StatusCode::NO_CONTENT)
 }
 
-/// Create paced trains by batch
+/// Create train schedules by batch
 #[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
@@ -301,16 +301,16 @@ pub(in crate::views) async fn delete(
     params(TrainScheduleSetIdParam),
     request_body = Vec<TrainSchedule>,
     responses(
-        (status = 201, description = "The created paced trains", body = Vec<TrainScheduleResponse>)
+        (status = 201, description = "The created train schedules", body = Vec<TrainScheduleResponse>)
     )
 )]
-pub(in crate::views) async fn post_paced_train(
+pub(in crate::views) async fn post_train_schedule(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(TrainScheduleSetIdParam {
         id: train_schedule_set_id,
     }): Path<TrainScheduleSetIdParam>,
-    Json(paced_trains): Json<Vec<TrainSchedule>>,
+    Json(train_schedules): Json<Vec<TrainSchedule>>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())
@@ -330,15 +330,15 @@ pub(in crate::views) async fn post_paced_train(
         .into());
     }
 
-    let changesets = paced_trains
+    let changesets = train_schedules
         .into_iter()
         .map(TrainScheduleChangeset::from)
         .map(|cs| cs.train_schedule_set_id(train_schedule_set_id))
         .collect::<Vec<_>>();
 
-    // Create a batch of paced trains
-    let paced_trains: Vec<_> = models::TrainSchedule::create_batch(conn, changesets).await?;
-    let response: Vec<TrainScheduleResponse> = paced_trains.into_iter().map_into().collect();
+    // Create a batch of train schedules
+    let train_schedules: Vec<_> = models::TrainSchedule::create_batch(conn, changesets).await?;
+    let response: Vec<TrainScheduleResponse> = train_schedules.into_iter().map_into().collect();
 
     Ok((StatusCode::CREATED, Json(response)))
 }
@@ -424,28 +424,29 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn create_paced_train() {
+    async fn create_train_schedule() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
         let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
-        let paced_train_1 = simple_paced_train_base();
-        let mut paced_train_2 = simple_paced_train_base();
-        paced_train_2.paced.as_mut().unwrap().time_window =
+        let train_schedule_1 = simple_paced_train_base();
+        let mut train_schedule_2 = simple_paced_train_base();
+        train_schedule_2.paced.as_mut().unwrap().time_window =
             Duration::minutes(120).try_into().unwrap();
-        paced_train_2.paced.as_mut().unwrap().interval = Duration::seconds(30).try_into().unwrap();
+        train_schedule_2.paced.as_mut().unwrap().interval =
+            Duration::seconds(30).try_into().unwrap();
 
-        let paced_trains = vec![paced_train_1, paced_train_2.clone()];
+        let train_schedules = vec![train_schedule_1, train_schedule_2.clone()];
 
         let request = app
             .post(
                 format!(
-                    "/train_schedule_sets/{}/paced_trains",
+                    "/train_schedule_sets/{}/train_schedules",
                     train_schedule_set.id
                 )
                 .as_str(),
             )
-            .json(&paced_trains);
+            .json(&train_schedules);
 
         let response: Vec<TrainScheduleResponse> = app
             .fetch(request)
@@ -462,12 +463,12 @@ mod tests {
 
         let list_result = models::TrainSchedule::list(&mut pool.get_ok(), settings)
             .await
-            .expect("Failed to fetch paced trains");
+            .expect("Failed to fetch train schedules");
 
         assert!(list_result.len() == 2);
         assert_eq!(
             list_result[0].exceptions,
-            paced_train_2.paced.unwrap().exceptions
+            train_schedule_2.paced.unwrap().exceptions
         );
     }
 
@@ -526,7 +527,7 @@ mod tests {
         let request = app
             .post(
                 format!(
-                    "/train_schedule_sets/{}/paced_trains",
+                    "/train_schedule_sets/{}/train_schedules",
                     train_schedule_set.id
                 )
                 .as_str(),
@@ -568,7 +569,7 @@ mod tests {
         let request = app
             .post(
                 format!(
-                    "/train_schedule_sets/{}/paced_trains",
+                    "/train_schedule_sets/{}/train_schedules",
                     train_schedule_set.id
                 )
                 .as_str(),
@@ -593,21 +594,22 @@ mod tests {
         let pool = app.db_pool();
 
         let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
-        let paced_train_1 = simple_paced_train_base();
-        let mut paced_train_2 = simple_paced_train_base();
-        paced_train_2.paced.as_mut().unwrap().time_window =
+        let train_schedule_1 = simple_paced_train_base();
+        let mut train_schedule_2 = simple_paced_train_base();
+        train_schedule_2.paced.as_mut().unwrap().time_window =
             Duration::minutes(90).try_into().unwrap();
-        paced_train_2.paced.as_mut().unwrap().interval = Duration::seconds(45).try_into().unwrap();
+        train_schedule_2.paced.as_mut().unwrap().interval =
+            Duration::seconds(45).try_into().unwrap();
 
         let request = app
             .post(
                 format!(
-                    "/train_schedule_sets/{}/paced_trains",
+                    "/train_schedule_sets/{}/train_schedules",
                     train_schedule_set.id
                 )
                 .as_str(),
             )
-            .json(&vec![paced_train_1, paced_train_2]);
+            .json(&vec![train_schedule_1, train_schedule_2]);
 
         let _: Vec<TrainScheduleResponse> = app
             .fetch(request)

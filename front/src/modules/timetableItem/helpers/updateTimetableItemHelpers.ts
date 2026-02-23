@@ -41,7 +41,7 @@ export async function createPacedTrains(
   pacedTrains: TrainSchedule[]
 ): Promise<TimetableItem[]> {
   const newPacedTrains = await dispatch(
-    osrdEditoastApi.endpoints.postTrainScheduleSetsByIdPacedTrains.initiate({
+    osrdEditoastApi.endpoints.postTrainScheduleSetsByIdTrainSchedules.initiate({
       id: trainScheduleSetId,
       body: pacedTrains,
     })
