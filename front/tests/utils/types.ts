@@ -57,6 +57,7 @@ export type PdfSimulationContent = {
       station1: StationDetail;
       station2: StationDetail;
       station3: StationDetail;
+      station4: StationDetail;
     };
     disclaimer: string;
   };

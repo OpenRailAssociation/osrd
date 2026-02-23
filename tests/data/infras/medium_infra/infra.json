@@ -131,7 +131,7 @@
                     "local_track_name": "V2bis"
                 }
             ],
-            "weight": null,
+            "weight": 4,
             "extensions": {
                 "sncf": {
                     "ci": 33,
@@ -160,7 +160,7 @@
                     "local_track_name": "V2"
                 }
             ],
-            "weight": null,
+            "weight": 10,
             "extensions": {
                 "sncf": {
                     "ci": 44,
@@ -189,7 +189,7 @@
                     "local_track_name": "V1"
                 }
             ],
-            "weight": null,
+            "weight": 3,
             "extensions": {
                 "sncf": {
                     "ci": 55,

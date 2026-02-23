@@ -98,7 +98,7 @@ class Infra:
                         uic=op.uic, name=op.label
                     ),
                 },
-                weight=None,
+                weight=op.weight,
             )
             ops.append(new_op)
         return ops

@@ -74,6 +74,14 @@ const simulationSheetDetails = (): PdfSimulationContent => ({
         stopType: frTranslations.passageStop,
       },
       station3: {
+        name: '3 Mid_East_station',
+        ch: 'BV',
+        track: 'V1',
+        passageTime: '20:38',
+        tonnage: '=',
+        length: '=',
+      },
+      station4: {
         name: '3 South_station',
         ch: 'BV',
         track: 'V1',
