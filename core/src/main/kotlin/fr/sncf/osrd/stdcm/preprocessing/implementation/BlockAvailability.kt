@@ -3,6 +3,7 @@ package fr.sncf.osrd.stdcm.preprocessing.implementation
 import com.google.common.collect.Range
 import com.google.common.collect.RangeSet
 import com.google.common.collect.TreeRangeSet
+import fr.sncf.osrd.api.stdcm.RequirementsWithMetadata
 import fr.sncf.osrd.conflicts.*
 import fr.sncf.osrd.envelope_utils.DoubleBinarySearch
 import fr.sncf.osrd.path.interfaces.PhysicsPath
@@ -23,6 +24,7 @@ class BlockAvailability(
     val gridMarginBeforeTrain: Double,
     val gridMarginAfterTrain: Double,
     val internalMarginForSteps: Double,
+    val requirementsWithMetadata: RequirementsWithMetadata?,
 ) : BlockAvailabilityInterface {
 
     override fun getAvailability(
@@ -32,6 +34,7 @@ class BlockAvailability(
         startTime: Double,
     ): BlockAvailabilityInterface.Availability {
         var timeShift = 0.0
+        var conflictCause: String? = null
         var firstConflictOffset: Offset<PhysicsPath>? = null
         while (timeShift.isFinite()) {
             val shiftedStartTime = startTime + timeShift
@@ -60,6 +63,7 @@ class BlockAvailability(
                         return BlockAvailabilityInterface.Unavailable(
                             timeShift,
                             firstConflictOffset ?: startOffset,
+                            conflictCause,
                         )
                     }
                     // Availability is directly available without adding any delay
@@ -67,6 +71,7 @@ class BlockAvailability(
                 }
                 is BlockAvailabilityInterface.Unavailable -> {
                     timeShift += availability.duration
+                    availability.causedBy?.let { conflictCause = it }
 
                     // Only update the conflict offset if it hasn't been set
                     firstConflictOffset = firstConflictOffset ?: availability.firstConflictOffset
@@ -77,6 +82,7 @@ class BlockAvailability(
         return BlockAvailabilityInterface.Unavailable(
             Double.POSITIVE_INFINITY,
             firstConflictOffset ?: startOffset,
+            conflictCause,
         )
     }
 
@@ -116,6 +122,7 @@ class BlockAvailability(
                 return BlockAvailabilityInterface.Unavailable(
                     Double.POSITIVE_INFINITY,
                     availabilityProperties.firstUnavailabilityOffset,
+                    null,
                 )
             } else if (
                 availabilityProperties.minimumDelayToBecomeAvailable > minimumDelayToBecomeAvailable
@@ -136,12 +143,14 @@ class BlockAvailability(
                 return BlockAvailabilityInterface.Unavailable(
                     Double.POSITIVE_INFINITY,
                     firstUnavailabilityOffset,
+                    null,
                 )
             }
             // Adding minimumDelayToBecomeAvailable solves every planned step problem
             return BlockAvailabilityInterface.Unavailable(
                 minimumDelayToBecomeAvailable,
                 firstUnavailabilityOffset,
+                null,
             )
         }
         // Every planned step was respected
@@ -257,9 +266,15 @@ class BlockAvailability(
                         infraExplorer,
                         conflictProperties.firstConflictTime - pathStartTime,
                     )
+                val causedBy =
+                    requirementsWithMetadata
+                        ?.metadata[conflictProperties.conflictingZone]
+                        ?.firstOrNull { it.from <= endTime && it.to >= startTime }
+                        ?.trainName
                 return BlockAvailabilityInterface.Unavailable(
                     conflictProperties.minDelayWithoutConflicts,
                     firstConflictOffset,
+                    causedBy,
                 )
             }
         }
@@ -340,6 +355,7 @@ fun makeBlockAvailability(
     gridMarginBeforeTrain: Double = 0.0,
     gridMarginAfterTrain: Double = 0.0,
     timeStep: Double = 2.0,
+    requirementsWithMetadata: RequirementsWithMetadata? = null,
 ): BlockAvailabilityInterface {
     var spacingRequirements = inputSpacingRequirements
     if (gridMarginAfterTrain != 0.0 || gridMarginBeforeTrain != 0.0) {
@@ -365,6 +381,7 @@ fun makeBlockAvailability(
         gridMarginBeforeTrain,
         gridMarginAfterTrain,
         timeStep,
+        requirementsWithMetadata,
     )
 }
 
@@ -373,6 +390,7 @@ fun makeBlockAvailability(
     gridMarginBeforeTrain: Double = 0.0,
     gridMarginAfterTrain: Double = 0.0,
     timeStep: Double = 2.0,
+    requirementsWithMetadata: RequirementsWithMetadata? = null,
 ): BlockAvailabilityInterface {
     var requirements = parsedRequirements
     if (gridMarginAfterTrain != 0.0 || gridMarginBeforeTrain != 0.0) {
@@ -403,5 +421,6 @@ fun makeBlockAvailability(
         gridMarginBeforeTrain,
         gridMarginAfterTrain,
         timeStep,
+        requirementsWithMetadata,
     )
 }

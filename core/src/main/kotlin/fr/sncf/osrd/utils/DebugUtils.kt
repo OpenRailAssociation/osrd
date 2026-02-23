@@ -1,5 +1,6 @@
 package fr.sncf.osrd.utils
 
+import fr.sncf.osrd.geom.Point
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
 import fr.sncf.osrd.sim_infra.api.BlockInfra
 import fr.sncf.osrd.sim_infra.api.RawInfra
@@ -39,16 +40,21 @@ class CSVLogger(filename: String, private val keys: List<String>) {
         vararg entries: Pair<String, Any>,
         flush: Boolean = false,
     ) {
-        val block = node.infraExplorer.getCurrentBlock()
-        val geo = buildTrainPathFromBlock(rawInfra, blockInfra, block).getGeo()
-        val blockLength = blockInfra.getBlockLength(block)
-        val offset = node.locationOnEdge ?: Offset.zero()
-        var p = geo.interpolateNormalized(offset.meters / blockLength.meters)
-        if (p.lat.isNaN() || p.lon.isNaN()) p = geo.getPoints().first()
-
+        val p = node.toGeoPoint(rawInfra, blockInfra)
         val data = mutableMapOf(*entries)
         data["lat"] = p.lat
         data["lon"] = p.lon
         log(data, flush)
     }
+}
+
+/** Return the geo coordinates of a node. */
+fun STDCMNode.toGeoPoint(rawInfra: RawInfra, blockInfra: BlockInfra): Point {
+    val block = infraExplorer.getCurrentBlock()
+    val geo = buildTrainPathFromBlock(rawInfra, blockInfra, block).getGeo()
+    val blockLength = blockInfra.getBlockLength(block)
+    val offset = locationOnEdge ?: Offset.zero()
+    var p = geo.interpolateNormalized(offset.meters / blockLength.meters)
+    if (p.lat.isNaN() || p.lon.isNaN()) p = geo.getPoints().first()
+    return p
 }

@@ -141,6 +141,7 @@ internal constructor(
             prevNode.timeData,
             envelope!!,
             startOffset,
+            prevNode,
         )
     }
 

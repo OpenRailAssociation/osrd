@@ -72,6 +72,7 @@ interface BlockAvailabilityInterface {
          * offset where the train would have released a resource it has kept for too long.
          */
         val firstConflictOffset: Offset<PhysicsPath>,
+        val causedBy: String?,
     ) : Availability()
 
     /**
