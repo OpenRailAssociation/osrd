@@ -77,7 +77,7 @@ const SimulationResultMap = ({
   useEffect(() => {
     const getPathItemsCoordinates = async (
       steps: TrainSchedule['path'],
-      matchedOps: RelatedOperationalPoint[],
+      matchedOps: Map<string, RelatedOperationalPoint[]>,
       pathPropertiesOps?: PathPropertiesFormatted['operationalPoints']
     ) => {
       // 1. Get path steps track ids to fetch their track metadata
@@ -158,7 +158,7 @@ const SimulationResultMap = ({
             coordinates,
           };
         } else {
-          const matchedOp = matchedOps.find((op) => matchOpRefAndOp(location, op));
+          const matchedOp = matchedOps.get(step.id)?.at(0);
 
           const { local_track_name } = location;
           const coordinates = local_track_name

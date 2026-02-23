@@ -10,21 +10,28 @@ import {
 import type { Train } from 'reducers/osrdconf/types';
 
 /**
- * Given a train's path, return the operational points corresponding to the pathSteps of this train
+ * Given a train's path, return the operational points corresponding to the path steps of this train. The map keys are path step IDs.
  */
-const usePathOps = (infraId: number, path?: Train['path']): RelatedOperationalPoint[] => {
-  const operationalPointReferences: OperationalPointReference[] = useMemo(
+const usePathOps = (
+  infraId: number,
+  path?: Train['path']
+): Map<string, RelatedOperationalPoint[]> => {
+  const opRefMap: Map<string, OperationalPointReference> = useMemo(
     () =>
-      (path ?? [])
-        .map((pathItem) => {
-          if ('operational_point' in pathItem.location) {
-            return pathItem.location.operational_point;
-          }
-          return null;
-        })
-        .filter((opRef) => opRef !== null),
+      new Map(
+        path
+          ?.map((pathItem) => {
+            if ('operational_point' in pathItem.location) {
+              return [pathItem.id, pathItem.location.operational_point] as const;
+            }
+            return null;
+          })
+          .filter((entry) => entry !== null)
+      ),
     [path]
   );
+
+  const operationalPointReferences = useMemo(() => [...opRefMap.values()], [opRefMap]);
 
   const { data: operationalPoints } =
     osrdEditoastApi.endpoints.postInfraByInfraIdMatchOperationalPoints.useQuery(
@@ -38,15 +45,12 @@ const usePathOps = (infraId: number, path?: Train['path']): RelatedOperationalPo
         : skipToken
     );
 
+  // The /match_operational_points endpoint returns as many output elements
+  // as there are input OP refs, in the same order
   return useMemo(() => {
-    if (
-      !operationalPoints?.related_operational_points ||
-      operationalPoints.related_operational_points.length === 0
-    )
-      return [];
-
-    // To remove empty arrays related to invalid step and flatten
-    return operationalPoints.related_operational_points.filter((ops) => ops.length !== 0).flat();
+    const relatedOps = operationalPoints?.related_operational_points;
+    const pathStepIds = [...opRefMap.keys()];
+    return new Map(relatedOps?.map((ops, index) => [pathStepIds[index], ops]));
   }, [operationalPoints]);
 };
 
