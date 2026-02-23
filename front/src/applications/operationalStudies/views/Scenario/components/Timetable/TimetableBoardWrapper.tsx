@@ -50,6 +50,7 @@ const TimetableBoardWrapper = ({
   timetableItemToEditData,
   timetableItems = [],
   timetableItemsWithDetails,
+  refreshNge,
   projectingOnSimulatedPathException,
   selectedTimetableItemIds,
   setSelectedTimetableItemIds,
@@ -306,6 +307,7 @@ const TimetableBoardWrapper = ({
         timetableItemToEditData={timetableItemToEditData}
         timetableItems={timetableItems}
         timetableItemsWithDetails={timetableItemsWithDetails}
+        refreshNge={refreshNge}
         projectingOnSimulatedPathException={projectingOnSimulatedPathException}
       />
     </BoardWrapper>
