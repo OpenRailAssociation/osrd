@@ -149,15 +149,15 @@
       "InvalidNumberOfRefs": "Expected at least two operational points references"
     },
     "paced_train": {
-      "BatchNotFound": "'{{count}}' paced train(s) could not be found",
+      "BatchNotFound": "'{{count}}' train schedule(s) could not be found",
       "Database": "Internal error (database)",
       "ExceptionNotFound": "Exception '{{exception_key}}' could not be found",
       "InfraNotFound": "Infrastructure '{{infra_id}}' could not be found",
-      "NotFound": "Paced train '{{paced_train_id}}' could not be found",
+      "NotFound": "Train schedule '{{train_schedule_id}}' could not be found",
       "OperationalPointNotFound": "Operational point '{{reference}}' could not be found",
-      "PathfindingFailed": "Pathfinding failed for paced train '{{paced_train_id}}'",
+      "PathfindingFailed": "Pathfinding failed for train schedule '{{train_schedule_id}}'",
       "RollingStockNotFound": "Rolling Stock '{{rolling_stock_name}}' could not be found",
-      "SimulationFailed": "Simulation failed for paced train '{{paced_train_id}}'",
+      "SimulationFailed": "Simulation failed for train schedule '{{train_schedule_id}}'",
       "TrainScheduleSetNotFound": "Train schedule set '{{train_schedule_set_id}}' could not be found"
     },
     "pathfinding": {
@@ -287,22 +287,6 @@
       "Database": "Internal error",
       "IdNotFound": "Towed rolling stock '{{towed_rolling_stock_id}}' could not be found",
       "IsLocked": "Towed rolling stock '{{towed_rolling_stock_id}}' is locked"
-    },
-    "train_schedule": {
-      "BatchShouldHaveSameTimetable": "Batch should have the same timetable",
-      "BatchTrainScheduleNotFound": "Some Train Schedules could not be found",
-      "Database": "Internal error (database)",
-      "InfraNotFound": "Infrastructure '{{infra_id}}' could not be found",
-      "NoSimulation": "No simulation given",
-      "NoTrainSchedules": "No train schedules given",
-      "NotFound": "Train Schedule '{{train_schedule_id}}' could not be found",
-      "OperationalPointNotFound": "Operational Point '{{operational_point_id}}' could not be found",
-      "PathNotFound": "Path '{{path_id}}' could not be found",
-      "PathfindingFailed": "Pathfinding failed for train schedule '{{train_schedule_id}}'",
-      "RollingStockNotFound": "Rolling Stock '{{rolling_stock_name}}' could not be found",
-      "SimulationFailed": "Simulation failed for train schedule '{{train_schedule_id}}'",
-      "TimetableNotFound": "Timetable '{{timetable_id}}' could not be found",
-      "UnsimulatedTrainSchedule": "Train Schedule '{{train_schedule_id}}' is not simulated"
     },
     "train_schedule_exception": {
       "BatchNotFound": "'{{count}}' train schedule exception(s) could not be found",

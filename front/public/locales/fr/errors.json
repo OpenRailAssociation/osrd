@@ -149,15 +149,15 @@
       "InvalidNumberOfRefs": "Au moins 2 références de points opérationnels attendues"
     },
     "paced_train": {
-      "BatchNotFound": "'{{count}}' mission(s) sont introuvable(s)",
+      "BatchNotFound": "'{{count}}' circulation(s) sont introuvable(s)",
       "Database": "Erreur interne (base de données)",
       "ExceptionNotFound": "Exception '{{exception_key}}' non trouvée",
       "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
-      "NotFound": "Mission '{{paced_train_id}}' non trouvée",
+      "NotFound": "Circulation '{{train_schedule_id}}' non trouvée",
       "OperationalPointNotFound": "Point remarquable '{{reference}}' non trouvé",
-      "PathfindingFailed": "La recherche de chemin n'a pas abouti pour la mission '{{paced_train_id}}'",
+      "PathfindingFailed": "La recherche de chemin n'a pas abouti pour la circulation '{{train_schedule_id}}'",
       "RollingStockNotFound": "Matériel roulant '{{rolling_stock_name}}' non trouvé",
-      "SimulationFailed": "La simulation n'a pas abouti pour la mission '{{paced_train_id}}'",
+      "SimulationFailed": "La simulation n'a pas abouti pour la circulation '{{train_schedule_id}}'",
       "TrainScheduleSetNotFound": "Paquet de train '{{train_schedule_set_id}}' non trouvé"
     },
     "pathfinding": {
@@ -287,22 +287,6 @@
       "Database": "Erreur interne",
       "IdNotFound": "Matériel remorqué '{{towed_rolling_stock_id}}' non trouvé",
       "IsLocked": "Matériel remorqué '{{towed_rolling_stock_id}}' est verrouillé"
-    },
-    "train_schedule": {
-      "BatchShouldHaveSameTimetable": "Le lot doit avoir une grille horaire identique",
-      "BatchTrainScheduleNotFound": "Certaines circulations sont introuvables",
-      "Database": "Erreur interne (base de données)",
-      "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
-      "NoSimulation": "Aucune simulation fournie",
-      "NoTrainSchedules": "Aucune circulation de train fournie",
-      "NotFound": "Circulation '{{train_schedule_id}}' non trouvée",
-      "OperationalPointNotFound": "Point opérationnel '{{operational_point_id}}' non trouvé",
-      "PathNotFound": "Chemin '{{path_id}}' non trouvé",
-      "PathfindingFailed": "La recherche de chemin n'a pas abouti pour la circulation '{{train_schedule_id}}'",
-      "RollingStockNotFound": "Matériel roulant '{{rolling_stock_name}}' non trouvé",
-      "SimulationFailed": "La simulation n'a pas abouti pour la circulation '{{train_schedule_id}}'",
-      "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée",
-      "UnsimulatedTrainSchedule": "La circulation '{{train_schedule_id}}' n'est pas simulée"
     },
     "train_schedule_exception": {
       "BatchNotFound": "'{{count}}' exception(s) non trouvée(s)",

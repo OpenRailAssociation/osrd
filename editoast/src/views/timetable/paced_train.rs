@@ -67,13 +67,13 @@ use editoast_models::rolling_stock::RollingStock;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "paced_train")]
-enum PacedTrainError {
-    #[error("{count} paced train(s) could not be found")]
+enum TrainScheduleError {
+    #[error("{count} train schedule(s) could not be found")]
     #[editoast_error(status = 404)]
     BatchNotFound { count: usize },
-    #[error("Paced train '{paced_train_id}', could not be found")]
+    #[error("Train schedule '{train_schedule_id}', could not be found")]
     #[editoast_error(status = 404)]
-    NotFound { paced_train_id: i64 },
+    NotFound { train_schedule_id: i64 },
     #[error("Infra '{infra_id}', could not be found")]
     #[editoast_error(status = 404)]
     InfraNotFound { infra_id: i64 },
@@ -88,12 +88,12 @@ enum PacedTrainError {
     #[error("Rolling stock '{rolling_stock_name}', could not be found")]
     #[editoast_error(status = 404)]
     RollingStockNotFound { rolling_stock_name: String },
-    #[error("Pathfinding failed for paced train '{paced_train_id}'")]
+    #[error("Pathfinding failed for train schedule '{train_schedule_id}'")]
     #[editoast_error(status = 404)]
-    PathfindingFailed { paced_train_id: i64 },
-    #[error("Simulation failed for train schedule '{paced_train_id}'")]
+    PathfindingFailed { train_schedule_id: i64 },
+    #[error("Simulation failed for train schedule '{train_schedule_id}'")]
     #[editoast_error(status = 404)]
-    SimulationFailed { paced_train_id: i64 },
+    SimulationFailed { train_schedule_id: i64 },
     #[error("Train schedule set '{train_schedule_set_id}', could not be found")]
     #[editoast_error(status = 404)]
     TrainScheduleSetNotFound { train_schedule_set_id: i64 },
@@ -155,9 +155,7 @@ pub(in crate::views) async fn get_by_id(
 
     let train_schedule =
         models::TrainSchedule::retrieve_or_fail(conn.clone(), train_schedule_id, || {
-            PacedTrainError::NotFound {
-                paced_train_id: train_schedule_id,
-            }
+            TrainScheduleError::NotFound { train_schedule_id }
         })
         .await?;
 
@@ -196,8 +194,8 @@ pub(in crate::views) async fn update_paced_train(
     let conn = &mut db_pool.get().await?;
     let paced_train_changeset: TrainScheduleChangeset = paced_train_base.into();
     paced_train_changeset
-        .update_or_fail(conn, train_schedule_id, || PacedTrainError::NotFound {
-            paced_train_id: train_schedule_id,
+        .update_or_fail(conn, train_schedule_id, || TrainScheduleError::NotFound {
+            train_schedule_id,
         })
         .await?;
 
@@ -236,7 +234,7 @@ pub(in crate::views) async fn delete(
 
     let conn = &mut db_pool.get().await?;
     models::TrainSchedule::delete_batch_or_fail(conn, paced_train_ids, |count| {
-        PacedTrainError::BatchNotFound { count }
+        TrainScheduleError::BatchNotFound { count }
     })
     .await?;
 
@@ -303,7 +301,7 @@ pub(in crate::views) async fn simulation_summary(
     let conn = &mut db_pool.get().await?;
 
     let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || {
-        PacedTrainError::InfraNotFound { infra_id }
+        TrainScheduleError::InfraNotFound { infra_id }
     })
     .await?;
 
@@ -317,7 +315,7 @@ pub(in crate::views) async fn simulation_summary(
 
     let paced_trains: Vec<models::TrainSchedule> =
         models::TrainSchedule::retrieve_batch_or_fail(conn, paced_train_ids, |missing| {
-            PacedTrainError::BatchNotFound {
+            TrainScheduleError::BatchNotFound {
                 count: missing.len(),
             }
         })
@@ -439,7 +437,7 @@ pub(in crate::views) async fn get_path(
     let mut valkey_conn = valkey_client.get_connection().await?;
 
     let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || {
-        PacedTrainError::InfraNotFound { infra_id }
+        TrainScheduleError::InfraNotFound { infra_id }
     })
     .await?;
 
@@ -453,9 +451,7 @@ pub(in crate::views) async fn get_path(
 
     let paced_train =
         models::TrainSchedule::retrieve_or_fail(conn.clone(), train_schedule_id, || {
-            PacedTrainError::NotFound {
-                paced_train_id: train_schedule_id,
-            }
+            TrainScheduleError::NotFound { train_schedule_id }
         })
         .await?;
 
@@ -465,7 +461,7 @@ pub(in crate::views) async fn get_path(
                 .exceptions
                 .iter()
                 .find(|e| e.key == exception_key)
-                .ok_or_else(|| PacedTrainError::ExceptionNotFound {
+                .ok_or_else(|| TrainScheduleError::ExceptionNotFound {
                     exception_key: exception_key.clone(),
                 })?;
 
@@ -531,7 +527,7 @@ pub(in crate::views) async fn simulation(
 
     // Retrieve infra or fail
     let infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
-        PacedTrainError::InfraNotFound { infra_id }
+        TrainScheduleError::InfraNotFound { infra_id }
     })
     .await?;
 
@@ -546,9 +542,7 @@ pub(in crate::views) async fn simulation(
     // Retrieve paced_train or fail
     let paced_train =
         models::TrainSchedule::retrieve_or_fail(db_pool.get().await?, train_schedule_id, || {
-            PacedTrainError::NotFound {
-                paced_train_id: train_schedule_id,
-            }
+            TrainScheduleError::NotFound { train_schedule_id }
         })
         .await?;
 
@@ -558,7 +552,7 @@ pub(in crate::views) async fn simulation(
                 .exceptions
                 .iter()
                 .find(|e| e.key == exception_key)
-                .ok_or_else(|| PacedTrainError::ExceptionNotFound {
+                .ok_or_else(|| TrainScheduleError::ExceptionNotFound {
                     exception_key: exception_key.clone(),
                 })?;
 
@@ -622,7 +616,7 @@ pub(in crate::views) async fn etcs_braking_curves(
 
     // Retrieve infra or fail
     let infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
-        PacedTrainError::InfraNotFound { infra_id }
+        TrainScheduleError::InfraNotFound { infra_id }
     })
     .await?;
 
@@ -637,9 +631,7 @@ pub(in crate::views) async fn etcs_braking_curves(
     // Retrieve paced_train or fail
     let paced_train =
         models::TrainSchedule::retrieve_or_fail(db_pool.get().await?, train_schedule_id, || {
-            PacedTrainError::NotFound {
-                paced_train_id: train_schedule_id,
-            }
+            TrainScheduleError::NotFound { train_schedule_id }
         })
         .await?;
 
@@ -649,7 +641,7 @@ pub(in crate::views) async fn etcs_braking_curves(
                 .exceptions
                 .iter()
                 .find(|e| e.key == exception_key)
-                .ok_or_else(|| PacedTrainError::ExceptionNotFound {
+                .ok_or_else(|| TrainScheduleError::ExceptionNotFound {
                     exception_key: exception_key.clone(),
                 })?;
 
@@ -676,10 +668,7 @@ pub(in crate::views) async fn etcs_braking_curves(
     let pathfinding_response: PathfindingResultSuccess = match pathfinding_result.as_ref() {
         PathfindingResult::Success(path) => path.clone(),
         _ => {
-            return Err(PacedTrainError::PathfindingFailed {
-                paced_train_id: train_schedule_id,
-            }
-            .into());
+            return Err(TrainScheduleError::PathfindingFailed { train_schedule_id }.into());
         }
     };
 
@@ -687,10 +676,7 @@ pub(in crate::views) async fn etcs_braking_curves(
     let mrsp = match simulation_result.as_ref() {
         simulation::Response::Success(SimulationResponseSuccess { mrsp, .. }) => mrsp.clone(),
         _ => {
-            return Err(PacedTrainError::SimulationFailed {
-                paced_train_id: train_schedule_id,
-            }
-            .into());
+            return Err(TrainScheduleError::SimulationFailed { train_schedule_id }.into());
         }
     };
 
@@ -698,7 +684,7 @@ pub(in crate::views) async fn etcs_braking_curves(
     let rs = RollingStock::retrieve_or_fail(
         db_pool.get().await?,
         train_schedule.rolling_stock_name.clone(),
-        || PacedTrainError::RollingStockNotFound {
+        || TrainScheduleError::RollingStockNotFound {
             rolling_stock_name: train_schedule.rolling_stock_name.clone(),
         },
     )
@@ -785,7 +771,7 @@ pub(in crate::views) async fn project_path(
     }): Json<ProjectPathForm>,
 ) -> Result<Json<HashMap<i64, ProjectPathPacedTrainResult>>> {
     let infra = &Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
-        PacedTrainError::InfraNotFound { infra_id }
+        TrainScheduleError::InfraNotFound { infra_id }
     })
     .await?;
 
@@ -808,7 +794,7 @@ pub(in crate::views) async fn project_path(
 
     let paced_trains: Vec<models::TrainSchedule> =
         models::TrainSchedule::retrieve_batch_or_fail(conn, paced_train_ids, |missing| {
-            PacedTrainError::BatchNotFound {
+            TrainScheduleError::BatchNotFound {
                 count: missing.len(),
             }
         })
@@ -922,7 +908,7 @@ pub(in crate::views) async fn project_path_op(
     }): Json<ProjectPathOperationalPointForm>,
 ) -> Result<Json<HashMap<i64, ProjectPathPacedTrainResult>>> {
     let infra = &Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
-        PacedTrainError::InfraNotFound { infra_id }
+        TrainScheduleError::InfraNotFound { infra_id }
     })
     .await?;
 
@@ -945,7 +931,7 @@ pub(in crate::views) async fn project_path_op(
 
     let paced_trains: Vec<models::TrainSchedule> =
         models::TrainSchedule::retrieve_batch_or_fail(conn, train_ids, |missing| {
-            PacedTrainError::BatchNotFound {
+            TrainScheduleError::BatchNotFound {
                 count: missing.len(),
             }
         })
@@ -1116,7 +1102,7 @@ pub(in crate::views) async fn occupancy_blocks(
     .await?;
 
     let infra = &Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
-        PacedTrainError::InfraNotFound { infra_id }
+        TrainScheduleError::InfraNotFound { infra_id }
     })
     .await?;
 
@@ -1124,7 +1110,7 @@ pub(in crate::views) async fn occupancy_blocks(
 
     let paced_trains: Vec<_> =
         models::TrainSchedule::retrieve_batch_or_fail(conn, paced_train_ids, |missing| {
-            PacedTrainError::BatchNotFound {
+            TrainScheduleError::BatchNotFound {
                 count: missing.len(),
             }
         })
@@ -1287,7 +1273,7 @@ pub(in crate::views) async fn track_occupancy(
 
     // Load infrastructure and paced trains
     let infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
-        PacedTrainError::InfraNotFound { infra_id }
+        TrainScheduleError::InfraNotFound { infra_id }
     })
     .await?;
 
@@ -1295,7 +1281,7 @@ pub(in crate::views) async fn track_occupancy(
 
     let paced_trains: Vec<models::TrainSchedule> =
         models::TrainSchedule::retrieve_batch_or_fail(conn, paced_train_ids, |missing| {
-            PacedTrainError::BatchNotFound {
+            TrainScheduleError::BatchNotFound {
                 count: missing.len(),
             }
         })
@@ -1420,7 +1406,7 @@ async fn get_operational_point(
                 db_pool.get().await?,
                 (infra_id, operational_point.to_string()),
                 || {
-                    PacedTrainError::OperationalPointNotFound {
+                    TrainScheduleError::OperationalPointNotFound {
                         reference: operational_point_reference.clone(),
                     }
                     .into()
@@ -1437,13 +1423,13 @@ async fn get_operational_point(
             &[trigram.to_string()],
         )
         .await
-        .map_err(|e| PacedTrainError::Database(e.into()))?
+        .map_err(|e| TrainScheduleError::Database(e.into()))?
         .into_iter()
         .find(|op| {
             op.schema.extensions.sncf.as_ref().map(|s| s.ch.as_str()) == secondary_code.as_deref()
         })
         .ok_or_else(|| {
-            PacedTrainError::OperationalPointNotFound {
+            TrainScheduleError::OperationalPointNotFound {
                 reference: operational_point_reference.clone(),
             }
             .into()
@@ -1457,13 +1443,13 @@ async fn get_operational_point(
             &[*uic],
         )
         .await
-        .map_err(|e| PacedTrainError::Database(e.into()))?
+        .map_err(|e| TrainScheduleError::Database(e.into()))?
         .into_iter()
         .find(|op| {
             op.schema.extensions.sncf.as_ref().map(|s| s.ch.as_str()) == secondary_code.as_deref()
         })
         .ok_or_else(|| {
-            PacedTrainError::OperationalPointNotFound {
+            TrainScheduleError::OperationalPointNotFound {
                 reference: operational_point_reference.clone(),
             }
             .into()
@@ -1504,7 +1490,7 @@ pub(in crate::views) async fn move_paced_trains_to_another_train_schedule_set(
     }
 
     TrainScheduleSet::exists_or_fail(&mut db_pool.get().await?, train_schedule_set_id, || {
-        PacedTrainError::TrainScheduleSetNotFound {
+        TrainScheduleError::TrainScheduleSetNotFound {
             train_schedule_set_id,
         }
     })
@@ -1513,7 +1499,7 @@ pub(in crate::views) async fn move_paced_trains_to_another_train_schedule_set(
     let paced_trains: Vec<_> = models::TrainSchedule::retrieve_batch_or_fail(
         &mut db_pool.get().await?,
         paced_train_ids.clone(),
-        |missing| PacedTrainError::BatchNotFound {
+        |missing| TrainScheduleError::BatchNotFound {
             count: missing.len(),
         },
     )
