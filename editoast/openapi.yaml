@@ -6224,16 +6224,6 @@ components:
       - $ref: '#/components/schemas/EditoastOperationErrorObjectNotFound'
       - $ref: '#/components/schemas/EditoastOperationalPointProjectionErrorInvalidNumberOfDistances'
       - $ref: '#/components/schemas/EditoastOperationalPointProjectionErrorInvalidNumberOfRefs'
-      - $ref: '#/components/schemas/EditoastPacedTrainErrorBatchNotFound'
-      - $ref: '#/components/schemas/EditoastPacedTrainErrorDatabase'
-      - $ref: '#/components/schemas/EditoastPacedTrainErrorExceptionNotFound'
-      - $ref: '#/components/schemas/EditoastPacedTrainErrorInfraNotFound'
-      - $ref: '#/components/schemas/EditoastPacedTrainErrorNotFound'
-      - $ref: '#/components/schemas/EditoastPacedTrainErrorOperationalPointNotFound'
-      - $ref: '#/components/schemas/EditoastPacedTrainErrorPathfindingFailed'
-      - $ref: '#/components/schemas/EditoastPacedTrainErrorRollingStockNotFound'
-      - $ref: '#/components/schemas/EditoastPacedTrainErrorSimulationFailed'
-      - $ref: '#/components/schemas/EditoastPacedTrainErrorTrainScheduleSetNotFound'
       - $ref: '#/components/schemas/EditoastPathfindingErrorDatabase'
       - $ref: '#/components/schemas/EditoastPathfindingErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastPathfindingViewErrorsEndingTrackLocationNotFound'
@@ -6297,6 +6287,16 @@ components:
       - $ref: '#/components/schemas/EditoastTowedRollingStockErrorDatabase'
       - $ref: '#/components/schemas/EditoastTowedRollingStockErrorIdNotFound'
       - $ref: '#/components/schemas/EditoastTowedRollingStockErrorIsLocked'
+      - $ref: '#/components/schemas/EditoastTrainScheduleErrorBatchNotFound'
+      - $ref: '#/components/schemas/EditoastTrainScheduleErrorDatabase'
+      - $ref: '#/components/schemas/EditoastTrainScheduleErrorExceptionNotFound'
+      - $ref: '#/components/schemas/EditoastTrainScheduleErrorInfraNotFound'
+      - $ref: '#/components/schemas/EditoastTrainScheduleErrorNotFound'
+      - $ref: '#/components/schemas/EditoastTrainScheduleErrorOperationalPointNotFound'
+      - $ref: '#/components/schemas/EditoastTrainScheduleErrorPathfindingFailed'
+      - $ref: '#/components/schemas/EditoastTrainScheduleErrorRollingStockNotFound'
+      - $ref: '#/components/schemas/EditoastTrainScheduleErrorSimulationFailed'
+      - $ref: '#/components/schemas/EditoastTrainScheduleErrorTrainScheduleSetNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorBatchNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorDatabase'
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorNotFound'
@@ -6955,241 +6955,6 @@ components:
           type: string
           enum:
           - editoast:operationalPointProjection:InvalidNumberOfRefs
-    EditoastPacedTrainErrorBatchNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - count
-          properties:
-            count:
-              type: integer
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:paced_train:BatchNotFound
-    EditoastPacedTrainErrorDatabase:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:paced_train:Database
-    EditoastPacedTrainErrorExceptionNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - exception_key
-          properties:
-            exception_key:
-              type: string
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:paced_train:ExceptionNotFound
-    EditoastPacedTrainErrorInfraNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - infra_id
-          properties:
-            infra_id:
-              type: integer
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:paced_train:InfraNotFound
-    EditoastPacedTrainErrorNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - paced_train_id
-          properties:
-            paced_train_id:
-              type: integer
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:paced_train:NotFound
-    EditoastPacedTrainErrorOperationalPointNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - reference
-          properties:
-            reference:
-              type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:paced_train:OperationalPointNotFound
-    EditoastPacedTrainErrorPathfindingFailed:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - paced_train_id
-          properties:
-            paced_train_id:
-              type: integer
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:paced_train:PathfindingFailed
-    EditoastPacedTrainErrorRollingStockNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - rolling_stock_name
-          properties:
-            rolling_stock_name:
-              type: string
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:paced_train:RollingStockNotFound
-    EditoastPacedTrainErrorSimulationFailed:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - paced_train_id
-          properties:
-            paced_train_id:
-              type: integer
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:paced_train:SimulationFailed
-    EditoastPacedTrainErrorTrainScheduleSetNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - train_schedule_set_id
-          properties:
-            train_schedule_set_id:
-              type: integer
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:paced_train:TrainScheduleSetNotFound
     EditoastPathfindingErrorDatabase:
       type: object
       required:
@@ -8597,6 +8362,241 @@ components:
           type: string
           enum:
           - editoast:towedrollingstocks:IsLocked
+    EditoastTrainScheduleErrorBatchNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - count
+          properties:
+            count:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:paced_train:BatchNotFound
+    EditoastTrainScheduleErrorDatabase:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:paced_train:Database
+    EditoastTrainScheduleErrorExceptionNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - exception_key
+          properties:
+            exception_key:
+              type: string
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:paced_train:ExceptionNotFound
+    EditoastTrainScheduleErrorInfraNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - infra_id
+          properties:
+            infra_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:paced_train:InfraNotFound
+    EditoastTrainScheduleErrorNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - train_schedule_id
+          properties:
+            train_schedule_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:paced_train:NotFound
+    EditoastTrainScheduleErrorOperationalPointNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - reference
+          properties:
+            reference:
+              type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:paced_train:OperationalPointNotFound
+    EditoastTrainScheduleErrorPathfindingFailed:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - train_schedule_id
+          properties:
+            train_schedule_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:paced_train:PathfindingFailed
+    EditoastTrainScheduleErrorRollingStockNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - rolling_stock_name
+          properties:
+            rolling_stock_name:
+              type: string
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:paced_train:RollingStockNotFound
+    EditoastTrainScheduleErrorSimulationFailed:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - train_schedule_id
+          properties:
+            train_schedule_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:paced_train:SimulationFailed
+    EditoastTrainScheduleErrorTrainScheduleSetNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - train_schedule_set_id
+          properties:
+            train_schedule_set_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:paced_train:TrainScheduleSetNotFound
     EditoastTrainScheduleExceptionErrorBatchNotFound:
       type: object
       required:
