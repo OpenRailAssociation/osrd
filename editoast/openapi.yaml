@@ -3745,14 +3745,12 @@ paths:
       - timetable
       summary: Create a timetable
       responses:
-        '200':
+        '201':
           description: Timetable with train schedule ids
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/TimetableResult'
-        '404':
-          description: Timetable not found
   /timetable/{id}:
     delete:
       tags:

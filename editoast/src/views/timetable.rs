@@ -118,14 +118,13 @@ pub struct TimetableIdParam {
     post, path = "",
     tag = "timetable",
     responses(
-        (status = 200, description = "Timetable with train schedule ids", body = TimetableResult),
-        (status = 404, description = "Timetable not found"),
+        (status = 201, description = "Timetable with train schedule ids", body = TimetableResult),
     ),
 )]
 pub(in crate::views) async fn post(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
-) -> Result<Json<TimetableResult>> {
+) -> Result<impl IntoResponse> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())
         .await
@@ -137,8 +136,9 @@ pub(in crate::views) async fn post(
     let conn = &mut db_pool.get().await?;
 
     let timetable = Timetable::changeset().create(conn).await?;
+    let response: TimetableResult = timetable.into();
 
-    Ok(Json(timetable.into()))
+    Ok((StatusCode::CREATED, Json(response)))
 }
 
 /// Delete a timetable
@@ -949,7 +949,7 @@ mod tests {
         let created_timetable: TimetableResult = app
             .fetch(request)
             .await
-            .assert_status(StatusCode::OK)
+            .assert_status(StatusCode::CREATED)
             .json_into();
 
         let retrieved_timetable =
