@@ -15,7 +15,7 @@
 
 [versions]
 kotlin = '2.3.10'
-ksp = '2.3.5'
+ksp = '2.3.6'
 kotlinx-coroutines = '1.10.+'
 logback = '1.5.+'
 moshi = '1.15.2'
