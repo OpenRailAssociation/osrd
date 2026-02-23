@@ -38,6 +38,7 @@ type TimetableProps = {
   timetableItemToEditData?: TimetableItemToEditData;
   timetableItems?: TimetableItem[];
   timetableItemsWithDetails: TimetableItemWithDetails[];
+  refreshNge: () => Promise<void>;
   selectedTimetableItemIds: TimetableItemId[];
   projectingOnSimulatedPathException: boolean | undefined;
 };
@@ -52,6 +53,7 @@ const Timetable = ({
   timetableItemToEditData,
   timetableItems = [],
   timetableItemsWithDetails,
+  refreshNge,
   selectedTimetableItemIds,
   projectingOnSimulatedPathException,
 }: TimetableProps) => {
@@ -172,7 +174,7 @@ const Timetable = ({
           setShowTrainDetails={setShowTrainDetails}
           setIsSelectMode={setIsSelectMode}
           setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
-          refreshNge={() => Promise.resolve()}
+          refreshNge={refreshNge}
           handleDeleteTimetableItems={handleDeleteTimetableItems}
           handleMoveTimetableItems={() => openMoveDialog(selectedTimetableItemIds)}
           timetableMode={timetableMode}
