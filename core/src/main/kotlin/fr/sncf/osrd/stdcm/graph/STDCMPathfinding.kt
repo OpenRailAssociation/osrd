@@ -11,12 +11,13 @@ import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.TrackSectionId
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
-import fr.sncf.osrd.stdcm.ProgressLogger
 import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
+import fr.sncf.osrd.stdcm.tracing.FailureExplainer
+import fr.sncf.osrd.stdcm.tracing.ProgressLogger
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.LogAggregator
 import fr.sncf.osrd.utils.units.Offset
@@ -61,6 +62,7 @@ fun findPath(
     temporarySpeedLimitManager: TemporarySpeedLimitManager,
     allowedTrackSections: Set<TrackSectionId>? = null,
     searchMetadata: STDCMGraph.SearchMetadata? = null,
+    failureExplainer: FailureExplainer? = null,
 ): STDCMResult? {
     return STDCMPathfinding(
             fullInfra,
@@ -78,6 +80,7 @@ fun findPath(
             temporarySpeedLimitManager,
             allowedTrackSections,
             searchMetadata,
+            failureExplainer,
         )
         .findPath()
 }
@@ -98,6 +101,7 @@ class STDCMPathfinding(
     private val temporarySpeedLimitManager: TemporarySpeedLimitManager,
     private val allowedTrackSections: Set<TrackSectionId>?,
     private val searchMetadata: STDCMGraph.SearchMetadata?,
+    private val failureExplainer: FailureExplainer?,
 ) {
 
     private var starts: Set<STDCMNode> = HashSet()
@@ -122,6 +126,7 @@ class STDCMPathfinding(
             temporarySpeedLimitManager,
             constraints,
             searchMetadata,
+            failureExplainer,
         )
 
     @WithSpan(value = "STDCM pathfinding", kind = SpanKind.SERVER)

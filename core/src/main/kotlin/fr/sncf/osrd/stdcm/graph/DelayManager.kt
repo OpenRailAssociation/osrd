@@ -5,6 +5,7 @@ import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface.Availability
+import fr.sncf.osrd.stdcm.tracing.FailureExplainer
 import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -22,8 +23,9 @@ internal constructor(
     private val maxRunTime: Double,
     private val blockAvailability: BlockAvailabilityInterface,
     private val graph: STDCMGraph,
-    private val internalMargin:
-        Double, // Margin added to every occupancy, to account for binary search tolerance
+    // Margin added to every occupancy, to account for binary search tolerance
+    private val internalMargin: Double,
+    private val failureExplainer: FailureExplainer?,
 ) {
     /**
      * Returns one value per "opening" (interval between two unavailable times). Always returns the
@@ -34,12 +36,14 @@ internal constructor(
         timeData: TimeData,
         envelope: Envelope,
         startOffset: Offset<Block>,
+        prevNode: STDCMNode,
     ): NavigableSet<Double> {
         val startTime = timeData.earliestReachableTime
         val maximumDelay = computeMaximumDelay(timeData)
         val res = TreeSet<Double>()
         val endOffset = startOffset + fromMeters(envelope.endPos)
         var time = startTime
+        var prevConflict: BlockAvailabilityInterface.Unavailable? = null
         while (java.lang.Double.isFinite(time)) {
             if (time - startTime > maximumDelay) break
             val availability =
@@ -47,14 +51,31 @@ internal constructor(
             time +=
                 when (availability) {
                     is BlockAvailabilityInterface.Available -> {
-                        if (availability.maximumDelay >= internalMargin) res.add(time - startTime)
+                        if (availability.maximumDelay >= internalMargin) {
+                            res.add(time - startTime)
+                            if (prevConflict != null && prevConflict.causedBy != null)
+                                failureExplainer?.conflictCallback(
+                                    prevNode,
+                                    prevConflict.duration,
+                                    false,
+                                    prevConflict.causedBy,
+                                )
+                        }
                         availability.maximumDelay + internalMargin
                     }
                     is BlockAvailabilityInterface.Unavailable -> {
+                        prevConflict = availability
                         availability.duration + internalMargin
                     }
                 }
         }
+        if (prevConflict != null && prevConflict.causedBy != null)
+            failureExplainer?.conflictCallback(
+                prevNode,
+                prevConflict.duration,
+                res.isEmpty(),
+                prevConflict.causedBy,
+            )
         return res
     }
 

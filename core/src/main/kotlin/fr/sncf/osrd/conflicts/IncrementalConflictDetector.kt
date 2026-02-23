@@ -17,6 +17,7 @@ data class ConflictResponse(
     val minDelayWithoutConflicts: Double,
     // Time at which the first conflict happened
     val firstConflictTime: Double,
+    val conflictingZone: ZoneId,
 ) : IncrementalConflictResponse
 
 data class NoConflictResponse(
@@ -49,10 +50,8 @@ class IncrementalConflictDetector(private val spacingZoneUses: ParsedRequirement
     ): IncrementalConflictResponse {
         val minDelayWithoutConflicts = minDelayWithoutConflicts(spacingRequirements)
         if (minDelayWithoutConflicts != 0.0) { // There are initial conflicts
-            return ConflictResponse(
-                minDelayWithoutConflicts,
-                earliestConflictTime(spacingRequirements),
-            )
+            val conflictData = earliestConflictTime(spacingRequirements)
+            return ConflictResponse(minDelayWithoutConflicts, conflictData.time, conflictData.zone)
         } else { // There are no initial conflicts
             var maxDelay = Double.POSITIVE_INFINITY
             var timeOfNextConflict = Double.POSITIVE_INFINITY
@@ -67,20 +66,27 @@ class IncrementalConflictDetector(private val spacingZoneUses: ParsedRequirement
         }
     }
 
+    private data class ConflictData(val time: Double, val zone: ZoneId)
+
     /**
      * Returns the earliest time at which there is a conflict (a resource is used by the new train
      * and in the initial requirements).
      */
-    private fun earliestConflictTime(spacingRequirements: List<SpacingRequirement>): Double {
+    private fun earliestConflictTime(spacingRequirements: List<SpacingRequirement>): ConflictData {
         var res = Double.POSITIVE_INFINITY
+        var zone: ZoneId? = null
         for (spacingRequirement in spacingRequirements) {
             val map = spacingZoneUses[spacingRequirement.zone] ?: continue
             val entry = map.higherEntry(spacingRequirement.beginTime) ?: continue
             if (entry.value.lowerEndpoint() > spacingRequirement.endTime) continue
             val firstConflictTime = max(entry.value.lowerEndpoint(), spacingRequirement.beginTime)
-            res = min(res, firstConflictTime)
+            if (res > firstConflictTime) {
+                res = firstConflictTime
+                zone = spacingRequirement.zone
+            }
         }
-        return res
+        require(zone != null) { "Couldn't find the matching zone after identifying a conflict" }
+        return ConflictData(res, zone)
     }
 
     /**

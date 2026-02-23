@@ -48,6 +48,7 @@ import fr.sncf.osrd.stdcm.graph.logger
 import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.PlannedTimingData
 import fr.sncf.osrd.stdcm.preprocessing.implementation.makeBlockAvailability
+import fr.sncf.osrd.stdcm.tracing.FailureExplainer
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.Direction
@@ -123,6 +124,8 @@ class STDCMEndpoint(
             val steps = parseSteps(infra, request.pathItems, request.startTime, rollingStock.length)
             val requirements = getRequirements(request, infra, timetableCacheManager)
             val allowedTrackSections = parseTrackSectionIds(infra, request.allowedTrackSections)
+            val failureExplainer =
+                FailureExplainer(request.startTime, infra.rawInfra, infra.blockInfra)
 
             // Run the STDCM pathfinding
             val path =
@@ -137,6 +140,7 @@ class STDCMEndpoint(
                         gridMarginBeforeTrain = request.timeGapBefore.seconds,
                         gridMarginAfterTrain = request.timeGapAfter.seconds,
                         timeStep = request.timeStep!!.seconds,
+                        requirementsWithMetadata = requirements,
                     ),
                     request.timeStep.seconds,
                     request.maximumDepartureDelay!!.seconds,
@@ -147,8 +151,10 @@ class STDCMEndpoint(
                     temporarySpeedLimitManager,
                     allowedTrackSections,
                     STDCMGraph.SearchMetadata(request.startTime, requirements.metadata, s3Context),
+                    failureExplainer = failureExplainer,
                 )
             if (path == null || hasDuplicateTracks(infra, path.trainPath)) {
+                failureExplainer.saveReport(s3Context)
                 val response = PathNotFound()
                 return RsJson(RsWithBody(stdcmResponseAdapter.toJson(response)))
             }

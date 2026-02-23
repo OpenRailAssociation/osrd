@@ -19,6 +19,7 @@ import fr.sncf.osrd.stdcm.graph.visited_node_tracking.VisitedNodes
 import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
+import fr.sncf.osrd.stdcm.tracing.FailureExplainer
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.units.meters
 import java.lang.Double.isFinite
@@ -48,12 +49,20 @@ class STDCMGraph(
     val temporarySpeedLimitManager: TemporarySpeedLimitManager = TemporarySpeedLimitManager(),
     constraints: ConstraintCombiner,
     val searchMetadata: SearchMetadata?,
+    failureExplainer: FailureExplainer?,
 ) : Graph<STDCMNode, STDCMEdge> {
     val rawInfra = fullInfra.rawInfra
     val blockInfra = fullInfra.blockInfra
     var stdcmSimulations: STDCMSimulations = STDCMSimulations()
     val delayManager: DelayManager =
-        DelayManager(minScheduleTimeStart, maxRunTime, blockAvailability, this, timeStep)
+        DelayManager(
+            minScheduleTimeStart,
+            maxRunTime,
+            blockAvailability,
+            this,
+            timeStep,
+            failureExplainer,
+        )
     val allowanceManager = EngineeringAllowanceManager(rollingStock.constGamma, this)
     val backtrackingManager: BacktrackingManager = BacktrackingManager(this)
     val maxSpeedEnvBuilder =

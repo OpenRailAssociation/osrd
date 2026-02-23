@@ -20,6 +20,7 @@ import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.graph.STDCMGraph
 import fr.sncf.osrd.stdcm.graph.findPath
 import fr.sncf.osrd.stdcm.preprocessing.implementation.makeBlockAvailability
+import fr.sncf.osrd.stdcm.tracing.FailureExplainer
 import fr.sncf.osrd.utils.CSVLogger
 import java.io.File
 import java.io.IOException
@@ -182,6 +183,7 @@ class BenchSTDCM : CliCommand {
                                 gridMarginBeforeTrain = request.timeGapBefore.seconds,
                                 gridMarginAfterTrain = request.timeGapAfter.seconds,
                                 timeStep = request.timeStep!!.seconds,
+                                requirementsWithMetadata = requirements,
                             ),
                             request.timeStep.seconds,
                             request.maximumDepartureDelay!!.seconds,
@@ -196,6 +198,7 @@ class BenchSTDCM : CliCommand {
                                 requirements.metadata,
                                 null,
                             ),
+                            FailureExplainer(request.startTime, infra.rawInfra, infra.blockInfra),
                         )
                     if (path != null && hasDuplicateTracks(infra, path.trainPath)) path = null
                 } catch (e: Exception) {

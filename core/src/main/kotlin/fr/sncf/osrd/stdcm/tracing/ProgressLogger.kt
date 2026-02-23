@@ -1,4 +1,4 @@
-package fr.sncf.osrd.stdcm
+package fr.sncf.osrd.stdcm.tracing
 
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
 import fr.sncf.osrd.stdcm.graph.STDCMGraph
@@ -8,7 +8,6 @@ import fr.sncf.osrd.utils.units.Duration
 import fr.sncf.osrd.utils.units.seconds
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Span
-import java.time.Duration.*
 import java.time.Instant
 import kotlin.math.pow
 
@@ -24,7 +23,8 @@ data class ProgressLogger(
     private val thresholdDistance = 1.0 / nStepsProgress.toDouble()
     private var nSamplesReached = 1 // Avoids first node
     private var seenSteps = 0
-    private var nextMemoryReport = Instant.now() + ofMillis(memoryReportTimeInterval.milliseconds)
+    private var nextMemoryReport =
+        Instant.now() + java.time.Duration.ofMillis(memoryReportTimeInterval.milliseconds)
 
     /** Process one node, logging it if it reaches a new threshold */
     fun processNode(node: STDCMNode) {
@@ -66,7 +66,7 @@ data class ProgressLogger(
         }
 
         if (Instant.now() >= nextMemoryReport) {
-            nextMemoryReport += ofMillis(memoryReportTimeInterval.milliseconds)
+            nextMemoryReport += java.time.Duration.ofMillis(memoryReportTimeInterval.milliseconds)
             val rt = Runtime.getRuntime()
             val max = rt.maxMemory()
             val free = rt.freeMemory()

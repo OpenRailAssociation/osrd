@@ -171,7 +171,11 @@ class DummyBlockAvailability(
              minimumDelay += recursiveDelay.duration
         }
         val conflictTravelledOffset = conflictOffset - startOffset.distance
-        return BlockAvailabilityInterface.Unavailable(minimumDelay, conflictTravelledOffset.cast())
+        return BlockAvailabilityInterface.Unavailable(
+            minimumDelay,
+            conflictTravelledOffset.cast(),
+            null,
+        )
     }
 
     /**
