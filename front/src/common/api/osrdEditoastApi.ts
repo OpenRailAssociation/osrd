@@ -260,7 +260,7 @@ const osrdEditoastApi = generatedEditoastApi
         invalidatesTags: ['timetable', 'scenarios'],
       },
       postTrainScheduleSetsByIdTrainSchedules: {
-        invalidatesTags: ['train_schedule_set', 'scenarios'],
+        invalidatesTags: ['train_schedule_set', 'scenarios', 'timetable'],
       },
 
       // Project handling
