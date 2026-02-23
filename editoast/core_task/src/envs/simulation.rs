@@ -45,7 +45,7 @@ where
 ///
 /// It is necessary to obtain a path to run a simulation, but pathfinding request may fail.
 /// The error is forwarded by [SimulationOutput::PathfindingFailure].
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 #[cfg_attr(test, derive(PartialEq))]
 #[expect(clippy::large_enum_variant)] // success is large, we can Box it if it becomes problematic but it's less convenient
 pub enum SimulationOutput {
