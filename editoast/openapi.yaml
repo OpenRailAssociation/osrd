@@ -3743,7 +3743,7 @@ paths:
       summary: Create a timetable
       responses:
         '200':
-          description: Timetable with train schedules ids
+          description: Timetable with train schedule ids
           content:
             application/json:
               schema:
@@ -3806,54 +3806,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Conflict'
-  /timetable/{id}/paced_trains:
-    get:
-      tags:
-      - timetable
-      summary: Return a specific timetable with its associated paced trains
-      parameters:
-      - name: id
-        in: path
-        description: A timetable ID
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: page
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int64
-          default: 1
-          minimum: 1
-      - name: page_size
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int64
-          default: 200
-          maximum: 200
-          minimum: 1
-      responses:
-        '200':
-          description: Timetable with paced train ids
-          content:
-            application/json:
-              schema:
-                allOf:
-                - $ref: '#/components/schemas/PaginationStats'
-                - type: object
-                  required:
-                  - results
-                  properties:
-                    results:
-                      type: array
-                      items:
-                        $ref: '#/components/schemas/TrainScheduleResponse'
-        '404':
-          description: Timetable not found
   /timetable/{id}/requirements:
     get:
       tags:
@@ -4263,6 +4215,54 @@ paths:
       responses:
         '204':
           description: The train schedule set has been linked to the timetable
+  /timetable/{id}/train_schedules:
+    get:
+      tags:
+      - timetable
+      summary: Return a specific timetable with its associated paced trains
+      parameters:
+      - name: id
+        in: path
+        description: A timetable ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: 1
+          minimum: 1
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: 200
+          maximum: 200
+          minimum: 1
+      responses:
+        '200':
+          description: Timetable with train schedule ids
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/PaginationStats'
+                - type: object
+                  required:
+                  - results
+                  properties:
+                    results:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/TrainScheduleResponse'
+        '404':
+          description: Timetable not found
   /towed_rolling_stock:
     get:
       tags:

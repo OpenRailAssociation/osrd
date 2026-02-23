@@ -66,7 +66,7 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
 
   const [spaceTimeData, setSpaceTimeData] = useState<TrainSpaceTimeData[]>([]);
 
-  const { data: timetable } = osrdEditoastApi.endpoints.getAllTimetableByIdPacedTrains.useQuery({
+  const { data: timetable } = osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.useQuery({
     timetableId,
   });
 

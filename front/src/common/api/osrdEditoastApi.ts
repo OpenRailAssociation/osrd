@@ -30,7 +30,7 @@ export type PostTimetableByIdStdcmApiResponseWithTraceId = PostTimetableByIdStdc
 const osrdEditoastApi = generatedEditoastApi
   .injectEndpoints({
     endpoints: (builder) => ({
-      getAllTimetableByIdPacedTrains: builder.query<
+      getAllTimetableByIdTrainSchedules: builder.query<
         TrainScheduleResponse[],
         { timetableId: number }
       >({
@@ -41,7 +41,7 @@ const osrdEditoastApi = generatedEditoastApi
           const result: TrainScheduleResponse[] = [];
           while (!reachEnd) {
             const data = await dispatch(
-              osrdEditoastApi.endpoints.getTimetableByIdPacedTrains.initiate(
+              osrdEditoastApi.endpoints.getTimetableByIdTrainSchedules.initiate(
                 {
                   id: timetableId,
                   pageSize,

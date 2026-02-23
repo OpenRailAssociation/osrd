@@ -82,7 +82,7 @@ export const ScenarioMiniCard = ({
   const { closeModal } = useContext(ModalContext);
 
   const [getTimetableItems] =
-    osrdEditoastApi.endpoints.getAllTimetableByIdPacedTrains.useLazyQuery();
+    osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.useLazyQuery();
   const [getSpeedLimitTags] =
     osrdEditoastApi.endpoints.getInfraByInfraIdSpeedLimitTags.useLazyQuery();
 

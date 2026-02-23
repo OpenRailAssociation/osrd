@@ -1115,19 +1115,6 @@ const injectedRtkApi = api
         }),
         providesTags: ['timetable'],
       }),
-      getTimetableByIdPacedTrains: build.query<
-        GetTimetableByIdPacedTrainsApiResponse,
-        GetTimetableByIdPacedTrainsApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/timetable/${queryArg.id}/paced_trains`,
-          params: {
-            page: queryArg.page,
-            page_size: queryArg.pageSize,
-          },
-        }),
-        providesTags: ['timetable'],
-      }),
       getTimetableByIdRequirements: build.query<
         GetTimetableByIdRequirementsApiResponse,
         GetTimetableByIdRequirementsApiArg
@@ -1188,6 +1175,19 @@ const injectedRtkApi = api
           body: queryArg.body,
         }),
         invalidatesTags: ['timetable', 'train_schedule_set'],
+      }),
+      getTimetableByIdTrainSchedules: build.query<
+        GetTimetableByIdTrainSchedulesApiResponse,
+        GetTimetableByIdTrainSchedulesApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/timetable/${queryArg.id}/train_schedules`,
+          params: {
+            page: queryArg.page,
+            page_size: queryArg.pageSize,
+          },
+        }),
+        providesTags: ['timetable'],
       }),
       getTowedRollingStock: build.query<
         GetTowedRollingStockApiResponse,
@@ -2343,7 +2343,7 @@ export type PostTemporarySpeedLimitGroupApiArg = {
   };
 };
 export type PostTimetableApiResponse =
-  /** status 200 Timetable with train schedules ids */ TimetableResult;
+  /** status 200 Timetable with train schedule ids */ TimetableResult;
 export type PostTimetableApiArg = void;
 export type DeleteTimetableByIdApiResponse = unknown;
 export type DeleteTimetableByIdApiArg = {
@@ -2356,16 +2356,6 @@ export type GetTimetableByIdConflictsApiArg = {
   id: number;
   infraId: number;
   electricalProfileSetId?: number;
-};
-export type GetTimetableByIdPacedTrainsApiResponse =
-  /** status 200 Timetable with paced train ids */ PaginationStats & {
-    results: TrainScheduleResponse[];
-  };
-export type GetTimetableByIdPacedTrainsApiArg = {
-  /** A timetable ID */
-  id: number;
-  page?: number;
-  pageSize?: number;
 };
 export type GetTimetableByIdRequirementsApiResponse =
   /** status 200 The paginated list of timetable requirements */ PaginationStats & {
@@ -2477,6 +2467,16 @@ export type PostTimetableByIdTrainScheduleSetsApiArg = {
   body: {
     train_schedule_set_ids: number[];
   };
+};
+export type GetTimetableByIdTrainSchedulesApiResponse =
+  /** status 200 Timetable with train schedule ids */ PaginationStats & {
+    results: TrainScheduleResponse[];
+  };
+export type GetTimetableByIdTrainSchedulesApiArg = {
+  /** A timetable ID */
+  id: number;
+  page?: number;
+  pageSize?: number;
 };
 export type GetTowedRollingStockApiResponse = /** status 200  */ PaginationStats & {
   results: TowedRollingStock[];
