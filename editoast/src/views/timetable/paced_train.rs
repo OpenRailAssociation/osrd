@@ -119,7 +119,7 @@ impl From<models::TrainSchedule> for TrainScheduleResponse {
 }
 
 #[derive(Debug, IntoParams, Deserialize)]
-pub(in crate::views) struct PacedTrainIdParam {
+pub(in crate::views) struct TrainScheduleIdParam {
     id: i64,
 }
 
@@ -128,7 +128,7 @@ pub(in crate::views) struct PacedTrainIdParam {
 #[utoipa::path(
     get, path = "",
     tags = ["timetable", "paced_train"],
-    params(PacedTrainIdParam),
+    params(TrainScheduleIdParam),
     responses(
         (status = 200, body = TrainScheduleResponse, description = "The requested paced train")
     )
@@ -136,7 +136,9 @@ pub(in crate::views) struct PacedTrainIdParam {
 pub(in crate::views) async fn get_by_id(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
-    Path(PacedTrainIdParam { id: paced_train_id }): Path<PacedTrainIdParam>,
+    Path(TrainScheduleIdParam {
+        id: train_schedule_id,
+    }): Path<TrainScheduleIdParam>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
@@ -149,8 +151,10 @@ pub(in crate::views) async fn get_by_id(
     let conn = &mut db_pool.get().await?;
 
     let train_schedule =
-        models::TrainSchedule::retrieve_or_fail(conn.clone(), paced_train_id, || {
-            PacedTrainError::NotFound { paced_train_id }
+        models::TrainSchedule::retrieve_or_fail(conn.clone(), train_schedule_id, || {
+            PacedTrainError::NotFound {
+                paced_train_id: train_schedule_id,
+            }
         })
         .await?;
 
@@ -164,7 +168,7 @@ pub(in crate::views) async fn get_by_id(
 #[utoipa::path(
     put, path = "",
     tags = ["timetable", "paced_train"],
-    params(PacedTrainIdParam),
+    params(TrainScheduleIdParam),
     request_body = TrainSchedule,
     responses(
         (status = 204, description = "The paced train has been updated")
@@ -173,7 +177,9 @@ pub(in crate::views) async fn get_by_id(
 pub(in crate::views) async fn update_paced_train(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
-    Path(PacedTrainIdParam { id: paced_train_id }): Path<PacedTrainIdParam>,
+    Path(TrainScheduleIdParam {
+        id: train_schedule_id,
+    }): Path<TrainScheduleIdParam>,
     Json(paced_train_base): Json<TrainSchedule>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
@@ -187,8 +193,8 @@ pub(in crate::views) async fn update_paced_train(
     let conn = &mut db_pool.get().await?;
     let paced_train_changeset: TrainScheduleChangeset = paced_train_base.into();
     paced_train_changeset
-        .update_or_fail(conn, paced_train_id, || PacedTrainError::NotFound {
-            paced_train_id,
+        .update_or_fail(conn, train_schedule_id, || PacedTrainError::NotFound {
+            paced_train_id: train_schedule_id,
         })
         .await?;
 
@@ -398,7 +404,7 @@ pub(in crate::views) struct ExceptionQueryParam {
 #[utoipa::path(
     get, path = "",
     tags = ["paced_train", "pathfinding"],
-    params(PacedTrainIdParam, InfraIdQueryParam, ExceptionQueryParam),
+    params(TrainScheduleIdParam, InfraIdQueryParam, ExceptionQueryParam),
     responses(
         (status = 200, description = "The path", body = PathfindingResult),
         (status = 404, description = "Infrastructure or Train schedule not found")
@@ -413,7 +419,9 @@ pub(in crate::views) async fn get_path(
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
-    Path(PacedTrainIdParam { id: paced_train_id }): Path<PacedTrainIdParam>,
+    Path(TrainScheduleIdParam {
+        id: train_schedule_id,
+    }): Path<TrainScheduleIdParam>,
     Query(InfraIdQueryParam { infra_id }): Query<InfraIdQueryParam>,
     Query(ExceptionQueryParam { exception_key }): Query<ExceptionQueryParam>,
 ) -> Result<Json<PathfindingResult>> {
@@ -440,10 +448,13 @@ pub(in crate::views) async fn get_path(
     })
     .await?;
 
-    let paced_train = models::TrainSchedule::retrieve_or_fail(conn.clone(), paced_train_id, || {
-        PacedTrainError::NotFound { paced_train_id }
-    })
-    .await?;
+    let paced_train =
+        models::TrainSchedule::retrieve_or_fail(conn.clone(), train_schedule_id, || {
+            PacedTrainError::NotFound {
+                paced_train_id: train_schedule_id,
+            }
+        })
+        .await?;
 
     let train_schedule = match exception_key {
         Some(exception_key) => {
@@ -484,7 +495,7 @@ pub struct ElectricalProfileSetIdQueryParam {
 #[utoipa::path(
     get, path = "",
     tag = "paced_train",
-    params(PacedTrainIdParam, InfraIdQueryParam, ElectricalProfileSetIdQueryParam, ExceptionQueryParam),
+    params(TrainScheduleIdParam, InfraIdQueryParam, ElectricalProfileSetIdQueryParam, ExceptionQueryParam),
     responses(
         (status = 200, description = "Simulation Output", body = simulation::Response),
     ),
@@ -498,7 +509,9 @@ pub(in crate::views) async fn simulation(
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
-    Path(PacedTrainIdParam { id: paced_train_id }): Path<PacedTrainIdParam>,
+    Path(TrainScheduleIdParam {
+        id: train_schedule_id,
+    }): Path<TrainScheduleIdParam>,
     Query(InfraIdQueryParam { infra_id }): Query<InfraIdQueryParam>,
     Query(ElectricalProfileSetIdQueryParam {
         electrical_profile_set_id,
@@ -529,8 +542,10 @@ pub(in crate::views) async fn simulation(
 
     // Retrieve paced_train or fail
     let paced_train =
-        models::TrainSchedule::retrieve_or_fail(db_pool.get().await?, paced_train_id, || {
-            PacedTrainError::NotFound { paced_train_id }
+        models::TrainSchedule::retrieve_or_fail(db_pool.get().await?, train_schedule_id, || {
+            PacedTrainError::NotFound {
+                paced_train_id: train_schedule_id,
+            }
         })
         .await?;
 
@@ -571,7 +586,7 @@ pub(in crate::views) async fn simulation(
 #[utoipa::path(
     get, path = "",
     tags = ["paced_train", "etcs_braking_curves"],
-    params(PacedTrainIdParam, InfraIdQueryParam, ElectricalProfileSetIdQueryParam, ExceptionQueryParam),
+    params(TrainScheduleIdParam, InfraIdQueryParam, ElectricalProfileSetIdQueryParam, ExceptionQueryParam),
     responses(
         (status = 200, description = "ETCS Braking Curves Output", body = core_client::etcs_braking_curves::Response),
     ),
@@ -585,7 +600,9 @@ pub(in crate::views) async fn etcs_braking_curves(
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
-    Path(PacedTrainIdParam { id: paced_train_id }): Path<PacedTrainIdParam>,
+    Path(TrainScheduleIdParam {
+        id: train_schedule_id,
+    }): Path<TrainScheduleIdParam>,
     Query(InfraIdQueryParam { infra_id }): Query<InfraIdQueryParam>,
     Query(ElectricalProfileSetIdQueryParam {
         electrical_profile_set_id,
@@ -616,8 +633,10 @@ pub(in crate::views) async fn etcs_braking_curves(
 
     // Retrieve paced_train or fail
     let paced_train =
-        models::TrainSchedule::retrieve_or_fail(db_pool.get().await?, paced_train_id, || {
-            PacedTrainError::NotFound { paced_train_id }
+        models::TrainSchedule::retrieve_or_fail(db_pool.get().await?, train_schedule_id, || {
+            PacedTrainError::NotFound {
+                paced_train_id: train_schedule_id,
+            }
         })
         .await?;
 
@@ -654,7 +673,10 @@ pub(in crate::views) async fn etcs_braking_curves(
     let pathfinding_response: PathfindingResultSuccess = match pathfinding_result.as_ref() {
         PathfindingResult::Success(path) => path.clone(),
         _ => {
-            return Err(PacedTrainError::PathfindingFailed { paced_train_id }.into());
+            return Err(PacedTrainError::PathfindingFailed {
+                paced_train_id: train_schedule_id,
+            }
+            .into());
         }
     };
 
@@ -662,7 +684,10 @@ pub(in crate::views) async fn etcs_braking_curves(
     let mrsp = match simulation_result.as_ref() {
         simulation::Response::Success(SimulationResponseSuccess { mrsp, .. }) => mrsp.clone(),
         _ => {
-            return Err(PacedTrainError::SimulationFailed { paced_train_id }.into());
+            return Err(PacedTrainError::SimulationFailed {
+                paced_train_id: train_schedule_id,
+            }
+            .into());
         }
     };
 
