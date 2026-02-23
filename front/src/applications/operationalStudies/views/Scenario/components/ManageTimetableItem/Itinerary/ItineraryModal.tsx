@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
 import { ArrowSwitch, FrameAll, Plus } from '@osrd-project/ui-icons';
@@ -234,34 +234,46 @@ const ItineraryModal = ({
     }
   }, [storePathSteps, displayTimetableItemManagement]);
 
-  const pathfindingSteps = pathSteps.filter((s) => {
-    if (!s.location) return false;
-    const meta = pathStepsMetadataById.get(s.id);
-    return !!meta && !meta.isInvalid;
-  });
-
-  const pathfindingLocations = pathfindingSteps.map((s) => s.location);
-
-  const metadataByPathStepId = new Map(
-    pathfindingSteps.map((s) => [s.id, pathStepsMetadataById.get(s.id)!])
+  const pathfindingStepsWithLocations = useMemo(
+    () =>
+      pathSteps.filter((s) => {
+        if (!s.location) return false;
+        const meta = pathStepsMetadataById.get(s.id);
+        return !!meta && !meta.isInvalid;
+      }),
+    [pathSteps, pathStepsMetadataById]
   );
+  const pathfindingStepsRef = useRef<PathStepV2[]>([]);
+
+  const pathfindingSteps = useMemo(() => {
+    const prev = pathfindingStepsRef.current;
+    const next = pathfindingStepsWithLocations;
+
+    const sameSteps =
+      prev.length === next.length &&
+      prev.every((p, i) => p.id === next[i].id && p.location === next[i].location);
+
+    if (sameSteps) return prev;
+
+    pathfindingStepsRef.current = next;
+    return next;
+  }, [pathfindingStepsWithLocations]);
+
   useEffect(() => {
-    if (workerStatus === 'READY' && pathfindingLocations.length >= 2 && rollingStockId) {
-      launchPathfindingV2({
-        pathSteps: pathfindingLocations,
-        pathStepsMetadataById: metadataByPathStepId,
-        rollingStockId,
-        speedLimitTag,
-      });
-    }
-  }, [
-    workerStatus,
-    pathSteps,
-    pathStepsMetadataById,
-    rollingStockId,
-    speedLimitTag,
-    launchPathfindingV2,
-  ]);
+    if (workerStatus !== 'READY' || !rollingStockId || pathfindingSteps.length < 2) return;
+
+    const pathfindingLocations = pathfindingSteps.map((s) => s.location!);
+    const metadataByPathStepId = new Map(
+      pathfindingSteps.map((s) => [s.id, pathStepsMetadataById.get(s.id)!])
+    );
+
+    launchPathfindingV2({
+      pathSteps: pathfindingLocations,
+      pathStepsMetadataById: metadataByPathStepId,
+      rollingStockId,
+      speedLimitTag,
+    });
+  }, [workerStatus, rollingStockId, speedLimitTag, pathfindingSteps]);
 
   const onPathfindingLoad = useEffectEvent((geometry: PathProperties['geometry']) => {
     const newViewport = computeBBoxViewport(bbox(geometry), mapSettings.viewport, {
