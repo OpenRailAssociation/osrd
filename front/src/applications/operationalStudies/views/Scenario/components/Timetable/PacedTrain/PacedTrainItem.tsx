@@ -151,7 +151,7 @@ const PacedTrainItem = ({
 
   const [postPacedTrain] =
     osrdEditoastApi.endpoints.postTrainScheduleSetsByIdTrainSchedules.useMutation();
-  const [getPacedTrainById] = osrdEditoastApi.endpoints.getPacedTrainById.useLazyQuery();
+  const [getTrainScheduleById] = osrdEditoastApi.endpoints.getTrainSchedulesById.useLazyQuery();
 
   const selectPathProjection = async () => {
     dispatch(updateTrainIdUsedForProjection(pacedTrain.id));
@@ -202,7 +202,7 @@ const PacedTrainItem = ({
 
     let pacedTrainDetail: TrainScheduleResponse;
     try {
-      const pacedTrainDetailPromise = getPacedTrainById({
+      const pacedTrainDetailPromise = getTrainScheduleById({
         id: editoastTrainId,
       });
       pacedTrainDetail = await pacedTrainDetailPromise.unwrap();

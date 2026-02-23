@@ -17,7 +17,7 @@ from .test_train_schedule import (
 def _update_simulation_with_mareco_allowances(
     editoast_url, paced_train_id, session: Session
 ):
-    response = session.get(editoast_url + f"/paced_train/{paced_train_id}/")
+    response = session.get(editoast_url + f"/train_schedules/{paced_train_id}/")
     assert response.status_code == 200
     paced_train = response.json()
     paced_train["margins"] = {
@@ -30,7 +30,7 @@ def _update_simulation_with_mareco_allowances(
         raise RuntimeError(
             f"Paced train error {r.status_code}: {r.content}, payload={json.dumps(paced_train)}"
         )
-    r = session.get(editoast_url + f"/paced_train/{paced_train_id}/")
+    r = session.get(editoast_url + f"/train_schedules/{paced_train_id}/")
     body = r.json()
     assert body["constraint_distribution"] == "MARECO"
     return body
@@ -62,7 +62,7 @@ def test_put_paced_train(
     update_response.raise_for_status()
 
     updated_paced_train = session.get(
-        f"{EDITOAST_URL}paced_train/{paced_train_id}"
+        f"{EDITOAST_URL}train_schedules/{paced_train_id}"
     ).json()
 
     assert updated_paced_train["train_name"] == "update_train_name"
@@ -202,7 +202,7 @@ def test_get_and_update_paced_train_result(
 ):
     paced_train = west_to_south_east_paced_train[0]
     paced_train_id = paced_train["id"]
-    response = session.get(f"{EDITOAST_URL}paced_train/{paced_train_id}/")
+    response = session.get(f"{EDITOAST_URL}train_schedules/{paced_train_id}/")
     if response.status_code // 100 != 2:
         raise RuntimeError(
             f"Paced train error {response.status_code}: {response.content}, id={paced_train_id}"
@@ -219,7 +219,7 @@ def test_get_and_update_paced_train_result(
     response = _update_simulation_with_mareco_allowances(
         EDITOAST_URL, paced_train_id, session
     )
-    response = session.get(f"{EDITOAST_URL}paced_train/{paced_train_id}/")
+    response = session.get(f"{EDITOAST_URL}train_schedules/{paced_train_id}/")
     if response.status_code // 100 != 2:
         raise RuntimeError(
             f"Paced train error {response.status_code}: {response.content}, id={paced_train_id}"
@@ -250,11 +250,11 @@ def test_editoast_delete(
             f"Paced train error {r.status_code}: {r.content}, payload={json.dumps(paced_trains_ids)}"
         )
     r = session.get(
-        f"{EDITOAST_URL}paced_train/{paced_trains_ids[0]}/",
+        f"{EDITOAST_URL}train_schedules/{paced_trains_ids[0]}/",
     )
     assert r.status_code == 404
     r = session.get(
-        f"{EDITOAST_URL}paced_train/{paced_trains_ids[1]}",
+        f"{EDITOAST_URL}train_schedules/{paced_trains_ids[1]}",
     )
     assert r.status_code == 404
 
@@ -282,7 +282,7 @@ def test_etcs_paced_train_braking_curves_endpoint(
     paced_train = ts_response.json()[0]
     paced_train_id = paced_train["id"]
     paced_train_id_response = session.get(
-        f"{EDITOAST_URL}paced_train/{paced_train_id}/"
+        f"{EDITOAST_URL}train_schedules/{paced_train_id}/"
     )
     paced_train_id_response.raise_for_status()
     etcs_braking_curves_response = session.get(

@@ -2585,25 +2585,6 @@ paths:
                 propertyNames:
                   type: string
   /paced_train/{id}:
-    get:
-      tags:
-      - timetable
-      - paced_train
-      summary: Get a train schedule by its ID
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        '200':
-          description: The requested paced train
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TrainScheduleResponse'
     put:
       tags:
       - timetable
@@ -4661,6 +4642,26 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/TrainScheduleResponse'
+  /train_schedules/{id}:
+    get:
+      tags:
+      - timetable
+      - paced_train
+      summary: Get a train schedule by its ID
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: The requested train schedule
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainScheduleResponse'
   /version:
     get:
       responses:

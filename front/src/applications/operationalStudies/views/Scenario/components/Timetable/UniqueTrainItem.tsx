@@ -71,7 +71,7 @@ const UniqueTrainItem = ({
 
   const [postPacedTrain] =
     osrdEditoastApi.endpoints.postTrainScheduleSetsByIdTrainSchedules.useMutation();
-  const [getPacedTrain] = osrdEditoastApi.endpoints.getPacedTrainById.useLazyQuery();
+  const [getTrainSchedule] = osrdEditoastApi.endpoints.getTrainSchedulesById.useLazyQuery();
 
   const { summary } = train;
 
@@ -104,7 +104,7 @@ const UniqueTrainItem = ({
 
     try {
       const editoastTrainId = extractEditoastIdFromPacedTrainId(train.id);
-      const trainDetail = await getPacedTrain({
+      const trainDetail = await getTrainSchedule({
         id: editoastTrainId,
       }).unwrap();
 

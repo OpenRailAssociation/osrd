@@ -702,10 +702,6 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['paced_train'],
       }),
-      getPacedTrainById: build.query<GetPacedTrainByIdApiResponse, GetPacedTrainByIdApiArg>({
-        query: (queryArg) => ({ url: `/paced_train/${queryArg.id}` }),
-        providesTags: ['timetable', 'paced_train'],
-      }),
       putPacedTrainById: build.mutation<PutPacedTrainByIdApiResponse, PutPacedTrainByIdApiArg>({
         query: (queryArg) => ({
           url: `/paced_train/${queryArg.id}`,
@@ -1345,6 +1341,13 @@ const injectedRtkApi = api
           body: queryArg.body,
         }),
         invalidatesTags: ['train_schedule_set', 'paced_train'],
+      }),
+      getTrainSchedulesById: build.query<
+        GetTrainSchedulesByIdApiResponse,
+        GetTrainSchedulesByIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/train_schedules/${queryArg.id}` }),
+        providesTags: ['timetable', 'paced_train'],
       }),
       getVersion: build.query<GetVersionApiResponse, GetVersionApiArg>({
         query: () => ({ url: `/version` }),
@@ -2097,11 +2100,6 @@ export type PostPacedTrainTrackOccupancyApiArg = {
     use_simulation: boolean;
   };
 };
-export type GetPacedTrainByIdApiResponse =
-  /** status 200 The requested paced train */ TrainScheduleResponse;
-export type GetPacedTrainByIdApiArg = {
-  id: number;
-};
 export type PutPacedTrainByIdApiResponse = unknown;
 export type PutPacedTrainByIdApiArg = {
   id: number;
@@ -2616,6 +2614,11 @@ export type PostTrainScheduleSetsByIdTrainSchedulesApiArg = {
   /** A train schedule set ID */
   id: number;
   body: TrainSchedule[];
+};
+export type GetTrainSchedulesByIdApiResponse =
+  /** status 200 The requested train schedule */ TrainScheduleResponse;
+export type GetTrainSchedulesByIdApiArg = {
+  id: number;
 };
 export type GetVersionApiResponse = /** status 200 Return the service version */ Version;
 export type GetVersionApiArg = void;
@@ -4018,10 +4021,6 @@ export type TrainSchedule = {
     time_window: PositiveDuration;
   };
 };
-export type TrainScheduleResponse = TrainSchedule & {
-  id: number;
-  train_schedule_set_id: number;
-};
 export type CoreEtcsConflictCurves = {
   conflict_type: 'Spacing' | 'Routing';
   guidance: {
@@ -4912,6 +4911,10 @@ export type TrainScheduleException = {
   occurrence_index?: number | null;
   timetable_id: number;
   train_schedule_id: number;
+};
+export type TrainScheduleResponse = TrainSchedule & {
+  id: number;
+  train_schedule_set_id: number;
 };
 export type RollingResistancePerWeight = {
   /**  Solid friction in N·kg⁻¹; N = kg⋅m⋅s⁻²
