@@ -1313,12 +1313,12 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/train_schedule_sets/${queryArg.id}/paced_trains` }),
         providesTags: ['train_schedule_set', 'paced_train'],
       }),
-      postTrainScheduleSetsByIdPacedTrains: build.mutation<
-        PostTrainScheduleSetsByIdPacedTrainsApiResponse,
-        PostTrainScheduleSetsByIdPacedTrainsApiArg
+      postTrainScheduleSetsByIdTrainSchedules: build.mutation<
+        PostTrainScheduleSetsByIdTrainSchedulesApiResponse,
+        PostTrainScheduleSetsByIdTrainSchedulesApiArg
       >({
         query: (queryArg) => ({
-          url: `/train_schedule_sets/${queryArg.id}/paced_trains`,
+          url: `/train_schedule_sets/${queryArg.id}/train_schedules`,
           method: 'POST',
           body: queryArg.body,
         }),
@@ -2570,9 +2570,9 @@ export type GetTrainScheduleSetsByIdPacedTrainsApiArg = {
   /** A train schedule set ID */
   id: number;
 };
-export type PostTrainScheduleSetsByIdPacedTrainsApiResponse =
-  /** status 201 The created paced trains */ TrainScheduleResponse[];
-export type PostTrainScheduleSetsByIdPacedTrainsApiArg = {
+export type PostTrainScheduleSetsByIdTrainSchedulesApiResponse =
+  /** status 201 The created train schedules */ TrainScheduleResponse[];
+export type PostTrainScheduleSetsByIdTrainSchedulesApiArg = {
   /** A train schedule set ID */
   id: number;
   body: TrainSchedule[];

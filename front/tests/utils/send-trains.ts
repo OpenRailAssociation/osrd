@@ -17,7 +17,7 @@ async function sendTrains<T>(
 ): Promise<TrainScheduleResponse[]> {
   const apiContext: APIRequestContext = await getApiContext();
   const pacedTrainsResponse: APIResponse = await apiContext.post(
-    `/api/train_schedule_sets/${trainScheduleSetId}/paced_trains/`,
+    `/api/train_schedule_sets/${trainScheduleSetId}/train_schedules/`,
     {
       data: JSON.stringify(body),
       headers: {

@@ -70,7 +70,7 @@ const UniqueTrainItem = ({
   const dispatch = useAppDispatch();
 
   const [postPacedTrain] =
-    osrdEditoastApi.endpoints.postTrainScheduleSetsByIdPacedTrains.useMutation();
+    osrdEditoastApi.endpoints.postTrainScheduleSetsByIdTrainSchedules.useMutation();
   const [getPacedTrain] = osrdEditoastApi.endpoints.getPacedTrainById.useLazyQuery();
 
   const { summary } = train;

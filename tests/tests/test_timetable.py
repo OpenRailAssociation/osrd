@@ -66,7 +66,7 @@ def test_conflicts_with_paced_trains(
     ]
 
     stopping_train_schedule_response = session.post(
-        f"{EDITOAST_URL}/train_schedule_sets/{train_schedule_set_id}/paced_trains",
+        f"{EDITOAST_URL}/train_schedule_sets/{train_schedule_set_id}/train_schedules",
         json=stopping_train_schedule_payload,
     )
     stopping_train_schedule_response.raise_for_status()
@@ -80,7 +80,7 @@ def test_conflicts_with_paced_trains(
     ]
 
     stopping_paced_train_response = session.post(
-        f"{EDITOAST_URL}/train_schedule_sets/{train_schedule_set_id}/paced_trains",
+        f"{EDITOAST_URL}/train_schedule_sets/{train_schedule_set_id}/train_schedules",
         json=[stopping_paced_train_payload],
     )
     stopping_paced_train_response.raise_for_status()
@@ -158,7 +158,7 @@ def test_conflicts_with_reception_on_closed_signal(
     ]
 
     stopping_train_schedule_response = session.post(
-        f"{EDITOAST_URL}/train_schedule_sets/{train_schedule_set_id}/paced_trains",
+        f"{EDITOAST_URL}/train_schedule_sets/{train_schedule_set_id}/train_schedules",
         json=stopping_train_schedule_payload,
     )
     stopping_train_schedule_response.raise_for_status()
@@ -190,7 +190,7 @@ def test_conflicts_with_reception_on_closed_signal(
         }
     ]
     session.post(
-        f"{EDITOAST_URL}/train_schedule_sets/{train_schedule_set_id}/paced_trains",
+        f"{EDITOAST_URL}/train_schedule_sets/{train_schedule_set_id}/train_schedules",
         json=train_schedule_payload,
     ).raise_for_status()
 
@@ -285,7 +285,7 @@ def test_paced_train_conflicts(
     }
 
     paced_train_response = session.post(
-        f"{EDITOAST_URL}train_schedule_sets/{train_schedule_set_id}/paced_trains",
+        f"{EDITOAST_URL}train_schedule_sets/{train_schedule_set_id}/train_schedules",
         json=[paced_train_payload],
     )
     paced_train_response.raise_for_status()
@@ -378,7 +378,7 @@ def test_paced_train_with_exceptions_conflicts(
     }
 
     paced_train_response = session.post(
-        f"{EDITOAST_URL}train_schedule_sets/{train_schedule_set_id}/paced_trains",
+        f"{EDITOAST_URL}train_schedule_sets/{train_schedule_set_id}/train_schedules",
         json=[paced_train_payload],
     )
     paced_train_response.raise_for_status()
@@ -462,7 +462,7 @@ def test_scheduled_points_with_incompatible_margins(
         }
     ]
     response = session.post(
-        f"{EDITOAST_URL}/train_schedule_sets/{train_schedule_set_id}/paced_trains",
+        f"{EDITOAST_URL}/train_schedule_sets/{train_schedule_set_id}/train_schedules",
         json=train_schedule_payload,
     )
     response.raise_for_status()
@@ -551,7 +551,7 @@ def _get_train_schedule_simulation_response(
     session: Session,
 ):
     ts_response = session.post(
-        f"{EDITOAST_URL}/train_schedule_sets/{train_schedule_set_id}/paced_trains",
+        f"{EDITOAST_URL}/train_schedule_sets/{train_schedule_set_id}/train_schedules",
         json=train_schedules_payload,
     )
     ts_response.raise_for_status()

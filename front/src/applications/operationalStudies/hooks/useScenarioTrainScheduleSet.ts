@@ -44,7 +44,7 @@ export default function useScenarioTrainScheduleSet(
   );
 
   const [createPacedTrains] =
-    osrdEditoastApi.endpoints.postTrainScheduleSetsByIdPacedTrains.useMutation();
+    osrdEditoastApi.endpoints.postTrainScheduleSetsByIdTrainSchedules.useMutation();
 
   const [createCatalogEntryMutation] = osrdEditoastApi.endpoints.postCatalogEntries.useMutation();
 

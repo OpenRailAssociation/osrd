@@ -1542,22 +1542,22 @@ mod tests {
     use crate::views::timetable::simulation_empty_response;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn paced_train_post() {
+    async fn train_schedule_post() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
         let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
-        let paced_train_base = simple_paced_train_base();
-        // Insert paced_train
+        let train_schedule = simple_paced_train_base();
+        // Insert train schedule
         let request = app
             .post(
                 format!(
-                    "/train_schedule_sets/{}/paced_trains",
+                    "/train_schedule_sets/{}/train_schedules",
                     train_schedule_set.id
                 )
                 .as_str(),
             )
-            .json(&json!(vec![paced_train_base]));
+            .json(&json!(vec![train_schedule]));
 
         let response: Vec<TrainScheduleResponse> = app
             .fetch(request)
@@ -1568,7 +1568,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn paced_train_with_sub_category() {
+    async fn train_schedule_with_sub_category() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
@@ -1581,21 +1581,21 @@ mod tests {
         .expect("Failed to create sub category");
 
         let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
-        let mut paced_train_base = simple_paced_train_base();
-        paced_train_base.train_occurrence.category = Some(TrainCategory::Sub {
+        let mut train_schedule = simple_paced_train_base();
+        train_schedule.train_occurrence.category = Some(TrainCategory::Sub {
             sub_category_code: created_sub_category.code.clone(),
         });
 
-        // Insert paced_train
+        // Insert train schedule
         let request = app
             .post(
                 format!(
-                    "/train_schedule_sets/{}/paced_trains",
+                    "/train_schedule_sets/{}/train_schedules",
                     train_schedule_set.id
                 )
                 .as_str(),
             )
-            .json(&json!(vec![paced_train_base]));
+            .json(&json!(vec![train_schedule]));
 
         let response: Vec<TrainScheduleResponse> = app
             .fetch(request)

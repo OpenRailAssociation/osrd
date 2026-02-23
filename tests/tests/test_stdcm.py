@@ -37,7 +37,7 @@ def _add_train(
     ]
     r = session.post(
         editoast_url
-        + f"/train_schedule_sets/{scenario.train_schedule_set}/paced_trains/",
+        + f"/train_schedule_sets/{scenario.train_schedule_set}/train_schedules/",
         json=schedule_payload,
     )
     if r.status_code // 100 != 2:

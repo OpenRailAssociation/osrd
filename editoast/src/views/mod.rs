@@ -441,7 +441,10 @@ fn service_router() -> router::DocumentedRouter {
                             .route("/", put!(train_schedule_set::put))
                             .route("/", delete!(train_schedule_set::delete))
                             .route("/paced_trains", get!(train_schedule_set::get_paced_trains))
-                            .route("/paced_trains", post!(train_schedule_set::post_paced_train))
+                            .route(
+                                "/train_schedules",
+                                post!(train_schedule_set::post_train_schedule),
+                            )
                     })
             })
             .nests("/catalog_entries", |path| {

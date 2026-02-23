@@ -150,7 +150,7 @@ const PacedTrainItem = ({
   });
 
   const [postPacedTrain] =
-    osrdEditoastApi.endpoints.postTrainScheduleSetsByIdPacedTrains.useMutation();
+    osrdEditoastApi.endpoints.postTrainScheduleSetsByIdTrainSchedules.useMutation();
   const [getPacedTrainById] = osrdEditoastApi.endpoints.getPacedTrainById.useLazyQuery();
 
   const selectPathProjection = async () => {
