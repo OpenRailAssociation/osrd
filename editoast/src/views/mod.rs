@@ -235,8 +235,8 @@ fn service_router() -> router::DocumentedRouter {
                             .route("/conflicts", get!(timetable::conflicts))
                             .route("/requirements", get!(timetable::requirements))
                             .route("/stdcm", post!(timetable::stdcm::stdcm))
-                            .nests("/paced_trains", |path| {
-                                path.route("/", get!(timetable::get_paced_trains))
+                            .nests("/train_schedules", |path| {
+                                path.route("/", get!(timetable::get_train_schedules))
                             })
                             .nests("/round_trips", |path| {
                                 path.route("/paced_trains", get!(round_trips::list_paced_trains))

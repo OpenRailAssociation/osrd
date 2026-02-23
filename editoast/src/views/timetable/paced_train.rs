@@ -105,7 +105,7 @@ pub(in crate::views) struct TrainScheduleResponse {
     id: i64,
     train_schedule_set_id: i64,
     #[serde(flatten)]
-    paced_train: TrainSchedule,
+    train_schedule: TrainSchedule,
 }
 
 impl From<models::TrainSchedule> for TrainScheduleResponse {
@@ -113,7 +113,7 @@ impl From<models::TrainSchedule> for TrainScheduleResponse {
         Self {
             id: value.id,
             train_schedule_set_id: value.train_schedule_set_id,
-            paced_train: value.into(),
+            train_schedule: value.into(),
         }
     }
 }
@@ -1795,7 +1795,7 @@ mod tests {
             .assert_status(StatusCode::OK)
             .json_into::<TrainScheduleResponse>();
 
-        assert_eq!(response.paced_train, paced_train.into());
+        assert_eq!(response.train_schedule, paced_train.into());
     }
 
     async fn app_infra_id_paced_train_id_for_simulation_tests() -> (TestApp, i64, i64) {
@@ -1936,7 +1936,7 @@ mod tests {
             .assert_status(StatusCode::OK)
             .json_into();
         paced_train_response
-            .paced_train
+            .train_schedule
             .paced
             .as_mut()
             .unwrap()
@@ -1947,7 +1947,7 @@ mod tests {
         });
         let request = app
             .put(format!("/paced_train/{train_schedule_id}").as_str())
-            .json(&json!(paced_train_response.paced_train));
+            .json(&json!(paced_train_response.train_schedule));
         app.fetch(request)
             .await
             .assert_status(StatusCode::NO_CONTENT);
@@ -2002,7 +2002,7 @@ mod tests {
             .json_into();
         // First remove all already generated exceptions
         paced_train_response
-            .paced_train
+            .train_schedule
             .paced
             .as_mut()
             .unwrap()
@@ -2010,7 +2010,7 @@ mod tests {
             .clear();
         // Add one exception which will not change the simulation from base
         paced_train_response
-            .paced_train
+            .train_schedule
             .paced
             .as_mut()
             .unwrap()
@@ -2025,7 +2025,7 @@ mod tests {
         // Add one exception which will change the simulation from base
         // and therefore add another entry in the response (field `exceptions`)
         paced_train_response
-            .paced_train
+            .train_schedule
             .paced
             .as_mut()
             .unwrap()
@@ -2037,7 +2037,7 @@ mod tests {
             });
         let request = app
             .put(format!("/paced_train/{paced_train_id}").as_str())
-            .json(&json!(paced_train_response.paced_train));
+            .json(&json!(paced_train_response.train_schedule));
         app.fetch(request)
             .await
             .assert_status(StatusCode::NO_CONTENT);
@@ -2392,7 +2392,7 @@ mod tests {
             .json_into();
         // First remove all already generated exceptions
         paced_train_response
-            .paced_train
+            .train_schedule
             .paced
             .as_mut()
             .unwrap()
@@ -2401,7 +2401,7 @@ mod tests {
 
         // Add one exception which will not change the simulation from base
         paced_train_response
-            .paced_train
+            .train_schedule
             .paced
             .as_mut()
             .unwrap()
@@ -2416,7 +2416,7 @@ mod tests {
         // Add one exception which will change the simulation from base
         // and therefore add another entry in the response (field `exceptions`)
         paced_train_response
-            .paced_train
+            .train_schedule
             .paced
             .as_mut()
             .unwrap()
@@ -2428,7 +2428,7 @@ mod tests {
             });
         let request = app
             .put(format!("/paced_train/{paced_train_id}").as_str())
-            .json(&json!(paced_train_response.paced_train));
+            .json(&json!(paced_train_response.train_schedule));
         app.fetch(request)
             .await
             .assert_status(StatusCode::NO_CONTENT);

@@ -9,7 +9,7 @@ from .services import EDITOAST_URL
 
 
 def test_get_timetable(timetable_id: int, session: Session):
-    response = session.get(f"{EDITOAST_URL}/timetable/{timetable_id}/paced_trains")
+    response = session.get(f"{EDITOAST_URL}/timetable/{timetable_id}/train_schedules")
     assert response.status_code == 200
     json = response.json()
     assert "results" in json

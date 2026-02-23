@@ -38,7 +38,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
 
   useEffect(() => {
     const pacedTrainsResult = dispatch(
-      osrdEditoastApi.endpoints.getAllTimetableByIdPacedTrains.initiate({
+      osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.initiate({
         timetableId: scenario.timetable_id,
       })
     );

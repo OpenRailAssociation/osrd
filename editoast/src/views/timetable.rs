@@ -117,7 +117,7 @@ pub struct TimetableIdParam {
     post, path = "",
     tag = "timetable",
     responses(
-        (status = 200, description = "Timetable with train schedules ids", body = TimetableResult),
+        (status = 200, description = "Timetable with train schedule ids", body = TimetableResult),
         (status = 404, description = "Timetable not found"),
     ),
 )]
@@ -174,7 +174,7 @@ pub(in crate::views) async fn delete(
 
 #[derive(Serialize, ToSchema, Debug)]
 #[cfg_attr(test, derive(Deserialize))]
-pub(in crate::views) struct ListPacedTrainsResponse {
+pub(in crate::views) struct ListTrainSchedulesResponse {
     #[schema(value_type = Vec<TrainScheduleResponse>)]
     results: Vec<TrainScheduleResponse>,
     #[serde(flatten)]
@@ -188,16 +188,16 @@ pub(in crate::views) struct ListPacedTrainsResponse {
     tag = "timetable",
     params(TimetableIdParam, PaginationQueryParams<200>),
     responses(
-        (status = 200, description = "Timetable with paced train ids", body = inline(ListPacedTrainsResponse)),
+        (status = 200, description = "Timetable with train schedule ids", body = inline(ListTrainSchedulesResponse)),
         (status = 404, description = "Timetable not found"),
     ),
 )]
-pub(in crate::views) async fn get_paced_trains(
+pub(in crate::views) async fn get_train_schedules(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
     Query(pagination_params): Query<PaginationQueryParams<200>>,
-) -> Result<Json<ListPacedTrainsResponse>> {
+) -> Result<Json<ListTrainSchedulesResponse>> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())
         .await
@@ -227,7 +227,7 @@ pub(in crate::views) async fn get_paced_trains(
 
     let results = paced_trains.into_iter().map_into().collect();
 
-    Ok(Json(ListPacedTrainsResponse { stats, results }))
+    Ok(Json(ListTrainSchedulesResponse { stats, results }))
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
@@ -1016,35 +1016,36 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn get_timetable_paced_trains() {
+    async fn get_timetable_train_schedules() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
         let (timetable, train_schedule_set) =
             create_timetable_with_train_schedule_set(&mut pool.get_ok()).await;
 
-        let paced_train_1 = simple_paced_train_base();
-        let mut paced_train_2 = simple_paced_train_base();
-        paced_train_2.train_occurrence.start_time += Duration::minutes(200);
-        paced_train_2.paced.as_mut().unwrap().time_window =
+        let train_schedule_1 = simple_paced_train_base();
+        let mut train_schedule_2 = simple_paced_train_base();
+        train_schedule_2.train_occurrence.start_time += Duration::minutes(200);
+        train_schedule_2.paced.as_mut().unwrap().time_window =
             Duration::minutes(120).try_into().unwrap();
-        paced_train_2.paced.as_mut().unwrap().interval = Duration::seconds(30).try_into().unwrap();
+        train_schedule_2.paced.as_mut().unwrap().interval =
+            Duration::seconds(30).try_into().unwrap();
 
-        let paced_trains = vec![paced_train_1, paced_train_2];
+        let train_schedules = vec![train_schedule_1, train_schedule_2];
 
-        let changesets = paced_trains
+        let changesets = train_schedules
             .into_iter()
             .map(TrainScheduleChangeset::from)
             .map(|cs| cs.train_schedule_set_id(train_schedule_set.id))
             .collect::<Vec<_>>();
 
-        let _paced_trains: Vec<_> =
+        let _train_schedules: Vec<_> =
             models::TrainSchedule::create_batch(&mut pool.get_ok(), changesets)
                 .await
-                .expect("Failed to create paced trains");
+                .expect("Failed to create train schedules");
 
-        let request = app.get(format!("/timetable/{}/paced_trains", timetable.id).as_str());
-        let list: ListPacedTrainsResponse = app
+        let request = app.get(format!("/timetable/{}/train_schedules", timetable.id).as_str());
+        let list: ListTrainSchedulesResponse = app
             .fetch(request)
             .await
             .assert_status(StatusCode::OK)
@@ -1054,9 +1055,9 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn get_not_found_timetable_paced_trains() {
+    async fn get_not_found_timetable_train_schedules() {
         let app = TestAppBuilder::default_app();
-        let request = app.get(format!("/timetable/{}/paced_trains", 0).as_str());
+        let request = app.get(format!("/timetable/{}/train_schedules", 0).as_str());
         let response: InternalError = app
             .fetch(request)
             .await

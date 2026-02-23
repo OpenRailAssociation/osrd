@@ -712,7 +712,7 @@ export const loadNgeDto = async (
   const notes = notesResult.results;
 
   const pacedTrainsPromise = dispatch(
-    osrdEditoastApi.endpoints.getAllTimetableByIdPacedTrains.initiate(
+    osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.initiate(
       { timetableId },
       { subscribe: false }
     )
