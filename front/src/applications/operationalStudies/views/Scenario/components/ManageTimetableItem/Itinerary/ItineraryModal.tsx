@@ -485,7 +485,6 @@ const ItineraryModal = ({
                     resetOpSuggestions={resetOpSuggestions}
                     connectorLong={hoveredGapIndex === i}
                     isTrailingPlaceHolder={isTrailingPlaceholder}
-                    isIndexed
                     isOnlyStep={isOnlyStep}
                     isInvalidAndIsEditing={isInvalid}
                   />

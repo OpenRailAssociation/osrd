@@ -31,29 +31,26 @@ import { computePathStepCoordinates, isOpRefMetadata } from './utils';
 const EMPTY_OPTION = { label: '', id: '' };
 
 type PathStepProps = {
+  pathStep: PathStepV2;
   setPathSteps?: React.Dispatch<React.SetStateAction<PathStepV2[]>>;
-  pathStep?: PathStepV2;
-  pathStepMetadata?: PathStepMetadata;
-  index?: number;
-  hidePathfindingLine?: boolean;
+  pathStepMetadata: PathStepMetadata | undefined;
+  index: number;
+  hidePathfindingLine: boolean;
   categoryColors: CategoryColors;
-  onOpInputChange?: (value: string) => void;
-  onTrackNameChange?: (trackName: string) => void;
-  onOpFocus?: () => void;
-  onOpBlur?: () => void;
-  inputValue?: string;
-  opSuggestions?: Array<OperationalPointSuggestion | string>;
-  onSelectOpSuggestion?: (suggestion: OperationalPointSuggestion, secondaryCode?: string) => void;
-  resetOpSuggestions?: () => void;
-  onChevronClick?: (queryValue: string) => void;
-  onInputClear?: () => void;
-  isCleared?: boolean;
-  isInvalidAndIsEditing?: boolean;
-  connectorLong?: boolean;
-  onDelete?: () => void;
-  isTrailingPlaceHolder?: boolean;
-  isIndexed?: boolean;
-  isOnlyStep?: boolean;
+  onOpInputChange: (value: string) => void;
+  onTrackNameChange: (trackName: string) => void;
+  onOpFocus: () => void;
+  onOpBlur: () => void;
+  inputValue: string | undefined;
+  opSuggestions: Array<OperationalPointSuggestion | string>;
+  onSelectOpSuggestion: (suggestion: OperationalPointSuggestion, secondaryCode?: string) => void;
+  resetOpSuggestions: () => void;
+  onChevronClick: (queryValue: string) => void;
+  isInvalidAndIsEditing: boolean;
+  connectorLong: boolean;
+  onDelete: () => void;
+  isTrailingPlaceHolder: boolean;
+  isOnlyStep: boolean;
 };
 
 const PathStepItem = ({
@@ -68,7 +65,7 @@ const PathStepItem = ({
   onOpFocus,
   onOpBlur,
   inputValue,
-  opSuggestions = [],
+  opSuggestions,
   onSelectOpSuggestion,
   resetOpSuggestions,
   onChevronClick,
@@ -92,9 +89,9 @@ const PathStepItem = ({
       (document.activeElement as HTMLElement | null)?.blur();
     });
   };
-  const isIndexed = !!index && !isTrailingPlaceHolder;
+  const isIndexed = !isTrailingPlaceHolder;
 
-  const shouldShowInvalidMessage = !!pathStep && !!isInvalidAndIsEditing;
+  const shouldShowInvalidMessage = !!isInvalidAndIsEditing;
 
   const getInvalidMessage = (comboBoxValue: string) => {
     let message = t('invalidOP');
@@ -104,7 +101,7 @@ const PathStepItem = ({
       `;
     }
 
-    if (!pathStepMetadata?.isInvalid || !pathStep?.location) return message;
+    if (!pathStepMetadata?.isInvalid || !pathStep.location) return message;
 
     const { location } = pathStep;
 
@@ -142,7 +139,7 @@ const PathStepItem = ({
       label: pathStepMetadata?.secondaryCode ?? '',
       id: pathStepMetadata?.secondaryCode ?? '',
     };
-  }, [pathStep, pathStepMetadata]);
+  }, [pathStepMetadata]);
 
   const trackNameSuggestions = useMemo(() => {
     const selectedSecondaryCode = selectedSecondaryCodeOption.id;
@@ -183,7 +180,7 @@ const PathStepItem = ({
       trackNameSuggestions.find((track) => track.label === pathStepMetadata.trackName) ||
       EMPTY_OPTION
     );
-  }, [pathStep, pathStepMetadata]);
+  }, [pathStepMetadata, trackNameSuggestions]);
 
   const handleFocusClick = () => {
     if (!pathStepMetadata) return;
@@ -249,7 +246,7 @@ const PathStepItem = ({
     <div className={cx('path-step-wrapper', { 'is-placeholder': isTrailingPlaceHolder })}>
       <div
         className={cx('path-step', {
-          'requested-point': pathStep?.location && 'track' in pathStep.location,
+          'requested-point': pathStep.location && 'track' in pathStep.location,
         })}
       >
         <button
@@ -261,7 +258,7 @@ const PathStepItem = ({
             index: isIndexed,
             'pathfinding-line': !hidePathfindingLine,
             origin: index === 1,
-            empty: !pathStep,
+            empty: !pathStep.location,
           })}
           style={{
             borderColor: !isInvalidAndIsEditing
@@ -277,7 +274,7 @@ const PathStepItem = ({
           }}
           onClick={(e) => {
             e.stopPropagation();
-            onDelete?.();
+            onDelete();
           }}
           onPointerEnter={() => !isTrailingPlaceHolder && setHovered(true)}
           onPointerLeave={() => !isTrailingPlaceHolder && setHovered(false)}
@@ -294,12 +291,12 @@ const PathStepItem = ({
           onMouseDownCapture={(e) => {
             const target = e.target as HTMLElement | null;
             if (target?.closest('.chevron-icon')) {
-              onChevronClick?.(comboBoxValue ?? '');
+              onChevronClick(comboBoxValue ?? '');
             }
           }}
         >
           <ComboBox
-            id={`pathStep-name-${pathStep?.id ?? 'empty'}`}
+            id={`pathStep-name-${pathStep.id}`}
             value={comboBoxValue}
             numberOfSuggestionsToShow={numberOfSuggestionsToShow}
             suggestions={visibleSuggestions}
@@ -310,21 +307,21 @@ const PathStepItem = ({
             }}
             onSelectSuggestion={(op) => {
               if (!op) {
-                onOpInputChange?.('');
-                resetOpSuggestions?.();
+                onOpInputChange('');
+                resetOpSuggestions();
                 return;
               }
 
               if (typeof op === 'string') {
-                onOpInputChange?.(op);
+                onOpInputChange(op);
                 return;
               }
 
-              onSelectOpSuggestion?.(op);
-              resetOpSuggestions?.();
+              onSelectOpSuggestion(op);
+              resetOpSuggestions();
               blurActiveElement();
             }}
-            resetSuggestions={() => resetOpSuggestions?.()}
+            resetSuggestions={() => resetOpSuggestions()}
             renderListElementComponent={({
               suggestion,
               index: suggestionIndex,
@@ -340,8 +337,8 @@ const PathStepItem = ({
                   isActive={isActive}
                   isSelected={isSelected}
                   onSelect={(op, secondaryCode) => {
-                    onSelectOpSuggestion?.(op, secondaryCode);
-                    resetOpSuggestions?.();
+                    onSelectOpSuggestion(op, secondaryCode);
+                    resetOpSuggestions();
                     blurActiveElement();
                   }}
                 />
@@ -373,10 +370,10 @@ const PathStepItem = ({
             narrow
             onFocus={onOpFocus}
             onBlur={onOpBlur}
-            onChange={(e) => onOpInputChange?.(e.target.value)}
+            onChange={(e) => onOpInputChange(e.target.value)}
           />
         </div>
-        {pathStep?.location && 'track' in pathStep.location ? (
+        {pathStep.location && 'track' in pathStep.location ? (
           <div className="requested-point-block" />
         ) : (
           <div
@@ -385,12 +382,12 @@ const PathStepItem = ({
             })}
           >
             <Select
-              id={`pathStep-status-${pathStep?.id ?? 'empty'}`}
+              id={`pathStep-status-${pathStep.id}`}
               value={selectedTrackNameOption}
               options={trackNameSuggestions}
               getOptionLabel={(option) => option.label}
               getOptionValue={(option) => option.id}
-              onChange={(option) => onTrackNameChange?.(option?.label ?? '')}
+              onChange={(option) => onTrackNameChange(option?.label ?? '')}
               small
               narrow
             />
@@ -408,7 +405,7 @@ const PathStepItem = ({
           small
         />
         <div className="map-interactions">
-          {pathStep?.location && 'track' in pathStep.location ? (
+          {pathStep.location && 'track' in pathStep.location ? (
             <AddedLocation
               size="lg"
               variant="fill"
@@ -424,8 +421,8 @@ const PathStepItem = ({
             />
           )}
           <button
-            className={cx('focus-map-icon', { empty: !pathStep })}
-            disabled={!pathStep}
+            className={cx('focus-map-icon', { empty: !pathStep.location })}
+            disabled={!pathStep.location}
             onClick={handleFocusClick}
           >
             <FocusLocation
