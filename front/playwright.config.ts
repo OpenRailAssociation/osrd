@@ -52,6 +52,13 @@ export default defineConfig({
       name: 'firefox',
       use: {
         browserName: 'firefox',
+        ...(!isCI && {
+          launchOptions: {
+            firefoxUserPrefs: {
+              'network.proxy.type': 0,
+            },
+          },
+        }),
       },
       dependencies: ['setup'],
     },
