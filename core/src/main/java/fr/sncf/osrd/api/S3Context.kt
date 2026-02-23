@@ -55,10 +55,11 @@ data class S3Context(
     /**
      * Write a new file for a given stdcm request, with a dedicated function to generate the
      * content. Used for safe call syntax (?.) that doesn't generate the data if the S3Context is
-     * null
+     * null. The generating method is also delegated to a distinct thread, this entire method call
+     * is non-blocking.
      */
     fun writeSTDCMFile(fileName: String, generateContent: () -> String) {
-        writeSTDCMFile(fileName, generateContent())
+        runAsync { writeSTDCMFile(fileName, generateContent()) }
     }
 
     /** Returns true if the file exists. */
