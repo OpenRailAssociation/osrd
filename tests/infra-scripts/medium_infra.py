@@ -323,7 +323,7 @@ def create_medium_infra(signaling_system: str) -> ScenarioData:
     )
     # Station
     mid_west = builder.add_operational_point(
-        label="Mid_West_station", trigram="MWS", uic=8733
+        label="Mid_West_station", trigram="MWS", uic=8733, weight=4
     )
     mid_west.add_part(tc0, 550, "V1bis")
     mid_west.add_part(tc1, 550, "V1")
@@ -385,7 +385,7 @@ def create_medium_infra(signaling_system: str) -> ScenarioData:
     )
     # Station
     mid_east = builder.add_operational_point(
-        label="Mid_East_station", trigram="MES", uic=8744
+        label="Mid_East_station", trigram="MES", uic=8744, weight=10
     )
     mid_east.add_part(td0, 14000, "V1")
     mid_east.add_part(td1, 14000, "V2")
@@ -478,7 +478,9 @@ def create_medium_infra(signaling_system: str) -> ScenarioData:
     )
     te3.set_remaining_coords([(-0.145, LAT_0 + 0.002), (-0.145, LAT_3 - 0.002)])
     # Station
-    north = builder.add_operational_point(label="North_station", trigram="NS", uic=8755)
+    north = builder.add_operational_point(
+        label="North_station", trigram="NS", uic=8755, weight=3
+    )
     north.add_part(te1, 1000, "V1bis")
     north.add_part(te2, 1025, "V1")
     # Curves

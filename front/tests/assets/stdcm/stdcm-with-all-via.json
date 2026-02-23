@@ -21,6 +21,17 @@
   },
   {
     "index": 3,
+    "operationalPoint": "Mid_East_station",
+    "code": "BV",
+    "track": "V1",
+    "endStop": "",
+    "passageStop": "20:38",
+    "startStop": "",
+    "weight": "=",
+    "refEngine": "="
+  },
+  {
+    "index": 4,
     "operationalPoint": "South_station",
     "code": "BV",
     "endStop": "20:55",
