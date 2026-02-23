@@ -23,7 +23,7 @@ export async function fetchTimetableItem(
 ): Promise<TimetableItem> {
   if (isPacedTrainId(timetableItemId)) {
     const pacedTrain = await dispatch(
-      osrdEditoastApi.endpoints.getPacedTrainById.initiate(
+      osrdEditoastApi.endpoints.getTrainSchedulesById.initiate(
         {
           id: extractEditoastIdFromPacedTrainId(timetableItemId),
         },

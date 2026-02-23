@@ -61,7 +61,7 @@ const osrdEditoastApi = generatedEditoastApi
       getTimetableItemById: builder.query<TimetableItem, { id: TimetableItemId }>({
         queryFn: async ({ id: timetableItemId }, { dispatch }) => {
           const pacedTrain = await dispatch(
-            generatedEditoastApi.endpoints.getPacedTrainById.initiate(
+            generatedEditoastApi.endpoints.getTrainSchedulesById.initiate(
               {
                 id: extractEditoastIdFromPacedTrainId(timetableItemId),
               },

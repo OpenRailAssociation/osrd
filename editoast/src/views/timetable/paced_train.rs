@@ -130,7 +130,7 @@ pub(in crate::views) struct TrainScheduleIdParam {
     tags = ["timetable", "paced_train"],
     params(TrainScheduleIdParam),
     responses(
-        (status = 200, body = TrainScheduleResponse, description = "The requested paced train")
+        (status = 200, body = TrainScheduleResponse, description = "The requested train schedule")
     )
 )]
 pub(in crate::views) async fn get_by_id(
@@ -1791,9 +1791,9 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn get_not_found_paced_train() {
+    async fn get_not_found_train_schedule() {
         let app = TestAppBuilder::default_app();
-        let request = app.get(&format!("/paced_train/{}", 0));
+        let request = app.get(&format!("/train_schedules/{}", 0));
 
         let response: InternalError = app
             .fetch(request)
@@ -1805,7 +1805,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn get_paced_train() {
+    async fn get_train_schedule() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
@@ -1813,7 +1813,7 @@ mod tests {
         let paced_train =
             create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
 
-        let request = app.get(&format!("/paced_train/{}", paced_train.id));
+        let request = app.get(&format!("/train_schedules/{}", paced_train.id));
 
         let response = app
             .fetch(request)
@@ -1955,7 +1955,7 @@ mod tests {
         // GIVEN
         let (app, infra_id, train_schedule_id) =
             app_infra_id_paced_train_id_for_simulation_tests().await;
-        let request = app.get(format!("/paced_train/{train_schedule_id}").as_str());
+        let request = app.get(format!("/train_schedules/{train_schedule_id}").as_str());
         let mut paced_train_response: TrainScheduleResponse = app
             .fetch(request)
             .await
@@ -2021,7 +2021,7 @@ mod tests {
     async fn paced_train_simulation_summary() {
         let (app, infra_id, paced_train_id) =
             app_infra_id_paced_train_id_for_simulation_tests().await;
-        let request = app.get(format!("/paced_train/{paced_train_id}").as_str());
+        let request = app.get(format!("/train_schedules/{paced_train_id}").as_str());
         let mut paced_train_response: TrainScheduleResponse = app
             .fetch(request)
             .await
@@ -2417,7 +2417,7 @@ mod tests {
         let (app, infra_id, paced_train_id) =
             app_infra_id_paced_train_id_for_simulation_tests().await;
 
-        let request = app.get(format!("/paced_train/{paced_train_id}").as_str());
+        let request = app.get(format!("/train_schedules/{paced_train_id}").as_str());
         let mut paced_train_response: TrainScheduleResponse = app
             .fetch(request)
             .await
