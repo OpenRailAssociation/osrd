@@ -398,7 +398,7 @@ fun parseSteps(
 }
 
 /** This is what's kept in cache: the data used to identify conflicts, and some metadata. */
-data class RequirementsWithMetadata(
+class RequirementsWithMetadata(
     // Map of (un)available times, in a format that enables fast queries during the search
     val requirements: ParsedRequirements,
     // Metadata for the occupied ranges, to identify which train it comes from.

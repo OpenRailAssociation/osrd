@@ -213,4 +213,8 @@ data class InfraExplorerWithEnvelopeImpl(
             .filter { it.originalStep.stop }
             .any { it.travelledPathOffset == getSimulatedLength() }
     }
+
+    override fun toString(): String {
+        return "InfraExplorerWithEnvelopeImpl(infraExplorer=$infraExplorer)"
+    }
 }
