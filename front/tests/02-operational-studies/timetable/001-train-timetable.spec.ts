@@ -102,9 +102,14 @@ test.describe('@op @timetable-items', () => {
 
   /** *************** Test 3 **************** */
   test('Loading timetable items and verifying paced trains display', async ({
+    scenarioTimetableSection,
     pacedTrainSection,
   }) => {
     await test.step('Verify each imported paced train card and its occurrences', async () => {
+      await scenarioTimetableSection.filterTrainTypeAndVerifyTrainCount(
+        'Service',
+        TOTAL_PACED_TRAINS
+      );
       for (let pacedTrainIndex = 0; pacedTrainIndex < 7; pacedTrainIndex += 1) {
         await pacedTrainSection.verifyPacedTrainItemDetails(
           IMPORTED_PACED_TRAIN_DETAILS[pacedTrainIndex],
