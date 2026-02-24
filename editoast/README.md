@@ -228,16 +228,6 @@ configuration for own URL and editoast's prefix).
 > editoast authz rejecting some requests), providing the correct `ROOT_URL` to
 > editoast might be the solution.
 
-## For M1 MacOS users
-
-Our `docker-compose.yml` at the root of the project uses the `postgis` image by default.
-For M1 macs, it requires emulation since it's not compiled for arm platforms, which results
-in a significant slowdown. Define this variable in your environment or in a `.env` file somewhere:
-
-```sh
-export OSRD_POSTGIS_IMAGE='nickblah/postgis:16-postgis-3'
-```
-
 ## Editoast diesel tables model update
 
 After creating a new migration, one should update `database/src/tables.rs` with
