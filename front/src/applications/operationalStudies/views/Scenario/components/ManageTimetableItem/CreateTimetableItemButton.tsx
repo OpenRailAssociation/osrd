@@ -4,7 +4,10 @@ import { useSelector } from 'react-redux';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
-import { createPacedTrains } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
+import {
+  createExceptions,
+  createPacedTrains,
+} from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import { setFailure, setSuccess } from 'reducers/main';
 import { clearAddedExceptionsList } from 'reducers/osrdconf/operationalStudiesConf';
 import { getOperationalStudiesConf } from 'reducers/osrdconf/operationalStudiesConf/selectors';
@@ -35,7 +38,7 @@ const CreateTimetableItemButton = ({
   const dispatch = useAppDispatch();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
 
-  const { workerStatus, sandboxId } = useScenarioContext();
+  const { workerStatus, sandboxId, timetableId } = useScenarioContext();
 
   const simulationConf = useSelector(getOperationalStudiesConf);
 
@@ -54,9 +57,20 @@ const CreateTimetableItemButton = ({
         ? formatPacedTrainPayload(simulationConf, rollingStock!.name)
         : formatTimetableItemPayload(simulationConf, rollingStock!.name);
 
-      const formattedNewPacedTrain: TimetableItem = (
-        await createPacedTrains(dispatch, sandboxId, [payload])
+      const { newTrainSchedulePayload, updatedExceptions } = payload;
+
+      const formattedNewTrainSchedule: TimetableItem = (
+        await createPacedTrains(dispatch, sandboxId, [newTrainSchedulePayload])
       )[0];
+
+      if (updatedExceptions.length > 0) {
+        await createExceptions(
+          dispatch,
+          updatedExceptions,
+          formattedNewTrainSchedule.id,
+          timetableId
+        );
+      }
 
       dispatch(
         setSuccess({
@@ -67,7 +81,7 @@ const CreateTimetableItemButton = ({
       if (simulationConf.editingItemType === 'pacedTrain') {
         dispatch(clearAddedExceptionsList());
       }
-      upsertTimetableItems([formattedNewPacedTrain]);
+      upsertTimetableItems([formattedNewTrainSchedule]);
     } catch (e) {
       dispatch(setFailure(castErrorToFailure(e)));
     } finally {
