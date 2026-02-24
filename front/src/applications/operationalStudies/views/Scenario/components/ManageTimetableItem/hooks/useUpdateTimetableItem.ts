@@ -54,6 +54,13 @@ const useUpdateTimetableItem = (
 
     setIsWorking(true);
 
+    // TODO: extract updated exceptions from the return to handle updating exceptions
+    const { newTrainSchedulePayload } = formatPacedTrainPayload(
+      simulationConf,
+      rollingStock!.name,
+      timetableItemToEditData
+    );
+
     const updatedItem = await storePacedTrain(
       timetableItemId,
       // When editing an occurrence, timetableItemToEditData will contain the original paced train
@@ -62,7 +69,7 @@ const useUpdateTimetableItem = (
       // The function will compare this original paced train information with the one
       // from the store and save the differences in the exception property of the original paced train.
       {
-        ...formatPacedTrainPayload(simulationConf, rollingStock!.name, timetableItemToEditData),
+        ...newTrainSchedulePayload,
         train_schedule_set_id: timetableItemToEditData.originalPacedTrain.train_schedule_set_id,
       },
       dispatch,

@@ -2,7 +2,7 @@ import { compact } from 'lodash';
 import { v4 as uuidV4 } from 'uuid';
 
 import type { PacedTrainWithPaced } from 'applications/operationalStudies/types';
-import type { TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { PacedTrainException, TrainSchedule } from 'common/api/osrdEditoastApi';
 import getStepLocation from 'modules/pathfinding/helpers/getStepLocation';
 import {
   findExceptionWithOccurrenceId,
@@ -33,29 +33,35 @@ export function formatTimetableItemPayload(
   osrdconf: OperationalStudiesConfState,
   // TODO TS2 : remove this when rollingStockName will replace rollingStockId in the store
   rollingStockName: string
-): TrainSchedule {
+): {
+  newTrainSchedulePayload: TrainSchedule;
+  updatedExceptions: PacedTrainException[];
+} {
   return {
-    category: osrdconf.category,
-    comfort: osrdconf.rollingStockComfort,
-    constraint_distribution: osrdconf.constraintDistribution,
-    initial_speed: osrdconf.initialSpeed ? kmhToMs(osrdconf.initialSpeed) : 0,
-    labels: osrdconf.labels,
-    margins: formatMargin(compact(osrdconf.pathSteps)),
-    options: {
-      use_electrical_profiles: osrdconf.usingElectricalProfiles,
-      use_speed_limits_for_simulation: osrdconf.usingSpeedLimits,
-      stops_at_end_of_block: false,
+    newTrainSchedulePayload: {
+      category: osrdconf.category,
+      comfort: osrdconf.rollingStockComfort,
+      constraint_distribution: osrdconf.constraintDistribution,
+      initial_speed: osrdconf.initialSpeed ? kmhToMs(osrdconf.initialSpeed) : 0,
+      labels: osrdconf.labels,
+      margins: formatMargin(compact(osrdconf.pathSteps)),
+      options: {
+        use_electrical_profiles: osrdconf.usingElectricalProfiles,
+        use_speed_limits_for_simulation: osrdconf.usingSpeedLimits,
+        stops_at_end_of_block: false,
+      },
+      path: compact(osrdconf.pathSteps).map((step) => ({
+        id: step.id,
+        location: getStepLocation(step.location),
+      })),
+      power_restrictions: osrdconf.powerRestriction,
+      rolling_stock_name: rollingStockName,
+      schedule: formatSchedule(compact(osrdconf.pathSteps)),
+      speed_limit_tag: osrdconf.speedLimitByTag,
+      start_time: osrdconf.startTime.toISOString(),
+      train_name: osrdconf.name,
     },
-    path: compact(osrdconf.pathSteps).map((step) => ({
-      id: step.id,
-      location: getStepLocation(step.location),
-    })),
-    power_restrictions: osrdconf.powerRestriction,
-    rolling_stock_name: rollingStockName,
-    schedule: formatSchedule(compact(osrdconf.pathSteps)),
-    speed_limit_tag: osrdconf.speedLimitByTag,
-    start_time: osrdconf.startTime.toISOString(),
-    train_name: osrdconf.name,
+    updatedExceptions: [],
   };
 }
 
@@ -106,10 +112,17 @@ export function formatPacedTrainPayload(
   // TODO TS2 : remove this when rollingStockName will replace rollingStockId in the store
   rollingStockName: string,
   timetableItemToEditData?: TimetableItemToEditData
-): TrainSchedule {
-  const baseTrain = formatTimetableItemPayload(osrdconf, rollingStockName);
+): {
+  newTrainSchedulePayload: TrainSchedule;
+  updatedExceptions: PacedTrainException[];
+} {
+  const { newTrainSchedulePayload: baseTrain } = formatTimetableItemPayload(
+    osrdconf,
+    rollingStockName
+  );
 
-  if (osrdconf.editingItemType === 'uniqueTrain') return baseTrain;
+  if (osrdconf.editingItemType === 'uniqueTrain')
+    return { newTrainSchedulePayload: baseTrain, updatedExceptions: [] };
 
   const exceptions = osrdconf.addedExceptions.map(({ key, startTime }) => ({
     key,
@@ -195,5 +208,5 @@ export function formatPacedTrainPayload(
       };
     }
   }
-  return newPacedTrain;
+  return { newTrainSchedulePayload: newPacedTrain, updatedExceptions: exceptions };
 }
