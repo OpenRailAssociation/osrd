@@ -1870,19 +1870,19 @@ export type PostLevelCrossingOccupancyApiResponse =
   /** status 200 Occupancy periods of the given level crossings */ {
     [key: string]: ((
       | {
-          id: number;
           index: number;
+          train_schedule_id: number;
           type: 'base';
         }
       | {
           exception_key: string;
-          id: number;
           index: number;
+          train_schedule_id: number;
           type: 'modified';
         }
       | {
           exception_key: string;
-          id: number;
+          train_schedule_id: number;
           type: 'created';
         }
     ) & {
@@ -2063,19 +2063,19 @@ export type PostPacedTrainTrackOccupancyApiResponse =
         );
     trains: ((
       | {
-          id: number;
           index: number;
+          train_schedule_id: number;
           type: 'base';
         }
       | {
           exception_key: string;
-          id: number;
           index: number;
+          train_schedule_id: number;
           type: 'modified';
         }
       | {
           exception_key: string;
-          id: number;
+          train_schedule_id: number;
           type: 'created';
         }
     ) & {
@@ -4714,19 +4714,19 @@ export type Conflict = {
   /** List of trains involved in the conflict. */
   train_ids: (
     | {
-        id: number;
         index: number;
+        train_schedule_id: number;
         type: 'base';
       }
     | {
         exception_key: string;
-        id: number;
         index: number;
+        train_schedule_id: number;
         type: 'modified';
       }
     | {
         exception_key: string;
-        id: number;
+        train_schedule_id: number;
         type: 'created';
       }
   )[];

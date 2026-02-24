@@ -325,16 +325,16 @@ impl From<TrainSchedule> for paced_train::TrainSchedule {
 /// This ID is used to identify paced train occurrences and exceptions when sending them to the core API for conflict detection.
 pub enum OccurrenceId {
     Base {
-        id: i64,
+        train_schedule_id: i64,
         index: usize,
     },
     Modified {
-        id: i64,
+        train_schedule_id: i64,
         index: usize,
         exception_key: String,
     },
     Created {
-        id: i64,
+        train_schedule_id: i64,
         exception_key: String,
     },
 }
@@ -342,13 +342,16 @@ pub enum OccurrenceId {
 impl OccurrenceId {
     /// Creates a new `Occurrence::Base`.
     pub fn new_base(id: i64, index: usize) -> Self {
-        OccurrenceId::Base { id, index }
+        OccurrenceId::Base {
+            train_schedule_id: id,
+            index,
+        }
     }
 
     /// Create a new `Occurrence::Modified` without an exception key.
     pub fn new_modified(id: i64, index: usize, exception_key: String) -> Self {
         OccurrenceId::Modified {
-            id,
+            train_schedule_id: id,
             index,
             exception_key,
         }
@@ -356,20 +359,29 @@ impl OccurrenceId {
 
     /// Creates a new `Occurrence::Created`.
     pub fn new_created(id: i64, exception_key: String) -> Self {
-        OccurrenceId::Created { id, exception_key }
+        OccurrenceId::Created {
+            train_schedule_id: id,
+            exception_key,
+        }
     }
 }
 
 impl Display for OccurrenceId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            OccurrenceId::Base { id, index } => write!(f, "{}#{}", id, index),
+            OccurrenceId::Base {
+                train_schedule_id: id,
+                index,
+            } => write!(f, "{}#{}", id, index),
             OccurrenceId::Modified {
-                id,
+                train_schedule_id: id,
                 index,
                 exception_key,
             } => write!(f, "{}@{}#{}", id, exception_key, index),
-            OccurrenceId::Created { id, exception_key } => {
+            OccurrenceId::Created {
+                train_schedule_id: id,
+                exception_key,
+            } => {
                 write!(f, "{}@{}", id, exception_key)
             }
         }
