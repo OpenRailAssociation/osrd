@@ -20,6 +20,7 @@ type BoardWrapperProps = {
   fullName?: string;
   items?: OSRDMenuItem[];
   withFooter?: boolean;
+  footerClass?: string;
   dataTestId?: string;
   resizable?: ResizableProps;
 };
@@ -31,6 +32,7 @@ const BoardWrapper = ({
   fullName,
   items = [],
   withFooter = false,
+  footerClass,
   dataTestId,
   customFooter,
   resizable,
@@ -61,7 +63,7 @@ const BoardWrapper = ({
         {children}
       </div>
       {customFooter}
-      {withFooter && !customFooter && <div className="board-footer" />}
+      {withFooter && !customFooter && <div className={cx('board-footer', footerClass)} />}
     </div>
   );
 

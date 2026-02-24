@@ -29,6 +29,7 @@ import {
   getDisplayOnlyPathSteps,
   getTrainIdUsedForProjection,
 } from 'reducers/simulationResults/selectors';
+import { getUseNewTimesStopsTable } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { extractPacedTrainIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
 
@@ -62,6 +63,7 @@ const SimulationResults = ({
   const { t } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
   const { infraId, timetableId } = useScenarioContext();
+  const useNewTimesStopsTable = useSelector(getUseNewTimesStopsTable);
 
   const { results: simulationResults, isSimulationDataLoading } = useSimulationResults();
   const selectedTrainId = simulationResults?.train.id;
@@ -326,6 +328,7 @@ const SimulationResults = ({
                 </div>
               )
             }
+            footerClass={useNewTimesStopsTable ? 'times-stops-table-footer' : undefined}
             withFooter
           >
             <div data-testid="time-stop-outputs" className="time-stop-outputs">
