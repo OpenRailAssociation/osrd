@@ -153,6 +153,15 @@
     color: var(--success30);
   }
 
+  .request-link {
+    text-decoration: underline;
+    color: var(--primary60);
+  }
+
+  .request-link:hover {
+    color: var(--primary80);
+  }
+
   .success-message {
     display: inline-flex;
     color: var(--success60);

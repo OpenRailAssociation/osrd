@@ -357,28 +357,29 @@ const StdcmResults = ({
                             }
                           />
                         ) : (
-                          <div>
-                            {railwayRequestUrl ? (
-                              <a
-                                href={railwayRequestUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="success-message"
+                          <div className="success-message">
+                            <span>
+                              <Trans
+                                components={{
+                                  requestNumber: railwayRequestUrl ? (
+                                    <a
+                                      href={railwayRequestUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="request-link"
+                                    >
+                                      {railwayDemandId}
+                                    </a>
+                                  ) : (
+                                    // eslint-disable-next-line react/jsx-no-useless-fragment
+                                    <>{railwayDemandId}</>
+                                  ),
+                                }}
                               >
-                                {t('modal.successMessage', {
-                                  demandNumber: railwayDemandId,
-                                })}
-                              </a>
-                            ) : (
-                              <span className="success-message">
-                                {t('modal.successMessage', {
-                                  demandNumber: railwayDemandId,
-                                })}
-                              </span>
-                            )}
-                            <span className="success-icon">
-                              <CheckCircle variant="fill" />
+                                {t('modal.successMessage')}
+                              </Trans>
                             </span>
+                            <CheckCircle className="check-circle" variant="fill" />
                           </div>
                         ))}
                     </div>
