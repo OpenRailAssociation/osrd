@@ -1,7 +1,14 @@
 import { useMemo } from 'react';
 
-import { ComboBox, Select } from '@osrd-project/ui-core';
-import { AddedLocation, AddLocation, FocusLocation, KebabHorizontal } from '@osrd-project/ui-icons';
+import { ComboBox, Select, SegmentedControl } from '@osrd-project/ui-core';
+import {
+  AddedLocation,
+  AddLocation,
+  FocusLocation,
+  ArrowRight,
+  Square,
+  KebabHorizontal,
+} from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +19,7 @@ import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import type { Viewport } from 'reducers/commonMap/types';
 import type { PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
+import { Duration } from 'utils/duration';
 
 import {
   ListElementComponent,
@@ -22,6 +30,7 @@ import { computePathStepCoordinates, isOpRefMetadata } from './utils';
 const EMPTY_OPTION = { label: '', id: '' };
 
 type PathStepProps = {
+  setPathSteps?: React.Dispatch<React.SetStateAction<PathStepV2[]>>;
   pathStep?: PathStepV2;
   pathStepMetadata?: PathStepMetadata;
   index?: number;
@@ -43,6 +52,7 @@ type PathStepProps = {
 
 const PathStepItem = ({
   pathStep,
+  setPathSteps,
   pathStepMetadata,
   index,
   hidePathfindingLine,
@@ -183,6 +193,28 @@ const PathStepItem = ({
     dispatch(updateViewport(viewport));
   };
 
+  type SegmentedControlOption = { value: string; label: string; icon: React.ReactNode };
+
+  const segmentedControlOptions: SegmentedControlOption[] = [
+    { value: 'pass', label: t('pass'), icon: <ArrowRight size="sm" /> },
+    { value: 'stop', label: t('stop'), icon: <Square size="sm" variant="fill" /> },
+  ];
+
+  const toggleType = (option: { value: string; label: string }) => {
+    if (!pathStep || !setPathSteps || index === undefined) return;
+    const newPathStep = { ...pathStep };
+    if (option.value === 'stop') {
+      newPathStep.stopFor = new Duration({ minutes: 0 });
+    } else {
+      newPathStep.stopFor = null;
+    }
+    setPathSteps((prevSteps) => {
+      const updatedSteps = [...prevSteps];
+      updatedSteps[index - 1] = newPathStep;
+      return updatedSteps;
+    });
+  };
+
   const comboBoxValue = useMemo(() => {
     if (inputValue !== undefined) return inputValue;
 
@@ -202,11 +234,7 @@ const PathStepItem = ({
 
   return (
     <div className="path-step-wrapper">
-      <div
-        className={cx('path-step', {
-          'requested-point': pathStep?.location && 'track' in pathStep.location,
-        })}
-      >
+      <div className="path-step">
         <div
           className={cx('path-step-counter', {
             invalid: isInvalidAndIsEditing,
@@ -338,6 +366,17 @@ const PathStepItem = ({
             />
           </div>
         )}
+        <SegmentedControl
+          options={segmentedControlOptions}
+          getOptionLabel={(option: SegmentedControlOption) => option.label}
+          getOptionValue={(option: SegmentedControlOption) => option.value}
+          getOptionIcon={(option: SegmentedControlOption) => option.icon}
+          value={pathStep?.stopFor ? segmentedControlOptions[1] : segmentedControlOptions[0]}
+          onChange={(option) => {
+            toggleType(option);
+          }}
+          small
+        />
         <div className="map-interactions">
           {pathStep?.location && 'track' in pathStep.location ? (
             <AddedLocation
