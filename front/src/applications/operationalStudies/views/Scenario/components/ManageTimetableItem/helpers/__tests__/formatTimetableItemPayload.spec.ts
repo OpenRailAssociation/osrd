@@ -403,12 +403,12 @@ describe('formatTimetableItemPayload', () => {
           },
         };
         test('the exception should be removed (it now matches completely the paced train)', () => {
-          const result = formatPacedTrainPayload(
+          const { newTrainSchedulePayload } = formatPacedTrainPayload(
             osrdconfWithUserChanges,
             rollingStockName,
             timetableItemToEditDataWithOneChangeGroup
           );
-          expect(result.paced?.exceptions).toEqual([]);
+          expect(newTrainSchedulePayload.paced?.exceptions).toEqual([]);
         });
       });
       describe('exception is both a label and category exception', () => {
@@ -444,12 +444,12 @@ describe('formatTimetableItemPayload', () => {
           },
         };
         test('exception remains a label exception but the category change groups is removed', () => {
-          const result = formatPacedTrainPayload(
+          const { newTrainSchedulePayload } = formatPacedTrainPayload(
             osrdconfWithUserChanges,
             rollingStockName,
             timetableItemToEditDataWithTwoChangeGroups
           );
-          expect(result.paced?.exceptions).toEqual([
+          expect(newTrainSchedulePayload.paced?.exceptions).toEqual([
             {
               key: 'a6f39ce5-ae64-4135-af9b-22ee19877873',
               occurrence_index: 1,
@@ -515,13 +515,13 @@ describe('formatTimetableItemPayload', () => {
             },
           },
         ];
-        const result = formatPacedTrainPayload(
+        const { newTrainSchedulePayload } = formatPacedTrainPayload(
           osrdconfWithUserChanges,
           rollingStockName,
           timetableItemToEditDataWithExceptions
         );
 
-        expect(result.paced?.exceptions).toEqual(expectedPacedTrainExceptions);
+        expect(newTrainSchedulePayload.paced?.exceptions).toEqual(expectedPacedTrainExceptions);
       });
     });
 
@@ -608,13 +608,13 @@ describe('formatTimetableItemPayload', () => {
             },
           },
         ];
-        const result = formatPacedTrainPayload(
+        const { newTrainSchedulePayload } = formatPacedTrainPayload(
           osrdconfWithUserChanges,
           rollingStockName,
           timetableItemToEditDataWithExceptions
         );
 
-        expect(result.paced?.exceptions).toEqual(expectedPacedTrainExceptions);
+        expect(newTrainSchedulePayload.paced?.exceptions).toEqual(expectedPacedTrainExceptions);
       });
     });
 
@@ -650,13 +650,13 @@ describe('formatTimetableItemPayload', () => {
           ...rawOsrdconf,
           ...userChanges,
         };
-        const result = formatPacedTrainPayload(
+        const { newTrainSchedulePayload } = formatPacedTrainPayload(
           osrdconfWithUserChanges,
           rollingStockName,
           timetableItemToEditDataWithExceptions
         );
 
-        expect(result.paced?.exceptions).toEqual([]);
+        expect(newTrainSchedulePayload.paced?.exceptions).toEqual([]);
       });
     });
   });
