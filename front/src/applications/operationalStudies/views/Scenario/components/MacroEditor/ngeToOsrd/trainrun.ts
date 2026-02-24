@@ -19,11 +19,11 @@ import { isPacedTrainId } from 'utils/trainId';
 import { checkChangeGroups } from '../../ManageTimetableItem/helpers/buildPacedTrainException';
 import type {
   NetzgrafikDto,
-  NGEEvent,
   TrainrunSectionDto,
   NodeDto,
   TimeLockDto,
   TrainrunDto,
+  NGETrainrunEvent,
 } from '../../NGE/types';
 import {
   DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
@@ -646,9 +646,8 @@ export const handleUpdateTimetableItem = async ({
 };
 
 export const handleTrainrunOperation = async ({
-  type,
   netzgrafikDto,
-  trainrunId,
+  trainrunEvent,
   trainScheduleSetId,
   infraId,
   state,
@@ -656,9 +655,8 @@ export const handleTrainrunOperation = async ({
   addUpsertedTimetableItems,
   addDeletedTimetableItemIds,
 }: {
-  type: NGEEvent['type'];
   netzgrafikDto: NetzgrafikDto;
-  trainrunId: number;
+  trainrunEvent: NGETrainrunEvent;
   trainScheduleSetId: number;
   infraId: number;
   state: MacroEditorState;
@@ -666,12 +664,12 @@ export const handleTrainrunOperation = async ({
   addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void;
   addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void;
 }) => {
-  const trainrun = netzgrafikDto.trainruns.find((tr) => tr.id === trainrunId);
-  switch (type) {
+  const trainrun = trainrunEvent.trainrun;
+  switch (trainrunEvent.type) {
     case 'create': {
       await handleCreateTimetableItem(
         netzgrafikDto,
-        trainrun!,
+        trainrun,
         trainScheduleSetId,
         infraId,
         state,
@@ -683,7 +681,7 @@ export const handleTrainrunOperation = async ({
     case 'update': {
       await handleUpdateTimetableItem({
         netzgrafikDto,
-        trainrun: trainrun!,
+        trainrun,
         trainScheduleSetId,
         infraId,
         dispatch,
@@ -694,7 +692,7 @@ export const handleTrainrunOperation = async ({
       break;
     }
     case 'delete': {
-      await handleDeleteTimetableItem(trainrunId, state, dispatch, addDeletedTimetableItemIds);
+      await handleDeleteTimetableItem(trainrun.id, state, dispatch, addDeletedTimetableItemIds);
       break;
     }
     default:

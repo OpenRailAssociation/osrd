@@ -104,9 +104,8 @@ export const handleOperation = async ({
       break;
     case 'trainrun': {
       await handleTrainrunOperation({
-        type,
         netzgrafikDto,
-        trainrunId: event.trainrun.id,
+        trainrunEvent: event,
         trainScheduleSetId,
         infraId,
         state,
