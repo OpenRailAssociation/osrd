@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useOptimistic, useRef, startTransition } from 'react';
 
 import cx from 'classnames';
 import { useSelector } from 'react-redux';
@@ -14,17 +14,13 @@ import { getUseNewTimesStopsTable } from 'reducers/user/userSelectors';
 import { formatLocalTime } from 'utils/date';
 import { Duration } from 'utils/duration';
 
+import { computeOptimisticSchedule } from './helpers/cellUpdate';
 import useOutputTableData from './hooks/useOutputTableData';
 import useTimesStopsTableData from './hooks/useTimesStopsTableData';
 import useUpdateTimesStopsTable from './hooks/useUpdateTimesStopsTable';
 import TimesStops from './TimesStops';
 import TimesStopsTable from './TimesStopsTable';
-import { TableType, type TimesStopsRow, type TimesStopsRowNew } from './types';
-
-type PendingEdit =
-  | { rowId: string; field: 'requestedArrival'; value: Date | null }
-  | { rowId: string; field: 'requestedDeparture'; value: Date | null }
-  | { rowId: string; field: 'stopDuration'; value: Duration | null };
+import { TableType, type PendingEdit, type TimesStopsRow, type TimesStopsRowNew } from './types';
 
 type TimesStopsOutputProps = {
   infraId: number;
@@ -60,9 +56,6 @@ const TimesStopsOutput = ({
   const preEditPathItemTimesRef = useRef<typeof simulatedPathItemTimes>(undefined);
   const isTrainSimulationPendingRef = useRef(false);
 
-  // Store pending edit for optimistic UI update (state to trigger re-render)
-  const [pendingEdit, setPendingEdit] = useState<PendingEdit | null>(null);
-
   // Only call the hook that corresponds to the active table to avoid unnecessary computation
   const legacyRows = useOutputTableData(
     infraId,
@@ -83,6 +76,15 @@ const TimesStopsOutput = ({
     useNewTimesStopsTable ? operationalPointsOnPath : undefined
   );
 
+  // Optimistic update: immediately show consistent derived schedule fields.
+  // Computed simulation fields show loading placeholders via isComputedDataPending.
+  // useOptimistic reverts to real newRows once the transition (API call) completes.
+  const [optimisticRows, addOptimisticEdit] = useOptimistic(newRows, (rows, edit: PendingEdit) =>
+    rows.map((row) =>
+      row.id === edit.rowId ? { ...row, ...computeOptimisticSchedule(row, edit) } : row
+    )
+  );
+
   const startTime = useMemo(() => new Date(selectedTrain.start_time), [selectedTrain.start_time]);
 
   const { updateArrival, updateStopDuration, updateDeparture } = useUpdateTimesStopsTable(
@@ -101,7 +103,7 @@ const TimesStopsOutput = ({
       simulatedPathItemTimes === preEditPathItemTimesRef.current) ||
     (isTrainSimulationPendingRef.current && isSimulationFetching);
 
-  // Reset refs and pending edit once both pipelines are done
+  // Reset refs once both simulation pipelines are done
   useEffect(() => {
     if (
       !isAwaitingSimulation &&
@@ -109,75 +111,68 @@ const TimesStopsOutput = ({
     ) {
       preEditPathItemTimesRef.current = undefined;
       isTrainSimulationPendingRef.current = false;
-      setPendingEdit(null);
     }
   }, [isAwaitingSimulation]);
 
   // Call this before any edit to start tracking simulation refresh.
-  const startSimulationTracking = (pendingEditValue: PendingEdit) => {
+  const startSimulationTracking = () => {
     preEditPathItemTimesRef.current = simulatedPathItemTimes;
     isTrainSimulationPendingRef.current = true;
-    setPendingEdit(pendingEditValue);
   };
 
   // Call this on error to cancel the tracking started by startSimulationTracking.
   const cancelSimulationTracking = () => {
     preEditPathItemTimesRef.current = undefined;
     isTrainSimulationPendingRef.current = false;
-    setPendingEdit(null);
   };
 
-  const handleArrivalChange = async (row: TimesStopsRowNew, arrival: Date | null) => {
+  const handleArrivalChange = (row: TimesStopsRowNew, arrival: Date | null) => {
     if (isAwaitingSimulation) return;
-    startSimulationTracking({ rowId: row.id, field: 'requestedArrival', value: arrival });
-    try {
-      await updateArrival(row, arrival);
-    } catch {
-      cancelSimulationTracking();
-    }
-  };
-
-  const handleDepartureChange = async (row: TimesStopsRowNew, departure: Date | null) => {
-    if (isAwaitingSimulation) return;
-    startSimulationTracking({ rowId: row.id, field: 'requestedDeparture', value: departure });
-    try {
-      await updateDeparture(row, departure);
-    } catch {
-      cancelSimulationTracking();
-    }
-  };
-
-  const handleStopDurationChange = async (
-    row: TimesStopsRowNew,
-    durationSeconds: number | null
-  ) => {
-    if (isAwaitingSimulation) return;
-    startSimulationTracking({
-      rowId: row.id,
-      field: 'stopDuration',
-      value: durationSeconds !== null ? new Duration({ seconds: durationSeconds }) : null,
+    startSimulationTracking();
+    startTransition(async () => {
+      addOptimisticEdit({ rowId: row.id, field: 'requestedArrival', value: arrival });
+      try {
+        await updateArrival(row, arrival);
+      } catch {
+        cancelSimulationTracking();
+      }
     });
-    try {
-      await updateStopDuration(row, durationSeconds);
-    } catch {
-      cancelSimulationTracking();
-    }
   };
 
-  // Apply optimistic update to display rows
-  const displayRows = pendingEdit
-    ? newRows.map((row) => {
-        if (row.id === pendingEdit.rowId) {
-          return { ...row, [pendingEdit.field]: pendingEdit.value };
-        }
-        return row;
-      })
-    : newRows;
+  const handleDepartureChange = (row: TimesStopsRowNew, departure: Date | null) => {
+    if (isAwaitingSimulation) return;
+    startSimulationTracking();
+    startTransition(async () => {
+      addOptimisticEdit({ rowId: row.id, field: 'requestedDeparture', value: departure });
+      try {
+        await updateDeparture(row, departure);
+      } catch {
+        cancelSimulationTracking();
+      }
+    });
+  };
+
+  const handleStopDurationChange = (row: TimesStopsRowNew, durationSeconds: number | null) => {
+    if (isAwaitingSimulation) return;
+    startSimulationTracking();
+    startTransition(async () => {
+      addOptimisticEdit({
+        rowId: row.id,
+        field: 'stopDuration',
+        value: durationSeconds !== null ? new Duration({ seconds: durationSeconds }) : null,
+      });
+      try {
+        await updateStopDuration(row, durationSeconds);
+      } catch {
+        cancelSimulationTracking();
+      }
+    });
+  };
 
   if (useNewTimesStopsTable) {
     return (
       <TimesStopsTable
-        rows={displayRows}
+        rows={optimisticRows}
         startTime={startTime}
         isValid={isValid}
         isComputedDataPending={isAwaitingSimulation}

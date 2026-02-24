@@ -88,3 +88,10 @@ export type DepartureUpdate = {
 };
 
 export type CellUpdate = ArrivalUpdate | StopDurationUpdate | DepartureUpdate;
+
+export type OptimisticEdit =
+  | { field: 'requestedArrival'; value: Date | null }
+  | { field: 'requestedDeparture'; value: Date | null }
+  | { field: 'stopDuration'; value: Duration | null };
+
+export type PendingEdit = OptimisticEdit & { rowId: string };

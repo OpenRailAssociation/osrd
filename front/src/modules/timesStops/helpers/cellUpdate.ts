@@ -5,7 +5,7 @@ import type { Train } from 'reducers/osrdconf/types';
 import { addElementAtIndex } from 'utils/array';
 import { Duration } from 'utils/duration';
 
-import type { CellUpdate, TimesStopsRowNew } from '../types';
+import type { CellUpdate, OptimisticEdit, TimesStopsRowNew } from '../types';
 
 /** Compute the insertion index for a new PathStep using row opOnPathIndex values. */
 const computeInsertIndex = (
@@ -127,6 +127,70 @@ export const insertScheduleItemInOrder = (
   const insertIndex = foundIndex === -1 ? schedule.length : foundIndex;
 
   return addElementAtIndex(schedule, insertIndex, newItem);
+};
+
+/**
+ * Compute the optimistic display values for all schedule fields when a cell is edited.
+ * Mirrors the business logic of buildScheduleItemForField but operates on display format
+ * values (Date/Duration) rather than API format (ISO duration strings).
+ */
+export const computeOptimisticSchedule = (
+  row: TimesStopsRowNew,
+  edit: OptimisticEdit
+): Pick<TimesStopsRowNew, 'requestedArrival' | 'stopDuration' | 'requestedDeparture'> => {
+  const { requestedArrival: currentArrival, stopDuration: currentDuration } = row;
+
+  switch (edit.field) {
+    case 'requestedArrival': {
+      const newArrival = edit.value;
+      const newDeparture =
+        newArrival !== null && currentDuration !== null
+          ? new Date(newArrival.getTime() + currentDuration.ms)
+          : null;
+      return {
+        requestedArrival: newArrival,
+        stopDuration: currentDuration,
+        requestedDeparture: newDeparture,
+      };
+    }
+
+    case 'stopDuration': {
+      const newDuration = edit.value;
+      const newDeparture =
+        currentArrival !== null && newDuration !== null
+          ? new Date(currentArrival.getTime() + newDuration.ms)
+          : null;
+      return {
+        requestedArrival: currentArrival,
+        stopDuration: newDuration,
+        requestedDeparture: newDeparture,
+      };
+    }
+
+    case 'requestedDeparture': {
+      const newDeparture = edit.value;
+      if (newDeparture === null) {
+        return { requestedArrival: currentArrival, stopDuration: null, requestedDeparture: null };
+      }
+      if (currentArrival !== null) {
+        const newDuration = new Duration({
+          milliseconds: newDeparture.getTime() - currentArrival.getTime(),
+        });
+        return {
+          requestedArrival: currentArrival,
+          stopDuration: newDuration,
+          requestedDeparture: newDeparture,
+        };
+      }
+      // No arrival: arrival = departure - existingStopDuration
+      const newArrival = new Date(newDeparture.getTime() - (currentDuration?.ms ?? 0));
+      return {
+        requestedArrival: newArrival,
+        stopDuration: currentDuration,
+        requestedDeparture: newDeparture,
+      };
+    }
+  }
 };
 
 /** Build a TrainSchedule object from a Train with updated path and schedule. */
