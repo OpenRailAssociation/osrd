@@ -349,8 +349,8 @@ const ItineraryModal = ({
             </div>
             <div className="path-step-list-header">
               <span>{t('opName')}</span>
-              <span>{t('secondaryCode')}</span>
               <span>{t('track')}</span>
+              <span>{t('opType')}</span>
             </div>
             {pathSteps.map((pathStep, i) => {
               const pathStepMetadata = pathStepsMetadataById.get(pathStep.id);
@@ -359,6 +359,7 @@ const ItineraryModal = ({
               return (
                 <PathStepItem
                   key={pathStep.id}
+                  setPathSteps={setPathSteps}
                   pathStep={pathStep}
                   pathStepMetadata={pathStepMetadata}
                   index={i + 1}

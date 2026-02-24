@@ -7,8 +7,8 @@
   --path-step-row-gap: 8px;
   --path-step-wrapper-padding-left: 12px;
   --path-step-wrapper-padding-right: 10px;
-  --path-step-secondary-code-width: 60px;
   --path-step-track-name-width: 76px;
+  --path-step-type-width: 60px;
   --map-interactions-width: 58px;
   --map-interactions-margin-left: 7px;
 
@@ -44,6 +44,7 @@
       border-bottom: 1px solid var(--gray-30);
       box-sizing: border-box;
       padding-bottom: 30px;
+
       .category-row {
         display: flex;
         align-items: center;
@@ -56,6 +57,7 @@
           border-radius: 4px;
           margin-right: 12px;
         }
+
         .category-select {
           width: 217px;
           height: 32px;
@@ -71,6 +73,7 @@
 
         .rolling-stock-combobox {
           min-width: 217px;
+
           // Fix osrd-ui styles
           label {
             margin-bottom: 0;
@@ -79,6 +82,7 @@
 
         .composition-code-select {
           min-width: 120px;
+
           // Fix osrd-ui styles
           label {
             margin-bottom: 0;
@@ -89,6 +93,7 @@
           min-width: 148px;
           margin-right: 40px;
           flex: 1 1 auto;
+
           // Fix osrd-ui styles
           label {
             margin-bottom: 0;
@@ -115,6 +120,7 @@
         margin-top: 12px;
         margin-inline: 8px;
         padding-top: 16px;
+
         .reverse-itinerary-button {
           position: absolute;
           padding: 8px;
@@ -123,6 +129,7 @@
           left: 8px;
           color: var(--grey30);
         }
+
         .itinerary-icons {
           display: flex;
           justify-content: end;
@@ -142,7 +149,9 @@
 
         .path-step-list-header {
           display: grid;
-          grid-template-columns: minmax(184px, 1fr) 60px 76px;
+          grid-template-columns: minmax(184px, 1fr) var(--path-step-track-name-width) var(
+              --path-step-type-width
+            );
           gap: 8px;
 
           font-size: 0.875rem;
@@ -173,20 +182,11 @@
           .path-step {
             display: grid;
             grid-template-columns:
-              24px minmax(184px, 1fr) var(--path-step-secondary-code-width)
-              var(--path-step-track-name-width) auto;
+              24px minmax(184px, 1fr) var(--path-step-track-name-width) var(--path-step-type-width)
+              auto;
             align-items: center;
             gap: 8px;
             padding-block: 8px;
-
-            &.requested-point {
-              grid-template-columns:
-                24px minmax(184px, 1fr) calc(
-                  var(--path-step-secondary-code-width) + var(--path-step-track-name-width) +
-                    var(--path-step-row-gap)
-                )
-                auto;
-            }
 
             .path-step-counter {
               position: relative;
@@ -253,14 +253,6 @@
               }
             }
 
-            .secondary-code,
-            .track-name {
-              &.invalid {
-                border-radius: 4px;
-                box-shadow: 0 0 0 1.5px rgba(255, 104, 104, 1);
-              }
-            }
-
             .requested-point-block {
               height: 28px;
               background-color: var(--ambientB5);
@@ -268,7 +260,7 @@
             }
 
             .map-interactions {
-              margin-left: 7px;
+              margin-left: 5px;
               color: var(--primary60);
 
               .added-location-icon svg {
@@ -338,6 +330,7 @@
   .itinerary-modal-map {
     display: none;
   }
+
   .itinerary-modal-form {
     width: 100%;
   }
