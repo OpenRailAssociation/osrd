@@ -121,8 +121,6 @@
       justify-content: space-between;
       padding: 16px;
       width: 100%;
-      box-shadow: 0 1px 0 0 inset var(--black10);
-      border-radius: 0 0 8px 8px;
       background-color: var(--ambiantB15);
 
       button {
@@ -134,6 +132,17 @@
       svg {
         color: var(--primary60);
       }
+    }
+
+    .times-stops-table-footer {
+      box-shadow: 0 1px 0 0 inset var(--white50);
+      border-top: 1px solid var(--color-grey-30);
+      border-radius: 0 0 8px 8px;
+    }
+
+    .times-stops-table-footer-old {
+      box-shadow: 0 1px 0 0 inset var(--black10);
+      border-radius: 0 0 8px 8px;
     }
 
     /* MAP */

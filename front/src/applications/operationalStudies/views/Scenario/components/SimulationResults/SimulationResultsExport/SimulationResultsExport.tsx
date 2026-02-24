@@ -1,8 +1,10 @@
 import { Button } from '@osrd-project/ui-core';
 import { Download, File } from '@osrd-project/ui-icons';
 import { pdf } from '@react-pdf/renderer';
+import cx from 'classnames';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
 import type {
   OperationalPointWithTimeAndSpeed,
@@ -15,6 +17,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import SimulationReportSheet from 'modules/SimulationReportSheet';
 import type { Train } from 'reducers/osrdconf/types';
+import { getUseNewTimesStopsTable } from 'reducers/user/userSelectors';
 
 import exportTrainCSV from './exportTrainCSV';
 import useFormattedOperationalPoints from './useFormattedOperationalPoints';
@@ -85,9 +88,15 @@ const SimulationResultsExport = ({
   const { t: tSimulationReportSheet } = useTranslation('stdcm');
 
   const operationalPoints = useFormattedOperationalPoints(train, simulation, pathProperties);
+  const useNewTimesStopsTable = useSelector(getUseNewTimesStopsTable);
 
   return (
-    <div className="simulation-sheet-container">
+    <div
+      className={cx(
+        'simulation-sheet-container',
+        useNewTimesStopsTable ? 'times-stops-table-footer' : 'times-stops-table-footer-old'
+      )}
+    >
       <Button
         onClick={() =>
           exportTrainPDF(
