@@ -285,19 +285,29 @@
       display: flex;
       gap: 16px;
       white-space: nowrap;
+    }
 
-      div {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-        font-size: 1rem;
-        .success-message {
-          color: var(--success60);
-        }
-        .success-icon {
-          color: var(--success30);
-        }
-      }
+    .request-link {
+      text-decoration: underline;
+      color: var(--primary60);
+    }
+
+    .request-link:hover {
+      color: var(--primary80);
+    }
+
+    .success-message {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 1rem;
+      color: var(--success60);
+    }
+
+    .success-icon {
+      display: flex;
+      align-items: center;
+      color: var(--success30);
     }
   }
 

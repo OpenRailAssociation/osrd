@@ -173,7 +173,7 @@
         "rollingStock": "towed rolling stock",
         "selectPathType": "Select",
         "stop": "Stop of {{minutes}} at {{stopAt}}",
-        "successMessage": "Request {{demandNumber}} received by GESICO",
+        "successMessage": "Request <requestNumber/> received by GESICO",
         "toleranceAfter": "Future tolerance",
         "toleranceBefore": "Past tolerance",
         "totalLength": "total length",

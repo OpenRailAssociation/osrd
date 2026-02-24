@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState, useCallback, type ReactElement } from 're
 import { Button, Checkbox, DatePicker, Input, Select, TextArea } from '@osrd-project/ui-core';
 import { Download, CheckCircle } from '@osrd-project/ui-icons';
 import { pdf, type DocumentProps } from '@react-pdf/renderer';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import type {
@@ -554,24 +554,29 @@ const SendToRailwayManagerModal = ({
         <p>{t('modal.followUpMessage')}</p>
         <div className="actions">
           {isSuccess && (
-            <div>
-              {data.created_request_url ? (
-                <a
-                  href={data.created_request_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="success-message"
+            <div className="success-message">
+              <span>
+                <Trans
+                  components={{
+                    requestNumber: data.created_request_url ? (
+                      <a
+                        href={data.created_request_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="request-link"
+                      >
+                        {data.request_identifier}
+                      </a>
+                    ) : (
+                      // eslint-disable-next-line react/jsx-no-useless-fragment
+                      <>{data.request_identifier}</>
+                    ),
+                  }}
                 >
-                  {t('modal.successMessage', { demandNumber: data.request_identifier })}
-                </a>
-              ) : (
-                <span className="success-message">
-                  {t('modal.successMessage', { demandNumber: data.request_identifier })}
-                </span>
-              )}
-              <span className="success-icon">
-                <CheckCircle variant="fill" />
+                  {t('modal.successMessage')}
+                </Trans>
               </span>
+              <CheckCircle className="success-icon" variant="fill" />
             </div>
           )}
           <Button
