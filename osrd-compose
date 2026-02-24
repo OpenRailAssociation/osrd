@@ -17,6 +17,7 @@ This script simplifies docker compose operations by managing override files.
 
 Flags (optional, can be combined):
   dev-front    Add front-end development container (docker/docker-compose.front.yml)
+  ext-front    Use a separately started front-end server (docker/docker-compose.ext-front.yml)
   sw           Enable single worker mode (docker/docker-compose.single-worker.yml)
   host         Use host networking mode (docker/docker-compose.host.yml)
   playwright   Start playwright container with the stack (docker/docker-compose.playwright.yml)
@@ -29,7 +30,7 @@ Examples:
 
 State System:
 The script maintains a state system to remember your last configuration.
-When you run the script with flags (dev-front, sw, host), these choices are saved
+When you run the script with flags (dev-front, sw, host…), these choices are saved
 in a hidden file (.osrd-compose-state). Next time you run the script without
 flags, it will automatically use this saved configuration. This lets you run
 quick commands like 'ps' or 'logs' without re-specifying your setup each time.
@@ -60,7 +61,7 @@ while [[ $# -gt 0 ]]; do
             DEFAULT_FLAG=true
             shift
             ;;
-        dev-front|sw|host|playwright)
+        dev-front|ext-front|sw|host|playwright)
             flags+=("$1")
             shift
             ;;
@@ -106,11 +107,19 @@ if has_flag "sw" && ! has_flag "host"; then
     exit 1
 fi
 
+if has_flag "ext-front" && has_flag "dev-front"; then
+    echo "Error: 'ext-front' and 'dev-front' flags are mutually exclusive."
+    echo "Hint: 'ext-front' should only be used if you are running \`npm start\` on the host."
+    exit 1
+fi
+
 if has_flag "host"; then
     compose_files+=("$OVERRIDE_DIR/docker-compose.host.yml")
 fi
 
-if has_flag "dev-front"; then
+if has_flag "ext-front"; then
+    compose_files+=("$OVERRIDE_DIR/docker-compose.ext-front.yml")
+elif has_flag "dev-front"; then
     if has_flag "host"; then
         compose_files+=("$OVERRIDE_DIR/docker-compose.host-front.yml")
     else

@@ -1,0 +1,10 @@
+services:
+  gateway:
+    image: ghcr.io/openrailassociation/osrd-${RELEASE_CHANNEL-edge}/osrd-gateway:${TAG-dev}-${GATEWAY_FLAVOR-standalone}
+    volumes:
+      - "./docker/gateway.dev.ext-front.toml:/srv/gateway.toml"
+    build:
+      args:
+        SKIP_FRONT: "1"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

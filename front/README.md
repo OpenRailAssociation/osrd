@@ -8,8 +8,10 @@ A Docker Compose override is provided in `docker/docker-compose.front.yml` to ru
 watch mode together with the rest of the OSRD stack. The osrd-compose script can be used to start
 OSRD in this mode:
 
-    ./osrd-compose dev-front build
-    ./osrd-compose up -d
+```sh
+./osrd-compose dev-front build
+./osrd-compose up -d
+```
 
 The first time the container starts up, the osrd-ui library will be missing. This will trigger some
 build errors, which should go away as soon as osrd-ui gets built. Restarting the front container
@@ -17,13 +19,28 @@ helps getting rid of lingering ESLint errors.
 
 ### Outside of Docker
 
-- go inside `/front/` from OSRD main project
-- you'll need [`npm`](https://nodejs.org/en/download/package-manager)
-- exec `npm install` (hope you have a good connection and a good cup of tea)
-- exec `npm run build-ui`
-- exec `npm start` (perhaps you'll need `NODE_OPTIONS="--openssl-legacy-provider"` if your node
-  version is too new)
-- enjoy
+If for some reason you can't or don't want to use the docker image during development, you can run
+the server directly from your development host.
+
+Everything else is still needed, so let's use `osrd-compose` with the `ext-front` flag:
+
+```sh
+./osrd-compose ext-front build
+./osrd-compose up -d
+```
+
+Make sure `npm` is [installed](https://nodejs.org/en/download), then run:
+
+```sh
+cd ./front/
+npm install
+npm run build-ui
+npm start -- --host 127.0.0.1
+```
+
+> [!NOTE]
+> We use `--host 127.0.0.1` to let Vite know it should also bind to Docker's `bridge`
+> network interface, so the `gateway` can proxy the requests accordingly.
 
 ## Commands
 
