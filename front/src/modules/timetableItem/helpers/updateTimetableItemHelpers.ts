@@ -1,6 +1,8 @@
 import {
   osrdEditoastApi,
+  type PacedTrainException,
   type TrainSchedule,
+  type TrainScheduleException,
   type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import type { TimetableItem } from 'reducers/osrdconf/types';
@@ -41,6 +43,31 @@ export async function createPacedTrains(
     })
   ).unwrap();
   return newPacedTrains;
+}
+
+export async function createExceptions(
+  dispatch: AppDispatch,
+  exceptions: PacedTrainException[],
+  pacedTrainId: number,
+  timetableId: number
+): Promise<TrainScheduleException[]> {
+  // TODO: use batch when it will be possible to batch post exceptions
+  return await Promise.all(
+    exceptions.map((exception) => {
+      const { key: _key, occurrence_index, disabled, ...change_groups } = exception;
+      return dispatch(
+        osrdEditoastApi.endpoints.postTimetableByIdTrainScheduleException.initiate({
+          id: timetableId,
+          body: {
+            change_groups,
+            disabled: disabled ?? false,
+            occurrence_index,
+            train_schedule_id: pacedTrainId,
+          },
+        })
+      ).unwrap();
+    })
+  );
 }
 
 async function updatePacedTrain(dispatch: AppDispatch, id: number, trainSchedule: TrainSchedule) {
