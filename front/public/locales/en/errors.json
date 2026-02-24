@@ -305,6 +305,7 @@
       "UnsimulatedTrainSchedule": "Train Schedule '{{train_schedule_id}}' is not simulated"
     },
     "train_schedule_exception": {
+      "BatchNotFound": "'{{count}}' train schedule exception(s) could not be found",
       "Database": "Internal error (database)",
       "NotPacedTrain": "Train schedule '{{train_schedule_id}}' is not a paced train",
       "TimetableNotFound": "Timetable '{{timetable_id}}' could not be found",

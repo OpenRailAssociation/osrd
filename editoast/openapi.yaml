@@ -4431,6 +4431,30 @@ paths:
       responses:
         '204':
           description: No content when successful
+  /train_schedule_exceptions/delete:
+    post:
+      tags:
+      - train_schedule_exceptions
+      summary: Delete train schedule exceptions
+      requestBody:
+        description: A set of train schedule exception IDs
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - ids
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  uniqueItems: true
+        required: true
+      responses:
+        '204':
+          description: The train schedule exception was deleted successfully
   /train_schedule_sets:
     get:
       tags:
@@ -6199,6 +6223,7 @@ components:
       - $ref: '#/components/schemas/EditoastTowedRollingStockErrorDatabase'
       - $ref: '#/components/schemas/EditoastTowedRollingStockErrorIdNotFound'
       - $ref: '#/components/schemas/EditoastTowedRollingStockErrorIsLocked'
+      - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorBatchNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorDatabase'
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorNotPacedTrain'
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorTimetableNotFound'
@@ -8497,6 +8522,30 @@ components:
           type: string
           enum:
           - editoast:towedrollingstocks:IsLocked
+    EditoastTrainScheduleExceptionErrorBatchNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - count
+          properties:
+            count:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:train_schedule_exception:BatchNotFound
     EditoastTrainScheduleExceptionErrorDatabase:
       type: object
       required:

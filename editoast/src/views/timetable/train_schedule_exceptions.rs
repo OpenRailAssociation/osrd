@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::sync::Arc;
 
 use authz;
@@ -5,6 +6,7 @@ use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
+use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
@@ -27,6 +29,9 @@ use crate::views::AuthorizationError;
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "train_schedule_exception")]
 pub enum TrainScheduleExceptionError {
+    #[error("{count} train schedule exception(s) could not be found")]
+    #[editoast_error(status = 404)]
+    BatchNotFound { count: usize },
     #[error("Timetable '{timetable_id}' not found")]
     #[editoast_error(status = 404)]
     TimetableNotFound { timetable_id: i64 },
@@ -44,6 +49,11 @@ pub enum TrainScheduleExceptionError {
 pub(in crate::views) struct TimetableIdParam {
     /// A timetable ID
     pub id: i64,
+}
+
+#[derive(Debug, Deserialize, ToSchema)]
+pub(in crate::views) struct ExceptionIdsParam {
+    ids: HashSet<i64>,
 }
 
 #[derive(Debug, Deserialize, Serialize, ToSchema)]
@@ -116,6 +126,42 @@ pub(in crate::views) async fn create_train_schedule_exception(
         .into();
 
     Ok(Json(train_schedule_exception))
+}
+
+/// Delete train schedule exceptions
+#[editoast_derive::route]
+#[utoipa::path(
+    post, path = "",
+    tags = ["train_schedule_exceptions"],
+    request_body (
+            content = inline(ExceptionIdsParam),
+            description = "A set of train schedule exception IDs"
+    ),
+    responses(
+        (status = 204, description = "The train schedule exception was deleted successfully"),
+    )
+)]
+pub(in crate::views) async fn delete(
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    Extension(auth): AuthenticationExt,
+    Json(ExceptionIdsParam { ids: exception_ids }): Json<ExceptionIdsParam>,
+) -> Result<impl IntoResponse> {
+    let authorized = auth
+        .check_roles([authz::Role::OperationalStudies].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    let conn = &mut db_pool.get().await?;
+
+    editoast_models::TrainScheduleException::delete_batch_or_fail(conn, exception_ids, |count| {
+        TrainScheduleExceptionError::BatchNotFound { count }
+    })
+    .await?;
+
+    Ok(StatusCode::NO_CONTENT)
 }
 
 #[cfg(test)]

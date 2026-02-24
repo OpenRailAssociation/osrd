@@ -1257,6 +1257,17 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['rolling_stock'],
       }),
+      postTrainScheduleExceptionsDelete: build.mutation<
+        PostTrainScheduleExceptionsDeleteApiResponse,
+        PostTrainScheduleExceptionsDeleteApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/train_schedule_exceptions/delete`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['train_schedule_exceptions'],
+      }),
       getTrainScheduleSets: build.query<
         GetTrainScheduleSetsApiResponse,
         GetTrainScheduleSetsApiArg
@@ -2532,6 +2543,13 @@ export type PatchTowedRollingStockByTowedRollingStockIdLockedApiResponse = unkno
 export type PatchTowedRollingStockByTowedRollingStockIdLockedApiArg = {
   towedRollingStockId: number;
   towedRollingStockLockedForm: TowedRollingStockLockedForm;
+};
+export type PostTrainScheduleExceptionsDeleteApiResponse = unknown;
+export type PostTrainScheduleExceptionsDeleteApiArg = {
+  /** A set of train schedule exception IDs */
+  body: {
+    ids: number[];
+  };
 };
 export type GetTrainScheduleSetsApiResponse =
   /** status 200 list of train schedule sets */ (TrainScheduleSet & {
