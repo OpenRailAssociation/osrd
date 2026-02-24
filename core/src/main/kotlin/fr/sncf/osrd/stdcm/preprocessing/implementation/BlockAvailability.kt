@@ -18,7 +18,7 @@ import java.util.*
 import kotlin.math.max
 import kotlin.math.min
 
-data class BlockAvailability(
+class BlockAvailability(
     val incrementalConflictDetector: IncrementalConflictDetector,
     val gridMarginBeforeTrain: Double,
     val gridMarginAfterTrain: Double,
