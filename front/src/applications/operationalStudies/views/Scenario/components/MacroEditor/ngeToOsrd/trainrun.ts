@@ -1,10 +1,12 @@
 import type {
   NetzgrafikDto,
-  Operation,
   TrainrunSectionDto,
   NodeDto,
   TimeLockDto,
   TrainrunDto,
+  TrainrunCreateOperation,
+  TrainrunDeleteOperation,
+  TrainrunUpdateOperation,
 } from '@osrd-project/netzgrafik-frontend';
 import { compact, uniq } from 'lodash';
 
@@ -705,9 +707,8 @@ export const handleUpdateTrainSchedule = async ({
 };
 
 export const handleTrainrunOperation = async ({
-  type,
   netzgrafikDto,
-  trainrunId,
+  operation,
   trainScheduleSetId,
   infraId,
   state,
@@ -715,9 +716,8 @@ export const handleTrainrunOperation = async ({
   addUpsertedTrainSchedules,
   addDeletedTrainScheduleIds,
 }: {
-  type: Operation['type'];
   netzgrafikDto: NetzgrafikDto;
-  trainrunId: number;
+  operation: TrainrunUpdateOperation | TrainrunCreateOperation | TrainrunDeleteOperation;
   trainScheduleSetId: number;
   infraId: number;
   state: MacroEditorState;
@@ -725,12 +725,12 @@ export const handleTrainrunOperation = async ({
   addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   addDeletedTrainScheduleIds: (trainScheduleIds: number[]) => void;
 }) => {
-  const trainrun = netzgrafikDto.trainruns.find((tr) => tr.id === trainrunId);
-  switch (type) {
+  const trainrun = operation.trainrun;
+  switch (operation.type) {
     case 'create': {
       await handleCreateTrainSchedule(
         netzgrafikDto,
-        trainrun!,
+        trainrun,
         trainScheduleSetId,
         infraId,
         state,
@@ -742,7 +742,7 @@ export const handleTrainrunOperation = async ({
     case 'update': {
       await handleUpdateTrainSchedule({
         netzgrafikDto,
-        trainrun: trainrun!,
+        trainrun,
         trainScheduleSetId,
         infraId,
         dispatch,
@@ -753,7 +753,7 @@ export const handleTrainrunOperation = async ({
       break;
     }
     case 'delete': {
-      await handleDeleteTrainSchedule(trainrunId, state, dispatch, addDeletedTrainScheduleIds);
+      await handleDeleteTrainSchedule(trainrun.id, state, dispatch, addDeletedTrainScheduleIds);
       break;
     }
     default:
