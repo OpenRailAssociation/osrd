@@ -12,7 +12,7 @@ function getConflictTrainNames(
 ): string[] {
   const trainNames: string[] = [];
   conflict.train_ids.forEach((train) => {
-    const pacedTrain = trainMap.get(formatEditoastIdToPacedTrainId(train.id));
+    const pacedTrain = trainMap.get(formatEditoastIdToPacedTrainId(train.train_schedule_id));
     if (!pacedTrain) return;
 
     if (train.type === 'base') {
@@ -25,7 +25,7 @@ function getConflictTrainNames(
     }
 
     if (!isPacedTrainBase(pacedTrain))
-      throw new Error(`Train with id ${train.id} should be a paced train`);
+      throw new Error(`Train with id ${train.train_schedule_id} should be a paced train`);
 
     if (train.type === 'modified') {
       // Updated exception
@@ -61,7 +61,7 @@ function getConflictTrainCategories(
 ): (TrainCategory | null)[] {
   // /!\ TODO: we don't use the exceptions here to get the correct categories
   return conflict.train_ids.map((train) => {
-    const pacedTrain = trainMap.get(formatEditoastIdToPacedTrainId(train.id));
+    const pacedTrain = trainMap.get(formatEditoastIdToPacedTrainId(train.train_schedule_id));
     return pacedTrain?.category ?? null;
   });
 }

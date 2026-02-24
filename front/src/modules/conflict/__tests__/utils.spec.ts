@@ -24,9 +24,9 @@ describe('addTrainNamesToConflicts', () => {
 
     const conflict = conflictBase({
       train_ids: [
-        { id: 10, type: 'base', index: 0 },
-        { id: 20, type: 'base', index: 8 },
-        { id: 20, type: 'created', exception_key: 'abc' },
+        { train_schedule_id: 10, type: 'base', index: 0 },
+        { train_schedule_id: 20, type: 'base', index: 8 },
+        { train_schedule_id: 20, type: 'created', exception_key: 'abc' },
       ],
     });
 
@@ -43,7 +43,7 @@ describe('filterAndReorderConflict - filtering', () => {
   it('keeps conflict when name matches', () => {
     const conflict: ConflictWithTrainNames = {
       ...conflictBase({
-        train_ids: [{ id: 2, type: 'base', index: 0 }],
+        train_ids: [{ train_schedule_id: 2, type: 'base', index: 0 }],
       }),
       trainsData: [
         { name: '1234', category: null },
@@ -58,7 +58,7 @@ describe('filterAndReorderConflict - filtering', () => {
 
   it('drops conflict when name does not match', () => {
     const conflict: ConflictWithTrainNames = {
-      ...conflictBase({ train_ids: [{ id: 1, type: 'base', index: 0 }] }),
+      ...conflictBase({ train_ids: [{ train_schedule_id: 1, type: 'base', index: 0 }] }),
       trainsData: [
         { name: '1234', category: null },
         { name: '1236', category: null },

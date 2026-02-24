@@ -1106,7 +1106,9 @@ mod tests {
         let simple_ts_train_core_id = trains_ids_map
             .iter()
             .find_map(|(core_id, train_id)| match train_id {
-                OccurrenceId::Base { id, .. } if *id == ts_id => Some(core_id),
+                OccurrenceId::Base {
+                    train_schedule_id, ..
+                } if *train_schedule_id == ts_id => Some(core_id),
                 _ => None,
             })
             .unwrap();
@@ -1129,9 +1131,11 @@ mod tests {
         let paced_0_train_core_id = trains_ids_map
             .iter()
             .find_map(|(core_id, train_id)| match train_id {
-                OccurrenceId::Base { id, index, .. } if *id == paced_train_id && *index == 0 => {
-                    Some(core_id)
-                }
+                OccurrenceId::Base {
+                    train_schedule_id,
+                    index,
+                    ..
+                } if *train_schedule_id == paced_train_id && *index == 0 => Some(core_id),
                 _ => None,
             })
             .unwrap();
@@ -1153,9 +1157,11 @@ mod tests {
         let paced_1_train_core_id = trains_ids_map
             .iter()
             .find_map(|(core_id, train_id)| match train_id {
-                OccurrenceId::Base { id, index, .. } if *id == paced_train_id && *index == 1 => {
-                    Some(core_id)
-                }
+                OccurrenceId::Base {
+                    train_schedule_id,
+                    index,
+                    ..
+                } if *train_schedule_id == paced_train_id && *index == 1 => Some(core_id),
                 _ => None,
             })
             .unwrap();

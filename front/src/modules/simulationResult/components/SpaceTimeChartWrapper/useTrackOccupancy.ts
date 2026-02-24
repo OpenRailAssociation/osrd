@@ -202,7 +202,7 @@ const useTrackOccupancy = ({
           const trackId =
             track_reference.type === 'track_id' ? track_reference.id : track_reference.name;
           for (const occupation of trains) {
-            const pacedId = formatEditoastIdToPacedTrainId(occupation.id);
+            const pacedId = formatEditoastIdToPacedTrainId(occupation.train_schedule_id);
             const train = trainsCollection[pacedId];
 
             if (!train) throw new Error(`No train found for id ${pacedId}`);

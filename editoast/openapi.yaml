@@ -1842,48 +1842,48 @@ paths:
                     - oneOf:
                       - type: object
                         required:
-                        - id
+                        - train_schedule_id
                         - index
                         - type
                         properties:
-                          id:
-                            type: integer
-                            format: int64
                           index:
                             type: integer
                             minimum: 0
+                          train_schedule_id:
+                            type: integer
+                            format: int64
                           type:
                             type: string
                             enum:
                             - base
                       - type: object
                         required:
-                        - id
+                        - train_schedule_id
                         - index
                         - exception_key
                         - type
                         properties:
                           exception_key:
                             type: string
-                          id:
-                            type: integer
-                            format: int64
                           index:
                             type: integer
                             minimum: 0
+                          train_schedule_id:
+                            type: integer
+                            format: int64
                           type:
                             type: string
                             enum:
                             - modified
                       - type: object
                         required:
-                        - id
+                        - train_schedule_id
                         - exception_key
                         - type
                         properties:
                           exception_key:
                             type: string
-                          id:
+                          train_schedule_id:
                             type: integer
                             format: int64
                           type:
@@ -2559,48 +2559,48 @@ paths:
                         - oneOf:
                           - type: object
                             required:
-                            - id
+                            - train_schedule_id
                             - index
                             - type
                             properties:
-                              id:
-                                type: integer
-                                format: int64
                               index:
                                 type: integer
                                 minimum: 0
+                              train_schedule_id:
+                                type: integer
+                                format: int64
                               type:
                                 type: string
                                 enum:
                                 - base
                           - type: object
                             required:
-                            - id
+                            - train_schedule_id
                             - index
                             - exception_key
                             - type
                             properties:
                               exception_key:
                                 type: string
-                              id:
-                                type: integer
-                                format: int64
                               index:
                                 type: integer
                                 minimum: 0
+                              train_schedule_id:
+                                type: integer
+                                format: int64
                               type:
                                 type: string
                                 enum:
                                 - modified
                           - type: object
                             required:
-                            - id
+                            - train_schedule_id
                             - exception_key
                             - type
                             properties:
                               exception_key:
                                 type: string
-                              id:
+                              train_schedule_id:
                                 type: integer
                                 format: int64
                               type:
@@ -5148,48 +5148,48 @@ components:
             oneOf:
             - type: object
               required:
-              - id
+              - train_schedule_id
               - index
               - type
               properties:
-                id:
-                  type: integer
-                  format: int64
                 index:
                   type: integer
                   minimum: 0
+                train_schedule_id:
+                  type: integer
+                  format: int64
                 type:
                   type: string
                   enum:
                   - base
             - type: object
               required:
-              - id
+              - train_schedule_id
               - index
               - exception_key
               - type
               properties:
                 exception_key:
                   type: string
-                id:
-                  type: integer
-                  format: int64
                 index:
                   type: integer
                   minimum: 0
+                train_schedule_id:
+                  type: integer
+                  format: int64
                 type:
                   type: string
                   enum:
                   - modified
             - type: object
               required:
-              - id
+              - train_schedule_id
               - exception_key
               - type
               properties:
                 exception_key:
                   type: string
-                id:
+                train_schedule_id:
                   type: integer
                   format: int64
                 type:
