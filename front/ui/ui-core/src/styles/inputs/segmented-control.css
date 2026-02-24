@@ -4,14 +4,15 @@
   display: flex;
   flex-direction: row;
   gap: var(--spacing);
-  padding: calc(var(--spacing));
+  padding: var(--spacing);
   width: fit-content;
 
   .segmented-control-option {
     border-radius: calc(var(--spacing) * 1.5);
-    border: 2px solid transparent;
+    border: 1px solid transparent;
     color: gray;
     cursor: pointer;
+    width: 100%;
     height: auto;
     margin: 0;
     padding: var(--spacing);
@@ -40,5 +41,19 @@
     .segmented-control-option-content {
       border-color: var(--color-white-75);
     }
+  }
+}
+
+.segmented-control.small {
+  border-radius: 8px;
+  width: 60px;
+  height: 32px;
+
+  .segmented-control-option {
+    padding: calc(var(--spacing) * 0.25);
+  }
+
+  .segmented-control-option.checked {
+    border: 1px solid var(--color-grey-40);
   }
 }

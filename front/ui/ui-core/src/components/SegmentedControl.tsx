@@ -12,6 +12,7 @@ export type SegmentedControlProps<T> = Omit<
   getOptionLabel: (option: T) => string;
   getOptionValue: (option: T) => string;
   getOptionIcon?: (option: T) => React.ReactNode;
+  small?: boolean;
 };
 
 const SegmentedControl = <T,>({
@@ -21,6 +22,7 @@ const SegmentedControl = <T,>({
   getOptionLabel,
   getOptionValue,
   getOptionIcon,
+  small = false,
   ...inputProps
 }: SegmentedControlProps<T>) => {
   const opts = useMemo(
@@ -34,7 +36,7 @@ const SegmentedControl = <T,>({
     [options, getOptionValue, getOptionLabel, getOptionIcon]
   );
   return (
-    <div className="segmented-control">
+    <div className={cx('segmented-control', { small })}>
       {opts.map((option) => (
         <label
           key={option.value}
