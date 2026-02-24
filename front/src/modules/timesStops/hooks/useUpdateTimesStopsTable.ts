@@ -1,7 +1,5 @@
 import { useCallback } from 'react';
 
-import { isNil } from 'lodash';
-
 import { buildPacedTrainWithUpdatedException } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/buildPacedTrainException';
 import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/formatTimetableItemPayload';
 import {
@@ -18,6 +16,7 @@ import {
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type { OccurrenceId, PacedTrainId, TimetableItem, Train } from 'reducers/osrdconf/types';
 import { removeElementAtIndex, replaceElementAtIndex } from 'utils/array';
+import { Duration } from 'utils/duration';
 import {
   extractEditoastIdFromPacedTrainId,
   extractPacedTrainIdFromOccurrenceId,
@@ -27,11 +26,12 @@ import {
 
 import {
   upsertPathStep,
-  buildScheduleItemForField,
+  applyScheduleEdit,
+  scheduleStateToApiFields,
   buildUpdatedOccurrence,
   insertScheduleItemInOrder,
 } from '../helpers/cellUpdate';
-import type { CellUpdate, TimesStopsRowNew } from '../types';
+import type { CellUpdate, OptimisticEdit, TimesStopsRowNew } from '../types';
 
 /**
  * Hook that provides a callback to update times/stops cell values.
@@ -63,50 +63,51 @@ const useUpdateTimesStopsTable = (
     ): { updatedPath: PathItem[]; updatedSchedule: ScheduleItem[] } | undefined => {
       const { pathStepId, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
       const currentSchedule = selectedTrain.schedule ?? [];
-      const existingScheduleItemIndex = currentSchedule.findIndex((item) => item.at === pathStepId);
-      let updatedSchedule: ScheduleItem[];
+      const existingItemIndex = currentSchedule.findIndex((item) => item.at === pathStepId);
 
-      // Handle clearing the value (setting to null)
-      if (update.value === null) {
-        if (existingScheduleItemIndex < 0) return undefined;
-
-        const fieldToNull: Extract<keyof ScheduleItem, 'arrival' | 'stop_for'> =
-          update.field === 'requestedArrival' ? 'arrival' : 'stop_for';
-        const updatedScheduleItem: ScheduleItem = {
-          ...currentSchedule[existingScheduleItemIndex],
-          [fieldToNull]: null,
+      // Convert CellUpdate to OptimisticEdit (stopDuration: number → Duration)
+      let edit: OptimisticEdit;
+      if (update.field === 'stopDuration') {
+        edit = {
+          field: 'stopDuration',
+          value: update.value !== null ? new Duration({ seconds: update.value }) : null,
         };
-
-        const shouldRemoveScheduleItem =
-          isNil(updatedScheduleItem.arrival) && isNil(updatedScheduleItem.stop_for);
-
-        updatedSchedule = shouldRemoveScheduleItem
-          ? removeElementAtIndex(currentSchedule, existingScheduleItemIndex)
-          : replaceElementAtIndex(currentSchedule, existingScheduleItemIndex, updatedScheduleItem);
-
-        const pathStepIndex = updatedPath.findIndex((step) => step.id === pathStepId);
-        const finalPath =
-          shouldRemoveScheduleItem && pathStepIndex > 0 && pathStepIndex < updatedPath.length - 1
-            ? removeElementAtIndex(updatedPath, pathStepIndex)
-            : updatedPath;
-
-        return { updatedPath: finalPath, updatedSchedule };
+      } else {
+        edit = update;
       }
 
-      // Handle setting a new value
-      const startTime = new Date(selectedTrain.start_time);
-      const newScheduleItem: ScheduleItem = {
-        at: pathStepId,
-        ...buildScheduleItemForField({ update, startTime }),
-      };
+      const newState = applyScheduleEdit(
+        { arrival: update.row.requestedArrival, stop: update.row.stopDuration },
+        edit
+      );
 
-      updatedSchedule =
-        existingScheduleItemIndex >= 0
-          ? replaceElementAtIndex(currentSchedule, existingScheduleItemIndex, {
-              ...currentSchedule[existingScheduleItemIndex],
-              ...newScheduleItem,
-            })
-          : insertScheduleItemInOrder(currentSchedule, newScheduleItem, updatedPath);
+      const startTime = new Date(selectedTrain.start_time);
+      const { arrival: newArrival, stop_for: newStopFor } = scheduleStateToApiFields(
+        newState,
+        startTime
+      );
+
+      const shouldRemove = newArrival === null && newStopFor === null;
+      let updatedSchedule: ScheduleItem[];
+
+      if (shouldRemove) {
+        // Both fields cleared: remove the schedule item entirely
+        if (existingItemIndex < 0) return undefined;
+        updatedSchedule = removeElementAtIndex(currentSchedule, existingItemIndex);
+      } else if (existingItemIndex >= 0) {
+        // Update existing schedule item
+        updatedSchedule = replaceElementAtIndex(currentSchedule, existingItemIndex, {
+          ...currentSchedule[existingItemIndex],
+          arrival: newArrival,
+          stop_for: newStopFor,
+        });
+      } else {
+        // Insert new schedule item in path order
+        const newItem: ScheduleItem = { at: pathStepId };
+        if (newArrival !== null) newItem.arrival = newArrival;
+        if (newStopFor !== null) newItem.stop_for = newStopFor;
+        updatedSchedule = insertScheduleItemInOrder(currentSchedule, newItem, updatedPath);
+      }
 
       return { updatedPath, updatedSchedule };
     },

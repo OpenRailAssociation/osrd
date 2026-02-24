@@ -5,7 +5,7 @@ import type { Train } from 'reducers/osrdconf/types';
 import { addElementAtIndex } from 'utils/array';
 import { Duration } from 'utils/duration';
 
-import type { CellUpdate, TimesStopsRowNew } from '../types';
+import type { OptimisticEdit, TimesStopsRowNew } from '../types';
 
 /** Compute the insertion index for a new PathStep using row opOnPathIndex values. */
 const computeInsertIndex = (
@@ -44,70 +44,88 @@ export const upsertPathStep = (
   return { pathStepId: newPathStep.id, updatedPath };
 };
 
-type BuildScheduleItemParams = {
-  update: CellUpdate;
-  startTime: Date;
-};
-
 /** Difference between two dates, truncated to whole seconds. */
 const diffSeconds = (a: Date, b: Date) =>
   Math.floor(a.getTime() / 1000) - Math.floor(b.getTime() / 1000);
 
+/** State of a stop's schedule in display format (Date / Duration). */
+export type ScheduleState = {
+  arrival: Date | null;
+  stop: Duration | null;
+};
+
 /**
- * Build a new ScheduleItem based on the field being updated.
+ * Apply a schedule field edit to the current state.
+ * Single source of truth for schedule editing business rules.
+ * Both optimistic display updates and API payload computation derive from this function.
+ *
  * Note: Day adjustment for overnight journeys is handled by TimeCell using referenceDate.
  * The dates received here are already on the correct calendar day.
  */
-export const buildScheduleItemForField = ({
-  update,
-  startTime,
-}: BuildScheduleItemParams): Partial<ScheduleItem> => {
-  if (update.value === null) return {};
+export const applyScheduleEdit = (
+  current: ScheduleState,
+  edit: OptimisticEdit
+): ScheduleState & { departure: Date | null } => {
+  const { arrival, stop } = current;
 
-  switch (update.field) {
+  switch (edit.field) {
     case 'requestedArrival': {
-      // TimeCell already adjusted the date using the previous row's time as reference
+      const newArrival = edit.value;
       return {
-        arrival: new Duration({ seconds: diffSeconds(update.value, startTime) }).toISOString(),
+        arrival: newArrival,
+        stop,
+        departure:
+          newArrival !== null && stop !== null ? new Date(newArrival.getTime() + stop.ms) : null,
       };
     }
 
     case 'stopDuration': {
-      return { stop_for: new Duration({ seconds: update.value }).toISOString() };
+      const newStop = edit.value;
+      return {
+        arrival,
+        stop: newStop,
+        departure:
+          arrival !== null && newStop !== null ? new Date(arrival.getTime() + newStop.ms) : null,
+      };
     }
 
     case 'requestedDeparture': {
-      const departureTime = update.value;
-      const arrivalTime = update.row.requestedArrival;
-
-      if (arrivalTime) {
-        // Arrival exists => stop_for = departure - arrival
+      const newDeparture = edit.value;
+      if (newDeparture === null) {
+        return { arrival: null, stop, departure: null };
+      }
+      if (arrival !== null) {
+        // Arrival exists → stop = departure - arrival
         // TimeCell already ensured departure >= arrival by using arrival as referenceDate
         return {
-          stop_for: new Duration({
-            seconds: diffSeconds(departureTime, arrivalTime),
-          }).toISOString(),
+          arrival,
+          stop: new Duration({ milliseconds: newDeparture.getTime() - arrival.getTime() }),
+          departure: newDeparture,
         };
       }
-
-      // No arrival => arrival = departure - stopDuration
-      const existingStopForSeconds = update.row.stopDuration?.total('second') ?? 0;
-      const newSchedule: Partial<ScheduleItem> = {
-        arrival: new Duration({
-          seconds: diffSeconds(departureTime, startTime) - existingStopForSeconds,
-        }).toISOString(),
+      // No arrival → arrival = departure - existingStop
+      return {
+        arrival: new Date(newDeparture.getTime() - (stop?.ms ?? 0)),
+        stop,
+        departure: newDeparture,
       };
-      // Keep stop_for if there was an existing stopDuration (including PT0S)
-      if (update.row.stopDuration) {
-        newSchedule.stop_for = update.row.stopDuration.toISOString();
-      }
-      return newSchedule;
     }
-
-    default:
-      return {};
   }
 };
+
+/**
+ * Convert a ScheduleState to API ScheduleItem fields (ISO duration strings relative to startTime).
+ */
+export const scheduleStateToApiFields = (
+  state: ScheduleState,
+  startTime: Date
+): { arrival: string | null; stop_for: string | null } => ({
+  arrival:
+    state.arrival !== null
+      ? new Duration({ seconds: diffSeconds(state.arrival, startTime) }).toISOString()
+      : null,
+  stop_for: state.stop !== null ? state.stop.toISOString() : null,
+});
 
 const getPathIndex = (pathStepId: string, path: PathItem[]) =>
   path.findIndex((step) => step.id === pathStepId);
@@ -127,6 +145,20 @@ export const insertScheduleItemInOrder = (
   const insertIndex = foundIndex === -1 ? schedule.length : foundIndex;
 
   return addElementAtIndex(schedule, insertIndex, newItem);
+};
+
+/**
+ * Compute the optimistic display values for all schedule fields when a cell is edited.
+ */
+export const computeOptimisticSchedule = (
+  row: TimesStopsRowNew,
+  edit: OptimisticEdit
+): Pick<TimesStopsRowNew, 'requestedArrival' | 'stopDuration' | 'requestedDeparture'> => {
+  const { arrival, stop, departure } = applyScheduleEdit(
+    { arrival: row.requestedArrival, stop: row.stopDuration },
+    edit
+  );
+  return { requestedArrival: arrival, stopDuration: stop, requestedDeparture: departure };
 };
 
 /** Build a TrainSchedule object from a Train with updated path and schedule. */
