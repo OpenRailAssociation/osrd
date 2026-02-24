@@ -40,6 +40,31 @@ export type DeploymentSettings = {
   railwayManagerInterfaceUrl?: string;
 };
 
+type Overrides = {
+  /** Url of your railway manager interface if any. Also useful in dev. Can also be a relative url inside the gateway container, such as "/tartine". */
+  railway_manager_interface_url?: string;
+  /** Email that stdcm users should use in order to submit feedback. */
+  stdcm_feedback_mail?: string;
+  /** Whether the options to edit the rail infrastructure should be visible to users. */
+  no_infra_edit?: boolean;
+  /** Custom names to display to users for the osrd modules. */
+  names?: {
+    operational_studies?: string;
+    stdcm?: string;
+  };
+  /** Paths to custom icons to display to users for the osrd modules. */
+  icons?: {
+    operational_studies?: {
+      logo: string;
+      logo_with_name: string;
+    };
+    stdcm?: {
+      logo: string;
+      simulation_sheet_logo: string;
+    };
+  };
+};
+
 export type DeploymentSettingsContext = {
   isLoading: boolean;
   deploymentSettings?: DeploymentSettings;
@@ -82,7 +107,7 @@ export const DeploymentContextProvider = ({ children }: DeploymentContextProvide
             },
           });
         } else {
-          const overridesData = await response.json();
+          const overridesData = (await response.json()) as Overrides;
           const {
             icons,
             names,
