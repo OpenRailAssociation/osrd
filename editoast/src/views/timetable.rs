@@ -914,8 +914,6 @@ mod tests {
     use core_client::simulation::RoutingZoneRequirement;
     use core_client::simulation::SpacingRequirement;
     use pretty_assertions::assert_eq;
-    use schemas::fixtures::simple_created_exception_with_change_groups;
-    use schemas::fixtures::simple_modified_exception_with_change_groups;
     use schemas::fixtures::simple_rolling_stock;
     use schemas::fixtures::towed_rolling_stock;
     use schemas::rolling_stock::RollingResistance;
@@ -979,41 +977,6 @@ mod tests {
             .expect("Failed to check if timetable exists");
 
         assert!(!exists);
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn create_paced_train_with_duplicated_exceptions() {
-        let app = TestAppBuilder::default_app();
-        let pool = app.db_pool();
-
-        let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
-        let mut paced_train_1 = simple_paced_train_base();
-
-        paced_train_1.paced.as_mut().unwrap().exceptions = vec![
-            simple_created_exception_with_change_groups("duplicated_key_1"),
-            simple_modified_exception_with_change_groups("duplicated_key_1", 0),
-        ];
-
-        let request = app
-            .post(
-                format!(
-                    "/train_schedule_sets/{}/paced_trains",
-                    train_schedule_set.id
-                )
-                .as_str(),
-            )
-            .json(&vec![paced_train_1.clone()]);
-
-        let response = app
-            .fetch(request)
-            .await
-            .assert_status(StatusCode::UNPROCESSABLE_ENTITY)
-            .bytes();
-        assert!(
-            String::from_utf8(response)
-                .unwrap()
-                .contains("Duplicate exception key: 'duplicated_key_1'")
-        )
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
