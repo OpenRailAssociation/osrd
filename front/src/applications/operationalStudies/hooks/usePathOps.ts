@@ -15,12 +15,14 @@ import type { Train } from 'reducers/osrdconf/types';
 const usePathOps = (infraId: number, path?: Train['path']): RelatedOperationalPoint[] => {
   const operationalPointReferences: OperationalPointReference[] = useMemo(
     () =>
-      (path ?? []).reduce<OperationalPointReference[]>((acc, pathItem) => {
-        if ('operational_point' in pathItem.location) {
-          acc.push(pathItem.location.operational_point);
-        }
-        return acc;
-      }, []),
+      (path ?? [])
+        .map((pathItem) => {
+          if ('operational_point' in pathItem.location) {
+            return pathItem.location.operational_point;
+          }
+          return null;
+        })
+        .filter((opRef) => opRef !== null),
     [path]
   );
 
