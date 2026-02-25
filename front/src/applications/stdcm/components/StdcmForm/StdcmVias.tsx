@@ -124,6 +124,7 @@ const StdcmVias = ({ disabled = false, skipAnimation, onItineraryChange }: Stdcm
             key={pathStep.id}
           >
             <StdcmDefaultCard
+              className="add-via"
               tip="bottom"
               text={t('trainPath.addVia')}
               Icon={<Location size="lg" variant="base" />}
@@ -171,6 +172,7 @@ const StdcmVias = ({ disabled = false, skipAnimation, onItineraryChange }: Stdcm
         );
       })}
       <StdcmDefaultCard
+        className="add-via"
         tip="bottom"
         text={t('trainPath.addVia')}
         Icon={<Location size="lg" variant="base" />}
