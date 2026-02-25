@@ -60,6 +60,12 @@ export class Duration {
     return new Duration({ milliseconds: Math.abs(this.ms) });
   }
 
+  round(smallestUnit: 'second' | 'minute' | 'hour') {
+    return new Duration({
+      milliseconds: Math.round(this.total(smallestUnit)) * UNIT_IN_MS[smallestUnit],
+    });
+  }
+
   /**
    * Computes the number of units of time that a duration represents.
    */

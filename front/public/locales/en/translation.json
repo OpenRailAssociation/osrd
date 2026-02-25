@@ -830,6 +830,12 @@
     "noPathLoaded": "No path loaded",
     "operational_point": "operational point",
     "powerRestriction": "power restriction",
+    "propagationMenu": {
+      "atThisWaypoint": "at this waypoint",
+      "fromDeparture": "from departure",
+      "toAllWaypoints": "to all waypoints",
+      "toDestination": "to destination"
+    },
     "realMargin": "real margin (s)",
     "receptionOnClosedSignal": "closed signal",
     "receptionOnClosedSignalFull": "reception on closed signal",

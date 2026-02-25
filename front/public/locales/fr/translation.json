@@ -830,6 +830,12 @@
     "noPathLoaded": "Aucun chemin chargé",
     "operational_point": "point remarquable",
     "powerRestriction": "restriction de puissance",
+    "propagationMenu": {
+      "atThisWaypoint": "appliquer à ce point",
+      "fromDeparture": "propager vers le début",
+      "toAllWaypoints": "décaler tout le sillon",
+      "toDestination": "propager vers la fin"
+    },
     "realMargin": "marge réelle (s)",
     "receptionOnClosedSignal": "signal fermé",
     "receptionOnClosedSignalFull": "réception sur signal fermé",

@@ -66,7 +66,7 @@ const MenuTriggerButton = ({ buttonProps, menuProps }: MenuTriggerButtonProps) =
         items={items.map((item) => ({
           ...item,
           onClick: () => {
-            item.onClick();
+            item.onClick?.();
             closeMenu();
           },
         }))}
