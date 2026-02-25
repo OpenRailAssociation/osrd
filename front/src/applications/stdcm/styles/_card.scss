@@ -5,7 +5,6 @@
     0px 4px 7px -3px rgba(24, 68, 239, 0.19),
     0px 1px 3px rgba(49, 46, 43, 0.2);
   background-color: rgba(255, 255, 255, 1);
-  height: fit-content;
   position: relative;
 
   .stdcm-default-card-icon {
@@ -187,6 +186,12 @@
 
     &.add-via {
       padding: 11px 24px 13px 12px;
+      margin-block: 16px;
+    }
+
+    &.edit-consist {
+      padding: 11px 24px 13px 12px;
+      margin-block: 16px;
     }
 
     .stdcm-default-card-text {

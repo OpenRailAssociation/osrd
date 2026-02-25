@@ -288,90 +288,87 @@ const StdcmConfig = ({
         </div>
       )}
       <div className="d-flex">
-        <div className="d-flex flex-column">
+        <div className="stdcm-parameters">
           <StdcmLinkedTrainSearch
             disabled={disabled}
             linkedTrainType="anterior"
             linkedOpId={origin.id}
           />
-          <div className="stdcm-simulation-inputs">
-            <div className="stdcm-consist-container">
-              <StdcmConsist
-                disabled={disabled}
-                isDebugMode={isDebugMode}
-                consistErrors={consistErrors}
-                setConsistErrors={setConsistErrors}
-              />
-            </div>
-            <div className="stdcm__separator" />
-              <StdcmOrigin disabled={disabled} onItineraryChange={onItineraryChange} />
-              <StdcmVias
-                disabled={disabled}
-            isDebugMode={isDebugMode}
-                skipAnimation={skipPathfindingStatusMessage}
-                onItineraryChange={onItineraryChange}
-              />
-              <StdcmDestination disabled={disabled} onItineraryChange={onItineraryChange} />
-              <StdcmLinkedTrainSearch
-                disabled={disabled}
-                linkedTrainType="posterior"
-                linkedOpId={destination.id}
-              />
-
-              <div
-                className={cx('stdcm-launch-request', {
-                  'wizz-effect': pathfinding?.status !== 'success' || formErrors,
-                })}
-                ref={launchButtonRef}
-              >
-                {formErrors && (
-                  <StdcmWarningBox
-                    infra={infra}
-                    workerStatus={pathfindingWorkerStatus}
-                    errorInfos={formErrors}
-                    removeOriginArrivalTime={removeOriginArrivalTime}
-                    removeDestinationArrivalTime={removeDestinationArrivalTime}
-                  />
-                )}
-                <Button
-                  dataTestID="launch-simulation-button"
-                  className={cx({
-                    'fade-out': !isDebugMode && !showBtnToLaunchSimulation,
-                  })}
-                  label={t('simulation.getSimulation')}
-                  onClick={startSimulation}
-                  isDisabled={
-                    disabled ||
-                    (!isDebugMode && !showBtnToLaunchSimulation) ||
-                    formErrors?.errorType === StdcmConfigErrorTypes.INFRA_NOT_LOADED
-                  }
-                />
-              </div>
-              {showMessage && (
-                <div className="simulation-status-banner">
-                  <div className="banner-content">
-                    <div
-                      ref={pathfindingBannerRef}
-                      data-testid="pathfinding-status-message"
-                      className={cx('pathfinding-status', {
-                        'pathfinding-status-success': pathfinding?.status === 'success',
-                      })}
-                    >
-                      {getStatusMessage()}
-                    </div>
-                  </div>
-                </div>
-              )}
-              {(isPending || isPendingAdditional) && (
-                <StdcmLoader
-                  isPendingAdditional={isPendingAdditional}
-                  cancelStdcmRequest={cancelStdcmRequest}
-                  launchButtonRef={launchButtonRef}
-                  formRef={formRef}
-                />
-              )}
-            </div>
+          <div className="stdcm-consist-container">
+            <StdcmConsist
+              disabled={disabled}
+              isDebugMode={isDebugMode}
+              consistErrors={consistErrors}
+              setConsistErrors={setConsistErrors}
+            />
           </div>
+          <div className="stdcm__separator" />
+          <StdcmOrigin disabled={disabled} onItineraryChange={onItineraryChange} />
+          <StdcmVias
+            disabled={disabled}
+            isDebugMode={isDebugMode}
+            skipAnimation={skipPathfindingStatusMessage}
+            onItineraryChange={onItineraryChange}
+          />
+          <StdcmDestination disabled={disabled} onItineraryChange={onItineraryChange} />
+          <StdcmLinkedTrainSearch
+            disabled={disabled}
+            linkedTrainType="posterior"
+            linkedOpId={destination.id}
+          />
+
+          <div
+            className={cx('stdcm-launch-request', {
+              'wizz-effect': pathfinding?.status !== 'success' || formErrors,
+            })}
+            ref={launchButtonRef}
+          >
+            {formErrors && (
+              <StdcmWarningBox
+                infra={infra}
+                workerStatus={pathfindingWorkerStatus}
+                errorInfos={formErrors}
+                removeOriginArrivalTime={removeOriginArrivalTime}
+                removeDestinationArrivalTime={removeDestinationArrivalTime}
+              />
+            )}
+            <Button
+              dataTestID="launch-simulation-button"
+              className={cx({
+                'fade-out': !isDebugMode && !showBtnToLaunchSimulation,
+              })}
+              label={t('simulation.getSimulation')}
+              onClick={startSimulation}
+              isDisabled={
+                disabled ||
+                (!isDebugMode && !showBtnToLaunchSimulation) ||
+                formErrors?.errorType === StdcmConfigErrorTypes.INFRA_NOT_LOADED
+              }
+            />
+          </div>
+          {showMessage && (
+            <div className="simulation-status-banner">
+              <div className="banner-content">
+                <div
+                  ref={pathfindingBannerRef}
+                  data-testid="pathfinding-status-message"
+                  className={cx('pathfinding-status', {
+                    'pathfinding-status-success': pathfinding?.status === 'success',
+                  })}
+                >
+                  {getStatusMessage()}
+                </div>
+              </div>
+            </div>
+          )}
+          {(isPending || isPendingAdditional) && (
+            <StdcmLoader
+              isPendingAdditional={isPendingAdditional}
+              cancelStdcmRequest={cancelStdcmRequest}
+              launchButtonRef={launchButtonRef}
+              formRef={formRef}
+            />
+          )}
         </div>
 
         <div className="osrd-config-item-container osrd-config-item-container-map stdcm-map">
