@@ -38,6 +38,9 @@ npm run build-ui
 npm start -- --host 127.0.0.1
 ```
 
+Don’t be fooled by Vite’s start message: you should then navigate to http://localhost:4000/ (not `:3000`!)
+to open OSRD, as requests must pass through the `gateway`.
+
 > [!NOTE]
 > We use `--host 127.0.0.1` to let Vite know it should also bind to Docker's `bridge`
 > network interface, so the `gateway` can proxy the requests accordingly.
