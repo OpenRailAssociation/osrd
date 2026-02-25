@@ -35,7 +35,7 @@ const columnHelper = createColumnHelper<TimesStopsRowNew>();
 const TimesStopsTable = ({ rows, dataIsLoading, isValid }: TimesStopsTableProps) => {
   const { t } = useTranslation('translation', { keyPrefix: 'timeStopTable' });
 
-  const scheduleNotHonored = rows.some((row) => row.scheduleNotHonored);
+  const isScheduleNotHonored = rows.some((row) => row.scheduleNotHonored);
 
   const columns = useMemo(
     () => [
@@ -48,10 +48,31 @@ const TimesStopsTable = ({ rows, dataIsLoading, isValid }: TimesStopsTableProps)
         },
       }),
       columnHelper.display({
-        id: 'opOnPathIndex',
+        id: 'stepStatus',
         header: '',
+        cell: (info) => {
+          const {
+            marginNotHonored,
+            scheduleNotHonored,
+            invalidPathStep,
+            requestedArrival,
+            computedArrival,
+          } = info.row.original;
+
+          const isPathStep = requestedArrival;
+          const isSuccessSchedule = computedArrival && !marginNotHonored && !scheduleNotHonored;
+
+          const className = cx({
+            'success-schedule': isPathStep && isSuccessSchedule,
+            'warning-schedule': isPathStep && scheduleNotHonored,
+            'warning-margin': isPathStep && marginNotHonored && !scheduleNotHonored,
+            'invalid-path-step': invalidPathStep,
+          });
+
+          return <span className={className}>&nbsp;</span>;
+        },
         meta: {
-          className: 'col-scheduled-index',
+          className: 'col-step-status computed',
         },
       }),
       columnHelper.accessor('name', {
@@ -156,7 +177,7 @@ const TimesStopsTable = ({ rows, dataIsLoading, isValid }: TimesStopsTableProps)
         </thead>
         <tbody
           className={cx({
-            invalid: !isValid || scheduleNotHonored,
+            invalid: !isValid || isScheduleNotHonored,
           })}
         >
           {table.getRowModel().rows.map((row) => (
