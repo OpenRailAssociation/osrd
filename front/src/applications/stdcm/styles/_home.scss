@@ -20,6 +20,12 @@
       min-width: 804px;
     }
 
+    .stdcm-parameters {
+      display: grid;
+      grid-template-columns: [consist-col] 322px auto [via-col] 1fr;
+      column-gap: 13px;
+    }
+
     .stdcm-scenario-explorer {
       width: 322px;
     }
@@ -37,186 +43,180 @@
       }
     }
 
-    .stdcm-simulation-inputs {
-      display: flex;
-      gap: 13px;
-
-      .stdcm-consist-container {
-        width: 322px;
-
-        .stdcm-consist-title {
-          padding-right: 12px;
-          position: relative;
-        }
-
-        .stdcm-consist-title::after {
-          content: '';
-          background: linear-gradient(270deg, transparent 0px, rgba(235, 235, 234) 40px);
-          position: absolute;
-          left: 100%;
-          width: 40px;
-          height: 22px;
-          z-index: 1;
-        }
-
-        .stdcm-consist-img {
-          overflow: hidden;
-          padding-bottom: 12px;
-          img {
-            object-fit: cover;
-            object-position: left;
-            transform: scaleX(-1);
-            max-width: 100%;
-            height: 20px;
-          }
-        }
-
-        .stdcm-consist-change-button-wrapper {
-          display: flex;
-          flex-direction: column;
-        }
-
-        .stdcm-consist-change-item {
-          margin-block: 16px;
-          margin-left: auto;
-        }
-      }
-
-      .stdcm__separator {
-        border-radius: 4px;
-        background-color: rgba(0, 0, 0, 0.05);
-        width: 6px;
-        height: 280px;
-        margin: 12px 0;
-      }
-      .stdcm-simulation-itinerary {
-        display: flex;
-        flex-direction: column;
-        min-width: 450px;
-        width: 450px;
+    .stdcm-consist-container {
+      .stdcm-consist-title {
+        padding-right: 12px;
         position: relative;
-        align-items: center;
+      }
 
-        > div:not(.stdcm-loader) {
-          width: 100%;
+      .stdcm-consist-title::after {
+        content: '';
+        background: linear-gradient(270deg, transparent 0px, rgba(235, 235, 234) 40px);
+        position: absolute;
+        left: 100%;
+        width: 40px;
+        height: 22px;
+        z-index: 1;
+      }
+
+      .stdcm-consist-img {
+        overflow: hidden;
+        padding-bottom: 12px;
+        img {
+          object-fit: cover;
+          object-position: left;
+          transform: scaleX(-1);
+          max-width: 100%;
+          height: 20px;
+        }
+      }
+    }
+
+    .stdcm__separator {
+      border-radius: 4px;
+      background-color: rgba(0, 0, 0, 0.05);
+      width: 6px;
+      margin: 12px 0;
+    }
+
+    > div:not(.stdcm-loader) {
+      width: 100%;
+    }
+
+    .stdcm-vias-bundle {
+      &.animated {
+        animation: bouncin-in 0.75s cubic-bezier(0.567, -0.475, 0, 1);
+      }
+
+      .stdcm-card {
+        scroll-margin-bottom: 15px;
+      }
+    }
+
+    @keyframes bouncin-in {
+      0% {
+        opacity: 0;
+        height: 0;
+        // To make the new block poping from above the clicked button
+        transform: translateY(-45px);
+        margin-bottom: -30px; // To make the button clicked bounce top
+      }
+      100% {
+        opacity: 1;
+        height: 296px; // height of add OP button + intermedita OP card
+      }
+    }
+
+    .stdcm-vias-list {
+      display: grid;
+      grid-template-columns: subgrid;
+      grid-column: span 3;
+
+      button {
+        text-align: left;
+      }
+
+      button:focus {
+        outline: none;
+      }
+
+      .stdcm-vias-bundle {
+        display: grid;
+        grid-template-columns: subgrid;
+        grid-column: span 3;
+
+        .edit-consist-card-wrapper {
+          grid-column: consist-col;
+          align-self: start;
         }
 
-        .stdcm-vias-list,
-        * > .stdcm-vias-bundle {
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
+        .via-wrapper {
+          grid-column: via-col;
         }
+      }
 
-        .stdcm-vias-bundle {
-          &.animated {
-            animation: bouncin-in 0.75s cubic-bezier(0.567, -0.475, 0, 1);
-          }
+      .add-via-card-wrapper {
+        grid-column: via-col;
+      }
+    }
 
-          .stdcm-card {
-            scroll-margin-bottom: 15px;
-          }
+    .stdcm-card-destination {
+      grid-column: via-col;
+    }
+
+    .stdcm-origin-icon,
+    .stdcm-destination-icon {
+      align-self: baseline;
+    }
+
+    /*TODO Waiting to fix the button in ui-core...*/
+    .stdcm-launch-request {
+      grid-column: via-col;
+
+      button {
+        justify-content: center;
+        width: 100%;
+
+        &.fade-out {
+          opacity: 0;
+          transition: opacity 0.3s ease-out;
         }
+      }
 
-        @keyframes bouncin-in {
-          0% {
-            opacity: 0;
-            height: 0;
-            // To make the new block poping from above the clicked button
-            transform: translateY(-45px);
-            margin-bottom: -30px; // To make the button clicked bounce top
-          }
-          100% {
-            opacity: 1;
-            height: 296px; // height of add OP button + intermedita OP card
-          }
+      .stdcm-warning-buttons {
+        display: flex;
+        justify-content: space-between;
+        padding-top: 18px;
+
+        &:not(:last-child) {
+          margin-bottom: 18px;
         }
-
-        .stdcm-vias-list {
-          margin-block: 16px;
-
-          button {
-            text-align: left;
-          }
-
-          button:focus {
-            outline: none;
-          }
-        }
-
-        .stdcm-origin-icon,
-        .stdcm-destination-icon {
-          align-self: baseline;
-        }
-
-        /*TODO Waiting to fix the button in ui-core...*/
-        .stdcm-launch-request {
-          button {
-            justify-content: center;
-            width: 100%;
-
-            &.fade-out {
-              opacity: 0;
-              transition: opacity 0.3s ease-out;
-            }
-          }
-
-          .stdcm-warning-buttons {
-            display: flex;
-            justify-content: space-between;
-            padding-top: 18px;
-
-            &:not(:last-child) {
-              margin-bottom: 18px;
-            }
-            button {
-              border-radius: 5px;
-              border: 0.5px solid rgba(121, 118, 113, 1);
-              box-shadow:
-                0 1px 1px rgba(255, 255, 255, 0.46) inset,
-                0 -1px 1px rgba(148, 145, 142, 1) inset,
-                0 1px 2px rgba(0, 0, 0, 0.25);
-              background-image: linear-gradient(
-                180deg,
-                rgba(226, 226, 222, 1) 0%,
-                rgba(211, 209, 207, 1) 100%
-              );
-              color: var(--grey70);
-              padding: 4px 12px 8px 12px;
-              max-width: fit-content;
-            }
-          }
-        }
-
-        .warning-box {
-          width: calc(100% + 16px);
-          margin-left: -8px;
-          border-radius: 8px;
+        button {
+          border-radius: 5px;
+          border: 0.5px solid rgba(121, 118, 113, 1);
           box-shadow:
-            0 3px 5px -2px var(--black10),
-            0 16px 30px -5px rgba(0, 0, 0, 0.16),
-            0 6px 21px -5px rgba(24, 68, 239, 0.26),
-            0 0 0 4px rgba(255, 255, 255, 1) inset,
-            0 0 0 5px rgba(234, 167, 43, 1) inset,
-            0 3px 7px -3px rgba(125, 82, 30, 0.55);
-          background-color: rgba(253, 245, 225, 1);
-          color: #7d521e;
-          display: flex;
-          flex-direction: column;
-          padding: 16px 29px 32px 29px;
-          margin-bottom: 30px;
-
-          span {
-            color: #eaa72b;
-            align-self: center;
-          }
+            0 1px 1px rgba(255, 255, 255, 0.46) inset,
+            0 -1px 1px rgba(148, 145, 142, 1) inset,
+            0 1px 2px rgba(0, 0, 0, 0.25);
+          background-image: linear-gradient(
+            180deg,
+            rgba(226, 226, 222, 1) 0%,
+            rgba(211, 209, 207, 1) 100%
+          );
+          color: var(--grey70);
+          padding: 4px 12px 8px 12px;
+          max-width: fit-content;
         }
+      }
+    }
 
-        .wizz-effect:active {
-          .warning-box {
-            animation: tilt-shaking 0.25s 0s;
-          }
-        }
+    .warning-box {
+      width: calc(100% + 16px);
+      margin-left: -8px;
+      border-radius: 8px;
+      box-shadow:
+        0 3px 5px -2px var(--black10),
+        0 16px 30px -5px rgba(0, 0, 0, 0.16),
+        0 6px 21px -5px rgba(24, 68, 239, 0.26),
+        0 0 0 4px rgba(255, 255, 255, 1) inset,
+        0 0 0 5px rgba(234, 167, 43, 1) inset,
+        0 3px 7px -3px rgba(125, 82, 30, 0.55);
+      background-color: rgba(253, 245, 225, 1);
+      color: #7d521e;
+      display: flex;
+      flex-direction: column;
+      padding: 16px 29px 32px 29px;
+      margin-bottom: 30px;
+
+      span {
+        color: #eaa72b;
+        align-self: center;
+      }
+    }
+
+    .wizz-effect:active {
+      .warning-box {
+        animation: tilt-shaking 0.25s 0s;
       }
     }
 
