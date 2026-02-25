@@ -388,12 +388,25 @@ export const createPacedAttributesFromTrainrun = (
 const handleCreateTimetableItem = async (
   netzgrafikDto: NetzgrafikDto,
   trainrun: TrainrunDto,
+  duplicatedTrainrunId: number | undefined,
   trainScheduleSetId: number,
   infraId: number,
   state: MacroEditorState,
   dispatch: AppDispatch,
   addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void
 ) => {
+  const duplicatedTimetableItemIds = duplicatedTrainrunId
+    ? state.timetableItemIdByNgeId.get(duplicatedTrainrunId)
+    : undefined;
+  const duplicatedForwardTimetableItem = duplicatedTimetableItemIds?.[0]
+    ? await fetchTimetableItem(duplicatedTimetableItemIds[0], dispatch)
+    : { id: undefined, train_name: undefined };
+  const duplicatedReturnTimetableItem = duplicatedTimetableItemIds?.[1]
+    ? await fetchTimetableItem(duplicatedTimetableItemIds[1], dispatch)
+    : { id: undefined, train_name: undefined };
+  const { id: _id, train_name: _name, ...duplicatedForwardBase } = duplicatedForwardTimetableItem;
+  const { id: __id, train_name: __name, ...duplicatedReturnBase } = duplicatedReturnTimetableItem;
+
   const trainrunSections = getContinuousTrainrunSectionsByTrainrunId(netzgrafikDto, trainrun.id);
   const labels = getTrainrunLabels(netzgrafikDto, trainrun);
 
@@ -431,11 +444,14 @@ const handleCreateTimetableItem = async (
     train_name: trainrun.name,
     labels,
     category,
+    ...duplicatedForwardBase,
     ...pathAndSchedule,
   };
 
   const returnTrip =
-    trainrun.direction === 'round_trip' ? { ...forwardTrip, ...returnPathAndSchedule } : undefined;
+    trainrun.direction === 'round_trip'
+      ? { ...forwardTrip, ...duplicatedReturnBase, ...returnPathAndSchedule }
+      : undefined;
 
   const timetableItemsToCreate = returnTrip ? [forwardTrip, returnTrip] : [forwardTrip];
 
@@ -670,6 +686,7 @@ export const handleTrainrunOperation = async ({
       await handleCreateTimetableItem(
         netzgrafikDto,
         trainrun,
+        trainrunEvent.duplicatedTrainrunId,
         trainScheduleSetId,
         infraId,
         state,
