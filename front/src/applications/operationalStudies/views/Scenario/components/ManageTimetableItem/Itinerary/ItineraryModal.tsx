@@ -29,6 +29,7 @@ import {
 import type { PathStep, PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { addElementAtIndex } from 'utils/array';
+import { Duration } from 'utils/duration';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 
 import { type OperationalPointSuggestion } from './ComboBoxCustomList/ListElementComponent';
@@ -353,7 +354,11 @@ const ItineraryModal = ({
     const filledSteps = pathSteps.filter((step) => !isEmptyStep(step, getInputForStep(step.id)));
     if (filledSteps.length < 2) return;
 
-    const updatedPathSteps = buildPathSteps(filledSteps, pathStepsMetadataById);
+    const stepsWithStopAtDestination = filledSteps.map((step, i) =>
+      i === filledSteps.length - 1 ? { ...step, stopFor: new Duration({ minutes: 0 }) } : step
+    );
+
+    const updatedPathSteps = buildPathSteps(stepsWithStopAtDestination, pathStepsMetadataById);
 
     const compacted = compact(updatedPathSteps);
 
