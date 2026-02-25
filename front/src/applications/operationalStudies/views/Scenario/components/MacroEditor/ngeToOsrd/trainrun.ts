@@ -420,12 +420,25 @@ export const createPacedAttributesFromTrainrun = (
 const handleCreateTrainSchedule = async (
   netzgrafikDto: NetzgrafikDto,
   trainrun: TrainrunDto,
+  duplicatedTrainrunId: number | undefined,
   trainScheduleSetId: number,
   infraId: number,
   state: MacroEditorState,
   dispatch: AppDispatch,
   addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void
 ) => {
+  const duplicatedTimetableItemIds = duplicatedTrainrunId
+    ? state.trainScheduleIdByNgeId.get(duplicatedTrainrunId)
+    : undefined;
+  const duplicatedForwardTimetableItem = duplicatedTimetableItemIds?.[0]
+    ? await fetchTrainSchedule(duplicatedTimetableItemIds[0], dispatch)
+    : { id: undefined, train_name: undefined };
+  const duplicatedReturnTimetableItem = duplicatedTimetableItemIds?.[1]
+    ? await fetchTrainSchedule(duplicatedTimetableItemIds[1], dispatch)
+    : { id: undefined, train_name: undefined };
+  const { id: _id, train_name: _name, ...duplicatedForwardBase } = duplicatedForwardTimetableItem;
+  const { id: __id, train_name: __name, ...duplicatedReturnBase } = duplicatedReturnTimetableItem;
+
   const trainrunSections = getContinuousTrainrunSectionsByTrainrunId(netzgrafikDto, trainrun.id);
   const labels = getTrainrunLabels(netzgrafikDto, trainrun);
 
@@ -471,6 +484,7 @@ const handleCreateTrainSchedule = async (
     train_name: trainrun.name,
     labels,
     category,
+    ...duplicatedForwardBase,
     ...pathAndSchedule,
   };
 
@@ -478,6 +492,7 @@ const handleCreateTrainSchedule = async (
     trainrun.direction === 'round_trip'
       ? {
           ...forwardTrip,
+          ...duplicatedReturnBase,
           ...returnPathAndSchedule,
         }
       : undefined;
@@ -731,6 +746,7 @@ export const handleTrainrunOperation = async ({
       await handleCreateTrainSchedule(
         netzgrafikDto,
         trainrun,
+        operation.duplicatedTrainrunId,
         trainScheduleSetId,
         infraId,
         state,
