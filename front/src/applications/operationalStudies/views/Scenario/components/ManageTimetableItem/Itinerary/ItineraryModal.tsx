@@ -349,7 +349,6 @@ const ItineraryModal = ({
             </div>
             <div className="path-step-list-header">
               <span>{t('opName')}</span>
-              <span>{t('secondaryCode')}</span>
               <span>{t('track')}</span>
             </div>
             {pathSteps.map((pathStep, i) => {
