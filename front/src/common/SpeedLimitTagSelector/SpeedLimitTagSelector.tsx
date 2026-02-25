@@ -41,6 +41,7 @@ const SpeedLimitTagSelector = ({
         <Select
           disabled={disabled}
           id="speed-limit-by-tag-selector"
+          data-testid="speed-limit-by-tag-selector"
           value={speedLimitTag || ''}
           label={t('speedLimitByTagAbbrev')}
           // The placeHolder is only displayed in operationalStudies and in debug mode in stdcm

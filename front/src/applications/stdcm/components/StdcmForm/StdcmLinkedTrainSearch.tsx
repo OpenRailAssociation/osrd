@@ -56,6 +56,7 @@ const StdcmLinkedTrainSearch = ({
           Icon={linkedTrainType === 'anterior' ? <ArrowUp size="lg" /> : <ArrowDown size="lg" />}
           className="add-linked-train"
           onClick={() => setShowLinkedTrainSearch(true)}
+          testId="add-linked-train"
         />
       ) : (
         <StdcmCard
@@ -71,6 +72,7 @@ const StdcmLinkedTrainSearch = ({
             </button>
           }
           className="linked-train"
+          testId="linked-train"
         >
           <div className="linked-train-inputs">
             <Input
