@@ -157,8 +157,12 @@ const useTimesStopsTableData = (
           simulatedPathItemTimes?.final[stepIndex] !== undefined
             ? new Duration({ milliseconds: simulatedPathItemTimes.final[stepIndex] })
             : undefined;
-        const scheduleNotHonored = !simulatedPathItemRespect?.times[stepIndex];
-        const marginNotHonored = !simulatedPathItemRespect?.margins[stepIndex];
+        const scheduleNotHonored = isValid && !simulatedPathItemRespect?.times[stepIndex];
+        // The back end returns the status at the end of the interval but we want to display the information at the beginning of the interval so we check the next path items status
+        const marginNotHonored =
+          isValid &&
+          stepIndex < selectedTrain.path.length - 1 &&
+          !simulatedPathItemRespect?.margins[stepIndex + 1];
 
         const row = buildTableRow({
           id: pathStep.id,
