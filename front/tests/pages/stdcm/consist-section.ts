@@ -18,7 +18,7 @@ class ConsistSection {
     this.towedRollingStockField = page.getByTestId('towedRollingStock-input');
     this.tonnageField = page.getByTestId('tonnage-input');
     this.lengthField = page.getByTestId('length-input');
-    this.speedLimitTagField = page.locator('#speed-limit-by-tag-selector');
+    this.speedLimitTagField = page.getByTestId('speed-limit-by-tag-selector');
     this.maxSpeedField = page.getByTestId('maxSpeed-input');
     this.tractionEngineField = page.getByTestId('tractionEngine-input');
   }

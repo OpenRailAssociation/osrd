@@ -7,6 +7,7 @@ type StdcmCardProps = {
   disabled?: boolean;
   onClick?: () => void;
   className?: string;
+  testId?: string;
 };
 const StdcmDefaultCard = ({
   text,
@@ -15,6 +16,7 @@ const StdcmDefaultCard = ({
   onClick,
   disabled = false,
   className = '',
+  testId = '',
 }: StdcmCardProps) => (
   <button
     className={`${className}-card-wrapper`}

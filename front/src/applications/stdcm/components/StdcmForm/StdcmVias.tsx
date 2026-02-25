@@ -164,6 +164,7 @@ const StdcmVias = ({
           >
             <StdcmDefaultCard
               className="add-via"
+              testId="add-via"
               tip="bottom"
               text={t('trainPath.addVia')}
               Icon={<Location size="lg" variant="base" />}
@@ -175,6 +176,7 @@ const StdcmVias = ({
               pathStep.stopType === StdcmStopTypes.SERVICE_STOP &&
               (!pathStep.hasConsistChange ? (
                 <StdcmDefaultCard
+                  testId="edit-consist"
                   className="edit-consist"
                   tip="right"
                   text={t('trainPath.consistChange.add')}
@@ -212,6 +214,7 @@ const StdcmVias = ({
               tip="bottom"
               disabled={disabled}
               className="via"
+              testId="via"
             >
               <StdcmOperationalPoint
                 operationalPoint={pathStep.operationalPoint}
@@ -232,6 +235,7 @@ const StdcmVias = ({
       })}
       <StdcmDefaultCard
         className="add-via"
+        testId="add-via"
         tip="bottom"
         text={t('trainPath.addVia')}
         Icon={<Location size="lg" variant="base" />}

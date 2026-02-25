@@ -252,6 +252,7 @@ const StdcmConsist = ({
       title={<ConsistCardTitle rollingStock={rollingStock} />}
       disabled={disabled}
       className="consist"
+      testId="consist"
     >
       <div className="traction-engine">
         <ComboBox
