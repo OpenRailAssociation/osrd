@@ -4,6 +4,7 @@
   border: 1px solid var(--grey30);
   color: var(--grey80);
   border-radius: 8px;
+  overflow: hidden;
   box-shadow:
     0 6px 21px -5px rgba(101, 169, 232, 0.341810533216783),
     0 16px 30px -5px rgba(0, 0, 0, 0.2),
@@ -17,6 +18,7 @@
   .menu-item {
     width: 100%;
     min-height: 44px;
+    font-family: 'IBM Plex sans', sans-serif;
     font-size: 0.875rem;
     padding-right: 12px;
     display: flex;
@@ -28,6 +30,10 @@
 
     &:not(:only-of-type, :last-child) {
       border-bottom: 1px solid var(--grey20);
+    }
+
+    &:not(:disabled):hover {
+      background-color: var(--white75);
     }
 
     .icon {

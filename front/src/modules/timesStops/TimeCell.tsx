@@ -6,7 +6,8 @@ import { SECONDS_IN_A_DAY } from 'utils/timeManipulation';
 
 import CellPlaceholder from './CellPlaceholder';
 import ClearButton from './ClearButton';
-import type { TimesStopsRowNew } from './types';
+import TimePropagationMenu from './TimePropagationMenu';
+import type { PropagationMode, TimesStopsRowNew } from './types';
 
 // Types
 
@@ -484,7 +485,7 @@ type TimeCellProps = CellContext<TimesStopsRowNew, Date | null> &
     onEnterKeyDown?: () => void;
     /** Called on Tab key to move focus to the next/previous editable time cell. */
     onTabKeyDown?: (direction: 'forward' | 'backward') => boolean;
-    onCommit?: (date: Date | null) => void;
+    onCommit?: (date: Date | null, propagationMode: PropagationMode) => void;
     disableClear?: boolean;
     ref?: React.Ref<TimeCellHandle>;
   };
@@ -500,7 +501,8 @@ const TimeCell = ({
   ref,
   ...props
 }: TimeCellProps) => {
-  const { onKeyDown, onBlur, onFocus, onChange, ...userProps } = props || {};
+  const { row, table, column, disabled, onKeyDown, onBlur, onFocus, onChange, ...userProps } =
+    props || {};
 
   const controlledValue = getValue();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -516,8 +518,15 @@ const TimeCell = ({
     }),
     []
   );
-
   const [state, dispatch] = useReducer(timeReducer, controlledValue, initialTimeState);
+
+  const handleSelectPropagationMode = (mode: PropagationMode) => {
+    if (!onCommit || !referenceDate) return;
+    const newDate = buildDateFromState(computeBlurState(state), referenceDate);
+    onCommit(newDate, mode);
+    blurIntentRef.current = 'cancel';
+    inputRef.current?.blur();
+  };
 
   const getSectionFromPosition = (position: number): Section => {
     if (position <= 2) return 'hours';
@@ -588,7 +597,7 @@ const TimeCell = ({
   };
 
   const handleClear = () => {
-    if (controlledValue !== null) onCommit?.(null);
+    if (controlledValue !== null) onCommit?.(null, 'atThisWaypoint');
     dispatch({ type: 'ESCAPE_PRESSED', value: null });
   };
 
@@ -636,9 +645,9 @@ const TimeCell = ({
       const hasChanged = newDate?.getTime() !== controlledValue?.getTime();
       if (hasChanged) {
         if (blurIntent === 'commit') {
-          setTimeout(() => onCommit(newDate), 0);
+          setTimeout(() => onCommit(newDate, 'atThisWaypoint'), 0);
         } else {
-          onCommit(newDate);
+          onCommit(newDate, 'atThisWaypoint');
         }
       }
     }
@@ -666,6 +675,15 @@ const TimeCell = ({
       target: { value: displayValue },
     } as ChangeEvent<HTMLInputElement>);
   }, [state.hours, state.minutes, state.seconds, onChange]);
+
+  const isTimeComplete =
+    hasAllDigits(state.hours) && hasAllDigits(state.minutes) && hasAllDigits(state.seconds);
+  const editedDate =
+    isTimeComplete && referenceDate ? buildDateFromState(state, referenceDate) : null;
+  const shouldShowPropagationMenu =
+    controlledValue !== null && !disabled && state.focusedSection !== null && state.hasTyped;
+  const isFirstRow = row.index === 0;
+  const isLastRow = row.index === table.getRowCount() - 1;
 
   return (
     <>
@@ -699,6 +717,15 @@ const TimeCell = ({
         ) : (
           <CellPlaceholder onClick={handlePlaceholderClick} />
         )}
+        <TimePropagationMenu
+          isOpen={shouldShowPropagationMenu}
+          anchorRef={{ current: inputRef.current?.closest('td') ?? null }}
+          oldValue={controlledValue}
+          newValue={editedDate}
+          onSelectMode={handleSelectPropagationMode}
+          disableFromDeparture={column.id === 'requestedArrival' && isFirstRow}
+          disableToDestination={column.id === 'requestedArrival' && isLastRow}
+        />
       </div>
       <ClearButton
         isVisible={state.focusedSection !== null && !state.empty && !disableClear}

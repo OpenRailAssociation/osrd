@@ -100,3 +100,36 @@
     }
   }
 }
+
+.osrd-menu.time-propagation-menu {
+  width: fit-content;
+  box-shadow:
+    0 3px 5px -1px rgba(0, 0, 0, 0.16),
+    0 16px 30px -5px rgba(0, 0, 0, 0.19),
+    0 6px 21px -5px rgba(255, 171, 88, 0.31);
+
+  .menu-item {
+    // Override OSRDMenu's min-height (44px) to match the table row height (40px)
+    min-height: unset;
+    height: 40px;
+    line-height: 20px;
+    padding: 8px 17px 10px 0;
+    white-space: nowrap;
+
+    &.selected {
+      // outline instead of box-shadow to draw over the item's borders
+      outline: 2px solid var(--primary60);
+      outline-offset: -2px;
+    }
+
+    .icon {
+      min-width: 34px;
+      padding-inline: 10px 8px;
+    }
+  }
+}
+
+.time-propagation-menu-wrapper {
+  // Align the third option ("at this waypoint") with the edited cell center.
+  transform: translateY(-101px);
+}

@@ -103,6 +103,12 @@ export type TheoreticalMarginsRecord = Record<
   { theoreticalMargin: string; isBoundary: boolean }
 >;
 
+export type PropagationMode =
+  | 'toAllWaypoints'
+  | 'fromDeparture'
+  | 'atThisWaypoint'
+  | 'toDestination';
+
 export type ArrivalUpdate = {
   row: TimesStopsRowNew;
   field: 'requestedArrival';
