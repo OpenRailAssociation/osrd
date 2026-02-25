@@ -11,20 +11,12 @@ type AnchoreMenuParams = {
   container?: Element | null;
   alignment?: 'left' | 'right' | 'auto';
   focusOnFirstElement?: boolean;
-  lockScroll?: boolean;
   /**
    * Controls where the menu appears relative to the anchor.
    * - `'below'` (default): menu opens below or above the anchor (dropdown behaviour).
-   * - `'beside'`: menu opens to the right or left of the anchor, tracking the anchor on
-   *   scroll/resize. Use `alignItemRef` to vertically align a specific `.menu-item` with the
-   *   anchor's centre.
+   * - `'beside'`: menu opens to the right or left of the anchor.
    */
   placement?: 'below' | 'beside';
-  /**
-   * Only used when `placement='beside'`. Ref to the element that should be vertically centred
-   * with the anchor.
-   */
-  alignItemRef?: React.RefObject<HTMLElement | null>;
 };
 
 /**
@@ -45,9 +37,7 @@ const AnchoredMenu = ({
   container,
   alignment = 'auto',
   focusOnFirstElement = true,
-  lockScroll = true,
   placement = 'below',
-  alignItemRef,
 }: AnchoreMenuParams) => {
   const [menuPosition, setMenuPosition] = useState<{
     top?: number;
@@ -59,96 +49,60 @@ const AnchoredMenu = ({
   const shouldDisplayMenu = Boolean(children);
 
   useLayoutEffect(() => {
-    const updatePosition = () => {
-      const anchorRefBoundingRect = anchorRef.current?.getBoundingClientRect();
-      const menuRefBoundingRect = menuRef.current?.getBoundingClientRect();
+    if (!shouldDisplayMenu) return;
 
-      if (!anchorRefBoundingRect || !menuRefBoundingRect || menuRefBoundingRect.width === 0) return;
+    const anchorRefBoundingRect = anchorRef.current?.getBoundingClientRect();
+    const menuRefBoundingRect = menuRef.current?.getBoundingClientRect();
 
-      if (placement === 'beside') {
-        const targetItem = alignItemRef?.current;
-        if (!targetItem) return;
+    if (!anchorRefBoundingRect || !menuRefBoundingRect || menuRefBoundingRect.width === 0) return;
 
-        const targetItemCenterFromMenuTop = targetItem.offsetTop + targetItem.offsetHeight / 2;
-
-        const anchorStyle = window.getComputedStyle(anchorRef.current!);
-        const paddingTop = parseFloat(anchorStyle.paddingTop) || 0;
-        const paddingBottom = parseFloat(anchorStyle.paddingBottom) || 0;
-        const anchorCenterY =
-          anchorRefBoundingRect.top +
-          anchorRefBoundingRect.height / 2 +
-          (paddingTop - paddingBottom) / 2;
-
-        const wouldOverflowRight =
-          anchorRefBoundingRect.right + menuRefBoundingRect.width > window.innerWidth;
-
-        setMenuPosition({
-          top: anchorCenterY - targetItemCenterFromMenuTop,
-          left: wouldOverflowRight
-            ? anchorRefBoundingRect.left - menuRefBoundingRect.width
-            : anchorRefBoundingRect.right,
-        });
-        return;
-      }
-
-      // Check if there is enough space below the anchor element
-      const isSpaceBelow =
-        window.innerHeight - anchorRefBoundingRect.bottom > menuRefBoundingRect.height;
-
-      // Check if menu would overflow on the right side of the viewport
+    if (placement === 'beside') {
+      const anchorCenterY = anchorRefBoundingRect.top + anchorRefBoundingRect.height / 2;
       const wouldOverflowRight =
-        anchorRefBoundingRect.left + menuRefBoundingRect.width > window.innerWidth;
-
-      // Determine the alignment based on prop and overflow detection
-      let boxLeftPosition: number;
-      if (alignment === 'right') {
-        boxLeftPosition = anchorRefBoundingRect.right - menuRefBoundingRect.width;
-      } else if (alignment === 'left') {
-        boxLeftPosition = anchorRefBoundingRect.left;
-      } else {
-        // auto alignment: switch to right alignment if would overflow
-        boxLeftPosition = wouldOverflowRight
-          ? anchorRefBoundingRect.right - menuRefBoundingRect.width
-          : anchorRefBoundingRect.left;
-      }
+        anchorRefBoundingRect.right + menuRefBoundingRect.width > window.innerWidth;
 
       setMenuPosition({
-        top: isSpaceBelow ? anchorRefBoundingRect.bottom : undefined,
-        left: boxLeftPosition,
-        bottom: isSpaceBelow ? undefined : window.innerHeight - anchorRefBoundingRect.top,
+        top: anchorCenterY,
+        left: wouldOverflowRight
+          ? anchorRefBoundingRect.left - menuRefBoundingRect.width
+          : anchorRefBoundingRect.right,
       });
-    };
+      return;
+    }
 
-    updatePosition();
+    // Check if there is enough space below the anchor element
+    const isSpaceBelow =
+      window.innerHeight - anchorRefBoundingRect.bottom > menuRefBoundingRect.height;
 
-    if (placement !== 'beside' || !shouldDisplayMenu) return;
+    // Check if menu would overflow on the right side of the viewport
+    const wouldOverflowRight =
+      anchorRefBoundingRect.left + menuRefBoundingRect.width > window.innerWidth;
 
-    // Track scroll and resize to keep the menu aligned with the anchor.
-    let frameId: number | null = null;
-    const scheduleUpdate = () => {
-      if (frameId !== null) return;
-      // Use requestAnimationFrame so we update at most once per frame while scrolling/resizing.
-      frameId = requestAnimationFrame(() => {
-        frameId = null;
-        updatePosition();
-      });
-    };
+    // Determine the alignment based on prop and overflow detection
+    let boxLeftPosition: number;
+    if (alignment === 'right') {
+      boxLeftPosition = anchorRefBoundingRect.right - menuRefBoundingRect.width;
+    } else if (alignment === 'left') {
+      boxLeftPosition = anchorRefBoundingRect.left;
+    } else {
+      // auto alignment: switch to right alignment if would overflow
+      boxLeftPosition = wouldOverflowRight
+        ? anchorRefBoundingRect.right - menuRefBoundingRect.width
+        : anchorRefBoundingRect.left;
+    }
 
-    window.addEventListener('resize', scheduleUpdate);
-    // Use capture=true to also catch scrolls from parent/nested scroll containers.
-    window.addEventListener('scroll', scheduleUpdate, true);
-    return () => {
-      if (frameId !== null) cancelAnimationFrame(frameId);
-      window.removeEventListener('resize', scheduleUpdate);
-      window.removeEventListener('scroll', scheduleUpdate, true);
-    };
-  }, [anchorRef, shouldDisplayMenu, alignment, placement, alignItemRef]);
+    setMenuPosition({
+      top: isSpaceBelow ? anchorRefBoundingRect.bottom : undefined,
+      left: boxLeftPosition,
+      bottom: isSpaceBelow ? undefined : window.innerHeight - anchorRefBoundingRect.top,
+    });
+  }, [anchorRef, shouldDisplayMenu, alignment, placement]);
 
   const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
     if (event.target === event.currentTarget) onDismiss();
   };
 
-  useModalFocusTrap(menuRef, onDismiss, { focusOnFirstElement: true });
+  useModalFocusTrap(menuRef, onDismiss, { focusOnFirstElement });
 
   if (!shouldDisplayMenu) return null;
 
