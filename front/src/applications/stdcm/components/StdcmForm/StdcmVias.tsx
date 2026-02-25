@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux';
 import IntermediatePointIcon from 'assets/pictures/mapMarkers/intermediate-point.svg';
 import { updateStdcmPathStep, deleteStdcmVia, addStdcmVia } from 'reducers/osrdconf/stdcmConf';
 import { getStdcmPathSteps } from 'reducers/osrdconf/stdcmConf/selectors';
-import type { StdcmPathStep } from 'reducers/osrdconf/types';
+import type { StdcmPathStep, StdcmViaPathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 
@@ -24,7 +24,12 @@ type StdcmViasProps = StdcmItineraryProps & {
   skipAnimation: boolean;
 };
 
-const StdcmVias = ({ disabled = false, skipAnimation, onItineraryChange }: StdcmViasProps) => {
+const StdcmVias = ({
+  disabled = false,
+  isDebugMode,
+  skipAnimation,
+  onItineraryChange,
+}: StdcmViasProps) => {
   const { t } = useTranslation('stdcm');
   const dispatch = useAppDispatch();
   const pathSteps = useSelector(getStdcmPathSteps);
@@ -110,6 +115,40 @@ const StdcmVias = ({ disabled = false, skipAnimation, onItineraryChange }: Stdcm
     onItineraryChange();
   };
 
+  const addConsistChange = (viaPathStep: StdcmViaPathStep) => {
+    if (viaPathStep.stopFor && viaPathStep.stopFor < new Duration({ minutes: 30 })) {
+      dispatch(
+        updateStdcmPathStep({
+          id: viaPathStep.id,
+          updates: {
+            hasConsistChange: true,
+            stopFor: new Duration({ minutes: 30 }),
+          },
+        })
+      );
+    } else {
+      dispatch(
+        updateStdcmPathStep({
+          id: viaPathStep.id,
+          updates: {
+            hasConsistChange: true,
+          },
+        })
+      );
+    }
+  };
+
+  const removeConsistChange = (viaPathStep: StdcmViaPathStep) => {
+    dispatch(
+      updateStdcmPathStep({
+        id: viaPathStep.id,
+        updates: {
+          hasConsistChange: false,
+        },
+      })
+    );
+  };
+
   return (
     <div className="stdcm-vias-list">
       {intermediatePoints.map((pathStep, index) => {
@@ -131,6 +170,26 @@ const StdcmVias = ({ disabled = false, skipAnimation, onItineraryChange }: Stdcm
               onClick={() => addViaOnClick(pathStepIndex)}
               disabled={disabled}
             />
+            {/* TODO #15344: remove isDebugMode */}
+            {isDebugMode &&
+              pathStep.stopType === StdcmStopTypes.SERVICE_STOP &&
+              (!pathStep.hasConsistChange ? (
+                <StdcmDefaultCard
+                  className="edit-consist"
+                  tip="right"
+                  text={t('trainPath.consistChange.add')}
+                  Icon={<Location size="lg" variant="base" />}
+                  onClick={() => addConsistChange(pathStep)}
+                />
+              ) : (
+                <>
+                  {/* // TODO #15242: add consist change form */}
+                  <button onClick={() => removeConsistChange(pathStep)}>
+                    **Consist change form placeholder (click to remove consist change)**
+                  </button>
+                  <div className="stdcm__separator" />
+                </>
+              ))}
             <StdcmCard
               name={t('trainPath.vias')}
               title={

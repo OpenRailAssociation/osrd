@@ -178,6 +178,8 @@ export type StdcmPathStep = {
     }
 );
 
+export type StdcmViaPathStep = Extract<StdcmPathStep, { isVia: true }>;
+
 /**
  * Each regular occurrence id should follow this syntax : indexedoccurrence_{pacedTrainId}_{occurrenceIndex}
  * A regular occurrence is an occurrence that was originally part of the paced train.

@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
-import { Location } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { isEqual } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -29,10 +28,9 @@ import {
   getLoadingGauge,
   getStdcmRollingStockID,
 } from 'reducers/osrdconf/stdcmConf/selectors';
-import type { OsrdStdcmConfState, StdcmPathStep } from 'reducers/osrdconf/types';
+import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { useDateTimeLocale } from 'utils/date';
-import { Duration } from 'utils/duration';
 
 import StdcmConsist from './StdcmConsist';
 import StdcmDestination from './StdcmDestination';
@@ -42,11 +40,10 @@ import useStaticPathfinding from '../../hooks/useStaticPathfinding';
 import type { StdcmConfigErrors, ConsistErrors } from '../../types';
 import StdcmSimulationParams from '../StdcmSimulationParams';
 import StdcmVias from './StdcmVias';
-import { ArrivalTimeTypes, StdcmConfigErrorTypes, StdcmStopTypes } from '../../types';
+import { ArrivalTimeTypes, StdcmConfigErrorTypes } from '../../types';
 import checkStdcmConfigErrors from '../../utils/checkStdcmConfigErrors';
 import StdcmLoader from '../StdcmLoader';
 import StdcmWarningBox from '../StdcmWarningBox';
-import StdcmDefaultCard from './StdcmDefaultCard';
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
@@ -196,44 +193,6 @@ const StdcmConfig = ({
     return t('pathfindingStatus.success');
   };
 
-  const addConsistChange = (pathStep: StdcmPathStep) => {
-    if (!pathStep.isVia || pathStep.stopType !== StdcmStopTypes.SERVICE_STOP) return;
-
-    if (pathStep.stopFor && pathStep.stopFor < new Duration({ minutes: 30 })) {
-      dispatch(
-        updateStdcmPathStep({
-          id: pathStep.id,
-          updates: {
-            hasConsistChange: true,
-            stopFor: new Duration({ minutes: 30 }),
-          },
-        })
-      );
-    } else {
-      dispatch(
-        updateStdcmPathStep({
-          id: pathStep.id,
-          updates: {
-            hasConsistChange: true,
-          },
-        })
-      );
-    }
-  };
-
-  const removeConsistChange = (pathStep: StdcmPathStep) => {
-    if (!pathStep.isVia || pathStep.stopType !== StdcmStopTypes.SERVICE_STOP) return;
-
-    dispatch(
-      updateStdcmPathStep({
-        id: pathStep.id,
-        updates: {
-          hasConsistChange: false,
-        },
-      })
-    );
-  };
-
   // Checks for live warnings regarding pathSteps
   useEffect(() => {
     if (pathfindingWorkerStatus !== 'READY' || stdcmWorkerStatus !== 'READY') {
@@ -343,40 +302,12 @@ const StdcmConfig = ({
                 consistErrors={consistErrors}
                 setConsistErrors={setConsistErrors}
               />
-              <div className="stdcm-consist-change-button-wrapper">
-                {/* TODO #15344: remove isDebugMode */}
-                {isDebugMode &&
-                  pathSteps.map((pathStep) => {
-                    if (!pathStep.isVia || pathStep.stopType !== StdcmStopTypes.SERVICE_STOP)
-                      return null;
-
-                    return (
-                      <div className="stdcm-consist-change-item" key={pathStep.id}>
-                        {!pathStep.hasConsistChange ? (
-                          <div className="stdcm-consist-change-button">
-                            <StdcmDefaultCard
-                              tip="right"
-                              text={t('trainPath.consistChange.add')}
-                              Icon={<Location size="lg" variant="base" />}
-                              onClick={() => addConsistChange(pathStep)}
-                            />
-                          </div>
-                        ) : (
-                          // TODO #15242: add consist change form
-                          <button onClick={() => removeConsistChange(pathStep)}>
-                            **Consist change form placeholder (click to remove consist change)**
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })}
-              </div>
             </div>
             <div className="stdcm__separator" />
-            <div ref={formRef} className="stdcm-simulation-itinerary">
               <StdcmOrigin disabled={disabled} onItineraryChange={onItineraryChange} />
               <StdcmVias
                 disabled={disabled}
+            isDebugMode={isDebugMode}
                 skipAnimation={skipPathfindingStatusMessage}
                 onItineraryChange={onItineraryChange}
               />
