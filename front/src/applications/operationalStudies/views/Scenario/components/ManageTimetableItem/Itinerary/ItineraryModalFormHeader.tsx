@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 
-import { ComboBox, Input, Select } from '@osrd-project/ui-core';
+import { ComboBox, Input, Select, useDefaultComboBox } from '@osrd-project/ui-core';
 import { isEqual } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -16,6 +16,7 @@ import useSpeedLimitTags from 'common/SpeedLimitTagSelector/useSpeedLimitTags';
 import useStoreDataForRollingStockSelector from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import useCategoryOptions from 'modules/rollingStock/hooks/useCategoryOptions';
+import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
 import { updateCategory, updateName } from 'reducers/osrdconf/operationalStudiesConf';
 import {
   getName,
@@ -39,7 +40,7 @@ const ItineraryModalFormHeader = ({
   categoryColors,
 }: ItineraryModalFormHeaderProps) => {
   const dispatch = useAppDispatch();
-  const { updateSpeedLimitByTag } = useOsrdConfActions();
+  const { updateSpeedLimitByTag, updateRollingStockID } = useOsrdConfActions();
 
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTimetableItem',
@@ -62,6 +63,24 @@ const ItineraryModalFormHeader = ({
   const getRollingStockLabel = (rs: LightRollingStockWithLiveries) => {
     const secondPart = rs.metadata?.series || rs.metadata?.reference || '';
     return secondPart ? `${rs.name} - ${secondPart}` : rs.name;
+  };
+
+  const { filteredRollingStockList } = useFilterRollingStock();
+
+  const rollingStockComboBoxDefaultProps = useDefaultComboBox(
+    filteredRollingStockList,
+    getRollingStockLabel
+  );
+
+  const handleRollingStockSelect = (rs?: LightRollingStockWithLiveries) => {
+    if (!rs) {
+      dispatch(updateRollingStockID(undefined));
+      dispatch(updateCategory(null));
+      return;
+    }
+
+    dispatch(updateRollingStockID(rs.id));
+    dispatch(updateCategory(rs.primary_category ? { main_category: rs.primary_category } : null));
   };
 
   // Composition code/speed limit by tag
@@ -109,7 +128,6 @@ const ItineraryModalFormHeader = ({
             getOptionLabel={(option) => option.label}
             getOptionValue={(option) => option.id}
             onChange={handleCategoryChange}
-            readOnly
           ></Select>
         </div>
       </div>
@@ -123,10 +141,8 @@ const ItineraryModalFormHeader = ({
             autoComplete="off"
             value={rollingStock}
             getSuggestionLabel={getRollingStockLabel}
-            onSelectSuggestion={() => {}}
-            suggestions={[]}
-            resetSuggestions={() => {}}
-            readOnly
+            onSelectSuggestion={handleRollingStockSelect}
+            {...rollingStockComboBoxDefaultProps}
           />
         </div>
         <div className="composition-code-select">
@@ -141,7 +157,6 @@ const ItineraryModalFormHeader = ({
             onChange={(e) => {
               dispatch(updateSpeedLimitByTag(e ?? null));
             }}
-            readOnly
           ></Select>
         </div>
         <div className="train-name-input">
@@ -153,7 +168,6 @@ const ItineraryModalFormHeader = ({
             value={name}
             title={name}
             onChange={handleNameChange}
-            readOnly
           />
         </div>
       </div>
