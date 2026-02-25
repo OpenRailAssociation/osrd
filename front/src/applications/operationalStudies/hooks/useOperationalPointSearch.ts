@@ -47,7 +47,7 @@ export const useOperationalPointSearch = ({
   const getInputForStep = useCallback(
     (stepId: string) => {
       const isEditing = isEditingByStepId[stepId] ?? true;
-      return isEditing ? (draftByStepId[stepId] ?? '') : (displayByStepId[stepId] ?? '');
+      return isEditing ? draftByStepId[stepId] : displayByStepId[stepId];
     },
     [draftByStepId, displayByStepId, isEditingByStepId]
   );
