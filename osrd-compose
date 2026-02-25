@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 set -eo pipefail
 
@@ -87,7 +87,9 @@ if [ ${#flags[@]} -gt 0 ]; then
     printf "%s\n" "${flags[@]}" > "$STATE_FILE"
 # If no flags but state exists, load it
 elif [ -f "$STATE_FILE" ]; then
-    mapfile -t flags < "$STATE_FILE"
+    while IFS= read -r flag || [[ -n "$flag" ]]; do
+        flags+=("$flag")
+    done < "$STATE_FILE"
 fi
 
 has_flag() {
