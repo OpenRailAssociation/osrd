@@ -169,7 +169,7 @@ class TimetableCacheManager(
             }
 
         // Once the requirements are loaded, we save them to s3 as well for reproducibility
-        saveToS3(cacheKey, requirements)
+        saveToS3(timetableId, requirements)
 
         return requirements
     }
@@ -289,11 +289,11 @@ class TimetableCacheManager(
 
     /** If there's no file yet with the given cache key, save the timetable in the s3 storage. */
     @WithSpan(kind = SpanKind.SERVER)
-    private fun saveToS3(cacheKey: String, requirements: STDCMTimetableData) {
+    private fun saveToS3(timetableId: TimetableId, requirements: STDCMTimetableData) {
         if (s3Context == null) return
 
         s3Context.runAsync {
-            val objectPath = "stdcm/saved_timetables/$cacheKey.cbor"
+            val objectPath = "stdcm/saved_timetables/$timetableId.cbor"
             if (s3Context.fileExists(objectPath)) return@runAsync
 
             try {
