@@ -21,10 +21,14 @@ const StdcmCard = ({
 }: StdcmCardProps) => (
   <div
     data-testid={testId}
-    className={cx('stdcm-card', {
-      [`tip-${tip}`]: tip,
-      disabled,
-    })}
+    className={cx(
+      'stdcm-card',
+      {
+        [`tip-${tip}`]: tip,
+        disabled,
+      },
+      `${className}-wrapper`
+    )}
   >
     {name && (
       <div

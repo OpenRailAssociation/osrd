@@ -20,7 +20,7 @@ const StdcmDestination = ({ disabled = false, onItineraryChange }: StdcmItinerar
       name={t('trainPath.destination')}
       title={<img src={DestinationIcon} alt="destination" className="stdcm-destination-icon" />}
       disabled={disabled}
-      className="extremity"
+      className="stdcm-card-destination extremity"
       testId="stdcm-card-destination"
     >
       <StdcmOperationalPoint
