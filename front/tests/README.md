@@ -33,7 +33,10 @@ In this mode, Playwright runs on your host machine while OSRD services run in Do
 ./osrd-compose default up -d --build
 ```
 
-## Install dependencies
+> [!NOTE]
+> The front is significantly slower using `dev-front` mode, and it can lead to timeout during e2e-tests.
+
+## Install specific e2e-tests dependencies
 
 ```bash
 cd front/
@@ -45,7 +48,7 @@ npx playwright install --with-deps
 
 ```bash
 npm run e2e-tests
-# or
+# equivalent to
 npx playwright test
 ```
 
@@ -62,7 +65,7 @@ Start the Playwright container only:
 ```
 
 **Or**, start the full stack including the front-end (recommended when working on both the front-end
-and E2E tests):
+and E2E tests, but beware of timeouts):
 
 ```bash
 ./osrd-compose playwright dev-front up playwright
@@ -331,14 +334,20 @@ In the CI those files are available as artifacts. You can view them in the Githu
 
 # ⚙️ 7. Playwright Configuration Summary
 
-- **Retries**: enabled in CI
+One can list all the options available using:
+
+```bash
+npx playwright test --help
+```
+
+- **Retries on test failure**: `1` in CI and locally
 - **Trace**: on first retry
 - **Video**: only when retried
-- **Projects**: Chromium, Firefox
+- **Projects**: only `chromium` & `firefox` are available
 - **Locale**: `fr`
 - **Timezone**: `Europe/Paris`
 - **Reporter**: custom + HTML
-- **Parallel workers**: dynamic
+- **Parallel workers**: no limit in CI, but technically `2` (and `30%` of logical CPU locally, after empirical tries)
 - **Screenshots**: on failure
 
 ---

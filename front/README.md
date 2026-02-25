@@ -54,10 +54,12 @@ Launches end to end tests.
 
 It requires:
 
-- Install Playwright dependencies `cd ./front/ && npx playwright install --with-deps`
-- Ensure backend containers are running
-Then run the tests with: `cd front/ && npm run e2e-tests`.
-For more details, or if you're using a Linux distribution other than Ubuntu or Debian, refer to the README located in `front/tests`.
+- Ensure the [stack is running](./tests/README.md#requirements)
+- Install [Playwright dependencies](./tests/README.md#install-specific-e2e-tests-dependencies)
+- Then [run the tests](./tests/README.md#run-e2e-tests)
+
+For more details/tips/troubleshoot/alternatives, or if you're using a Linux distribution other than Ubuntu or
+Debian, refer to the dedicated [README](./tests/README.md).
 
 ## Design rules
 

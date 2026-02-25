@@ -13,7 +13,7 @@ export default defineConfig({
   fullyParallel: true,
   workers: isCI ? undefined : '30%',
   forbidOnly: isCI,
-  retries: isCI ? 1 : 0,
+  retries: 1,
   use: {
     navigationTimeout: isCI ? 30_000 : 60_000,
     actionTimeout: 10_000,
