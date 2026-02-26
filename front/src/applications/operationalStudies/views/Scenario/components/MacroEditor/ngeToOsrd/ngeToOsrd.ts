@@ -52,6 +52,7 @@ const handleLabelOperation = async ({
         await handleUpdateTimetableItem({
           netzgrafikDto,
           trainrun,
+          tags: ['labelIds'],
           trainScheduleSetId,
           infraId,
           state,

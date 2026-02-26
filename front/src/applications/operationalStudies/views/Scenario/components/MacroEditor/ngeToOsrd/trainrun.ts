@@ -24,6 +24,7 @@ import type {
   TimeLockDto,
   TrainrunDto,
   NGETrainrunEvent,
+  TrainrunUpdateTag,
 } from '../../NGE/types';
 import {
   DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
@@ -510,6 +511,7 @@ const handleDeleteTimetableItem = async (
 export const handleUpdateTimetableItem = async ({
   netzgrafikDto,
   trainrun,
+  tags,
   trainScheduleSetId,
   infraId,
   state,
@@ -519,6 +521,7 @@ export const handleUpdateTimetableItem = async ({
 }: {
   netzgrafikDto: NetzgrafikDto;
   trainrun: TrainrunDto;
+  tags: TrainrunUpdateTag[];
   infraId: number;
   trainScheduleSetId: number;
   state: MacroEditorState;
@@ -530,14 +533,14 @@ export const handleUpdateTimetableItem = async ({
   const oldForwardTimetableItem = await fetchTimetableItem(timetableItemIds[0], dispatch);
   const trainrunSections = getContinuousTrainrunSectionsByTrainrunId(netzgrafikDto, trainrun.id);
   const labels = getTrainrunLabels(netzgrafikDto, trainrun);
-  const forwardPathAndSchedule = generatePathAndSchedule(
+  const { path: forwardPath, ...forwardSchedule } = generatePathAndSchedule(
     trainrunSections,
     netzgrafikDto.nodes,
     new Date(oldForwardTimetableItem.start_time),
     TRAINRUN_DIRECTIONS.FORWARD,
     state
   );
-  await populateSecondaryCodesInPath(forwardPathAndSchedule.path, infraId, dispatch);
+  await populateSecondaryCodesInPath(forwardPath, infraId, dispatch);
 
   const { id: _id, ...timetableItemBase } = oldForwardTimetableItem;
 
@@ -550,13 +553,13 @@ export const handleUpdateTimetableItem = async ({
 
   const newForwardTrainBase: Omit<TrainScheduleResponse, 'id'> = {
     ...timetableItemBase,
-    train_name: trainrun.name,
-    labels,
-    // Reset margins because they contain references to path items
-    margins: undefined,
-    paced,
-    category,
-    ...forwardPathAndSchedule,
+    ...(tags.includes('name') && { train_name: trainrun.name }),
+    ...(tags.includes('labelIds') && { labels }),
+    // Reset margins if the path changed because they contain references to path items
+    ...(tags.includes('nodes') && { path: forwardPath, margins: undefined, ...forwardSchedule }),
+    ...(tags.includes('times') && { ...forwardSchedule }),
+    ...(tags.includes('frequencyId') && { paced }),
+    ...(tags.includes('categoryId') && { category }),
   };
 
   if (paced && oldForwardTimetableItem.paced) {
@@ -588,7 +591,7 @@ export const handleUpdateTimetableItem = async ({
     return;
   }
 
-  const returnPathAndSchedule = generatePathAndSchedule(
+  const { path: returnPath, ...returnSchedule } = generatePathAndSchedule(
     trainrunSections,
     netzgrafikDto.nodes,
     new Date(oldForwardTimetableItem.start_time),
@@ -596,7 +599,7 @@ export const handleUpdateTimetableItem = async ({
     state
   );
 
-  await populateSecondaryCodesInPath(returnPathAndSchedule.path, infraId, dispatch);
+  await populateSecondaryCodesInPath(returnPath, infraId, dispatch);
 
   let newReturnTimetableItem: TimetableItem;
   const returnPaced: TrainSchedule['paced'] = paced ? { ...paced, exceptions: [] } : null;
@@ -607,13 +610,16 @@ export const handleUpdateTimetableItem = async ({
     const { id: _return_id, ...oldReturnTrainBase } = oldReturnTimetableItem;
     const newReturnTrainBase: Omit<TrainScheduleResponse, 'id'> = {
       ...oldReturnTrainBase,
-      train_name: trainrun.name,
-      labels,
-      // Reset margins because they contain references to path items
-      margins: undefined,
-      paced: returnPaced,
-      category,
-      ...returnPathAndSchedule,
+      ...(tags.includes('name') && { train_name: trainrun.name }),
+      ...(tags.includes('labelIds') && { labels }),
+      // Reset margins if the path changed because they contain references to path items
+      ...(tags.includes('nodes') && { path: returnPath, margins: undefined, ...returnSchedule }),
+      ...(tags.includes('times') && {
+        schedule: returnSchedule.schedule,
+        start_time: returnSchedule.start_time,
+      }),
+      ...(tags.includes('frequencyId') && { paced: returnPaced }),
+      ...(tags.includes('categoryId') && { category }),
     };
 
     if (returnPaced && oldReturnTimetableItem.paced) {
@@ -641,7 +647,8 @@ export const handleUpdateTimetableItem = async ({
 
     const returnPacedTrain: TrainSchedule = {
       ...pacedTrainWithoutTrainScheduleSetId,
-      ...returnPathAndSchedule,
+      ...returnSchedule,
+      path: returnPath,
       paced: returnPaced,
     };
 
@@ -699,6 +706,7 @@ export const handleTrainrunOperation = async ({
       await handleUpdateTimetableItem({
         netzgrafikDto,
         trainrun,
+        tags: trainrunEvent.tags,
         trainScheduleSetId,
         infraId,
         dispatch,
@@ -753,6 +761,7 @@ export const updateTrainrunsByNode = async ({
     await handleUpdateTimetableItem({
       netzgrafikDto,
       trainrun,
+      tags: ['nodes'],
       trainScheduleSetId,
       infraId,
       dispatch,

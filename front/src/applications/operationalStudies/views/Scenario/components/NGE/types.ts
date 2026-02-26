@@ -220,7 +220,7 @@ export type NetzgrafikDto = {
   };
 };
 
-type TrainrunUpdateTag =
+export type TrainrunUpdateTag =
   | 'nodes'
   | 'times'
   | 'numberOfStops'
