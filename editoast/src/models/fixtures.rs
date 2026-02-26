@@ -82,6 +82,15 @@ pub async fn create_timetable_with_train_schedule_set(
     (timetable, train_schedule_set)
 }
 
+pub async fn create_timetable_with_simple_paced_train(
+    conn: &mut DbConnection,
+) -> (Timetable, models::TrainSchedule) {
+    let (timetable, train_schedule_set) = create_timetable_with_train_schedule_set(conn).await;
+    let train_schedule = create_simple_paced_train(conn, train_schedule_set.id).await;
+
+    (timetable, train_schedule)
+}
+
 pub async fn create_timetable(conn: &mut DbConnection) -> Timetable {
     Timetable::changeset()
         .create(conn)
