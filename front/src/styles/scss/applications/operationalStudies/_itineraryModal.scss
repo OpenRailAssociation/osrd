@@ -297,9 +297,9 @@
       height: var(--footer-height);
       min-height: var(--footer-height);
       display: flex;
-      justify-content: end;
+      justify-content: space-between;
       align-items: center;
-      padding-right: 34px;
+      padding-inline: 34px;
       margin-top: var(--footer-box-shadow-height);
       box-shadow: 0 calc(-1 * var(--footer-box-shadow-height)) 0 0 var(--black10);
     }

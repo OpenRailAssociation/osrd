@@ -406,6 +406,7 @@
     "itineraryModal": {
       "addLocationOnMap": "Add a location on the map",
       "alertInvalidOP": "At least one of the waypoints could not be recognized",
+      "cancel": "Cancel",
       "focusLocationOnMap": "Focus the map on this operational point",
       "frameAll": "Center on all path steps on map",
       "invalidOP": "Non recognized point : ",
