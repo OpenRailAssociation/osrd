@@ -135,8 +135,6 @@ const ItineraryModal = ({
       ? pathProperties
       : undefined;
 
-  const isNextDisabled = hasInvalidPathStepDisplay || !!pathfindingError;
-
   const markEditing = (stepId: string) => {
     editingStepIdRef.current = stepId;
     setActiveStepId(stepId);
@@ -288,8 +286,8 @@ const ItineraryModal = ({
   };
 
   const submitItinerary = () => {
-    if (locatedStepsCount >= 2) {
-      if (hasInvalidPathStep || pathfindingError) return;
+    if (locatedStepsCount < 2) {
+      return;
     }
 
     const updatedPathSteps = buildPathSteps(pathSteps, pathStepsMetadataById);
@@ -410,13 +408,7 @@ const ItineraryModal = ({
         </div>
         <div className="itinerary-modal-form-footer">
           <Button label={t('cancel')} variant="Cancel" size="medium" onClick={closeModal} />
-          <Button
-            label={t('next')}
-            variant="Primary"
-            size="medium"
-            onClick={submitItinerary}
-            isDisabled={isNextDisabled}
-          />
+          <Button label={t('next')} variant="Primary" size="medium" onClick={submitItinerary} />
         </div>
       </div>
       <div className="itinerary-modal-map">
