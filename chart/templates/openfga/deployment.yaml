@@ -72,6 +72,9 @@ spec:
             {{- with .Values.services.openfga.env | default dict }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
+          
+          resources:
+            {{- toYaml .Values.services.openfga.resources | nindent 12 }}
               
           {{- if not .Values.services.openfga.readinessProbe.disabled }}
           readinessProbe:
