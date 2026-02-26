@@ -63,6 +63,7 @@ const handleLabelOperation = async ({
         await handleUpdateTrainSchedule({
           netzgrafikDto,
           trainrun,
+          tags: ['labelIds'],
           trainScheduleSetId,
           infraId,
           state,
