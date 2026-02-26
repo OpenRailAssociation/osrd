@@ -6,7 +6,7 @@ use crate as editoast_models;
 #[derive(Debug, Clone, Model)]
 #[cfg_attr(test, derive(serde::Deserialize))]
 #[model(table = database::tables::train_schedule_exception)]
-#[model(gen(ops = cud, batch_ops = cd, list))]
+#[model(gen(ops = crud, batch_ops = cd, list))]
 pub struct TrainScheduleException {
     pub id: i64,
     pub key: Option<String>,

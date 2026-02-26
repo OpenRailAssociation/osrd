@@ -167,15 +167,16 @@ pub(in crate::views) async fn delete(
 #[cfg(test)]
 mod tests {
     use chrono::DateTime;
+    use editoast_models::TrainScheduleException;
+    use editoast_models::prelude::*;
+    use editoast_models::train_schedule_exception::TrainScheduleExceptionChangeset;
     use reqwest::StatusCode;
-    use schemas::TrainScheduleException;
     use schemas::TrainScheduleExceptionChangeGroups;
     use schemas::paced_train::StartTimeChangeGroup;
     use schemas::paced_train::TrainNameChangeGroup;
     use serde_json::json;
 
-    use crate::models::fixtures::create_simple_paced_train;
-    use crate::models::fixtures::create_timetable_with_train_schedule_set;
+    use crate::models::fixtures::create_timetable_with_simple_paced_train;
     use crate::views::test_app::TestAppBuilder;
     use crate::views::timetable::train_schedule_exceptions::TrainScheduleExceptionForm;
 
@@ -184,10 +185,9 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let (timetable, train_schedule_set) =
-            create_timetable_with_train_schedule_set(&mut pool.get_ok()).await;
-        let train_schedule =
-            create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
+        let mut conn = pool.get_ok();
+
+        let (timetable, train_schedule) = create_timetable_with_simple_paced_train(&mut conn).await;
 
         let train_schedule_exception_form_change_groups = TrainScheduleExceptionChangeGroups {
             train_name: Some(TrainNameChangeGroup {
@@ -212,7 +212,7 @@ mod tests {
             .post(format!("/timetable/{}/train_schedule_exception", timetable.id).as_str())
             .json(&json!(&train_schedule_exception_form));
 
-        let response: TrainScheduleException = app
+        let response: schemas::TrainScheduleException = app
             .fetch(request)
             .await
             .assert_status(StatusCode::OK)
@@ -225,5 +225,52 @@ mod tests {
         );
         assert_eq!(response.train_schedule_id, train_schedule.id);
         assert_eq!(response.timetable_id, timetable.id);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn train_schedule_exception_deleted() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        let mut conn = pool.get_ok();
+
+        let (timetable, train_schedule) = create_timetable_with_simple_paced_train(&mut conn).await;
+
+        let payload = TrainScheduleExceptionChangeGroups {
+            train_name: Some(TrainNameChangeGroup {
+                value: "To be deleted".to_string(),
+            }),
+            ..Default::default()
+        };
+
+        let changeset: TrainScheduleExceptionChangeset = TrainScheduleException::changeset()
+            .change_groups(payload)
+            .train_schedule_id(train_schedule.id)
+            .timetable_id(timetable.id);
+
+        let train_schedule_exception: TrainScheduleException = changeset
+            .create(&mut conn)
+            .await
+            .expect("Failed to create train schedule exception");
+
+        let exists =
+            TrainScheduleException::exists(&mut pool.get_ok(), train_schedule_exception.id)
+                .await
+                .expect("Failed to retrieve train schedule exception");
+        assert!(exists);
+
+        let request = app.post("/train_schedule_exceptions/delete").json(&json!({
+            "ids": [train_schedule_exception.id]
+        }));
+
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NO_CONTENT);
+
+        let exists =
+            TrainScheduleException::exists(&mut pool.get_ok(), train_schedule_exception.id)
+                .await
+                .expect("Failed to retrieve train schedule exception");
+        assert!(!exists);
     }
 }
