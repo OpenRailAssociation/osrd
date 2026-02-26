@@ -1,6 +1,5 @@
 use serde::Deserialize;
 use serde::Serialize;
-use serde_with::DefaultOnNull;
 use serde_with::serde_as;
 use serde_with::skip_serializing_none;
 use utoipa::ToSchema;
@@ -33,9 +32,6 @@ pub struct TrainScheduleException {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 #[cfg_attr(feature = "testing", derive(Default))]
 pub struct TrainScheduleExceptionChangeGroups {
-    #[serde[default]]
-    #[serde_as(as = "DefaultOnNull")]
-    pub disabled: bool,
     #[schema(nullable = false)]
     pub train_name: Option<TrainNameChangeGroup>,
     #[schema(nullable = false)]
