@@ -5,7 +5,6 @@ import com.google.common.collect.RangeSet
 import com.google.common.collect.TreeRangeSet
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonAdapter
-import com.squareup.moshi.JsonReader
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.conflicts.TrainRequirementsById
@@ -16,7 +15,6 @@ import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import java.time.Duration
 import java.time.Instant
 import java.time.ZonedDateTime
-import kotlin.io.path.Path
 import kotlin.math.pow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -31,7 +29,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import okio.IOException
-import okio.buffer
 import okio.source
 import org.slf4j.LoggerFactory
 
@@ -162,54 +159,6 @@ class TimetableDownloader(
             }
             STDCMTimetableData(zoneUses, detailedRequirements)
         }
-    }
-}
-
-class JsonTimetableProvider(val timetableDirectory: String) : TimetableProvider {
-    override fun getTimetableData(
-        infraId: String,
-        infra: RawInfra,
-        timetableId: TimetableId,
-    ): STDCMTimetableData {
-        val adapter: JsonAdapter<TrainRequirementsById> =
-            Moshi.Builder()
-                .addLast(UnitAdapterFactory())
-                .addLast(KotlinJsonAdapterFactory())
-                .build()
-                .adapter(TrainRequirementsById::class.java)
-        val filePath = Path("$timetableDirectory/$timetableId.json")
-        logger.info("Fetching timetable requirements at json file $filePath")
-
-        val source = filePath.source().buffer()
-        val jsonReader = JsonReader.of(source)
-        jsonReader.beginArray()
-        val zoneUses = mutableMapOf<ZoneId, RangeSet<Double>>()
-        val detailedRequirements =
-            mutableMapOf<ZoneId, MutableList<STDCMTimetableData.DetailedRequirement>>()
-        while (jsonReader.hasNext()) {
-            val train = adapter.fromJson(jsonReader)!!
-            for (rjsSpacingReq in train.spacingRequirements) {
-                val spacingReq =
-                    SpacingRequirement.fromRJSWithAddedTime(
-                        rjsSpacingReq,
-                        infra,
-                        train.startTime.durationSinceEpoch(),
-                    )
-                val set = zoneUses.computeIfAbsent(spacingReq.zone) { TreeRangeSet.create() }
-                set.add(Range.closedOpen(spacingReq.beginTime, spacingReq.endTime))
-                detailedRequirements
-                    .computeIfAbsent(spacingReq.zone) { mutableListOf() }
-                    .add(
-                        STDCMTimetableData.DetailedRequirement(
-                            spacingReq.beginTime,
-                            spacingReq.endTime,
-                            train.trainName,
-                        )
-                    )
-            }
-        }
-
-        return STDCMTimetableData(zoneUses, detailedRequirements)
     }
 }
 
