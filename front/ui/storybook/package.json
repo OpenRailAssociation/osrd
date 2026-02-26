@@ -7,7 +7,7 @@
     "@storybook/addon-links": "^10.2.6",
     "@storybook/addon-onboarding": "^10.2.6",
     "@storybook/react-vite": "^10.2.6",
-    "storybook": "^10.2.6",
+    "storybook": "^10.2.10",
     "storybook-addon-run-script": "^0.1.4",
     "vite": "^7.3.0",
     "vite-plugin-checker": "^0.12.0"
