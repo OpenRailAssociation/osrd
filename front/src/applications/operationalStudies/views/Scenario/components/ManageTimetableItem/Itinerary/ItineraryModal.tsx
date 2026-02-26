@@ -511,6 +511,7 @@ const ItineraryModal = ({
           </div>
         </div>
         <div className="itinerary-modal-form-footer">
+          <Button label={t('cancel')} variant="Cancel" size="medium" onClick={closeModal} />
           <Button
             label={t('next')}
             variant="Primary"
