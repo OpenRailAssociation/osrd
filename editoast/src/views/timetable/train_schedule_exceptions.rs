@@ -32,6 +32,9 @@ pub enum TrainScheduleExceptionError {
     #[error("{count} train schedule exception(s) could not be found")]
     #[editoast_error(status = 404)]
     BatchNotFound { count: usize },
+    #[error("Train schedule exception '{exception_id}' could not be found")]
+    #[editoast_error(status = 404)]
+    NotFound { exception_id: i64 },
     #[error("Timetable '{timetable_id}' not found")]
     #[editoast_error(status = 404)]
     TimetableNotFound { timetable_id: i64 },
@@ -51,6 +54,12 @@ pub(in crate::views) struct TimetableIdParam {
     pub id: i64,
 }
 
+#[derive(IntoParams, Deserialize)]
+pub(in crate::views) struct ExceptionIdParam {
+    /// An exception ID
+    pub id: i64,
+}
+
 #[derive(Debug, Deserialize, ToSchema)]
 pub(in crate::views) struct ExceptionIdsParam {
     ids: HashSet<i64>,
@@ -62,6 +71,16 @@ pub(in crate::views) struct TrainScheduleExceptionForm {
     pub occurrence_index: Option<i64>,
     pub disabled: bool,
     pub change_groups: TrainScheduleExceptionChangeGroups,
+}
+
+impl From<TrainScheduleExceptionForm> for TrainScheduleExceptionChangeset {
+    fn from(train_schedule_exception_form: TrainScheduleExceptionForm) -> Self {
+        editoast_models::TrainScheduleException::changeset()
+            .train_schedule_id(train_schedule_exception_form.train_schedule_id)
+            .occurrence_index(train_schedule_exception_form.occurrence_index)
+            .disabled(train_schedule_exception_form.disabled)
+            .change_groups(train_schedule_exception_form.change_groups)
+    }
 }
 
 /// Create a train schedule exception
@@ -113,13 +132,9 @@ pub(in crate::views) async fn create_train_schedule_exception(
     }
 
     let train_schedule_exception_changeset: TrainScheduleExceptionChangeset =
-        editoast_models::TrainScheduleException::changeset()
-            .train_schedule_id(train_schedule_exception_form.train_schedule_id)
-            .timetable_id(timetable_id)
-            .occurrence_index(train_schedule_exception_form.occurrence_index)
-            .disabled(train_schedule_exception_form.disabled)
-            .change_groups(train_schedule_exception_form.change_groups);
-
+        train_schedule_exception_form.into();
+    let train_schedule_exception_changeset =
+        train_schedule_exception_changeset.timetable_id(timetable_id);
     let train_schedule_exception: TrainScheduleException = train_schedule_exception_changeset
         .create(conn)
         .await?
@@ -164,10 +179,63 @@ pub(in crate::views) async fn delete(
     Ok(StatusCode::NO_CONTENT)
 }
 
+/// Update a train schedule exception
+#[editoast_derive::route]
+#[utoipa::path(
+    put, path = "",
+    tags = ["train_schedule_exceptions"],
+    params(ExceptionIdParam),
+    request_body = inline(TrainScheduleExceptionForm),
+    responses(
+        (status = 204, description = "The train schedule exception has been updated")
+    )
+)]
+pub(in crate::views) async fn update(
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    Extension(auth): AuthenticationExt,
+    Path(ExceptionIdParam { id: exception_id }): Path<ExceptionIdParam>,
+    Json(train_schedule_exception_form): Json<TrainScheduleExceptionForm>,
+) -> Result<impl IntoResponse> {
+    let authorized = auth
+        .check_roles([authz::Role::OperationalStudies].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    let conn = &mut db_pool.get().await?;
+
+    let train_schedule_id = train_schedule_exception_form.train_schedule_id;
+
+    let train_schedule = models::TrainSchedule::retrieve_or_fail(
+        conn.clone(),
+        train_schedule_exception_form.train_schedule_id,
+        || TrainScheduleExceptionError::TrainScheduleNotFound { train_schedule_id },
+    )
+    .await?;
+
+    if !train_schedule.is_paced() {
+        return Err(TrainScheduleExceptionError::NotPacedTrain { train_schedule_id }.into());
+    }
+
+    let changeset: TrainScheduleExceptionChangeset = train_schedule_exception_form.into();
+
+    changeset
+        .update_or_fail(conn, exception_id, || {
+            TrainScheduleExceptionError::NotFound { exception_id }
+        })
+        .await?;
+
+    Ok(axum::http::StatusCode::NO_CONTENT)
+}
+
 #[cfg(test)]
 mod tests {
     use chrono::DateTime;
+    use editoast_models;
     use editoast_models::TrainScheduleException;
+    use editoast_models::prelude::Retrieve;
     use editoast_models::prelude::*;
     use editoast_models::train_schedule_exception::TrainScheduleExceptionChangeset;
     use reqwest::StatusCode;
@@ -177,6 +245,7 @@ mod tests {
     use serde_json::json;
 
     use crate::models::fixtures::create_timetable_with_simple_paced_train;
+    use crate::models::fixtures::create_train_schedule_exception;
     use crate::views::test_app::TestAppBuilder;
     use crate::views::timetable::train_schedule_exceptions::TrainScheduleExceptionForm;
 
@@ -272,5 +341,61 @@ mod tests {
                 .await
                 .expect("Failed to retrieve train schedule exception");
         assert!(!exists);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn train_schedule_exception_update() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        let (timetable, train_schedule) =
+            create_timetable_with_simple_paced_train(&mut pool.get_ok()).await;
+
+        let train_schedule_exception = create_train_schedule_exception(
+            &mut pool.get_ok(),
+            timetable.id,
+            train_schedule.id,
+            Some(1),
+        )
+        .await;
+
+        let train_schedule_exeption_form_change_groups = TrainScheduleExceptionChangeGroups {
+            train_name: Some(TrainNameChangeGroup {
+                value: "Modified".to_string(),
+            }),
+            ..Default::default()
+        };
+
+        let train_schedule_exeption_form: TrainScheduleExceptionForm = TrainScheduleExceptionForm {
+            train_schedule_id: train_schedule.id,
+            occurrence_index: Some(2),
+            disabled: false,
+            change_groups: train_schedule_exeption_form_change_groups.clone(),
+        };
+
+        // Update train schedule exception
+        let request = app
+            .put(format!("/train_schedule_exception/{}", train_schedule_exception.id).as_str())
+            .json(&json!(&train_schedule_exeption_form));
+
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NO_CONTENT);
+
+        let updated_exception = editoast_models::TrainScheduleException::retrieve(
+            pool.get_ok(),
+            train_schedule_exception.id,
+        )
+        .await
+        .expect("Failed to retrieve exception")
+        .expect("Retrieved exception is absent");
+
+        assert_eq!(updated_exception.occurrence_index, Some(2));
+        assert_eq!(
+            &updated_exception.change_groups,
+            &train_schedule_exeption_form_change_groups
+        );
+        assert_eq!(updated_exception.train_schedule_id, train_schedule.id);
+        assert_eq!(updated_exception.timetable_id, timetable.id);
     }
 }

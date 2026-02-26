@@ -260,6 +260,9 @@ fn service_router() -> router::DocumentedRouter {
                 "/similar_trains",
                 post!(timetable::similar_trains::similar_trains),
             )
+            .nests("/train_schedule_exception", |path| {
+                path.route("/{id}", put!(timetable::train_schedule_exceptions::update))
+            })
             .nests("/paced_train", |path| {
                 path.route("/", delete!(timetable::paced_train::delete))
                     .route(

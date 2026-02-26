@@ -307,6 +307,7 @@
     "train_schedule_exception": {
       "BatchNotFound": "'{{count}}' train schedule exception(s) could not be found",
       "Database": "Internal error (database)",
+      "NotFound": "Train schedule exception '{{exception_id}}' could not be found",
       "NotPacedTrain": "Train schedule '{{train_schedule_id}}' is not a paced train",
       "TimetableNotFound": "Timetable '{{timetable_id}}' could not be found",
       "TrainScheduleNotFound": "Train schedule '{{train_schedule_id}}' could not be found"
