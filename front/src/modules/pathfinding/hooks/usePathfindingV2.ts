@@ -116,6 +116,7 @@ const usePathfindingV2 = () => {
 
       if (hasInvalidPathItems) {
         setPathfindingError(t('missingPathSteps'));
+        setPathProperties(undefined);
         return;
       }
 
@@ -131,6 +132,7 @@ const usePathfindingV2 = () => {
         error = t(`pathfindingErrors.${pathfindingResult.error_type}`);
       }
       setPathfindingError(error);
+      setPathProperties(undefined);
     },
     [infraId]
   );
