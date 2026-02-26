@@ -70,7 +70,8 @@ spec:
             {{- with .Values.services.editoast.env | default dict }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
-
+          resources:
+            {{- toYaml .Values.services.editoast.resources | nindent 12 }}
           volumeMounts:
             - name: config
               mountPath: /init-vol/script.sh
