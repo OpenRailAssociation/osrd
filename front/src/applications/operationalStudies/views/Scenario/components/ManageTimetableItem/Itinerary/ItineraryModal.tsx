@@ -203,6 +203,7 @@ const ItineraryModal = ({
           acc.push(...computePathStepCoordinates(pathStepMetadata));
           return acc;
         }, []);
+      if (allMarkersCoordinates.length === 0) return;
       const box = bbox({
         type: 'MultiPoint',
         coordinates: allMarkersCoordinates,
