@@ -35,6 +35,7 @@ type BuildTableRowParams = {
   invalidPathStep?: boolean;
   scheduleNotHonored?: boolean;
   marginNotHonored?: boolean;
+  isPathStep?: boolean;
 };
 
 const buildTableRow = ({
@@ -49,6 +50,7 @@ const buildTableRow = ({
   invalidPathStep,
   scheduleNotHonored,
   marginNotHonored,
+  isPathStep,
 }: BuildTableRowParams): TimesStopsRowNew => {
   const requestedArrival = schedule?.arrival
     ? new Date(startDate.getTime() + Duration.parse(schedule.arrival).ms)
@@ -87,6 +89,7 @@ const buildTableRow = ({
     invalidPathStep,
     scheduleNotHonored,
     marginNotHonored,
+    isPathStep,
   };
 };
 
@@ -177,6 +180,7 @@ const useTimesStopsTableData = (
           invalidPathStep: !matchingOp,
           scheduleNotHonored,
           marginNotHonored,
+          isPathStep: true,
         });
 
         return [pathStep.id, row];
@@ -233,6 +237,7 @@ const useTimesStopsTableData = (
               trackName,
               startDate,
               computedArrival,
+              isPathStep: false,
             })
           );
         }
