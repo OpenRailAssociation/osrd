@@ -227,22 +227,18 @@ fn find_track_occupancy_for_operational_point_with_context<'a>(
         .and_then(|item| item.stop_for)
         .unwrap_or_default();
 
-    if let Some(local_track_name) = get_local_track_name(
-        &context,
-        operational_point_track_offsets,
-        op_cache,
-        train_schedule,
-    ) {
-        return vec![TrackOccupancy {
-            local_track_name: Some(local_track_name),
-            time_window: TimeWindow {
-                time_begin: train_schedule.start_time + Duration::milliseconds(arrival_time),
-                duration: stop_duration,
-            },
-        }];
-    }
-
-    vec![]
+    vec![TrackOccupancy {
+        local_track_name: get_local_track_name(
+            &context,
+            operational_point_track_offsets,
+            op_cache,
+            train_schedule,
+        ),
+        time_window: TimeWindow {
+            time_begin: train_schedule.start_time + Duration::milliseconds(arrival_time),
+            duration: stop_duration,
+        },
+    }]
 }
 
 #[cfg(test)]
@@ -275,7 +271,7 @@ pub mod tests {
     #[case("op_2", 1000, 300000, true, true, true)]
     // Edge cases: missing simulation or pathfinding
     #[case("op_1", 0, 0, false, true, true)] // op_1 at index 0 works without simulation
-    #[case("op_1", 0, 0, false, false, false)] // No pathfinding fails (no local_track_name)
+    #[case("op_1", 0, 0, false, false, true)] // op_1 at index 0 works without pathfinding
     #[case("op_2", 1000, 300000, false, true, false)] // No simulation fails (no arrival_time)
     #[case("op_3", 5000, 200000, false, false, true)] // op_3 works without simulation/pathfinding (explicit arrival + local_track_name)
     fn test_find_track_occupancy_with_matching_path_item(
