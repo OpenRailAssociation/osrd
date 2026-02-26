@@ -6382,7 +6382,6 @@ components:
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorExceptionNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorNotFound'
-      - $ref: '#/components/schemas/EditoastTrainScheduleErrorOperationalPointNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorPathfindingFailed'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorRollingStockNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorSimulationFailed'
@@ -8567,30 +8566,6 @@ components:
           type: string
           enum:
           - editoast:paced_train:NotFound
-    EditoastTrainScheduleErrorOperationalPointNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - reference
-          properties:
-            reference:
-              type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:paced_train:OperationalPointNotFound
     EditoastTrainScheduleErrorPathfindingFailed:
       type: object
       required:

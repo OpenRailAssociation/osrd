@@ -9,6 +9,7 @@ use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use axum::response::IntoResponse;
+use chrono::Duration;
 use core_client::AsCoreRequest;
 use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::signal_projection::SignalUpdate;
@@ -81,11 +82,6 @@ enum TrainScheduleError {
     #[error("Exception '{exception_key}', could not be found")]
     #[editoast_error(status = 404)]
     ExceptionNotFound { exception_key: String },
-    #[error("Operational point '{reference}' could not be found")]
-    #[editoast_error(status = 404)]
-    OperationalPointNotFound {
-        reference: OperationalPointReference,
-    },
     #[error("Rolling stock '{rolling_stock_name}', could not be found")]
     #[editoast_error(status = 404)]
     RollingStockNotFound { rolling_stock_name: String },
@@ -1269,18 +1265,11 @@ pub(in crate::views) async fn track_occupancy(
         })
         .await?;
 
-    // Get the operational point
-    let operational_point =
-        get_operational_point(db_pool.clone(), infra_id, operational_point_reference).await?;
-
     // Collect all occurrences from all paced trains using iter_occurrences()
     let (train_ids, trains): (Vec<_>, Vec<_>) = train_schedules
         .iter()
         .flat_map(|train_schedule| train_schedule.iter_occurrences())
         .unzip();
-
-    // Get track positions at the operational point
-    let operational_point_track_offsets = operational_point.schema.track_offsets();
 
     let path_items = trains
         .iter()
@@ -1288,153 +1277,158 @@ pub(in crate::views) async fn track_occupancy(
         .map(|p| &p.location)
         .collect_vec();
 
-    let op_cache =
+    let mut op_cache =
         OperationalPointCache::load_path_items(db_pool.get().await?, infra_id, &path_items).await?;
 
-    // For each occurrence + simulation result, compute track occupancies
-    let all_occupancies = if use_simulation {
-        let simulations_result = train_simulation_batch(
-            conn,
-            valkey_client,
-            core_client,
-            &trains,
-            &infra,
-            electrical_profile_set_id,
-            config.app_version.as_deref(),
-        )
-        .await?;
+    // If the OP is not in the op_cache (e.g. a passage point not declared as a path item),
+    // load it from the DB and merge it into op_cache.
+    if op_cache
+        .get_reference(operational_point_reference.clone())?
+        .is_empty()
+    {
+        let op_location =
+            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
+                operational_point: operational_point_reference.clone(),
+                local_track_name: None,
+            });
+        let current_op =
+            OperationalPointCache::load_path_items(db_pool.get().await?, infra_id, &[&op_location])
+                .await?;
+        op_cache.extend(current_op);
+    }
 
-        izip!(train_ids, trains, simulations_result)
-            .flat_map(|(train_id, train, (simulation, pathfinding))| {
-                track_occupancy::find_track_occupancy_for_operational_point(
-                    &operational_point.obj_id,
-                    &operational_point_track_offsets,
-                    &op_cache,
-                    &simulation,
-                    &pathfinding,
-                    &train,
+    // Get the operational point (found either in path items or loaded from DB above)
+    let operational_point = op_cache
+        .get_reference(operational_point_reference.clone())?
+        .into_iter()
+        .next();
+
+    let results = match operational_point {
+        Some(operational_point) => {
+            // Get track positions at the operational point
+            let operational_point_track_offsets = operational_point.track_offsets();
+
+            // For each occurrence + simulation result, compute track occupancies
+            let all_occupancies: Vec<_> = if use_simulation {
+                let simulations_result = train_simulation_batch(
+                    conn,
+                    valkey_client,
+                    core_client,
+                    &trains,
+                    &infra,
+                    electrical_profile_set_id,
+                    config.app_version.as_deref(),
                 )
-                .into_iter()
-                .map(
-                    |track_occupancy::TrackOccupancy {
-                         local_track_name,
-                         time_window,
-                     }| {
-                        (
-                            local_track_name,
-                            TrackOccupancy {
-                                train_id: train_id.clone(),
-                                time_window,
+                .await?;
+
+                izip!(train_ids, trains, simulations_result)
+                    .flat_map(|(train_id, train, (simulation, pathfinding))| {
+                        track_occupancy::find_track_occupancy_for_operational_point(
+                            &operational_point.id,
+                            &operational_point_track_offsets,
+                            &op_cache,
+                            &simulation,
+                            &pathfinding,
+                            &train,
+                        )
+                        .into_iter()
+                        .map(
+                            move |track_occupancy::TrackOccupancy {
+                                      local_track_name,
+                                      time_window,
+                                  }| {
+                                (
+                                    local_track_name,
+                                    TrackOccupancy {
+                                        train_id: train_id.clone(),
+                                        time_window,
+                                    },
+                                )
                             },
                         )
-                    },
-                )
-                .collect_vec()
-            })
-            .collect_vec()
-    } else {
-        izip!(train_ids, trains)
+                    })
+                    .collect()
+            } else {
+                izip!(train_ids, trains)
+                    .flat_map(|(train_id, train_schedule)| {
+                        track_occupancy::find_track_occupancy_for_operational_point_without_simulation(
+                            &operational_point.id,
+                            &operational_point_track_offsets,
+                            &op_cache,
+                            &train_schedule,
+                        )
+                        .into_iter()
+                        .map(move |track_occupancy::TrackOccupancy { local_track_name, time_window }| {
+                            (local_track_name, TrackOccupancy { train_id: train_id.clone(), time_window })
+                        })
+                    })
+                    .collect()
+            };
+
+            // Group occupancies by local_track_name
+            all_occupancies
+                .into_iter()
+                .into_group_map()
+                .into_iter()
+                .map(|(local_track_name, trains)| TrackSectionOccupancy {
+                    local_track_name,
+                    trains,
+                })
+                .collect()
+        }
+        None => izip!(train_ids, trains)
             .flat_map(|(train_id, train_schedule)| {
-                track_occupancy::find_track_occupancy_for_operational_point_without_simulation(
-                    &operational_point.obj_id,
-                    &operational_point_track_offsets,
-                    &op_cache,
-                    &train_schedule,
-                )
-                .into_iter()
-                .map(
-                    |track_occupancy::TrackOccupancy {
-                         local_track_name,
-                         time_window,
-                     }| {
-                        (
-                            local_track_name,
-                            TrackOccupancy {
-                                train_id: train_id.clone(),
-                                time_window,
-                            },
+                train_schedule
+                    .path
+                    .iter()
+                    .filter_map(|path_item| {
+                        find_track_occupancy_without_known_operational_point(
+                            path_item,
+                            &train_schedule,
+                            &train_id,
+                            &operational_point_reference,
                         )
-                    },
-                )
-                .collect_vec()
+                    })
+                    .collect_vec()
             })
-            .collect_vec()
+            .collect(),
     };
-
-    // Group occupancies by local_track_name
-    let results: Vec<TrackSectionOccupancy> = all_occupancies
-        .into_iter()
-        .into_group_map()
-        .into_iter()
-        .map(|(local_track_name, trains)| TrackSectionOccupancy {
-            local_track_name,
-            trains,
-        })
-        .collect();
 
     Ok(Json(results))
 }
 
-async fn get_operational_point(
-    db_pool: Arc<DbConnectionPoolV2>,
-    infra_id: i64,
-    operational_point_reference: OperationalPointReference,
-) -> Result<models::OperationalPointModel> {
-    match &operational_point_reference {
-        OperationalPointReference::Id { operational_point } => {
-            models::OperationalPointModel::retrieve_or_fail(
-                db_pool.get().await?,
-                (infra_id, operational_point.to_string()),
-                || {
-                    TrainScheduleError::OperationalPointNotFound {
-                        reference: operational_point_reference.clone(),
-                    }
-                    .into()
-                },
-            )
-            .await
-        }
-        OperationalPointReference::Trigram {
-            trigram,
-            secondary_code,
-        } => models::OperationalPointModel::retrieve_from_trigrams(
-            &mut db_pool.get().await?,
-            infra_id,
-            &[trigram.to_string()],
-        )
-        .await
-        .map_err(|e| TrainScheduleError::Database(e.into()))?
-        .into_iter()
-        .find(|op| {
-            op.schema.extensions.sncf.as_ref().map(|s| s.ch.as_str()) == secondary_code.as_deref()
-        })
-        .ok_or_else(|| {
-            TrainScheduleError::OperationalPointNotFound {
-                reference: operational_point_reference.clone(),
-            }
-            .into()
-        }),
-        OperationalPointReference::Uic {
-            uic,
-            secondary_code,
-        } => models::OperationalPointModel::retrieve_from_uic(
-            &mut db_pool.get().await?,
-            infra_id,
-            &[*uic],
-        )
-        .await
-        .map_err(|e| TrainScheduleError::Database(e.into()))?
-        .into_iter()
-        .find(|op| {
-            op.schema.extensions.sncf.as_ref().map(|s| s.ch.as_str()) == secondary_code.as_deref()
-        })
-        .ok_or_else(|| {
-            TrainScheduleError::OperationalPointNotFound {
-                reference: operational_point_reference.clone(),
-            }
-            .into()
-        }),
+fn find_track_occupancy_without_known_operational_point(
+    path_item: &schemas::train_schedule::PathItem,
+    train_schedule: &schemas::TrainOccurrence,
+    train_id: &OccurrenceId,
+    operational_point_reference: &OperationalPointReference,
+) -> Option<TrackSectionOccupancy> {
+    let PathItemLocation::OperationalPointPartReference(ref op_ref) = path_item.location else {
+        return None;
+    };
+    if op_ref.operational_point != *operational_point_reference {
+        return None;
     }
+    let time_window = train_schedule
+        .schedule
+        .iter()
+        .find(|ts| ts.at == path_item.id)
+        .and_then(|ts| {
+            let duration = ts.stop_for.unwrap_or_default();
+            let arrival_time = ts.arrival?.num_milliseconds();
+            let time_begin = train_schedule.start_time + Duration::milliseconds(arrival_time);
+            Some(TimeWindow {
+                time_begin,
+                duration,
+            })
+        })?;
+    Some(TrackSectionOccupancy {
+        local_track_name: op_ref.local_track_name.clone(),
+        trains: vec![TrackOccupancy {
+            train_id: train_id.clone(),
+            time_window,
+        }],
+    })
 }
 
 #[cfg_attr(test, derive(serde::Serialize))]

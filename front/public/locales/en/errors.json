@@ -153,9 +153,8 @@
       "Database": "Internal error (database)",
       "ExceptionNotFound": "Exception '{{exception_key}}' could not be found",
       "InfraNotFound": "Infrastructure '{{infra_id}}' could not be found",
-      "NotFound": "Train schedule '{{train_schedule_id}}' could not be found",
-      "OperationalPointNotFound": "Operational point '{{reference}}' could not be found",
-      "PathfindingFailed": "Pathfinding failed for train schedule '{{train_schedule_id}}'",
+      "NotFound": "Paced train '{{train_schedule_id}}' could not be found",
+      "PathfindingFailed": "Pathfinding failed for paced train '{{train_schedule_id}}'",
       "RollingStockNotFound": "Rolling Stock '{{rolling_stock_name}}' could not be found",
       "SimulationFailed": "Simulation failed for train schedule '{{train_schedule_id}}'",
       "TrainScheduleSetNotFound": "Train schedule set '{{train_schedule_set_id}}' could not be found"
