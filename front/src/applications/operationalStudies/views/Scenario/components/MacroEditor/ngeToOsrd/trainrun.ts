@@ -559,6 +559,7 @@ const handleDeleteTrainSchedule = async (
 export const handleUpdateTrainSchedule = async ({
   netzgrafikDto,
   trainrun,
+  tags,
   trainScheduleSetId,
   infraId,
   state,
@@ -568,6 +569,7 @@ export const handleUpdateTrainSchedule = async ({
 }: {
   netzgrafikDto: NetzgrafikDto;
   trainrun: TrainrunDto;
+  tags: TrainrunUpdateOperation['tags'];
   infraId: number;
   trainScheduleSetId: number;
   state: MacroEditorState;
@@ -590,7 +592,7 @@ export const handleUpdateTrainSchedule = async ({
     netzgrafikDto,
     getDefaultPacedTrainTimeWindow(state.timetableType)
   );
-  const forwardPathAndSchedule = generatePathAndSchedule(
+  const { path: forwardPath, ...forwardSchedule } = generatePathAndSchedule(
     trainrunSections,
     netzgrafikDto.nodes,
     baseStartTime,
@@ -598,7 +600,7 @@ export const handleUpdateTrainSchedule = async ({
     paced,
     state
   );
-  await populateSecondaryCodesInPath(forwardPathAndSchedule.path, infraId, dispatch);
+  await populateSecondaryCodesInPath(forwardPath, infraId, dispatch);
 
   const { id: _id, ...trainScheduleBase } = oldForwardTrainSchedule;
 
@@ -609,14 +611,18 @@ export const handleUpdateTrainSchedule = async ({
 
   const newForwardTrainBase: Omit<TrainScheduleResponse, 'id'> = {
     ...trainScheduleBase,
-    train_name: trainrun.name,
-    labels,
-    // Reset margins and power restrictions because they contain references to path items
-    margins: { boundaries: [], values: ['0%'] },
-    power_restrictions: undefined,
-    paced,
-    category,
-    ...forwardPathAndSchedule,
+    ...(tags.includes('name') && { train_name: trainrun.name }),
+    ...(tags.includes('labelIds') && { labels }),
+    // Reset margins and power restrictions if the path changed because they contain references to path items
+    ...(tags.includes('nodes') && {
+      path: forwardPath,
+      margins: { boundaries: [], values: ['0%'] },
+      power_restrictions: undefined,
+      ...forwardSchedule,
+    }),
+    ...(tags.includes('times') && { ...forwardSchedule }),
+    ...(tags.includes('frequencyId') && { paced }),
+    ...(tags.includes('categoryId') && { category }),
   };
 
   if (paced && oldForwardTrainSchedule.paced) {
@@ -648,7 +654,7 @@ export const handleUpdateTrainSchedule = async ({
     return;
   }
 
-  const returnPathAndSchedule = generatePathAndSchedule(
+  const { path: returnPath, ...returnSchedule } = generatePathAndSchedule(
     trainrunSections,
     netzgrafikDto.nodes,
     baseStartTime,
@@ -657,7 +663,7 @@ export const handleUpdateTrainSchedule = async ({
     state
   );
 
-  await populateSecondaryCodesInPath(returnPathAndSchedule.path, infraId, dispatch);
+  await populateSecondaryCodesInPath(returnPath, infraId, dispatch);
 
   let newReturnTrainSchedule: TrainScheduleResponse;
   const returnPaced: TrainSchedule['paced'] = paced ? { ...paced, exceptions: [] } : null;
@@ -672,14 +678,21 @@ export const handleUpdateTrainSchedule = async ({
     const { id: _return_id, ...oldReturnTrainBase } = oldReturnTrainSchedule;
     const newReturnTrainBase: Omit<TrainScheduleResponse, 'id'> = {
       ...oldReturnTrainBase,
-      train_name: trainrun.name,
-      labels,
-      // Reset margins and power restrictions because they contain references to path items
-      margins: { boundaries: [], values: ['0%'] },
-      power_restrictions: undefined,
-      paced: returnPaced,
-      category,
-      ...returnPathAndSchedule,
+      ...(tags.includes('name') && { train_name: trainrun.name }),
+      ...(tags.includes('labelIds') && { labels }),
+      // Reset margins and power restrictions if the path changed because they contain references to path items
+      ...(tags.includes('nodes') && {
+        path: returnPath,
+        margins: { boundaries: [], values: ['0%'] },
+        power_restrictions: undefined,
+        ...returnSchedule,
+      }),
+      ...(tags.includes('times') && {
+        schedule: returnSchedule.schedule,
+        start_time: returnSchedule.start_time,
+      }),
+      ...(tags.includes('frequencyId') && { paced: returnPaced }),
+      ...(tags.includes('categoryId') && { category }),
     };
 
     if (returnPaced && oldReturnTrainSchedule.paced) {
@@ -709,7 +722,8 @@ export const handleUpdateTrainSchedule = async ({
 
     const returnTrainSchedule: TrainSchedule = {
       ...trainScheduleWithoutTrainScheduleSetId,
-      ...returnPathAndSchedule,
+      ...returnSchedule,
+      path: returnPath,
       paced: returnPaced,
     };
 
@@ -767,6 +781,7 @@ export const handleTrainrunOperation = async ({
       await handleUpdateTrainSchedule({
         netzgrafikDto,
         trainrun,
+        tags: operation.tags,
         trainScheduleSetId,
         infraId,
         dispatch,
@@ -821,6 +836,7 @@ export const updateTrainrunsByNode = async ({
     await handleUpdateTrainSchedule({
       netzgrafikDto,
       trainrun,
+      tags: ['nodes'],
       trainScheduleSetId,
       infraId,
       dispatch,
