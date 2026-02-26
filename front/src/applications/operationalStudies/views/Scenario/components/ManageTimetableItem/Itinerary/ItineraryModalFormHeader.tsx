@@ -1,6 +1,12 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-import { ComboBox, Input, Select, useDefaultComboBox } from '@osrd-project/ui-core';
+import {
+  ComboBox,
+  Input,
+  Select,
+  useDefaultComboBox,
+  type StatusWithMessage,
+} from '@osrd-project/ui-core';
 import { isEqual } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -19,7 +25,6 @@ import useCategoryOptions from 'modules/rollingStock/hooks/useCategoryOptions';
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
 import { updateCategory, updateName } from 'reducers/osrdconf/operationalStudiesConf';
 import {
-  getName,
   getOperationalStudiesRollingStockID,
   getOperationalStudiesSpeedLimitByTag,
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
@@ -31,6 +36,9 @@ type ItineraryModalFormHeaderProps = {
   category: TrainCategory | null;
   currentSubCategory?: SubCategory;
   categoryColors: CategoryColors;
+  submitAttempted?: boolean;
+  name?: string;
+  isNameEmpty?: boolean;
 };
 
 const ItineraryModalFormHeader = ({
@@ -38,6 +46,9 @@ const ItineraryModalFormHeader = ({
   category,
   currentSubCategory,
   categoryColors,
+  submitAttempted,
+  name,
+  isNameEmpty,
 }: ItineraryModalFormHeaderProps) => {
   const dispatch = useAppDispatch();
   const { updateSpeedLimitByTag, updateRollingStockID } = useOsrdConfActions();
@@ -88,10 +99,21 @@ const ItineraryModalFormHeader = ({
   const speedLimitTags = useSpeedLimitTags();
 
   // Timetable item name
-  const name = useSelector(getName);
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     dispatch(updateName(e.target.value));
   };
+  // Timetable item name error
+  const [nameFocused, setNameFocused] = useState(false);
+
+  const nameError: StatusWithMessage | undefined = useMemo(() => {
+    const shouldShowError = (nameFocused || submitAttempted) && isNameEmpty;
+    if (!shouldShowError) return undefined;
+
+    return {
+      status: 'error',
+      message: t('errorMessages.requiredField'),
+    };
+  }, [nameFocused, submitAttempted, isNameEmpty, t]);
 
   // Category warning
   const categoryWarningMessage = useMemo(() => {
@@ -168,6 +190,8 @@ const ItineraryModalFormHeader = ({
             value={name}
             title={name}
             onChange={handleNameChange}
+            onBlur={() => setNameFocused(true)}
+            statusWithMessage={nameError}
           />
         </div>
       </div>
