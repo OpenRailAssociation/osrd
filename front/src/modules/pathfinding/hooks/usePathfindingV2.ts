@@ -81,6 +81,7 @@ const usePathfindingV2 = () => {
         const pathPropertiesResult = await postPathProperties(pathPropertiesParams).unwrap();
 
         setPathProperties({ ...pathPropertiesResult, length: pathfindingResult.length });
+        setPathfindingError('');
         return;
       }
 
