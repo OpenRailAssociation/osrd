@@ -144,7 +144,7 @@ const SimulationResultMap = ({
           const coordinates = correspondingTrack
             ? getPointOnTrackCoordinates(
                 correspondingTrack.geo,
-                mToMm(correspondingTrack.length),
+                correspondingTrack.length,
                 matchedOp.part.position
               )
             : null;
