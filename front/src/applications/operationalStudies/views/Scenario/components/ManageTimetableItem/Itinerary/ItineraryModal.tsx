@@ -378,7 +378,6 @@ const ItineraryModal = ({
 
   useEffect(() => {
     if (locatedStepsCount < 2 || pathStepsMetadataById.size < 2) return;
-    if (hasInvalidPathStep) return;
 
     frameAllPathSteps();
   }, [pathStepsMetadataById, hasInvalidPathStep]);
