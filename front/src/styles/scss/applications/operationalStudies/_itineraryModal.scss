@@ -103,6 +103,11 @@
           label {
             margin-bottom: 0;
           }
+          .ui-status-message-wrapper-tooltip {
+            width: 100%;
+            left: 1px;
+            transform: translateY(7px);
+          }
         }
       }
     }

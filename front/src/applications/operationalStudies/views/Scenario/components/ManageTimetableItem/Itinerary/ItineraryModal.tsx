@@ -23,6 +23,7 @@ import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import { updatePathSteps } from 'reducers/osrdconf/operationalStudiesConf';
 import {
   getCategory,
+  getName,
   getOperationalStudiesRollingStockID,
   getOperationalStudiesSpeedLimitByTag,
   getPathSteps,
@@ -214,6 +215,12 @@ const ItineraryModal = ({
     }
   };
 
+  // RS name
+  const name = useSelector(getName);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+
+  const isNameEmpty = !name || name.trim() === '';
+
   useEffect(() => {
     if (
       displayTimetableItemManagement === MANAGE_TIMETABLE_ITEM_TYPES.edit ||
@@ -347,6 +354,8 @@ const ItineraryModal = ({
   };
 
   const submitItinerary = () => {
+    setSubmitAttempted(true);
+    if (isNameEmpty) return;
     if (locatedStepsCount < 2) {
       return;
     }
@@ -392,6 +401,9 @@ const ItineraryModal = ({
             category={category}
             currentSubCategory={currentSubCategory}
             categoryColors={categoryColors}
+            submitAttempted={submitAttempted}
+            name={name}
+            isNameEmpty={isNameEmpty}
           />
         </div>
         <div className="itinerary-modal-form-body">
