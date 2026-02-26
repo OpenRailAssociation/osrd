@@ -4429,6 +4429,45 @@ paths:
       responses:
         '204':
           description: No content when successful
+  /train_schedule_exception/{id}:
+    put:
+      tags:
+      - train_schedule_exceptions
+      summary: Update a train schedule exception
+      parameters:
+      - name: id
+        in: path
+        description: An exception ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - train_schedule_id
+              - disabled
+              - change_groups
+              properties:
+                change_groups:
+                  $ref: '#/components/schemas/TrainScheduleExceptionChangeGroups'
+                disabled:
+                  type: boolean
+                occurrence_index:
+                  type:
+                  - integer
+                  - 'null'
+                  format: int64
+                train_schedule_id:
+                  type: integer
+                  format: int64
+        required: true
+      responses:
+        '204':
+          description: The train schedule exception has been updated
   /train_schedule_exceptions/delete:
     post:
       tags:
@@ -6224,6 +6263,7 @@ components:
       - $ref: '#/components/schemas/EditoastTowedRollingStockErrorIsLocked'
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorBatchNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorDatabase'
+      - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorNotPacedTrain'
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorTimetableNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorTrainScheduleNotFound'
@@ -8564,6 +8604,30 @@ components:
           type: string
           enum:
           - editoast:train_schedule_exception:Database
+    EditoastTrainScheduleExceptionErrorNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - exception_id
+          properties:
+            exception_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:train_schedule_exception:NotFound
     EditoastTrainScheduleExceptionErrorNotPacedTrain:
       type: object
       required:

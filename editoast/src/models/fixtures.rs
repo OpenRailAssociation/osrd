@@ -19,6 +19,7 @@ use editoast_models::study::Study;
 use editoast_models::tags::Tags;
 use editoast_models::timetable::Timetable;
 use editoast_models::timetable_train_schedule_set::TimetableTrainScheduleSet;
+use editoast_models::train_schedule_exception::TrainScheduleException;
 use schemas::TrainScheduleExceptionChangeGroups;
 use schemas::fixtures::simple_created_exception_with_change_groups;
 use schemas::fixtures::simple_modified_exception_with_change_groups;
@@ -279,6 +280,28 @@ pub async fn create_paced_train_with_exceptions(
         .create(conn)
         .await
         .expect("Failed to create paced train")
+}
+
+pub async fn create_train_schedule_exception(
+    conn: &mut DbConnection,
+    timetable_id: i64,
+    train_schedule_id: i64,
+    occurrence_index: Option<i64>,
+) -> TrainScheduleException {
+    TrainScheduleException::changeset()
+        .timetable_id(timetable_id)
+        .train_schedule_id(train_schedule_id)
+        .occurrence_index(occurrence_index)
+        .disabled(false)
+        .change_groups(TrainScheduleExceptionChangeGroups {
+            train_name: Some(TrainNameChangeGroup {
+                value: "Name".into(),
+            }),
+            ..Default::default()
+        })
+        .create(conn)
+        .await
+        .expect("Failed to create exception")
 }
 
 pub fn scenario_changeset(

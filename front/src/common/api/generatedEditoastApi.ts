@@ -1257,6 +1257,17 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['rolling_stock'],
       }),
+      putTrainScheduleExceptionById: build.mutation<
+        PutTrainScheduleExceptionByIdApiResponse,
+        PutTrainScheduleExceptionByIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/train_schedule_exception/${queryArg.id}`,
+          method: 'PUT',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['train_schedule_exceptions'],
+      }),
       postTrainScheduleExceptionsDelete: build.mutation<
         PostTrainScheduleExceptionsDeleteApiResponse,
         PostTrainScheduleExceptionsDeleteApiArg
@@ -2543,6 +2554,17 @@ export type PatchTowedRollingStockByTowedRollingStockIdLockedApiResponse = unkno
 export type PatchTowedRollingStockByTowedRollingStockIdLockedApiArg = {
   towedRollingStockId: number;
   towedRollingStockLockedForm: TowedRollingStockLockedForm;
+};
+export type PutTrainScheduleExceptionByIdApiResponse = unknown;
+export type PutTrainScheduleExceptionByIdApiArg = {
+  /** An exception ID */
+  id: number;
+  body: {
+    change_groups: TrainScheduleExceptionChangeGroups;
+    disabled: boolean;
+    occurrence_index?: number | null;
+    train_schedule_id: number;
+  };
 };
 export type PostTrainScheduleExceptionsDeleteApiResponse = unknown;
 export type PostTrainScheduleExceptionsDeleteApiArg = {
