@@ -19,6 +19,7 @@ use editoast_models::study::Study;
 use editoast_models::tags::Tags;
 use editoast_models::timetable::Timetable;
 use editoast_models::timetable_train_schedule_set::TimetableTrainScheduleSet;
+use schemas::TrainScheduleExceptionChangeGroups;
 use schemas::fixtures::simple_created_exception_with_change_groups;
 use schemas::fixtures::simple_modified_exception_with_change_groups;
 use schemas::infra::InfraObject;
@@ -136,89 +137,91 @@ pub fn create_created_exception_with_change_groups(key: &str) -> PacedTrainExcep
         key: key.into(),
         exception_type: ExceptionType::Created {},
         disabled: false,
-        train_name: Some(TrainNameChangeGroup {
-            value: "created_exception_train_name".into(),
-        }),
-        constraint_distribution: Some(ConstraintDistributionChangeGroup {
-            value: Distribution::Mareco,
-        }),
-        initial_speed: Some(InitialSpeedChangeGroup { value: 10.0 }),
-        labels: Some(LabelsChangeGroup {
-            value: vec!["Label 1".to_string(), "Label 3".to_string()],
-        }),
-        options: Some(OptionsChangeGroup {
-            value: TrainScheduleOptions::default(),
-        }),
-        path_and_schedule: Some(PathAndScheduleChangeGroup {
-            power_restrictions: vec![],
-            schedule: vec![
-                ScheduleItem {
-                    at: NonBlankString("aa".to_string()),
-                    ..Default::default()
-                },
-                ScheduleItem {
-                    at: NonBlankString("bb".to_string()),
-                    ..Default::default()
-                },
-                ScheduleItem {
-                    at: NonBlankString("cc".to_string()),
-                    ..Default::default()
-                },
-                ScheduleItem {
-                    at: NonBlankString("dd".to_string()),
-                    ..Default::default()
-                },
-            ],
-            path: vec![
-                PathItem {
-                    id: "aa".into(),
-                    location: PathItemLocation::TrackOffset(TrackOffset {
-                        offset: 300,
-                        track: Identifier("TC0".to_string()),
-                    }),
-                },
-                PathItem {
-                    id: "bb".into(),
-                    location: PathItemLocation::OperationalPointPartReference(
-                        OperationalPointPartReference {
-                            operational_point: OperationalPointReference::Id {
-                                operational_point: Identifier("Mid_East_station".to_string()),
+        change_groups: TrainScheduleExceptionChangeGroups {
+            train_name: Some(TrainNameChangeGroup {
+                value: "created_exception_train_name".into(),
+            }),
+            constraint_distribution: Some(ConstraintDistributionChangeGroup {
+                value: Distribution::Mareco,
+            }),
+            initial_speed: Some(InitialSpeedChangeGroup { value: 10.0 }),
+            labels: Some(LabelsChangeGroup {
+                value: vec!["Label 1".to_string(), "Label 3".to_string()],
+            }),
+            options: Some(OptionsChangeGroup {
+                value: TrainScheduleOptions::default(),
+            }),
+            path_and_schedule: Some(PathAndScheduleChangeGroup {
+                power_restrictions: vec![],
+                schedule: vec![
+                    ScheduleItem {
+                        at: NonBlankString("aa".to_string()),
+                        ..Default::default()
+                    },
+                    ScheduleItem {
+                        at: NonBlankString("bb".to_string()),
+                        ..Default::default()
+                    },
+                    ScheduleItem {
+                        at: NonBlankString("cc".to_string()),
+                        ..Default::default()
+                    },
+                    ScheduleItem {
+                        at: NonBlankString("dd".to_string()),
+                        ..Default::default()
+                    },
+                ],
+                path: vec![
+                    PathItem {
+                        id: "aa".into(),
+                        location: PathItemLocation::TrackOffset(TrackOffset {
+                            offset: 300,
+                            track: Identifier("TC0".to_string()),
+                        }),
+                    },
+                    PathItem {
+                        id: "bb".into(),
+                        location: PathItemLocation::OperationalPointPartReference(
+                            OperationalPointPartReference {
+                                operational_point: OperationalPointReference::Id {
+                                    operational_point: Identifier("Mid_East_station".to_string()),
+                                },
+                                local_track_name: None,
                             },
-                            local_track_name: None,
-                        },
-                    ),
+                        ),
+                    },
+                    PathItem {
+                        id: "cc".into(),
+                        location: PathItemLocation::TrackOffset(TrackOffset {
+                            offset: 300,
+                            track: Identifier("TC1".to_string()),
+                        }),
+                    },
+                    PathItem {
+                        id: "dd".into(),
+                        location: PathItemLocation::TrackOffset(TrackOffset {
+                            offset: 300,
+                            track: Identifier("TC2".to_string()),
+                        }),
+                    },
+                ],
+                margins: Margins {
+                    boundaries: vec![],
+                    values: vec![MarginValue::Percentage(5.0)],
                 },
-                PathItem {
-                    id: "cc".into(),
-                    location: PathItemLocation::TrackOffset(TrackOffset {
-                        offset: 300,
-                        track: Identifier("TC1".to_string()),
-                    }),
-                },
-                PathItem {
-                    id: "dd".into(),
-                    location: PathItemLocation::TrackOffset(TrackOffset {
-                        offset: 300,
-                        track: Identifier("TC2".to_string()),
-                    }),
-                },
-            ],
-            margins: Margins {
-                boundaries: vec![],
-                values: vec![MarginValue::Percentage(5.0)],
-            },
-        }),
-        rolling_stock: Some(RollingStockChangeGroup {
-            rolling_stock_name: "simulation_rolling_stock".into(),
-            comfort: Comfort::AirConditioning,
-        }),
-        rolling_stock_category: Some(RollingStockCategoryChangeGroup { value: None }),
-        speed_limit_tag: Some(SpeedLimitTagChangeGroup {
-            value: Some(NonBlankString("GB".into())),
-        }),
-        start_time: Some(StartTimeChangeGroup {
-            value: DateTime::<Utc>::from_str("2025-05-15T15:10:00+02:00").unwrap(),
-        }),
+            }),
+            rolling_stock: Some(RollingStockChangeGroup {
+                rolling_stock_name: "simulation_rolling_stock".into(),
+                comfort: Comfort::AirConditioning,
+            }),
+            rolling_stock_category: Some(RollingStockCategoryChangeGroup { value: None }),
+            speed_limit_tag: Some(SpeedLimitTagChangeGroup {
+                value: Some(NonBlankString("GB".into())),
+            }),
+            start_time: Some(StartTimeChangeGroup {
+                value: DateTime::<Utc>::from_str("2025-05-15T15:10:00+02:00").unwrap(),
+            }),
+        },
     }
 }
 
@@ -228,8 +231,8 @@ pub fn create_modified_exception_with_change_groups(
 ) -> PacedTrainException {
     let mut exception = create_created_exception_with_change_groups(key);
     exception.exception_type = ExceptionType::Modified { occurrence_index };
-    exception.start_time = None;
-    exception.train_name = Some(TrainNameChangeGroup {
+    exception.change_groups.start_time = None;
+    exception.change_groups.train_name = Some(TrainNameChangeGroup {
         value: "modified_exception_train_name".to_string(),
     });
     exception

@@ -402,6 +402,7 @@ mod tests {
     use editoast_models::CatalogEntry;
     use editoast_models::prelude::*;
     use reqwest::StatusCode;
+    use schemas::TrainScheduleExceptionChangeGroups;
     use schemas::fixtures::simple_created_exception_with_change_groups;
     use schemas::fixtures::simple_modified_exception_with_change_groups;
     use schemas::paced_train::ExceptionType;
@@ -483,16 +484,7 @@ mod tests {
             key: "exception_key_1".into(),
             exception_type: ExceptionType::Created {},
             disabled: false,
-            constraint_distribution: None,
-            initial_speed: None,
-            labels: None,
-            options: None,
-            path_and_schedule: None,
-            rolling_stock: None,
-            rolling_stock_category: None,
-            speed_limit_tag: None,
-            start_time: None,
-            train_name: None,
+            change_groups: TrainScheduleExceptionChangeGroups::default(),
         };
 
         let exception_2 = PacedTrainException {
@@ -501,24 +493,18 @@ mod tests {
                 occurrence_index: 1,
             },
             disabled: true,
-            path_and_schedule: Some(PathAndScheduleChangeGroup {
-                power_restrictions: vec![],
-                schedule: vec![],
-                path: vec![],
-                margins: Margins {
-                    boundaries: vec![],
-                    values: vec![MarginValue::Percentage(5.0)],
-                },
-            }),
-            constraint_distribution: None,
-            initial_speed: None,
-            labels: None,
-            options: None,
-            rolling_stock: None,
-            rolling_stock_category: None,
-            speed_limit_tag: None,
-            start_time: None,
-            train_name: None,
+            change_groups: TrainScheduleExceptionChangeGroups {
+                path_and_schedule: Some(PathAndScheduleChangeGroup {
+                    power_restrictions: vec![],
+                    schedule: vec![],
+                    path: vec![],
+                    margins: Margins {
+                        boundaries: vec![],
+                        values: vec![MarginValue::Percentage(5.0)],
+                    },
+                }),
+                ..Default::default()
+            },
         };
 
         paced_train_1.paced.as_mut().unwrap().exceptions =

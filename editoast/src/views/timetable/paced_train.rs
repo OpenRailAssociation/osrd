@@ -1494,6 +1494,7 @@ mod tests {
     use editoast_models::rolling_stock::TrainMainCategory;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
+    use schemas::TrainScheduleExceptionChangeGroups;
     use schemas::fixtures::simple_created_exception_with_change_groups;
     use schemas::fixtures::simple_modified_exception_with_change_groups;
     use schemas::infra::Direction;
@@ -1966,6 +1967,7 @@ mod tests {
             .as_mut()
             .unwrap()
             .exceptions[0]
+            .change_groups
             .rolling_stock = Some(RollingStockChangeGroup {
             rolling_stock_name: "R2D2".into(),
             comfort: Comfort::AirConditioning,
@@ -2042,9 +2044,12 @@ mod tests {
             .exceptions
             .push(PacedTrainException {
                 key: "change_train_name".to_string(),
-                train_name: Some(TrainNameChangeGroup {
-                    value: "exception_name_but_same_simulation".into(),
-                }),
+                change_groups: TrainScheduleExceptionChangeGroups {
+                    train_name: Some(TrainNameChangeGroup {
+                        value: "exception_name_but_same_simulation".into(),
+                    }),
+                    ..Default::default()
+                },
                 ..Default::default()
             });
         // Add one exception which will change the simulation from base
@@ -2057,7 +2062,10 @@ mod tests {
             .exceptions
             .push(PacedTrainException {
                 key: "change_initial_speed".to_string(),
-                initial_speed: Some(InitialSpeedChangeGroup { value: 1.23 }),
+                change_groups: TrainScheduleExceptionChangeGroups {
+                    initial_speed: Some(InitialSpeedChangeGroup { value: 1.23 }),
+                    ..Default::default()
+                },
                 ..Default::default()
             });
         let request = app
@@ -2267,7 +2275,7 @@ mod tests {
         create_fast_rolling_stock(&mut db_pool.get_ok(), "R2D2").await;
         let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
         let mut exception = create_created_exception_with_change_groups("exception_created_key");
-        exception.rolling_stock = Some(RollingStockChangeGroup {
+        exception.change_groups.rolling_stock = Some(RollingStockChangeGroup {
             rolling_stock_name: "exception_rolling_stock".into(),
             comfort: Comfort::Standard,
         });
@@ -2433,9 +2441,12 @@ mod tests {
             .exceptions
             .push(PacedTrainException {
                 key: "change_train_name".to_string(),
-                train_name: Some(TrainNameChangeGroup {
-                    value: "exception_name_but_same_simulation".into(),
-                }),
+                change_groups: TrainScheduleExceptionChangeGroups {
+                    train_name: Some(TrainNameChangeGroup {
+                        value: "exception_name_but_same_simulation".into(),
+                    }),
+                    ..Default::default()
+                },
                 ..Default::default()
             });
         // Add one exception which will change the simulation from base
@@ -2448,7 +2459,10 @@ mod tests {
             .exceptions
             .push(PacedTrainException {
                 key: "change_initial_speed".to_string(),
-                initial_speed: Some(InitialSpeedChangeGroup { value: 1.23 }),
+                change_groups: TrainScheduleExceptionChangeGroups {
+                    initial_speed: Some(InitialSpeedChangeGroup { value: 1.23 }),
+                    ..Default::default()
+                },
                 ..Default::default()
             });
         let request = app

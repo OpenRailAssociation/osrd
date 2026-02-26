@@ -68,40 +68,41 @@ impl TrainSchedule {
     pub fn apply_exception(&self, exception: &PacedTrainException) -> TrainOccurrence {
         let mut train_schedule = self.clone().into_train_occurrence();
 
-        if let Some(change_group) = &exception.train_name {
+        if let Some(change_group) = &exception.change_groups.train_name {
             train_schedule.train_name = change_group.value.clone();
         }
-        if let Some(change_group) = &exception.rolling_stock {
+        if let Some(change_group) = &exception.change_groups.rolling_stock {
             train_schedule.comfort = change_group.comfort;
             train_schedule.rolling_stock_name = change_group.rolling_stock_name.clone();
         }
-        if let Some(change_group) = &exception.rolling_stock_category {
+        if let Some(change_group) = &exception.change_groups.rolling_stock_category {
             train_schedule.category = change_group.value.clone();
         }
-        if let Some(change_group) = &exception.labels {
+        if let Some(change_group) = &exception.change_groups.labels {
             train_schedule.labels = change_group.value.clone();
         }
-        if let Some(change_group) = &exception.speed_limit_tag {
+        if let Some(change_group) = &exception.change_groups.speed_limit_tag {
             train_schedule.speed_limit_tag = change_group.value.clone();
         }
-        if let Some(change_group) = &exception.start_time {
+        if let Some(change_group) = &exception.change_groups.start_time {
             train_schedule.start_time = change_group.value
         }
-        if let (ExceptionType::Modified { occurrence_index }, None) =
-            (&exception.exception_type, &exception.start_time)
-        {
+        if let (ExceptionType::Modified { occurrence_index }, None) = (
+            &exception.exception_type,
+            &exception.change_groups.start_time,
+        ) {
             train_schedule.start_time = self.get_occurrence_start_time(*occurrence_index);
         }
-        if let Some(change_group) = &exception.constraint_distribution {
+        if let Some(change_group) = &exception.change_groups.constraint_distribution {
             train_schedule.constraint_distribution = change_group.value;
         }
-        if let Some(change_group) = &exception.initial_speed {
+        if let Some(change_group) = &exception.change_groups.initial_speed {
             train_schedule.initial_speed = change_group.value;
         }
-        if let Some(change_group) = &exception.options {
+        if let Some(change_group) = &exception.change_groups.options {
             train_schedule.options = change_group.value.clone();
         }
-        if let Some(change_group) = &exception.path_and_schedule {
+        if let Some(change_group) = &exception.change_groups.path_and_schedule {
             train_schedule.margins = change_group.margins.clone();
             train_schedule.path = change_group.path.clone();
             train_schedule.power_restrictions = change_group.power_restrictions.clone();
@@ -437,7 +438,7 @@ mod tests {
     async fn paced_train_main_category_apply_exception() {
         let mut exception = create_created_exception_with_change_groups("key_1");
 
-        exception.rolling_stock_category = Some(RollingStockCategoryChangeGroup {
+        exception.change_groups.rolling_stock_category = Some(RollingStockCategoryChangeGroup {
             value: Some(schemas::rolling_stock::TrainCategory::Main {
                 main_category: schemas::rolling_stock::TrainMainCategory::FastFreightTrain,
             }),
@@ -467,41 +468,61 @@ mod tests {
 
         assert_eq!(
             paced_train_exception.train_name,
-            exception.train_name.unwrap().value
+            exception.change_groups.train_name.unwrap().value
         );
         assert_eq!(
             paced_train_exception.rolling_stock_name,
-            exception.rolling_stock.clone().unwrap().rolling_stock_name
+            exception
+                .change_groups
+                .rolling_stock
+                .clone()
+                .unwrap()
+                .rolling_stock_name
         );
         assert_eq!(
             paced_train_exception.comfort,
-            exception.rolling_stock.unwrap().comfort
+            exception.change_groups.rolling_stock.unwrap().comfort
         );
         assert_eq!(
             paced_train_exception.initial_speed,
-            exception.initial_speed.unwrap().value
+            exception.change_groups.initial_speed.unwrap().value
         );
         // Check if the category of the paced train that has a category is removed by an exception.
         assert_eq!(paced_train_exception.category, None);
         assert_eq!(
             paced_train_exception.constraint_distribution,
-            exception.constraint_distribution.unwrap().value
+            exception
+                .change_groups
+                .constraint_distribution
+                .unwrap()
+                .value
         );
         assert_eq!(
             paced_train_exception.labels,
-            exception.labels.unwrap().value
+            exception.change_groups.labels.unwrap().value
         );
         assert_eq!(
             paced_train_exception.margins,
-            exception.path_and_schedule.clone().unwrap().margins
+            exception
+                .change_groups
+                .path_and_schedule
+                .clone()
+                .unwrap()
+                .margins
         );
         assert_eq!(
             paced_train_exception.path,
-            exception.path_and_schedule.clone().unwrap().path
+            exception
+                .change_groups
+                .path_and_schedule
+                .clone()
+                .unwrap()
+                .path
         );
         assert_eq!(
             paced_train_exception.power_restrictions,
             exception
+                .change_groups
                 .path_and_schedule
                 .clone()
                 .unwrap()
@@ -509,15 +530,20 @@ mod tests {
         );
         assert_eq!(
             paced_train_exception.schedule,
-            exception.path_and_schedule.clone().unwrap().schedule
+            exception
+                .change_groups
+                .path_and_schedule
+                .clone()
+                .unwrap()
+                .schedule
         );
         assert_eq!(
             paced_train_exception.speed_limit_tag,
-            exception.speed_limit_tag.unwrap().value
+            exception.change_groups.speed_limit_tag.unwrap().value
         );
         assert_eq!(
             paced_train_exception.options,
-            exception.options.unwrap().value
+            exception.change_groups.options.unwrap().value
         );
     }
 
@@ -591,7 +617,7 @@ mod tests {
     #[tokio::test]
     async fn iter_occurrences_with_modified_start_time_exception() {
         let mut exception_1 = create_modified_exception_with_change_groups("key_1", 1);
-        exception_1.start_time = Some(StartTimeChangeGroup {
+        exception_1.change_groups.start_time = Some(StartTimeChangeGroup {
             value: DateTime::<Utc>::from_str("2025-05-15T14:31:00+02:00").unwrap(),
         });
 

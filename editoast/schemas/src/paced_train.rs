@@ -13,6 +13,7 @@ use utoipa::openapi::ObjectBuilder;
 use utoipa::openapi::RefOr;
 use utoipa::openapi::schema::Schema;
 
+use crate::TrainScheduleExceptionChangeGroups;
 use crate::primitives::NonBlankString;
 use crate::primitives::PositiveDuration;
 use crate::rolling_stock::TrainCategory;
@@ -111,26 +112,9 @@ pub struct PacedTrainException {
     #[serde[default]]
     #[serde_as(as = "DefaultOnNull")]
     pub disabled: bool,
-    #[schema(nullable = false)]
-    pub train_name: Option<TrainNameChangeGroup>,
-    #[schema(nullable = false)]
-    pub rolling_stock: Option<RollingStockChangeGroup>,
-    #[schema(nullable = false)]
-    pub rolling_stock_category: Option<RollingStockCategoryChangeGroup>,
-    #[schema(nullable = false)]
-    pub labels: Option<LabelsChangeGroup>,
-    #[schema(nullable = false)]
-    pub speed_limit_tag: Option<SpeedLimitTagChangeGroup>,
-    #[schema(nullable = false)]
-    pub start_time: Option<StartTimeChangeGroup>,
-    #[schema(nullable = false)]
-    pub constraint_distribution: Option<ConstraintDistributionChangeGroup>,
-    #[schema(nullable = false)]
-    pub initial_speed: Option<InitialSpeedChangeGroup>,
-    #[schema(nullable = false)]
-    pub options: Option<OptionsChangeGroup>,
-    #[schema(nullable = false)]
-    pub path_and_schedule: Option<PathAndScheduleChangeGroup>,
+    #[serde(flatten)]
+    #[schema(inline)]
+    pub change_groups: TrainScheduleExceptionChangeGroups,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
