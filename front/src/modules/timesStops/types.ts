@@ -22,6 +22,7 @@ export type TimesStopsRowNew = {
   invalidPathStep: boolean | undefined;
   scheduleNotHonored: boolean | undefined;
   marginNotHonored: boolean | undefined;
+  isPathStep?: boolean;
 };
 
 export type TimesStopsRow = {

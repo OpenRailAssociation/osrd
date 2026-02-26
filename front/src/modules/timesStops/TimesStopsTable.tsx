@@ -55,11 +55,10 @@ const TimesStopsTable = ({ rows, dataIsLoading, isValid }: TimesStopsTableProps)
             marginNotHonored,
             scheduleNotHonored,
             invalidPathStep,
-            requestedArrival,
             computedArrival,
+            isPathStep,
           } = info.row.original;
 
-          const isPathStep = requestedArrival;
           const isSuccessSchedule = computedArrival && !marginNotHonored && !scheduleNotHonored;
 
           const className = cx({
