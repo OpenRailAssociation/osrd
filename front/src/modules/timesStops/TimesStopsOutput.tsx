@@ -12,6 +12,7 @@ import type { SimulationSummary, TimetableItemWithDetails } from 'modules/timeta
 import type { TimetableItem, Train } from 'reducers/osrdconf/types';
 import { getUseNewTimesStopsTable } from 'reducers/user/userSelectors';
 import { formatLocalTime } from 'utils/date';
+import { Duration } from 'utils/duration';
 
 import useOutputTableData from './hooks/useOutputTableData';
 import useTimesStopsTableData from './hooks/useTimesStopsTableData';
@@ -19,6 +20,11 @@ import useUpdateTimesStopsTable from './hooks/useUpdateTimesStopsTable';
 import TimesStops from './TimesStops';
 import TimesStopsTable from './TimesStopsTable';
 import { TableType, type TimesStopsRow, type TimesStopsRowNew } from './types';
+
+type PendingEdit =
+  | { rowId: string; field: 'requestedArrival'; value: Date | null }
+  | { rowId: string; field: 'requestedDeparture'; value: Date | null }
+  | { rowId: string; field: 'stopDuration'; value: Duration | null };
 
 type TimesStopsOutputProps = {
   infraId: number;
@@ -50,11 +56,7 @@ const TimesStopsOutput = ({
   const preEditPathItemTimesRef = useRef<typeof simulatedPathItemTimes>(undefined);
 
   // Store pending edit for optimistic UI update (state to trigger re-render)
-  const [pendingEdit, setPendingEdit] = useState<{
-    rowId: string;
-    field: 'requestedArrival' | 'requestedDeparture';
-    value: Date | null;
-  } | null>(null);
+  const [pendingEdit, setPendingEdit] = useState<PendingEdit | null>(null);
 
   // Only call the hook that corresponds to the active table to avoid unnecessary computation
   const legacyRows = useOutputTableData(
@@ -78,7 +80,7 @@ const TimesStopsOutput = ({
 
   const startTime = useMemo(() => new Date(selectedTrain.start_time), [selectedTrain.start_time]);
 
-  const { updateArrival, updateDeparture } = useUpdateTimesStopsTable(
+  const { updateArrival, updateStopDuration, updateDeparture } = useUpdateTimesStopsTable(
     selectedTrain,
     newRows,
     timetableItemsWithDetails,
@@ -122,6 +124,25 @@ const TimesStopsOutput = ({
     }
   };
 
+  const handleStopDurationChange = async (
+    row: TimesStopsRowNew,
+    durationSeconds: number | null
+  ) => {
+    if (isAwaitingSimulation) return;
+    preEditPathItemTimesRef.current = simulatedPathItemTimes;
+    setPendingEdit({
+      rowId: row.id,
+      field: 'stopDuration',
+      value: durationSeconds !== null ? new Duration({ seconds: durationSeconds }) : null,
+    });
+    try {
+      await updateStopDuration(row, durationSeconds);
+    } catch {
+      preEditPathItemTimesRef.current = undefined;
+      setPendingEdit(null);
+    }
+  };
+
   // Apply optimistic update to display rows
   const displayRows = pendingEdit
     ? newRows.map((row) => {
@@ -141,6 +162,7 @@ const TimesStopsOutput = ({
         isValid={isValid}
         isComputedDataPending={isAwaitingSimulation}
         onArrivalChange={handleArrivalChange}
+        onStopDurationChange={handleStopDurationChange}
         onDepartureChange={handleDepartureChange}
       />
     );
