@@ -94,7 +94,7 @@
     "reselect": "^5.1.0",
     "uuid": "^13.0.0",
     "viewport-mercator-project": "^7.0.4",
-    "virtua": "^0.45.3"
+    "virtua": "^0.48.6"
   },
   "devDependencies": {
     "@apidevtools/swagger-parser": "^12.1.0",
