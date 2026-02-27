@@ -243,8 +243,8 @@ pub(in crate::views) async fn project_path(
                 .into_iter()
                 .map(|tr| core_client::pathfinding::TrackRange {
                     track_section: tr.track,
-                    begin: (tr.begin * 1000.0) as u64,
-                    end: (tr.end * 1000.0) as u64,
+                    begin: (tr.begin * 1000.0).round() as u64,
+                    end: (tr.end * 1000.0).round() as u64,
                     direction: Direction::StartToStop,
                 })
                 .collect();

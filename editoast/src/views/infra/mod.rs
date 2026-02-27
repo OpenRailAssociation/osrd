@@ -1430,7 +1430,7 @@ pub mod tests {
         assert_eq!(
             response.related_operational_points[0][0].geo,
             Some(GeoJsonPoint::Point(GeoJsonPointValue(vec!(
-                -0.3907884613333333,
+                -0.3907884636666667,
                 49.4999,
             ))))
         );

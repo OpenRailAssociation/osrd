@@ -461,8 +461,8 @@ pub fn as_core_work_schedule(
             .iter()
             .map(|track| UndirectedTrackRange {
                 track_section: track.track.to_string(),
-                begin: (track.begin * 1000.0) as u64,
-                end: (track.end * 1000.0) as u64,
+                begin: (track.begin * 1000.0).round() as u64,
+                end: (track.end * 1000.0).round() as u64,
             })
             .collect(),
     })

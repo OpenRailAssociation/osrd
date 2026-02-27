@@ -198,7 +198,7 @@ def create_small_infra(signaling_system: str) -> ScenarioData:
     )
     # Station
     west = builder.add_operational_point(label="West_station", trigram="WS", uic=8722)
-    west.add_part(ta0, 700, "V1")
+    west.add_part(ta0, 699.99959, "V1")  # To be rounded to 700
     west.add_part(ta1, 500, "V2")
     west.add_part(ta2, 500, "V3")
     # Slopes
