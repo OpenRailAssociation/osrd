@@ -202,7 +202,7 @@ pub(in crate::views) async fn update_paced_train(
 }
 
 #[derive(Debug, Deserialize, ToSchema)]
-pub(in crate::views) struct PacedTrainIds {
+pub(in crate::views) struct TrainScheduleIds {
     ids: HashSet<i64>,
 }
 
@@ -211,7 +211,7 @@ pub(in crate::views) struct PacedTrainIds {
 #[utoipa::path(
     delete, path = "",
     tags = ["timetable", "paced_train"],
-    request_body = inline(PacedTrainIds),
+    request_body = inline(TrainScheduleIds),
     responses(
         (status = 204, description = "All paced_trains have been deleted")
     )
@@ -219,9 +219,9 @@ pub(in crate::views) struct PacedTrainIds {
 pub(in crate::views) async fn delete(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
-    Json(PacedTrainIds {
+    Json(TrainScheduleIds {
         ids: paced_train_ids,
-    }): Json<PacedTrainIds>,
+    }): Json<TrainScheduleIds>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())
