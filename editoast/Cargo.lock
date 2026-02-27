@@ -548,12 +548,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6bd91ee7b2422bcb158d90ef4d14f75ef67f340943fc4149891dcce8f8b972a3"
 
 [[package]]
-name = "c_vec"
-version = "2.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fdd7a427adc0135366d99db65b36dae9237130997e560ed61118041fb72be6e8"
-
-[[package]]
 name = "cache"
 version = "0.1.0"
 dependencies = [
@@ -1917,22 +1911,20 @@ dependencies = [
 
 [[package]]
 name = "geos"
-version = "10.0.0"
+version = "11.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0473e63acafe4109b096ab8c1e6b8151e1cb25397811525779a9bc7187382a7b"
+checksum = "5996ab8d8f04d4cc9a749952864bf4dc8e6f8c660ec50ea60cb647c4ce3517ac"
 dependencies = [
- "c_vec",
  "geojson",
  "geos-sys",
  "libc",
- "num",
 ]
 
 [[package]]
 name = "geos-sys"
-version = "2.0.6"
+version = "2.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4dc873d24aefc72aa94c3c1c251afb82beb7be5926002746c0e1f585fef9854c"
+checksum = "48fc11f837935501a7beb10afd8ecec14e5180274acf87e5a36bf0f770485884"
 dependencies = [
  "libc",
  "pkg-config",
