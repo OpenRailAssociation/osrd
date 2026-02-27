@@ -673,17 +673,6 @@ const injectedRtkApi = api
         }),
         providesTags: ['train_schedule'],
       }),
-      postPacedTrainSimulationSummary: build.query<
-        PostPacedTrainSimulationSummaryApiResponse,
-        PostPacedTrainSimulationSummaryApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/paced_train/simulation_summary`,
-          method: 'POST',
-          body: queryArg.body,
-        }),
-        providesTags: ['paced_train'],
-      }),
       postPacedTrainTrackOccupancy: build.mutation<
         PostPacedTrainTrackOccupancyApiResponse,
         PostPacedTrainTrackOccupancyApiArg
@@ -1345,6 +1334,17 @@ const injectedRtkApi = api
           body: queryArg.body,
         }),
         invalidatesTags: ['paced_train'],
+      }),
+      postTrainSchedulesSimulationSummary: build.query<
+        PostTrainSchedulesSimulationSummaryApiResponse,
+        PostTrainSchedulesSimulationSummaryApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/train_schedules/simulation_summary`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        providesTags: ['paced_train'],
       }),
       getTrainSchedulesById: build.query<
         GetTrainSchedulesByIdApiResponse,
@@ -2051,17 +2051,6 @@ export type PostPacedTrainProjectPathOpApiArg = {
     use_simulation: boolean;
   };
 };
-export type PostPacedTrainSimulationSummaryApiResponse =
-  /** status 200 Associate each paced train id with its simulation summaries */ {
-    [key: string]: PacedTrainSimulationSummaryResult;
-  };
-export type PostPacedTrainSimulationSummaryApiArg = {
-  body: {
-    electrical_profile_set_id?: number | null;
-    ids: number[];
-    infra_id: number;
-  };
-};
 export type PostPacedTrainTrackOccupancyApiResponse =
   /** status 200 Track section occupancy periods for paced trains */ {
     /** Which track section the train is on at the queried operational point.
@@ -2632,6 +2621,17 @@ export type PatchTrainSchedulesMoveApiArg = {
   body: {
     train_schedule_ids: number[];
     train_schedule_set_id: number;
+  };
+};
+export type PostTrainSchedulesSimulationSummaryApiResponse =
+  /** status 200 Associate each train schedule id with its simulation summaries */ {
+    [key: string]: TrainScheduleSimulationSummaryResult;
+  };
+export type PostTrainSchedulesSimulationSummaryApiArg = {
+  body: {
+    electrical_profile_set_id?: number | null;
+    ids: number[];
+    infra_id: number;
   };
 };
 export type GetTrainSchedulesByIdApiResponse =
@@ -3870,57 +3870,6 @@ export type ProjectPathForm = {
     track_section: string;
   }[];
 };
-export type SimulationSummaryResult =
-  | {
-      /** Total energy consumption of a train in kWh */
-      energy_consumption: number;
-      /** Length of a path in mm */
-      length: number;
-      /** Whether the final path times respect the input margins for each train schedule path item.
-    The length of this array is the number of path items in the train schedule used as input for the simulation.
-    Important: `true` means the provisional time is acceptable margin-wise, not *precisely* respecting the margin. */
-      path_item_respect_margins: boolean[];
-      /** Whether each path item in the train schedule is reached on time.
-    The length of this array is the number of path items in the train schedule used as input for the simulation.
-    Important: `true` doesn't mean the path item has been reached *precisely* at the requested time. Instead, it means it reached the path item at an acceptable time. */
-      path_item_respect_times: boolean[];
-      /** Base simulation time for each train schedule path item.
-    The length of this array is the number of path items in the train schedule used as input for the simulation.
-    The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path) */
-      path_item_times_base: number[];
-      /** Final simulation time for each train schedule path item.
-    The length of this array is the number of path items in the train schedule used as input for the simulation.
-    The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path) */
-      path_item_times_final: number[];
-      /** Provisional simulation time for each train schedule path item.
-    The length of this array is the number of path items in the train schedule used as input for the simulation.
-    The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path) */
-      path_item_times_provisional: number[];
-      status: 'success';
-      /** Travel time in ms */
-      time: number;
-    }
-  | (CorePathfindingNotFound & {
-      status: 'pathfinding_not_found';
-    })
-  | {
-      core_error: InternalError;
-      status: 'pathfinding_failure';
-    }
-  | {
-      error_type: string;
-      status: 'simulation_failed';
-    }
-  | (CorePathfindingInputError & {
-      status: 'pathfinding_input_error';
-    });
-export type PacedTrainSimulationSummaryResult = {
-  /** The key is the `exception_key` */
-  exceptions: {
-    [key: string]: SimulationSummaryResult;
-  };
-  paced_train: SimulationSummaryResult;
-};
 export type TrainCategory =
   | {
       main_category: TrainMainCategory;
@@ -5010,6 +4959,57 @@ export type TrainScheduleSetForm = {
   description: string;
   name?: string | null;
   published: boolean;
+};
+export type SimulationSummaryResult =
+  | {
+      /** Total energy consumption of a train in kWh */
+      energy_consumption: number;
+      /** Length of a path in mm */
+      length: number;
+      /** Whether the final path times respect the input margins for each train schedule path item.
+    The length of this array is the number of path items in the train schedule used as input for the simulation.
+    Important: `true` means the provisional time is acceptable margin-wise, not *precisely* respecting the margin. */
+      path_item_respect_margins: boolean[];
+      /** Whether each path item in the train schedule is reached on time.
+    The length of this array is the number of path items in the train schedule used as input for the simulation.
+    Important: `true` doesn't mean the path item has been reached *precisely* at the requested time. Instead, it means it reached the path item at an acceptable time. */
+      path_item_respect_times: boolean[];
+      /** Base simulation time for each train schedule path item.
+    The length of this array is the number of path items in the train schedule used as input for the simulation.
+    The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path) */
+      path_item_times_base: number[];
+      /** Final simulation time for each train schedule path item.
+    The length of this array is the number of path items in the train schedule used as input for the simulation.
+    The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path) */
+      path_item_times_final: number[];
+      /** Provisional simulation time for each train schedule path item.
+    The length of this array is the number of path items in the train schedule used as input for the simulation.
+    The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path) */
+      path_item_times_provisional: number[];
+      status: 'success';
+      /** Travel time in ms */
+      time: number;
+    }
+  | (CorePathfindingNotFound & {
+      status: 'pathfinding_not_found';
+    })
+  | {
+      core_error: InternalError;
+      status: 'pathfinding_failure';
+    }
+  | {
+      error_type: string;
+      status: 'simulation_failed';
+    }
+  | (CorePathfindingInputError & {
+      status: 'pathfinding_input_error';
+    });
+export type TrainScheduleSimulationSummaryResult = {
+  /** The key is the `exception_key` */
+  exceptions: {
+    [key: string]: SimulationSummaryResult;
+  };
+  train_schedule: SimulationSummaryResult;
 };
 export type Version = {
   git_describe: string | null;

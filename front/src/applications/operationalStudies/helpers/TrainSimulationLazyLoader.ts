@@ -1,7 +1,7 @@
 import {
   osrdEditoastApi,
-  type PacedTrainSimulationSummaryResult,
-  type PostPacedTrainSimulationSummaryApiResponse,
+  type TrainScheduleSimulationSummaryResult,
+  type PostTrainSchedulesSimulationSummaryApiResponse,
 } from 'common/api/osrdEditoastApi';
 import type { PacedTrainId, TimetableItemId } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
@@ -13,7 +13,9 @@ type TrainSimulationLazyLoaderOptions = {
   dispatch: AppDispatch;
   infraId: number;
   electricalProfileSetId?: number;
-  onProgress: (pacedTrainSummaries: Map<PacedTrainId, PacedTrainSimulationSummaryResult>) => void;
+  onProgress: (
+    pacedTrainSummaries: Map<PacedTrainId, TrainScheduleSimulationSummaryResult>
+  ) => void;
 };
 
 /**
@@ -70,13 +72,12 @@ export default class TrainSimulationLazyLoader {
   async processBatch(batch: TimetableItemId[]) {
     const editoastIds = batch.map((id) => extractEditoastIdFromPacedTrainId(id));
 
-    let pacedTrainPromise: Promise<PostPacedTrainSimulationSummaryApiResponse> = Promise.resolve(
-      {}
-    );
+    let pacedTrainPromise: Promise<PostTrainSchedulesSimulationSummaryApiResponse> =
+      Promise.resolve({});
     if (editoastIds.length > 0) {
       pacedTrainPromise = this.options
         .dispatch(
-          osrdEditoastApi.endpoints.postPacedTrainSimulationSummary.initiate(
+          osrdEditoastApi.endpoints.postTrainSchedulesSimulationSummary.initiate(
             {
               body: {
                 infra_id: this.options.infraId,

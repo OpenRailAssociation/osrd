@@ -2405,49 +2405,6 @@ paths:
                 propertyNames:
                   type: integer
                   format: int64
-  /paced_train/simulation_summary:
-    post:
-      tags:
-      - paced_train
-      summary: |-
-        Associate each paced train id with its simulation summaries response
-        If the simulation fails, it associates the reason: pathfinding failed or running time failed
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-              - infra_id
-              - ids
-              properties:
-                electrical_profile_set_id:
-                  type:
-                  - integer
-                  - 'null'
-                  format: int64
-                ids:
-                  type: array
-                  items:
-                    type: integer
-                    format: int64
-                  uniqueItems: true
-                infra_id:
-                  type: integer
-                  format: int64
-        required: true
-      responses:
-        '200':
-          description: Associate each paced train id with its simulation summaries
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties:
-                  $ref: '#/components/schemas/PacedTrainSimulationSummaryResult'
-                propertyNames:
-                  type: integer
-                  format: int64
   /paced_train/track_occupancy:
     post:
       tags:
@@ -4675,6 +4632,49 @@ paths:
       responses:
         '204':
           description: The train schedule set is updated with the train schedules
+  /train_schedules/simulation_summary:
+    post:
+      tags:
+      - paced_train
+      summary: |-
+        Associate each train schedule id with its simulation summaries response
+        If the simulation fails, it associates the reason: pathfinding failed or running time failed
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - infra_id
+              - ids
+              properties:
+                electrical_profile_set_id:
+                  type:
+                  - integer
+                  - 'null'
+                  format: int64
+                ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  uniqueItems: true
+                infra_id:
+                  type: integer
+                  format: int64
+        required: true
+      responses:
+        '200':
+          description: Associate each train schedule id with its simulation summaries
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/TrainScheduleSimulationSummaryResult'
+                propertyNames:
+                  type: integer
+                  format: int64
   /train_schedules/{id}:
     get:
       tags:
@@ -10724,21 +10724,6 @@ components:
         that may deviate from the paced train.
         - Created: A new occurrence manually added by the user, not originally present in the automatically generated occurrences based on the paced train.
         - Modified: An existing occurrence that has been changed
-    PacedTrainSimulationSummaryResult:
-      type: object
-      required:
-      - paced_train
-      - exceptions
-      properties:
-        exceptions:
-          type: object
-          description: The key is the `exception_key`
-          additionalProperties:
-            $ref: '#/components/schemas/SimulationSummaryResult'
-          propertyNames:
-            type: string
-        paced_train:
-          $ref: '#/components/schemas/SimulationSummaryResult'
     PaginationStats:
       type: object
       description: |-
@@ -14625,6 +14610,21 @@ components:
             type: integer
             format: int64
             minimum: 0
+    TrainScheduleSimulationSummaryResult:
+      type: object
+      required:
+      - train_schedule
+      - exceptions
+      properties:
+        exceptions:
+          type: object
+          description: The key is the `exception_key`
+          additionalProperties:
+            $ref: '#/components/schemas/SimulationSummaryResult'
+          propertyNames:
+            type: string
+        train_schedule:
+          $ref: '#/components/schemas/SimulationSummaryResult'
     Version:
       type: object
       required:

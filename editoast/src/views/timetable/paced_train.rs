@@ -250,9 +250,9 @@ pub(in crate::views) struct SimulationBatchForm {
 
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(PartialEq, serde::Deserialize))]
-#[schema(as = PacedTrainSimulationSummaryResult)]
-pub(in crate::views) struct PacedTrainSummaryResponse {
-    pub paced_train: SummaryResponse,
+#[schema(as = TrainScheduleSimulationSummaryResult)]
+pub(in crate::views) struct TrainScheduleSummaryResponse {
+    pub train_schedule: SummaryResponse,
     /// The key is the `exception_key`
     pub exceptions: HashMap<String, SummaryResponse>,
 }
@@ -264,7 +264,7 @@ struct SimulationContext {
     train_schedule: schemas::TrainOccurrence,
 }
 
-/// Associate each paced train id with its simulation summaries response
+/// Associate each train schedule id with its simulation summaries response
 /// If the simulation fails, it associates the reason: pathfinding failed or running time failed
 #[editoast_derive::route]
 #[utoipa::path(
@@ -272,7 +272,7 @@ struct SimulationContext {
     tag = "paced_train",
     request_body = inline(SimulationBatchForm),
     responses(
-        (status = 200, description = "Associate each paced train id with its simulation summaries", body = HashMap<i64, PacedTrainSummaryResponse>),
+        (status = 200, description = "Associate each train schedule id with its simulation summaries", body = HashMap<i64, TrainScheduleSummaryResponse>),
     ),
 )]
 pub(in crate::views) async fn simulation_summary(
@@ -289,7 +289,7 @@ pub(in crate::views) async fn simulation_summary(
         electrical_profile_set_id,
         ids: paced_train_ids,
     }): Json<SimulationBatchForm>,
-) -> Result<Json<HashMap<i64, PacedTrainSummaryResponse>>> {
+) -> Result<Json<HashMap<i64, TrainScheduleSummaryResponse>>> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())
         .await
@@ -359,7 +359,7 @@ pub(in crate::views) async fn simulation_summary(
     // Will remember all simulation that already have been inserted in the response
     let mut base_simulation = Arc::clone(&simulations[0].0);
     let results = simulation_contexts.into_iter().zip(simulations).fold(
-        HashMap::<i64, PacedTrainSummaryResponse>::new(),
+        HashMap::<i64, TrainScheduleSummaryResponse>::new(),
         |mut map, (simulation_context, (simulation, _path))| {
             if let Some(exception_key) = &simulation_context.exception_key {
                 if !Arc::ptr_eq(&base_simulation, &simulation) {
@@ -378,8 +378,8 @@ pub(in crate::views) async fn simulation_summary(
                 base_simulation = Arc::clone(&simulation);
                 map.insert(
                     simulation_context.paced_train_id,
-                    PacedTrainSummaryResponse {
-                        paced_train: SummaryResponse::summarize_simulation(
+                    TrainScheduleSummaryResponse {
+                        train_schedule: SummaryResponse::summarize_simulation(
                             Arc::unwrap_or_clone(simulation),
                             &simulation_context.train_schedule,
                         ),
@@ -1611,12 +1611,12 @@ mod tests {
     use crate::views::tests::mocked_core_pathfinding_sim_and_proj;
     use crate::views::timetable::paced_train::MoveTrainSchedulesForm;
     use crate::views::timetable::paced_train::OccupancyBlocksPacedTrainResult;
-    use crate::views::timetable::paced_train::PacedTrainSummaryResponse;
     use crate::views::timetable::paced_train::ProjectPathPacedTrainResult;
     use crate::views::timetable::paced_train::TrackOccupancyForm;
     use crate::views::timetable::paced_train::TrackReference;
     use crate::views::timetable::paced_train::TrackSectionOccupancy;
     use crate::views::timetable::paced_train::TrainScheduleResponse;
+    use crate::views::timetable::paced_train::TrainScheduleSummaryResponse;
     use crate::views::timetable::simulation;
     use crate::views::timetable::simulation::SimulationResponseSuccess;
     use crate::views::timetable::simulation::SummaryResponse;
@@ -2154,12 +2154,14 @@ mod tests {
         app.fetch(request)
             .await
             .assert_status(StatusCode::NO_CONTENT);
-        let request = app.post("/paced_train/simulation_summary").json(&json!({
-            "infra_id": infra_id,
-            "ids": vec![paced_train_id],
-        }));
+        let request = app
+            .post("/train_schedules/simulation_summary")
+            .json(&json!({
+                "infra_id": infra_id,
+                "ids": vec![paced_train_id],
+            }));
 
-        let response: HashMap<i64, PacedTrainSummaryResponse> = app
+        let response: HashMap<i64, TrainScheduleSummaryResponse> = app
             .fetch(request)
             .await
             .assert_status(StatusCode::OK)
@@ -2167,8 +2169,8 @@ mod tests {
         assert_eq!(response.len(), 1);
         assert_eq!(
             *response.get(&paced_train_id).unwrap(),
-            PacedTrainSummaryResponse {
-                paced_train: SummaryResponse::Success {
+            TrainScheduleSummaryResponse {
+                train_schedule: SummaryResponse::Success {
                     length: 3,
                     time: 3,
                     energy_consumption: 0.0,
@@ -2203,10 +2205,12 @@ mod tests {
     async fn paced_train_simulation_summary_not_found() {
         let (app, infra_id, _paced_train_id) =
             app_infra_id_paced_train_id_for_simulation_tests().await;
-        let request = app.post("/paced_train/simulation_summary").json(&json!({
-            "infra_id": infra_id,
-            "ids": vec![0],
-        }));
+        let request = app
+            .post("/train_schedules/simulation_summary")
+            .json(&json!({
+                "infra_id": infra_id,
+                "ids": vec![0],
+            }));
         let response: InternalError = app
             .fetch(request)
             .await

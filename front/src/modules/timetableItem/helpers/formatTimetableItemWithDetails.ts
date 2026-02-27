@@ -6,7 +6,7 @@ import {
 import type {
   LightRollingStockWithLiveries,
   SimulationSummaryResult,
-  PacedTrainSimulationSummaryResult,
+  TrainScheduleSimulationSummaryResult,
 } from 'common/api/osrdEditoastApi';
 import type {
   SimulatedException,
@@ -71,7 +71,7 @@ const extractBaseTimetableItemProps = (timetableItem: TimetableItem) => ({
 export const formatPacedTrainWithDetails = (
   pacedTrain: TimetableItem,
   rollingStock?: LightRollingStockWithLiveries,
-  pacedTrainSummary?: PacedTrainSimulationSummaryResult
+  pacedTrainSummary?: TrainScheduleSimulationSummaryResult
 ): TimetableItemWithDetails => {
   // we omit the following props since they're not expected in TimetableItemWithDetails
   const {
@@ -87,7 +87,7 @@ export const formatPacedTrainWithDetails = (
       ...pacedTrainProps,
       ...extractBaseTimetableItemProps(pacedTrain),
       rollingStock,
-      summary: formatSummary(pacedTrainSummary?.paced_train),
+      summary: formatSummary(pacedTrainSummary?.train_schedule),
     };
   }
 
@@ -122,6 +122,6 @@ export const formatPacedTrainWithDetails = (
       interval: Duration.parse(paced.interval),
       exceptions: simulatedExceptions,
     },
-    summary: formatSummary(pacedTrainSummary?.paced_train),
+    summary: formatSummary(pacedTrainSummary?.train_schedule),
   };
 };
