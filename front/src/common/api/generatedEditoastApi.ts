@@ -2855,6 +2855,7 @@ export type OperationalPointPart = {
     };
   };
   local_track_name: NonBlankString;
+  /** Offset on the track section, in m */
   position: number;
   track: string;
 };
