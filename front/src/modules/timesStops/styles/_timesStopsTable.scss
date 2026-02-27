@@ -4,6 +4,10 @@
 }
 
 .times-stops-table-new {
+  &.computed-data-pending {
+    pointer-events: none;
+  }
+
   .table-container {
     position: relative;
     thead {
@@ -236,5 +240,26 @@
     td:last-child {
       border-right: none;
     }
+  }
+}
+
+.cell-loading-placeholder {
+  display: inline-block;
+  width: 38px;
+  height: 16px;
+  border-radius: 8px;
+  background-color: var(--black10);
+  animation: cell-loading-pulse 1s ease-in-out infinite;
+}
+
+@keyframes cell-loading-pulse {
+  0% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 1;
   }
 }

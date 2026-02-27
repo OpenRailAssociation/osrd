@@ -1,4 +1,5 @@
 import { isEmpty, isEqual, omit } from 'lodash';
+import { v4 as uuidV4 } from 'uuid';
 
 import type { PacedTrainWithPaced } from 'applications/operationalStudies/types';
 import type { TrainSchedule, PacedTrainException } from 'common/api/osrdEditoastApi';
@@ -170,6 +171,46 @@ export function updatePacedTrainExceptionsList<T extends PacedTrainException>(
   return hasExceptions
     ? replaceElementAtIndex(currentExceptions, exceptionIndex, newException)
     : removeElementAtIndex(currentExceptions, exceptionIndex);
+}
+
+/**
+ * Build a PacedTrain with an updated or new exception for a specific occurrence.
+ * This centralizes the pattern of generating an exception and updating the exceptions list.
+ */
+export function buildPacedTrainWithUpdatedException(
+  originalPacedTrain: PacedTrainWithPaced,
+  updatedOccurrence: TrainSchedule,
+  occurrenceId: OccurrenceId
+): PacedTrainWithPaced {
+  const occurrenceIndex = isIndexedOccurrenceId(occurrenceId)
+    ? extractOccurrenceIndexFromOccurrenceId(occurrenceId)
+    : undefined;
+
+  const baseException = generatePacedTrainException(
+    updatedOccurrence,
+    originalPacedTrain,
+    occurrenceIndex ?? null
+  );
+
+  const existingException = findExceptionWithOccurrenceId(
+    originalPacedTrain.paced.exceptions,
+    occurrenceId
+  );
+
+  const updatedExceptions = updatePacedTrainExceptionsList(
+    originalPacedTrain.paced.exceptions,
+    {
+      ...baseException,
+      key: existingException?.key ?? uuidV4(),
+      occurrence_index: occurrenceIndex,
+    },
+    occurrenceId
+  );
+
+  return {
+    ...originalPacedTrain,
+    paced: { ...originalPacedTrain.paced, exceptions: updatedExceptions },
+  };
 }
 
 /**

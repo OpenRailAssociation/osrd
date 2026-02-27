@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import type { TFunction } from 'i18next';
 import { round, isEqual, isNil } from 'lodash';
 
+import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import { getInvalidStepLabel } from 'applications/operationalStudies/utils';
 import type {
   OperationalPoint,
@@ -22,6 +23,7 @@ import {
   secToHoursString,
   time2sec,
 } from 'utils/timeManipulation';
+import type { ArrayElement } from 'utils/types';
 
 import { marginRegExValidation, MarginUnit } from '../consts';
 import { TableType, type TimeExtraDays, type TimesStopsInputRow } from '../types';
@@ -356,3 +358,15 @@ export const getOperationalPointName = (
   // Invalid step
   return getInvalidStepLabel(step.operational_point);
 };
+
+/** Build matching parameters from an operational point for PathStep matching. */
+export const buildOpMatchParams = (
+  op: ArrayElement<PathPropertiesFormatted['operationalPoints']>
+) => ({
+  opId: op.id,
+  uic: op.extensions?.identifier?.uic,
+  ch: op.extensions?.sncf?.ch,
+  trigram: op.extensions?.sncf?.trigram,
+  track: op.part.track,
+  offsetOnTrack: op.part.position,
+});

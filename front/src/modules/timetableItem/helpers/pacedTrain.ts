@@ -19,6 +19,7 @@ import {
   isIndexedOccurrenceId,
 } from 'utils/trainId';
 
+import computeOccurrenceName from './computeOccurrenceName';
 import type {
   ExceptionChangeGroups,
   PacedTrainWithDetails,
@@ -172,6 +173,35 @@ export const getExceptionFromOccurrenceId = (
     exception = pacedTrain.paced.exceptions.find((e) => e.key === key);
   }
   return exception;
+};
+
+/**
+ * Compute the train_name for an occurrence, taking into account any existing exception override.
+ * - If an exception already overrides train_name, use that value.
+ * - For indexed occurrences, compute the name from the base name + index.
+ * - For added exceptions, use `baseName/+`.
+ */
+export const getOccurrenceTrainName = (
+  pacedTrain: Pick<PacedTrainWithPaced, 'train_name' | 'paced'>,
+  occurrenceId: OccurrenceId
+): string => {
+  const existingException = findExceptionWithOccurrenceId(
+    pacedTrain.paced.exceptions,
+    occurrenceId
+  );
+
+  if (existingException?.train_name?.value) {
+    return existingException.train_name.value;
+  }
+
+  if (isIndexedOccurrenceId(occurrenceId)) {
+    return computeOccurrenceName(
+      pacedTrain.train_name,
+      extractOccurrenceIndexFromOccurrenceId(occurrenceId)
+    );
+  }
+
+  return `${pacedTrain.train_name}/+`;
 };
 
 export const getOcurrencesIds = (pacedTrain: PacedTrainWithPaced, pacedTrainId: PacedTrainId) => {

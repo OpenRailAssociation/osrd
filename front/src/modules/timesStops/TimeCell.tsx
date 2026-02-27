@@ -2,6 +2,8 @@ import { useEffect, useReducer, useRef, type ChangeEvent } from 'react';
 
 import type { CellContext } from '@tanstack/react-table';
 
+import { SECONDS_IN_A_DAY } from 'utils/timeManipulation';
+
 import CellPlaceholder from './CellPlaceholder';
 import type { TimesStopsRowNew } from './types';
 
@@ -34,7 +36,8 @@ type TimeAction =
   | { type: 'FOCUSED'; section: Section }
   | { type: 'LEFT_ARROW_PRESSED' }
   | { type: 'RIGHT_ARROW_PRESSED' }
-  | { type: 'BLURRED' };
+  | { type: 'BLURRED' }
+  | { type: 'EXTERNAL_VALUE_CHANGED'; value: Date | null };
 
 // Helpers
 
@@ -365,6 +368,13 @@ const handleHorizontalArrow = (state: TimeState, direction: 'left' | 'right'): T
   };
 };
 
+const initialTimeState = (controlledValue: Date | null): TimeState => ({
+  ...parseTimeState(controlledValue),
+  focusedSection: null,
+  empty: controlledValue === null,
+  hasTyped: controlledValue === null,
+});
+
 // Reducer
 
 const timeReducer = (state: TimeState, action: TimeAction): TimeState => {
@@ -385,17 +395,40 @@ const timeReducer = (state: TimeState, action: TimeAction): TimeState => {
       return handleHorizontalArrow(state, 'left');
     case 'RIGHT_ARROW_PRESSED':
       return handleHorizontalArrow(state, 'right');
+    case 'EXTERNAL_VALUE_CHANGED':
+      // Don't override user's in-progress edits
+      if (state.focusedSection) return state;
+      return initialTimeState(action.value);
     default:
       return state;
   }
 };
 
-const initialTimeState = (controlledValue: Date | null): TimeState => ({
-  ...parseTimeState(controlledValue),
-  focusedSection: null,
-  empty: controlledValue === null,
-  hasTyped: controlledValue === null,
-});
+// Helpers for commit
+
+/**
+ * Build a Date from the time state using referenceDate as the calendar day base.
+ * If the resulting time is before referenceDate, assume it's the next day.
+ */
+const buildDateFromState = (state: TimeState, referenceDate: Date): Date | null => {
+  if (state.empty) return null;
+
+  const hours = parseInt(state.hours, 10);
+  const minutes = parseInt(state.minutes, 10);
+  const seconds = parseInt(state.seconds, 10);
+
+  if (isNaN(hours) || isNaN(minutes) || isNaN(seconds)) return null;
+
+  const result = new Date(referenceDate);
+  result.setHours(hours, minutes, seconds, 0);
+
+  // If the result is before the reference, assume the user meant the next day
+  if (result < referenceDate) {
+    result.setTime(result.getTime() + SECONDS_IN_A_DAY * 1000);
+  }
+
+  return result;
+};
 
 // Component
 
@@ -417,10 +450,14 @@ const renderTimeSection = (value: string, focused: boolean, hasTyped: boolean) =
   </span>
 );
 
-const TimeCell = ({
-  getValue,
-  ...props
-}: CellContext<TimesStopsRowNew, Date | null> & React.InputHTMLAttributes<HTMLInputElement>) => {
+type TimeCellProps = CellContext<TimesStopsRowNew, Date | null> &
+  React.InputHTMLAttributes<HTMLInputElement> & {
+    /** Reference date used as the calendar day base. If the entered time is before this date, the next day is assumed. */
+    referenceDate?: Date;
+    onCommit?: (date: Date | null) => void;
+  };
+
+const TimeCell = ({ getValue, referenceDate, onCommit, ...props }: TimeCellProps) => {
   const { onKeyDown, onBlur, onFocus, onChange, ...userProps } = props || {};
 
   const controlledValue = getValue();
@@ -499,8 +536,23 @@ const TimeCell = ({
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     dispatch({ type: 'BLURRED' });
+
+    if (onCommit && referenceDate) {
+      const newDate = buildDateFromState(state, referenceDate);
+      const hasChanged = newDate?.getTime() !== controlledValue?.getTime();
+      if (hasChanged) {
+        onCommit(newDate);
+      }
+    }
+
     onBlur?.(e);
   };
+
+  // Sync internal state when the external controlled value changes (e.g., after simulation re-run).
+  // Skip sync while the user is editing (focusedSection !== null) — handled by the reducer guard.
+  useEffect(() => {
+    dispatch({ type: 'EXTERNAL_VALUE_CHANGED', value: controlledValue });
+  }, [controlledValue?.getTime()]);
 
   useEffect(() => {
     if (state.focusedSection) {
