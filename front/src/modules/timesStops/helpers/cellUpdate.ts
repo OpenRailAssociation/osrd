@@ -49,6 +49,10 @@ type BuildScheduleItemParams = {
   startTime: Date;
 };
 
+/** Difference between two dates, truncated to whole seconds. */
+const diffSeconds = (a: Date, b: Date) =>
+  Math.floor(a.getTime() / 1000) - Math.floor(b.getTime() / 1000);
+
 /**
  * Build a new ScheduleItem based on the field being updated.
  * Note: Day adjustment for overnight journeys is handled by TimeCell using referenceDate.
@@ -63,7 +67,9 @@ export const buildScheduleItemForField = ({
   switch (update.field) {
     case 'requestedArrival': {
       // TimeCell already adjusted the date using the previous row's time as reference
-      return { arrival: Duration.subtractDate(update.value, startTime).toISOString() };
+      return {
+        arrival: new Duration({ seconds: diffSeconds(update.value, startTime) }).toISOString(),
+      };
     }
 
     case 'stopDuration': {
@@ -77,18 +83,19 @@ export const buildScheduleItemForField = ({
       if (arrivalTime) {
         // Arrival exists => stop_for = departure - arrival
         // TimeCell already ensured departure >= arrival by using arrival as referenceDate
-        // Truncate to seconds to match input table behavior (works with HH:MM:SS strings)
-        const arrivalSec = Math.floor(arrivalTime.getTime() / 1000);
-        const departureSec = Math.floor(departureTime.getTime() / 1000);
-        const stopForSec = departureSec - arrivalSec;
-        return { stop_for: new Duration({ seconds: stopForSec }).toISOString() };
+        return {
+          stop_for: new Duration({
+            seconds: diffSeconds(departureTime, arrivalTime),
+          }).toISOString(),
+        };
       }
 
       // No arrival => arrival = departure - stopDuration
       const existingStopForSeconds = update.row.stopDuration?.total('second') ?? 0;
-      const arrivalDate = new Date(departureTime.getTime() - existingStopForSeconds * 1000);
       const newSchedule: Partial<ScheduleItem> = {
-        arrival: Duration.subtractDate(arrivalDate, startTime).toISOString(),
+        arrival: new Duration({
+          seconds: diffSeconds(departureTime, startTime) - existingStopForSeconds,
+        }).toISOString(),
       };
       // Keep stop_for if there was an existing stopDuration (including PT0S)
       if (update.row.stopDuration) {
