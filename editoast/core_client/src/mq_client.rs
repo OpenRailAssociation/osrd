@@ -44,7 +44,7 @@ pub struct RabbitMQClient {
 pub struct ChannelManager {
     connection: Arc<RwLock<Option<Connection>>>,
     hostname: String,
-    response_tracker: Arc<DashMap<String, mpsc::Sender<Delivery>>>,
+    response_tracker: Arc<DashMap<String, mpsc::UnboundedSender<Delivery>>>,
 }
 
 impl ChannelManager {
@@ -102,7 +102,7 @@ impl Manager for ChannelManager {
 #[derive(Debug)]
 pub struct ChannelWorker {
     channel: Arc<Channel>,
-    response_tracker: Arc<DashMap<String, mpsc::Sender<Delivery>>>,
+    response_tracker: Arc<DashMap<String, mpsc::UnboundedSender<Delivery>>>,
     consumer_tag: String,
 }
 
@@ -110,7 +110,7 @@ impl ChannelWorker {
     pub async fn new(
         channel: Arc<Channel>,
         hostname: String,
-        response_tracker: Arc<DashMap<String, mpsc::Sender<Delivery>>>,
+        response_tracker: Arc<DashMap<String, mpsc::UnboundedSender<Delivery>>>,
     ) -> Self {
         let worker = ChannelWorker {
             channel,
@@ -128,7 +128,7 @@ impl ChannelWorker {
     pub async fn register_response_tracker(
         &self,
         correlation_id: String,
-        tx: mpsc::Sender<Delivery>,
+        tx: mpsc::UnboundedSender<Delivery>,
     ) {
         self.response_tracker.insert(correlation_id, tx);
     }
@@ -187,7 +187,7 @@ impl ChannelWorker {
                     continue;
                 };
 
-                let response = sender_entry.send(delivery).await;
+                let response = sender_entry.send(delivery);
                 if response.is_err() || final_message {
                     // Response channel is closed or it was the last response
                     response_tracker.remove(correlation_id.as_str());
@@ -459,7 +459,7 @@ impl RabbitMQClient {
             .with_expiration(timeout.as_millis().to_string().into())
             .with_headers(headers);
 
-        let (tx, rx) = mpsc::channel(10);
+        let (tx, rx) = mpsc::unbounded_channel();
         channel_worker
             .register_response_tracker(correlation_id.clone(), tx)
             .await;
@@ -485,7 +485,7 @@ impl RabbitMQClient {
 
         let mut finished = false;
 
-        let stream = tokio_stream::wrappers::ReceiverStream::new(rx)
+        let stream = tokio_stream::wrappers::UnboundedReceiverStream::new(rx)
             .timeout(timeout)
             .map(|result| match result {
                 Ok(delivery) => {
