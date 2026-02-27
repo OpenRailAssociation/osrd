@@ -30,6 +30,7 @@ pub struct OperationalPointPart {
     #[educe(Default = "InvalidRef".into())]
     #[schema(inline)]
     pub track: Identifier,
+    /// Offset on the track section, in m
     pub position: f64,
     pub local_track_name: NonBlankString,
     #[serde(default)]
