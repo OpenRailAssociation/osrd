@@ -248,18 +248,18 @@
   width: 38px;
   height: 16px;
   border-radius: 8px;
-  background-color: var(--black10);
+  background-color: var(--black100);
   animation: cell-loading-pulse 1s ease-in-out infinite;
 }
 
 @keyframes cell-loading-pulse {
   0% {
-    opacity: 0.2;
+    opacity: 0.25;
   }
   50% {
-    opacity: 0.3;
+    opacity: 0.05;
   }
   100% {
-    opacity: 1;
+    opacity: 0.25;
   }
 }
