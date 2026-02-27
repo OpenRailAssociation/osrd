@@ -121,7 +121,7 @@ impl OperationalPoint {
             })
             .map(|part| TrackOffset {
                 track: part.track.clone(),
-                offset: (part.position * 1000.0) as u64,
+                offset: (part.position * 1000.0).round() as u64,
             })
             .collect()
     }

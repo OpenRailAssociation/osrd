@@ -1,9 +1,10 @@
-from collections.abc import Sequence
-from typing import Any
-
 import pytest
+from requests import Session
+from tests.infra import Infra
+from tests.path import Path as TrainPath
 
 from .path import Path
+from .services import EDITOAST_URL
 
 _EXPECTED_WEST_TO_SOUTH_EAST_PATH = Path(
     **{
@@ -157,21 +158,6 @@ _EXPECTED_WEST_TO_SOUTH_EAST_PATH = Path(
 )
 
 
-def assert_track_ranges_are_equals(
-    track_ranges: Sequence[Any], expected_track_ranges: Sequence[Any]
-):
-    assert len(track_ranges) == len(expected_track_ranges)
-
-    for i in range(len(track_ranges)):
-        assert (
-            track_ranges[i]["track_section"]
-            == expected_track_ranges[i]["track_section"]
-        )
-        assert track_ranges[i]["begin"] == expected_track_ranges[i]["begin"]
-        assert track_ranges[i]["end"] == expected_track_ranges[i]["end"]
-        assert track_ranges[i]["direction"] == expected_track_ranges[i]["direction"]
-
-
 def test_west_to_south_east_path(west_to_south_east_path: Path):
     assert west_to_south_east_path.status == _EXPECTED_WEST_TO_SOUTH_EAST_PATH.status
     assert west_to_south_east_path.length == pytest.approx(
@@ -182,3 +168,115 @@ def test_west_to_south_east_path(west_to_south_east_path: Path):
         west_to_south_east_path.path_item_positions
         == _EXPECTED_WEST_TO_SOUTH_EAST_PATH.path_item_positions
     )
+
+
+def test_start_ws_v1_path(session: Session, small_infra: Infra):
+    path_resp = session.post(
+        f"{EDITOAST_URL}infra/{small_infra.id}/pathfinding/blocks",
+        json={
+            "path_items": [
+                {
+                    "operational_point": {
+                        "uic": 8722,
+                        "secondary_code": "BV",
+                        "type": "uic",
+                    },
+                    "local_track_name": "V1",
+                },
+                {"offset": 1000000, "track": "TA0"},
+            ],
+            "rolling_stock_is_thermal": True,
+            "rolling_stock_loading_gauge": "G1",
+            "rolling_stock_supported_electrifications": [],
+            "rolling_stock_supported_signaling_systems": [
+                "BAL",
+                "BAPR",
+                "TVM300",
+                "TVM430",
+                "ETCS_LEVEL2",
+            ],
+            "rolling_stock_maximum_speed": 200,
+            "rolling_stock_length": 100000,
+            "stops_at_end_of_block": False,
+        },
+    )
+    start_ws_v1_path = TrainPath(**path_resp.json())
+
+    assert start_ws_v1_path.status == "success"
+    assert start_ws_v1_path.length == pytest.approx(300000, rel=1e-3)
+    # especially check that the start is rounded to 700 m (closest value from 699.99959 m in data)
+    assert start_ws_v1_path.path == {
+        "blocks": [
+            {
+                "id": "block.1053dfcc22f763572986fca41a69581e",
+                "begin": 700000,
+                "end": 1000000,
+            }
+        ],
+        "routes": [{"id": "rt.buffer_stop.0->DA2", "begin": 700000, "end": 1000000}],
+        "track_section_ranges": [
+            {
+                "track_section": "TA0",
+                "begin": 700000,
+                "end": 1000000,
+                "direction": "START_TO_STOP",
+            }
+        ],
+    }
+    assert start_ws_v1_path.path_item_positions == [0, 300000]
+
+    # especially check that OP part is at the very beginning of the path (match pathfinding blocks)
+    path_properties = session.post(
+        f"{EDITOAST_URL}infra/{small_infra.id}/path_properties",
+        json={
+            "track_section_ranges": [
+                {
+                    "track_section": "TA0",
+                    "begin": 700000,
+                    "end": 1000000,
+                    "direction": "START_TO_STOP",
+                }
+            ]
+        },
+    ).json()
+    assert path_properties == {
+        "slopes": {"boundaries": [], "values": [0.0]},
+        "curves": {"boundaries": [], "values": [0.0]},
+        "electrifications": {
+            "boundaries": [],
+            "values": [{"type": "electrification", "voltage": "1500V"}],
+        },
+        "geometry": {
+            "type": "LineString",
+            "coordinates": [[-0.38775, 49.5], [-0.3825, 49.5]],
+        },
+        "operational_points": [
+            {
+                "id": "West_station",
+                "part": {
+                    "track": "TA0",
+                    "position": 700.000,
+                    "local_track_name": "V1",
+                    "extensions": {
+                        "sncf": None,
+                    },
+                },
+                "extensions": {
+                    "sncf": {
+                        "ci": 22,
+                        "ch": "BV",
+                        "ch_short_label": "BV",
+                        "ch_long_label": "0",
+                        "trigram": "WS",
+                    },
+                    "identifier": {"name": "West_station", "uic": 8722},
+                },
+                "position": 0,
+                "weight": None,
+            }
+        ],
+        "zones": {
+            "boundaries": [],
+            "values": ["zone.[DA2:DECREASING, buffer_stop.0:INCREASING]"],
+        },
+    }

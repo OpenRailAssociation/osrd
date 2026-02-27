@@ -53,7 +53,7 @@ impl LevelCrossing {
             .into_iter()
             .map(|lcp| TrackOffset {
                 track: lcp.track,
-                offset: (lcp.position * 1000.0) as u64,
+                offset: (lcp.position * 1000.0).round() as u64,
             })
             .collect()
     }
