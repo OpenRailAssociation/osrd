@@ -69,6 +69,9 @@ const usePathfindingV2 = () => {
         },
       };
 
+      setPathProperties(undefined);
+      setPathfindingError('');
+
       const pathfindingResult = await postPathfindingBlocks(pathFindingPayload).unwrap();
 
       if (pathfindingResult.status === 'success') {
