@@ -560,6 +560,7 @@ export const handleUpdateTrainSchedule = async ({
   netzgrafikDto,
   trainrun,
   tags,
+  oneWayDirection,
   trainScheduleSetId,
   infraId,
   state,
@@ -570,6 +571,7 @@ export const handleUpdateTrainSchedule = async ({
   netzgrafikDto: NetzgrafikDto;
   trainrun: TrainrunDto;
   tags: TrainrunUpdateOperation['tags'];
+  oneWayDirection?: 'forward' | 'backward';
   infraId: number;
   trainScheduleSetId: number;
   state: MacroEditorState;
@@ -577,10 +579,16 @@ export const handleUpdateTrainSchedule = async ({
   addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   addDeletedTrainScheduleIds: (trainScheduleIds: number[]) => void;
 }) => {
-  const trainScheduleIds = state.trainScheduleIdByNgeId.get(trainrun.id);
-  if (!trainScheduleIds) return;
+  const trainScheduleIds = state.trainScheduleIdByNgeId.get(trainrun.id)!;
+  let oldForwardId = trainScheduleIds[0];
+  if (oneWayDirection === 'backward') {
+    // Case 1: Switching from round trip to the return trip (now forward)
+    if (trainScheduleIds[1]) oldForwardId = trainScheduleIds[1];
+    // Case 2: Inverting the direction of a one way train (we sadly don't store the old return)
+    else tags.push('nodes', 'times');
+  }
   const oldForwardTrainSchedule = await fetchTrainSchedule(
-    trainScheduleIds[0],
+    oldForwardId,
     state.timetableId,
     dispatch
   );
@@ -644,10 +652,10 @@ export const handleUpdateTrainSchedule = async ({
 
   if (trainrun.direction === 'one_way') {
     if (trainScheduleIds[1]) {
-      // NGE always selects the forward trip by default when going from round trip to one way trip,
-      // thus the trip that needs to be deleted is always the return trip
       await storeRoundTrip(dispatch, newForwardTrainSchedule.id);
-      await deleteTrainScheduleById(trainScheduleIds[1], dispatch, addDeletedTrainScheduleIds);
+      const oldReturnId =
+        oneWayDirection !== 'backward' ? trainScheduleIds[1] : trainScheduleIds[0];
+      await deleteTrainScheduleById(oldReturnId, dispatch, addDeletedTrainScheduleIds);
     }
 
     state.trainScheduleIdByNgeId.set(trainrun.id, [newForwardTrainSchedule.id, null]);
@@ -782,6 +790,7 @@ export const handleTrainrunOperation = async ({
         netzgrafikDto,
         trainrun,
         tags: operation.tags,
+        oneWayDirection: operation.oneWayDirection,
         trainScheduleSetId,
         infraId,
         dispatch,
