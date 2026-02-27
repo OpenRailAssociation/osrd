@@ -3,6 +3,7 @@
     "sdd": "速度距离图"
   },
   "boards": {
-    "conflicts": "冲突"
+    "conflicts": "冲突",
+    "macro": "宏"
   }
 }
