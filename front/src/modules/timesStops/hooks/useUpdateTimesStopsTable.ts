@@ -84,7 +84,13 @@ const useUpdateTimesStopsTable = (
           ? removeElementAtIndex(currentSchedule, existingScheduleItemIndex)
           : replaceElementAtIndex(currentSchedule, existingScheduleItemIndex, updatedScheduleItem);
 
-        return { updatedPath, updatedSchedule };
+        const pathStepIndex = updatedPath.findIndex((step) => step.id === pathStepId);
+        const finalPath =
+          shouldRemoveScheduleItem && pathStepIndex > 0 && pathStepIndex < updatedPath.length - 1
+            ? removeElementAtIndex(updatedPath, pathStepIndex)
+            : updatedPath;
+
+        return { updatedPath: finalPath, updatedSchedule };
       }
 
       // Handle setting a new value
