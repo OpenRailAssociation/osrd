@@ -104,6 +104,10 @@ const TimesStopsTable = ({
         id: 'stepStatus',
         header: '',
         cell: (info) => {
+          if (isComputedDataPending) {
+            return <span>&nbsp;</span>;
+          }
+
           const {
             marginNotHonored,
             scheduleNotHonored,
