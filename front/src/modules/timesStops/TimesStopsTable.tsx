@@ -22,6 +22,13 @@ declare module '@tanstack/react-table' {
   interface ColumnMeta<TData extends RowData, TValue> {
     className: string;
   }
+  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions, @typescript-eslint/no-unused-vars
+  interface TableMeta<TData extends RowData> {
+    allRows: TimesStopsRowNew[];
+    onArrivalChange: (row: TimesStopsRowNew, arrival: Date | null) => void;
+    onStopDurationChange: (row: TimesStopsRowNew, durationSeconds: number | null) => void;
+    onDepartureChange: (row: TimesStopsRowNew, departure: Date | null) => void;
+  }
 }
 
 /**
@@ -66,6 +73,7 @@ type TimesStopsTableProps = {
   isValid: boolean;
   isComputedDataPending?: boolean;
   onArrivalChange: (row: TimesStopsRowNew, arrival: Date | null) => void;
+  onStopDurationChange: (row: TimesStopsRowNew, durationSeconds: number | null) => void;
   onDepartureChange: (row: TimesStopsRowNew, departure: Date | null) => void;
 };
 
@@ -78,6 +86,7 @@ const TimesStopsTable = ({
   isValid,
   isComputedDataPending,
   onArrivalChange,
+  onStopDurationChange,
   onDepartureChange,
 }: TimesStopsTableProps) => {
   const { t } = useTranslation('translation', { keyPrefix: 'timeStopTable' });
@@ -145,13 +154,16 @@ const TimesStopsTable = ({
       }),
       columnHelper.accessor('requestedArrival', {
         header: () => t('arrivalTime'),
-        cell: (info) => (
-          <TimeCell
-            {...info}
-            referenceDate={getArrivalReferenceDate(info.row.original, rows, startTime)}
-            onCommit={(date) => onArrivalChange(info.row.original, date)}
-          />
-        ),
+        cell: (info) => {
+          const { allRows, onArrivalChange: onArrival } = info.table.options.meta!;
+          return (
+            <TimeCell
+              {...info}
+              referenceDate={getArrivalReferenceDate(info.row.original, allRows, startTime)}
+              onCommit={(date) => onArrival(info.row.original, date)}
+            />
+          );
+        },
         meta: {
           className: 'col-requested-arrival',
         },
@@ -171,7 +183,14 @@ const TimesStopsTable = ({
       }),
       columnHelper.accessor('stopDuration', {
         header: () => t('stopTime'),
-        cell: (info) => <DurationCell {...info} />,
+        cell: (info) => (
+          <DurationCell
+            {...info}
+            onChange={(e) =>
+              info.table.options.meta!.onStopDurationChange(info.row.original, e.target.value)
+            }
+          />
+        ),
         meta: {
           className: 'col-stop-duration',
         },
@@ -189,7 +208,7 @@ const TimesStopsTable = ({
             <TimeCell
               {...info}
               referenceDate={getDepartureReferenceDate(row, startTime)}
-              onCommit={(date) => onDepartureChange(row, date)}
+              onCommit={(date) => info.table.options.meta!.onDepartureChange(row, date)}
             />
           );
         },
@@ -219,6 +238,12 @@ const TimesStopsTable = ({
     data: rows,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    meta: {
+      allRows: rows,
+      onArrivalChange,
+      onStopDurationChange,
+      onDepartureChange,
+    },
   });
 
   if (dataIsLoading) {
