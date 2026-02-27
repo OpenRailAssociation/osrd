@@ -1,3 +1,4 @@
+import type { PathItemLocation } from 'common/api/osrdEditoastApi';
 import type { TimeString } from 'common/types';
 import type { SuggestedOP } from 'modules/timetableItem/types';
 import type { Duration } from 'utils/duration';
@@ -22,7 +23,10 @@ export type TimesStopsRowNew = {
   invalidPathStep: boolean | undefined;
   scheduleNotHonored: boolean | undefined;
   marginNotHonored: boolean | undefined;
-  isPathStep?: boolean;
+  /** True if this row corresponds to a pathStep input, false if it's just a waypoint */
+  isPathStep: boolean;
+  /** Location info to create a new PathItem when editing a waypoint that's not yet a pathStep */
+  location: PathItemLocation;
 };
 
 export type TimesStopsRow = {
@@ -64,3 +68,23 @@ export type TheoreticalMarginsRecord = Record<
   string,
   { theoreticalMargin: string; isBoundary: boolean }
 >;
+
+export type ArrivalUpdate = {
+  row: TimesStopsRowNew;
+  field: 'requestedArrival';
+  value: Date | null;
+};
+
+export type StopDurationUpdate = {
+  row: TimesStopsRowNew;
+  field: 'stopDuration';
+  value: number | null;
+};
+
+export type DepartureUpdate = {
+  row: TimesStopsRowNew;
+  field: 'requestedDeparture';
+  value: Date | null;
+};
+
+export type CellUpdate = ArrivalUpdate | StopDurationUpdate | DepartureUpdate;

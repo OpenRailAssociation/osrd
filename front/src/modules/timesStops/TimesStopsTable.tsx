@@ -24,15 +24,62 @@ declare module '@tanstack/react-table' {
   }
 }
 
+/**
+ * Get the reference date for arrival editing.
+ * Uses the previous row's latest time (departure > arrival) to determine the correct day.
+ */
+const getArrivalReferenceDate = (
+  row: TimesStopsRowNew,
+  allRows: TimesStopsRowNew[],
+  startTime: Date
+): Date => {
+  // Find the previous row with any time information
+  const previousRow = allRows.findLast(
+    (r) =>
+      r.opOnPathIndex < row.opOnPathIndex &&
+      (r.computedDeparture || r.computedArrival || r.requestedDeparture || r.requestedArrival)
+  );
+
+  if (!previousRow) return startTime;
+
+  // Use the latest available time from the previous row
+  return (
+    previousRow.computedDeparture ??
+    previousRow.computedArrival ??
+    previousRow.requestedDeparture ??
+    previousRow.requestedArrival ??
+    startTime
+  );
+};
+
+/**
+ * Get the reference date for departure editing.
+ * Uses the current row's arrival time since departure must be after arrival.
+ */
+const getDepartureReferenceDate = (row: TimesStopsRowNew, startTime: Date): Date =>
+  row.computedArrival ?? row.requestedArrival ?? startTime;
+
 type TimesStopsTableProps = {
   rows: TimesStopsRowNew[];
-  dataIsLoading: boolean;
+  startTime: Date;
+  dataIsLoading?: boolean;
   isValid: boolean;
+  isComputedDataPending?: boolean;
+  onArrivalChange: (row: TimesStopsRowNew, arrival: Date | null) => void;
+  onDepartureChange: (row: TimesStopsRowNew, departure: Date | null) => void;
 };
 
 const columnHelper = createColumnHelper<TimesStopsRowNew>();
 
-const TimesStopsTable = ({ rows, dataIsLoading, isValid }: TimesStopsTableProps) => {
+const TimesStopsTable = ({
+  rows,
+  startTime,
+  dataIsLoading,
+  isValid,
+  isComputedDataPending,
+  onArrivalChange,
+  onDepartureChange,
+}: TimesStopsTableProps) => {
   const { t } = useTranslation('translation', { keyPrefix: 'timeStopTable' });
 
   const isScheduleNotHonored = rows.some((row) => row.scheduleNotHonored);
@@ -98,14 +145,26 @@ const TimesStopsTable = ({ rows, dataIsLoading, isValid }: TimesStopsTableProps)
       }),
       columnHelper.accessor('requestedArrival', {
         header: () => t('arrivalTime'),
-        cell: (info) => <TimeCell {...info} />,
+        cell: (info) => (
+          <TimeCell
+            {...info}
+            referenceDate={getArrivalReferenceDate(info.row.original, rows, startTime)}
+            onCommit={(date) => onArrivalChange(info.row.original, date)}
+          />
+        ),
         meta: {
           className: 'col-requested-arrival',
         },
       }),
       columnHelper.accessor('computedArrival', {
         header: () => t('calculatedArrivalTime'),
-        cell: (info) => <span>{info.getValue() ? formatLocalTime(info.getValue()!) : ''}</span>,
+        cell: (info) => {
+          if (isComputedDataPending) {
+            return <span className="cell-loading-placeholder" />;
+          }
+          const value = info.getValue();
+          return <span>{value ? formatLocalTime(value) : ''}</span>;
+        },
         meta: {
           className: 'col-computed-arrival computed',
         },
@@ -119,20 +178,40 @@ const TimesStopsTable = ({ rows, dataIsLoading, isValid }: TimesStopsTableProps)
       }),
       columnHelper.accessor('requestedDeparture', {
         header: () => t('departureTime'),
-        cell: (info) => <span>{info.getValue() ? formatLocalTime(info.getValue()!) : ''}</span>,
+        cell: (info) => {
+          const row = info.row.original;
+          // Disable departure editing on the first row (origin)
+          if (row.opOnPathIndex === 0) {
+            const value = info.getValue();
+            return <span>{value ? formatLocalTime(value) : ''}</span>;
+          }
+          return (
+            <TimeCell
+              {...info}
+              referenceDate={getDepartureReferenceDate(row, startTime)}
+              onCommit={(date) => onDepartureChange(row, date)}
+            />
+          );
+        },
         meta: {
           className: 'col-requested-departure',
         },
       }),
       columnHelper.accessor('computedDeparture', {
         header: () => t('calculatedDepartureTime'),
-        cell: (info) => <span>{info.getValue() ? formatLocalTime(info.getValue()!) : ''}</span>,
+        cell: (info) => {
+          if (isComputedDataPending) {
+            return <span className="cell-loading-placeholder" />;
+          }
+          const value = info.getValue();
+          return <span>{value ? formatLocalTime(value) : ''}</span>;
+        },
         meta: {
           className: 'col-computed-departure computed',
         },
       }),
     ],
-    [t]
+    [startTime, isComputedDataPending]
   );
 
   // eslint-disable-next-line react-hooks/incompatible-library
@@ -159,7 +238,9 @@ const TimesStopsTable = ({ rows, dataIsLoading, isValid }: TimesStopsTableProps)
   }
 
   return (
-    <div className="times-stops-table-new">
+    <div
+      className={cx('times-stops-table-new', { 'computed-data-pending': isComputedDataPending })}
+    >
       <table className="table-container">
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
