@@ -1,3 +1,5 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
+
 import cx from 'classnames';
 import { useSelector } from 'react-redux';
 
@@ -6,21 +8,24 @@ import type {
   CorePathfindingResultSuccess,
   SimulationResponseSuccess,
 } from 'common/api/osrdEditoastApi';
-import type { SimulationSummary } from 'modules/timetableItem/types';
-import type { Train } from 'reducers/osrdconf/types';
+import type { SimulationSummary, TimetableItemWithDetails } from 'modules/timetableItem/types';
+import type { TimetableItem, Train } from 'reducers/osrdconf/types';
 import { getUseNewTimesStopsTable } from 'reducers/user/userSelectors';
 import { formatLocalTime } from 'utils/date';
 
 import useOutputTableData from './hooks/useOutputTableData';
 import useTimesStopsTableData from './hooks/useTimesStopsTableData';
+import useUpdateTimesStopsTable from './hooks/useUpdateTimesStopsTable';
 import TimesStops from './TimesStops';
 import TimesStopsTable from './TimesStopsTable';
-import { TableType, type TimesStopsRow } from './types';
+import { TableType, type TimesStopsRow, type TimesStopsRowNew } from './types';
 
 type TimesStopsOutputProps = {
   infraId: number;
-  isValid: boolean;
+  isValid?: boolean;
   selectedTrain: Train;
+  timetableItemsWithDetails: TimetableItemWithDetails[];
+  upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   simulatedTrain?: SimulationResponseSuccess['final_output'];
   simulatedPath?: CorePathfindingResultSuccess;
   simulatedPathItemTimes?: Extract<SimulationSummary, { isValid: true }>['pathItemTimes'];
@@ -30,14 +35,26 @@ type TimesStopsOutputProps = {
 
 const TimesStopsOutput = ({
   infraId,
-  isValid,
+  isValid = false,
   selectedTrain,
+  timetableItemsWithDetails,
+  upsertTimetableItems,
   simulatedTrain,
   simulatedPathItemTimes,
   simulatedPathItemRespect,
   operationalPointsOnPath,
 }: TimesStopsOutputProps) => {
   const useNewTimesStopsTable = useSelector(getUseNewTimesStopsTable);
+
+  // Store the simulatedPathItemTimes reference before an edit to detect when new simulation arrives
+  const preEditPathItemTimesRef = useRef<typeof simulatedPathItemTimes>(undefined);
+
+  // Store pending edit for optimistic UI update (state to trigger re-render)
+  const [pendingEdit, setPendingEdit] = useState<{
+    rowId: string;
+    field: 'requestedArrival' | 'requestedDeparture';
+    value: Date | null;
+  } | null>(null);
 
   // Only call the hook that corresponds to the active table to avoid unnecessary computation
   const legacyRows = useOutputTableData(
@@ -59,9 +76,73 @@ const TimesStopsOutput = ({
     useNewTimesStopsTable ? operationalPointsOnPath : undefined
   );
 
+  const startTime = useMemo(() => new Date(selectedTrain.start_time), [selectedTrain.start_time]);
+
+  const { updateArrival, updateDeparture } = useUpdateTimesStopsTable(
+    selectedTrain,
+    newRows,
+    timetableItemsWithDetails,
+    upsertTimetableItems
+  );
+
+  // Are we waiting for simulation to refresh after a user edit?
+  const isAwaitingSimulation =
+    preEditPathItemTimesRef.current !== undefined &&
+    simulatedPathItemTimes === preEditPathItemTimesRef.current;
+
+  // Clear refs/state when fresh simulation data arrives
+  useEffect(() => {
+    if (!isAwaitingSimulation && preEditPathItemTimesRef.current !== undefined) {
+      preEditPathItemTimesRef.current = undefined;
+      setPendingEdit(null);
+    }
+  }, [isAwaitingSimulation]);
+
+  const handleArrivalChange = async (row: TimesStopsRowNew, arrival: Date | null) => {
+    if (isAwaitingSimulation) return;
+    preEditPathItemTimesRef.current = simulatedPathItemTimes;
+    setPendingEdit({ rowId: row.id, field: 'requestedArrival', value: arrival });
+    try {
+      await updateArrival(row, arrival);
+    } catch {
+      preEditPathItemTimesRef.current = undefined;
+      setPendingEdit(null);
+    }
+  };
+
+  const handleDepartureChange = async (row: TimesStopsRowNew, departure: Date | null) => {
+    if (isAwaitingSimulation) return;
+    preEditPathItemTimesRef.current = simulatedPathItemTimes;
+    setPendingEdit({ rowId: row.id, field: 'requestedDeparture', value: departure });
+    try {
+      await updateDeparture(row, departure);
+    } catch {
+      preEditPathItemTimesRef.current = undefined;
+      setPendingEdit(null);
+    }
+  };
+
+  // Apply optimistic update to display rows
+  const displayRows = pendingEdit
+    ? newRows.map((row) => {
+        if (row.id === pendingEdit.rowId) {
+          return { ...row, [pendingEdit.field]: pendingEdit.value };
+        }
+        return row;
+      })
+    : newRows;
+
   if (useNewTimesStopsTable) {
     return (
-      <TimesStopsTable rows={newRows} dataIsLoading={newRows.length === 0} isValid={isValid} />
+      <TimesStopsTable
+        rows={displayRows}
+        startTime={startTime}
+        dataIsLoading={newRows.length === 0}
+        isValid={isValid}
+        isComputedDataPending={isAwaitingSimulation}
+        onArrivalChange={handleArrivalChange}
+        onDepartureChange={handleDepartureChange}
+      />
     );
   }
 

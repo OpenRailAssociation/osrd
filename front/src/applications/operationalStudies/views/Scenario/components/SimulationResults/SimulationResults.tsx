@@ -23,7 +23,7 @@ import type { ProjectionData, TrainSpaceTimeData } from 'modules/simulationResul
 import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
 import { findExceptionWithOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
-import type { TimetableItemId } from 'reducers/osrdconf/types';
+import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 import { toggleDisplayOnlyPathSteps, updateSelectedTrainId } from 'reducers/simulationResults';
 import {
   getDisplayOnlyPathSteps,
@@ -47,6 +47,7 @@ type SimulationResultsProps = {
   conflicts?: Conflict[];
   activeBoards: Set<Board>;
   updateTrainDepartureTime: (trainId: TimetableItemId, newDepartureTime: Date) => Promise<void>;
+  upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
 };
 
 const SimulationResults = ({
@@ -56,6 +57,7 @@ const SimulationResults = ({
   conflicts = [],
   activeBoards,
   updateTrainDepartureTime,
+  upsertTimetableItems,
 }: SimulationResultsProps) => {
   const { t } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
@@ -330,15 +332,16 @@ const SimulationResults = ({
               <TimesStopsOutput
                 infraId={infraId}
                 selectedTrain={simulationResults?.train}
-                {...(simulationResults?.isValid && simulationSummary?.isValid
-                  ? {
-                      isValid: true,
-                      simulatedTrain: simulationResults.simulation.final_output,
-                      simulatedPathItemTimes: simulationSummary.pathItemTimes,
-                      simulatedPathItemRespect: simulationSummary.pathItemRespect,
-                      operationalPointsOnPath: simulationResults.pathProperties.operationalPoints,
-                    }
-                  : { isValid: false })}
+                timetableItemsWithDetails={timetableItemsWithDetails}
+                upsertTimetableItems={upsertTimetableItems}
+                {...(simulationResults?.isValid &&
+                  simulationSummary?.isValid && {
+                    isValid: true,
+                    simulatedTrain: simulationResults.simulation.final_output,
+                    simulatedPathItemTimes: simulationSummary.pathItemTimes,
+                    simulatedPathItemRespect: simulationSummary.pathItemRespect,
+                    operationalPointsOnPath: simulationResults.pathProperties.operationalPoints,
+                  })}
               />
             </div>
           </BoardWrapper>

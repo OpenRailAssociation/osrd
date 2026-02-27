@@ -9,6 +9,7 @@ import { useScenarioContext } from 'applications/operationalStudies/hooks/useSce
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import { matchOpRefAndOp } from 'applications/operationalStudies/utils';
 import type {
+  PathItemLocation,
   SimulationResponseSuccess,
   TrackSection,
   ScheduleItem,
@@ -20,7 +21,7 @@ import type { Train } from 'reducers/osrdconf/types';
 import { getDisplayOnlyPathSteps } from 'reducers/simulationResults/selectors';
 import { Duration } from 'utils/duration';
 
-import { getOperationalPointName } from '../helpers/utils';
+import { buildOpMatchParams, getOperationalPointName } from '../helpers/utils';
 import type { TimesStopsRowNew } from '../types';
 
 type BuildTableRowParams = {
@@ -35,7 +36,7 @@ type BuildTableRowParams = {
   invalidPathStep?: boolean;
   scheduleNotHonored?: boolean;
   marginNotHonored?: boolean;
-  isPathStep?: boolean;
+  location: PathItemLocation;
 };
 
 const buildTableRow = ({
@@ -50,7 +51,7 @@ const buildTableRow = ({
   invalidPathStep,
   scheduleNotHonored,
   marginNotHonored,
-  isPathStep,
+  location,
 }: BuildTableRowParams): TimesStopsRowNew => {
   const requestedArrival = schedule?.arrival
     ? new Date(startDate.getTime() + Duration.parse(schedule.arrival).ms)
@@ -89,7 +90,8 @@ const buildTableRow = ({
     invalidPathStep,
     scheduleNotHonored,
     marginNotHonored,
-    isPathStep,
+    isPathStep: true,
+    location,
   };
 };
 
@@ -180,7 +182,7 @@ const useTimesStopsTableData = (
           invalidPathStep: !matchingOp,
           scheduleNotHonored,
           marginNotHonored,
-          isPathStep: true,
+          location: pathStep.location,
         });
 
         return [pathStep.id, row];
@@ -195,14 +197,7 @@ const useTimesStopsTableData = (
         const trackName = op.part.local_track_name;
 
         const matchingPathStep = selectedTrain.path.find((pathStep) =>
-          matchPathStepAndOp(pathStep.location, {
-            opId: op.id,
-            uic: op.extensions?.identifier?.uic,
-            ch: op.extensions?.sncf?.ch,
-            trigram: op.extensions?.sncf?.trigram,
-            track: op.part.track,
-            offsetOnTrack: op.part.position,
-          })
+          matchPathStepAndOp(pathStep.location, buildOpMatchParams(op))
         );
 
         const matchingPathStepRow = matchingPathStep
@@ -228,8 +223,8 @@ const useTimesStopsTableData = (
               ? new Duration({ milliseconds: computedArrivalMs })
               : undefined;
 
-          formattedRows.push(
-            buildTableRow({
+          formattedRows.push({
+            ...buildTableRow({
               id: op.id,
               opOnPathIndex: opIndex,
               name: op.extensions?.identifier?.name,
@@ -237,9 +232,19 @@ const useTimesStopsTableData = (
               trackName,
               startDate,
               computedArrival,
-              isPathStep: false,
-            })
-          );
+              // Build location from OP data for creating a new PathItem if user edits this row
+              // OPs on path always have a UIC identifier
+              location: {
+                operational_point: {
+                  type: 'uic',
+                  uic: op.extensions!.identifier!.uic,
+                  secondary_code: op.extensions?.sncf?.ch ?? null,
+                },
+                local_track_name: op.part.local_track_name,
+              },
+            }),
+            isPathStep: false,
+          });
         }
       });
     } else {
