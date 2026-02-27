@@ -26,7 +26,7 @@ import { useScenarioContext } from './useScenarioContext';
  */
 const useSimulationResults = (): {
   results: SimulationResults | undefined;
-  isSimulationFetching: boolean;
+  isSimulationDataLoading: boolean;
 } => {
   const { t } = useTranslation('operational-studies');
 
@@ -73,15 +73,16 @@ const useSimulationResults = (): {
     return findExceptionWithOccurrenceId(timetableItem.paced.exceptions, selectedTrainId);
   }, [selectedTrainId, timetableItem]);
 
-  const { currentData: pathfinding } = osrdEditoastApi.endpoints.getTrainPath.useQuery(
-    selectedTrainId
-      ? {
-          id: selectedTrainId,
-          infraId,
-          exceptionKey: exception?.key,
-        }
-      : skipToken
-  );
+  const { currentData: pathfinding, isFetching: isPathfindingFetching } =
+    osrdEditoastApi.endpoints.getTrainPath.useQuery(
+      selectedTrainId
+        ? {
+            id: selectedTrainId,
+            infraId,
+            exceptionKey: exception?.key,
+          }
+        : skipToken
+    );
 
   const { currentData: simulation, isFetching: isSimulationFetching } =
     osrdEditoastApi.endpoints.getTrainSimulation.useQuery(
@@ -106,7 +107,7 @@ const useSimulationResults = (): {
         : skipToken
     );
 
-  const { currentData: rawPathProperties } =
+  const { currentData: rawPathProperties, isFetching: isPathPropertiesFetching } =
     osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useQuery(
       pathfinding?.status === 'success'
         ? {
@@ -118,8 +119,11 @@ const useSimulationResults = (): {
         : skipToken
     );
 
+  const isSimulationDataLoading =
+    isPathfindingFetching || isSimulationFetching || isPathPropertiesFetching;
+
   if (!train || exception?.disabled) {
-    return { results: undefined, isSimulationFetching };
+    return { results: undefined, isSimulationDataLoading };
   }
 
   if (
@@ -128,7 +132,10 @@ const useSimulationResults = (): {
     !rawPathProperties ||
     !rollingStock
   ) {
-    return { results: { isValid: false, train, rollingStock }, isSimulationFetching };
+    return {
+      results: { isValid: false, train, rollingStock },
+      isSimulationDataLoading,
+    };
   }
 
   const pathProperties = preparePathPropertiesData(
@@ -157,7 +164,7 @@ const useSimulationResults = (): {
       pathProperties,
       powerRestrictions,
     },
-    isSimulationFetching,
+    isSimulationDataLoading,
   };
 };
 

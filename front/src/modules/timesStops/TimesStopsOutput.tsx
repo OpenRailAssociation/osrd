@@ -33,7 +33,7 @@ type TimesStopsOutputProps = {
   simulatedPathItemTimes?: Extract<SimulationSummary, { isValid: true }>['pathItemTimes'];
   simulatedPathItemRespect?: Extract<SimulationSummary, { isValid: true }>['pathItemRespect'];
   operationalPointsOnPath?: PathPropertiesFormatted['operationalPoints'];
-  isSimulationFetching?: boolean;
+  isSimulationDataLoading?: boolean;
 };
 
 const TimesStopsOutput = ({
@@ -46,13 +46,13 @@ const TimesStopsOutput = ({
   simulatedPathItemTimes,
   simulatedPathItemRespect,
   operationalPointsOnPath,
-  isSimulationFetching = false,
+  isSimulationDataLoading = false,
 }: TimesStopsOutputProps) => {
   const useNewTimesStopsTable = useSelector(getUseNewTimesStopsTable);
 
   // Refs used to track simulation refresh after a user edit (see isAwaitingSimulation):
   //   - preEditPathItemTimesRef: batch summary (simulatedPathItemTimes reference)
-  //   - isTrainSimulationPendingRef: per-train simulation (getTrainSimulation isFetching)
+  //   - isTrainSimulationPendingRef: all simulation queries (isSimulationDataLoading)
   const preEditPathItemTimesRef = useRef<typeof simulatedPathItemTimes>(undefined);
   const isTrainSimulationPendingRef = useRef(false);
 
@@ -66,9 +66,10 @@ const TimesStopsOutput = ({
     useNewTimesStopsTable ? undefined : operationalPointsOnPath
   );
 
-  const newRows = useTimesStopsTableData(
+  const { rows: newRows, stableIsValid } = useTimesStopsTableData(
     infraId,
     isValid,
+    isSimulationDataLoading,
     selectedTrain,
     useNewTimesStopsTable ? simulatedTrain : undefined,
     useNewTimesStopsTable ? simulatedPathItemTimes : undefined,
@@ -97,11 +98,11 @@ const TimesStopsOutput = ({
   // True if we are still waiting for fresh simulation data after a user edit.
   // Both pipelines must finish before we clear the loading state:
   //   - Condition 1 (batch summary): wait until simulatedPathItemTimes gets a new reference.
-  //   - Condition 2 (train simulation): wait until getTrainSimulation stops fetching.
+  //   - Condition 2 (all simulation queries): wait until isSimulationDataLoading is false.
   const isAwaitingSimulation =
     (preEditPathItemTimesRef.current !== undefined &&
       simulatedPathItemTimes === preEditPathItemTimesRef.current) ||
-    (isTrainSimulationPendingRef.current && isSimulationFetching);
+    (isTrainSimulationPendingRef.current && isSimulationDataLoading);
 
   // Reset refs once both simulation pipelines are done
   useEffect(() => {
@@ -174,7 +175,7 @@ const TimesStopsOutput = ({
       <TimesStopsTable
         rows={optimisticRows}
         startTime={startTime}
-        isValid={isValid}
+        isValid={stableIsValid}
         isComputedDataPending={isAwaitingSimulation}
         onArrivalChange={handleArrivalChange}
         onStopDurationChange={handleStopDurationChange}
