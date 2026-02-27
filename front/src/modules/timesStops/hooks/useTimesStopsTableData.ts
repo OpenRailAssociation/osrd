@@ -244,6 +244,11 @@ const useTimesStopsTableData = (
       }));
     }
 
+    // The first row has no schedule.arrival, so we set requestedArrival to startDate.
+    if (formattedRows.length > 0 && !formattedRows[0].requestedArrival) {
+      formattedRows[0] = { ...formattedRows[0], requestedArrival: startDate };
+    }
+
     return formattedRows;
   }, [
     selectedTrain,
