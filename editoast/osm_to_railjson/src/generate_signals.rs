@@ -158,6 +158,11 @@ impl<'a> Track<'a> {
             && let Some((track_section, direction, pk)) =
                 self.get_track_section_at_distance(INTERSECTION_SIGNAL_DISTANCE)
         {
+            // FIXME: This signals should not be generated.
+            // It's here as a temporary solution to a problem with the current route generation.
+            // Link to the issue: https://github.com/OpenRailAssociation/osrd/issues/15465
+            signals.push(new_bal(track_section.id.clone(), pk, direction, true));
+
             signals.push(new_bal(
                 track_section.id.clone(),
                 pk,
@@ -171,6 +176,16 @@ impl<'a> Track<'a> {
                 self.get_track_section_at_distance(track_length - INTERSECTION_SIGNAL_DISTANCE)
         {
             signals.push(new_bal(track_section.id.clone(), pk, direction, true));
+
+            // FIXME: This signals should not be generated.
+            // It's here as a temporary solution to a problem with the current route generation.
+            // Link to the issue: https://github.com/OpenRailAssociation/osrd/issues/15465
+            signals.push(new_bal(
+                track_section.id.clone(),
+                pk,
+                direction.toggle(),
+                true,
+            ));
         }
 
         signals
@@ -308,8 +323,8 @@ mod tests {
         let mut railjson =
             crate::osm_to_railjson::parse_osm("src/tests/switches.osm.pbf".into(), true).unwrap();
         super::generate_signals(&mut railjson);
-        assert_eq!(railjson.signals.len(), 371);
-        assert_eq!(railjson.detectors.len(), 371);
+        assert_eq!(railjson.signals.len(), 382);
+        assert_eq!(railjson.detectors.len(), 382);
     }
 
     #[rstest]
@@ -357,7 +372,7 @@ mod tests {
             crate::osm_to_railjson::parse_osm("src/tests/intersection.osm.pbf".into(), true)
                 .unwrap();
         super::generate_signals(&mut railjson);
-        assert_eq!(railjson.signals.len(), 6);
+        assert_eq!(railjson.signals.len(), 12);
 
         assert!(railjson.signals.iter().all(|signal| {
             if let Some(logical_signal) = signal.logical_signals.first() {
