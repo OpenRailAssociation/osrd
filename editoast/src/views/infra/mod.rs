@@ -770,9 +770,6 @@ pub(in crate::views) async fn unlock(
 #[cfg_attr(test, derive(Serialize))]
 pub(in crate::views) struct MatchOperationalPointsForm {
     operational_point_references: Vec<OperationalPointReference>,
-    /// When true, ignores secondary_code matching and returns all OPs with the given trigram/UIC.
-    #[serde(default)]
-    ignore_secondary_code: bool,
 }
 
 #[derive(Serialize, ToSchema)]
@@ -822,7 +819,6 @@ pub(in crate::views) async fn match_operational_points(
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     Json(MatchOperationalPointsForm {
         operational_point_references,
-        ignore_secondary_code,
     }): Json<MatchOperationalPointsForm>,
 ) -> Result<Json<MatchOperationalPointsResponse>> {
     let authorized = auth
@@ -847,7 +843,7 @@ pub(in crate::views) async fn match_operational_points(
     for operational_point_reference in operational_point_references {
         // Retrieve related OPs based on the input operational point identifier:
         let related_operational_points = op_cache
-            .get_reference(operational_point_reference, ignore_secondary_code)
+            .get_reference(operational_point_reference)
             .expect("should get the provided reference");
 
         // Add the operational point reference related operational points to the response:
@@ -1413,7 +1409,6 @@ pub mod tests {
             .post(format!("/infra/{}/match_operational_points", infra.id).as_str())
             .json(&json!({
                 "operational_point_references": operational_point_references,
-                "ignore_secondary_code": false
             }));
         let response: MatchOperationalPointsResponse = app
             .fetch(request)
@@ -1462,7 +1457,6 @@ pub mod tests {
             .post(format!("/infra/{}/match_operational_points", infra.id).as_str())
             .json(&json!({
                 "operational_point_references": operational_point_references,
-                "ignore_secondary_code": false
             }));
         let response: MatchOperationalPointsResponse = app
             .fetch(request)
@@ -1475,57 +1469,6 @@ pub mod tests {
             .map(|op_ref| op_ref.iter().map(|op| op.id.as_str()).collect::<Vec<_>>())
             .collect::<Vec<_>>();
         let expected_identifiers: [Vec<&str>; 2] = [vec![], vec![]];
-        assert_eq!(response_op_identifiers, expected_identifiers);
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn match_operational_points_with_ignore_secondary_code() {
-        let app = TestAppBuilder::default_app();
-        let db_pool = app.db_pool();
-        let mut infra = create_small_infra(&mut db_pool.get_ok()).await;
-        let infra_cache = InfraCache::load(&mut db_pool.get_ok(), &infra)
-            .await
-            .unwrap();
-        infra
-            .refresh(db_pool.clone(), false, &infra_cache)
-            .await
-            .unwrap();
-
-        // Test with ignore_secondary_code set to true to retrieve all OPs with this trigram or UIC
-        let operational_point_references = vec![
-            OperationalPointReference::Id {
-                operational_point: ("West_station").into(),
-            },
-            OperationalPointReference::Trigram {
-                trigram: "MES".into(),
-                secondary_code: Some("BV".into()),
-            },
-            OperationalPointReference::Uic {
-                uic: 8755,
-                secondary_code: None,
-            },
-        ];
-        let request = app
-            .post(format!("/infra/{}/match_operational_points", infra.id).as_str())
-            .json(&json!({
-                "operational_point_references": operational_point_references,
-                "ignore_secondary_code": true
-            }));
-        let response: MatchOperationalPointsResponse = app
-            .fetch(request)
-            .await
-            .assert_status(StatusCode::OK)
-            .json_into();
-        let response_op_identifiers = response
-            .related_operational_points
-            .iter()
-            .map(|op_ref| op_ref.iter().map(|op| op.id.as_str()).collect::<Vec<_>>())
-            .collect_vec();
-        let expected_identifiers = [
-            vec!["West_station"],
-            vec!["Mid_East_station"],
-            vec!["North_station"],
-        ];
         assert_eq!(response_op_identifiers, expected_identifiers);
     }
 

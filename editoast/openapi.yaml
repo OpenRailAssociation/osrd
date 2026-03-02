@@ -1178,9 +1178,6 @@ paths:
               required:
               - operational_point_references
               properties:
-                ignore_secondary_code:
-                  type: boolean
-                  description: When true, ignores secondary_code matching and returns all OPs with the given trigram/UIC.
                 operational_point_references:
                   type: array
                   items:
