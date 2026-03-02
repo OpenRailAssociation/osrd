@@ -19,10 +19,10 @@ const upsertNewProjectedTrains = (
       continue;
     }
 
-    const exceptionProjections = new Map<string, BaseTrainProjection>();
+    const exceptionProjections = new Map<number, BaseTrainProjection>();
     if (trainData.exceptions) {
-      for (const [exceptionKey, exceptionProjectionData] of trainData.exceptions) {
-        exceptionProjections.set(exceptionKey, {
+      for (const [exceptionId, exceptionProjectionData] of trainData.exceptions) {
+        exceptionProjections.set(Number(exceptionId), {
           spaceTimeCurves: exceptionProjectionData.space_time_curves,
           signalUpdates: exceptionProjectionData.signal_updates,
         });
