@@ -93,15 +93,12 @@ const PathStepItem = ({
 
   const shouldShowInvalidMessage = !!isInvalidAndIsEditing;
 
-  const getInvalidMessage = (comboBoxValue: string) => {
+  const getInvalidMessage = () => {
     let message = t('invalidOP');
 
-    if (comboBoxValue) {
-      message += `${comboBoxValue}
-      `;
-    }
-
-    if (!pathStepMetadata?.isInvalid || !pathStep.location) return message;
+    if (!pathStepMetadata?.isInvalid || !pathStep.location || inputValue !== undefined)
+      return (message += `${inputValue}
+      `);
 
     const { location } = pathStep;
 
@@ -226,6 +223,9 @@ const PathStepItem = ({
   };
 
   const comboBoxValue = useMemo(() => {
+    // Don't show invalid points in the combobox - they'll be shown in the error message instead
+    if (inputValue !== undefined && pathStepMetadata?.isInvalid) return undefined;
+
     if (inputValue !== undefined) return inputValue;
 
     if (isOpRefMetadata(pathStepMetadata)) {
@@ -434,9 +434,7 @@ const PathStepItem = ({
         </div>
       </div>
       {shouldShowInvalidMessage && (
-        <span className="invalid-step-message">
-          {getInvalidMessage(comboBoxValue ? comboBoxValue : '')}
-        </span>
+        <span className="invalid-step-message">{getInvalidMessage()}</span>
       )}
     </div>
   );

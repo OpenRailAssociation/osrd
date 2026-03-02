@@ -161,13 +161,19 @@ const ItineraryModal = ({
   const editingStepIdRef = useRef<string>('');
 
   const isStepInvalidAndIsEditing = (step: PathStepV2, metadata?: PathStepMetadata) => {
-    if (step.location) return false;
     if (!metadata?.isInvalid) return false;
 
-    const query = (getInputForStep(step.id) ?? '').trim();
     const isEditing = editingStepIdRef.current === step.id;
 
-    return query.length > 0 && !isEditing;
+    // A step with no location is invalid only if the user typed something and isn't currently editing
+    if (!step.location) {
+      const query = (getInputForStep(step.id) ?? '').trim();
+      return query.length > 0 && !isEditing;
+    }
+
+    // A step with a location can still be invalid (OP not found in current infra).
+    // Show the error as long as the user is not actively editing it.
+    return !isEditing;
   };
 
   const hasInvalidPathStepDisplay = pathSteps.some((step) =>
@@ -472,7 +478,11 @@ const ItineraryModal = ({
                     pathStepMetadata={pathStepMetadata}
                     index={i + 1}
                     categoryColors={categoryColors}
-                    hidePathfindingLine={i > 0 && isInvalid && !isTrailingPlaceholder}
+                    hidePathfindingLine={
+                      i > 0 &&
+                      !isTrailingPlaceholder &&
+                      (isInvalid || !!previousPathStepMetadata?.isInvalid)
+                    }
                     onDelete={() => {
                       if (isOnlyStep) return;
                       handleDeletePathStep(pathStep.id);
