@@ -9,6 +9,7 @@ use authz::Role;
 use authz::StorageDriver;
 use authz::identity::GroupInfo;
 use authz::identity::UserInfo;
+use authz::v2::Authorizer;
 use clap::Args;
 use clap::Subcommand;
 use database::DbConnectionPoolV2;
@@ -17,6 +18,9 @@ use strum::IntoEnumIterator;
 use tracing::info;
 
 use editoast_models::PgAuthDriver;
+
+use crate::authorizers::Rejection;
+use crate::authorizers::SystemAuthorizer;
 
 use super::openfga_config::OpenfgaConfig;
 
@@ -77,6 +81,13 @@ impl Subject {
         Self {
             id,
             info: SubjectInfo::Group(info),
+        }
+    }
+
+    fn into_authz(self) -> authz::Subject {
+        match self.info {
+            SubjectInfo::User(_) => authz::Subject::User(authz::User(self.id)),
+            SubjectInfo::Group(_) => authz::Subject::Group(authz::Group(self.id)),
         }
     }
 }
@@ -161,7 +172,12 @@ pub async fn add_roles(
     pool: Arc<DbConnectionPoolV2>,
     openfga_config: OpenfgaConfig,
 ) -> anyhow::Result<()> {
-    let regulator = openfga_config.into_regulator(pool).await?;
+    let openfga = &openfga_config.into_client().await?;
+    let system = SystemAuthorizer {
+        openfga,
+        conn: pool.get().await?,
+    };
+
     let roles = roles
         .iter()
         .map(String::as_str)
@@ -175,21 +191,14 @@ pub async fn add_roles(
             .collect_vec()
             .join(", "),
     );
-    match parse_and_fetch_subject(&subject, regulator.driver()).await? {
-        Subject {
-            id,
-            info: SubjectInfo::User(_),
-        } => regulator.grant_user_roles(&authz::User(id), roles).await?,
-        Subject {
-            id,
-            info: SubjectInfo::Group(_),
-        } => {
-            regulator
-                .grant_group_roles(&authz::Group(id), roles)
-                .await?
+    let subject = parse_and_fetch_subject(&subject, &PgAuthDriver::new(pool)).await?;
+    let add_roles = authz::v2::add_roles(subject.into_authz(), roles);
+    match system.authorize(add_roles).await?.access().await? {
+        Ok(()) => Ok(()),
+        Err(Rejection::NoSuchUser(_)) | Err(Rejection::NoSuchGroup(_)) => {
+            unreachable!("checked by parse_and_fetch_subject")
         }
     }
-    Ok(())
 }
 
 pub async fn remove_roles(
