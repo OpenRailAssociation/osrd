@@ -6,13 +6,23 @@ use strum::EnumIter;
 use strum::EnumString;
 use utoipa::ToSchema;
 
-#[derive(Debug, PartialEq, derive_more::From)]
+#[derive(Debug, Clone, Copy, PartialEq, derive_more::From)]
 pub enum Subject {
     User(User),
     Group(Group),
 }
 
 impl Subject {
+    #[cfg(test)]
+    pub fn user(id: i64) -> Self {
+        Subject::User(User(id))
+    }
+
+    #[cfg(test)]
+    pub fn group(id: i64) -> Self {
+        Subject::Group(Group(id))
+    }
+
     pub fn id(&self) -> i64 {
         match self {
             Subject::User(user) => user.0,

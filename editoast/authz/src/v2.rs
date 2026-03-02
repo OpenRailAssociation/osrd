@@ -8,6 +8,7 @@ use itertools::Itertools;
 
 use crate::Group;
 use crate::Role;
+use crate::Subject;
 use crate::User;
 
 pub type OpenFgaError = fga::client::RequestFailure;
@@ -187,6 +188,45 @@ pub fn add_members<'a>(group: Group, members: HashSet<User>) -> Protected<'a, ()
     .with_guardrail(Guardrail::IssuerHasRole(Role::Admin))
 }
 
+// TODO: move somewhere more appropriate
+/// Gives the subject the specified roles
+///
+/// Idempotent but not atomic due to the lack of transactions in OpenFGA.
+pub fn add_roles(subject: Subject, roles: HashSet<Role>) -> Protected<'static, ()> {
+    Protected::new(move |openfga| {
+        async move {
+            let existing_roles = match &subject {
+                Subject::User(user) => Role::list_roles(openfga, User::role(), user).await?,
+                Subject::Group(group) => Role::list_roles(openfga, Group::role(), group).await?,
+            };
+
+            let existing_roles = HashSet::from_iter(existing_roles);
+            let new_roles = roles.difference(&existing_roles);
+            let mut writes = openfga.prepare_writes();
+            match subject {
+                Subject::User(user) => {
+                    for role in new_roles {
+                        writes.push(&User::role().tuple(role, &user));
+                    }
+                }
+                Subject::Group(group) => {
+                    for role in new_roles {
+                        writes.push(&Group::role().tuple(role, &group));
+                    }
+                }
+            }
+            writes.execute().await?;
+            Ok(())
+        }
+        .boxed()
+    })
+    .with_guardrail(Guardrail::IssuerHasRole(Role::Admin))
+    .with_check(match &subject {
+        Subject::User(user) => SanityCheck::UserExists(*user),
+        Subject::Group(group) => SanityCheck::GroupExists(*group),
+    })
+}
+
 pub mod test_authorizers {
     use std::convert::Infallible;
 
@@ -228,10 +268,21 @@ pub mod test_authorizers {
 }
 
 pub trait TestClientExt {
+    async fn subject_roles(&self, subject: &Subject) -> HashSet<Role>;
     async fn group_members(&self, group: &Group) -> HashSet<User>;
 }
 
 impl TestClientExt for fga::Client {
+    async fn subject_roles(&self, subject: &Subject) -> HashSet<Role> {
+        match subject {
+            Subject::User(user) => Role::list_roles(self, User::role(), user).await,
+            Subject::Group(group) => Role::list_roles(self, Group::role(), group).await,
+        }
+        .unwrap()
+        .into_iter()
+        .collect()
+    }
+
     async fn group_members(&self, group: &Group) -> HashSet<User> {
         self.list_users(Group::member().query_users(group))
             .await
@@ -301,6 +352,74 @@ mod tests {
         assert_eq!(
             openfga.group_members(&Group(1)).await,
             HashSet::from_iter([User(1), User(2), User(3)])
+        );
+    }
+
+    #[tokio::test]
+    async fn add_roles_idempotent() {
+        let openfga = crate::authz_client!();
+        let authorize = Authorize(&openfga);
+
+        add_roles(
+            Subject::user(1),
+            HashSet::from_iter([Role::Admin, Role::Stdcm]),
+        )
+        .authorize(&authorize)
+        .await
+        .unwrap()
+        .unwrap_authorized()
+        .await;
+        assert_eq!(
+            openfga.subject_roles(&Subject::user(1)).await,
+            HashSet::from_iter([Role::Admin, Role::Stdcm])
+        );
+
+        add_roles(
+            Subject::user(1),
+            HashSet::from_iter([Role::Admin, Role::Stdcm]),
+        )
+        .authorize(&authorize)
+        .await
+        .unwrap()
+        .unwrap_authorized()
+        .await;
+        assert_eq!(
+            openfga.subject_roles(&Subject::user(1)).await,
+            HashSet::from_iter([Role::Admin, Role::Stdcm])
+        );
+    }
+
+    #[tokio::test]
+    async fn add_roles_intersecting_calls() {
+        let openfga = crate::authz_client!();
+        let authorize = Authorize(&openfga);
+
+        add_roles(
+            Subject::user(1),
+            HashSet::from_iter([Role::Admin, Role::Stdcm]),
+        )
+        .authorize(&authorize)
+        .await
+        .unwrap()
+        .unwrap_authorized()
+        .await;
+        assert_eq!(
+            openfga.subject_roles(&Subject::user(1)).await,
+            HashSet::from_iter([Role::Admin, Role::Stdcm])
+        );
+
+        add_roles(
+            Subject::user(1),
+            HashSet::from_iter([Role::Admin, Role::OperationalStudies]),
+        )
+        .authorize(&authorize)
+        .await
+        .unwrap()
+        .unwrap_authorized()
+        .await;
+        assert_eq!(
+            openfga.subject_roles(&Subject::user(1)).await,
+            HashSet::from_iter([Role::Admin, Role::Stdcm, Role::OperationalStudies])
         );
     }
 }
