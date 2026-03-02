@@ -12,13 +12,7 @@ import type { Train } from 'reducers/osrdconf/types';
 /**
  * Given a train's path, return the operational points corresponding to the pathSteps of this train
  */
-const usePathOps = (
-  infraId: number,
-  path?: Train['path'],
-  options?: {
-    ignoreSecondaryCode: boolean;
-  }
-): RelatedOperationalPoint[] => {
+const usePathOps = (infraId: number, path?: Train['path']): RelatedOperationalPoint[] => {
   const operationalPointReferences: OperationalPointReference[] = useMemo(
     () =>
       (path ?? []).reduce<OperationalPointReference[]>((acc, pathItem) => {
@@ -37,7 +31,6 @@ const usePathOps = (
             infraId,
             body: {
               operational_point_references: operationalPointReferences,
-              ignore_secondary_code: options?.ignoreSecondaryCode ?? false,
             },
           }
         : skipToken
