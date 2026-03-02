@@ -151,6 +151,10 @@ const PacedTrainItem = ({
 
   const [postPacedTrain] =
     osrdEditoastApi.endpoints.postTrainScheduleSetsByIdTrainSchedules.useMutation();
+
+  const [postExceptions] =
+    osrdEditoastApi.endpoints.postTimetableByIdTrainScheduleException.useMutation();
+
   const [getTrainScheduleById] = osrdEditoastApi.endpoints.getTrainSchedulesById.useLazyQuery();
 
   const selectPathProjection = async () => {
@@ -222,12 +226,32 @@ const PacedTrainItem = ({
       train_name: pacedTrainName,
     };
 
-    let pacedTrainResult;
+    let pacedTrainResult: TrainScheduleResponse;
     try {
       [pacedTrainResult] = await postPacedTrain({
         id: pacedTrainDetail.train_schedule_set_id,
         body: [newPacedTrain],
       }).unwrap();
+
+      const exceptions = pacedTrainDetail.paced?.exceptions;
+
+      if (exceptions && exceptions.length > 0) {
+        await Promise.all(
+          exceptions.map((exception) => {
+            const { key: _key, occurrence_index, ...change_groups } = exception;
+
+            return postExceptions({
+              id: pacedTrainResult.id,
+              body: {
+                change_groups,
+                disabled: false,
+                occurrence_index,
+                train_schedule_id: pacedTrainResult.id,
+              },
+            }).unwrap();
+          })
+        );
+      }
     } catch (e) {
       dispatch(setFailure(castErrorToFailure(e)));
       return;
