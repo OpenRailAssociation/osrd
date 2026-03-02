@@ -39,21 +39,23 @@ impl From<OpenfgaConfig> for views::OpenfgaConfig {
 }
 
 impl OpenfgaConfig {
+    pub async fn into_client(self) -> anyhow::Result<fga::Client> {
+        let config: views::OpenfgaConfig = self.into();
+        tracing::info!(url = %config.url, "connecting to OpenFGA");
+        match fga::Client::try_with_store(&config.store, config.as_settings()).await {
+            Err(fga::client::InitializationError::NotFound(store)) => {
+                tracing::info!(store, "store not found, creating it");
+                Ok(fga::Client::try_new_store(&store, config.as_settings()).await?)
+            }
+            result => Ok(result?),
+        }
+    }
+
     pub async fn into_regulator(
         self,
         pool: Arc<DbConnectionPoolV2>,
     ) -> anyhow::Result<views::Regulator> {
-        let config: views::OpenfgaConfig = self.into();
-        let openfga = {
-            tracing::info!(url = %config.url, "connecting to OpenFGA");
-            match fga::Client::try_with_store(&config.store, config.as_settings()).await {
-                Err(fga::client::InitializationError::NotFound(store)) => {
-                    tracing::info!(store, "store not found, creating it");
-                    fga::Client::try_new_store(&store, config.as_settings()).await?
-                }
-                result => result?,
-            }
-        };
+        let openfga = self.into_client().await?;
         let driver = PgAuthDriver::new(pool);
         Ok(views::Regulator::new(openfga, driver))
     }
