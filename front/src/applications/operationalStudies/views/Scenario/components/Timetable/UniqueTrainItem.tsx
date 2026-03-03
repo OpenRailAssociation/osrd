@@ -13,7 +13,7 @@ import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import {
   createPacedTrains,
-  deletePacedTrains,
+  deleteTrainSchedules,
 } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import { setFailure, setSuccess } from 'reducers/main';
@@ -81,7 +81,7 @@ const UniqueTrainItem = ({
   };
 
   const deleteTrain = async () => {
-    deletePacedTrains(dispatch, [train.id])
+    deleteTrainSchedules(dispatch, [train.id])
       .then(() => {
         removeTrains([train.id]);
         setSelectedTimetableItemIds((prev) => prev.filter((id) => id !== train.id));

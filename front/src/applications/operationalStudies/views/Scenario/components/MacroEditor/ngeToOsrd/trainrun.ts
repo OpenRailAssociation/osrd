@@ -7,7 +7,7 @@ import {
 } from 'common/api/osrdEditoastApi';
 import {
   createPacedTrains,
-  deletePacedTrains,
+  deleteTrainSchedules,
   fetchTimetableItem,
   storePacedTrain,
 } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
@@ -462,7 +462,7 @@ const deleteTimetableItemById = async (
   dispatch: AppDispatch,
   addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void
 ) => {
-  if (isPacedTrainId(timetableItemId)) await deletePacedTrains(dispatch, [timetableItemId]);
+  if (isPacedTrainId(timetableItemId)) await deleteTrainSchedules(dispatch, [timetableItemId]);
   else throw new Error('TrainSchedules are not handled anymore.');
 
   addDeletedTimetableItemIds([timetableItemId]);

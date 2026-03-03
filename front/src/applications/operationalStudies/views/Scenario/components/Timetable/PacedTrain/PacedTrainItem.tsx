@@ -24,7 +24,7 @@ import isMainCategory from 'modules/rollingStock/helpers/category';
 import { getOccurrencesWorstStatus } from 'modules/timetableItem/helpers/pacedTrain';
 import {
   createPacedTrains,
-  deletePacedTrains,
+  deleteTrainSchedules,
   storePacedTrain,
 } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import type { PacedTrainWithPacedWithDetails } from 'modules/timetableItem/types';
@@ -158,7 +158,7 @@ const PacedTrainItem = ({
 
   const deletePacedTrain = async () => {
     try {
-      await deletePacedTrains(dispatch, [pacedTrain.id]);
+      await deleteTrainSchedules(dispatch, [pacedTrain.id]);
       removePacedTrains([pacedTrain.id]);
       setSelectedTimetableItemIds((prev) => prev.filter((id) => id !== pacedTrain.id));
       dispatch(

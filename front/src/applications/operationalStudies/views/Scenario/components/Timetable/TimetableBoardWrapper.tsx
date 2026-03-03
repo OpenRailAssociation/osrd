@@ -8,7 +8,7 @@ import BoardWrapper from 'applications/operationalStudies/views/Scenario/compone
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
-import { deletePacedTrains } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
+import { deleteTrainSchedules } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import { setFailure, setSuccess } from 'reducers/main';
 import type {
@@ -169,7 +169,7 @@ const TimetableBoardWrapper = ({
 
     try {
       if (selectedTimetableItemIds.length > 0) {
-        await deletePacedTrains(dispatch, selectedTimetableItemIds);
+        await deleteTrainSchedules(dispatch, selectedTimetableItemIds);
       }
 
       removeAndUnselectTrains(selectedTimetableItemIds);

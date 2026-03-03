@@ -207,21 +207,21 @@ pub(in crate::views) struct TrainScheduleIds {
     ids: HashSet<i64>,
 }
 
-/// Delete a paced train
+/// Delete a train schedule
 #[editoast_derive::route]
 #[utoipa::path(
     delete, path = "",
     tags = ["timetable", "paced_train"],
     request_body = inline(TrainScheduleIds),
     responses(
-        (status = 204, description = "All paced_trains have been deleted")
+        (status = 204, description = "All train schedules have been deleted")
     )
 )]
 pub(in crate::views) async fn delete(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Json(TrainScheduleIds {
-        ids: paced_train_ids,
+        ids: train_schedule_ids,
     }): Json<TrainScheduleIds>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
@@ -233,7 +233,7 @@ pub(in crate::views) async fn delete(
     }
 
     let conn = &mut db_pool.get().await?;
-    models::TrainSchedule::delete_batch_or_fail(conn, paced_train_ids, |count| {
+    models::TrainSchedule::delete_batch_or_fail(conn, train_schedule_ids, |count| {
         TrainScheduleError::BatchNotFound { count }
     })
     .await?;
@@ -1845,26 +1845,26 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn paced_train_delete() {
+    async fn train_schedule_delete() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
         let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
-        let paced_train =
+        let train_schedule =
             create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
 
         let request = app
-            .delete("/paced_train/")
-            .json(&json!({"ids": vec![paced_train.id]}));
+            .delete("/train_schedules/")
+            .json(&json!({"ids": vec![train_schedule.id]}));
 
         let _ = app
             .fetch(request)
             .await
             .assert_status(StatusCode::NO_CONTENT);
 
-        let exists = models::TrainSchedule::exists(&mut pool.get_ok(), paced_train.id)
+        let exists = models::TrainSchedule::exists(&mut pool.get_ok(), train_schedule.id)
             .await
-            .expect("Failed to retrieve paced_train");
+            .expect("Failed to retrieve train_schedule");
 
         assert!(!exists);
     }
