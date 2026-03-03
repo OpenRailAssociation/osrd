@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 
 import { ChronogramCanvas } from './ChronogramCanvas';
 import ChronogramManchette from './ChronogramManchette';
+import { zoomValueToTimeScale } from '../../manchette/utils/helpers';
 import useChronogram from '../hooks/useChronogram';
 import { INITIAL_CHRONOGRAM_HEIGHT } from '../lib/const';
 import type { ChronogramProps } from '../lib/types';
@@ -19,7 +20,10 @@ export const Chronogram = ({
   const {
     height: chronogramHeight,
     handleVerticalScroll,
+    handleXZoomOnWheelEvent,
+    onPan,
     xOffset,
+    xZoom,
     yOffset,
   } = useChronogram({
     itemCount: levelCrossingsOccupancies.length,
@@ -49,10 +53,14 @@ export const Chronogram = ({
         <div ref={chronogramChartRef} className="chronogram-container">
           <ChronogramCanvas
             timeOrigin={timeOrigin}
-            timeScale={10000}
+            timeScale={zoomValueToTimeScale(xZoom)}
             xOffset={xOffset}
             yOffset={yOffset}
             levelCrossingsOccupancies={levelCrossingsOccupancies.map((lc) => lc.occupancies)}
+            onPan={onPan}
+            onZoom={({ delta, position, event }) => {
+              handleXZoomOnWheelEvent(event, xZoom + delta, position.x);
+            }}
           />
         </div>
       </div>
