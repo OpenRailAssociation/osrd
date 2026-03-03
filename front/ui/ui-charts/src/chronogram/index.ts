@@ -8,6 +8,6 @@ export * from './components/OccupancyBlocksLayer';
 
 export * from './hooks/useChronogram';
 
-export type { ChronogramProps, ChronogramContextType, LevelCrossingOccupancies } from './lib/types';
+export type { ChronogramProps, ChronogramContextType, LevelCrossingData } from './lib/types';
 
 export { ChronogramContext } from './lib/context';
