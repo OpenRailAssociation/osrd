@@ -168,19 +168,11 @@ data class DistanceRangeMapImpl<T>(
     }
 
     override fun truncate(beginOffset: Distance, endOffset: Distance) {
-        if (bounds.size != 0) {
-            validate()
+        if (bounds.isNotEmpty()) {
             putOptional(lowerBound(), beginOffset, null)
-            putOptional(endOffset, upperBound(), null)
-            if (values.isNotEmpty() && values[0] == null) {
-                bounds.remove(0)
-                values.removeAt(0)
+            if (bounds.isNotEmpty()) {
+                putOptional(endOffset, upperBound(), null)
             }
-            if (values.isNotEmpty() && values[values.size - 1] == null) {
-                bounds.remove(bounds.size - 1)
-                values.removeAt(values.size - 1)
-            }
-            if (values.isEmpty()) bounds.clear()
         }
     }
 
@@ -391,13 +383,30 @@ data class DistanceRangeMapImpl<T>(
                 } else i++
             }
         }
-        mergeAdjacent()
-        validate()
+        ensureInvariants()
     }
 
-    /** Asserts that the internal state is consistent */
-    private fun validate() {
-        require(bounds.size == values.size + 1 || (bounds.size == 0 && values.isEmpty()))
+    /**
+     * Ensures that the internal state is consistent.
+     * 1. [bounds] must have one more element than [values]
+     * 2. ranges are coalesced
+     * 3. [values] must not start nor end with `null`s
+     */
+    private fun ensureInvariants() {
+        require(bounds.size == values.size + 1 || (bounds.isEmpty() && values.isEmpty()))
+        mergeAdjacent()
+        if (values.isNotEmpty() && values.first() == null) {
+            bounds.remove(0)
+            values.removeAt(0)
+        }
+        // Re-check for emptiness in case we took the branch above
+        if (values.isNotEmpty() && values.last() == null) {
+            bounds.remove(bounds.size - 1)
+            values.removeAt(values.size - 1)
+        }
+        if (values.isEmpty()) {
+            bounds.clear()
+        }
     }
 
     // This declaration is needed for the extension methods in kt-osrd-utils
