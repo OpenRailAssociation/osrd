@@ -11,7 +11,7 @@ import { useInfraID } from 'common/osrdContext';
 import { useMapSettingsActions } from 'reducers/commonMap';
 import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 import { useAppDispatch } from 'store';
-import { useDebounce } from 'utils/helpers';
+import { useDebounce } from 'utils/hooks/useDebounce';
 
 type MapSearchLineProps = {
   updateExtViewport: (viewport: Partial<Viewport>) => void;

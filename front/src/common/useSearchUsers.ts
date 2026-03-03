@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 
 import { skipToken } from '@reduxjs/toolkit/query';
 
-import { useDebounce } from 'utils/helpers';
+import { useDebounce } from 'utils/hooks/useDebounce';
 
 import type { SearchResultItemUser } from './api/generatedEditoastApi';
 import { osrdEditoastApi } from './api/osrdEditoastApi';

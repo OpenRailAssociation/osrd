@@ -4,7 +4,7 @@ import { Search } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { useDebounce } from 'utils/helpers';
+import { useDebounce } from 'utils/hooks/useDebounce';
 
 type Props = {
   id: string;

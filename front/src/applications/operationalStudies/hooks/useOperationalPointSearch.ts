@@ -4,7 +4,7 @@ import { uniqBy } from 'lodash';
 
 import { osrdEditoastApi, type SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
 import { useInfraID } from 'common/osrdContext';
-import { useDebounce } from 'utils/helpers';
+import { useDebounce } from 'utils/hooks/useDebounce';
 import { toUpper } from 'utils/strings';
 
 import { rankSuggestions, markSuggestions } from '../helpers/rankingSuggestions';

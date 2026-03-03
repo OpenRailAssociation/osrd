@@ -12,7 +12,7 @@ import { Loader } from 'common/Loaders';
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
-import { useDebounce } from 'utils/helpers';
+import { useDebounce } from 'utils/hooks/useDebounce';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
 import InfraSelectorModalBodyEdition from './InfraSelectorModalBodyEdition';

@@ -15,7 +15,7 @@ import type {
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { MAIN_OP_CH_CODES } from 'common/Map/Search/consts';
 import { useInfraID } from 'common/osrdContext';
-import { useDebounce } from 'utils/helpers';
+import { useDebounce } from 'utils/hooks/useDebounce';
 import {
   isCursorSurroundedBySpace,
   findCurrentWord,

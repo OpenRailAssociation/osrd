@@ -9,7 +9,7 @@ import { setFailure } from 'reducers/main';
 import { getOperationalPoints } from 'reducers/osrdconf/stdcmConf/selectors';
 import { getIsSuperUser } from 'reducers/user/userSelectors';
 import { castErrorToFailure } from 'utils/error';
-import { useDebounce } from 'utils/helpers';
+import { useDebounce } from 'utils/hooks/useDebounce';
 
 import { MAIN_OP_CH_CODES } from './consts';
 import {
