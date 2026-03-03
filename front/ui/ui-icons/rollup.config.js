@@ -1,5 +1,5 @@
-import typescript from '@rollup/plugin-typescript';
 import eslint from '@rollup/plugin-eslint';
+import typescript from '@rollup/plugin-typescript';
 
 const formats = ['esm'];
 

@@ -173,8 +173,5 @@ for (const [name, currentData] of Object.entries(representation)) {
   // Write the component file for the current icon
   writeFileSync(join('.', 'src', 'components', `${name}.tsx`), file);
   // Append the current icon's export statement to the index file
-  appendFileSync(
-    indexFile,
-    `export { ${name} } from "./components/${name}";\n`
-  );
+  appendFileSync(indexFile, `export { ${name} } from "./components/${name}";\n`);
 }
