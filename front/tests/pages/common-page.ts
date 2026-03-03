@@ -76,6 +76,11 @@ class CommonPage {
       await expect(this.loader).not.toBeVisible({ timeout });
     }
   }
+
+  async validateNumericBudget(locator: Locator, expectedBudget: string): Promise<void> {
+    const budgetText = await locator.textContent();
+    expect(budgetText?.replace(/[^0-9]/g, '')).toEqual(expectedBudget);
+  }
 }
 
 export default CommonPage;
