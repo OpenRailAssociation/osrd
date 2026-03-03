@@ -2205,30 +2205,6 @@ paths:
       responses:
         '204':
           description: The macro note was deleted successfully
-  /paced_train:
-    delete:
-      tags:
-      - timetable
-      - paced_train
-      summary: Delete a paced train
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-              - ids
-              properties:
-                ids:
-                  type: array
-                  items:
-                    type: integer
-                    format: int64
-                  uniqueItems: true
-        required: true
-      responses:
-        '204':
-          description: All paced_trains have been deleted
   /paced_train/project_path:
     post:
       tags:
@@ -4579,6 +4555,30 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/TrainScheduleResponse'
+  /train_schedules:
+    delete:
+      tags:
+      - timetable
+      - paced_train
+      summary: Delete a train schedule
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - ids
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  uniqueItems: true
+        required: true
+      responses:
+        '204':
+          description: All train schedules have been deleted
   /train_schedules/move:
     patch:
       tags:

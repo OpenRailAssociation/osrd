@@ -244,7 +244,9 @@ def test_editoast_delete(
 ):
     paced_trains = west_to_south_east_paced_trains[0:2]
     paced_trains_ids = [paced_train["id"] for paced_train in paced_trains]
-    r = session.delete(f"{EDITOAST_URL}paced_train/", json={"ids": paced_trains_ids})
+    r = session.delete(
+        f"{EDITOAST_URL}train_schedules/", json={"ids": paced_trains_ids}
+    )
     if r.status_code // 100 != 2:
         raise RuntimeError(
             f"Paced train error {r.status_code}: {r.content}, payload={json.dumps(paced_trains_ids)}"

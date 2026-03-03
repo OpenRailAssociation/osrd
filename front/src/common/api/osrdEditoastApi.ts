@@ -256,7 +256,7 @@ const osrdEditoastApi = generatedEditoastApi
       // As we always use all get pacedTrain endpoints after updating the timetable,
       // we don't want to invalidate the paced_train tags here to prevent multiple calls
 
-      deletePacedTrain: {
+      deleteTrainSchedules: {
         invalidatesTags: ['timetable', 'scenarios'],
       },
       postTrainScheduleSetsByIdTrainSchedules: {

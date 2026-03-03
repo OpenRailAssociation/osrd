@@ -13,9 +13,9 @@ export const addTagTypes = [
   'layers',
   'level_crossing',
   'scenarios',
-  'timetable',
   'paced_train',
   'train_schedule',
+  'timetable',
   'etcs_braking_curves',
   'projects',
   'rolling_stock_livery',
@@ -635,10 +635,6 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({ url: `/macro_notes/${queryArg.noteId}`, method: 'DELETE' }),
         invalidatesTags: ['scenarios'],
-      }),
-      deletePacedTrain: build.mutation<DeletePacedTrainApiResponse, DeletePacedTrainApiArg>({
-        query: (queryArg) => ({ url: `/paced_train`, method: 'DELETE', body: queryArg.body }),
-        invalidatesTags: ['timetable', 'paced_train'],
       }),
       postPacedTrainProjectPath: build.query<
         PostPacedTrainProjectPathApiResponse,
@@ -1312,6 +1308,13 @@ const injectedRtkApi = api
           body: queryArg.body,
         }),
         invalidatesTags: ['train_schedule_set', 'paced_train'],
+      }),
+      deleteTrainSchedules: build.mutation<
+        DeleteTrainSchedulesApiResponse,
+        DeleteTrainSchedulesApiArg
+      >({
+        query: (queryArg) => ({ url: `/train_schedules`, method: 'DELETE', body: queryArg.body }),
+        invalidatesTags: ['timetable', 'paced_train'],
       }),
       patchTrainSchedulesMove: build.mutation<
         PatchTrainSchedulesMoveApiResponse,
@@ -1998,12 +2001,6 @@ export type DeleteMacroNotesByNoteIdApiResponse = unknown;
 export type DeleteMacroNotesByNoteIdApiArg = {
   noteId: number;
 };
-export type DeletePacedTrainApiResponse = unknown;
-export type DeletePacedTrainApiArg = {
-  body: {
-    ids: number[];
-  };
-};
 export type PostPacedTrainProjectPathApiResponse = /** status 200 Project Path Output */ {
   [key: string]: ProjectPathPacedTrainResult;
 };
@@ -2609,6 +2606,12 @@ export type PostTrainScheduleSetsByIdTrainSchedulesApiArg = {
   /** A train schedule set ID */
   id: number;
   body: TrainSchedule[];
+};
+export type DeleteTrainSchedulesApiResponse = unknown;
+export type DeleteTrainSchedulesApiArg = {
+  body: {
+    ids: number[];
+  };
 };
 export type PatchTrainSchedulesMoveApiResponse = unknown;
 export type PatchTrainSchedulesMoveApiArg = {
