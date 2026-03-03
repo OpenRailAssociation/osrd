@@ -1,6 +1,8 @@
 import { type BrowserContext, type Locator, type Page } from '@playwright/test';
+import { expect } from '@playwright/test';
 
 import CommonPage from './common-page';
+import { HOME_URLS } from '../assets/constants/homepage-const';
 
 class HomePage extends CommonPage {
   private readonly operationalStudiesLink: Locator;
@@ -27,10 +29,9 @@ class HomePage extends CommonPage {
   }
 
   async goToHomePage(): Promise<void> {
-    await this.page.goto('/');
+    await this.page.goto(HOME_URLS.home);
   }
 
-  // Click on the logo to navigate back to the home page
   async backToHomePage(): Promise<void> {
     await this.backHomeLogo.click();
     await this.page.waitForLoadState();
@@ -38,34 +39,35 @@ class HomePage extends CommonPage {
 
   async goToOperationalStudiesPage(): Promise<void> {
     await this.operationalStudiesLink.click();
+    await expect(this.page).toHaveURL(HOME_URLS.operationalStudies);
   }
 
   async goToCartoPage(): Promise<void> {
     await this.cartoLink.click();
+    await expect(this.page).toHaveURL(HOME_URLS.map);
   }
 
   async goToEditorPage(): Promise<void> {
     await this.editorLink.click();
+    await expect(this.page).toHaveURL(HOME_URLS.editor);
   }
 
   async goToRollingStockEditorPage(): Promise<void> {
     await this.rollingStockEditorLink.click();
+    await expect(this.page).toHaveURL(HOME_URLS.rollingStockEditor);
   }
 
   async goToSTDCMPage(context: BrowserContext): Promise<Page> {
-    // Wait for the new page to be created
     const [stdcmPage] = await Promise.all([context.waitForEvent('page'), this.STDCMLink.click()]);
-
-    // Ensure the new page is fully loaded before proceeding
     await stdcmPage.waitForLoadState();
-
+    await expect(stdcmPage).toHaveURL(HOME_URLS.stdcm);
     return stdcmPage;
   }
 
   async getOSRDLanguage(): Promise<string> {
     await this.dropDown.click();
-    const selectedLanguage = await this.OSRDLanguage.innerText();
-    return selectedLanguage;
+    return this.OSRDLanguage.innerText();
   }
 }
+
 export default HomePage;
