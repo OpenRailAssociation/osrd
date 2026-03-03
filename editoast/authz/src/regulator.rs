@@ -185,24 +185,6 @@ impl<S: StorageDriver> Regulator<S> {
         Ok(members.users.into_iter().collect())
     }
 
-    /// Removes some users from a group
-    #[tracing::instrument(skip_all, fields(group, ?members), ret(level = Level::DEBUG), err)]
-    pub async fn remove_members(
-        &self,
-        group: &Group,
-        members: &HashSet<User>,
-    ) -> Result<(), Error<S::Error>> {
-        let existing_members = self.group_members(group).await?;
-        let members = members.intersection(&existing_members);
-        let mut deletes = self.openfga.prepare_deletes();
-        for user in members {
-            deletes.push(&Group::member().tuple(user, group));
-            deletes.push(&User::group().tuple(group, user));
-        }
-        deletes.execute().await?;
-        Ok(())
-    }
-
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn user_roles(&self, user: &User) -> Result<HashSet<Role>, Error<S::Error>> {
         // no need to check for user inexistence, an empty set will be returned in this case
