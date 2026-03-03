@@ -161,7 +161,7 @@ export type ScenarioData = {
 export type ScenarioDetails = {
   name: string;
   description: string;
-  tags: string[];
+  tags?: string[];
   infraName?: string;
   electricProfileName?: string;
 };

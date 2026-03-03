@@ -10,10 +10,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 
 import { postApiRequest, getInfra, getProject, getStudy } from './api-utils';
-import { readJsonFile } from './file-utils';
-import type { ScenarioData } from './types';
-
-const scenarioData: ScenarioData = readJsonFile('tests/assets/operation-studies/scenario.json');
+import { SCENARIO_DATA } from '../assets/operation-studies/scenario-const';
 
 // Define the SetupResult type to structure the returned setup data.
 type SetupResult = {
@@ -70,13 +67,13 @@ export default async function createScenario(
   );
 
   // Create a new scenario with a unique name if not provided
-  const scenarioNameFinal = scenarioName || `${scenarioData.name} ${uuidv4()}`;
+  const scenarioNameFinal = scenarioName || `${SCENARIO_DATA.name} ${uuidv4()}`;
 
   // Create a new scenario with the provided or generated name
   const scenario: Scenario = await postApiRequest(
     `/api/scenarios`,
     {
-      ...scenarioData,
+      ...SCENARIO_DATA,
       study_id: study.id,
       name: scenarioNameFinal,
       infra_id: mediumInfra.id,

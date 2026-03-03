@@ -1,5 +1,3 @@
-import { expect } from '@playwright/test';
-
 import type {
   ElectricalProfileSet,
   Infra,
@@ -9,6 +7,11 @@ import type {
 } from 'common/api/osrdEditoastApi';
 
 import { infrastructureName } from '../../assets/constants/project-const';
+import {
+  SCENARIO_DATA,
+  SCENARIO_URLS,
+  UPDATED_SCENARIO_DATA,
+} from '../../assets/operation-studies/scenario-const';
 import test from '../../page-object-fixture';
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
 import {
@@ -18,12 +21,8 @@ import {
   getStudy,
   setElectricalProfile,
 } from '../../utils/api-utils';
-import { readJsonFile } from '../../utils/file-utils';
 import createScenario from '../../utils/scenario';
 import { deleteScenario } from '../../utils/teardown-utils';
-import type { ScenarioData } from '../../utils/types';
-
-const scenarioData: ScenarioData = readJsonFile('tests/assets/operation-studies/scenario.json');
 
 test.describe('@op @scenario @management', () => {
   let project: Project;
@@ -34,48 +33,45 @@ test.describe('@op @scenario @management', () => {
 
   const createdScenarios: { projectId: number; studyId: number; name: string }[] = [];
 
-  test.beforeAll('Fetch a project, study and add electrical profile ', async () => {
+  test.beforeAll('Fetch project, study and add electrical profiles ', async () => {
     project = await getProject();
     study = await getStudy(project.id);
     infra = await getInfra();
     electricalProfileSet = await setElectricalProfile();
   });
 
-  test.afterAll('Delete scenarios and electrical profile', async () => {
+  test.afterAll('Delete scenarios and electrical profiles', async () => {
     await deleteApiRequest(`/api/electrical_profile_set/${electricalProfileSet.id}/`);
     if (!createdScenarios.length) return;
-    const scenariosToDelete = [...createdScenarios];
-    await Promise.allSettled(scenariosToDelete.map((s) => deleteScenario(s.studyId, s.name)));
+    await Promise.allSettled(createdScenarios.map((s) => deleteScenario(s.studyId, s.name)));
   });
 
   /** *************** Test 1 **************** */
   test('@smoke Create a new scenario', async ({ page, scenarioPage }) => {
-    const scenarioName = generateUniqueName(scenarioData.name);
-    createdScenarios.push({
-      projectId: project.id,
-      studyId: study.id,
+    const scenarioName = generateUniqueName(SCENARIO_DATA.name);
+    createdScenarios.push({ projectId: project.id, studyId: study.id, name: scenarioName });
+
+    const scenarioDetails = {
       name: scenarioName,
-    });
+      description: SCENARIO_DATA.description,
+      infraName: infrastructureName,
+      tags: SCENARIO_DATA.tags,
+      electricProfileName: electricalProfileSet.name,
+    };
 
     await test.step('Navigate to study page', async () => {
-      await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
+      await page.goto(SCENARIO_URLS.study(project.id, study.id));
     });
 
     await test.step('Create scenario via UI', async () => {
-      await scenarioPage.createScenario({
-        name: scenarioName,
-        description: scenarioData.description,
-        infraName: infrastructureName,
-        tags: scenarioData.tags,
-        electricProfileName: electricalProfileSet.name,
-      });
+      await scenarioPage.createScenario(scenarioDetails);
       await waitForInfraStateToBeCached(infra.id);
     });
 
     await test.step('Validate created scenario data', async () => {
       await scenarioPage.validateScenarioData({
         name: scenarioName,
-        description: scenarioData.description,
+        description: SCENARIO_DATA.description,
         infraName: infrastructureName,
       });
     });
@@ -87,40 +83,38 @@ test.describe('@op @scenario @management', () => {
       ({ project, study, scenario } = await createScenario());
     });
 
-    const updatedScenarioName = generateUniqueName(`${scenarioData.name}(updated)`);
-    createdScenarios.push({
-      projectId: project.id,
-      studyId: study.id,
+    const updatedScenarioName = generateUniqueName(`${SCENARIO_DATA.name}(updated)`);
+    const updatedDetails = {
+      ...UPDATED_SCENARIO_DATA,
       name: updatedScenarioName,
-    });
+    };
 
-    await test.step('Open scenario from study page and wait infra cache', async () => {
-      await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
+    createdScenarios.push({ projectId: project.id, studyId: study.id, name: updatedScenarioName });
+
+    await test.step('Open scenario from study page and wait for infra cache', async () => {
+      await page.goto(SCENARIO_URLS.study(project.id, study.id));
       await scenarioPage.openScenarioByName(scenario.name);
       await waitForInfraStateToBeCached(scenario.infra_id);
     });
 
     await test.step('Update scenario details', async () => {
-      await scenarioPage.updateScenario({
-        name: updatedScenarioName,
-        description: `${scenario.description} (updated)`,
-        tags: ['update-tag'],
-      });
+      await scenarioPage.updateScenario(updatedDetails);
     });
 
-    await test.step('Validate updated scenario in scenario page', async () => {
+    await test.step('Validate updated scenario data', async () => {
       await scenarioPage.validateScenarioData({
         name: updatedScenarioName,
-        description: `${scenario.description} (updated)`,
+        description: UPDATED_SCENARIO_DATA.description,
         infraName: infrastructureName,
         isUpdating: true,
       });
     });
 
     await test.step('Validate scenario tags in study page list', async () => {
-      await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
-      await expect(scenarioPage.getScenarioTags(updatedScenarioName)).toContainText(
-        `${scenarioData.tags.join('')}update-tag`
+      await page.goto(SCENARIO_URLS.study(project.id, study.id));
+      await scenarioPage.expectScenarioTags(
+        updatedScenarioName,
+        `${SCENARIO_DATA.tags.join('')}${UPDATED_SCENARIO_DATA.tags}`
       );
     });
 
@@ -128,7 +122,7 @@ test.describe('@op @scenario @management', () => {
       await scenarioPage.openScenarioByName(updatedScenarioName);
       await scenarioPage.validateScenarioData({
         name: updatedScenarioName,
-        description: `${scenario.description} (updated)`,
+        description: UPDATED_SCENARIO_DATA.description,
         infraName: infrastructureName,
       });
     });
@@ -138,15 +132,14 @@ test.describe('@op @scenario @management', () => {
   test('Delete a scenario', async ({ page, scenarioPage }) => {
     await test.step('Create a scenario to delete', async () => {
       ({ project, study, scenario } = await createScenario());
+      createdScenarios.push({ projectId: project.id, studyId: study.id, name: scenario.name });
     });
-    createdScenarios.push({
-      projectId: project.id,
-      studyId: study.id,
-      name: scenario.name,
+
+    await test.step('Navigate to study page', async () => {
+      await page.goto(SCENARIO_URLS.study(project.id, study.id));
     });
 
     await test.step('Open scenario and delete via edit form', async () => {
-      await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
       await scenarioPage.openScenarioByName(scenario.name);
       await waitForInfraStateToBeCached(infra.id);
       await scenarioPage.openScenarioEditForm();
@@ -154,8 +147,8 @@ test.describe('@op @scenario @management', () => {
     });
 
     await test.step('Verify scenario no longer visible in study page', async () => {
-      await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
-      await expect(scenarioPage.getScenarioByName(scenario.name)).not.toBeVisible();
+      await page.goto(SCENARIO_URLS.study(project.id, study.id));
+      await scenarioPage.assertScenarioNotVisible(scenario.name);
     });
   });
 });
