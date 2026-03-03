@@ -46,7 +46,7 @@ const OccurrenceIndicator = ({ occurrence, subCategories }: OccurrenceIndicatorP
     occurrence.exceptionChangeGroups &&
     Object.entries(occurrence.exceptionChangeGroups)
       .filter(([_, isPresent]) => isPresent !== null)
-      .map(([changeGroup]) => changeGroup as keyof ExceptionChangeGroups)
+      .map(([changeGroup]) => changeGroup as keyof Omit<ExceptionChangeGroups, 'id'>)
       .map((changeGroup) => {
         let occurrenceCategory;
 

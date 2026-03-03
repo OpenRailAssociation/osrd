@@ -41,7 +41,8 @@ use editoast_models::timetable::Timetable;
 use editoast_models::timetable::TimetableWithTrains;
 use itertools::Itertools;
 use itertools::izip;
-use paced_train::TrainScheduleResponse;
+use schemas::paced_train::Paced;
+use schemas::paced_train::TrainSchedule;
 use schemas::rolling_stock::EtcsBrakeParams;
 use schemas::rolling_stock::RollingResistance;
 use schemas::rolling_stock::RollingStock;
@@ -68,6 +69,7 @@ use crate::models::train_schedule::OccurrenceId;
 use crate::models::train_schedule_set::TrainScheduleSet;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
+use crate::views::timetable::paced_train::TrainScheduleResponse;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 
 #[derive(Debug, Error, EditoastError, derive_more::From)]
@@ -226,7 +228,47 @@ pub(in crate::views) async fn get_train_schedules(
 
     let (paced_trains, stats) = models::TrainSchedule::list_paginated(conn, settings).await?;
 
-    let results = paced_trains.into_iter().map_into().collect();
+    let paced_trains_ids = paced_trains.iter().map(|t| t.id).collect::<Vec<_>>();
+    let exceptions_settings = SelectionSettings::new().filter(move || {
+        editoast_models::TrainScheduleException::TRAIN_SCHEDULE_ID.eq_any(paced_trains_ids.clone())
+    });
+
+    let mut exceptions = editoast_models::TrainScheduleException::list(conn, exceptions_settings)
+        .await?
+        .into_iter()
+        .into_group_map_by(|e| e.train_schedule_id);
+
+    let results: Vec<TrainScheduleResponse> = paced_trains
+        .into_iter()
+        .map(|ts| {
+            let id = ts.id;
+            let train_schedule_set_id = ts.train_schedule_set_id;
+
+            let paced = if let (Some(interval), Some(time_window)) = (ts.interval, ts.time_window) {
+                Some(Paced {
+                    interval: interval.try_into().unwrap(),
+                    time_window: time_window.try_into().unwrap(),
+                    exceptions: exceptions
+                        .remove(&id)
+                        .unwrap_or_default()
+                        .into_iter()
+                        .map_into()
+                        .collect(),
+                })
+            } else {
+                None
+            };
+
+            TrainScheduleResponse {
+                id,
+                train_schedule_set_id,
+                train_schedule: TrainSchedule {
+                    train_occurrence: ts.into_train_occurrence(),
+                    paced,
+                },
+            }
+        })
+        .collect();
 
     Ok(Json(ListTrainSchedulesResponse { stats, results }))
 }
@@ -922,6 +964,7 @@ mod tests {
     use crate::error::InternalError;
     use crate::models::fixtures::create_timetable;
     use crate::models::fixtures::create_timetable_with_train_schedule_set;
+    use crate::models::fixtures::create_train_schedule_exception;
     use crate::models::fixtures::create_train_schedule_set;
     use crate::models::fixtures::simple_paced_train_base;
     use crate::models::train_schedule::TrainScheduleChangeset;
@@ -1003,10 +1046,18 @@ mod tests {
             .map(|cs| cs.train_schedule_set_id(train_schedule_set.id))
             .collect::<Vec<_>>();
 
-        let _train_schedules: Vec<_> =
+        let train_schedules: Vec<_> =
             models::TrainSchedule::create_batch(&mut pool.get_ok(), changesets)
                 .await
                 .expect("Failed to create train schedules");
+
+        let _train_schedule_exception = create_train_schedule_exception(
+            &mut pool.get_ok(),
+            timetable.id,
+            train_schedules.first().unwrap().id,
+            None,
+        )
+        .await;
 
         let request = app.get(format!("/timetable/{}/train_schedules", timetable.id).as_str());
         let list: ListTrainSchedulesResponse = app
@@ -1016,6 +1067,19 @@ mod tests {
             .json_into();
 
         assert_eq!(list.results.len(), 2);
+
+        assert_eq!(
+            list.results
+                .first()
+                .unwrap()
+                .clone()
+                .train_schedule
+                .paced
+                .unwrap()
+                .exceptions
+                .len(),
+            1
+        )
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
