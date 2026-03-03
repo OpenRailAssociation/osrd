@@ -208,7 +208,7 @@ fun makeElectricalProfiles(
     for (electrification in electrificationRanges) {
         profileMap.putCoalescing(
             Range.closed(electrification.start, electrification.stop),
-            profileFromElectrification(electrification.electrificationUsage),
+            profileFromElectrification(electrification.electrificationUsage ?: continue),
         )
     }
 
