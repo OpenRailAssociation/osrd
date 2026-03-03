@@ -136,6 +136,10 @@ pub async fn exclude_group(
 
     let regulator = openfga_config.into_regulator(pool.clone()).await?;
     let driver = regulator.driver();
+    let system = SystemAuthorizer {
+        openfga: regulator.openfga(),
+        conn: pool.get().await?,
+    };
 
     let Some(group_id) = driver.get_group_id(&group_name).await? else {
         bail!("No such group: '{group_name}'");
@@ -152,10 +156,12 @@ pub async fn exclude_group(
         authz_users.insert(authz::User(uid));
     }
 
-    regulator
-        .remove_members(&authz::Group(group_id), &authz_users)
-        .await?;
-    Ok(())
+    let remove_member = authz::v2::remove_members(authz::Group(group_id), authz_users);
+    match system.authorize(remove_member).await?.access().await? {
+        Ok(()) => Ok(()),
+        Err(Rejection::NoSuchGroup(_)) => unreachable!("tested above"),
+        Err(Rejection::NoSuchUser(user_id)) => bail!("No such user {user_id}"),
+    }
 }
 
 /// Include users in a group
@@ -205,6 +211,10 @@ pub async fn delete_group(
 ) -> anyhow::Result<()> {
     let regulator = openfga_config.into_regulator(pool.clone()).await?;
     let driver = regulator.driver();
+    let system = SystemAuthorizer {
+        openfga: regulator.openfga(),
+        conn: pool.get().await?,
+    };
     let group_id = if let Some(id) = driver.get_group_id(&name).await? {
         id
     } else {
@@ -214,7 +224,12 @@ pub async fn delete_group(
 
     // Delete the relationships between the group to be deleted and its members
     let users_in_group = regulator.group_members(&group).await?;
-    regulator.remove_members(&group, &users_in_group).await?;
+    let remove_member = authz::v2::remove_members(group, users_in_group);
+    match system.authorize(remove_member).await?.access().await? {
+        Ok(()) => {}
+        Err(Rejection::NoSuchGroup(_)) => unreachable!("tested above"),
+        Err(Rejection::NoSuchUser(_)) => unreachable!("tested above"),
+    }
 
     let deleted = driver.delete_group(group_id).await?;
     if deleted {

@@ -369,10 +369,12 @@ mod tests {
         );
 
         // remove user
-        regulator()
-            .remove_members(&friends, &HashSet::from([User(bob_id)]))
+        v2::remove_members(friends, HashSet::from([User(bob_id)]))
+            .authorize(&test_authorizers::Authorize(regulator().openfga()))
             .await
-            .expect("bob should be removed from the group");
+            .expect("bob should be removed from the group")
+            .unwrap_authorized()
+            .await;
 
         assert!(
             !Authorizer::try_initialize(bob_identity(), regulator())

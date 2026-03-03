@@ -227,6 +227,45 @@ pub fn add_roles(subject: Subject, roles: HashSet<Role>) -> Protected<'static, (
     })
 }
 
+/// Removes some members from a group
+///
+/// Idempotent but not atomic due to the lack of transactions in OpenFGA.
+pub fn remove_members(group: Group, members: HashSet<User>) -> Protected<'static, ()> {
+    let user_exists_checks = members
+        .iter()
+        .map(|user| SanityCheck::UserExists(*user))
+        .collect_vec(); // members is moved in Protected
+
+    Protected::new(move |openfga| {
+        async move {
+            let existing_members = openfga
+                .list_users(Group::member().query_users(&group))
+                .await
+                .map_err(QueryError::parsing_ok)?;
+
+            debug_assert!(
+                existing_members.public_access.is_none(),
+                "we don't write public accesses for groups"
+            );
+
+            let existing_members = HashSet::from_iter(existing_members.users);
+            let expelled = members.intersection(&existing_members);
+            let mut writes = openfga.prepare_deletes();
+            for user in expelled {
+                writes.push(&Group::member().tuple(user, &group));
+                writes.push(&User::group().tuple(&group, user));
+            }
+            writes.execute().await?;
+
+            Ok(())
+        }
+        .boxed()
+    })
+    .with_check(SanityCheck::GroupExists(group))
+    .with_check_iter(user_exists_checks)
+    .with_guardrail(Guardrail::IssuerHasRole(Role::Admin))
+}
+
 pub mod test_authorizers {
     use std::convert::Infallible;
 
@@ -352,6 +391,84 @@ mod tests {
         assert_eq!(
             openfga.group_members(&Group(1)).await,
             HashSet::from_iter([User(1), User(2), User(3)])
+        );
+    }
+
+    #[tokio::test]
+    async fn remove_members_idempotent() {
+        let openfga = crate::authz_client!();
+        let authorize = Authorize(&openfga);
+
+        add_members(Group(1), HashSet::from_iter([User(1), User(2)]))
+            .authorize(&authorize)
+            .await
+            .unwrap()
+            .unwrap_authorized()
+            .await;
+        assert_eq!(
+            openfga.group_members(&Group(1)).await,
+            HashSet::from_iter([User(1), User(2)])
+        );
+
+        remove_members(Group(1), HashSet::from_iter([User(1), User(2)]))
+            .authorize(&authorize)
+            .await
+            .unwrap()
+            .unwrap_authorized()
+            .await;
+        assert_eq!(
+            openfga.group_members(&Group(1)).await,
+            HashSet::from_iter([])
+        );
+
+        remove_members(Group(1), HashSet::from_iter([User(1), User(2)]))
+            .authorize(&authorize)
+            .await
+            .unwrap()
+            .unwrap_authorized()
+            .await;
+        assert_eq!(
+            openfga.group_members(&Group(1)).await,
+            HashSet::from_iter([])
+        );
+    }
+
+    #[tokio::test]
+    async fn remove_members_intersecting_calls() {
+        let openfga = crate::authz_client!();
+        let authorize = Authorize(&openfga);
+
+        add_members(Group(1), HashSet::from_iter([User(1), User(2), User(3)]))
+            .authorize(&authorize)
+            .await
+            .unwrap()
+            .unwrap_authorized()
+            .await;
+        assert_eq!(
+            openfga.group_members(&Group(1)).await,
+            HashSet::from_iter([User(1), User(2), User(3)])
+        );
+
+        remove_members(Group(1), HashSet::from_iter([User(1), User(2)]))
+            .authorize(&authorize)
+            .await
+            .unwrap()
+            .unwrap_authorized()
+            .await;
+        assert_eq!(
+            openfga.group_members(&Group(1)).await,
+            HashSet::from_iter([User(3)])
+        );
+
+        remove_members(Group(1), HashSet::from_iter([User(1), User(3)]))
+            .authorize(&authorize)
+            .await
+            .unwrap()
+            .unwrap_authorized()
+            .await;
+        assert_eq!(
+            openfga.group_members(&Group(1)).await,
+            HashSet::from_iter([])
         );
     }
 
