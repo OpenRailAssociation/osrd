@@ -1,7 +1,6 @@
 package fr.sncf.osrd.envelope_sim
 
 import com.google.common.collect.RangeMap
-import com.google.common.collect.TreeRangeMap
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.CurvesAndConditions
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.TractiveEffortPoint
 import fr.sncf.osrd.envelope_sim.etcs.EtcsBrakeParams
@@ -61,7 +60,7 @@ class SimpleRollingStock(
         electrificationMap: RangeMap<Double, Electrification>,
         comfort: Comfort?,
     ): CurvesAndConditions {
-        return CurvesAndConditions(distanceRangeMapOf(), TreeRangeMap.create())
+        return CurvesAndConditions(distanceRangeMapOf(), distanceRangeMapOf())
     }
 
     /**

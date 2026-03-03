@@ -47,7 +47,7 @@ interface PhysicsRollingStock {
 
     data class CurvesAndConditions(
         val curves: DistanceRangeMap<Array<TractiveEffortPoint>>,
-        val conditions: RangeMap<Double, InfraConditions>,
+        val conditions: DistanceRangeMap<InfraConditions>,
     )
 
     @JvmRecord

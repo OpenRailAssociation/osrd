@@ -55,6 +55,7 @@ import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.DistanceRangeMap.RangeMapEntry
 import fr.sncf.osrd.utils.distanceRangeMapOf
+import fr.sncf.osrd.utils.toRangeMap
 import fr.sncf.osrd.utils.units.*
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
@@ -287,7 +288,10 @@ class STDCMEndpoint(
             )
         val curvesAndConditions = rollingStock.mapTractiveEffortCurves(electrificationMap, comfort)
         val electrificationRanges =
-            ElectrificationRange.from(curvesAndConditions.conditions, electrificationMap)
+            ElectrificationRange.from(
+                curvesAndConditions.conditions.toRangeMap(),
+                electrificationMap,
+            )
         return makeElectricalProfiles(electrificationRanges)
     }
 }
