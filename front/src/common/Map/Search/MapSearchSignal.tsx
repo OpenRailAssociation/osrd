@@ -21,7 +21,7 @@ import { useMapSettingsActions } from 'reducers/commonMap';
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
-import { useDebounce } from 'utils/helpers';
+import { useDebounce } from 'utils/hooks/useDebounce';
 
 type MapSearchSignalProps = {
   closeMapSearchPopUp: () => void;

@@ -19,8 +19,8 @@ import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF';
 import { updateUserPreferences } from 'reducers/user';
 import { getUserPreferences } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
-import { useDebounce } from 'utils/helpers';
 import useAuth from 'utils/hooks/useAuth';
+import { useDebounce } from 'utils/hooks/useDebounce';
 
 const UserSettings = () => {
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useLazyQuery();

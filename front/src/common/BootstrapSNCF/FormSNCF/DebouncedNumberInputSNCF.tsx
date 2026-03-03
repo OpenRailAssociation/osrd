@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { useDebouncedFunc } from 'utils/helpers';
+import { useDebouncedFunc } from 'utils/hooks/useDebounce';
 
 type DebouncedNumberInputSNCFProps = {
   input: number;

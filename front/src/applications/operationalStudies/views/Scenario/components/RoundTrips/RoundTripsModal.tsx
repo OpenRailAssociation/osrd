@@ -10,7 +10,7 @@ import { checkRoundTripCompatible, groupRoundTrips } from 'applications/operatio
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
-import { useDebounce } from 'utils/helpers';
+import { useDebounce } from 'utils/hooks/useDebounce';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 import { mapBy } from 'utils/types';
 
