@@ -11,7 +11,8 @@ import {
 } from '@osrd-project/ui-charts';
 import type { Meta } from '@storybook/react-vite';
 
-import { HOUR, KILOMETER } from './helpers/consts';
+import { HOUR } from '../common/const';
+import { KILOMETER } from './helpers/consts';
 import { OPERATIONAL_POINTS, PATHS, START_DATE } from './helpers/paths';
 import { X_ZOOM_LEVEL, Y_ZOOM_LEVEL } from './helpers/utils';
 
