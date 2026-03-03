@@ -1,3 +1,5 @@
+import { join } from 'node:path';
+
 import js from '@eslint/js';
 import { defineConfig, globalIgnores } from 'eslint/config';
 import importPlugin from 'eslint-plugin-import';
@@ -122,8 +124,16 @@ export default defineConfig([
       'import/no-extraneous-dependencies': [
         'error',
         {
-          devDependencies: ['**/*.spec.ts', '**/__tests__/**', '.storybook/**'],
-          packageDir: ['.', '../base'],
+          devDependencies: [
+            '**/*.spec.ts',
+            '**/__tests__/**',
+            '**/.storybook/**',
+            '**/build.js',
+            '**/vitest.config.mts',
+            '**/rollup.config.js',
+            'rollup-base.config.js',
+            'eslint.config.js',
+          ],
         },
       ],
 
@@ -162,5 +172,22 @@ export default defineConfig([
         },
       ],
     },
+  },
+  {
+    basePath: import.meta.dirname,
+    files: ['./eslint.config.js', './rollup-base.config.js'],
+    extends: [
+      {
+        rules: {
+          'import/no-extraneous-dependencies': [
+            'error',
+            {
+              devDependencies: true,
+              packageDir: [join(import.meta.dirname, './base')],
+            },
+          ],
+        },
+      },
+    ],
   },
 ]);
