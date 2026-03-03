@@ -1,9 +1,7 @@
 package fr.sncf.osrd.train
 
-import com.google.common.collect.ImmutableRangeMap
 import com.google.common.collect.Range
 import com.google.common.collect.RangeMap
-import com.google.common.collect.TreeRangeMap
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.CurvesAndConditions
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.InfraConditions
@@ -106,7 +104,7 @@ constructor(
         electrificationMap: RangeMap<Double, Electrification>,
         comfort: Comfort?,
     ): CurvesAndConditions {
-        val conditionsUsed = TreeRangeMap.create<Double, InfraConditions>()
+        val conditionsUsed = DistanceRangeMapImpl<InfraConditions>()
         val curves = DistanceRangeMapImpl<Array<TractiveEffortPoint>>()
 
         for (elecCondEntry in electrificationMap.asMapOfRanges().entries) {
@@ -114,7 +112,7 @@ constructor(
             curves.put(elecCondEntry.key, curveAndCond.curve)
             conditionsUsed.put(elecCondEntry.key, curveAndCond.cond)
         }
-        return CurvesAndConditions(curves, ImmutableRangeMap.copyOf(conditionsUsed))
+        return CurvesAndConditions(curves, conditionsUsed)
     }
 
     @JvmRecord

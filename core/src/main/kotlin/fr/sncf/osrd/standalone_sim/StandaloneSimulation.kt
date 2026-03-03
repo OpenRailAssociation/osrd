@@ -97,7 +97,7 @@ fun runStandaloneSimulation(
         )
     val curvesAndConditions = rollingStock.mapTractiveEffortCurves(electrificationMap, comfort)
     val electrificationRanges =
-        ElectrificationRange.from(curvesAndConditions.conditions, electrificationMap)
+        ElectrificationRange.from(curvesAndConditions.conditions.toRangeMap(), electrificationMap)
     var context =
         EnvelopeSimContext(
             rollingStock,

@@ -59,16 +59,8 @@ class TestRollingStock {
                 false,
             )
         val tractiveEffortCurveMap = rollingStock.mapTractiveEffortCurves(elecCondMap, comfort)
-        testRangeCoverage(tractiveEffortCurveMap.conditions, path.length)
+        Assertions.assertTrue(tractiveEffortCurveMap.conditions.fullyCovers(path.length.meters))
         Assertions.assertTrue(tractiveEffortCurveMap.curves.fullyCovers(path.length.meters))
-        val nConditionsSeen =
-            elecCondMap.subRangeMap(Range.closed(0.0, path.length)).asMapOfRanges().size
-        val nConditionsUsed =
-            tractiveEffortCurveMap.conditions
-                .subRangeMap(Range.closed(0.0, path.length))
-                .asMapOfRanges()
-                .size
-        Assertions.assertTrue(nConditionsSeen <= nConditionsUsed, "wrong number of conditions")
     }
 
     @Test
@@ -111,7 +103,6 @@ class TestRollingStock {
             listOf(
                 InfraConditions("thermal", null, null), // 0
                 InfraConditions("1500V", null, null), // 1
-                InfraConditions("1500V", null, null), // 5 "Restrict1" invalid for 1500V
                 InfraConditions("thermal", null, null), // 8
                 InfraConditions("25000V", null, "Restrict2"), // 8.1
                 InfraConditions("25000V", "25000V", "Restrict2"), // 10
@@ -126,9 +117,8 @@ class TestRollingStock {
                     null,
                 ), // 18 "UnknownRestrict" invalid for 25000V
                 InfraConditions("thermal", null, null), // 20 No mode given
-                InfraConditions("thermal", null, null), // 30 Invalid mode
             ),
-            res.conditions.subRangeMap(Range.closed(0.0, path.length)).asMapOfRanges().values,
+            res.conditions.subMap(0.meters, path.length.meters).map { it.value },
         )
 
         // Check that the curves are correct
@@ -153,28 +143,5 @@ class TestRollingStock {
                 .toDoubleArray(),
             0.001,
         )
-    }
-}
-
-fun <T : Any> testRangeCoverage(map: RangeMap<Double, T>, length: Double) {
-    val subMap = map.subRangeMap(Range.closed(0.0, length))
-
-    val span = subMap.span()
-    Assertions.assertEquals(
-        (span.upperEndpoint() - span.lowerEndpoint()),
-        length,
-        "map does not cover the whole path",
-    )
-
-    val entries = subMap.asMapOfRanges().iterator()
-    var prev = entries.next()
-    while (entries.hasNext()) {
-        val next = entries.next()
-        Assertions.assertEquals(
-            prev.key.upperEndpoint(),
-            next.key.lowerEndpoint(),
-            "ranges are not contiguous",
-        )
-        prev = next
     }
 }
