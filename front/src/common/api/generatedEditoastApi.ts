@@ -640,17 +640,6 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/paced_train`, method: 'DELETE', body: queryArg.body }),
         invalidatesTags: ['timetable', 'paced_train'],
       }),
-      postPacedTrainOccupancyBlocks: build.query<
-        PostPacedTrainOccupancyBlocksApiResponse,
-        PostPacedTrainOccupancyBlocksApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/paced_train/occupancy_blocks`,
-          method: 'POST',
-          body: queryArg.occupancyBlockForm,
-        }),
-        providesTags: ['paced_train'],
-      }),
       postPacedTrainProjectPath: build.query<
         PostPacedTrainProjectPathApiResponse,
         PostPacedTrainProjectPathApiArg
@@ -1335,6 +1324,17 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['paced_train'],
       }),
+      postTrainSchedulesOccupancyBlocks: build.query<
+        PostTrainSchedulesOccupancyBlocksApiResponse,
+        PostTrainSchedulesOccupancyBlocksApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/train_schedules/occupancy_blocks`,
+          method: 'POST',
+          body: queryArg.occupancyBlockForm,
+        }),
+        providesTags: ['paced_train'],
+      }),
       postTrainSchedulesSimulationSummary: build.query<
         PostTrainSchedulesSimulationSummaryApiResponse,
         PostTrainSchedulesSimulationSummaryApiArg
@@ -2004,12 +2004,6 @@ export type DeletePacedTrainApiArg = {
     ids: number[];
   };
 };
-export type PostPacedTrainOccupancyBlocksApiResponse = /** status 200  */ {
-  [key: string]: OccupancyBlocksPacedTrainResult;
-};
-export type PostPacedTrainOccupancyBlocksApiArg = {
-  occupancyBlockForm: OccupancyBlockForm;
-};
 export type PostPacedTrainProjectPathApiResponse = /** status 200 Project Path Output */ {
   [key: string]: ProjectPathPacedTrainResult;
 };
@@ -2622,6 +2616,12 @@ export type PatchTrainSchedulesMoveApiArg = {
     train_schedule_ids: number[];
     train_schedule_set_id: number;
   };
+};
+export type PostTrainSchedulesOccupancyBlocksApiResponse = /** status 200  */ {
+  [key: string]: OccupancyBlocksTrainScheduleResult;
+};
+export type PostTrainSchedulesOccupancyBlocksApiArg = {
+  occupancyBlockForm: OccupancyBlockForm;
 };
 export type PostTrainSchedulesSimulationSummaryApiResponse =
   /** status 200 Associate each train schedule id with its simulation summaries */ {
@@ -3805,41 +3805,6 @@ export type MacroNoteBatchForm = {
   macro_notes: MacroNoteForm[];
   scenario_id: number;
 };
-export type CoreSignalUpdate = {
-  /** The labels of the new aspect */
-  aspect_label: string;
-  /** Whether the signal is blinking */
-  blinking: boolean;
-  /** The color of the aspect
-    (Bits 24-31 are alpha, 16-23 are red, 8-15 are green, 0-7 are blue) */
-  color: number;
-  /** The route ends at this position in mm on the train path */
-  position_end: number;
-  /** The route starts at this position in mm on the train path */
-  position_start: number;
-  /** The id of the updated signal */
-  signal_id: string;
-  /** The name of the signaling system of the signal */
-  signaling_system: string;
-  /** The aspects stop being displayed at this time (number of ms since `departure_time`) */
-  time_end: number;
-  /** The aspects start being displayed at this time (number of ms since `departure_time`) */
-  time_start: number;
-};
-export type OccupancyBlocksPacedTrainResult = {
-  /** Exceptions whose blocks are different from the paced train */
-  exceptions: {
-    [key: string]: CoreSignalUpdate[];
-  };
-  /** Paced train */
-  paced_train: CoreSignalUpdate[];
-};
-export type OccupancyBlockForm = {
-  electrical_profile_set_id?: number | null;
-  ids: number[];
-  infra_id: number;
-  path: CoreTrainPath;
-};
 export type SpaceTimeCurve = {
   /** List of positions of a train in mm
     Both positions and times must have the same length */
@@ -4959,6 +4924,41 @@ export type TrainScheduleSetForm = {
   description: string;
   name?: string | null;
   published: boolean;
+};
+export type CoreSignalUpdate = {
+  /** The labels of the new aspect */
+  aspect_label: string;
+  /** Whether the signal is blinking */
+  blinking: boolean;
+  /** The color of the aspect
+    (Bits 24-31 are alpha, 16-23 are red, 8-15 are green, 0-7 are blue) */
+  color: number;
+  /** The route ends at this position in mm on the train path */
+  position_end: number;
+  /** The route starts at this position in mm on the train path */
+  position_start: number;
+  /** The id of the updated signal */
+  signal_id: string;
+  /** The name of the signaling system of the signal */
+  signaling_system: string;
+  /** The aspects stop being displayed at this time (number of ms since `departure_time`) */
+  time_end: number;
+  /** The aspects start being displayed at this time (number of ms since `departure_time`) */
+  time_start: number;
+};
+export type OccupancyBlocksTrainScheduleResult = {
+  /** Exceptions whose blocks are different from the paced train */
+  exceptions: {
+    [key: string]: CoreSignalUpdate[];
+  };
+  /** Train schedule */
+  train_schedule: CoreSignalUpdate[];
+};
+export type OccupancyBlockForm = {
+  electrical_profile_set_id?: number | null;
+  ids: number[];
+  infra_id: number;
+  path: CoreTrainPath;
 };
 export type SimulationSummaryResult =
   | {

@@ -272,6 +272,10 @@ fn service_router() -> router::DocumentedRouter {
                         "/simulation_summary",
                         post!(timetable::paced_train::simulation_summary),
                     )
+                    .route(
+                        "/occupancy_blocks",
+                        post!(timetable::paced_train::occupancy_blocks),
+                    )
                 .nests("/{id}", |path| {
                     path.route("/", get!(timetable::paced_train::get_by_id))
 
@@ -279,10 +283,6 @@ fn service_router() -> router::DocumentedRouter {
             })
             .nests("/paced_train", |path| {
                 path.route("/", delete!(timetable::paced_train::delete))
-                    .route(
-                        "/occupancy_blocks",
-                        post!(timetable::paced_train::occupancy_blocks),
-                    )
                     .route("/project_path", post!(timetable::paced_train::project_path))
                     .route(
                         "/project_path_op",

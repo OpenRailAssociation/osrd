@@ -3,7 +3,7 @@ import { isEmpty } from 'lodash';
 import {
   osrdEditoastApi,
   type PostPacedTrainProjectPathApiResponse,
-  type PostPacedTrainOccupancyBlocksApiResponse,
+  type PostTrainSchedulesOccupancyBlocksApiResponse,
   type CoreTrainPath,
 } from 'common/api/osrdEditoastApi';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
@@ -39,7 +39,7 @@ export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyL
     const editoastIds = batch.map((id) => extractEditoastIdFromPacedTrainId(id));
 
     let pacedTrainPromise: Promise<PostPacedTrainProjectPathApiResponse> = Promise.resolve({});
-    let pacedTrainOccupancyBlocksPromise: Promise<PostPacedTrainOccupancyBlocksApiResponse> =
+    let pacedTrainOccupancyBlocksPromise: Promise<PostTrainSchedulesOccupancyBlocksApiResponse> =
       Promise.resolve({});
     if (editoastIds.length > 0) {
       pacedTrainPromise = this.options
@@ -60,7 +60,7 @@ export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyL
 
       pacedTrainOccupancyBlocksPromise = this.options
         .dispatch(
-          osrdEditoastApi.endpoints.postPacedTrainOccupancyBlocks.initiate(
+          osrdEditoastApi.endpoints.postTrainSchedulesOccupancyBlocks.initiate(
             {
               occupancyBlockForm: {
                 infra_id: infraId,
@@ -88,7 +88,7 @@ export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyL
       const pacedTrainId = formatEditoastIdToPacedTrainId(Number(id));
       const pacedTrainProjectionResult: ProjectionResult = {
         space_time_curves: result.paced_train,
-        signal_updates: rawPacedTrainOccupancyBlocks[id].paced_train,
+        signal_updates: rawPacedTrainOccupancyBlocks[id].train_schedule,
       };
 
       if (!isEmpty(result.exceptions)) {
