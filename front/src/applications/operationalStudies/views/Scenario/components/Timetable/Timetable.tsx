@@ -69,7 +69,9 @@ const Timetable = ({
   );
   const [showTrainScheduleSetDialog, setShowTrainScheduleSetDialog] = useState(false);
 
-  const [patchPacedTrainMove] = osrdEditoastApi.endpoints.patchPacedTrainMove.useMutation({});
+  const [updateTrainSchedulesTssId] = osrdEditoastApi.endpoints.patchTrainSchedulesMove.useMutation(
+    {}
+  );
 
   const [showTrainScheduleMoveDialog, setShowTrainScheduleMoveDialog] = useState(false);
   const [pacedTrainIdsToMove, setPacedTrainIdsToMove] = useState<PacedTrainId[]>([]);
@@ -132,9 +134,9 @@ const Timetable = ({
     async (trainScheduleSetId: number) => {
       const formattedPacedTrainIds = pacedTrainIdsToMove.map(extractEditoastIdFromPacedTrainId);
       try {
-        await patchPacedTrainMove({
+        await updateTrainSchedulesTssId({
           body: {
-            paced_train_ids: formattedPacedTrainIds,
+            train_schedule_ids: formattedPacedTrainIds,
             train_schedule_set_id: trainScheduleSetId,
           },
         }).unwrap();
@@ -153,7 +155,7 @@ const Timetable = ({
         setPacedTrainIdsToMove([]);
       }
     },
-    [pacedTrainIdsToMove, patchPacedTrainMove, dispatch]
+    [pacedTrainIdsToMove, updateTrainSchedulesTssId, dispatch]
   );
 
   return (

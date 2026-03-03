@@ -2228,31 +2228,6 @@ paths:
       responses:
         '204':
           description: All paced_trains have been deleted
-  /paced_train/move:
-    patch:
-      tags:
-      - paced_train
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-              - paced_train_ids
-              - train_schedule_set_id
-              properties:
-                paced_train_ids:
-                  type: array
-                  items:
-                    type: integer
-                    format: int64
-                train_schedule_set_id:
-                  type: integer
-                  format: int64
-        required: true
-      responses:
-        '204':
-          description: The train schedule set is updated with the paced trains
   /paced_train/occupancy_blocks:
     post:
       tags:
@@ -4674,6 +4649,31 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/TrainScheduleResponse'
+  /train_schedules/move:
+    patch:
+      tags:
+      - paced_train
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - train_schedule_ids
+              - train_schedule_set_id
+              properties:
+                train_schedule_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                train_schedule_set_id:
+                  type: integer
+                  format: int64
+        required: true
+      responses:
+        '204':
+          description: The train schedule set is updated with the train schedules
   /train_schedules/{id}:
     get:
       tags:

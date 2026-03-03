@@ -264,8 +264,15 @@ fn service_router() -> router::DocumentedRouter {
                 path.route("/{id}", put!(timetable::train_schedule_exceptions::update))
             })
             .nests("/train_schedules", |path| {
-                path.nests("/{id}", |path| {
+                path.route(
+                        "/move",
+                        patch!(
+                            timetable::paced_train::move_train_schedules_to_another_train_schedule_set
+                        ),
+                    )
+                .nests("/{id}", |path| {
                     path.route("/", get!(timetable::paced_train::get_by_id))
+
                 })
             })
             .nests("/paced_train", |path| {
@@ -282,12 +289,6 @@ fn service_router() -> router::DocumentedRouter {
                     .route(
                         "/simulation_summary",
                         post!(timetable::paced_train::simulation_summary),
-                    )
-                    .route(
-                        "/move",
-                        patch!(
-                            timetable::paced_train::move_paced_trains_to_another_train_schedule_set
-                        ),
                     )
                     .route(
                         "/track_occupancy",
