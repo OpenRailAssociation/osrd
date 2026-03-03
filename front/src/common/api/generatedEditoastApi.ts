@@ -640,13 +640,6 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/paced_train`, method: 'DELETE', body: queryArg.body }),
         invalidatesTags: ['timetable', 'paced_train'],
       }),
-      patchPacedTrainMove: build.mutation<
-        PatchPacedTrainMoveApiResponse,
-        PatchPacedTrainMoveApiArg
-      >({
-        query: (queryArg) => ({ url: `/paced_train/move`, method: 'PATCH', body: queryArg.body }),
-        invalidatesTags: ['paced_train'],
-      }),
       postPacedTrainOccupancyBlocks: build.query<
         PostPacedTrainOccupancyBlocksApiResponse,
         PostPacedTrainOccupancyBlocksApiArg
@@ -1342,6 +1335,17 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['train_schedule_set', 'paced_train'],
       }),
+      patchTrainSchedulesMove: build.mutation<
+        PatchTrainSchedulesMoveApiResponse,
+        PatchTrainSchedulesMoveApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/train_schedules/move`,
+          method: 'PATCH',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['paced_train'],
+      }),
       getTrainSchedulesById: build.query<
         GetTrainSchedulesByIdApiResponse,
         GetTrainSchedulesByIdApiArg
@@ -2000,13 +2004,6 @@ export type DeletePacedTrainApiArg = {
     ids: number[];
   };
 };
-export type PatchPacedTrainMoveApiResponse = unknown;
-export type PatchPacedTrainMoveApiArg = {
-  body: {
-    paced_train_ids: number[];
-    train_schedule_set_id: number;
-  };
-};
 export type PostPacedTrainOccupancyBlocksApiResponse = /** status 200  */ {
   [key: string]: OccupancyBlocksPacedTrainResult;
 };
@@ -2629,6 +2626,13 @@ export type PostTrainScheduleSetsByIdTrainSchedulesApiArg = {
   /** A train schedule set ID */
   id: number;
   body: TrainSchedule[];
+};
+export type PatchTrainSchedulesMoveApiResponse = unknown;
+export type PatchTrainSchedulesMoveApiArg = {
+  body: {
+    train_schedule_ids: number[];
+    train_schedule_set_id: number;
+  };
 };
 export type GetTrainSchedulesByIdApiResponse =
   /** status 200 The requested train schedule */ TrainScheduleResponse;

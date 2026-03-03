@@ -1459,8 +1459,8 @@ async fn get_operational_point(
 
 #[cfg_attr(test, derive(serde::Serialize))]
 #[derive(Deserialize, ToSchema)]
-pub(in crate::views) struct MovePacedTrainsForm {
-    pub paced_train_ids: Vec<i64>,
+pub(in crate::views) struct MoveTrainSchedulesForm {
+    pub train_schedule_ids: Vec<i64>,
     pub train_schedule_set_id: i64,
 }
 
@@ -1468,18 +1468,18 @@ pub(in crate::views) struct MovePacedTrainsForm {
 #[utoipa::path(
     patch, path = "",
     tag = "paced_train",
-    request_body = inline(MovePacedTrainsForm),
+    request_body = inline(MoveTrainSchedulesForm),
     responses(
-        (status = 204, description = "The train schedule set is updated with the paced trains"),
+        (status = 204, description = "The train schedule set is updated with the train schedules"),
     ),
 )]
-pub(in crate::views) async fn move_paced_trains_to_another_train_schedule_set(
+pub(in crate::views) async fn move_train_schedules_to_another_train_schedule_set(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
-    Json(MovePacedTrainsForm {
-        paced_train_ids,
+    Json(MoveTrainSchedulesForm {
+        train_schedule_ids,
         train_schedule_set_id,
-    }): Json<MovePacedTrainsForm>,
+    }): Json<MoveTrainSchedulesForm>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())
@@ -1496,31 +1496,31 @@ pub(in crate::views) async fn move_paced_trains_to_another_train_schedule_set(
     })
     .await?;
 
-    let paced_trains: Vec<_> = models::TrainSchedule::retrieve_batch_or_fail(
+    let train_schedules: Vec<_> = models::TrainSchedule::retrieve_batch_or_fail(
         &mut db_pool.get().await?,
-        paced_train_ids.clone(),
+        train_schedule_ids.clone(),
         |missing| TrainScheduleError::BatchNotFound {
             count: missing.len(),
         },
     )
     .await?;
 
-    // Filter paced trains ids to remove ones that are already in the provided train schedule set
-    let paced_train_ids = paced_trains
+    // Filter train schedules ids to remove ones that are already in the provided train schedule set
+    let train_schedule_ids = train_schedules
         .into_iter()
-        .filter_map(|paced_train| {
-            if paced_train.train_schedule_set_id != train_schedule_set_id {
-                Some(paced_train.id)
+        .filter_map(|train_schedule| {
+            if train_schedule.train_schedule_set_id != train_schedule_set_id {
+                Some(train_schedule.id)
             } else {
                 None
             }
         })
         .collect_vec();
 
-    // Check if some paced trains are part of a round_trips
+    // Check if some train schedules are part of a round_trips
     let round_trips = TrainScheduleRoundTrips::retrieve_from_train_schedule_ids(
         &mut db_pool.get().await?,
-        paced_train_ids.clone(),
+        train_schedule_ids.clone(),
     )
     .await?;
 
@@ -1532,7 +1532,9 @@ pub(in crate::views) async fn move_paced_trains_to_another_train_schedule_set(
             continue;
         };
         // If one of the two trains is not a train we want to move, we add the ID to to_break
-        if !paced_train_ids.contains(&right_id) || !paced_train_ids.contains(&round_trip.left_id) {
+        if !train_schedule_ids.contains(&right_id)
+            || !train_schedule_ids.contains(&round_trip.left_id)
+        {
             to_break.push(round_trip.id);
         }
     }
@@ -1542,7 +1544,7 @@ pub(in crate::views) async fn move_paced_trains_to_another_train_schedule_set(
     // Update the train_schedule_set_id of the paced trains
     let _: (Vec<_>, _) = models::TrainSchedule::changeset()
         .train_schedule_set_id(train_schedule_set_id)
-        .update_batch(&mut db_pool.get().await?, paced_train_ids)
+        .update_batch(&mut db_pool.get().await?, train_schedule_ids)
         .await?;
 
     Ok(StatusCode::NO_CONTENT)
@@ -1607,7 +1609,7 @@ mod tests {
     use crate::views::test_app::TestAppBuilder;
     use crate::views::test_app::TestResponse;
     use crate::views::tests::mocked_core_pathfinding_sim_and_proj;
-    use crate::views::timetable::paced_train::MovePacedTrainsForm;
+    use crate::views::timetable::paced_train::MoveTrainSchedulesForm;
     use crate::views::timetable::paced_train::OccupancyBlocksPacedTrainResult;
     use crate::views::timetable::paced_train::PacedTrainSummaryResponse;
     use crate::views::timetable::paced_train::ProjectPathPacedTrainResult;
@@ -2688,30 +2690,30 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn move_paced_trains_to_another_train_schedule_set() {
+    async fn move_train_schedules_to_another_train_schedule_set() {
         let app = TestAppBuilder::new().build();
         let db_pool = app.db_pool();
         let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
-        let paced_train =
+        let train_schedule =
             create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.id).await;
 
         let train_schedule_set_to_move = create_train_schedule_set(&mut db_pool.get_ok()).await;
 
-        let move_form = MovePacedTrainsForm {
-            paced_train_ids: vec![paced_train.id],
+        let move_form = MoveTrainSchedulesForm {
+            train_schedule_ids: vec![train_schedule.id],
             train_schedule_set_id: train_schedule_set_to_move.id,
         };
-        let request = app.patch("/paced_train/move").json(&move_form);
+        let request = app.patch("/train_schedules/move").json(&move_form);
 
         app.fetch(request)
             .await
             .assert_status(StatusCode::NO_CONTENT);
 
-        let paced_train = models::TrainSchedule::retrieve(db_pool.get_ok(), paced_train.id)
+        let train_schedule = models::TrainSchedule::retrieve(db_pool.get_ok(), train_schedule.id)
             .await
-            .expect("Failed to retrieve paced train");
+            .expect("Failed to retrieve train schedule");
         assert_eq!(
-            paced_train.unwrap().train_schedule_set_id,
+            train_schedule.unwrap().train_schedule_set_id,
             train_schedule_set_to_move.id
         );
     }
