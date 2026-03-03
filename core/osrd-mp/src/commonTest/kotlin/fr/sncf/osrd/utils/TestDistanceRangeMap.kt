@@ -17,20 +17,20 @@ class TestDistanceRangeMap {
     ) {
         val rangeMap = distanceRangeMapOf<T>()
         for (entry in entries) rangeMap.put(entry.lower, entry.upper, entry.value)
-        assertEquals(expected, rangeMap.asList())
+        assertEquals(expected, rangeMap.toList())
 
         val rangeMapMany = distanceRangeMapOf<T>()
         rangeMapMany.putMany(entries)
-        assertEquals(expected, rangeMapMany.asList())
+        assertEquals(expected, rangeMapMany.toList())
 
         val rangeMapCtor = DistanceRangeMapImpl(entries)
-        assertEquals(expected, rangeMapCtor.asList())
+        assertEquals(expected, rangeMapCtor.toList())
     }
 
     @Test
     fun testEmpty() {
         val rangeMap = distanceRangeMapOf<Int>()
-        assertEquals(emptyList(), rangeMap.asList())
+        assertEquals(emptyList(), rangeMap.toList())
     }
 
     @Test
@@ -164,7 +164,7 @@ class TestDistanceRangeMap {
         rangeMap.truncate(Distance(250), Distance(260))
         assertEquals(
             listOf(DistanceRangeMap.RangeMapEntry(Distance(250), Distance(260), 42)),
-            rangeMap.asList(),
+            rangeMap.toList(),
         )
     }
 
@@ -174,7 +174,7 @@ class TestDistanceRangeMap {
         rangeMap.put(Distance(0), Distance(100), 41)
         rangeMap.put(Distance(200), Distance(300), 42)
         rangeMap.truncate(Distance(0), Distance(0))
-        assertEquals(listOf(), rangeMap.asList())
+        assertEquals(listOf(), rangeMap.toList())
     }
 
     @Test
@@ -183,7 +183,7 @@ class TestDistanceRangeMap {
         rangeMap.put(Distance(0), Distance(100), 41)
         rangeMap.put(Distance(200), Distance(300), 42)
         rangeMap.truncate(Distance(150), Distance(160))
-        assertEquals(listOf(), rangeMap.asList())
+        assertEquals(listOf(), rangeMap.toList())
     }
 
     @Test
@@ -204,7 +204,7 @@ class TestDistanceRangeMap {
                 DistanceRangeMap.RangeMapEntry(Distance(-100), Distance(0), 41),
                 DistanceRangeMap.RangeMapEntry(Distance(100), Distance(200), 42),
             ),
-            rangeMap.asList(),
+            rangeMap.toList(),
         )
     }
 
@@ -224,7 +224,7 @@ class TestDistanceRangeMap {
                 DistanceRangeMap.RangeMapEntry(Distance(500), Distance(600), 42),
                 DistanceRangeMap.RangeMapEntry(Distance(600), Distance(1000), 43),
             ),
-            rangeMap.asList(),
+            rangeMap.toList(),
         )
     }
 
@@ -243,13 +243,13 @@ class TestDistanceRangeMap {
         val rangeMap = distanceRangeMapOf<Int>()
         rangeMap.putMany(entries)
         assertFalse(mark2.hasPassedNow())
-        assertEquals(entries, rangeMap.asList())
+        assertEquals(entries, rangeMap.toList())
 
         val mark3 = timeSource.markNow()
         val mark4 = mark3 + oneSecond
         val rangeMapCtor = DistanceRangeMapImpl(entries)
         assertFalse(mark4.hasPassedNow())
-        assertEquals(entries, rangeMapCtor.asList())
+        assertEquals(entries, rangeMapCtor.toList())
     }
 
     @Test
