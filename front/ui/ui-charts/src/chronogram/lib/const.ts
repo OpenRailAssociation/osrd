@@ -1,0 +1,2 @@
+export const CHRONOGRAM_HEADER_HEIGHT = 33;
+export const LEVEL_CROSSING_ITEM_HEIGHT = 48;
