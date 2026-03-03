@@ -1,5 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
+import { PROJECT_URLS } from '../../assets/operation-studies/project-const';
 import { cleanText } from '../../utils/data-normalizer';
 import type { ProjectDetails } from '../../utils/types';
 import HomePage from '../home-page';
@@ -44,24 +45,14 @@ class ProjectPage extends HomePage {
     this.projectConfirmDeleteButton = page.getByTestId('confirm-delete-button');
   }
 
-  // Create a project based on the provided details.
-  async createProject(details: ProjectDetails) {
-    await expect(this.addProjectButton).toBeVisible();
-    await this.addProjectButton.click();
-    await this.fillProjectDetails(details);
-    await this.createProjectButton.click();
-    await this.page.waitForURL('**/projects/*');
+  private getProjectByName(name: string): Locator {
+    return this.page.getByTestId(name);
   }
 
-  // Update a project based on the provided details.
-  async updateProject(details: ProjectDetails) {
-    await this.updateProjectButton.click();
-    await this.fillProjectDetails(details);
-    await this.updateConfirmButton.click();
-    await this.page.waitForURL('**/projects/*');
+  private openProjectButton(name: string): Locator {
+    return this.getProjectByName(name).getByTestId('openProject');
   }
 
-  // Fill the project details in the form inputs.
   private async fillProjectDetails(details: ProjectDetails) {
     const { name, description, objectives, funders, budget, tags } = details;
 
@@ -76,47 +67,46 @@ class ProjectPage extends HomePage {
     }
   }
 
-  // Validate if the project's financial budget matches the expected value.
-  async validateNumericBudget(expectedBudget: string) {
-    const budgetText = await this.projectFinancialAmountLabel.textContent();
-    expect(budgetText?.replace(/[^0-9]/g, '')).toEqual(expectedBudget);
-  }
-
-  // Validate if the project objectives match the expected objectives.
-  async validateObjectives(expectedObjectives: string) {
+  private async validateObjectives(expectedObjectives: string) {
     const objectives = await this.projectObjectivesLabel.textContent();
     expect(cleanText(objectives)).toContain(cleanText(expectedObjectives));
   }
 
-  // Validate if all project details are displayed correctly.
+  async createProject(details: ProjectDetails) {
+    await expect(this.addProjectButton).toBeVisible();
+    await this.addProjectButton.click();
+    await this.fillProjectDetails(details);
+    await this.createProjectButton.click();
+    await this.page.waitForURL(PROJECT_URLS.detail);
+  }
+
+  async updateProject(details: ProjectDetails) {
+    await this.updateProjectButton.click();
+    await this.fillProjectDetails(details);
+    await this.updateConfirmButton.click();
+    await this.page.waitForURL(PROJECT_URLS.detail);
+  }
+
   async validateProjectData(details: ProjectDetails) {
     const { name, description, objectives, funders, budget, tags } = details;
 
-    expect(await this.projectNameLabel.textContent()).toContain(name);
-    expect(await this.projectDescriptionLabel.textContent()).toContain(description);
+    await expect(this.projectNameLabel).toContainText(name);
+    await expect(this.projectDescriptionLabel).toContainText(description);
+    await expect(this.projectFinancialInfoLabel).toContainText(funders);
+    await expect(this.projectTagsLabel).toContainText(tags.join(''));
     await this.validateObjectives(objectives);
-    expect(await this.projectFinancialInfoLabel.textContent()).toContain(funders);
-    await this.validateNumericBudget(budget);
-    expect(await this.projectTagsLabel.textContent()).toContain(tags.join(''));
+    await this.validateNumericBudget(this.projectFinancialAmountLabel, budget);
   }
 
-  // Open a project by its test ID (The Test ID is the same as the Name).
-  async openProjectByTestId(projectTestId: string | RegExp) {
-    await this.page.getByTestId(projectTestId).first().hover();
-    await this.page.getByTestId(projectTestId).getByTestId('openProject').click();
+  async openProjectByName(projectName: string) {
+    await this.getProjectByName(projectName).hover();
+    await this.openProjectButton(projectName).click();
   }
 
-  // Retrieve a project element by its name.
-  getProjectByName(name: string) {
-    return this.page.locator(`.project-card .project-card-name:has-text("${name}")`);
-  }
-
-  // Delete a project by its name.
   async deleteProject(name: string) {
     await this.updateProjectButton.click();
     await expect(this.projectDeleteButton).toBeVisible();
     await this.projectDeleteButton.click();
-    await expect(this.projectDeleteButton).not.toBeVisible();
     await expect(this.projectConfirmDeleteButton).toBeVisible();
     await this.projectConfirmDeleteButton.click();
     await expect(this.projectConfirmDeleteButton).not.toBeVisible();

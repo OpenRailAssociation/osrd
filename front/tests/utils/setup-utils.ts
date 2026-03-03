@@ -23,7 +23,7 @@ import { createDateInSpecialTimeZone } from './date-utils';
 import { readJsonFile } from './file-utils';
 import createScenario from './scenario';
 import sendTrains from './send-trains';
-import type { ProjectData, StudyData } from './types';
+import type { StudyData } from './types';
 import {
   dualModeRollingStockName,
   electricRollingStockName,
@@ -38,8 +38,8 @@ import {
   timetableItemStudyName,
 } from '../assets/constants/project-const';
 
-const projectData: ProjectData = readJsonFile('tests/assets/operation-studies/project.json');
-const studyData: StudyData = readJsonFile('tests/assets/operation-studies/study.json');
+import { PROJECT_DATA } from '../assets/operation-studies/project-const';
+const studyData: StudyData = readJsonFile('tests/assets/operation-studies/study-const';
 
 /**
  * Helper function to create infrastructure using RailJson.
@@ -118,7 +118,7 @@ export async function createProject(projectName = globalProjectName): Promise<Pr
   const project: Project = await postApiRequest(
     '/api/projects',
     {
-      ...projectData,
+      ...PROJECT_DATA,
       name: projectName,
       budget: 1234567890,
     } as ProjectCreateForm,
