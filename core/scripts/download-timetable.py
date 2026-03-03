@@ -16,7 +16,7 @@ async def download_timetable(
     page_size: int,
     gateway_cookie: str,
 ) -> Dict:
-    paced_trains_url = f"{editoast_url}api/timetable/{timetable_id}/paced_trains/?page=$page&{page_size=}"
+    paced_trains_url = f"{editoast_url}api/timetable/{timetable_id}/train_schedules/?page=$page&{page_size=}"
     cookies, connector = make_connector(gateway_cookie)
     async with aiohttp.ClientSession(
         trust_env=True, raise_for_status=True, cookies=cookies, connector=connector
