@@ -56,7 +56,7 @@ export default function ScenarioCard({
       </div>
       <div className="scenario-card-description">{scenario.description}</div>
 
-      <div className="scenario-card-tags">
+      <div className="scenario-card-tags" data-testid="scenario-card-tags">
         {scenario.tags &&
           scenario.tags.map((tag) => (
             <div

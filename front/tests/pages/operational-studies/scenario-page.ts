@@ -1,5 +1,7 @@
-import { type Locator, type Page, expect } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 
+import { SCENARIO_URLS } from '../../assets/operation-studies/scenario-const';
+import { STUDY_URLS } from '../../assets/operation-studies/study-const';
 import type { ScenarioDetails } from '../../utils/types';
 import CommonPage from '../common-page';
 
@@ -28,9 +30,8 @@ class ScenarioPage extends CommonPage {
   readonly stdButton: Locator;
   readonly sddButton: Locator;
 
-  constructor(readonly page: Page) {
+  constructor(page: Page) {
     super(page);
-
     this.scenarioUpdateButton = page.getByTestId('edit-scenario');
     this.scenarioEditionModal = page.getByTestId('scenario-edition-modal');
     this.scenarioDeleteButton = this.scenarioEditionModal.getByTestId('delete-scenario');
@@ -56,26 +57,39 @@ class ScenarioPage extends CommonPage {
     this.sddButton = page.getByTestId('sdd-button');
   }
 
-  // Create a scenario based on the provided details.
+  private getScenarioByName(scenarioName: string): Locator {
+    return this.page.getByTestId(scenarioName);
+  }
+
+  private openScenarioButton(scenarioName: string): Locator {
+    return this.getScenarioByName(scenarioName).getByTestId('openScenario');
+  }
+  private getScenarioTags(id: string): Locator {
+    return this.page.getByTestId(`scenario-card-${id}`).getByTestId('scenario-card-tags');
+  }
+
+  private getElectricProfileOptionByName(name: string): Locator {
+    const list = this.page.getByRole('list');
+    return list.getByRole('button', { name });
+  }
+
   async createScenario(details: ScenarioDetails) {
     await expect(this.addScenarioButton).toBeVisible();
     await this.addScenarioButton.click();
     await this.fillScenarioDetails(details);
     await this.createScenarioButton.click();
-    await this.page.waitForURL('**/scenarios/*');
+    await this.page.waitForURL(SCENARIO_URLS.detail);
   }
 
-  // Update a scenario based on the provided details.
   async updateScenario(details: ScenarioDetails) {
     await this.openScenarioEditForm();
     await this.fillScenarioDetails(details);
     await this.scenarioConfirmUpdateButton.click();
     await expect(this.scenarioEditionModal).toBeHidden();
-    await this.page.waitForURL('**/scenarios/*');
+    await this.page.waitForURL(SCENARIO_URLS.detail);
     await this.page.waitForLoadState();
   }
 
-  // Fill the scenario details in the form inputs.
   private async fillScenarioDetails({
     name,
     description,
@@ -85,68 +99,37 @@ class ScenarioPage extends CommonPage {
   }: ScenarioDetails) {
     await this.scenarioNameInput.fill(name);
     await this.scenarioDescriptionInput.fill(description);
-
-    // Set electric profile if provided
-    if (electricProfileName) {
-      await this.setScenarioElectricProfileByName(electricProfileName);
-    }
-
-    // Select infra name if provided
-    if (infraName) {
-      await this.scenarioInfraList.getByText(infraName).first().click();
-    }
-
-    // Set scenario tags
-    for (const tag of tags) {
-      await this.setTag(tag);
-    }
+    if (electricProfileName) await this.setScenarioElectricProfileByName(electricProfileName);
+    if (infraName) await this.scenarioInfraList.getByText(infraName).first().click();
+    for (const tag of tags ?? []) await this.setTag(tag);
   }
 
-  // Validate if all scenario details are displayed correctly.
   async validateScenarioData({
     name,
     description,
     infraName,
     tags,
     isUpdating = false,
-  }: {
-    name: string;
-    description: string;
-    infraName: string;
-    tags?: string[];
-    isUpdating?: boolean;
-  }) {
-    await expect(this.scenarioName).toBeVisible();
-    await expect.poll(async () => this.scenarioName.textContent()).toContain(name);
-    // Wait for the scenario name to be clickable if not updating
-    // this is to prevent the description panel from being hidden
+  }: ScenarioDetails & { isUpdating?: boolean }) {
     if (!isUpdating) await this.scenarioNameContainer.click();
-    const scenarioNameText = (await this.scenarioName.innerText()).slice(-1, 3);
-    expect(name).toContain(scenarioNameText);
-    expect(await this.scenarioDescription.textContent()).toContain(description);
-    expect(await this.scenarioInfraName.textContent()).toContain(infraName);
-    if (tags) {
-      expect(await this.scenarioTagsLabel.textContent()).toContain(tags.join(''));
-    }
+    await expect(this.scenarioName).toContainText(name);
+    await expect(this.scenarioDescription).toContainText(description);
+    if (infraName) await expect(this.scenarioInfraName).toContainText(infraName);
+    if (tags) await expect(this.scenarioTagsLabel).toContainText(tags.join(''));
   }
 
-  getScenarioByName(name: string) {
-    return this.page.locator(`text=${name}`);
+  async expectScenarioTags(scenarioName: string, expectedTags: string) {
+    await expect(this.getScenarioTags(scenarioName)).toContainText(expectedTags);
   }
 
-  getScenarioTags(id: string) {
-    return this.page.getByTestId(`scenario-card-${id}`).locator('.scenario-card-tags');
+  async assertScenarioNotVisible(name: string) {
+    await expect(this.getScenarioByName(name)).not.toBeVisible();
   }
 
   async openScenarioByName(scenarioName: string) {
-    await this.page.getByTestId(scenarioName).first().hover({ trial: true });
-    await this.page.getByTestId(scenarioName).getByTestId('openScenario').click();
-  }
-
-  // Set the scenario electric profile by name.
-  private async setScenarioElectricProfileByName(electricProfileName: string) {
-    await this.scenarioElectricProfileSelect.click();
-    await this.page.locator('#select-toggle').getByText(electricProfileName).click();
+    await expect(this.getScenarioByName(scenarioName)).toBeVisible();
+    await this.getScenarioByName(scenarioName).hover();
+    await this.openScenarioButton(scenarioName).click();
   }
 
   async openScenarioEditForm() {
@@ -160,7 +143,12 @@ class ScenarioPage extends CommonPage {
     await expect(this.scenarioConfirmDeleteButton).toBeVisible();
     await this.scenarioConfirmDeleteButton.click();
     await expect(this.scenarioConfirmDeleteButton).not.toBeVisible();
-    await this.page.waitForURL('**/studies/*');
+    await this.page.waitForURL(STUDY_URLS.detail);
+  }
+
+  private async setScenarioElectricProfileByName(electricProfileName: string) {
+    await this.scenarioElectricProfileSelect.click();
+    await this.getElectricProfileOptionByName(electricProfileName).click();
   }
 }
 
