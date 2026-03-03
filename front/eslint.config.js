@@ -1,11 +1,11 @@
 import js from '@eslint/js';
+import vitestPlugin from '@vitest/eslint-plugin';
 import importPlugin from 'eslint-plugin-import';
 import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';
 import prettierPluginRecommended from 'eslint-plugin-prettier/recommended';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import tseslint from 'typescript-eslint';
-import vitestPlugin from '@vitest/eslint-plugin';
 
 export default [
   {
@@ -125,6 +125,7 @@ export default [
             '**/__tests__/**',
             'tests/**',
             'scripts/**',
+            'eslint.config.js',
             'playwright.config.ts',
             'vite.config.ts',
           ],
@@ -163,11 +164,9 @@ export default [
       '@typescript-eslint/space-before-blocks': 0,
       camelcase: 0,
       'no-nonoctal-decimal-escape': 0,
-      'no-param-reassign': 0,
       'no-unsafe-optional-chaining': 0,
       'object-curly-newline': 0,
       'react/function-component-definition': 0,
-      'react/jsx-props-no-spreading': 0,
       'react/no-array-index-key': 0,
       'react/require-default-props': 0,
 
