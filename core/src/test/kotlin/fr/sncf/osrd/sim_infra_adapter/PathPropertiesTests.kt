@@ -70,7 +70,7 @@ class PathPropertiesTests {
                 RangeMapEntry(1_500.meters, 2_500.meters, .0),
                 RangeMapEntry(2_500.meters, 3_000.meters, -5.0),
             ),
-            slopes.asList(),
+            slopes.toList(),
         )
 
         val pathBackward =
@@ -87,7 +87,7 @@ class PathPropertiesTests {
                 RangeMapEntry(0.meters, 1_000.meters, .0),
                 RangeMapEntry(1_000.meters, 2_000.meters, -15.0),
             ),
-            slopesBackward.asList(),
+            slopesBackward.toList(),
         )
     }
 
@@ -265,7 +265,7 @@ class PathPropertiesTests {
                 RangeMapEntry(0.meters, 500.meters, -10_000.0),
                 RangeMapEntry(500.meters, 1_000.meters, -5_000.0),
             ),
-            slopesBackward.asList(),
+            slopesBackward.toList(),
         )
     }
 
@@ -298,7 +298,7 @@ class PathPropertiesTests {
                 RangeMapEntry(0.meters, 500.meters, -15.0),
                 RangeMapEntry(500.meters, 1_000.meters, -5.0 + 800.0 / 5_000.0),
             ),
-            slopesBackward.asList(),
+            slopesBackward.toList(),
         )
     }
 
@@ -417,7 +417,7 @@ class PathPropertiesTests {
                 RangeMapEntry(0.meters, 2_500.meters, setOf("1500V")),
                 RangeMapEntry(2_500.meters, 3_000.meters, setOf("25000V")),
             ),
-            electrificationForward.asList(),
+            electrificationForward.toList(),
         )
 
         val pathBackward =
@@ -434,7 +434,7 @@ class PathPropertiesTests {
                 RangeMapEntry(0.meters, 500.meters, setOf("25000V")),
                 RangeMapEntry(500.meters, 2_500.meters, setOf("1500V")),
             ),
-            electrificationBackward.asList(),
+            electrificationBackward.toList(),
         )
     }
 
@@ -507,7 +507,7 @@ class PathPropertiesTests {
                 routes = listOf(),
             )
         val speedLimits = path.getSpeedLimitProperties("trainTag", null)
-        assertThat(speedLimits.asList())
+        assertThat(speedLimits.toList())
             .containsExactlyElementsOf(
                 listOf(
                     RangeMapEntry(
@@ -568,7 +568,7 @@ class PathPropertiesTests {
         */
 
         val speedLimitsMA100 = path.getSpeedLimitProperties("MA100", null)
-        assertThat(speedLimitsMA100.asList())
+        assertThat(speedLimitsMA100.toList())
             .containsExactlyElementsOf(
                 listOf(
                     RangeMapEntry(
@@ -595,7 +595,7 @@ class PathPropertiesTests {
             )
 
         val speedLimitsME100 = path.getSpeedLimitProperties("ME100", null)
-        assertThat(speedLimitsME100.asList())
+        assertThat(speedLimitsME100.toList())
             .containsExactlyElementsOf(
                 listOf(
                     RangeMapEntry(
@@ -622,7 +622,7 @@ class PathPropertiesTests {
             )
 
         val speedLimitsE32C = path.getSpeedLimitProperties("E32C", null)
-        assertThat(speedLimitsE32C.asList())
+        assertThat(speedLimitsE32C.toList())
             .containsExactlyElementsOf(
                 listOf(
                     RangeMapEntry(
@@ -649,7 +649,7 @@ class PathPropertiesTests {
             )
 
         val speedLimitsHLP = path.getSpeedLimitProperties("HLP", null)
-        assertThat(speedLimitsHLP.asList())
+        assertThat(speedLimitsHLP.toList())
             .containsExactlyElementsOf(
                 listOf(
                     RangeMapEntry(
@@ -676,7 +676,7 @@ class PathPropertiesTests {
             )
 
         val speedLimitsNull = path.getSpeedLimitProperties(null, null)
-        assertThat(speedLimitsNull.asList())
+        assertThat(speedLimitsNull.toList())
             .containsExactlyElementsOf(
                 listOf(
                     RangeMapEntry(
@@ -726,10 +726,10 @@ class PathPropertiesTests {
                 ),
             )
         val speedLimitsMA90 = path.getSpeedLimitProperties("MA90", null)
-        assertThat(speedLimitsMA90.asList()).containsExactlyElementsOf(expectedSpeedLimitsMA90)
+        assertThat(speedLimitsMA90.toList()).containsExactlyElementsOf(expectedSpeedLimitsMA90)
 
         val speedLimitsMA80 = path.getSpeedLimitProperties("MA80", null)
-        assertThat(speedLimitsMA80.asList()).containsExactlyElementsOf(expectedSpeedLimitsMA90)
+        assertThat(speedLimitsMA80.toList()).containsExactlyElementsOf(expectedSpeedLimitsMA90)
     }
 
     /** Assert that line strings are equal, with a certain tolerance for double values */
