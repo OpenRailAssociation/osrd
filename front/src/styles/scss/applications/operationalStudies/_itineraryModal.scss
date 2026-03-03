@@ -240,6 +240,20 @@
             padding-bottom: 14px;
           }
 
+          .path-step-counter:hover {
+            opacity: 1;
+            background-color: var(--error60);
+            // border-color: var(--error30) !important;
+
+            .remove-path-step-icon {
+              display: block;
+            }
+
+            .counter {
+              display: none;
+            }
+          }
+
           .path-step {
             display: grid;
             grid-template-columns:
@@ -258,11 +272,11 @@
                 auto;
             }
 
-            .path-step-counter.delete-hovered {
-              opacity: 1;
-              background-color: var(--error60) !important;
-              border-color: var(--error30) !important;
-            }
+            // .path-step-counter.delete-hovered {
+            //   opacity: 1;
+            //   background-color: var(--error60) !important;
+            //   border-color: var(--error30) !important;
+            // }
             .path-step-counter {
               position: relative;
               width: 24px;
@@ -312,6 +326,10 @@
                 &::before {
                   top: -2px; // relative element border width
                 }
+              }
+
+              .remove-path-step-icon {
+                display: none;
               }
 
               &.invalid {
