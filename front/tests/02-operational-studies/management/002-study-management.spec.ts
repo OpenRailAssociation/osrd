@@ -1,21 +1,17 @@
-import { expect } from '@playwright/test';
-
 import type { Project, Study } from 'common/api/osrdEditoastApi';
 
+import {
+  STUDY_DATA,
+  STUDY_TRANSLATIONS,
+  STUDY_URLS,
+  UPDATED_STUDY_DATA,
+} from '../../assets/operation-studies/study-const';
 import test from '../../page-object-fixture';
 import { generateUniqueName } from '../../utils';
 import { getProject } from '../../utils/api-utils';
-import { formatDateToDayMonthYear } from '../../utils/date-utils';
-import { readJsonFile } from '../../utils/file-utils';
+import { DATE_OFFSET, formatDateToDayMonthYear, getISODate } from '../../utils/date-utils';
 import { createStudy } from '../../utils/setup-utils';
 import { deleteStudy } from '../../utils/teardown-utils';
-import type { StudyData, StudyFrTranslations } from '../../utils/types';
-
-const studyData: StudyData = readJsonFile('tests/assets/operation-studies/study.json');
-
-const frTranslations: StudyFrTranslations = readJsonFile(
-  'public/locales/fr/operational-studies.json'
-);
 
 test.describe('@op @study @management', () => {
   let project: Project;
@@ -29,117 +25,94 @@ test.describe('@op @study @management', () => {
 
   test.afterAll(async () => {
     if (!createdStudies.length) return;
-    const studiesToDelete = [...createdStudies];
-    await Promise.allSettled(studiesToDelete.map((s) => deleteStudy(s.projectId, s.name)));
+    await Promise.allSettled(createdStudies.map((s) => deleteStudy(s.projectId, s.name)));
   });
 
   /** *************** Test 1 **************** */
-  test('@smoke Create a new study', async ({ page, studyPage }) => {
-    await test.step('Navigate to project page', async () => {
-      await page.goto(`/operational-studies/projects/${project.id}`);
-    });
+  test('@smoke Create a new study', async ({ studyPage, page }) => {
+    const studyName = generateUniqueName(STUDY_DATA.name);
+    const todayISO = getISODate(DATE_OFFSET.TODAY);
+    const expectedDate = formatDateToDayMonthYear(todayISO);
 
-    const studyName = generateUniqueName(studyData.name);
-    const todayDateISO = new Date().toISOString().split('T')[0];
-    const expectedDate = formatDateToDayMonthYear(todayDateISO);
+    const studyDetails = {
+      ...STUDY_DATA,
+      name: studyName,
+      type: STUDY_TRANSLATIONS.type.flowRate,
+      status: STUDY_TRANSLATIONS.status.started,
+      startDate: todayISO,
+      expectedEndDate: todayISO,
+      endDate: todayISO,
+    };
 
     createdStudies.push({ projectId: project.id, name: studyName });
 
-    await test.step('Create a new study', async () => {
-      await studyPage.createStudy({
-        name: studyName,
-        description: studyData.description,
-        type: frTranslations.study.studyCategories.flowRate,
-        status: frTranslations.study.studyStates.started,
-        startDate: todayDateISO,
-        expectedEndDate: todayDateISO,
-        endDate: todayDateISO,
-        serviceCode: studyData.service_code,
-        businessCode: studyData.business_code,
-        budget: studyData.budget,
-        tags: studyData.tags,
-      });
+    await test.step('Navigate to project page', async () => {
+      await page.goto(STUDY_URLS.project(project.id));
     });
 
-    await test.step('Validate created study data', async () => {
+    await test.step('Create a new study', async () => await studyPage.createStudy(studyDetails));
+
+    await test.step('Validate created study data', async () =>
       await studyPage.validateStudyData({
-        name: studyName,
-        description: studyData.description,
-        type: frTranslations.study.studyCategories.flowRate,
-        status: frTranslations.study.studyStates.started,
+        ...studyDetails,
         startDate: expectedDate,
         expectedEndDate: expectedDate,
         endDate: expectedDate,
-        serviceCode: studyData.service_code,
-        businessCode: studyData.business_code,
-        budget: studyData.budget,
-        tags: studyData.tags,
-      });
-    });
+      }));
   });
 
   /** *************** Test 2 **************** */
   test('Update an existing study', async ({ page, studyPage }) => {
-    const baseName = generateUniqueName(studyData.name);
+    const baseName = generateUniqueName(STUDY_DATA.name);
     const updatedName = `${baseName} (updated)`;
+    const tomorrowISO = getISODate(DATE_OFFSET.TOMORROW);
+    const expectedDate = formatDateToDayMonthYear(tomorrowISO);
+
     createdStudies.push({ projectId: project.id, name: updatedName });
 
-    await test.step('Navigate to created study', async () => {
+    await test.step('Create a base study via API', async () => {
       study = await createStudy(project.id, baseName);
-      await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
+      await page.goto(STUDY_URLS.study(project.id, study.id));
     });
 
-    const tomorrowDateISO = new Date(Date.now() + 86400000).toISOString().split('T')[0];
-    const expectedDate = formatDateToDayMonthYear(tomorrowDateISO);
+    const updatedDetails = {
+      ...UPDATED_STUDY_DATA,
+      name: updatedName,
+      description: `${study.description} (updated)`,
+      startDate: tomorrowISO,
+      expectedEndDate: tomorrowISO,
+      endDate: tomorrowISO,
+    };
 
-    await test.step('Update the study', async () => {
-      await studyPage.updateStudy({
-        name: updatedName,
-        description: `${study.description} (updated)`,
-        type: frTranslations.study.studyCategories.operability,
-        status: frTranslations.study.studyStates.inProgress,
-        startDate: tomorrowDateISO,
-        expectedEndDate: tomorrowDateISO,
-        endDate: tomorrowDateISO,
-        serviceCode: 'A1230',
-        businessCode: 'B1230',
-        budget: '123456789',
-        tags: ['update-tag'],
-      });
+    await test.step('Update the study ', async () => {
+      await studyPage.updateStudy(updatedDetails);
     });
 
     await test.step('Validate updated study data', async () => {
       await studyPage.validateStudyData({
-        name: updatedName,
-        description: `${study.description} (updated)`,
-        type: frTranslations.study.studyCategories.operability,
-        status: frTranslations.study.studyStates.inProgress,
+        ...updatedDetails,
         startDate: expectedDate,
         expectedEndDate: expectedDate,
         endDate: expectedDate,
-        serviceCode: 'A1230',
-        businessCode: 'B1230',
-        budget: '123456789',
-        tags: ['update-tag'],
         isUpdate: true,
       });
     });
 
-    await test.step('Verify updated study in project list (tags)', async () => {
-      await page.goto(`/operational-studies/projects/${project.id}`);
-      await expect(page.getByTestId(updatedName).first()).toBeVisible();
+    await test.step('Verify updated study in project list', async () => {
+      await page.goto(STUDY_URLS.project(project.id));
+      await studyPage.verifyStudyVisibility(updatedName);
     });
   });
 
   /** *************** Test 3 **************** */
   test('Delete a study', async ({ page, studyPage }) => {
     await test.step('Create a study to delete', async () => {
-      study = await createStudy(project.id, generateUniqueName(studyData.name));
+      study = await createStudy(project.id, generateUniqueName(STUDY_DATA.name));
       createdStudies.push({ projectId: project.id, name: study.name });
     });
 
     await test.step('Navigate to project studies list', async () => {
-      await page.goto(`/operational-studies/projects/${project.id}`);
+      await page.goto(STUDY_URLS.project(project.id));
     });
 
     await test.step('Delete study by name via UI', async () => {

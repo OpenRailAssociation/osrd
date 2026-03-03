@@ -1,5 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
+import { STUDY_URLS } from '../../assets/operation-studies/study-const';
 import type { StudyDetails } from '../../utils/types';
 import CommonPage from '../common-page';
 
@@ -69,15 +70,38 @@ class StudyPage extends CommonPage {
     this.confirmDeleteScenarioButton = page.getByTestId('confirm-delete-button');
   }
 
-  getScenarioCardLocator(scenarioName: string): Locator {
+  private getStudyByName(name: string): Locator {
+    return this.page.getByTestId(name);
+  }
+  private openStudyButton(name: string): Locator {
+    return this.getStudyByName(name).getByTestId('openStudy');
+  }
+
+  private getScenarioCardLocator(scenarioName: string): Locator {
     return this.page.getByTestId(`scenario-card-${scenarioName}`);
   }
 
-  getScenarioTrainCount(scenarioName: string): Locator {
+  private getScenarioTrainCount(scenarioName: string): Locator {
     return this.getScenarioCardLocator(scenarioName).getByTestId('scenario-trains-count');
   }
 
-  // Fill the study details in the form inputs.
+  private async openStudyByName(studyName: string) {
+    await expect(this.getStudyByName(studyName)).toBeVisible();
+    await this.getStudyByName(studyName).hover();
+    await this.openStudyButton(studyName).click();
+  }
+
+  private async setStudyTypeByText(type: string) {
+    await this.studyTypeSelect.click();
+    await this.page.getByRole('button', { name: type }).click();
+  }
+
+  private async setStudyStatusByText(status: string) {
+    await this.studyStatusSelect.click();
+    const menu = this.page.getByRole('list');
+    await menu.getByRole('button', { name: status, exact: true }).click();
+  }
+
   private async fillStudyDetails(details: StudyDetails) {
     const {
       name,
@@ -105,24 +129,27 @@ class StudyPage extends CommonPage {
     for (const tag of tags) await this.setTag(tag);
   }
 
-  // Create a study based on the provided details.
+  async verifyStudyVisibility(studyName: string) {
+    await expect(this.getStudyByName(studyName)).toBeVisible();
+  }
+
   async createStudy(details: StudyDetails) {
     await expect(this.addStudyButton).toBeVisible();
     await this.addStudyButton.click();
     await this.fillStudyDetails(details);
     await this.createStudyButton.click();
-    await this.page.waitForURL('**/studies/*');
+    await this.page.waitForURL(STUDY_URLS.detail);
+    await expect(this.studyEditionModal).not.toBeVisible();
   }
 
-  // Update a study based on the provided details.
   async updateStudy(details: StudyDetails) {
     await this.studyUpdateButton.click();
     await this.fillStudyDetails(details);
     await this.studyUpdateConfirmButton.click();
-    await this.page.waitForURL('**/studies/*');
+    await this.page.waitForURL(STUDY_URLS.detail);
+    await expect(this.studyEditionModal).not.toBeVisible();
   }
 
-  // Validate that the study details match the expected values.
   async validateStudyData(details: StudyDetails & { isUpdate?: boolean }) {
     const {
       name,
@@ -139,7 +166,6 @@ class StudyPage extends CommonPage {
       isUpdate = false,
     } = details;
 
-    await expect(this.studyEditionModal).not.toBeVisible();
     await expect(this.studyName).toHaveText(name);
     await expect(this.startDate).toHaveText(startDate);
     await expect(this.expectedEndDate).toHaveText(expectedEndDate);
@@ -153,39 +179,12 @@ class StudyPage extends CommonPage {
 
     await expect(this.studyServiceCodeInfo).toHaveText(serviceCode);
     await expect(this.studyBusinessCodeInfo).toHaveText(businessCode);
-    await this.validateNumericBudget(budget);
-    expect(await this.studyTags.textContent()).toContain(tags.join(''));
+    await this.validateNumericBudget(this.studyFinancialAmount, budget);
+    await expect(this.studyTags).toContainText(tags.join(''));
   }
 
-  getStudyByName(name: string) {
-    return this.page.locator(`.study-card .study-card-name-text:has-text("${name}")`);
-  }
-
-  // Open a study by its test ID (The Test ID is the same as the Name).
-  async openStudyByTestId(studyTestId: string | RegExp) {
-    await this.page.getByTestId(studyTestId).first().hover();
-    await this.page.getByTestId(studyTestId).getByTestId('openStudy').click();
-  }
-
-  async setStudyTypeByText(type: string) {
-    await this.studyTypeSelect.click();
-    await this.page.locator('#modal-body').getByText(type).click();
-  }
-
-  async setStudyStatusByText(status: string) {
-    await this.studyStatusSelect.click();
-    await this.page.locator('#select-toggle').getByText(status).click();
-  }
-
-  // Validate if the study's financial budget matches the expected value.
-  async validateNumericBudget(expectedBudget: string) {
-    const budgetText = await this.studyFinancialAmount.textContent();
-    expect(budgetText?.replace(/[^0-9]/g, '')).toEqual(expectedBudget);
-  }
-
-  // Delete a study by its name.
   async deleteStudy(name: string) {
-    await this.openStudyByTestId(name);
+    await this.openStudyByName(name);
     await this.studyUpdateButton.click();
     await this.studyDeleteButton.click();
     await expect(this.studyDeleteButton).not.toBeVisible();
@@ -207,4 +206,5 @@ class StudyPage extends CommonPage {
     await expect(this.getScenarioCardLocator(scenarioName)).not.toBeVisible();
   }
 }
+
 export default StudyPage;

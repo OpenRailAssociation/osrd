@@ -7,6 +7,11 @@ import utc from 'dayjs/plugin/utc.js';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
+export const DATE_OFFSET = {
+  TODAY: 0,
+  TOMORROW: 1,
+};
+
 /**
  * Get a localized date string formatted to French.
  *
@@ -44,4 +49,14 @@ export function formatDateToDayMonthYear(dateString: string): string {
     month: 'short',
     year: 'numeric',
   });
+}
+
+/**
+ * Returns an ISO date string (YYYY-MM-DD) in a specific timezone.
+ *
+ * @param offsetDays - Number of days to add (0 = today, 1 = tomorrow)
+ * @param timeZone - Target timezone (default: Europe/Paris)
+ */
+export function getISODate(offsetDays = DATE_OFFSET.TODAY, timeZone = 'Europe/Paris'): string {
+  return dayjs().tz(timeZone).add(offsetDays, 'day').format('YYYY-MM-DD');
 }

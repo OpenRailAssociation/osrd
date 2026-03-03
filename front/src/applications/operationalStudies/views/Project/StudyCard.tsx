@@ -33,7 +33,7 @@ export default function StudyCard({
       role="button"
       tabIndex={0}
     >
-      <div className={cx('study-card-name')} data-testid={study.name}>
+      <div className={cx('study-card-name')}>
         <span className="mr-2">
           <span className="selected-mark">
             <CheckCircle variant="fill" size="lg" />

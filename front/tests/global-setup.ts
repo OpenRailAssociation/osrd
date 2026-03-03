@@ -13,6 +13,7 @@ setup('setup', async () => {
 
   await Promise.all([deleteProject(timetableItemProjectName), deleteProject(globalProjectName)]);
   await deleteRollingStocks(ROLLING_STOCK_NAMES);
-
   await createDataForTests();
+
+  logger.info('Test data setup completed successfully');
 });
