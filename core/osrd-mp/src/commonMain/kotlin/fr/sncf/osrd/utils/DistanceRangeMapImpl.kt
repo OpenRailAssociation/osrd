@@ -144,20 +144,7 @@ data class DistanceRangeMapImpl<T>(
     }
 
     /** Iterates over the entries in the map */
-    override fun iterator(): Iterator<DistanceRangeMap.RangeMapEntry<T>> {
-        return asList().iterator()
-    }
-
-    /** Returns a list of the entries in the map */
-    override fun asList(): List<DistanceRangeMap.RangeMapEntry<T>> {
-        validate()
-        val res = ArrayList<DistanceRangeMap.RangeMapEntry<T>>()
-        for (i in 0 until values.size) {
-            if (values[i] != null)
-                res.add(DistanceRangeMap.RangeMapEntry(bounds[i], bounds[i + 1], values[i]!!))
-        }
-        return res
-    }
+    override fun iterator(): Iterator<DistanceRangeMap.RangeMapEntry<T>> = IteratorImpl(this)
 
     override fun lowerBound(): Distance {
         return bounds[0]
@@ -407,6 +394,32 @@ data class DistanceRangeMapImpl<T>(
         if (values.isEmpty()) {
             bounds.clear()
         }
+    }
+
+    private class IteratorImpl<T>(val rangeMap: DistanceRangeMapImpl<T>) :
+        Iterator<DistanceRangeMap.RangeMapEntry<T>> {
+        private var cursor = -1
+
+        override fun next(): DistanceRangeMap.RangeMapEntry<T> {
+            if (cursor + 1 >= rangeMap.values.size) {
+                throw NoSuchElementException()
+            }
+            cursor++
+            if (rangeMap.values[cursor] == null) {
+                // skip over the gap...
+                // because of [DistanceRangeMapImpl.ensureInvariants], we know there is at least one
+                // range entry after the null one, so no need to throw an exception
+                cursor++
+            }
+            return DistanceRangeMap.RangeMapEntry(
+                lower = rangeMap.bounds[cursor],
+                upper = rangeMap.bounds[cursor + 1],
+                // [values] shouldn't contain consecutive nulls thanks to [mergeAdjacent]
+                value = rangeMap.values[cursor]!!,
+            )
+        }
+
+        override fun hasNext(): Boolean = cursor + 1 < rangeMap.values.size
     }
 
     // This declaration is needed for the extension methods in kt-osrd-utils

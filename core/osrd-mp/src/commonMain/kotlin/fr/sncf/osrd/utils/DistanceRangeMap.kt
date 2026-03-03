@@ -27,7 +27,7 @@ interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
     fun putMany(entries: List<RangeMapEntry<T>>)
 
     /** Returns a list of the entries in the map */
-    fun asList(): List<RangeMapEntry<T>>
+    fun asList(): List<RangeMapEntry<T>> = toList()
 
     /** Lower bound of the entry with the smallest distance */
     fun lowerBound(): Distance
