@@ -1,25 +1,25 @@
 import js from '@eslint/js';
+import { defineConfig, globalIgnores } from 'eslint/config';
 import importPlugin from 'eslint-plugin-import';
 import prettierPluginRecommended from 'eslint-plugin-prettier/recommended';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
-import storybookPlugin from 'eslint-plugin-storybook';
-import tseslint from 'typescript-eslint';
+import { configs as storybookPluginConfigs } from 'eslint-plugin-storybook';
+import { configs as tsEslintConfigs } from 'typescript-eslint';
 
-export default [
+export default defineConfig([
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.js'],
   },
-  {
-    ignores: ['ui-icons/src/'],
-  },
-  ...tseslint.config(js.configs.recommended, ...tseslint.configs.recommended),
+  globalIgnores(['**/ui-icons/src/**', '**/dist/**', '**/storybook-static/**']),
+  js.configs.recommended,
+  tsEslintConfigs.recommended,
   prettierPluginRecommended,
   importPlugin.flatConfigs.recommended,
   importPlugin.flatConfigs.typescript,
   reactPlugin.configs.flat.recommended,
   reactHooksPlugin.configs.flat.recommended,
-  ...storybookPlugin.configs['flat/recommended'],
+  storybookPluginConfigs['flat/recommended'],
   {
     settings: {
       react: {
@@ -157,4 +157,4 @@ export default [
       ],
     },
   },
-];
+]);
