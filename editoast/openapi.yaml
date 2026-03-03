@@ -2229,34 +2229,6 @@ paths:
       responses:
         '204':
           description: All paced_trains have been deleted
-  /paced_train/occupancy_blocks:
-    post:
-      tags:
-      - paced_train
-      summary: |-
-        ## Important:
-        The following paced trains are **excluded** from the result:
-        - paced trains for which pathfinding fails
-        - paced trains for which the simulation fails
-        - paced trains for which the simulation does not respect schedule times
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/OccupancyBlockForm'
-        required: true
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties:
-                  $ref: '#/components/schemas/OccupancyBlocksPacedTrainResult'
-                propertyNames:
-                  type: integer
-                  format: int64
   /paced_train/project_path:
     post:
       tags:
@@ -4632,6 +4604,34 @@ paths:
       responses:
         '204':
           description: The train schedule set is updated with the train schedules
+  /train_schedules/occupancy_blocks:
+    post:
+      tags:
+      - paced_train
+      summary: |-
+        ## Important:
+        The following train schedules are **excluded** from the result:
+        - train schedules for which pathfinding fails
+        - train schedules for which the simulation fails
+        - train schedules for which the simulation does not respect schedule times
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OccupancyBlockForm'
+        required: true
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/OccupancyBlocksTrainScheduleResult'
+                propertyNames:
+                  type: integer
+                  format: int64
   /train_schedules/simulation_summary:
     post:
       tags:
@@ -10381,11 +10381,11 @@ components:
           format: int64
         path:
           $ref: '#/components/schemas/core.TrainPath'
-    OccupancyBlocksPacedTrainResult:
+    OccupancyBlocksTrainScheduleResult:
       type: object
       description: Occupancy blocks output is described by blocks (signal updates)
       required:
-      - paced_train
+      - train_schedule
       - exceptions
       properties:
         exceptions:
@@ -10397,11 +10397,11 @@ components:
               $ref: '#/components/schemas/core.SignalUpdate'
           propertyNames:
             type: string
-        paced_train:
+        train_schedule:
           type: array
           items:
             $ref: '#/components/schemas/core.SignalUpdate'
-          description: Paced train
+          description: Train schedule
     Operation:
       oneOf:
       - allOf:
