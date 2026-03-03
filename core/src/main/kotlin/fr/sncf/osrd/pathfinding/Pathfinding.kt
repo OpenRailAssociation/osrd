@@ -112,10 +112,15 @@ class Pathfinding(
             if (establishedLength != other.establishedLength)
                 return establishedLength.compareTo(other.establishedLength)
             // favor more blocks (hoping that capacity consumed diminishes, could be removed)
-            return -infraExplorer
-                .getAllBlocks()
-                .size
-                .compareTo(other.infraExplorer.getAllBlocks().size)
+            val nbBlocks = infraExplorer.getAllBlocks().size
+            val nbOtherBlocks = other.infraExplorer.getAllBlocks().size
+            if (nbBlocks != nbOtherBlocks) return -nbBlocks.compareTo(nbOtherBlocks)
+            // stable complete discrimination on blocks used (only one optimal way to reach final
+            // block)
+            return infraExplorer
+                .getCurrentBlock()
+                .index
+                .compareTo(other.infraExplorer.getCurrentBlock().index)
         }
     }
 
@@ -159,11 +164,8 @@ class Pathfinding(
                 listOf(constraintCombiner),
             )
         for (infraExplorer in startInfraExplorers) {
-            registerStep(
-                infraExplorer,
-                rangeCost(infraExplorer.getCurrentBlockRange()),
-                infraExplorer.getCurrentBlockRange().length,
-            )
+            val currentRange = infraExplorer.getCurrentBlockRange()
+            registerStep(infraExplorer, rangeCost(currentRange), currentRange.length)
         }
 
         var maxSeenTarget = 0
