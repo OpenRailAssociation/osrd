@@ -72,7 +72,7 @@ object EnvelopeTrainPath {
         map: DistanceRangeMap<Electrification>
     ): ImmutableRangeMap<Double, Electrification> {
         val res = TreeRangeMap.create<Double, Electrification>()
-        for (entry in map.asList()) {
+        for (entry in map) {
             res.put(Range.closed(toMeters(entry.lower), toMeters(entry.upper)), entry.value)
         }
         return ImmutableRangeMap.copyOf(res)

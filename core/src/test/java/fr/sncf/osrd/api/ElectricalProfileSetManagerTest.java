@@ -1,5 +1,6 @@
 package fr.sncf.osrd.api;
 
+import static kotlin.collections.CollectionsKt.count;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -62,7 +63,7 @@ public class ElectricalProfileSetManagerTest extends ApiTest {
         for (var byTrack : profileMap.getMapping().entrySet()) {
             assertNotEquals(0, byTrack.getValue().size());
             for (var byRange : byTrack.getValue().entrySet()) {
-                assertNotEquals(0, byRange.getValue().asList().size());
+                assertNotEquals(0, count(byRange.getValue()));
             }
         }
     }

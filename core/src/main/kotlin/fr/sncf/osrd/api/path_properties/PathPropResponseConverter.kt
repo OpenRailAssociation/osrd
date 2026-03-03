@@ -120,13 +120,9 @@ private fun makeZones(path: TrainPath, rawInfra: RawSignalingInfra): RangeValues
 }
 
 private fun <T> makeRangeValues(distanceRangeMap: DistanceRangeMap<T>): RangeValues<T> {
-    return makeRangeValues(distanceRangeMap.asList())
-}
-
-private fun <T> makeRangeValues(entries: List<DistanceRangeMap.RangeMapEntry<T>>): RangeValues<T> {
     val boundaries = mutableListOf<Offset<PhysicsPath>>()
     val values = mutableListOf<T>()
-    for (entry in entries) {
+    for (entry in distanceRangeMap) {
         boundaries.add(Offset(entry.upper))
         values.add(entry.value)
     }

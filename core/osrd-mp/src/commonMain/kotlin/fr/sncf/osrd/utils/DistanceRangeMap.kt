@@ -24,7 +24,7 @@ interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
     fun put(lower: Distance, upper: Distance, value: T)
 
     /** Sets many values more efficiently than many calls to `put` */
-    fun putMany(entries: List<RangeMapEntry<T>>)
+    fun putMany(entries: Iterable<RangeMapEntry<T>>)
 
     /** Returns a list of the entries in the map */
     fun asList(): List<RangeMapEntry<T>> = toList()
@@ -99,7 +99,7 @@ fun <T, R> filterIntersection(
     for (range in filter) {
         val filteredRange = mapToFilter.clone()
         filteredRange.truncate(range.lower, range.upper)
-        res.putMany(filteredRange.asList())
+        res.putMany(filteredRange)
     }
     return res
 }
