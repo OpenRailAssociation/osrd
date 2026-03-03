@@ -1,8 +1,8 @@
-import process from 'process';
 import path from 'path';
+import process from 'process';
 
 import eslint from '@rollup/plugin-eslint';
-import nodeResolve from '@rollup/plugin-node-resolve';
+import { nodeResolve } from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
 import livereload from 'rollup-plugin-livereload';
 import postcss from 'rollup-plugin-postcss';

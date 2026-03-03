@@ -54,6 +54,7 @@
     "@types/d3-selection": "^3.0.11",
     "@types/d3-zoom": "^3.0.0",
     "@types/file-saver": "^2.0.7",
-    "file-saver": "^2.0.5"
+    "file-saver": "^2.0.5",
+    "vitest": "^4.0.18"
   }
 }
