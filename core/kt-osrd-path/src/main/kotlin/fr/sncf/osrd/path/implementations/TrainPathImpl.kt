@@ -18,7 +18,6 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.forceDirected
 import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.toDirected
-import kotlin.collections.flatMap
 
 /**
  * Default train path implementation. Other implementation may be views or similar.
@@ -303,8 +302,7 @@ data class TrainPathImpl(
     private fun <T> getRangeMap(
         getData: (dirChunkId: DirTrackChunkId) -> DistanceRangeMap<T>
     ): DistanceRangeMap<T> {
-        // TODO: reduce allocations (subMap allocates -too much- before truncate, then asList
-        //       allocates again)
+        // TODO: reduce allocations (subMap allocates -too much- before truncate)
         val entries =
             chunks
                 .asSequence()
@@ -313,7 +311,6 @@ data class TrainPathImpl(
                     getData(it.value)
                         .subMap(it.objectBegin.distance, it.objectEnd.distance)
                         .shiftPositions(it.pathBegin.distance - it.objectBegin.distance)
-                        .asList()
                 }
         return distanceRangeMapOf(entries.toList())
     }

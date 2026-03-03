@@ -29,7 +29,7 @@ data class DistanceRangeMapImpl<T>(
      * Another idea would be to use a temporary (so we can free the memory later) tree-like
      * structure (RangeMaps lib).
      */
-    override fun putMany(entries: List<DistanceRangeMap.RangeMapEntry<T>>) {
+    override fun putMany(entries: Iterable<DistanceRangeMap.RangeMapEntry<T>>) {
         // Unfortunately, built-in groupBy doesn't consider the original order, here we want
         // consecutive values.
         fun <U, V> groupByConsecutiveFirst(pairs: List<Pair<U, V>>): List<Pair<U, List<V>>> {
@@ -90,7 +90,7 @@ data class DistanceRangeMapImpl<T>(
 
         // Order matters and existing entries should come first.
         // E.g. allEntries = [(lower=0, upper=5, value=1), (lower=5, upper=10, value=1)]
-        val allEntries = asList() + entries
+        val allEntries = this + entries
 
         // Start from scratch.
         values.clear()

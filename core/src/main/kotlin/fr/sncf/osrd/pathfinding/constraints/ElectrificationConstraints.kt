@@ -12,6 +12,7 @@ import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.OffsetRange
 import java.util.stream.Collectors
+import kotlin.streams.asStream
 
 data class ElectrificationConstraints(
     val blockInfra: BlockInfra,
@@ -59,8 +60,8 @@ data class ElectrificationConstraints(
         private fun <T> rangeSetFromMap(rangeMap: DistanceRangeMap<T>): RangeSet<Distance> {
             return TreeRangeSet.create(
                 rangeMap
-                    .asList()
-                    .stream()
+                    .asSequence()
+                    .asStream()
                     .map { (lower, upper): DistanceRangeMap.RangeMapEntry<T> ->
                         Range.closed(lower, upper)
                     }
