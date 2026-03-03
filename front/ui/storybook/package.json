@@ -1,5 +1,6 @@
 {
   "name": "@osrd-project/storybook",
+  "type": "module",
   "private": true,
   "devDependencies": {
     "@chromatic-com/storybook": "^5.0.1",
