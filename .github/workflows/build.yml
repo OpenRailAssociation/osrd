@@ -104,67 +104,67 @@ jobs:
           exit 1
 
       - name: Upload core artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'core')
         with:
           name: core
           path: osrd-core.tar
       - name: Upload core-build artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'core-build')
         with:
           name: core-build
           path: osrd-core-build.tar
       - name: Upload editoast artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'editoast')
         with:
           name: editoast
           path: osrd-editoast.tar
       - name: Upload editoast-test artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'editoast-test')
         with:
           name: editoast-test
           path: osrd-editoast-test.tar
       - name: Upload front artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'front-devel')
         with:
           name: front
           path: osrd-front.tar
       - name: Upload front-tests artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'front-tests')
         with:
           name: front-tests
           path: osrd-front-tests.tar
       - name: Upload gateway-front artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'gateway-front')
         with:
           name: gateway-front
           path: osrd-gateway-front.tar
       - name: Upload gateway-standalone artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'gateway-standalone')
         with:
           name: gateway-standalone
           path: osrd-gateway-standalone.tar
       - name: Upload gateway-test artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'gateway-test')
         with:
           name: gateway-test
           path: osrd-gateway-test.tar
       - name: Upload osrdyne artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'osrdyne')
         with:
           name: osrdyne
           path: osrd-osrdyne.tar
       - name: Upload osrdyne-test artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'osrdyne-test')
         with:
           name: osrdyne-test
@@ -853,7 +853,7 @@ jobs:
         run: docker compose logs > container-logs
         if: always()
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: integration-container-logs
@@ -1012,7 +1012,7 @@ jobs:
 
       - name: Upload media artifact
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-media
           path: |
@@ -1022,7 +1022,7 @@ jobs:
 
       - name: Upload trace artifact
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-traces
           path: front/test-results/**/trace.zip
@@ -1049,7 +1049,7 @@ jobs:
         run: docker compose logs > container-logs
         if: always()
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: e2e-container-logs
