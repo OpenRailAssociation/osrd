@@ -459,7 +459,7 @@ diesel::table! {
         full_name -> Nullable<Varchar>,
         connection_time -> Int8,
         labels -> Array<Nullable<Text>>,
-        #[max_length = 25]
+        #[max_length = 255]
         trigram -> Nullable<Varchar>,
         #[max_length = 255]
         path_item_key -> Varchar,
