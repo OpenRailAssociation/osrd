@@ -1,131 +1,61 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useRef, useState } from 'react';
 
-import cx from 'classnames';
+import { ChronogramCanvas } from './ChronogramCanvas';
+import ChronogramManchette from './ChronogramManchette';
+import useChronogram from '../hooks/useChronogram';
+import { INITIAL_CHRONOGRAM_HEIGHT } from '../lib/const';
+import type { ChronogramProps } from '../lib/types';
 
-import { TimeChartCanvasContext } from '../../common/context';
-import { getTimeToPixel, getPixelToTime } from '../../common/helpers/time';
-import { useCanvas } from '../../common/hooks/useCanvas';
-import { useSize } from '../../common/hooks/useSize';
-import { TimeCaptions } from '../../common/layers/TimeCaptions';
-import TimeGraduations from '../../common/layers/TimeGraduations';
-import type { PickingElement, Point } from '../../common/types';
-import { DEFAULT_THEME } from '../../spaceTimeChart/lib/consts';
-import { validateTheme } from '../../spaceTimeChart/lib/theme';
-import type { DataPoint } from '../../spaceTimeChart/lib/types';
-import { ChronogramContext } from '../lib/context';
-import type { ChronogramContextType, ChronogramProps } from '../lib/types';
+export const Chronogram = ({
+  levelCrossingData,
+  timeOrigin,
+  height = INITIAL_CHRONOGRAM_HEIGHT,
+}: ChronogramProps) => {
+  const chronogramManchetteRef = useRef<HTMLDivElement>(null);
+  const chronogramChartRef = useRef<HTMLDivElement>(null);
 
-export const Chronogram = (props: ChronogramProps) => {
+  const [levelCrossingsOccupancies, setLevelCrossingsOccupancies] = useState(levelCrossingData);
+
   const {
-    levelCrossingsNames,
-    levelCrossingsOccupancies,
-    timeOrigin,
-    timeScale,
-    xOffset = 0,
-    yOffset = 0,
-    theme,
-    ...attr
-  } = props;
+    height: chronogramHeight,
+    handleVerticalScroll,
+    xOffset,
+    yOffset,
+  } = useChronogram({
+    itemCount: levelCrossingsOccupancies.length,
+    chronogramManchetteRef,
+    chronogramChartRef,
+    chronogramHeight: height,
+  });
 
-  const [root, setRoot] = useState<HTMLDivElement | null>(null);
-  const [canvasesRoot, setCanvasesRoot] = useState<HTMLDivElement | null>(null);
-  const fullTheme = useMemo(() => ({ ...DEFAULT_THEME, ...theme }), [theme]);
-  const { width, height } = useSize(root);
-
-  const fingerprint = useMemo(
-    () =>
-      JSON.stringify({
-        levelCrossingsNames,
-        levelCrossingsOccupancies,
-        width,
-        height,
-        timeOrigin,
-        timeScale,
-        xOffset,
-        yOffset,
-      }),
-    [
-      levelCrossingsNames,
-      levelCrossingsOccupancies,
-      width,
-      height,
-      timeOrigin,
-      timeScale,
-      xOffset,
-      yOffset,
-    ]
-  );
-
-  const pickingState = useMemo(() => {
-    const pickingElements: PickingElement[] = [];
-    const resetPickingElements = () => {
-      pickingElements.length = 0;
-    };
-    const registerPickingElement = (element: PickingElement) => {
-      pickingElements.push(element);
-      return pickingElements.length - 1;
-    };
-    return {
-      pickingElements,
-      resetPickingElements,
-      registerPickingElement,
-    };
-  }, []);
-
-  const contextState: ChronogramContextType = useMemo(() => {
-    const getTimePixel = getTimeToPixel(timeOrigin, xOffset, timeScale);
-    const getTime = getPixelToTime(timeOrigin, xOffset, timeScale);
-
-    // TODO: Check and fix those functions once we introduce mouse interactions
-    const getData = (point: Point) => ({ time: point.x, position: point.y });
-    const getPoint = ({ time, position }: DataPoint) =>
-      ({
-        ['x']: getTimePixel(time),
-        ['y']: position,
-      }) as Point;
-
-    return {
-      ...pickingState,
-      fingerprint,
-      width,
-      height,
-      getTimePixel,
-      getTime,
-      getData,
-      getPoint,
-      levelCrossingsNames,
-      levelCrossingsOccupancies,
-      timeOrigin,
-      timeScale,
-      timePixelOffset: xOffset,
-      yPixelOffset: yOffset,
-      theme: fullTheme,
-      captionSize: fullTheme.dateCaptionsSize + fullTheme.timeCaptionsSize,
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fingerprint, pickingState]);
-
-  const { canvasContext } = useCanvas(canvasesRoot, contextState);
-
-  // Check theme validity:
-  useEffect(() => {
-    validateTheme(fullTheme);
-  }, [fullTheme]);
+  function handleDeleteLevelCrossing(name: string) {
+    setLevelCrossingsOccupancies((previousLevelCrossingsOccupancies) =>
+      previousLevelCrossingsOccupancies.filter((lc) => lc.name !== name)
+    );
+  }
 
   return (
-    <div
-      {...attr}
-      ref={setRoot}
-      className={cx('relative', attr.className)}
-      style={{ background: fullTheme.background }}
-    >
-      <div ref={setCanvasesRoot} className="absolute inset-0" />
-      <ChronogramContext.Provider value={contextState}>
-        <TimeChartCanvasContext.Provider value={canvasContext}>
-          <TimeGraduations />
-          <TimeCaptions />
-        </TimeChartCanvasContext.Provider>
-      </ChronogramContext.Provider>
+    <div className="ui-chronogram" style={{ height }}>
+      <div
+        ref={chronogramManchetteRef}
+        className="chronogram-manchette-container flex"
+        onScroll={handleVerticalScroll}
+      >
+        <ChronogramManchette
+          onDelete={handleDeleteLevelCrossing}
+          levelCrossingsNames={levelCrossingsOccupancies.map((lc) => lc.name)}
+          height={chronogramHeight}
+        />
+        <div ref={chronogramChartRef} className="chronogram-container">
+          <ChronogramCanvas
+            timeOrigin={timeOrigin}
+            timeScale={10000}
+            xOffset={xOffset}
+            yOffset={yOffset}
+            levelCrossingsOccupancies={levelCrossingsOccupancies.map((lc) => lc.occupancies)}
+          />
+        </div>
+      </div>
     </div>
   );
 };
