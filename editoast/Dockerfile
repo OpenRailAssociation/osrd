@@ -50,8 +50,7 @@ RUN /assets/fonts/generate-glyphs.sh
 FROM base_builder AS test_builder
 RUN rustup component add llvm-tools && \
     rustup component add rustfmt && \
-    rustup component add clippy && \
-    cargo install grcov
+    rustup component add clippy
 
 COPY --from=planner /editoast/recipe.json recipe.json
 COPY --from=planner /editoast/editoast_derive/ editoast_derive

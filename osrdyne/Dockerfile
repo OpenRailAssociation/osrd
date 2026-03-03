@@ -37,8 +37,7 @@ RUN --mount=type=cache,target=/cargo_osrdyne/registry \
 FROM chef AS testing_env
 RUN rustup component add llvm-tools && \
     rustup component add rustfmt && \
-    rustup component add clippy && \
-    cargo install grcov
+    rustup component add clippy
 COPY --from=planner /osrdyne/recipe.json recipe.json
 
 ENV LLVM_PROFILE_FILE="osrdyne-%p-%m.profraw"

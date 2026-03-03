@@ -54,7 +54,6 @@ Here a list of components to help you in your development (see CI jobs if necess
 - [rustfmt](https://github.com/rust-lang/rustfmt): Format the whole code `cargo fmt --all`
 - [taplo](https://taplo.tamasfe.dev/): Format the TOML files with `taplo fmt`
 - [clippy](https://github.com/rust-lang/rust-clippy): Run a powerful linter `cargo clippy --workspace --all-features --all-targets -- -D warnings`
-- [grcov](https://github.com/mozilla/grcov): Check code coverage (see documentation on GitHub)
 
 To install `rustfmt` and `clippy`, simply run:
 
@@ -67,8 +66,6 @@ To install `taplo`, run:
 ```sh
 cargo install --locked taplo-cli
 ```
-
-To setup `grcov`, please see [its documentation](https://github.com/mozilla/grcov#how-to-get-grcov)
 
 ## Debugging
 
