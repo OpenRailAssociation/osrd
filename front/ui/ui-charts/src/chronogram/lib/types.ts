@@ -1,5 +1,4 @@
-import { HTMLProps } from 'react';
-import type { TimeChartContextType } from '../../common/types';
+import type { ChartEventHandlers, TimeChartContextType } from '../../common/types';
 import type { SpaceTimeChartTheme } from '../../spaceTimeChart';
 
 export type OccupancyBlock = {
@@ -32,8 +31,7 @@ export type ChronogramCanvasProps = {
 
   // Custom styles:
   theme?: Partial<SpaceTimeChartTheme>;
-  // TODO: Replace HTMLProps with ChartEventHandlers<ChronogramContextType> when we implement mouse interactions
-} & HTMLProps<HTMLDivElement>;
+} & ChartEventHandlers<ChronogramContextType>;
 
 export type ChronogramProps = {
   levelCrossingData: LevelCrossingData[];

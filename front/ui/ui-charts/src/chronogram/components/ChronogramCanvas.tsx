@@ -10,9 +10,12 @@ import { useSize } from '../../common/hooks/useSize';
 import { TimeCaptions } from '../../common/layers/TimeCaptions';
 import TimeGraduations from '../../common/layers/TimeGraduations';
 import type { PickingElement, Point } from '../../common/types';
+import { useMouseInteractions } from '../../spaceTimeChart/hooks/useMouseInteractions';
+import { useMouseTracking } from '../../spaceTimeChart/hooks/useMouseTracking'; //! bouger les hooks dans common
 import { DEFAULT_THEME } from '../../spaceTimeChart/lib/consts';
+import { MouseContext } from '../../spaceTimeChart/lib/context';
 import { validateTheme } from '../../spaceTimeChart/lib/theme';
-import type { DataPoint } from '../../spaceTimeChart/lib/types';
+import type { DataPoint, MouseContextType } from '../../spaceTimeChart/lib/types';
 import { ChronogramContext } from '../lib/context';
 import type { ChronogramContextType, ChronogramCanvasProps } from '../lib/types';
 
@@ -24,8 +27,16 @@ export const ChronogramCanvas = (props: ChronogramCanvasProps) => {
     xOffset = 0,
     yOffset = 0,
     theme,
+    onPan,
+    onZoom,
+    onClick, // TODO: the 3 last handlers are custom and need to be extracted but are not used for now
+    onHoveredChildUpdate,
+    onMouseMove,
     ...attr
   } = props;
+
+  // TODO: remove this console.info once interactions are implemented and handlers are used
+  console.info(onClick, onMouseMove, onHoveredChildUpdate);
 
   const [root, setRoot] = useState<HTMLDivElement | null>(null);
   const [canvasesRoot, setCanvasesRoot] = useState<HTMLDivElement | null>(null);
@@ -94,7 +105,23 @@ export const ChronogramCanvas = (props: ChronogramCanvasProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fingerprint, pickingState, fullTheme]);
 
-  const { canvasContext } = useCanvas(canvasesRoot, contextState);
+  const mouseState = useMouseTracking(root);
+  const { position, down, isHover } = mouseState;
+  const { canvasContext } = useCanvas(canvasesRoot, contextState, position);
+
+  const mouseContext = useMemo<MouseContextType>(
+    () => ({
+      down,
+      isHover,
+      position: mouseState.position,
+      hoveredItem: null,
+      data: contextState.getData(mouseState.position),
+    }),
+    [mouseState.position, down, isHover, contextState]
+  );
+
+  // Handle interactions:
+  useMouseInteractions(root, mouseContext, { onPan, onZoom }, contextState);
 
   // Check theme validity:
   useEffect(() => {
@@ -111,9 +138,11 @@ export const ChronogramCanvas = (props: ChronogramCanvasProps) => {
       <div ref={setCanvasesRoot} className="absolute inset-0">
         <ChronogramContext.Provider value={contextState}>
           <TimeChartCanvasContext.Provider value={canvasContext}>
-            <TimeGraduations />
-            <TimeCaptions />
-            <OccupancyBlocksLayer />
+            <MouseContext.Provider value={mouseContext}>
+              <TimeGraduations />
+              <TimeCaptions />
+              <OccupancyBlocksLayer />
+            </MouseContext.Provider>
           </TimeChartCanvasContext.Provider>
         </ChronogramContext.Provider>
       </div>
