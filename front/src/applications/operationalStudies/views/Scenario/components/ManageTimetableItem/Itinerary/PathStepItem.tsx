@@ -235,11 +235,6 @@ const PathStepItem = ({
     return undefined;
   }, [inputValue, pathStepMetadata]);
 
-  const clearInputAndSuggestions = () => {
-    onOpInputChange('');
-    resetOpSuggestions();
-  };
-
   const maxVisibleSuggestions = 8;
   const visibleSuggestions = opSuggestions.slice(0, maxVisibleSuggestions);
   const hasMore = opSuggestions.length > maxVisibleSuggestions;
@@ -326,7 +321,7 @@ const PathStepItem = ({
               resetOpSuggestions();
               blurActiveElement();
             }}
-            resetSuggestions={clearInputAndSuggestions}
+            resetSuggestions={resetOpSuggestions}
             renderListElementComponent={({
               suggestion,
               index: suggestionIndex,
