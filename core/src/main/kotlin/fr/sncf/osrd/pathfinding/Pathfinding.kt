@@ -17,6 +17,7 @@ import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorers
 import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
 import fr.sncf.osrd.utils.POSITION_EPSILON
+import fr.sncf.osrd.utils.areTimesEqual
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.meters
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -104,9 +105,11 @@ class Pathfinding(
         val weight: Double = establishedCost + estimatedRemainingCost
 
         override fun compareTo(other: Step): Int {
-            if (weight != other.weight) return weight.compareTo(other.weight)
+            // Note: epsilon-comparisons are done to prevent float-precision errors (especially with
+            // different speeds and SIGNALING_SYSTEM_COST_WEIGHTING)
+            if (!areTimesEqual(weight, other.weight)) return weight.compareTo(other.weight)
             // favor less uncertain path
-            if (estimatedRemainingCost != other.estimatedRemainingCost)
+            if (!areTimesEqual(estimatedRemainingCost, other.estimatedRemainingCost))
                 return estimatedRemainingCost.compareTo(other.estimatedRemainingCost)
             // favor shorter (in distance) path
             if (establishedLength != other.establishedLength)

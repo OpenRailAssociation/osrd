@@ -10,7 +10,8 @@ const val POSITION_EPSILON: Double = 1E-2
 const val SPEED_EPSILON: Double = 1E-5
 // An acceleration lower than this value will be considered zero
 const val ACCELERATION_EPSILON: Double = 1E-5
-const val TIME_EPSILON: Double = 1E-2
+// Time epsilon matching a 0.01 m epsilon on position at 360 km/h
+const val TIME_EPSILON: Double = 1E-4
 
 /** Returns true if the positions' difference is lower than epsilon */
 fun arePositionsEqual(a: Double, b: Double): Boolean {

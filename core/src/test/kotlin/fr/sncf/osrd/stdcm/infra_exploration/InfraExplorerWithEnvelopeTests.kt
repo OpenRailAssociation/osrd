@@ -185,7 +185,7 @@ class InfraExplorerWithEnvelopeTests {
             Envelope.make(
                 EnvelopePart.generateTimes(
                     listOf(EnvelopeProfile.CONSTANT_SPEED),
-                    doubleArrayOf(0.0, 100.0, 100.1, 200.0),
+                    doubleArrayOf(0.0, 100.0, 100.01, 200.0),
                     doubleArrayOf(30.0, 30.0, 42.00, 42.0),
                 )
             ),
