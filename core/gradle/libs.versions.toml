@@ -16,6 +16,7 @@
 [versions]
 kotlin = '2.3.10'
 ksp = '2.3.6'
+kotlinx-benchmark = '0.4.16'
 kotlinx-coroutines = '1.10.+'
 logback = '1.5.+'
 moshi = '1.15.2'
@@ -29,6 +30,7 @@ kotlin-stdlib = { module = 'org.jetbrains.kotlin:kotlin-stdlib', version.ref = '
 kotlin-logging = { module = 'io.github.microutils:kotlin-logging', version = '3.0.5' } # Apache 2.0
 kotlin-reflect = { module = 'org.jetbrains.kotlin:kotlin-reflect', version.ref = 'kotlin' } # Apache 2.0
 kotlin-test = { module = 'org.jetbrains.kotlin:kotlin-test', version.ref = 'kotlin' } # Apache 2.0
+kotlinx-benchmark-runtime = { module = 'org.jetbrains.kotlinx:kotlinx-benchmark-runtime', version.ref = 'kotlinx-benchmark' } # Apache 2.0
 kotlinx-coroutines-core = { module = 'org.jetbrains.kotlinx:kotlinx-coroutines-core', version.ref = 'kotlinx-coroutines' } # Apache 2.0
 kotlinx-coroutines-test = { module = 'org.jetbrains.kotlinx:kotlinx-coroutines-test', version.ref = 'kotlinx-coroutines' } # Apache 2.0
 kotlinx-serialization-cbor = { module = 'org.jetbrains.kotlinx:kotlinx-serialization-cbor', version = '1.10.+' } # Apache 2.0
@@ -77,6 +79,7 @@ ksp = { id = 'com.google.devtools.ksp', version.ref = 'ksp' }
 kotlin-jvm = { id = 'org.jetbrains.kotlin.jvm', version.ref = 'kotlin' }
 kotlin-multiplatform = { id = 'org.jetbrains.kotlin.multiplatform', version.ref = 'kotlin' }
 kotlin-serialization = { id = 'org.jetbrains.kotlin.plugin.serialization', version.ref = 'kotlin' }
+kotlinx-benchmark = { id = 'org.jetbrains.kotlinx.benchmark', version.ref = 'kotlinx-benchmark' }
 
 # java
 spotbugs = { id = 'com.github.spotbugs', version = '6.0.9' }
