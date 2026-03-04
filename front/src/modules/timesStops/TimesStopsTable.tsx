@@ -11,9 +11,11 @@ import {
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
+import type { ReceptionSignal } from 'common/api/osrdEditoastApi';
 import { formatLocalTime } from 'utils/date';
 
 import DurationCell, { type DurationCellHandle } from './DurationCell';
+import { onStopSignalToReceptionSignal } from './helpers/utils';
 import TimeCell, { type TimeCellHandle } from './TimeCell';
 import { type TimesStopsRowNew } from './types';
 
@@ -30,6 +32,7 @@ declare module '@tanstack/react-table' {
     onArrivalChange: (row: TimesStopsRowNew, arrival: Date | null) => void;
     onStopDurationChange: (row: TimesStopsRowNew, durationSeconds: number | null) => void;
     onDepartureChange: (row: TimesStopsRowNew, departure: Date | null) => void;
+    onReceptionSignalChange: (row: TimesStopsRowNew, signal: ReceptionSignal | undefined) => void;
   }
 }
 
@@ -73,10 +76,10 @@ type TimesStopsTableProps = {
   startTime: Date;
   isValid: boolean;
   isComputedDataPending?: boolean;
-  pendingReceptionSignalRowId?: string | null;
   onArrivalChange: (row: TimesStopsRowNew, arrival: Date | null) => void;
   onStopDurationChange: (row: TimesStopsRowNew, durationSeconds: number | null) => void;
   onDepartureChange: (row: TimesStopsRowNew, departure: Date | null) => void;
+  onReceptionSignalChange: (row: TimesStopsRowNew, signal: ReceptionSignal | undefined) => void;
 };
 
 const columnHelper = createColumnHelper<TimesStopsRowNew>();
@@ -96,6 +99,7 @@ const TimesStopsTable = ({
   onArrivalChange,
   onStopDurationChange,
   onDepartureChange,
+  onReceptionSignalChange,
 }: TimesStopsTableProps) => {
   const { t } = useTranslation('translation', { keyPrefix: 'timeStopTable' });
   const scheduleNotHonored = rows.some((row) => row.stepStatus === 'scheduleNotHonored');
@@ -302,9 +306,8 @@ const TimesStopsTable = ({
       columnHelper.accessor('closedSignal', {
         header: () => t('receptionOnClosedSignal'),
         cell: (info) => {
-          const { closedSignal, stopDuration } = info.row.original;
-          const isLastRow = info.row.index === rows.length - 1;
-          const isDisabled = !isLastRow && !stopDuration;
+          const { closedSignal, stopDuration, shortSlipDistance } = info.row.original;
+          const isDisabled = !stopDuration;
 
           return (
             <Checkbox
@@ -312,7 +315,17 @@ const TimesStopsTable = ({
               small
               checked={!!closedSignal}
               disabled={isDisabled}
-              onChange={() => {}}
+              onChange={() => {
+                if (!isDisabled) {
+                  const newClosedSignal = !closedSignal;
+                  // When unchecking closedSignal, also reset shortSlipDistance to false
+                  const signal = onStopSignalToReceptionSignal(
+                    newClosedSignal,
+                    newClosedSignal ? shortSlipDistance : false
+                  );
+                  info.table.options.meta!.onReceptionSignalChange(info.row.original, signal);
+                }
+              }}
             />
           );
         },
@@ -403,6 +416,7 @@ const TimesStopsTable = ({
       onArrivalChange,
       onStopDurationChange,
       onDepartureChange,
+      onReceptionSignalChange,
     },
   });
 

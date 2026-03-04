@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux';
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import type {
   CorePathfindingResultSuccess,
+  ReceptionSignal,
   SimulationResponseSuccess,
 } from 'common/api/osrdEditoastApi';
 import type { SimulationSummary, TimetableItemWithDetails } from 'modules/timetableItem/types';
@@ -106,12 +107,13 @@ const TimesStopsOutput = ({
 
   const startTime = useMemo(() => new Date(selectedTrain.start_time), [selectedTrain.start_time]);
 
-  const { updateArrival, updateStopDuration, updateDeparture } = useUpdateTimesStopsTable(
-    selectedTrain,
-    newRows,
-    timetableItemsWithDetails,
-    upsertTimetableItems
-  );
+  const { updateArrival, updateStopDuration, updateDeparture, updateReceptionSignal } =
+    useUpdateTimesStopsTable(
+      selectedTrain,
+      newRows,
+      timetableItemsWithDetails,
+      upsertTimetableItems
+    );
 
   // True if we are still waiting for fresh simulation data after a user edit.
   // Both conditions must be false before we clear the loading state:
@@ -165,6 +167,15 @@ const TimesStopsOutput = ({
       () => updateStopDuration(row, durationSeconds)
     );
 
+  const handleReceptionSignalChange = (
+    row: TimesStopsRowNew,
+    signal: ReceptionSignal | undefined
+  ) => {
+    commitEdit({ rowId: row.id, field: 'receptionSignal', value: signal }, () =>
+      updateReceptionSignal(row, signal)
+    );
+  };
+
   if (useNewTimesStopsTable) {
     return (
       <TimesStopsTable
@@ -175,6 +186,7 @@ const TimesStopsOutput = ({
         onArrivalChange={handleArrivalChange}
         onStopDurationChange={handleStopDurationChange}
         onDepartureChange={handleDepartureChange}
+        onReceptionSignalChange={handleReceptionSignalChange}
       />
     );
   }
