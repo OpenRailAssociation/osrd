@@ -2603,6 +2603,7 @@ mod tests {
         path: Vec<PathItem>,
         schedule: Vec<ScheduleItem>,
         operational_point_reference: OperationalPointReference,
+        use_simulation: bool,
     ) -> TestResponse {
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
@@ -2639,7 +2640,7 @@ mod tests {
                 operational_point_reference,
                 infra_id: small_infra.id,
                 electrical_profile_set_id: None,
-                use_simulation: true,
+                use_simulation,
             });
 
         app.fetch(request).await
@@ -2669,6 +2670,7 @@ mod tests {
             OperationalPointReference::Id {
                 operational_point: "Mid_West_station".into(),
             },
+            true,
         );
         let track_occupancies: Vec<TrackSectionOccupancy> =
             response.await.assert_status(StatusCode::OK).json_into();
@@ -2697,6 +2699,7 @@ mod tests {
             OperationalPointReference::Id {
                 operational_point: "West_station".into(),
             },
+            true,
         );
         let track_occupancies: Vec<TrackSectionOccupancy> =
             response.await.assert_status(StatusCode::OK).json_into();
@@ -2767,9 +2770,151 @@ mod tests {
                 trigram: "UNKNOWN_TRIGRAM".into(),
                 secondary_code: None,
             },
+            true,
         );
         let track_occupancies: Vec<TrackSectionOccupancy> =
             response.await.assert_status(StatusCode::OK).json_into();
+        assert_eq!(track_occupancies.len(), 4);
+        assert!(
+            track_occupancies
+                .iter()
+                .all(|to| to.local_track_name == Some(NonBlankString("UNKNOWN_V".to_string())))
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn track_occupancy_no_sim_no_local_track_name_has_null_reference() {
+        let response = init_paced_train_test(
+            Vec::new(),
+            vec![
+                PathItem::new_operational_point("Mid_West_station"),
+                PathItem::new_operational_point("Mid_East_station"),
+            ],
+            vec![ScheduleItem::new_with_stop(
+                "Mid_East_station",
+                Duration::new(0, 0).expect("Failed to parse duration"),
+            )],
+            OperationalPointReference::Id {
+                operational_point: "Mid_West_station".into(),
+            },
+            false,
+        );
+        let track_occupancies: Vec<TrackSectionOccupancy> =
+            response.await.assert_status(StatusCode::OK).json_into();
+
+        assert_eq!(track_occupancies.len(), 1);
+        assert_eq!(track_occupancies[0].local_track_name, None);
+        assert_eq!(track_occupancies[0].trains.len(), 4);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn track_occupancy_no_sim_local_track_name_not_in_infra_returns_local_track_name() {
+        let path_item_with_unknown_track = PathItem {
+            id: "Mid_West_station".into(),
+            location: PathItemLocation::OperationalPointPartReference(
+                OperationalPointPartReference {
+                    operational_point: OperationalPointReference::Id {
+                        operational_point: "Mid_West_station".into(),
+                    },
+                    local_track_name: Some(NonBlankString("UNKNOWN_V".to_string())),
+                },
+            ),
+        };
+        let response = init_paced_train_test(
+            Vec::new(),
+            vec![
+                path_item_with_unknown_track,
+                PathItem::new_operational_point("Mid_East_station"),
+            ],
+            vec![ScheduleItem::new_with_stop(
+                "Mid_East_station",
+                Duration::new(0, 0).expect("Failed to parse duration"),
+            )],
+            OperationalPointReference::Id {
+                operational_point: "Mid_West_station".into(),
+            },
+            false,
+        );
+        let track_occupancies: Vec<TrackSectionOccupancy> =
+            response.await.assert_status(StatusCode::OK).json_into();
+
+        assert_eq!(track_occupancies.len(), 1);
+        assert_eq!(
+            track_occupancies[0].local_track_name,
+            Some(NonBlankString("UNKNOWN_V".to_string()))
+        );
+        assert_eq!(track_occupancies[0].trains.len(), 4);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn track_occupancy_no_sim_no_arrival_returns_empty() {
+        let response = init_paced_train_test(
+            Vec::new(),
+            vec![
+                PathItem::new_operational_point("Mid_West_station"),
+                PathItem::new_operational_point("Mid_East_station"),
+                PathItem::new_operational_point("North_station"),
+            ],
+            vec![
+                ScheduleItem::new_with_stop(
+                    "Mid_East_station",
+                    Duration::new(60, 0).expect("Failed to parse duration"),
+                ),
+                ScheduleItem::new_with_stop(
+                    "North_station",
+                    Duration::new(0, 0).expect("Failed to parse duration"),
+                ),
+            ],
+            OperationalPointReference::Id {
+                operational_point: "Mid_East_station".into(),
+            },
+            false,
+        );
+        let track_occupancies: Vec<TrackSectionOccupancy> =
+            response.await.assert_status(StatusCode::OK).json_into();
+
+        assert!(track_occupancies.is_empty());
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn track_occupancy_no_sim_unknown_op_with_local_track_name_has_track_name() {
+        let response = init_paced_train_test(
+            Vec::new(),
+            vec![
+                new_op_with_trigram_and_local_track_name("Mid_West_station", "MWS", None, None),
+                new_op_with_trigram_and_local_track_name(
+                    "UNKNOWN_ID",
+                    "UNKNOWN_TRIGRAM",
+                    None,
+                    Some(NonBlankString("UNKNOWN_V".to_string())),
+                ),
+                new_op_with_trigram_and_local_track_name("Mid_East_station", "MES", None, None),
+            ],
+            vec![
+                ScheduleItem {
+                    at: "UNKNOWN_ID".into(),
+                    arrival: Some(PositiveDuration::new(
+                        Duration::new(300, 0).expect("Failed to parse duration"),
+                    )),
+                    stop_for: Some(PositiveDuration::new(
+                        Duration::new(120, 0).expect("Failed to parse duration"),
+                    )),
+                    reception_signal: ReceptionSignal::Open,
+                },
+                ScheduleItem::new_with_stop(
+                    "Mid_East_station",
+                    Duration::new(0, 0).expect("Failed to parse duration"),
+                ),
+            ],
+            OperationalPointReference::Trigram {
+                trigram: "UNKNOWN_TRIGRAM".into(),
+                secondary_code: None,
+            },
+            false,
+        );
+        let track_occupancies: Vec<TrackSectionOccupancy> =
+            response.await.assert_status(StatusCode::OK).json_into();
+
         assert_eq!(track_occupancies.len(), 4);
         assert!(
             track_occupancies
