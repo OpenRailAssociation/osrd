@@ -57,12 +57,12 @@ export async function createPacedTrains(
 async function updatePacedTrain(
   dispatch: AppDispatch,
   id: PacedTrainId,
-  trainSchedule: TrainSchedule
+  trainSchedule: TrainScheduleWithoutExceptions
 ) {
   await dispatch(
     osrdEditoastApi.endpoints.putPacedTrainById.initiate({
       id: extractEditoastIdFromPacedTrainId(id),
-      trainSchedule,
+      trainScheduleWithoutExceptions: trainSchedule,
     })
   ).unwrap();
 }

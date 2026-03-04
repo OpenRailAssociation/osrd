@@ -2636,7 +2636,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TrainSchedule'
+              $ref: '#/components/schemas/TrainScheduleWithoutExceptions'
         required: true
       responses:
         '204':

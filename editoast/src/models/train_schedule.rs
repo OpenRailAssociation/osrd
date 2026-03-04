@@ -288,6 +288,47 @@ impl From<paced_train::TrainSchedule> for TrainScheduleChangeset {
     }
 }
 
+impl From<paced_train::TrainScheduleWithoutExceptions> for TrainScheduleChangeset {
+    fn from(
+        paced_train::TrainScheduleWithoutExceptions {
+            train_occurrence,
+            paced,
+        }: paced_train::TrainScheduleWithoutExceptions,
+    ) -> Self {
+        let changeset = TrainSchedule::changeset()
+            .comfort(train_occurrence.comfort)
+            .constraint_distribution(train_occurrence.constraint_distribution)
+            .initial_speed(train_occurrence.initial_speed)
+            .labels(Tags::new(train_occurrence.labels))
+            .margins(train_occurrence.margins)
+            .path(train_occurrence.path)
+            .power_restrictions(train_occurrence.power_restrictions)
+            .rolling_stock_name(train_occurrence.rolling_stock_name)
+            .schedule(train_occurrence.schedule)
+            .speed_limit_tag(train_occurrence.speed_limit_tag.map(|s| s.0))
+            .start_time(train_occurrence.start_time)
+            .train_name(train_occurrence.train_name)
+            .options(train_occurrence.options)
+            .time_window(
+                paced
+                    .as_ref()
+                    .map(|p| p.time_window)
+                    .map(ChronoDuration::from),
+            )
+            .interval(paced.as_ref().map(|p| p.interval).map(ChronoDuration::from));
+
+        match train_occurrence.category {
+            Some(TrainCategory::Main { main_category }) => changeset
+                .main_category(Some(TrainMainCategory(main_category)))
+                .sub_category(None),
+            Some(TrainCategory::Sub { sub_category_code }) => changeset
+                .sub_category(Some(sub_category_code))
+                .main_category(None),
+            None => changeset.sub_category(None).main_category(None),
+        }
+    }
+}
+
 impl From<TrainSchedule> for paced_train::TrainSchedule {
     fn from(train_schedule: TrainSchedule) -> Self {
         Self {
