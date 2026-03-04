@@ -134,12 +134,15 @@ const TimesStopsTable = ({
       columnHelper.accessor('name', {
         header: () => t('operational_point'),
         cell: (info) => {
-          const { name, secondaryCode } = info.row.original;
+          const { name, secondaryCode, isPathStep } = info.row.original;
           return (
-            <div title={`${name}${secondaryCode ? ` ${secondaryCode}` : ''}`}>
-              <span>{name}</span>
-              {secondaryCode && <span className="secondary-code"> {secondaryCode}</span>}
-            </div>
+            <>
+              {isPathStep && <span className="requested-point-dot" />}
+              <div title={`${name}${secondaryCode ? ` ${secondaryCode}` : ''}`}>
+                <span>{name}</span>
+                {secondaryCode && <span className="secondary-code"> {secondaryCode}</span>}
+              </div>
+            </>
           );
         },
         meta: {
@@ -148,7 +151,15 @@ const TimesStopsTable = ({
       }),
       columnHelper.accessor('track', {
         header: () => t('trackName'),
-        cell: (info) => <span>{info.getValue() ?? ''}</span>,
+        cell: (info) => {
+          const { isPathStep, hasRequestedTrack } = info.row.original;
+          return (
+            <>
+              {isPathStep && hasRequestedTrack && <span className="requested-point-dot" />}
+              <span>{info.getValue() ?? ''}</span>
+            </>
+          );
+        },
         meta: {
           className: 'col-track computed',
         },
