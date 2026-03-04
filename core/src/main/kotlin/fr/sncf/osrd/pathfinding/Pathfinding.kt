@@ -86,9 +86,8 @@ class Pathfinding(
     }
 
     val mrspBuilder: CachedBlockMRSPBuilder =
-        CachedBlockMRSPBuilder(
-            fullInfra.rawInfra,
-            fullInfra.blockInfra,
+        CachedBlockMRSPBuilder.getCachedBlockMRSPBuilder(
+            fullInfra,
             rollingStockMaxSpeed,
             rollingStockLength,
             speedLimitTag,

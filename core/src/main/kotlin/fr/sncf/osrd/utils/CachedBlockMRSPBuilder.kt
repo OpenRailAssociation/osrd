@@ -1,5 +1,6 @@
 package fr.sncf.osrd.utils
 
+import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
@@ -12,6 +13,7 @@ import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Used to compute block MRSPs and min time required to reach a point, with proper caching
@@ -29,7 +31,7 @@ data class CachedBlockMRSPBuilder(
     val temporarySpeedLimitManager: TemporarySpeedLimitManager = TemporarySpeedLimitManager(),
     val addRollingStockLength: Boolean = true,
 ) {
-    private val mrspCache = mutableMapOf<BlockId, Envelope>()
+    private val mrspCache = ConcurrentHashMap<BlockId, Envelope>()
 
     constructor(
         rawInfra: RawInfra,
@@ -81,5 +83,50 @@ data class CachedBlockMRSPBuilder(
     companion object {
         // 320km/h as default value (global max speed in France)
         const val DEFAULT_MAX_ROLLING_STOCK_SPEED = (320.0 / 3.6)
+
+        data class CacheParameters(
+            val infraName: String,
+            val infraVersion: Int,
+            private val rsMaxSpeed: Double,
+            private val rsLength: Double,
+            private val speedLimitTag: String?,
+            val addRollingStockLength: Boolean,
+        )
+
+        val REUSABLE_CACHE by SoftLazy {
+            ConcurrentHashMap<CacheParameters, CachedBlockMRSPBuilder>()
+        }
+
+        fun getCachedBlockMRSPBuilder(
+            infra: FullInfra,
+            rsMaxSpeed: Double,
+            rsLength: Double,
+            speedLimitTag: String? = null,
+            addRollingStockLength: Boolean = true,
+            temporarySpeedLimitManager: TemporarySpeedLimitManager = TemporarySpeedLimitManager(),
+        ): CachedBlockMRSPBuilder {
+            fun buildNew() =
+                CachedBlockMRSPBuilder(
+                    infra.rawInfra,
+                    infra.blockInfra,
+                    rsMaxSpeed,
+                    rsLength,
+                    speedLimitTag,
+                    temporarySpeedLimitManager,
+                    addRollingStockLength,
+                )
+            if (temporarySpeedLimitManager.speedLimits.isNotEmpty()) return buildNew()
+
+            val key =
+                CacheParameters(
+                    infra.metadata.name,
+                    infra.metadata.version,
+                    rsMaxSpeed,
+                    rsLength,
+                    speedLimitTag,
+                    addRollingStockLength,
+                )
+            return REUSABLE_CACHE.computeIfAbsent(key) { buildNew() }
+        }
     }
 }
