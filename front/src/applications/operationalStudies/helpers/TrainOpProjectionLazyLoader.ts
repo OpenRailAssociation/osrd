@@ -107,7 +107,7 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
         for (const [exceptionKey, exception] of Object.entries(result.exceptions)) {
           pacedTrainProjectionResult.exceptions.set(exceptionKey, {
             space_time_curves: exception,
-            signal_updates: [],
+            signal_updates: rawPacedTrainOccupancyBlocks[id]?.exceptions?.[exceptionKey] ?? [],
           });
         }
       }
