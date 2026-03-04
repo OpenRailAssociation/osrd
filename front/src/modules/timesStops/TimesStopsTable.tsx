@@ -24,6 +24,7 @@ declare module '@tanstack/react-table' {
   interface ColumnMeta<TData extends RowData, TValue> {
     className: string;
     tabbable?: boolean;
+    title?: string;
   }
   // eslint-disable-next-line @typescript-eslint/consistent-type-definitions, @typescript-eslint/no-unused-vars
   interface TableMeta<TData extends RowData> {
@@ -197,6 +198,7 @@ const TimesStopsTable = ({
         },
         meta: {
           className: 'col-name computed',
+          title: t('operational_point'),
         },
       }),
       columnHelper.accessor('track', {
@@ -212,6 +214,7 @@ const TimesStopsTable = ({
         },
         meta: {
           className: 'col-track computed',
+          title: t('trackName'),
         },
       }),
       columnHelper.accessor('requestedArrival', {
@@ -236,6 +239,7 @@ const TimesStopsTable = ({
         meta: {
           className: 'col-requested-arrival',
           tabbable: true,
+          title: t('arrivalTime'),
         },
       }),
       columnHelper.accessor('computedArrival', {
@@ -249,6 +253,7 @@ const TimesStopsTable = ({
         },
         meta: {
           className: 'col-computed-arrival computed',
+          title: t('calculatedArrivalTime'),
         },
       }),
       columnHelper.accessor('stopDuration', {
@@ -265,6 +270,7 @@ const TimesStopsTable = ({
         meta: {
           className: 'col-stop-duration',
           tabbable: true,
+          title: t('stopTime'),
         },
       }),
       columnHelper.accessor('requestedDeparture', {
@@ -288,6 +294,7 @@ const TimesStopsTable = ({
         meta: {
           className: 'col-requested-departure',
           tabbable: true,
+          title: t('departureTime'),
         },
       }),
       columnHelper.accessor('computedDeparture', {
@@ -301,6 +308,7 @@ const TimesStopsTable = ({
         },
         meta: {
           className: 'col-computed-departure computed',
+          title: t('calculatedDepartureTime'),
         },
       }),
       columnHelper.accessor('closedSignal', {
@@ -331,6 +339,7 @@ const TimesStopsTable = ({
         },
         meta: {
           className: 'col-closed-signal',
+          title: t('receptionOnClosedSignalFull'),
         },
       }),
       columnHelper.accessor('shortSlipDistance', {
@@ -455,7 +464,11 @@ const TimesStopsTable = ({
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
-                <th key={header.id} className={header.column.columnDef.meta?.className}>
+                <th
+                  key={header.id}
+                  className={header.column.columnDef.meta?.className}
+                  title={header.column.columnDef.meta?.title}
+                >
                   <div className="th-content">
                     {flexRender(header.column.columnDef.header, header.getContext())}
                   </div>
