@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useRef } from 'react';
 
+import { Checkbox } from '@osrd-project/ui-core';
 import {
   createColumnHelper,
   flexRender,
@@ -72,6 +73,7 @@ type TimesStopsTableProps = {
   startTime: Date;
   isValid: boolean;
   isComputedDataPending?: boolean;
+  pendingReceptionSignalRowId?: string | null;
   onArrivalChange: (row: TimesStopsRowNew, arrival: Date | null) => void;
   onStopDurationChange: (row: TimesStopsRowNew, durationSeconds: number | null) => void;
   onDepartureChange: (row: TimesStopsRowNew, departure: Date | null) => void;
@@ -299,7 +301,21 @@ const TimesStopsTable = ({
       }),
       columnHelper.accessor('closedSignal', {
         header: () => t('receptionOnClosedSignal'),
-        cell: (info) => <input type="checkbox" checked={info.getValue()} readOnly />,
+        cell: (info) => {
+          const { closedSignal, stopDuration } = info.row.original;
+          const isLastRow = info.row.index === rows.length - 1;
+          const isDisabled = !isLastRow && !stopDuration;
+
+          return (
+            <Checkbox
+              id={`closedSignal-${info.row.id}`}
+              small
+              checked={!!closedSignal}
+              disabled={isDisabled}
+              onChange={() => {}}
+            />
+          );
+        },
         meta: {
           className: 'col-closed-signal',
         },
@@ -308,12 +324,26 @@ const TimesStopsTable = ({
         header: () => t('shortSlipDistance'),
         cell: (info) => {
           const { closedSignal, shortSlipDistance } = info.row.original;
+          const isDisabled = !closedSignal;
+
           return (
-            <input type="checkbox" checked={shortSlipDistance} disabled={!closedSignal} readOnly />
+            <Checkbox
+              id={`shortSlipDistance-${info.row.id}`}
+              small
+              checked={!!shortSlipDistance}
+              disabled={isDisabled}
+              onChange={() => {
+                if (!isDisabled) {
+                  const signal = onStopSignalToReceptionSignal(closedSignal, !shortSlipDistance);
+                  info.table.options.meta!.onReceptionSignalChange(info.row.original, signal);
+                }
+              }}
+            />
           );
         },
         meta: {
           className: 'col-short-slip-distance',
+          title: t('shortSlipDistance'),
         },
       }),
       columnHelper.accessor('powerRestriction', {
