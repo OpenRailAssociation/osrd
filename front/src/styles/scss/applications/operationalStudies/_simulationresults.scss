@@ -88,6 +88,10 @@
     .osrd-simulation-container {
       position: relative;
       border-radius: 4px;
+
+      .speed-space-chart-wrapper {
+        overflow: hidden;
+      }
     }
 
     .simulation-map {
@@ -126,6 +130,7 @@
         font-weight: 500;
         font-size: 1rem;
       }
+
       svg {
         color: var(--primary60);
       }
@@ -148,11 +153,13 @@
       padding: 2.4px 4px;
       font-size: 0.7rem;
       white-space: nowrap;
+
       &.via-number {
         padding: 0;
         font-weight: bold;
         color: white;
       }
+
       &.stdcm-via {
         align-self: flex-start;
         padding-top: 8px;
