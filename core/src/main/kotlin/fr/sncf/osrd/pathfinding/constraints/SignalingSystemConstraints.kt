@@ -29,6 +29,10 @@ data class SignalingSystemConstraints(
         return res
     }
 
+    override fun getID(): String {
+        return "SignalingSystemConstraints(${rollingStocksSupportedSigSystems.joinToString(", ")})"
+    }
+
     /** Returns the sections of the given block that can't be used by the given rolling stock */
     private fun getBlockedRanges(
         edge: BlockId,

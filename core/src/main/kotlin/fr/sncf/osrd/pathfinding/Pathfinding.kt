@@ -145,7 +145,8 @@ class Pathfinding(
     private val queue = PriorityQueue<Step>()
 
     fun runPathfinding(timeout: Double = TIMEOUT): InfraExplorer? {
-        val constraintCombiner = ConstraintCombiner(constraints)
+        val constraintCombiner =
+            ConstraintCombiner.getCachedConstraintCombiner(fullInfra, constraints)
 
         val startTime = Instant.now()
         val seenBlocks = HashMap<BlockId, Int>()

@@ -28,6 +28,10 @@ data class TestRangeConstraints(val f: (BlockId) -> Collection<OffsetRange<Block
     override fun apply(edge: BlockId): Collection<OffsetRange<Block>> {
         return f(edge)
     }
+
+    override fun getID(): String {
+        return "TestRangeConstraints"
+    }
 }
 
 class PathfindingTests {

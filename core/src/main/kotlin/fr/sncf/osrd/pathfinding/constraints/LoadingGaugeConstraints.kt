@@ -20,6 +20,10 @@ data class LoadingGaugeConstraints(
         return res
     }
 
+    override fun getID(): String {
+        return "LoadingGaugeConstraints($loadingGaugeType)"
+    }
+
     /** Returns the sections of the given block that can't be used by the given rolling stock */
     private fun getBlockedRanges(
         type: RJSLoadingGaugeType,
