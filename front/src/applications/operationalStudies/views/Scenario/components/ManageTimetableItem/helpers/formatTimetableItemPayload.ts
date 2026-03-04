@@ -133,6 +133,7 @@ export function formatPacedTrainPayload(
     paced: {
       time_window: osrdconf.timeWindow.toISOString(),
       interval: osrdconf.interval.toISOString(),
+      // TODO: remove exceptions when the migration is done
       exceptions,
     },
   };
@@ -180,6 +181,7 @@ export function formatPacedTrainPayload(
       // with only its exceptions updated
       newPacedTrain = {
         ...originalPacedTrain,
+        // TODO: remove exceptions when the migration is done
         paced: { ...originalPacedTrain.paced, exceptions: updatedExceptions },
       };
       // ========== user modified the whole paced train ==========
@@ -204,6 +206,7 @@ export function formatPacedTrainPayload(
 
       newPacedTrain = {
         ...newPacedTrain,
+        // TODO: remove exceptions when the migration is done
         paced: { ...newPacedTrain.paced, exceptions: newExceptionList },
       };
     }
