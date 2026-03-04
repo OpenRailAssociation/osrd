@@ -125,7 +125,7 @@ export type Occurrence = {
   rollingStock?: LightRollingStockWithLiveries;
   startTime: Date;
   stopsCount: number;
-  exceptionChangeGroups?: ExceptionChangeGroups;
+  exception?: { id: number; exceptionChangeGroups: ExceptionChangeGroups };
   summary?: SimulationSummary;
 };
 
