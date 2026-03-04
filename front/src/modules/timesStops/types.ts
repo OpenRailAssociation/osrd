@@ -25,6 +25,8 @@ export type TimesStopsRowNew = {
   marginNotHonored: boolean | undefined;
   /** True if this row corresponds to a pathStep input, false if it's just a waypoint */
   isPathStep: boolean;
+  /** True if the pathStep had an explicit track in its location (TrackOffset or local_track_name) */
+  hasRequestedTrack: boolean;
   /** Location info to create a new PathItem when editing a waypoint that's not yet a pathStep */
   location: PathItemLocation;
 };

@@ -29,6 +29,7 @@ type BuildTableRowParams = {
   name?: string;
   secondaryCode?: string;
   trackName?: string;
+  hasRequestedTrack?: boolean;
   startDate: Date;
   schedule?: ScheduleItem;
   computedArrival?: Duration;
@@ -44,6 +45,7 @@ const buildTableRow = ({
   name,
   secondaryCode,
   trackName,
+  hasRequestedTrack = false,
   startDate,
   schedule,
   computedArrival,
@@ -90,6 +92,7 @@ const buildTableRow = ({
     scheduleNotHonored,
     marginNotHonored,
     isPathStep: true,
+    hasRequestedTrack,
     location,
   };
 };
@@ -200,6 +203,9 @@ const useTimesStopsTableData = (
                 ?.local_track_name
             : (pathStepLocation.local_track_name ?? undefined);
 
+        const hasRequestedTrack =
+          'track' in pathStepLocation || !!pathStepLocation.local_track_name;
+
         const schedule = scheduleByAt[pathStep.id];
         const computedArrival =
           stablePathItemTimes?.final[stepIndex] !== undefined
@@ -219,6 +225,7 @@ const useTimesStopsTableData = (
           name,
           secondaryCode: matchingOp?.extensions?.sncf?.ch,
           trackName,
+          hasRequestedTrack,
           startDate,
           schedule,
           computedArrival,
