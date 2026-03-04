@@ -158,6 +158,11 @@
       width: 87px;
     }
 
+    th.col-closed-signal,
+    th.col-short-slip-distance {
+      max-width: 36px;
+    }
+
     /* comfortable padding */
     @media (min-width: 784px) {
       th[class^='col-'] {
@@ -190,7 +195,18 @@
         width: 103px;
       }
 
-      td[class^='col-']:not(.col-index, .col-step-status) {
+      td.col-closed-signal,
+      td.col-short-slip-distance {
+        max-width: 44px;
+        padding-inline: 10px;
+      }
+
+      td[class^='col-']:not(
+          .col-index,
+          .col-step-status,
+          .col-closed-signal,
+          .col-short-slip-distance
+        ) {
         padding-inline: 12px;
       }
     }
