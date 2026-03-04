@@ -1558,10 +1558,14 @@ mod tests {
     use schemas::paced_train::TrainNameChangeGroup;
     use schemas::paced_train::TrainSchedule;
     use schemas::primitives::NonBlankString;
+    use schemas::primitives::PositiveDuration;
     use schemas::rolling_stock::TrainCategory;
     use schemas::train_schedule::Comfort;
+    use schemas::train_schedule::OperationalPointPartReference;
     use schemas::train_schedule::OperationalPointReference;
     use schemas::train_schedule::PathItem;
+    use schemas::train_schedule::PathItemLocation;
+    use schemas::train_schedule::ReceptionSignal;
     use schemas::train_schedule::ScheduleItem;
     use schemas::train_schedule::TrainOccurrence;
     use serde_json::json;
@@ -1577,6 +1581,7 @@ mod tests {
     use crate::models::fixtures::simple_paced_train_base;
     use crate::models::fixtures::simple_paced_train_changeset;
     use crate::models::fixtures::simple_sub_category;
+    use crate::models::train_schedule::OccurrenceId;
     use crate::models::train_schedule::TrainScheduleChangeset;
     use crate::views::path::pathfinding::PathfindingFailure;
     use crate::views::path::pathfinding::PathfindingResult;
@@ -1591,10 +1596,31 @@ mod tests {
     use crate::views::timetable::paced_train::TrackSectionOccupancy;
     use crate::views::timetable::paced_train::TrainScheduleResponse;
     use crate::views::timetable::paced_train::TrainScheduleSummaryResponse;
+    use crate::views::timetable::paced_train::find_track_occupancy_without_known_operational_point;
     use crate::views::timetable::simulation;
     use crate::views::timetable::simulation::SimulationResponseSuccess;
     use crate::views::timetable::simulation::SummaryResponse;
     use crate::views::timetable::simulation_empty_response;
+
+    pub fn new_op_with_trigram_and_local_track_name(
+        id: &str,
+        trigram: &str,
+        secondary_code: Option<String>,
+        local_track_name: Option<NonBlankString>,
+    ) -> PathItem {
+        PathItem {
+            id: id.into(),
+            location: PathItemLocation::OperationalPointPartReference(
+                OperationalPointPartReference {
+                    operational_point: OperationalPointReference::Trigram {
+                        trigram: trigram.into(),
+                        secondary_code,
+                    },
+                    local_track_name,
+                },
+            ),
+        }
+    }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn train_schedule_post() {
@@ -2575,6 +2601,8 @@ mod tests {
 
     async fn init_paced_train_test(
         exceptions: Vec<PacedTrainException>,
+        path: Vec<PathItem>,
+        schedule: Vec<ScheduleItem>,
         operational_point_reference: OperationalPointReference,
     ) -> TestResponse {
         let mut core = MockingClient::new();
@@ -2596,14 +2624,8 @@ mod tests {
             .into_changeset()
             .train_schedule_set_id(train_schedule_set.id)
             .rolling_stock_name(rolling_stock.name)
-            .path(vec![
-                PathItem::new_operational_point("Mid_West_station"),
-                PathItem::new_operational_point("Mid_East_station"),
-            ])
-            .schedule(vec![ScheduleItem::new_with_stop(
-                "Mid_East_station",
-                Duration::new(0, 0).expect("Failed to parse duration"),
-            )])
+            .path(path)
+            .schedule(schedule)
             .interval(TimeDelta::try_minutes(15))
             .time_window(TimeDelta::try_hours(1))
             .exceptions(exceptions)
@@ -2637,6 +2659,14 @@ mod tests {
     ) {
         let response = init_paced_train_test(
             exceptions,
+            vec![
+                PathItem::new_operational_point("Mid_West_station"),
+                PathItem::new_operational_point("Mid_East_station"),
+            ],
+            vec![ScheduleItem::new_with_stop(
+                "Mid_East_station",
+                Duration::new(0, 0).expect("Failed to parse duration"),
+            )],
             OperationalPointReference::Id {
                 operational_point: "Mid_West_station".into(),
             },
@@ -2657,6 +2687,14 @@ mod tests {
     async fn paced_train_returns_empty_track_occupancies() {
         let response = init_paced_train_test(
             Vec::new(),
+            vec![
+                PathItem::new_operational_point("Mid_West_station"),
+                PathItem::new_operational_point("Mid_East_station"),
+            ],
+            vec![ScheduleItem::new_with_stop(
+                "Mid_East_station",
+                Duration::new(0, 0).expect("Failed to parse duration"),
+            )],
             OperationalPointReference::Id {
                 operational_point: "West_station".into(),
             },
@@ -2694,5 +2732,126 @@ mod tests {
             train_schedule.unwrap().train_schedule_set_id,
             train_schedule_set_to_move.id
         );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn track_occupancy_returns_unkown_op() {
+        let response = init_paced_train_test(
+            Vec::new(),
+            vec![
+                new_op_with_trigram_and_local_track_name("Mid_West_station", "MWS", None, None),
+                new_op_with_trigram_and_local_track_name(
+                    "UNKNOWN_ID",
+                    "UNKNOWN_TRIGRAM",
+                    None,
+                    Some(NonBlankString("UNKNOWN_V".to_string())),
+                ),
+                new_op_with_trigram_and_local_track_name("Mid_East_station", "MES", None, None),
+            ],
+            vec![
+                ScheduleItem {
+                    at: "UNKNOWN_ID".into(),
+                    arrival: Some(PositiveDuration::new(
+                        Duration::new(300, 0).expect("Failed to parse duration"),
+                    )),
+                    stop_for: Some(PositiveDuration::new(
+                        Duration::new(120, 0).expect("Failed to parse duration"),
+                    )),
+                    reception_signal: ReceptionSignal::Open,
+                },
+                ScheduleItem::new_with_stop(
+                    "Mid_East_station",
+                    Duration::new(0, 0).expect("Failed to parse duration"),
+                ),
+            ],
+            OperationalPointReference::Trigram {
+                trigram: "UNKNOWN_TRIGRAM".into(),
+                secondary_code: None,
+            },
+        );
+        let track_occupancies: Vec<TrackSectionOccupancy> =
+            response.await.assert_status(StatusCode::OK).json_into();
+        assert_eq!(track_occupancies.len(), 4);
+        assert!(
+            track_occupancies
+                .iter()
+                .all(|to| to.local_track_name == Some(NonBlankString("UNKNOWN_V".to_string())))
+        );
+    }
+
+    #[test]
+    fn unknown_op_without_local_track_name_has_null_reference() {
+        let op_ref = OperationalPointReference::Trigram {
+            trigram: "UNKNOWN".into(),
+            secondary_code: None,
+        };
+        let path_item = PathItem {
+            id: "item_1".into(),
+            location: PathItemLocation::OperationalPointPartReference(
+                OperationalPointPartReference {
+                    operational_point: op_ref.clone(),
+                    local_track_name: None,
+                },
+            ),
+        };
+        let train_schedule = schemas::TrainOccurrence {
+            path: vec![path_item.clone()],
+            schedule: vec![ScheduleItem {
+                at: "item_1".into(),
+                arrival: Some(PositiveDuration::try_from(Duration::seconds(100)).unwrap()),
+                stop_for: Some(PositiveDuration::try_from(Duration::seconds(60)).unwrap()),
+                reception_signal: ReceptionSignal::Open,
+            }],
+            ..Default::default()
+        };
+        let train_id = OccurrenceId::new_base(42, 0);
+
+        let result = find_track_occupancy_without_known_operational_point(
+            &path_item,
+            &train_schedule,
+            &train_id,
+            &op_ref,
+        );
+
+        let occupancy = result.expect("Failed to find track occupancy");
+        assert_eq!(occupancy.local_track_name, None);
+        assert_eq!(occupancy.trains.len(), 1);
+    }
+
+    #[test]
+    fn unknown_op_without_arrival_time_returns_none() {
+        let op_ref = OperationalPointReference::Trigram {
+            trigram: "UNKNOWN".into(),
+            secondary_code: None,
+        };
+        let path_item = PathItem {
+            id: "item_1".into(),
+            location: PathItemLocation::OperationalPointPartReference(
+                OperationalPointPartReference {
+                    operational_point: op_ref.clone(),
+                    local_track_name: None,
+                },
+            ),
+        };
+        let train_schedule = schemas::TrainOccurrence {
+            path: vec![path_item.clone()],
+            schedule: vec![ScheduleItem {
+                at: "item_1".into(),
+                arrival: None,
+                stop_for: None,
+                reception_signal: ReceptionSignal::Open,
+            }],
+            ..Default::default()
+        };
+        let train_id = OccurrenceId::new_base(1, 0);
+
+        let result = find_track_occupancy_without_known_operational_point(
+            &path_item,
+            &train_schedule,
+            &train_id,
+            &op_ref,
+        );
+
+        assert!(result.is_none());
     }
 }
