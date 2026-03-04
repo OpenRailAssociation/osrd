@@ -114,10 +114,19 @@ pub(in crate::views) struct TrainScheduleResponse {
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub(in crate::views) struct TrainScheduleWithoutExceptionsResponse {
-    id: i64,
-    train_schedule_set_id: i64,
+    pub id: i64,
+    pub train_schedule_set_id: i64,
     #[serde(flatten)]
-    train_schedule: TrainScheduleWithoutExceptions,
+    pub train_schedule: TrainScheduleWithoutExceptions,
+}
+impl From<models::TrainSchedule> for TrainScheduleWithoutExceptionsResponse {
+    fn from(value: models::TrainSchedule) -> Self {
+        Self {
+            id: value.id,
+            train_schedule_set_id: value.train_schedule_set_id,
+            train_schedule: value.into(),
+        }
+    }
 }
 
 impl From<models::TrainSchedule> for TrainScheduleResponse {
@@ -170,15 +179,7 @@ pub(in crate::views) async fn get_by_id(
         })
         .await?;
 
-    let train_schedule_set_id = train_schedule.train_schedule_set_id;
-    let train_schedule_id = train_schedule.id;
-    let train_schedule: schemas::paced_train::TrainSchedule = train_schedule.into();
-
-    let train_schedule = TrainScheduleWithoutExceptionsResponse {
-        id: train_schedule_id,
-        train_schedule_set_id,
-        train_schedule: train_schedule.into(),
-    };
+    let train_schedule: TrainScheduleWithoutExceptionsResponse = train_schedule.into();
 
     Ok(Json(train_schedule))
 }

@@ -11,6 +11,7 @@ use schemas::paced_train;
 use schemas::paced_train::ExceptionType;
 use schemas::paced_train::Paced;
 use schemas::paced_train::PacedTrainException;
+use schemas::paced_train::PacedWithoutExceptions;
 use schemas::rolling_stock::TrainCategory;
 use schemas::train_schedule::Comfort;
 use schemas::train_schedule::Distribution;
@@ -243,6 +244,42 @@ impl TrainSchedule {
             .interval
             .expect("interval should be set for paced trains");
         (time_window.num_seconds() / interval.num_seconds()) as usize
+    }
+}
+
+impl From<TrainSchedule> for paced_train::TrainScheduleWithoutExceptions {
+    fn from(train_schedule: TrainSchedule) -> Self {
+        let paced = train_schedule.time_window.and_then(|time_window| {
+            train_schedule
+                .interval
+                .map(|interval| PacedWithoutExceptions {
+                    time_window: time_window.try_into().unwrap(),
+                    interval: interval.try_into().unwrap(),
+                })
+        });
+
+        Self {
+            train_occurrence: schemas::TrainOccurrence {
+                train_name: train_schedule.train_name,
+                labels: train_schedule.labels.to_vec(),
+                rolling_stock_name: train_schedule.rolling_stock_name,
+                start_time: train_schedule.start_time,
+                schedule: train_schedule.schedule,
+                margins: train_schedule.margins,
+                initial_speed: train_schedule.initial_speed,
+                comfort: train_schedule.comfort,
+                path: train_schedule.path,
+                constraint_distribution: train_schedule.constraint_distribution,
+                speed_limit_tag: train_schedule.speed_limit_tag.map(Into::into),
+                power_restrictions: train_schedule.power_restrictions,
+                options: train_schedule.options,
+                category: train_schedule
+                    .main_category
+                    .map(|main_category| TrainCategory::main(main_category.0))
+                    .xor(train_schedule.sub_category.map(TrainCategory::sub)),
+            },
+            paced,
+        }
     }
 }
 

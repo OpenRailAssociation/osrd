@@ -4,7 +4,7 @@ use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
 use editoast_models::prelude::*;
 use itertools::Itertools;
-use schemas::paced_train::TrainSchedule;
+use schemas::paced_train::TrainScheduleWithoutExceptions;
 use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
@@ -16,6 +16,7 @@ use crate::models::train_schedule_set::TrainScheduleSet;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::timetable::paced_train::TrainScheduleResponse;
+use crate::views::timetable::paced_train::TrainScheduleWithoutExceptionsResponse;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -299,9 +300,9 @@ pub(in crate::views) async fn delete(
     post, path = "",
     tags = ["train_schedule_set", "paced_train"],
     params(TrainScheduleSetIdParam),
-    request_body = Vec<TrainSchedule>,
+    request_body = Vec<TrainScheduleWithoutExceptions>,
     responses(
-        (status = 201, description = "The created train schedules", body = Vec<TrainScheduleResponse>)
+        (status = 201, description = "The created train schedules", body = Vec<TrainScheduleWithoutExceptionsResponse>)
     )
 )]
 pub(in crate::views) async fn post_train_schedule(
@@ -310,7 +311,7 @@ pub(in crate::views) async fn post_train_schedule(
     Path(TrainScheduleSetIdParam {
         id: train_schedule_set_id,
     }): Path<TrainScheduleSetIdParam>,
-    Json(train_schedules): Json<Vec<TrainSchedule>>,
+    Json(train_schedules): Json<Vec<TrainScheduleWithoutExceptions>>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())
@@ -338,7 +339,8 @@ pub(in crate::views) async fn post_train_schedule(
 
     // Create a batch of train schedules
     let train_schedules: Vec<_> = models::TrainSchedule::create_batch(conn, changesets).await?;
-    let response: Vec<TrainScheduleResponse> = train_schedules.into_iter().map_into().collect();
+    let response: Vec<TrainScheduleWithoutExceptionsResponse> =
+        train_schedules.into_iter().map_into().collect();
 
     Ok((StatusCode::CREATED, Json(response)))
 }
@@ -402,14 +404,6 @@ mod tests {
     use editoast_models::CatalogEntry;
     use editoast_models::prelude::*;
     use reqwest::StatusCode;
-    use schemas::TrainScheduleExceptionChangeGroups;
-    use schemas::fixtures::simple_created_exception_with_change_groups;
-    use schemas::fixtures::simple_modified_exception_with_change_groups;
-    use schemas::paced_train::ExceptionType;
-    use schemas::paced_train::PacedTrainException;
-    use schemas::paced_train::PathAndScheduleChangeGroup;
-    use schemas::train_schedule::MarginValue;
-    use schemas::train_schedule::Margins;
 
     async fn create_train_schedule_set_linked_to_catalog_entry(
         conn: &mut DbConnection,
@@ -471,109 +465,6 @@ mod tests {
             list_result[0].exceptions,
             train_schedule_2.paced.unwrap().exceptions
         );
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn create_paced_train_exceptions() {
-        let app = TestAppBuilder::default_app();
-        let pool = app.db_pool();
-
-        let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
-        let mut paced_train_1 = simple_paced_train_base();
-        let exception_1 = PacedTrainException {
-            id: None,
-            key: "exception_key_1".into(),
-            exception_type: ExceptionType::Created {},
-            disabled: false,
-            change_groups: TrainScheduleExceptionChangeGroups::default(),
-        };
-
-        let exception_2 = PacedTrainException {
-            id: None,
-            key: "exception_key_2".into(),
-            exception_type: ExceptionType::Modified {
-                occurrence_index: 1,
-            },
-            disabled: true,
-            change_groups: TrainScheduleExceptionChangeGroups {
-                path_and_schedule: Some(PathAndScheduleChangeGroup {
-                    power_restrictions: vec![],
-                    schedule: vec![],
-                    path: vec![],
-                    margins: Margins {
-                        boundaries: vec![],
-                        values: vec![MarginValue::Percentage(5.0)],
-                    },
-                }),
-                ..Default::default()
-            },
-        };
-
-        paced_train_1.paced.as_mut().unwrap().exceptions =
-            vec![exception_1.clone(), exception_2.clone()];
-
-        let request = app
-            .post(
-                format!(
-                    "/train_schedule_sets/{}/train_schedules",
-                    train_schedule_set.id
-                )
-                .as_str(),
-            )
-            .json(&vec![paced_train_1.clone()]);
-
-        let _: Vec<TrainScheduleResponse> = app
-            .fetch(request)
-            .await
-            .assert_status(StatusCode::CREATED)
-            .json_into();
-
-        let settings = SelectionSettings::default()
-            .filter(move || models::TrainSchedule::TRAIN_SCHEDULE_SET_ID.eq(train_schedule_set.id))
-            .limit(25)
-            .offset(0);
-
-        let list_result = models::TrainSchedule::list(&mut pool.get_ok(), settings)
-            .await
-            .expect("Failed to fetch paced trains");
-
-        assert_eq!(&list_result[0].exceptions[0], &exception_1);
-        assert_eq!(&list_result[0].exceptions[1], &exception_2);
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn create_paced_train_with_duplicated_exceptions() {
-        let app = TestAppBuilder::default_app();
-        let pool = app.db_pool();
-
-        let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
-        let mut paced_train_1 = simple_paced_train_base();
-
-        paced_train_1.paced.as_mut().unwrap().exceptions = vec![
-            simple_created_exception_with_change_groups("duplicated_key_1"),
-            simple_modified_exception_with_change_groups("duplicated_key_1", 0),
-        ];
-
-        let request = app
-            .post(
-                format!(
-                    "/train_schedule_sets/{}/train_schedules",
-                    train_schedule_set.id
-                )
-                .as_str(),
-            )
-            .json(&vec![paced_train_1.clone()]);
-
-        let response = app
-            .fetch(request)
-            .await
-            .assert_status(StatusCode::UNPROCESSABLE_ENTITY)
-            .bytes();
-        assert!(
-            String::from_utf8(response)
-                .unwrap()
-                .contains("Duplicate exception key: 'duplicated_key_1'")
-        )
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

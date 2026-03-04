@@ -2626,11 +2626,11 @@ export type GetTrainScheduleSetsByIdPacedTrainsApiArg = {
   id: number;
 };
 export type PostTrainScheduleSetsByIdTrainSchedulesApiResponse =
-  /** status 201 The created train schedules */ TrainScheduleResponse[];
+  /** status 201 The created train schedules */ TrainScheduleWithoutExceptionsResponse[];
 export type PostTrainScheduleSetsByIdTrainSchedulesApiArg = {
   /** A train schedule set ID */
   id: number;
-  body: TrainSchedule[];
+  body: TrainScheduleWithoutExceptions[];
 };
 export type GetTrainSchedulesByIdApiResponse =
   /** status 200 The requested train schedule */ TrainScheduleWithoutExceptionsResponse;

@@ -4666,7 +4666,7 @@ paths:
             schema:
               type: array
               items:
-                $ref: '#/components/schemas/TrainSchedule'
+                $ref: '#/components/schemas/TrainScheduleWithoutExceptions'
         required: true
       responses:
         '201':
@@ -4676,7 +4676,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/TrainScheduleResponse'
+                  $ref: '#/components/schemas/TrainScheduleWithoutExceptionsResponse'
   /train_schedules/{id}:
     get:
       tags:
