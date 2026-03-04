@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useRef } from 'react';
 
+import type { MapLibreEvent } from 'maplibre-gl';
 import type { MapRef } from 'react-map-gl/maplibre';
 
 import BaseMap from 'common/Map/BaseMap';
@@ -8,7 +9,7 @@ import { MapContextProvider } from 'common/Map/useMapContext';
 import { useInfraID } from 'common/osrdContext';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import type { MapSettings, Viewport } from 'reducers/commonMap/types';
-import { updateReferenceMapViewport } from 'reducers/referenceMap';
+import { syncReferenceMapRouterViewport, updateReferenceMapViewport } from 'reducers/referenceMap';
 import { useAppDispatch } from 'store';
 
 const REFERENCE_MAP_ID = 'reference-map';
@@ -32,10 +33,17 @@ const Map = () => {
   );
 
   const updateViewportChange = useCallback(
-    (value: Partial<Viewport>, { updateRouter } = { updateRouter: false }) => {
-      dispatch(updateReferenceMapViewport(value, updateRouter));
+    (value: Partial<Viewport>) => {
+      dispatch(updateReferenceMapViewport(value));
     },
-    []
+    [dispatch]
+  );
+
+  const updateMapRouterViewportChange = useCallback(
+    (value: MapLibreEvent) => {
+      dispatch(syncReferenceMapRouterViewport(value));
+    },
+    [dispatch]
   );
 
   const resetPitchBearing = () => {
@@ -75,6 +83,7 @@ const Map = () => {
           onClick={() => {
             dispatch(removeMapSearchMarker());
           }}
+          onIdleRouterSync={updateMapRouterViewportChange}
           updatePartialViewPort={updateViewportChange}
         />
       </MapContextProvider>

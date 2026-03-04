@@ -1,4 +1,5 @@
 import { createSlice, type Dispatch } from '@reduxjs/toolkit';
+import type { MapLibreEvent } from 'maplibre-gl';
 
 import history from 'main/history';
 import { defaultMapSettings, buildMapStateReducer } from 'reducers/commonMap';
@@ -25,20 +26,20 @@ export const referenceMapSlice = createSlice({
   },
 });
 
-export function updateReferenceMapViewport(viewport: Partial<Viewport>, updateRouter = false) {
-  return (dispatch: Dispatch, getState: () => { referenceMap: ReferenceMapState }) => {
+export function updateReferenceMapViewport(viewport: Partial<Viewport>) {
+  return (dispatch: Dispatch) => {
     dispatch(referenceMapSlice.actions.updateViewport(viewport));
+  };
+}
 
-    if (!updateRouter) return;
-
-    const {
-      referenceMap: { mapSettings },
-    } = getState();
-    const latitude = gpsRound(viewport.latitude || mapSettings.viewport.latitude);
-    const longitude = gpsRound(viewport.longitude || mapSettings.viewport.longitude);
-    const zoom = gpsRound(viewport.zoom || mapSettings.viewport.zoom);
-    const bearing = gpsRound(viewport.bearing || mapSettings.viewport.bearing);
-    const pitch = gpsRound(viewport.pitch || mapSettings.viewport.pitch);
+export function syncReferenceMapRouterViewport(event: MapLibreEvent) {
+  return (_dispatch: Dispatch) => {
+    const center = event.target.getCenter();
+    const latitude = gpsRound(center.lat);
+    const longitude = gpsRound(center.lng);
+    const zoom = gpsRound(event.target.getZoom());
+    const bearing = gpsRound(event.target.getBearing());
+    const pitch = gpsRound(event.target.getPitch());
 
     history.push(`/map/${latitude}/${longitude}/${zoom}/${bearing}/${pitch}`);
   };
