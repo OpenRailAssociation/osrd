@@ -147,6 +147,7 @@ mod mock_driver {
     use crate::identity::UserInfo;
     use crate::identity::UserName;
     use crate::model;
+    use crate::v2;
 
     #[derive(Debug, Clone, Default)]
     pub struct MockAuthDriver {
@@ -168,9 +169,12 @@ mod mock_driver {
         }
 
         pub async fn set_role(&self, user: model::User, role: Role) {
-            self.grant_user_roles(&user, HashSet::from([role]))
+            v2::add_roles(user.into(), HashSet::from([role]))
+                .authorize(&v2::test_authorizers::Authorize(self.openfga()))
                 .await
                 .expect("role set should succeed")
+                .unwrap_authorized()
+                .await;
         }
 
         pub async fn get_infra_grant(
