@@ -23,6 +23,10 @@ data class TrackSectionConstraints(
         return res
     }
 
+    override fun getID(): String {
+        return "TrackSectionConstraints(${allowedTrackSections.hashCode()})"
+    }
+
     private fun getBlockedRanges(
         allowedTrackSections: Set<TrackSectionId>,
         path: TrainPath,

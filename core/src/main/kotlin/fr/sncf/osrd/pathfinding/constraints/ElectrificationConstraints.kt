@@ -24,6 +24,10 @@ data class ElectrificationConstraints(
         return getBlockedRanges(path, compatibleElectrification)
     }
 
+    override fun getID(): String {
+        return "ElectrificationConstraints(${compatibleElectrification.joinToString(", ")})"
+    }
+
     companion object {
         /**
          * Returns the sections of the given block that can't be used by the given rolling stock

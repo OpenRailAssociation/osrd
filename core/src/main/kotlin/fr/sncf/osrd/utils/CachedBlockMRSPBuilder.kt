@@ -87,6 +87,7 @@ data class CachedBlockMRSPBuilder(
         data class CacheParameters(
             val infraName: String,
             val infraVersion: Int,
+            val infraObjectId: Int, // For tests with modified infrastructures
             private val rsMaxSpeed: Double,
             private val rsLength: Double,
             private val speedLimitTag: String?,
@@ -121,6 +122,7 @@ data class CachedBlockMRSPBuilder(
                 CacheParameters(
                     infra.metadata.name,
                     infra.metadata.version,
+                    System.identityHashCode(infra),
                     rsMaxSpeed,
                     rsLength,
                     speedLimitTag,

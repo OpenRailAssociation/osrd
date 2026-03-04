@@ -17,6 +17,12 @@ fun interface AStarHeuristic {
  * Function that takes a block and returns a collection of ranges, used to define blocked
  * (forbidden) ranges on a block
  */
-fun interface PathfindingConstraint {
+interface PathfindingConstraint {
     fun apply(edge: BlockId): Collection<OffsetRange<Block>>
+
+    /**
+     * Returns an identifier describing the constraint and its parameters. Used for caching: results
+     * can be reused if the constraint ID matches.
+     */
+    fun getID(): String
 }
