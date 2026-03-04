@@ -514,10 +514,12 @@ impl<'a> UserBuilder<'a> {
             .await
             .expect("User should be created successfully");
         if app.app_state.config.enable_authorization {
-            regulator
-                .grant_user_roles(&authz::User(user.id), roles)
+            v2::add_roles(authz::Subject::user(user.id), roles)
+                .authorize(&test_authorizers::Authorize(regulator.openfga()))
                 .await
-                .expect("roles should be granted successfully");
+                .expect("roles should be granted successfully")
+                .unwrap_authorized()
+                .await;
 
             for (infra_id, grant) in infras_grant.into_iter() {
                 regulator
@@ -588,10 +590,12 @@ impl<'a> GroupBuilder<'a> {
         let group = authz::identity::Group { id, info };
         if !authz_disabled {
             let group_auth = authz::Group(group.id);
-            regulator
-                .grant_group_roles(&group_auth, roles)
+            v2::add_roles(group_auth.into(), roles)
+                .authorize(&test_authorizers::Authorize(regulator.openfga()))
                 .await
-                .expect("roles should be granted successfully");
+                .expect("roles should be granted successfully")
+                .unwrap_authorized()
+                .await;
 
             v2::add_members(
                 group_auth,

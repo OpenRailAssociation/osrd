@@ -179,13 +179,15 @@ mod tests {
 
         // setup roles
         {
-            regulator()
-                .grant_user_roles(
-                    &User(user_id),
-                    HashSet::from([Role::OperationalStudies, Role::Stdcm]),
-                )
-                .await
-                .expect("roles should be granted");
+            v2::add_roles(
+                Subject::user(user_id),
+                HashSet::from([Role::OperationalStudies, Role::Stdcm]),
+            )
+            .authorize(&v2::test_authorizers::Authorize(regulator().openfga()))
+            .await
+            .expect("roles should be granted")
+            .unwrap_authorized()
+            .await;
         }
 
         assert!(
@@ -315,15 +317,19 @@ mod tests {
             .await;
 
         // setup roles
-        regulator()
-            .grant_group_roles(&friends, HashSet::from([Role::OperationalStudies]))
+        v2::add_roles(friends.into(), HashSet::from([Role::OperationalStudies]))
+            .authorize(&v2::test_authorizers::Authorize(regulator().openfga()))
             .await
-            .expect("group's roles should be granted");
+            .expect("group's roles should be granted")
+            .unwrap_authorized()
+            .await;
 
-        regulator()
-            .grant_user_roles(&User(bob_id), HashSet::from([Role::Stdcm]))
+        v2::add_roles(Subject::user(bob_id), HashSet::from([Role::Stdcm]))
+            .authorize(&v2::test_authorizers::Authorize(regulator().openfga()))
             .await
-            .expect("bob's roles should be granted");
+            .expect("bob's roles should be granted")
+            .unwrap_authorized()
+            .await;
 
         // check roles
         assert!(

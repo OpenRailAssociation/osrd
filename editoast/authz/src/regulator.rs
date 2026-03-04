@@ -218,24 +218,6 @@ impl<S: StorageDriver> Regulator<S> {
     }
 
     #[tracing::instrument(skip_all, fields(user, ?roles), ret(level = Level::DEBUG), err)]
-    pub async fn grant_user_roles(
-        &self,
-        user: &User,
-        roles: HashSet<Role>,
-    ) -> Result<(), Error<S::Error>> {
-        if !self.user_exists(user.0).await? {
-            return Err(Error::UnknownSubject(user.0));
-        }
-        let mut writes = self.openfga.prepare_writes();
-        let existing_roles = self.user_roles(user).await?;
-        for role in roles.difference(&existing_roles) {
-            writes.push(&User::role().tuple(role, user));
-        }
-        writes.execute().await?;
-        Ok(())
-    }
-
-    #[tracing::instrument(skip_all, fields(user, ?roles), ret(level = Level::DEBUG), err)]
     pub async fn revoke_user_roles(
         &self,
         user: &User,
@@ -250,24 +232,6 @@ impl<S: StorageDriver> Regulator<S> {
             deletes.push(&User::role().tuple(role, user));
         }
         deletes.execute().await?;
-        Ok(())
-    }
-
-    #[tracing::instrument(skip_all, fields(group, ?roles), ret(level = Level::DEBUG), err)]
-    pub async fn grant_group_roles(
-        &self,
-        group: &Group,
-        roles: HashSet<Role>,
-    ) -> Result<(), Error<S::Error>> {
-        if !self.group_exists(group.0).await? {
-            return Err(Error::UnknownSubject(group.0));
-        }
-        let mut writes = self.openfga.prepare_writes();
-        let existing_roles = self.group_roles(group).await?;
-        for role in roles.difference(&existing_roles) {
-            writes.push(&Group::role().tuple(role, group));
-        }
-        writes.execute().await?;
         Ok(())
     }
 

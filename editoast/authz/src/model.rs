@@ -13,12 +13,10 @@ pub enum Subject {
 }
 
 impl Subject {
-    #[cfg(test)]
     pub fn user(id: i64) -> Self {
         Subject::User(User(id))
     }
 
-    #[cfg(test)]
     pub fn group(id: i64) -> Self {
         Subject::Group(Group(id))
     }
