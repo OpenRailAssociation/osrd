@@ -113,6 +113,7 @@ const SpeedDistanceDiagramWrapper = ({
     <div
       ref={root}
       id="container-SpeedSpaceChart"
+      className="speed-space-chart-wrapper"
       data-testid="speed-space-chart"
       style={{ height: `${height}px` }}
     >
