@@ -2,8 +2,8 @@ import { type MutableRefObject, type PropsWithChildren, useEffect, useState } fr
 
 import type { Geometry } from 'geojson';
 import type { MapLayerMouseEvent, MapLibreEvent } from 'maplibre-gl';
-import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
 import type { MapRef } from 'react-map-gl/maplibre';
+import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
 import { useParams } from 'react-router-dom';
 
 import {
@@ -12,8 +12,8 @@ import {
   LineSearchLayer,
   OSMLayers,
   SearchMarker,
-  VirtualLayers,
   useMapBlankStyle,
+  VirtualLayers,
 } from 'common/Map/Layers';
 import { colors } from 'common/Map/theme';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
@@ -27,10 +27,7 @@ type MapProps = {
   mapRef: MutableRefObject<MapRef | null>;
   interactiveLayerIds: string[];
   infraId?: number;
-  updatePartialViewPort: (
-    newPartialViewPort: Partial<Viewport>,
-    options?: { updateRouter: boolean }
-  ) => void;
+  updatePartialViewPort: (newPartialViewPort: Partial<Viewport>) => void;
   cursor?: 'default' | 'pointer' | 'normal';
   hideAttribution?: boolean;
   hoveredOperationalPointId?: string;
@@ -38,6 +35,7 @@ type MapProps = {
   onMouseEnter?: (e: MapLayerMouseEvent) => void;
   onMouseMove?: (e: MapLayerMouseEvent) => void;
   onIdle?: (e: MapLibreEvent) => void;
+  onIdleRouterSync?: (e: MapLibreEvent) => void;
   /**
    * If an area is provided, then the map style is focus on it :
    * - filtering all data layouts on this area
@@ -61,6 +59,7 @@ const BaseMap = ({
   onMouseEnter,
   onMouseMove,
   onIdle,
+  onIdleRouterSync,
   highlightedArea,
 }: PropsWithChildren<MapProps>) => {
   const mapBlankStyle = useMapBlankStyle();
@@ -110,12 +109,14 @@ const BaseMap = ({
       onMouseEnter={onMouseEnter}
       onMouseMove={onMouseMove}
       onClick={onClick}
-      onIdle={onIdle}
+      onIdle={(e) => {
+        onIdle?.(e);
+        onIdleRouterSync?.(e);
+      }}
       // default behavior
       onMove={(e) => {
         updatePartialViewPort(e.viewState);
       }}
-      onMoveEnd={(e) => updatePartialViewPort(e.viewState, { updateRouter: true })}
       onResize={(e) => {
         updatePartialViewPort({
           width: e.target.getContainer().offsetWidth,
