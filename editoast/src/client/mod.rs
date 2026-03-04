@@ -1,3 +1,4 @@
+pub mod authorization;
 pub mod electrical_profiles_commands;
 pub mod garbage_collector;
 pub mod group;
@@ -6,7 +7,6 @@ pub mod import_rolling_stock;
 pub mod infra_commands;
 mod openfga_config;
 mod postgres_config;
-pub mod roles;
 pub mod runserver;
 pub mod search_commands;
 pub mod stdcm_search_env_commands;
@@ -15,6 +15,8 @@ mod trains_traffic;
 pub mod user;
 mod valkey_config;
 
+use authorization::grants::GrantsCommand;
+use authorization::roles::RolesCommand;
 use clap::Parser;
 use clap::Subcommand;
 use clap::ValueEnum;
@@ -23,7 +25,6 @@ use import_rolling_stock::ImportRollingStockArgs;
 use infra_commands::InfraCommands;
 use openfga_config::OpenfgaConfig;
 pub use postgres_config::PostgresConfig;
-use roles::RolesCommand;
 use runserver::CoreArgs;
 use runserver::RunserverArgs;
 use search_commands::SearchCommands;
@@ -92,6 +93,8 @@ pub enum Commands {
     Group(GroupCommand),
     #[command(subcommand, about, long_about = "User related commands")]
     User(UserCommand),
+    #[command(subcommand, about, long_about = "Grants related commands")]
+    Grants(GrantsCommand),
     #[command(about, long_about = "Healthcheck")]
     Healthcheck(CoreArgs),
     #[command(about, long_about = "Garbage collector")]
