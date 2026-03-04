@@ -167,7 +167,10 @@ const ComboBox = <T,>({
     focusInput();
   };
 
-  useOutsideClick(wrapperRef, closeSuggestions);
+  useOutsideClick(
+    showSuggestions ? wrapperRef : null, // Only trigger when the suggestions are displayed
+    closeSuggestions
+  );
 
   const inputIcons = useMemo(() => {
     if (inputProps.readOnly || inputProps.disabled) return undefined;
