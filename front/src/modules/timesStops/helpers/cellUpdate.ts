@@ -6,6 +6,7 @@ import { addElementAtIndex } from 'utils/array';
 import { Duration } from 'utils/duration';
 
 import type { OptimisticEdit, TimesStopsRowNew } from '../types';
+import { receptionSignalToSignalBooleans } from './utils';
 
 /** Compute the insertion index for a new PathStep using row opOnPathIndex values. */
 const computeInsertIndex = (
@@ -44,6 +45,10 @@ export const upsertPathStep = (
   return { pathStepId: newPathStep.id, updatedPath };
 };
 
+/** Compute departure from arrival and stop duration. */
+const computeDeparture = (arrival: Date | null, stop: Duration | null): Date | null =>
+  arrival !== null && stop !== null ? new Date(arrival.getTime() + stop.ms) : null;
+
 /** Difference between two dates, truncated to whole seconds. */
 const diffSeconds = (a: Date, b: Date) =>
   Math.floor(a.getTime() / 1000) - Math.floor(b.getTime() / 1000);
@@ -74,8 +79,7 @@ export const applyScheduleEdit = (
       return {
         arrival: newArrival,
         stop,
-        departure:
-          newArrival !== null && stop !== null ? new Date(newArrival.getTime() + stop.ms) : null,
+        departure: computeDeparture(newArrival, stop),
       };
     }
 
@@ -84,8 +88,7 @@ export const applyScheduleEdit = (
       return {
         arrival,
         stop: newStop,
-        departure:
-          arrival !== null && newStop !== null ? new Date(arrival.getTime() + newStop.ms) : null,
+        departure: computeDeparture(arrival, newStop),
       };
     }
 
@@ -109,6 +112,20 @@ export const applyScheduleEdit = (
         stop,
         departure: newDeparture,
       };
+    }
+
+    case 'receptionSignal': {
+      // receptionSignal doesn't affect arrival/stop/departure values
+      return {
+        arrival,
+        stop,
+        departure: computeDeparture(arrival, stop),
+      };
+    }
+
+    default: {
+      const exhaustiveCheck: never = edit;
+      throw new Error(`Unhandled schedule edit field: ${JSON.stringify(exhaustiveCheck)}`);
     }
   }
 };
@@ -153,12 +170,24 @@ export const insertScheduleItemInOrder = (
 export const computeOptimisticSchedule = (
   row: TimesStopsRowNew,
   edit: OptimisticEdit
-): Pick<TimesStopsRowNew, 'requestedArrival' | 'stopDuration' | 'requestedDeparture'> => {
+): Pick<
+  TimesStopsRowNew,
+  'requestedArrival' | 'stopDuration' | 'requestedDeparture' | 'closedSignal' | 'shortSlipDistance'
+> => {
   const { arrival, stop, departure } = applyScheduleEdit(
     { arrival: row.requestedArrival, stop: row.stopDuration },
     edit
   );
-  return { requestedArrival: arrival, stopDuration: stop, requestedDeparture: departure };
+  const checkboxes =
+    edit.field === 'receptionSignal'
+      ? receptionSignalToSignalBooleans(edit.value)
+      : { closedSignal: row.closedSignal, shortSlipDistance: row.shortSlipDistance };
+  return {
+    requestedArrival: arrival,
+    stopDuration: stop,
+    requestedDeparture: departure,
+    ...checkboxes,
+  };
 };
 
 /** Build a TrainSchedule object from a Train with updated path and schedule. */

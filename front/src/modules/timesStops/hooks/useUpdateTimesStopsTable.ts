@@ -6,6 +6,7 @@ import {
   osrdEditoastApi,
   type TrainSchedule,
   type PathItem,
+  type ReceptionSignal,
   type ScheduleItem,
 } from 'common/api/osrdEditoastApi';
 import {
@@ -65,6 +66,17 @@ const useUpdateTimesStopsTable = (
       const currentSchedule = selectedTrain.schedule ?? [];
       const existingItemIndex = currentSchedule.findIndex((item) => item.at === pathStepId);
       const isOrigin = pathStepId === updatedPath[0].id;
+
+      // receptionSignal: directly update the schedule item's reception_signal field.
+      // A stop is always required to edit reception signal
+      if (update.field === 'receptionSignal') {
+        if (existingItemIndex < 0) return undefined;
+        const updatedSchedule = replaceElementAtIndex(currentSchedule, existingItemIndex, {
+          ...currentSchedule[existingItemIndex],
+          reception_signal: update.value,
+        });
+        return { updatedPath, updatedSchedule };
+      }
 
       // Convert CellUpdate to OptimisticEdit (stopDuration: number → Duration)
       let edit: OptimisticEdit;
@@ -266,10 +278,17 @@ const useUpdateTimesStopsTable = (
     [updateCell]
   );
 
+  const updateReceptionSignal = useCallback(
+    (row: TimesStopsRowNew, receptionSignal: ReceptionSignal | undefined) =>
+      updateCell({ row, field: 'receptionSignal', value: receptionSignal }),
+    [updateCell]
+  );
+
   return {
     updateArrival,
     updateStopDuration,
     updateDeparture,
+    updateReceptionSignal,
   };
 };
 
