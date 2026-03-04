@@ -1,4 +1,4 @@
-import type { PathItemLocation } from 'common/api/osrdEditoastApi';
+import type { PathItemLocation, ReceptionSignal } from 'common/api/osrdEditoastApi';
 import type { TimeString } from 'common/types';
 import type { SuggestedOP } from 'modules/timetableItem/types';
 import type { Duration } from 'utils/duration';
@@ -45,8 +45,8 @@ export type TimesStopsRowNew = {
   computedDeparture: Date | null;
 
   // Signaling options
-  closedSignal: boolean;
-  shortSlipDistance: boolean;
+  closedSignal?: boolean;
+  shortSlipDistance?: boolean;
 
   // Power restrictions
   powerRestriction: string | null;
@@ -121,11 +121,22 @@ export type DepartureUpdate = {
   value: Date | null;
 };
 
-export type CellUpdate = ArrivalUpdate | StopDurationUpdate | DepartureUpdate;
+export type ReceptionSignalUpdate = {
+  row: TimesStopsRowNew;
+  field: 'receptionSignal';
+  value: ReceptionSignal | undefined;
+};
+
+export type CellUpdate =
+  | ArrivalUpdate
+  | StopDurationUpdate
+  | DepartureUpdate
+  | ReceptionSignalUpdate;
 
 export type OptimisticEdit =
   | { field: 'requestedArrival'; value: Date | null }
   | { field: 'requestedDeparture'; value: Date | null }
-  | { field: 'stopDuration'; value: Duration | null };
+  | { field: 'stopDuration'; value: Duration | null }
+  | { field: 'receptionSignal'; value: ReceptionSignal | undefined };
 
 export type PendingEdit = OptimisticEdit & { rowId: string };
