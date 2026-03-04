@@ -247,6 +247,7 @@ pub mod tests {
     use crate::views::path::pathfinding::PathfindingFailure;
     use crate::views::timetable::simulation::SimulationResponseSuccess;
     use chrono::DateTime;
+    use chrono::Utc;
     use core_client::pathfinding::PathfindingNotFound;
     use core_client::pathfinding::TrackRange;
     use core_client::simulation::CompleteReportTrain;
@@ -263,8 +264,49 @@ pub mod tests {
     use schemas::train_schedule::ReceptionSignal;
     use std::collections::HashMap;
     use std::collections::HashSet;
+    use std::str::FromStr;
 
     use super::*;
+
+    fn make_simulation_success(path_item_times: Vec<u64>) -> simulation::Response {
+        let report_train = ReportTrain {
+            positions: vec![],
+            times: vec![],
+            speeds: vec![],
+            energy_consumption: 0.0,
+            path_item_times,
+        };
+        simulation::Response::Success(SimulationResponseSuccess {
+            base: report_train.clone(),
+            provisional: report_train.clone(),
+            final_output: CompleteReportTrain {
+                report_train,
+                ..Default::default()
+            },
+            mrsp: Default::default(),
+            electrical_profiles: Default::default(),
+        })
+    }
+
+    fn make_pathfinding_success(
+        track_section: Identifier,
+        path_item_positions: Vec<u64>,
+    ) -> PathfindingResult {
+        PathfindingResult::Success(PathfindingResultSuccess {
+            path: core_client::pathfinding::TrainPath {
+                blocks: vec![],
+                routes: vec![],
+                track_section_ranges: vec![TrackRange {
+                    track_section,
+                    begin: 0,
+                    end: 100,
+                    direction: Direction::StartToStop,
+                }],
+            },
+            length: 100,
+            path_item_positions,
+        })
+    }
 
     #[rstest]
     // Normal cases with both simulation and pathfinding
@@ -302,26 +344,10 @@ pub mod tests {
             ]),
         );
 
-        let track_range = TrackRange {
-            track_section: track_section.clone(),
-            begin: 0,
-            end: 150,
-            direction: Direction::StartToStop,
-        };
-        let track_ranges = vec![track_range];
-
         let operational_point_track_offsets = vec![TrackOffset {
             track: track_section.clone(),
             offset: track_offset,
         }];
-
-        let report_train = ReportTrain {
-            positions: vec![0, 50, 100, 150],
-            times: vec![0, expected_time, 2000, 5000],
-            speeds: vec![10.0; 4],
-            energy_consumption: 0.0,
-            path_item_times: vec![0, expected_time, 5000],
-        };
 
         // Create a train schedule with path items and schedule items
         let start_time = DateTime::from_timestamp(1000000000, 0).unwrap();
@@ -387,16 +413,7 @@ pub mod tests {
 
         // Call the function
         let simulation = if has_simulation {
-            simulation::Response::Success(SimulationResponseSuccess {
-                base: report_train.clone(),
-                provisional: report_train.clone(),
-                final_output: CompleteReportTrain {
-                    report_train,
-                    ..Default::default()
-                },
-                mrsp: Default::default(),
-                electrical_profiles: Default::default(),
-            })
+            make_simulation_success(vec![0, expected_time, 5000])
         } else {
             simulation::Response::SimulationFailed {
                 core_error: InternalError {
@@ -409,15 +426,7 @@ pub mod tests {
         };
 
         let pathfinding = if has_pathfinding {
-            PathfindingResult::Success(PathfindingResultSuccess {
-                path: core_client::pathfinding::TrainPath {
-                    blocks: vec![],
-                    routes: vec![],
-                    track_section_ranges: track_ranges,
-                },
-                length: 150,
-                path_item_positions,
-            })
+            make_pathfinding_success(track_section.clone(), path_item_positions)
         } else {
             PathfindingResult::Failure(PathfindingFailure::PathfindingNotFound(
                 PathfindingNotFound::NotFoundInBlocks {
@@ -501,6 +510,67 @@ pub mod tests {
         assert_eq!(
             find_matching_path_item_index(&path, op_id, &cache),
             expected_index
+        );
+    }
+
+    #[test]
+    fn test_schedule_arrival_used_when_simulation_does_not_honor_times() {
+        let start_time =
+            DateTime::<Utc>::from_str("2026-02-01T00:00:00Z").expect("Date should be valid");
+
+        let train_schedule = schemas::TrainOccurrence {
+            start_time,
+            path: vec![
+                PathItem::new_operational_point("op_1"),
+                PathItem::new_operational_point("op_2"),
+            ],
+            schedule: vec![ScheduleItem {
+                at: "op_2".into(),
+                arrival: Some(PositiveDuration::try_from(Duration::minutes(5)).unwrap()),
+                stop_for: Some(
+                    PositiveDuration::try_from(Duration::seconds(0))
+                        .expect("Failed to parse duration"),
+                ),
+                reception_signal: ReceptionSignal::Open,
+            }],
+            ..Default::default()
+        };
+
+        // simulation arrival_time: 10min, input arrival_time: 5min
+        let simulation = make_simulation_success(vec![0, 600_000]);
+        let pathfinding = make_pathfinding_success(Identifier::from("T2"), vec![0, 100]);
+
+        let op_cache = OperationalPointCache::new(
+            Vec::new(),
+            HashMap::new(),
+            HashMap::new(),
+            HashMap::new(),
+            HashSet::new(),
+            HashMap::from([("T2".into(), "V2".into())]),
+        );
+
+        let operational_point_track_offsets = vec![TrackOffset {
+            track: Identifier::from("T2"),
+            offset: 100,
+        }];
+
+        let results = find_track_occupancy_for_operational_point(
+            "op_2",
+            &operational_point_track_offsets,
+            &op_cache,
+            &simulation,
+            &pathfinding,
+            &train_schedule,
+        );
+
+        assert_eq!(results.len(), 1);
+        assert_eq!(
+            results[0].local_track_name,
+            Some(NonBlankString("V2".to_string()))
+        );
+        assert_eq!(
+            results[0].time_window.time_begin,
+            start_time + Duration::minutes(5)
         );
     }
 }
