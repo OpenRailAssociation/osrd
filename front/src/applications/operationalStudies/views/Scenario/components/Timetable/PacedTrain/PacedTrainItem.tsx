@@ -23,6 +23,7 @@ import { useRollingStockContext } from 'common/RollingStockContext';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import { getOccurrencesWorstStatus } from 'modules/timetableItem/helpers/pacedTrain';
 import {
+  createExceptions,
   createPacedTrains,
   deleteTrainSchedules,
   storePacedTrain,
@@ -77,6 +78,7 @@ type PacedTrainItemProps = {
   isSelectMode: boolean;
   moveTimetableItem: () => void;
   showMovebutton: boolean;
+  timetableId: number;
 };
 
 const PacedTrainItem = ({
@@ -97,6 +99,7 @@ const PacedTrainItem = ({
   isSelectMode,
   moveTimetableItem,
   showMovebutton,
+  timetableId,
 }: PacedTrainItemProps) => {
   const { editedElementContainer } = useContext(EditedElementContainerContext);
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
@@ -218,10 +221,54 @@ const PacedTrainItem = ({
       train_name: pacedTrainName,
     };
 
+    // We don't want to send summary to create exceptions
+    const payloadExceptions = pacedTrain.paced?.exceptions.map((exception) => {
+      const { summary: _summary, ...changeGroups } = exception;
+      return changeGroups;
+    });
+
     const formattedPacedTrainResponse: TimetableItem = (
       await createPacedTrains(dispatch, pacedTrainDetail.train_schedule_set_id, [newPacedTrain])
     )[0];
-    upsertTimetableItems([formattedPacedTrainResponse]);
+
+    const newExceptions =
+      payloadExceptions.length > 0
+        ? await createExceptions(
+            dispatch,
+            payloadExceptions,
+            formattedPacedTrainResponse.id,
+            timetableId
+          )
+        : [];
+
+    // TODO : remove this part when the back will be done inserting the new exception format in TrainSchedule
+    const formattedExceptions = newExceptions.map((exceptionNewModel) => {
+      const {
+        change_groups,
+        train_schedule_id: _train_schedule_id,
+        timetable_id: _timetable_id,
+        ...restExceptions
+      } = exceptionNewModel;
+      return {
+        ...change_groups,
+        ...restExceptions,
+        // TODO: drop this when drop key in the model
+        key: restExceptions.key ?? restExceptions.id.toString(),
+      };
+    });
+
+    // We add the new exceptions to the duplicate paced train, so they contain their new exception ids
+    upsertTimetableItems([
+      {
+        ...formattedPacedTrainResponse,
+        ...(formattedPacedTrainResponse.paced && {
+          paced: {
+            ...formattedPacedTrainResponse.paced,
+            exceptions: formattedExceptions,
+          },
+        }),
+      },
+    ]);
     dispatch(
       setSuccess({
         title: t('timetable.pacedTrainAdded'),

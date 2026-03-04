@@ -78,7 +78,7 @@ const TrainList = ({
 }: TrainListProps) => {
   const dateTimeLocale = useDateTimeLocale();
 
-  const { workerStatus } = useScenarioContext();
+  const { workerStatus, timetableId } = useScenarioContext();
   const subCategories = useSubCategoryContext();
 
   const [expandedTimetableItemIds, setExpandedTimetableItemIds] = useState<Set<number>>(new Set());
@@ -202,6 +202,7 @@ const TrainList = ({
               isSelectMode={isSelectMode}
               moveTimetableItem={() => moveTimetableItem?.([timetableItem.id])}
               showMovebutton={timetableMode === 'trainScheduleSet'}
+              timetableId={timetableId}
             />
           )}
         </div>

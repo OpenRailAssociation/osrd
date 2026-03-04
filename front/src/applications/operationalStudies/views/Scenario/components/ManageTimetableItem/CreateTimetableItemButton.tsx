@@ -63,13 +63,42 @@ const CreateTimetableItemButton = ({
         await createPacedTrains(dispatch, sandboxId, [newTrainSchedulePayload])
       )[0];
 
+      let timetableItemToUpsert = formattedNewTrainSchedule;
+
       if (updatedExceptions.length > 0) {
-        await createExceptions(
+        const newExceptions = await createExceptions(
           dispatch,
           updatedExceptions,
           formattedNewTrainSchedule.id,
           timetableId
         );
+
+        // TODO : remove this part when the back will be done inserting the new exception format in TrainSchedule
+        const formattedExceptions = newExceptions.map((exceptionNewModel) => {
+          const {
+            change_groups,
+            train_schedule_id: _train_schedule_id,
+            timetable_id: _timetable_id,
+            ...restExceptions
+          } = exceptionNewModel;
+          return {
+            ...change_groups,
+            ...restExceptions,
+            // TODO: drop this when drop key in the model
+            key: restExceptions.key ?? restExceptions.id.toString(),
+          };
+        });
+
+        // Add the new exceptions to the timetable item so they contain their new exception ids
+        timetableItemToUpsert = {
+          ...formattedNewTrainSchedule,
+          ...(formattedNewTrainSchedule.paced && {
+            paced: {
+              ...formattedNewTrainSchedule.paced,
+              exceptions: formattedExceptions,
+            },
+          }),
+        };
       }
 
       dispatch(
@@ -81,7 +110,7 @@ const CreateTimetableItemButton = ({
       if (simulationConf.editingItemType === 'pacedTrain') {
         dispatch(clearAddedExceptionsList());
       }
-      upsertTimetableItems([formattedNewTrainSchedule]);
+      upsertTimetableItems([timetableItemToUpsert]);
     } catch (e) {
       dispatch(setFailure(castErrorToFailure(e)));
     } finally {
