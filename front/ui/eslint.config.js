@@ -21,6 +21,12 @@ export default defineConfig([
   reactHooksPlugin.configs.flat.recommended,
   storybookPluginConfigs['flat/recommended'],
   {
+    languageOptions: {
+      parserOptions: {
+        tsconfigRootDir: import.meta.dirname,
+        ecmaVersion: 'latest',
+      },
+    },
     settings: {
       react: {
         version: 'detect',
