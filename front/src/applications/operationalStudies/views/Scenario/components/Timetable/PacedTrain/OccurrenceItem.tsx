@@ -93,8 +93,8 @@ const OccurrenceItem = ({
 
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
 
-  const { trainName, rollingStock, startTime, disabled, exceptionChangeGroups, summary } =
-    occurrence;
+  const { trainName, rollingStock, startTime, disabled, exception, summary } = occurrence;
+  const exceptionChangeGroups = exception?.exceptionChangeGroups;
 
   let arrivalTime: Date | undefined;
   let isAfterMidnight = false;
