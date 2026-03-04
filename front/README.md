@@ -45,6 +45,25 @@ to open OSRD, as requests must pass through the `gateway`.
 > We use `--host 127.0.0.1` to let Vite know it should also bind to Docker's `bridge`
 > network interface, so the `gateway` can proxy the requests accordingly.
 
+## IDE integrations
+
+Make sure you configure your IDE to enable Prettier and ESLint integrations.
+
+For example, in VSCode, make sure to install and enable both the [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) and [ESLint](https://github.com/microsoft/vscode-eslint) extensions.
+
+> [!NOTE]
+> Make sure the extension or integration you use inside your IDE adds `--flag v10_config_lookup_from_file`
+> so `eslint` can be run from anywhere (including if it should lint a file in `ui/`).
+>
+> For example, in VSCode, add this snippet in your `settings.json`:
+>
+> ```jsonc
+> {
+>   // ...
+>   "eslint.options": { "flags": ["v10_config_lookup_from_file"] }
+> }
+> ```
+
 ## Commands
 
 ### `npm start`
