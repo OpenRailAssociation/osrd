@@ -199,8 +199,11 @@ describe('formatTimetableItemPayload', () => {
         ...rawOsrdconf,
         ...userChanges,
       };
-      const result = formatPacedTrainPayload(osrdconfWithUserChanges, rollingStockName);
-      expect(result).toEqual({
+      const { newTrainSchedulePayload } = formatPacedTrainPayload(
+        osrdconfWithUserChanges,
+        rollingStockName
+      );
+      expect(newTrainSchedulePayload).toEqual({
         category: {
           main_category: 'FREIGHT_TRAIN',
         },
@@ -295,12 +298,12 @@ describe('formatTimetableItemPayload', () => {
             },
           },
         };
-        const result = formatPacedTrainPayload(
+        const { newTrainSchedulePayload } = formatPacedTrainPayload(
           osrdconfWithUserChanges,
           rollingStockName,
           itemDataWithPREVIOUSLYAddedException
         );
-        expect(result).toEqual({
+        expect(newTrainSchedulePayload).toEqual({
           category: {
             main_category: 'FREIGHT_TRAIN',
           },
