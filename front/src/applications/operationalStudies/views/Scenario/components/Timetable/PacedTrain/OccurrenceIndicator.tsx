@@ -42,9 +42,11 @@ const OccurrenceIndicator = ({ occurrence, subCategories }: OccurrenceIndicatorP
 
   const categoryValue = occurrence.category;
 
+  const exceptionChangeGroups = occurrence.exception?.exceptionChangeGroups;
+
   const displayedChangeGroups =
-    occurrence.exceptionChangeGroups &&
-    Object.entries(occurrence.exceptionChangeGroups)
+    exceptionChangeGroups &&
+    Object.entries(exceptionChangeGroups)
       .filter(([_, isPresent]) => isPresent !== null)
       .map(([changeGroup]) => changeGroup as keyof ExceptionChangeGroups)
       .map((changeGroup) => {
@@ -95,7 +97,7 @@ const OccurrenceIndicator = ({ occurrence, subCategories }: OccurrenceIndicatorP
         setIsHovering(false);
       }}
     >
-      {isHovering && (occurrence.disabled || !isEmpty(occurrence.exceptionChangeGroups)) && (
+      {isHovering && (occurrence.disabled || !isEmpty(exceptionChangeGroups)) && (
         <OSRDTooltip
           containerRef={dotRef}
           header={tooltipHeader()}
@@ -105,7 +107,7 @@ const OccurrenceIndicator = ({ occurrence, subCategories }: OccurrenceIndicatorP
       )}
       <span
         className={cx('icon', getTrainCategoryClassName(occurrence.category, 'bg'), {
-          exception: !isEmpty(occurrence.exceptionChangeGroups),
+          exception: !isEmpty(exceptionChangeGroups),
           disabled: occurrence.disabled,
         })}
         style={{

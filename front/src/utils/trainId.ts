@@ -31,7 +31,8 @@ export const isTrainId = (id: string): id is TrainId => isOccurrenceId(id) || is
  * - An added exception that has been modified is still considered as an added exception.
  */
 export const getExceptionType = (occurrence: Occurrence): 'added' | 'modified' | null => {
-  const { id, exceptionChangeGroups } = occurrence;
+  const { id, exception } = occurrence;
+  const exceptionChangeGroups = exception && exception.exceptionChangeGroups;
   if (isAddedExceptionId(id)) {
     return 'added';
   }
@@ -46,14 +47,18 @@ export const isException = (occurrence: Occurrence) => !!getExceptionType(occurr
 /**
  * Checks if an exception is related to the path or simulation.
  */
-export const isExceptionFromPathOrSimulation = ({ exceptionChangeGroups }: Occurrence) =>
-  exceptionChangeGroups &&
-  (exceptionChangeGroups.path_and_schedule ||
-    exceptionChangeGroups.options ||
-    exceptionChangeGroups.constraint_distribution ||
-    exceptionChangeGroups.speed_limit_tag ||
-    exceptionChangeGroups.initial_speed ||
-    exceptionChangeGroups.rolling_stock);
+export const isExceptionFromPathOrSimulation = ({ exception }: Occurrence) => {
+  const exceptionChangeGroups = exception?.exceptionChangeGroups;
+  return (
+    exceptionChangeGroups &&
+    (exceptionChangeGroups.path_and_schedule ||
+      exceptionChangeGroups.options ||
+      exceptionChangeGroups.constraint_distribution ||
+      exceptionChangeGroups.speed_limit_tag ||
+      exceptionChangeGroups.initial_speed ||
+      exceptionChangeGroups.rolling_stock)
+  );
+};
 
 /**
  * Given a train id in the Editoast format (used for api),
