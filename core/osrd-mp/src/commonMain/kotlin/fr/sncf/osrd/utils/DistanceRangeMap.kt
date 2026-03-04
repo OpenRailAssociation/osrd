@@ -14,6 +14,20 @@ import fr.sncf.osrd.utils.units.Distance
  *
  * `DistanceRangeMap` should be used when memory footprint is a concern (in particular to store
  * infra data), and only when precise interval semantics aren't necessary.
+ *
+ * # Note to implementors
+ *
+ * [DistanceRangeMap.iterator] must return entries in ascending order.
+ *
+ * Like [List] implementations, [DistanceRangeMap] implementations must override [Any.toString],
+ * [Any.equals] and [Any.hashCode] functions and provide implementations such that:
+ * - [DistanceRangeMap.toString] should return a string containing string representation of the
+ *   range entries in ascending order.
+ * - [DistanceRangeMap.equals] should consider two maps equal if and only if they contain the same
+ *   entries.
+ * - [DistanceRangeMap.hashCode] should be computed as a combination of the entries' hash codes
+ *   using the following algorithm: ```kotlin var hashCode: Int = 1 for (entry in
+ *   this.sortedAscending()) hashCode = hashCode * 31 + entry.hashCode() ```
  */
 interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
 

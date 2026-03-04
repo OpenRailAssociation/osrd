@@ -4,7 +4,7 @@ import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.MutableDistanceArrayList
 import kotlin.math.min
 
-data class MutableDistanceRangeMap<T>(
+class MutableDistanceRangeMap<T>(
     private val bounds: MutableDistanceArrayList,
     private val values: MutableList<T?>,
 ) : DistanceRangeMap<T> {
@@ -177,13 +177,12 @@ data class MutableDistanceRangeMap<T>(
     }
 
     override fun subMap(lower: Distance, upper: Distance, shift: Distance): DistanceRangeMap<T> {
-        require(lower < upper)
-        val res = this.toMutableDistanceRangeMap()
-        res.truncate(lower, upper)
-        if (shift != Distance.ZERO) {
-            for (i in 0 until res.bounds.size) res.bounds[i] = res.bounds[i] + shift
-        }
-        return res
+        return DistanceRangeSubMap(
+            fullMap = this,
+            lower = lower + shift,
+            upper = upper + shift,
+            shift = shift,
+        )
     }
 
     override fun isEmpty(): Boolean {
@@ -196,7 +195,8 @@ data class MutableDistanceRangeMap<T>(
      */
     fun <U> updateMapIntersection(update: DistanceRangeMap<U>, updateFunction: (T, U) -> T) {
         for ((updateLower, updateUpper, updateValue) in update) {
-            for ((subMapLower, subMapUpper, subMapValue) in this.subMap(updateLower, updateUpper)) {
+            val subMap = this.subMap(updateLower, updateUpper).toMutableDistanceRangeMap()
+            for ((subMapLower, subMapUpper, subMapValue) in subMap) {
                 this.put(subMapLower, subMapUpper, updateFunction(subMapValue, updateValue))
             }
         }
@@ -426,6 +426,15 @@ data class MutableDistanceRangeMap<T>(
 
         override fun hasNext(): Boolean = cursor + 1 < rangeMap.values.size
     }
+
+    override fun equals(other: Any?): Boolean =
+        other is DistanceRangeMap<*> &&
+            this.asSequence().zip(other.asSequence()).all { (t, o) -> t == o }
+
+    override fun hashCode(): Int = fold(1) { hashCode, entry -> hashCode * 31 + entry.hashCode() }
+
+    override fun toString(): String =
+        joinToString(prefix = "{", postfix = "}") { "[${it.lower},${it.upper}]=${it.value}" }
 
     // This declaration is needed for the extension methods in kt-osrd-utils
     companion object

@@ -323,4 +323,119 @@ class TestDistanceRangeMap {
         map.clear()
         assertNull(map.get(5.0.meters))
     }
+
+    @Test
+    fun subMapShiftSingleEntry() {
+        val map = MutableDistanceRangeMap<String>()
+        map.put(0.meters, 10.meters, "A")
+        map.put(10.meters, 20.meters, "B")
+        map.put(20.meters, 30.meters, "C")
+
+        val subMap = map.subMap(lower = 10.meters, upper = 20.meters, shift = (-10).meters)
+
+        assertNull(subMap.get((-1).meters))
+        assertEquals("B", subMap.get(0.meters))
+        assertEquals("B", subMap.get(5.meters))
+        assertNull(subMap.get(10.meters))
+
+        assertEquals(0.meters, subMap.lowerBound())
+        assertEquals(10.meters, subMap.upperBound())
+
+        assertFalse(subMap.isEmpty())
+
+        assertEquals(
+            listOf(
+                DistanceRangeMap.RangeMapEntry(lower = 0.meters, upper = 10.meters, value = "B")
+            ),
+            subMap.toList(),
+        )
+    }
+
+    @Test
+    fun subMapShiftDoubleEntries() {
+        val map = MutableDistanceRangeMap<String>()
+        map.put(0.meters, 10.meters, "A")
+        map.put(10.meters, 20.meters, "B")
+        map.put(20.meters, 30.meters, "C")
+
+        val subMap = map.subMap(lower = 5.meters, upper = 15.meters, shift = (-5).meters)
+
+        assertNull(subMap.get((-1).meters))
+        assertEquals("A", subMap.get(0.meters))
+        assertEquals("A", subMap.get(2.meters))
+        assertEquals("B", subMap.get(5.meters))
+        assertEquals("B", subMap.get(7.meters))
+        assertNull(subMap.get(10.meters))
+
+        assertEquals(0.meters, subMap.lowerBound())
+        assertEquals(10.meters, subMap.upperBound())
+
+        assertFalse(subMap.isEmpty())
+
+        assertEquals(
+            listOf(
+                DistanceRangeMap.RangeMapEntry(lower = 0.meters, upper = 5.meters, value = "A"),
+                DistanceRangeMap.RangeMapEntry(lower = 5.meters, upper = 10.meters, value = "B"),
+            ),
+            subMap.toList(),
+        )
+    }
+
+    @Test
+    fun subMapOfSubMap() {
+        val map = MutableDistanceRangeMap<String>()
+        map.put(0.meters, 10.meters, "A")
+        map.put(10.meters, 20.meters, "B")
+        map.put(20.meters, 30.meters, "C")
+
+        val subMap = map.subMap(lower = 5.meters, upper = 25.meters, shift = (-5).meters)
+
+        assertNull(subMap.get((-1).meters))
+        assertEquals("A", subMap.get(0.meters))
+        assertEquals("A", subMap.get(2.meters))
+        assertEquals("B", subMap.get(5.meters))
+        assertEquals("B", subMap.get(7.meters))
+        assertEquals("B", subMap.get(10.meters))
+        assertEquals("B", subMap.get(12.meters))
+        assertEquals("C", subMap.get(15.meters))
+        assertEquals("C", subMap.get(17.meters))
+        assertNull(subMap.get(20.meters))
+
+        assertEquals(0.meters, subMap.lowerBound())
+        assertEquals(20.meters, subMap.upperBound())
+
+        assertFalse(subMap.isEmpty())
+
+        assertEquals(
+            listOf(
+                DistanceRangeMap.RangeMapEntry(lower = 0.meters, upper = 5.meters, value = "A"),
+                DistanceRangeMap.RangeMapEntry(lower = 5.meters, upper = 15.meters, value = "B"),
+                DistanceRangeMap.RangeMapEntry(lower = 15.meters, upper = 20.meters, value = "C"),
+            ),
+            subMap.toList(),
+        )
+
+        val subSubMap = subMap.subMap(lower = 12.meters, upper = 22.meters, shift = 100.meters)
+
+        assertNull(subSubMap.get(100.meters))
+        assertNull(subSubMap.get(110.meters))
+        assertNull(subSubMap.get(111.meters))
+        assertEquals("B", subSubMap.get(112.meters))
+        assertEquals("C", subSubMap.get(115.meters))
+        assertEquals("C", subSubMap.get(117.meters))
+        assertNull(subSubMap.get(120.meters))
+
+        assertEquals(112.meters, subSubMap.lowerBound())
+        assertEquals(120.meters, subSubMap.upperBound())
+
+        assertFalse(subSubMap.isEmpty())
+
+        assertEquals(
+            listOf(
+                DistanceRangeMap.RangeMapEntry(lower = 112.meters, upper = 115.meters, value = "B"),
+                DistanceRangeMap.RangeMapEntry(lower = 115.meters, upper = 120.meters, value = "C"),
+            ),
+            subSubMap.toList(),
+        )
+    }
 }
