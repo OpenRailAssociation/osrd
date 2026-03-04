@@ -4696,7 +4696,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TrainScheduleResponse'
+                $ref: '#/components/schemas/TrainScheduleWithoutExceptionsResponse'
   /version:
     get:
       responses:
@@ -14635,6 +14635,103 @@ components:
             type: integer
             format: int64
             minimum: 0
+    TrainScheduleWithoutExceptions:
+      allOf:
+      - type: object
+        required:
+        - train_name
+        - rolling_stock_name
+        - start_time
+        - path
+        - constraint_distribution
+        properties:
+          category:
+            oneOf:
+            - type: 'null'
+            - $ref: '#/components/schemas/TrainCategory'
+          comfort:
+            $ref: '#/components/schemas/Comfort'
+          constraint_distribution:
+            $ref: '#/components/schemas/Distribution'
+          initial_speed:
+            type: number
+            format: double
+          labels:
+            type: array
+            items:
+              type: string
+          margins:
+            $ref: '#/components/schemas/Margins'
+          options:
+            $ref: '#/components/schemas/TrainScheduleOptions'
+          path:
+            type: array
+            items:
+              $ref: '#/components/schemas/PathItem'
+          power_restrictions:
+            type: array
+            items:
+              type: object
+              required:
+              - from
+              - to
+              - value
+              properties:
+                from:
+                  type: string
+                  minLength: 1
+                to:
+                  type: string
+                  minLength: 1
+                value:
+                  type: string
+              additionalProperties: false
+          rolling_stock_name:
+            type: string
+          schedule:
+            type: array
+            items:
+              $ref: '#/components/schemas/ScheduleItem'
+          speed_limit_tag:
+            oneOf:
+            - type: 'null'
+            - type: string
+              minLength: 1
+          start_time:
+            type: string
+            format: date-time
+          train_name:
+            type: string
+      - type: object
+        properties:
+          paced:
+            oneOf:
+            - type: 'null'
+            - type: object
+              required:
+              - time_window
+              - interval
+              properties:
+                interval:
+                  $ref: '#/components/schemas/PositiveDuration'
+                  description: Time between two occurrences, an ISO 8601 format is expected
+                time_window:
+                  $ref: '#/components/schemas/PositiveDuration'
+                  description: Duration of the paced train, an ISO 8601 format is expected
+    TrainScheduleWithoutExceptionsResponse:
+      allOf:
+      - $ref: '#/components/schemas/TrainScheduleWithoutExceptions'
+      - type: object
+        required:
+        - id
+        - train_schedule_set_id
+        properties:
+          id:
+            type: integer
+            format: int64
+          train_schedule_set_id:
+            type: integer
+            format: int64
     Version:
       type: object
       required:

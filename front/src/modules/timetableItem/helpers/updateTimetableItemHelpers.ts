@@ -2,6 +2,7 @@ import {
   osrdEditoastApi,
   type TrainSchedule,
   type TrainScheduleResponse,
+  type TrainScheduleWithoutExceptions,
 } from 'common/api/osrdEditoastApi';
 import type { PacedTrainId, TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 import {
@@ -38,7 +39,7 @@ export async function fetchTimetableItem(
 export async function createPacedTrains(
   dispatch: AppDispatch,
   trainScheduleSetId: number,
-  pacedTrains: TrainSchedule[]
+  pacedTrains: TrainScheduleWithoutExceptions[]
 ): Promise<TimetableItem[]> {
   if (!pacedTrains.length) return [];
   const newPacedTrains = await dispatch(

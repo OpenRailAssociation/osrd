@@ -13,8 +13,9 @@ import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'applications/ope
 import {
   osrdEditoastApi,
   type TrainSchedule,
-  type TrainScheduleResponse,
   type SubCategory,
+  type TrainScheduleWithoutExceptionsResponse,
+  type TrainScheduleWithoutExceptions,
 } from 'common/api/osrdEditoastApi';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
@@ -198,7 +199,7 @@ const PacedTrainItem = ({
 
     const editoastTrainId = extractEditoastIdFromPacedTrainId(pacedTrain.id);
 
-    let pacedTrainDetail: TrainScheduleResponse;
+    let pacedTrainDetail: TrainScheduleWithoutExceptionsResponse;
     try {
       const pacedTrainDetailPromise = getTrainScheduleById({
         id: editoastTrainId,
@@ -214,7 +215,7 @@ const PacedTrainItem = ({
       new Date(pacedTrainDetail.start_time),
       new Duration({ minutes: TIMETABLE_ITEM_DELTA })
     );
-    const newPacedTrain: TrainSchedule = {
+    const newPacedTrain: TrainScheduleWithoutExceptions = {
       ...omit(pacedTrainDetail, ['id', 'train_schedule_set_id']),
       start_time: startTime.toISOString(),
       train_name: pacedTrainName,

@@ -2633,7 +2633,7 @@ export type PostTrainScheduleSetsByIdTrainSchedulesApiArg = {
   body: TrainSchedule[];
 };
 export type GetTrainSchedulesByIdApiResponse =
-  /** status 200 The requested train schedule */ TrainScheduleResponse;
+  /** status 200 The requested train schedule */ TrainScheduleWithoutExceptionsResponse;
 export type GetTrainSchedulesByIdApiArg = {
   id: number;
 };
@@ -5010,6 +5010,37 @@ export type TrainScheduleSetForm = {
   description: string;
   name?: string | null;
   published: boolean;
+};
+export type TrainScheduleWithoutExceptions = {
+  category?: null | TrainCategory;
+  comfort?: Comfort;
+  constraint_distribution: Distribution;
+  initial_speed?: number;
+  labels?: string[];
+  margins?: Margins;
+  options?: TrainScheduleOptions;
+  path: PathItem[];
+  power_restrictions?: {
+    from: string;
+    to: string;
+    value: string;
+  }[];
+  rolling_stock_name: string;
+  schedule?: ScheduleItem[];
+  speed_limit_tag?: null | string;
+  start_time: string;
+  train_name: string;
+} & {
+  paced?: null | {
+    /** Time between two occurrences, an ISO 8601 format is expected */
+    interval: PositiveDuration;
+    /** Duration of the paced train, an ISO 8601 format is expected */
+    time_window: PositiveDuration;
+  };
+};
+export type TrainScheduleWithoutExceptionsResponse = TrainScheduleWithoutExceptions & {
+  id: number;
+  train_schedule_set_id: number;
 };
 export type Version = {
   git_describe: string | null;

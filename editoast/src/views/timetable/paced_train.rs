@@ -21,6 +21,7 @@ use itertools::Itertools;
 use itertools::izip;
 use reqwest::StatusCode;
 use schemas::paced_train::TrainSchedule;
+use schemas::paced_train::TrainScheduleWithoutExceptions;
 use schemas::primitives::TimeWindow;
 use schemas::train_schedule::OperationalPointPartReference;
 use schemas::train_schedule::OperationalPointReference;
@@ -111,6 +112,14 @@ pub(in crate::views) struct TrainScheduleResponse {
     pub train_schedule: TrainSchedule,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub(in crate::views) struct TrainScheduleWithoutExceptionsResponse {
+    id: i64,
+    train_schedule_set_id: i64,
+    #[serde(flatten)]
+    train_schedule: TrainScheduleWithoutExceptions,
+}
+
 impl From<models::TrainSchedule> for TrainScheduleResponse {
     fn from(value: models::TrainSchedule) -> Self {
         Self {
@@ -133,7 +142,7 @@ pub(in crate::views) struct TrainScheduleIdParam {
     tags = ["timetable", "paced_train"],
     params(TrainScheduleIdParam),
     responses(
-        (status = 200, body = TrainScheduleResponse, description = "The requested train schedule")
+        (status = 200, body = TrainScheduleWithoutExceptionsResponse, description = "The requested train schedule")
     )
 )]
 pub(in crate::views) async fn get_by_id(
@@ -161,7 +170,15 @@ pub(in crate::views) async fn get_by_id(
         })
         .await?;
 
-    let train_schedule: TrainScheduleResponse = train_schedule.into();
+    let train_schedule_set_id = train_schedule.train_schedule_set_id;
+    let train_schedule_id = train_schedule.id;
+    let train_schedule: schemas::paced_train::TrainSchedule = train_schedule.into();
+
+    let train_schedule = TrainScheduleWithoutExceptionsResponse {
+        id: train_schedule_id,
+        train_schedule_set_id,
+        train_schedule: train_schedule.into(),
+    };
 
     Ok(Json(train_schedule))
 }

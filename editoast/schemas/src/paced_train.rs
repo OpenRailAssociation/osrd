@@ -36,6 +36,21 @@ pub struct Paced {
     #[schema(required)]
     pub exceptions: Vec<PacedTrainException>,
 }
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+pub struct PacedWithoutExceptions {
+    /// Duration of the paced train, an ISO 8601 format is expected
+    pub time_window: PositiveDuration,
+    /// Time between two occurrences, an ISO 8601 format is expected
+    pub interval: PositiveDuration,
+}
+impl From<Paced> for PacedWithoutExceptions {
+    fn from(paced: Paced) -> Self {
+        Self {
+            time_window: paced.time_window,
+            interval: paced.interval,
+        }
+    }
+}
 
 #[derive(Debug, Clone, Serialize, PartialEq, ToSchema)]
 pub struct TrainSchedule {
@@ -44,6 +59,23 @@ pub struct TrainSchedule {
     pub train_occurrence: TrainOccurrence,
     #[schema(inline)]
     pub paced: Option<Paced>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
+pub struct TrainScheduleWithoutExceptions {
+    #[serde(flatten)]
+    #[schema(inline)]
+    pub train_occurrence: TrainOccurrence,
+    #[schema(inline)]
+    pub paced: Option<PacedWithoutExceptions>,
+}
+impl From<TrainSchedule> for TrainScheduleWithoutExceptions {
+    fn from(train_schedule: TrainSchedule) -> Self {
+        Self {
+            train_occurrence: train_schedule.train_occurrence,
+            paced: train_schedule.paced.map(|p| p.into()),
+        }
+    }
 }
 
 impl<'de> Deserialize<'de> for TrainSchedule {
