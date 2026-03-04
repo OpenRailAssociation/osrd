@@ -10,7 +10,7 @@ test suite** for the OSRD front-end.
 You can run the E2E tests in **two ways**:
 
 - **Locally (against a Dockerized OSRD stack)**
-- **Inside OSRD’s Playwright container**
+- **Inside OSRD's Playwright container**
 
 ---
 
@@ -33,8 +33,7 @@ In this mode, Playwright runs on your host machine while OSRD services run in Do
 ./osrd-compose default up -d --build
 ```
 
-> [!NOTE]
-> The front is significantly slower using `dev-front` mode, and it can lead to timeout during e2e-tests.
+ℹ️ The front is significantly slower using `dev-front` mode, and it can lead to timeout during e2e-tests.
 
 ## Install specific e2e-tests dependencies
 
@@ -90,9 +89,11 @@ This script accepts all Playwright CLI flags:
 If you switch between `default`, `playwright`, or other compose configurations, it is recommended to
 clean up first:
 
-`````bash
+```bash
 ./osrd-compose down --remove-orphans
+```
 
+---
 
 # 🧪 2. Folder Structure & Test Organization
 
@@ -166,7 +167,6 @@ clean up first:
 - Page Object = behavior + locators
 - Test = data + expectations
 
-
 ---
 
 # 🏷️ 3. Using the `@smoke` Tag
@@ -179,17 +179,17 @@ The `@smoke` tag should be used for:
 
 ### Example
 
-````ts
+```ts
 test('@smoke create a new study', async ({ page }) => {
   ...
 });
-
+```
 
 ### Run only smoke tests
 
 ```bash
 npx playwright test -g "@smoke"
-`````
+```
 
 ---
 
@@ -276,7 +276,6 @@ Update snapshots:
 If visual comparison tests fail due to UI changes, new snapshots must be generated as the new baseline.
 
 You can automatically update snapshots by running:
- 
 
 ```bash
 npx playwright test --update-snapshots
@@ -311,7 +310,7 @@ npx playwright test --project=chromium --retries=1 --workers=2
  `npx playwright test` with `./scripts/run-front-playwright-container.sh`.
 
 You may also want to explore [Playwright documentation](https://playwright.dev/docs/intro) for more
-insights. 
+insights.
 
 ---
 
@@ -330,6 +329,7 @@ They are available under:
 Open traces via: https://trace.playwright.dev/
 
 In the CI those files are available as artifacts. You can view them in the Github summary.
+
 ---
 
 # ⚙️ 7. Playwright Configuration Summary
@@ -365,18 +365,20 @@ All Page Objects **must be accessed through Playwright fixtures** (defined in
 
 ```ts
 test('test example', async ({ homePage }) => {
-    await homePage.goToOperationalStudiesPage();
-    await expect(homePage.page).toHaveURL(/.*\/operational-studies/);
-  });
-
+  await homePage.goToOperationalStudiesPage();
+  await expect(homePage.page).toHaveURL(/.*\/operational-studies/);
+});
+```
 
 ❌ Avoid:
 
+```ts
 test('test example', async ({ page }) => {
- const homePage = new HomePage(page);
-   await homePage.goToOperationalStudiesPage();
-      await expect(homePage.page).toHaveURL(/.*\/operational-studies/);
+  const homePage = new HomePage(page);
+  await homePage.goToOperationalStudiesPage();
+  await expect(homePage.page).toHaveURL(/.*\/operational-studies/);
 });
+```
 
 Guidelines:
 
@@ -385,6 +387,7 @@ Guidelines:
 - Keep business logic **out** of tests → put it in POMs
 - Keep POMs clean, typed, readable
 - Each page has its own folder and class
+
 ---
 
 # 📦 9. Test Data & Assets
@@ -407,7 +410,7 @@ Includes:
 
 ---
 
-### ✔ Do
+### ✅ Do
 
 - **Use meaningful `test.describe()` tags**
   Helps filtering by domain: `@op`, `@timetable`, `@stdcm`, `@nge`, etc.
@@ -442,4 +445,3 @@ Includes:
 - Business logic inside test files
   Anything repeated twice → move into a POM or utils.
 - Adding logs (`console.log`) in the test environment
-```
