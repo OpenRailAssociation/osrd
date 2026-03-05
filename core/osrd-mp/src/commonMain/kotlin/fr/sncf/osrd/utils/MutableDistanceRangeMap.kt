@@ -163,11 +163,6 @@ data class MutableDistanceRangeMap<T>(
         }
     }
 
-    override fun shiftPositions(offset: Distance): DistanceRangeMap<T> {
-        for (i in 0 until bounds.size) bounds[i] = bounds[i] + offset
-        return this
-    }
-
     override fun get(offset: Distance): T? {
         // TODO: use a binary search
         for (entry in this.reversed()) {
@@ -180,10 +175,13 @@ data class MutableDistanceRangeMap<T>(
         return MutableDistanceRangeMap(bounds.clone(), values.toMutableList())
     }
 
-    override fun subMap(lower: Distance, upper: Distance): DistanceRangeMap<T> {
+    override fun subMap(lower: Distance, upper: Distance, shift: Distance): DistanceRangeMap<T> {
         require(lower < upper)
         val res = this.toMutableDistanceRangeMap()
         res.truncate(lower, upper)
+        if (shift != Distance.ZERO) {
+            for (i in 0 until res.bounds.size) res.bounds[i] = res.bounds[i] + shift
+        }
         return res
     }
 

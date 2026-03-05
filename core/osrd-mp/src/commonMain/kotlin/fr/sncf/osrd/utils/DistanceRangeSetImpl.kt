@@ -31,10 +31,6 @@ class DistanceRangeSetImpl : DistanceRangeSet {
         map.truncate(beginOffset, endOffset)
     }
 
-    override fun shiftPositions(offset: Distance) {
-        map.shiftPositions(offset)
-    }
-
     override fun contains(offset: Distance): Boolean {
         return map.get(offset) ?: false
     }

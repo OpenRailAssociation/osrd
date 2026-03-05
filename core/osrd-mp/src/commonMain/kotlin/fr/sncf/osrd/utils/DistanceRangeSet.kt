@@ -25,9 +25,6 @@ interface DistanceRangeSet : Iterable<DistanceRangeSet.RangeSetEntry> {
     /** Removes all values outside the given range */
     fun truncate(beginOffset: Distance, endOffset: Distance)
 
-    /** Shifts the positions by adding the given value */
-    fun shiftPositions(offset: Distance)
-
     /**
      * Returns true if the value is contained in the set. On range transition, returns the value to
      * the right.

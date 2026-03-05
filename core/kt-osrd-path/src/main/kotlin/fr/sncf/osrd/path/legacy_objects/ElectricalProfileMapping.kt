@@ -72,10 +72,10 @@ class ElectricalProfileMapping {
             val trackProfiles = mapping[trackName]!!
             profilesOnChunk =
                 trackProfiles.subMap(
-                    chunkOffset.distance,
-                    chunkOffset.distance + infra.getTrackChunkLength(chunk).distance,
+                    lower = chunkOffset.distance,
+                    upper = chunkOffset.distance + infra.getTrackChunkLength(chunk).distance,
+                    shift = -chunkOffset.distance,
                 )
-            profilesOnChunk.shiftPositions(-chunkOffset.distance)
         }
         return profilesOnChunk
     }

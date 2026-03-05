@@ -194,21 +194,6 @@ class TestDistanceRangeMap {
     }
 
     @Test
-    fun testShift() {
-        val rangeMap = distanceRangeMapOf<Int>()
-        rangeMap.put(Distance(0), Distance(100), 41)
-        rangeMap.put(Distance(200), Distance(300), 42)
-        rangeMap.shiftPositions(Distance(-100))
-        assertEquals(
-            listOf(
-                DistanceRangeMap.RangeMapEntry(Distance(-100), Distance(0), 41),
-                DistanceRangeMap.RangeMapEntry(Distance(100), Distance(200), 42),
-            ),
-            rangeMap.toList(),
-        )
-    }
-
-    @Test
     fun testPutManyOnNonEmpty() {
         val rangeMap = distanceRangeMapOf<Int>()
         rangeMap.put(Distance(100), Distance(1000), 42)

@@ -43,12 +43,6 @@ interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
     fun truncate(beginOffset: Distance, endOffset: Distance)
 
     /**
-     * Shifts the positions by adding the given value. Map is changed inplace, but still returned
-     * for call chains.
-     */
-    fun shiftPositions(offset: Distance): DistanceRangeMap<T>
-
-    /**
      * Get the value at the given offset, if there is any. On exact transition offsets, the value
      * for the higher offset is used.
      */
@@ -57,8 +51,16 @@ interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
     /** Returns a deep copy of the map as a [MutableDistanceRangeMap] */
     fun toMutableDistanceRangeMap(): MutableDistanceRangeMap<T>
 
-    /** Returns a new DistanceRangeMap of the ranges between lower and upper */
-    fun subMap(lower: Distance, upper: Distance): DistanceRangeMap<T>
+    /**
+     * Returns a new [DistanceRangeMap] of the ranges between [lower] and [upper].
+     *
+     * Optionally, it shifts the ranges of the resulting map by [shift].
+     */
+    fun subMap(
+        lower: Distance,
+        upper: Distance,
+        shift: Distance = Distance.ZERO,
+    ): DistanceRangeMap<T>
 
     /**
      * Updates the map with another one, using a merge function to fuse the values of intersecting
