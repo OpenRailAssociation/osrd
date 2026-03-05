@@ -1,18 +1,21 @@
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, Fragment, useMemo, useRef } from 'react';
 
 import { Checkbox } from '@osrd-project/ui-core';
+import { Moon } from '@osrd-project/ui-icons';
 import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
   useReactTable,
+  type Row,
   type RowData,
 } from '@tanstack/react-table';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import type { ReceptionSignal } from 'common/api/osrdEditoastApi';
-import { formatLocalTime } from 'utils/date';
+import { formatLocalTime, useDateTimeLocale } from 'utils/date';
+import { calculateTimeDifferenceInDays } from 'utils/timeManipulation';
 
 import DurationCell, { type DurationCellHandle } from './DurationCell';
 import { onStopSignalToReceptionSignal } from './helpers/utils';
@@ -103,6 +106,7 @@ const TimesStopsTable = ({
   onReceptionSignalChange,
 }: TimesStopsTableProps) => {
   const { t } = useTranslation('translation', { keyPrefix: 'timeStopTable' });
+  const dateTimeLocale = useDateTimeLocale();
   const scheduleNotHonored = rows.some((row) => row.stepStatus === 'scheduleNotHonored');
   const cellHandlesRef = useRef<Map<string, TabbableCellHandle>>(new Map());
   const cellTabOrderRef = useRef<Map<string, TimeCellTabEntry>>(new Map());
@@ -447,6 +451,12 @@ const TimesStopsTable = ({
     ])
   );
 
+  const getRowDayOffset = (row: Row<TimesStopsRowNew>) =>
+    calculateTimeDifferenceInDays(
+      startTime,
+      row.original.computedArrival ?? row.original.requestedArrival ?? undefined
+    ) ?? 0;
+
   if (rows.length === 0) {
     return (
       <div className="d-flex justify-content-center align-items-center h-100">
@@ -482,20 +492,44 @@ const TimesStopsTable = ({
             invalid: !isValid || scheduleNotHonored,
           })}
         >
-          {table.getRowModel().rows.map((row) => (
-            <tr
-              key={row.id}
-              className={cx({
-                'invalid-path-step': row.original.stepStatus === 'invalidPathStep',
-              })}
-            >
-              {row.getVisibleCells().map((cell) => (
-                <td key={cell.id} className={cell.column.columnDef.meta?.className}>
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </td>
-              ))}
-            </tr>
-          ))}
+          {table.getRowModel().rows.map((row, rowIndex) => {
+            const prevRow = rowIndex > 0 ? table.getRowModel().rows[rowIndex - 1] : null;
+            const rowArrivalDate = row.original.computedArrival ?? row.original.requestedArrival;
+            const dayOffset = getRowDayOffset(row);
+            const prevDayOffset = prevRow ? getRowDayOffset(prevRow) : 0;
+
+            return (
+              <Fragment key={row.id}>
+                {dayOffset > prevDayOffset && (
+                  <tr className="day-change-banner">
+                    <td colSpan={row.getVisibleCells().length}>
+                      <div className="day-change-banner-content">
+                        <Moon />
+                        <span>
+                          {rowArrivalDate?.toLocaleDateString(dateTimeLocale, {
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric',
+                          })}
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+                <tr
+                  className={cx({
+                    'invalid-path-step': row.original.stepStatus === 'invalidPathStep',
+                  })}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <td key={cell.id} className={cell.column.columnDef.meta?.className}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </tr>
+              </Fragment>
+            );
+          })}
         </tbody>
       </table>
     </div>
