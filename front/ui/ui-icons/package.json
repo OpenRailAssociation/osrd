@@ -35,6 +35,6 @@
   },
   "devDependencies": {
     "cheerio": "^1.2.0",
-    "svgo": "4.0.0"
+    "svgo": "4.0.1"
   }
 }
