@@ -12,7 +12,7 @@ import fr.sncf.osrd.utils.units.Distance
 
 /** Builds the ElectrificationMap */
 fun buildElectrificationMap(path: TrainPath): DistanceRangeMap<Electrification> {
-    val res: DistanceRangeMap<Electrification> = MutableDistanceRangeMap()
+    val res = MutableDistanceRangeMap<Electrification>()
     res.put(Distance.ZERO, path.getLength().distance, NonElectrified())
     res.updateMapIntersection(path.getElectrification()) {
         _: Electrification?,

@@ -474,7 +474,7 @@ fun parseNeutralRanges(
 
 // Parse speed-sections
 fun mergeIntoSpeedSections(
-    initialSpeedSections: DirectionalMap<DistanceRangeMap<SpeedSection>>,
+    initialSpeedSections: DirectionalMap<MutableDistanceRangeMap<SpeedSection>>,
     direction: Direction,
     lower: Distance,
     upper: Distance,

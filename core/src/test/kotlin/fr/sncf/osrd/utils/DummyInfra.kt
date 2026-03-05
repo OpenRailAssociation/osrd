@@ -448,9 +448,9 @@ class DummyInfra : RawInfra, BlockInfra {
         trackChunk: DirTrackChunkId,
         trainTag: String?,
         route: String?,
-    ): DistanceRangeMap<SpeedLimitProperty> {
+    ): MutableDistanceRangeMap<SpeedLimitProperty> {
         val desc = blockPool[trackChunk.value.index]
-        return desc.allowedSpeed
+        return desc.allowedSpeed.toMutableDistanceRangeMap()
     }
 
     override fun getTrackChunkGeom(trackChunk: TrackChunkId): LineString {

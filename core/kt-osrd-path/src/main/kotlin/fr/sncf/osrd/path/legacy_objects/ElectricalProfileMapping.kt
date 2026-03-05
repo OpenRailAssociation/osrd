@@ -19,13 +19,13 @@ class ElectricalProfileMapping {
      * Internal representation: {"power class": {"track section": {"range": "electrical profile
      * value"}}}
      */
-    var mapping = HashMap<String, HashMap<String, DistanceRangeMap<String>>>()
+    var mapping = HashMap<String, HashMap<String, MutableDistanceRangeMap<String>>>()
 
     /** Parse the rjs profiles and store them in the internal mapping. */
     fun parseRJS(rjsProfileSet: RJSElectricalProfileSet) {
         assert(mapping.isEmpty())
         for (rjsProfile in rjsProfileSet.levels) {
-            val trackMapping: HashMap<String, DistanceRangeMap<String>> =
+            val trackMapping: HashMap<String, MutableDistanceRangeMap<String>> =
                 mapping.computeIfAbsent(rjsProfile.powerClass) { _: String? -> HashMap() }
             for (trackRange in rjsProfile.trackRanges) {
                 val rangeMapping =
@@ -62,21 +62,20 @@ class ElectricalProfileMapping {
     fun getProfilesOnChunk(
         infra: RawInfra,
         chunk: TrackChunkId,
-        mapping: HashMap<String, DistanceRangeMap<String>>,
+        mapping: HashMap<String, MutableDistanceRangeMap<String>>,
     ): DistanceRangeMap<String> {
         val chunkOffset = infra.getTrackChunkOffset(chunk)
         val trackId = infra.getTrackFromChunk(chunk)
         val trackName = infra.getTrackSectionName(trackId)
-        var profilesOnChunk = distanceRangeMapOf<String>()
-        if (mapping.containsKey(trackName)) {
+        return if (mapping.containsKey(trackName)) {
             val trackProfiles = mapping[trackName]!!
-            profilesOnChunk =
-                trackProfiles.subMap(
-                    lower = chunkOffset.distance,
-                    upper = chunkOffset.distance + infra.getTrackChunkLength(chunk).distance,
-                    shift = -chunkOffset.distance,
-                )
+            trackProfiles.subMap(
+                lower = chunkOffset.distance,
+                upper = chunkOffset.distance + infra.getTrackChunkLength(chunk).distance,
+                shift = -chunkOffset.distance,
+            )
+        } else {
+            distanceRangeMapOf()
         }
-        return profilesOnChunk
     }
 }

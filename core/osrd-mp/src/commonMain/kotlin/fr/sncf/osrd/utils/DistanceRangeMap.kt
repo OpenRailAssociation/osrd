@@ -20,12 +20,6 @@ interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
     /** When iterating over the values of the map, this represents one range of constant value */
     data class RangeMapEntry<T>(val lower: Distance, val upper: Distance, val value: T)
 
-    /** Sets the value between the lower and upper distances */
-    fun put(lower: Distance, upper: Distance, value: T)
-
-    /** Sets many values more efficiently than many calls to `put` */
-    fun putMany(entries: Iterable<RangeMapEntry<T>>)
-
     /** Returns a list of the entries in the map */
     @Deprecated(
         message =
@@ -38,9 +32,6 @@ interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
 
     /** Upper bound of the entry with the highest distance */
     fun upperBound(): Distance
-
-    /** Removes all values outside the given range */
-    fun truncate(beginOffset: Distance, endOffset: Distance)
 
     /**
      * Get the value at the given offset, if there is any. On exact transition offsets, the value
@@ -62,42 +53,25 @@ interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
         shift: Distance = Distance.ZERO,
     ): DistanceRangeMap<T>
 
-    /**
-     * Updates the map with another one, using a merge function to fuse the values of intersecting
-     * ranges. Doesn't keep any range from update where there is no intersection.
-     */
-    fun <U> updateMapIntersection(update: DistanceRangeMap<U>, updateFunction: (T, U) -> T)
-
-    /**
-     * Updates the map with another one, using a merge function to fuse the values of intersecting
-     * ranges. Calls default on the values of the ranges from update where there is no intersection.
-     */
-    fun updateMap(
-        update: DistanceRangeMap<T>,
-        updateFunction: (T, T) -> T,
-        default: (T) -> T = { it },
-    )
-
     /** Returns true if there is no entry at all */
     fun isEmpty(): Boolean
-
-    /** Clear the map */
-    fun clear()
 }
 
-fun <T> distanceRangeMapOf(vararg entries: DistanceRangeMap.RangeMapEntry<T>): DistanceRangeMap<T> {
+fun <T> distanceRangeMapOf(
+    vararg entries: DistanceRangeMap.RangeMapEntry<T>
+): MutableDistanceRangeMap<T> {
     return MutableDistanceRangeMap(entries.asList())
 }
 
 fun <T> distanceRangeMapOf(
     entries: Sequence<DistanceRangeMap.RangeMapEntry<T>>
-): DistanceRangeMap<T> {
+): MutableDistanceRangeMap<T> {
     return MutableDistanceRangeMap(entries.asIterable())
 }
 
 fun <T> distanceRangeMapOf(
     entries: Iterable<DistanceRangeMap.RangeMapEntry<T>>
-): DistanceRangeMap<T> {
+): MutableDistanceRangeMap<T> {
     return MutableDistanceRangeMap(entries)
 }
 

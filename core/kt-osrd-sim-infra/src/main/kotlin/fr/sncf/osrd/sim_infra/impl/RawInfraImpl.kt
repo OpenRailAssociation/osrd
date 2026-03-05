@@ -7,6 +7,7 @@ import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DirectionalMap
 import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.MutableDistanceRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.*
@@ -101,9 +102,9 @@ class TrackChunkDescriptor(
     val routes: DirectionalMap<List<RouteId>>,
     var operationalPointParts: List<OperationalPointPartId>,
     val loadingGaugeConstraints: DistanceRangeMap<LoadingGaugeConstraint>,
-    val electrificationVoltage: DistanceRangeMap<Set<String>>,
-    val neutralSections: DirectionalMap<DistanceRangeMap<NeutralSection>>,
-    val speedSections: DirectionalMap<DistanceRangeMap<SpeedSection>>,
+    val electrificationVoltage: MutableDistanceRangeMap<Set<String>>,
+    val neutralSections: DirectionalMap<MutableDistanceRangeMap<NeutralSection>>,
+    val speedSections: DirectionalMap<MutableDistanceRangeMap<SpeedSection>>,
 )
 
 class ZoneDescriptor(val movableElements: StaticIdxSortedSet<TrackNode>, var name: String = "")
@@ -527,7 +528,7 @@ class RawInfraImpl(
         trackChunk: DirTrackChunkId,
         trainTag: String?,
         route: String?,
-    ): DistanceRangeMap<SpeedLimitProperty> {
+    ): MutableDistanceRangeMap<SpeedLimitProperty> {
         val res = distanceRangeMapOf<SpeedLimitProperty>()
 
         val trainSpeedLimitTagDescriptor = speedLimitTagPool[trainTag]

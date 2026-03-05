@@ -2,6 +2,7 @@ package fr.sncf.osrd.sim_infra.api
 
 import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.MutableDistanceRangeMap
 import fr.sncf.osrd.utils.SelfTypeHolder
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.units.Length
@@ -83,7 +84,7 @@ interface TrackProperties {
         trackChunk: DirTrackChunkId,
         trainTag: String?,
         route: String?,
-    ): DistanceRangeMap<SpeedLimitProperty>
+    ): MutableDistanceRangeMap<SpeedLimitProperty>
 
     fun getTrackChunkGeom(trackChunk: TrackChunkId): LineString
 

@@ -16,7 +16,7 @@ data class MutableDistanceRangeMap<T>(
     }
 
     /** Sets the value between the lower and upper distances */
-    override fun put(lower: Distance, upper: Distance, value: T) {
+    fun put(lower: Distance, upper: Distance, value: T) {
         putOptional(lower, upper, value)
     }
 
@@ -29,7 +29,7 @@ data class MutableDistanceRangeMap<T>(
      * Another idea would be to use a temporary (so we can free the memory later) tree-like
      * structure (RangeMaps lib).
      */
-    override fun putMany(entries: Iterable<DistanceRangeMap.RangeMapEntry<T>>) {
+    fun putMany(entries: Iterable<DistanceRangeMap.RangeMapEntry<T>>) {
         // Unfortunately, built-in groupBy doesn't consider the original order, here we want
         // consecutive values.
         fun <U, V> groupByConsecutiveFirst(pairs: List<Pair<U, V>>): List<Pair<U, List<V>>> {
@@ -154,7 +154,8 @@ data class MutableDistanceRangeMap<T>(
         return bounds[bounds.size - 1]
     }
 
-    override fun truncate(beginOffset: Distance, endOffset: Distance) {
+    /** Removes all values outside the given range */
+    fun truncate(beginOffset: Distance, endOffset: Distance) {
         if (bounds.isNotEmpty()) {
             putOptional(lowerBound(), beginOffset, null)
             if (bounds.isNotEmpty()) {
@@ -189,10 +190,11 @@ data class MutableDistanceRangeMap<T>(
         return bounds.isEmpty()
     }
 
-    override fun <U> updateMapIntersection(
-        update: DistanceRangeMap<U>,
-        updateFunction: (T, U) -> T,
-    ) {
+    /**
+     * Updates the map with another one, using a merge function to fuse the values of intersecting
+     * ranges. Doesn't keep any range from update where there is no intersection.
+     */
+    fun <U> updateMapIntersection(update: DistanceRangeMap<U>, updateFunction: (T, U) -> T) {
         for ((updateLower, updateUpper, updateValue) in update) {
             for ((subMapLower, subMapUpper, subMapValue) in this.subMap(updateLower, updateUpper)) {
                 this.put(subMapLower, subMapUpper, updateFunction(subMapValue, updateValue))
@@ -200,10 +202,14 @@ data class MutableDistanceRangeMap<T>(
         }
     }
 
-    override fun updateMap(
+    /**
+     * Updates the map with another one, using a merge function to fuse the values of intersecting
+     * ranges. Calls default on the values of the ranges from update where there is no intersection.
+     */
+    fun updateMap(
         update: DistanceRangeMap<T>,
         updateFunction: (T, T) -> T,
-        default: (T) -> T,
+        default: (T) -> T = { it },
     ) {
         val resultEntries = mutableListOf<DistanceRangeMap.RangeMapEntry<T>>()
 
@@ -293,7 +299,8 @@ data class MutableDistanceRangeMap<T>(
         this.putMany(resultEntries)
     }
 
-    override fun clear() {
+    /** Clear the map */
+    fun clear() {
         bounds.clear()
         values.clear()
     }
