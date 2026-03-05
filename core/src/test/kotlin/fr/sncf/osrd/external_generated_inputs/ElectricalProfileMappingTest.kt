@@ -9,11 +9,11 @@ import org.junit.jupiter.api.Test
 class ElectricalProfileMappingTest {
     @Test
     fun testRJSParsing() {
-        val powerClass1TrackTA0 = DistanceRangeMapImpl<String>()
+        val powerClass1TrackTA0 = MutableDistanceRangeMap<String>()
         powerClass1TrackTA0.put(0.meters, 1_600.meters, "A")
         powerClass1TrackTA0.put(1_600.meters, 1_800.meters, "B")
         powerClass1TrackTA0.put(1_800.meters, 2_000.meters, "A")
-        val powerClass1TrackTA1 = DistanceRangeMapImpl<String>()
+        val powerClass1TrackTA1 = MutableDistanceRangeMap<String>()
         powerClass1TrackTA1.put(0.meters, 1_950.meters, "B")
         val powerClass1Map =
             hashMapOf<String, DistanceRangeMap<String>>(
@@ -21,9 +21,9 @@ class ElectricalProfileMappingTest {
                 Pair("TA1", powerClass1TrackTA1),
             )
 
-        val powerClass2TrackTA0 = DistanceRangeMapImpl<String>()
+        val powerClass2TrackTA0 = MutableDistanceRangeMap<String>()
         powerClass2TrackTA0.put(0.meters, 2_000.meters, "C")
-        val powerClass2TrackTA1 = DistanceRangeMapImpl<String>()
+        val powerClass2TrackTA1 = MutableDistanceRangeMap<String>()
         powerClass2TrackTA1.put(0.meters, 1_950.meters, "D")
         val powerClass2Map =
             hashMapOf<String, DistanceRangeMap<String>>(
@@ -56,13 +56,13 @@ class ElectricalProfileMappingTest {
                 3_500.meters,
             )
 
-        val powerClass1Map = DistanceRangeMapImpl<String>()
+        val powerClass1Map = MutableDistanceRangeMap<String>()
         powerClass1Map.put(0.meters, 600.meters, "A")
         powerClass1Map.put(600.meters, 800.meters, "B")
         powerClass1Map.put(800.meters, 1_000.meters, "A")
         powerClass1Map.put(1_000.meters, 2_500.meters, "B")
 
-        val powerClass2Map = DistanceRangeMapImpl<String>()
+        val powerClass2Map = MutableDistanceRangeMap<String>()
         powerClass2Map.put(0.meters, 1_000.meters, "C")
         powerClass2Map.put(1_000.meters, 2_500.meters, "D")
         val expectedProfileMapping = hashMapOf(Pair("1", powerClass1Map), Pair("2", powerClass2Map))

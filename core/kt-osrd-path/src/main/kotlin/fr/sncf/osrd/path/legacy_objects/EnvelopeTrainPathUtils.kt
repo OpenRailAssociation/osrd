@@ -7,12 +7,12 @@ import fr.sncf.osrd.path.legacy_objects.electrification.Neutral
 import fr.sncf.osrd.path.legacy_objects.electrification.NonElectrified
 import fr.sncf.osrd.sim_infra.api.NeutralSection
 import fr.sncf.osrd.utils.DistanceRangeMap
-import fr.sncf.osrd.utils.DistanceRangeMapImpl
+import fr.sncf.osrd.utils.MutableDistanceRangeMap
 import fr.sncf.osrd.utils.units.Distance
 
 /** Builds the ElectrificationMap */
 fun buildElectrificationMap(path: TrainPath): DistanceRangeMap<Electrification> {
-    val res: DistanceRangeMap<Electrification> = DistanceRangeMapImpl()
+    val res: DistanceRangeMap<Electrification> = MutableDistanceRangeMap()
     res.put(Distance.ZERO, path.getLength().distance, NonElectrified())
     res.updateMapIntersection(path.getElectrification()) {
         _: Electrification?,

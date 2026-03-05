@@ -20,7 +20,9 @@ fun <T : Any> DistanceRangeMap<T>.toRangeMap(): RangeMap<Double, T> {
     return res.build()
 }
 
-fun <T : Any> DistanceRangeMapImpl.Companion.from(map: RangeMap<Distance, T>): DistanceRangeMap<T> {
+fun <T : Any> MutableDistanceRangeMap.Companion.from(
+    map: RangeMap<Distance, T>
+): DistanceRangeMap<T> {
     val res = distanceRangeMapOf<T>()
     for (entry in map.asMapOfRanges().entries) res.put(
         entry.key.lowerEndpoint(),
@@ -30,7 +32,7 @@ fun <T : Any> DistanceRangeMapImpl.Companion.from(map: RangeMap<Distance, T>): D
     return res
 }
 
-fun <T : Any> DistanceRangeMapImpl.Companion.toRangeMap(
+fun <T : Any> MutableDistanceRangeMap.Companion.toRangeMap(
     distanceRangeMap: DistanceRangeMap<T>
 ): RangeMap<Distance, T> {
     val rangeMap = TreeRangeMap.create<Distance, T>()

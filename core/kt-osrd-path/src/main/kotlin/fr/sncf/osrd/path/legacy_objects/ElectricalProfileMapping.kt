@@ -5,7 +5,7 @@ import fr.sncf.osrd.railjson.schema.external_generated_inputs.RJSElectricalProfi
 import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.api.TrackChunkId
 import fr.sncf.osrd.utils.DistanceRangeMap
-import fr.sncf.osrd.utils.DistanceRangeMapImpl
+import fr.sncf.osrd.utils.MutableDistanceRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
 
@@ -30,7 +30,7 @@ class ElectricalProfileMapping {
             for (trackRange in rjsProfile.trackRanges) {
                 val rangeMapping =
                     trackMapping.computeIfAbsent(trackRange.trackSectionID) { _: String? ->
-                        DistanceRangeMapImpl()
+                        MutableDistanceRangeMap()
                     }
                 rangeMapping.put(
                     fromMeters(trackRange.begin),

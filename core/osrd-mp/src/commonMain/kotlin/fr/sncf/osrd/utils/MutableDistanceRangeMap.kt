@@ -4,7 +4,7 @@ import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.MutableDistanceArrayList
 import kotlin.math.min
 
-data class DistanceRangeMapImpl<T>(
+data class MutableDistanceRangeMap<T>(
     private val bounds: MutableDistanceArrayList,
     private val values: MutableList<T?>,
 ) : DistanceRangeMap<T> {
@@ -177,7 +177,7 @@ data class DistanceRangeMapImpl<T>(
     }
 
     override fun clone(): DistanceRangeMap<T> {
-        return DistanceRangeMapImpl(bounds.clone(), values.toMutableList())
+        return MutableDistanceRangeMap(bounds.clone(), values.toMutableList())
     }
 
     override fun subMap(lower: Distance, upper: Distance): DistanceRangeMap<T> {
@@ -396,7 +396,7 @@ data class DistanceRangeMapImpl<T>(
         }
     }
 
-    private class IteratorImpl<T>(val rangeMap: DistanceRangeMapImpl<T>) :
+    private class IteratorImpl<T>(val rangeMap: MutableDistanceRangeMap<T>) :
         Iterator<DistanceRangeMap.RangeMapEntry<T>> {
         private var cursor = -1
 

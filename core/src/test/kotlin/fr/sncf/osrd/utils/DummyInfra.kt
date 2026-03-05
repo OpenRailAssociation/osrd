@@ -421,7 +421,7 @@ class DummyInfra : RawInfra, BlockInfra {
     override fun getTrackChunkLoadingGaugeConstraints(
         trackChunk: TrackChunkId
     ): DistanceRangeMap<LoadingGaugeConstraint> {
-        return DistanceRangeMapImpl()
+        return MutableDistanceRangeMap()
     }
 
     override fun getTrackChunkElectrificationVoltage(
@@ -440,7 +440,7 @@ class DummyInfra : RawInfra, BlockInfra {
         val neutralSection =
             if (trackChunk.direction == Direction.INCREASING) desc.neutralSectionForward
             else desc.neutralSectionBackward
-        return if (neutralSection == null) DistanceRangeMapImpl()
+        return if (neutralSection == null) MutableDistanceRangeMap()
         else makeRangeMap(desc.length, neutralSection)
     }
 
@@ -566,8 +566,8 @@ class DummyInfra : RawInfra, BlockInfra {
     // endregion
 
     // region utils
-    private fun <T> makeRangeMap(length: Distance, default: T): DistanceRangeMapImpl<T> {
-        val res = DistanceRangeMapImpl<T>()
+    private fun <T> makeRangeMap(length: Distance, default: T): MutableDistanceRangeMap<T> {
+        val res = MutableDistanceRangeMap<T>()
         res.put(0.meters, length, default)
         return res
     }

@@ -108,7 +108,7 @@ private fun getChunkDirectionalDistanceRange(
     val chunkLength = chunkEndOffset - chunkStartOffset
     return DirectionalMap(
         increasingChunkRange,
-        DistanceRangeMapImpl(
+        MutableDistanceRangeMap(
             increasingChunkRange.reversed().map {
                 DistanceRangeMap.RangeMapEntry(
                     chunkLength - it.upper,

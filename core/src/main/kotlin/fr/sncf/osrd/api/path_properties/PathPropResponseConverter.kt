@@ -8,7 +8,7 @@ import fr.sncf.osrd.railjson.schema.geom.RJSLineString
 import fr.sncf.osrd.sim_infra.api.NeutralSection
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
 import fr.sncf.osrd.utils.DistanceRangeMap
-import fr.sncf.osrd.utils.DistanceRangeMapImpl
+import fr.sncf.osrd.utils.MutableDistanceRangeMap
 import fr.sncf.osrd.utils.from
 import fr.sncf.osrd.utils.toRangeMap
 import fr.sncf.osrd.utils.units.Offset
@@ -35,7 +35,7 @@ private fun makeCurves(pathProperties: TrainPath): RangeValues<Double> {
 private fun makeElectrifications(pathProperties: TrainPath): RangeValues<Electrification> {
     val electrifications = makeElectrificationMap(pathProperties.getElectrification())
     val neutralSections = makeElectrificationMap(pathProperties.getNeutralSections())
-    val mergedMap = DistanceRangeMapImpl.toRangeMap(electrifications)
+    val mergedMap = MutableDistanceRangeMap.toRangeMap(electrifications)
     for (neutralSection in neutralSections) {
         // Neutral section has priority over any electrification on an overlapping range
         mergedMap.merge(
@@ -45,7 +45,7 @@ private fun makeElectrifications(pathProperties: TrainPath): RangeValues<Electri
             neutralSectionValue
         }
     }
-    return makeRangeValues(DistanceRangeMapImpl.from(mergedMap))
+    return makeRangeValues(MutableDistanceRangeMap.from(mergedMap))
 }
 
 private fun makeGeographic(path: TrainPath): RJSLineString {
@@ -133,7 +133,7 @@ private fun <T> makeRangeValues(distanceRangeMap: DistanceRangeMap<T>): RangeVal
 private fun makeElectrificationMap(
     distanceRangeMap: DistanceRangeMap<out Any>
 ): DistanceRangeMap<Electrification> {
-    val res = DistanceRangeMapImpl<Electrification>()
+    val res = MutableDistanceRangeMap<Electrification>()
     for (entry in distanceRangeMap) {
         when (entry.value) {
             // Is electrified
