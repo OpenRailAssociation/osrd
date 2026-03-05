@@ -1269,11 +1269,11 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/train_schedule_sets/${queryArg.id}`, method: 'DELETE' }),
         invalidatesTags: ['train_schedule_set'],
       }),
-      getTrainScheduleSetsByIdPacedTrains: build.query<
-        GetTrainScheduleSetsByIdPacedTrainsApiResponse,
-        GetTrainScheduleSetsByIdPacedTrainsApiArg
+      getTrainScheduleSetsByIdTrainSchedules: build.query<
+        GetTrainScheduleSetsByIdTrainSchedulesApiResponse,
+        GetTrainScheduleSetsByIdTrainSchedulesApiArg
       >({
-        query: (queryArg) => ({ url: `/train_schedule_sets/${queryArg.id}/paced_trains` }),
+        query: (queryArg) => ({ url: `/train_schedule_sets/${queryArg.id}/train_schedules` }),
         providesTags: ['train_schedule_set', 'paced_train'],
       }),
       postTrainScheduleSetsByIdTrainSchedules: build.mutation<
@@ -2584,9 +2584,9 @@ export type DeleteTrainScheduleSetsByIdApiArg = {
   /** A train schedule set ID */
   id: number;
 };
-export type GetTrainScheduleSetsByIdPacedTrainsApiResponse =
-  /** status 200 The paced trains */ TrainScheduleResponse[];
-export type GetTrainScheduleSetsByIdPacedTrainsApiArg = {
+export type GetTrainScheduleSetsByIdTrainSchedulesApiResponse =
+  /** status 200 The train schedules */ TrainScheduleResponse[];
+export type GetTrainScheduleSetsByIdTrainSchedulesApiArg = {
   /** A train schedule set ID */
   id: number;
 };

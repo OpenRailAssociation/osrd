@@ -343,18 +343,18 @@ pub(in crate::views) async fn post_train_schedule(
     Ok((StatusCode::CREATED, Json(response)))
 }
 
-/// List paced trains for a train schedule set
+/// List train schedules for a train schedule set
 #[editoast_derive::route]
 #[utoipa::path(
-    get, path = "/paced_trains",
+    get, path = "",
     tags = ["train_schedule_set", "paced_train"],
     params(TrainScheduleSetIdParam),
     responses(
-        (status = 200, description = "The paced trains", body = Vec<TrainScheduleResponse>),
+        (status = 200, description = "The train schedules", body = Vec<TrainScheduleResponse>),
         (status = 404, description = "Train schedule set not found"),
     )
 )]
-pub(in crate::views) async fn get_paced_trains(
+pub(in crate::views) async fn get_train_schedules(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(TrainScheduleSetIdParam {
@@ -382,8 +382,8 @@ pub(in crate::views) async fn get_paced_trains(
     let settings = SelectionSettings::new()
         .filter(move || models::TrainSchedule::TRAIN_SCHEDULE_SET_ID.eq(train_schedule_set_id));
 
-    let paced_trains = models::TrainSchedule::list(conn, settings).await?;
-    Ok(Json(paced_trains.into_iter().map_into().collect()))
+    let train_schedules = models::TrainSchedule::list(conn, settings).await?;
+    Ok(Json(train_schedules.into_iter().map_into().collect()))
 }
 
 #[cfg(test)]
@@ -605,7 +605,7 @@ mod tests {
 
         let request = app.get(
             format!(
-                "/train_schedule_sets/{}/paced_trains",
+                "/train_schedule_sets/{}/train_schedules",
                 train_schedule_set.id
             )
             .as_str(),

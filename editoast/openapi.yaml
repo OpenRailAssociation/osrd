@@ -4440,12 +4440,12 @@ paths:
           description: the train schedule set is deleted
         '404':
           description: Train schedule set not found
-  /train_schedule_sets/{id}/paced_trains:
+  /train_schedule_sets/{id}/train_schedules:
     get:
       tags:
       - train_schedule_set
       - paced_train
-      summary: List paced trains for a train schedule set
+      summary: List train schedules for a train schedule set
       parameters:
       - name: id
         in: path
@@ -4456,7 +4456,7 @@ paths:
           format: int64
       responses:
         '200':
-          description: The paced trains
+          description: The train schedules
           content:
             application/json:
               schema:
@@ -4465,7 +4465,6 @@ paths:
                   $ref: '#/components/schemas/TrainScheduleResponse'
         '404':
           description: Train schedule set not found
-  /train_schedule_sets/{id}/train_schedules:
     post:
       tags:
       - train_schedule_set

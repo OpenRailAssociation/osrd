@@ -58,8 +58,8 @@ export default function useScenarioTrainScheduleSet(
   const [linkTrainScheduleSetToTimetable] =
     osrdEditoastApi.endpoints.postTimetableByIdTrainScheduleSets.useMutation();
 
-  const [getTrainScheduleSetPacedTrains] =
-    osrdEditoastApi.endpoints.getTrainScheduleSetsByIdPacedTrains.useLazyQuery();
+  const [getTrainScheduleSetTrainSchedules] =
+    osrdEditoastApi.endpoints.getTrainScheduleSetsByIdTrainSchedules.useLazyQuery();
 
   const createTrainScheduleSet = useCallback(
     async (data: TrainScheduleSetFormData): Promise<void> => {
@@ -261,7 +261,7 @@ export default function useScenarioTrainScheduleSet(
             newIds.push(item.trainScheduleSet.id);
           }
 
-          const referencedPacedTrains = await getTrainScheduleSetPacedTrains({
+          const referencedPacedTrains = await getTrainScheduleSetTrainSchedules({
             id: item.trainScheduleSet.id,
           }).unwrap();
 
@@ -272,7 +272,7 @@ export default function useScenarioTrainScheduleSet(
           allTrainsToUpsert.push(...formattedTrains);
         } else {
           // For copy imports, create a new train schedule set and copy the trains
-          const sourcePacedTrains = await getTrainScheduleSetPacedTrains({
+          const sourcePacedTrains = await getTrainScheduleSetTrainSchedules({
             id: item.trainScheduleSet.id,
           }).unwrap();
 
@@ -313,7 +313,7 @@ export default function useScenarioTrainScheduleSet(
     },
     [
       trainScheduleSets,
-      getTrainScheduleSetPacedTrains,
+      getTrainScheduleSetTrainSchedules,
       createTrainScheduleSetMutation,
       createPacedTrains,
       linkTrainScheduleSetToTimetable,
