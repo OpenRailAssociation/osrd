@@ -16,11 +16,11 @@ import { save } from 'reducers/editor/thunkActions';
 import { nearestPointOnLine, type NearestPointOnLine } from 'utils/geometry';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
+import TOOL_NAMES from '../constsToolNames';
 import { TrackEditionLayers, TrackEditionLeftPanel, TrackEditionMessages } from './components';
 import { POINTS_LAYER_ID, TRACK_LAYER_ID } from './consts';
 import type { TrackEditionState } from './types';
 import { getInitialState } from './utils';
-import TOOL_NAMES from '../constsToolNames';
 
 const TrackEditionTool: Tool<TrackEditionState> = {
   id: 'track-edition',
@@ -408,7 +408,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
     return ['editor/geo/track-main', POINTS_LAYER_ID, TRACK_LAYER_ID];
   },
 
-  getCursor({ state }, { isDragging }) {
+  getCursor({ state }, isDragging) {
     if (isDragging) return 'grabbing';
     if (state.editionState.type === 'addPoint') return 'copy';
     if (state.editionState.type === 'movePoint') {

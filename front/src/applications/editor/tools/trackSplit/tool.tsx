@@ -7,11 +7,11 @@ import type { Tool } from 'applications/editor/types';
 import { nearestPointOnLine } from 'utils/geometry';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
+import TOOL_NAMES from '../constsToolNames';
+import { approximateDistanceForEditoast, getNewLine } from '../utils';
 import { TrackSplitLayers, TrackSplitLeftPanel, TrackSplitMessages } from './components';
 import type { TrackSplitState } from './types';
 import { isOffsetValid } from './utils';
-import TOOL_NAMES from '../constsToolNames';
-import { approximateDistanceForEditoast, getNewLine } from '../utils';
 
 const TrackSplitTool: Tool<TrackSplitState> = {
   id: 'track-split',
@@ -147,7 +147,7 @@ const TrackSplitTool: Tool<TrackSplitState> = {
       }
     }
   },
-  getCursor({ state }, { isDragging }) {
+  getCursor({ state }, isDragging) {
     if (isDragging) return 'grabbing';
     if (state.splitState.type === 'movePoint') return 'grabbing';
     if (state.splitState.type === 'hoverPoint') return 'pointer';

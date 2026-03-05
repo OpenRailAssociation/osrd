@@ -114,10 +114,7 @@ export type Tool<S> = {
   onHover?: (e: MapLayerMouseEvent, context: ExtendedEditorContextType<S>) => void;
   onMove?: (e: MapLayerMouseEvent, context: ExtendedEditorContextType<S>) => void;
   onKeyDown?: (e: KeyboardEvent, context: ExtendedEditorContextType<S>) => void;
-  getCursor?: (
-    context: ExtendedEditorContextType<S>,
-    mapState: { isLoaded: boolean; isDragging: boolean; isHovering: boolean }
-  ) => string;
+  getCursor?: (context: ExtendedEditorContextType<S>, isDragging: boolean) => string;
 
   // Display:
   getInteractiveLayers?: (context: ReadOnlyEditorContextType<S>) => string[];
