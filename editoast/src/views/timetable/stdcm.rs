@@ -13,6 +13,8 @@ use core_client::AsCoreRequest;
 use core_client::CoreClient;
 use core_client::pathfinding::InvalidPathItem;
 use core_client::pathfinding::PathfindingResultSuccess;
+use core_client::stdcm::ConsistConfiguration;
+use core_client::stdcm::ConsistSchedule;
 use core_client::stdcm::Request as StdcmRequest;
 use core_client::stdcm::UndirectedTrackRange;
 use database::DbConnectionPoolV2;
@@ -294,14 +296,20 @@ pub(in crate::views) async fn stdcm_handler(
         infra: infra.id,
         expected_version: infra.version,
         timetable_id,
-        rolling_stock_loading_gauge: request
-            .loading_gauge_type
-            .unwrap_or(physics_consist_parameters.traction_engine.loading_gauge),
         allowed_track_sections: request.allowed_track_sections.clone(),
-        rolling_stock_supported_signaling_systems: physics_consist_parameters
-            .traction_engine
-            .supported_signaling_systems(),
-        physics_consist: physics_consist_parameters.into(),
+        consist_schedule: ConsistSchedule {
+            boundaries: vec![],
+            values: vec![ConsistConfiguration {
+                loading_gauge_type: request
+                    .loading_gauge_type
+                    .unwrap_or(physics_consist_parameters.traction_engine.loading_gauge),
+                supported_signaling_systems: physics_consist_parameters
+                    .traction_engine
+                    .supported_signaling_systems(),
+                speed_limit_tag: request.speed_limit_tags.clone(),
+                physics_consist: physics_consist_parameters.into(),
+            }],
+        },
         temporary_speed_limits: request
             .get_temporary_speed_limits(&mut conn, simulation_run_time)
             .await?,
@@ -310,7 +318,6 @@ pub(in crate::views) async fn stdcm_handler(
         start_time: earliest_departure_time,
         maximum_departure_delay: request.get_maximum_departure_delay(simulation_run_time),
         maximum_run_time: request.get_maximum_run_time(simulation_run_time),
-        speed_limit_tag: request.speed_limit_tags.clone(),
         time_gap_before: request.time_gap_before,
         time_gap_after: request.time_gap_after,
         margin: request.margin,

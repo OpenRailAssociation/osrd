@@ -4733,6 +4733,47 @@ export type CoreTrainRequirementsById = {
   /** ID that can be used to find the train in tools other than OSRD. Used in debug traces. */
   train_name: string;
 };
+export type ConsistConfiguration = {
+  /** The loading gauge of the rolling stock */
+  loading_gauge_type: LoadingGaugeType;
+  physics_consist: {
+    base_power_class?: string | null;
+    /** Acceleration in m·s⁻² */
+    comfort_acceleration: number;
+    /**  The constant gamma braking coefficient used when NOT circulating
+         under ETCS/ERTMS signaling system
+        Acceleration in m·s⁻² */
+    const_gamma: number;
+    effort_curves: EffortCurves;
+    /** The time the train takes before actually using electrical power.
+        Is null if the train is not electric or the value not specified. */
+    electrical_power_startup_time?: number | null;
+    etcs_brake_params?: null | EtcsBrakeParams;
+    inertia_coefficient: number;
+    length: number;
+    mass: number;
+    /** Velocity in m·s⁻¹ */
+    max_speed: number;
+    /** Mapping of power restriction code to power class */
+    power_restrictions?: {
+      [key: string]: string;
+    };
+    /** The time it takes to raise this train's pantograph.
+        Is null if the train is not electric or the value not specified. */
+    raise_pantograph_time?: number | null;
+    rolling_resistance: RollingResistance;
+    /** Acceleration in m·s⁻² */
+    startup_acceleration: number;
+    startup_time: number;
+  };
+  speed_limit_tag?: string | null;
+  /** List of supported signaling systems */
+  supported_signaling_systems: string[];
+};
+export type ConsistSchedule = {
+  boundaries: number[];
+  values: ConsistConfiguration[];
+};
 export type CoreStepTimingData = {
   /** Time the train should arrive at this point */
   arrival_time: string;
@@ -4769,6 +4810,7 @@ export type CoreStdcmRequest = {
   allowed_track_sections?: string[] | null;
   /** The comfort of the train */
   comfort: Comfort;
+  consist_schedule: ConsistSchedule;
   /** Infrastructure expected version */
   expected_version: number;
   /** Infrastructure id */
@@ -4790,41 +4832,6 @@ export type CoreStdcmRequest = {
   maximum_run_time: number;
   /** List of waypoints. Each waypoint is a list of track offset. */
   path_items: CorePathItem[];
-  physics_consist: {
-    base_power_class?: string | null;
-    /** Acceleration in m·s⁻² */
-    comfort_acceleration: number;
-    /**  The constant gamma braking coefficient used when NOT circulating
-         under ETCS/ERTMS signaling system
-        Acceleration in m·s⁻² */
-    const_gamma: number;
-    effort_curves: EffortCurves;
-    /** The time the train takes before actually using electrical power.
-        Is null if the train is not electric or the value not specified. */
-    electrical_power_startup_time?: number | null;
-    etcs_brake_params?: null | EtcsBrakeParams;
-    inertia_coefficient: number;
-    length: number;
-    mass: number;
-    /** Velocity in m·s⁻¹ */
-    max_speed: number;
-    /** Mapping of power restriction code to power class */
-    power_restrictions?: {
-      [key: string]: string;
-    };
-    /** The time it takes to raise this train's pantograph.
-        Is null if the train is not electric or the value not specified. */
-    raise_pantograph_time?: number | null;
-    rolling_resistance: RollingResistance;
-    /** Acceleration in m·s⁻² */
-    startup_acceleration: number;
-    startup_time: number;
-  };
-  /** The loading gauge of the rolling stock */
-  rolling_stock_loading_gauge: LoadingGaugeType;
-  /** List of supported signaling systems */
-  rolling_stock_supported_signaling_systems: string[];
-  speed_limit_tag?: string | null;
   start_time: string;
   /** List of applicable temporary speed limits between the train departure and arrival */
   temporary_speed_limits: {
