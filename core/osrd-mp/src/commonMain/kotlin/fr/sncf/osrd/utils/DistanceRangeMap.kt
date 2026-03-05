@@ -54,8 +54,8 @@ interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
      */
     fun get(offset: Distance): T?
 
-    /** Returns a deep copy of the map */
-    fun clone(): DistanceRangeMap<T>
+    /** Returns a deep copy of the map as a [MutableDistanceRangeMap] */
+    fun toMutableDistanceRangeMap(): MutableDistanceRangeMap<T>
 
     /** Returns a new DistanceRangeMap of the ranges between lower and upper */
     fun subMap(lower: Distance, upper: Distance): DistanceRangeMap<T>

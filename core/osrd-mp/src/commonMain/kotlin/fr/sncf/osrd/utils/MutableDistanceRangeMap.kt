@@ -176,13 +176,13 @@ data class MutableDistanceRangeMap<T>(
         return null
     }
 
-    override fun clone(): DistanceRangeMap<T> {
+    override fun toMutableDistanceRangeMap(): MutableDistanceRangeMap<T> {
         return MutableDistanceRangeMap(bounds.clone(), values.toMutableList())
     }
 
     override fun subMap(lower: Distance, upper: Distance): DistanceRangeMap<T> {
         require(lower < upper)
-        val res = this.clone()
+        val res = this.toMutableDistanceRangeMap()
         res.truncate(lower, upper)
         return res
     }

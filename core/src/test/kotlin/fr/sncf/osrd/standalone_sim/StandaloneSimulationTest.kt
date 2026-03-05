@@ -343,7 +343,7 @@ class StandaloneSimulationTest {
         val signalingRangesBAL = buildSignalingRanges(infra, trainPath)
 
         // ETCS_LEVEL2 range covers the first stop only: getting safetySpeed for the other stops
-        val signalingRangesEtcsHappyPath = signalingRangesBAL.clone()
+        val signalingRangesEtcsHappyPath = signalingRangesBAL.toMutableDistanceRangeMap()
         signalingRangesEtcsHappyPath.put(10.meters, 1_000.meters, ETCS_LEVEL2.id)
         val safetySpeedRangesEtcsHappyPath =
             makeSafetySpeedRanges(infra, trainPath, schedule, signalingRangesEtcsHappyPath)
@@ -358,7 +358,7 @@ class StandaloneSimulationTest {
 
         // ETCS_LEVEL2 range covers the last 2 stops only and their associated EoA: no safetySpeed
         // for those stops (only the first)
-        val signalingRangesEndFullEtcs = signalingRangesBAL.clone()
+        val signalingRangesEndFullEtcs = signalingRangesBAL.toMutableDistanceRangeMap()
         signalingRangesEndFullEtcs.put(9_500.meters, 10_400.meters, ETCS_LEVEL2.id)
         val safetySpeedRangesEndFullEtcs =
             makeSafetySpeedRanges(infra, trainPath, schedule, signalingRangesEndFullEtcs)
@@ -370,7 +370,7 @@ class StandaloneSimulationTest {
 
         // ETCS_LEVEL2 range covers the last 2 stops but not the final buffer-stop: no safetySpeed
         // for those stops (only the first)
-        val signalingRangesEndEtcsExceptFinalBuffer = signalingRangesBAL.clone()
+        val signalingRangesEndEtcsExceptFinalBuffer = signalingRangesBAL.toMutableDistanceRangeMap()
         signalingRangesEndEtcsExceptFinalBuffer.put(9_500.meters, 10_350.meters, ETCS_LEVEL2.id)
         val safetySpeedRangesEndFullEtcsExceptFinalBuffer =
             makeSafetySpeedRanges(
@@ -391,7 +391,7 @@ class StandaloneSimulationTest {
         // ETCS_LEVEL2 range covers all the end, starting between penultimate stop and its signal:
         // safetySpeed for first and penultimate stops
         val signalingRangesEtcsStartingBetweenPenultimateStopAndItsSignal =
-            signalingRangesBAL.clone()
+            signalingRangesBAL.toMutableDistanceRangeMap()
         signalingRangesEtcsStartingBetweenPenultimateStopAndItsSignal.put(
             10_100.meters,
             10_400.meters,
@@ -417,7 +417,8 @@ class StandaloneSimulationTest {
 
         // ETCS_LEVEL2 covers only the end, starting between the last stop and the buffer-stop:
         // safetySpeed expected for all (stops are in BAL range)
-        val signalingRangesEtcsStartingBetweenLastStopAndBuffer = signalingRangesBAL.clone()
+        val signalingRangesEtcsStartingBetweenLastStopAndBuffer =
+            signalingRangesBAL.toMutableDistanceRangeMap()
         signalingRangesEtcsStartingBetweenLastStopAndBuffer.put(
             10_350.meters,
             10_400.meters,
