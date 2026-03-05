@@ -125,6 +125,20 @@ export type StdcmSimulationInputs = {
   linkedTrains: LinkedTrains;
 };
 
+export type ConsistData = {
+  rollingStockID?: number;
+  towedRollingStockID?: number;
+  /** In ton */
+  totalMass?: number;
+  /** In meters */
+  totalLength?: number;
+  /** Loading gauge, max speed and speed limit can only be set on initial consist and cannot be changed */
+  /** In km/h */
+  maxSpeed?: number;
+  loadingGauge?: LoadingGaugeType;
+  speedLimitByTag?: string;
+};
+
 export type StdcmResultsOutput = {
   pathProperties: StdcmPathProperties;
   results: StdcmSuccessResponse;

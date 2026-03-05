@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useState } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { Location } from '@osrd-project/ui-icons';
 import cx from 'classnames';
@@ -7,21 +7,24 @@ import { useSelector } from 'react-redux';
 
 import { updateStdcmPathStep, deleteStdcmVia, addStdcmVia } from 'reducers/osrdconf/stdcmConf';
 import { getStdcmPathSteps } from 'reducers/osrdconf/stdcmConf/selectors';
-import type { StdcmPathStep, StdcmViaPathStep } from 'reducers/osrdconf/types';
+import type { StdcmViaPathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 
 import StdcmCard from './StdcmCard';
+import StdcmConsist from './StdcmConsist';
 import StdcmDefaultCard from './StdcmDefaultCard';
 import StdcmOperationalPoint from './StdcmOperationalPoint';
 import StdcmStopType from './StdcmStopType';
 import StopDurationInput from './StopDurationInput';
 import { StdcmStopTypes } from '../../types';
-import type { StdcmItineraryProps } from '../../types';
+import type { ConsistData, ConsistErrors, StdcmItineraryProps } from '../../types';
 import StdcmCardMarkerIcon from '../StdcmCardMarkerIcon';
 
 type StdcmViasProps = StdcmItineraryProps & {
   skipAnimation: boolean;
+  initialConsist: ConsistData;
+  onHasViaConsistErrorsChange: (errors: ConsistErrors[]) => void;
 };
 
 const StdcmVias = ({
@@ -29,6 +32,8 @@ const StdcmVias = ({
   isDebugMode,
   skipAnimation,
   onItineraryChange,
+  initialConsist,
+  onHasViaConsistErrorsChange,
 }: StdcmViasProps) => {
   const { t } = useTranslation('stdcm');
   const dispatch = useAppDispatch();
@@ -36,9 +41,14 @@ const StdcmVias = ({
 
   const [newIntermediateOpIndex, setNewIntermediateOpIndex] = useState<number>();
 
-  const intermediatePoints = useMemo(() => pathSteps.slice(1, -1), [pathSteps]);
+  const consistErrorsByStep = useRef<Record<string, ConsistErrors>>({});
 
-  const updateStopType = (newStopType: StdcmStopTypes, pathStep: StdcmPathStep) => {
+  const intermediatePoints = useMemo(
+    () => pathSteps.slice(1, -1),
+    [pathSteps]
+  ) as StdcmViaPathStep[];
+
+  const updateStopType = (newStopType: StdcmStopTypes, pathStep: StdcmViaPathStep) => {
     let defaultStopTime: Duration | undefined;
     if (newStopType === StdcmStopTypes.DRIVER_SWITCH) {
       defaultStopTime = new Duration({ minutes: 3 });
@@ -46,15 +56,20 @@ const StdcmVias = ({
       defaultStopTime = Duration.zero;
     }
 
-    let hasConsistChange = pathStep.isVia && pathStep.hasConsistChange;
-    if (newStopType !== StdcmStopTypes.SERVICE_STOP && hasConsistChange) {
-      hasConsistChange = false;
+    let newConsistChange = pathStep.consistChange;
+    if (newStopType !== StdcmStopTypes.SERVICE_STOP && pathStep.consistChange) {
+      // Disable consist change
+      newConsistChange = undefined;
     }
 
     dispatch(
       updateStdcmPathStep({
         id: pathStep.id,
-        updates: { stopType: newStopType, stopFor: defaultStopTime, hasConsistChange },
+        updates: {
+          stopType: newStopType,
+          stopFor: defaultStopTime,
+          consistChange: newConsistChange,
+        },
       })
     );
   };
@@ -115,14 +130,24 @@ const StdcmVias = ({
     onItineraryChange();
   };
 
-  const addConsistChange = (viaPathStep: StdcmViaPathStep) => {
+  const getPreviousConsistChange = (index: number): ConsistData => {
+    for (let i = index - 1; i >= 0; i--) {
+      if (intermediatePoints[i].consistChange) {
+        return { ...intermediatePoints[i].consistChange };
+      }
+    }
+
+    return initialConsist;
+  };
+
+  const addConsistChange = (viaPathStep: StdcmViaPathStep, index: number) => {
     if (viaPathStep.stopFor && viaPathStep.stopFor < new Duration({ minutes: 30 })) {
       dispatch(
         updateStdcmPathStep({
           id: viaPathStep.id,
           updates: {
-            hasConsistChange: true,
             stopFor: new Duration({ minutes: 30 }),
+            consistChange: getPreviousConsistChange(index),
           },
         })
       );
@@ -131,7 +156,7 @@ const StdcmVias = ({
         updateStdcmPathStep({
           id: viaPathStep.id,
           updates: {
-            hasConsistChange: true,
+            consistChange: getPreviousConsistChange(index),
           },
         })
       );
@@ -139,14 +164,22 @@ const StdcmVias = ({
   };
 
   const removeConsistChange = (viaPathStep: StdcmViaPathStep) => {
+    delete consistErrorsByStep.current[viaPathStep.id];
+    onHasViaConsistErrorsChange(Object.values(consistErrorsByStep.current));
+
     dispatch(
       updateStdcmPathStep({
         id: viaPathStep.id,
         updates: {
-          hasConsistChange: false,
+          consistChange: undefined,
         },
       })
     );
+  };
+
+  const handleConsistErrors = (id: string, errors: ConsistErrors) => {
+    consistErrorsByStep.current[id] = errors;
+    onHasViaConsistErrorsChange(Object.values(consistErrorsByStep.current));
   };
 
   return (
@@ -174,21 +207,32 @@ const StdcmVias = ({
             {/* TODO #15344: remove isDebugMode */}
             {isDebugMode &&
               pathStep.stopType === StdcmStopTypes.SERVICE_STOP &&
-              (!pathStep.hasConsistChange ? (
+              (!pathStep.consistChange ? (
                 <StdcmDefaultCard
                   testId="edit-consist"
                   className="edit-consist"
                   tip="right"
                   text={t('trainPath.consistChange.add')}
                   Icon={<Location size="lg" variant="base" />}
-                  onClick={() => addConsistChange(pathStep)}
+                  onClick={() => addConsistChange(pathStep, index)}
                 />
               ) : (
                 <>
-                  {/* // TODO #15242: add consist change form */}
-                  <button onClick={() => removeConsistChange(pathStep)}>
-                    **Consist change form placeholder (click to remove consist change)**
-                  </button>
+                  <StdcmConsist
+                    isDebugMode={isDebugMode}
+                    onConsistErrorsChange={(errors) => handleConsistErrors(pathStep.id, errors)}
+                    consist={pathStep.consistChange ?? {}}
+                    onConsistChange={(newConsist) =>
+                      dispatch(
+                        updateStdcmPathStep({
+                          id: pathStep.id,
+                          updates: { consistChange: newConsist },
+                        })
+                      )
+                    }
+                    isConsistChange
+                    onDeleteConsistChange={() => removeConsistChange(pathStep)}
+                  />
                   <div className="stdcm__separator" />
                 </>
               ))}

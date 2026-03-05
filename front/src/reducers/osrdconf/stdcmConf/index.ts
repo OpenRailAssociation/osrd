@@ -245,7 +245,7 @@ export const stdcmConfSlice = createSlice({
         id: uuidV4(),
         stopType: StdcmStopTypes.PASSAGE_TIME,
         isVia: true,
-        hasConsistChange: false,
+        consistChange: undefined,
       });
     },
     deleteStdcmVia(state: Draft<OsrdStdcmConfState>, action: PayloadAction<string>) {
