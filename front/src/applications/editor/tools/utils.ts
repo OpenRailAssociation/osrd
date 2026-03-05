@@ -1,11 +1,11 @@
+import type { ActionCreatorWithPayload } from '@reduxjs/toolkit';
 import turfBbox from '@turf/bbox';
 import { featureCollection, type Units } from '@turf/helpers';
 import length from '@turf/length';
 import type { NearestPoint } from '@turf/nearest-point';
 import type { Feature, LineString, Point, BBox } from 'geojson';
 import { uniq } from 'lodash';
-import type { LngLatBoundsLike, MapLayerMouseEvent } from 'maplibre-gl';
-import type { MapRef } from 'react-map-gl/maplibre';
+import type { MapLayerMouseEvent } from 'maplibre-gl';
 import type { Dispatch } from 'redux';
 
 import { EDITOAST_TO_LAYER_DICT } from 'applications/editor/consts';
@@ -29,13 +29,13 @@ import type { SwitchEntity } from 'applications/editor/tools/switchEdition/types
 import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 import type { EditorContextType } from 'applications/editor/types';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
+import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
+import type { Viewport } from 'reducers/commonMap/types';
 import { type EditorState, editorSliceActions } from 'reducers/editor';
 import type { AppDispatch } from 'store';
-import type { Bbox } from 'types';
 import { nearestPointOnLine } from 'utils/geometry';
 
 import { getLayerSettingNameFromEditorLayer } from '../utils';
-import type { Viewport } from 'reducers/commonMap/types';
 
 /**
  * Since Turf and Editoast do not compute the lengths the same way (see #1751)
@@ -269,16 +269,13 @@ export async function getEntitiesBbox(
   infraId: number,
   entities: EditorEntity[],
   dispatch: AppDispatch
-): Promise<Bbox | null> {
+): Promise<BBox | null> {
   const hasRouteEntity = entities.some((entity) => entity.objType === 'Route');
 
   if (!hasRouteEntity) {
     let bbox = turfBbox(entities[0].geometry);
     if (entities.length > 1) bbox = getLargestBbox(entities);
-    return [
-      [bbox[0], bbox[1]],
-      [bbox[2], bbox[3]],
-    ];
+    return bbox;
   }
 
   if (entities.length === 1 && entities[0].objType === 'Route') {
@@ -290,11 +287,7 @@ export async function getEntitiesBbox(
     const endPoint = await getEntity(infraId, endPointId, endPointIdType, dispatch);
 
     const fc = featureCollection([startPoint, endPoint]);
-    const bbox = turfBbox(fc);
-    return [
-      [bbox[0], bbox[1]],
-      [bbox[2], bbox[3]],
-    ];
+    return turfBbox(fc);
   }
   return null;
 }
@@ -303,14 +296,14 @@ export async function centerMapOnObject(
   infraId: number,
   entities: EditorEntity[],
   dispatch: AppDispatch,
-  setViewport: (value: Partial<Viewport>) => void,
+  setViewport: ActionCreatorWithPayload<Partial<Viewport>>,
+  viewport: Viewport
 ): Promise<void> {
   // Center the map on the object
   const bbox = await getEntitiesBbox(infraId, entities, dispatch);
   if (bbox) {
     // Zoom to the bbox with padding added (in pixels)
-    setViewport({latitude: 0, longitude: 0, zoom: 8})
-    // mapRef.fitBounds(bbox as LngLatBoundsLike, { padding: 40, animate: false });
+    dispatch(setViewport(computeBBoxViewport(bbox, viewport)));
   }
 }
 

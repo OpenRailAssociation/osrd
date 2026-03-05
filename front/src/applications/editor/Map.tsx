@@ -37,8 +37,6 @@ import { getEditorState } from 'reducers/editor/selectors';
 import { useAppDispatch } from 'store';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
-import MapFocusSelection from './components/MapFocusSelection';
-
 type MapProps<S extends CommonToolState = CommonToolState> = {
   t: TFunction;
   toolState: S;
@@ -283,7 +281,6 @@ const MapUnplugged = ({
             dispatch(removeMapSearchMarker());
           }}
         >
-          <MapFocusSelection switchTool={context.switchTool} />
           <VirtualLayers />
           <AttributionControl position="bottom-right" customAttribution={CUSTOM_ATTRIBUTION} />
           <ScaleControl

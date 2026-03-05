@@ -2,33 +2,27 @@ import { useEffect } from 'react';
 
 import { t } from 'i18next';
 import { useSelector } from 'react-redux';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 import type { ObjectType } from 'common/api/osrdEditoastApi';
+import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import { getEditorState } from 'reducers/editor/selectors';
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
-import type { Viewport } from 'reducers/commonMap/types';
 import type { EditoastType } from '../consts';
 import { getEntity, getMixedEntities } from '../data/api';
 import { centerMapOnObject, selectEntities } from '../tools/utils';
 import type { EditorContextType } from '../types';
 import type { EditorEntity } from '../typesEditorEntity';
 
-const MapFocusSelection = ({
-  switchTool,
-  setViewport,
-}: {
-  switchTool: EditorContextType['switchTool'];
-  setViewport: (value: Partial<Viewport>) => void;
-}) => {
+const EditorUrlSelection = ({ switchTool }: { switchTool: EditorContextType['switchTool'] }) => {
   const dispatch = useAppDispatch();
   const { urlInfra } = useParams();
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const editorState = useSelector(getEditorState);
+  const { updateViewport } = useMapSettingsActions();
+  const { viewport } = useMapSettings();
 
   /**
    * When the component mounts
@@ -37,16 +31,8 @@ const MapFocusSelection = ({
    */
   useEffect(() => {
     if (urlInfra) {
+      const searchParams = new URLSearchParams(window.location.search);
       const params = searchParams.get('selection');
-      if (!params && searchParams.size !== 0) {
-        dispatch(
-          setFailure({
-            name: t('Editor.tools.select-items.errors.unable-to-select'),
-            message: t('Editor.tools.select-items.errors.invalid-url'),
-          })
-        );
-        navigate(`/editor/${urlInfra}`);
-      }
       const paramsList = params?.split('|');
 
       if (paramsList && paramsList.length) {
@@ -73,8 +59,7 @@ const MapFocusSelection = ({
               entities = Object.values(entitiesRecord);
             }
             selectEntities(entities, { switchTool, dispatch, editorState });
-
-            centerMapOnObject(+urlInfra, entities, dispatch, setViewport);
+            centerMapOnObject(+urlInfra, entities, dispatch, updateViewport, viewport);
           } catch (e) {
             dispatch(
               setFailure(
@@ -90,7 +75,8 @@ const MapFocusSelection = ({
       }
     }
   }, []);
+
   return null;
 };
 
-export default MapFocusSelection;
+export default EditorUrlSelection;

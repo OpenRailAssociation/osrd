@@ -35,6 +35,7 @@ import { loadDataModel, updateTotalsIssue } from 'reducers/editor/thunkActions';
 import { getIsLoading } from 'reducers/main/mainSelector';
 import { useAppDispatch } from 'store';
 
+import EditorUrlSelection from './components/EditorUrlSelection';
 import type { EditorContextType, ExtendedEditorContextType, FullTool, Reducer } from './types';
 import type { EditorEntity } from './typesEditorEntity';
 import { getLayerSettingNameFromEditorLayer } from './utils';
@@ -299,6 +300,7 @@ const Editor = () => {
 
   return (
     <EditorContext.Provider value={extendedContext as EditorContextType<unknown>}>
+      <EditorUrlSelection switchTool={extendedContext.switchTool} />
       <main
         className={cx('editor-root mastcontainer mastcontainer-map', infraID && 'infra-selected')}
       >
