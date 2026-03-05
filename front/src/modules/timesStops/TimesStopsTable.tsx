@@ -20,7 +20,7 @@ import { calculateTimeDifferenceInDays } from 'utils/timeManipulation';
 import DurationCell, { type DurationCellHandle } from './DurationCell';
 import { onStopSignalToReceptionSignal } from './helpers/utils';
 import TimeCell, { type TimeCellHandle } from './TimeCell';
-import { type TimesStopsRowNew } from './types';
+import type { PropagationMode, TimesStopsRowNew } from './types';
 
 declare module '@tanstack/react-table' {
   // eslint-disable-next-line @typescript-eslint/consistent-type-definitions, @typescript-eslint/no-unused-vars
@@ -33,9 +33,17 @@ declare module '@tanstack/react-table' {
   interface TableMeta<TData extends RowData> {
     allRows: TimesStopsRowNew[];
     isComputedDataPending?: boolean;
-    onArrivalChange: (row: TimesStopsRowNew, arrival: Date | null) => void;
+    onArrivalChange: (
+      row: TimesStopsRowNew,
+      arrival: Date | null,
+      propagationMode: PropagationMode
+    ) => void;
     onStopDurationChange: (row: TimesStopsRowNew, durationSeconds: number | null) => void;
-    onDepartureChange: (row: TimesStopsRowNew, departure: Date | null) => void;
+    onDepartureChange: (
+      row: TimesStopsRowNew,
+      departure: Date | null,
+      propagationMode: PropagationMode
+    ) => void;
     onReceptionSignalChange: (row: TimesStopsRowNew, signal: ReceptionSignal | undefined) => void;
   }
 }
@@ -80,9 +88,17 @@ type TimesStopsTableProps = {
   startTime: Date;
   isValid: boolean;
   isComputedDataPending?: boolean;
-  onArrivalChange: (row: TimesStopsRowNew, arrival: Date | null) => void;
+  onArrivalChange: (
+    row: TimesStopsRowNew,
+    arrival: Date | null,
+    propagationMode: PropagationMode
+  ) => void;
   onStopDurationChange: (row: TimesStopsRowNew, durationSeconds: number | null) => void;
-  onDepartureChange: (row: TimesStopsRowNew, departure: Date | null) => void;
+  onDepartureChange: (
+    row: TimesStopsRowNew,
+    departure: Date | null,
+    propagationMode: PropagationMode
+  ) => void;
   onReceptionSignalChange: (row: TimesStopsRowNew, signal: ReceptionSignal | undefined) => void;
 };
 
@@ -236,7 +252,7 @@ const TimesStopsTable = ({
               onTabKeyDown={(direction) =>
                 focusRequestedCellOnTab(info.row.index, 'requestedArrival', direction)
               }
-              onCommit={(date) => onArrival(row, date)}
+              onCommit={(date, propagationMode) => onArrival(row, date, propagationMode)}
               disableClear={info.row.index === 0}
             />
           );
@@ -292,7 +308,9 @@ const TimesStopsTable = ({
               onTabKeyDown={(direction) =>
                 focusRequestedCellOnTab(info.row.index, 'requestedDeparture', direction)
               }
-              onCommit={(date) => info.table.options.meta!.onDepartureChange(row, date)}
+              onCommit={(date, propagationMode) =>
+                info.table.options.meta!.onDepartureChange(row, date, propagationMode)
+              }
             />
           );
         },

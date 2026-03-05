@@ -32,7 +32,8 @@ import {
   buildUpdatedOccurrence,
   insertScheduleItemInOrder,
 } from '../helpers/cellUpdate';
-import type { CellUpdate, OptimisticEdit, TimesStopsRowNew } from '../types';
+import { propagateTime } from '../helpers/timePropagation';
+import type { CellUpdate, OptimisticEdit, PropagationMode, TimesStopsRowNew } from '../types';
 
 /**
  * Hook that provides a callback to update times/stops cell values.
@@ -61,7 +62,12 @@ const useUpdateTimesStopsTable = (
   const computeUpdatedPathAndSchedule = useCallback(
     (
       update: CellUpdate
-    ): { updatedPath: PathItem[]; updatedSchedule: ScheduleItem[] } | undefined => {
+    ):
+      | { updatedPath: PathItem[]; updatedSchedule: ScheduleItem[]; updatedStartTime?: Date }
+      | undefined => {
+      const propagatedResult = propagateTime(update, selectedTrain);
+      if (propagatedResult) return propagatedResult;
+
       const { pathStepId, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
       const currentSchedule = selectedTrain.schedule ?? [];
       const existingItemIndex = currentSchedule.findIndex((item) => item.at === pathStepId);
@@ -159,7 +165,11 @@ const useUpdateTimesStopsTable = (
 
       // Build updated occurrence based on update type
       let updatedOccurrence: TrainSchedule;
-      if (update.field === 'requestedArrival' && update.row.opOnPathIndex === 0) {
+      if (
+        update.field === 'requestedArrival' &&
+        update.row.opOnPathIndex === 0 &&
+        update.propagationMode === 'atThisWaypoint'
+      ) {
         if (!update.value) {
           console.error('Cannot clear start time on the origin');
           return;
@@ -176,12 +186,15 @@ const useUpdateTimesStopsTable = (
       } else {
         const result = computeUpdatedPathAndSchedule(update);
         if (!result) return;
-        updatedOccurrence = buildUpdatedOccurrence(
-          selectedTrain,
-          result.updatedPath,
-          result.updatedSchedule,
-          occurrenceTrainName
-        );
+        updatedOccurrence = {
+          ...buildUpdatedOccurrence(
+            selectedTrain,
+            result.updatedPath,
+            result.updatedSchedule,
+            occurrenceTrainName
+          ),
+          start_time: result.updatedStartTime?.toISOString() ?? selectedTrain.start_time,
+        };
       }
 
       const updatedPacedTrain = buildPacedTrainWithUpdatedException(
@@ -207,7 +220,11 @@ const useUpdateTimesStopsTable = (
       const editoastId = extractEditoastIdFromPacedTrainId(trainId);
 
       // Handle first row
-      if (update.field === 'requestedArrival' && update.row.opOnPathIndex === 0) {
+      if (
+        update.field === 'requestedArrival' &&
+        update.row.opOnPathIndex === 0 &&
+        update.propagationMode === 'atThisWaypoint'
+      ) {
         if (!update.value) return;
 
         const train: TimetableItem = {
@@ -233,6 +250,7 @@ const useUpdateTimesStopsTable = (
         id: extractEditoastIdFromPacedTrainId(trainId),
         path: updatedPath,
         schedule: updatedSchedule,
+        start_time: result.updatedStartTime?.toISOString() ?? selectedTrain.start_time,
       };
 
       await updateTrainSchedule({
@@ -265,8 +283,8 @@ const useUpdateTimesStopsTable = (
   // Functions are included in deps (exception to the project convention) to propagate
   // allRows updates through the entire callback chain.
   const updateArrival = useCallback(
-    (row: TimesStopsRowNew, arrival: Date | null) =>
-      updateCell({ row, field: 'requestedArrival', value: arrival }),
+    (row: TimesStopsRowNew, arrival: Date | null, propagationMode?: PropagationMode) =>
+      updateCell({ row, field: 'requestedArrival', value: arrival, propagationMode }),
     [updateCell]
   );
 
@@ -277,8 +295,8 @@ const useUpdateTimesStopsTable = (
   );
 
   const updateDeparture = useCallback(
-    (row: TimesStopsRowNew, departure: Date | null) =>
-      updateCell({ row, field: 'requestedDeparture', value: departure }),
+    (row: TimesStopsRowNew, departure: Date | null, propagationMode?: PropagationMode) =>
+      updateCell({ row, field: 'requestedDeparture', value: departure, propagationMode }),
     [updateCell]
   );
 

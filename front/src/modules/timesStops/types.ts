@@ -113,6 +113,7 @@ export type ArrivalUpdate = {
   row: TimesStopsRowNew;
   field: 'requestedArrival';
   value: Date | null;
+  propagationMode?: PropagationMode;
 };
 
 export type StopDurationUpdate = {
@@ -125,6 +126,7 @@ export type DepartureUpdate = {
   row: TimesStopsRowNew;
   field: 'requestedDeparture';
   value: Date | null;
+  propagationMode?: PropagationMode;
 };
 
 export type ReceptionSignalUpdate = {
