@@ -1,7 +1,7 @@
 package fr.sncf.osrd.stdcm
 
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
-import fr.sncf.osrd.pathfinding.constraints.ConstraintCombiner
+import fr.sncf.osrd.pathfinding.constraints.CachedBlockConstraintCombiner
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.BlockInfra
@@ -111,7 +111,7 @@ class STDCMHeuristicBuilder(
     private val maxRunningTime: Double,
     private val maxSpeedEnvBuilder: CachedBlockMaxSpeedEnvBuilder,
     val allowance: AllowanceValue?,
-    private val constraints: ConstraintCombiner? = null,
+    private val constraints: CachedBlockConstraintCombiner? = null,
 ) {
     private val logger: Logger = LoggerFactory.getLogger("STDCMHeuristic")
 

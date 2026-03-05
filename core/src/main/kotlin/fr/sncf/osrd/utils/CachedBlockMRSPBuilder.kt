@@ -1,6 +1,7 @@
 package fr.sncf.osrd.utils
 
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.api.FullInfra.InfraCacheType
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
@@ -85,18 +86,14 @@ data class CachedBlockMRSPBuilder(
         const val DEFAULT_MAX_ROLLING_STOCK_SPEED = (320.0 / 3.6)
 
         data class CacheParameters(
-            val infraName: String,
-            val infraVersion: Int,
-            val infraObjectId: Int, // For tests with modified infrastructures
             private val rsMaxSpeed: Double,
             private val rsLength: Double,
             private val speedLimitTag: String?,
             val addRollingStockLength: Boolean,
         )
 
-        val REUSABLE_CACHE by SoftLazy {
-            ConcurrentHashMap<CacheParameters, CachedBlockMRSPBuilder>()
-        }
+        data object GlobalCacheKey :
+            InfraCacheType<ConcurrentHashMap<CacheParameters, CachedBlockMRSPBuilder>>()
 
         fun getCachedBlockMRSPBuilder(
             infra: FullInfra,
@@ -118,17 +115,9 @@ data class CachedBlockMRSPBuilder(
                 )
             if (temporarySpeedLimitManager.speedLimits.isNotEmpty()) return buildNew()
 
-            val key =
-                CacheParameters(
-                    infra.metadata.name,
-                    infra.metadata.version,
-                    System.identityHashCode(infra),
-                    rsMaxSpeed,
-                    rsLength,
-                    speedLimitTag,
-                    addRollingStockLength,
-                )
-            return REUSABLE_CACHE.computeIfAbsent(key) { buildNew() }
+            val key = CacheParameters(rsMaxSpeed, rsLength, speedLimitTag, addRollingStockLength)
+            val cache = infra.getCache(GlobalCacheKey) { ConcurrentHashMap() }
+            return cache.computeIfAbsent(key) { buildNew() }
         }
     }
 }

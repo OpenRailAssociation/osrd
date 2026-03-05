@@ -5,7 +5,7 @@ import fr.sncf.osrd.api.pathfinding.pathfindingLogger
 import fr.sncf.osrd.graph.AStarHeuristic
 import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.path.interfaces.BlockRange
-import fr.sncf.osrd.pathfinding.constraints.ConstraintCombiner
+import fr.sncf.osrd.pathfinding.constraints.CachedBlockConstraintCombiner
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.BlockId
@@ -146,7 +146,7 @@ class Pathfinding(
 
     fun runPathfinding(timeout: Double = TIMEOUT): InfraExplorer? {
         val constraintCombiner =
-            ConstraintCombiner.getCachedConstraintCombiner(fullInfra, constraints)
+            CachedBlockConstraintCombiner.getCachedConstraintCombiner(fullInfra, constraints)
 
         val startTime = Instant.now()
         val seenBlocks = HashMap<BlockId, Int>()

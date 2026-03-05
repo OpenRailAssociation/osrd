@@ -7,7 +7,7 @@ import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.FixedTime
 import fr.sncf.osrd.graph.Graph
-import fr.sncf.osrd.pathfinding.constraints.ConstraintCombiner
+import fr.sncf.osrd.pathfinding.constraints.CachedBlockConstraintCombiner
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.sim_infra.api.ZoneId
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
@@ -47,7 +47,7 @@ class STDCMGraph(
     val tag: String?,
     val standardAllowance: AllowanceValue?,
     val temporarySpeedLimitManager: TemporarySpeedLimitManager = TemporarySpeedLimitManager(),
-    constraints: ConstraintCombiner,
+    constraints: CachedBlockConstraintCombiner,
     val searchMetadata: SearchMetadata?,
     failureExplainer: FailureExplainer?,
 ) : Graph<STDCMNode, STDCMEdge> {

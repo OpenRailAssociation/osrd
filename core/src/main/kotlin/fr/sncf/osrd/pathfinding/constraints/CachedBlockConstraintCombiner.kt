@@ -1,13 +1,13 @@
 package fr.sncf.osrd.pathfinding.constraints
 
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.api.FullInfra.InfraCacheType
 import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.TrackSectionId
 import fr.sncf.osrd.train.RollingStock
-import fr.sncf.osrd.utils.SoftLazy
 import fr.sncf.osrd.utils.units.OffsetRange
 import java.util.concurrent.ConcurrentHashMap
 
@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap
  *
  * This object (and its cache) can be shared across requests by using [getCachedConstraintCombiner].
  */
-class ConstraintCombiner(val functions: List<PathfindingConstraint> = ArrayList()) :
+class CachedBlockConstraintCombiner(val functions: List<PathfindingConstraint> = ArrayList()) :
     PathfindingConstraint {
     private val cache = ConcurrentHashMap<BlockId, Collection<OffsetRange<Block>>>()
 
@@ -37,31 +37,20 @@ class ConstraintCombiner(val functions: List<PathfindingConstraint> = ArrayList(
     }
 
     companion object {
-        data class CacheParameters(
-            val infraName: String,
-            val infraVersion: Int,
-            val infraObjectId: Int, // For tests with modified infrastructures
-            private val constraintIds: Set<String>,
-        )
-
-        val REUSABLE_CACHE by SoftLazy { ConcurrentHashMap<CacheParameters, ConstraintCombiner>() }
+        data object GlobalCacheKey :
+            InfraCacheType<ConcurrentHashMap<Set<String>, CachedBlockConstraintCombiner>>()
 
         /**
-         * Returns a previous [ConstraintCombiner] that has the exact same parameter, if one has
-         * already been used, and if it hasn't been cleared by the JVM.
+         * Returns a previous [CachedBlockConstraintCombiner] that has the exact same parameter, if
+         * one has already been used, and if it hasn't been cleared by the JVM.
          */
         fun getCachedConstraintCombiner(
             infra: FullInfra,
             constraints: List<PathfindingConstraint>,
-        ): ConstraintCombiner {
-            val key =
-                CacheParameters(
-                    infra.metadata.name,
-                    infra.metadata.version,
-                    System.identityHashCode(infra),
-                    constraints.map { it.getID() }.toSet(),
-                )
-            return REUSABLE_CACHE.computeIfAbsent(key) { ConstraintCombiner(constraints) }
+        ): CachedBlockConstraintCombiner {
+            val key = constraints.map { it.getID() }.toSet()
+            val cache = infra.getCache(GlobalCacheKey) { ConcurrentHashMap() }
+            return cache.computeIfAbsent(key) { CachedBlockConstraintCombiner(constraints) }
         }
     }
 }

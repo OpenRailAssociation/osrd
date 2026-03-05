@@ -37,12 +37,7 @@ class DummyInfra : RawInfra, BlockInfra {
             signalingSimulator.loadSignals(this),
             this,
             signalingSimulator,
-            InfraMetadata(
-                "Dummy" +
-                    blockPool.hashCode() +
-                    detectorGeoPoint.hashCode() +
-                    detectorMap.hashCode()
-            ),
+            InfraMetadata("Dummy"),
         )
     }
 
@@ -103,7 +98,7 @@ class DummyInfra : RawInfra, BlockInfra {
         detectorGeoPoint.putAll(detectorGeoPoints)
     }
 
-    data class DummyBlockDescriptor(
+    class DummyBlockDescriptor(
         val length: Distance,
         val name: String,
         val entry: DirDetectorId,
