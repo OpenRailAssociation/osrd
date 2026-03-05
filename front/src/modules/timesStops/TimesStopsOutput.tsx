@@ -21,7 +21,13 @@ import useTimesStopsTableData from './hooks/useTimesStopsTableData';
 import useUpdateTimesStopsTable from './hooks/useUpdateTimesStopsTable';
 import TimesStops from './TimesStops';
 import TimesStopsTable from './TimesStopsTable';
-import { TableType, type PendingEdit, type TimesStopsRow, type TimesStopsRowNew } from './types';
+import {
+  TableType,
+  type PendingEdit,
+  type PropagationMode,
+  type TimesStopsRow,
+  type TimesStopsRowNew,
+} from './types';
 
 type TimesStopsOutputProps = {
   infraId: number;
@@ -147,14 +153,22 @@ const TimesStopsOutput = ({
     });
   };
 
-  const handleArrivalChange = (row: TimesStopsRowNew, arrival: Date | null) =>
+  const handleArrivalChange = (
+    row: TimesStopsRowNew,
+    arrival: Date | null,
+    propagationMode: PropagationMode
+  ) =>
     commitEdit({ rowId: row.id, field: 'requestedArrival', value: arrival }, () =>
-      updateArrival(row, arrival)
+      updateArrival(row, arrival, propagationMode)
     );
 
-  const handleDepartureChange = (row: TimesStopsRowNew, departure: Date | null) =>
+  const handleDepartureChange = (
+    row: TimesStopsRowNew,
+    departure: Date | null,
+    propagationMode: PropagationMode
+  ) =>
     commitEdit({ rowId: row.id, field: 'requestedDeparture', value: departure }, () =>
-      updateDeparture(row, departure)
+      updateDeparture(row, departure, propagationMode)
     );
 
   const handleStopDurationChange = (row: TimesStopsRowNew, durationSeconds: number | null) =>
