@@ -86,6 +86,14 @@ The last-minute train (STDCM) module needs additional setup: start by creating a
 docker compose exec editoast editoast stdcm-search-env set-from-scenario <id>
 ```
 
+If you need to use speed limits tags and loading gauge, run this:
+
+```sh
+echo '{ "LG1": [], "LG2": [] }' > /tmp/allowed_tracks.json
+docker cp /tmp/allowed_tracks.json osrd-editoast:/tmp/
+docker compose exec editoast editoast stdcm-search-env set-from-scenario <id> --speed-limit-tags "CC100|100" "CC90|90" "CC200|200" --default-speed-limit-tag "CC100" /tmp/allowed_tracks.json
+```
+
 ## Working on a single component
 
 Each component has a _justfile_ to run usual development tasks. Install [just](https://github.com/casey/just#installation) and run it to see available recipes. All the components include:
