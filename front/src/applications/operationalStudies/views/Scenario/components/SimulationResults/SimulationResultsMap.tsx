@@ -1,10 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import bbox from '@turf/bbox';
 import { lineString } from '@turf/helpers';
 import { compact } from 'lodash';
 import { useTranslation } from 'react-i18next';
-import type { MapRef } from 'react-map-gl/maplibre';
 
 import captureMap from 'applications/operationalStudies/helpers/captureMap';
 import usePathOps from 'applications/operationalStudies/hooks/usePathOps';
@@ -54,8 +53,6 @@ const SimulationResultMap = ({
     updateViewport,
   } = useMapSettingsActions();
   const { viewport } = mapSettings;
-
-  const mapRef = React.useRef<MapRef>(null);
 
   const geojsonPath = useMemo(
     () => pathProperties && lineString(pathProperties.geometry.coordinates),
@@ -233,7 +230,6 @@ const SimulationResultMap = ({
       updateMapSettings={updateMapSettings}
     >
       <MapButtons
-        map={mapRef.current ?? undefined}
         resetPitchBearing={resetPitchBearing}
         bearing={viewport.bearing}
         withMapKeyButton
@@ -242,7 +238,6 @@ const SimulationResultMap = ({
       />
       <BaseMap
         mapId={MAP_ID}
-        mapRef={mapRef}
         cursor="pointer"
         infraId={infraId}
         interactiveLayerIds={interactiveLayerIds}

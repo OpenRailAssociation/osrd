@@ -1,4 +1,4 @@
-import { type MutableRefObject, type PropsWithChildren, useEffect, useState } from 'react';
+import { type PropsWithChildren, type RefObject, useEffect, useState } from 'react';
 
 import type { Geometry } from 'geojson';
 import type { MapLayerMouseEvent, MapLibreEvent } from 'maplibre-gl';
@@ -24,7 +24,7 @@ import { CUSTOM_ATTRIBUTION } from './const';
 type MapProps = {
   mapSettings: MapSettings;
   mapId: string;
-  mapRef: MutableRefObject<MapRef | null>;
+  mapRef?: RefObject<MapRef>;
   interactiveLayerIds: string[];
   infraId?: number;
   updatePartialViewPort: (newPartialViewPort: Partial<Viewport>) => void;

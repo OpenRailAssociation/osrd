@@ -20,10 +20,10 @@ import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 import { useAppDispatch } from 'store';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
+import type { FeatureInfoClick } from '../types';
 import AddPathStepPopup from './AddPathStepPopup';
 import ItineraryLayer from './ItineraryLayer';
 import ItineraryMarkers, { type MarkerInformation } from './ItineraryMarkers';
-import type { FeatureInfoClick } from '../types';
 
 const OPERATIONAL_POINT_LAYERS = [
   'chartis/osrd_operational_point/geo',
@@ -181,7 +181,6 @@ const ManageTimetableItemMap = ({
       updateMapSettings={updateMapSettings}
     >
       <MapButtons
-        map={mapRef.current ?? undefined}
         resetPitchBearing={resetPitchBearing}
         closeFeatureInfoClickPopup={closeFeatureInfoClickPopup}
         bearing={viewport.bearing}
@@ -191,7 +190,6 @@ const ManageTimetableItemMap = ({
       />
       <BaseMap
         mapId="map-container"
-        mapRef={mapRef}
         cursor="pointer"
         hoveredOperationalPointId={hoveredOperationalPointId}
         infraId={infraID}

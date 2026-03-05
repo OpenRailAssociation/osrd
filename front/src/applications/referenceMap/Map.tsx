@@ -1,7 +1,6 @@
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import type { MapLibreEvent } from 'maplibre-gl';
-import type { MapRef } from 'react-map-gl/maplibre';
 
 import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
@@ -22,8 +21,6 @@ const Map = () => {
     useMapSettingsActions();
 
   const infraID = useInfraID();
-
-  const mapRef = useRef<MapRef | null>(null);
 
   const updateMapSettings = useCallback(
     (value: Partial<MapSettings>) => {
@@ -66,7 +63,6 @@ const Map = () => {
         updateMapSettings={updateMapSettings}
       >
         <MapButtons
-          map={mapRef.current ?? undefined}
           resetPitchBearing={resetPitchBearing}
           bearing={viewport.bearing}
           viewPort={viewport}
@@ -75,7 +71,6 @@ const Map = () => {
         />
         <BaseMap
           mapId={REFERENCE_MAP_ID}
-          mapRef={mapRef}
           cursor="normal"
           infraId={infraID}
           interactiveLayerIds={interactiveLayerIds}

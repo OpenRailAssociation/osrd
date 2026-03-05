@@ -10,6 +10,7 @@ import { centerMapOnObject, selectEntities } from 'applications/editor/tools/uti
 import type { EditorContextType } from 'applications/editor/types';
 import type { InfraError } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import { getEditorState } from 'reducers/editor/selectors';
 import { useAppDispatch } from 'store';
 import useKeyboardShortcuts from 'utils/hooks/useKeyboardShortcuts';
@@ -24,6 +25,8 @@ type InfraErrorMapControlProps = {
 const InfraErrorMapControl = ({ mapRef, switchTool }: InfraErrorMapControlProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
+  const { updateViewport } = useMapSettingsActions();
+  const { viewport } = useMapSettings();
   const { register } = useKeyboardShortcuts();
   const { openModal, closeModal } = useModal();
   const editorState = useSelector(getEditorState);
@@ -46,7 +49,7 @@ const InfraErrorMapControl = ({ mapRef, switchTool }: InfraErrorMapControlProps)
           // closing the modal
           closeModal();
 
-          centerMapOnObject(infraID, [entity], dispatch, mapRef);
+          centerMapOnObject(infraID, [entity], dispatch, updateViewport, viewport);
         }}
       />,
       'lg'

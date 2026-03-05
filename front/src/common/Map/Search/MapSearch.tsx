@@ -1,7 +1,6 @@
 import { useCallback } from 'react';
 
 import { useTranslation } from 'react-i18next';
-import type { MapRef } from 'react-map-gl/maplibre';
 
 import MapSearchLine from 'common/Map/Search/MapSearchLine';
 import MapSearchOperationalPoint from 'common/Map/Search/MapSearchOperationalPoint';
@@ -14,31 +13,20 @@ import { useAppDispatch } from 'store';
 import MapModalHeader from '../MapModalHeader';
 
 type MapSearchProps = {
-  map?: MapRef;
   closeMapSearchPopUp: () => void;
   mapSettings: MapSettings;
 };
 
-const MapSearch = ({ map, closeMapSearchPopUp, mapSettings }: MapSearchProps) => {
+const MapSearch = ({ closeMapSearchPopUp, mapSettings }: MapSearchProps) => {
   const { smoothTravel } = mapSettings;
   const { updateViewport } = useMapSettingsActions();
   const dispatch = useAppDispatch();
 
   const updateViewportChange = useCallback(
     (value: Partial<Viewport>) => {
-      if (map && smoothTravel) {
-        map.flyTo({
-          center: {
-            lng: value.longitude || map.getCenter().lng,
-            lat: value.latitude || map.getCenter().lat,
-          },
-          zoom: value.zoom || map.getZoom(),
-          essential: true,
-        });
-      }
       dispatch(updateViewport(value));
     },
-    [map, smoothTravel]
+    [smoothTravel]
   );
 
   const { t } = useTranslation();

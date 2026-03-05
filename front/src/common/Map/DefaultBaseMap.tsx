@@ -1,9 +1,8 @@
-import { type PropsWithChildren, useCallback, useEffect, useRef } from 'react';
+import { type PropsWithChildren, useCallback, useEffect } from 'react';
 
 import bbox from '@turf/bbox';
 import type { Geometry } from 'geojson';
 import { compact } from 'lodash';
-import type { MapRef } from 'react-map-gl/maplibre';
 
 import ItineraryLayer from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/ManageTimetableItemMap/ItineraryLayer';
 import ItineraryMarkers, {
@@ -53,7 +52,6 @@ const DefaultBaseMap = ({
   highlightedOperationalPoints,
   highlightedTrackSections,
 }: PropsWithChildren<DefaultBaseMapProps>) => {
-  const mapRef = useRef<MapRef | null>(null);
   const { viewport } = mapSettings;
 
   const updateViewportChange = useCallback(
@@ -105,7 +103,6 @@ const DefaultBaseMap = ({
       <MapButtons
         zoomIn={zoomIn}
         zoomOut={zoomOut}
-        map={mapRef.current ?? undefined}
         resetPitchBearing={resetPitchBearing}
         bearing={viewport.bearing}
         withMapKeyButton={false}
@@ -116,7 +113,6 @@ const DefaultBaseMap = ({
       />
       <BaseMap
         mapId={mapId}
-        mapRef={mapRef}
         infraId={infraId}
         interactiveLayerIds={[]}
         updatePartialViewPort={updateViewportChange}
