@@ -1183,7 +1183,7 @@ pub(in crate::views) async fn occupancy_blocks(
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 #[schema(as = PacedTrainTrackOccupancyForm)]
 pub(in crate::views) struct TrackOccupancyForm {
-    paced_train_ids: Vec<i64>,
+    train_schedule_ids: Vec<i64>,
     operational_point_reference: OperationalPointReference,
     infra_id: i64,
     electrical_profile_set_id: Option<i64>,
@@ -1217,7 +1217,7 @@ pub(in crate::views) struct TrackSectionOccupancy {
     tag = "paced_train",
     request_body = inline(TrackOccupancyForm),
     responses(
-        (status = 200, description = "Track section occupancy periods for paced trains",
+        (status = 200, description = "Track section occupancy periods for train schedules",
          body = inline(Vec<TrackSectionOccupancy>)),
     ),
 )]
@@ -1231,7 +1231,7 @@ pub(in crate::views) async fn track_occupancy(
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
     Json(TrackOccupancyForm {
-        paced_train_ids,
+        train_schedule_ids,
         operational_point_reference,
         infra_id,
         electrical_profile_set_id,
@@ -1261,8 +1261,8 @@ pub(in crate::views) async fn track_occupancy(
 
     let conn = &mut db_pool.get().await?;
 
-    let paced_trains: Vec<models::TrainSchedule> =
-        models::TrainSchedule::retrieve_batch_or_fail(conn, paced_train_ids, |missing| {
+    let train_schedules: Vec<models::TrainSchedule> =
+        models::TrainSchedule::retrieve_batch_or_fail(conn, train_schedule_ids, |missing| {
             TrainScheduleError::BatchNotFound {
                 count: missing.len(),
             }
@@ -1274,9 +1274,9 @@ pub(in crate::views) async fn track_occupancy(
         get_operational_point(db_pool.clone(), infra_id, operational_point_reference).await?;
 
     // Collect all occurrences from all paced trains using iter_occurrences()
-    let (train_ids, trains): (Vec<_>, Vec<_>) = paced_trains
+    let (train_ids, trains): (Vec<_>, Vec<_>) = train_schedules
         .iter()
-        .flat_map(|paced_train| paced_train.iter_occurrences())
+        .flat_map(|train_schedule| train_schedule.iter_occurrences())
         .unzip();
 
     // Get track positions at the operational point
@@ -2617,9 +2617,9 @@ mod tests {
             .expect("Failed to create paced train");
 
         let request = app
-            .post("/paced_train/track_occupancy")
+            .post("/train_schedules/track_occupancy")
             .json(&TrackOccupancyForm {
-                paced_train_ids: vec![paced_train.id],
+                train_schedule_ids: vec![paced_train.id],
                 operational_point_reference,
                 infra_id: small_infra.id,
                 electrical_profile_set_id: None,

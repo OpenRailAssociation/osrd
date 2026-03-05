@@ -120,8 +120,8 @@ const useTrackOccupancy = ({
     [pathOperationalPoints]
   );
 
-  const [postPacedTrainTrackOccupancy] =
-    osrdEditoastApi.endpoints.postPacedTrainTrackOccupancy.useMutation();
+  const [postTrainSchedulesTrackOccupancy] =
+    osrdEditoastApi.endpoints.postTrainSchedulesTrackOccupancy.useMutation();
   const isSimulationEnabled = useSelector(getIsSimulationEnabled);
   const [postInfraByInfraIdMatchOperationalPoints] =
     osrdEditoastApi.endpoints.postInfraByInfraIdMatchOperationalPoints.useLazyQuery();
@@ -186,13 +186,13 @@ const useTrackOccupancy = ({
           ? {
               operational_point_reference: opRef,
               infra_id: infraId,
-              paced_train_ids: pacedTrainIds.map(extractEditoastIdFromPacedTrainId),
+              train_schedule_ids: pacedTrainIds.map(extractEditoastIdFromPacedTrainId),
               use_simulation: isSimulationEnabled,
             }
           : null;
 
       const pacedResp = await (bodyForPaced
-        ? postPacedTrainTrackOccupancy({ body: bodyForPaced })
+        ? postTrainSchedulesTrackOccupancy({ body: bodyForPaced })
         : Promise.resolve(undefined));
 
       const zones: MovableOccupancyZone[] = [];
@@ -282,7 +282,7 @@ const useTrackOccupancy = ({
 
       return zones;
     },
-    [infraId, postPacedTrainTrackOccupancy, isSimulationEnabled]
+    [infraId, postTrainSchedulesTrackOccupancy, isSimulationEnabled]
   );
 
   const deployedWaypoints = useMemo(() => {

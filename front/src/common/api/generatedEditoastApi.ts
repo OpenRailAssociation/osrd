@@ -647,17 +647,6 @@ const injectedRtkApi = api
         }),
         providesTags: ['train_schedule'],
       }),
-      postPacedTrainTrackOccupancy: build.mutation<
-        PostPacedTrainTrackOccupancyApiResponse,
-        PostPacedTrainTrackOccupancyApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/paced_train/track_occupancy`,
-          method: 'POST',
-          body: queryArg.body,
-        }),
-        invalidatesTags: ['paced_train'],
-      }),
       getPacedTrainByIdPath: build.query<
         GetPacedTrainByIdPathApiResponse,
         GetPacedTrainByIdPathApiArg
@@ -1326,6 +1315,17 @@ const injectedRtkApi = api
           body: queryArg.body,
         }),
         providesTags: ['paced_train'],
+      }),
+      postTrainSchedulesTrackOccupancy: build.mutation<
+        PostTrainSchedulesTrackOccupancyApiResponse,
+        PostTrainSchedulesTrackOccupancyApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/train_schedules/track_occupancy`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['paced_train'],
       }),
       getTrainSchedulesById: build.query<
         GetTrainSchedulesByIdApiResponse,
@@ -2039,41 +2039,6 @@ export type PostPacedTrainProjectPathOpApiArg = {
     use_simulation: boolean;
   };
 };
-export type PostPacedTrainTrackOccupancyApiResponse =
-  /** status 200 Track section occupancy periods for paced trains */ {
-    /** Local track name. Unset if trains occupy the operational point but the specific track is unknown. */
-    local_track_name?: null | string;
-    trains: ((
-      | {
-          index: number;
-          train_schedule_id: number;
-          type: 'base';
-        }
-      | {
-          exception_key: string;
-          index: number;
-          train_schedule_id: number;
-          type: 'modified';
-        }
-      | {
-          exception_key: string;
-          train_schedule_id: number;
-          type: 'created';
-        }
-    ) & {
-      duration: string;
-      time_begin: string;
-    })[];
-  }[];
-export type PostPacedTrainTrackOccupancyApiArg = {
-  body: {
-    electrical_profile_set_id?: number | null;
-    infra_id: number;
-    operational_point_reference: OperationalPointReference;
-    paced_train_ids: number[];
-    use_simulation: boolean;
-  };
-};
 export type GetPacedTrainByIdPathApiResponse = /** status 200 The path */ PathfindingResult;
 export type GetPacedTrainByIdPathApiArg = {
   id: number;
@@ -2610,6 +2575,41 @@ export type PostTrainSchedulesSimulationSummaryApiArg = {
     electrical_profile_set_id?: number | null;
     ids: number[];
     infra_id: number;
+  };
+};
+export type PostTrainSchedulesTrackOccupancyApiResponse =
+  /** status 200 Track section occupancy periods for train schedules */ {
+    /** Local track name. Unset if trains occupy the operational point but the specific track is unknown. */
+    local_track_name?: null | string;
+    trains: ((
+      | {
+          index: number;
+          train_schedule_id: number;
+          type: 'base';
+        }
+      | {
+          exception_key: string;
+          index: number;
+          train_schedule_id: number;
+          type: 'modified';
+        }
+      | {
+          exception_key: string;
+          train_schedule_id: number;
+          type: 'created';
+        }
+    ) & {
+      duration: string;
+      time_begin: string;
+    })[];
+  }[];
+export type PostTrainSchedulesTrackOccupancyApiArg = {
+  body: {
+    electrical_profile_set_id?: number | null;
+    infra_id: number;
+    operational_point_reference: OperationalPointReference;
+    train_schedule_ids: number[];
+    use_simulation: boolean;
   };
 };
 export type GetTrainSchedulesByIdApiResponse =
