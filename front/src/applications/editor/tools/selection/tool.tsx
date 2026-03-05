@@ -20,9 +20,9 @@ import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF/ConfirmModal';
 import { save } from 'reducers/editor/thunkActions';
 import { selectInZone } from 'utils/mapHelper';
 
-import { SelectionLayers, SelectionMessages, SelectionLeftPanel } from './components';
-import type { SelectionState } from './types';
 import TOOL_NAMES from '../constsToolNames';
+import { SelectionLayers, SelectionLeftPanel, SelectionMessages } from './components';
+import type { SelectionState } from './types';
 import type { TrackSectionEntity } from '../trackEdition/types';
 
 const SelectionTool: Tool<SelectionState> = {
@@ -326,7 +326,7 @@ const SelectionTool: Tool<SelectionState> = {
   },
 
   // Layers:
-  getCursor({ state }, { isDragging }) {
+  getCursor({ state }, isDragging) {
     if (isDragging) return 'grabbing';
     if (state.selectionState.type === 'single' && state.hovered) return 'pointer';
     if (state.selectionState.type === 'rectangle' || state.selectionState.type === 'polygon')

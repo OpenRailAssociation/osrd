@@ -1,7 +1,7 @@
 import { useContext, useMemo, useState, type PropsWithChildren } from 'react';
 
 import type { TFunction } from 'i18next';
-import { isEmpty, isEqual, isNil } from 'lodash';
+import { isEmpty, isNil } from 'lodash';
 import maplibregl from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
 import { withTranslation } from 'react-i18next';
@@ -49,12 +49,6 @@ type MapProps<S extends CommonToolState = CommonToolState> = {
   infraID: number | undefined;
 };
 
-type MapState = {
-  isLoaded: boolean;
-  isDragging: boolean;
-  isHovering: boolean;
-};
-
 const protocol = new Protocol();
 maplibregl.addProtocol('pmtiles', protocol.tile);
 
@@ -72,11 +66,7 @@ const MapUnplugged = ({
   const dispatch = useAppDispatch();
   const { removeMapSearchMarker } = useMapSettingsActions();
   const mapBlankStyle = useMapBlankStyle();
-  const [mapState, setMapState] = useState<MapState>({
-    isLoaded: true,
-    isDragging: false,
-    isHovering: false,
-  });
+  const [isDraggingState, setIsDraggingState] = useState<boolean>(false);
   const context = useContext(EditorContext) as EditorContextType<CommonToolState>;
   const { data: switchTypes } = useSwitchTypes(infraID);
   const editorState = useSelector(getEditorState);
@@ -116,8 +106,9 @@ const MapUnplugged = ({
   );
 
   const cursor = useMemo(
-    () => (activeTool.getCursor ? activeTool.getCursor(extendedContext, mapState) : 'default'),
-    [activeTool, extendedContext, mapState]
+    () =>
+      activeTool.getCursor ? activeTool.getCursor(extendedContext, isDraggingState) : 'default',
+    [activeTool, extendedContext, isDraggingState]
   );
 
   return (
@@ -137,8 +128,8 @@ const MapUnplugged = ({
           style={{ width: '100%', height: '100%' }}
           mapStyle={mapBlankStyle}
           onMove={(e) => setViewport(e.viewState)}
-          onDragStart={() => setMapState((prev) => ({ ...prev, isDragging: true }))}
-          onDragEnd={() => setMapState((prev) => ({ ...prev, isDragging: false }))}
+          onDragStart={() => setIsDraggingState(true)}
+          onDragEnd={() => setIsDraggingState(false)}
           onMouseOut={() => {
             setToolState({ hovered: null });
           }}
@@ -155,12 +146,10 @@ const MapUnplugged = ({
             const partialToolState: Partial<CommonToolState> = {
               mousePosition: [e.lngLat.lng, e.lngLat.lat],
             };
-            const partialMapState: Partial<MapState> = { isHovering: false };
 
             // if we hover something
             if (nearestResult) {
               const { feature } = nearestResult;
-              partialMapState.isHovering = true;
               if (activeTool.onHover) {
                 activeTool.onHover(
                   {
@@ -214,14 +203,10 @@ const MapUnplugged = ({
             }
 
             if (!isEmpty(partialToolState)) setToolState(partialToolState);
-
-            const newMapState = { ...mapState, ...partialMapState };
-            if (!isEqual(mapState, newMapState)) setMapState(newMapState);
           }}
           onLoad={(e) => {
             // need to call resize, otherwise sometimes the canvas doesn't take 100%
             e.target.resize();
-            setMapState((prev) => ({ ...prev, isLoaded: false }));
           }}
           onResize={(e) => {
             setViewport({

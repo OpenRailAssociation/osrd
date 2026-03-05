@@ -22,7 +22,7 @@ import { NULL_GEOMETRY } from 'types';
 import { nearestPointOnLine } from 'utils/geometry';
 import { getNearestPoint } from 'utils/mapHelper';
 
-import { PointEditionMessages, PointEditionLeftPanel } from './components';
+import { PointEditionLeftPanel, PointEditionMessages } from './components';
 import { POINT_LAYER_ID } from './consts';
 import type { BufferStopEntity, DetectorEntity, PointEditionState, SignalEntity } from './types';
 
@@ -167,7 +167,7 @@ function getPointEditionTool<T extends EditorPoint>({
     ],
 
     // Interactions:
-    getCursor({ state }, { isDragging }) {
+    getCursor({ state }, isDragging) {
       if (isDragging || !state.entity.geometry || isEqual(state.entity.geometry, NULL_GEOMETRY))
         return 'grabbing';
       if (state.isHoveringTarget) return 'pointer';
