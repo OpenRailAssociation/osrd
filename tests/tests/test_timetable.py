@@ -230,7 +230,7 @@ def test_conflicts_with_reception_on_closed_signal(
         "track_section_ranges": path_response_json["path"]["track_section_ranges"],
     }
     response_project_path = session.post(
-        f"{EDITOAST_URL}/paced_train/project_path", json=project_path_payload
+        f"{EDITOAST_URL}/train_schedules/project_path", json=project_path_payload
     )
     response_project_path.raise_for_status()
 

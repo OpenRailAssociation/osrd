@@ -2,7 +2,7 @@ import { isEmpty } from 'lodash';
 
 import {
   osrdEditoastApi,
-  type PostPacedTrainProjectPathApiResponse,
+  type PostTrainSchedulesProjectPathApiResponse,
   type PostTrainSchedulesOccupancyBlocksApiResponse,
   type CoreTrainPath,
 } from 'common/api/osrdEditoastApi';
@@ -38,13 +38,13 @@ export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyL
 
     const editoastIds = batch.map((id) => extractEditoastIdFromPacedTrainId(id));
 
-    let pacedTrainPromise: Promise<PostPacedTrainProjectPathApiResponse> = Promise.resolve({});
-    let pacedTrainOccupancyBlocksPromise: Promise<PostTrainSchedulesOccupancyBlocksApiResponse> =
+    let pacedTrainPromise: Promise<PostTrainSchedulesProjectPathApiResponse> = Promise.resolve({});
+    let trainSchedulesOccupancyBlocksPromise: Promise<PostTrainSchedulesOccupancyBlocksApiResponse> =
       Promise.resolve({});
     if (editoastIds.length > 0) {
       pacedTrainPromise = this.options
         .dispatch(
-          osrdEditoastApi.endpoints.postPacedTrainProjectPath.initiate(
+          osrdEditoastApi.endpoints.postTrainSchedulesProjectPath.initiate(
             {
               projectPathForm: {
                 infra_id: infraId,
@@ -58,7 +58,7 @@ export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyL
         )
         .unwrap();
 
-      pacedTrainOccupancyBlocksPromise = this.options
+      trainSchedulesOccupancyBlocksPromise = this.options
         .dispatch(
           osrdEditoastApi.endpoints.postTrainSchedulesOccupancyBlocks.initiate(
             {
@@ -76,7 +76,7 @@ export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyL
     }
 
     const rawPacedTrainResults = await pacedTrainPromise;
-    const rawPacedTrainOccupancyBlocks = await pacedTrainOccupancyBlocksPromise;
+    const rawTrainSchedulesOccupancyBlocks = await trainSchedulesOccupancyBlocksPromise;
 
     if (this.cancelled) {
       return;
@@ -87,8 +87,8 @@ export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyL
     for (const [id, result] of Object.entries(rawPacedTrainResults)) {
       const pacedTrainId = formatEditoastIdToPacedTrainId(Number(id));
       const pacedTrainProjectionResult: ProjectionResult = {
-        space_time_curves: result.paced_train,
-        signal_updates: rawPacedTrainOccupancyBlocks[id].train_schedule,
+        space_time_curves: result.train_schedule,
+        signal_updates: rawTrainSchedulesOccupancyBlocks[id].train_schedule,
       };
 
       if (!isEmpty(result.exceptions)) {
@@ -96,7 +96,7 @@ export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyL
         for (const [exceptionKey, exception] of Object.entries(result.exceptions)) {
           pacedTrainProjectionResult.exceptions.set(exceptionKey, {
             space_time_curves: exception,
-            signal_updates: rawPacedTrainOccupancyBlocks[id]?.exceptions?.[exceptionKey] ?? [],
+            signal_updates: rawTrainSchedulesOccupancyBlocks[id]?.exceptions?.[exceptionKey] ?? [],
           });
         }
       }

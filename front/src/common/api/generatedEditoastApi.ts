@@ -13,8 +13,8 @@ export const addTagTypes = [
   'layers',
   'level_crossing',
   'scenarios',
-  'paced_train',
   'train_schedule',
+  'paced_train',
   'projects',
   'rolling_stock_livery',
   'round_trips',
@@ -635,17 +635,6 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({ url: `/macro_notes/${queryArg.noteId}`, method: 'DELETE' }),
         invalidatesTags: ['scenarios'],
-      }),
-      postPacedTrainProjectPath: build.query<
-        PostPacedTrainProjectPathApiResponse,
-        PostPacedTrainProjectPathApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/paced_train/project_path`,
-          method: 'POST',
-          body: queryArg.projectPathForm,
-        }),
-        providesTags: ['paced_train'],
       }),
       postPacedTrainProjectPathOp: build.query<
         PostPacedTrainProjectPathOpApiResponse,
@@ -1313,6 +1302,17 @@ const injectedRtkApi = api
           url: `/train_schedules/occupancy_blocks`,
           method: 'POST',
           body: queryArg.occupancyBlockForm,
+        }),
+        providesTags: ['paced_train'],
+      }),
+      postTrainSchedulesProjectPath: build.query<
+        PostTrainSchedulesProjectPathApiResponse,
+        PostTrainSchedulesProjectPathApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/train_schedules/project_path`,
+          method: 'POST',
+          body: queryArg.projectPathForm,
         }),
         providesTags: ['paced_train'],
       }),
@@ -2004,15 +2004,9 @@ export type DeleteMacroNotesByNoteIdApiResponse = unknown;
 export type DeleteMacroNotesByNoteIdApiArg = {
   noteId: number;
 };
-export type PostPacedTrainProjectPathApiResponse = /** status 200 Project Path Output */ {
-  [key: string]: ProjectPathPacedTrainResult;
-};
-export type PostPacedTrainProjectPathApiArg = {
-  projectPathForm: ProjectPathForm;
-};
 export type PostPacedTrainProjectPathOpApiResponse =
   /** status 200 Project paced trains on a list of operational points. */ {
-    [key: string]: ProjectPathPacedTrainResult;
+    [key: string]: ProjectPathTrainScheduleResult;
   };
 export type PostPacedTrainProjectPathOpApiArg = {
   body: {
@@ -2600,6 +2594,12 @@ export type PostTrainSchedulesOccupancyBlocksApiResponse = /** status 200  */ {
 };
 export type PostTrainSchedulesOccupancyBlocksApiArg = {
   occupancyBlockForm: OccupancyBlockForm;
+};
+export type PostTrainSchedulesProjectPathApiResponse = /** status 200 Project Path Output */ {
+  [key: string]: ProjectPathTrainScheduleResult;
+};
+export type PostTrainSchedulesProjectPathApiArg = {
+  projectPathForm: ProjectPathForm;
 };
 export type PostTrainSchedulesSimulationSummaryApiResponse =
   /** status 200 Associate each train schedule id with its simulation summaries */ {
@@ -3803,28 +3803,13 @@ export type SpaceTimeCurve = {
   /** List of times in ms since `departure_time` associated to a position */
   times: number[];
 };
-export type ProjectPathPacedTrainResult = {
-  /** Exceptions whose projection is different from the paced train */
+export type ProjectPathTrainScheduleResult = {
+  /** Exceptions whose projection is different from the train schedule when it has a paced */
   exceptions: {
     [key: string]: SpaceTimeCurve[];
   };
-  /** Paced train */
-  paced_train: SpaceTimeCurve[];
-};
-export type ProjectPathForm = {
-  electrical_profile_set_id?: number | null;
-  ids: number[];
-  infra_id: number;
-  track_section_ranges: {
-    /** The beginning of the range in mm. */
-    begin: number;
-    /** The direction of the range. */
-    direction: Direction;
-    /** The end of the range in mm. */
-    end: number;
-    /** The track section identifier. */
-    track_section: string;
-  }[];
+  /** Train schedule */
+  train_schedule: SpaceTimeCurve[];
 };
 export type CoreReportTrain = {
   /** Total energy consumption */
@@ -4887,6 +4872,21 @@ export type OccupancyBlockForm = {
   ids: number[];
   infra_id: number;
   path: CoreTrainPath;
+};
+export type ProjectPathForm = {
+  electrical_profile_set_id?: number | null;
+  ids: number[];
+  infra_id: number;
+  track_section_ranges: {
+    /** The beginning of the range in mm. */
+    begin: number;
+    /** The direction of the range. */
+    direction: Direction;
+    /** The end of the range in mm. */
+    end: number;
+    /** The track section identifier. */
+    track_section: string;
+  }[];
 };
 export type SimulationSummaryResult =
   | {

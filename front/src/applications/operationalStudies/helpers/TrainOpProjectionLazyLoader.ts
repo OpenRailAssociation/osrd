@@ -98,7 +98,7 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
     for (const [id, result] of Object.entries(rawPacedTrainResults)) {
       const pacedTrainId = formatEditoastIdToPacedTrainId(Number(id));
       const pacedTrainProjectionResult: ProjectionResult = {
-        space_time_curves: result.paced_train,
+        space_time_curves: result.train_schedule,
         signal_updates: rawPacedTrainOccupancyBlocks[id]?.train_schedule,
       };
 
