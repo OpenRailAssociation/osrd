@@ -2519,43 +2519,6 @@ paths:
       responses:
         '204':
           description: The paced train has been updated
-  /paced_train/{id}/etcs_braking_curves:
-    get:
-      tags:
-      - paced_train
-      - etcs_braking_curves
-      summary: Retrieve the etcs braking curves of an etcs train on etcs portions of the path
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: infra_id
-        in: query
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: electrical_profile_set_id
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int64
-      - name: exception_key
-        in: query
-        required: false
-        schema:
-          type: string
-      responses:
-        '200':
-          description: ETCS Braking Curves Output
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/core.ETCSBrakingCurvesResponse'
   /paced_train/{id}/path:
     get:
       tags:
@@ -4695,6 +4658,43 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TrainScheduleResponse'
+  /train_schedules/{id}/etcs_braking_curves:
+    get:
+      tags:
+      - paced_train
+      - etcs_braking_curves
+      summary: Retrieve the etcs braking curves of an etcs train on etcs portions of the path
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: infra_id
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: electrical_profile_set_id
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: exception_key
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: ETCS Braking Curves Output
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/core.ETCSBrakingCurvesResponse'
   /version:
     get:
       responses:

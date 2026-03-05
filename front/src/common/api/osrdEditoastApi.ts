@@ -133,7 +133,7 @@ const osrdEditoastApi = generatedEditoastApi
             ? extractPacedTrainIdFromOccurrenceId(trainId)
             : trainId;
           const etcsBrakingCurves = await dispatch(
-            generatedEditoastApi.endpoints.getPacedTrainByIdEtcsBrakingCurves.initiate(
+            generatedEditoastApi.endpoints.getTrainSchedulesByIdEtcsBrakingCurves.initiate(
               {
                 id: extractEditoastIdFromPacedTrainId(pacedTrainId),
                 infraId,
