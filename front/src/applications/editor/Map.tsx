@@ -8,8 +8,8 @@ import { withTranslation } from 'react-i18next';
 import ReactMapGL, { AttributionControl, ScaleControl, type MapRef } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 
-import { LAYER_TO_EDITOAST_DICT, LAYERS_SET } from 'applications/editor/consts';
 import type { Layer } from 'applications/editor/consts';
+import { LAYER_TO_EDITOAST_DICT, LAYERS_SET } from 'applications/editor/consts';
 import EditorContext from 'applications/editor/context';
 import { getEntity } from 'applications/editor/data/api';
 import useSwitchTypes from 'applications/editor/tools/switchEdition/useSwitchTypes';
@@ -25,8 +25,8 @@ import {
   OSMLayers,
   Platforms,
   SearchMarker,
-  VirtualLayers,
   useMapBlankStyle,
+  VirtualLayers,
 } from 'common/Map/Layers';
 import LevelCrossingsLayer from 'common/Map/Layers/InfraObjectLayers/LevelCrossing';
 import { colors } from 'common/Map/theme';
@@ -137,10 +137,8 @@ const MapUnplugged = ({
           style={{ width: '100%', height: '100%' }}
           mapStyle={mapBlankStyle}
           onMove={(e) => setViewport(e.viewState)}
-          onMoveStart={() => setMapState((prev) => ({ ...prev, isDragging: true }))}
-          onMoveEnd={() => {
-            setMapState((prev) => ({ ...prev, isDragging: false }));
-          }}
+          onDragStart={() => setMapState((prev) => ({ ...prev, isDragging: true }))}
+          onDragEnd={() => setMapState((prev) => ({ ...prev, isDragging: false }))}
           onMouseOut={() => {
             setToolState({ hovered: null });
           }}
