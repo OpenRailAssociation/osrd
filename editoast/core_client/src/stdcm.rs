@@ -31,19 +31,13 @@ pub struct Request {
     // Pathfinding inputs
     /// List of waypoints. Each waypoint is a list of track offset.
     pub path_items: Vec<PathItem>,
-    /// The loading gauge of the rolling stock
-    pub rolling_stock_loading_gauge: LoadingGaugeType,
     /// Set of authorized track section ids for the current request
     pub allowed_track_sections: Option<HashSet<String>>,
-    /// List of supported signaling systems
-    pub rolling_stock_supported_signaling_systems: Vec<String>,
 
     // Simulation inputs
     /// The comfort of the train
     pub comfort: Comfort,
-    pub speed_limit_tag: Option<String>,
-    #[schema(inline)]
-    pub physics_consist: PhysicsConsist,
+    pub consist_schedule: ConsistSchedule,
 
     // STDCM search parameters
     /// Numerical integration time step in milliseconds. Use default value if not specified.
@@ -123,6 +117,26 @@ pub struct UndirectedTrackRange {
     pub begin: u64,
     /// The end of the range in mm.
     pub end: u64,
+}
+
+/// Represents a physics consist.
+#[derive(Serialize, Deserialize, Clone, Debug, ToSchema, Hash, PartialEq, Eq)]
+pub struct ConsistConfiguration {
+    /// List of supported signaling systems
+    pub supported_signaling_systems: Vec<String>,
+    pub speed_limit_tag: Option<String>,
+    /// The loading gauge of the rolling stock
+    pub loading_gauge_type: LoadingGaugeType,
+    #[schema(inline)]
+    pub physics_consist: PhysicsConsist,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, ToSchema, Hash, PartialEq, Eq)]
+pub struct ConsistSchedule {
+    // Indices of steps where consist changes occur
+    pub boundaries: Vec<usize>,
+    // Consist configuration for each segment
+    pub values: Vec<ConsistConfiguration>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]

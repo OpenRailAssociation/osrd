@@ -25,21 +25,17 @@ class STDCMRequest(
     @Json(name = "expected_version") var expectedVersion: Int,
     @Json(name = "timetable_id") var timetableId: TimetableId,
 
-    // Rolling stock
-    @Json(name = "physics_consist") val physicsConsist: PhysicsConsistModel,
+    // Rolling stocks
+    @Json(name = "consist_schedule") val consistSchedule: ConsistSchedule,
 
     // Pathfinding inputs
     /// List of waypoints. Each waypoint is a list of track offsets
     @Json(name = "path_items") val pathItems: List<STDCMPathItem>,
-    @Json(name = "rolling_stock_loading_gauge") val rollingStockLoadingGauge: RJSLoadingGaugeType,
     // TODO: migrate this to structured SupportedSignalingSystem like editoast for ETCS support of
     // brake params
-    @Json(name = "rolling_stock_supported_signaling_systems")
-    val rollingStockSupportedSignalingSystems: List<String>,
 
     // Simulation inputs
     val comfort: Comfort,
-    @Json(name = "speed_limit_tag") val speedLimitTag: String?,
 
     // STDCM search parameters
     /// Numerical integration time step. Defaults to 2s.
@@ -77,6 +73,18 @@ data class StepTimingData(
     @Json(name = "arrival_time") val arrivalTime: ZonedDateTime,
     @Json(name = "arrival_time_tolerance_before") val arrivalTimeToleranceBefore: Duration,
     @Json(name = "arrival_time_tolerance_after") val arrivalTimeToleranceAfter: Duration,
+)
+
+data class ConsistSchedule(
+    @Json(name = "boundaries") val boundaries: List<Int>,
+    @Json(name = "values") val values: List<ConsistConfiguration>,
+)
+
+data class ConsistConfiguration(
+    @Json(name = "supported_signaling_systems") val supportedSignalingSystems: List<String>,
+    @Json(name = "speed_limit_tag") val speedLimitTag: String?,
+    @Json(name = "loading_gauge_type") val loadingGaugeType: RJSLoadingGaugeType,
+    @Json(name = "physics_consist") val physicsConsist: PhysicsConsistModel,
 )
 
 val stdcmRequestAdapter: JsonAdapter<STDCMRequest> =

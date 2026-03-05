@@ -114,9 +114,9 @@ class STDCMEndpoint(
                 buildTemporarySpeedLimitManager(infra, request.temporarySpeedLimits)
             val rollingStock =
                 parseRawRollingStock(
-                    request.physicsConsist,
-                    request.rollingStockLoadingGauge,
-                    request.rollingStockSupportedSignalingSystems.filter {
+                    request.consistSchedule.values[0].physicsConsist,
+                    request.consistSchedule.values[0].loadingGaugeType,
+                    request.consistSchedule.values[0].supportedSignalingSystems.filter {
                         // Ignoring ETCS as it is not (yet) supported for STDCM
                         it != ETCS_LEVEL2.id
                     },
@@ -145,7 +145,7 @@ class STDCMEndpoint(
                     request.timeStep.seconds,
                     request.maximumDepartureDelay!!.seconds,
                     request.maximumRunTime.seconds,
-                    request.speedLimitTag,
+                    request.consistSchedule.values[0].speedLimitTag,
                     parseMarginValue(request.margin),
                     Pathfinding.TIMEOUT,
                     temporarySpeedLimitManager,
@@ -166,7 +166,7 @@ class STDCMEndpoint(
                     infra,
                     path,
                     rollingStock,
-                    request.speedLimitTag,
+                    request.consistSchedule.values[0].speedLimitTag,
                     temporarySpeedLimitManager,
                     request.comfort,
                 )

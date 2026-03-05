@@ -5202,6 +5202,126 @@ components:
             type: integer
             format: int64
           description: List of work schedule ids involved in the conflict
+    ConsistConfiguration:
+      type: object
+      description: Represents a physics consist.
+      required:
+      - supported_signaling_systems
+      - loading_gauge_type
+      - physics_consist
+      properties:
+        loading_gauge_type:
+          $ref: '#/components/schemas/LoadingGaugeType'
+          description: The loading gauge of the rolling stock
+        physics_consist:
+          type: object
+          required:
+          - effort_curves
+          - length
+          - max_speed
+          - startup_time
+          - startup_acceleration
+          - comfort_acceleration
+          - const_gamma
+          - inertia_coefficient
+          - mass
+          - rolling_resistance
+          properties:
+            base_power_class:
+              type:
+              - string
+              - 'null'
+            comfort_acceleration:
+              type: number
+              format: double
+              description: Acceleration in m·s⁻²
+            const_gamma:
+              type: number
+              format: double
+              description: |2-
+                 The constant gamma braking coefficient used when NOT circulating
+                 under ETCS/ERTMS signaling system
+                Acceleration in m·s⁻²
+            effort_curves:
+              $ref: '#/components/schemas/EffortCurves'
+            electrical_power_startup_time:
+              type:
+              - integer
+              - 'null'
+              format: int64
+              description: |-
+                The time the train takes before actually using electrical power.
+                Is null if the train is not electric or the value not specified.
+              minimum: 0
+            etcs_brake_params:
+              oneOf:
+              - type: 'null'
+              - $ref: '#/components/schemas/EtcsBrakeParams'
+            inertia_coefficient:
+              type: number
+              format: double
+            length:
+              type: integer
+              format: int64
+              minimum: 0
+            mass:
+              type: integer
+              format: int64
+              minimum: 0
+            max_speed:
+              type: number
+              format: double
+              description: Velocity in m·s⁻¹
+            power_restrictions:
+              type: object
+              description: Mapping of power restriction code to power class
+              additionalProperties:
+                type: string
+              propertyNames:
+                type: string
+            raise_pantograph_time:
+              type:
+              - integer
+              - 'null'
+              format: int64
+              description: |-
+                The time it takes to raise this train's pantograph.
+                Is null if the train is not electric or the value not specified.
+              minimum: 0
+            rolling_resistance:
+              $ref: '#/components/schemas/RollingResistance'
+            startup_acceleration:
+              type: number
+              format: double
+              description: Acceleration in m·s⁻²
+            startup_time:
+              type: integer
+              format: int64
+              minimum: 0
+        speed_limit_tag:
+          type:
+          - string
+          - 'null'
+        supported_signaling_systems:
+          type: array
+          items:
+            type: string
+          description: List of supported signaling systems
+    ConsistSchedule:
+      type: object
+      required:
+      - boundaries
+      - values
+      properties:
+        boundaries:
+          type: array
+          items:
+            type: integer
+            minimum: 0
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConsistConfiguration'
     ConstraintDistributionChangeGroup:
       type: object
       required:
@@ -15391,10 +15511,8 @@ components:
       - expected_version
       - timetable_id
       - path_items
-      - rolling_stock_loading_gauge
-      - rolling_stock_supported_signaling_systems
       - comfort
-      - physics_consist
+      - consist_schedule
       - start_time
       - maximum_departure_delay
       - maximum_run_time
@@ -15414,6 +15532,8 @@ components:
         comfort:
           $ref: '#/components/schemas/Comfort'
           description: The comfort of the train
+        consist_schedule:
+          $ref: '#/components/schemas/ConsistSchedule'
         expected_version:
           type: integer
           format: int64
@@ -15456,103 +15576,6 @@ components:
           items:
             $ref: '#/components/schemas/core.PathItem'
           description: List of waypoints. Each waypoint is a list of track offset.
-        physics_consist:
-          type: object
-          required:
-          - effort_curves
-          - length
-          - max_speed
-          - startup_time
-          - startup_acceleration
-          - comfort_acceleration
-          - const_gamma
-          - inertia_coefficient
-          - mass
-          - rolling_resistance
-          properties:
-            base_power_class:
-              type:
-              - string
-              - 'null'
-            comfort_acceleration:
-              type: number
-              format: double
-              description: Acceleration in m·s⁻²
-            const_gamma:
-              type: number
-              format: double
-              description: |2-
-                 The constant gamma braking coefficient used when NOT circulating
-                 under ETCS/ERTMS signaling system
-                Acceleration in m·s⁻²
-            effort_curves:
-              $ref: '#/components/schemas/EffortCurves'
-            electrical_power_startup_time:
-              type:
-              - integer
-              - 'null'
-              format: int64
-              description: |-
-                The time the train takes before actually using electrical power.
-                Is null if the train is not electric or the value not specified.
-              minimum: 0
-            etcs_brake_params:
-              oneOf:
-              - type: 'null'
-              - $ref: '#/components/schemas/EtcsBrakeParams'
-            inertia_coefficient:
-              type: number
-              format: double
-            length:
-              type: integer
-              format: int64
-              minimum: 0
-            mass:
-              type: integer
-              format: int64
-              minimum: 0
-            max_speed:
-              type: number
-              format: double
-              description: Velocity in m·s⁻¹
-            power_restrictions:
-              type: object
-              description: Mapping of power restriction code to power class
-              additionalProperties:
-                type: string
-              propertyNames:
-                type: string
-            raise_pantograph_time:
-              type:
-              - integer
-              - 'null'
-              format: int64
-              description: |-
-                The time it takes to raise this train's pantograph.
-                Is null if the train is not electric or the value not specified.
-              minimum: 0
-            rolling_resistance:
-              $ref: '#/components/schemas/RollingResistance'
-            startup_acceleration:
-              type: number
-              format: double
-              description: Acceleration in m·s⁻²
-            startup_time:
-              type: integer
-              format: int64
-              minimum: 0
-        rolling_stock_loading_gauge:
-          $ref: '#/components/schemas/LoadingGaugeType'
-          description: The loading gauge of the rolling stock
-        rolling_stock_supported_signaling_systems:
-          type: array
-          items:
-            type: string
-          description: List of supported signaling systems
-        speed_limit_tag:
-          type:
-          - string
-          - 'null'
         start_time:
           type: string
           format: date-time
