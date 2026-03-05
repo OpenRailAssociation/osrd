@@ -47,6 +47,7 @@ body:
       multiple: true
       options:
         - Local
+        - Demo (https://demo.osrd.fr/)
         - Dev (SNCF)
         - Recette (SNCF)
         - Integration (SNCF)
