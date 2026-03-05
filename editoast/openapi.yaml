@@ -2317,124 +2317,6 @@ paths:
                 propertyNames:
                   type: integer
                   format: int64
-  /paced_train/track_occupancy:
-    post:
-      tags:
-      - paced_train
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-              - paced_train_ids
-              - operational_point_reference
-              - infra_id
-              - use_simulation
-              properties:
-                electrical_profile_set_id:
-                  type:
-                  - integer
-                  - 'null'
-                  format: int64
-                infra_id:
-                  type: integer
-                  format: int64
-                operational_point_reference:
-                  $ref: '#/components/schemas/OperationalPointReference'
-                paced_train_ids:
-                  type: array
-                  items:
-                    type: integer
-                    format: int64
-                use_simulation:
-                  type: boolean
-        required: true
-      responses:
-        '200':
-          description: Track section occupancy periods for paced trains
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  required:
-                  - trains
-                  properties:
-                    local_track_name:
-                      oneOf:
-                      - type: 'null'
-                      - type: string
-                        minLength: 1
-                      description: Local track name. Unset if trains occupy the operational point but the specific track is unknown.
-                    trains:
-                      type: array
-                      items:
-                        allOf:
-                        - oneOf:
-                          - type: object
-                            required:
-                            - train_schedule_id
-                            - index
-                            - type
-                            properties:
-                              index:
-                                type: integer
-                                minimum: 0
-                              train_schedule_id:
-                                type: integer
-                                format: int64
-                              type:
-                                type: string
-                                enum:
-                                - base
-                          - type: object
-                            required:
-                            - train_schedule_id
-                            - index
-                            - exception_key
-                            - type
-                            properties:
-                              exception_key:
-                                type: string
-                              index:
-                                type: integer
-                                minimum: 0
-                              train_schedule_id:
-                                type: integer
-                                format: int64
-                              type:
-                                type: string
-                                enum:
-                                - modified
-                          - type: object
-                            required:
-                            - train_schedule_id
-                            - exception_key
-                            - type
-                            properties:
-                              exception_key:
-                                type: string
-                              train_schedule_id:
-                                type: integer
-                                format: int64
-                              type:
-                                type: string
-                                enum:
-                                - created
-                          description: This ID is used to identify paced train occurrences and exceptions when sending them to the core API for conflict detection.
-                        - type: object
-                          required:
-                          - time_begin
-                          - duration
-                          properties:
-                            duration:
-                              type: string
-                              example: PT5M
-                            time_begin:
-                              type: string
-                              format: date-time
   /paced_train/{id}/path:
     get:
       tags:
@@ -4589,6 +4471,124 @@ paths:
                 propertyNames:
                   type: integer
                   format: int64
+  /train_schedules/track_occupancy:
+    post:
+      tags:
+      - paced_train
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - train_schedule_ids
+              - operational_point_reference
+              - infra_id
+              - use_simulation
+              properties:
+                electrical_profile_set_id:
+                  type:
+                  - integer
+                  - 'null'
+                  format: int64
+                infra_id:
+                  type: integer
+                  format: int64
+                operational_point_reference:
+                  $ref: '#/components/schemas/OperationalPointReference'
+                train_schedule_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                use_simulation:
+                  type: boolean
+        required: true
+      responses:
+        '200':
+          description: Track section occupancy periods for train schedules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                  - trains
+                  properties:
+                    local_track_name:
+                      oneOf:
+                      - type: 'null'
+                      - type: string
+                        minLength: 1
+                      description: Local track name. Unset if trains occupy the operational point but the specific track is unknown.
+                    trains:
+                      type: array
+                      items:
+                        allOf:
+                        - oneOf:
+                          - type: object
+                            required:
+                            - train_schedule_id
+                            - index
+                            - type
+                            properties:
+                              index:
+                                type: integer
+                                minimum: 0
+                              train_schedule_id:
+                                type: integer
+                                format: int64
+                              type:
+                                type: string
+                                enum:
+                                - base
+                          - type: object
+                            required:
+                            - train_schedule_id
+                            - index
+                            - exception_key
+                            - type
+                            properties:
+                              exception_key:
+                                type: string
+                              index:
+                                type: integer
+                                minimum: 0
+                              train_schedule_id:
+                                type: integer
+                                format: int64
+                              type:
+                                type: string
+                                enum:
+                                - modified
+                          - type: object
+                            required:
+                            - train_schedule_id
+                            - exception_key
+                            - type
+                            properties:
+                              exception_key:
+                                type: string
+                              train_schedule_id:
+                                type: integer
+                                format: int64
+                              type:
+                                type: string
+                                enum:
+                                - created
+                          description: This ID is used to identify paced train occurrences and exceptions when sending them to the core API for conflict detection.
+                        - type: object
+                          required:
+                          - time_begin
+                          - duration
+                          properties:
+                            duration:
+                              type: string
+                              example: PT5M
+                            time_begin:
+                              type: string
+                              format: date-time
   /train_schedules/{id}:
     get:
       tags:

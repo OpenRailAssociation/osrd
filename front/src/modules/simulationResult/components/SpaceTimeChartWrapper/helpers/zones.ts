@@ -2,7 +2,7 @@ import type { OccupancyZone } from '@osrd-project/ui-charts';
 
 import {
   type PacedTrainException,
-  type PostPacedTrainTrackOccupancyApiResponse,
+  type PostTrainSchedulesTrackOccupancyApiResponse,
 } from 'common/api/osrdEditoastApi';
 import type { TrainId } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
@@ -54,7 +54,7 @@ function getTimeToPosition(
 export function getMovableOccupancyZone(
   trackId: string,
   trainId: TrainId,
-  occupation: PostPacedTrainTrackOccupancyApiResponse[number]['trains'][number],
+  occupation: PostTrainSchedulesTrackOccupancyApiResponse[number]['trains'][number],
   spaceTimeCurves: BaseTrainProjection['spaceTimeCurves'],
   trainName: string,
   departureTime: Date,
