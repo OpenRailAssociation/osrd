@@ -15,7 +15,6 @@ export const addTagTypes = [
   'scenarios',
   'paced_train',
   'train_schedule',
-  'timetable',
   'projects',
   'rolling_stock_livery',
   'round_trips',
@@ -28,6 +27,7 @@ export const addTagTypes = [
   'studies',
   'sub_categories',
   'temporary_speed_limits',
+  'timetable',
   'train_schedule_exceptions',
   'train_schedule_set',
   'etcs_braking_curves',
@@ -668,14 +668,6 @@ const injectedRtkApi = api
           body: queryArg.body,
         }),
         invalidatesTags: ['paced_train'],
-      }),
-      putPacedTrainById: build.mutation<PutPacedTrainByIdApiResponse, PutPacedTrainByIdApiArg>({
-        query: (queryArg) => ({
-          url: `/paced_train/${queryArg.id}`,
-          method: 'PUT',
-          body: queryArg.trainSchedule,
-        }),
-        invalidatesTags: ['timetable', 'paced_train'],
       }),
       getPacedTrainByIdPath: build.query<
         GetPacedTrainByIdPathApiResponse,
@@ -1341,6 +1333,17 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({ url: `/train_schedules/${queryArg.id}` }),
         providesTags: ['timetable', 'paced_train'],
+      }),
+      putTrainSchedulesById: build.mutation<
+        PutTrainSchedulesByIdApiResponse,
+        PutTrainSchedulesByIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/train_schedules/${queryArg.id}`,
+          method: 'PUT',
+          body: queryArg.trainSchedule,
+        }),
+        invalidatesTags: ['timetable', 'paced_train'],
       }),
       getTrainSchedulesByIdEtcsBrakingCurves: build.query<
         GetTrainSchedulesByIdEtcsBrakingCurvesApiResponse,
@@ -2092,11 +2095,6 @@ export type PostPacedTrainTrackOccupancyApiArg = {
     use_simulation: boolean;
   };
 };
-export type PutPacedTrainByIdApiResponse = unknown;
-export type PutPacedTrainByIdApiArg = {
-  id: number;
-  trainSchedule: TrainSchedule;
-};
 export type GetPacedTrainByIdPathApiResponse = /** status 200 The path */ PathfindingResult;
 export type GetPacedTrainByIdPathApiArg = {
   id: number;
@@ -2633,6 +2631,11 @@ export type GetTrainSchedulesByIdApiResponse =
   /** status 200 The requested train schedule */ TrainScheduleResponse;
 export type GetTrainSchedulesByIdApiArg = {
   id: number;
+};
+export type PutTrainSchedulesByIdApiResponse = unknown;
+export type PutTrainSchedulesByIdApiArg = {
+  id: number;
+  trainSchedule: TrainSchedule;
 };
 export type GetTrainSchedulesByIdEtcsBrakingCurvesApiResponse =
   /** status 200 ETCS Braking Curves Output */ CoreEtcsBrakingCurvesResponse;
@@ -3838,126 +3841,6 @@ export type ProjectPathForm = {
     track_section: string;
   }[];
 };
-export type TrainCategory =
-  | {
-      main_category: TrainMainCategory;
-    }
-  | {
-      sub_category_code: string;
-    };
-export type Comfort = 'STANDARD' | 'AIR_CONDITIONING' | 'HEATING';
-export type Distribution = 'STANDARD' | 'MARECO';
-export type Margins = {
-  boundaries: string[];
-  /** The values of the margins. Must contains one more element than the boundaries
-    Can be a percentage `X%` or a time in minutes per 100 kilometer `Xmin/100km` */
-  values: string[];
-};
-export type TrainScheduleOptions = {
-  stops_at_end_of_block?: boolean;
-  use_electrical_profiles?: boolean;
-  use_speed_limits_for_simulation?: boolean;
-};
-export type PathItem = {
-  /** The unique identifier of the path item.
-    This is used to reference path items in the train schedule. */
-  id: string;
-  location: PathItemLocation;
-};
-export type PositiveDuration = string;
-export type ReceptionSignal = 'OPEN' | 'STOP' | 'SHORT_SLIP_STOP';
-export type ScheduleItem = {
-  arrival?: null | PositiveDuration;
-  /** Position on the path of the schedule item. */
-  at: string;
-  reception_signal?: ReceptionSignal;
-  stop_for?: null | PositiveDuration;
-};
-export type ConstraintDistributionChangeGroup = {
-  value: Distribution;
-};
-export type InitialSpeedChangeGroup = {
-  value: number;
-};
-export type LabelsChangeGroup = {
-  value: string[];
-};
-export type OptionsChangeGroup = {
-  value: TrainScheduleOptions;
-};
-export type PowerRestrictionItem = {
-  from: string;
-  to: string;
-  value: string;
-};
-export type PathAndScheduleChangeGroup = {
-  margins: Margins;
-  path: PathItem[];
-  power_restrictions: PowerRestrictionItem[];
-  schedule: ScheduleItem[];
-};
-export type RollingStockChangeGroup = {
-  comfort: Comfort;
-  rolling_stock_name: string;
-};
-export type RollingStockCategoryChangeGroup = {
-  value?: null | TrainCategory;
-};
-export type SpeedLimitTagChangeGroup = {
-  value?: null | string;
-};
-export type StartTimeChangeGroup = {
-  value: string;
-};
-export type TrainNameChangeGroup = {
-  value: string;
-};
-export type PacedTrainException = {
-  occurrence_index?: number;
-} & {
-  constraint_distribution?: ConstraintDistributionChangeGroup;
-  initial_speed?: InitialSpeedChangeGroup;
-  labels?: LabelsChangeGroup;
-  options?: OptionsChangeGroup;
-  path_and_schedule?: PathAndScheduleChangeGroup;
-  rolling_stock?: RollingStockChangeGroup;
-  rolling_stock_category?: RollingStockCategoryChangeGroup;
-  speed_limit_tag?: SpeedLimitTagChangeGroup;
-  start_time?: StartTimeChangeGroup;
-  train_name?: TrainNameChangeGroup;
-} & {
-  disabled?: boolean;
-  /** Unique key for the exception within the paced train, required and generated by the frontend. */
-  key: string;
-};
-export type TrainSchedule = {
-  category?: null | TrainCategory;
-  comfort?: Comfort;
-  constraint_distribution: Distribution;
-  initial_speed?: number;
-  labels?: string[];
-  margins?: Margins;
-  options?: TrainScheduleOptions;
-  path: PathItem[];
-  power_restrictions?: {
-    from: string;
-    to: string;
-    value: string;
-  }[];
-  rolling_stock_name: string;
-  schedule?: ScheduleItem[];
-  speed_limit_tag?: null | string;
-  start_time: string;
-  train_name: string;
-} & {
-  paced?: null | {
-    exceptions: PacedTrainException[];
-    /** Time between two occurrences, an ISO 8601 format is expected */
-    interval: PositiveDuration;
-    /** Duration of the paced train, an ISO 8601 format is expected */
-    time_window: PositiveDuration;
-  };
-};
 export type CoreReportTrain = {
   /** Total energy consumption */
   energy_consumption: number;
@@ -4109,6 +3992,7 @@ export type ProjectPatchForm = {
   objectives?: string | null;
   tags?: null | Tags;
 };
+export type Comfort = 'STANDARD' | 'AIR_CONDITIONING' | 'HEATING';
 export type EffortCurveConditions = {
   comfort: null | Comfort;
   electrical_profile_level: string | null;
@@ -4408,6 +4292,37 @@ export type SearchResultItemScenario = {
   study_id: number;
   tags: string[];
   trains_count: number;
+};
+export type Margins = {
+  boundaries: string[];
+  /** The values of the margins. Must contains one more element than the boundaries
+    Can be a percentage `X%` or a time in minutes per 100 kilometer `Xmin/100km` */
+  values: string[];
+};
+export type TrainScheduleOptions = {
+  stops_at_end_of_block?: boolean;
+  use_electrical_profiles?: boolean;
+  use_speed_limits_for_simulation?: boolean;
+};
+export type PathItem = {
+  /** The unique identifier of the path item.
+    This is used to reference path items in the train schedule. */
+  id: string;
+  location: PathItemLocation;
+};
+export type PowerRestrictionItem = {
+  from: string;
+  to: string;
+  value: string;
+};
+export type PositiveDuration = string;
+export type ReceptionSignal = 'OPEN' | 'STOP' | 'SHORT_SLIP_STOP';
+export type ScheduleItem = {
+  arrival?: null | PositiveDuration;
+  /** Position on the path of the schedule item. */
+  at: string;
+  reception_signal?: ReceptionSignal;
+  stop_for?: null | PositiveDuration;
 };
 export type SearchResultItemTrainSchedule = {
   comfort: number;
@@ -4764,6 +4679,48 @@ export type PathfindingItem = {
     arrival_time_tolerance_before: number;
   };
 };
+export type Distribution = 'STANDARD' | 'MARECO';
+export type ConstraintDistributionChangeGroup = {
+  value: Distribution;
+};
+export type InitialSpeedChangeGroup = {
+  value: number;
+};
+export type LabelsChangeGroup = {
+  value: string[];
+};
+export type OptionsChangeGroup = {
+  value: TrainScheduleOptions;
+};
+export type PathAndScheduleChangeGroup = {
+  margins: Margins;
+  path: PathItem[];
+  power_restrictions: PowerRestrictionItem[];
+  schedule: ScheduleItem[];
+};
+export type RollingStockChangeGroup = {
+  comfort: Comfort;
+  rolling_stock_name: string;
+};
+export type TrainCategory =
+  | {
+      main_category: TrainMainCategory;
+    }
+  | {
+      sub_category_code: string;
+    };
+export type RollingStockCategoryChangeGroup = {
+  value?: null | TrainCategory;
+};
+export type SpeedLimitTagChangeGroup = {
+  value?: null | string;
+};
+export type StartTimeChangeGroup = {
+  value: string;
+};
+export type TrainNameChangeGroup = {
+  value: string;
+};
 export type TrainScheduleExceptionChangeGroups = {
   constraint_distribution?: ConstraintDistributionChangeGroup;
   initial_speed?: InitialSpeedChangeGroup;
@@ -4785,6 +4742,52 @@ export type TrainScheduleException = {
   occurrence_index?: number;
   timetable_id: number;
   train_schedule_id: number;
+};
+export type PacedTrainException = {
+  occurrence_index?: number;
+} & {
+  constraint_distribution?: ConstraintDistributionChangeGroup;
+  initial_speed?: InitialSpeedChangeGroup;
+  labels?: LabelsChangeGroup;
+  options?: OptionsChangeGroup;
+  path_and_schedule?: PathAndScheduleChangeGroup;
+  rolling_stock?: RollingStockChangeGroup;
+  rolling_stock_category?: RollingStockCategoryChangeGroup;
+  speed_limit_tag?: SpeedLimitTagChangeGroup;
+  start_time?: StartTimeChangeGroup;
+  train_name?: TrainNameChangeGroup;
+} & {
+  disabled?: boolean;
+  /** Unique key for the exception within the paced train, required and generated by the frontend. */
+  key: string;
+};
+export type TrainSchedule = {
+  category?: null | TrainCategory;
+  comfort?: Comfort;
+  constraint_distribution: Distribution;
+  initial_speed?: number;
+  labels?: string[];
+  margins?: Margins;
+  options?: TrainScheduleOptions;
+  path: PathItem[];
+  power_restrictions?: {
+    from: string;
+    to: string;
+    value: string;
+  }[];
+  rolling_stock_name: string;
+  schedule?: ScheduleItem[];
+  speed_limit_tag?: null | string;
+  start_time: string;
+  train_name: string;
+} & {
+  paced?: null | {
+    exceptions: PacedTrainException[];
+    /** Time between two occurrences, an ISO 8601 format is expected */
+    interval: PositiveDuration;
+    /** Duration of the paced train, an ISO 8601 format is expected */
+    time_window: PositiveDuration;
+  };
 };
 export type TrainScheduleResponse = TrainSchedule & {
   id: number;

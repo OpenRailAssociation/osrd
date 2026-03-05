@@ -25,7 +25,9 @@ def _update_simulation_with_mareco_allowances(
         "values": ["3%"],
     }
     paced_train["constraint_distribution"] = "MARECO"
-    r = session.put(editoast_url + f"/paced_train/{paced_train_id}", json=paced_train)
+    r = session.put(
+        editoast_url + f"/train_schedules/{paced_train_id}", json=paced_train
+    )
     if r.status_code // 102 != 2:
         raise RuntimeError(
             f"Paced train error {r.status_code}: {r.content}, payload={json.dumps(paced_train)}"
@@ -57,7 +59,7 @@ def test_put_paced_train(
     paced_train["paced"]["exceptions"] = [exception]
 
     update_response = session.put(
-        f"{EDITOAST_URL}paced_train/{paced_train_id}", json=paced_train
+        f"{EDITOAST_URL}train_schedules/{paced_train_id}", json=paced_train
     )
     update_response.raise_for_status()
 
@@ -108,7 +110,7 @@ def test_get_paced_train_with_exception_path(
     }
     paced_train["paced"]["exceptions"] = [exception]
     update_response = session.put(
-        f"{EDITOAST_URL}paced_train/{paced_train_id}", json=paced_train
+        f"{EDITOAST_URL}train_schedules/{paced_train_id}", json=paced_train
     )
     assert update_response.status_code == 204
     # Get exception path
@@ -185,7 +187,7 @@ def test_get_paced_train_with_exception_simulation(
     }
     paced_train["paced"]["exceptions"] = [exception]
     update_response = session.put(
-        f"{EDITOAST_URL}paced_train/{paced_train_id}", json=paced_train
+        f"{EDITOAST_URL}train_schedules/{paced_train_id}", json=paced_train
     )
     assert update_response.status_code == 204
     # Get exception path

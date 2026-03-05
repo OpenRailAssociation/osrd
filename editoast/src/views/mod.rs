@@ -279,10 +279,12 @@ fn service_router() -> router::DocumentedRouter {
                     .route("/", delete!(timetable::paced_train::delete))
                 .nests("/{id}", |path| {
                     path.route("/", get!(timetable::paced_train::get_by_id))
-                    .route(
+                        .route(
                                 "/etcs_braking_curves",
                                 get!(timetable::paced_train::etcs_braking_curves),
                             )
+                        .route("/", put!(timetable::paced_train::update_train_schedule))
+
                 })
             })
             .nests("/paced_train", |path| {
@@ -296,8 +298,7 @@ fn service_router() -> router::DocumentedRouter {
                         post!(timetable::paced_train::track_occupancy),
                     )
                     .nests("/{id}", |path| {
-                            path.route("/", put!(timetable::paced_train::update_paced_train))
-                            .route("/path", get!(timetable::paced_train::get_path))
+                            path.route("/path", get!(timetable::paced_train::get_path))
                             .route("/simulation", get!(timetable::paced_train::simulation))
                     })
             })
