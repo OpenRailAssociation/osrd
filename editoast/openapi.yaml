@@ -2205,42 +2205,6 @@ paths:
       responses:
         '204':
           description: The macro note was deleted successfully
-  /paced_train/project_path:
-    post:
-      tags:
-      - paced_train
-      summary: Projects the space-time curves and paths of a number of paced trains onto a given path.
-      description: |-
-        - Returns 404 if the infra or any of the paced trains are not found
-        - Returns 200 with a hashmap of train_id to ProjectPathTrainResult
-
-        ## Important:
-        - The main train projected is the model paced train without exceptions.
-        - If there are exceptions defined for the paced train that have a different projection than the main train,
-          they are included in the `exceptions` field of the result.
-        - The following paced trains are **excluded** from the result:
-            - paced trains for which pathfinding fails
-            - paced trains for which the simulation fails
-        - Trains that have a simulation but that does not honor their schedule, use their schedule with straight lines
-          between the known points.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ProjectPathForm'
-        required: true
-      responses:
-        '200':
-          description: Project Path Output
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties:
-                  $ref: '#/components/schemas/ProjectPathPacedTrainResult'
-                propertyNames:
-                  type: integer
-                  format: int64
   /paced_train/project_path_op:
     post:
       tags:
@@ -2349,7 +2313,7 @@ paths:
               schema:
                 type: object
                 additionalProperties:
-                  $ref: '#/components/schemas/ProjectPathPacedTrainResult'
+                  $ref: '#/components/schemas/ProjectPathTrainScheduleResult'
                 propertyNames:
                   type: integer
                   format: int64
@@ -4543,6 +4507,42 @@ paths:
                 type: object
                 additionalProperties:
                   $ref: '#/components/schemas/OccupancyBlocksTrainScheduleResult'
+                propertyNames:
+                  type: integer
+                  format: int64
+  /train_schedules/project_path:
+    post:
+      tags:
+      - paced_train
+      summary: Projects the space-time curves and paths of a number of train schedules onto a given path.
+      description: |-
+        - Returns 404 if the infra or any of the train schedules are not found
+        - Returns 200 with a hashmap of train_id to ProjectPathTrainResult
+
+        ## Important:
+        - The main train projected is the model train schedule without exceptions.
+        - If there are exceptions defined for the train schedule that have a different projection than the main train,
+          they are included in the `exceptions` field of the result.
+        - The following train schedules are **excluded** from the result:
+            - train schedules for which pathfinding fails
+            - train schedules for which the simulation fails
+        - Trains that have a simulation but that does not honor their schedule, use their schedule with straight lines
+          between the known points.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectPathForm'
+        required: true
+      responses:
+        '200':
+          description: Project Path Output
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/ProjectPathTrainScheduleResult'
                 propertyNames:
                   type: integer
                   format: int64
@@ -11580,27 +11580,27 @@ components:
                   maxLength: 255
                   minLength: 1
                 description: The track section identifier.
-    ProjectPathPacedTrainResult:
+    ProjectPathTrainScheduleResult:
       type: object
       description: Project path output is described by time-space points and blocks
       required:
-      - paced_train
+      - train_schedule
       - exceptions
       properties:
         exceptions:
           type: object
-          description: Exceptions whose projection is different from the paced train
+          description: Exceptions whose projection is different from the train schedule when it has a paced
           additionalProperties:
             type: array
             items:
               $ref: '#/components/schemas/SpaceTimeCurve'
           propertyNames:
             type: string
-        paced_train:
+        train_schedule:
           type: array
           items:
             $ref: '#/components/schemas/SpaceTimeCurve'
-          description: Paced train
+          description: Train schedule
     ProjectWithStudies:
       allOf:
       - $ref: '#/components/schemas/Project'
