@@ -46,6 +46,38 @@
           background: var(--grey10);
         }
 
+        &.day-change-banner {
+          height: 41px;
+
+          td {
+            padding-inline-start: 50px;
+            vertical-align: middle;
+            background: color-mix(in srgb, var(--info60) 20%, transparent);
+            box-shadow: inset 0 1px 0 var(--white75);
+
+            .day-change-banner-content {
+              display: flex;
+              align-items: center;
+              color: var(--info60);
+
+              > span:first-child {
+                display: flex;
+                align-items: center;
+              }
+
+              span:last-child {
+                font-size: 0.875rem;
+                font-weight: 400;
+                line-height: 20px;
+              }
+
+              svg {
+                margin-right: 12px;
+              }
+            }
+          }
+        }
+
         &:hover {
           background: var(--white50);
         }
