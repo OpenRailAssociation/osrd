@@ -1,4 +1,4 @@
-import { useRef, useState, useContext, useEffect, useCallback } from 'react';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 import {
   CompassCardinalV2,
@@ -12,7 +12,6 @@ import {
 import cx from 'classnames';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import type { MapRef } from 'react-map-gl/maplibre';
 
 import { EDITOAST_TO_LAYER_DICT, type EditoastType } from 'applications/editor/consts';
 import type { SelectionState } from 'applications/editor/tools/selection/types';
@@ -34,12 +33,11 @@ import { type EditorState } from 'reducers/editor';
 import { useAppDispatch } from 'store';
 import useOutsideClick from 'utils/hooks/useOutsideClick';
 
+import { MapContextProvider, useMapContext } from '../useMapContext';
 import ButtonMapInfraErrors from './ButtonMapInfraErrors';
 import MapButton from './MapButton';
-import { MapContextProvider, useMapContext } from '../useMapContext';
 
 type MapButtonsProps = {
-  map?: MapRef;
   resetPitchBearing: () => void;
   closeFeatureInfoClickPopup?: () => void;
   zoomIn?: () => void;
@@ -66,7 +64,6 @@ const ZOOM_DELTA = 1.5;
 const MAP_POPOVERS = { SEARCH: 'SEARCH', SETTINGS: 'SETTINGS', KEY: 'KEY' };
 
 export default function MapButtons({
-  map,
   resetPitchBearing,
   closeFeatureInfoClickPopup,
   withInfraButton,
@@ -266,7 +263,6 @@ export default function MapButtons({
         )}
       {openedPopover === MAP_POPOVERS.SEARCH && (
         <MapSearch
-          map={map}
           closeMapSearchPopUp={() => setOpenedPopover(undefined)}
           mapSettings={mapSettings}
         />

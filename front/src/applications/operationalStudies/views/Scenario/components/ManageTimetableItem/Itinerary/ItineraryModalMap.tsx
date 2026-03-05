@@ -1,8 +1,8 @@
-import { useCallback, useMemo, useRef, useState, type PropsWithChildren } from 'react';
+import { useCallback, useMemo, useState, type PropsWithChildren } from 'react';
 
 import type { Position } from 'geojson';
 import { useTranslation } from 'react-i18next';
-import type { MapLayerMouseEvent, MapRef } from 'react-map-gl/maplibre';
+import type { MapLayerMouseEvent } from 'react-map-gl/maplibre';
 
 import { matchOpRefAndOp } from 'applications/operationalStudies/utils';
 import type { PathProperties } from 'common/api/osrdEditoastApi';
@@ -58,8 +58,6 @@ const ItineraryModalMap = ({
     removeMapSearchMarker,
     updateViewport,
   } = useMapSettingsActions();
-
-  const mapRef = useRef<MapRef | null>(null);
 
   const [hoveredOperationalPointId, setHoveredOperationalPointId] = useState<string>();
 
@@ -152,7 +150,6 @@ const ItineraryModalMap = ({
       updateMapSettings={updateMapSettings}
     >
       <MapButtons
-        map={mapRef.current ?? undefined}
         resetPitchBearing={resetPitchBearing}
         closeFeatureInfoClickPopup={closeFeatureInfoClickPopup}
         bearing={viewport.bearing}
@@ -163,7 +160,6 @@ const ItineraryModalMap = ({
       />
       <BaseMap
         mapId="map-container"
-        mapRef={mapRef}
         cursor="pointer"
         hoveredOperationalPointId={hoveredOperationalPointId}
         infraId={infraID}

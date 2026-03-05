@@ -1,4 +1,4 @@
-import { useContext, useMemo, useState, type PropsWithChildren } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState, type PropsWithChildren } from 'react';
 
 import type { TFunction } from 'i18next';
 import { isEmpty, isNil } from 'lodash';
@@ -37,6 +37,8 @@ import { getEditorState } from 'reducers/editor/selectors';
 import { useAppDispatch } from 'store';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
+import MapFocusSelection from './components/MapFocusSelection';
+
 type MapProps<S extends CommonToolState = CommonToolState> = {
   t: TFunction;
   toolState: S;
@@ -45,7 +47,6 @@ type MapProps<S extends CommonToolState = CommonToolState> = {
   mapStyle: MapStyle;
   viewport: Viewport;
   setViewport: (newViewport: Partial<Viewport>, updateRouter?: boolean) => void;
-  mapRef: React.RefObject<MapRef | null>;
   infraID: number | undefined;
 };
 
@@ -53,7 +54,6 @@ const protocol = new Protocol();
 maplibregl.addProtocol('pmtiles', protocol.tile);
 
 const MapUnplugged = ({
-  mapRef,
   toolState,
   setToolState,
   activeTool,
@@ -79,6 +79,7 @@ const MapUnplugged = ({
       terrain3DExaggeration,
       mapSearchMarker,
       lineSearchCode,
+      smoothTravel,
     },
   } = editorState;
 
@@ -111,6 +112,21 @@ const MapUnplugged = ({
     [activeTool, extendedContext, isDraggingState]
   );
 
+  const mapRef = useRef<MapRef>(null);
+
+  useEffect(() => {
+    const map = mapRef.current?.getMap();
+    if (!map) return;
+
+    const { latitude, longitude, zoom } = viewport;
+    const location = { center: [longitude, latitude] as [number, number], zoom };
+    if (smoothTravel) {
+      map.flyTo({ ...location, essential: true });
+    } else {
+      map.jumpTo(location);
+    }
+  }, [viewport]);
+
   return (
     <>
       <div
@@ -123,11 +139,9 @@ const MapUnplugged = ({
         }}
       >
         <ReactMapGL
-          {...viewport}
           ref={mapRef}
           style={{ width: '100%', height: '100%' }}
           mapStyle={mapBlankStyle}
-          onMove={(e) => setViewport(e.viewState)}
           onDragStart={() => setIsDraggingState(true)}
           onDragEnd={() => setIsDraggingState(false)}
           onMouseOut={() => {
@@ -269,6 +283,7 @@ const MapUnplugged = ({
             dispatch(removeMapSearchMarker());
           }}
         >
+          <MapFocusSelection switchTool={context.switchTool} />
           <VirtualLayers />
           <AttributionControl position="bottom-right" customAttribution={CUSTOM_ATTRIBUTION} />
           <ScaleControl

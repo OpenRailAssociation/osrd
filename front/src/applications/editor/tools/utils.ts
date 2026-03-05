@@ -35,6 +35,7 @@ import type { Bbox } from 'types';
 import { nearestPointOnLine } from 'utils/geometry';
 
 import { getLayerSettingNameFromEditorLayer } from '../utils';
+import type { Viewport } from 'reducers/commonMap/types';
 
 /**
  * Since Turf and Editoast do not compute the lengths the same way (see #1751)
@@ -302,13 +303,14 @@ export async function centerMapOnObject(
   infraId: number,
   entities: EditorEntity[],
   dispatch: AppDispatch,
-  mapRef: MapRef
+  setViewport: (value: Partial<Viewport>) => void,
 ): Promise<void> {
   // Center the map on the object
   const bbox = await getEntitiesBbox(infraId, entities, dispatch);
   if (bbox) {
     // Zoom to the bbox with padding added (in pixels)
-    mapRef.fitBounds(bbox as LngLatBoundsLike, { padding: 40, animate: false });
+    setViewport({latitude: 0, longitude: 0, zoom: 8})
+    // mapRef.fitBounds(bbox as LngLatBoundsLike, { padding: 40, animate: false });
   }
 }
 

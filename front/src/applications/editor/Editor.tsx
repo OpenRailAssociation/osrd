@@ -11,7 +11,6 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import InfraErrorCorrector from 'applications/editor/components/InfraErrors/InfraErrorCorrector';
 import InfraErrorMapControl from 'applications/editor/components/InfraErrors/InfraErrorMapControl';
 import EditorContext from 'applications/editor/context';
-import { getEntity, getMixedEntities } from 'applications/editor/data/api';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import Map from 'applications/editor/Map';
 import TOOL_NAMES from 'applications/editor/tools/constsToolNames';
@@ -19,8 +18,6 @@ import TOOLS from 'applications/editor/tools/constsTools';
 import useSwitchTypes from 'applications/editor/tools/switchEdition/useSwitchTypes';
 import type { switchProps } from 'applications/editor/tools/switchProps';
 import type { CommonToolState } from 'applications/editor/tools/types';
-import { centerMapOnObject, selectEntities } from 'applications/editor/tools/utils';
-import type { ObjectType } from 'common/api/osrdEditoastApi';
 import useCheckUserPrivileges from 'common/authorization/hooks/useCheckUserPrivileges';
 import useProtectedAction from 'common/authorization/hooks/useProtectedAction';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -35,12 +32,9 @@ import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 import { type EditorSliceActions } from 'reducers/editor';
 import { getEditorState, getInfraLockStatus } from 'reducers/editor/selectors';
 import { loadDataModel, updateTotalsIssue } from 'reducers/editor/thunkActions';
-import { setFailure } from 'reducers/main';
 import { getIsLoading } from 'reducers/main/mainSelector';
 import { useAppDispatch } from 'store';
-import { castErrorToFailure } from 'utils/error';
 
-import type { EditoastType } from './consts';
 import type { EditorContextType, ExtendedEditorContextType, FullTool, Reducer } from './types';
 import type { EditorEntity } from './typesEditorEntity';
 import { getLayerSettingNameFromEditorLayer } from './utils';
@@ -236,67 +230,6 @@ const Editor = () => {
   }, []);
 
   /**
-   * When the component mounts
-   * => get the searchParams
-   * => if there is a selection param, select the entities and focus on them
-   */
-  useEffect(() => {
-    if (urlInfra) {
-      const params = searchParams.get('selection');
-      if (!params && searchParams.size !== 0) {
-        dispatch(
-          setFailure({
-            name: t('Editor.tools.select-items.errors.unable-to-select'),
-            message: t('Editor.tools.select-items.errors.invalid-url'),
-          })
-        );
-        navigate(`/editor/${urlInfra}`);
-      }
-      const paramsList = params?.split('|');
-
-      if (paramsList && paramsList.length) {
-        const selectedEntities = paramsList.map((param) => {
-          const [objType, entityId] = param.split('~');
-          return {
-            id: entityId,
-            type: objType as EditoastType,
-          };
-        });
-
-        const selectObjectsAndFocus = async (
-          entitiesInfos: { id: string; type: EditoastType }[]
-        ) => {
-          let entities: EditorEntity[];
-          if (!entitiesInfos.length) return;
-          try {
-            if (entitiesInfos.length === 1) {
-              const { type: objType, id: entityId } = selectedEntities[0];
-              const entity = await getEntity(+urlInfra, entityId, objType as ObjectType, dispatch);
-              entities = [entity];
-            } else {
-              const entitiesRecord = await getMixedEntities(+urlInfra, entitiesInfos, dispatch);
-              entities = Object.values(entitiesRecord);
-            }
-            selectEntities(entities, { switchTool, dispatch, editorState });
-
-            if (mapRef.current) centerMapOnObject(+urlInfra, entities, dispatch, mapRef.current);
-          } catch (e) {
-            dispatch(
-              setFailure(
-                castErrorToFailure(e, {
-                  name: t('Editor.tools.select-items.errors.unable-to-select'),
-                  message: t('Editor.tools.select-items.errors.invalid-url'),
-                })
-              )
-            );
-          }
-        };
-        selectObjectsAndFocus(selectedEntities);
-      }
-    }
-  }, []);
-
-  /**
    * When infra change in the url
    * => change the state
    * => reset editor state
@@ -482,7 +415,6 @@ const Editor = () => {
               >
                 <Map
                   {...{
-                    mapRef,
                     mapStyle,
                     viewport,
                     setViewport,
@@ -494,14 +426,12 @@ const Editor = () => {
                 />
                 {isSearchToolOpened && (
                   <MapSearch
-                    map={mapRef.current!}
                     closeMapSearchPopUp={() => setIsSearchToolOpened(false)}
                     mapSettings={editorState.mapSettings}
                   />
                 )}
 
                 <MapButtons
-                  map={mapRef.current ?? undefined}
                   resetPitchBearing={resetPitchBearing}
                   withInfraButton
                   bearing={viewport.bearing}
