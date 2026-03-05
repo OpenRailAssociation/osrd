@@ -1047,27 +1047,27 @@ pub(in crate::views) async fn project_path_op(
 
 /// Occupancy blocks output is described by blocks (signal updates)
 #[derive(Debug, Deserialize, Serialize, ToSchema)]
-pub struct OccupancyBlocksPacedTrainResult {
-    /// Paced train
+pub struct OccupancyBlocksTrainScheduleResult {
+    /// Train schedule
     #[schema(value_type = Vec<SignalUpdate>)]
-    pub paced_train: OccupancyBlocks,
-    /// Exceptions whose blocks are different from the paced train
+    pub train_schedule: OccupancyBlocks,
+    /// Exceptions whose blocks are different from the train schedule
     #[schema(value_type = HashMap<String, Vec<SignalUpdate>>)]
     pub exceptions: HashMap<String, OccupancyBlocks>,
 }
 
 /// ## Important:
-/// The following paced trains are **excluded** from the result:
-/// - paced trains for which pathfinding fails
-/// - paced trains for which the simulation fails
-/// - paced trains for which the simulation does not respect schedule times
+/// The following train schedules are **excluded** from the result:
+/// - train schedules for which pathfinding fails
+/// - train schedules for which the simulation fails
+/// - train schedules for which the simulation does not respect schedule times
 #[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "paced_train",
     request_body = OccupancyBlockForm,
     responses(
-        (status = 200, body = HashMap<i64, OccupancyBlocksPacedTrainResult>),
+        (status = 200, body = HashMap<i64, OccupancyBlocksTrainScheduleResult>),
     ),
 )]
 pub(in crate::views) async fn occupancy_blocks(
@@ -1081,11 +1081,11 @@ pub(in crate::views) async fn occupancy_blocks(
     Extension(auth): AuthenticationExt,
     Json(OccupancyBlockForm {
         infra_id,
-        ids: paced_train_ids,
+        ids: train_schedule_ids,
         path,
         electrical_profile_set_id,
     }): Json<OccupancyBlockForm>,
-) -> Result<Json<HashMap<i64, OccupancyBlocksPacedTrainResult>>> {
+) -> Result<Json<HashMap<i64, OccupancyBlocksTrainScheduleResult>>> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())
         .await
@@ -1108,8 +1108,8 @@ pub(in crate::views) async fn occupancy_blocks(
 
     let conn = &mut db_pool.get().await?;
 
-    let paced_trains: Vec<_> =
-        models::TrainSchedule::retrieve_batch_or_fail(conn, paced_train_ids, |missing| {
+    let train_schedules: Vec<_> =
+        models::TrainSchedule::retrieve_batch_or_fail(conn, train_schedule_ids, |missing| {
             TrainScheduleError::BatchNotFound {
                 count: missing.len(),
             }
@@ -1117,19 +1117,19 @@ pub(in crate::views) async fn occupancy_blocks(
         .await?;
 
     let simulation_contexts: Vec<SimulationContext> =
-        paced_trains
+        train_schedules
             .iter()
-            .flat_map(|paced_train| {
+            .flat_map(|train_schedule| {
                 std::iter::once(SimulationContext {
-                    paced_train_id: paced_train.id,
+                    paced_train_id: train_schedule.id,
                     exception_key: None,
-                    train_schedule: paced_train.clone().into_train_occurrence(),
+                    train_schedule: train_schedule.clone().into_train_occurrence(),
                 })
-                .chain(paced_train.exceptions.iter().map(|exception| {
+                .chain(train_schedule.exceptions.iter().map(|exception| {
                     SimulationContext {
-                        paced_train_id: paced_train.id,
+                        paced_train_id: train_schedule.id,
                         exception_key: Some(exception.key.clone()),
-                        train_schedule: paced_train.apply_exception(exception),
+                        train_schedule: train_schedule.apply_exception(exception),
                     }
                 }))
             })
@@ -1153,7 +1153,7 @@ pub(in crate::views) async fn occupancy_blocks(
     .await?;
 
     let mut base_occupancy_blocks = occupancy_blocks_result[0].clone();
-    let mut results = HashMap::<i64, OccupancyBlocksPacedTrainResult>::new();
+    let mut results = HashMap::<i64, OccupancyBlocksTrainScheduleResult>::new();
 
     for (index, simulation_context) in simulation_contexts.into_iter().enumerate() {
         if let Some(exception_key) = simulation_context.exception_key {
@@ -1170,8 +1170,8 @@ pub(in crate::views) async fn occupancy_blocks(
         } else {
             results.insert(
                 simulation_context.paced_train_id,
-                OccupancyBlocksPacedTrainResult {
-                    paced_train: Arc::unwrap_or_clone(occupancy_blocks_result[index].clone()),
+                OccupancyBlocksTrainScheduleResult {
+                    train_schedule: Arc::unwrap_or_clone(occupancy_blocks_result[index].clone()),
                     exceptions: HashMap::new(),
                 },
             );
@@ -1610,7 +1610,7 @@ mod tests {
     use crate::views::test_app::TestResponse;
     use crate::views::tests::mocked_core_pathfinding_sim_and_proj;
     use crate::views::timetable::paced_train::MoveTrainSchedulesForm;
-    use crate::views::timetable::paced_train::OccupancyBlocksPacedTrainResult;
+    use crate::views::timetable::paced_train::OccupancyBlocksTrainScheduleResult;
     use crate::views::timetable::paced_train::PacedTrainSummaryResponse;
     use crate::views::timetable::paced_train::ProjectPathPacedTrainResult;
     use crate::views::timetable::paced_train::TrackOccupancyForm;
@@ -2553,7 +2553,7 @@ mod tests {
             .assert_status(StatusCode::NO_CONTENT);
 
         let request =
-            app.post("/paced_train/occupancy_blocks")
+            app.post("/train_schedules/occupancy_blocks")
                 .json(&json!({"ids": vec![paced_train_id],
                     "infra_id": infra_id,
                     "path": {
@@ -2568,11 +2568,11 @@ mod tests {
                     },
                 }));
         let response = app.fetch(request).await;
-        let response: HashMap<i64, OccupancyBlocksPacedTrainResult> =
+        let response: HashMap<i64, OccupancyBlocksTrainScheduleResult> =
             response.assert_status(StatusCode::OK).json_into();
         assert_eq!(response.len(), 1);
         // TODO fix mocked simulation to return path item times that respect times
-        assert_eq!(response.get(&paced_train_id).unwrap().paced_train.len(), 0);
+        assert_eq!(response.get(&paced_train_id).unwrap().train_schedule.len(), 0);
         assert_eq!(response.get(&paced_train_id).unwrap().exceptions.len(), 0);
     }
 
