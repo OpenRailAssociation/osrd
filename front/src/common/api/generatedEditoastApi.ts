@@ -16,7 +16,6 @@ export const addTagTypes = [
   'paced_train',
   'train_schedule',
   'timetable',
-  'etcs_braking_curves',
   'projects',
   'rolling_stock_livery',
   'round_trips',
@@ -31,6 +30,7 @@ export const addTagTypes = [
   'temporary_speed_limits',
   'train_schedule_exceptions',
   'train_schedule_set',
+  'etcs_braking_curves',
   'work_schedules',
   'worker',
 ] as const;
@@ -676,20 +676,6 @@ const injectedRtkApi = api
           body: queryArg.trainSchedule,
         }),
         invalidatesTags: ['timetable', 'paced_train'],
-      }),
-      getPacedTrainByIdEtcsBrakingCurves: build.query<
-        GetPacedTrainByIdEtcsBrakingCurvesApiResponse,
-        GetPacedTrainByIdEtcsBrakingCurvesApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/paced_train/${queryArg.id}/etcs_braking_curves`,
-          params: {
-            infra_id: queryArg.infraId,
-            electrical_profile_set_id: queryArg.electricalProfileSetId,
-            exception_key: queryArg.exceptionKey,
-          },
-        }),
-        providesTags: ['paced_train', 'etcs_braking_curves'],
       }),
       getPacedTrainByIdPath: build.query<
         GetPacedTrainByIdPathApiResponse,
@@ -1355,6 +1341,20 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({ url: `/train_schedules/${queryArg.id}` }),
         providesTags: ['timetable', 'paced_train'],
+      }),
+      getTrainSchedulesByIdEtcsBrakingCurves: build.query<
+        GetTrainSchedulesByIdEtcsBrakingCurvesApiResponse,
+        GetTrainSchedulesByIdEtcsBrakingCurvesApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/train_schedules/${queryArg.id}/etcs_braking_curves`,
+          params: {
+            infra_id: queryArg.infraId,
+            electrical_profile_set_id: queryArg.electricalProfileSetId,
+            exception_key: queryArg.exceptionKey,
+          },
+        }),
+        providesTags: ['paced_train', 'etcs_braking_curves'],
       }),
       getVersion: build.query<GetVersionApiResponse, GetVersionApiArg>({
         query: () => ({ url: `/version` }),
@@ -2097,14 +2097,6 @@ export type PutPacedTrainByIdApiArg = {
   id: number;
   trainSchedule: TrainSchedule;
 };
-export type GetPacedTrainByIdEtcsBrakingCurvesApiResponse =
-  /** status 200 ETCS Braking Curves Output */ CoreEtcsBrakingCurvesResponse;
-export type GetPacedTrainByIdEtcsBrakingCurvesApiArg = {
-  id: number;
-  infraId: number;
-  electricalProfileSetId?: number;
-  exceptionKey?: string;
-};
 export type GetPacedTrainByIdPathApiResponse = /** status 200 The path */ PathfindingResult;
 export type GetPacedTrainByIdPathApiArg = {
   id: number;
@@ -2641,6 +2633,14 @@ export type GetTrainSchedulesByIdApiResponse =
   /** status 200 The requested train schedule */ TrainScheduleResponse;
 export type GetTrainSchedulesByIdApiArg = {
   id: number;
+};
+export type GetTrainSchedulesByIdEtcsBrakingCurvesApiResponse =
+  /** status 200 ETCS Braking Curves Output */ CoreEtcsBrakingCurvesResponse;
+export type GetTrainSchedulesByIdEtcsBrakingCurvesApiArg = {
+  id: number;
+  infraId: number;
+  electricalProfileSetId?: number;
+  exceptionKey?: string;
 };
 export type GetVersionApiResponse = /** status 200 Return the service version */ Version;
 export type GetVersionApiArg = void;
@@ -3958,76 +3958,6 @@ export type TrainSchedule = {
     time_window: PositiveDuration;
   };
 };
-export type CoreEtcsConflictCurves = {
-  conflict_type: 'Spacing' | 'Routing';
-  guidance: {
-    /** List of positions of a train
-        Both positions (in mm) and times (in ms) must have the same length */
-    positions: number[];
-    /** List of speeds (in m/s) associated to a position */
-    speeds: number[];
-    /** List of times (in ms) associated to a position */
-    times: number[];
-  };
-  indication: {
-    /** List of positions of a train
-        Both positions (in mm) and times (in ms) must have the same length */
-    positions: number[];
-    /** List of speeds (in m/s) associated to a position */
-    speeds: number[];
-    /** List of times (in ms) associated to a position */
-    times: number[];
-  };
-  permitted_speed: {
-    /** List of positions of a train
-        Both positions (in mm) and times (in ms) must have the same length */
-    positions: number[];
-    /** List of speeds (in m/s) associated to a position */
-    speeds: number[];
-    /** List of times (in ms) associated to a position */
-    times: number[];
-  };
-};
-export type CoreEtcsCurves = {
-  guidance: {
-    /** List of positions of a train
-        Both positions (in mm) and times (in ms) must have the same length */
-    positions: number[];
-    /** List of speeds (in m/s) associated to a position */
-    speeds: number[];
-    /** List of times (in ms) associated to a position */
-    times: number[];
-  };
-  indication?: null | {
-    /** List of positions of a train
-        Both positions (in mm) and times (in ms) must have the same length */
-    positions: number[];
-    /** List of speeds (in m/s) associated to a position */
-    speeds: number[];
-    /** List of times (in ms) associated to a position */
-    times: number[];
-  };
-  permitted_speed: {
-    /** List of positions of a train
-        Both positions (in mm) and times (in ms) must have the same length */
-    positions: number[];
-    /** List of speeds (in m/s) associated to a position */
-    speeds: number[];
-    /** List of times (in ms) associated to a position */
-    times: number[];
-  };
-};
-export type CoreEtcsBrakingCurvesResponse = {
-  /** List of ETCS conflict braking curves associated to the train schedule's ETCS signals.
-    For each non-route delimiter (F) signal, the associated spacing conflict curve is returned.
-    For each route delimiter (Nf) signal, 2 sets of curves are returned, associated to the
-    corresponding potential spacing or routing conflict. */
-  conflicts: CoreEtcsConflictCurves[];
-  /** List of ETCS braking curves associated to the train schedule's ETCS slowdowns */
-  slowdowns: CoreEtcsCurves[];
-  /** List of ETCS braking curves associated to the train schedule's ETCS stops */
-  stops: CoreEtcsCurves[];
-};
 export type CoreReportTrain = {
   /** Total energy consumption */
   energy_consumption: number;
@@ -5020,6 +4950,76 @@ export type TrainScheduleSimulationSummaryResult = {
     [key: string]: SimulationSummaryResult;
   };
   train_schedule: SimulationSummaryResult;
+};
+export type CoreEtcsConflictCurves = {
+  conflict_type: 'Spacing' | 'Routing';
+  guidance: {
+    /** List of positions of a train
+        Both positions (in mm) and times (in ms) must have the same length */
+    positions: number[];
+    /** List of speeds (in m/s) associated to a position */
+    speeds: number[];
+    /** List of times (in ms) associated to a position */
+    times: number[];
+  };
+  indication: {
+    /** List of positions of a train
+        Both positions (in mm) and times (in ms) must have the same length */
+    positions: number[];
+    /** List of speeds (in m/s) associated to a position */
+    speeds: number[];
+    /** List of times (in ms) associated to a position */
+    times: number[];
+  };
+  permitted_speed: {
+    /** List of positions of a train
+        Both positions (in mm) and times (in ms) must have the same length */
+    positions: number[];
+    /** List of speeds (in m/s) associated to a position */
+    speeds: number[];
+    /** List of times (in ms) associated to a position */
+    times: number[];
+  };
+};
+export type CoreEtcsCurves = {
+  guidance: {
+    /** List of positions of a train
+        Both positions (in mm) and times (in ms) must have the same length */
+    positions: number[];
+    /** List of speeds (in m/s) associated to a position */
+    speeds: number[];
+    /** List of times (in ms) associated to a position */
+    times: number[];
+  };
+  indication?: null | {
+    /** List of positions of a train
+        Both positions (in mm) and times (in ms) must have the same length */
+    positions: number[];
+    /** List of speeds (in m/s) associated to a position */
+    speeds: number[];
+    /** List of times (in ms) associated to a position */
+    times: number[];
+  };
+  permitted_speed: {
+    /** List of positions of a train
+        Both positions (in mm) and times (in ms) must have the same length */
+    positions: number[];
+    /** List of speeds (in m/s) associated to a position */
+    speeds: number[];
+    /** List of times (in ms) associated to a position */
+    times: number[];
+  };
+};
+export type CoreEtcsBrakingCurvesResponse = {
+  /** List of ETCS conflict braking curves associated to the train schedule's ETCS signals.
+    For each non-route delimiter (F) signal, the associated spacing conflict curve is returned.
+    For each route delimiter (Nf) signal, 2 sets of curves are returned, associated to the
+    corresponding potential spacing or routing conflict. */
+  conflicts: CoreEtcsConflictCurves[];
+  /** List of ETCS braking curves associated to the train schedule's ETCS slowdowns */
+  slowdowns: CoreEtcsCurves[];
+  /** List of ETCS braking curves associated to the train schedule's ETCS stops */
+  stops: CoreEtcsCurves[];
 };
 export type Version = {
   git_describe: string | null;

@@ -628,8 +628,8 @@ pub(in crate::views) async fn etcs_braking_curves(
     })
     .await?;
 
-    // Retrieve paced_train or fail
-    let paced_train =
+    // Retrieve train schedule or fail
+    let train_schedule =
         models::TrainSchedule::retrieve_or_fail(db_pool.get().await?, train_schedule_id, || {
             TrainScheduleError::NotFound { train_schedule_id }
         })
@@ -637,7 +637,7 @@ pub(in crate::views) async fn etcs_braking_curves(
 
     let train_schedule = match exception_key {
         Some(exception_key) => {
-            let exception = paced_train
+            let exception = train_schedule
                 .exceptions
                 .iter()
                 .find(|e| e.key == exception_key)
@@ -645,9 +645,9 @@ pub(in crate::views) async fn etcs_braking_curves(
                     exception_key: exception_key.clone(),
                 })?;
 
-            paced_train.apply_exception(exception)
+            train_schedule.apply_exception(exception)
         }
-        None => paced_train.into_train_occurrence(),
+        None => train_schedule.into_train_occurrence(),
     };
 
     // Compute simulation of a train schedule

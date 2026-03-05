@@ -288,6 +288,6 @@ def test_etcs_paced_train_braking_curves_endpoint(
     )
     paced_train_id_response.raise_for_status()
     etcs_braking_curves_response = session.get(
-        f"{EDITOAST_URL}paced_train/{paced_train_id}/etcs_braking_curves?infra_id={etcs_scenario.infra}"
+        f"{EDITOAST_URL}train_schedules/{paced_train_id}/etcs_braking_curves?infra_id={etcs_scenario.infra}"
     )
     _check_etcs_braking_curves_response(etcs_braking_curves_response)
