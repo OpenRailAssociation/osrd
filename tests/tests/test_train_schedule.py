@@ -37,7 +37,7 @@ def _update_simulation_with_mareco_allowances(
     }
     train_schedule["constraint_distribution"] = "MARECO"
     r = session.put(
-        editoast_url + f"/paced_train/{train_schedule_id}", json=train_schedule
+        editoast_url + f"/train_schedules/{train_schedule_id}", json=train_schedule
     )
     if r.status_code // 100 != 2:
         raise RuntimeError(

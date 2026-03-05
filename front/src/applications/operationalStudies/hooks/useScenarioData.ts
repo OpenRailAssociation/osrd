@@ -29,7 +29,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
   const timetableItemsById = useMemo(() => mapBy(timetableItems, 'id'), [timetableItems]);
   const [selectedTimetableItemIds, setSelectedTimetableItemIds] = useState<TimetableItemId[]>([]);
 
-  const [putPacedTrainById] = osrdEditoastApi.endpoints.putPacedTrainById.useMutation();
+  const [updateTrainSchedule] = osrdEditoastApi.endpoints.putTrainSchedulesById.useMutation();
 
   const { workerStatus } = useScenarioContext();
   const { rollingStocks, rollingStockMap: rollingStocksByName } = useRollingStockContext();
@@ -204,7 +204,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
 
       const editoastPacedTrainId = extractEditoastIdFromPacedTrainId(timetableItem.id);
 
-      await putPacedTrainById({
+      await updateTrainSchedule({
         id: editoastPacedTrainId,
         trainSchedule: {
           ...timetableItem,

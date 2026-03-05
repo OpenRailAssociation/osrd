@@ -59,7 +59,7 @@ async function updatePacedTrain(
   trainSchedule: TrainSchedule
 ) {
   await dispatch(
-    osrdEditoastApi.endpoints.putPacedTrainById.initiate({
+    osrdEditoastApi.endpoints.putTrainSchedulesById.initiate({
       id: extractEditoastIdFromPacedTrainId(id),
       trainSchedule,
     })

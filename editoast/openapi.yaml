@@ -2497,28 +2497,6 @@ paths:
                             time_begin:
                               type: string
                               format: date-time
-  /paced_train/{id}:
-    put:
-      tags:
-      - timetable
-      - paced_train
-      summary: Update a paced train
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TrainSchedule'
-        required: true
-      responses:
-        '204':
-          description: The paced train has been updated
   /paced_train/{id}/path:
     get:
       tags:
@@ -4658,6 +4636,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TrainScheduleResponse'
+    put:
+      tags:
+      - timetable
+      - paced_train
+      summary: Update a paced train
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrainSchedule'
+        required: true
+      responses:
+        '204':
+          description: The paced train has been updated
   /train_schedules/{id}/etcs_braking_curves:
     get:
       tags:

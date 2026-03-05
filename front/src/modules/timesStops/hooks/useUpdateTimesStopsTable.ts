@@ -52,7 +52,7 @@ const useUpdateTimesStopsTable = (
   timetableItemsWithDetails: TimetableItemWithDetails[],
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void
 ) => {
-  const [updatePacedTrain] = osrdEditoastApi.endpoints.putPacedTrainById.useMutation();
+  const [updateTrainSchedule] = osrdEditoastApi.endpoints.putTrainSchedulesById.useMutation();
 
   /**
    * Compute the updated path and schedule based on the cell update.
@@ -175,7 +175,7 @@ const useUpdateTimesStopsTable = (
         occurrenceId
       );
 
-      await updatePacedTrain({
+      await updateTrainSchedule({
         id: extractEditoastIdFromPacedTrainId(pacedTrainId),
         trainSchedule: updatedPacedTrain,
       }).unwrap();
@@ -199,7 +199,7 @@ const useUpdateTimesStopsTable = (
           start_time: update.value.toISOString(),
         };
 
-        await updatePacedTrain({
+        await updateTrainSchedule({
           id: extractEditoastIdFromPacedTrainId(trainId),
           trainSchedule: train,
         }).unwrap();
@@ -218,7 +218,7 @@ const useUpdateTimesStopsTable = (
         schedule: updatedSchedule,
       };
 
-      await updatePacedTrain({
+      await updateTrainSchedule({
         id: extractEditoastIdFromPacedTrainId(trainId),
         trainSchedule: train,
       }).unwrap();

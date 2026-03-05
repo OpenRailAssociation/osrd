@@ -175,13 +175,13 @@ pub(in crate::views) async fn get_by_id(
         (status = 204, description = "The paced train has been updated")
     )
 )]
-pub(in crate::views) async fn update_paced_train(
+pub(in crate::views) async fn update_train_schedule(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(TrainScheduleIdParam {
         id: train_schedule_id,
     }): Path<TrainScheduleIdParam>,
-    Json(paced_train_base): Json<TrainSchedule>,
+    Json(train_schedule_base): Json<TrainSchedule>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())
@@ -192,8 +192,8 @@ pub(in crate::views) async fn update_paced_train(
     }
 
     let conn = &mut db_pool.get().await?;
-    let paced_train_changeset: TrainScheduleChangeset = paced_train_base.into();
-    paced_train_changeset
+    let train_schedule_changeset: TrainScheduleChangeset = train_schedule_base.into();
+    train_schedule_changeset
         .update_or_fail(conn, train_schedule_id, || TrainScheduleError::NotFound {
             train_schedule_id,
         })
@@ -1726,7 +1726,7 @@ mod tests {
         let paced_train: TrainSchedule = simple_paced_train.clone().into();
 
         let request = app
-            .put(format!("/paced_train/{}", simple_paced_train.id).as_str())
+            .put(format!("/train_schedules/{}", simple_paced_train.id).as_str())
             .json(&json!(&paced_train));
 
         app.fetch(request)
@@ -1762,7 +1762,7 @@ mod tests {
             Duration::minutes(15).try_into().unwrap();
 
         let request = app
-            .put(format!("/paced_train/{}", paced_train.id).as_str())
+            .put(format!("/train_schedules/{}", paced_train.id).as_str())
             .json(&json!(&paced_train_base));
 
         app.fetch(request)
@@ -1797,7 +1797,7 @@ mod tests {
         ];
 
         let request = app
-            .put(format!("/paced_train/{}", paced_train.id).as_str())
+            .put(format!("/train_schedules/{}", paced_train.id).as_str())
             .json(&json!(&paced_train_base));
 
         let response = app
@@ -1829,7 +1829,7 @@ mod tests {
             vec![simple_modified_exception_with_change_groups("key_1", 5)];
 
         let request = app
-            .put(format!("/paced_train/{}", paced_train.id).as_str())
+            .put(format!("/train_schedules/{}", paced_train.id).as_str())
             .json(&json!(&paced_train_base));
 
         let response = app
@@ -2052,7 +2052,7 @@ mod tests {
             comfort: Comfort::AirConditioning,
         });
         let request = app
-            .put(format!("/paced_train/{train_schedule_id}").as_str())
+            .put(format!("/train_schedules/{train_schedule_id}").as_str())
             .json(&json!(paced_train_response.train_schedule));
         app.fetch(request)
             .await
@@ -2148,7 +2148,7 @@ mod tests {
                 ..Default::default()
             });
         let request = app
-            .put(format!("/paced_train/{paced_train_id}").as_str())
+            .put(format!("/train_schedules/{paced_train_id}").as_str())
             .json(&json!(paced_train_response.train_schedule));
         app.fetch(request)
             .await
@@ -2549,7 +2549,7 @@ mod tests {
                 ..Default::default()
             });
         let request = app
-            .put(format!("/paced_train/{paced_train_id}").as_str())
+            .put(format!("/train_schedules/{paced_train_id}").as_str())
             .json(&json!(paced_train_response.train_schedule));
         app.fetch(request)
             .await
