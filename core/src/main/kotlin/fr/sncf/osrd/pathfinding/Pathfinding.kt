@@ -30,7 +30,7 @@ import kotlin.collections.set
 import kotlin.math.abs
 import kotlin.math.max
 
-const val SIGNALING_SYSTEM_COST_WEIGHTING = 1e-2
+const val SIGNALING_SYSTEM_COST_WEIGHTING = 1e-1
 
 // TODO: Refactor this to remove the list<AStarHeuristic> and better express the intent
 //       Probably also completely remove AStarHeuristic interface
