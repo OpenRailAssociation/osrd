@@ -6,6 +6,8 @@ import fr.sncf.osrd.signaling.SignalingSimulator
 import fr.sncf.osrd.sim_infra.api.BlockInfra
 import fr.sncf.osrd.sim_infra.api.LoadedSignalInfra
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
+import java.lang.ref.SoftReference
+import java.util.concurrent.ConcurrentHashMap
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -39,6 +41,24 @@ data class FullInfra(
 
             return FullInfra(rawInfra, loadedSignalInfra, blockInfra, signalingSimulator, metadata)
         }
+    }
+
+    /** Generic cache, used to attach any kind of cache to this infra instance. See [getCache]. */
+    val genericCache = ConcurrentHashMap<InfraCacheType<*>, SoftReference<Any>>()
+
+    open class InfraCacheType<T>
+
+    /**
+     * Used to store extra cache data related to this specific infra. Typing is enforced by the
+     * [InfraCacheType] typing. Can be extended by creating new data objects with the appropriate
+     * type.
+     */
+    @Suppress("UNCHECKED_CAST")
+    fun <T> getCache(cacheType: InfraCacheType<T>, init: () -> T): T {
+        val newValue by lazy { init() }
+        val existingCache =
+            genericCache.computeIfAbsent(cacheType) { SoftReference(newValue) }.get()
+        return (existingCache as T) ?: newValue
     }
 }
 

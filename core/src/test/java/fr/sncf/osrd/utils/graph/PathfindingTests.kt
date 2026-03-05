@@ -17,6 +17,7 @@ import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.OffsetRange
 import fr.sncf.osrd.utils.units.meters
+import kotlin.random.Random
 import org.assertj.core.api.AssertionsForClassTypes
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -30,7 +31,7 @@ data class TestRangeConstraints(val f: (BlockId) -> Collection<OffsetRange<Block
     }
 
     override fun getID(): String {
-        return "TestRangeConstraints"
+        return "TestRangeConstraints(${Random.nextLong()})"
     }
 }
 

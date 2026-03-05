@@ -4,7 +4,7 @@ import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.pathfinding.Pathfinding
-import fr.sncf.osrd.pathfinding.constraints.ConstraintCombiner
+import fr.sncf.osrd.pathfinding.constraints.CachedBlockConstraintCombiner
 import fr.sncf.osrd.pathfinding.constraints.initConstraints
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.reporting.exceptions.ErrorType
@@ -107,7 +107,7 @@ class STDCMPathfinding(
     private var starts: Set<STDCMNode> = HashSet()
 
     val constraints =
-        ConstraintCombiner(
+        CachedBlockConstraintCombiner(
             initConstraints(fullInfra, rollingStock, allowedTrackSections).toMutableList()
         )
 
