@@ -15,6 +15,7 @@ use crate::paced_train::SpeedLimitTagChangeGroup;
 use crate::paced_train::StartTimeChangeGroup;
 use crate::paced_train::TrainNameChangeGroup;
 
+#[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct TrainScheduleException {
     pub id: i64,
@@ -22,6 +23,7 @@ pub struct TrainScheduleException {
     pub timetable_id: i64,
     pub train_schedule_id: i64,
     /// If None the exception is created, otherwise it is a modified exception
+    #[schema(nullable = false)]
     pub occurrence_index: Option<i64>,
     pub disabled: bool,
     pub change_groups: TrainScheduleExceptionChangeGroups,

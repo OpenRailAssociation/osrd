@@ -14516,9 +14516,7 @@ components:
           - string
           - 'null'
         occurrence_index:
-          type:
-          - integer
-          - 'null'
+          type: integer
           format: int64
           description: If None the exception is created, otherwise it is a modified exception
         timetable_id:
