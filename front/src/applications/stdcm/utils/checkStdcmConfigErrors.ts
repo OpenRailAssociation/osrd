@@ -27,7 +27,7 @@ const checkStdcmConfigErrors = ({
   pathfindingStatus?: 'success' | 'failure';
   stdcmConf?: OsrdStdcmConfState;
   prevFormErrors?: StdcmConfigErrors;
-  consistErrors?: ConsistErrors;
+  consistErrors?: ConsistErrors[];
   shouldCheckMandatoryFields?: boolean;
 }): StdcmConfigErrors | undefined => {
   const { stdcmPathSteps, rollingStockID, totalMass, totalLength, maxSpeed } = stdcmConf!;

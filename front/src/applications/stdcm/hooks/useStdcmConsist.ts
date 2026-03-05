@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import type { InputProps } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
@@ -9,27 +9,14 @@ import type {
   LoadingGaugeType,
   TowedRollingStock,
 } from 'common/api/osrdEditoastApi';
-import {
-  updateTotalMass,
-  updateTotalLength,
-  updateMaxSpeed,
-  updateLoadingGauge,
-} from 'reducers/osrdconf/stdcmConf';
-import {
-  getTotalMass,
-  getTotalLength,
-  getMaxSpeed,
-  getLoadingGauge,
-  getStdcmSpeedLimitsByTag,
-} from 'reducers/osrdconf/stdcmConf/selectors';
-import { useAppDispatch } from 'store';
+import { getStdcmSpeedLimitsByTag } from 'reducers/osrdconf/stdcmConf/selectors';
 import { kgToT } from 'utils/physics';
 
+import type { ConsistData } from '../types';
 import calculateConsistMaxSpeed from '../utils/calculateConsistMaxSpeed';
 
-const useStdcmConsist = () => {
+const useStdcmConsist = (consist: ConsistData, onConsistChange: (consist: ConsistData) => void) => {
   const { t } = useTranslation('stdcm');
-  const dispatch = useAppDispatch();
   const speedLimitTags = useSelector(getStdcmSpeedLimitsByTag);
 
   const [totalMassChanged, setTotalMassChanged] = useState(false);
@@ -42,42 +29,42 @@ const useStdcmConsist = () => {
     maxSpeed?: InputProps['statusWithMessage'];
   }>({});
 
-  const totalMass = useSelector(getTotalMass);
   const onTotalMassChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const totalMassValue = Number(e.target.value);
     setTotalMassChanged(true);
-    dispatch(updateTotalMass(totalMassValue === 0 ? undefined : totalMassValue));
+    onConsistChange({ ...consist, totalMass: totalMassValue === 0 ? undefined : totalMassValue });
   };
 
-  const totalLength = useSelector(getTotalLength);
   const onTotalLengthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const totalLengthValue = Number(e.target.value);
     setTotalLengthChanged(true);
-    dispatch(updateTotalLength(totalLengthValue === 0 ? undefined : totalLengthValue));
+    onConsistChange({
+      ...consist,
+      totalLength: totalLengthValue === 0 ? undefined : totalLengthValue,
+    });
   };
 
-  const maxSpeed = useSelector(getMaxSpeed);
   const onMaxSpeedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const totalMaxSpeed = Number(e.target.value);
     setMaxSpeedChanged(true);
-    dispatch(updateMaxSpeed(totalMaxSpeed === 0 ? undefined : totalMaxSpeed));
+    onConsistChange({ ...consist, maxSpeed: totalMaxSpeed === 0 ? undefined : totalMaxSpeed });
   };
 
-  const loadingGauge = useSelector(getLoadingGauge);
   const onLoadingGaugeChange = (option: LoadingGaugeType | undefined) => {
-    dispatch(updateLoadingGauge(option));
+    onConsistChange({ ...consist, loadingGauge: option });
   };
 
   const prefillConsist = (
     rollingStock?: LightRollingStockWithLiveries,
     towed?: TowedRollingStock,
-    maxSpeedTag?: string | null
+    maxSpeedTag?: string | null,
+    extraFields?: Partial<ConsistData>
   ) => {
     const newStatus: typeof statusWithMessage = {};
 
     const consistMass = Math.ceil(kgToT((rollingStock?.mass ?? 0) + (towed?.mass ?? 0)));
-    dispatch(updateTotalMass(consistMass > 0 ? consistMass : undefined));
-    if (totalMassChanged && totalMass !== undefined) {
+    const newTotalMass = consistMass > 0 ? consistMass : undefined;
+    if (totalMassChanged && consist.totalMass !== undefined) {
       newStatus.totalMass = {
         status: 'info',
         message: t('consist.info.totalMass'),
@@ -87,8 +74,8 @@ const useStdcmConsist = () => {
     setTotalMassChanged(false);
 
     const consistLength = Math.ceil((rollingStock?.length ?? 0) + (towed?.length ?? 0));
-    dispatch(updateTotalLength(consistLength > 0 ? consistLength : undefined));
-    if (totalLengthChanged && totalLength !== undefined) {
+    const newTotalLength = consistLength > 0 ? consistLength : undefined;
+    if (totalLengthChanged && consist.totalLength !== undefined) {
       newStatus.totalLength = {
         status: 'info',
         message: t('consist.info.totalLength'),
@@ -97,16 +84,12 @@ const useStdcmConsist = () => {
     }
     setTotalLengthChanged(false);
 
-    dispatch(
-      updateMaxSpeed(
-        calculateConsistMaxSpeed(
-          rollingStock,
-          towed,
-          maxSpeedTag ? (speedLimitTags || {})[maxSpeedTag] : undefined
-        )
-      )
+    const newMaxSpeed = calculateConsistMaxSpeed(
+      rollingStock,
+      towed,
+      maxSpeedTag ? (speedLimitTags || {})[maxSpeedTag] : undefined
     );
-    if (maxSpeedChanged && maxSpeed !== undefined) {
+    if (maxSpeedChanged && consist.maxSpeed !== undefined) {
       newStatus.maxSpeed = {
         status: 'info',
         message: t('consist.info.maxSpeed'),
@@ -116,20 +99,57 @@ const useStdcmConsist = () => {
     setMaxSpeedChanged(false);
 
     setStatusWithMessage(newStatus);
+    onConsistChange({
+      ...consist,
+      totalMass: newTotalMass,
+      totalLength: newTotalLength,
+      maxSpeed: newMaxSpeed,
+      ...extraFields,
+    });
   };
 
+  const totalMassError = useMemo(
+    () =>
+      getMissingFieldMessage(consist.totalMass) ??
+      validateTotalMass({
+        tractionEngineMass: selectedRollingStock?.mass,
+        towedMass: selectedTowedRollingStock?.mass,
+        totalMass: consist.totalMass,
+      }),
+    [consist.totalMass, selectedRollingStock?.mass, selectedTowedRollingStock?.mass]
+  );
+
+  const totalLengthError = useMemo(
+    () =>
+      getMissingFieldMessage(consist.totalLength) ??
+      validateTotalLength({
+        tractionEngineLength: selectedRollingStock?.length,
+        towedLength: selectedTowedRollingStock?.length,
+        totalLength: consist.totalLength,
+      }),
+    [consist.totalLength, selectedRollingStock?.length, selectedTowedRollingStock?.length]
+  );
+
+  const maxSpeedError = useMemo(
+    () =>
+      getMissingFieldMessage(consist.maxSpeed) ??
+      validateMaxSpeed(consist.maxSpeed, selectedRollingStock?.max_speed),
+    [consist.maxSpeed, selectedRollingStock?.max_speed]
+  );
+
   return {
-    totalMass,
     onTotalMassChange,
-    totalLength,
     onTotalLengthChange,
-    maxSpeed,
     onMaxSpeedChange,
-    loadingGauge,
     onLoadingGaugeChange,
     prefillConsist,
     statusWithMessage,
     setMaxSpeedChanged,
+    consistErrors,
+    handleBlurError,
+    totalMassError,
+    totalLengthError,
+    maxSpeedError,
   };
 };
 

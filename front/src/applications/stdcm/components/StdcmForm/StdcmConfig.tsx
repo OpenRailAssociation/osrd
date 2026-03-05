@@ -9,10 +9,20 @@ import { useSelector } from 'react-redux';
 import { extractMarkersInfo } from 'applications/stdcm/utils';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import DefaultBaseMap from 'common/Map/DefaultBaseMap';
+import { useOsrdConfActions } from 'common/osrdContext';
 import useWorkerStatus from 'modules/pathfinding/hooks/useWorkerStatus';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import type { MapSettings, Viewport } from 'reducers/commonMap/types';
-import { resetMargins, restoreStdcmConfig, updateStdcmPathStep } from 'reducers/osrdconf/stdcmConf';
+import {
+  resetMargins,
+  restoreStdcmConfig,
+  updateStdcmPathStep,
+  updateTotalMass,
+  updateTotalLength,
+  updateMaxSpeed,
+  updateLoadingGauge,
+  updateTowedRollingStockID,
+} from 'reducers/osrdconf/stdcmConf';
 import {
   getOperationalPoints,
   getTrackSectionIdsByLoadingGauge,
@@ -27,6 +37,11 @@ import {
   getStdcmTimetableID,
   getLoadingGauge,
   getStdcmRollingStockID,
+  getTotalMass,
+  getTotalLength,
+  getMaxSpeed,
+  getTowedRollingStockID,
+  getStdcmSpeedLimitByTag,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
@@ -37,7 +52,7 @@ import StdcmDestination from './StdcmDestination';
 import StdcmLinkedTrainSearch from './StdcmLinkedTrainSearch';
 import StdcmOrigin from './StdcmOrigin';
 import useStaticPathfinding from '../../hooks/useStaticPathfinding';
-import type { StdcmConfigErrors, ConsistErrors } from '../../types';
+import type { ConsistData, StdcmConfigErrors, ConsistErrors } from '../../types';
 import StdcmSimulationParams from '../StdcmSimulationParams';
 import StdcmVias from './StdcmVias';
 import { ArrivalTimeTypes, StdcmConfigErrorTypes } from '../../types';
@@ -105,12 +120,39 @@ const StdcmConfig = ({
   const pathSteps = useSelector(getStdcmPathSteps);
   const destination = useSelector(getStdcmDestination);
   const rollingStockID = useSelector(getStdcmRollingStockID);
+  const towedRollingStockID = useSelector(getTowedRollingStockID);
+  const totalMass = useSelector(getTotalMass);
+  const totalLength = useSelector(getTotalLength);
+  const maxSpeed = useSelector(getMaxSpeed);
+  const speedLimitByTag = useSelector(getStdcmSpeedLimitByTag);
   const projectID = useSelector(getStdcmProjectID);
   const studyID = useSelector(getStdcmStudyID);
   const scenarioID = useSelector(getStdcmScenarioID);
   const operationalPoints = useSelector(getOperationalPoints);
   const trackSectionIdsByLoadingGauge = useSelector(getTrackSectionIdsByLoadingGauge);
   const loadingGaugeType = useSelector(getLoadingGauge);
+
+  const initialConsist: ConsistData = {
+    rollingStockID,
+    towedRollingStockID,
+    totalMass,
+    totalLength,
+  };
+
+  const { updateRollingStockID, updateSpeedLimitByTag } = useOsrdConfActions();
+
+  const onConsistChange = useCallback(
+    (newConsist: ConsistData) => {
+      dispatch(updateRollingStockID(newConsist.rollingStockID));
+      dispatch(updateTowedRollingStockID(newConsist.towedRollingStockID));
+      dispatch(updateTotalMass(newConsist.totalMass));
+      dispatch(updateTotalLength(newConsist.totalLength));
+      dispatch(updateMaxSpeed(newConsist.maxSpeed));
+      dispatch(updateLoadingGauge(newConsist.loadingGauge));
+      dispatch(updateSpeedLimitByTag(newConsist.speedLimitByTag));
+    },
+    [dispatch]
+  );
 
   const mapSettings = useMapSettings();
 
@@ -141,11 +183,18 @@ const StdcmConfig = ({
 
   const [formErrors, setFormErrors] = useState<StdcmConfigErrors>();
 
-  const [consistErrors, setConsistErrors] = useState<ConsistErrors>({
+  const [initialConsistErrors, setInitialConsistErrors] = useState<ConsistErrors>({
     totalMass: { message: undefined, display: false, type: 'missing' },
     totalLength: { message: undefined, display: false, type: 'missing' },
     maxSpeed: { message: undefined, display: false, type: 'missing' },
   });
+
+  const [viaConsistErrors, setViaConsistErrors] = useState<ConsistErrors[]>([]);
+
+  const consistErrors = useMemo(
+    () => [initialConsistErrors, ...viaConsistErrors],
+    [initialConsistErrors, viaConsistErrors]
+  );
 
   const disabled = isPending || retainedSimulationIndex !== undefined;
 
@@ -294,14 +343,21 @@ const StdcmConfig = ({
             linkedTrainType="anterior"
             linkedOpId={origin.id}
           />
-          <div className="stdcm-consist-container">
-            <StdcmConsist
-              disabled={disabled}
-              isDebugMode={isDebugMode}
-              consistErrors={consistErrors}
-              setConsistErrors={setConsistErrors}
-            />
-          </div>
+          <StdcmConsist
+            disabled={disabled}
+            isDebugMode={isDebugMode}
+            onConsistErrorsChange={setInitialConsistErrors}
+            consist={{
+              rollingStockID,
+              towedRollingStockID,
+              totalMass,
+              totalLength,
+              maxSpeed,
+              loadingGauge: loadingGaugeType,
+              speedLimitByTag,
+            }}
+            onConsistChange={onConsistChange}
+          />
           <div className="stdcm__separator" />
           <StdcmOrigin disabled={disabled} onItineraryChange={onItineraryChange} />
           <StdcmVias
@@ -309,6 +365,8 @@ const StdcmConfig = ({
             isDebugMode={isDebugMode}
             skipAnimation={skipPathfindingStatusMessage}
             onItineraryChange={onItineraryChange}
+            initialConsist={initialConsist}
+            onHasViaConsistErrorsChange={setViaConsistErrors}
           />
           <StdcmDestination disabled={disabled} onItineraryChange={onItineraryChange} />
           <StdcmLinkedTrainSearch

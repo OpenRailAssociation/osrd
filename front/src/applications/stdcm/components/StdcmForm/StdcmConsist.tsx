@@ -1,37 +1,28 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { Input, ComboBox, useDefaultComboBox, Select } from '@osrd-project/ui-core';
+import { skipToken } from '@reduxjs/toolkit/query';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { consistErrorFields } from 'applications/stdcm/consts';
 import useConsistFieldStatus from 'applications/stdcm/hooks/useConsistFieldStatus';
 import useFilterTowedRollingStock from 'applications/stdcm/hooks/useFilterTowedRollingStock';
-import useStdcmLightRollingStock from 'applications/stdcm/hooks/useStdcmLightRollingStock';
-import useStdcmTowedRollingStock from 'applications/stdcm/hooks/useStdcmTowedRollingStock';
-import type { ConsistErrors } from 'applications/stdcm/types';
+import type { ConsistData, ConsistErrors } from 'applications/stdcm/types';
 import calculateConsistMaxSpeed from 'applications/stdcm/utils/calculateConsistMaxSpeed';
-import {
-  validateMaxSpeed,
-  validateTotalLength,
-  validateTotalMass,
-} from 'applications/stdcm/utils/consistValidation';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type {
   LightRollingStockWithLiveries,
   TowedRollingStock,
   LoadingGaugeType,
 } from 'common/api/osrdEditoastApi';
-import { useOsrdConfActions } from 'common/osrdContext';
 import SpeedLimitTagSelector from 'common/SpeedLimitTagSelector';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
-import { updateMaxSpeed, updateTowedRollingStockID } from 'reducers/osrdconf/stdcmConf';
 import {
   getTrackSectionIdsByLoadingGauge,
-  getStdcmSpeedLimitByTag,
   getStdcmSpeedLimitsByTag,
 } from 'reducers/osrdconf/stdcmConf/selectors';
-import { useAppDispatch } from 'store';
 import { removeDuplicates } from 'utils/array';
 import { createStandardSelectOptions } from 'utils/uiCoreHelpers';
 
@@ -55,8 +46,11 @@ const ConsistCardTitle = ({
 export type StdcmConsistProps = {
   isDebugMode: boolean;
   disabled?: boolean;
-  consistErrors: ConsistErrors;
-  setConsistErrors: React.Dispatch<React.SetStateAction<ConsistErrors>>;
+  consist: ConsistData;
+  onConsistChange: (consist: ConsistData) => void;
+  onConsistErrorsChange: (errors: ConsistErrors) => void;
+  isConsistChange?: boolean;
+  onDeleteConsistChange?: () => void;
 };
 
 const GAUGES_LIST: LoadingGaugeType[] = [
@@ -77,12 +71,20 @@ const isLoadingGaugeType = (gauge: string | undefined): gauge is LoadingGaugeTyp
 const StdcmConsist = ({
   isDebugMode,
   disabled = false,
-  consistErrors,
-  setConsistErrors,
+  consist,
+  onConsistChange,
+  onConsistErrorsChange,
+  isConsistChange = false,
+  onDeleteConsistChange,
 }: StdcmConsistProps) => {
   const { t } = useTranslation('stdcm');
 
-  const selectedSpeedLimitTag = useSelector(getStdcmSpeedLimitByTag);
+  const [consistErrors, setConsistErrors] = useState<ConsistErrors>({
+    totalMass: { message: undefined, display: false, type: 'missing' },
+    totalLength: { message: undefined, display: false, type: 'missing' },
+    maxSpeed: { message: undefined, display: false, type: 'missing' },
+  });
+
   const speedLimitsByTag = useSelector(getStdcmSpeedLimitsByTag);
   const speedLimitTags = useMemo(
     () => removeDuplicates(Object.keys(speedLimitsByTag)).sort(),
@@ -93,11 +95,15 @@ const StdcmConsist = ({
     ? Object.keys(trackSectionIdsByLoadingGauge)
     : [];
 
-  const { updateRollingStockID, updateSpeedLimitByTag } = useOsrdConfActions();
-  const dispatch = useAppDispatch();
+  const { data: rollingStock } =
+    osrdEditoastApi.endpoints.getLightRollingStockByRollingStockId.useQuery(
+      consist.rollingStockID ? { rollingStockId: consist.rollingStockID } : skipToken
+    );
 
-  const rollingStock = useStdcmLightRollingStock();
-  const towedRollingStock = useStdcmTowedRollingStock();
+  const { currentData: towedRollingStock } =
+    osrdEditoastApi.endpoints.getTowedRollingStockByTowedRollingStockId.useQuery(
+      consist.towedRollingStockID ? { towedRollingStockId: consist.towedRollingStockID } : skipToken
+    );
 
   const [statusMessagesVisible, setStatusMessagesVisible] = useState({
     mass: true,
@@ -106,18 +112,14 @@ const StdcmConsist = ({
   });
 
   const {
-    totalMass,
     onTotalMassChange,
-    totalLength,
     onTotalLengthChange,
-    maxSpeed,
     onMaxSpeedChange,
-    loadingGauge,
     onLoadingGaugeChange,
     prefillConsist,
     statusWithMessage,
     setMaxSpeedChanged,
-  } = useStdcmConsist();
+  } = useStdcmConsist(consist, onConsistChange, rollingStock, towedRollingStock);
 
   const useFieldStatus = (field: 'totalMass' | 'totalLength' | 'maxSpeed') =>
     useConsistFieldStatus(
@@ -132,13 +134,6 @@ const StdcmConsist = ({
   const massFieldStatus = useFieldStatus('totalMass');
   const lengthFieldStatus = useFieldStatus('totalLength');
   const speedFieldStatus = useFieldStatus('maxSpeed');
-
-  const getMissingFieldMessage = (value?: number): string | null => {
-    if (!value) {
-      return t('consist.errors.missingValue');
-    }
-    return null;
-  };
 
   const { filteredRollingStockList: rollingStocks } = useFilterRollingStock({ isStdcm: true });
 
@@ -158,8 +153,9 @@ const StdcmConsist = ({
   );
 
   const handleRollingStockSelect = (option?: LightRollingStockWithLiveries) => {
-    prefillConsist(option, towedRollingStock, selectedSpeedLimitTag);
-    dispatch(updateRollingStockID(option?.id));
+    prefillConsist(option, towedRollingStock, consist.speedLimitByTag, {
+      rollingStockID: option?.id,
+    });
     setStatusMessagesVisible({
       mass: true,
       length: true,
@@ -168,16 +164,15 @@ const StdcmConsist = ({
   };
 
   const onSpeedLimitTagChange = (newTag: string | null) => {
-    dispatch(
-      updateMaxSpeed(
-        calculateConsistMaxSpeed(
-          rollingStock,
-          towedRollingStock,
-          newTag ? speedLimitsByTag[newTag] : undefined
-        )
-      )
-    );
-    dispatch(updateSpeedLimitByTag(newTag));
+    onConsistChange({
+      ...consist,
+      speedLimitByTag: newTag ?? undefined,
+      maxSpeed: calculateConsistMaxSpeed(
+        rollingStock,
+        towedRollingStock,
+        newTag ? speedLimitsByTag[newTag] : undefined
+      ),
+    });
     setMaxSpeedChanged(false);
   };
 
@@ -185,189 +180,158 @@ const StdcmConsist = ({
     setStatusMessagesVisible((prevState) => ({ ...prevState, [key]: false }));
   };
 
-  const handleBlurError = (field: keyof ConsistErrors, error?: string) => {
-    setConsistErrors((prev) => ({
-      ...prev,
-      [field]: {
-        message: error,
-        display: !!error,
-        type: error === t('consist.errors.missingValue') ? 'missing' : 'invalid',
-      },
-    }));
-  };
-
-  const totalMassError = useMemo(
-    () =>
-      getMissingFieldMessage(totalMass) ??
-      validateTotalMass({
-        tractionEngineMass: rollingStock?.mass,
-        towedMass: towedRollingStock?.mass,
-        totalMass,
-      }),
-    [totalMass]
-  );
-
-  const totalLengthError = useMemo(
-    () =>
-      getMissingFieldMessage(totalLength) ??
-      validateTotalLength({
-        tractionEngineLength: rollingStock?.length,
-        towedLength: towedRollingStock?.length,
-        totalLength,
-      }),
-    [totalLength]
-  );
-
-  const maxSpeedError = useMemo(
-    () => getMissingFieldMessage(maxSpeed) ?? validateMaxSpeed(maxSpeed, rollingStock?.max_speed),
-    [maxSpeed]
-  );
-
+  // Propagate consist errors to parent component
   useEffect(() => {
-    const errors = {
-      totalMass: totalMassError,
-      totalLength: totalLengthError,
-      maxSpeed: maxSpeedError,
-    };
-
-    consistErrorFields.forEach((field) => {
-      setConsistErrors((prev) => ({
-        ...prev,
-        [field]: {
-          ...prev[field],
-          display:
-            prev[field].display &&
-            (prev[field].type === 'missing'
-              ? // Hide tooltip if the error was a missing one and is fixed regardless if the fied is still invalid
-                !!(errors[field] === t('consist.errors.missingValue'))
-              : !!errors[field]),
-        },
-      }));
-    });
-  }, [totalMassError, totalLengthError, maxSpeedError]);
+    onConsistErrorsChange(consistErrors);
+  }, [consistErrors]);
 
   return (
-    <StdcmCard
-      name={t('consist.consist')}
-      title={<ConsistCardTitle rollingStock={rollingStock} />}
-      disabled={disabled}
-      className="consist"
-      testId="consist"
-    >
-      <div className="traction-engine">
-        <ComboBox
-          testIdPrefix="traction-engine"
-          id="tractionEngine"
-          label={t('consist.tractionEngine')}
-          value={rollingStock}
-          getSuggestionLabel={getLabel}
-          onSelectSuggestion={handleRollingStockSelect}
-          {...rollingStockComboBoxDefaultProps}
-          autoComplete="off"
-          disabled={disabled}
-          narrow
-        />
-      </div>
-      <div className="towed-rolling-stock">
-        <ComboBox
-          testIdPrefix="towed-rolling-stock"
-          id="towedRollingStock"
-          label={t('consist.towedRollingStock')}
-          value={towedRollingStock}
-          getSuggestionLabel={(suggestion: TowedRollingStock) => suggestion.name}
-          onSelectSuggestion={(towed) => {
-            prefillConsist(rollingStock, towed, selectedSpeedLimitTag);
-            dispatch(updateTowedRollingStockID(towed?.id));
-          }}
-          {...towedRollingStockComboBoxDefaultProps}
-          autoComplete="off"
-          disabled={disabled}
-          narrow
-        />
-      </div>
-      <div className="loading-gauge">
-        {loadingGauges && loadingGauges.length > 0 && (
-          <Select
-            id="loading-gauge-selector"
-            value={loadingGauge}
-            label={t('consist.loadingGauge')}
-            onChange={(e) => {
-              if (isLoadingGaugeType(e)) {
-                onLoadingGaugeChange(e);
-              } else {
-                onLoadingGaugeChange(undefined);
-              }
-            }}
-            {...createStandardSelectOptions(loadingGauges)}
+    <>
+      <ConsistCardTitle rollingStock={rollingStock} />
+      <StdcmCard
+        name={t('consist.consist')}
+        title={
+          isConsistChange ? (
+            <div
+              data-testid="stdcm-via-delete-consist-change"
+              className="stdcm-via-delete-consist-change"
+            >
+              <button
+                data-testid="delete-consist-change-button"
+                type="button"
+                onClick={onDeleteConsistChange}
+              >
+                {t('translation:common.delete')}
+              </button>
+            </div>
+          ) : undefined
+        }
+        disabled={disabled}
+        className="consist"
+        testId="consist"
+      >
+        <div className="traction-engine">
+          <ComboBox
+            testIdPrefix="traction-engine"
+            id="tractionEngine"
+            label={t('consist.tractionEngine')}
+            value={rollingStock}
+            getSuggestionLabel={getLabel}
+            onSelectSuggestion={handleRollingStockSelect}
+            {...rollingStockComboBoxDefaultProps}
+            autoComplete="off"
             disabled={disabled}
             narrow
           />
+        </div>
+        <div className="towed-rolling-stock">
+          <ComboBox
+            testIdPrefix="towed-rolling-stock"
+            id="towedRollingStock"
+            label={t('consist.towedRollingStock')}
+            value={towedRollingStock}
+            getSuggestionLabel={(suggestion: TowedRollingStock) => suggestion.name}
+            onSelectSuggestion={(towed) => {
+              prefillConsist(rollingStock, towed, consist.speedLimitByTag, {
+                towedRollingStockID: towed?.id,
+              });
+            }}
+            {...towedRollingStockComboBoxDefaultProps}
+            autoComplete="off"
+            disabled={disabled}
+            narrow
+          />
+        </div>
+        {!isConsistChange && (
+          <div className="loading-gauge">
+            {loadingGauges && loadingGauges.length > 0 && (
+              <Select
+                id="loading-gauge-selector"
+                value={consist.loadingGauge}
+                label={t('consist.loadingGauge')}
+                onChange={(e) => {
+                  if (isLoadingGaugeType(e)) {
+                    onLoadingGaugeChange(e);
+                  } else {
+                    onLoadingGaugeChange(undefined);
+                  }
+                }}
+                {...createStandardSelectOptions(loadingGauges)}
+                disabled={disabled}
+                narrow
+              />
+            )}
+          </div>
         )}
-      </div>
-      <div className="stdcm-consist__properties">
-        <Input
-          testIdPrefix="tonnage"
-          id="tonnage"
-          label={t('consist.tonnage')}
-          trailingContent="t"
-          type="number"
-          min={0}
-          value={totalMass ?? ''}
-          onChange={(e) => {
-            onTotalMassChange(e);
-          }}
-          onBlur={() => handleBlurError('totalMass', totalMassError)}
-          disabled={disabled}
-          statusWithMessage={massFieldStatus}
-          onCloseStatusMessage={() => handleCloseStatusMessage('mass')}
-          narrow
-        />
-        <Input
-          testIdPrefix="length"
-          id="length"
-          label={t('consist.length')}
-          trailingContent="m"
-          type="number"
-          min={0}
-          value={totalLength ?? ''}
-          onChange={(e) => {
-            onTotalLengthChange(e);
-          }}
-          onBlur={() => handleBlurError('totalLength', totalLengthError)}
-          disabled={disabled}
-          statusWithMessage={lengthFieldStatus}
-          onCloseStatusMessage={() => handleCloseStatusMessage('length')}
-          narrow
-        />
-      </div>
-      <div className="stdcm-consist__properties">
-        <SpeedLimitTagSelector
-          disabled={disabled}
-          selectedSpeedLimitTag={selectedSpeedLimitTag}
-          speedLimitTags={speedLimitTags}
-          updateSpeedLimitTag={onSpeedLimitTagChange}
-          showPlaceHolder={isDebugMode}
-          narrow
-        />
-        <Input
-          testIdPrefix="maxSpeed"
-          id="maxSpeed"
-          label={t('consist.maxSpeed')}
-          trailingContent="km/h"
-          type="number"
-          min={0}
-          value={maxSpeed ?? ''}
-          onChange={(e) => {
-            onMaxSpeedChange(e);
-          }}
-          onBlur={() => handleBlurError('maxSpeed', maxSpeedError)}
-          disabled={disabled}
-          statusWithMessage={speedFieldStatus}
-          onCloseStatusMessage={() => handleCloseStatusMessage('speed')}
-          narrow
-        />
-      </div>
-    </StdcmCard>
+        <div className="stdcm-consist__properties">
+          <Input
+            testIdPrefix="tonnage"
+            id="tonnage"
+            label={t('consist.tonnage')}
+            trailingContent="t"
+            type="number"
+            min={0}
+            value={consist.totalMass ?? ''}
+            onChange={(e) => {
+              onTotalMassChange(e);
+            }}
+            onBlur={() => handleBlurError('totalMass', totalMassError)}
+            disabled={disabled}
+            statusWithMessage={massFieldStatus}
+            onCloseStatusMessage={() => handleCloseStatusMessage('mass')}
+            narrow
+          />
+          <Input
+            testIdPrefix="length"
+            id="length"
+            label={t('consist.length')}
+            trailingContent="m"
+            type="number"
+            min={0}
+            value={consist.totalLength ?? ''}
+            onChange={(e) => {
+              onTotalLengthChange(e);
+            }}
+            onBlur={() => handleBlurError('totalLength', totalLengthError)}
+            disabled={disabled}
+            statusWithMessage={lengthFieldStatus}
+            onCloseStatusMessage={() => handleCloseStatusMessage('length')}
+            narrow
+          />
+        </div>
+        <div className="stdcm-consist__properties">
+          {!isConsistChange && (
+            <>
+              <SpeedLimitTagSelector
+                disabled={disabled}
+                selectedSpeedLimitTag={consist.speedLimitByTag}
+                speedLimitTags={speedLimitTags}
+                updateSpeedLimitTag={onSpeedLimitTagChange}
+                showPlaceHolder={isDebugMode}
+                narrow
+              />
+              <Input
+                testIdPrefix="maxSpeed"
+                id="maxSpeed"
+                label={t('consist.maxSpeed')}
+                trailingContent="km/h"
+                type="number"
+                min={0}
+                value={consist.maxSpeed ?? ''}
+                onChange={(e) => {
+                  onMaxSpeedChange(e);
+                }}
+                onBlur={() => handleBlurError('maxSpeed', maxSpeedError)}
+                disabled={disabled}
+                statusWithMessage={speedFieldStatus}
+                onCloseStatusMessage={() => handleCloseStatusMessage('speed')}
+                narrow
+              />
+            </>
+          )}
+        </div>
+      </StdcmCard>
+    </>
   );
 };
 

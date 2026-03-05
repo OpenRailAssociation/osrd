@@ -33,7 +33,7 @@ const StopDurationInput = ({ pathStep }: StopDurationInputProps) => {
 
     const isInvalidConsistChange =
       pathStep.stopFor !== undefined &&
-      pathStep.hasConsistChange &&
+      pathStep.consistChange &&
       pathStep.stopFor < new Duration({ minutes: 30 });
 
     if (isInvalidDriverStop) {
@@ -51,7 +51,7 @@ const StopDurationInput = ({ pathStep }: StopDurationInputProps) => {
     }
 
     return undefined;
-  }, [pathStep.stopType, pathStep.stopFor, pathStep.hasConsistChange]);
+  }, [pathStep.stopType, pathStep.stopFor, pathStep.consistChange]);
 
   useEffect(() => {
     setStopDuration(pathStep.stopFor !== undefined ? `${pathStep.stopFor.total('minute')}` : '');
