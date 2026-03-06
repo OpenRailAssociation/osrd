@@ -107,7 +107,7 @@ const osrdEditoastApi = generatedEditoastApi
             ? extractPacedTrainIdFromOccurrenceId(trainId)
             : trainId;
           const simulation = await dispatch(
-            generatedEditoastApi.endpoints.getPacedTrainByIdSimulation.initiate(
+            generatedEditoastApi.endpoints.getTrainSchedulesByIdSimulation.initiate(
               {
                 id: extractEditoastIdFromPacedTrainId(pacedTrainId),
                 infraId,

@@ -70,7 +70,7 @@ def _check_result(editoast_url: str, schedule_id: int, infra_id: int, session: S
     Get the /result/ of the given train id. The function doesn't return anything, it just raises any error
     """
     r = session.get(
-        f"{EDITOAST_URL}paced_train/{schedule_id}/simulation/?infra_id={infra_id}"
+        f"{EDITOAST_URL}train_schedules/{schedule_id}/simulation/?infra_id={infra_id}"
     )
     if r.status_code // 100 != 2 or r.json().get("status", "") != "success":
         raise RuntimeError(

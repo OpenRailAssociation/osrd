@@ -62,7 +62,7 @@ def test_get_and_update_schedule_result(
             f"Schedule error {response.status_code}: {response.content}, id={schedule_id}"
         )
     response = session.get(
-        f"{EDITOAST_URL}paced_train/{schedule_id}/simulation?infra_id={small_infra.id}"
+        f"{EDITOAST_URL}train_schedules/{schedule_id}/simulation?infra_id={small_infra.id}"
     )
     simulation_report = response.json()
     assert (
@@ -80,7 +80,7 @@ def test_get_and_update_schedule_result(
         )
 
     response = session.get(
-        f"{EDITOAST_URL}paced_train/{schedule_id}/simulation?infra_id={small_infra.id}"
+        f"{EDITOAST_URL}train_schedules/{schedule_id}/simulation?infra_id={small_infra.id}"
     )
     simulation_report = response.json()
     assert (
@@ -159,7 +159,7 @@ def test_etcs_schedule_stop_brakes_result_never_reach_mrsp(
     ts_id_response = session.get(f"{EDITOAST_URL}train_schedules/{schedule_id}/")
     ts_id_response.raise_for_status()
     simu_response = session.get(
-        f"{EDITOAST_URL}paced_train/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
+        f"{EDITOAST_URL}train_schedules/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
     )
     simulation_final_output = simu_response.json()["final_output"]
 
@@ -321,7 +321,7 @@ def test_etcs_schedule_result_stop_brake_from_mrsp(
     ts_id_response = session.get(f"{EDITOAST_URL}train_schedules/{schedule_id}/")
     ts_id_response.raise_for_status()
     simu_response = session.get(
-        f"{EDITOAST_URL}paced_train/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
+        f"{EDITOAST_URL}train_schedules/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
     )
     simulation_final_output = simu_response.json()["final_output"]
 
@@ -434,7 +434,7 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_same_location(
     ts_id_response = session.get(f"{EDITOAST_URL}train_schedules/{schedule_id}/")
     ts_id_response.raise_for_status()
     simu_response = session.get(
-        f"{EDITOAST_URL}paced_train/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
+        f"{EDITOAST_URL}train_schedules/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
     )
     simulation_final_output = simu_response.json()["final_output"]
 
@@ -555,7 +555,7 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_different_locations(
     ts_id_response = session.get(f"{EDITOAST_URL}train_schedules/{schedule_id}/")
     ts_id_response.raise_for_status()
     simu_response = session.get(
-        f"{EDITOAST_URL}paced_train/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
+        f"{EDITOAST_URL}train_schedules/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
     )
     simulation_final_output = simu_response.json()["final_output"]
 
@@ -698,7 +698,7 @@ def test_etcs_schedule_result_stop_on_open_signal(
     ts_id_response = session.get(f"{EDITOAST_URL}train_schedules/{schedule_id}/")
     ts_id_response.raise_for_status()
     simu_response = session.get(
-        f"{EDITOAST_URL}paced_train/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
+        f"{EDITOAST_URL}train_schedules/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
     )
     simulation_final_output = simu_response.json()["final_output"]
 
@@ -823,7 +823,7 @@ def test_etcs_schedule_result_slowdowns(
     ts_id_response = session.get(f"{EDITOAST_URL}train_schedules/{schedule_id}/")
     ts_id_response.raise_for_status()
     simu_response = session.get(
-        f"{EDITOAST_URL}paced_train/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
+        f"{EDITOAST_URL}train_schedules/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
     )
     simulation_final_output = simu_response.json()["final_output"]
 
@@ -1020,7 +1020,7 @@ def test_etcs_schedule_result_slowdowns_with_stop(
     ts_id_response = session.get(f"{EDITOAST_URL}train_schedules/{schedule_id}/")
     ts_id_response.raise_for_status()
     simu_response = session.get(
-        f"{EDITOAST_URL}paced_train/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
+        f"{EDITOAST_URL}train_schedules/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
     )
     simulation_final_output = simu_response.json()["final_output"]
 
@@ -1138,7 +1138,7 @@ def test_etcs_spacing_req(
     ts_id_response = session.get(f"{EDITOAST_URL}train_schedules/{schedule_id}/")
     ts_id_response.raise_for_status()
     simu_response = session.get(
-        f"{EDITOAST_URL}paced_train/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
+        f"{EDITOAST_URL}train_schedules/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
     )
     simulation_final_output = simu_response.json()["final_output"]
 
@@ -1246,7 +1246,7 @@ def test_etcs_routing_req(
     ts_id_response = session.get(f"{EDITOAST_URL}train_schedules/{schedule_id}/")
     ts_id_response.raise_for_status()
     simu_response = session.get(
-        f"{EDITOAST_URL}paced_train/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
+        f"{EDITOAST_URL}train_schedules/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
     )
     simulation_final_output = simu_response.json()["final_output"]
 
@@ -1364,7 +1364,7 @@ def test_etcs_stop_at_requirements_eoa(
     ts_id_response = session.get(f"{EDITOAST_URL}train_schedules/{schedule_id}/")
     ts_id_response.raise_for_status()
     simu_response = session.get(
-        f"{EDITOAST_URL}paced_train/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
+        f"{EDITOAST_URL}train_schedules/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
     )
     simulation_final_output = simu_response.json()["final_output"]
 
@@ -1473,7 +1473,7 @@ def test_etcs_train_schedule_with_margins(
     ts_id_response = session.get(f"{EDITOAST_URL}train_schedules/{schedule_id}/")
     ts_id_response.raise_for_status()
     simu_response = session.get(
-        f"{EDITOAST_URL}paced_train/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
+        f"{EDITOAST_URL}train_schedules/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
     )
     assert simu_response.json()["status"] == "success"
 

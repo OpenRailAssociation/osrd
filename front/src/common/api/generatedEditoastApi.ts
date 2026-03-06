@@ -13,7 +13,6 @@ export const addTagTypes = [
   'layers',
   'level_crossing',
   'scenarios',
-  'paced_train',
   'projects',
   'rolling_stock_livery',
   'round_trips',
@@ -29,6 +28,7 @@ export const addTagTypes = [
   'timetable',
   'train_schedule_exceptions',
   'train_schedule_set',
+  'paced_train',
   'train_schedule',
   'etcs_braking_curves',
   'work_schedules',
@@ -635,20 +635,6 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({ url: `/macro_notes/${queryArg.noteId}`, method: 'DELETE' }),
         invalidatesTags: ['scenarios'],
-      }),
-      getPacedTrainByIdSimulation: build.query<
-        GetPacedTrainByIdSimulationApiResponse,
-        GetPacedTrainByIdSimulationApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/paced_train/${queryArg.id}/simulation`,
-          params: {
-            infra_id: queryArg.infraId,
-            electrical_profile_set_id: queryArg.electricalProfileSetId,
-            exception_key: queryArg.exceptionKey,
-          },
-        }),
-        providesTags: ['paced_train'],
       }),
       getProjects: build.query<GetProjectsApiResponse, GetProjectsApiArg>({
         query: (queryArg) => ({
@@ -1359,6 +1345,20 @@ const injectedRtkApi = api
         }),
         providesTags: ['paced_train', 'pathfinding'],
       }),
+      getTrainSchedulesByIdSimulation: build.query<
+        GetTrainSchedulesByIdSimulationApiResponse,
+        GetTrainSchedulesByIdSimulationApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/train_schedules/${queryArg.id}/simulation`,
+          params: {
+            infra_id: queryArg.infraId,
+            electrical_profile_set_id: queryArg.electricalProfileSetId,
+            exception_key: queryArg.exceptionKey,
+          },
+        }),
+        providesTags: ['paced_train'],
+      }),
       getVersion: build.query<GetVersionApiResponse, GetVersionApiArg>({
         query: () => ({ url: `/version` }),
         providesTags: [],
@@ -2004,14 +2004,6 @@ export type DeleteMacroNotesByNoteIdApiResponse = unknown;
 export type DeleteMacroNotesByNoteIdApiArg = {
   noteId: number;
 };
-export type GetPacedTrainByIdSimulationApiResponse =
-  /** status 200 Simulation Output */ SimulationResponse;
-export type GetPacedTrainByIdSimulationApiArg = {
-  id: number;
-  infraId: number;
-  electricalProfileSetId?: number;
-  exceptionKey?: string;
-};
 export type GetProjectsApiResponse = /** status 200 The list of projects */ PaginationStats & {
   results: ProjectWithStudies[];
 };
@@ -2628,6 +2620,14 @@ export type GetTrainSchedulesByIdPathApiResponse = /** status 200 The path */ Pa
 export type GetTrainSchedulesByIdPathApiArg = {
   id: number;
   infraId: number;
+  exceptionKey?: string;
+};
+export type GetTrainSchedulesByIdSimulationApiResponse =
+  /** status 200 Simulation Output */ SimulationResponse;
+export type GetTrainSchedulesByIdSimulationApiArg = {
+  id: number;
+  infraId: number;
+  electricalProfileSetId?: number;
   exceptionKey?: string;
 };
 export type GetVersionApiResponse = /** status 200 Return the service version */ Version;
@@ -3796,122 +3796,6 @@ export type MacroNoteBatchForm = {
   macro_notes: MacroNoteForm[];
   scenario_id: number;
 };
-export type CoreReportTrain = {
-  /** Total energy consumption */
-  energy_consumption: number;
-  /** Time in ms of each path item given as input of the pathfinding
-    The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path) */
-  path_item_times: number[];
-  /** List of positions of a train
-    Both positions (in mm) and times (in ms) must have the same length */
-  positions: number[];
-  /** List of speeds associated to a position */
-  speeds: number[];
-  times: number[];
-};
-export type CoreRoutingZoneRequirement = {
-  /** Time in ms */
-  end_time: number;
-  entry_detector: string;
-  exit_detector: string;
-  switches: {
-    [key: string]: string;
-  };
-  zone: string;
-};
-export type CoreRoutingRequirement = {
-  /** Time in ms */
-  begin_time: number;
-  route: string;
-  zones: CoreRoutingZoneRequirement[];
-};
-export type CoreSignalCriticalPosition = {
-  /** Position in mm */
-  position: number;
-  signal: string;
-  state: string;
-  /** Time in ms */
-  time: number;
-};
-export type CoreSpacingRequirement = {
-  begin_time: number;
-  end_time: number;
-  zone: string;
-};
-export type CoreZoneUpdate = {
-  is_entry: boolean;
-  position: number;
-  time: number;
-  zone: string;
-};
-export type SimulationResponseSuccess = {
-  /** Simulation without any regularity margins */
-  base: CoreReportTrain;
-  electrical_profiles: {
-    /** List of `n` boundaries of the ranges (block path).
-        A boundary is a distance from the beginning of the path in mm. */
-    boundaries: number[];
-    /** List of `n+1` values associated to the ranges */
-    values: (
-      | {
-          electrical_profile_type: 'no_profile';
-        }
-      | {
-          electrical_profile_type: 'profile';
-          handled: boolean;
-          profile?: string | null;
-        }
-    )[];
-  };
-  /** Simulation that takes into account the regularity margins and the schedule item times */
-  final_output: CoreReportTrain & {
-    routing_requirements: CoreRoutingRequirement[];
-    signal_critical_positions: CoreSignalCriticalPosition[];
-    spacing_requirements: CoreSpacingRequirement[];
-    zone_updates: CoreZoneUpdate[];
-  };
-  /** A MRSP computation result (Most Restrictive Speed Profile) */
-  mrsp: {
-    /** List of `n` boundaries of the ranges (block path).
-        A boundary is a distance from the beginning of the path in mm. */
-    boundaries: number[];
-    /** List of `n+1` values associated to the ranges */
-    values: {
-      /** source of the speed-limit if relevant (tag used) */
-      source?:
-        | null
-        | (
-            | {
-                speed_limit_source_type: 'given_train_tag';
-                tag: string;
-              }
-            | {
-                speed_limit_source_type: 'fallback_tag';
-                tag: string;
-              }
-            | {
-                speed_limit_source_type: 'unknown_tag';
-              }
-          );
-      /** in meters per second */
-      speed: number;
-    }[];
-  };
-  /** Simulation that takes into account the regularity margins */
-  provisional: CoreReportTrain;
-};
-export type SimulationResponse =
-  | (SimulationResponseSuccess & {
-      status: 'success';
-    })
-  | {
-      pathfinding_failed: PathfindingFailure;
-      status: 'pathfinding_failed';
-    }
-  | {
-      core_error: InternalError;
-      status: 'simulation_failed';
-    };
 export type Project = {
   budget?: number | null;
   creation_date: string;
@@ -4493,6 +4377,27 @@ export type Conflict = {
   /** List of work schedule ids involved in the conflict */
   work_schedule_ids: number[];
 };
+export type CoreRoutingZoneRequirement = {
+  /** Time in ms */
+  end_time: number;
+  entry_detector: string;
+  exit_detector: string;
+  switches: {
+    [key: string]: string;
+  };
+  zone: string;
+};
+export type CoreRoutingRequirement = {
+  /** Time in ms */
+  begin_time: number;
+  route: string;
+  zones: CoreRoutingZoneRequirement[];
+};
+export type CoreSpacingRequirement = {
+  begin_time: number;
+  end_time: number;
+  zone: string;
+};
 export type CoreTrainRequirementsById = {
   routing_requirements: CoreRoutingRequirement[];
   spacing_requirements: CoreSpacingRequirement[];
@@ -4619,6 +4524,101 @@ export type CoreStdcmRequest = {
   /** List of planned work schedules */
   work_schedules: CoreWorkSchedule[];
 };
+export type CoreReportTrain = {
+  /** Total energy consumption */
+  energy_consumption: number;
+  /** Time in ms of each path item given as input of the pathfinding
+    The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path) */
+  path_item_times: number[];
+  /** List of positions of a train
+    Both positions (in mm) and times (in ms) must have the same length */
+  positions: number[];
+  /** List of speeds associated to a position */
+  speeds: number[];
+  times: number[];
+};
+export type CoreSignalCriticalPosition = {
+  /** Position in mm */
+  position: number;
+  signal: string;
+  state: string;
+  /** Time in ms */
+  time: number;
+};
+export type CoreZoneUpdate = {
+  is_entry: boolean;
+  position: number;
+  time: number;
+  zone: string;
+};
+export type SimulationResponseSuccess = {
+  /** Simulation without any regularity margins */
+  base: CoreReportTrain;
+  electrical_profiles: {
+    /** List of `n` boundaries of the ranges (block path).
+        A boundary is a distance from the beginning of the path in mm. */
+    boundaries: number[];
+    /** List of `n+1` values associated to the ranges */
+    values: (
+      | {
+          electrical_profile_type: 'no_profile';
+        }
+      | {
+          electrical_profile_type: 'profile';
+          handled: boolean;
+          profile?: string | null;
+        }
+    )[];
+  };
+  /** Simulation that takes into account the regularity margins and the schedule item times */
+  final_output: CoreReportTrain & {
+    routing_requirements: CoreRoutingRequirement[];
+    signal_critical_positions: CoreSignalCriticalPosition[];
+    spacing_requirements: CoreSpacingRequirement[];
+    zone_updates: CoreZoneUpdate[];
+  };
+  /** A MRSP computation result (Most Restrictive Speed Profile) */
+  mrsp: {
+    /** List of `n` boundaries of the ranges (block path).
+        A boundary is a distance from the beginning of the path in mm. */
+    boundaries: number[];
+    /** List of `n+1` values associated to the ranges */
+    values: {
+      /** source of the speed-limit if relevant (tag used) */
+      source?:
+        | null
+        | (
+            | {
+                speed_limit_source_type: 'given_train_tag';
+                tag: string;
+              }
+            | {
+                speed_limit_source_type: 'fallback_tag';
+                tag: string;
+              }
+            | {
+                speed_limit_source_type: 'unknown_tag';
+              }
+          );
+      /** in meters per second */
+      speed: number;
+    }[];
+  };
+  /** Simulation that takes into account the regularity margins */
+  provisional: CoreReportTrain;
+};
+export type SimulationResponse =
+  | (SimulationResponseSuccess & {
+      status: 'success';
+    })
+  | {
+      pathfinding_failed: PathfindingFailure;
+      status: 'pathfinding_failed';
+    }
+  | {
+      core_error: InternalError;
+      status: 'simulation_failed';
+    };
 export type PathfindingItem = {
   /** The stop duration in milliseconds, None if the train does not stop. */
   duration?: number | null;

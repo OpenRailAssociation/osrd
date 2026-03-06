@@ -209,7 +209,7 @@ def test_conflicts_with_reception_on_closed_signal(
     # (signal sight for OPEN reception, or 20s before restart for STOP/SHORT_SLIP_STOP reception).
     train_id = stopping_train_schedule_response.json()[0]["id"]
     simu_response = session.get(
-        f"{EDITOAST_URL}/paced_train/{train_id}/simulation/?infra_id={small_infra.id}"
+        f"{EDITOAST_URL}/train_schedules/{train_id}/simulation/?infra_id={small_infra.id}"
     )
     simu_response.raise_for_status()
     simu_response_json = simu_response.json()
@@ -468,7 +468,7 @@ def test_scheduled_points_with_incompatible_margins(
     response.raise_for_status()
     train_id = response.json()[0]["id"]
     response = session.get(
-        f"{EDITOAST_URL}/paced_train/{train_id}/simulation/?infra_id={small_infra.id}"
+        f"{EDITOAST_URL}/train_schedules/{train_id}/simulation/?infra_id={small_infra.id}"
     )
     response.raise_for_status()
     content = response.json()
@@ -557,7 +557,7 @@ def _get_train_schedule_simulation_response(
     ts_response.raise_for_status()
     train_id = ts_response.json()[0]["id"]
     sim_response = session.get(
-        f"{EDITOAST_URL}/paced_train/{train_id}/simulation/?infra_id={infra.id}"
+        f"{EDITOAST_URL}/train_schedules/{train_id}/simulation/?infra_id={infra.id}"
     )
     sim_response.raise_for_status()
     content = sim_response.json()

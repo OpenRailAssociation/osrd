@@ -540,8 +540,8 @@ pub(in crate::views) async fn simulation(
     })
     .await?;
 
-    // Retrieve paced_train or fail
-    let paced_train =
+    // Retrieve train_schedule or fail
+    let train_schedule =
         models::TrainSchedule::retrieve_or_fail(db_pool.get().await?, train_schedule_id, || {
             TrainScheduleError::NotFound { train_schedule_id }
         })
@@ -549,7 +549,7 @@ pub(in crate::views) async fn simulation(
 
     let train_schedule = match exception_key {
         Some(exception_key) => {
-            let exception = paced_train
+            let exception = train_schedule
                 .exceptions
                 .iter()
                 .find(|e| e.key == exception_key)
@@ -557,12 +557,12 @@ pub(in crate::views) async fn simulation(
                     exception_key: exception_key.clone(),
                 })?;
 
-            paced_train.apply_exception(exception)
+            train_schedule.apply_exception(exception)
         }
-        None => paced_train.into_train_occurrence(),
+        None => train_schedule.into_train_occurrence(),
     };
 
-    // Compute simulation of a paced_train
+    // Compute simulation of a train schedule
     let (simulation, _) = train_simulation_batch(
         &mut db_pool.get().await?,
         valkey_client,
@@ -1922,7 +1922,8 @@ mod tests {
         let (app, infra_id, train_schedule_id) =
             app_infra_id_paced_train_id_for_simulation_tests().await;
         let request = app.get(
-            format!("/paced_train/{train_schedule_id}/simulation/?infra_id={infra_id}").as_str(),
+            format!("/train_schedules/{train_schedule_id}/simulation/?infra_id={infra_id}")
+                .as_str(),
         );
         let response: core_client::simulation::Response = app
             .fetch(request)
@@ -1939,7 +1940,7 @@ mod tests {
             app_infra_id_paced_train_id_for_simulation_tests().await;
         let request = app.get(
             format!(
-                "/paced_train/{train_schedule_id}/simulation/?infra_id={infra_id}&exception_key=toto"
+                "/train_schedules/{train_schedule_id}/simulation/?infra_id={infra_id}&exception_key=toto"
             )
             .as_str(),
         );
@@ -1960,7 +1961,7 @@ mod tests {
         let (app, infra_id, train_schedule_id) =
             app_infra_id_paced_train_id_for_simulation_tests().await;
         let request = app.get(
-            format!("/paced_train/{train_schedule_id}/simulation/?infra_id={infra_id}&exception_key=created_exception_key").as_str(),
+            format!("/train_schedules/{train_schedule_id}/simulation/?infra_id={infra_id}&exception_key=created_exception_key").as_str(),
         );
         let response: simulation::Response = app
             .fetch(request)
@@ -2040,7 +2041,7 @@ mod tests {
             .assert_status(StatusCode::NO_CONTENT);
         // WHEN
         let request = app.get(
-            format!("/paced_train/{train_schedule_id}/simulation/?infra_id={infra_id}&exception_key=created_exception_key").as_str(),
+            format!("/train_schedules/{train_schedule_id}/simulation/?infra_id={infra_id}&exception_key=created_exception_key").as_str(),
         );
         let response: simulation::Response = app
             .fetch(request)
@@ -2066,7 +2067,7 @@ mod tests {
         let (app, infra_id, _paced_train_id) =
             app_infra_id_paced_train_id_for_simulation_tests().await;
         let request =
-            app.get(format!("/paced_train/{}/simulation/?infra_id={}", 0, infra_id).as_str());
+            app.get(format!("/train_schedules/{}/simulation/?infra_id={}", 0, infra_id).as_str());
 
         let response: InternalError = app
             .fetch(request)

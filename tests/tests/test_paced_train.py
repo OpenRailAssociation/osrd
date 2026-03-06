@@ -159,7 +159,7 @@ def test_get_paced_train_with_exception_simulation(
 
     # Get base paced train simulation
     paced_train_simulation_result = session.get(
-        f"{EDITOAST_URL}paced_train/{paced_train_id}/simulation?infra_id={small_infra.id}"
+        f"{EDITOAST_URL}train_schedules/{paced_train_id}/simulation?infra_id={small_infra.id}"
     ).json()
 
     # Add exception to the paced train
@@ -192,7 +192,7 @@ def test_get_paced_train_with_exception_simulation(
     assert update_response.status_code == 204
     # Get exception path
     exception_simulation_result = session.get(
-        f"{EDITOAST_URL}paced_train/{paced_train_id}/simulation?infra_id={small_infra.id}&exception_key=exception_key"
+        f"{EDITOAST_URL}train_schedules/{paced_train_id}/simulation?infra_id={small_infra.id}&exception_key=exception_key"
     ).json()
 
     # Check if the response is different from paced train
@@ -210,7 +210,7 @@ def test_get_and_update_paced_train_result(
             f"Paced train error {response.status_code}: {response.content}, id={paced_train_id}"
         )
     response = session.get(
-        f"{EDITOAST_URL}paced_train/{paced_train_id}/simulation?infra_id={small_infra.id}"
+        f"{EDITOAST_URL}train_schedules/{paced_train_id}/simulation?infra_id={small_infra.id}"
     )
     simulation_report = response.json()
     assert (
@@ -228,7 +228,7 @@ def test_get_and_update_paced_train_result(
         )
 
     response = session.get(
-        f"{EDITOAST_URL}paced_train/{paced_train_id}/simulation?infra_id={small_infra.id}"
+        f"{EDITOAST_URL}train_schedules/{paced_train_id}/simulation?infra_id={small_infra.id}"
     )
     simulation_report = response.json()
     assert (
