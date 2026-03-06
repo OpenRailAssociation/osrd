@@ -284,7 +284,7 @@ impl TestAppBuilder {
             .with_state(app_state.clone());
 
         // Run server
-        let server = TestServer::new(router).expect("test server should build properly");
+        let server = TestServer::new(router);
 
         TestApp {
             test_name: self.test_name,
