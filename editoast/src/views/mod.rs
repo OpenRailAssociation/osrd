@@ -76,6 +76,7 @@ use tokio::time::timeout;
 use tower::Layer as _;
 use tower_http::cors::Any;
 use tower_http::cors::CorsLayer;
+use tower_http::decompression::RequestDecompressionLayer;
 use tower_http::limit::RequestBodyLimitLayer;
 use tower_http::normalize_path::NormalizePath;
 use tower_http::normalize_path::NormalizePathLayer;
@@ -1107,6 +1108,7 @@ impl Server {
             ))
             .layer(OtelInResponseLayer)
             .layer(OtelAxumLayer::default())
+            .layer(RequestDecompressionLayer::new())
             .layer(DefaultBodyLimit::disable())
             .layer(request_payload_limit)
             .layer(cors)
