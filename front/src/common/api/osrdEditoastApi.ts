@@ -1,3 +1,4 @@
+import type { BaseQueryFn } from '@reduxjs/toolkit/query';
 import { isNil, sortBy } from 'lodash';
 
 import type { TimetableItem, TimetableItemId, TrainId } from 'reducers/osrdconf/types';
@@ -7,6 +8,7 @@ import {
   isOccurrenceId,
 } from 'utils/trainId';
 
+import type { ApiError } from './baseGeneratedApis';
 import {
   generatedEditoastApi,
   type CatalogEntry,
@@ -17,6 +19,8 @@ import {
   type OperationalPointReference,
   type TrainScheduleResponse,
   type PathfindingResult,
+  type PostInfraRailjsonApiArg,
+  type PostInfraRailjsonApiResponse,
   type PostTimetableByIdStdcmApiResponse,
   type RelatedOperationalPoint,
   type SimulationResponse,
@@ -25,6 +29,34 @@ import {
 // Type extension for PostTimetableByIdStdcm to include traceId
 export type PostTimetableByIdStdcmApiResponseWithTraceId = PostTimetableByIdStdcmApiResponse & {
   traceId?: string;
+};
+
+/** Helper to easily perform a compressed post query  */
+const compressedQuery = async <Response>(
+  url: string,
+  body: unknown,
+  queryParams: unknown,
+  baseQuery: (arg: Parameters<BaseQueryFn>[0]) => ReturnType<BaseQueryFn>
+) => {
+  const compressedStream = new Blob([JSON.stringify(body)])
+    .stream()
+    .pipeThrough(new CompressionStream('gzip'));
+  const compressedBuffer = await new Response(compressedStream).arrayBuffer();
+  const compressedBlob = new Blob([compressedBuffer], {
+    type: 'application/json',
+  });
+
+  const result = await baseQuery({
+    url,
+    method: 'POST',
+    body: compressedBlob,
+    params: queryParams,
+    headers: {
+      'content-encoding': 'gzip',
+    },
+  });
+
+  return result as { data: Response } | { error: ApiError };
 };
 
 const osrdEditoastApi = generatedEditoastApi
@@ -227,6 +259,21 @@ const osrdEditoastApi = generatedEditoastApi
           return { data: result };
         },
         providesTags: ['catalog_entry'],
+      }),
+    }),
+  })
+  .injectEndpoints({
+    overrideExisting: true,
+    endpoints: (builder) => ({
+      postInfraRailjson: builder.mutation<PostInfraRailjsonApiResponse, PostInfraRailjsonApiArg>({
+        queryFn: ({ railJson, name, generateData }, _api, _extraOptions, baseQuery) =>
+          compressedQuery<PostInfraRailjsonApiResponse>(
+            '/infra/railjson',
+            railJson,
+            { name, generate_data: generateData },
+            baseQuery
+          ),
+        invalidatesTags: ['infra'],
       }),
     }),
   })
