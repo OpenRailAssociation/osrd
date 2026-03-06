@@ -53,7 +53,7 @@ class AppendOnlyLinkedList<T>(private var lastNode: Node<T>? = null, var size: I
      * calls on elements that aren't near the end.
      */
     fun toList(): List<T> {
-        return iterateBackwards().toList().reversed()
+        return iterateBackwards().toCollection(ArrayList(size)).asReversed()
     }
 
     /** Converts the linked list into a set. */
