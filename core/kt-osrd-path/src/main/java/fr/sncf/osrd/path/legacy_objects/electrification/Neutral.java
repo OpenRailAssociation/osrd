@@ -44,4 +44,9 @@ public final class Neutral implements Electrification {
     public int hashCode() {
         return Objects.hash(lowerPantograph, overlappedElectrification, isAnnouncement);
     }
+
+    @Override
+    public String toString() {
+        return String.format("Neutral(lowerPantograph=%b, isAnnouncement=%b)", lowerPantograph, isAnnouncement);
+    }
 }
