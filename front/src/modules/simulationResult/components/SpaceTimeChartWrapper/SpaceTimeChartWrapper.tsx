@@ -225,8 +225,7 @@ const SpaceTimeChartWrapper = ({
   const { waypointMenu, activeWaypointId, handleWaypointClick } = useWaypointMenu(
     activeWaypointRef,
     waypointsPanelData,
-    allTrainsProjected,
-    pathfindingHasFailed
+    allTrainsProjected
   );
 
   const hoveredTrainIdForChart = useMemo(() => {

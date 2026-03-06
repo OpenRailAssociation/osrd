@@ -14,8 +14,7 @@ import { getWaypointsLocalStorageKey } from './helpers/utils';
 const useWaypointMenu = (
   activeWaypointRef: RefObject<HTMLDivElement | null>,
   waypointsPanelData?: WaypointsPanelData,
-  allTrainsProjected?: boolean,
-  pathfindingHasFailed?: boolean
+  allTrainsProjected?: boolean
 ) => {
   const {
     filteredWaypoints,
@@ -95,12 +94,21 @@ const useWaypointMenu = (
       (waypoint) => waypoint.waypointId === activeWaypointId
     );
 
-    if (typeof activeWaypoint?.opId === 'string') {
+    // Show the occupancy menu item for any waypoint that has an operational point reference
+    // (opId, trigram, or UIC) — not just those with a resolved opId string.
+    // This allows opening track occupancy even when pathfinding has failed.
+    const hasReference =
+      activeWaypoint != null &&
+      (activeWaypoint.opId != null ||
+        activeWaypoint.extensions?.sncf?.trigram != null ||
+        activeWaypoint.extensions?.identifier?.uic != null);
+
+    if (hasReference && activeWaypoint != null) {
       const isDeployed = deployedWaypoints.has(activeWaypointId);
 
       menuItems.push({
         dataTestID: 'occupancy-menu-button',
-        disabled: pathfindingHasFailed || (!isDeployed && !allTrainsProjected),
+        disabled: !isDeployed && !allTrainsProjected,
         title: isDeployed
           ? t('simulationResults.waypointMenu.hideOccupancy')
           : t('simulationResults.waypointMenu.showOccupancy'),

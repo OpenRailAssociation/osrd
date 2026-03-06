@@ -112,9 +112,12 @@ const SimulationResults = ({
     updateTrackOccupanciesOnDrag: handleTrainDragInTrackOccupancy,
   } = useTrackOccupancy({
     infraId,
-    pathfindingHasFailed: projectionData?.pathfindingStatus === 'failed',
     pathOperationalPoints: filteredOperationalPoints,
     timetableItemProjections,
+    pathItems:
+      (projectionData?.path?.filter((item) => 'operational_point' in item.location) as Array<{
+        location: { operational_point?: { trigram?: string }; local_track_name?: string | null };
+      }>) || [],
   });
 
   const conflictZones = useProjectedConflicts(infraId, conflicts, projectionData?.pathfinding);

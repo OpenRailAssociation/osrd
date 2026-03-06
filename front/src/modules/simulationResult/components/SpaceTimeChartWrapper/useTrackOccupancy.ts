@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { OccupancyZone, Track } from '@osrd-project/ui-charts';
 import type { TFunction } from 'i18next';
-import { forEach, fromPairs, isEmpty, isEqual, isFunction, keyBy, noop, uniqBy } from 'lodash';
+import { forEach, fromPairs, isEmpty, isEqual, isFunction, keyBy, noop } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -11,7 +11,7 @@ import { type OperationalPointReference, osrdEditoastApi } from 'common/api/osrd
 import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
 import { computeIndexedOccurrenceStartTime } from 'modules/timetableItem/helpers/pacedTrain';
 import type { SimulatedException } from 'modules/timetableItem/types';
-import type { PacedTrainId, TimetableItemId, TrainId } from 'reducers/osrdconf/types';
+import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
 import { getIsSimulationEnabled } from 'reducers/simulationResults/selectors';
 import {
   extractEditoastIdFromPacedTrainId,
@@ -20,7 +20,6 @@ import {
   formatPacedTrainIdToExceptionId,
   formatPacedTrainIdToIndexedOccurrenceId,
   isOccurrenceId,
-  isPacedTrainId,
 } from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
@@ -29,9 +28,28 @@ import { batchFetchTrackOccupancy } from './helpers/utils';
 import { getMovableOccupancyZone, type MovableOccupancyZone } from './helpers/zones';
 import { usePrevious } from '../../../../utils/hooks/state';
 
+/**
+ * The synthetic track ID used for occupancy zones whose local_track_name is null.
+ * Displayed at the very end of the track list.
+ */
+const NULL_TRACK_ID = '[ ]';
+
 type AsyncState<T> = { type: 'loading'; data?: T; abort?: () => void } | { type: 'ok'; data: T };
 type ZonesState = AsyncState<MovableOccupancyZone[]>;
 type OperationalPointState = { selected: boolean; zones: ZonesState };
+
+/**
+ * Information about tracks for a given operational point (keyed by opId).
+ *
+ * - `tracks`: Ordered list of tracks derived from `match_operational_points` results.
+ *   Each track uses its `local_track_name` as `Track.id` and `Track.name`.
+ * - `sectionIdToLocalName`: Reverse-lookup map from track-section ID → local_track_name,
+ *   used to resolve `track_id` references from `track_occupancy` back to a local_track_name.
+ */
+type TrackInfo = {
+  tracks: Track[];
+  sectionIdToLocalName: Map<string, string>;
+};
 
 type DeployedWaypoint = {
   waypointId: string;
@@ -67,6 +85,82 @@ function getOperationalPointReference(
 }
 
 /**
+ * Resolve the zone trackId from a track_reference in a track_occupancy response.
+ *
+ * - `track_id`   → reverse-lookup to local_track_name via TrackInfo; fall back to raw id
+ * - `track_name` → the name itself is the local_track_name (unknown to match_op)
+ * - null / undefined → NULL_TRACK_ID ("[]"), displayed at the very end
+ */
+function resolveZoneTrackId(
+  trackReference:
+    | null
+    | undefined
+    | { id: string; type: 'track_id' }
+    | { name: string | null; type: 'track_name' },
+  trackInfo: TrackInfo | undefined
+): string {
+  if (!trackReference) return NULL_TRACK_ID;
+  if (trackReference.type === 'track_id') {
+    return trackInfo?.sectionIdToLocalName.get(trackReference.id) ?? trackReference.id;
+  }
+  // track_name: local_track_name not resolved to a track section ID
+  return trackReference.name ?? NULL_TRACK_ID;
+}
+
+/**
+ * Given the base ordered tracks (from match_operational_points), path item tracks, and zones for a waypoint,
+ * compute the full ordered track list:
+ *  1. All base tracks in order
+ *  2. Any path item local_track_name values not in base list
+ *  3. Any extra tracks referenced by zones but not in the base list (appended after)
+ *  4. The NULL_TRACK_ID track last (only if no base tracks and no zones)
+ */
+function mergeTracksWithZones(
+  baseTracks: Track[],
+  zones: MovableOccupancyZone[] | undefined,
+  pathTracks: string[] = []
+): Track[] {
+  // If no base tracks AND no zones AND no path tracks, return fallback track
+  if (baseTracks.length === 0 && !zones?.length && pathTracks.length === 0) {
+    return [{ id: NULL_TRACK_ID, name: NULL_TRACK_ID }];
+  }
+
+  if (!zones?.length && pathTracks.length === 0) return baseTracks;
+
+  const baseTrackIds = new Set(baseTracks.map((t) => t.id));
+  const pathTrackSet = new Set(pathTracks);
+  const extraTracks: Track[] = [];
+  let hasNullTrack = false;
+
+  // Add path item tracks
+  for (const pathTrack of pathTracks) {
+    if (!baseTrackIds.has(pathTrack) && !extraTracks.some((t) => t.id === pathTrack)) {
+      extraTracks.push({ id: pathTrack, name: pathTrack });
+    }
+  }
+
+  // Add zone tracks
+  for (const zone of zones || []) {
+    if (zone.trackId === NULL_TRACK_ID) {
+      hasNullTrack = true;
+    } else if (
+      !baseTrackIds.has(zone.trackId) &&
+      !pathTrackSet.has(zone.trackId) &&
+      !extraTracks.some((t) => t.id === zone.trackId)
+    ) {
+      extraTracks.push({ id: zone.trackId, name: zone.trackId });
+    }
+  }
+
+  const result = [...baseTracks, ...extraTracks];
+  // Add NULL_TRACK_ID only if explicitly referenced by zones
+  if (hasNullTrack && !baseTrackIds.has(NULL_TRACK_ID)) {
+    result.push({ id: NULL_TRACK_ID, name: NULL_TRACK_ID });
+  }
+  return result;
+}
+
+/**
  * This hook handles track occupancy zones lifecycle.
  *
  * It takes the following inputs:
@@ -81,7 +175,7 @@ function getOperationalPointReference(
  *   tracks, and other useful metadata
  * - toggleWaypoint:
  *   A function to call to deploy / undeploy a specified waypoint
- * - handleTrainDrag:
+ * - updateTrackOccupanciesOnDrag:
  *   A function to call when a train is dragged in the SpaceTimeChart, so that its related
  *   occupancy zones are updated accordingly
  */
@@ -89,12 +183,24 @@ const useTrackOccupancy = ({
   infraId,
   timetableItemProjections,
   pathOperationalPoints,
-  pathfindingHasFailed = false,
+  timetableItemsWithDetails = [],
+  pathItems = [],
 }: {
   infraId: number;
   timetableItemProjections: TrainSpaceTimeData[];
   pathOperationalPoints: PathOperationalPoint[];
-  pathfindingHasFailed?: boolean;
+  timetableItemsWithDetails?: Array<{
+    id: string;
+    path?: Array<{
+      location?: {
+        operational_point?: { trigram?: string; uic?: number };
+        local_track_name?: string | null;
+      };
+    }>;
+  }>;
+  pathItems?: Array<{
+    location?: { operational_point?: { trigram?: string }; local_track_name?: string | null };
+  }>;
 }): {
   deployedWaypoints: DeployedWaypoint[];
   toggleWaypoint: (waypointId: string, selectedState?: boolean) => void;
@@ -129,8 +235,18 @@ const useTrackOccupancy = ({
     () => new Map(timetableItemProjections.map((item) => [item.id, item])),
     [timetableItemProjections]
   );
-  const [tracksState, setTracksState] = useState<AsyncState<Record<string, Track[]>>>({
-    type: 'loading',
+
+  /**
+   * Tracks keyed by opId. Each entry holds:
+   * - `tracks`: ordered list using local_track_name as Track.id/name
+   * - `sectionIdToLocalName`: reverse map for resolving track_id refs from track_occupancy
+   *
+   * Initialized as 'ok' (empty) so that deployedWaypoints is never permanently blocked
+   * when no waypoints have an opId (which would leave it in 'loading' forever).
+   */
+  const [tracksState, setTracksState] = useState<AsyncState<Record<string, TrackInfo>>>({
+    type: 'ok',
+    data: {},
   });
   const [pathOperationalPointsState, setPathOperationalPointsState] = useState<
     Record<string, OperationalPointState>
@@ -167,116 +283,139 @@ const useTrackOccupancy = ({
   const toOwnerTimetableItemId = (id: TrainId): TimetableItemId =>
     !isOccurrenceId(id) ? id : extractPacedTrainIdFromOccurrenceId(id);
 
+  /** Return the TrackInfo for an opId, used to resolve zone trackIds. */
+  const getTrackInfo = useCallback(
+    (opId: string | null | undefined): TrackInfo | undefined => {
+      if (!opId) return undefined;
+      return tracksState.data?.[opId];
+    },
+    [tracksState]
+  );
+
   const fetchTrackOccupancy = useCallback(
     async (
       opRef: OperationalPointReference | undefined | null,
-      trainsCollection: Record<TimetableItemId, TrainSpaceTimeData>
+      trainsCollection: Record<TimetableItemId, TrainSpaceTimeData>,
+      trackInfo?: TrackInfo
     ): Promise<MovableOccupancyZone[]> => {
       if (!opRef) return [];
 
-      const pacedTrainIds: PacedTrainId[] = [];
-      for (const id of Object.keys(trainsCollection)) {
-        if (isPacedTrainId(id)) pacedTrainIds.push(id);
-      }
+      const trainIds = Object.keys(trainsCollection) as TimetableItemId[];
 
-      const bodyForPaced =
-        pacedTrainIds.length > 0
-          ? {
-              operational_point_reference: opRef,
-              infra_id: infraId,
-              paced_train_ids: pacedTrainIds.map(extractEditoastIdFromPacedTrainId),
-              use_simulation: isSimulationEnabled,
-            }
-          : null;
+      if (trainIds.length === 0) return [];
 
-      const pacedResp = await (bodyForPaced
-        ? postPacedTrainTrackOccupancy({ body: bodyForPaced })
-        : Promise.resolve(undefined));
+      const bodyForPaced = {
+        operational_point_reference: opRef,
+        infra_id: infraId,
+        paced_train_ids: trainIds.map(extractEditoastIdFromPacedTrainId),
+        use_simulation: isSimulationEnabled,
+      };
 
-      const zones: MovableOccupancyZone[] = [];
+      try {
+        const pacedResp = await postPacedTrainTrackOccupancy({ body: bodyForPaced });
 
-      if (pacedResp?.data) {
-        for (const trackItem of pacedResp.data) {
-          const { track_reference, trains } = trackItem;
-          if (!track_reference) continue;
-          const trackId =
-            track_reference.type === 'track_id' ? track_reference.id : track_reference.name;
-          for (const occupation of trains) {
-            const pacedId = formatEditoastIdToPacedTrainId(occupation.train_schedule_id);
-            const train = trainsCollection[pacedId];
+        const zones: MovableOccupancyZone[] = [];
 
-            if (!train) throw new Error(`No train found for id ${pacedId}`);
+        if (pacedResp?.data) {
+          for (const trackItem of pacedResp.data) {
+            const { track_reference, trains } = trackItem;
 
-            if (!train.paced) {
-              if (occupation.type !== 'base') {
-                throw new Error(
-                  `Invalid occupation type ${occupation.type} for unique train ${train.id}`
+            // Resolve zone trackId using local_track_name logic:
+            // - track_id   → reverse-lookup to local_track_name (or raw id as fallback)
+            // - track_name → the local_track_name not in match_op (new track appended after)
+            // - null/undef → NULL_TRACK_ID "[]" (displayed last)
+            const zoneTrackId = resolveZoneTrackId(track_reference, trackInfo);
+
+            for (const occupation of trains) {
+              const pacedId = formatEditoastIdToPacedTrainId(occupation.train_schedule_id);
+              const train = trainsCollection[pacedId];
+
+              if (!train) throw new Error(`No train found for id ${pacedId}`);
+
+              if (!train.paced) {
+                if (occupation.type !== 'base') {
+                  throw new Error(
+                    `Invalid occupation type ${occupation.type} for unique train ${train.id}`
+                  );
+                }
+                zones.push(
+                  getMovableOccupancyZone(
+                    zoneTrackId,
+                    pacedId,
+                    occupation,
+                    train.spaceTimeCurves,
+                    train.name,
+                    train.departureTime
+                  )
                 );
+                continue;
               }
+
+              let exception: SimulatedException | undefined;
+              let exceptionProjection: BaseTrainProjection | undefined;
+              if (occupation.type !== 'base') {
+                exception = train.paced.exceptions.find((e) => e.key === occupation.exception_key);
+                exceptionProjection = train.paced.exceptionProjections.get(
+                  occupation.exception_key
+                );
+                if (!exception) throw new Error(`Exception not found for train ${train.id}`);
+              }
+
+              const { spaceTimeCurves } = exceptionProjection ?? train;
+
+              let trainId: TrainId;
+              let trainName: string;
+              let startTime: Date;
+
+              if (occupation.type === 'created') {
+                if (!exception?.start_time?.value)
+                  throw new Error(`Created exceptions should always be a start time exception`);
+
+                trainId = formatPacedTrainIdToExceptionId(pacedId, occupation.exception_key);
+                trainName = exception.train_name?.value ?? `${train.name}/+`;
+                startTime = new Date(exception.start_time.value);
+              } else {
+                trainId = formatPacedTrainIdToIndexedOccurrenceId(pacedId, occupation.index);
+                trainName =
+                  exception?.train_name?.value ??
+                  computeOccurrenceName(train.name, occupation.index);
+
+                startTime = exception?.start_time?.value
+                  ? new Date(exception.start_time.value)
+                  : computeIndexedOccurrenceStartTime(
+                      new Date(train.departureTime),
+                      train.paced.interval,
+                      occupation.index
+                    );
+              }
+
               zones.push(
                 getMovableOccupancyZone(
-                  trackId,
-                  pacedId,
+                  zoneTrackId,
+                  trainId,
                   occupation,
-                  train.spaceTimeCurves,
-                  train.name,
-                  train.departureTime
+                  spaceTimeCurves,
+                  trainName,
+                  startTime,
+                  exception
                 )
               );
-              continue;
             }
-
-            let exception: SimulatedException | undefined;
-            let exceptionProjection: BaseTrainProjection | undefined;
-            if (occupation.type !== 'base') {
-              exception = train.paced.exceptions.find((e) => e.key === occupation.exception_key);
-              exceptionProjection = train.paced.exceptionProjections.get(occupation.exception_key);
-              if (!exception) throw new Error(`Exception not found for train ${train.id}`);
-            }
-
-            const { spaceTimeCurves } = exceptionProjection ?? train;
-
-            let trainId: TrainId;
-            let trainName: string;
-            let startTime: Date;
-
-            if (occupation.type === 'created') {
-              if (!exception?.start_time?.value)
-                throw new Error(`Created exceptions should always be a start time exception`);
-
-              trainId = formatPacedTrainIdToExceptionId(pacedId, occupation.exception_key);
-              trainName = exception.train_name?.value ?? `${train.name}/+`;
-              startTime = new Date(exception.start_time.value);
-            } else {
-              trainId = formatPacedTrainIdToIndexedOccurrenceId(pacedId, occupation.index);
-              trainName =
-                exception?.train_name?.value ?? computeOccurrenceName(train.name, occupation.index);
-
-              startTime = exception?.start_time?.value
-                ? new Date(exception.start_time.value)
-                : computeIndexedOccurrenceStartTime(
-                    new Date(train.departureTime),
-                    train.paced.interval,
-                    occupation.index
-                  );
-            }
-
-            zones.push(
-              getMovableOccupancyZone(
-                trackId,
-                trainId,
-                occupation,
-                spaceTimeCurves,
-                trainName,
-                startTime,
-                exception
-              )
-            );
           }
         }
-      }
 
-      return zones;
+        return zones;
+      } catch (error: unknown) {
+        // If the API returns 404 (train not found), it means the train was deleted
+        // Gracefully return empty zones instead of propagating the error
+        const apiError = error as { status?: number };
+        if (apiError?.status === 404) {
+          console.debug('Train not found for track occupancy (likely deleted):', error);
+          return [];
+        }
+        // Re-throw other errors
+        throw error;
+      }
     },
     [infraId, postPacedTrainTrackOccupancy, isSimulationEnabled]
   );
@@ -287,11 +426,55 @@ const useTrackOccupancy = ({
     if (tracksState.type === 'ok')
       forEach(pathOperationalPointsState, (opState, waypointId) => {
         const op = pathOpsByWaypointId.get(waypointId);
-        if (opState.selected && op?.opId) {
-          const tracks = tracksState.data[op.opId];
+        // Allow any waypoint that has a resolvable OP reference (opId, trigram, or UIC),
+        // including those with opId=null (e.g. trains with invalid pathfinding).
+        const hasReference = op != null && getOperationalPointReference(op) !== undefined;
+        if (opState.selected && hasReference && op != null) {
+          const trackInfo = op.opId ? tracksState.data[op.opId] : undefined;
+          const baseTracks = trackInfo?.tracks ?? [];
+
+          // Extract local_track_name values from all projected trains' paths for this operational point
+          const pathTracksForOp = new Set<string>();
+          const opTrigram = op.extensions?.sncf?.trigram;
+          const opUIC = op.extensions?.identifier?.uic;
+          if (opTrigram || opUIC) {
+            // Gather tracks from all projected trains using their complete paths
+            for (const trainWithDetails of timetableItemsWithDetails) {
+              if (!trainWithDetails.path) continue;
+
+              for (const pathItem of trainWithDetails.path) {
+                if (!pathItem.location) continue;
+                const itemOp = pathItem.location.operational_point;
+                const itemLocalTrack = pathItem.location.local_track_name;
+                const matchesTrigram =
+                  itemOp && 'trigram' in itemOp && itemOp.trigram === opTrigram;
+                const matchesUIC = itemOp && 'uic' in itemOp && itemOp.uic === opUIC;
+                if (matchesTrigram || matchesUIC) {
+                  pathTracksForOp.add(itemLocalTrack ?? NULL_TRACK_ID);
+                }
+              }
+            }
+            // Also check pathItems parameter for backward compatibility
+            pathItems.forEach((item) => {
+              const itemOp = item.location?.operational_point;
+              const itemLocalTrack = item.location?.local_track_name;
+              if (itemOp && 'trigram' in itemOp && itemOp.trigram === opTrigram) {
+                pathTracksForOp.add(itemLocalTrack ?? NULL_TRACK_ID);
+              }
+            });
+          }
+
+          // Merge base tracks with path tracks and any extra/null tracks discovered from zone data
+          const tracks = mergeTracksWithZones(
+            baseTracks,
+            opState.zones.data,
+            Array.from(pathTracksForOp)
+          );
+
           res.push({
             waypointId,
-            operationalPointId: op.opId,
+            // Use opId when available, fall back to waypointId so the required string field is always set
+            operationalPointId: op.opId ?? waypointId,
             operationalPointPosition: op.position,
             operationalPointName: op.extensions?.identifier?.name || undefined,
             zones: opState.zones.data?.map((zone) => {
@@ -309,7 +492,15 @@ const useTrackOccupancy = ({
       });
 
     return res;
-  }, [pathOperationalPointsState, pathOpsByWaypointId, t]);
+  }, [
+    pathOperationalPointsState,
+    pathOpsByWaypointId,
+    tracksState,
+    t,
+    pathItems,
+    timetableItemProjections,
+    timetableItemsWithDetails,
+  ]);
 
   const toggleWaypoint = useCallback(
     (waypointId: string, selectedState?: boolean) => {
@@ -324,12 +515,14 @@ const useTrackOccupancy = ({
 
       // Start fetching data:
       if (!currentState) {
+        const trackInfo = getTrackInfo(waypoint.opId);
         const abort = batchFetchTrackOccupancy(
           Array.from(timetableItemProjectionsById.keys()),
           (ids) =>
             fetchTrackOccupancy(
               getOperationalPointReference(waypoint),
-              Object.fromEntries(ids.map((id) => [id, timetableItemProjectionsById.get(id)!]))
+              Object.fromEntries(ids.map((id) => [id, timetableItemProjectionsById.get(id)!])),
+              trackInfo
             ),
           {
             batchSize: 50,
@@ -379,8 +572,9 @@ const useTrackOccupancy = ({
           if (!opRef) return;
 
           const trains = Object.fromEntries(Array.from(timetableItemProjectionsById.entries()));
+          const trackInfo = getTrackInfo(waypoint.opId);
 
-          fetchTrackOccupancy(opRef, trains).then((newZones) => {
+          fetchTrackOccupancy(opRef, trains, trackInfo).then((newZones) => {
             if (!newZones.length) return;
 
             updatePathOperationalPointState(waypointId, (state) =>
@@ -403,6 +597,7 @@ const useTrackOccupancy = ({
       pathOperationalPointsState,
       updatePathOperationalPointState,
       timetableItemProjectionsById,
+      getTrackInfo,
     ]
   );
 
@@ -448,11 +643,14 @@ const useTrackOccupancy = ({
         const draggedTrainEditoastId = draggedTrainId;
         await Promise.all(
           [...impactedPathOperationalPointIDs].map(async (waypointId) => {
+            const waypoint = pathOpsByWaypointId.get(waypointId);
+            const trackInfo = getTrackInfo(waypoint?.opId);
             const newZones = await fetchTrackOccupancy(
-              getOperationalPointReference(pathOpsByWaypointId.get(waypointId)),
+              getOperationalPointReference(waypoint),
               {
                 [draggedTrainEditoastId]: newTrainData,
-              }
+              },
+              trackInfo
             );
 
             if (newZones.length)
@@ -467,7 +665,7 @@ const useTrackOccupancy = ({
         );
       }
     },
-    [pathOpsByWaypointId, pathOperationalPointsState]
+    [pathOpsByWaypointId, pathOperationalPointsState, getTrackInfo]
   );
 
   // Abort all batch calls on unmount:
@@ -483,14 +681,10 @@ const useTrackOccupancy = ({
 
   // Load all tracks from all waypoints on mount / waypoints update:
   useEffect(() => {
-    if (pathfindingHasFailed) {
-      return;
-    }
-
     let aborted = false;
 
     const pathOperationalPointsWithoutTracks = pathOperationalPoints.filter(
-      (op) => !(tracksState.data || {})[op.waypointId]
+      (op) => !(tracksState.data || {})[op.opId ?? '']
     );
     const loadAllTracks = async (
       operationalPointReferences: { operational_point: string; type: 'id' }[]
@@ -505,36 +699,70 @@ const useTrackOccupancy = ({
 
         if (aborted) return;
 
-        const allTrackIds = data.related_operational_points.flatMap(([points]) =>
-          points.parts.map((part) => part.track)
-        );
+        // Collect all track section IDs that need metadata (only for OPs that exist):
+        const allTrackIds = data.related_operational_points.flatMap((opMatches) => {
+          const op = opMatches[0];
+          return op ? op.parts.map((part) => part.track) : [];
+        });
         const fetchedTrackSections = await getTrackSectionsByIds(allTrackIds);
 
-        const trackSectionByTrackId = new Map();
-        for (const trackSections of Object.values(fetchedTrackSections)) {
-          if (trackSections.id) trackSectionByTrackId.set(trackSections.id, trackSections);
+        const trackSectionByTrackId = new Map<string, (typeof fetchedTrackSections)[string]>();
+        for (const trackSection of Object.values(fetchedTrackSections)) {
+          if (trackSection.id) trackSectionByTrackId.set(trackSection.id, trackSection);
         }
 
-        const loadedTracks = fromPairs(
-          operationalPointReferences.map(({ operational_point }, i) => [
-            operational_point,
-            uniqBy(
-              data.related_operational_points[i][0].parts.map((part) => {
-                const trackPart = trackSectionByTrackId.get(part.track);
-                return {
-                  id: part.track,
-                  name: part.local_track_name,
-                  line: trackPart?.extensions?.sncf?.line_code,
-                };
-              }),
-              (track) => track.id
-            ),
-          ])
+        const loadedTrackInfos = fromPairs(
+          operationalPointReferences.map(({ operational_point }, i) => {
+            const opMatches = data.related_operational_points[i];
+            const op = opMatches?.[0];
+
+            if (!op) {
+              // OP not found in infra → do nothing (tracks list stays empty)
+              return [operational_point, null];
+            }
+
+            // Build ordered tracks using local_track_name as ID.
+            // Deduplicate by local_track_name (preserve first-occurrence order).
+            const seen = new Set<string>();
+            const tracks: Track[] = [];
+            const sectionIdToLocalName = new Map<string, string>();
+
+            for (const part of op.parts) {
+              const { local_track_name, track } = part;
+              const trackPart = trackSectionByTrackId.get(track);
+
+              // Build reverse map: section_id → local_track_name
+              sectionIdToLocalName.set(track, local_track_name);
+
+              if (!seen.has(local_track_name)) {
+                seen.add(local_track_name);
+                tracks.push({
+                  id: local_track_name,
+                  name: local_track_name,
+                  line:
+                    trackPart?.extensions?.sncf?.line_code != null
+                      ? String(trackPart.extensions.sncf.line_code)
+                      : undefined,
+                });
+              }
+            }
+
+            const trackInfo: TrackInfo = { tracks, sectionIdToLocalName };
+            return [operational_point, trackInfo];
+          })
         );
-        setTracksState({
+
+        const validTrackInfos = Object.entries(loadedTrackInfos).filter(
+          (entry): entry is [string, TrackInfo] => entry[1] !== null
+        );
+        setTracksState((state) => ({
           type: 'ok',
-          data: loadedTracks,
-        });
+          // Merge previously loaded infos with newly loaded ones (skip null entries = OP not found)
+          data: {
+            ...(state.data || {}),
+            ...Object.fromEntries(validTrackInfos),
+          },
+        }));
       } catch (e) {
         console.error(e);
       }
@@ -548,7 +776,7 @@ const useTrackOccupancy = ({
     return () => {
       aborted = true;
     };
-  }, [pathOperationalPoints, pathfindingHasFailed]);
+  }, [pathOperationalPoints]);
 
   // Update train data for all deployed waypoints on trains update:
   useEffect(() => {
@@ -601,14 +829,22 @@ const useTrackOccupancy = ({
     // Load zones for added trains, for each path operational point that has already been toggled at least once:
     if (addedTrainIDs.size || modifiedTrainIDs.size) {
       forEach(pathOperationalPointsState, async (_, waypointId) => {
+        const waypoint = pathOpsByWaypointId.get(waypointId);
+        const trackInfo = getTrackInfo(waypoint?.opId);
+
+        // Only fetch for trains that still exist in the current projection
+        const trainsToFetch = Object.fromEntries(
+          [...addedTrainIDs, ...modifiedTrainIDs]
+            .filter((id) => timetableItemProjectionsById.has(id))
+            .map((id) => [id, timetableItemProjectionsById.get(id)!])
+        );
+
+        if (Object.keys(trainsToFetch).length === 0) return;
+
         const newZones = await fetchTrackOccupancy(
-          getOperationalPointReference(pathOpsByWaypointId.get(waypointId)),
-          Object.fromEntries(
-            [...addedTrainIDs, ...modifiedTrainIDs].map((id) => [
-              id,
-              timetableItemProjectionsById.get(id)!,
-            ])
-          )
+          getOperationalPointReference(waypoint),
+          trainsToFetch,
+          trackInfo
         );
         if (newZones.length) {
           updatePathOperationalPointState(waypointId, (state) =>
