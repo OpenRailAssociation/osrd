@@ -75,7 +75,7 @@ private fun getSlopes(rjsTrackSection: RJSTrackSection): DistanceRangeMap<Double
 private fun getCurves(rjsTrackSection: RJSTrackSection): DistanceRangeMap<Double> {
     val curves =
         distanceRangeMapOf(
-            listOf(DistanceRangeMap.RangeMapEntry(0.meters, rjsTrackSection.length.meters, 0.0))
+            DistanceRangeMap.RangeMapEntry(0.meters, rjsTrackSection.length.meters, 0.0)
         )
     if (rjsTrackSection.curves != null) {
         for (rjsCurve in rjsTrackSection.curves) {

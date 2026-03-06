@@ -87,7 +87,15 @@ fun <T> distanceRangeMapOf(vararg entries: DistanceRangeMap.RangeMapEntry<T>): D
     return DistanceRangeMapImpl(entries.asList())
 }
 
-fun <T> distanceRangeMapOf(entries: List<DistanceRangeMap.RangeMapEntry<T>>): DistanceRangeMap<T> {
+fun <T> distanceRangeMapOf(
+    entries: Sequence<DistanceRangeMap.RangeMapEntry<T>>
+): DistanceRangeMap<T> {
+    return DistanceRangeMapImpl(entries.asIterable())
+}
+
+fun <T> distanceRangeMapOf(
+    entries: Iterable<DistanceRangeMap.RangeMapEntry<T>>
+): DistanceRangeMap<T> {
     return DistanceRangeMapImpl(entries)
 }
 
@@ -101,8 +109,7 @@ fun <T, R> filterIntersection(
 ): DistanceRangeMap<T> {
     val res = distanceRangeMapOf<T>()
     for (range in filter) {
-        val filteredRange = mapToFilter.clone()
-        filteredRange.truncate(range.lower, range.upper)
+        val filteredRange = mapToFilter.subMap(range.lower, range.upper)
         res.putMany(filteredRange)
     }
     return res
