@@ -6,8 +6,8 @@ import {
   type Handler,
   type MouseContextType,
   type PointToData,
-} from '../lib/types';
-import { getEventPosition, getEventWheelDelta } from '../utils/events';
+} from '../../spaceTimeChart/lib/types';
+import { getEventPosition, getEventWheelDelta } from '../../spaceTimeChart/utils/events';
 
 type Handlers<T> = {
   onPan?: Handler<{
