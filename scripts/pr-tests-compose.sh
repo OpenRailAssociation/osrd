@@ -79,6 +79,11 @@ elif [ "$2" = "up" ] || [ "$2" = "up-and-load-backup" ]; then
 
     export PR_NB="pr-$1"
 
+    docker compose \
+        -p "osrd-pr-tests" \
+        -f "docker/docker-compose.pr-tests.yml" \
+        pull
+
     if [ "$2" = "up-and-load-backup" ]; then
 
         docker compose \
