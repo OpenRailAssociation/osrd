@@ -10,7 +10,7 @@ data class DistanceRangeMapImpl<T>(
 ) : DistanceRangeMap<T> {
 
     constructor(
-        entries: List<DistanceRangeMap.RangeMapEntry<T>> = emptyList()
+        entries: Iterable<DistanceRangeMap.RangeMapEntry<T>> = emptyList()
     ) : this(MutableDistanceArrayList(), ArrayList()) {
         putMany(entries)
     }

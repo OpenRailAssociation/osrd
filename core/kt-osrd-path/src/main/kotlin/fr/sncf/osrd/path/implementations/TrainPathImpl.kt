@@ -312,7 +312,7 @@ data class TrainPathImpl(
                         .subMap(it.objectBegin.distance, it.objectEnd.distance)
                         .shiftPositions(it.pathBegin.distance - it.objectBegin.distance)
                 }
-        return distanceRangeMapOf(entries.toList())
+        return distanceRangeMapOf(entries)
     }
 
     private fun getTrackRanges(): List<DirTrackRange> {
