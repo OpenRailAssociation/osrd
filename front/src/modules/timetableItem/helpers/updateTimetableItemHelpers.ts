@@ -1,9 +1,9 @@
 import {
   osrdEditoastApi,
-  type PacedTrainException,
   type TrainSchedule,
   type TrainScheduleException,
   type TrainScheduleResponse,
+  type PacedTrainException,
 } from 'common/api/osrdEditoastApi';
 import type { PacedTrainId, TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 import {
