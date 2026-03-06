@@ -205,10 +205,19 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         assert(evaluatedPathEnd <= fullPath.size)
         val routeSet by lazy { routes.toSet() }
 
-        fun getZoneState(i: Int): ZoneStatus {
+        fun getZoneState(i: Int, default: ZoneStatus = ZoneStatus.CLEAR): ZoneStatus {
             // Zones outside the path are considered clear. We can query zone status when they are
             // not included in the path, but still part of a block included in the path.
-            return zoneStates[i] ?: ZoneStatus.CLEAR
+
+            // This function is written to avoid Integer boxing, which happens on map queries.
+            // Instead, we rely on the fact that this is usually called with at most one entry in
+            // the map, and we compare the keys directly.
+            if (zoneStates.isEmpty()) return default
+            if (zoneStates.size == 1) {
+                val entry = zoneStates.entries.single()
+                return if (entry.key == i) entry.value else default
+            }
+            return zoneStates[i] ?: default // We still use map query as fallback
         }
 
         // compute the offset of each block's first zone inside the partial path
