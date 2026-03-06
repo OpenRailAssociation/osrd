@@ -16,7 +16,7 @@ import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorers
 import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
-import fr.sncf.osrd.utils.POSITION_EPSILON
+import fr.sncf.osrd.utils.arePositionsEqual
 import fr.sncf.osrd.utils.areTimesEqual
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.meters
@@ -27,7 +27,6 @@ import java.util.ArrayList
 import java.util.HashMap
 import java.util.PriorityQueue
 import kotlin.collections.set
-import kotlin.math.abs
 import kotlin.math.max
 
 const val SIGNALING_SYSTEM_COST_WEIGHTING = 1e-1
@@ -192,11 +191,12 @@ class Pathfinding(
             if (step.infraExplorer.getStepTracker().hasSeenDestination()) {
                 // Success!
                 require(
-                    abs(
+                    arePositionsEqual(
                         step.infraExplorer.getAllBlocks().iterateBackwards().sumOf {
                             it.length.meters
-                        } - step.establishedLength.meters
-                    ) < POSITION_EPSILON
+                        },
+                        step.establishedLength.meters,
+                    )
                 )
                 return step.infraExplorer
             }
@@ -273,10 +273,10 @@ class Pathfinding(
         TODO: restore this block once asserts are disabled in prod.
         It's a nice sanity check but not worth the computation time.
         assert(
-            abs(
-                newStep.infraExplorer.getAllBlocks().iterateBackwards().sumOf { it.length.meters } -
-                    newStep.establishedLength.meters
-            ) < POSITION_EPSILON
+            arePositionsEqual(
+                newStep.infraExplorer.getAllBlocks().iterateBackwards().sumOf { it.length.meters },
+                newStep.establishedLength.meters,
+            )
         )
         */
         if (newStep.weight.isFinite()) queue.add(newStep)
