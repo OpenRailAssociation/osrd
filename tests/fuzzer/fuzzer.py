@@ -292,7 +292,8 @@ def _test_new_train(
     sim_id = r.json()[0]["id"]
     r = _get_with_timeout(
         session,
-        editoast_url + f"/paced_train/{sim_id}/simulation/?infra_id={scenario.infra}",
+        editoast_url
+        + f"/train_schedules/{sim_id}/simulation/?infra_id={scenario.infra}",
     )
     if r.status_code // 100 != 2 or r.json().get("status", "") != "success":
         _make_error(

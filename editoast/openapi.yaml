@@ -2205,42 +2205,6 @@ paths:
       responses:
         '204':
           description: The macro note was deleted successfully
-  /paced_train/{id}/simulation:
-    get:
-      tags:
-      - paced_train
-      summary: Retrieve the space, speed and time curve of a given train
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: infra_id
-        in: query
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: electrical_profile_set_id
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int64
-      - name: exception_key
-        in: query
-        required: false
-        schema:
-          type: string
-      responses:
-        '200':
-          description: Simulation Output
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimulationResponse'
   /projects:
     get:
       tags:
@@ -4667,6 +4631,42 @@ paths:
                 $ref: '#/components/schemas/PathfindingResult'
         '404':
           description: Infrastructure or Train schedule not found
+  /train_schedules/{id}/simulation:
+    get:
+      tags:
+      - paced_train
+      summary: Retrieve the space, speed and time curve of a given train
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: infra_id
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: electrical_profile_set_id
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: exception_key
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Simulation Output
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimulationResponse'
   /version:
     get:
       responses:
