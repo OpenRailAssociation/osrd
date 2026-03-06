@@ -188,8 +188,9 @@ class Pathfinding(
                 // Success!
                 require(
                     abs(
-                        step.infraExplorer.getAllBlocks().toList().sumOf { it.length.meters } -
-                            step.establishedLength.meters
+                        step.infraExplorer.getAllBlocks().iterateBackwards().sumOf {
+                            it.length.meters
+                        } - step.establishedLength.meters
                     ) < POSITION_EPSILON
                 )
                 return step.infraExplorer
@@ -263,12 +264,16 @@ class Pathfinding(
 
         val newStep =
             Step(infraExplorer, establishedCost, estimatedRemainingCost, establishedLength)
-        require(
+        /*
+        TODO: restore this block once asserts are disabled in prod.
+        It's a nice sanity check but not worth the computation time.
+        assert(
             abs(
-                newStep.infraExplorer.getAllBlocks().toList().sumOf { it.length.meters } -
+                newStep.infraExplorer.getAllBlocks().iterateBackwards().sumOf { it.length.meters } -
                     newStep.establishedLength.meters
             ) < POSITION_EPSILON
         )
+        */
         if (newStep.weight.isFinite()) queue.add(newStep)
     }
 
