@@ -152,7 +152,7 @@ impl<'a, T, R: std::fmt::Debug> Access<'a, T, R> {
 /// Adds some members to a group
 ///
 /// Idempotent but not atomic due to the lack of transactions in OpenFGA.
-pub fn add_members<'a>(group: Group, members: HashSet<User>) -> Protected<'a, ()> {
+pub fn add_members(group: Group, members: HashSet<User>) -> Protected<'static, ()> {
     let user_exists_checks = members
         .iter()
         .map(|user| SanityCheck::UserExists(*user))
