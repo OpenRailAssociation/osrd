@@ -46,4 +46,9 @@ public class Electrified implements Electrification {
     public int hashCode() {
         return Objects.hash(mode, powerRestriction, profile);
     }
+
+    @Override
+    public String toString() {
+        return String.format("Electrified(mode=%s, profile=%s, powerRestriction=%s)", mode, profile, powerRestriction);
+    }
 }
