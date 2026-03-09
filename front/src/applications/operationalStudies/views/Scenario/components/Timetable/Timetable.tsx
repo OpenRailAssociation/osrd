@@ -21,6 +21,7 @@ import { extractEditoastIdFromPacedTrainId } from 'utils/trainId';
 
 import CalendarTrainList from './CalendarTrainList';
 import TimetableToolbar from './TimetableToolbar';
+import TrainList from './TrainList';
 import AddNewTrainScheduleSetTab from './TrainScheduleSet/AddNewTrainScheduleSetTab';
 import TrainScheduleMoveDialog from './TrainScheduleSet/TrainScheduleMoveDialog';
 import TrainScheduleSetDialog from './TrainScheduleSet/TrainScheduleSetDialog';
@@ -184,21 +185,19 @@ const Timetable = ({
           upsertTimetableItems={upsertTimetableItems}
         />
         {timetableMode === 'calendar' && (
-          <Virtualizer overscan={15}>
-            <CalendarTrainList
-              setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
-              upsertTimetableItems={upsertTimetableItems}
-              setTimetableItemToEditData={setTimetableItemToEditData}
-              setSelectedTimetableItemIds={setSelectedTimetableItemIds}
-              removeAndUnselectTrains={removeAndUnselectTrains}
-              timetableItemToEditData={timetableItemToEditData}
-              timetableItemsWithDetails={filteredTimetableItems}
-              selectedTimetableItemIds={selectedTimetableItemIds}
-              projectingOnSimulatedPathException={projectingOnSimulatedPathException}
-              isSelectMode={isSelectMode}
-              timetableMode={timetableMode}
-            />
-          </Virtualizer>
+          <TrainList
+            setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
+            upsertTimetableItems={upsertTimetableItems}
+            setTimetableItemToEditData={setTimetableItemToEditData}
+            setSelectedTimetableItemIds={setSelectedTimetableItemIds}
+            removeAndUnselectTrains={removeAndUnselectTrains}
+            timetableItemToEditData={timetableItemToEditData}
+            timetableItemsWithDetails={filteredTimetableItems}
+            selectedTimetableItemIds={selectedTimetableItemIds}
+            projectingOnSimulatedPathException={projectingOnSimulatedPathException}
+            isSelectMode={isSelectMode}
+            timetableMode={timetableMode}
+          />
         )}
         {timetableMode === 'trainScheduleSet' &&
           (timetableItemsByTrainScheduleSets ? (
