@@ -2044,23 +2044,8 @@ export type PostPacedTrainProjectPathOpApiArg = {
 };
 export type PostPacedTrainTrackOccupancyApiResponse =
   /** status 200 Track section occupancy periods for paced trains */ {
-    /** Which track section the train is on at the queried operational point.
-    
-    - `null`: no track could be determined (trains are in no-simulation, no `local_track_name`)
-    - `track_id`: track resolved via pathfinding or `local_track_name` lookup
-    - `track_name`: `local_track_name` given but not matched to any track ID */
-    track_reference?:
-      | null
-      | (
-          | {
-              id: string;
-              type: 'track_id';
-            }
-          | {
-              name: string;
-              type: 'track_name';
-            }
-        );
+    /** Local track name. Unset if trains occupy the operational point but the specific track is unknown. */
+    local_track_name?: null | string;
     trains: ((
       | {
           index: number;

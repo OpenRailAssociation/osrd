@@ -2398,38 +2398,12 @@ paths:
                   required:
                   - trains
                   properties:
-                    track_reference:
+                    local_track_name:
                       oneOf:
                       - type: 'null'
-                      - oneOf:
-                        - type: object
-                          required:
-                          - id
-                          - type
-                          properties:
-                            id:
-                              type: string
-                            type:
-                              type: string
-                              enum:
-                              - track_id
-                        - type: object
-                          required:
-                          - name
-                          - type
-                          properties:
-                            name:
-                              type: string
-                            type:
-                              type: string
-                              enum:
-                              - track_name
-                      description: |-
-                        Which track section the train is on at the queried operational point.
-
-                        - `null`: no track could be determined (trains are in no-simulation, no `local_track_name`)
-                        - `track_id`: track resolved via pathfinding or `local_track_name` lookup
-                        - `track_name`: `local_track_name` given but not matched to any track ID
+                      - type: string
+                        minLength: 1
+                      description: Local track name. Unset if trains occupy the operational point but the specific track is unknown.
                     trains:
                       type: array
                       items:
