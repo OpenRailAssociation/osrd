@@ -15,7 +15,11 @@ import { calculateDistanceAlongTrack } from 'applications/editor/tools/utils';
 import { useManageTimetableItemContext } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { MapPathProperties } from 'applications/operationalStudies/types';
-import { osrdEditoastApi, type OperationalPoint } from 'common/api/osrdEditoastApi';
+import {
+  osrdEditoastApi,
+  type OperationalPoint,
+  type OperationalPointReference,
+} from 'common/api/osrdEditoastApi';
 import { getOrigin, getDestination } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { getPointOnTrackCoordinates } from 'utils/geometry';
@@ -141,16 +145,22 @@ const AddPathStepPopup = ({
         coordinates: result[0].geographic.coordinates as number[],
       });
 
+      let opRef: OperationalPointReference;
+      const uic = operationalPoint.extensions?.identifier?.uic;
+      if (uic) {
+        opRef = {
+          type: 'uic',
+          uic,
+          secondary_code: operationalPoint.extensions?.sncf?.ch,
+        };
+      } else {
+        opRef = { type: 'id', operational_point: operationalPoint.id };
+      }
+
       setClickedOp({
         id: uuidV4(),
         name: operationalPoint.extensions?.identifier?.name,
-        location: {
-          operational_point: {
-            secondary_code: operationalPoint.extensions!.sncf!.ch,
-            uic: operationalPoint.extensions!.identifier!.uic,
-            type: 'uic',
-          },
-        },
+        location: { operational_point: opRef },
         tracks: trackPartCoordinates,
       });
       setSelectedTrack(trackPartCoordinates[0]);
