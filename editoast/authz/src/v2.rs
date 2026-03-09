@@ -256,7 +256,6 @@ pub fn remove_members(group: Group, members: HashSet<User>) -> Protected<'static
                 writes.push(&User::group().tuple(&group, user));
             }
             writes.execute().await?;
-
             Ok(())
         }
         .boxed()
@@ -264,6 +263,45 @@ pub fn remove_members(group: Group, members: HashSet<User>) -> Protected<'static
     .with_check(SanityCheck::GroupExists(group))
     .with_check_iter(user_exists_checks)
     .with_guardrail(Guardrail::IssuerHasRole(Role::Admin))
+}
+
+// TODO: move somewhere more appropriate
+/// Removes the specified roles from the subject
+///
+/// Idempotent but not atomic due to the lack of transactions in OpenFGA.
+pub fn remove_roles(subject: Subject, roles: HashSet<Role>) -> Protected<'static, ()> {
+    Protected::new(move |openfga| {
+        async move {
+            let existing_roles = match &subject {
+                Subject::User(user) => Role::list_roles(openfga, User::role(), user).await?,
+                Subject::Group(group) => Role::list_roles(openfga, Group::role(), group).await?,
+            };
+
+            let existing_roles = HashSet::from_iter(existing_roles);
+            let removed_roles = roles.intersection(&existing_roles);
+            let mut writes = openfga.prepare_deletes();
+            match subject {
+                Subject::User(user) => {
+                    for role in removed_roles {
+                        writes.push(&User::role().tuple(role, &user));
+                    }
+                }
+                Subject::Group(group) => {
+                    for role in removed_roles {
+                        writes.push(&Group::role().tuple(role, &group));
+                    }
+                }
+            }
+            writes.execute().await?;
+            Ok(())
+        }
+        .boxed()
+    })
+    .with_guardrail(Guardrail::IssuerHasRole(Role::Admin))
+    .with_check(match &subject {
+        Subject::User(user) => SanityCheck::UserExists(*user),
+        Subject::Group(group) => SanityCheck::GroupExists(*group),
+    })
 }
 
 pub mod test_authorizers {
@@ -537,6 +575,102 @@ mod tests {
         assert_eq!(
             openfga.subject_roles(&Subject::user(1)).await,
             HashSet::from_iter([Role::Admin, Role::Stdcm, Role::OperationalStudies])
+        );
+    }
+
+    #[tokio::test]
+    async fn remove_roles_idempotent() {
+        let openfga = crate::authz_client!();
+        let authorize = Authorize(&openfga);
+
+        add_roles(
+            Subject::user(1),
+            HashSet::from_iter([Role::Admin, Role::Stdcm]),
+        )
+        .authorize(&authorize)
+        .await
+        .unwrap()
+        .unwrap_authorized()
+        .await;
+        assert_eq!(
+            openfga.subject_roles(&Subject::user(1)).await,
+            HashSet::from_iter([Role::Admin, Role::Stdcm])
+        );
+
+        remove_roles(
+            Subject::user(1),
+            HashSet::from_iter([Role::Admin, Role::Stdcm]),
+        )
+        .authorize(&authorize)
+        .await
+        .unwrap()
+        .unwrap_authorized()
+        .await;
+        assert_eq!(
+            openfga.subject_roles(&Subject::user(1)).await,
+            HashSet::from_iter([])
+        );
+
+        remove_roles(
+            Subject::user(1),
+            HashSet::from_iter([Role::Admin, Role::Stdcm]),
+        )
+        .authorize(&authorize)
+        .await
+        .unwrap()
+        .unwrap_authorized()
+        .await;
+        assert_eq!(
+            openfga.subject_roles(&Subject::user(1)).await,
+            HashSet::from_iter([])
+        );
+    }
+
+    #[tokio::test]
+    async fn remove_roles_intersecting_calls() {
+        let openfga = crate::authz_client!();
+        let authorize = Authorize(&openfga);
+
+        add_roles(
+            Subject::user(1),
+            HashSet::from_iter([Role::Admin, Role::Stdcm, Role::OperationalStudies]),
+        )
+        .authorize(&authorize)
+        .await
+        .unwrap()
+        .unwrap_authorized()
+        .await;
+        assert_eq!(
+            openfga.subject_roles(&Subject::user(1)).await,
+            HashSet::from_iter([Role::Admin, Role::Stdcm, Role::OperationalStudies])
+        );
+
+        remove_roles(
+            Subject::user(1),
+            HashSet::from_iter([Role::Admin, Role::Stdcm]),
+        )
+        .authorize(&authorize)
+        .await
+        .unwrap()
+        .unwrap_authorized()
+        .await;
+        assert_eq!(
+            openfga.subject_roles(&Subject::user(1)).await,
+            HashSet::from_iter([Role::OperationalStudies])
+        );
+
+        remove_roles(
+            Subject::user(1),
+            HashSet::from_iter([Role::Admin, Role::OperationalStudies]),
+        )
+        .authorize(&authorize)
+        .await
+        .unwrap()
+        .unwrap_authorized()
+        .await;
+        assert_eq!(
+            openfga.subject_roles(&Subject::user(1)).await,
+            HashSet::from_iter([])
         );
     }
 }

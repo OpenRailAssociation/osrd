@@ -217,10 +217,15 @@ mod tests {
 
         // remove role
         {
-            regulator()
-                .revoke_user_roles(&User(user_id), HashSet::from([Role::OperationalStudies]))
-                .await
-                .expect("roles should be stripped");
+            v2::remove_roles(
+                Subject::user(user_id),
+                HashSet::from([Role::OperationalStudies]),
+            )
+            .authorize(&v2::test_authorizers::Authorize(regulator().openfga()))
+            .await
+            .expect("roles should be stripped")
+            .unwrap_authorized()
+            .await;
         }
 
         assert!(

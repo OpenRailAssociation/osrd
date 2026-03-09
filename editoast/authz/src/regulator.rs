@@ -199,42 +199,6 @@ impl<S: StorageDriver> Regulator<S> {
         Ok(roles.into_iter().collect())
     }
 
-    #[tracing::instrument(skip_all, fields(user, ?roles), ret(level = Level::DEBUG), err)]
-    pub async fn revoke_user_roles(
-        &self,
-        user: &User,
-        roles: HashSet<Role>,
-    ) -> Result<(), Error<S::Error>> {
-        if !self.user_exists(user.0).await? {
-            return Err(Error::UnknownSubject(user.0));
-        }
-        let mut deletes = self.openfga.prepare_deletes();
-        let existing_roles = self.user_roles(user).await?;
-        for role in roles.intersection(&existing_roles) {
-            deletes.push(&User::role().tuple(role, user));
-        }
-        deletes.execute().await?;
-        Ok(())
-    }
-
-    #[tracing::instrument(skip_all, fields(group, ?roles), ret(level = Level::DEBUG), err)]
-    pub async fn revoke_group_roles(
-        &self,
-        group: &Group,
-        roles: HashSet<Role>,
-    ) -> Result<(), Error<S::Error>> {
-        if !self.group_exists(group.0).await? {
-            return Err(Error::UnknownSubject(group.0));
-        }
-        let mut deletes = self.openfga.prepare_deletes();
-        let existing_roles = self.group_roles(group).await?;
-        for role in roles.intersection(&existing_roles) {
-            deletes.push(&Group::role().tuple(role, group));
-        }
-        deletes.execute().await?;
-        Ok(())
-    }
-
     #[tracing::instrument(skip(self), fields(user, ?roles), ret(level = Level::DEBUG), err)]
     pub async fn check_roles(
         &self,
