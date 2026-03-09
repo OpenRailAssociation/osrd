@@ -8,7 +8,7 @@ import type {
 } from 'maplibre-gl';
 import { Source, type LayerProps } from 'react-map-gl/maplibre';
 
-import { MAP_TRACK_SOURCES, MAP_URL } from 'common/Map/const';
+import { MAP_TRACK_SOURCE_LAYER, MAP_URL } from 'common/Map/const';
 import type { Theme } from 'common/Map/theme';
 import { useMapContext } from 'common/Map/useMapContext';
 
@@ -286,7 +286,7 @@ const OperationalPointsLayer = ({
         }}
         id="chartis/tracks-geo/track-name"
         layerOrder={layerOrder}
-        source-layer={MAP_TRACK_SOURCES.geographic}
+        source-layer={MAP_TRACK_SOURCE_LAYER}
       />
       <OrderedLayer
         {...name}

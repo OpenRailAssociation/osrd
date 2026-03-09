@@ -1,7 +1,7 @@
 import { isNil } from 'lodash';
 import { Source } from 'react-map-gl/maplibre';
 
-import { MAP_TRACK_SOURCES, MAP_URL } from 'common/Map/const';
+import { MAP_TRACK_SOURCE_LAYER, MAP_URL } from 'common/Map/const';
 
 import OrderedLayer from './OrderedLayer';
 
@@ -18,11 +18,11 @@ const LineSearchLayer = ({ layerOrder, infraID, lineSearchCode }: TracksGeograph
       id="searchTrack-geo"
       type="vector"
       url={`${MAP_URL}/layer/track_sections/mvt/geo/?infra=${infraID}`}
-      source-layer={MAP_TRACK_SOURCES.geographic}
+      source-layer={MAP_TRACK_SOURCE_LAYER}
     >
       {lineSearchCode && (
         <OrderedLayer
-          source-layer={MAP_TRACK_SOURCES.geographic}
+          source-layer={MAP_TRACK_SOURCE_LAYER}
           layerOrder={layerOrder}
           id="lineSearchLayer-geo"
           type="line"
