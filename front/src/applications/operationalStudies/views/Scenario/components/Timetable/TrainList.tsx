@@ -256,8 +256,8 @@ const TrainList = ({
       {timetableMode === 'calendar' && trainsToItems(timetableItemsWithDetails)}
       {timetableMode === 'trainScheduleSet' &&
         (timetableItemsByTrainScheduleSets ? (
-          <>
-            {timetableItemsByTrainScheduleSets.map(({ trainScheduleSet, catalog, trains }) => {
+          timetableItemsByTrainScheduleSets
+            .flatMap(({ trainScheduleSet, catalog, trains }) => {
               const trainScheduleSetTrainsIds = trains.map((train) => train.id);
               const isSelected =
                 trains.length > 0 &&
@@ -265,7 +265,9 @@ const TrainList = ({
               const isIndeterminate =
                 !isSelected && trains.some((train) => selectedTimetableItemIds.includes(train.id));
               const isCheckboxDisabled = trains.length === 0;
-              return (
+              const isTrainListOpen = expandedTrainScheduleSetIds.has(trainScheduleSet.id);
+
+              const tab = (
                 <TrainScheduleSetTab
                   key={trainScheduleSet.id}
                   trainScheduleSet={trainScheduleSet}
@@ -278,20 +280,24 @@ const TrainList = ({
                   isSelected={isSelected}
                   isIndeterminate={isIndeterminate}
                   isCheckboxDisabled={isCheckboxDisabled}
-                  isTrainListOpen={expandedTrainScheduleSetIds.has(trainScheduleSet.id)}
+                  isTrainListOpen={isTrainListOpen}
                   catalogEntries={catalogEntries}
                   publishTrainScheduleSet={publishTrainScheduleSet}
                   getTrainScheduleSetByCatalogAndName={getTrainScheduleSetByCatalogAndName}
                   localCopyTrainScheduleSet={localCopyTrainScheduleSet}
                   updateTrainScheduleSet={updateTrainScheduleSet}
                   removeTrainScheduleSet={removeTrainScheduleSet}
-                >
-                  {trainsToItems(trains)}
-                </TrainScheduleSetTab>
+                />
               );
-            })}
-            <AddNewTrainScheduleSetTab onClick={() => setShowTrainScheduleSetDialog(true)} />
-          </>
+
+              return isTrainListOpen ? [tab, ...trainsToItems(trains)] : [tab];
+            })
+            .concat([
+              <AddNewTrainScheduleSetTab
+                key="add-new-train-schedule"
+                onClick={() => setShowTrainScheduleSetDialog(true)}
+              />,
+            ])
         ) : (
           <Loader className="scenario-timetable-trainschedule-loader" />
         ))}
