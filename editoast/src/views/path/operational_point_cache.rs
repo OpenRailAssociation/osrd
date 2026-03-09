@@ -31,7 +31,7 @@ pub struct OperationalPointCache {
     /// Maps obj_id to index in the ops Vec
     obj_id_to_index: HashMap<String, usize>,
     track_ids: HashSet<String>,
-    track_ids_to_name: HashMap<String, NonBlankString>,
+    track_ids_to_local_track_name: HashMap<String, NonBlankString>,
 }
 
 impl OperationalPointCache {
@@ -90,18 +90,14 @@ impl OperationalPointCache {
             .map(|track| track.obj_id.clone())
             .collect();
 
-        let track_ids_to_name = track_sections
-            .into_iter()
-            .filter_map(|track| {
-                track
-                    .extensions
-                    .sncf
-                    .as_ref()
-                    .map(|extension| (track.obj_id.clone(), extension.track_name.clone()))
-            })
+        let track_ids_to_local_track_name = op_cache
+            .ops
+            .iter()
+            .flat_map(|op| &op.parts)
+            .map(|part| (part.track.0.clone(), part.local_track_name.clone()))
             .collect();
 
-        op_cache.track_ids_to_name = track_ids_to_name;
+        op_cache.track_ids_to_local_track_name = track_ids_to_local_track_name;
         op_cache.track_ids = track_ids;
         Ok(op_cache)
     }
@@ -141,7 +137,7 @@ impl OperationalPointCache {
         let mut obj_id_to_index: HashMap<String, usize> = HashMap::new();
         let mut uic_to_indices: HashMap<u32, Vec<usize>> = HashMap::new();
         let mut trigram_to_indices: HashMap<String, Vec<usize>> = HashMap::new();
-        let track_ids_to_name: HashMap<String, NonBlankString> = HashMap::new();
+        let track_ids_to_local_track_name: HashMap<String, NonBlankString> = HashMap::new();
         let track_ids: HashSet<String> = HashSet::new();
 
         for (index, op) in ops.iter().enumerate() {
@@ -171,7 +167,7 @@ impl OperationalPointCache {
             trigram_to_indices,
             obj_id_to_index,
             track_ids,
-            track_ids_to_name,
+            track_ids_to_local_track_name,
         })
     }
 
@@ -199,7 +195,7 @@ impl OperationalPointCache {
 
     /// Get the track name by track id
     pub fn get_name_by_track(&self, track_id: &str) -> Option<&NonBlankString> {
-        self.track_ids_to_name.get(track_id)
+        self.track_ids_to_local_track_name.get(track_id)
     }
 
     /// Check if a track exists
@@ -351,7 +347,7 @@ impl OperationalPointCache {
         trigram_to_indices: HashMap<String, Vec<usize>>,
         obj_id_to_index: HashMap<String, usize>,
         track_ids: HashSet<String>,
-        track_ids_to_name: HashMap<String, NonBlankString>,
+        track_ids_to_local_track_name: HashMap<String, NonBlankString>,
     ) -> Self {
         Self {
             ops,
@@ -359,7 +355,7 @@ impl OperationalPointCache {
             trigram_to_indices,
             obj_id_to_index,
             track_ids,
-            track_ids_to_name,
+            track_ids_to_local_track_name,
         }
     }
 

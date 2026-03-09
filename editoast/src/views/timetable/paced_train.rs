@@ -21,6 +21,7 @@ use itertools::Itertools;
 use itertools::izip;
 use reqwest::StatusCode;
 use schemas::paced_train::TrainSchedule;
+use schemas::primitives::NonBlankString;
 use schemas::primitives::TimeWindow;
 use schemas::train_schedule::OperationalPointPartReference;
 use schemas::train_schedule::OperationalPointReference;
@@ -1202,28 +1203,11 @@ pub(in crate::views) struct TrackOccupancy {
 }
 
 #[derive(Debug, Serialize, ToSchema)]
-#[serde(tag = "type", rename_all = "snake_case")]
-#[cfg_attr(test, derive(Deserialize, PartialEq))]
-pub(in crate::views) enum TrackReference {
-    TrackId {
-        id: String,
-    },
-    #[cfg_attr(not(test), expect(dead_code))]
-    TrackName {
-        name: String,
-    },
-}
-
-#[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
 pub(in crate::views) struct TrackSectionOccupancy {
-    /// Which track section the train is on at the queried operational point.
-    ///
-    /// - `null`: no track could be determined (trains are in no-simulation, no `local_track_name`)
-    /// - `track_id`: track resolved via pathfinding or `local_track_name` lookup
-    /// - `track_name`: `local_track_name` given but not matched to any track ID
+    /// Local track name. Unset if trains occupy the operational point but the specific track is unknown.
     #[schema(inline)]
-    track_reference: Option<TrackReference>,
+    local_track_name: Option<NonBlankString>,
     #[schema(inline)]
     trains: Vec<TrackOccupancy>,
 }
@@ -1334,11 +1318,11 @@ pub(in crate::views) async fn track_occupancy(
                 .into_iter()
                 .map(
                     |track_occupancy::TrackOccupancy {
-                         track_section,
+                         local_track_name,
                          time_window,
                      }| {
                         (
-                            track_section,
+                            local_track_name,
                             TrackOccupancy {
                                 train_id: train_id.clone(),
                                 time_window,
@@ -1361,11 +1345,11 @@ pub(in crate::views) async fn track_occupancy(
                 .into_iter()
                 .map(
                     |track_occupancy::TrackOccupancy {
-                         track_section,
+                         local_track_name,
                          time_window,
                      }| {
                         (
-                            track_section,
+                            local_track_name,
                             TrackOccupancy {
                                 train_id: train_id.clone(),
                                 time_window,
@@ -1378,15 +1362,13 @@ pub(in crate::views) async fn track_occupancy(
             .collect_vec()
     };
 
-    // Group occupancies by track section
+    // Group occupancies by local_track_name
     let results: Vec<TrackSectionOccupancy> = all_occupancies
         .into_iter()
         .into_group_map()
         .into_iter()
-        .map(|(track_reference, trains)| TrackSectionOccupancy {
-            track_reference: Some(TrackReference::TrackId {
-                id: track_reference,
-            }),
+        .map(|(local_track_name, trains)| TrackSectionOccupancy {
+            local_track_name,
             trains,
         })
         .collect();
@@ -1582,6 +1564,7 @@ mod tests {
     use schemas::paced_train::RollingStockChangeGroup;
     use schemas::paced_train::TrainNameChangeGroup;
     use schemas::paced_train::TrainSchedule;
+    use schemas::primitives::NonBlankString;
     use schemas::rolling_stock::TrainCategory;
     use schemas::train_schedule::Comfort;
     use schemas::train_schedule::OperationalPointReference;
@@ -1612,7 +1595,6 @@ mod tests {
     use crate::views::timetable::paced_train::OccupancyBlocksTrainScheduleResult;
     use crate::views::timetable::paced_train::ProjectPathPacedTrainResult;
     use crate::views::timetable::paced_train::TrackOccupancyForm;
-    use crate::views::timetable::paced_train::TrackReference;
     use crate::views::timetable::paced_train::TrackSectionOccupancy;
     use crate::views::timetable::paced_train::TrainScheduleResponse;
     use crate::views::timetable::paced_train::TrainScheduleSummaryResponse;
@@ -2669,16 +2651,12 @@ mod tests {
             response.await.assert_status(StatusCode::OK).json_into();
 
         assert_eq!(track_occupancies.len(), 1);
-        let tc1_item = track_occupancies
-            .iter()
-            .find(|x| {
-                x.track_reference
-                    == Some(TrackReference::TrackId {
-                        id: "TC1".to_string(),
-                    })
-            })
-            .expect("TC1 track reference not found");
-        assert_eq!(tc1_item.trains.len(), paced_trains);
+        let item = &track_occupancies[0];
+        assert_eq!(
+            item.local_track_name,
+            Some(NonBlankString("V2".to_string()))
+        );
+        assert_eq!(item.trains.len(), paced_trains);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

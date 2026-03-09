@@ -2,6 +2,7 @@ use chrono::Duration;
 use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::simulation::ReportTrain;
 use schemas::infra::TrackOffset;
+use schemas::primitives::NonBlankString;
 use schemas::primitives::TimeWindow;
 use schemas::train_schedule::PathItem;
 use schemas::train_schedule::PathItemLocation;
@@ -15,7 +16,7 @@ use crate::views::timetable::simulation;
 
 #[derive(Debug, Clone)]
 pub(super) struct TrackOccupancy {
-    pub(super) track_section: String,
+    pub(super) local_track_name: Option<NonBlankString>,
     pub(super) time_window: TimeWindow,
 }
 
@@ -137,37 +138,33 @@ fn get_arrival_time(
     None
 }
 
-// Returns the track section for an operational point, using pathfinding or input.
-fn get_track_section(
+// Returns the local_track_name for an operational point, using pathfinding or input.
+fn get_local_track_name(
     context: &OccupancyContext,
     operational_point_track_offsets: &[TrackOffset],
     op_cache: &OperationalPointCache,
     train_schedule: &schemas::TrainOccurrence,
-) -> Option<String> {
+) -> Option<NonBlankString> {
+    if let Some(idx) = context.matching_index {
+        let PathItemLocation::OperationalPointPartReference(op_ref) =
+            &train_schedule.path[idx].location
+        else {
+            panic!("matching_index must reference an OperationalPointPartReference")
+        };
+        if op_ref.local_track_name.is_some() {
+            return op_ref.local_track_name.clone();
+        }
+    }
+
     if let Some(pathfinding_success) = context.pathfinding_success {
         let path_projection = PathProjection::new(&pathfinding_success.path.track_section_ranges);
         return operational_point_track_offsets
             .iter()
             .find(|to| path_projection.get_position(to).is_some())
-            .map(|to| to.track.to_string());
+            .and_then(|to| op_cache.get_name_by_track(to.track.as_str()))
+            .cloned();
     }
 
-    if let Some(idx) = context.matching_index {
-        let local_track_name = match &train_schedule.path[idx].location {
-            PathItemLocation::OperationalPointPartReference(op_ref) => &op_ref.local_track_name,
-            PathItemLocation::TrackOffset(_) => {
-                panic!("matching_index must reference an OperationalPointPartReference")
-            }
-        };
-        if local_track_name.is_some() {
-            return operational_point_track_offsets
-                .iter()
-                .find(|track_offset| {
-                    op_cache.get_name_by_track(&track_offset.track) == local_track_name.as_ref()
-                })
-                .map(|track_offset| track_offset.track.to_string());
-        }
-    }
     None
 }
 
@@ -221,9 +218,8 @@ fn find_track_occupancy_for_operational_point_with_context<'a>(
     op_cache: &OperationalPointCache,
     train_schedule: &schemas::TrainOccurrence,
 ) -> Vec<TrackOccupancy> {
-    let arrival_time = match get_arrival_time(&context, operational_point_track_offsets) {
-        Some(time) => time,
-        None => return vec![],
+    let Some(arrival_time) = get_arrival_time(&context, operational_point_track_offsets) else {
+        return vec![];
     };
 
     let stop_duration = context
@@ -231,20 +227,21 @@ fn find_track_occupancy_for_operational_point_with_context<'a>(
         .and_then(|item| item.stop_for)
         .unwrap_or_default();
 
-    if let Some(track_section) = get_track_section(
+    if let Some(local_track_name) = get_local_track_name(
         &context,
         operational_point_track_offsets,
         op_cache,
         train_schedule,
     ) {
         return vec![TrackOccupancy {
-            track_section,
+            local_track_name: Some(local_track_name),
             time_window: TimeWindow {
                 time_begin: train_schedule.start_time + Duration::milliseconds(arrival_time),
                 duration: stop_duration,
             },
         }];
     }
+
     vec![]
 }
 
@@ -302,7 +299,11 @@ pub mod tests {
             HashMap::new(),
             HashMap::new(),
             HashSet::new(),
-            HashMap::from([("T3".into(), "TS3".into())]),
+            HashMap::from([
+                ("T1".into(), "V1".into()),
+                ("T2".into(), "V2".into()),
+                ("T3".into(), "V3".into()),
+            ]),
         );
 
         let track_range = TrackRange {
@@ -360,7 +361,7 @@ pub mod tests {
                             operational_point: OperationalPointReference::Id {
                                 operational_point: "op_3".into(),
                             },
-                            local_track_name: Some("TS3".into()),
+                            local_track_name: Some("V3".into()),
                         },
                     ),
                 },
