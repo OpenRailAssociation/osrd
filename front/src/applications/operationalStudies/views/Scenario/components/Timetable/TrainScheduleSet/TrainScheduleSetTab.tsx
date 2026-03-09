@@ -70,7 +70,6 @@ const TrainScheduleSetTab = ({
   isIndeterminate,
   isCheckboxDisabled,
   isTrainListOpen,
-  children,
   catalogEntries,
   publishTrainScheduleSet,
   getTrainScheduleSetByCatalogAndName,
@@ -182,7 +181,6 @@ const TrainScheduleSetTab = ({
           <MenuTriggerButton buttonProps={{}} menuProps={menuProps} />
         )}
       </div>
-      {isTrainListOpen && children}
       {openedDialog === 'publishToCatalog' &&
         createPortal(
           <TrainScheduleSetDialog
