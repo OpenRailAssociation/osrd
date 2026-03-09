@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1.17
 ##############
 # Cargo chef #
 ##############
@@ -19,7 +20,8 @@ RUN cargo chef prepare --recipe-path recipe.json
 FROM chef AS base_builder
 RUN apk add --no-cache build-base openssl openssl-dev openssl-libs-static mold libpq-dev geos-dev
 ENV RUSTFLAGS="-C target-feature=-crt-static -C link-arg=-fuse-ld=mold"
-RUN cargo install diesel_cli --no-default-features --features postgres
+ADD --unpack=true --checksum=sha256:e20a1429f91c3ec5b2565b1af7395c0a89b3bb405e81abba9d589f9d46991c25 \
+    https://github.com/osrd-project/diesel_cli_bin/releases/download/diesel-cli-v2.3.6/diesel_cli-2.3.6-x86_64-unknown-linux-musl.tar.gz /cargo_editoast/bin/
 COPY --from=static_assets . /assets
 
 # install `fga` binary used when authorization is enabled (production) and in `crate fga` unit tests
