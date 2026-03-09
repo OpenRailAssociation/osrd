@@ -2,7 +2,7 @@ import type { Geometry } from 'geojson';
 import { isNil } from 'lodash';
 import { Source } from 'react-map-gl/maplibre';
 
-import { MAP_TRACK_SOURCES, MAP_URL } from 'common/Map/const';
+import { MAP_TRACK_SOURCE_LAYER, MAP_URL } from 'common/Map/const';
 import { lineNameLayer, lineNumberLayer, trackNameLayer } from 'common/Map/Layers/commonLayers';
 import type { Theme } from 'common/Map/theme';
 import { useMapContext } from 'common/Map/useMapContext';
@@ -30,7 +30,7 @@ function TracksGeographic({ colors, layerOrder, highlightedArea }: TracksGeograp
       id="tracksGeographic"
       type="vector"
       url={`${MAP_URL}/layer/track_sections/mvt/geo/?infra=${infraID}`}
-      source-layer={MAP_TRACK_SOURCES.geographic}
+      source-layer={MAP_TRACK_SOURCE_LAYER}
     >
       <OrderedLayer
         {...geoMainLayer(
@@ -40,7 +40,7 @@ function TracksGeographic({ colors, layerOrder, highlightedArea }: TracksGeograp
           highlightedTrackSections
         )}
         id="chartis/tracks-geo/main"
-        source-layer={MAP_TRACK_SOURCES.geographic}
+        source-layer={MAP_TRACK_SOURCE_LAYER}
         layerOrder={layerOrder}
       />
       <OrderedLayer
@@ -52,7 +52,7 @@ function TracksGeographic({ colors, layerOrder, highlightedArea }: TracksGeograp
           },
         }}
         id="chartis/tracks-geo/track-name"
-        source-layer={MAP_TRACK_SOURCES.geographic}
+        source-layer={MAP_TRACK_SOURCE_LAYER}
         layerOrder={layerOrder}
       />
       <OrderedLayer
@@ -64,7 +64,7 @@ function TracksGeographic({ colors, layerOrder, highlightedArea }: TracksGeograp
           },
         }}
         id="chartis/tracks-geo/line-number"
-        source-layer={MAP_TRACK_SOURCES.geographic}
+        source-layer={MAP_TRACK_SOURCE_LAYER}
         layerOrder={layerOrder}
       />
       <OrderedLayer
@@ -76,7 +76,7 @@ function TracksGeographic({ colors, layerOrder, highlightedArea }: TracksGeograp
           },
         }}
         id="chartis/tracks-geo/line-name"
-        source-layer={MAP_TRACK_SOURCES.geographic}
+        source-layer={MAP_TRACK_SOURCE_LAYER}
         layerOrder={layerOrder}
       />
     </Source>
