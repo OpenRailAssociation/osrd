@@ -5,9 +5,8 @@ import { absoluteUrl } from 'utils/strings';
 export const MAP_URL = `${config.proxy_editoast}/layers`;
 export const SPRITES_URL = absoluteUrl(`${config.proxy_editoast}/sprites`);
 export const FONTS_URL = `${config.proxy_editoast}/fonts`;
-export const OSM_URL = 'pmtiles://https://osm.nbg1.your-objectstorage.com/planet.pmtiles';
-export const TERRAIN_URL =
-  'pmtiles://https://osm.nbg1.your-objectstorage.com/terrain-europe.pmtiles';
+export const OSM_URL = 'pmtiles://https://tuiles.enliberte.fr/planet.pmtiles';
+export const TERRAIN_URL = 'pmtiles://https://tuiles.enliberte.fr/terrain-europe.pmtiles';
 
 export const MAP_MODES = {
   display: 'display',
