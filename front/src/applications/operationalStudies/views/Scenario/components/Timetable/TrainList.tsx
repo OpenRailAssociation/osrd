@@ -138,9 +138,9 @@ const TrainList = ({
     []
   );
 
-  return (
-    <Virtualizer overscan={15}>
-      {timetableItemsWithDetails.map((timetableItem, index) => (
+  const trainsToItems = useMemo(
+    () => (timetableItems: PacedTrainWithDetails[]) =>
+      timetableItems.map((timetableItem, index) => (
         <div key={`timetable-train-card-${timetableItem.id}`} data-train-id={timetableItem.id}>
           {timetableMode === 'calendar' && showDepartureDates[index] && (
             <div className="scenario-timetable-departure-date">{currentDepartureDates[index]}</div>
@@ -186,7 +186,33 @@ const TrainList = ({
             />
           )}
         </div>
-      ))}
+      )),
+    [
+      currentDepartureDates,
+      showDepartureDates,
+      expandedTimetableItemIds,
+      handleExpandTimetableItem,
+      handleSelectTimetableItem,
+      isSelectMode,
+      moveTimetableItem,
+      projectingOnSimulatedPathException,
+      removeAndUnselectTrains,
+      selectTimetableItemToEdit,
+      selectedTimetableItemIds,
+      selectedTrainId,
+      setSelectedTimetableItemIds,
+      subCategories,
+      timetableItemToEditData?.timetableItemId,
+      timetableMode,
+      trainIdUsedForProjection,
+      upsertTimetableItems,
+      workerStatus,
+    ]
+  );
+
+  return (
+    <Virtualizer overscan={15}>
+      {timetableMode === 'calendar' && trainsToItems(timetableItemsWithDetails)}
     </Virtualizer>
   );
 };
