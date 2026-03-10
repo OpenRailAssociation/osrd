@@ -334,9 +334,10 @@ describe('isOccurrencePresentInPacedTrain', () => {
     timeWindow: Duration.parse('PT2H'),
     interval: Duration.parse('PT30M'),
     exceptions: [
-      { key: 'added-exception' },
-      { key: 'disabled-exception', occurrence_index: 1, disabled: true },
-      { key: 'modified-exception', occurrence_index: 2, disabled: false },
+      // TODO_EXCEPTION: delete `key`
+      { id: 0, key: '0' },
+      { id: 1, key: '1', occurrence_index: 1, disabled: true },
+      { id: 2, key: '2', occurrence_index: 2, disabled: false },
     ],
   };
   const timetableItem = { paced, id: timetableItemId };
@@ -401,7 +402,7 @@ describe('isOccurrencePresentInPacedTrain', () => {
   it('should return true if the occurrence is an added exception present in the paced train', () => {
     expect(
       isOccurrencePresentInPacedTrain(
-        formatPacedTrainIdToExceptionId(pacedTrainId, 'added-exception'),
+        formatPacedTrainIdToExceptionId(pacedTrainId, 0),
         timetableItem
       )
     ).toEqual(true);
@@ -410,7 +411,7 @@ describe('isOccurrencePresentInPacedTrain', () => {
   it('should return false if the occurrence is an added exception not present in the paced train', () => {
     expect(
       isOccurrencePresentInPacedTrain(
-        formatPacedTrainIdToExceptionId(pacedTrainId, 'unknown-exception'),
+        formatPacedTrainIdToExceptionId(pacedTrainId, 999),
         timetableItem
       )
     ).toEqual(false);

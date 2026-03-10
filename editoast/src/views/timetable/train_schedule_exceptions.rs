@@ -40,8 +40,43 @@ pub enum TrainScheduleExceptionError {
     #[error("Train schedule '{train_schedule_id}' is not a paced train")]
     #[editoast_error(status = 400)]
     NotPacedTrain { train_schedule_id: i64 },
+    #[error(
+        "Occurrence index '{occurrence_index}' is invalid for train schedule '{train_schedule_id}' with time window '{time_window}' and interval '{interval}'"
+    )]
+    #[editoast_error(status = 400)]
+    InvalidOccurrenceIndex {
+        train_schedule_id: i64,
+        occurrence_index: i64,
+        time_window: String,
+        interval: String,
+    },
+    #[error(
+        "The occurrence index '{occurrence_index}' is already used for another exception of the same train schedule"
+    )]
+    #[editoast_error(status = 400)]
+    OccurrenceIndexAlreadyUsed { occurrence_index: String },
     #[error(transparent)]
-    Database(#[from] editoast_models::Error),
+    Database(editoast_models::Error),
+}
+
+impl From<editoast_models::Error> for TrainScheduleExceptionError {
+    fn from(e: editoast_models::Error) -> Self {
+        match e {
+            editoast_models::Error::UniqueViolation {
+                constraint,
+                column,
+                value,
+            } if constraint
+                == "train_schedule_exception_timetable_id_train_schedule_id_occ_key"
+                && column == "timetable_id, train_schedule_id, occurrence_index" =>
+            {
+                Self::OccurrenceIndexAlreadyUsed {
+                    occurrence_index: value,
+                }
+            }
+            e => Self::Database(e),
+        }
+    }
 }
 
 #[derive(IntoParams, Deserialize)]
@@ -118,13 +153,32 @@ pub(in crate::views) async fn create_train_schedule_exception(
         .into());
     }
 
+    if let Some(occurrence_index) = train_schedule_exception_form.occurrence_index
+        && !train_schedule.is_exception_occurrence_index_valid(occurrence_index)
+    {
+        return Err(TrainScheduleExceptionError::InvalidOccurrenceIndex {
+            train_schedule_id: train_schedule_exception_form.train_schedule_id,
+            occurrence_index,
+            time_window: train_schedule
+                .time_window
+                .map(|t| t.to_string())
+                .unwrap_or_else(|| "None".to_string()),
+            interval: train_schedule
+                .interval
+                .map(|i| i.to_string())
+                .unwrap_or_else(|| "None".to_string()),
+        }
+        .into());
+    }
+
     let train_schedule_exception_changeset: TrainScheduleExceptionChangeset =
         train_schedule_exception_form.into();
     let train_schedule_exception_changeset =
         train_schedule_exception_changeset.timetable_id(timetable_id);
     let train_schedule_exception: TrainScheduleException = train_schedule_exception_changeset
         .create(conn)
-        .await?
+        .await
+        .map_err(TrainScheduleExceptionError::from)?
         .into();
 
     Ok(Json(train_schedule_exception))
@@ -188,6 +242,24 @@ pub(in crate::views) async fn update(
         return Err(TrainScheduleExceptionError::NotPacedTrain { train_schedule_id }.into());
     }
 
+    if let Some(occurrence_index) = train_schedule_exception_form.occurrence_index
+        && !train_schedule.is_exception_occurrence_index_valid(occurrence_index)
+    {
+        return Err(TrainScheduleExceptionError::InvalidOccurrenceIndex {
+            train_schedule_id: train_schedule_exception_form.train_schedule_id,
+            occurrence_index,
+            time_window: train_schedule
+                .time_window
+                .map(|t| t.to_string())
+                .unwrap_or_else(|| "None".to_string()),
+            interval: train_schedule
+                .interval
+                .map(|i| i.to_string())
+                .unwrap_or_else(|| "None".to_string()),
+        }
+        .into());
+    }
+
     let changeset: TrainScheduleExceptionChangeset = train_schedule_exception_form.into();
 
     changeset
@@ -213,6 +285,7 @@ mod tests {
     use schemas::paced_train::TrainNameChangeGroup;
     use serde_json::json;
 
+    use crate::error::InternalError;
     use crate::fixtures::create_timetable_with_simple_paced_train;
     use crate::fixtures::create_train_schedule_exception;
     use crate::views::test_app::TestAppBuilder;
@@ -263,6 +336,84 @@ mod tests {
         );
         assert_eq!(response.train_schedule_id, train_schedule.id);
         assert_eq!(response.timetable_id, timetable.id);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn train_schedule_exception_invalid_occurrence_index_post() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        let mut conn = pool.get_ok();
+
+        let (timetable, train_schedule) = create_timetable_with_simple_paced_train(&mut conn).await;
+
+        let train_schedule_exception_form: TrainScheduleExceptionForm =
+            TrainScheduleExceptionForm {
+                train_schedule_id: train_schedule.id,
+                occurrence_index: Some(100),
+                disabled: false,
+                change_groups: TrainScheduleExceptionChangeGroups::fixture_modified(),
+            };
+
+        // Insert train schedule exception
+        let request = app
+            .post(format!("/timetable/{}/train_schedule_exception", timetable.id).as_str())
+            .json(&json!(&train_schedule_exception_form));
+
+        let response: InternalError = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::BAD_REQUEST)
+            .json_into();
+
+        assert_eq!(
+            &response.error_type,
+            "editoast:train_schedule_exception:InvalidOccurrenceIndex"
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn train_schedule_exception_duplicated_occurrence_index_post() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        let mut conn = pool.get_ok();
+
+        let (timetable, train_schedule) = create_timetable_with_simple_paced_train(&mut conn).await;
+
+        let _train_schedule_exception_1 = create_train_schedule_exception(
+            &mut pool.get_ok(),
+            timetable.id,
+            train_schedule.id,
+            Some(0),
+            None,
+            None,
+        )
+        .await;
+
+        let train_schedule_exception_form: TrainScheduleExceptionForm =
+            TrainScheduleExceptionForm {
+                train_schedule_id: train_schedule.id,
+                occurrence_index: Some(0),
+                disabled: false,
+                change_groups: TrainScheduleExceptionChangeGroups::fixture_modified(),
+            };
+
+        // Insert train schedule exception
+        let request = app
+            .post(format!("/timetable/{}/train_schedule_exception", timetable.id).as_str())
+            .json(&json!(&train_schedule_exception_form));
+
+        let response: InternalError = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::BAD_REQUEST)
+            .json_into();
+
+        assert_eq!(
+            &response.error_type,
+            "editoast:train_schedule_exception:OccurrenceIndexAlreadyUsed"
+        )
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -325,6 +476,8 @@ mod tests {
             timetable.id,
             train_schedule.id,
             Some(1),
+            None,
+            None,
         )
         .await;
 
@@ -366,5 +519,54 @@ mod tests {
         );
         assert_eq!(updated_exception.train_schedule_id, train_schedule.id);
         assert_eq!(updated_exception.timetable_id, timetable.id);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn train_schedule_exception_invalid_occurrence_index_update() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        let (timetable, train_schedule) =
+            create_timetable_with_simple_paced_train(&mut pool.get_ok()).await;
+
+        let train_schedule_exception = create_train_schedule_exception(
+            &mut pool.get_ok(),
+            timetable.id,
+            train_schedule.id,
+            Some(1),
+            None,
+            None,
+        )
+        .await;
+
+        let train_schedule_exeption_form_change_groups = TrainScheduleExceptionChangeGroups {
+            train_name: Some(TrainNameChangeGroup {
+                value: "Modified".to_string(),
+            }),
+            ..Default::default()
+        };
+
+        let train_schedule_exeption_form: TrainScheduleExceptionForm = TrainScheduleExceptionForm {
+            train_schedule_id: train_schedule.id,
+            occurrence_index: Some(-100),
+            disabled: false,
+            change_groups: train_schedule_exeption_form_change_groups.clone(),
+        };
+
+        // Update train schedule exception
+        let request = app
+            .put(format!("/train_schedule_exception/{}", train_schedule_exception.id).as_str())
+            .json(&json!(&train_schedule_exeption_form));
+
+        let response: InternalError = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::BAD_REQUEST)
+            .json_into();
+
+        assert_eq!(
+            &response.error_type,
+            "editoast:train_schedule_exception:InvalidOccurrenceIndex"
+        )
     }
 }

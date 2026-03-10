@@ -72,7 +72,8 @@ test.describe(
           infra.id
         );
         scenarioItems = scenario;
-        await sendTrains(trainScheduleSet.id, trains.slice(0, 6));
+        const trainsSubset = trains.slice(0, 6);
+        await sendTrains(trainScheduleSet.id, trainsSubset, scenarioItems.timetable_id);
       }
     );
 

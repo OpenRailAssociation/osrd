@@ -279,7 +279,7 @@
     "train_schedule": {
       "BatchNotFound": "'{{count}}' train schedule(s) could not be found",
       "Database": "Internal error (database)",
-      "ExceptionNotFound": "Exception '{{exception_key}}' could not be found",
+      "ExceptionNotFound": "Exception '{{exception_id}}' could not be found",
       "InfraNotFound": "Infrastructure '{{infra_id}}' could not be found",
       "NotFound": "Train schedule '{{train_schedule_id}}' could not be found",
       "PathfindingFailed": "Pathfinding failed for train schedule '{{train_schedule_id}}'",
@@ -290,8 +290,10 @@
     "train_schedule_exception": {
       "BatchNotFound": "'{{count}}' train schedule exception(s) could not be found",
       "Database": "Internal error (database)",
+      "InvalidOccurrenceIndex": "Occurrence index '{{occurrence_index}}' is invalid for train schedule '{{train_schedule_id}}' with time window '{{time_window}}' and interval '{{interval}}'",
       "NotFound": "Train schedule exception '{{exception_id}}' could not be found",
       "NotPacedTrain": "Train schedule '{{train_schedule_id}}' is not a paced train",
+      "OccurrenceIndexAlreadyUsed": "The occurrence index '{{occurrence_index}}' is already used for another exception of the same train schedule",
       "TimetableNotFound": "Timetable '{{timetable_id}}' could not be found",
       "TrainScheduleNotFound": "Train schedule '{{train_schedule_id}}' could not be found"
     },

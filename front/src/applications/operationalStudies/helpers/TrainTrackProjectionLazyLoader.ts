@@ -32,7 +32,7 @@ export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyL
   }
 
   async processBatch(ids: number[]) {
-    const { infraId, path, electricalProfileSetId } = this.options;
+    const { infraId, timetableId, path, electricalProfileSetId } = this.options;
 
     let pacedTrainPromise: Promise<PostTrainSchedulesProjectPathApiResponse> = Promise.resolve({});
     let trainSchedulesOccupancyBlocksPromise: Promise<PostTrainSchedulesOccupancyBlocksApiResponse> =
@@ -44,6 +44,7 @@ export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyL
             {
               projectPathForm: {
                 infra_id: infraId,
+                timetable_id: timetableId,
                 track_section_ranges: path.track_section_ranges,
                 ids,
                 electrical_profile_set_id: electricalProfileSetId,
@@ -60,6 +61,7 @@ export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyL
             {
               occupancyBlockForm: {
                 infra_id: infraId,
+                timetable_id: timetableId,
                 path,
                 ids,
                 electrical_profile_set_id: electricalProfileSetId,
@@ -88,10 +90,10 @@ export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyL
 
       if (!isEmpty(result.exceptions)) {
         pacedTrainProjectionResult.exceptions = new Map();
-        for (const [exceptionKey, exception] of Object.entries(result.exceptions)) {
-          pacedTrainProjectionResult.exceptions.set(exceptionKey, {
+        for (const [exceptionId, exception] of Object.entries(result.exceptions)) {
+          pacedTrainProjectionResult.exceptions.set(exceptionId, {
             space_time_curves: exception,
-            signal_updates: rawTrainSchedulesOccupancyBlocks[id]?.exceptions?.[exceptionKey] ?? [],
+            signal_updates: rawTrainSchedulesOccupancyBlocks[id]?.exceptions?.[exceptionId] ?? [],
           });
         }
       }
