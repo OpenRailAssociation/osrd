@@ -197,10 +197,19 @@ def test_work_schedules(
     url = f"{EDITOAST_URL}timetable/{small_scenario.timetable}/stdcm/?infra={small_scenario.infra}"
     r = session.post(url, json=payload)
     assert r.status_code == 200
-    response = r.json()
-    departure_time = datetime.datetime.fromisoformat(
-        response["departure_time"].replace("Z", "+00:00")
-    )
+    departure_time = None
+    for line in r.iter_lines():
+        if not line:
+            continue
+        response_json = json.loads(line)
+        if response_json.get("event") == "completed":
+            data = response_json["data"]
+            if data.get("status") == "success":
+                departure_time = datetime.datetime.fromisoformat(
+                    data["departure_time"].replace("Z", "+00:00")
+                )
+            break
+    assert departure_time is not None
     assert departure_time >= end_time.astimezone(departure_time.tzinfo)
 
 
@@ -337,11 +346,17 @@ def test_max_running_time(
     }
     url = f"{EDITOAST_URL}timetable/{small_scenario.timetable}/stdcm/?infra={small_scenario.infra}"
     r = session.post(url, json=payload)
-    response = r.json()
+    data = None
+    for line in r.iter_lines():
+        if not line:
+            continue
+        response_json = json.loads(line)
+        if response_json.get("event") == "completed":
+            data = response_json["data"]
+            break
     assert r.status_code == 200
-    assert response == {
-        "status": "path_not_found",
-    }
+    assert data is not None
+    assert data.get("status") == "path_not_found"
 
 
 def _get_stdcm_response(
@@ -355,5 +370,15 @@ def _get_stdcm_response(
         json=stdcm_payload,
     )
     stdcm_response.raise_for_status()
-    content = stdcm_response.json()
+    content = None
+
+    for line in stdcm_response.iter_lines():
+        if not line:
+            continue
+        response_json = json.loads(line)
+        if response_json.get("event") == "completed":
+            content = response_json["data"]
+            break
+
+    assert content is not None
     return content

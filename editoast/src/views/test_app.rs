@@ -766,4 +766,49 @@ impl TestResponse {
             panic!("could not deserialize test request");
         })
     }
+
+    #[tracing::instrument(
+        name = "Deserialization",
+        level = "debug",
+        skip(self),
+        fields(response_status = ?self.inner.status_code())
+    )]
+    #[track_caller]
+    pub fn last_jsonl_into<T: DeserializeOwned>(self) -> T {
+        self.jsonl_into()
+            .into_iter()
+            .last()
+            .expect("Response should not be empty")
+    }
+
+    #[tracing::instrument(
+        name = "Deserialization",
+        level = "debug",
+        skip(self),
+        fields(response_status = ?self.inner.status_code())
+    )]
+    #[track_caller]
+    pub fn jsonl_into<T: DeserializeOwned>(self) -> Vec<T> {
+        let body = self.string();
+
+        body.lines()
+            .map(|line| {
+                serde_json::from_str(line).unwrap_or_else(|err| {
+                    tracing::error!(error = ?err, "Error deserializing test response into the desired type");
+                    let actual: serde_json::Value =
+                        serde_json::from_str(line).unwrap_or_else(|err| {
+                            tracing::error!(
+                                error = ?err,
+                                ?body,
+                                "Failed to deserialize test response body into JSON"
+                            );
+                            panic!("could not deserialize test response into JSON");
+                        });
+                    let pretty = serde_json::to_string_pretty(&actual).unwrap();
+                    tracing::error!(body = %pretty, "Actual JSON value");
+                    panic!("could not deserialize test request");
+                })
+            })
+            .collect::<Vec<_>>()
+    }
 }
