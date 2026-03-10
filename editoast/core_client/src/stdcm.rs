@@ -141,7 +141,6 @@ pub struct ConsistSchedule {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(tag = "status", rename_all = "SCREAMING_SNAKE_CASE")]
-#[allow(clippy::large_enum_variant)]
 pub enum ProgressStatus {
     InProgress {
         point: ProgressCoordinates,

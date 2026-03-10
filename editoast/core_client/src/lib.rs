@@ -159,11 +159,14 @@ impl CoreClient {
                     todo!("TODO: handle protocol errors")
                 })))
             }
-            CoreClient::Mocked(client) => match client.fetch_mocked::<_, B, R>(path, body) {
-                Ok(Some(response)) => Ok(Either::Right(stream::once(async { Ok(response) }))),
-                Ok(None) => Err(Error::NoResponseContent),
-                Err(mocking::MockingError { bytes, url }) => Err(Error::parse(&bytes, url)),
-            },
+            CoreClient::Mocked(client) => {
+                match client.fetch_streaming_mocked::<_, B, R>(path, body) {
+                    Ok(responses) => Ok(Either::Right(
+                        stream::iter(responses).map(|response| Ok(response)),
+                    )),
+                    Err(mocking::MockingError { bytes, url }) => Err(Error::parse(&bytes, url)),
+                }
+            }
         }
     }
 }
