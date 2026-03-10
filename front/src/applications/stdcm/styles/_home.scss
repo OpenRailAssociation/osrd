@@ -236,6 +236,9 @@
   }
 
   .simulation-status-banner {
+    grid-column: via-col;
+    position: relative;
+
     .banner-content {
       padding: 0 0 16px 378px;
       background: linear-gradient(180deg, rgba(239, 243, 245) 40px, rgba(233, 239, 242) 40px);

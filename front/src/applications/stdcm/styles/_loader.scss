@@ -13,6 +13,7 @@
     position: fixed;
     bottom: 32px;
     top: unset;
+    margin-left: 348px;
 
     &.with-slide-animation {
       animation: slideUp 0.8s ease-in-out;
@@ -20,8 +21,7 @@
   }
 
   &.loader-absolute {
-    position: absolute;
-    bottom: calc(-176px + 40px); // height of the loader minus the height of the launch button
+    grid-column: via-col;
 
     &.with-fade-in-animation {
       animation: fade-in 0.5s ease-in-out;
@@ -32,6 +32,7 @@
     position: fixed;
     top: 32px;
     bottom: unset;
+    margin-left: 348px;
   }
 
   @keyframes fade-in {
