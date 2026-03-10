@@ -95,14 +95,24 @@ impl CoreClient {
         R: CoreResponse,
         <R as CoreResponse>::Response: std::marker::Send,
     {
-        let stream = self
-            .fetch_streaming::<B, R>(path, body, worker_key, override_timeout)
-            .await?;
+        match self {
+            CoreClient::MessageQueue(_) => {
+                let stream = self
+                    .fetch_streaming::<B, R>(path, body, worker_key, override_timeout)
+                    .await?;
 
-        pin!(stream)
-            .next()
-            .await
-            .ok_or(Error::UnparsableErrorOutput)?
+                pin!(stream)
+                    .next()
+                    .await
+                    .ok_or(Error::UnparsableErrorOutput)?
+            }
+
+            CoreClient::Mocked(client) => match client.fetch_mocked::<_, B, R>(path, body) {
+                Ok(Some(response)) => Ok(response),
+                Ok(None) => Err(Error::NoResponseContent),
+                Err(mocking::MockingError { bytes, url }) => Err(Error::parse(&bytes, url)),
+            },
+        }
     }
 
     #[tracing::instrument(
@@ -159,11 +169,12 @@ impl CoreClient {
                     todo!("TODO: handle protocol errors")
                 })))
             }
-            CoreClient::Mocked(client) => match client.fetch_mocked::<_, B, R>(path, body) {
-                Ok(Some(response)) => Ok(Either::Right(stream::once(async { Ok(response) }))),
-                Ok(None) => Err(Error::NoResponseContent),
-                Err(mocking::MockingError { bytes, url }) => Err(Error::parse(&bytes, url)),
-            },
+            CoreClient::Mocked(client) => {
+                match client.fetch_streaming_mocked::<_, B, R>(path, body) {
+                    Ok(responses) => Ok(Either::Right(stream::iter(responses).map(Ok))),
+                    Err(mocking::MockingError { bytes, url }) => Err(Error::parse(&bytes, url)),
+                }
+            }
         }
     }
 }

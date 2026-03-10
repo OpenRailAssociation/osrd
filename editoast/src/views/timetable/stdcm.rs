@@ -572,7 +572,6 @@ mod tests {
     use schemas::train_schedule::OperationalPointPartReference;
     use schemas::train_schedule::OperationalPointReference;
     use schemas::train_schedule::PathItemLocation;
-    use serde_json::json;
     use std::str::FromStr;
     use uom::si::length::Length;
     use uom::si::length::meter;
@@ -860,11 +859,13 @@ mod tests {
         let mut core = core_mocking_client();
         core.stub("/stdcm")
             .response(StatusCode::OK)
-            .json(core_client::stdcm::Response::Success {
-                simulation: simulation_empty_response().success().unwrap(),
-                path: pathfinding_result_success(),
-                departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
-                    .expect("Failed to parse datetime"),
+            .json(core_client::stdcm::ProgressStatus::Done {
+                result: core_client::stdcm::Response::Success {
+                    simulation: simulation_empty_response().success().unwrap(),
+                    path: pathfinding_result_success(),
+                    departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
+                        .expect("Failed to parse datetime"),
+                },
             })
             .finish();
 
@@ -879,24 +880,24 @@ mod tests {
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
             .json(&get_stdcm_payload(rolling_stock.id, None, None, None));
 
-        let stdcm_response: StdcmResponse = app
+        let stdcm_response: StdcmProgression = app
             .fetch(request)
             .await
             .assert_status(StatusCode::OK)
-            .json_into();
+            .last_jsonl_into();
 
         if let PathfindingResult::Success(path) =
             PathfindingResult::Success(pathfinding_result_success())
         {
             assert_eq!(
                 stdcm_response,
-                StdcmResponse::Success {
+                StdcmProgression::Completed(StdcmResponse::Success {
                     simulation: simulation_empty_response().success().unwrap().into(),
                     pathfinding_result: path,
                     departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
                         .expect("Failed to parse datetime"),
                     core_payload: None,
-                }
+                })
             );
         }
     }
@@ -990,11 +991,13 @@ mod tests {
         let mut core = core_mocking_client();
         core.stub("/stdcm")
             .response(StatusCode::OK)
-            .json(core_client::stdcm::Response::Success {
-                simulation: simulation_empty_response().success().unwrap(),
-                path: pathfinding_result_success(),
-                departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
-                    .expect("Failed to parse datetime"),
+            .json(core_client::stdcm::ProgressStatus::Done {
+                result: core_client::stdcm::Response::Success {
+                    simulation: simulation_empty_response().success().unwrap(),
+                    path: pathfinding_result_success(),
+                    departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
+                        .expect("Failed to parse datetime"),
+                },
             })
             .finish();
 
@@ -1016,24 +1019,24 @@ mod tests {
                 total_length,
             ));
 
-        let stdcm_response: StdcmResponse = app
+        let stdcm_response: StdcmProgression = app
             .fetch(request)
             .await
             .assert_status(StatusCode::OK)
-            .json_into();
+            .last_jsonl_into();
 
         if let PathfindingResult::Success(path) =
             PathfindingResult::Success(pathfinding_result_success())
         {
             assert_eq!(
                 stdcm_response,
-                StdcmResponse::Success {
+                StdcmProgression::Completed(StdcmResponse::Success {
                     simulation: simulation_empty_response().success().unwrap().into(),
                     pathfinding_result: path,
                     departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
                         .expect("Failed to parse datetime"),
                     core_payload: None,
-                }
+                })
             );
         }
     }
@@ -1043,7 +1046,9 @@ mod tests {
         let mut core = core_mocking_client();
         core.stub("/stdcm")
             .response(StatusCode::OK)
-            .json(json!({"status": "path_not_found"}))
+            .json(core_client::stdcm::ProgressStatus::Done {
+                result: core_client::stdcm::Response::PathNotFound,
+            })
             .finish();
 
         let app = TestAppBuilder::new().core_client(core.into()).build();
@@ -1057,15 +1062,142 @@ mod tests {
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
             .json(&get_stdcm_payload(rolling_stock.id, None, None, None));
 
-        let stdcm_response: StdcmResponse = app
+        let stdcm_response: StdcmProgression = app
             .fetch(request)
             .await
             .assert_status(StatusCode::OK)
-            .json_into();
+            .last_jsonl_into();
 
         assert_eq!(
             stdcm_response,
-            StdcmResponse::PathNotFound { core_payload: None }
+            StdcmProgression::Completed(StdcmResponse::PathNotFound { core_payload: None })
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn stdcm_multiple_response_return_success() {
+        let mut core = core_mocking_client();
+        core.stub("/stdcm")
+            .response(StatusCode::OK)
+            .json(core_client::stdcm::ProgressStatus::InProgress {
+                point: core_client::stdcm::ProgressCoordinates { lat: 0.0, lon: 0.0 },
+                best_travel_time: 1,
+            })
+            .json(core_client::stdcm::ProgressStatus::InProgress {
+                point: core_client::stdcm::ProgressCoordinates { lat: 1.0, lon: 1.0 },
+                best_travel_time: 5,
+            })
+            .json(core_client::stdcm::ProgressStatus::Done {
+                result: core_client::stdcm::Response::Success {
+                    simulation: simulation_empty_response().success().unwrap(),
+                    path: pathfinding_result_success(),
+                    departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
+                        .expect("Failed to parse datetime"),
+                },
+            })
+            .finish();
+
+        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let db_pool = app.db_pool();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+
+        let request = app
+            .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
+            .json(&get_stdcm_payload(rolling_stock.id, None, None, None));
+
+        let stdcm_response: Vec<StdcmProgression> = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .jsonl_into();
+
+        if let PathfindingResult::Success(path) =
+            PathfindingResult::Success(pathfinding_result_success())
+        {
+            assert_eq!(stdcm_response.len(), 3);
+            assert_eq!(
+                stdcm_response[0].clone(),
+                StdcmProgression::Ongoing(StdcmProgressionEvent {
+                    point: Geometry::new(Value::Point(vec![0.0, 0.0])),
+                    best_travel_time: 1,
+                })
+            );
+            assert_eq!(
+                stdcm_response[1].clone(),
+                StdcmProgression::Ongoing(StdcmProgressionEvent {
+                    point: Geometry::new(Value::Point(vec![1.0, 1.0])),
+                    best_travel_time: 5,
+                })
+            );
+            assert_eq!(
+                stdcm_response[2].clone(),
+                StdcmProgression::Completed(StdcmResponse::Success {
+                    simulation: simulation_empty_response().success().unwrap().into(),
+                    pathfinding_result: path,
+                    departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
+                        .expect("Failed to parse datetime"),
+                    core_payload: None,
+                })
+            );
+        }
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn stdcm_multiple_response_path_not_found() {
+        let mut core = core_mocking_client();
+        core.stub("/stdcm")
+            .response(StatusCode::OK)
+            .json(core_client::stdcm::ProgressStatus::InProgress {
+                point: core_client::stdcm::ProgressCoordinates { lat: 0.0, lon: 0.0 },
+                best_travel_time: 1,
+            })
+            .json(core_client::stdcm::ProgressStatus::InProgress {
+                point: core_client::stdcm::ProgressCoordinates { lat: 1.0, lon: 1.0 },
+                best_travel_time: 5,
+            })
+            .json(core_client::stdcm::ProgressStatus::Done {
+                result: core_client::stdcm::Response::PathNotFound,
+            })
+            .finish();
+
+        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let db_pool = app.db_pool();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+
+        let request = app
+            .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
+            .json(&get_stdcm_payload(rolling_stock.id, None, None, None));
+
+        let stdcm_response: Vec<StdcmProgression> = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .jsonl_into();
+
+        assert_eq!(stdcm_response.len(), 3);
+        assert_eq!(
+            stdcm_response[0].clone(),
+            StdcmProgression::Ongoing(StdcmProgressionEvent {
+                point: Geometry::new(Value::Point(vec![0.0, 0.0])),
+                best_travel_time: 1,
+            })
+        );
+        assert_eq!(
+            stdcm_response[1].clone(),
+            StdcmProgression::Ongoing(StdcmProgressionEvent {
+                point: Geometry::new(Value::Point(vec![1.0, 1.0])),
+                best_travel_time: 5,
+            })
+        );
+        assert_eq!(
+            stdcm_response[2].clone(),
+            StdcmProgression::Completed(StdcmResponse::PathNotFound { core_payload: None })
         );
     }
 
