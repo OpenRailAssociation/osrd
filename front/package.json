@@ -130,7 +130,7 @@
     "i18next-fs-backend": "^2.6.1",
     "json-key-path-list": "^2.0.3",
     "openapi-types": "^12.1.3",
-    "pdfjs-dist": "^5.4.624",
+    "pdfjs-dist": "^5.5.207",
     "prettier": "^3.8.1",
     "sass": "^1.97.3",
     "ts-node": "^10.9.2",
