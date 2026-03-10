@@ -109,6 +109,7 @@ pub fn rolling_stock_with_invalid_effort_curves_json() -> &'static str {
 
 pub fn simple_created_exception_with_change_groups(key: &str) -> PacedTrainException {
     PacedTrainException {
+        id: None,
         key: key.into(),
         exception_type: ExceptionType::Created {},
         disabled: false,
