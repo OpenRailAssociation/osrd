@@ -289,6 +289,7 @@ def test_conflicts_with_reception_on_closed_signal(
     project_path_payload = {
         "ids": [train_id],
         "infra_id": small_infra.id,
+        "timetable_id": timetable_id,
         "track_section_ranges": path_response_json["path"]["track_section_ranges"],
     }
     response_project_path = session.post(
@@ -432,38 +433,64 @@ def test_paced_train_with_exceptions_conflicts(
         "paced": {
             "time_window": "PT1H",
             "interval": "PT15M",
-            "exceptions": [
-                {
-                    "key": "created_ex_key",
-                    "disabled": False,
-                    "start_time": {
-                        "value": "2024-05-22T08:01:00.000Z",
-                    },
-                    "train_name": {"value": "created_exception_train_name"},
-                },
-                {
-                    "key": "modified_ex_key",
-                    "occurrence_index": 2,
-                    "disabled": False,
-                    "train_name": {"value": "modified_exception_train_name"},
-                },
-                {
-                    "key": "created_ex_conflict_modified_key",
-                    "disabled": False,
-                    "start_time": {
-                        "value": "2024-05-22T08:30:00.000Z",
-                    },
-                    "train_name": {"value": "exception_train_name"},
-                },
-            ],
+            "exceptions": [],
         },
     }
 
     paced_train_response = session.post(
         f"{EDITOAST_URL}train_schedule_sets/{train_schedule_set_id}/train_schedules",
         json=[paced_train_payload],
-    )
-    paced_train_response.raise_for_status()
+    ).json()
+
+    paced_train_id = paced_train_response[0]["id"]
+
+    created_ex_payload = {
+        "key": "created_ex_key",
+        "train_schedule_id": paced_train_id,
+        "disabled": False,
+        "change_groups": {
+            "start_time": {
+                "value": "2024-05-22T08:01:00.000Z",
+            },
+            "train_name": {"value": "created_exception_train_name"},
+        },
+    }
+    created_ex = session.post(
+        f"{EDITOAST_URL}timetable/{timetable_id}/train_schedule_exception",
+        json=created_ex_payload,
+    ).json()
+
+    modified_ex_payload = {
+        "key": "modified_ex_key",
+        "train_schedule_id": paced_train_id,
+        "occurrence_index": 2,
+        "disabled": False,
+        "change_groups": {
+            "train_name": {"value": "modified_exception_train_name"},
+        },
+    }
+    modified_ex = session.post(
+        f"{EDITOAST_URL}timetable/{timetable_id}/train_schedule_exception",
+        json=modified_ex_payload,
+    ).json()
+
+    created_ex_conflict_modified_payload = {
+        "key": "created_ex_conflict_modified_key",
+        "train_schedule_id": paced_train_id,
+        "disabled": False,
+        "change_groups": {
+            "start_time": {
+                "value": "2024-05-22T08:30:00.000Z",
+            },
+            "train_name": {"value": "exception_train_name"},
+        },
+    }
+    created_ex_conflict_modified = session.post(
+        f"{EDITOAST_URL}timetable/{timetable_id}/train_schedule_exception",
+        json=created_ex_conflict_modified_payload,
+    ).json()
+
+    print(created_ex_conflict_modified)
 
     conflicts_response = session.get(
         f"{EDITOAST_URL}timetable/{timetable_id}/conflicts/?infra_id={small_infra.id}"
@@ -475,7 +502,7 @@ def test_paced_train_with_exceptions_conflicts(
         [
             {
                 "index": c.get("index", None),
-                "exception_key": c.get("exception_key", None),
+                "exception_id": c.get("exception_id", None),
             }
             for c in conflict["train_ids"]
         ]
@@ -483,13 +510,13 @@ def test_paced_train_with_exceptions_conflicts(
     ]
 
     expected_conflict_with_created_exception = [
-        {"exception_key": None, "index": 0},
-        {"exception_key": "created_ex_key", "index": None},
+        {"exception_id": None, "index": 0},
+        {"exception_id": created_ex["id"], "index": None},
     ]
 
     expected_conflict_with_modified_exception = [
-        {"exception_key": "modified_ex_key", "index": 2},
-        {"exception_key": "created_ex_conflict_modified_key", "index": None},
+        {"exception_id": modified_ex["id"], "index": 2},
+        {"exception_id": created_ex_conflict_modified["id"], "index": None},
     ]
 
     assert any(

@@ -1806,6 +1806,7 @@ paths:
               - train_ids
               - level_crossing_ids
               - infra_id
+              - timetable_id
               properties:
                 electrical_profile_set_id:
                   type:
@@ -1819,6 +1820,9 @@ paths:
                   type: array
                   items:
                     $ref: '#/components/schemas/Identifier'
+                timetable_id:
+                  type: integer
+                  format: int64
                 train_ids:
                   type: array
                   items:
@@ -1859,11 +1863,12 @@ paths:
                         required:
                         - train_schedule_id
                         - index
-                        - exception_key
+                        - exception_id
                         - type
                         properties:
-                          exception_key:
-                            type: string
+                          exception_id:
+                            type: integer
+                            format: int64
                           index:
                             type: integer
                             minimum: 0
@@ -1878,11 +1883,12 @@ paths:
                         title: OccurrenceIdCreated
                         required:
                         - train_schedule_id
-                        - exception_key
+                        - exception_id
                         - type
                         properties:
-                          exception_key:
-                            type: string
+                          exception_id:
+                            type: integer
+                            format: int64
                           train_schedule_id:
                             type: integer
                             format: int64
@@ -4237,6 +4243,7 @@ paths:
               type: object
               required:
               - infra_id
+              - timetable_id
               - train_ids
               - operational_points_refs
               - operational_points_distances
@@ -4317,6 +4324,9 @@ paths:
                           format: int32
                           description: The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
                           minimum: 0
+                timetable_id:
+                  type: integer
+                  format: int64
                 train_ids:
                   type: array
                   items:
@@ -4352,6 +4362,7 @@ paths:
               type: object
               required:
               - infra_id
+              - timetable_id
               - ids
               properties:
                 electrical_profile_set_id:
@@ -4366,6 +4377,9 @@ paths:
                     format: int64
                   uniqueItems: true
                 infra_id:
+                  type: integer
+                  format: int64
+                timetable_id:
                   type: integer
                   format: int64
         required: true
@@ -4394,6 +4408,7 @@ paths:
               - train_schedule_ids
               - operational_point_reference
               - infra_id
+              - timetable_id
               - use_simulation
               properties:
                 electrical_profile_set_id:
@@ -4406,6 +4421,9 @@ paths:
                   format: int64
                 operational_point_reference:
                   $ref: '#/components/schemas/OperationalPointReference'
+                timetable_id:
+                  type: integer
+                  format: int64
                 train_schedule_ids:
                   type: array
                   items:
@@ -4459,11 +4477,12 @@ paths:
                             required:
                             - train_schedule_id
                             - index
-                            - exception_key
+                            - exception_id
                             - type
                             properties:
-                              exception_key:
-                                type: string
+                              exception_id:
+                                type: integer
+                                format: int64
                               index:
                                 type: integer
                                 minimum: 0
@@ -4478,11 +4497,12 @@ paths:
                             title: OccurrenceIdCreated
                             required:
                             - train_schedule_id
-                            - exception_key
+                            - exception_id
                             - type
                             properties:
-                              exception_key:
-                                type: string
+                              exception_id:
+                                type: integer
+                                format: int64
                               train_schedule_id:
                                 type: integer
                                 format: int64
@@ -4568,11 +4588,12 @@ paths:
         schema:
           type: integer
           format: int64
-      - name: exception_key
+      - name: exception_id
         in: query
         required: false
         schema:
-          type: string
+          type: integer
+          format: int64
       responses:
         '200':
           description: ETCS Braking Curves Output
@@ -4599,11 +4620,12 @@ paths:
         schema:
           type: integer
           format: int64
-      - name: exception_key
+      - name: exception_id
         in: query
         required: false
         schema:
-          type: string
+          type: integer
+          format: int64
       responses:
         '200':
           description: The path
@@ -4637,11 +4659,12 @@ paths:
         schema:
           type: integer
           format: int64
-      - name: exception_key
+      - name: exception_id
         in: query
         required: false
         schema:
-          type: string
+          type: integer
+          format: int64
       responses:
         '200':
           description: Simulation Output
@@ -5120,11 +5143,12 @@ components:
               required:
               - train_schedule_id
               - index
-              - exception_key
+              - exception_id
               - type
               properties:
-                exception_key:
-                  type: string
+                exception_id:
+                  type: integer
+                  format: int64
                 index:
                   type: integer
                   minimum: 0
@@ -5139,11 +5163,12 @@ components:
               title: OccurrenceIdCreated
               required:
               - train_schedule_id
-              - exception_key
+              - exception_id
               - type
               properties:
-                exception_key:
-                  type: string
+                exception_id:
+                  type: integer
+                  format: int64
                 train_schedule_id:
                   type: integer
                   format: int64
@@ -6331,8 +6356,10 @@ components:
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorTrainScheduleSetNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorBatchNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorDatabase'
+      - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorInvalidOccurrenceIndex'
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorNotPacedTrain'
+      - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorOccurrenceIndexAlreadyUsed'
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorTimetableNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorTrainScheduleNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleSetErrorDatabase'
@@ -8541,10 +8568,10 @@ components:
           type: object
           title: EditoastTrainScheduleErrorExceptionNotFoundContext
           required:
-          - exception_key
+          - exception_id
           properties:
-            exception_key:
-              type: string
+            exception_id:
+              type: integer
         message:
           type: string
         status:
@@ -8750,6 +8777,40 @@ components:
           type: string
           enum:
           - editoast:train_schedule_exception:Database
+    EditoastTrainScheduleExceptionErrorInvalidOccurrenceIndex:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastTrainScheduleExceptionErrorInvalidOccurrenceIndexContext
+          required:
+          - interval
+          - occurrence_index
+          - time_window
+          - train_schedule_id
+          properties:
+            interval:
+              type: string
+            occurrence_index:
+              type: integer
+            time_window:
+              type: string
+            train_schedule_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:train_schedule_exception:InvalidOccurrenceIndex
     EditoastTrainScheduleExceptionErrorNotFound:
       type: object
       required:
@@ -8800,6 +8861,31 @@ components:
           type: string
           enum:
           - editoast:train_schedule_exception:NotPacedTrain
+    EditoastTrainScheduleExceptionErrorOccurrenceIndexAlreadyUsed:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastTrainScheduleExceptionErrorOccurrenceIndexAlreadyUsedContext
+          required:
+          - occurrence_index
+          properties:
+            occurrence_index:
+              type: string
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:train_schedule_exception:OccurrenceIndexAlreadyUsed
     EditoastTrainScheduleExceptionErrorTimetableNotFound:
       type: object
       required:
@@ -10524,6 +10610,7 @@ components:
       type: object
       required:
       - infra_id
+      - timetable_id
       - ids
       - path
       properties:
@@ -10543,6 +10630,9 @@ components:
           format: int64
         path:
           $ref: '#/components/schemas/core.TrainPath'
+        timetable_id:
+          type: integer
+          format: int64
     OccupancyBlocksTrainScheduleResult:
       type: object
       description: Occupancy blocks output is described by blocks (signal updates)
@@ -10878,6 +10968,12 @@ components:
         properties:
           disabled:
             type: boolean
+          id:
+            type:
+            - integer
+            - 'null'
+            format: int64
+            description: TODO The new exception table id (for incremental migration)
           key:
             type: string
             description: Unique key for the exception within the paced train, required and generated by the frontend.
@@ -11640,6 +11736,7 @@ components:
       type: object
       required:
       - infra_id
+      - timetable_id
       - ids
       - track_section_ranges
       properties:
@@ -11655,6 +11752,9 @@ components:
             format: int64
           uniqueItems: true
         infra_id:
+          type: integer
+          format: int64
+        timetable_id:
           type: integer
           format: int64
         track_section_ranges:
@@ -14937,7 +15037,7 @@ components:
       properties:
         exceptions:
           type: object
-          description: The key is the `exception_key`
+          description: The key is the `exception_id`
           additionalProperties:
             $ref: '#/components/schemas/SimulationSummaryResult'
           propertyNames:

@@ -31,7 +31,8 @@ export const isTrainId = (id: string): id is TrainId => isOccurrenceId(id) || is
  * - An added exception that has been modified is still considered as an added exception.
  */
 export const getExceptionType = (occurrence: Occurrence): 'added' | 'modified' | null => {
-  const { id, exceptionChangeGroups } = occurrence;
+  const { id, exception } = occurrence;
+  const exceptionChangeGroups = exception && exception.exceptionChangeGroups;
   if (isAddedExceptionId(id)) {
     return 'added';
   }
@@ -46,14 +47,18 @@ export const isException = (occurrence: Occurrence) => !!getExceptionType(occurr
 /**
  * Checks if an exception is related to the path or simulation.
  */
-export const isExceptionFromPathOrSimulation = ({ exceptionChangeGroups }: Occurrence) =>
-  exceptionChangeGroups &&
-  (exceptionChangeGroups.path_and_schedule ||
-    exceptionChangeGroups.options ||
-    exceptionChangeGroups.constraint_distribution ||
-    exceptionChangeGroups.speed_limit_tag ||
-    exceptionChangeGroups.initial_speed ||
-    exceptionChangeGroups.rolling_stock);
+export const isExceptionFromPathOrSimulation = ({ exception }: Occurrence) => {
+  const exceptionChangeGroups = exception?.exceptionChangeGroups;
+  return (
+    exceptionChangeGroups &&
+    (exceptionChangeGroups.path_and_schedule ||
+      exceptionChangeGroups.options ||
+      exceptionChangeGroups.constraint_distribution ||
+      exceptionChangeGroups.speed_limit_tag ||
+      exceptionChangeGroups.initial_speed ||
+      exceptionChangeGroups.rolling_stock)
+  );
+};
 
 /**
  * Given a train id in the Editoast format (used for api),
@@ -84,7 +89,7 @@ export const formatEditoastIdToExceptionId = ({
   exceptionId,
 }: {
   pacedTrainId: number;
-  exceptionId: string;
+  exceptionId: number;
 }): AddedExceptionId => `exception_${pacedTrainId}_${exceptionId}` as AddedExceptionId;
 
 /**
@@ -125,7 +130,7 @@ export const formatPacedTrainIdToIndexedOccurrenceId = (
  */
 export const formatPacedTrainIdToExceptionId = (
   pacedTrainId: PacedTrainId,
-  exceptionId: string
+  exceptionId: number
 ): AddedExceptionId => {
   const editoastTrainId = extractEditoastIdFromPacedTrainId(pacedTrainId);
   return formatEditoastIdToExceptionId({
@@ -144,7 +149,8 @@ export const formatPacedTrainIdToOccurrenceId = (
 ): OccurrenceId =>
   exception.occurrence_index
     ? formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, exception.occurrence_index)
-    : formatPacedTrainIdToExceptionId(pacedTrainId, exception.key);
+    : // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
+      formatPacedTrainIdToExceptionId(pacedTrainId, Number(exception.id!));
 
 /**
  * Given a occurrence id with an OccurrenceId format (used across the front),
@@ -189,7 +195,7 @@ export const extractOccurrenceIndexFromOccurrenceId = (occurrenceId: OccurrenceI
  * Given a occurrence id with an OccurrenceId format (used across the front),
  * returns the exception id.
  */
-export const extractExceptionIdFromOccurrenceId = (occurrenceId: OccurrenceId): string => {
+export const extractExceptionIdFromOccurrenceId = (occurrenceId: OccurrenceId): number => {
   if (!isAddedExceptionId(occurrenceId)) {
     throw new Error(
       'The occurrence id should match the format "exception_{pacedTrainId}_{exceptionId}"'
@@ -198,8 +204,13 @@ export const extractExceptionIdFromOccurrenceId = (occurrenceId: OccurrenceId): 
 
   const [_type, _pacedTrainId, ...exceptionId] = occurrenceId.split('_');
 
+  const result = Number(exceptionId.join('_'));
+  if (Number.isNaN(result)) {
+    throw new Error(`Exception ID should be a number: ${occurrenceId}`);
+  }
+
   // Handle the case where exceptionId contains "_" itself
-  return exceptionId.join('_');
+  return result;
 };
 
 export const isTrainIdInTimetable = (

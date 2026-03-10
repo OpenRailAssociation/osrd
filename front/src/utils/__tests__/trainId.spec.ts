@@ -36,7 +36,7 @@ describe('formatEditoastIdToIndexedOccurrenceId', () => {
 describe('formatEditoastIdToExceptionId', () => {
   it('should format a valid paced train ID and occurrence index correctly', () => {
     const pacedTrainId = 123;
-    const exceptionId = 'exception-uuid';
+    const exceptionId = 1;
     const result = formatEditoastIdToExceptionId({ pacedTrainId, exceptionId });
     expect(result).toBe(`exception_${pacedTrainId}_${exceptionId}`);
   });
@@ -82,13 +82,13 @@ describe('formatPacedTrainIdToIndexedOccurrenceId', () => {
 describe('formatPacedTrainIdToExceptionId', () => {
   it('should return the exceptionId', () => {
     const pacedTrainId = 'paced_123' as PacedTrainId;
-    const result = formatPacedTrainIdToExceptionId(pacedTrainId, '1234-ab45-2355');
-    expect(result).toBe('exception_123_1234-ab45-2355');
+    const result = formatPacedTrainIdToExceptionId(pacedTrainId, 1234);
+    expect(result).toBe('exception_123_1234');
   });
 
   it('should throw if pacedTrainId is invalid', () => {
     const pacedTrainId = 'invalid_paced_123' as PacedTrainId;
-    expect(() => formatPacedTrainIdToExceptionId(pacedTrainId, '1234-ab45-2355')).toThrow(
+    expect(() => formatPacedTrainIdToExceptionId(pacedTrainId, 12345)).toThrow(
       'The paced train id should start with "paced_"'
     );
   });
@@ -146,21 +146,22 @@ describe('extractOccurrenceIndexFromOccurrenceId', () => {
 
 describe('extractExceptionIdFromOccurrenceId', () => {
   it('should return the exception id', () => {
-    const occurrenceId = 'exception_123_exception-uuid' as OccurrenceId;
+    const occurrenceId = 'exception_123_1' as OccurrenceId;
     const result = extractExceptionIdFromOccurrenceId(occurrenceId);
-    expect(result).toBe('exception-uuid');
-  });
-
-  it('should return the whole exception id if it contains underscores', () => {
-    const occurrenceId = 'exception_123_exception_uuid_with_underscores' as OccurrenceId;
-    const result = extractExceptionIdFromOccurrenceId(occurrenceId);
-    expect(result).toBe('exception_uuid_with_underscores');
+    expect(result).toBe(1);
   });
 
   it('should throw an error for an invalid key format', () => {
-    const occurrenceId = 'indexedoccurrence_123_exception-uuid' as OccurrenceId;
+    const occurrenceId = 'indexedoccurrence_123_1' as OccurrenceId;
     expect(() => extractExceptionIdFromOccurrenceId(occurrenceId)).toThrow(
       'The occurrence id should match the format "exception_{pacedTrainId}_{exceptionId}"'
+    );
+  });
+
+  it("should throw an error if the exception id isn't a number", () => {
+    const occurrenceId = 'exception_123_exceptionId' as OccurrenceId;
+    expect(() => extractExceptionIdFromOccurrenceId(occurrenceId)).toThrow(
+      `Exception ID should be a number: ${occurrenceId}`
     );
   });
 });
@@ -180,9 +181,10 @@ describe('isTrainIdInTimetable', () => {
         timeWindow: Duration.parse('PT2H'),
         interval: Duration.parse('PT30M'),
         exceptions: [
-          { key: 'added-exception' },
-          { key: 'disabled-exception', occurrence_index: 1, disabled: true },
-          { key: 'modified-exception', occurrence_index: 2, disabled: false },
+          // TODO_EXCEPTION: delete `key`
+          { key: '0', id: 0 },
+          { key: '1', id: 1, occurrence_index: 1, disabled: true },
+          { key: '2', id: 2, occurrence_index: 2, disabled: false },
         ],
       },
     },
@@ -252,19 +254,13 @@ describe('isTrainIdInTimetable', () => {
 
   it('should return true if added exception id is present in timetable', () => {
     expect(
-      isTrainIdInTimetable(
-        formatPacedTrainIdToExceptionId(pacedTrainId, 'added-exception'),
-        timetableItems
-      )
+      isTrainIdInTimetable(formatPacedTrainIdToExceptionId(pacedTrainId, 0), timetableItems)
     ).toEqual(true);
   });
 
   it('should return false if added exception id is not present in timetable', () => {
     expect(
-      isTrainIdInTimetable(
-        formatPacedTrainIdToExceptionId(pacedTrainId, 'unknown-exception'),
-        timetableItems
-      )
+      isTrainIdInTimetable(formatPacedTrainIdToExceptionId(pacedTrainId, 999), timetableItems)
     ).toEqual(false);
   });
 });

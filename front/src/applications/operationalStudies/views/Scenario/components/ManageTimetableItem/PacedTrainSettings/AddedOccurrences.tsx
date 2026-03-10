@@ -27,8 +27,8 @@ const AddedOccurrences = () => {
     dispatch(addAddedException(new Date(`${date}T${time}`)));
   }
 
-  function handleDeleteException(key: string) {
-    dispatch(deleteAddedException(key));
+  function handleDeleteException(index: number) {
+    dispatch(deleteAddedException(index));
   }
 
   return (
@@ -84,15 +84,15 @@ const AddedOccurrences = () => {
       </div>
       <ul className="list" data-testid="added-occurrences-list">
         {addedExceptions.map(
-          ({ startTime, key }) =>
+          ({ startTime }, index) =>
             startTime && (
-              <li key={key}>
+              <li key={`${index}-${startTime.toISOString()}`}>
                 <Dot className="input-icon" variant="fill" />
                 {startTime.toLocaleString()}
                 <button
                   type="button"
                   onClick={() => {
-                    handleDeleteException(key);
+                    handleDeleteException(index);
                   }}
                 >
                   <Trash className="input-icon" />

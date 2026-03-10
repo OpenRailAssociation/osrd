@@ -111,13 +111,14 @@
       "exceptions": [
         {
           "disabled": false,
-          "key": "e0573b19-d957-47ac-9a96-834d44ab842a",
           "occurrence_index": 1,
-          "train_name": {
-            "value": "abc"
-          },
-          "labels": {
-            "value": ["exception-label"]
+          "change_groups": {
+            "train_name": {
+              "value": "abc"
+            },
+            "labels": {
+              "value": ["exception-label"]
+            }
           }
         }
       ]
@@ -195,11 +196,12 @@
       "exceptions": [
         {
           "disabled": false,
-          "key": "e05qs3b19-d957-47ac-9a96-834d44ab842a",
           "occurrence_index": 2,
-          "rolling_stock": {
-            "rolling_stock_name": "SLOW_RS_E2E",
-            "comfort": "STANDARD"
+          "change_groups": {
+            "rolling_stock": {
+              "rolling_stock_name": "SLOW_RS_E2E",
+              "comfort": "STANDARD"
+            }
           }
         }
       ]
@@ -276,63 +278,64 @@
       "interval": "PT3900S",
       "exceptions": [
         {
-          "key": "0d03f1d8-6791-4380-87f1-3bf14e2f12d8",
           "occurrence_index": 1,
           "disabled": false,
-          "train_name": {
-            "value": "Paced Train - All exceptions 31"
-          },
-          "speed_limit_tag": {
-            "value": "MA100"
-          },
-          "path_and_schedule": {
-            "path": [
-              {
-                "id": "id2458",
-                "location": {
-                  "type": "track_offset",
-                  "track": "TG4",
-                  "offset": 1549000
-                }
-              },
-              {
-                "id": "id2570",
-                "location": {
-                  "type": "operational_point_part_reference",
-                  "operational_point": {
-                    "uic": 8733,
-                    "secondary_code": "BV",
-                    "type": "uic"
-                  },
-                  "track_reference": null
-                }
-              },
-              {
-                "id": "8369cfc6-e667-4b6b-965a-79795c94dd18",
-                "location": {
-                  "type": "operational_point_part_reference",
-                  "operational_point": {
-                    "uic": 8799,
-                    "secondary_code": "BV",
-                    "type": "uic"
-                  },
-                  "track_reference": null
-                }
-              }
-            ],
-            "schedule": [
-              {
-                "at": "8369cfc6-e667-4b6b-965a-79795c94dd18",
-                "arrival": null,
-                "stop_for": "P0D",
-                "reception_signal": "OPEN"
-              }
-            ],
-            "margins": {
-              "boundaries": ["8369cfc6-e667-4b6b-965a-79795c94dd18"],
-              "values": ["5%", "0%"]
+          "change_groups": {
+            "train_name": {
+              "value": "Paced Train - All exceptions 31"
             },
-            "power_restrictions": []
+            "speed_limit_tag": {
+              "value": "MA100"
+            },
+            "path_and_schedule": {
+              "path": [
+                {
+                  "id": "id2458",
+                  "location": {
+                    "type": "track_offset",
+                    "track": "TG4",
+                    "offset": 1549000
+                  }
+                },
+                {
+                  "id": "id2570",
+                  "location": {
+                    "type": "operational_point_part_reference",
+                    "operational_point": {
+                      "uic": 8733,
+                      "secondary_code": "BV",
+                      "type": "uic"
+                    },
+                    "track_reference": null
+                  }
+                },
+                {
+                  "id": "8369cfc6-e667-4b6b-965a-79795c94dd18",
+                  "location": {
+                    "type": "operational_point_part_reference",
+                    "operational_point": {
+                      "uic": 8799,
+                      "secondary_code": "BV",
+                      "type": "uic"
+                    },
+                    "track_reference": null
+                  }
+                }
+              ],
+              "schedule": [
+                {
+                  "at": "8369cfc6-e667-4b6b-965a-79795c94dd18",
+                  "arrival": null,
+                  "stop_for": "P0D",
+                  "reception_signal": "OPEN"
+                }
+              ],
+              "margins": {
+                "boundaries": ["8369cfc6-e667-4b6b-965a-79795c94dd18"],
+                "values": ["5%", "0%"]
+              },
+              "power_restrictions": []
+            }
           }
         },
         {
@@ -518,10 +521,11 @@
       "interval": "PT3600S",
       "exceptions": [
         {
-          "key": "e0f2d454-ccaa-4df6-8a57-39c28c904976",
           "disabled": false,
-          "start_time": {
-            "value": "2024-10-16T00:30:00Z"
+          "change_groups": {
+            "start_time": {
+              "value": "2024-10-16T00:30:00Z"
+            }
           }
         },
         {
@@ -628,11 +632,12 @@
       "exceptions": [
         {
           "disabled": false,
-          "key": "e0573b19-d957-47ac-9a96-224d44ab842b",
           "occurrence_index": 0,
-          "rolling_stock": {
-            "rolling_stock_name": "SLOW_RS_E2E",
-            "comfort": "STANDARD"
+          "change_groups": {
+            "rolling_stock": {
+              "rolling_stock_name": "SLOW_RS_E2E",
+              "comfort": "STANDARD"
+            }
           }
         },
         {
@@ -715,63 +720,64 @@
       "interval": "PT3900S",
       "exceptions": [
         {
-          "key": "0d03f1d8-6791-4380-87f1-3bf14e2f12d8",
           "occurrence_index": 1,
           "disabled": false,
-          "train_name": {
-            "value": "Paced Train - All exceptions 31"
-          },
-          "speed_limit_tag": {
-            "value": "MA100"
-          },
-          "path_and_schedule": {
-            "path": [
-              {
-                "id": "id2458",
-                "location": {
-                  "type": "track_offset",
-                  "track": "TG4",
-                  "offset": 1549000
-                }
-              },
-              {
-                "id": "id2570",
-                "location": {
-                  "type": "operational_point_part_reference",
-                  "operational_point": {
-                    "uic": 8733,
-                    "secondary_code": "BV",
-                    "type": "uic"
-                  },
-                  "track_reference": null
-                }
-              },
-              {
-                "id": "8369cfc6-e667-4b6b-965a-79795c94dd18",
-                "location": {
-                  "type": "operational_point_part_reference",
-                  "operational_point": {
-                    "uic": 8799,
-                    "secondary_code": "BV",
-                    "type": "uic"
-                  },
-                  "track_reference": null
-                }
-              }
-            ],
-            "schedule": [
-              {
-                "at": "8369cfc6-e667-4b6b-965a-79795c94dd18",
-                "arrival": null,
-                "stop_for": "P0D",
-                "reception_signal": "OPEN"
-              }
-            ],
-            "margins": {
-              "boundaries": ["8369cfc6-e667-4b6b-965a-79795c94dd18"],
-              "values": ["5%", "0%"]
+          "change_groups": {
+            "train_name": {
+              "value": "Paced Train - All exceptions 31"
             },
-            "power_restrictions": []
+            "speed_limit_tag": {
+              "value": "MA100"
+            },
+            "path_and_schedule": {
+              "path": [
+                {
+                  "id": "id2458",
+                  "location": {
+                    "type": "track_offset",
+                    "track": "TG4",
+                    "offset": 1549000
+                  }
+                },
+                {
+                  "id": "id2570",
+                  "location": {
+                    "type": "operational_point_part_reference",
+                    "operational_point": {
+                      "uic": 8733,
+                      "secondary_code": "BV",
+                      "type": "uic"
+                    },
+                    "track_reference": null
+                  }
+                },
+                {
+                  "id": "8369cfc6-e667-4b6b-965a-79795c94dd18",
+                  "location": {
+                    "type": "operational_point_part_reference",
+                    "operational_point": {
+                      "uic": 8799,
+                      "secondary_code": "BV",
+                      "type": "uic"
+                    },
+                    "track_reference": null
+                  }
+                }
+              ],
+              "schedule": [
+                {
+                  "at": "8369cfc6-e667-4b6b-965a-79795c94dd18",
+                  "arrival": null,
+                  "stop_for": "P0D",
+                  "reception_signal": "OPEN"
+                }
+              ],
+              "margins": {
+                "boundaries": ["8369cfc6-e667-4b6b-965a-79795c94dd18"],
+                "values": ["5%", "0%"]
+              },
+              "power_restrictions": []
+            }
           }
         },
         {

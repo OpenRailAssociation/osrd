@@ -19,6 +19,7 @@ export type ProjectionResult = {
 export type TrainProjectionLazyLoaderOptions = {
   dispatch: AppDispatch;
   infraId: number;
+  timetableId: number;
   path?: CoreTrainPath;
   electricalProfileSetId?: number;
   onProgress: (results: Map<number, ProjectionResult>) => void;

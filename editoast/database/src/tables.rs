@@ -855,7 +855,6 @@ diesel::table! {
         time_window -> Nullable<Interval>,
         interval -> Nullable<Interval>,
         main_category -> Nullable<TrainMainCategory>,
-        exceptions -> Jsonb,
         #[max_length = 255]
         sub_category -> Nullable<Varchar>,
         train_schedule_set_id -> Int8,

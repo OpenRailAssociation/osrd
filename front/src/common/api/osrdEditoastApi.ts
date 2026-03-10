@@ -1,7 +1,7 @@
 import type { BaseQueryFn } from '@reduxjs/toolkit/query';
 import { isNil, sortBy } from 'lodash';
 
-import type { TimetableItem, TrainId } from 'reducers/osrdconf/types';
+import type { TrainId } from 'reducers/osrdconf/types';
 import {
   extractEditoastIdFromPacedTrainId,
   extractPacedTrainIdFromOccurrenceId,
@@ -95,25 +95,11 @@ const osrdEditoastApi = generatedEditoastApi
         },
         providesTags: ['timetable'],
       }),
-      getTimetableItemById: builder.query<TimetableItem, { id: number }>({
-        queryFn: async ({ id }, { dispatch }) => {
-          const pacedTrain = await dispatch(
-            generatedEditoastApi.endpoints.getTrainSchedulesById.initiate(
-              {
-                id,
-              },
-              { subscribe: false }
-            )
-          ).unwrap();
-          return { data: pacedTrain };
-        },
-        providesTags: ['timetable', 'train_schedule'],
-      }),
       getTrainPath: builder.query<
         PathfindingResult,
-        { id: TrainId; infraId: number; exceptionKey?: string }
+        { id: TrainId; infraId: number; exceptionId?: number }
       >({
-        queryFn: async ({ id: trainId, infraId, exceptionKey }, { dispatch }) => {
+        queryFn: async ({ id: trainId, infraId, exceptionId }, { dispatch }) => {
           const pacedTrainId = isOccurrenceId(trainId)
             ? extractPacedTrainIdFromOccurrenceId(trainId)
             : trainId;
@@ -122,7 +108,7 @@ const osrdEditoastApi = generatedEditoastApi
               {
                 id: extractEditoastIdFromPacedTrainId(pacedTrainId),
                 infraId,
-                exceptionKey,
+                exceptionId,
               },
               { subscribe: false }
             )
@@ -133,10 +119,10 @@ const osrdEditoastApi = generatedEditoastApi
       }),
       getTrainSimulation: builder.query<
         SimulationResponse,
-        { id: TrainId; infraId: number; electricalProfileSetId?: number; exceptionKey?: string }
+        { id: TrainId; infraId: number; electricalProfileSetId?: number; exceptionId?: number }
       >({
         queryFn: async (
-          { id: trainId, infraId, electricalProfileSetId, exceptionKey },
+          { id: trainId, infraId, electricalProfileSetId, exceptionId },
           { dispatch }
         ) => {
           const pacedTrainId = isOccurrenceId(trainId)
@@ -148,7 +134,7 @@ const osrdEditoastApi = generatedEditoastApi
                 id: extractEditoastIdFromPacedTrainId(pacedTrainId),
                 infraId,
                 electricalProfileSetId,
-                exceptionKey,
+                exceptionId,
               },
               { subscribe: false }
             )
@@ -159,10 +145,10 @@ const osrdEditoastApi = generatedEditoastApi
       }),
       getEtcsBrakingCurves: builder.query<
         CoreEtcsBrakingCurvesResponse,
-        { id: TrainId; infraId: number; electricalProfileSetId?: number; exceptionKey?: string }
+        { id: TrainId; infraId: number; electricalProfileSetId?: number; exceptionId?: number }
       >({
         queryFn: async (
-          { id: trainId, infraId, electricalProfileSetId, exceptionKey },
+          { id: trainId, infraId, electricalProfileSetId, exceptionId },
           { dispatch }
         ) => {
           const pacedTrainId = isOccurrenceId(trainId)
@@ -174,7 +160,7 @@ const osrdEditoastApi = generatedEditoastApi
                 id: extractEditoastIdFromPacedTrainId(pacedTrainId),
                 infraId,
                 electricalProfileSetId,
-                exceptionKey,
+                exceptionId,
               },
               { subscribe: false }
             )
@@ -300,6 +286,15 @@ const osrdEditoastApi = generatedEditoastApi
       },
       postTrainScheduleSetsByIdTrainSchedules: {
         invalidatesTags: ['train_schedule_set', 'scenarios', 'timetable'],
+      },
+      postTimetableByIdTrainScheduleException: {
+        invalidatesTags: ['train_schedule_exceptions', 'train_schedule'],
+      },
+      putTrainScheduleExceptionById: {
+        invalidatesTags: ['train_schedule_exceptions', 'train_schedule'],
+      },
+      postTrainScheduleExceptionsDelete: {
+        invalidatesTags: ['train_schedule_exceptions', 'train_schedule'],
       },
 
       postLevelCrossingOccupancy: {
