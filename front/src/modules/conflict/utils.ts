@@ -20,8 +20,12 @@ function getConflictTrainNames(conflict: Conflict, trainMap: Map<number, Timetab
       return;
     }
 
-    if (!isPacedTrainBase(pacedTrain))
-      throw new Error(`Train with id ${train.train_schedule_id} should be a paced train`);
+    // The train might have been converted from paced to unique but the conflicts
+    // haven't been re-fetched yet. In that case, fall back to the train name.
+    if (!isPacedTrainBase(pacedTrain)) {
+      trainNames.push(pacedTrain.train_name);
+      return;
+    }
 
     if (train.type === 'modified') {
       // Updated exception
@@ -40,7 +44,8 @@ function getConflictTrainNames(conflict: Conflict, trainMap: Map<number, Timetab
       // Check if the exception has a name change group
       // Otherwise, the name is `${pacedTrainName}/+`
       const namedException = pacedTrain.paced.exceptions.find(
-        (exception) => exception.key === train.exception_key && exception.train_name
+        // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
+        (exception) => exception.id! === train.exception_id && exception.train_name
       );
       trainNames.push(
         namedException ? namedException.train_name!.value : `${pacedTrain.train_name}/+`

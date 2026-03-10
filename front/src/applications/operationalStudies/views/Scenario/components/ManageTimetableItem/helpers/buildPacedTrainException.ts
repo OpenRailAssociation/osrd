@@ -1,13 +1,14 @@
-import { isEmpty, isEqual, omit } from 'lodash';
-import { v4 as uuidV4 } from 'uuid';
+import { isEqual, omit } from 'lodash';
 
 import type { PacedTrainWithPaced } from 'applications/operationalStudies/types';
 import type { TrainSchedule, PacedTrainException } from 'common/api/osrdEditoastApi';
 import computeBasePathStep from 'modules/timetableItem/helpers/computeBasePathStep';
 import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
 import {
+  CHANGE_GROUP_KEYS,
   findExceptionWithOccurrenceId,
   computeIndexedOccurrenceStartTime,
+  hasExceptions,
 } from 'modules/timetableItem/helpers/pacedTrain';
 import type { OccurrenceId } from 'reducers/osrdconf/types';
 import { removeElementAtIndex, replaceElementAtIndex } from 'utils/array';
@@ -27,6 +28,7 @@ export function generatePacedTrainException(
   updatedOccurrence: TrainSchedule,
   originalPacedTrain: Omit<PacedTrainWithPaced, 'train_schedule_set_id'>,
   occurrenceIndex: number | null = null
+  // TODO_EXCEPTION: remove `key`
 ): Omit<PacedTrainException, 'key' | 'occurrence_index'> {
   const exception: Omit<PacedTrainException, 'key' | 'occurrence_index'> = {};
 
@@ -143,19 +145,17 @@ export function updatePacedTrainExceptionsList<T extends PacedTrainException>(
   occurrenceId: OccurrenceId
 ): T[] {
   // Check if there are change groups in this exception or if it is disabled.
-  const hasExceptions =
-    !isEmpty(omit(newException, ['key', 'occurrence_index', 'disabled'])) || newException.disabled;
-
+  const isStillException = hasExceptions(newException);
   const exceptionToUpdate = findExceptionWithOccurrenceId(currentExceptions, occurrenceId);
 
   // If the exception was not already present and it has some change groups, add it.
   // Return the current exceptions list otherwise.
   if (!exceptionToUpdate) {
-    return hasExceptions ? [...currentExceptions, newException] : currentExceptions;
+    return isStillException ? [...currentExceptions, newException] : currentExceptions;
   }
 
   // If the exception was already present, find it and replace it by the updated one
-  let exceptionIndex;
+  let exceptionIndex: number;
   if (isIndexedOccurrenceId(occurrenceId)) {
     const occurrenceToUpdateIndex = extractOccurrenceIndexFromOccurrenceId(occurrenceId);
 
@@ -164,174 +164,186 @@ export function updatePacedTrainExceptionsList<T extends PacedTrainException>(
     );
   } else {
     const addedExceptionId = extractExceptionIdFromOccurrenceId(occurrenceId);
-    exceptionIndex = currentExceptions.findIndex(({ key }) => addedExceptionId === key);
+    exceptionIndex = currentExceptions.findIndex(({ id }) => addedExceptionId === id);
   }
 
   // If yes we replace the exception at the found index, otherwise we remove it
-  return hasExceptions
+  return isStillException
     ? replaceElementAtIndex(currentExceptions, exceptionIndex, newException)
     : removeElementAtIndex(currentExceptions, exceptionIndex);
 }
 
 /**
- * Build a PacedTrain with an updated or new exception for a specific occurrence.
- * This centralizes the pattern of generating an exception and updating the exceptions list.
+ * Computes the exception diff data needed to create/update/delete an exception
+ * for a given occurrence update. Pure function — caller handles the API calls.
  */
-export function buildPacedTrainWithUpdatedException(
-  originalPacedTrain: PacedTrainWithPaced,
+export function buildOccurrenceExceptionData(
+  originalPacedTrain: Omit<PacedTrainWithPaced, 'train_schedule_set_id'>,
   updatedOccurrence: TrainSchedule,
   occurrenceId: OccurrenceId
-): PacedTrainWithPaced {
+): {
+  generatedException: Omit<PacedTrainException, 'key' | 'occurrence_index'>;
+  existingException: PacedTrainException | undefined;
+  occurrenceIndex: number | undefined;
+} {
   const occurrenceIndex = isIndexedOccurrenceId(occurrenceId)
     ? extractOccurrenceIndexFromOccurrenceId(occurrenceId)
     : undefined;
 
-  const baseException = generatePacedTrainException(
-    updatedOccurrence,
-    originalPacedTrain,
-    occurrenceIndex ?? null
-  );
-
-  const existingException = findExceptionWithOccurrenceId(
-    originalPacedTrain.paced.exceptions,
-    occurrenceId
-  );
-
-  const updatedExceptions = updatePacedTrainExceptionsList(
-    originalPacedTrain.paced.exceptions,
-    {
-      ...baseException,
-      key: existingException?.key ?? uuidV4(),
-      occurrence_index: occurrenceIndex,
-    },
-    occurrenceId
-  );
-
   return {
-    ...originalPacedTrain,
-    paced: { ...originalPacedTrain.paced, exceptions: updatedExceptions },
+    generatedException: generatePacedTrainException(
+      updatedOccurrence,
+      originalPacedTrain,
+      occurrenceIndex ?? null
+    ),
+    existingException: findExceptionWithOccurrenceId(
+      originalPacedTrain.paced.exceptions,
+      occurrenceId
+    ),
+    occurrenceIndex,
   };
 }
+
+type CheckChangeGroupsResult = {
+  exceptions: PacedTrainException[];
+  modifiedExceptions: PacedTrainException[];
+  exceptionsToDeleteIds: number[];
+};
 
 /**
  * This function is called after updating a paced train when the user sends the form.
  * It checks if an exception change group can be removed.
  * If the change group value in the paced train matches the exceptions, the exception change group is removed.
  * If the exceptions as no change group after those checks, the exception is removed.
+ *
+ * Returns the cleaned exceptions list, along with modified exceptions and ids to delete.
  */
 export function checkChangeGroups(
   updatedTrain: TrainSchedule,
   paced: NonNullable<TrainSchedule['paced']>,
   originalExceptions: PacedTrainException[]
-): PacedTrainException[] {
-  return originalExceptions.reduce<PacedTrainException[]>((acc, exception) => {
-    const updatedException = { ...exception };
-    if (
-      exception.constraint_distribution &&
-      isEqual(exception.constraint_distribution.value, updatedTrain.constraint_distribution)
-    ) {
-      delete updatedException.constraint_distribution;
-    }
-
-    if (
-      exception.initial_speed &&
-      isEqual(exception.initial_speed.value, updatedTrain.initial_speed)
-    ) {
-      delete updatedException.initial_speed;
-    }
-
-    if (exception.labels && isEqual(exception.labels.value, updatedTrain.labels)) {
-      delete updatedException.labels;
-    }
-
-    if (exception.options && isEqual(exception.options, updatedTrain.options)) {
-      delete updatedException.options;
-    }
-
-    // Compute first all path steps of the exception and the updated paced train to facilitate the comparison
-    // As the front generates each path step id, between two same pathfinding, ids could be different
-    // so we don't want to compare them.
-    if (updatedException.path_and_schedule) {
-      const originalPacedTrainPathSteps = updatedTrain.path.map((_, i) =>
-        computeBasePathStep(updatedTrain, i)
-      );
-      const exceptionPathSteps = updatedException.path_and_schedule.path.map((_, i) =>
-        computeBasePathStep(updatedException.path_and_schedule!, i)
-      );
+): CheckChangeGroupsResult {
+  return originalExceptions.reduce<CheckChangeGroupsResult>(
+    (acc, exception) => {
+      const updatedException = { ...exception };
       if (
-        originalPacedTrainPathSteps.length === exceptionPathSteps.length &&
-        originalPacedTrainPathSteps.every((pathStep, i) =>
-          isEqual(omit(pathStep, 'id'), omit(exceptionPathSteps[i], 'id'))
+        exception.constraint_distribution &&
+        isEqual(exception.constraint_distribution.value, updatedTrain.constraint_distribution)
+      ) {
+        delete updatedException.constraint_distribution;
+      }
+
+      if (
+        exception.initial_speed &&
+        isEqual(exception.initial_speed.value, updatedTrain.initial_speed)
+      ) {
+        delete updatedException.initial_speed;
+      }
+
+      if (exception.labels && isEqual(exception.labels.value, updatedTrain.labels)) {
+        delete updatedException.labels;
+      }
+
+      if (exception.options && isEqual(exception.options, updatedTrain.options)) {
+        delete updatedException.options;
+      }
+
+      // Compute first all path steps of the exception and the updated paced train to facilitate the comparison
+      // As the front generates each path step id, between two same pathfinding, ids could be different
+      // so we don't want to compare them.
+      if (updatedException.path_and_schedule) {
+        const originalPacedTrainPathSteps = updatedTrain.path.map((_, i) =>
+          computeBasePathStep(updatedTrain, i)
+        );
+        const exceptionPathSteps = updatedException.path_and_schedule.path.map((_, i) =>
+          computeBasePathStep(updatedException.path_and_schedule!, i)
+        );
+        if (
+          originalPacedTrainPathSteps.length === exceptionPathSteps.length &&
+          originalPacedTrainPathSteps.every((pathStep, i) =>
+            isEqual(omit(pathStep, 'id'), omit(exceptionPathSteps[i], 'id'))
+          )
+        ) {
+          delete updatedException.path_and_schedule;
+        }
+      }
+
+      if (
+        exception.rolling_stock &&
+        isEqual(exception.rolling_stock.comfort, updatedTrain.comfort) &&
+        isEqual(exception.rolling_stock.rolling_stock_name, updatedTrain.rolling_stock_name)
+      ) {
+        delete updatedException.rolling_stock;
+      }
+
+      if (
+        exception.rolling_stock_category &&
+        isEqual(exception.rolling_stock_category.value, updatedTrain.category)
+      ) {
+        delete updatedException.rolling_stock_category;
+      }
+
+      if (
+        exception.speed_limit_tag &&
+        isEqual(
+          exception.speed_limit_tag.value ?? null,
+          // speed limit tag is instantiated with null if not present when formatting the item
+          updatedTrain.speed_limit_tag ?? null
         )
       ) {
-        delete updatedException.path_and_schedule;
+        delete updatedException.speed_limit_tag;
       }
-    }
 
-    if (
-      exception.rolling_stock &&
-      isEqual(exception.rolling_stock.comfort, updatedTrain.comfort) &&
-      isEqual(exception.rolling_stock.rolling_stock_name, updatedTrain.rolling_stock_name)
-    ) {
-      delete updatedException.rolling_stock;
-    }
+      // We do the check only for indexed occurrences because added exceptions should not have
+      // their start time reset
+      if (exception.start_time && exception.occurrence_index !== undefined) {
+        const originalPacedTrainInterval = Duration.parse(paced.interval);
+        const originalStartTimeToTest = computeIndexedOccurrenceStartTime(
+          new Date(updatedTrain.start_time),
+          originalPacedTrainInterval,
+          exception.occurrence_index
+        );
+        const exceptionStartTime = new Date(exception.start_time.value);
 
-    if (
-      exception.rolling_stock_category &&
-      isEqual(exception.rolling_stock_category.value, updatedTrain.category)
-    ) {
-      delete updatedException.rolling_stock_category;
-    }
-
-    if (
-      exception.speed_limit_tag &&
-      isEqual(
-        exception.speed_limit_tag.value ?? null,
-        // speed limit tag is instantiated with null if not present when formatting the item
-        updatedTrain.speed_limit_tag ?? null
-      )
-    ) {
-      delete updatedException.speed_limit_tag;
-    }
-
-    // We do the check only for indexed occurrences because added exceptions should not have
-    // their start time reset
-    if (exception.start_time && exception.occurrence_index !== undefined) {
-      const originalPacedTrainInterval = Duration.parse(paced.interval);
-      const originalStartTimeToTest = computeIndexedOccurrenceStartTime(
-        new Date(updatedTrain.start_time),
-        originalPacedTrainInterval,
-        exception.occurrence_index
-      );
-      const exceptionStartTime = new Date(exception.start_time.value);
-
-      // Remove milliseconds to avoid issues with the comparison
-      originalStartTimeToTest.setMilliseconds(0);
-      exceptionStartTime.setMilliseconds(0);
-      if (isEqual(originalStartTimeToTest, exceptionStartTime)) {
-        delete updatedException.start_time;
+        // Remove milliseconds to avoid issues with the comparison
+        originalStartTimeToTest.setMilliseconds(0);
+        exceptionStartTime.setMilliseconds(0);
+        if (isEqual(originalStartTimeToTest, exceptionStartTime)) {
+          delete updatedException.start_time;
+        }
       }
-    }
 
-    // We do the check only for indexed occurrences because added exceptions names won't match
-    // a cadenced name format
-    if (exception.train_name && exception.occurrence_index !== undefined) {
-      // Compute the name that the occurrence at this index should have with the new name
-      const occurrenceFormattedName = computeOccurrenceName(
-        updatedTrain.train_name,
-        exception.occurrence_index
-      );
-      if (isEqual(exception.train_name.value, occurrenceFormattedName)) {
-        delete updatedException.train_name;
+      // We do the check only for indexed occurrences because added exceptions names won't match
+      // a cadenced name format
+      if (exception.train_name && exception.occurrence_index !== undefined) {
+        // Compute the name that the occurrence at this index should have with the new name
+        const occurrenceFormattedName = computeOccurrenceName(
+          updatedTrain.train_name,
+          exception.occurrence_index
+        );
+        if (isEqual(exception.train_name.value, occurrenceFormattedName)) {
+          delete updatedException.train_name;
+        }
       }
-    }
 
-    // If the exception is now empty, we don't want to keep it anymore in the list
-    const hasChangedGroup = !isEmpty(omit(updatedException, ['key', 'occurrence_index']));
-    if (hasChangedGroup) {
-      acc.push(updatedException);
-    }
+      // If the exception is now empty, we don't want to keep it anymore in the list
+      // We check explicitly for change group keys to avoid false positives from
+      // metadata fields like 'id', 'disabled', 'summary', etc.
+      const hasChangedGroup = CHANGE_GROUP_KEYS.some((key) => key in updatedException);
 
-    return acc;
-  }, []);
+      if (hasChangedGroup) {
+        acc.exceptions.push(updatedException);
+        if (!isEqual(updatedException, exception)) {
+          acc.modifiedExceptions.push(updatedException);
+        }
+      } else {
+        // All change groups were cleaned: the exception should be dropped.
+        // TODO_EXCEPTION: remove the "!" when using TrainScheduleException type
+        acc.exceptionsToDeleteIds.push(exception.id!);
+      }
+
+      return acc;
+    },
+    { exceptions: [], modifiedExceptions: [], exceptionsToDeleteIds: [] }
+  );
 }

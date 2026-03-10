@@ -13,6 +13,7 @@ import TrainSimulationLazyLoader from '../helpers/TrainSimulationLazyLoader';
 
 type UseLazySimulateTrainsOptions = {
   infraId: number;
+  timetableId: number;
   electricalProfileSetId: number | undefined;
   rollingStocks: LightRollingStockWithLiveries[] | null;
   onProgress?: (results: Map<number, TimetableItemWithDetails>) => void;
@@ -35,6 +36,7 @@ type UseLazySimulateTrainsOptions = {
  */
 export default function useLazySimulateTrains({
   infraId,
+  timetableId,
   electricalProfileSetId,
   rollingStocks,
   onProgress,
@@ -55,6 +57,7 @@ export default function useLazySimulateTrains({
     const loader = new TrainSimulationLazyLoader({
       dispatch,
       infraId,
+      timetableId,
       electricalProfileSetId,
       onProgress: (pacedTrainSummaries: Map<number, TrainScheduleSimulationSummaryResult>) => {
         const summaries = formatTimetableItemSummaries(

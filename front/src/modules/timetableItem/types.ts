@@ -107,7 +107,7 @@ export type TimetableItemWithDetails = PacedTrainWithDetails;
 
 export type ExceptionChangeGroups = Omit<
   PacedTrainException,
-  'key' | 'occurrence_index' | 'disabled'
+  'key' | 'occurrence_index' | 'disabled' | 'id'
 >;
 
 export type Occurrence = {
@@ -123,7 +123,7 @@ export type Occurrence = {
   rollingStock?: LightRollingStockWithLiveries;
   startTime: Date;
   stopsCount: number;
-  exceptionChangeGroups?: ExceptionChangeGroups;
+  exception?: { id: number; exceptionChangeGroups: ExceptionChangeGroups };
   summary?: SimulationSummary;
 };
 

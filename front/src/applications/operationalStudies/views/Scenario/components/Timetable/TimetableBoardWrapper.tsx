@@ -214,6 +214,7 @@ const TimetableBoardWrapper = ({
 
       const newTimetableItems = await postFullImportPayload(
         sandboxId,
+        scenario.timetable_id,
         scenario.id,
         importedPayload,
         subCategories,

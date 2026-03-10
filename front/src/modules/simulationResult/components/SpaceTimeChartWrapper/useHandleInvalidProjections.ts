@@ -40,9 +40,11 @@ const useHandleInvalidProjections = ({
         const updatedExceptions = new Map(projection.paced.exceptionProjections);
 
         timetableItem.paced.exceptions.forEach((exception) => {
-          const existingException = updatedExceptions.get(exception.key);
+          // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
+          const existingException = updatedExceptions.get(exception.id!);
           if (existingException) {
-            updatedExceptions.set(exception.key, {
+            // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
+            updatedExceptions.set(exception.id!, {
               ...existingException,
               isSimulated: isSimulated(exception.summary),
             });

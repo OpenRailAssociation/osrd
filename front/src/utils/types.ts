@@ -30,7 +30,7 @@ export const concatMap = <K, V>(map1: Map<K, V>, map2: Map<K, V>) =>
  * @param K The keys we want to make non-nullable
  * @example NonNullableObject<{ a?: string | null; b?: string; c?: string }, 'a' | 'c'> = { a: string; b?: string; c: string }
  */
-type NonNullableObject<Type, K extends keyof Type> = {
+export type NonNullableObject<Type, K extends keyof Type> = {
   [Property in keyof Type as Property extends K ? Property : never]-?: NonNullable<Type[Property]>;
 } & {
   [Property in keyof Type as Property extends K ? never : Property]: Type[Property];

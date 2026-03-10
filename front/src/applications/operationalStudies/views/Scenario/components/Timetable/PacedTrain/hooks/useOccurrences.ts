@@ -68,16 +68,29 @@ const useOccurrences = (
           ? correspondingException.rolling_stock_category.value
           : pacedTrainCategory,
         occurrenceIndex: i,
-        exceptionChangeGroups: correspondingException
-          ? omit(correspondingException, ['key', 'occurrence_index', 'disabled', 'summary'])
-          : undefined,
+        exception:
+          // TODO_EXCEPTION: remove the second check when use TrainScheduleException type
+          correspondingException && correspondingException.id
+            ? {
+                id: correspondingException.id,
+                exceptionChangeGroups: omit(correspondingException, [
+                  // TODO_EXCEPTION: remove 'key' when use TrainScheduleException type
+                  'key',
+                  'occurrence_index',
+                  'disabled',
+                  'summary',
+                  'id',
+                ]),
+              }
+            : undefined,
+
         summary: correspondingException?.summary ?? summary,
       });
     }
 
     // Handle added exceptions
     exceptions.forEach((exception) => {
-      if (exception.occurrence_index !== undefined) return;
+      if (exception.occurrence_index !== undefined || !exception.start_time) return;
 
       let occurrenceRollingStock = rollingStock;
       if (exception.rolling_stock && rollingStockList) {
@@ -85,11 +98,11 @@ const useOccurrences = (
         occurrenceRollingStock = rollingStockList.find((rs) => rs.name === rollingStockName);
       }
 
-      // An added exception will always have a least a start time in its exceptions
-      const startTime = new Date(exception.start_time!.value);
+      const startTime = new Date(exception.start_time.value);
 
       computedOccurrences.push({
-        id: formatPacedTrainIdToExceptionId(pacedTrainId, exception.key),
+        // TODO_EXCEPTION: remove `!` when use TrainScheduleException type
+        id: formatPacedTrainIdToExceptionId(pacedTrainId, Number(exception.id!)),
         trainName: exception.train_name?.value ?? `${name}/+`,
         rollingStock: occurrenceRollingStock,
         startTime,
@@ -100,11 +113,23 @@ const useOccurrences = (
         category: exception.rolling_stock_category
           ? exception.rolling_stock_category.value
           : pacedTrainCategory,
-        exceptionChangeGroups: omit(exception, ['key', 'disabled', 'occurrence_index', 'summary']),
+
+        exception: {
+          // TODO_EXCEPTION: remove `!` when use TrainScheduleException type
+          id: exception.id!,
+          exceptionChangeGroups: omit(exception, [
+            // TODO_EXCEPTION: remove 'key' when use TrainScheduleException type
+            'key',
+            'disabled',
+            'occurrence_index',
+            'summary',
+            'id',
+          ]),
+        },
+
         summary: exception.summary ?? summary,
       });
     });
-
     return sortBy(computedOccurrences, 'startTime');
   }, [pacedTrain, rollingStockList]);
 

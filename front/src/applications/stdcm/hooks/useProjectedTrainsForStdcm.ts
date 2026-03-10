@@ -81,6 +81,7 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
   // Progressive projection of the trains
   const { projectedTrainsById, allTrainsProjected, projectTimetableItems } = useLazyProjectTrains({
     infraId,
+    timetableId,
     electricalProfileSetId,
     path: stdcmResponse?.pathfinding_result.path,
   });
@@ -88,6 +89,7 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
   // Progressive loading of the trains
   const { simulatedTrainsById, simulateTimetableItems } = useLazySimulateTrains({
     infraId,
+    timetableId,
     electricalProfileSetId,
     rollingStocks,
     onProgress: (results) => {

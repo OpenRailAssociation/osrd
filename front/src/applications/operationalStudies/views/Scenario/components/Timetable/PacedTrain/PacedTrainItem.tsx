@@ -23,9 +23,10 @@ import { useRollingStockContext } from 'common/RollingStockContext';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import { getOccurrencesWorstStatus } from 'modules/timetableItem/helpers/pacedTrain';
 import {
+  createExceptions,
   createPacedTrains,
+  deleteExceptions,
   deleteTrainSchedules,
-  storePacedTrain,
 } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import type { PacedTrainWithPacedWithDetails } from 'modules/timetableItem/types';
 import { setFailure, setSuccess } from 'reducers/main';
@@ -77,6 +78,7 @@ type PacedTrainItemProps = {
   isSelectMode: boolean;
   moveTimetableItem: () => void;
   showMovebutton: boolean;
+  timetableId: number;
 };
 
 const PacedTrainItem = ({
@@ -97,6 +99,7 @@ const PacedTrainItem = ({
   isSelectMode,
   moveTimetableItem,
   showMovebutton,
+  timetableId,
 }: PacedTrainItemProps) => {
   const { editedElementContainer } = useContext(EditedElementContainerContext);
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
@@ -111,7 +114,10 @@ const PacedTrainItem = ({
 
   const { showPacedTrainProjectionIcon, pathUsedForProjectionIsException } = useMemo(() => {
     if (!trainIdUsedForProjection)
-      return { showPacedTrainProjectionIcon: false, pathUsedForProjectionIsException: false };
+      return {
+        showPacedTrainProjectionIcon: false,
+        pathUsedForProjectionIsException: false,
+      };
     if (isPacedTrainId(trainIdUsedForProjection))
       return {
         showPacedTrainProjectionIcon:
@@ -149,6 +155,7 @@ const PacedTrainItem = ({
     occurrences,
     selectPacedTrainToEdit,
     upsertTimetableItems,
+    timetableId,
   });
 
   const [getTrainScheduleById] = osrdEditoastApi.endpoints.getTrainSchedulesById.useLazyQuery();
@@ -178,21 +185,30 @@ const PacedTrainItem = ({
     dispatch(updateSelectedTrainId(formattedPacedTrainId));
   };
 
-  async function deleteExceptions() {
+  const deleteAllExceptions = async () => {
+    // TODO_EXCEPTION: remove filter when using TrainScheduleException type
+    const allIds = pacedTrain.paced.exceptions.filter((e) => e.id != null).map((e) => e.id!);
+
+    if (allIds.length > 0) {
+      await deleteExceptions(dispatch, allIds);
+    }
+
+    // Use pacedTrain as the source for train_schedule_set_id and id
     const updatedPacedTrainPayload = formatPacedTrainWithDetailsToPacedTrainPayload({
       ...pacedTrain,
       paced: { ...pacedTrain.paced, exceptions: [] },
     });
 
-    await storePacedTrain(
-      pacedTrain.id,
-      { ...updatedPacedTrainPayload, train_schedule_set_id: pacedTrain.train_schedule_set_id },
-      dispatch,
-      upsertTimetableItems
-    );
+    upsertTimetableItems([
+      {
+        ...updatedPacedTrainPayload,
+        train_schedule_set_id: pacedTrain.train_schedule_set_id,
+        id: pacedTrain.id,
+      },
+    ]);
 
     closeModal();
-  }
+  };
 
   const duplicatePacedTrain = async () => {
     // Static for now, will be dynamic when UI will be ready
@@ -220,11 +236,56 @@ const PacedTrainItem = ({
       train_name: pacedTrainName,
     };
 
+    // We don't want to send summary to create exceptions
+    const payloadExceptions = pacedTrain.paced?.exceptions.map((exception) => {
+      const { summary: _summary, ...changeGroups } = exception;
+      return changeGroups;
+    });
+
     const formattedPacedTrainResponse: TimetableItem = (
       await createPacedTrains(dispatch, pacedTrainDetail.train_schedule_set_id, [newPacedTrain])
     )[0];
     dispatch(updateSelectedTrainId(formatEditoastIdToPacedTrainId(formattedPacedTrainResponse.id)));
     upsertTimetableItems([formattedPacedTrainResponse]);
+
+    const newExceptions =
+      payloadExceptions.length > 0
+        ? await createExceptions(
+            dispatch,
+            payloadExceptions,
+            formattedPacedTrainResponse.id,
+            timetableId
+          )
+        : [];
+
+    // TODO : remove this part when the back will be done inserting the new exception format in TrainSchedule
+    const formattedExceptions = newExceptions.map((exceptionNewModel) => {
+      const {
+        change_groups,
+        train_schedule_id: _train_schedule_id,
+        timetable_id: _timetable_id,
+        ...restExceptions
+      } = exceptionNewModel;
+      return {
+        ...change_groups,
+        ...restExceptions,
+        // TODO_EXCEPTION: remove this when drop key in the model
+        key: '',
+      };
+    });
+
+    // We add the new exceptions to the duplicate paced train, so they contain their new exception ids
+    upsertTimetableItems([
+      {
+        ...formattedPacedTrainResponse,
+        ...(formattedPacedTrainResponse.paced && {
+          paced: {
+            ...formattedPacedTrainResponse.paced,
+            exceptions: formattedExceptions,
+          },
+        }),
+      },
+    ]);
     dispatch(
       setSuccess({
         title: t('timetable.pacedTrainAdded'),
@@ -371,7 +432,7 @@ const PacedTrainItem = ({
           resetAllExceptions={() => {
             openModal(
               <ConfirmModal
-                onConfirm={() => deleteExceptions()}
+                onConfirm={() => deleteAllExceptions()}
                 title={t('timetable.resetAllExceptions')}
               />
             );
