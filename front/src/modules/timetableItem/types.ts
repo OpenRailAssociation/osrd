@@ -109,7 +109,7 @@ export type TimetableItemWithDetails = PacedTrainWithDetails;
 
 export type ExceptionChangeGroups = Omit<
   PacedTrainException,
-  'key' | 'occurrence_index' | 'disabled'
+  'key' | 'occurrence_index' | 'disabled' | 'id'
 >;
 
 export type Occurrence = {
