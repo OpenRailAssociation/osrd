@@ -19,22 +19,27 @@ export type ApiError = {
   status: number;
 };
 
+const prepareHeadersWithImpersonate = async (
+  headers: Headers,
+  api: { getState: () => unknown }
+) => {
+  const impersonatedUser = getImpersonatedUser(api.getState() as RootState);
+
+  if (impersonatedUser) {
+    headers.set('x-impersonate', impersonatedUser.identities[0]);
+  } else {
+    headers.delete('x-impersonate');
+  }
+
+  return headers;
+};
+
 // initialize an empty api service that we'll inject endpoints into later as needed
 export const baseEditoastApi = createApi({
   reducerPath: 'editoastApi',
   baseQuery: fetchBaseQuery({
     baseUrl: `${MAIN_API.proxy_editoast}/`,
-    prepareHeaders: async (headers, { getState }) => {
-      const impersonatedUser = getImpersonatedUser(getState() as RootState);
-
-      if (impersonatedUser) {
-        headers.set('x-impersonate', impersonatedUser.identities[0]);
-      } else {
-        headers.delete('x-impersonate');
-      }
-
-      return headers;
-    },
+    prepareHeaders: prepareHeadersWithImpersonate,
   }) as BaseQueryFn<FetchArgs, unknown, ApiError>,
   endpoints: () => ({}),
 });
@@ -55,7 +60,7 @@ const dynamicBaseQuery: BaseQueryFn<FetchArgs, unknown, ApiError> = (async (
   const state = api.getState() as RootState;
   const baseUrl = getRailwayManagerInterfaceUrl(state);
 
-  const rawBaseQuery = fetchBaseQuery({ baseUrl });
+  const rawBaseQuery = fetchBaseQuery({ baseUrl, prepareHeaders: prepareHeadersWithImpersonate });
 
   const result = await rawBaseQuery(args, api, extraOptions);
   return result;
