@@ -1910,9 +1910,9 @@ dependencies = [
 
 [[package]]
 name = "geos"
-version = "11.0.1"
+version = "11.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5996ab8d8f04d4cc9a749952864bf4dc8e6f8c660ec50ea60cb647c4ce3517ac"
+checksum = "0d13c464e56cc46077aa9bafef9a02e65610ddafb6347a26a306855e7a7d3133"
 dependencies = [
  "geojson",
  "geos-sys",
