@@ -12,163 +12,62 @@ on:
       - prod
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    name: Build
-    permissions:
-      packages: write
-    outputs:
-      stable_tags: ${{ steps.bake-metadata.outputs.stable_tags }}
-      stable_version: ${{ steps.bake-metadata.outputs.stable_version }}
-      output_method: ${{ steps.bake-metadata.outputs.output_method }}
-    strategy:
-      matrix:
-        targets:
-          - [core-build, core]
-          - [editoast, editoast-test]
-          - [gateway-test, gateway-standalone, gateway-front]
-          - [front-devel, front-tests]
-          - [osrdyne, osrdyne-test]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
 
-      - name: Make bake metadata
-        id: bake-metadata
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: |
-          set -euo pipefail
-          echo ::group::Github context
-          python3 -m json.tool <<< "${GITHUB_CONTEXT}"
-          echo ::endgroup::
+  build-core:
+    name: Build (core-build, core)
+    uses: ./.github/workflows/build-images.yml
+    with:
+      targets: core-build core
+      artifact_name: images-core
+      artifact_paths: |
+        osrd-core-build.tar
+        osrd-core.tar
+    secrets: inherit
 
-          echo ::group::Bake metadata
-          .github/scripts/bake-metadata.py | tee bake-metadata.json
-          echo ::endgroup::
+  build-editoast:
+    uses: ./.github/workflows/build-images.yml
+    name: Build (editoast, editoast-test)
+    with:
+      targets: editoast editoast-test
+      artifact_name: images-editoast
+      artifact_paths: |
+        osrd-editoast.tar
+        osrd-editoast-test.tar
+    secrets: inherit
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-        with:
-          buildkitd-flags: --debug
+  build-gateway:
+    uses: ./.github/workflows/build-images.yml
+    name: Build (gateway-test, gateway-standalone, gateway-front)
+    with:
+      targets: gateway-test gateway-standalone gateway-front
+      artifact_name: images-gateway
+      artifact_paths: |
+        osrd-gateway-test.tar
+        osrd-gateway-standalone.tar
+        osrd-gateway-front.tar
+    secrets: inherit
 
-      - name: Login to ghcr.io
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: "$" # special user for authenticating as a gh actions worker
-          password: ${{ secrets.GITHUB_TOKEN }}
+  build-front:
+    uses: ./.github/workflows/build-images.yml
+    name: Build (front-devel, front-tests)
+    with:
+      targets: front-devel front-tests
+      artifact_name: images-front
+      artifact_paths: |
+        osrd-front.tar
+        osrd-front-tests.tar
+    secrets: inherit
 
-      # This action happens to randomly fail, so we retry it 3 times.
-      # Whitelisted messages are:
-      #
-      # - `failed to solve: failed to compute cache key`
-      #   full message: `failed to solve: failed to compute cache key: failed to get state for index 0 on XXXXXX`
-      #
-      # - `httpReadSeeker: failed open:`
-      #   full message: `ERROR: failed to solve: DeadlineExceeded: failed to compute cache key: failed to copy: httpReadSeeker: failed open: no active session for XXXXX: context deadline exceeded`
-      - name: Build and push
-        run: |
-          set -euo pipefail
-
-          # disable cache mounts as github cache is slow
-          find \( -name Dockerfile -o -name "Dockerfile.*" \) -print0 | xargs -0 sed -Ei 's/--mount=type=cache,target=[^[:blank:]]+//g'
-
-          TRANSIENT_FAILURES=(
-            "failed to solve: failed to compute cache key"
-            "httpReadSeeker: failed open:"
-          )
-          BAKEFILE="--file=docker/docker-bake.hcl"
-          METADATA="--file=bake-metadata.json"
-          TARGETS="${{ join(matrix.targets, ' ') }}"
-
-          for i in $(seq 1 3); do
-            echo "::group::Try $i"
-            if docker buildx bake $BAKEFILE $METADATA $TARGETS 2>&1 | tee docker-build.log; then
-              echo "::endgroup::"
-              exit 0
-            fi
-            echo "::endgroup::"
-
-            for failure_msg in "${TRANSIENT_FAILURES[@]}"; do
-              if grep -q "$failure_msg" docker-build.log; then
-                echo "Transient failure detected, retrying..."
-                continue 2
-              fi
-            done
-
-            echo "Build failed for non-transient cause, exiting."
-            exit 1
-          done
-          echo "All retries failed, exiting."
-          exit 1
-
-      - name: Upload core artifact
-        uses: actions/upload-artifact@v7
-        if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'core')
-        with:
-          name: core
-          path: osrd-core.tar
-      - name: Upload core-build artifact
-        uses: actions/upload-artifact@v7
-        if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'core-build')
-        with:
-          name: core-build
-          path: osrd-core-build.tar
-      - name: Upload editoast artifact
-        uses: actions/upload-artifact@v7
-        if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'editoast')
-        with:
-          name: editoast
-          path: osrd-editoast.tar
-      - name: Upload editoast-test artifact
-        uses: actions/upload-artifact@v7
-        if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'editoast-test')
-        with:
-          name: editoast-test
-          path: osrd-editoast-test.tar
-      - name: Upload front artifact
-        uses: actions/upload-artifact@v7
-        if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'front-devel')
-        with:
-          name: front
-          path: osrd-front.tar
-      - name: Upload front-tests artifact
-        uses: actions/upload-artifact@v7
-        if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'front-tests')
-        with:
-          name: front-tests
-          path: osrd-front-tests.tar
-      - name: Upload gateway-front artifact
-        uses: actions/upload-artifact@v7
-        if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'gateway-front')
-        with:
-          name: gateway-front
-          path: osrd-gateway-front.tar
-      - name: Upload gateway-standalone artifact
-        uses: actions/upload-artifact@v7
-        if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'gateway-standalone')
-        with:
-          name: gateway-standalone
-          path: osrd-gateway-standalone.tar
-      - name: Upload gateway-test artifact
-        uses: actions/upload-artifact@v7
-        if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'gateway-test')
-        with:
-          name: gateway-test
-          path: osrd-gateway-test.tar
-      - name: Upload osrdyne artifact
-        uses: actions/upload-artifact@v7
-        if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'osrdyne')
-        with:
-          name: osrdyne
-          path: osrd-osrdyne.tar
-      - name: Upload osrdyne-test artifact
-        uses: actions/upload-artifact@v7
-        if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'osrdyne-test')
-        with:
-          name: osrdyne-test
-          path: osrd-osrdyne-test.tar
+  build-osrdyne:
+    uses: ./.github/workflows/build-images.yml
+    name: Build (osrdyne, osrdyne-test)
+    with:
+      targets: osrdyne osrdyne-test
+      artifact_name: images-osrdyne
+      artifact_paths: |
+        osrd-osrdyne.tar
+        osrd-osrdyne-test.tar
+    secrets: inherit
 
   check_dockerfiles:
     runs-on: ubuntu-latest
@@ -407,21 +306,21 @@ jobs:
     runs-on: ubuntu-latest
     name: Check front rtk sync
     needs:
-      - build
+      - build-front
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
       - name: Download built images
-        if: needs.build.outputs.output_method == 'artifact'
+        if: needs.build-front.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
-          name: front-tests
+          name: images-front
           path: .
 
       - name: Load built images
-        if: needs.build.outputs.output_method == 'artifact'
+        if: needs.build-front.outputs.output_method == 'artifact'
         run: |
           docker load --input ./osrd-front-tests.tar
           docker image ls -a
@@ -433,7 +332,7 @@ jobs:
           -v $PWD/gateway:/gateway
           -v $PWD/railway_manager_interface:/railway_manager_interface
           -v $PWD/front/src/common/api:/app/src/common/api
-          ${{ fromJSON(needs.build.outputs.stable_tags).front-tests }}
+          ${{ fromJSON(needs.build-front.outputs.stable_tags).front-tests }}
           npm run generate-types
 
       - name: Check for unexpected changes
@@ -444,27 +343,27 @@ jobs:
     runs-on: ubuntu-latest
     name: Check core
     needs:
-      - build
+      - build-core
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
       - name: Download built images
-        if: needs.build.outputs.output_method == 'artifact'
+        if: needs.build-core.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
-          name: core-build
+          name: images-core
           path: .
 
       - name: Load built images
-        if: needs.build.outputs.output_method == 'artifact'
+        if: needs.build-core.outputs.output_method == 'artifact'
         run: |
           docker load --input ./osrd-core-build.tar
 
       - name: Execute tests within container
         run: |
           docker run --name core-test \
-            -v $PWD/core/build:/output ${{ fromJSON(needs.build.outputs.stable_tags).core-build }} \
+            -v $PWD/core/build:/output ${{ fromJSON(needs.build-core.outputs.stable_tags).core-build }} \
             /bin/bash -c 'gradle -Pspotbugs_report_xml --continue check; status=$?; cp -r build/* /output/; exit $status'
           exit $(docker wait core-test)
 
@@ -485,20 +384,20 @@ jobs:
     runs-on: ubuntu-latest
     name: Check editoast tests
     needs:
-      - build
+      - build-editoast
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
       - name: Download built editoast-test image
-        if: needs.build.outputs.output_method == 'artifact'
+        if: needs.build-editoast.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
-          name: editoast-test
+          name: images-editoast
           path: .
 
       - name: Load built images
-        if: needs.build.outputs.output_method == 'artifact'
+        if: needs.build-editoast.outputs.output_method == 'artifact'
         run: |
           docker load --input ./osrd-editoast-test.tar
 
@@ -522,7 +421,7 @@ jobs:
             -e DATABASE_URL="postgres://osrd:password@localhost:5432/osrd" \
             -e CI="true" \
             -e FGA_API_URL="http://localhost:8091" \
-            ${{ fromJSON(needs.build.outputs.stable_tags).editoast-test }} \
+            ${{ fromJSON(needs.build-editoast.outputs.stable_tags).editoast-test }} \
             /bin/sh -c "diesel migration run --locked-schema && RUST_LOG=error RUST_BACKTRACE=1 cargo test --workspace -- --test-threads=4"
 
           exit $(docker wait editoast-test)
@@ -534,20 +433,20 @@ jobs:
     runs-on: ubuntu-latest
     name: Check editoast lints
     needs:
-      - build
+      - build-editoast
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
       - name: Download built images
-        if: needs.build.outputs.output_method == 'artifact'
+        if: needs.build-editoast.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
-          name: editoast-test
+          name: images-editoast
           path: .
 
       - name: Load built images
-        if: needs.build.outputs.output_method == 'artifact'
+        if: needs.build-editoast.outputs.output_method == 'artifact'
         run: |
           docker load --input ./osrd-editoast-test.tar
 
@@ -555,7 +454,7 @@ jobs:
         run: |
           docker run --name=editoast-doc --net=host -v $PWD/output:/output \
             -e RUSTDOCFLAGS="-D warnings" \
-            ${{ fromJSON(needs.build.outputs.stable_tags).editoast-test }} \
+            ${{ fromJSON(needs.build-editoast.outputs.stable_tags).editoast-test }} \
             cargo doc --manifest-path ./Cargo.toml --no-deps
 
           exit $(docker wait editoast-doc)
@@ -563,7 +462,7 @@ jobs:
       - name: Format check
         run: |
           docker run --name=editoast-format --net=host -v $PWD/output:/output \
-            ${{ fromJSON(needs.build.outputs.stable_tags).editoast-test }} \
+            ${{ fromJSON(needs.build-editoast.outputs.stable_tags).editoast-test }} \
             cargo fmt --check
 
           exit $(docker wait editoast-format)
@@ -571,7 +470,7 @@ jobs:
       - name: Clippy check
         run: |
           docker run --name=editoast-clippy --net=host -v $PWD/output:/output \
-            ${{ fromJSON(needs.build.outputs.stable_tags).editoast-test }} \
+            ${{ fromJSON(needs.build-editoast.outputs.stable_tags).editoast-test }} \
             cargo clippy --workspace --all-features --all-targets -- -D warnings
 
           exit $(docker wait editoast-clippy)
@@ -581,34 +480,36 @@ jobs:
     runs-on: ubuntu-latest
     name: Check editoast openapi
     needs:
-      - build
+      - build-editoast
+      - build-front
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
       - name: Download built editoast image
-        if: needs.build.outputs.output_method == 'artifact'
+        if: needs.build-editoast.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
           name: editoast
           path: .
       - name: Download built front-tests image
-        if: needs.build.outputs.output_method == 'artifact'
+        if: needs.build-front.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
           name: front-tests
           path: .
 
       - name: Load built images
-        if: needs.build.outputs.output_method == 'artifact'
+        if: needs.build-editoast.outputs.output_method == 'artifact' || needs.build-front.outputs.output_method == 'artifact'
         run: |
+          set +e
           docker load --input ./osrd-editoast.tar
           docker load --input ./osrd-front-tests.tar
 
       - name: Generate OpenAPI
         run: |
           docker run --name=editoast-test --net=host -v $PWD/output:/output \
-            ${{ fromJSON(needs.build.outputs.stable_tags).editoast }} \
+            ${{ fromJSON(needs.build-editoast.outputs.stable_tags).editoast }} \
             /bin/sh -c 'editoast openapi > /output/openapi.yaml'
 
       - name: Check for unexpected changes
@@ -618,7 +519,7 @@ jobs:
       - name: Check for i18n API errors
         run: |
           docker run --name=front-i18n-api-error --net=host -v $PWD/output/openapi.yaml:/editoast/openapi.yaml \
-              ${{ fromJSON(needs.build.outputs.stable_tags).front-tests }} \
+              ${{ fromJSON(needs.build-front.outputs.stable_tags).front-tests }} \
               npm run i18n-api-errors
           exit $(docker wait front-i18n-api-error)
 
@@ -626,28 +527,28 @@ jobs:
     runs-on: ubuntu-latest
     name: Check gateway
     needs:
-      - build
+      - build-gateway
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
       - name: Download built images
-        if: needs.build.outputs.output_method == 'artifact'
+        if: needs.build-gateway.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
-          name: gateway-test
+          name: images-gateway
           path: .
 
       - name: Load built images
-        if: needs.build.outputs.output_method == 'artifact'
+        if: needs.build-gateway.outputs.output_method == 'artifact'
         run: |
           docker load --input ./osrd-gateway-test.tar
 
       - name: Execute tests within container
         run: |
           docker run --name=gateway-test --net=host -v $PWD/output:/output \
-            ${{ fromJSON(needs.build.outputs.stable_tags).gateway-test }} \
+            ${{ fromJSON(needs.build-gateway.outputs.stable_tags).gateway-test }} \
             /bin/sh -c "cargo test --verbose"
 
           exit $(docker wait gateway-test)
@@ -656,7 +557,7 @@ jobs:
         run: |
           docker run --name=gateway-doc --net=host -v $PWD/output:/output \
             -e RUSTDOCFLAGS="-D warnings" \
-            ${{ fromJSON(needs.build.outputs.stable_tags).gateway-test }} \
+            ${{ fromJSON(needs.build-gateway.outputs.stable_tags).gateway-test }} \
             cargo doc --manifest-path ./Cargo.toml --no-deps
 
           exit $(docker wait gateway-doc)
@@ -664,14 +565,14 @@ jobs:
       - name: Format check
         run: |
           docker run --name=gateway-format --net=host -v $PWD/output:/output \
-            ${{ fromJSON(needs.build.outputs.stable_tags).gateway-test }} \
+            ${{ fromJSON(needs.build-gateway.outputs.stable_tags).gateway-test }} \
             cargo fmt --check
           exit $(docker wait gateway-format)
 
       - name: Clippy check
         run: |
           docker run --name=gateway-clippy --net=host -v $PWD/output:/output \
-            ${{ fromJSON(needs.build.outputs.stable_tags).gateway-test }} \
+            ${{ fromJSON(needs.build-gateway.outputs.stable_tags).gateway-test }} \
             cargo clippy --workspace --all-features --all-targets -- -D warnings
           exit $(docker wait gateway-clippy)
 
@@ -679,28 +580,28 @@ jobs:
     runs-on: ubuntu-latest
     name: Check osrdyne
     needs:
-      - build
+      - build-osrdyne
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
       - name: Download built images
-        if: needs.build.outputs.output_method == 'artifact'
+        if: needs.build-osrdyne.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
-          name: osrdyne-test
+          name: images-osrdyne
           path: .
 
       - name: Load built images
-        if: needs.build.outputs.output_method == 'artifact'
+        if: needs.build-osrdyne.outputs.output_method == 'artifact'
         run: |
           docker load --input ./osrd-osrdyne-test.tar
 
       - name: Execute tests within container
         run: |
           docker run --name=osrdyne-test --net=host -v $PWD/output:/output \
-            ${{ fromJSON(needs.build.outputs.stable_tags).osrdyne-test }} \
+            ${{ fromJSON(needs.build-osrdyne.outputs.stable_tags).osrdyne-test }} \
             /bin/sh -c "cargo test --verbose"
 
           exit $(docker wait osrdyne-test)
@@ -709,7 +610,7 @@ jobs:
         run: |
           docker run --name=osrdyne-doc --net=host -v $PWD/output:/output \
             -e RUSTDOCFLAGS="-D warnings" \
-            ${{ fromJSON(needs.build.outputs.stable_tags).osrdyne-test }} \
+            ${{ fromJSON(needs.build-osrdyne.outputs.stable_tags).osrdyne-test }} \
             cargo doc --manifest-path ./Cargo.toml --no-deps
 
           exit $(docker wait osrdyne-doc)
@@ -717,14 +618,14 @@ jobs:
       - name: Format check
         run: |
           docker run --name=osrdyne-format --net=host -v $PWD/output:/output \
-            ${{ fromJSON(needs.build.outputs.stable_tags).osrdyne-test }} \
+            ${{ fromJSON(needs.build-osrdyne.outputs.stable_tags).osrdyne-test }} \
             cargo fmt --check
           exit $(docker wait osrdyne-format)
 
       - name: Clippy check
         run: |
           docker run --name=osrdyne-clippy --net=host -v $PWD/output:/output \
-            ${{ fromJSON(needs.build.outputs.stable_tags).osrdyne-test }} \
+            ${{ fromJSON(needs.build-osrdyne.outputs.stable_tags).osrdyne-test }} \
             cargo clippy --all-features --all-targets -- -D warnings
           exit $(docker wait osrdyne-clippy)
 
@@ -732,21 +633,21 @@ jobs:
     runs-on: ubuntu-latest
     name: Check front
     needs:
-      - build
+      - build-front
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
       - name: Download built images
-        if: needs.build.outputs.output_method == 'artifact'
+        if: needs.build-front.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
-          name: front-tests
+          name: images-front
           path: .
 
       - name: Load built images
-        if: needs.build.outputs.output_method == 'artifact'
+        if: needs.build-front.outputs.output_method == 'artifact'
         run: |
           docker load --input ./osrd-front-tests.tar
 
@@ -754,7 +655,7 @@ jobs:
         # TODO: Once we migrate to eslint v9 and add support for json and css this can be dropped
         run: |
           docker run --name=front-format --net=host \
-            ${{ fromJSON(needs.build.outputs.stable_tags).front-tests }} \
+            ${{ fromJSON(needs.build-front.outputs.stable_tags).front-tests }} \
             sh -c "npx prettier . --check && cd ui && npx prettier . --check"
 
           exit $(docker wait front-format)
@@ -762,14 +663,14 @@ jobs:
       - name: Check lints
         run: |
           docker run --name=front-lint --net=host \
-            ${{ fromJSON(needs.build.outputs.stable_tags).front-tests }} \
+            ${{ fromJSON(needs.build-front.outputs.stable_tags).front-tests }} \
             sh -c "npm run lint"
           exit $(docker wait front-lint)
 
       - name: Check for i18n missing keys
         run: |
           docker run --name=front-i18n-checker --net=host \
-            ${{ fromJSON(needs.build.outputs.stable_tags).front-tests }} \
+            ${{ fromJSON(needs.build-front.outputs.stable_tags).front-tests }} \
             npm run i18n-checker
           exit $(docker wait front-i18n-checker)
 
@@ -779,7 +680,7 @@ jobs:
       - name: Execute tests within container
         run: |
           docker run --name=front-test --net=host \
-            ${{ fromJSON(needs.build.outputs.stable_tags).front-tests }} \
+            ${{ fromJSON(needs.build-front.outputs.stable_tags).front-tests }} \
             sh -c "npm run test"
 
           exit $(docker wait front-test)
@@ -788,35 +689,40 @@ jobs:
     runs-on: ubuntu-latest
     name: Integration tests
     needs:
-      - build
+      - build-core
+      - build-editoast
+      - build-gateway
+      - build-osrdyne
+      # Note: we don't need the front-tests image for integration tests, as they only run backend tests.
     steps:
       # TODO: check if we can deduplicate the base steps from integration_tests_quality
       # https://www.jameskerr.blog/posts/sharing-steps-in-github-action-workflows/
       - name: Checkout
         uses: actions/checkout@v6
       - name: Download built editoast image
-        if: needs.build.outputs.output_method == 'artifact'
+        if: needs.build-editoast.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
           name: editoast
           path: .
       - name: Download built core image
-        if: needs.build.outputs.output_method == 'artifact'
+        if: needs.build-core.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
           name: core
           path: .
       - name: Download built osrdyne image
-        if: needs.build.outputs.output_method == 'artifact'
+        if: needs.build-osrdyne.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
           name: osrdyne
           path: .
       - name: Load built images
-        if: needs.build.outputs.output_method == 'artifact'
+        if: needs.build-core.outputs.output_method == 'artifact' || needs.build-editoast.outputs.output_method == 'artifact' || needs.build-osrdyne.outputs.output_method == 'artifact'
         run: |
-          docker load --input ./osrd-editoast.tar
+
           docker load --input ./osrd-core.tar
+          docker load --input ./osrd-editoast.tar
           docker load --input ./osrd-osrdyne.tar
       - name: Set up 'uv'
         uses: astral-sh/setup-uv@v7
@@ -831,7 +737,7 @@ jobs:
         id: start_integration_worker
         run: |
           set -euo pipefail
-          export TAG='${{ needs.build.outputs.stable_version }}'
+          export TAG='${{ needs.build-core.outputs.stable_version }}'
 
           # Inside /docker/osrdyne.yml, replace core_image "osrd-core:dev" with "osrd-core:$TAG"
           # to match the version of the core image we just built inside osrdyne
@@ -864,37 +770,40 @@ jobs:
     runs-on: ubuntu-latest
     name: Check Getting Started
     needs:
-      - build
+      - build-core
+      - build-editoast
+      - build-osrdyne
     steps:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Download built editoast image
-        if: needs.build.outputs.output_method == 'artifact'
+        if: needs.build-editoast.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
           name: editoast
           path: .
       - name: Download built core image
-        if: needs.build.outputs.output_method == 'artifact'
+        if: needs.build-core.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
           name: core
           path: .
       - name: Download built osrdyne image
-        if: needs.build.outputs.output_method == 'artifact'
+        if: needs.build-osrdyne.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
           name: osrdyne
           path: .
       - name: Load built images
-        if: needs.build.outputs.output_method == 'artifact'
+        if: needs.build-core.outputs.output_method == 'artifact' || needs.build-editoast.outputs.output_method == 'artifact' || needs.build-osrdyne.outputs.output_method == 'artifact'
         run: |
-          docker load --input ./osrd-editoast.tar
+          set +e
           docker load --input ./osrd-core.tar
+          docker load --input ./osrd-editoast.tar
           docker load --input ./osrd-osrdyne.tar
       - name: Start the stack
         run: |
-          export TAG='${{ needs.build.outputs.stable_version }}'
+          export TAG='${{ needs.build-core.outputs.stable_version }}'
           docker compose up --no-build -d editoast osrdyne core jaeger openfga wait-healthy
       - name: "Check the getting started commands"
         # Note: any change below should also be reflected in the README.md getting started section
@@ -907,44 +816,48 @@ jobs:
     runs-on: ubuntu-latest
     name: End to end tests
     needs:
-      - build
+      - build-core
+      - build-editoast
+      - build-osrdyne
+      - build-gateway
+      - build-front
     steps:
       # TODO: check if we can deduplicate the base steps from integration_tests_quality
       # https://www.jameskerr.blog/posts/sharing-steps-in-github-action-workflows/
       - name: Checkout
         uses: actions/checkout@v6
       - name: Download built front-tests image
-        if: needs.build.outputs.output_method == 'artifact'
+        if: needs.build-front.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
           name: front-tests
           path: .
       - name: Download built editoast image
-        if: needs.build.outputs.output_method == 'artifact'
+        if: needs.build-editoast.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
           name: editoast
           path: .
       - name: Download built core image
-        if: needs.build.outputs.output_method == 'artifact'
+        if: needs.build-core.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
           name: core
           path: .
       - name: Download built gateway-front image
-        if: needs.build.outputs.output_method == 'artifact'
+        if: needs.build-gateway.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
           name: gateway-front
           path: .
       - name: Download built osrdyne image
-        if: needs.build.outputs.output_method == 'artifact'
+        if: needs.build-osrdyne.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
           name: osrdyne
           path: .
       - name: Load built images
-        if: needs.build.outputs.output_method == 'artifact'
+        if: needs.build-front.outputs.output_method == 'artifact' || needs.build-editoast.outputs.output_method == 'artifact' || needs.build-core.outputs.output_method == 'artifact' || needs.build-gateway.outputs.output_method == 'artifact' || needs.build-osrdyne.outputs.output_method == 'artifact'
         run: |
           docker load --input ./osrd-front-tests.tar
           docker load --input ./osrd-editoast.tar
@@ -966,7 +879,7 @@ jobs:
       - name: Build Playwright container
         run: |
           docker build --build-arg PLAYWRIGHT_VERSION=v$PLAYWRIGHT_VERSION \
-            --build-arg FRONT_TESTS_IMAGE=${{ fromJSON(needs.build.outputs.stable_tags).front-tests }} \
+            --build-arg FRONT_TESTS_IMAGE=${{ fromJSON(needs.build-front.outputs.stable_tags).front-tests }} \
             -t osrd-playwright:latest \
             - <docker/Dockerfile.playwright-ci
 
@@ -974,7 +887,7 @@ jobs:
         id: start_playwright_worker
         run: |
           set -euo pipefail
-          export TAG='${{ needs.build.outputs.stable_version }}'
+          export TAG='${{ needs.build-core.outputs.stable_version }}'
           export GATEWAY_FLAVOR='front'
 
           # Inside /docker/osrdyne.yml, replace core_image "osrd-core:dev" with "osrd-core:$TAG"
