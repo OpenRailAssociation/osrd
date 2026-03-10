@@ -143,11 +143,11 @@ const clampTimeState = (state: TimeState): TimeState => {
   };
 };
 
-// Handlers
+// State transformers (pure functions used by the reducer)
 
 // The minutes section needs special handling when overflowing
 // It allows the user to quickly enter times like 01:45 by typing 0145 even when focused on minutes
-const handleMinutesOverflow = (state: TimeState, digit: string): TimeState => {
+const computeMinutesOverflowState = (state: TimeState, digit: string): TimeState => {
   if (!hasAllDigits(state.hours)) {
     return {
       ...state,
@@ -171,7 +171,7 @@ const handleMinutesOverflow = (state: TimeState, digit: string): TimeState => {
   };
 };
 
-const handleNormalOverflow = (state: TimeState, digit: string): TimeState => {
+const computeNormalOverflowState = (state: TimeState, digit: string): TimeState => {
   const { focusedSection } = state;
   if (!focusedSection) return state;
 
@@ -208,7 +208,7 @@ const handleNormalOverflow = (state: TimeState, digit: string): TimeState => {
   return state;
 };
 
-const handleDigitPressed = (state: TimeState, digit: string): TimeState => {
+const computeDigitState = (state: TimeState, digit: string): TimeState => {
   const { focusedSection } = state;
   if (!focusedSection) return state;
 
@@ -255,14 +255,14 @@ const handleDigitPressed = (state: TimeState, digit: string): TimeState => {
     case 2:
     default:
       return focusedSection === 'minutes'
-        ? handleMinutesOverflow(state, digit)
-        : handleNormalOverflow(state, digit);
+        ? computeMinutesOverflowState(state, digit)
+        : computeNormalOverflowState(state, digit);
   }
 };
 
 // When a section is emptied, we need to shift the other sections to the left
 // This way the user can quickly delete time by holding backspace
-const handleBackspaceShift = (state: TimeState, section: Section): TimeState => {
+const computeBackspaceShiftState = (state: TimeState, section: Section): TimeState => {
   if (section === 'seconds') {
     return {
       ...state,
@@ -285,7 +285,7 @@ const handleBackspaceShift = (state: TimeState, section: Section): TimeState => 
   };
 };
 
-const handleBackspacePressed = (state: TimeState): TimeState => {
+const computeBackspaceState = (state: TimeState): TimeState => {
   const { focusedSection } = state;
   if (!focusedSection) return state;
 
@@ -296,7 +296,7 @@ const handleBackspacePressed = (state: TimeState): TimeState => {
   const newSectionState = removeDigitFromSectionState(currentSectionState, focusedSection);
 
   if (hasNoDigits(newSectionState)) {
-    return handleBackspaceShift(state, focusedSection);
+    return computeBackspaceShiftState(state, focusedSection);
   }
 
   return {
@@ -305,7 +305,7 @@ const handleBackspacePressed = (state: TimeState): TimeState => {
   };
 };
 
-const handleBlurred = (state: TimeState): TimeState => {
+const computeBlurState = (state: TimeState): TimeState => {
   if (hasNoDigits(state.hours) && hasNoDigits(state.minutes) && hasNoDigits(state.seconds)) {
     return {
       hours: 'hh',
@@ -322,20 +322,20 @@ const handleBlurred = (state: TimeState): TimeState => {
   });
 };
 
-const handleFocused = (state: TimeState, section: Section): TimeState => ({
+const computeFocusState = (state: TimeState, section: Section): TimeState => ({
   ...state,
   focusedSection: section,
   empty: false,
   hasTyped: state.empty || false,
 });
 
-const handleSectionClicked = (state: TimeState, section: Section): TimeState => ({
+const computeSectionClickState = (state: TimeState, section: Section): TimeState => ({
   ...state,
   focusedSection: section,
   hasTyped: state.empty || false,
 });
 
-const handleHorizontalArrow = (state: TimeState, direction: 'left' | 'right'): TimeState => {
+const computeArrowState = (state: TimeState, direction: 'left' | 'right'): TimeState => {
   const { focusedSection } = state;
   if (!focusedSection) return state;
 
@@ -380,21 +380,21 @@ const initialTimeState = (controlledValue: Date | null): TimeState => ({
 const timeReducer = (state: TimeState, action: TimeAction): TimeState => {
   switch (action.type) {
     case 'DIGIT_PRESSED':
-      return { ...handleDigitPressed(state, action.digit), hasTyped: true };
+      return { ...computeDigitState(state, action.digit), hasTyped: true };
     case 'BACKSPACE_PRESSED':
-      return { ...handleBackspacePressed(state), hasTyped: true };
+      return { ...computeBackspaceState(state), hasTyped: true };
     case 'BLURRED':
-      return handleBlurred(state);
+      return computeBlurState(state);
     case 'FOCUSED':
-      return handleFocused(state, action.section);
+      return computeFocusState(state, action.section);
     case 'SECTION_CLICKED':
-      return handleSectionClicked(state, action.section);
+      return computeSectionClickState(state, action.section);
     case 'ENTER_PRESSED':
-      return handleBlurred(state);
+      return computeBlurState(state);
     case 'LEFT_ARROW_PRESSED':
-      return handleHorizontalArrow(state, 'left');
+      return computeArrowState(state, 'left');
     case 'RIGHT_ARROW_PRESSED':
-      return handleHorizontalArrow(state, 'right');
+      return computeArrowState(state, 'right');
     case 'EXTERNAL_VALUE_CHANGED':
       // Don't override user's in-progress edits
       if (state.focusedSection) return state;
