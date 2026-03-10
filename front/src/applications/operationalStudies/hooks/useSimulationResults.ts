@@ -13,7 +13,7 @@ import {
   getOccurrenceTrainName,
 } from 'modules/timetableItem/helpers/pacedTrain';
 import useSelectedTimetableItem from 'modules/timetableItem/hooks/useSelectedTimetableItem';
-import type { Train } from 'reducers/osrdconf/types';
+import type { TimetableItem, Train } from 'reducers/osrdconf/types';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { Duration } from 'utils/duration';
 import {
@@ -29,7 +29,9 @@ import { useScenarioContext } from './useScenarioContext';
 /**
  * Prepare data to be used in simulation results
  */
-const useSimulationResults = (): {
+const useSimulationResults = (
+  timetableItems: TimetableItem[] | undefined
+): {
   results: SimulationResults | undefined;
   isSimulationDataLoading: boolean;
 } => {
@@ -38,7 +40,7 @@ const useSimulationResults = (): {
   const { infraId, electricalProfileSetId } = useScenarioContext();
   const selectedTrainId = useSelector(getSelectedTrainId);
 
-  const timetableItem = useSelectedTimetableItem();
+  const timetableItem = useSelectedTimetableItem(timetableItems);
 
   const train: Train | undefined = useMemo(() => {
     if (!selectedTrainId || !timetableItem) return undefined;
@@ -89,7 +91,7 @@ const useSimulationResults = (): {
         ? {
             id: selectedTrainId,
             infraId,
-            exceptionKey: exception?.key,
+            exceptionId: exception?.id ?? undefined,
           }
         : skipToken
     );
@@ -101,7 +103,7 @@ const useSimulationResults = (): {
             id: selectedTrainId,
             infraId,
             electricalProfileSetId,
-            exceptionKey: exception?.key,
+            exceptionId: exception?.id ?? undefined,
           }
         : skipToken
     );

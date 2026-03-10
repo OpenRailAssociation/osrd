@@ -1,6 +1,11 @@
 import { useCallback } from 'react';
 
-import { buildPacedTrainWithUpdatedException } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/buildPacedTrainException';
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
+import type { PacedTrainWithPaced } from 'applications/operationalStudies/types';
+import {
+  buildOccurrenceExceptionData,
+  updatePacedTrainExceptionsList,
+} from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/buildPacedTrainException';
 import formatMargin from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/formatMargin';
 import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/formatTimetableItemPayload';
 import {
@@ -16,8 +21,10 @@ import {
   isPacedTrainBase,
   isPacedTrainWithDetails,
 } from 'modules/timetableItem/helpers/pacedTrain';
+import { syncOccurrenceException } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type { OccurrenceId, PacedTrainId, TimetableItem, Train } from 'reducers/osrdconf/types';
+import { useAppDispatch } from 'store';
 import { removeElementAtIndex, replaceElementAtIndex } from 'utils/array';
 import { Duration } from 'utils/duration';
 import {
@@ -75,6 +82,8 @@ const useUpdateTimesStopsTable = (
   timetableItemsWithDetails: TimetableItemWithDetails[],
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void
 ) => {
+  const dispatch = useAppDispatch();
+  const { timetableId } = useScenarioContext();
   const [updateTrainSchedule] = osrdEditoastApi.endpoints.putTrainSchedulesById.useMutation();
 
   const computeUpdatedMargins = useCallback(
@@ -145,7 +154,11 @@ const useUpdateTimesStopsTable = (
           ...currentSchedule[existingItemIndex],
           reception_signal: update.value,
         });
-        return { updatedPath, updatedSchedule, updatedMargins: selectedTrain.margins };
+        return {
+          updatedPath,
+          updatedSchedule,
+          updatedMargins: selectedTrain.margins,
+        };
       }
 
       // Convert CellUpdate to OptimisticEdit (stopDuration: number → Duration)
@@ -220,7 +233,12 @@ const useUpdateTimesStopsTable = (
     const { pathStepId, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
     const modifiedRows = allRows.map((r) =>
       r.id === update.row.id
-        ? { ...r, id: pathStepId, isPathStep: true, powerRestriction: update.value }
+        ? {
+            ...r,
+            id: pathStepId,
+            isPathStep: true,
+            powerRestriction: update.value,
+          }
         : r
     );
     return {
@@ -231,6 +249,7 @@ const useUpdateTimesStopsTable = (
 
   /**
    * Handle update when the selected train is an occurrence of a PacedTrain.
+   * Uses exception-specific endpoints instead of updating the full paced train.
    */
   const updateOccurrence = useCallback(
     async (occurrenceId: OccurrenceId, update: CellUpdate): Promise<UpdateCellStatus> => {
@@ -248,12 +267,22 @@ const useUpdateTimesStopsTable = (
         throw new Error(`Parent PacedTrain not found for occurrence: ${occurrenceId}`);
       }
 
-      const originalPacedTrain = formatPacedTrainWithDetailsToPacedTrainPayload(
+      const formattedPacedTrain = formatPacedTrainWithDetailsToPacedTrainPayload(
         originalPacedTrainWithDetails
       );
-      if (!isPacedTrainBase(originalPacedTrain)) {
+      if (!isPacedTrainBase(formattedPacedTrain)) {
         throw new Error('Formatted PacedTrain is missing paced field');
       }
+      // formatPacedTrainWithDetailsToPacedTrainPayload intentionally strips exceptions
+      // (they have dedicated endpoints). Restore the actual list from timetableItemsWithDetails
+      // so lookups, diff computation, and local state updates see the full current state.
+      const originalPacedTrain: PacedTrainWithPaced = {
+        ...formattedPacedTrain,
+        paced: {
+          ...formattedPacedTrain.paced,
+          exceptions: originalPacedTrainWithDetails.paced.exceptions,
+        },
+      };
 
       // selectedTrain.train_name is the paced train's BASE name, but the
       // exception diff expects the occurrence's computed name.
@@ -288,15 +317,32 @@ const useUpdateTimesStopsTable = (
         };
       }
 
-      const updatedPacedTrain = buildPacedTrainWithUpdatedException(
-        originalPacedTrain,
-        updatedOccurrence,
+      const { generatedException, existingException, occurrenceIndex } =
+        buildOccurrenceExceptionData(originalPacedTrain, updatedOccurrence, occurrenceId);
+
+      const finalException = await syncOccurrenceException(
+        dispatch,
+        generatedException,
+        existingException,
+        occurrenceIndex,
+        pacedTrainId,
+        timetableId
+      );
+
+      const updatedExceptions = updatePacedTrainExceptionsList(
+        originalPacedTrain.paced.exceptions,
+        finalException,
         occurrenceId
       );
 
-      return persistTrain({ ...updatedPacedTrain, id: pacedTrainId });
+      return persistTrain({
+        ...originalPacedTrain,
+        id: pacedTrainId,
+        train_schedule_set_id: originalPacedTrainWithDetails.train_schedule_set_id,
+        paced: { ...originalPacedTrain.paced, exceptions: updatedExceptions },
+      });
     },
-    [selectedTrain, timetableItemsWithDetails, computeUpdatedPathAndSchedule]
+    [selectedTrain, timetableItemsWithDetails, computeUpdatedPathAndSchedule, timetableId, dispatch]
   );
 
   /**
@@ -328,7 +374,7 @@ const useUpdateTimesStopsTable = (
         start_time: result.updatedStartTime?.toISOString() ?? selectedTrain.start_time,
       });
     },
-    [selectedTrain, computeUpdatedPathAndSchedule]
+    [selectedTrain, computeUpdatedPathAndSchedule, updateTrainSchedule]
   );
 
   /**
@@ -353,7 +399,12 @@ const useUpdateTimesStopsTable = (
   // allRows updates through the entire callback chain.
   const updateArrival = useCallback(
     (row: TimesStopsRowNew, arrival: Date | null, propagationMode: PropagationMode) =>
-      updateCell({ row, field: 'requestedArrival', value: arrival, propagationMode }),
+      updateCell({
+        row,
+        field: 'requestedArrival',
+        value: arrival,
+        propagationMode,
+      }),
     [updateCell]
   );
 
@@ -365,7 +416,12 @@ const useUpdateTimesStopsTable = (
 
   const updateDeparture = useCallback(
     (row: TimesStopsRowNew, departure: Date | null, propagationMode: PropagationMode) =>
-      updateCell({ row, field: 'requestedDeparture', value: departure, propagationMode }),
+      updateCell({
+        row,
+        field: 'requestedDeparture',
+        value: departure,
+        propagationMode,
+      }),
     [updateCell]
   );
 
@@ -377,7 +433,11 @@ const useUpdateTimesStopsTable = (
 
   const updateRequestedMargin = useCallback(
     (row: TimesStopsRowNew, requestedTheoreticalMargin: MarginValue | null) =>
-      updateCell({ row, field: 'requestedTheoreticalMargin', value: requestedTheoreticalMargin }),
+      updateCell({
+        row,
+        field: 'requestedTheoreticalMargin',
+        value: requestedTheoreticalMargin,
+      }),
     [updateCell]
   );
 

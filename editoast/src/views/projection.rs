@@ -35,6 +35,7 @@ use editoast_models::Infra;
 #[derive(Debug, Deserialize, ToSchema)]
 pub struct ProjectPathForm {
     pub infra_id: i64,
+    pub timetable_id: i64,
     pub electrical_profile_set_id: Option<i64>,
     pub ids: HashSet<i64>,
     #[schema(inline, value_type = Vec<core_client::pathfinding::TrackRange>)]
@@ -44,6 +45,7 @@ pub struct ProjectPathForm {
 #[derive(Debug, Deserialize, ToSchema)]
 pub struct ProjectPathOperationalPointForm {
     pub infra_id: i64,
+    pub timetable_id: i64,
     pub electrical_profile_set_id: Option<i64>,
     pub train_ids: HashSet<i64>,
     #[schema(inline)]

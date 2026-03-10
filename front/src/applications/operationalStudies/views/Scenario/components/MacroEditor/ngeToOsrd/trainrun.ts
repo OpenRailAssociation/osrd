@@ -512,7 +512,8 @@ export const handleUpdateTimetableItem = async ({
   addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void;
   addDeletedTimetableItemIds: (timetableItemIds: number[]) => void;
 }) => {
-  const timetableItemIds = state.timetableItemIdByNgeId.get(trainrun.id)!;
+  const timetableItemIds = state.timetableItemIdByNgeId.get(trainrun.id);
+  if (!timetableItemIds) return;
   const oldForwardTimetableItem = await fetchTimetableItem(timetableItemIds[0], dispatch);
   const trainrunSections = getContinuousTrainrunSectionsByTrainrunId(netzgrafikDto, trainrun.id);
   const labels = getTrainrunLabels(netzgrafikDto, trainrun);
@@ -551,7 +552,7 @@ export const handleUpdateTimetableItem = async ({
       newForwardTrainBase,
       paced,
       oldForwardTimetableItem.paced.exceptions
-    );
+    ).exceptions;
     newForwardTrainBase.paced = paced;
   }
 
@@ -608,7 +609,7 @@ export const handleUpdateTimetableItem = async ({
         newReturnTrainBase,
         returnPaced,
         oldReturnTimetableItem.paced.exceptions
-      );
+      ).exceptions;
       newReturnTrainBase.paced = returnPaced;
     }
 

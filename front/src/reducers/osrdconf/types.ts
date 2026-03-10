@@ -66,7 +66,6 @@ export type OperationalStudiesConfState = OsrdConfState & {
   timeWindow: Duration;
   interval: Duration;
   addedExceptions: {
-    key: string;
     startTime: Date;
   }[];
   editingItemType: 'uniqueTrain' | 'pacedTrain' | 'occurrence';

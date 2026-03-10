@@ -4,10 +4,16 @@ import { useSelector } from 'react-redux';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
-import { createPacedTrains } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
+import {
+  createExceptions,
+  createPacedTrains,
+} from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import { setFailure, setSuccess } from 'reducers/main';
 import { clearAddedExceptionsList } from 'reducers/osrdconf/operationalStudiesConf';
-import { getOperationalStudiesConf } from 'reducers/osrdconf/operationalStudiesConf/selectors';
+import {
+  getOperationalStudiesConf,
+  getAddedExceptions,
+} from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
@@ -37,9 +43,10 @@ const CreateTimetableItemButton = ({
   const dispatch = useAppDispatch();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
 
-  const { workerStatus, sandboxId } = useScenarioContext();
+  const { workerStatus, sandboxId, timetableId } = useScenarioContext();
 
   const simulationConf = useSelector(getOperationalStudiesConf);
+  const addedExceptions = useSelector(getAddedExceptions);
 
   // TODO TS2 : remove this when rollingStockName will replace rollingStockId in the store
   const { rollingStock } = useStoreDataForRollingStockSelector({
@@ -52,14 +59,57 @@ const CreateTimetableItemButton = ({
     setIsWorking(true);
 
     try {
-      const payload = isPacedTrainMode
+      const newTrainSchedulePayload = isPacedTrainMode
         ? formatPacedTrainPayload(simulationConf, rollingStock!.name)
         : formatTimetableItemPayload(simulationConf, rollingStock!.name);
 
-      const formattedNewPacedTrain: TimetableItem = (
-        await createPacedTrains(dispatch, sandboxId, [payload])
+      const formattedNewTrainSchedule: TimetableItem = (
+        await createPacedTrains(dispatch, sandboxId, [newTrainSchedulePayload])
       )[0];
-      dispatch(updateSelectedTrainId(formatEditoastIdToPacedTrainId(formattedNewPacedTrain.id)));
+      dispatch(updateSelectedTrainId(formatEditoastIdToPacedTrainId(formattedNewTrainSchedule.id)));
+
+      let timetableItemToUpsert = formattedNewTrainSchedule;
+
+      const newAddedExceptions = addedExceptions.map(({ startTime: exStartTime }) => ({
+        key: '', // TODO : remove this when the key will be removed from the model
+        start_time: { value: exStartTime.toISOString() },
+      }));
+
+      if (newAddedExceptions.length > 0) {
+        const newExceptions = await createExceptions(
+          dispatch,
+          newAddedExceptions,
+          formattedNewTrainSchedule.id,
+          timetableId
+        );
+
+        // TODO : remove this part when the back will be done inserting the new exception format in TrainSchedule
+        const formattedExceptions = newExceptions.map((exceptionNewModel) => {
+          const {
+            change_groups,
+            train_schedule_id: _train_schedule_id,
+            timetable_id: _timetable_id,
+            ...restExceptions
+          } = exceptionNewModel;
+          return {
+            ...change_groups,
+            ...restExceptions,
+            // TODO_EXCEPTION: remove this when drop key in the model
+            key: '',
+          };
+        });
+
+        // Add the new exceptions to the timetable item so they contain their new exception ids
+        timetableItemToUpsert = {
+          ...formattedNewTrainSchedule,
+          ...(formattedNewTrainSchedule.paced && {
+            paced: {
+              ...formattedNewTrainSchedule.paced,
+              exceptions: formattedExceptions,
+            },
+          }),
+        };
+      }
 
       dispatch(
         setSuccess({
@@ -70,7 +120,7 @@ const CreateTimetableItemButton = ({
       if (simulationConf.editingItemType === 'pacedTrain') {
         dispatch(clearAddedExceptionsList());
       }
-      upsertTimetableItems([formattedNewPacedTrain]);
+      upsertTimetableItems([timetableItemToUpsert]);
     } catch (e) {
       dispatch(setFailure(castErrorToFailure(e)));
     } finally {
