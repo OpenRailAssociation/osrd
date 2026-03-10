@@ -482,6 +482,7 @@ mod tests {
         let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
         let mut paced_train_1 = simple_paced_train_base();
         let exception_1 = PacedTrainException {
+            id: None,
             key: "exception_key_1".into(),
             exception_type: ExceptionType::Created {},
             disabled: false,
@@ -489,6 +490,7 @@ mod tests {
         };
 
         let exception_2 = PacedTrainException {
+            id: None,
             key: "exception_key_2".into(),
             exception_type: ExceptionType::Modified {
                 occurrence_index: 1,
