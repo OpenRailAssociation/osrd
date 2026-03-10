@@ -108,9 +108,10 @@ const TimesStopsTable = ({
             return <span>&nbsp;</span>;
           }
 
-          const { stepStatus, computedArrival, isPathStep } = info.row.original;
+          const { stepStatus, computedArrival, requestedArrival, isPathStep } = info.row.original;
 
           const isSuccessSchedule =
+            requestedArrival &&
             computedArrival &&
             !(stepStatus === 'marginNotHonored') &&
             !(stepStatus === 'scheduleNotHonored');
