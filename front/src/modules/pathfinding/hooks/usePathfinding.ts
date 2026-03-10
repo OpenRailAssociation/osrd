@@ -111,8 +111,15 @@ const usePathfinding = ({
         return {
           ...step,
           ...(op.extensions?.identifier?.name && { name: op.extensions.identifier.name }),
-          ...(op.extensions?.identifier?.uic && { uic: op.extensions.identifier.uic }),
-          ...(op.extensions?.sncf?.ch && { ch: op.extensions.sncf.ch }),
+          ...(op.extensions?.identifier?.uic && {
+            location: {
+              operational_point: {
+                uic: op.extensions.identifier.uic,
+                secondary_code: op.extensions?.sncf?.ch,
+                type: 'uic',
+              },
+            },
+          }),
           ...(op.geo && { coordinates: op.geo.coordinates }),
         };
       });
