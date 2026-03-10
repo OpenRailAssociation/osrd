@@ -535,16 +535,18 @@ const TimeCell = ({ getValue, referenceDate, onCommit, ...props }: TimeCellProps
   };
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    dispatch({ type: 'BLURRED' });
-
+    // Commit first: useReducer updates are async, so we compute the clamped state
+    // ourselves rather than waiting for the BLURRED dispatch to take effect.
+    // This ensures "14:45" (no seconds) commits as "14:45:00" instead of null.
     if (onCommit && referenceDate) {
-      const newDate = buildDateFromState(state, referenceDate);
+      const newDate = buildDateFromState(computeBlurState(state), referenceDate);
       const hasChanged = newDate?.getTime() !== controlledValue?.getTime();
       if (hasChanged) {
         onCommit(newDate);
       }
     }
 
+    dispatch({ type: 'BLURRED' });
     onBlur?.(e);
   };
 
