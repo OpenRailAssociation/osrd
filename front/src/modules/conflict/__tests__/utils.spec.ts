@@ -18,7 +18,7 @@ describe('addTrainNamesToConflicts', () => {
         id: 20,
         train_name: 'PT 4567',
         category: null,
-        paced: { exceptions: [{ key: 'abc', train_name: { value: 'PT 5678/9' } }] },
+        paced: { exceptions: [{ key: '1', id: 1, train_name: { value: 'ABC' } }] },
       } as TimetableItem,
     ];
 
@@ -26,16 +26,12 @@ describe('addTrainNamesToConflicts', () => {
       train_ids: [
         { train_schedule_id: 10, type: 'base', index: 0 },
         { train_schedule_id: 20, type: 'base', index: 8 },
-        { train_schedule_id: 20, type: 'created', exception_key: 'abc' },
+        { train_schedule_id: 20, type: 'created', exception_id: 1 },
       ],
     });
 
     const [enriched] = addTrainNamesToConflicts([conflict], trains);
-    expect(enriched.trainsData.map((train) => train.name)).toEqual([
-      'TS 1234',
-      'PT 4583',
-      'PT 5678/9',
-    ]);
+    expect(enriched.trainsData.map((train) => train.name)).toEqual(['TS 1234', 'PT 4583', 'ABC']);
   });
 });
 

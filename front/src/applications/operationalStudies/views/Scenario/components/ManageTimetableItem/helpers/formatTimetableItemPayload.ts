@@ -1,23 +1,16 @@
 import { compact } from 'lodash';
-import { v4 as uuidV4 } from 'uuid';
 
 import type { PacedTrainWithPaced } from 'applications/operationalStudies/types';
-import type { TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { PacedTrainException, TrainSchedule } from 'common/api/osrdEditoastApi';
 import getStepLocation from 'modules/pathfinding/helpers/getStepLocation';
-import {
-  findExceptionWithOccurrenceId,
-  isPacedTrainBase,
-} from 'modules/timetableItem/helpers/pacedTrain';
+import { isPacedTrainBase } from 'modules/timetableItem/helpers/pacedTrain';
 import type { PacedTrainWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItemToEditData, OperationalStudiesConfState } from 'reducers/osrdconf/types';
 import { kmhToMs } from 'utils/physics';
 import { extractOccurrenceIndexFromOccurrenceId, isIndexedOccurrenceId } from 'utils/trainId';
+import type { NonNullableObject } from 'utils/types';
 
-import {
-  generatePacedTrainException,
-  updatePacedTrainExceptionsList,
-  checkChangeGroups,
-} from './buildPacedTrainException';
+import { generatePacedTrainException } from './buildPacedTrainException';
 import formatMargin from './formatMargin';
 import formatSchedule from './formatSchedule';
 
@@ -68,7 +61,9 @@ export function formatPacedTrainWithDetailsToPacedTrainPayload(
       ? {
           time_window: pacedTrainWithDetails.paced.timeWindow.toISOString(),
           interval: pacedTrainWithDetails.paced.interval.toISOString(),
-          exceptions: pacedTrainWithDetails.paced.exceptions,
+          // This data is used as payload to create/update train schedule and shouldn't have exceptions inside
+          // since exceptions have their own endpoints for that
+          exceptions: [],
         }
       : undefined,
     path: pacedTrainWithDetails.path,
@@ -83,99 +78,77 @@ export function formatPacedTrainWithDetailsToPacedTrainPayload(
 }
 
 /**
- * Used when creating and editing a paced train
- * @param osrdconf pace train fields that were modified by user
- * @param timetableItemToEditData the existing paced train we’re editing
+ * Used when editing an occurrence of a paced train.
+ * Generates the exception diff for the occurrence being modified and returns it
+ * alongside the existing exception if any.
+ * The caller is responsible for creating/updating the exception and updating the list.
+ */
+export function formatOccurrenceException(
+  osrdconf: OperationalStudiesConfState,
+  rollingStockName: string,
+  timetableItemToEditData: NonNullableObject<TimetableItemToEditData, 'occurrenceId'>
+): {
+  generatedException: Omit<PacedTrainException, 'key' | 'occurrence_index'>;
+  occurrenceIndex: number | undefined;
+} {
+  const baseTrain = formatTimetableItemPayload(osrdconf, rollingStockName);
+
+  const newPacedTrain: Omit<PacedTrainWithPaced, 'train_schedule_set_id'> = {
+    ...baseTrain,
+    paced: {
+      time_window: osrdconf.timeWindow.toISOString(),
+      interval: osrdconf.interval.toISOString(),
+      exceptions: [],
+    },
+  };
+
+  const originalPacedTrain = formatPacedTrainWithDetailsToPacedTrainPayload(
+    timetableItemToEditData.originalPacedTrain
+  );
+
+  if (!isPacedTrainBase(originalPacedTrain))
+    throw new Error(
+      `PacedTrain payload (built from train ${timetableItemToEditData.originalPacedTrain.id}) should have a paced field.`
+    );
+
+  const { occurrenceId } = timetableItemToEditData;
+
+  const occurrenceIndex = isIndexedOccurrenceId(occurrenceId)
+    ? extractOccurrenceIndexFromOccurrenceId(occurrenceId)
+    : undefined;
+
+  const generatedException = generatePacedTrainException(
+    newPacedTrain,
+    originalPacedTrain,
+    occurrenceIndex
+  );
+
+  return { generatedException, occurrenceIndex };
+}
+
+/**
+ * Used when creating and editing a paced train (not an occurrence).
+ * @param osrdconf paced train fields that were modified by user
  */
 export function formatPacedTrainPayload(
   osrdconf: OperationalStudiesConfState,
   // TODO TS2 : remove this when rollingStockName will replace rollingStockId in the store
-  rollingStockName: string,
-  timetableItemToEditData?: TimetableItemToEditData
+  rollingStockName: string
 ): TrainSchedule {
   const baseTrain = formatTimetableItemPayload(osrdconf, rollingStockName);
 
   if (osrdconf.editingItemType === 'uniqueTrain') return baseTrain;
 
-  const exceptions = osrdconf.addedExceptions.map(({ key, startTime }) => ({
-    key,
-    start_time: { value: startTime.toISOString() },
-  }));
-  let newPacedTrain: Omit<PacedTrainWithPaced, 'train_schedule_set_id'> = {
+  const newPacedTrain: Omit<PacedTrainWithPaced, 'train_schedule_set_id'> = {
     ...baseTrain,
     paced: {
       time_window: osrdconf.timeWindow.toISOString(),
       interval: osrdconf.interval.toISOString(),
-      exceptions,
+      // This data is used as payload to create/update train schedule and shouldn't have exceptions inside
+      // since exceptions have their own endpoints for that
+      exceptions: [],
     },
   };
 
-  if (timetableItemToEditData && timetableItemToEditData.originalPacedTrain.paced) {
-    const originalPacedTrain = formatPacedTrainWithDetailsToPacedTrainPayload(
-      timetableItemToEditData.originalPacedTrain
-    );
-    if (!isPacedTrainBase(originalPacedTrain))
-      throw new Error(
-        `PacedTrain payload (built from train ${timetableItemToEditData.originalPacedTrain.id}) should have a paced field.`
-      );
-
-    // ========== user modified an occurrence ==========
-    if (timetableItemToEditData.occurrenceId) {
-      const occurrenceIndex = isIndexedOccurrenceId(timetableItemToEditData.occurrenceId)
-        ? extractOccurrenceIndexFromOccurrenceId(timetableItemToEditData.occurrenceId)
-        : undefined;
-
-      const baseException = generatePacedTrainException(
-        newPacedTrain, // contains occurrence changes
-        originalPacedTrain,
-        occurrenceIndex
-      );
-
-      const existingException = findExceptionWithOccurrenceId(
-        originalPacedTrain.paced.exceptions,
-        timetableItemToEditData.occurrenceId
-      );
-
-      const updatedExceptions = updatePacedTrainExceptionsList(
-        originalPacedTrain.paced.exceptions,
-        {
-          ...baseException,
-          key: existingException?.key ?? uuidV4(),
-          occurrence_index: occurrenceIndex,
-        },
-        timetableItemToEditData.occurrenceId
-      );
-      // If we are updating an occurrence, we want to send the exact same original paced train
-      // with only its exceptions updated
-      newPacedTrain = {
-        ...originalPacedTrain,
-        paced: { ...originalPacedTrain.paced, exceptions: updatedExceptions },
-      };
-      // ========== user modified the whole paced train ==========
-    } else {
-      const hasPacedTrainSettingsChanged =
-        osrdconf.timeWindow.toISOString() !==
-          timetableItemToEditData.originalPacedTrain.paced.timeWindow.toISOString() ||
-        osrdconf.interval.toISOString() !==
-          timetableItemToEditData.originalPacedTrain.paced.interval.toISOString();
-
-      // Reset all exceptions if the paced train settings have changed
-      const newExceptionList = !hasPacedTrainSettingsChanged
-        ? [
-            ...checkChangeGroups(
-              newPacedTrain,
-              newPacedTrain.paced,
-              originalPacedTrain.paced.exceptions
-            ),
-            ...newPacedTrain.paced.exceptions,
-          ]
-        : [];
-
-      newPacedTrain = {
-        ...newPacedTrain,
-        paced: { ...newPacedTrain.paced, exceptions: newExceptionList },
-      };
-    }
-  }
   return newPacedTrain;
 }

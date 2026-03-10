@@ -7,8 +7,8 @@ use chrono::Utc;
 use editoast_derive::Model;
 use itertools::Itertools;
 use schemas;
+use schemas::TrainScheduleException;
 use schemas::paced_train;
-use schemas::paced_train::ExceptionType;
 use schemas::paced_train::Paced;
 use schemas::paced_train::PacedTrainException;
 use schemas::rolling_stock::TrainCategory;
@@ -60,56 +60,98 @@ pub struct TrainSchedule {
     pub main_category: Option<TrainMainCategory>,
     /// Sub category code
     pub sub_category: Option<String>,
-    #[model(json)]
-    pub exceptions: Vec<PacedTrainException>,
+}
+
+/// Transforms the TrainSchedule database type into a paced_train::TrainSchedule schema with exceptions.
+pub fn train_schedule_schema_from_model(
+    train_schedule: TrainSchedule,
+    exceptions: Vec<PacedTrainException>,
+) -> paced_train::TrainSchedule {
+    paced_train::TrainSchedule {
+        train_occurrence: TrainOccurrence {
+            train_name: train_schedule.train_name,
+            labels: train_schedule.labels.to_vec(),
+            rolling_stock_name: train_schedule.rolling_stock_name,
+            start_time: train_schedule.start_time,
+            schedule: train_schedule.schedule,
+            margins: train_schedule.margins,
+            initial_speed: train_schedule.initial_speed,
+            comfort: train_schedule.comfort,
+            path: train_schedule.path,
+            constraint_distribution: train_schedule.constraint_distribution,
+            speed_limit_tag: train_schedule.speed_limit_tag.map(Into::into),
+            power_restrictions: train_schedule.power_restrictions,
+            options: train_schedule.options,
+            category: train_schedule
+                .main_category
+                .map(|main_category| TrainCategory::main(main_category.0))
+                .xor(train_schedule.sub_category.map(TrainCategory::sub)),
+        },
+        paced: train_schedule.time_window.and_then(|time_window| {
+            train_schedule.interval.map(|interval| Paced {
+                time_window: time_window.try_into().unwrap(),
+                interval: interval.try_into().unwrap(),
+                exceptions,
+            })
+        }),
+    }
 }
 
 impl TrainSchedule {
-    pub fn apply_exception(&self, exception: &PacedTrainException) -> TrainOccurrence {
-        let mut train_schedule = self.clone().into_train_occurrence();
+    pub fn is_exception_occurrence_index_valid(&self, occurrence_index: i64) -> bool {
+        usize::try_from(occurrence_index)
+            .is_ok_and(|i| (0..self.num_base_occurrences()).contains(&i))
+    }
+
+    pub fn apply_train_schedule_exception(
+        &self,
+        exception: &TrainScheduleException,
+    ) -> TrainOccurrence {
+        let mut train_occurrence = self.clone().into_train_occurrence();
 
         if let Some(change_group) = &exception.change_groups.train_name {
-            train_schedule.train_name = change_group.value.clone();
+            train_occurrence.train_name = change_group.value.clone();
         }
         if let Some(change_group) = &exception.change_groups.rolling_stock {
-            train_schedule.comfort = change_group.comfort;
-            train_schedule.rolling_stock_name = change_group.rolling_stock_name.clone();
+            train_occurrence.comfort = change_group.comfort;
+            train_occurrence.rolling_stock_name = change_group.rolling_stock_name.clone();
         }
         if let Some(change_group) = &exception.change_groups.rolling_stock_category {
-            train_schedule.category = change_group.value.clone();
+            train_occurrence.category = change_group.value.clone();
         }
         if let Some(change_group) = &exception.change_groups.labels {
-            train_schedule.labels = change_group.value.clone();
+            train_occurrence.labels = change_group.value.clone();
         }
         if let Some(change_group) = &exception.change_groups.speed_limit_tag {
-            train_schedule.speed_limit_tag = change_group.value.clone();
+            train_occurrence.speed_limit_tag = change_group.value.clone();
         }
         if let Some(change_group) = &exception.change_groups.start_time {
-            train_schedule.start_time = change_group.value
+            train_occurrence.start_time = change_group.value
         }
-        if let (ExceptionType::Modified { occurrence_index }, None) = (
-            &exception.exception_type,
+        if let (Some(occurrence_index), None) = (
+            &exception.occurrence_index,
             &exception.change_groups.start_time,
         ) {
-            train_schedule.start_time = self.get_occurrence_start_time(*occurrence_index);
+            train_occurrence.start_time =
+                self.get_occurrence_start_time(*occurrence_index as usize);
         }
         if let Some(change_group) = &exception.change_groups.constraint_distribution {
-            train_schedule.constraint_distribution = change_group.value;
+            train_occurrence.constraint_distribution = change_group.value;
         }
         if let Some(change_group) = &exception.change_groups.initial_speed {
-            train_schedule.initial_speed = change_group.value;
+            train_occurrence.initial_speed = change_group.value;
         }
         if let Some(change_group) = &exception.change_groups.options {
-            train_schedule.options = change_group.value.clone();
+            train_occurrence.options = change_group.value.clone();
         }
         if let Some(change_group) = &exception.change_groups.path_and_schedule {
-            train_schedule.margins = change_group.margins.clone();
-            train_schedule.path = change_group.path.clone();
-            train_schedule.power_restrictions = change_group.power_restrictions.clone();
-            train_schedule.schedule = change_group.schedule.clone();
+            train_occurrence.margins = change_group.margins.clone();
+            train_occurrence.path = change_group.path.clone();
+            train_occurrence.power_restrictions = change_group.power_restrictions.clone();
+            train_occurrence.schedule = change_group.schedule.clone();
         }
 
-        train_schedule
+        train_occurrence
     }
 
     pub fn into_train_occurrence(self) -> TrainOccurrence {
@@ -132,21 +174,6 @@ impl TrainSchedule {
                 .map(|main_category| TrainCategory::main(main_category.0))
                 .xor(self.sub_category.map(TrainCategory::sub)),
         }
-    }
-
-    /// Returns an iterator over "created" train exceptions with their IDs and schedules.
-    fn get_created_occurrences_exceptions(
-        &self,
-    ) -> impl Iterator<Item = (OccurrenceId, TrainOccurrence)> {
-        self.exceptions
-            .iter()
-            .filter(|exception| matches!(exception.exception_type, ExceptionType::Created { .. }))
-            .map(|exception| {
-                (
-                    OccurrenceId::new_created(self.id, exception.key.clone()),
-                    self.apply_exception(exception),
-                )
-            })
     }
 
     /// Returns the start time of the occurrence at the given index.
@@ -174,56 +201,6 @@ impl TrainSchedule {
             .collect()
     }
 
-    /// Returns an iterator over all train occurrences, including:
-    /// - base occurrences, minus the ones disabled by a modified exception
-    /// - occurrences modified by exceptions (which replace a base one)
-    /// - occurrences created by exceptions (additional trains)
-    ///
-    /// If it's not a paced train (i.e., no time window), this will return the single train schedule.
-    ///
-    /// This function replaces any base occurrence that has a `Modified` exception,
-    /// and appends any `Created` exceptions as new trains.
-    ///
-    /// The result is sorted by `start_time` to reflect the chronological order of the trains.
-    pub fn iter_occurrences(&self) -> impl Iterator<Item = (OccurrenceId, TrainOccurrence)> {
-        let mut base_occurrences = self.get_base_occurrences();
-
-        let modified_exceptions = self
-            .exceptions
-            .iter()
-            .filter_map(|e| match e.exception_type {
-                ExceptionType::Modified { occurrence_index } => Some((occurrence_index, e)),
-                _ => None,
-            });
-
-        let mut to_remove = vec![false; base_occurrences.len()];
-        // Modify corresponding occurrences.
-        for (occurrence_index, exception) in modified_exceptions {
-            if let Some(occurrence) = base_occurrences.get_mut(occurrence_index) {
-                if exception.disabled {
-                    to_remove[occurrence_index] = true;
-                } else {
-                    let occurrence_id = OccurrenceId::new_modified(
-                        self.id,
-                        occurrence_index,
-                        exception.key.clone(),
-                    );
-                    *occurrence = (occurrence_id, self.apply_exception(exception));
-                }
-            }
-        }
-        // Remove disabled occurrences.
-        let occurrences = base_occurrences
-            .into_iter()
-            .zip(to_remove)
-            .filter_map(|(occ, disabled)| if disabled { None } else { Some(occ) });
-
-        occurrences
-            .into_iter()
-            .chain(self.get_created_occurrences_exceptions())
-            .sorted_by_key(|(_, ts)| ts.start_time)
-    }
-
     /// Returns time window and interval when this train has paced occurrences.
     pub fn pace(&self) -> Option<(ChronoDuration, ChronoDuration)> {
         self.time_window.zip(self.interval)
@@ -246,6 +223,81 @@ impl TrainSchedule {
         } else {
             1
         }
+    }
+
+    /// Returns an iterator over "created" train exceptions with their IDs and schedules.
+    fn get_created_occurrences_exceptions(
+        &self,
+        exceptions: &[TrainScheduleException],
+    ) -> impl Iterator<Item = (OccurrenceId, TrainOccurrence)> {
+        exceptions
+            .iter()
+            .filter(|exception| exception.occurrence_index.is_none())
+            .map(|exception| {
+                (
+                    OccurrenceId::new_created(self.id, exception.id),
+                    self.apply_train_schedule_exception(exception),
+                )
+            })
+    }
+
+    /// Returns an iterator over all train occurrences, including:
+    /// - base occurrences, minus the ones disabled by a modified exception
+    /// - occurrences modified by exceptions (which replace a base one)
+    /// - occurrences created by exceptions (additional trains)
+    ///
+    /// If it's not a paced train (i.e., no time window), this will return the single train schedule.
+    ///
+    /// This function replaces any base occurrence that has a `Modified` exception,
+    /// and appends any `Created` exceptions as new trains.
+    ///
+    /// The result is sorted by `start_time` to reflect the chronological order of the trains.
+    pub fn iter_occurrences(
+        &self,
+        exceptions: &[TrainScheduleException],
+    ) -> impl Iterator<Item = (OccurrenceId, TrainOccurrence)> {
+        let mut base_occurrences = self.get_base_occurrences();
+
+        let modified_exceptions = exceptions.iter().filter_map(|e| {
+            e.occurrence_index
+                .map(|occurrence_index| (occurrence_index, e))
+        });
+
+        let mut to_remove = vec![false; base_occurrences.len()];
+        // Modify corresponding occurrences.
+        for (occurrence_index, exception) in modified_exceptions {
+            if let Some(occurrence) = base_occurrences.get_mut(occurrence_index as usize) {
+                if exception.disabled {
+                    to_remove[occurrence_index as usize] = true;
+                } else {
+                    let occurrence_id = OccurrenceId::new_modified(
+                        self.id,
+                        occurrence_index as usize,
+                        exception.id,
+                    );
+                    *occurrence = (
+                        occurrence_id,
+                        self.apply_train_schedule_exception(exception),
+                    );
+                }
+            }
+        }
+        // Remove disabled occurrences.
+        let occurrences = base_occurrences
+            .into_iter()
+            .zip(to_remove)
+            .filter_map(|(occ, disabled)| if disabled { None } else { Some(occ) });
+
+        occurrences
+            .into_iter()
+            .chain(self.get_created_occurrences_exceptions(exceptions))
+            .sorted_by_key(|(_, ts)| ts.start_time)
+    }
+
+    /// Determines whether the pace (time window and interval) of the train schedule is the same as the given pace.
+    pub fn has_same_pace(&self, paced: &Option<Paced>) -> bool {
+        self.interval == paced.as_ref().map(|p| p.interval.into())
+            && self.time_window == paced.as_ref().map(|p| p.time_window.into())
     }
 }
 
@@ -276,8 +328,7 @@ impl From<paced_train::TrainSchedule> for TrainScheduleChangeset {
                     .map(|p| p.time_window)
                     .map(ChronoDuration::from),
             )
-            .interval(paced.as_ref().map(|p| p.interval).map(ChronoDuration::from))
-            .exceptions(paced.map(|p| p.exceptions).unwrap_or_default());
+            .interval(paced.as_ref().map(|p| p.interval).map(ChronoDuration::from));
 
         match train_occurrence.category {
             Some(TrainCategory::Main { main_category }) => changeset
@@ -287,39 +338,6 @@ impl From<paced_train::TrainSchedule> for TrainScheduleChangeset {
                 .sub_category(Some(sub_category_code))
                 .main_category(None),
             None => changeset.sub_category(None).main_category(None),
-        }
-    }
-}
-
-impl From<TrainSchedule> for paced_train::TrainSchedule {
-    fn from(train_schedule: TrainSchedule) -> Self {
-        Self {
-            train_occurrence: schemas::TrainOccurrence {
-                train_name: train_schedule.train_name,
-                labels: train_schedule.labels.to_vec(),
-                rolling_stock_name: train_schedule.rolling_stock_name,
-                start_time: train_schedule.start_time,
-                schedule: train_schedule.schedule,
-                margins: train_schedule.margins,
-                initial_speed: train_schedule.initial_speed,
-                comfort: train_schedule.comfort,
-                path: train_schedule.path,
-                constraint_distribution: train_schedule.constraint_distribution,
-                speed_limit_tag: train_schedule.speed_limit_tag.map(Into::into),
-                power_restrictions: train_schedule.power_restrictions,
-                options: train_schedule.options,
-                category: train_schedule
-                    .main_category
-                    .map(|main_category| TrainCategory::main(main_category.0))
-                    .xor(train_schedule.sub_category.map(TrainCategory::sub)),
-            },
-            paced: train_schedule.time_window.and_then(|time_window| {
-                train_schedule.interval.map(|interval| Paced {
-                    time_window: time_window.try_into().unwrap(),
-                    interval: interval.try_into().unwrap(),
-                    exceptions: train_schedule.exceptions,
-                })
-            }),
         }
     }
 }
@@ -336,11 +354,11 @@ pub enum OccurrenceId {
     Modified {
         train_schedule_id: i64,
         index: usize,
-        exception_key: String,
+        exception_id: i64,
     },
     Created {
         train_schedule_id: i64,
-        exception_key: String,
+        exception_id: i64,
     },
 }
 
@@ -354,19 +372,19 @@ impl OccurrenceId {
     }
 
     /// Create a new `Occurrence::Modified` without an exception key.
-    pub fn new_modified(id: i64, index: usize, exception_key: String) -> Self {
+    pub fn new_modified(id: i64, index: usize, exception_id: i64) -> Self {
         OccurrenceId::Modified {
             train_schedule_id: id,
             index,
-            exception_key,
+            exception_id,
         }
     }
 
     /// Creates a new `Occurrence::Created`.
-    pub fn new_created(id: i64, exception_key: String) -> Self {
+    pub fn new_created(id: i64, exception_id: i64) -> Self {
         OccurrenceId::Created {
             train_schedule_id: id,
-            exception_key,
+            exception_id,
         }
     }
 }
@@ -381,14 +399,12 @@ impl Display for OccurrenceId {
             OccurrenceId::Modified {
                 train_schedule_id: id,
                 index,
-                exception_key,
-            } => write!(f, "{}@{}#{}", id, exception_key, index),
+                exception_id,
+            } => write!(f, "{}@{}#{}", id, exception_id, index),
             OccurrenceId::Created {
                 train_schedule_id: id,
-                exception_key,
-            } => {
-                write!(f, "{}@{}", id, exception_key)
-            }
+                exception_id,
+            } => write!(f, "{}@{}", id, exception_id),
         }
     }
 }
@@ -411,6 +427,20 @@ mod tests {
     use rstest::rstest;
     use schemas::TrainScheduleExceptionChangeGroups;
 
+    use crate::models::fixtures::create_timetable;
+    use crate::models::fixtures::simple_paced_train_changeset;
+    use crate::models::fixtures::simple_sub_category;
+    use crate::prelude::*;
+    use chrono::DateTime;
+    use chrono::Utc;
+    use database::DbConnectionPoolV2;
+    use editoast_models::TrainScheduleException;
+    use editoast_models::prelude::*;
+    use editoast_models::rolling_stock::TrainMainCategory;
+    use editoast_models::tags::Tags;
+    use pretty_assertions::assert_eq;
+    use rstest::rstest;
+    use schemas::TrainScheduleExceptionChangeGroups;
     use schemas::infra::TrackOffset;
     use schemas::paced_train::ConstraintDistributionChangeGroup;
     use schemas::paced_train::ExceptionType;
@@ -440,116 +470,6 @@ mod tests {
     use schemas::train_schedule::ScheduleItem;
     use schemas::train_schedule::TrainScheduleOptions;
 
-    use crate::prelude::*;
-
-    fn create_created_exception_with_change_groups(key: &str) -> PacedTrainException {
-        PacedTrainException {
-            key: key.into(),
-            exception_type: ExceptionType::Created {},
-            disabled: false,
-            change_groups: TrainScheduleExceptionChangeGroups {
-                train_name: Some(TrainNameChangeGroup {
-                    value: "created_exception_train_name".into(),
-                }),
-                constraint_distribution: Some(ConstraintDistributionChangeGroup {
-                    value: Distribution::Mareco,
-                }),
-                initial_speed: Some(InitialSpeedChangeGroup { value: 10.0 }),
-                labels: Some(LabelsChangeGroup {
-                    value: vec!["Label 1".to_string(), "Label 3".to_string()],
-                }),
-                options: Some(OptionsChangeGroup {
-                    value: TrainScheduleOptions::default(),
-                }),
-                path_and_schedule: Some(PathAndScheduleChangeGroup {
-                    power_restrictions: vec![],
-                    schedule: vec![
-                        ScheduleItem {
-                            at: NonBlankString("aa".to_string()),
-                            ..Default::default()
-                        },
-                        ScheduleItem {
-                            at: NonBlankString("bb".to_string()),
-                            ..Default::default()
-                        },
-                        ScheduleItem {
-                            at: NonBlankString("cc".to_string()),
-                            ..Default::default()
-                        },
-                        ScheduleItem {
-                            at: NonBlankString("dd".to_string()),
-                            ..Default::default()
-                        },
-                    ],
-                    path: vec![
-                        PathItem {
-                            id: "aa".into(),
-                            location: PathItemLocation::TrackOffset(TrackOffset {
-                                offset: 300,
-                                track: Identifier("TC0".to_string()),
-                            }),
-                        },
-                        PathItem {
-                            id: "bb".into(),
-                            location: PathItemLocation::OperationalPointPartReference(
-                                OperationalPointPartReference {
-                                    operational_point: OperationalPointReference::Id {
-                                        operational_point: Identifier(
-                                            "Mid_East_station".to_string(),
-                                        ),
-                                    },
-                                    local_track_name: None,
-                                },
-                            ),
-                        },
-                        PathItem {
-                            id: "cc".into(),
-                            location: PathItemLocation::TrackOffset(TrackOffset {
-                                offset: 300,
-                                track: Identifier("TC1".to_string()),
-                            }),
-                        },
-                        PathItem {
-                            id: "dd".into(),
-                            location: PathItemLocation::TrackOffset(TrackOffset {
-                                offset: 300,
-                                track: Identifier("TC2".to_string()),
-                            }),
-                        },
-                    ],
-                    margins: Margins {
-                        boundaries: vec![],
-                        values: vec![MarginValue::Percentage(5.0)],
-                    },
-                }),
-                rolling_stock: Some(RollingStockChangeGroup {
-                    rolling_stock_name: "simulation_rolling_stock".into(),
-                    comfort: Comfort::AirConditioning,
-                }),
-                rolling_stock_category: Some(RollingStockCategoryChangeGroup { value: None }),
-                speed_limit_tag: Some(SpeedLimitTagChangeGroup {
-                    value: Some(NonBlankString("GB".into())),
-                }),
-                start_time: Some(StartTimeChangeGroup {
-                    value: DateTime::<Utc>::from_str("2025-05-15T15:10:00+02:00").unwrap(),
-                }),
-            },
-        }
-    }
-
-    fn create_modified_exception_with_change_groups(
-        key: &str,
-        occurrence_index: usize,
-    ) -> PacedTrainException {
-        let mut exception = create_created_exception_with_change_groups(key);
-        exception.exception_type = ExceptionType::Modified { occurrence_index };
-        exception.change_groups.start_time = None;
-        exception.change_groups.train_name = Some(TrainNameChangeGroup {
-            value: "modified_exception_train_name".to_string(),
-        });
-        exception
-    }
-
     fn simple_paced_train_base() -> schemas::paced_train::TrainSchedule {
         schemas::paced_train::TrainSchedule {
             train_occurrence: schemas::TrainOccurrence::fake(),
@@ -574,7 +494,7 @@ mod tests {
             .train_schedule_set_id(train_schedule_set_id)
     }
 
-    fn create_paced_train(exceptions: Vec<PacedTrainException>) -> TrainSchedule {
+    pub fn create_paced_train() -> TrainSchedule {
         TrainSchedule {
             id: 1,
             train_schedule_set_id: 1,
@@ -600,36 +520,118 @@ mod tests {
             time_window: chrono::Duration::try_hours(2),
             interval: chrono::Duration::try_minutes(30),
             sub_category: None,
-            exceptions,
         }
     }
 
-    fn simple_sub_category(
-        code: &str,
-        main_category: crate::rolling_stock::TrainMainCategory,
-    ) -> Changeset<SubCategory> {
-        SubCategory::changeset()
-            .code(code.to_string())
-            .name(code.to_uppercase())
-            .main_category(main_category)
-            .color("#ff0000".parse::<SubCategoryColor>().unwrap())
-            .background_color("#ff2200".parse::<SubCategoryColor>().unwrap())
-            .hovered_color("#ff4400".parse::<SubCategoryColor>().unwrap())
+    #[rstest]
+    #[case(
+        chrono::Duration::try_hours(2),
+        chrono::Duration::try_minutes(30),
+        0,
+        true
+    )]
+    #[case(
+        chrono::Duration::try_hours(2),
+        chrono::Duration::try_minutes(30),
+        1,
+        true
+    )]
+    #[case(
+        chrono::Duration::try_hours(2),
+        chrono::Duration::try_minutes(30),
+        3,
+        true
+    )]
+    #[case(
+        chrono::Duration::try_hours(2),
+        chrono::Duration::try_minutes(30),
+        4,
+        false
+    )]
+    #[case(
+        chrono::Duration::try_hours(2),
+        chrono::Duration::try_minutes(30),
+        100,
+        false
+    )]
+    #[case(chrono::Duration::try_hours(2), chrono::Duration::try_minutes(30), -1, false)]
+    #[case(
+        chrono::Duration::try_seconds(120),
+        chrono::Duration::try_seconds(50),
+        3,
+        false
+    )]
+    #[case(
+        chrono::Duration::try_minutes(60),
+        chrono::Duration::try_minutes(25),
+        2,
+        true
+    )]
+    #[case(
+        chrono::Duration::try_minutes(60),
+        chrono::Duration::try_minutes(25),
+        3,
+        false
+    )]
+    fn train_schedule_is_exception_occurrence_index_invalid(
+        #[case] time_window: Option<chrono::Duration>,
+        #[case] interval: Option<chrono::Duration>,
+        #[case] occurrence_index: i64,
+        #[case] expected_valid: bool,
+    ) {
+        let mut train_schedule = create_paced_train();
+        train_schedule.time_window = time_window;
+        train_schedule.interval = interval;
+        assert_eq!(
+            train_schedule.is_exception_occurrence_index_valid(occurrence_index),
+            expected_valid
+        );
+    }
+
+    #[test]
+    fn has_same_pace_when_nothing_changed() {
+        let train_schedule = create_paced_train();
+        let train_schedule_update: schemas::paced_train::TrainSchedule =
+            train_schedule_schema_from_model(create_paced_train(), vec![]);
+        assert!(train_schedule.has_same_pace(&train_schedule_update.paced));
+    }
+
+    #[test]
+    fn has_not_same_pace_when_interval_changed() {
+        let train_schedule = create_paced_train();
+        let mut train_schedule_update: schemas::paced_train::TrainSchedule =
+            train_schedule_schema_from_model(create_paced_train(), vec![]);
+        train_schedule_update.paced.as_mut().unwrap().interval =
+            chrono::Duration::minutes(60).try_into().unwrap();
+        assert!(!train_schedule.has_same_pace(&train_schedule_update.paced));
+    }
+
+    #[test]
+    fn has_not_same_pace_when_time_window_changed() {
+        let train_schedule = create_paced_train();
+        let mut train_schedule_update: schemas::paced_train::TrainSchedule =
+            train_schedule_schema_from_model(create_paced_train(), vec![]);
+        train_schedule_update.paced.as_mut().unwrap().time_window =
+            chrono::Duration::hours(4).try_into().unwrap();
+        assert!(!train_schedule.has_same_pace(&train_schedule_update.paced));
     }
 
     #[tokio::test]
     async fn paced_train_main_category_apply_exception() {
-        let mut exception = create_created_exception_with_change_groups("key_1");
-
-        exception.change_groups.rolling_stock_category = Some(RollingStockCategoryChangeGroup {
-            value: Some(schemas::rolling_stock::TrainCategory::Main {
-                main_category: schemas::rolling_stock::TrainMainCategory::FastFreightTrain,
+        let mut exception = TrainScheduleException::fixture_created("key_1", None);
+        exception.change_groups = TrainScheduleExceptionChangeGroups {
+            rolling_stock_category: Some(RollingStockCategoryChangeGroup {
+                value: Some(schemas::rolling_stock::TrainCategory::Main {
+                    main_category: schemas::rolling_stock::TrainMainCategory::FastFreightTrain,
+                }),
             }),
-        });
+            ..Default::default()
+        };
 
         // The paced train has HighSpeedTrain
-        let paced_train = create_paced_train(vec![exception.clone()]);
-        let paced_train_exception = paced_train.apply_exception(&exception);
+        let paced_train = create_paced_train();
+
+        let paced_train_exception = paced_train.apply_train_schedule_exception(&exception.into());
 
         // Check if it get replaced by exception category
         assert_eq!(
@@ -642,12 +644,13 @@ mod tests {
 
     #[rstest]
     #[tokio::test]
-    #[case::created(create_created_exception_with_change_groups("key_1"))]
+    #[case::created(TrainScheduleException::fixture_created("key_1", None))]
     #[tokio::test]
-    #[case::modified(create_modified_exception_with_change_groups("key_2", 0))]
-    async fn paced_train_apply_exception(#[case] exception: PacedTrainException) {
-        let paced_train = create_paced_train(vec![exception.clone()]);
-        let paced_train_exception = paced_train.apply_exception(&exception);
+    #[case::modified(TrainScheduleException::fixture_created("key_2", Some(0)))]
+    async fn paced_train_apply_exception(#[case] exception: TrainScheduleException) {
+        let exception: schemas::TrainScheduleException = exception.into();
+        let paced_train = create_paced_train();
+        let paced_train_exception = paced_train.apply_train_schedule_exception(&exception);
 
         assert_eq!(
             paced_train_exception.train_name,
@@ -732,29 +735,58 @@ mod tests {
 
     #[tokio::test]
     async fn num_base_occurrences_without_exceptions() {
-        let paced_train = create_paced_train(vec![]);
+        let paced_train = create_paced_train();
         assert_eq!(paced_train.num_base_occurrences(), 4);
     }
 
     #[tokio::test]
     async fn num_base_occurrences_with_exceptions() {
-        let paced_train = create_paced_train(vec![
-            create_created_exception_with_change_groups("key_2"),
-            create_modified_exception_with_change_groups("key_1", 0),
-        ]);
+        let paced_train = create_paced_train();
         assert_eq!(paced_train.num_base_occurrences(), 4);
     }
 
     #[tokio::test]
     async fn iter_occurrences_with_exceptions() {
-        let exception_1 = create_modified_exception_with_change_groups("key_1", 1);
-        let exception_2 = create_created_exception_with_change_groups("key_2");
-        let mut exception_3 = create_modified_exception_with_change_groups("key_3", 0);
-        exception_3.disabled = true;
+        let exception_1: schemas::TrainScheduleException = TrainScheduleException {
+            id: 1,
+            timetable_id: 1,
+            train_schedule_id: 1,
+            key: Some("key_1".into()),
+            occurrence_index: Some(1),
+            disabled: false,
+            change_groups: TrainScheduleExceptionChangeGroups::fixture_modified(),
+        }
+        .into();
 
-        let paced_train =
-            create_paced_train(vec![exception_1.clone(), exception_2.clone(), exception_3]);
-        let occurrences: Vec<_> = paced_train.iter_occurrences().collect();
+        let exception_2: schemas::TrainScheduleException = TrainScheduleException {
+            id: 2,
+            timetable_id: 1,
+            train_schedule_id: 1,
+            key: Some("key_2".into()),
+            occurrence_index: None,
+            disabled: false,
+            change_groups: TrainScheduleExceptionChangeGroups::fixture_created(),
+        }
+        .into();
+        let exception_3: schemas::TrainScheduleException = TrainScheduleException {
+            id: 3,
+            timetable_id: 1,
+            train_schedule_id: 1,
+            key: Some("key_3".into()),
+            occurrence_index: Some(0),
+            disabled: true,
+            change_groups: TrainScheduleExceptionChangeGroups::fixture_modified(),
+        }
+        .into();
+
+        let paced_train = create_paced_train();
+        let exceptions: Vec<schemas::TrainScheduleException> = vec![
+            exception_1.clone(),
+            exception_2.clone(),
+            exception_3.clone(),
+        ];
+
+        let occurrences: Vec<_> = paced_train.iter_occurrences(&exceptions).collect();
 
         assert_eq!(occurrences.len(), 4);
 
@@ -789,9 +821,9 @@ mod tests {
         assert_eq!(
             types,
             vec![
-                OccurrenceId::new_modified(paced_train.id, 1, "key_1".to_string()),
+                OccurrenceId::new_modified(paced_train.id, 1, 1),
                 OccurrenceId::new_base(paced_train.id, 2),
-                OccurrenceId::new_created(paced_train.id, "key_2".to_string()),
+                OccurrenceId::new_created(paced_train.id, 2),
                 OccurrenceId::new_base(paced_train.id, 3),
             ]
         );
@@ -799,13 +831,25 @@ mod tests {
 
     #[tokio::test]
     async fn iter_occurrences_with_modified_start_time_exception() {
-        let mut exception_1 = create_modified_exception_with_change_groups("key_1", 1);
+        let mut exception_1 = TrainScheduleException::fixture_modified("key_1", 1);
         exception_1.change_groups.start_time = Some(StartTimeChangeGroup {
             value: DateTime::<Utc>::from_str("2025-05-15T14:31:00+02:00").unwrap(),
         });
+        let exception_1: schemas::TrainScheduleException = TrainScheduleException {
+            id: 1,
+            timetable_id: 1,
+            train_schedule_id: 1,
+            key: Some("key_1".into()),
+            occurrence_index: Some(1),
+            disabled: false,
+            change_groups: exception_1.change_groups,
+        }
+        .into();
 
-        let paced_train = create_paced_train(vec![exception_1.clone()]);
-        let occurrences: Vec<_> = paced_train.iter_occurrences().collect();
+        let paced_train = create_paced_train();
+        let occurrences: Vec<_> = paced_train
+            .iter_occurrences(std::slice::from_ref(&exception_1))
+            .collect();
 
         assert_eq!(occurrences.len(), 4);
 
@@ -841,7 +885,7 @@ mod tests {
             types,
             vec![
                 OccurrenceId::new_base(paced_train.id, 0),
-                OccurrenceId::new_modified(paced_train.id, 1, "key_1".to_string()),
+                OccurrenceId::new_modified(paced_train.id, 1, exception_1.id),
                 OccurrenceId::new_base(paced_train.id, 2),
                 OccurrenceId::new_base(paced_train.id, 3),
             ]
