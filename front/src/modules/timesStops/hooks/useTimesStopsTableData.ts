@@ -20,6 +20,7 @@ import type { Train } from 'reducers/osrdconf/types';
 import { getDisplayOnlyPathSteps } from 'reducers/simulationResults/selectors';
 import { Duration } from 'utils/duration';
 
+import { ARRIVAL_TIME_ACCEPTABLE_ERROR } from '../consts';
 import { buildOpMatchParams, getOperationalPointName } from '../helpers/utils';
 import { type StepStatus, type TimesStopsRowNew } from '../types';
 
@@ -59,8 +60,16 @@ const buildTableRow = ({
     : null;
 
   // computedArrival is offset from startDate
-  const computedArrivalDate =
+  const rawComputedArrivalDate =
     computedArrival !== undefined ? new Date(startDate.getTime() + computedArrival.ms) : null;
+
+  // Snap to requested arrival when within tolerance, consistent with the legacy table behavior.
+  const isOnTime =
+    requestedArrival && rawComputedArrivalDate
+      ? Duration.subtractDate(requestedArrival, rawComputedArrivalDate).abs() <=
+        ARRIVAL_TIME_ACCEPTABLE_ERROR
+      : false;
+  const computedArrivalDate = isOnTime ? requestedArrival : rawComputedArrivalDate;
 
   // schedule.stop_for is ISO 8601 duration
   const stopDuration = schedule?.stop_for ? Duration.parse(schedule.stop_for) : null;
