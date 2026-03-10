@@ -46,16 +46,46 @@ impl MockingClient {
         req_path: P,
         req_body: Option<&B>,
     ) -> Result<Option<R::Response>, MockingError> {
-        let req_path = req_path.as_ref().to_string();
+        let req_path = req_path.as_ref();
 
         let Some(stub) = self
             .stubs
-            .get(&req_path)
+            .get(req_path)
             .and_then(|stubs| stubs.deref().lock().unwrap().pop_front())
         else {
             panic!("could not find stub for request at PATH '{req_path}'");
         };
 
+        Self::process_stub_request::<B, R>(&stub, req_path, req_body)
+    }
+
+    pub(super) fn fetch_streaming_mocked<P: AsRef<str>, B: Serialize, R: CoreResponse>(
+        &self,
+        req_path: P,
+        req_body: Option<&B>,
+    ) -> Result<Vec<R::Response>, MockingError> {
+        let req_path = req_path.as_ref();
+
+        let Some(stubs) = self
+            .stubs
+            .get(req_path)
+            .map(|stubs| stubs.deref().lock().unwrap().drain(..).collect::<Vec<_>>())
+        else {
+            panic!("could not find stub for request at PATH '{req_path}'");
+        };
+
+        stubs
+            .iter()
+            .map(|stub| Self::process_stub_request::<B, R>(stub, req_path, req_body))
+            .flat_map(Result::transpose)
+            .collect()
+    }
+
+    fn process_stub_request<B: Serialize, R: CoreResponse>(
+        stub: &StubRequest,
+        req_path: &str,
+        req_body: Option<&B>,
+    ) -> Result<Option<R::Response>, MockingError> {
         match (
             req_body.map(|b| serde_json::to_string(b).expect("could not serialize request body")),
             stub.body.as_ref().map(|b| b.as_str().to_string()),
@@ -83,7 +113,7 @@ impl MockingClient {
                     .to_vec();
                 Err(MockingError {
                     bytes: err,
-                    url: req_path,
+                    url: req_path.to_string(),
                 })
             }
         }
