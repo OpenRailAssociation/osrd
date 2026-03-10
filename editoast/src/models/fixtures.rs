@@ -135,6 +135,7 @@ async fn link_train_schedule_set_to_timetable(
 
 pub fn create_created_exception_with_change_groups(key: &str) -> PacedTrainException {
     PacedTrainException {
+        id: None,
         key: key.into(),
         exception_type: ExceptionType::Created {},
         disabled: false,
