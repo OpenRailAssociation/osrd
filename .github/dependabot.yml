@@ -141,7 +141,7 @@ updates:
   - package-ecosystem: "gradle"
     directory: "/core/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     cooldown:
       default-days: 5
     commit-message:
@@ -155,6 +155,12 @@ updates:
         patterns:
           - "kotlin"
           - "ksp"
+      patch:
+        update-types:
+          - "patch"
+      minor:
+        update-types:
+          - "minor"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
