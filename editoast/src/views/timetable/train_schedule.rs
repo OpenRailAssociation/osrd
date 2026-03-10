@@ -105,10 +105,10 @@ enum TrainScheduleError {
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub(in crate::views) struct TrainScheduleResponse {
-    id: i64,
-    train_schedule_set_id: i64,
+    pub id: i64,
+    pub train_schedule_set_id: i64,
     #[serde(flatten)]
-    train_schedule: TrainSchedule,
+    pub train_schedule: TrainSchedule,
 }
 
 impl From<models::TrainSchedule> for TrainScheduleResponse {

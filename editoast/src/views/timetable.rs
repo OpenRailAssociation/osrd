@@ -41,6 +41,8 @@ use editoast_models::timetable::Timetable;
 use editoast_models::timetable::TimetableWithTrains;
 use itertools::Itertools;
 use itertools::izip;
+use schemas::paced_train::Paced;
+use schemas::paced_train::TrainSchedule;
 use schemas::rolling_stock::EtcsBrakeParams;
 use schemas::rolling_stock::RollingResistance;
 use schemas::rolling_stock::RollingStock;
@@ -68,6 +70,7 @@ use crate::models::train_schedule::OccurrenceId;
 use crate::models::train_schedule_set::TrainScheduleSet;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
+use crate::views::timetable::paced_train::TrainScheduleResponse;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 
 #[derive(Debug, Error, EditoastError, derive_more::From)]
@@ -226,7 +229,50 @@ pub(in crate::views) async fn get_train_schedules(
 
     let (paced_trains, stats) = models::TrainSchedule::list_paginated(conn, settings).await?;
 
-    let results = paced_trains.into_iter().map_into().collect();
+    let paced_trains_ids = paced_trains.iter().map(|t| t.id).collect::<Vec<_>>();
+    let exceptions_settings = SelectionSettings::new()
+        .filter(move || editoast_models::TrainScheduleException::TIMETABLE_ID.eq(timetable_id))
+        .filter(move || {
+            editoast_models::TrainScheduleException::TRAIN_SCHEDULE_ID
+                .eq_any(paced_trains_ids.clone())
+        });
+
+    let mut exceptions = editoast_models::TrainScheduleException::list(conn, exceptions_settings)
+        .await?
+        .into_iter()
+        .into_group_map_by(|e| e.train_schedule_id);
+
+    let results: Vec<TrainScheduleResponse> = paced_trains
+        .into_iter()
+        .map(|ts| {
+            let id = ts.id;
+            let train_schedule_set_id = ts.train_schedule_set_id;
+
+            let paced = if let (Some(interval), Some(time_window)) = (ts.interval, ts.time_window) {
+                Some(Paced {
+                    interval: interval.try_into().unwrap(),
+                    time_window: time_window.try_into().unwrap(),
+                    exceptions: exceptions
+                        .remove(&id)
+                        .unwrap_or_default()
+                        .into_iter()
+                        .map_into()
+                        .collect(),
+                })
+            } else {
+                None
+            };
+
+            TrainScheduleResponse {
+                id,
+                train_schedule_set_id,
+                train_schedule: TrainSchedule {
+                    train_occurrence: ts.into_train_occurrence(),
+                    paced,
+                },
+            }
+        })
+        .collect();
 
     Ok(Json(ListTrainSchedulesResponse { stats, results }))
 }
@@ -922,6 +968,7 @@ mod tests {
     use crate::error::InternalError;
     use crate::models::fixtures::create_timetable;
     use crate::models::fixtures::create_timetable_with_train_schedule_set;
+    use crate::models::fixtures::create_train_schedule_exception;
     use crate::models::fixtures::create_train_schedule_set;
     use crate::models::fixtures::simple_paced_train_base;
     use crate::models::train_schedule::TrainScheduleChangeset;
@@ -984,38 +1031,97 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let (timetable, train_schedule_set) =
+        // Setup timetable 1 data
+        let (timetable1, train_schedule_set1) =
             create_timetable_with_train_schedule_set(&mut pool.get_ok()).await;
 
-        let train_schedule_1 = simple_paced_train_base();
-        let mut train_schedule_2 = simple_paced_train_base();
-        train_schedule_2.train_occurrence.start_time += Duration::minutes(200);
-        train_schedule_2.paced.as_mut().unwrap().time_window =
+        let train_schedule_t1_1 = simple_paced_train_base();
+        let mut train_schedule_t1_2 = simple_paced_train_base();
+        train_schedule_t1_2.train_occurrence.start_time += Duration::minutes(200);
+        train_schedule_t1_2.paced.as_mut().unwrap().time_window =
             Duration::minutes(120).try_into().unwrap();
-        train_schedule_2.paced.as_mut().unwrap().interval =
+        train_schedule_t1_2.paced.as_mut().unwrap().interval =
             Duration::seconds(30).try_into().unwrap();
 
-        let train_schedules = vec![train_schedule_1, train_schedule_2];
-
-        let changesets = train_schedules
+        let train_schedules_bases_t1 = vec![train_schedule_t1_1, train_schedule_t1_2];
+        let train_schedules_changesets_t1 = train_schedules_bases_t1
             .into_iter()
             .map(TrainScheduleChangeset::from)
-            .map(|cs| cs.train_schedule_set_id(train_schedule_set.id))
+            .map(|cs| cs.train_schedule_set_id(train_schedule_set1.id))
             .collect::<Vec<_>>();
-
-        let _train_schedules: Vec<_> =
-            models::TrainSchedule::create_batch(&mut pool.get_ok(), changesets)
+        let train_schedules_t1: Vec<_> =
+            models::TrainSchedule::create_batch(&mut pool.get_ok(), train_schedules_changesets_t1)
                 .await
                 .expect("Failed to create train schedules");
+        let train_schedule_exception_t1_1 = create_train_schedule_exception(
+            &mut pool.get_ok(),
+            timetable1.id,
+            train_schedules_t1.first().unwrap().id,
+            None,
+        )
+        .await;
 
-        let request = app.get(format!("/timetable/{}/train_schedules", timetable.id).as_str());
+        let _train_schedule_exception_t1_2 = create_train_schedule_exception(
+            &mut pool.get_ok(),
+            timetable1.id,
+            train_schedules_t1.get(1).unwrap().id,
+            None,
+        )
+        .await;
+
+        // Setup timetable 2 data
+        let (timetable2, train_schedule_set2) =
+            create_timetable_with_train_schedule_set(&mut pool.get_ok()).await;
+        let mut train_schedule_t2_1 = simple_paced_train_base();
+        train_schedule_t2_1.train_occurrence.start_time += Duration::minutes(200);
+        train_schedule_t2_1.paced.as_mut().unwrap().time_window =
+            Duration::minutes(120).try_into().unwrap();
+        train_schedule_t2_1.paced.as_mut().unwrap().interval =
+            Duration::seconds(30).try_into().unwrap();
+        let train_schedules_bases_t2 = vec![train_schedule_t2_1];
+        let train_schedules_changesets_t2 = train_schedules_bases_t2
+            .into_iter()
+            .map(TrainScheduleChangeset::from)
+            .map(|cs| cs.train_schedule_set_id(train_schedule_set2.id))
+            .collect::<Vec<_>>();
+        let train_schedules_t2: Vec<_> =
+            models::TrainSchedule::create_batch(&mut pool.get_ok(), train_schedules_changesets_t2)
+                .await
+                .expect("Failed to create train schedules");
+        let _train_schedule_exception_t2_1 = create_train_schedule_exception(
+            &mut pool.get_ok(),
+            timetable2.id,
+            train_schedules_t2.first().unwrap().id,
+            None,
+        )
+        .await;
+
+        let request = app.get(format!("/timetable/{}/train_schedules", timetable1.id).as_str());
         let list: ListTrainSchedulesResponse = app
             .fetch(request)
             .await
             .assert_status(StatusCode::OK)
             .json_into();
 
+        // Check if the timetable has the two train schedules
         assert_eq!(list.results.len(), 2);
+
+        // Check if the first train schedule containe only his own exception
+        assert_eq!(
+            list.results
+                .first()
+                .unwrap()
+                .clone()
+                .train_schedule
+                .paced
+                .unwrap()
+                .exceptions
+                .first()
+                .unwrap()
+                .id
+                .unwrap(),
+            train_schedule_exception_t1_1.id
+        )
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
