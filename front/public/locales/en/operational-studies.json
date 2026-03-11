@@ -282,7 +282,7 @@
         "addTrainScheduleSet": "Add package",
         "cancel": "Cancel",
         "catalogEntry": "Set",
-        "checkingNameUniquenessError": "Name is already in used in this train set",
+        "checkingNameUniquenessError": "Series name is already in used in this train set",
         "choose": "Choose",
         "createNewCatalogEntry": "Create new set",
         "description": "Description",
@@ -294,8 +294,8 @@
         "error": {
           "alreadyPublished": "This package is already published",
           "catalogEntryRequired": "A set is required to publish the package",
-          "nameRequired": "A name is required to publish the package",
-          "tssNameDuplicate": "Package name {{name}} is already in use in set with id {{catalogId}}"
+          "nameRequired": "A series name is required to publish the package",
+          "tssNameDuplicate": "Series name {{name}} is already in use in set with id {{catalogId}}"
         },
         "existingCatalogEntry": "Use an existing set",
         "localRemoveDialogTitle": "Remove local package",
@@ -303,7 +303,7 @@
         "moveToPackage": "Move to package",
         "moveToSelectPackage": "Move to selected package",
         "movingToAnotherPackage": "Moving to another package",
-        "name": "Name",
+        "name": "Series name",
         "newCatalogEntry": "New set",
         "newLocalTrainScheduleSet": "New local package",
         "newTrainScheduleSet": "Create new package",

@@ -282,7 +282,7 @@
         "addTrainScheduleSet": "Ajouter le paquet",
         "cancel": "Annuler",
         "catalogEntry": "Ensemble",
-        "checkingNameUniquenessError": "Ce nom de paquet existe dejà dans cet ensemble",
+        "checkingNameUniquenessError": "Ce nom de série existe dejà dans cet ensemble",
         "choose": "Choisir",
         "createNewCatalogEntry": "Créer un nouvel ensemble",
         "description": "Description",
@@ -294,8 +294,8 @@
         "error": {
           "alreadyPublished": "Ce paquet est déjà publié",
           "catalogEntryRequired": "Un ensemble est requis pour publier le paquet",
-          "nameRequired": "Un nom est requis pour publier le paquet",
-          "tssNameDuplicate": "Le nom du paquet {{name}} est déjà utilisé dans l'ensemble avec l'identifiant {{catalogId}}"
+          "nameRequired": "Un nom de série est requis pour publier le paquet",
+          "tssNameDuplicate": "Le nom de série {{name}} est déjà utilisé dans l'ensemble avec l'identifiant {{catalogId}}"
         },
         "existingCatalogEntry": "Utiliser un ensemble existant",
         "localRemoveDialogTitle": "Retirer le paquet local",
@@ -303,7 +303,7 @@
         "moveToPackage": "Déplacer vers un paquet",
         "moveToSelectPackage": "Déplacer vers le paquet sélectionné",
         "movingToAnotherPackage": "Déplacement vers un autre paquet",
-        "name": "Nom",
+        "name": "Nom de série",
         "newCatalogEntry": "Nouvel ensemble",
         "newLocalTrainScheduleSet": "Nouveau paquet local",
         "newTrainScheduleSet": "Créer un nouveau paquet",
