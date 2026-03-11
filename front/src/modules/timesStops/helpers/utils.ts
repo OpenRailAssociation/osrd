@@ -143,32 +143,68 @@ export function updateRowTimesAndMargin(
   allWaypointsLength: number
 ): TimesStopsInputRow {
   const newRowData = { ...rowData };
-  if (
-    !isEqual(newRowData.arrival, previousRowData.arrival) ||
-    !isEqual(newRowData.departure, previousRowData.departure)
-  ) {
-    if (newRowData.departure?.time && newRowData.arrival?.time) {
-      newRowData.stopFor = new Duration({
-        seconds: durationInSeconds(
-          time2sec(newRowData.arrival.time),
-          time2sec(newRowData.departure.time)
-        ),
-      });
-    } else if (newRowData.departure) {
-      if (!previousRowData.departure) {
-        newRowData.arrival = {
+  const {
+    stopFor: previousStopFor,
+    departure: previousDeparture,
+    arrival: previousArrival,
+  } = previousRowData;
+  const arrivalChanged = !isEqual(newRowData.arrival, previousRowData.arrival);
+  const departureChanged = !isEqual(newRowData.departure, previousRowData.departure);
+  const stopDurationChanged = !isEqual(newRowData.stopFor, previousRowData.stopFor);
+
+  if (previousArrival?.time && previousDeparture?.time) {
+    if (!newRowData.arrival?.time || !newRowData.departure?.time) {
+      newRowData.departure = undefined;
+      newRowData.arrival = undefined;
+    } else {
+      if (arrivalChanged || stopDurationChanged) {
+        newRowData.departure = {
           time: secToHoursString(
-            time2sec(newRowData.departure.time) - (newRowData.stopFor?.total('second') ?? 0)
+            time2sec(newRowData.arrival.time) + (newRowData.stopFor?.total('second') ?? 0)
           ),
         };
-      } else {
-        newRowData.departure = undefined;
       }
-    } else if (newRowData.arrival && previousRowData.departure) {
-      // we just erased departure value
-      newRowData.stopFor = undefined;
+      if (departureChanged) {
+        if (newRowData.departure?.time) {
+          newRowData.stopFor = new Duration({
+            seconds: durationInSeconds(
+              time2sec(newRowData.arrival.time),
+              time2sec(newRowData.departure.time)
+            ),
+          });
+        }
+      }
+    }
+  } else if (previousArrival?.time) {
+    if (newRowData.arrival?.time && (arrivalChanged || stopDurationChanged)) {
+      if (newRowData.stopFor?.total('second') ?? 0 > 0) {
+        newRowData.departure = {
+          time: secToHoursString(
+            time2sec(newRowData.arrival.time) + (newRowData.stopFor?.total('second') ?? 0)
+          ),
+        };
+      }
+    }
+    if (newRowData.departure?.time && newRowData.arrival?.time) {
+      if (newRowData.arrival?.time) {
+        newRowData.stopFor = new Duration({
+          seconds: durationInSeconds(
+            time2sec(newRowData.arrival.time),
+            time2sec(newRowData.departure.time)
+          ),
+        });
+      }
     }
   }
+
+  if (previousStopFor && !previousDeparture?.time && newRowData.departure?.time) {
+    newRowData.arrival = {
+      time: secToHoursString(
+        time2sec(newRowData.departure.time) - (newRowData.stopFor?.total('second') ?? 0)
+      ),
+    };
+  }
+
   if (
     !newRowData.stopFor &&
     newRowData.onStopSignal &&

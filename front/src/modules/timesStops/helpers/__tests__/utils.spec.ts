@@ -10,8 +10,228 @@ import {
   calculateStepTimeAndDays,
 } from '../utils';
 
+const inputRow = ({
+  arrival,
+  departure,
+  stopSeconds,
+}: {
+  arrival?: string;
+  departure?: string;
+  stopSeconds?: number;
+}) =>
+  ({
+    opId: 'd94a2af4',
+    name: 'Gr',
+    arrival: arrival ? { time: arrival } : undefined,
+    departure: departure ? { time: departure } : undefined,
+    stopFor: stopSeconds ? new Duration({ seconds: stopSeconds }) : undefined,
+  }) as TimesStopsInputRow;
+
 describe('updateRowTimesAndMargin', () => {
   const whateverOperation = { fromRowIndex: 2 };
+
+  describe('only the arrival was set beforehand', () => {
+    const before = inputRow({ arrival: '10:00:00' });
+
+    describe('on arrival change', () => {
+      const after = inputRow({ arrival: '10:05:00' });
+      const result = updateRowTimesAndMargin(after, before, whateverOperation, 4);
+
+      it('should change arrival time', () => {
+        expect(result.arrival?.time).toEqual('10:05:00');
+      });
+
+      it('should keep departure or stop duration empty', () => {
+        expect(result.departure?.time).toBe(undefined);
+        expect(result.stopFor).toBe(undefined);
+      });
+    });
+
+    describe('on arrival deletion', () => {
+      const after = inputRow({});
+      const result = updateRowTimesAndMargin(after, before, whateverOperation, 4);
+
+      it('should remove arrival time', () => {
+        expect(result.arrival?.time).toBe(undefined);
+      });
+
+      it('should keep departure or stop duration empty', () => {
+        expect(result.departure?.time).toBe(undefined);
+        expect(result.stopFor).toBe(undefined);
+      });
+    });
+
+    describe('on stop duration change', () => {
+      const after = inputRow({ arrival: '10:00:00', stopSeconds: 120 });
+      const result = updateRowTimesAndMargin(after, before, whateverOperation, 4);
+
+      it('should set stop duration', () => {
+        expect(result.stopFor).toEqual(new Duration({ seconds: 120 }));
+      });
+
+      it('should compute new departure time', () => {
+        expect(result.departure?.time).toEqual('10:02:00');
+      });
+
+      it('should keep arrival time as it was beforehand', () => {
+        expect(result.arrival?.time).toEqual('10:00:00');
+      });
+    });
+
+    describe('on departure change', () => {
+      const after = inputRow({ arrival: '10:00:00', departure: '10:02:00' });
+      const result = updateRowTimesAndMargin(after, before, whateverOperation, 4);
+
+      it('should compute new stop duration', () => {
+        expect(result.stopFor).toEqual(new Duration({ seconds: 120 }));
+      });
+
+      it('should set departure time', () => {
+        expect(result.departure?.time).toEqual('10:02:00');
+      });
+
+      it('should keep arrival time as it was beforehand', () => {
+        expect(result.arrival?.time).toEqual('10:00:00');
+      });
+    });
+  });
+
+  describe('only the stop duration was set beforehand', () => {
+    const before = inputRow({ stopSeconds: 60 });
+
+    describe('on stop duration change', () => {
+      const after = inputRow({ stopSeconds: 120 });
+      const result = updateRowTimesAndMargin(after, before, whateverOperation, 4);
+
+      it('should change stop duration', () => {
+        expect(result.stopFor).toEqual(new Duration({ seconds: 120 }));
+      });
+
+      it('should keep departure or stop duration empty', () => {
+        expect(result.departure?.time).toBe(undefined);
+        expect(result.arrival?.time).toBe(undefined);
+      });
+    });
+
+    describe('on stop duration deletion', () => {
+      const after = inputRow({});
+      const result = updateRowTimesAndMargin(after, before, whateverOperation, 4);
+
+      it('should remove stop duration', () => {
+        expect(result.stopFor).toBe(undefined);
+      });
+      it('should keep departure or stop duration empty', () => {
+        expect(result.departure?.time).toBe(undefined);
+        expect(result.arrival?.time).toBe(undefined);
+      });
+    });
+  });
+
+  describe('all arrival, departure and duration stop fields were set beforehand', () => {
+    const before = inputRow({ arrival: '10:00:00', departure: '10:01:00', stopSeconds: 60 });
+
+    describe('on arrival change', () => {
+      const after = inputRow({ arrival: '10:05:00', departure: '10:01:00', stopSeconds: 60 });
+      const result = updateRowTimesAndMargin(after, before, whateverOperation, 4);
+
+      it('should change arrival time', () => {
+        expect(result.arrival?.time).toEqual('10:05:00');
+      });
+
+      it('should compute new departure time', () => {
+        expect(result.departure?.time).toEqual('10:06:00');
+      });
+
+      it('should keep stop duration as it was beforehand', () => {
+        expect(result.stopFor).toEqual(new Duration({ seconds: 60 }));
+      });
+    });
+
+    describe('on arrival deletion', () => {
+      const after = inputRow({ departure: '10:01:00', stopSeconds: 60 });
+      const result = updateRowTimesAndMargin(after, before, whateverOperation, 4);
+
+      it('should remove arrival time', () => {
+        expect(result.arrival?.time).toBe(undefined);
+      });
+
+      it('should also remove departure time', () => {
+        expect(result.departure?.time).toBe(undefined);
+      });
+
+      it('should keep the stop duration as it was beforehand', () => {
+        expect(result.stopFor).toEqual(new Duration({ seconds: 60 }));
+      });
+    });
+
+    describe('on stop duration change', () => {
+      const after = inputRow({ arrival: '10:00:00', departure: '10:01:00', stopSeconds: 120 });
+      const result = updateRowTimesAndMargin(after, before, whateverOperation, 4);
+
+      it('should change stop duration', () => {
+        expect(result.stopFor).toEqual(new Duration({ seconds: 120 }));
+      });
+
+      it('should compute new departure time', () => {
+        expect(result.departure?.time).toEqual('10:02:00');
+      });
+
+      it('should keep arrival time as it was beforehand', () => {
+        expect(result.arrival?.time).toEqual('10:00:00');
+      });
+    });
+
+    describe('on stop duration deletion', () => {
+      const after = inputRow({ arrival: '10:00:00', departure: '10:01:00' });
+      const result = updateRowTimesAndMargin(after, before, whateverOperation, 4);
+
+      it('should remove stop duration', () => {
+        expect(result.stopFor).toBe(undefined);
+      });
+
+      it('should set departure time as arrival time', () => {
+        expect(result.departure?.time).toEqual('10:00:00');
+      });
+
+      it('should keep arrival time as it was beforehand', () => {
+        expect(result.arrival?.time).toEqual('10:00:00');
+      });
+    });
+
+    describe('on departure change', () => {
+      const after = inputRow({ arrival: '10:00:00', departure: '10:02:00', stopSeconds: 60 });
+      const result = updateRowTimesAndMargin(after, before, whateverOperation, 4);
+
+      it('should change departure time', () => {
+        expect(result.departure?.time).toEqual('10:02:00');
+      });
+
+      it('should compute a new stop duration', () => {
+        expect(result.stopFor).toEqual(new Duration({ seconds: 120 }));
+      });
+
+      it('should keep arrival time as it was beforehand', () => {
+        expect(result.arrival?.time).toEqual('10:00:00');
+      });
+    });
+
+    describe('on departure deletion', () => {
+      const after = inputRow({ arrival: '10:00:00', stopSeconds: 60 });
+      const result = updateRowTimesAndMargin(after, before, whateverOperation, 4);
+
+      it('should delete departure time', () => {
+        expect(result.departure?.time).toBe(undefined);
+      });
+
+      it('should also delete arrival time', () => {
+        expect(result.arrival?.time).toBe(undefined);
+      });
+
+      it('should keep stop duration as it was beforehand', () => {
+        expect(result.stopFor).toEqual(new Duration({ seconds: 60 }));
+      });
+    });
+  });
 
   describe('arrival is set, departure just changed', () => {
     it('should update stop duration from the arrival and departure', () => {
@@ -152,38 +372,10 @@ describe('updateRowTimesAndMargin', () => {
       expect(result).toEqual({
         opId: 'd94a2af4',
         name: 'Gr',
-        arrival: { time: '' },
+        arrival: undefined,
         departure: undefined,
         stopFor: new Duration({ seconds: 600 }),
         isMarginValid: true,
-      });
-    });
-  });
-  describe('arrival, departure & stopFor are set, departure gets erased', () => {
-    it('should keep arrival and remove stopFor', () => {
-      const rowData = {
-        opId: 'd94a2af4',
-        name: 'Gr',
-        arrival: { time: '00:10:00' },
-        departure: undefined,
-        stopFor: new Duration({ seconds: 600 }),
-      } as TimesStopsInputRow;
-      const previousRowData = {
-        opId: 'd94a2af4',
-        name: 'Gr',
-        arrival: { time: '00:10:00' },
-        departure: { time: '00:20:00' },
-        stopFor: new Duration({ seconds: 600 }),
-      } as TimesStopsInputRow;
-      const result = updateRowTimesAndMargin(rowData, previousRowData, whateverOperation, 4);
-      expect(result).toEqual({
-        opId: 'd94a2af4',
-        name: 'Gr',
-        arrival: { time: '00:10:00' },
-        departure: undefined,
-        stopFor: undefined,
-        isMarginValid: true,
-        onStopSignal: undefined,
       });
     });
   });
