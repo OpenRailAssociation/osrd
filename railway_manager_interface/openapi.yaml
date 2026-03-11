@@ -46,11 +46,29 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /send_last_minute_request/authorized:
+    get:
+      tags:
+        - lmr
+      summary: Check whether the user is authenticated and authorized to send last-minute requests.
+      responses:
+        '200':
+          description: Authorization result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  authorized:
+                    type: boolean
+                    description: Whether the user is authenticated and authorized to send last-minute requests
+                required:
+                  - authorized
   /send_last_minute_request:
     post:
       tags:
         - lmr
-      summary: Format and transfer the simulation to the web service that processes last-minute requests after identifying the user group.
+      summary: Format and transfer the simulation to the web service that processes last-minute requests.
       requestBody:
         required: true
         content:
@@ -74,7 +92,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SendLastMinuteRequestResponse'
         '403':
-          description: User group is not associated with any account.
+          description: User is not authorized to send last minute requests.
 components:
   schemas:
     TransformTimetableResponse:
