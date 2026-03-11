@@ -45,12 +45,12 @@ core_task = { path = "./core_task" }
 darling = "0.23"
 dashmap = "6.1.0"
 database = { path = "./database" }
-deadpool = { version = "0.12.3", default-features = false, features = [
+deadpool = { version = "0.13.0", default-features = false, features = [
   "managed",
   "rt_tokio_1",
   "unmanaged",
 ] }
-deadpool-redis = { version = "0.22.1", default-features = false, features = [
+deadpool-redis = { version = "0.23", default-features = false, features = [
   "tokio-comp",
   "tokio-native-tls-comp",
 ] }
@@ -68,7 +68,7 @@ diesel = { version = "2.3", default-features = false, features = [
   "serde_json",
   "uuid",
 ] }
-diesel-async = { version = "0.7", default-features = false, features = [
+diesel-async = { version = "0.8", default-features = false, features = [
   "deadpool",
   "migrations",
   "postgres",

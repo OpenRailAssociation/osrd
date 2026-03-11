@@ -9,6 +9,7 @@ use deadpool_redis::redis::Pipeline;
 use deadpool_redis::redis::RedisError;
 use deadpool_redis::redis::RedisFuture;
 use deadpool_redis::redis::ToRedisArgs;
+use deadpool_redis::redis::ToSingleRedisArg;
 use deadpool_redis::redis::Value;
 use deadpool_redis::redis::aio::ConnectionLike;
 use futures::FutureExt;
@@ -36,7 +37,7 @@ fn no_cache_cmd_handler(cmd: &Cmd) -> Result<Value, RedisError> {
     let cmd_name = cmd
         .args_iter()
         .next()
-        .ok_or((ErrorKind::ClientError, "missing a command instruction"))?;
+        .ok_or((ErrorKind::Client, "missing a command instruction"))?;
     let nb_keys = cmd.args_iter().skip(1).count();
     match cmd_name {
         Arg::Simple(cmd_name_bytes)
@@ -52,11 +53,16 @@ fn no_cache_cmd_handler(cmd: &Cmd) -> Result<Value, RedisError> {
         }
         Arg::Simple(cmd_name_bytes) => unimplemented!(
             "valkey command '{}' is not supported by cache::ValkeyConnection with '--no-cache'",
-            String::from_utf8(cmd_name_bytes.to_vec())?
+            String::from_utf8(cmd_name_bytes.to_vec()).map_err(|e| (
+                ErrorKind::Parse,
+                "Cannot convert from UTF-8",
+                e.to_string()
+            ))?
         ),
         Arg::Cursor => unimplemented!(
             "valkey cursor mode is not supported by cache::ValkeyConnection with '--no-cache'"
         ),
+        _ => unimplemented!("All yet unknown future cases are not supported"),
     }
 }
 
@@ -144,7 +150,7 @@ impl Connection {
 
     /// Get a deserializable value from valkey
     #[tracing::instrument(name = "cache:json_get", skip(self), err)]
-    pub async fn json_get<T: DeserializeOwned, K: Debug + ToRedisArgs + Send + Sync>(
+    pub async fn json_get<T: DeserializeOwned, K: Debug + ToSingleRedisArg + Send + Sync>(
         &mut self,
         key: K,
     ) -> Result<Option<T>, RedisError> {
@@ -193,7 +199,7 @@ impl Connection {
 
     /// Set a serializable value to valkey with expiry time
     #[tracing::instrument(name = "cache:json_set", skip(self, value), err)]
-    pub async fn json_set<K: Debug + ToRedisArgs + Send + Sync, T: Serialize>(
+    pub async fn json_set<K: Debug + ToSingleRedisArg + Send + Sync, T: Serialize>(
         &mut self,
         key: K,
         value: &T,
@@ -334,8 +340,8 @@ impl Connection {
 
     /// Add one serializable member to a sorted set, or update its score if it already exists.
     pub async fn json_zadd<
-        K: Debug + ToRedisArgs + Send + Sync,
-        S: ToRedisArgs + Send + Sync,
+        K: Debug + ToSingleRedisArg + Send + Sync,
+        S: ToSingleRedisArg + Send + Sync,
         M: Serialize + ToOwned,
     >(
         &mut self,
@@ -364,9 +370,9 @@ impl Connection {
     /// Return a range of members in a sorted set, by score.
     pub async fn json_zrangebyscore<
         T: DeserializeOwned,
-        K: ToRedisArgs + Send + Sync,
-        M: ToRedisArgs + Send + Sync,
-        MM: ToRedisArgs + Send + Sync,
+        K: ToSingleRedisArg + Send + Sync,
+        M: ToSingleRedisArg + Send + Sync,
+        MM: ToSingleRedisArg + Send + Sync,
     >(
         &mut self,
         key: K,
