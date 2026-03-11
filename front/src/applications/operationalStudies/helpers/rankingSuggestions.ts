@@ -1,8 +1,7 @@
 import { uniqBy } from 'lodash';
 
-import { toUpper } from 'utils/strings';
+import { normalizeName, splitTokens, toUpper } from 'utils/strings';
 
-import { norm, splitTokens } from './stringUtils';
 import {
   secondaryCodeStarts,
   secondaryCodeIncludes,
@@ -23,12 +22,11 @@ export const rankSingleTokenSuggestions = (
   tokenRaw: string,
   fullRaw: string
 ): OperationalPointSuggestion[] => {
-  const tokenNormalized = norm(tokenRaw);
+  const tokenNormalized = normalizeName(tokenRaw);
   const tokenUpper = toUpper(tokenRaw);
   const endWithSpace = /\s+$/.test(fullRaw);
 
-  const exactNames = suggestions.filter((s) => norm(s.name) === tokenNormalized);
-  if (exactNames.length) return exactNames;
+  const exactNames = suggestions.filter((s) => normalizeName(s.name) === tokenNormalized);
 
   const trigramExact = suggestions.filter((s) => toUpper(s.trigram) === tokenUpper);
   if (trigramExact.length && endWithSpace) return uniqBy(trigramExact, 'id');
@@ -42,7 +40,7 @@ export const rankSingleTokenSuggestions = (
   const secondaryCodeSubstringMatches: OperationalPointSuggestion[] = [];
 
   for (const s of suggestions) {
-    const nameNorm = norm(s.name);
+    const nameNorm = normalizeName(s.name);
     const trigramUpper = toUpper(s.trigram);
     if (trigramUpper.startsWith(tokenUpper)) trigramStarts.push(s);
     if (nameNorm.startsWith(tokenNormalized)) nameStarts.push(s);
@@ -54,6 +52,7 @@ export const rankSingleTokenSuggestions = (
 
   return uniqBy(
     [
+      ...exactNames,
       ...trigramExact,
       ...trigramStarts,
       ...nameStarts,
@@ -80,8 +79,8 @@ export const rankMultiTokenSuggestions = (
   const lastToken = tokens[tokens.length - 1];
   const baseTokens = tokens.slice(0, -1);
 
-  const fullPhrase = norm(tokens.join(' '));
-  const basePhrase = norm(baseTokens.join(' '));
+  const fullPhrase = normalizeName(tokens.join(' '));
+  const basePhrase = normalizeName(baseTokens.join(' '));
   const lastTokenUpper = toUpper(lastToken);
 
   const firstTokenUpper = toUpper(tokens[0] ?? '');
@@ -111,7 +110,7 @@ export const rankMultiTokenSuggestions = (
   };
 
   for (const s of sortingBase) {
-    const nameNorm = norm(s.name);
+    const nameNorm = normalizeName(s.name);
     const trigramUpper = toUpper(s.trigram);
     const hasSecondaryCodePrefix = secondaryCodeStarts(s, lastTokenUpper);
 

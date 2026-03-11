@@ -1,6 +1,5 @@
-import { toUpper } from 'utils/strings';
+import { normalizeName, splitTokens, toUpper } from 'utils/strings';
 
-import { splitTokens, norm, normalizePhrase } from './stringUtils';
 import type { OperationalPointSuggestion } from '../views/Scenario/components/ManageTimetableItem/Itinerary/ComboBoxCustomList/ListElementComponent';
 
 export const secondaryCodeStarts = (s: OperationalPointSuggestion, tokenUpper: string) =>
@@ -33,15 +32,17 @@ export const hasChPrefix = (s: OperationalPointSuggestion, chTokenUpper: string)
   s.secondaryCodeList.some((secondaryCode) => toUpper(secondaryCode.code).startsWith(chTokenUpper));
 
 export const tokenMatchesIncludesNoCh = (s: OperationalPointSuggestion, token: string) => {
-  const tokenNormalized = norm(token);
+  const tokenNormalized = normalizeName(token);
   const tokenUpper = toUpper(token);
-  return norm(s.name).includes(tokenNormalized) || toUpper(s.trigram).includes(tokenUpper);
+  return normalizeName(s.name).includes(tokenNormalized) || toUpper(s.trigram).includes(tokenUpper);
 };
 
 export const tokenMatchesStartNoCh = (s: OperationalPointSuggestion, token: string) => {
-  const tokenNormalized = norm(token);
+  const tokenNormalized = normalizeName(token);
   const tokenUpper = toUpper(token);
-  return norm(s.name).startsWith(tokenNormalized) || toUpper(s.trigram).startsWith(tokenUpper);
+  return (
+    normalizeName(s.name).startsWith(tokenNormalized) || toUpper(s.trigram).startsWith(tokenUpper)
+  );
 };
 
 // Secondary code only for last token
@@ -55,7 +56,7 @@ export const lastTokenMatchesStarts = (s: OperationalPointSuggestion, lastToken:
 export const shouldKeepTrigramLock = (s: OperationalPointSuggestion, tokens: string[]) => {
   if (tokens.length <= 1) return true;
 
-  const nameNorm = normalizePhrase(s.name);
+  const nameNorm = normalizeName(s.name);
 
   const lastToken = tokens[tokens.length - 1] ?? '';
   const lastTokenUpper = toUpper(lastToken);
@@ -69,11 +70,11 @@ export const shouldKeepTrigramLock = (s: OperationalPointSuggestion, tokens: str
 
   if (lastIsChForThisSuggestion) {
     if (!beforeLastText) return true;
-    const beforeNorm = normalizePhrase(beforeLastText);
+    const beforeNorm = normalizeName(beforeLastText);
     return nameNorm === beforeNorm || nameNorm.startsWith(beforeNorm);
   }
 
-  const restNorm = normalizePhrase(restText);
+  const restNorm = normalizeName(restText);
   return nameNorm === restNorm || nameNorm.startsWith(restNorm);
 };
 

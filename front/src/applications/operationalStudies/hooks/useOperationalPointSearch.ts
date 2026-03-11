@@ -5,7 +5,7 @@ import { uniqBy } from 'lodash';
 import { osrdEditoastApi, type SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
 import { useInfraID } from 'common/osrdContext';
 import { useDebounce } from 'utils/hooks/useDebounce';
-import { toUpper } from 'utils/strings';
+import { splitTokens, toUpper } from 'utils/strings';
 
 import { rankSuggestions, markSuggestions } from '../helpers/rankingSuggestions';
 import {
@@ -13,7 +13,6 @@ import {
   exactTrigramPayload,
   multiPayloadFromTokens,
 } from '../helpers/searchPayload';
-import { splitTokens } from '../helpers/stringUtils';
 import { selectSecondaryCode, shouldKeepTrigramLock } from '../helpers/suggestionMatchers';
 import { buildOpSuggestion } from '../views/Scenario/components/ManageTimetableItem/helpers/buildOpSuggestion';
 import type { OperationalPointSuggestion } from '../views/Scenario/components/ManageTimetableItem/Itinerary/ComboBoxCustomList/ListElementComponent';

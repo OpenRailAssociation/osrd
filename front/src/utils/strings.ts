@@ -83,6 +83,13 @@ export function normalized(s: string): string {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '');
 }
+export const splitTokens = (raw: string) =>
+  raw
+    .trim()
+    .split(/[\s/-]+/)
+    .filter(Boolean);
+
+export const normalizeName = (string: string) => splitTokens(normalized(string)).join(' ');
 
 export const TEXT_AREA_MAX_LENGTH = 4096;
 export const SMALL_TEXT_AREA_MAX_LENGTH = 1024;
