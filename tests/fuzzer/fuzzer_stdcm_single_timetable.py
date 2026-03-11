@@ -20,6 +20,7 @@ _TIMEOUT = 300
 
 _EDITOAST_URL = "http://127.0.0.1:8090/"
 _INFRA_NAME = "France"
+_INFRA_ID = None
 _TIMETABLE_ID = 0
 _TRAIN_SCHEDULE_SET_ID = 0
 
@@ -106,7 +107,7 @@ def _get_train_ids(
     res = []
     while page is not None:
         r = session.get(
-            f"{editoast_url}/timetable/{scenario.timetable}/paced_trains/?page={page}"
+            f"{editoast_url}/timetable/{scenario.timetable}/train_schedules/?page={page}"
         )
         r.raise_for_status()
         parsed = r.json()
@@ -127,7 +128,7 @@ def _build_timetable_range(
     train_ids = random.sample(train_ids, min(100, len(train_ids)))
     train_times = list()
     for train_id in train_ids:
-        r = session.get(f"{editoast_url}/paced_train/{train_id}")
+        r = session.get(f"{editoast_url}/train_schedules/{train_id}")
         r.raise_for_status()
         start_time = datetime.datetime.strptime(
             r.json()["start_time"], "%Y-%m-%dT%H:%M:%SZ"
@@ -146,18 +147,18 @@ def _build_timetable_range(
         )
 
 
-def _make_op_list(editoast_url, infra, session: Session) -> Iterable[int]:
+def _make_op_list(editoast_url, infra, session: Session) -> Iterable[str]:
     print("loading infra to generate op list")
     url = editoast_url + f"infra/{infra}/railjson/"
     r = session.get(url)
     infra = r.json()
     for op in infra["operational_points"]:
-        yield op["extensions"]["identifier"]["uic"]
+        yield op["id"]
 
 
 def _test_stdcm(
     editoast_url: str,
-    op_list: list[int],
+    op_list: list[str],
     scenario: Scenario,
     timetable_range: TimetableTimeRange,
     session: Session,
@@ -197,7 +198,7 @@ def _test_stdcm(
 
 
 def _make_stdcm_payload(
-    op_list: list[int],
+    op_list: list[str],
     rolling_stock: int,
     timetable_range: TimetableTimeRange,
     towed_rs: list[int],
@@ -219,7 +220,7 @@ def _make_stdcm_payload(
     return res
 
 
-def _make_steps(op_list: list[int], timetable_range: TimetableTimeRange) -> list[dict]:
+def _make_steps(op_list: list[str], timetable_range: TimetableTimeRange) -> list[dict]:
     """
     Generate steps for the stdcm payloads
     """
@@ -231,8 +232,8 @@ def _make_steps(op_list: list[int], timetable_range: TimetableTimeRange) -> list
             {
                 "location": {
                     "operational_point": {
-                        "type": "uic",
-                        "uic": _random_set_element(op_list),
+                        "type": "id",
+                        "operational_point": _random_set_element(op_list),
                     }
                 }
             }
@@ -264,7 +265,7 @@ def _get_towed_rolling_stock_ids(session: Session, editoast_url: str) -> list[in
 
 if __name__ == "__main__":
     session = conftest.session_no_fixture()
-    infra_id = get_infra(_EDITOAST_URL, _INFRA_NAME, session)
+    infra_id = _INFRA_ID or get_infra(_EDITOAST_URL, _INFRA_NAME, session)
     towed_rs = _get_towed_rolling_stock_ids(session, _EDITOAST_URL)
     run(
         _EDITOAST_URL,
