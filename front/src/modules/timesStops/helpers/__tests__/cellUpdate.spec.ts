@@ -89,6 +89,16 @@ describe('applyScheduleEdit', () => {
       expect(t(result.departure)).toBe(t(_11H00));
     });
 
+    it('sets departure and update stop from arrival when both stop duration and arrival exists', () => {
+      const state: ScheduleState = { arrival: _10H00, stop: _30MIN };
+      // departure = 11h00 = 10h00 + 60min
+      const result = applyScheduleEdit(state, { field: 'requestedDeparture', value: _11H00 });
+
+      expect(t(result.arrival)).toBe(t(_10H00));
+      expect(ms(result.stop)).toBe(ms(_60MIN));
+      expect(t(result.departure)).toBe(t(_11H00));
+    });
+
     it('sets departure and computes arrival from stop when no arrival', () => {
       const state: ScheduleState = { arrival: null, stop: _30MIN };
       // departure = 10h30, arrival = 10h30 - 30min = 10h00
