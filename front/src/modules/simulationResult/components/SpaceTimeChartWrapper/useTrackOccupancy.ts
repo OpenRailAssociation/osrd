@@ -28,28 +28,9 @@ import { batchFetchTrackOccupancy } from './helpers/utils';
 import { getMovableOccupancyZone, type MovableOccupancyZone } from './helpers/zones';
 import { usePrevious } from '../../../../utils/hooks/state';
 
-/**
- * The synthetic track ID used for occupancy zones whose local_track_name is null.
- * Displayed at the very end of the track list.
- */
-const NULL_TRACK_ID = '[ ]';
-
 type AsyncState<T> = { type: 'loading'; data?: T; abort?: () => void } | { type: 'ok'; data: T };
 type ZonesState = AsyncState<MovableOccupancyZone[]>;
 type OperationalPointState = { selected: boolean; zones: ZonesState };
-
-/**
- * Information about tracks for a given operational point (keyed by opId).
- *
- * - `tracks`: Ordered list of tracks derived from `match_operational_points` results.
- *   Each track uses its `local_track_name` as `Track.id` and `Track.name`.
- * - `sectionIdToLocalName`: Reverse-lookup map from track-section ID → local_track_name,
- *   used to resolve `track_id` references from `track_occupancy` back to a local_track_name.
- */
-type TrackInfo = {
-  tracks: Track[];
-  sectionIdToLocalName: Map<string, string>;
-};
 
 type DeployedWaypoint = {
   waypointId: string;
@@ -85,27 +66,23 @@ function getOperationalPointReference(
 }
 
 /**
- * Resolve the zone trackId from a track_reference in a track_occupancy response.
- *
- * - `track_id`   → reverse-lookup to local_track_name via TrackInfo; fall back to raw id
- * - `track_name` → the name itself is the local_track_name (unknown to match_op)
- * - null / undefined → NULL_TRACK_ID ("[]"), displayed at the very end
+ * The synthetic track ID used for occupancy zones whose local_track_name is null.
+ * Displayed at the very end of the track list.
  */
-function resolveZoneTrackId(
-  trackReference:
-    | null
-    | undefined
-    | { id: string; type: 'track_id' }
-    | { name: string | null; type: 'track_name' },
-  trackInfo: TrackInfo | undefined
-): string {
-  if (!trackReference) return NULL_TRACK_ID;
-  if (trackReference.type === 'track_id') {
-    return trackInfo?.sectionIdToLocalName.get(trackReference.id) ?? trackReference.id;
-  }
-  // track_name: local_track_name not resolved to a track section ID
-  return trackReference.name ?? NULL_TRACK_ID;
-}
+const NULL_TRACK_ID = '[ ]';
+
+/**
+ * Information about tracks for a given operational point (keyed by opId).
+ *
+ * - `tracks`: Ordered list of tracks derived from `match_operational_points` results.
+ *   Each track uses its `local_track_name` as `Track.id` and `Track.name`.
+ * - `sectionIdToLocalName`: Reverse-lookup map from track-section ID → local_track_name,
+ *   used to resolve `track_id` references from `track_occupancy` back to a local_track_name.
+ */
+type TrackInfo = {
+  tracks: Track[];
+  sectionIdToLocalName: Map<string, string>;
+};
 
 /**
  * Given the base ordered tracks (from match_operational_points), path item tracks, and zones for a waypoint,
@@ -132,14 +109,12 @@ function mergeTracksWithZones(
   const extraTracks: Track[] = [];
   let hasNullTrack = false;
 
-  // Add path item tracks
   for (const pathTrack of pathTracks) {
     if (!baseTrackIds.has(pathTrack) && !extraTracks.some((t) => t.id === pathTrack)) {
       extraTracks.push({ id: pathTrack, name: pathTrack });
     }
   }
 
-  // Add zone tracks
   for (const zone of zones || []) {
     if (zone.trackId === NULL_TRACK_ID) {
       hasNullTrack = true;
@@ -153,7 +128,6 @@ function mergeTracksWithZones(
   }
 
   const result = [...baseTracks, ...extraTracks];
-  // Add NULL_TRACK_ID only if explicitly referenced by zones
   if (hasNullTrack && !baseTrackIds.has(NULL_TRACK_ID)) {
     result.push({ id: NULL_TRACK_ID, name: NULL_TRACK_ID });
   }
@@ -192,6 +166,7 @@ const useTrackOccupancy = ({
   timetableItemsWithDetails?: Array<{
     id: string;
     path?: Array<{
+      id?: string;
       location?: {
         operational_point?: { trigram?: string; uic?: number };
         local_track_name?: string | null;
@@ -235,7 +210,6 @@ const useTrackOccupancy = ({
     () => new Map(timetableItemProjections.map((item) => [item.id, item])),
     [timetableItemProjections]
   );
-
   /**
    * Tracks keyed by opId. Each entry holds:
    * - `tracks`: ordered list using local_track_name as Track.id/name
@@ -318,13 +292,14 @@ const useTrackOccupancy = ({
 
         if (pacedResp?.data) {
           for (const trackItem of pacedResp.data) {
-            const { track_reference, trains } = trackItem;
+            const { local_track_name: localTrackName, trains } = trackItem;
+            // Resolve trackId: use local_track_name directly as the track ID
+            // (tracks are keyed by local_track_name in tracksState).
+            // Fall back to NULL_TRACK_ID when local_track_name is absent.
+            const zoneTrackId = localTrackName ?? NULL_TRACK_ID;
 
-            // Resolve zone trackId using local_track_name logic:
-            // - track_id   → reverse-lookup to local_track_name (or raw id as fallback)
-            // - track_name → the local_track_name not in match_op (new track appended after)
-            // - null/undef → NULL_TRACK_ID "[]" (displayed last)
-            const zoneTrackId = resolveZoneTrackId(track_reference, trackInfo);
+            // If the OP has a known track list, skip zones for tracks not in it
+            // (they will be appended via mergeTracksWithZones in deployedWaypoints).
 
             for (const occupation of trains) {
               const pacedId = formatEditoastIdToPacedTrainId(occupation.train_schedule_id);
@@ -433,38 +408,45 @@ const useTrackOccupancy = ({
           const trackInfo = op.opId ? tracksState.data[op.opId] : undefined;
           const baseTracks = trackInfo?.tracks ?? [];
 
-          // Extract local_track_name values from all projected trains' paths for this operational point
+          // Extract local_track_name values from all trains' paths for this OP.
+          // Trains may identify the same OP differently:
+          //   1. By waypointId (path item id): computed trains whose path items are UUIDs
+          //   2. By trigram: uncomputed trains that identify OPs by trigram
+          //   3. By UIC: uncomputed trains that identify OPs by UIC code
           const pathTracksForOp = new Set<string>();
           const opTrigram = op.extensions?.sncf?.trigram;
           const opUIC = op.extensions?.identifier?.uic;
-          if (opTrigram || opUIC) {
-            // Gather tracks from all projected trains using their complete paths
-            for (const trainWithDetails of timetableItemsWithDetails) {
-              if (!trainWithDetails.path) continue;
 
-              for (const pathItem of trainWithDetails.path) {
-                if (!pathItem.location) continue;
-                const itemOp = pathItem.location.operational_point;
-                const itemLocalTrack = pathItem.location.local_track_name;
-                const matchesTrigram =
-                  itemOp && 'trigram' in itemOp && itemOp.trigram === opTrigram;
-                const matchesUIC = itemOp && 'uic' in itemOp && itemOp.uic === opUIC;
-                if (matchesTrigram || matchesUIC) {
-                  pathTracksForOp.add(itemLocalTrack ?? NULL_TRACK_ID);
-                }
-              }
-            }
-            // Also check pathItems parameter for backward compatibility
-            pathItems.forEach((item) => {
-              const itemOp = item.location?.operational_point;
-              const itemLocalTrack = item.location?.local_track_name;
-              if (itemOp && 'trigram' in itemOp && itemOp.trigram === opTrigram) {
+          for (const trainWithDetails of timetableItemsWithDetails) {
+            if (!trainWithDetails.path) continue;
+            for (const pathItem of trainWithDetails.path) {
+              if (!pathItem.location) continue;
+              const itemOp = pathItem.location.operational_point;
+              const itemLocalTrack = pathItem.location.local_track_name;
+
+              const matchesWaypointId = pathItem.id === waypointId;
+              const matchesTrigram =
+                opTrigram != null && itemOp && 'trigram' in itemOp && itemOp.trigram === opTrigram;
+              const matchesUIC = opUIC != null && itemOp && 'uic' in itemOp && itemOp.uic === opUIC;
+
+              if (matchesWaypointId || matchesTrigram || matchesUIC) {
                 pathTracksForOp.add(itemLocalTrack ?? NULL_TRACK_ID);
               }
-            });
+            }
           }
 
-          // Merge base tracks with path tracks and any extra/null tracks discovered from zone data
+          // Also check pathItems for backward compatibility
+          pathItems.forEach((item) => {
+            const itemOp = item.location?.operational_point;
+            const itemLocalTrack = item.location?.local_track_name;
+            const matchesTrigram =
+              opTrigram != null && itemOp && 'trigram' in itemOp && itemOp.trigram === opTrigram;
+            const matchesUIC = opUIC != null && itemOp && 'uic' in itemOp && itemOp.uic === opUIC;
+            if (matchesTrigram || matchesUIC) {
+              pathTracksForOp.add(itemLocalTrack ?? NULL_TRACK_ID);
+            }
+          });
+
           const tracks = mergeTracksWithZones(
             baseTracks,
             opState.zones.data,
