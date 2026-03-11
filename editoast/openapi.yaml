@@ -2205,118 +2205,6 @@ paths:
       responses:
         '204':
           description: The macro note was deleted successfully
-  /paced_train/project_path_op:
-    post:
-      tags:
-      - train_schedule
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-              - infra_id
-              - train_ids
-              - operational_points_refs
-              - operational_points_distances
-              - use_simulation
-              properties:
-                electrical_profile_set_id:
-                  type:
-                  - integer
-                  - 'null'
-                  format: int64
-                infra_id:
-                  type: integer
-                  format: int64
-                operational_points_distances:
-                  type: array
-                  items:
-                    type: integer
-                    format: int64
-                    minimum: 0
-                  description: Distances between operational points in mm
-                operational_points_refs:
-                  type: array
-                  items:
-                    oneOf:
-                    - type: object
-                      title: OperationalPointReferenceId
-                      required:
-                      - operational_point
-                      - type
-                      properties:
-                        operational_point:
-                          oneOf:
-                          - type: string
-                            maxLength: 255
-                            minLength: 1
-                          description: The object id of an operational point
-                        type:
-                          type: string
-                          enum:
-                          - id
-                    - type: object
-                      title: OperationalPointReferenceTrigram
-                      required:
-                      - trigram
-                      - type
-                      properties:
-                        secondary_code:
-                          type:
-                          - string
-                          - 'null'
-                          description: An optional secondary code to identify a more specific location
-                        trigram:
-                          oneOf:
-                          - type: string
-                            minLength: 1
-                          description: The operational point trigram
-                        type:
-                          type: string
-                          enum:
-                          - trigram
-                    - type: object
-                      title: OperationalPointReferenceUic
-                      required:
-                      - uic
-                      - type
-                      properties:
-                        secondary_code:
-                          type:
-                          - string
-                          - 'null'
-                          description: An optional secondary code to identify a more specific location
-                        type:
-                          type: string
-                          enum:
-                          - uic
-                        uic:
-                          type: integer
-                          format: int32
-                          description: The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
-                          minimum: 0
-                train_ids:
-                  type: array
-                  items:
-                    type: integer
-                    format: int64
-                  uniqueItems: true
-                use_simulation:
-                  type: boolean
-        required: true
-      responses:
-        '200':
-          description: Project paced trains on a list of operational points.
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties:
-                  $ref: '#/components/schemas/ProjectPathTrainScheduleResult'
-                propertyNames:
-                  type: integer
-                  format: int64
   /paced_train/{id}/path:
     get:
       tags:
@@ -4419,6 +4307,118 @@ paths:
       responses:
         '200':
           description: Project Path Output
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/ProjectPathTrainScheduleResult'
+                propertyNames:
+                  type: integer
+                  format: int64
+  /train_schedules/project_path_op:
+    post:
+      tags:
+      - train_schedule
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - infra_id
+              - train_ids
+              - operational_points_refs
+              - operational_points_distances
+              - use_simulation
+              properties:
+                electrical_profile_set_id:
+                  type:
+                  - integer
+                  - 'null'
+                  format: int64
+                infra_id:
+                  type: integer
+                  format: int64
+                operational_points_distances:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                    minimum: 0
+                  description: Distances between operational points in mm
+                operational_points_refs:
+                  type: array
+                  items:
+                    oneOf:
+                    - type: object
+                      title: OperationalPointReferenceId
+                      required:
+                      - operational_point
+                      - type
+                      properties:
+                        operational_point:
+                          oneOf:
+                          - type: string
+                            maxLength: 255
+                            minLength: 1
+                          description: The object id of an operational point
+                        type:
+                          type: string
+                          enum:
+                          - id
+                    - type: object
+                      title: OperationalPointReferenceTrigram
+                      required:
+                      - trigram
+                      - type
+                      properties:
+                        secondary_code:
+                          type:
+                          - string
+                          - 'null'
+                          description: An optional secondary code to identify a more specific location
+                        trigram:
+                          oneOf:
+                          - type: string
+                            minLength: 1
+                          description: The operational point trigram
+                        type:
+                          type: string
+                          enum:
+                          - trigram
+                    - type: object
+                      title: OperationalPointReferenceUic
+                      required:
+                      - uic
+                      - type
+                      properties:
+                        secondary_code:
+                          type:
+                          - string
+                          - 'null'
+                          description: An optional secondary code to identify a more specific location
+                        type:
+                          type: string
+                          enum:
+                          - uic
+                        uic:
+                          type: integer
+                          format: int32
+                          description: The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
+                          minimum: 0
+                train_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  uniqueItems: true
+                use_simulation:
+                  type: boolean
+        required: true
+      responses:
+        '200':
+          description: Project train schedules on a list of operational points.
           content:
             application/json:
               schema:

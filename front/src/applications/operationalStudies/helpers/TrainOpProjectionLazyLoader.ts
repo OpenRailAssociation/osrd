@@ -4,7 +4,7 @@ import {
   osrdEditoastApi,
   type OperationalPointReference,
   type PostTrainSchedulesOccupancyBlocksApiResponse,
-  type PostPacedTrainProjectPathOpApiResponse,
+  type PostTrainSchedulesProjectPathOpApiResponse,
 } from 'common/api/osrdEditoastApi';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
 import { extractEditoastIdFromPacedTrainId, formatEditoastIdToPacedTrainId } from 'utils/trainId';
@@ -45,13 +45,15 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
 
     const editoastIds = batch.map((id) => extractEditoastIdFromPacedTrainId(id));
 
-    let pacedTrainPromise: Promise<PostPacedTrainProjectPathOpApiResponse> = Promise.resolve({});
+    let pacedTrainPromise: Promise<PostTrainSchedulesProjectPathOpApiResponse> = Promise.resolve(
+      {}
+    );
     let pacedTrainOccupancyBlocksPromise: Promise<PostTrainSchedulesOccupancyBlocksApiResponse> =
       Promise.resolve({});
     if (editoastIds.length > 0) {
       pacedTrainPromise = this.options
         .dispatch(
-          osrdEditoastApi.endpoints.postPacedTrainProjectPathOp.initiate(
+          osrdEditoastApi.endpoints.postTrainSchedulesProjectPathOp.initiate(
             {
               body: {
                 infra_id: infraId,
