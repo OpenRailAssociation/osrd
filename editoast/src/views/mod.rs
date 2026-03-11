@@ -243,7 +243,7 @@ fn service_router() -> router::DocumentedRouter {
                                 path.route("/", get!(timetable::get_train_schedules))
                             })
                             .nests("/round_trips", |path| {
-                                path.route("/paced_trains", get!(round_trips::list_paced_trains))
+                                path.route("/train_schedules", get!(round_trips::list_train_schedules))
                             })
                     })
             })
@@ -304,9 +304,9 @@ fn service_router() -> router::DocumentedRouter {
                     })
             })
             .nests("/round_trips", |path| {
-                path.nests("/paced_trains", |path| {
-                    path.route("/", post!(round_trips::post_paced_trains))
-                        .route("/delete", post!(round_trips::delete_paced_trains))
+                path.nests("/train_schedules", |path| {
+                    path.route("/", post!(round_trips::post_train_schedules))
+                        .route("/delete", post!(round_trips::delete_train_schedules))
                 })
             })
             .nests("/sub_category", |path| {

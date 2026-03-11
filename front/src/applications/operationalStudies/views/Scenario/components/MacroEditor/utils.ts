@@ -105,7 +105,7 @@ export const storeRoundTrip = async (
     };
   }
   await dispatch(
-    osrdEditoastApi.endpoints.postRoundTripsPacedTrains.initiate({
+    osrdEditoastApi.endpoints.postRoundTripsTrainSchedules.initiate({
       roundTrips,
     })
   ).unwrap();

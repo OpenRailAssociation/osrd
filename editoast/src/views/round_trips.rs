@@ -90,7 +90,7 @@ fn schema_round_trips() -> RefOr<Schema> {
         .into()
 }
 
-/// Upsert a list of round trips / one-way of paced trains
+/// Upsert a list of round trips / one-way of train schedules
 #[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
@@ -98,7 +98,7 @@ fn schema_round_trips() -> RefOr<Schema> {
     request_body = RoundTrips,
     responses((status = 204, description = "Round trips were successfully upserted"))
 )]
-pub(in crate::views) async fn post_paced_trains(
+pub(in crate::views) async fn post_train_schedules(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Json(round_trips): Json<RoundTrips>,
@@ -149,18 +149,18 @@ pub(in crate::views) async fn post_paced_trains(
     Ok(axum::http::StatusCode::NO_CONTENT)
 }
 
-/// Delete a list of round trips / one-way of paced trains
+/// Delete a list of round trips / one-way of train schedules
 #[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "round_trips",
     request_body(
         content = Vec<u64>,
-        description = "IDs of paced trains to remove from round trips or one-way."
+        description = "IDs of train schedules to remove from round trips or one-way."
     ),
     responses((status = 204, description = "Round trips were successfully deleted"))
 )]
-pub(in crate::views) async fn delete_paced_trains(
+pub(in crate::views) async fn delete_train_schedules(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Json(train_schedule_ids): Json<HashSet<i64>>,
@@ -187,7 +187,7 @@ pub(in crate::views) struct RoundTripsPage {
     results: RoundTrips,
 }
 
-/// Upsert a list of round trips / one-way of paced trains
+/// Upsert a list of round trips / one-way of train schedules
 #[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
@@ -195,7 +195,7 @@ pub(in crate::views) struct RoundTripsPage {
     params(TimetableIdParam, PaginationQueryParams<1000>),
     responses((status = 200, body = inline(RoundTripsPage)))
 )]
-pub(in crate::views) async fn list_paced_trains(
+pub(in crate::views) async fn list_train_schedules(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,

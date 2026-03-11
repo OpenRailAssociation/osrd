@@ -779,23 +779,23 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/rolling_stock/${queryArg.rollingStockId}/usage` }),
         providesTags: ['rolling_stock'],
       }),
-      postRoundTripsPacedTrains: build.mutation<
-        PostRoundTripsPacedTrainsApiResponse,
-        PostRoundTripsPacedTrainsApiArg
+      postRoundTripsTrainSchedules: build.mutation<
+        PostRoundTripsTrainSchedulesApiResponse,
+        PostRoundTripsTrainSchedulesApiArg
       >({
         query: (queryArg) => ({
-          url: `/round_trips/paced_trains`,
+          url: `/round_trips/train_schedules`,
           method: 'POST',
           body: queryArg.roundTrips,
         }),
         invalidatesTags: ['round_trips'],
       }),
-      postRoundTripsPacedTrainsDelete: build.mutation<
-        PostRoundTripsPacedTrainsDeleteApiResponse,
-        PostRoundTripsPacedTrainsDeleteApiArg
+      postRoundTripsTrainSchedulesDelete: build.mutation<
+        PostRoundTripsTrainSchedulesDeleteApiResponse,
+        PostRoundTripsTrainSchedulesDeleteApiArg
       >({
         query: (queryArg) => ({
-          url: `/round_trips/paced_trains/delete`,
+          url: `/round_trips/train_schedules/delete`,
           method: 'POST',
           body: queryArg.body,
         }),
@@ -1026,12 +1026,12 @@ const injectedRtkApi = api
         }),
         providesTags: ['timetable'],
       }),
-      getTimetableByIdRoundTripsPacedTrains: build.query<
-        GetTimetableByIdRoundTripsPacedTrainsApiResponse,
-        GetTimetableByIdRoundTripsPacedTrainsApiArg
+      getTimetableByIdRoundTripsTrainSchedules: build.query<
+        GetTimetableByIdRoundTripsTrainSchedulesApiResponse,
+        GetTimetableByIdRoundTripsTrainSchedulesApiArg
       >({
         query: (queryArg) => ({
-          url: `/timetable/${queryArg.id}/round_trips/paced_trains`,
+          url: `/timetable/${queryArg.id}/round_trips/train_schedules`,
           params: {
             page: queryArg.page,
             page_size: queryArg.pageSize,
@@ -2095,13 +2095,13 @@ export type GetRollingStockByRollingStockIdUsageApiResponse =
 export type GetRollingStockByRollingStockIdUsageApiArg = {
   rollingStockId: number;
 };
-export type PostRoundTripsPacedTrainsApiResponse = unknown;
-export type PostRoundTripsPacedTrainsApiArg = {
+export type PostRoundTripsTrainSchedulesApiResponse = unknown;
+export type PostRoundTripsTrainSchedulesApiArg = {
   roundTrips: RoundTrips;
 };
-export type PostRoundTripsPacedTrainsDeleteApiResponse = unknown;
-export type PostRoundTripsPacedTrainsDeleteApiArg = {
-  /** IDs of paced trains to remove from round trips or one-way. */
+export type PostRoundTripsTrainSchedulesDeleteApiResponse = unknown;
+export type PostRoundTripsTrainSchedulesDeleteApiArg = {
+  /** IDs of train schedules to remove from round trips or one-way. */
   body: number[];
 };
 export type GetScenariosApiResponse =
@@ -2288,11 +2288,11 @@ export type GetTimetableByIdRequirementsApiArg = {
   infraId: number;
   electricalProfileSetId?: number;
 };
-export type GetTimetableByIdRoundTripsPacedTrainsApiResponse =
+export type GetTimetableByIdRoundTripsTrainSchedulesApiResponse =
   /** status 200  */ PaginationStats & {
     results: RoundTrips;
   };
-export type GetTimetableByIdRoundTripsPacedTrainsApiArg = {
+export type GetTimetableByIdRoundTripsTrainSchedulesApiArg = {
   /** A timetable ID */
   id: number;
   page?: number;
