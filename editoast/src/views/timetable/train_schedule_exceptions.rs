@@ -356,6 +356,8 @@ mod tests {
             timetable.id,
             train_schedule.id,
             Some(1),
+            None,
+            None,
         )
         .await;
 
