@@ -128,9 +128,10 @@ const usePathProjection = (
   const pacedArg = rawPacedTrainId ? { id: rawPacedTrainId, infraId, exceptionKey } : skipToken;
   const basePacedArg = exceptionKey ? { id: rawPacedTrainId!, infraId } : skipToken;
 
-  const { data: pathfinding } = osrdEditoastApi.endpoints.getPacedTrainByIdPath.useQuery(pacedArg);
+  const { data: pathfinding } =
+    osrdEditoastApi.endpoints.getTrainSchedulesByIdPath.useQuery(pacedArg);
   const { currentData: basePacedPath } =
-    osrdEditoastApi.endpoints.getPacedTrainByIdPath.useQuery(basePacedArg);
+    osrdEditoastApi.endpoints.getTrainSchedulesByIdPath.useQuery(basePacedArg);
 
   const { data: pathProperties } =
     osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useQuery(

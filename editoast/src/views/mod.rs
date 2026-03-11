@@ -294,13 +294,13 @@ fn service_router() -> router::DocumentedRouter {
                                 get!(timetable::paced_train::etcs_braking_curves),
                             )
                         .route("/", put!(timetable::paced_train::update_train_schedule))
+                        .route("/path", get!(timetable::paced_train::get_path))
 
                 })
             })
             .nests("/paced_train", |path| {
                 path.nests("/{id}", |path| {
-                            path.route("/path", get!(timetable::paced_train::get_path))
-                            .route("/simulation", get!(timetable::paced_train::simulation))
+                            path.route("/simulation", get!(timetable::paced_train::simulation))
                     })
             })
             .nests("/round_trips", |path| {

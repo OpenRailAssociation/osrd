@@ -2209,7 +2209,7 @@ mod tests {
             create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
 
         let request = app.get(&format!(
-            "/paced_train/{}/path?infra_id={}",
+            "/train_schedules/{}/path?infra_id={}",
             paced_train.id, 0
         ));
 
@@ -2229,7 +2229,7 @@ mod tests {
         let small_infra = create_small_infra(&mut pool.get_ok()).await;
 
         let request = app.get(&format!(
-            "/paced_train/{}/path?infra_id={}",
+            "/train_schedules/{}/path?infra_id={}",
             0, small_infra.id
         ));
 
@@ -2252,7 +2252,7 @@ mod tests {
             create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
         let request = app.get(
             format!(
-                "/paced_train/{}/path/?infra_id={}&exception_key=toto",
+                "/train_schedules/{}/path/?infra_id={}&exception_key=toto",
                 paced_train.id, small_infra.id
             )
             .as_str(),
@@ -2295,7 +2295,7 @@ mod tests {
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
 
         let request = app.get(&format!(
-            "/paced_train/{}/path?infra_id={}",
+            "/train_schedules/{}/path?infra_id={}",
             paced_train.id, small_infra.id
         ));
 
@@ -2353,7 +2353,7 @@ mod tests {
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
 
         let request = app.get(&format!(
-            "/paced_train/{}/path?infra_id={}&exception_key={}",
+            "/train_schedules/{}/path?infra_id={}&exception_key={}",
             paced_train.id, small_infra.id, exception.key
         ));
 
@@ -2405,7 +2405,7 @@ mod tests {
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
 
         let request = app.get(&format!(
-            "/paced_train/{}/path?infra_id={}&exception_key={}",
+            "/train_schedules/{}/path?infra_id={}&exception_key={}",
             paced_train.id, small_infra.id, exception.key
         ));
 

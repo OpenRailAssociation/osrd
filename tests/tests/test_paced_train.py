@@ -79,7 +79,7 @@ def test_get_paced_train_with_exception_path(
 
     # Get base paced train path
     paced_train_path_result = session.get(
-        f"{EDITOAST_URL}paced_train/{paced_train_id}/path?infra_id={small_infra.id}"
+        f"{EDITOAST_URL}train_schedules/{paced_train_id}/path?infra_id={small_infra.id}"
     ).json()
 
     # Add exception to the paced train
@@ -115,7 +115,7 @@ def test_get_paced_train_with_exception_path(
     assert update_response.status_code == 204
     # Get exception path
     exception_path_result = session.get(
-        f"{EDITOAST_URL}paced_train/{paced_train_id}/path?infra_id={small_infra.id}&exception_key=exception_key"
+        f"{EDITOAST_URL}train_schedules/{paced_train_id}/path?infra_id={small_infra.id}&exception_key=exception_key"
     ).json()
     base_track_sections = [
         tsr["track_section"]

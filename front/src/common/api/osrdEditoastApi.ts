@@ -82,7 +82,7 @@ const osrdEditoastApi = generatedEditoastApi
             ? extractPacedTrainIdFromOccurrenceId(trainId)
             : trainId;
           const path: PathfindingResult = await dispatch(
-            generatedEditoastApi.endpoints.getPacedTrainByIdPath.initiate(
+            generatedEditoastApi.endpoints.getTrainSchedulesByIdPath.initiate(
               {
                 id: extractEditoastIdFromPacedTrainId(pacedTrainId),
                 infraId,
