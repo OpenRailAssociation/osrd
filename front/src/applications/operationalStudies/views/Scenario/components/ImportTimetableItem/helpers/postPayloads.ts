@@ -25,7 +25,9 @@ const postRoundTrips = async (
       formattedPacedTrains,
       extractEditoastIdFromPacedTrainId
     );
-    await dispatch(osrdEditoastApi.endpoints.postRoundTripsPacedTrains.initiate(payload)).unwrap();
+    await dispatch(
+      osrdEditoastApi.endpoints.postRoundTripsTrainSchedules.initiate(payload)
+    ).unwrap();
   }
 };
 

@@ -54,12 +54,14 @@ const RoundTripsModal = ({
   const subCategories = useSubCategoryContext();
 
   const { data: { results: pacedTrainRoundtrips } = { results: undefined } } =
-    osrdEditoastApi.endpoints.getTimetableByIdRoundTripsPacedTrains.useQuery({ id: timetableId });
+    osrdEditoastApi.endpoints.getTimetableByIdRoundTripsTrainSchedules.useQuery({
+      id: timetableId,
+    });
 
-  const [postRoundTripsPacedTrains] =
-    osrdEditoastApi.endpoints.postRoundTripsPacedTrains.useMutation();
-  const [deleteRoundTripsPacedTrains] =
-    osrdEditoastApi.endpoints.postRoundTripsPacedTrainsDelete.useMutation();
+  const [postRoundTripsTrainSchedules] =
+    osrdEditoastApi.endpoints.postRoundTripsTrainSchedules.useMutation();
+  const [deleteRoundTripsTrainSchedules] =
+    osrdEditoastApi.endpoints.postRoundTripsTrainSchedulesDelete.useMutation();
 
   const timetableItemsWithOps = useTimetableItemsWithPathOps(infraId, timetableItems);
 
@@ -135,11 +137,11 @@ const RoundTripsModal = ({
 
     const apiCalls = [];
     if (idsToDelete.length > 0) {
-      apiCalls.push(deleteRoundTripsPacedTrains({ body: idsToDelete }));
+      apiCalls.push(deleteRoundTripsTrainSchedules({ body: idsToDelete }));
     }
     if (roundTripsIds.length > 0 || oneWaysIds.length > 0) {
       apiCalls.push(
-        postRoundTripsPacedTrains({
+        postRoundTripsTrainSchedules({
           roundTrips: { round_trips: roundTripsIds, one_ways: oneWaysIds },
         })
       );
