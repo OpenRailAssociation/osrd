@@ -133,8 +133,10 @@ const SendToRailwayManagerModal = ({
   const afterDate = addDurationToDate(realConstraintTime, afterTolerance);
   const beforeDate = subtractDurationFromDate(realConstraintTime, beforeTolerance);
 
-  const [sendLastMinuteRequest, { isLoading, isSuccess, data, error: lastMinuteRequestError }] =
-    osrdRailwayManagerApi.endpoints.postSendLastMinuteRequest.useMutation();
+  const [
+    sendLastMinuteRequest,
+    { isLoading, isSuccess, data: sendLMRResponse, error: lastMinuteRequestError },
+  ] = osrdRailwayManagerApi.endpoints.postSendLastMinuteRequest.useMutation();
 
   const convoyDetails = useMemo(
     () => [
@@ -314,9 +316,9 @@ const SendToRailwayManagerModal = ({
 
   useEffect(() => {
     if (isSuccess) {
-      onSuccess(isSuccess, data);
+      onSuccess(isSuccess, sendLMRResponse);
     }
-  }, [isSuccess, data]);
+  }, [isSuccess, sendLMRResponse]);
 
   return (
     <div className="send-to-railway-manager">
@@ -558,18 +560,18 @@ const SendToRailwayManagerModal = ({
               <span>
                 <Trans
                   components={{
-                    requestNumber: data.created_request_url ? (
+                    requestNumber: sendLMRResponse.created_request_url ? (
                       <a
-                        href={data.created_request_url}
+                        href={sendLMRResponse.created_request_url}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="request-link"
                       >
-                        {data.request_identifier}
+                        {sendLMRResponse.request_identifier}
                       </a>
                     ) : (
                       // eslint-disable-next-line react/jsx-no-useless-fragment
-                      <>{data.request_identifier}</>
+                      <>{sendLMRResponse.request_identifier}</>
                     ),
                   }}
                 >
