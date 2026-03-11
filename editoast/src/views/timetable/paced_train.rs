@@ -886,7 +886,7 @@ enum BaseOrExceptionId {
     tag = "train_schedule",
     request_body = inline(ProjectPathOperationalPointForm),
     responses(
-        (status = 200, description = "Project paced trains on a list of operational points.", body = HashMap<i64,ProjectPathTrainScheduleResult>),
+        (status = 200, description = "Project train schedules on a list of operational points.", body = HashMap<i64,ProjectPathTrainScheduleResult>),
     ),
 )]
 pub(in crate::views) async fn project_path_op(
@@ -929,7 +929,7 @@ pub(in crate::views) async fn project_path_op(
 
     let conn = &mut db_pool.get().await?;
 
-    let paced_trains: Vec<models::TrainSchedule> =
+    let train_schedules: Vec<models::TrainSchedule> =
         models::TrainSchedule::retrieve_batch_or_fail(conn, train_ids, |missing| {
             TrainScheduleError::BatchNotFound {
                 count: missing.len(),
@@ -937,22 +937,22 @@ pub(in crate::views) async fn project_path_op(
         })
         .await?;
 
-    let (ids, train_schedules): (Vec<_>, Vec<_>) = paced_trains
+    let (ids, train_schedules): (Vec<_>, Vec<_>) = train_schedules
         .iter()
-        .flat_map(|paced_train| {
+        .flat_map(|train_schedule| {
             std::iter::once((
                 BaseOrExceptionId::PacedTrain {
-                    paced_train_id: paced_train.id,
+                    paced_train_id: train_schedule.id,
                 },
-                paced_train.clone().into_train_occurrence(),
+                train_schedule.clone().into_train_occurrence(),
             ))
-            .chain(paced_train.exceptions.iter().map(|exception| {
+            .chain(train_schedule.exceptions.iter().map(|exception| {
                 (
                     BaseOrExceptionId::Exception {
-                        paced_train_id: paced_train.id,
+                        paced_train_id: train_schedule.id,
                         exception_key: exception.key.clone(),
                     },
-                    paced_train.apply_exception(exception),
+                    train_schedule.apply_exception(exception),
                 )
             }))
         })

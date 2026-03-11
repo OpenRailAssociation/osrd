@@ -13,7 +13,6 @@ export const addTagTypes = [
   'layers',
   'level_crossing',
   'scenarios',
-  'train_schedule',
   'paced_train',
   'projects',
   'rolling_stock_livery',
@@ -30,6 +29,7 @@ export const addTagTypes = [
   'timetable',
   'train_schedule_exceptions',
   'train_schedule_set',
+  'train_schedule',
   'etcs_braking_curves',
   'work_schedules',
   'worker',
@@ -635,17 +635,6 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({ url: `/macro_notes/${queryArg.noteId}`, method: 'DELETE' }),
         invalidatesTags: ['scenarios'],
-      }),
-      postPacedTrainProjectPathOp: build.query<
-        PostPacedTrainProjectPathOpApiResponse,
-        PostPacedTrainProjectPathOpApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/paced_train/project_path_op`,
-          method: 'POST',
-          body: queryArg.body,
-        }),
-        providesTags: ['train_schedule'],
       }),
       getPacedTrainByIdPath: build.query<
         GetPacedTrainByIdPathApiResponse,
@@ -1304,6 +1293,17 @@ const injectedRtkApi = api
           body: queryArg.projectPathForm,
         }),
         providesTags: ['paced_train'],
+      }),
+      postTrainSchedulesProjectPathOp: build.query<
+        PostTrainSchedulesProjectPathOpApiResponse,
+        PostTrainSchedulesProjectPathOpApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/train_schedules/project_path_op`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        providesTags: ['train_schedule'],
       }),
       postTrainSchedulesSimulationSummary: build.query<
         PostTrainSchedulesSimulationSummaryApiResponse,
@@ -2004,41 +2004,6 @@ export type DeleteMacroNotesByNoteIdApiResponse = unknown;
 export type DeleteMacroNotesByNoteIdApiArg = {
   noteId: number;
 };
-export type PostPacedTrainProjectPathOpApiResponse =
-  /** status 200 Project paced trains on a list of operational points. */ {
-    [key: string]: ProjectPathTrainScheduleResult;
-  };
-export type PostPacedTrainProjectPathOpApiArg = {
-  body: {
-    electrical_profile_set_id?: number | null;
-    infra_id: number;
-    /** Distances between operational points in mm */
-    operational_points_distances: number[];
-    operational_points_refs: (
-      | {
-          /** The object id of an operational point */
-          operational_point: string;
-          type: 'id';
-        }
-      | {
-          /** An optional secondary code to identify a more specific location */
-          secondary_code?: string | null;
-          /** The operational point trigram */
-          trigram: string;
-          type: 'trigram';
-        }
-      | {
-          /** An optional secondary code to identify a more specific location */
-          secondary_code?: string | null;
-          type: 'uic';
-          /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
-          uic: number;
-        }
-    )[];
-    train_ids: number[];
-    use_simulation: boolean;
-  };
-};
 export type GetPacedTrainByIdPathApiResponse = /** status 200 The path */ PathfindingResult;
 export type GetPacedTrainByIdPathApiArg = {
   id: number;
@@ -2565,6 +2530,41 @@ export type PostTrainSchedulesProjectPathApiResponse = /** status 200 Project Pa
 };
 export type PostTrainSchedulesProjectPathApiArg = {
   projectPathForm: ProjectPathForm;
+};
+export type PostTrainSchedulesProjectPathOpApiResponse =
+  /** status 200 Project train schedules on a list of operational points. */ {
+    [key: string]: ProjectPathTrainScheduleResult;
+  };
+export type PostTrainSchedulesProjectPathOpApiArg = {
+  body: {
+    electrical_profile_set_id?: number | null;
+    infra_id: number;
+    /** Distances between operational points in mm */
+    operational_points_distances: number[];
+    operational_points_refs: (
+      | {
+          /** The object id of an operational point */
+          operational_point: string;
+          type: 'id';
+        }
+      | {
+          /** An optional secondary code to identify a more specific location */
+          secondary_code?: string | null;
+          /** The operational point trigram */
+          trigram: string;
+          type: 'trigram';
+        }
+      | {
+          /** An optional secondary code to identify a more specific location */
+          secondary_code?: string | null;
+          type: 'uic';
+          /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
+          uic: number;
+        }
+    )[];
+    train_ids: number[];
+    use_simulation: boolean;
+  };
 };
 export type PostTrainSchedulesSimulationSummaryApiResponse =
   /** status 200 Associate each train schedule id with its simulation summaries */ {
@@ -3796,21 +3796,6 @@ export type MacroNoteBatchForm = {
   macro_notes: MacroNoteForm[];
   scenario_id: number;
 };
-export type SpaceTimeCurve = {
-  /** List of positions of a train in mm
-    Both positions and times must have the same length */
-  positions: number[];
-  /** List of times in ms since `departure_time` associated to a position */
-  times: number[];
-};
-export type ProjectPathTrainScheduleResult = {
-  /** Exceptions whose projection is different from the train schedule when it has a paced */
-  exceptions: {
-    [key: string]: SpaceTimeCurve[];
-  };
-  /** Train schedule */
-  train_schedule: SpaceTimeCurve[];
-};
 export type CoreReportTrain = {
   /** Total energy consumption */
   energy_consumption: number;
@@ -4872,6 +4857,21 @@ export type OccupancyBlockForm = {
   ids: number[];
   infra_id: number;
   path: CoreTrainPath;
+};
+export type SpaceTimeCurve = {
+  /** List of positions of a train in mm
+    Both positions and times must have the same length */
+  positions: number[];
+  /** List of times in ms since `departure_time` associated to a position */
+  times: number[];
+};
+export type ProjectPathTrainScheduleResult = {
+  /** Exceptions whose projection is different from the train schedule when it has a paced */
+  exceptions: {
+    [key: string]: SpaceTimeCurve[];
+  };
+  /** Train schedule */
+  train_schedule: SpaceTimeCurve[];
 };
 export type ProjectPathForm = {
   electrical_profile_set_id?: number | null;
