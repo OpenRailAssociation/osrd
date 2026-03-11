@@ -76,7 +76,7 @@ const TrainScheduleSetSelect = ({
       <div className="catalog-entry">
         <Select<CatalogEntry>
           id="catalogue-entry"
-          label={t('catalogEntry')}
+          label={t('parentCatalogEntry')}
           placeholder={t('choose')}
           value={catalogSelected}
           onChange={(item) => setCatalogEntry(item ? item.id : undefined)}
