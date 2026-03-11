@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import { ComboBox, Select, SegmentedControl } from '@osrd-project/ui-core';
 import {
@@ -81,8 +81,6 @@ const PathStepItem = ({
   const dispatch = useAppDispatch();
   const mapSettings = useMapSettings();
   const { updateViewport } = useMapSettingsActions();
-
-  const [hovered, setHovered] = useState(false);
 
   const blurActiveElement = () => {
     requestAnimationFrame(() => {
@@ -252,9 +250,9 @@ const PathStepItem = ({
         <button
           type="button"
           className={cx('path-step-counter', {
-            'delete-hovered': hovered && !isTrailingPlaceHolder && !isOnlyStep,
             invalid: isInvalidAndIsEditing,
             'is-only-step': isOnlyStep,
+            'is-trailing-placeholder': isTrailingPlaceHolder,
             index: isIndexed,
             'pathfinding-line': !hidePathfindingLine,
             origin: index === 1,
@@ -276,10 +274,12 @@ const PathStepItem = ({
             e.stopPropagation();
             onDelete();
           }}
-          onPointerEnter={() => !isTrailingPlaceHolder && setHovered(true)}
-          onPointerLeave={() => !isTrailingPlaceHolder && setHovered(false)}
         >
-          {isTrailingPlaceHolder ? null : hovered && !isOnlyStep ? <X /> : index}
+          <span className="counter">{!isTrailingPlaceHolder && index}</span>
+
+          <span className="remove-path-step-icon">
+            <X />
+          </span>
         </button>
 
         <div

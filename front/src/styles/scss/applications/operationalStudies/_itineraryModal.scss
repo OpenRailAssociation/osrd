@@ -245,6 +245,20 @@
             padding-bottom: 14px;
           }
 
+          .path-step-counter:not(.is-only-step):not(.is-trailing-placeholder):hover {
+            opacity: 1;
+            background-color: var(--error60) !important;
+            border-color: var(--error30) !important;
+
+            .remove-path-step-icon {
+              display: block !important;
+            }
+
+            .counter {
+              display: none;
+            }
+          }
+
           .path-step {
             display: grid;
             grid-template-columns:
@@ -263,11 +277,6 @@
                 auto;
             }
 
-            .path-step-counter.delete-hovered {
-              opacity: 1;
-              background-color: var(--error60) !important;
-              border-color: var(--error30) !important;
-            }
             .path-step-counter {
               position: relative;
               width: 24px;
@@ -319,11 +328,18 @@
                 }
               }
 
+              .remove-path-step-icon {
+                display: none;
+              }
+
               &.invalid {
                 background-color: var(--error60);
                 border-color: var(--error30);
               }
               &.is-only-step {
+                pointer-events: none;
+              }
+              &.is-trailing-placeholder {
                 pointer-events: none;
               }
             }
