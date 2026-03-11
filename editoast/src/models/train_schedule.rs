@@ -7,6 +7,7 @@ use editoast_models::rolling_stock::TrainMainCategory;
 use editoast_models::tags::Tags;
 use itertools::Itertools;
 use schemas;
+use schemas::TrainScheduleException;
 use schemas::paced_train;
 use schemas::paced_train::ExceptionType;
 use schemas::paced_train::Paced;
@@ -110,6 +111,57 @@ impl TrainSchedule {
         }
 
         train_schedule
+    }
+
+    pub fn apply_train_schedule_exception(
+        &self,
+        exception: &TrainScheduleException,
+    ) -> TrainOccurrence {
+        let mut train_occurrence = self.clone().into_train_occurrence();
+
+        if let Some(change_group) = &exception.change_groups.train_name {
+            train_occurrence.train_name = change_group.value.clone();
+        }
+        if let Some(change_group) = &exception.change_groups.rolling_stock {
+            train_occurrence.comfort = change_group.comfort;
+            train_occurrence.rolling_stock_name = change_group.rolling_stock_name.clone();
+        }
+        if let Some(change_group) = &exception.change_groups.rolling_stock_category {
+            train_occurrence.category = change_group.value.clone();
+        }
+        if let Some(change_group) = &exception.change_groups.labels {
+            train_occurrence.labels = change_group.value.clone();
+        }
+        if let Some(change_group) = &exception.change_groups.speed_limit_tag {
+            train_occurrence.speed_limit_tag = change_group.value.clone();
+        }
+        if let Some(change_group) = &exception.change_groups.start_time {
+            train_occurrence.start_time = change_group.value
+        }
+        if let (Some(occurrence_index), None) = (
+            &exception.occurrence_index,
+            &exception.change_groups.start_time,
+        ) {
+            train_occurrence.start_time =
+                self.get_occurrence_start_time(*occurrence_index as usize);
+        }
+        if let Some(change_group) = &exception.change_groups.constraint_distribution {
+            train_occurrence.constraint_distribution = change_group.value;
+        }
+        if let Some(change_group) = &exception.change_groups.initial_speed {
+            train_occurrence.initial_speed = change_group.value;
+        }
+        if let Some(change_group) = &exception.change_groups.options {
+            train_occurrence.options = change_group.value.clone();
+        }
+        if let Some(change_group) = &exception.change_groups.path_and_schedule {
+            train_occurrence.margins = change_group.margins.clone();
+            train_occurrence.path = change_group.path.clone();
+            train_occurrence.power_restrictions = change_group.power_restrictions.clone();
+            train_occurrence.schedule = change_group.schedule.clone();
+        }
+
+        train_occurrence
     }
 
     pub fn into_train_occurrence(self) -> TrainOccurrence {
