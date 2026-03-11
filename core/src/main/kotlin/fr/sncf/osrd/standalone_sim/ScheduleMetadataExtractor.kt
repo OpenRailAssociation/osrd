@@ -20,6 +20,7 @@ import fr.sncf.osrd.path.interfaces.BlockRange
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.RouteRange
 import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.interfaces.ZoneRange
 import fr.sncf.osrd.signaling.SigSystemManager
 import fr.sncf.osrd.signaling.SignalingTrainState
 import fr.sncf.osrd.signaling.ZoneStatus
@@ -30,7 +31,13 @@ import fr.sncf.osrd.standalone_sim.result.ResultSpeed
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.simplifyEnvelopePoints
-import fr.sncf.osrd.utils.units.*
+import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.Speed
+import fr.sncf.osrd.utils.units.TimeDelta
+import fr.sncf.osrd.utils.units.meters
+import fr.sncf.osrd.utils.units.metersPerSecond
+import fr.sncf.osrd.utils.units.seconds
 
 // Reserve clear track with a margin for the reaction time of the driver
 const val CLOSED_SIGNAL_RESERVATION_MARGIN = 20.0
@@ -544,21 +551,116 @@ data class ZoneOccupationChangeEvent(
     val zone: ZoneId,
 )
 
+private fun getBacktrackWithTrainTailOverOffset(
+    ascendingBacktrackLocations: List<Offset<PhysicsPath>>,
+    trainLength: Distance,
+    offset: Offset<PhysicsPath>,
+): Offset<PhysicsPath>? {
+    for (backtracking in ascendingBacktrackLocations) {
+        if (offset < backtracking - trainLength) continue
+        if (offset <= backtracking) return backtracking
+        break
+    }
+    return null
+}
+
+private fun zoneRangeExitOffset(
+    ascendingBacktrackLocations: List<Offset<PhysicsPath>>,
+    trainLength: Distance,
+    zoneRange: ZoneRange,
+): Offset<PhysicsPath> {
+    val backtrackOverZoneBeginOffset =
+        getBacktrackWithTrainTailOverOffset(
+            ascendingBacktrackLocations,
+            trainLength,
+            zoneRange.pathBegin,
+        )
+    if (
+        backtrackOverZoneBeginOffset != null && backtrackOverZoneBeginOffset != zoneRange.pathBegin
+    ) {
+        // Backtracking with tail above zone-start: entry location of the head (zone-start) will
+        // actually be exit location of the tail after backtrack.
+        // No matter the length of the train (> 100m in the example), if the zone started 100m
+        // before backtrack, then it will end 100m after backtrack.
+        return backtrackOverZoneBeginOffset + (backtrackOverZoneBeginOffset - zoneRange.pathBegin)
+    }
+
+    val backtrackOverZoneEndOffset =
+        getBacktrackWithTrainTailOverOffset(
+            ascendingBacktrackLocations,
+            trainLength,
+            zoneRange.pathEnd,
+        )
+    if (backtrackOverZoneEndOffset != null) {
+        // Backtracking with tail above zone-end: will actually lead to occupying zone until the
+        // backtracking (to be merged later with occupation after backtrack).
+        return backtrackOverZoneEndOffset
+    }
+
+    // regular case: wait until tail crosses exit
+    return zoneRange.pathEnd + trainLength
+}
+
+private fun sortAndMergeSameZoneOverlappingOrContiguousOccupations(
+    zoneOccupationChangeEvents: MutableList<ZoneOccupationChangeEvent>
+) {
+    // Sorting entries before exits to "create" overlaps for contiguous occupations, then easily
+    // merge those
+    zoneOccupationChangeEvents.sortWith(compareBy({ it.time }, { !it.isEntry }))
+
+    // Keeping only the events that start-from/end-to no occupation on considered zone
+    val currentOccupationNumberByZone = mutableMapOf<ZoneId, Int>()
+    val eventIterator = zoneOccupationChangeEvents.iterator()
+    while (eventIterator.hasNext()) {
+        val event = eventIterator.next()
+        var updated = currentOccupationNumberByZone.getOrDefault(event.zone, 0)
+        if (event.isEntry) {
+            if (updated > 0) {
+                // keep entry only when not already occupied before the considered entry
+                eventIterator.remove()
+            }
+            updated++
+        } else {
+            updated--
+            if (updated > 0) {
+                // keep exit only when there are no more occupation ongoing after the considered
+                // exit
+                eventIterator.remove()
+            }
+        }
+        require(updated >= 0)
+        currentOccupationNumberByZone[event.zone] = updated
+    }
+}
+
 fun zoneOccupationChangeEvents(
     trainPath: TrainPath,
     envelope: EnvelopeTimeInterpolate,
     trainLength: Distance,
-): MutableList<ZoneOccupationChangeEvent> {
+): List<ZoneOccupationChangeEvent> {
+    // Check that backtracks are sorted ascending and that there is no "backtrack-over-backtrack"
+    // (in which case the following code wouldn't work properly)
+    require(
+        trainPath
+            .getBacktrackLocations()
+            .asSequence()
+            .zipWithNext { current, next -> current < next - trainLength }
+            .all { it }
+    )
+
     val zoneOccupationChangeEvents = mutableListOf<ZoneOccupationChangeEvent>()
     for (zoneRange in trainPath.getZoneRanges()) {
+        // entry is always at the start of the zone (might lead to some adjacent identical zone
+        // occupation for the same zone at backtrack)
         val entryOffset = zoneRange.pathBegin
-        val exitOffset = zoneRange.pathEnd + trainLength
         val entryTime = envelope.interpolateArrivalAtClamp(entryOffset.meters).seconds
+
+        val exitOffset =
+            zoneRangeExitOffset(trainPath.getBacktrackLocations(), trainLength, zoneRange)
         val exitTime = envelope.interpolateDepartureFromClamp(exitOffset.meters).seconds
 
         // Avoid generating entry + exit at the same time
         if (exitTime <= entryTime) continue
-
         zoneOccupationChangeEvents.add(
             ZoneOccupationChangeEvent(entryTime, entryOffset, isEntry = true, zoneRange.value)
         )
@@ -566,7 +668,8 @@ fun zoneOccupationChangeEvents(
             ZoneOccupationChangeEvent(exitTime, exitOffset, isEntry = false, zoneRange.value)
         )
     }
-    zoneOccupationChangeEvents.sortBy { it.time }
+
+    sortAndMergeSameZoneOverlappingOrContiguousOccupations(zoneOccupationChangeEvents)
 
     return zoneOccupationChangeEvents
 }
