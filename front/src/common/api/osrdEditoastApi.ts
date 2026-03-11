@@ -308,6 +308,9 @@ const osrdEditoastApi = generatedEditoastApi
       postTrainScheduleSetsByIdTrainSchedules: {
         invalidatesTags: ['train_schedule_set', 'scenarios', 'timetable'],
       },
+      postTimetableByIdTrainScheduleException: {
+        invalidatesTags: ['train_schedule_exceptions', 'paced_train'],
+      },
 
       postLevelCrossingOccupancy: {
         providesTags: ['level_crossing', 'train_schedule'],
