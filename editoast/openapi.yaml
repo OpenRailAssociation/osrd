@@ -2205,39 +2205,6 @@ paths:
       responses:
         '204':
           description: The macro note was deleted successfully
-  /paced_train/{id}/path:
-    get:
-      tags:
-      - paced_train
-      - pathfinding
-      summary: Get a path from a paced train given an infrastructure id and a paced train id
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: infra_id
-        in: query
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: exception_key
-        in: query
-        required: false
-        schema:
-          type: string
-      responses:
-        '200':
-          description: The path
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PathfindingResult'
-        '404':
-          description: Infrastructure or Train schedule not found
   /paced_train/{id}/simulation:
     get:
       tags:
@@ -4667,6 +4634,39 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/core.ETCSBrakingCurvesResponse'
+  /train_schedules/{id}/path:
+    get:
+      tags:
+      - paced_train
+      - pathfinding
+      summary: Get a path from a paced train given an infrastructure id and a paced train id
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: infra_id
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: exception_key
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The path
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PathfindingResult'
+        '404':
+          description: Infrastructure or Train schedule not found
   /version:
     get:
       responses:

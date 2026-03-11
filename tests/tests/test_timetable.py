@@ -220,7 +220,7 @@ def test_conflicts_with_reception_on_closed_signal(
     ]
     assert len(switch_zone_spacing_requirement) == 1
     path_response = session.get(
-        f"{EDITOAST_URL}/paced_train/{train_id}/path/?infra_id={small_infra.id}"
+        f"{EDITOAST_URL}/train_schedules/{train_id}/path/?infra_id={small_infra.id}"
     )
     path_response.raise_for_status()
     path_response_json = path_response.json()

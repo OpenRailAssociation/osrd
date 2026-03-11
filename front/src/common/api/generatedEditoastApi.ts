@@ -636,19 +636,6 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/macro_notes/${queryArg.noteId}`, method: 'DELETE' }),
         invalidatesTags: ['scenarios'],
       }),
-      getPacedTrainByIdPath: build.query<
-        GetPacedTrainByIdPathApiResponse,
-        GetPacedTrainByIdPathApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/paced_train/${queryArg.id}/path`,
-          params: {
-            infra_id: queryArg.infraId,
-            exception_key: queryArg.exceptionKey,
-          },
-        }),
-        providesTags: ['paced_train', 'pathfinding'],
-      }),
       getPacedTrainByIdSimulation: build.query<
         GetPacedTrainByIdSimulationApiResponse,
         GetPacedTrainByIdSimulationApiArg
@@ -1359,6 +1346,19 @@ const injectedRtkApi = api
         }),
         providesTags: ['paced_train', 'etcs_braking_curves'],
       }),
+      getTrainSchedulesByIdPath: build.query<
+        GetTrainSchedulesByIdPathApiResponse,
+        GetTrainSchedulesByIdPathApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/train_schedules/${queryArg.id}/path`,
+          params: {
+            infra_id: queryArg.infraId,
+            exception_key: queryArg.exceptionKey,
+          },
+        }),
+        providesTags: ['paced_train', 'pathfinding'],
+      }),
       getVersion: build.query<GetVersionApiResponse, GetVersionApiArg>({
         query: () => ({ url: `/version` }),
         providesTags: [],
@@ -2004,12 +2004,6 @@ export type DeleteMacroNotesByNoteIdApiResponse = unknown;
 export type DeleteMacroNotesByNoteIdApiArg = {
   noteId: number;
 };
-export type GetPacedTrainByIdPathApiResponse = /** status 200 The path */ PathfindingResult;
-export type GetPacedTrainByIdPathApiArg = {
-  id: number;
-  infraId: number;
-  exceptionKey?: string;
-};
 export type GetPacedTrainByIdSimulationApiResponse =
   /** status 200 Simulation Output */ SimulationResponse;
 export type GetPacedTrainByIdSimulationApiArg = {
@@ -2628,6 +2622,12 @@ export type GetTrainSchedulesByIdEtcsBrakingCurvesApiArg = {
   id: number;
   infraId: number;
   electricalProfileSetId?: number;
+  exceptionKey?: string;
+};
+export type GetTrainSchedulesByIdPathApiResponse = /** status 200 The path */ PathfindingResult;
+export type GetTrainSchedulesByIdPathApiArg = {
+  id: number;
+  infraId: number;
   exceptionKey?: string;
 };
 export type GetVersionApiResponse = /** status 200 Return the service version */ Version;
