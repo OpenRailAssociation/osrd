@@ -1,13 +1,13 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
 import STDCMPage from './stdcm-page';
-import LINKED_TRAIN_DETAILS from '../../assets/constants/linked-train-const';
+import LINKED_TRAIN_DETAILS from '../../assets/constants/stdcm/linked-train-const';
 import {
   CI_SUGGESTIONS,
   DEFAULT_DETAILS,
   LIGHT_ORIGIN_DETAILS,
   ORIGIN_DETAILS,
-} from '../../assets/constants/stdcm-const';
+} from '../../assets/constants/stdcm/stdcm-const';
 
 class OriginSection extends STDCMPage {
   readonly originChField: Locator;

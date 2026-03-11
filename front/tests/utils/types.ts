@@ -326,3 +326,5 @@ export type PacedTrainOptions = {
   pacedTrainCardAlreadyOpen?: boolean;
   occurrenceColor?: string;
 };
+
+export type ViaSearchText = 'mid_west' | 'mid_east' | 'nS';

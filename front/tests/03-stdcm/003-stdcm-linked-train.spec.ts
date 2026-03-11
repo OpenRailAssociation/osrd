@@ -5,18 +5,14 @@ import test, { createStdcmTab } from './../page-object-fixture';
 import { waitForInfraStateToBeCached } from './../utils';
 import { getInfra, setTowedRollingStock } from './../utils/api-utils';
 import type { ConsistFields } from './../utils/types';
-import { DEFAULT_DETAILS } from '../assets/constants/stdcm-const';
-
-const fastRollingStockPrefilledValues = {
-  tonnage: '190',
-  length: '46',
-  maxSpeed: '220',
-};
-const towedRollingStockPrefilledValues = {
-  tonnage: '46',
-  length: '26',
-  maxSpeed: '180',
-};
+import {
+  ANTERIOR_LINKED_TRAIN_TABLE_DATA_PATH,
+  DEFAULT_DETAILS,
+  FAST_ROLLING_STOCK_PREFILLED_VALUES,
+  POSTERIOR_LINKED_TRAIN_TABLE_DATA_PATH,
+  STDCM_URL,
+  TOWED_ROLLING_STOCK_PREFILLED_VALUES,
+} from '../assets/constants/stdcm/stdcm-const';
 
 test.describe('@stdcm @stdcm-linked-train', () => {
   let infra: Infra;
@@ -33,7 +29,7 @@ test.describe('@stdcm @stdcm-linked-train', () => {
   });
 
   test.beforeEach('Navigate to the STDCM page', async ({ page }) => {
-    await page.goto('/stdcm');
+    await page.goto(STDCM_URL);
     await waitForInfraStateToBeCached(infra.id);
   });
 
@@ -50,10 +46,10 @@ test.describe('@stdcm @stdcm-linked-train', () => {
     await test.step('Fill consist with traction engine details + towed RS and verify prefilled values', async () => {
       await consistSection.fillAndVerifyConsistDetails(
         towedConsistDetails,
-        fastRollingStockPrefilledValues.tonnage,
-        fastRollingStockPrefilledValues.length,
-        towedRollingStockPrefilledValues.tonnage,
-        towedRollingStockPrefilledValues.length
+        FAST_ROLLING_STOCK_PREFILLED_VALUES.tonnage,
+        FAST_ROLLING_STOCK_PREFILLED_VALUES.length,
+        TOWED_ROLLING_STOCK_PREFILLED_VALUES.tonnage,
+        TOWED_ROLLING_STOCK_PREFILLED_VALUES.length
       );
     });
 
@@ -69,6 +65,7 @@ test.describe('@stdcm @stdcm-linked-train', () => {
       await stdcmSimulationResultPage.verifyTableData(
         './tests/assets/stdcm/linked-train/anterior-linked-train-table.json'
       );
+      await stdcmSimulationResultPage.verifyTableData(ANTERIOR_LINKED_TRAIN_TABLE_DATA_PATH);
     });
 
     await test.step('Retain + download simulation PDF', async () => {
@@ -94,8 +91,8 @@ test.describe('@stdcm @stdcm-linked-train', () => {
       await newConsistSection.verifyConsistDetails({
         tractionEngine: fastRollingStockName,
         towedRollingStock: createdTowedRollingStock.name,
-        tonnage: `${Number(fastRollingStockPrefilledValues.tonnage) + Number(towedRollingStockPrefilledValues.tonnage)}`,
-        length: `${Number(towedRollingStockPrefilledValues.length) + Number(fastRollingStockPrefilledValues.length)}`,
+        tonnage: `${Number(FAST_ROLLING_STOCK_PREFILLED_VALUES.tonnage) + Number(TOWED_ROLLING_STOCK_PREFILLED_VALUES.tonnage)}`,
+        length: `${Number(TOWED_ROLLING_STOCK_PREFILLED_VALUES.length) + Number(FAST_ROLLING_STOCK_PREFILLED_VALUES.length)}`,
         maxSpeed: DEFAULT_DETAILS.maxSpeed,
         speedLimitTag: DEFAULT_DETAILS.speedLimitTag,
       });
@@ -123,10 +120,10 @@ test.describe('@stdcm @stdcm-linked-train', () => {
     await test.step('Fill consist with traction engine details + towed RS and verify prefilled values', async () => {
       await consistSection.fillAndVerifyConsistDetails(
         towedConsistDetails,
-        fastRollingStockPrefilledValues.tonnage,
-        fastRollingStockPrefilledValues.length,
-        towedRollingStockPrefilledValues.tonnage,
-        towedRollingStockPrefilledValues.length
+        FAST_ROLLING_STOCK_PREFILLED_VALUES.tonnage,
+        FAST_ROLLING_STOCK_PREFILLED_VALUES.length,
+        TOWED_ROLLING_STOCK_PREFILLED_VALUES.tonnage,
+        TOWED_ROLLING_STOCK_PREFILLED_VALUES.length
       );
     });
 
@@ -135,6 +132,7 @@ test.describe('@stdcm @stdcm-linked-train', () => {
       await stdcmSimulationResultPage.verifyTableData(
         './tests/assets/stdcm/linked-train/posterior-linked-train-table.json'
       );
+      await stdcmSimulationResultPage.verifyTableData(POSTERIOR_LINKED_TRAIN_TABLE_DATA_PATH);
     });
 
     await test.step('Retain + download simulation PDF', async () => {

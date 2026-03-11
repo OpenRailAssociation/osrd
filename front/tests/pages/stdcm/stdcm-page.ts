@@ -1,9 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import { readJsonFile } from '../../utils/file-utils';
-import type { StdcmTranslations } from '../../utils/types';
-
-const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');
+import { STDCM_TRANSLATIONS } from '../../assets/constants/stdcm/stdcm-const';
 
 class STDCMPage {
   readonly page: Page;
@@ -20,7 +17,7 @@ class STDCMPage {
   private readonly mapContainer: Locator;
   readonly launchSimulationButton: Locator;
   private readonly closeOriginTolerancePickerButton: Locator;
-  private readonly closeDestinationTolerancePickerButton;
+  private readonly closeDestinationTolerancePickerButton: Locator;
   private readonly suggestionList: Locator;
   readonly suggestionItems: Locator;
   private readonly simulationStatus: Locator;
@@ -48,17 +45,14 @@ class STDCMPage {
       'add-linked-train-card-body'
     );
     this.launchSimulationButton = page.getByTestId('launch-simulation-button');
-
     this.closeOriginTolerancePickerButton = page
       .getByTestId('tolerance-origin-arrival')
       .getByTestId('modal-close-button');
     this.closeDestinationTolerancePickerButton = page
       .getByTestId('tolerance-destination-arrival')
       .getByTestId('modal-close-button');
-
     this.suggestionList = page.getByTestId('suggestions-list');
     this.suggestionItems = this.suggestionList.getByTestId('suggestions-item');
-
     this.simulationStatus = page.getByTestId('simulation-status');
 
     this.originMarker = this.mapContainer.getByTestId('stdcm-map-config-marker-origin');
@@ -66,7 +60,6 @@ class STDCMPage {
     this.viaMarker = this.mapContainer.getByTestId('stdcm-map-config-marker-via');
 
     this.warningBox = page.getByTestId('warning-box');
-
     this.pathfindingStatusMessage = page.getByTestId('pathfinding-status-message');
   }
 
@@ -77,7 +70,6 @@ class STDCMPage {
     expect(actualSuggestions).toEqual(expectedSuggestions);
   }
 
-  // Verify STDCM elements are visible
   async verifyStdcmElementsVisibility() {
     const elements = [
       this.debugButton,
@@ -91,9 +83,7 @@ class STDCMPage {
       this.mapContainer,
       this.launchSimulationButton,
     ];
-    for (const element of elements) {
-      await expect(element).toBeVisible();
-    }
+    await Promise.all(elements.map((el) => expect(el).toBeVisible()));
   }
 
   async fillToleranceField({
@@ -125,7 +115,6 @@ class STDCMPage {
     await closeButton.click();
   }
 
-  // Launch the simulation and check if simulation-related elements are visible
   private async launchSimulation(): Promise<void> {
     await expect(this.pathfindingStatusMessage).toBeHidden();
     await expect(this.launchSimulationButton).toBeVisible();
@@ -136,7 +125,7 @@ class STDCMPage {
   async verifyValidSimulationLaunch(): Promise<void> {
     await this.launchSimulation();
     await expect(this.simulationStatus).toHaveText(
-      frTranslations.simulation.results.status.completed
+      STDCM_TRANSLATIONS.simulation.results.status.completed
     );
   }
 
@@ -160,14 +149,15 @@ class STDCMPage {
   }
 
   async expectWarningBoxContains(expectedFields: string[], absentFields?: string[]) {
-    for (const field of expectedFields) {
-      await expect(this.warningBox).toContainText(new RegExp(field, 'i'));
-    }
-
+    await Promise.all(
+      expectedFields.map((field) => expect(this.warningBox).toContainText(new RegExp(field, 'i')))
+    );
     if (absentFields) {
-      for (const field of absentFields) {
-        await expect(this.warningBox).not.toContainText(new RegExp(field, 'i'));
-      }
+      await Promise.all(
+        absentFields.map((field) =>
+          expect(this.warningBox).not.toContainText(new RegExp(field, 'i'))
+        )
+      );
     }
   }
 }

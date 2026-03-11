@@ -3,8 +3,8 @@ import { expect, type Locator, type Page } from '@playwright/test';
 import DestinationSection from './destination-section';
 import OriginSection from './origin-section';
 import STDCMPage from './stdcm-page';
-import LINKED_TRAIN_DETAILS from '../../assets/constants/linked-train-const';
-import { DEFAULT_DETAILS } from '../../assets/constants/stdcm-const';
+import LINKED_TRAIN_DETAILS from '../../assets/constants/stdcm/linked-train-const';
+import { DEFAULT_DETAILS } from '../../assets/constants/stdcm/stdcm-const';
 
 class LinkedTrainSection extends STDCMPage {
   readonly originPage: OriginSection;
@@ -53,7 +53,6 @@ class LinkedTrainSection extends STDCMPage {
     );
   }
 
-  // Add an anterior and posterior linked path card, verify default fields, and delete it
   async addAndDeleteDefaultLinkedPath() {
     await this.anteriorAddLinkedPathButton.click();
     await expect(this.anteriorLinkedTrainField).toHaveValue('');
@@ -82,11 +81,11 @@ class LinkedTrainSection extends STDCMPage {
 
     return trainResultInfosButton.evaluateAll((buttons) =>
       buttons.map((button) => {
-        const trainName = button.querySelector('.train-name')?.textContent?.trim() || '';
+        const trainName = button.querySelector('.train-name')?.textContent?.trim() ?? '';
         const segments = Array.from(button.querySelectorAll('.d-flex'), (segment) =>
           Array.from(
             segment.querySelectorAll('.opDetails'),
-            (detail) => detail.textContent?.trim() || ''
+            (detail) => detail.textContent?.trim() ?? ''
           )
         );
         return { trainName, segments };

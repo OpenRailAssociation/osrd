@@ -1,6 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import { DEFAULT_DETAILS } from '../../assets/constants/stdcm-const';
+import { DEFAULT_DETAILS } from '../../assets/constants/stdcm/stdcm-const';
 import { handleAndVerifyInput } from '../../utils';
 import type { ConsistFields } from '../../utils/types';
 

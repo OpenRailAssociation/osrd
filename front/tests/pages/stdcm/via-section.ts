@@ -4,13 +4,11 @@ import STDCMPage from './stdcm-page';
 import {
   CI_SUGGESTIONS,
   DEFAULT_DETAILS,
+  STDCM_TRANSLATIONS,
   VIA_STOP_TIMES,
   VIA_STOP_TYPES,
-} from '../../assets/constants/stdcm-const';
-import { readJsonFile } from '../../utils/file-utils';
-import type { StdcmTranslations } from '../../utils/types';
-
-const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');
+} from '../../assets/constants/stdcm/stdcm-const';
+import type { ViaSearchText } from '../../utils/types';
 
 class ViaSection extends STDCMPage {
   private readonly viaIcon: Locator;
@@ -22,24 +20,14 @@ class ViaSection extends STDCMPage {
 
   constructor(page: Page) {
     super(page);
-
     this.viaIcon = page.getByTestId('stdcm-via-icons');
     this.viaDeleteButton = page.getByTestId('delete-via-button');
-
-    this.suggestionNS = this.suggestionItems.filter({
-      hasText: 'NS North_station',
-    });
-
-    this.suggestionMES = this.suggestionItems.filter({
-      hasText: 'MES Mid_East_station',
-    });
-    this.suggestionMWS = this.suggestionItems.filter({
-      hasText: 'MWS Mid_West_station',
-    });
+    this.suggestionNS = this.suggestionItems.filter({ hasText: 'NS North_station' });
+    this.suggestionMES = this.suggestionItems.filter({ hasText: 'MES Mid_East_station' });
+    this.suggestionMWS = this.suggestionItems.filter({ hasText: 'MWS Mid_West_station' });
     this.viaCard = this.page.getByTestId('stdcm-via-card');
   }
 
-  // Dynamic selectors for via cards
   private getViaCard(viaNumber: number): Locator {
     return this.page.getByTestId('stdcm-via-card').nth(viaNumber - 1);
   }
@@ -83,7 +71,7 @@ class ViaSection extends STDCMPage {
     ciSearchText,
   }: {
     viaNumber: number;
-    ciSearchText: string;
+    ciSearchText: ViaSearchText;
   }): Promise<void> {
     const { PASSAGE_TIME, SERVICE_STOP, DRIVER_SWITCH } = VIA_STOP_TYPES;
     const { serviceStop, driverSwitch } = VIA_STOP_TIMES;
@@ -122,7 +110,7 @@ class ViaSection extends STDCMPage {
         await expect(this.getViaStopTime(viaNumber)).toHaveValue(driverSwitch.invalidInput);
         await expect(warning).toBeVisible();
         await expect(warning).toHaveText(
-          frTranslations.stdcmErrors.routeErrors.viaStopDurationDriverSwitchTooShort
+          STDCM_TRANSLATIONS.stdcmErrors.routeErrors.viaStopDurationDriverSwitchTooShort
         );
         await this.getViaStopTime(viaNumber).fill(driverSwitch.validInput);
         await expect(this.getViaStopTime(viaNumber)).toHaveValue(driverSwitch.validInput);
@@ -134,7 +122,7 @@ class ViaSection extends STDCMPage {
     }
   }
 
-  async verifyViaDetails(viaNumber: number = 1) {
+  async verifyViaDetails(viaNumber = 1) {
     await expect(this.getViaCI(viaNumber)).toHaveValue(CI_SUGGESTIONS.north[1]);
     await expect(this.getViaType(viaNumber)).toHaveValue(VIA_STOP_TYPES.DRIVER_SWITCH);
     await expect(this.getViaStopTime(viaNumber)).toHaveValue(

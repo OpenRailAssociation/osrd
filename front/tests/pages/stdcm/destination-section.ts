@@ -5,11 +5,8 @@ import {
   CI_SUGGESTIONS,
   DESTINATION_DETAILS,
   LIGHT_DESTINATION_DETAILS,
-} from '../../assets/constants/stdcm-const';
-import { readJsonFile } from '../../utils/file-utils';
-import type { StdcmTranslations } from '../../utils/types';
-
-const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');
+  STDCM_TRANSLATIONS,
+} from '../../assets/constants/stdcm/stdcm-const';
 
 class DestinationSection extends STDCMPage {
   readonly destinationCiField: Locator;
@@ -42,13 +39,11 @@ class DestinationSection extends STDCMPage {
   }
 
   private async setMinuteLocator(minuteValue: string) {
-    const minuteLocator = this.page.locator('.time-grid .minute', { hasText: minuteValue });
-    await minuteLocator.click();
+    await this.page.locator('.time-grid .minute', { hasText: minuteValue }).click();
   }
 
   private async setHourLocator(hourValue: string) {
-    const hourLocator = this.page.locator('.time-grid .hour', { hasText: hourValue });
-    await hourLocator.click();
+    await this.page.locator('.time-grid .hour', { hasText: hourValue }).click();
   }
 
   async verifyDefaultDestinationFields() {
@@ -83,7 +78,7 @@ class DestinationSection extends STDCMPage {
     await expect(this.destinationArrival).toHaveValue(arrivalType.default);
     await this.launchSimulationButton.click();
     await expect(this.warningBox).toContainText(
-      frTranslations.stdcmErrors.routeErrors.noScheduledPoint
+      STDCM_TRANSLATIONS.stdcmErrors.routeErrors.noScheduledPoint
     );
     await expect(this.dateDestinationArrival).not.toBeVisible();
     await expect(this.timeDestinationArrival).not.toBeVisible();
@@ -127,7 +122,6 @@ class DestinationSection extends STDCMPage {
 
   async clearDestination(): Promise<void> {
     await this.clearButton.click();
-
     await expect(this.destinationCiField).toHaveValue('');
   }
 }
