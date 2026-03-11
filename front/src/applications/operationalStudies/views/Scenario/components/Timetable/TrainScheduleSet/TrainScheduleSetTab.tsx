@@ -222,7 +222,7 @@ const TrainScheduleSetTab = ({
             catalogEntries={catalogEntries}
             labels={{
               title: t(openedDialog === 'editLocal' ? 'editLocalTitle' : 'editPublishedTitle'),
-              submit: t('edit'),
+              submit: t(openedDialog === 'editLocal' ? 'edit' : 'editAndPublish'),
               cancel: t('cancel'),
             }}
             onCancel={() => setOpenedDialog(null)}

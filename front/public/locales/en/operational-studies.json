@@ -289,6 +289,7 @@
         "duplicate": "Duplicate package",
         "duplicateCatalogEntry": "This set name already exists.",
         "edit": "Edit package",
+        "editAndPublish": "Edit and publish package",
         "editLocalTitle": "Edit local package",
         "editPublishedTitle": "Edit published package",
         "error": {
