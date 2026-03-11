@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button } from '@osrd-project/ui-core';
 import { CheckCircle } from '@osrd-project/ui-icons';
 import { PDFDownloadLink } from '@react-pdf/renderer';
+import { skipToken } from '@reduxjs/toolkit/query';
 import { head, last } from 'lodash';
 import { useTranslation, Trans } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -12,7 +13,10 @@ import { extractMarkersInfo, mergeSimilarTrainSegments } from 'applications/stdc
 import { addSecondaryCodesToSimilarTrains } from 'applications/stdcm/utils/addSecondaryCodesToSimilarTrains';
 import { hasResults } from 'applications/stdcm/utils/simulationOutputUtils';
 import { osrdEditoastApi, type PostSimilarTrainsApiResponse } from 'common/api/osrdEditoastApi';
-import { type SendLastMinuteRequestResponse } from 'common/api/osrdRailwayManagerApi';
+import {
+  osrdRailwayManagerApi,
+  type SendLastMinuteRequestResponse,
+} from 'common/api/osrdRailwayManagerApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import DefaultBaseMap from 'common/Map/DefaultBaseMap';
 import {
@@ -79,6 +83,11 @@ const StdcmResults = ({
 
   // Keep local state of the map settings to keep stdcm config and stdcm results maps independent
   const [mapSettings, setMapSettings] = useState(defaultMapSettings);
+
+  const { data: sendLMRAuthorizedResponse } =
+    osrdRailwayManagerApi.endpoints.getSendLastMinuteRequestAuthorized.useQuery(
+      railwayManagerUrl ? undefined : skipToken
+    );
 
   const updateMapSettings = useCallback(
     (value: Partial<MapSettings>) => setMapSettings((prev) => ({ ...prev, ...value })),
@@ -335,6 +344,7 @@ const StdcmResults = ({
                         </PDFDownloadLink>
                       </div>
                       {railwayManagerUrl &&
+                        sendLMRAuthorizedResponse?.authorized &&
                         (!isRailwayRequestSuccessful ? (
                           <Button
                             label={t('transferSheetToRailManager')}
