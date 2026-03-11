@@ -12,14 +12,12 @@ import type { StdcmTranslations } from '../../utils/types';
 const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');
 
 class DestinationSection extends STDCMPage {
-  private readonly destinationChField: Locator;
-  private readonly destinationCiField: Locator;
+  readonly destinationCiField: Locator;
+  readonly destinationChField: Locator;
   readonly destinationArrival: Locator;
   readonly dateDestinationArrival: Locator;
   readonly timeDestinationArrival: Locator;
   readonly toleranceDestinationArrival: Locator;
-  readonly dynamicDestinationCh: Locator;
-  readonly dynamicDestinationCi: Locator;
   private readonly suggestionSS: Locator;
   private readonly closeDestinationTimePickerButton: Locator;
   private readonly clearButton: Locator;
@@ -27,18 +25,13 @@ class DestinationSection extends STDCMPage {
 
   constructor(page: Page) {
     super(page);
-
-    this.destinationChField = this.destinationCard.getByTestId('operational-point-ch');
     this.destinationCiField = this.destinationCard.getByTestId('operational-point-ci');
+    this.destinationChField = this.destinationCard.getByTestId('operational-point-ch');
     this.destinationArrival = page.locator('#select-destination-arrival');
     this.dateDestinationArrival = page.getByTestId('date-destination-arrival-input');
     this.timeDestinationArrival = page.getByTestId('time-destination-arrival-input');
     this.toleranceDestinationArrival = page.getByTestId('tolerance-destination-arrival-input');
-    this.dynamicDestinationCh = this.destinationCard.getByTestId('operational-point-ch');
-    this.dynamicDestinationCi = this.destinationCard.getByTestId('operational-point-ci');
-    this.suggestionSS = this.suggestionItems.filter({
-      hasText: 'SS South_station',
-    });
+    this.suggestionSS = this.suggestionItems.filter({ hasText: 'SS South_station' });
     this.clearButton = this.destinationCard.locator('.clear-icon');
     this.destinationIncrementTimeButton = page.getByTestId(
       'time-destination-arrival-increment-minute'
@@ -81,14 +74,12 @@ class DestinationSection extends STDCMPage {
       updatedDetails,
     } = DESTINATION_DETAILS;
 
-    // Fill destination input and verify suggestions
-    await this.dynamicDestinationCi.fill(input);
+    await this.destinationCiField.fill(input);
     await this.verifyDestinationSouthSuggestions();
     await this.suggestionSS.click();
-    const destinationCiValue = await this.dynamicDestinationCi.getAttribute('value');
+    const destinationCiValue = await this.destinationCiField.getAttribute('value');
     expect(destinationCiValue).toContain(suggestion);
-    // Verify default values
-    await expect(this.dynamicDestinationCh).toHaveValue(chValue);
+    await expect(this.destinationChField).toHaveValue(chValue);
     await expect(this.destinationArrival).toHaveValue(arrivalType.default);
     await this.launchSimulationButton.click();
     await expect(this.warningBox).toContainText(
@@ -97,13 +88,11 @@ class DestinationSection extends STDCMPage {
     await expect(this.dateDestinationArrival).not.toBeVisible();
     await expect(this.timeDestinationArrival).not.toBeVisible();
     await expect(this.toleranceDestinationArrival).not.toBeVisible();
-    // Select 'preciseTime' and verify values
     await this.destinationArrival.selectOption(arrivalType.updated);
     await expect(this.destinationArrival).toHaveValue(arrivalType.updated);
     await expect(this.dateDestinationArrival).toHaveValue(arrivalDate);
     await expect(this.timeDestinationArrival).toHaveValue(arrivalTime);
     await expect(this.toleranceDestinationArrival).toHaveValue(tolerance);
-    // Update date and time values
     await this.dateDestinationArrival.fill(updatedDetails.date);
     await expect(this.dateDestinationArrival).toHaveValue(updatedDetails.date);
     await this.timeDestinationArrival.click();
@@ -112,31 +101,27 @@ class DestinationSection extends STDCMPage {
     await this.destinationIncrementTimeButton.dblclick(); // Double-click the +1 minute button to reach 37
     await this.closeDestinationTimePickerButton.click();
     await expect(this.timeDestinationArrival).toHaveValue(updatedDetails.timeValue);
-
-    // Update tolerance and verify warning box
     await this.fillToleranceField({
       toleranceInput: this.toleranceDestinationArrival,
       minusValue: updatedDetails.tolerance.negative,
       plusValue: updatedDetails.tolerance.positive,
       toleranceOp: 'destination',
     });
-
     await expect(this.warningBox).not.toBeVisible();
   }
 
   async fillDestinationDetailsLight() {
     const { input, chValue, arrivalType } = LIGHT_DESTINATION_DETAILS;
-    await this.dynamicDestinationCi.fill(input);
+    await this.destinationCiField.fill(input);
     await this.suggestionSS.click();
-    await expect(this.dynamicDestinationCh).toHaveValue(chValue);
+    await expect(this.destinationChField).toHaveValue(chValue);
     await expect(this.destinationArrival).toHaveValue(arrivalType);
   }
 
   async verifyDestinationDetails() {
     const { chValue, arrivalType } = DESTINATION_DETAILS;
-
     await expect(this.destinationCiField).toHaveValue(CI_SUGGESTIONS.south[1]);
-    await expect(this.dynamicDestinationCh).toHaveValue(chValue);
+    await expect(this.destinationChField).toHaveValue(chValue);
     await expect(this.destinationArrival).toHaveValue(arrivalType.default);
   }
 

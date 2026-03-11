@@ -63,6 +63,7 @@ class LinkedTrainSection extends STDCMPage {
     await expect(this.anteriorLinkedTrainField).not.toBeVisible();
     await expect(this.anteriorLinkedTrainDate).not.toBeVisible();
     await expect(this.anteriorLinkedTrainSearchButton).not.toBeVisible();
+
     await this.posteriorAddLinkedPathButton.click();
     await expect(this.posteriorLinkedTrainField).toHaveValue('');
     await expect(this.posteriorLinkedTrainDate).toHaveValue(DEFAULT_DETAILS.arrivalDate);
@@ -73,14 +74,12 @@ class LinkedTrainSection extends STDCMPage {
     await expect(this.posteriorLinkedTrainSearchButton).not.toBeVisible();
   }
 
-  // Get anterior or posterior searched linked train details
-  private async getLinkedTrainDetails(isAnterior: boolean = false) {
+  private async getLinkedTrainDetails(isAnterior = true) {
     const trainResultInfosButton = isAnterior
-      ? this.posteriorLinkedTrainResultInfosButton
-      : this.anteriorLinkedTrainResultInfosButton;
+      ? this.anteriorLinkedTrainResultInfosButton
+      : this.posteriorLinkedTrainResultInfosButton;
     await expect(trainResultInfosButton).toBeVisible();
 
-    // Extract and process train details
     return trainResultInfosButton.evaluateAll((buttons) =>
       buttons.map((button) => {
         const trainName = button.querySelector('.train-name')?.textContent?.trim() || '';
@@ -95,33 +94,35 @@ class LinkedTrainSection extends STDCMPage {
     );
   }
 
-  // Add an anterior linked train and fill the path fields
   async anteriorLinkedPathDetails() {
     const {
       trainName,
       trainDate,
       trainDetails,
-      dynamicOriginCi,
-      dynamicOriginCh,
+      originCi,
+      originCh,
       originArrival,
       dateOriginArrival,
       timeOriginArrival,
       toleranceOriginArrival,
       toleranceFields,
     } = LINKED_TRAIN_DETAILS.anterior;
+
     await this.anteriorAddLinkedPathButton.click();
     await this.anteriorLinkedTrainField.fill(trainName);
     await this.anteriorLinkedTrainDate.fill(trainDate);
     await this.anteriorLinkedTrainSearchButton.click();
     await this.anteriorLinkedTrainResultInfosButton.click();
-    const actualTrainDetails = await this.getLinkedTrainDetails();
+
+    const actualTrainDetails = await this.getLinkedTrainDetails(true);
     expect(actualTrainDetails).toEqual(trainDetails);
-    await expect(this.originPage.dynamicOriginCi).toHaveValue(dynamicOriginCi);
-    await expect(this.originPage.dynamicOriginCh).toHaveValue(dynamicOriginCh);
+    await expect(this.originPage.originCiField).toHaveValue(originCi);
+    await expect(this.originPage.originChField).toHaveValue(originCh);
     await expect(this.originPage.originArrival).toHaveValue(originArrival);
     await expect(this.originPage.dateOriginArrival).toHaveValue(dateOriginArrival);
     await expect(this.originPage.timeOriginArrival).toHaveValue(timeOriginArrival);
     await expect(this.originPage.toleranceOriginArrival).toHaveValue(toleranceOriginArrival);
+
     await this.fillToleranceField({
       toleranceInput: this.originPage.toleranceOriginArrival,
       minusValue: toleranceFields.min,
@@ -130,35 +131,37 @@ class LinkedTrainSection extends STDCMPage {
     });
   }
 
-  // Add an posterior linked train and fill the path fields
   async posteriorLinkedPathDetails() {
     const {
       trainName,
       trainDate,
       trainDetails,
-      dynamicDestinationCi,
-      dynamicDestinationCh,
+      destinationCi,
+      destinationCh,
       destinationArrival,
       dateDestinationArrival,
       timeDestinationArrival,
       toleranceDestinationArrival,
       toleranceFields,
     } = LINKED_TRAIN_DETAILS.posterior;
+
     await this.posteriorAddLinkedPathButton.click();
     await this.posteriorLinkedTrainField.fill(trainName);
     await this.posteriorLinkedTrainDate.fill(trainDate);
     await this.posteriorLinkedTrainSearchButton.click();
     await this.posteriorLinkedTrainResultInfosButton.click();
-    const actualTrainDetails = await this.getLinkedTrainDetails(true);
+
+    const actualTrainDetails = await this.getLinkedTrainDetails(false);
     expect(actualTrainDetails).toEqual(trainDetails);
-    await expect(this.destinationPage.dynamicDestinationCi).toHaveValue(dynamicDestinationCi);
-    await expect(this.destinationPage.dynamicDestinationCh).toHaveValue(dynamicDestinationCh);
+    await expect(this.destinationPage.destinationCiField).toHaveValue(destinationCi);
+    await expect(this.destinationPage.destinationChField).toHaveValue(destinationCh);
     await expect(this.destinationPage.destinationArrival).toHaveValue(destinationArrival);
     await expect(this.destinationPage.dateDestinationArrival).toHaveValue(dateDestinationArrival);
     await expect(this.destinationPage.timeDestinationArrival).toHaveValue(timeDestinationArrival);
     await expect(this.destinationPage.toleranceDestinationArrival).toHaveValue(
       toleranceDestinationArrival
     );
+
     await this.fillToleranceField({
       toleranceInput: this.destinationPage.toleranceDestinationArrival,
       minusValue: toleranceFields.min,
@@ -167,4 +170,5 @@ class LinkedTrainSection extends STDCMPage {
     });
   }
 }
+
 export default LinkedTrainSection;
