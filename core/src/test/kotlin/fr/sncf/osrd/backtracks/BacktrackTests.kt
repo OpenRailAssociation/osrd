@@ -3,6 +3,7 @@ package fr.sncf.osrd.backtracks
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.RangeValues
 import fr.sncf.osrd.api.path_properties.makePathPropResponse
+import fr.sncf.osrd.api.standalone_sim.SimulationScheduleItem
 import fr.sncf.osrd.path.implementations.PartialBlockRange
 import fr.sncf.osrd.path.implementations.buildRangeList
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlockRanges
@@ -11,6 +12,8 @@ import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.splitAtBacktracks
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.OPEN
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.getLogicalSignalName
@@ -23,6 +26,7 @@ import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
+import fr.sncf.osrd.utils.units.seconds
 import fr.sncf.osrd.utils.units.sumDistances
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -106,8 +110,9 @@ class BacktrackTests {
                 PartialBlockRange(
                     firstBlocks[2].first,
                     Offset(0.meters),
-                    // Last block before backtrack is used up to 500m before its end
-                    firstBlocks[2].second - 500.meters,
+                    // Last block before backtrack ends at c2 (offset 3000m), and backtrack is at
+                    // offset 2500m
+                    firstBlocks[2].second - (3000.meters - 2500.meters),
                     firstBlocks[2].second,
                 ),
                 // Backtrack there: on track t.center at offset 2500m
@@ -115,7 +120,7 @@ class BacktrackTests {
                 PartialBlockRange(
                     secondBlocks[0].first,
                     // c3 is at offset 5000m, 400m of train length
-                    Offset(5000.meters - 2500.meters - rollingStockLength),
+                    Offset(5000.meters - 2500.meters + rollingStockLength),
                     secondBlocks[0].second,
                     secondBlocks[0].second,
                 ),
@@ -191,10 +196,14 @@ class BacktrackTests {
             useElectricalProfiles = false,
             useSpeedLimits = true,
             timeStep = 2.0,
-            schedule = listOf(),
+            schedule =
+                listOf(
+                    SimulationScheduleItem(Offset(9400.meters), null, 60.seconds, SHORT_SLIP_STOP),
+                    SimulationScheduleItem(Offset(18100.meters), null, 0.seconds, OPEN),
+                ),
             initialSpeed = 0.0,
             margins = RangeValues(),
-            pathItemPositions = listOf(),
+            pathItemPositions = listOf(Offset(9400.meters), Offset(18100.meters)),
         )
     }
 }
