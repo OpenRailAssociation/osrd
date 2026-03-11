@@ -291,8 +291,10 @@ mod tests {
         assert_eq!(1, rj.operational_points.len());
         let op = &rj.operational_points[0];
         assert_eq!(2, op.parts.len());
-        let ext = op.extensions.identifier.as_ref().unwrap();
-        assert_eq!("atlantis", ext.name);
-        assert_eq!(1234, ext.uic);
+        let identifier_ext = op.extensions.identifier.as_ref().unwrap();
+        assert_eq!("atlantis", identifier_ext.name);
+        assert_eq!(1234, identifier_ext.uic);
+        let sncf_ext = op.extensions.sncf.as_ref().unwrap();
+        assert_eq!("TRI", sncf_ext.trigram);
     }
 }

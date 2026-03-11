@@ -3,6 +3,7 @@ use osm4routing::Distance;
 use osm4routing::Edge;
 use osm4routing::NodeId;
 use osm4routing::osmpbfreader::Node;
+use osm4routing::osmpbfreader::OsmPbfReader;
 use schemas::infra::ApplicableDirections;
 use schemas::infra::ApplicableDirectionsTrackRange;
 use schemas::infra::BufferStop;
@@ -15,6 +16,7 @@ use schemas::infra::OperationalPoint;
 use schemas::infra::OperationalPointExtensions;
 use schemas::infra::OperationalPointIdentifierExtension;
 use schemas::infra::OperationalPointPart;
+use schemas::infra::OperationalPointSncfExtension;
 use schemas::infra::Side;
 use schemas::infra::Signal;
 use schemas::infra::SignalExtensions;
@@ -445,12 +447,26 @@ pub fn electrifications(edge: &Edge) -> Option<Electrification> {
     })
 }
 
+fn map_node_id_to_node(
+    pbf: &mut OsmPbfReader<std::fs::File>,
+) -> HashMap<osm4routing::osmpbfreader::NodeId, osm4routing::osmpbfreader::Node> {
+    pbf.iter()
+        .flatten()
+        .filter_map(|obj| match obj {
+            osm4routing::osmpbfreader::OsmObj::Node(node) => Some((node.id, node)),
+            _ => None,
+        })
+        .collect()
+}
+
 pub fn operational_points(
     osm_pbf_in: &std::path::PathBuf,
     nodes_to_tracks: &NodeToTrack,
 ) -> Vec<OperationalPoint> {
     let file = std::fs::File::open(osm_pbf_in).unwrap();
-    let mut pbf = osm4routing::osmpbfreader::OsmPbfReader::new(file);
+    let mut pbf: OsmPbfReader<std::fs::File> = osm4routing::osmpbfreader::OsmPbfReader::new(file);
+    let node_id_to_node = map_node_id_to_node(&mut pbf);
+    pbf.rewind().expect("Could not rewind file.");
     pbf.iter()
         .flatten()
         .filter(|obj| obj.tags().contains("public_transport", "stop_area")) // https://wiki.openstreetmap.org/wiki/Tag:public_transport%3Dstop_area
@@ -476,6 +492,23 @@ pub fn operational_points(
                         .map(|(track, position, local_track_name)| OperationalPointPart { track, position, local_track_name, extensions: Default::default() })
                 })
                 .collect();
+            // Get operational point trigram
+            // Look through the nodes member of the relation and find one that has a "railway:ref" tag
+            let trigram = rel
+                .refs
+                .iter()
+                .filter_map(|r| match r.member {
+                    osm4routing::osmpbfreader::OsmId::Node(id) => Some(id),
+                    _ => None,
+                })
+                .find_map(|node_id| {
+                    node_id_to_node.get(&node_id).and_then(|node| {
+                        node.tags
+                            .get("railway:ref")
+                            .map(ToString::to_string)
+                    })
+                })
+                .unwrap_or_default();
             // Parts can be empty when the stop_area references stops that are not railway (e.g. bus station)
             if parts.is_empty() {
                 None
@@ -485,7 +518,13 @@ pub fn operational_points(
                     parts,
                     extensions: OperationalPointExtensions {
                         identifier: identifier(&rel.tags),
-                        sncf: None,
+                        sncf: Some(OperationalPointSncfExtension {
+                            ci: 0,
+                            ch: String::from("BV"),
+                            ch_short_label: NonBlankString::from("BV"),
+                            ch_long_label: NonBlankString::from("BV"),
+                            trigram
+                        }),
                     },
                     weight: None,
                 })
