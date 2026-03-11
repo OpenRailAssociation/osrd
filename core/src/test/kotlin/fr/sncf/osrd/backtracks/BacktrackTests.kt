@@ -339,7 +339,7 @@ class BacktrackTests {
 
     @Test
     @Disabled("Not working yet")
-    fun testSimulation() {
+    fun testSimulationBacktrackingOverNothing() {
         val path = buildPathBacktrackingOverNothing(infra, rollingStock.length.meters)
         // Smoke test, we only test for uncaught exceptions and failed asserts
         runStandaloneSimulation(
@@ -361,6 +361,33 @@ class BacktrackTests {
             initialSpeed = 0.0,
             margins = RangeValues(),
             pathItemPositions = listOf(Offset(9400.meters), Offset(18100.meters)),
+        )
+    }
+
+    @Test
+    @Disabled("Not working yet")
+    fun testSimulationBacktrackingOverRouteDelimiter() {
+        val path = buildPathBacktrackingOverRouteDelimiter(infra, rollingStock.length.meters)
+        // Smoke test, we only test for uncaught exceptions and failed asserts
+        runStandaloneSimulation(
+            infra = infra,
+            trainPath = path,
+            rollingStock = REALISTIC_FAST_TRAIN,
+            comfort = Comfort.STANDARD,
+            constraintDistribution = RJSAllowanceDistribution.LINEAR,
+            speedLimitTag = null,
+            powerRestrictions = distanceRangeMapOf(),
+            useElectricalProfiles = false,
+            useSpeedLimits = true,
+            timeStep = 2.0,
+            schedule =
+                listOf(
+                    SimulationScheduleItem(Offset(8000.meters), null, 60.seconds, SHORT_SLIP_STOP),
+                    SimulationScheduleItem(Offset(15300.meters), null, 0.seconds, OPEN),
+                ),
+            initialSpeed = 0.0,
+            margins = RangeValues(),
+            pathItemPositions = listOf(Offset(8000.meters), Offset(15300.meters)),
         )
     }
 }
