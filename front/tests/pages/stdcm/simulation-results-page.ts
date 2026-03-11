@@ -1,5 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
+import { STDCM_TRANSLATIONS } from '../../assets/constants/stdcm/stdcm-const';
 import { logger } from '../../logging-fixture';
 import {
   assertSuggestedFilename,
@@ -7,9 +8,7 @@ import {
   saveDownloadToDir,
   triggerFileDownload,
 } from '../../utils/file-utils';
-import type { STDCMResultTableRow, StdcmTranslations } from '../../utils/types';
-
-const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');
+import type { STDCMResultTableRow } from '../../utils/types';
 
 class SimulationResultPage {
   readonly page: Page;
@@ -160,7 +159,7 @@ class SimulationResultPage {
     const isResultTableVisible = await this.simulationResultTable.isVisible();
     const expectedSimulationName = isResultTableVisible
       ? `Simulation n°${validSimulationNumber}`
-      : frTranslations.simulation.results.simulationName.withoutOutputs;
+      : STDCM_TRANSLATIONS.simulation.results.simulationName.withoutOutputs;
     // Validate simulation name
     const actualSimulationName = await this.getSimulationNameLocator(simulationIndex).textContent();
     expect(actualSimulationName).toEqual(expectedSimulationName);

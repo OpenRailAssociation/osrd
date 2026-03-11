@@ -2,29 +2,22 @@ import fs from 'fs';
 
 import type { Infra } from 'common/api/osrdEditoastApi';
 
-import { electricRollingStockName } from './../assets/constants/project-const';
-import simulationSheetDetails from './../assets/constants/simulation-sheet-const';
 import test from './../page-object-fixture';
+import simulationSheetDetails from '../assets/constants/stdcm/simulation-sheet-const';
 import ConsistSection from './../pages/stdcm/consist-section';
 import DestinationSection from './../pages/stdcm/destination-section';
 import OriginSection from './../pages/stdcm/origin-section';
 import { waitForInfraStateToBeCached } from './../utils';
 import { getInfra } from './../utils/api-utils';
 import { findFirstPdf, parsePdfText, verifySimulationContent } from './../utils/pdf-parser';
-import type { ConsistFields, PdfSimulationContent } from './../utils/types';
-
-const consistDetails: ConsistFields = {
-  tractionEngine: electricRollingStockName,
-  tonnage: '950',
-  length: '567',
-  maxSpeed: '100',
-  speedLimitTag: 'HLP',
-};
-const tractionEnginePrefilledValues = {
-  tonnage: '900',
-  length: '400',
-  maxSpeed: '288',
-};
+import type { PdfSimulationContent } from './../utils/types';
+import {
+  CONSIST_DETAILS,
+  STDCM_URL,
+  STDCM_WITH_ALL_VIA_DATA_PATH,
+  STDCM_WITHOUT_ALL_VIA_DATA_PATH,
+  TRACTION_ENGINE_PREFILLED_VALUES,
+} from '../assets/constants/stdcm/stdcm-const';
 
 test.describe('@stdcm @stdcm-sheet', () => {
   test.describe.configure({ mode: 'serial' });
@@ -37,7 +30,7 @@ test.describe('@stdcm @stdcm-sheet', () => {
   });
 
   test.beforeEach('Navigate to the STDCM page', async ({ page }) => {
-    await page.goto('/stdcm');
+    await page.goto(STDCM_URL);
     await waitForInfraStateToBeCached(infra.id);
   });
 
@@ -54,10 +47,10 @@ test.describe('@stdcm @stdcm-sheet', () => {
   }, testInfo) => {
     await test.step('Fill consist, origin, destination and via', async () => {
       await consistSection.fillAndVerifyConsistDetails(
-        consistDetails,
-        tractionEnginePrefilledValues.tonnage,
-        tractionEnginePrefilledValues.length,
-        tractionEnginePrefilledValues.maxSpeed
+        CONSIST_DETAILS,
+        TRACTION_ENGINE_PREFILLED_VALUES.tonnage,
+        TRACTION_ENGINE_PREFILLED_VALUES.length,
+        TRACTION_ENGINE_PREFILLED_VALUES.maxSpeed
       );
       await originSection.fillOriginDetailsLight();
       await destinationSection.fillDestinationDetailsLight();
@@ -78,13 +71,9 @@ test.describe('@stdcm @stdcm-sheet', () => {
       if (browserName === 'chromium') {
         await stdcmSimulationResultPage.mapMarkerResultVisibility();
       }
-      await stdcmSimulationResultPage.verifyTableData(
-        './tests/assets/stdcm/stdcm-without-all-via.json'
-      );
+      await stdcmSimulationResultPage.verifyTableData(STDCM_WITHOUT_ALL_VIA_DATA_PATH);
       await stdcmSimulationResultPage.displayAllOperationalPoints();
-      await stdcmSimulationResultPage.verifyTableData(
-        './tests/assets/stdcm/stdcm-with-all-via.json'
-      );
+      await stdcmSimulationResultPage.verifyTableData(STDCM_WITH_ALL_VIA_DATA_PATH);
     });
 
     await test.step('Retain & download simulation PDF', async () => {

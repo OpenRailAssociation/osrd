@@ -1,4 +1,4 @@
-import type { StdcmTranslations } from '../../utils/types';
+import type { StdcmTranslations } from '../../../utils/types';
 
 export const ALL_MISSING_FIELDS_KEY = [
   'tractionEngine',

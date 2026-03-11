@@ -1,25 +1,15 @@
 import type { Infra } from 'common/api/osrdEditoastApi';
 
-import getMailFeedbackData from './../assets/constants/mail-feedback-const';
-import { electricRollingStockName } from './../assets/constants/project-const';
 import test from './../page-object-fixture';
 import { waitForInfraStateToBeCached } from './../utils';
 import { getInfra } from './../utils/api-utils';
-import type { ConsistFields } from './../utils/types';
-
-const consistDetails: ConsistFields = {
-  tractionEngine: electricRollingStockName,
-  tonnage: '950',
-  length: '567',
-  maxSpeed: '100',
-  speedLimitTag: 'HLP',
-};
-
-const tractionEnginePrefilledValues = {
-  tonnage: '900',
-  length: '400',
-  maxSpeed: '288',
-};
+import getMailFeedbackData from '../assets/constants/stdcm/mail-feedback-const';
+import {
+  CONSIST_DETAILS,
+  SIMULATION_RESULTS_DETAILS,
+  STDCM_URL,
+  TRACTION_ENGINE_PREFILLED_VALUES,
+} from '../assets/constants/stdcm/stdcm-const';
 
 test.describe('@stdcm @stdcm-feedback', () => {
   let infra: Infra;
@@ -29,7 +19,7 @@ test.describe('@stdcm @stdcm-feedback', () => {
   });
 
   test.beforeEach('Navigate to the STDCM page', async ({ page }) => {
-    await page.goto('/stdcm');
+    await page.goto(STDCM_URL);
     await waitForInfraStateToBeCached(infra.id);
   });
 
@@ -43,10 +33,10 @@ test.describe('@stdcm @stdcm-feedback', () => {
   }) => {
     await test.step('Fill consist with traction engine details and verify prefilled values', async () => {
       await consistSection.fillAndVerifyConsistDetails(
-        consistDetails,
-        tractionEnginePrefilledValues.tonnage,
-        tractionEnginePrefilledValues.length,
-        tractionEnginePrefilledValues.maxSpeed
+        CONSIST_DETAILS,
+        TRACTION_ENGINE_PREFILLED_VALUES.tonnage,
+        TRACTION_ENGINE_PREFILLED_VALUES.length,
+        TRACTION_ENGINE_PREFILLED_VALUES.maxSpeed
       );
     });
 
@@ -57,11 +47,7 @@ test.describe('@stdcm @stdcm-feedback', () => {
 
     await test.step('Launch simulation and verify simulation details', async () => {
       await stdcmPage.verifyValidSimulationLaunch();
-      await stdcmSimulationResultPage.verifySimulationDetails({
-        simulationIndex: 0,
-        simulationLengthAndDuration: '51 km — 33min',
-        validSimulationNumber: 1,
-      });
+      await stdcmSimulationResultPage.verifySimulationDetails(SIMULATION_RESULTS_DETAILS);
     });
 
     await test.step('Verify feedback card is visible', async () => {

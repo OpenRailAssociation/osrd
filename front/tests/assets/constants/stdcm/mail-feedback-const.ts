@@ -1,5 +1,5 @@
-import { readJsonFile } from '../../utils/file-utils';
-import type { StdcmTranslations } from '../../utils/types';
+import { readJsonFile } from '../../../utils/file-utils';
+import type { StdcmTranslations } from '../../../utils/types';
 
 const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');
 
