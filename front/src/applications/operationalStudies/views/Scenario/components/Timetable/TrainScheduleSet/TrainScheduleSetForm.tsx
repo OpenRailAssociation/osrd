@@ -184,25 +184,6 @@ const TrainScheduleSetForm = ({
         }
       }}
     >
-      {/* Name */}
-      <div className={cx('train-schedule-set-name', 'uniqueness-info')}>
-        <Input
-          id="train-schedule-set-name"
-          label={t('name')}
-          required
-          value={name}
-          onChange={(e) => {
-            const newValue = e.target.value;
-            setNameError(undefined);
-            setName(newValue);
-            if (checkNameInCatalogIsUniq) {
-              checkNameCatalogUniqueness(newValue, catalogEntry);
-            }
-          }}
-          statusWithMessage={inputNameStatus}
-        />
-      </div>
-
       {/* Catalog */}
       {catalogEntryMode === 'select' && (
         <div className="catalog-entry">
@@ -265,6 +246,25 @@ const TrainScheduleSetForm = ({
           </button>
         </div>
       )}
+
+      {/* Name */}
+      <div className={cx('train-schedule-set-name', 'uniqueness-info')}>
+        <Input
+          id="train-schedule-set-name"
+          label={t('name')}
+          required
+          value={name}
+          onChange={(e) => {
+            const newValue = e.target.value;
+            setNameError(undefined);
+            setName(newValue);
+            if (checkNameInCatalogIsUniq) {
+              checkNameCatalogUniqueness(newValue, catalogEntry);
+            }
+          }}
+          statusWithMessage={inputNameStatus}
+        />
+      </div>
 
       {/* Description */}
       <TextArea
