@@ -66,26 +66,29 @@ class BacktrackTests {
 
     val infra = fullInfraFromFile("y_infra/infra.json")
     val rollingStock: RollingStock = REALISTIC_FAST_TRAIN
-    val path = buildPath(infra, rollingStock.length.meters)
 
-    private fun buildPath(infra: FullInfra, rollingStockLength: Distance): TrainPath {
+    private fun signalsToBlocks(signalNameList: List<String>): List<Pair<BlockId, Length<Block>>> {
+        val nameToSignal =
+            infra.rawInfra.logicalSignals.associateBy { signalId ->
+                infra.rawInfra.getLogicalSignalName(signalId)
+            }
+        val signalList = signalNameList.map { nameToSignal[it]!! }
+        val signalPairs = (signalList.dropLast(1) zip signalList.drop(1)).map { it.toList() }
+        val signalPairToBlock =
+            infra.blockInfra.blocks.associateBy { infra.blockInfra.getBlockSignals(it) }
+        return signalPairs.map {
+            val signalId = signalPairToBlock[it]!!
+            Pair(signalId, infra.blockInfra.getBlockLength(signalId))
+        }
+    }
+
+    private fun buildPathBacktrackingOverNothing(
+        infra: FullInfra,
+        rollingStockLength: Distance,
+    ): TrainPath {
         val firstSignalNameList = listOf("s.right.a1", "s.right.a2", "s.right.a3", "s.right.c2")
         val secondSignalNameList = listOf("s.left.c3", "s.left.c1", "s.left.b2", "s.left.b1")
 
-        fun signalsToBlocks(signalNameList: List<String>): List<Pair<BlockId, Length<Block>>> {
-            val nameToSignal =
-                infra.rawInfra.logicalSignals.associateBy { signalId ->
-                    infra.rawInfra.getLogicalSignalName(signalId)
-                }
-            val signalList = signalNameList.map { nameToSignal[it]!! }
-            val signalPairs = (signalList.dropLast(1) zip signalList.drop(1)).map { it.toList() }
-            val signalPairToBlock =
-                infra.blockInfra.blocks.associateBy { infra.blockInfra.getBlockSignals(it) }
-            return signalPairs.map {
-                val signalId = signalPairToBlock[it]!!
-                Pair(signalId, infra.blockInfra.getBlockLength(signalId))
-            }
-        }
         val firstBlocks = signalsToBlocks(firstSignalNameList)
         val secondBlocks = signalsToBlocks(secondSignalNameList)
 
@@ -155,11 +158,15 @@ class BacktrackTests {
     @Test
     fun testPathProperties() {
         // Smoke test, we only test for uncaught exceptions and failed asserts
-        makePathPropResponse(path, infra.rawInfra)
+        makePathPropResponse(
+            buildPathBacktrackingOverNothing(infra, rollingStock.length.meters),
+            infra.rawInfra,
+        )
     }
 
     @Test
     fun testPathSplit() {
+        val path = buildPathBacktrackingOverNothing(infra, rollingStock.length.meters)
         val paths = path.splitAtBacktracks()
         assertEquals(2, paths.size)
         val first = paths[0]
@@ -184,6 +191,7 @@ class BacktrackTests {
     @Test
     @Disabled("Not working yet")
     fun testSimulation() {
+        val path = buildPathBacktrackingOverNothing(infra, rollingStock.length.meters)
         // Smoke test, we only test for uncaught exceptions and failed asserts
         runStandaloneSimulation(
             infra = infra,
