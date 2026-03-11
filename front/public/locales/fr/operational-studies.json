@@ -305,6 +305,7 @@
         "moveToSelectPackage": "Déplacer vers le paquet sélectionné",
         "movingToAnotherPackage": "Déplacement vers un autre paquet",
         "name": "Nom de série",
+        "namePlaceholder": "Ex. {{series}}",
         "newCatalogEntry": "Nouvel ensemble",
         "newLocalTrainScheduleSet": "Nouveau paquet local",
         "newTrainScheduleSet": "Créer un nouveau paquet",

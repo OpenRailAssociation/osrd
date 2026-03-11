@@ -24,6 +24,14 @@ type TrainScheduleSetFormProps = {
   checkNameInCatalogIsUniq?: (name: string, catalogId: number) => Promise<boolean>;
 };
 
+/**
+ * Compute a basic train set name (series), defined as a few years in the future.
+ */
+function trainSetNameExample(): string {
+  const currentYear = new Date().getFullYear();
+  return `${currentYear + 3}`;
+}
+
 const TrainScheduleSetForm = ({
   formId,
   trainScheduleSet,
@@ -162,6 +170,11 @@ const TrainScheduleSetForm = ({
     return undefined;
   }, [nameError, nameUniqueStatus, t]);
 
+  const placeholderName = useMemo(
+    () => t('namePlaceholder', { series: trainSetNameExample() }),
+    []
+  );
+
   return (
     <form
       id={formId}
@@ -263,6 +276,7 @@ const TrainScheduleSetForm = ({
             }
           }}
           statusWithMessage={inputNameStatus}
+          placeholder={placeholderName}
         />
       </div>
 
