@@ -9,6 +9,8 @@ import type { MapRef } from 'react-map-gl/maplibre';
 import type { MapPathProperties } from 'applications/operationalStudies/types';
 import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
+import ItineraryLayer from 'common/Map/components/ItineraryLayer';
+import ItineraryMarkers, { type MarkerInformation } from 'common/Map/components/ItineraryMarkers';
 import { SnappedMarker } from 'common/Map/Layers';
 import { MapContextProvider } from 'common/Map/useMapContext';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
@@ -21,8 +23,6 @@ import { useAppDispatch } from 'store';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
 import AddPathStepPopup from './AddPathStepPopup';
-import ItineraryLayer from './ItineraryLayer';
-import ItineraryMarkers, { type MarkerInformation } from './ItineraryMarkers';
 import type { FeatureInfoClick } from '../types';
 
 const OPERATIONAL_POINT_LAYERS = [
