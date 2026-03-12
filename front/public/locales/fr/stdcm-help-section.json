@@ -186,6 +186,52 @@
       ],
       "title": "Le convoi"
     },
+    "consistChange": {
+      "content": [
+        {
+          "type": "text",
+          "value": "La fonctionnalité Changement de convoi permet de modifier la composition du convoi associé à un sillon à un ou plusieurs points remarquables (PR) intermédiaires en fonction des besoins réels d'acheminement."
+        },
+        {
+          "type": "text",
+          "value": "Elle répond aux besoins opérationnels, où le convoi peut évoluer selon les opérations prévues ou les contraintes du parcours."
+        }
+      ],
+      "subSections": [
+        {
+          "content": [
+            {
+              "items": [
+                {
+                  "value": "Adapter facilement le convoi lors d'opérations telles qu'accroche/décroche, ajout ou retrait de wagons, ou changement de locomotive."
+                },
+                {
+                  "value": "Anticiper les limites de charge, de performance ou les particularités d'itinéraire."
+                },
+                {
+                  "value": "Gagner en souplesse pour gérer plusieurs variantes d'acheminement sur un même sillon."
+                },
+                {
+                  "value": "Garantir la conformité et la cohérence du convoi tout au long du trajet."
+                }
+              ],
+              "type": "list"
+            }
+          ],
+          "title": "Cette fonctionnalité permet notamment :"
+        },
+        {
+          "content": [
+            {
+              "type": "text",
+              "value": "En permettant d'ajuster le convoi à des PR spécifiques, cette fonctionnalité facilite la construction de sillons réellement adaptés aux réalités et optimise l'exploitation opérationnelle."
+            }
+          ],
+          "title": "Résumé"
+        }
+      ],
+      "title": "Le changement de convoi"
+    },
     "faq": {
       "content": [
         {
