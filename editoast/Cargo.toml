@@ -160,6 +160,7 @@ axum = { version = "0.8.7", default-features = false, features = [
 axum-extra = { version = "0.12.2", default-features = false, features = [
   "typed-header",
 ] }
+axum-streams = { version = "0.25.0", features = ["json"] }
 axum-test = { version = "19.0", default-features = false }
 axum-tracing-opentelemetry = { version = "0.33.0", default-features = false, features = [
   "tracing_level_info",
@@ -221,6 +222,7 @@ sha1.workspace = true
 strum.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
+tokio-stream = "0.1.18"
 tower = "0.5.2"
 tower-http = { version = "0.6.6", features = [
   "cors",

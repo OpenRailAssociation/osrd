@@ -140,6 +140,25 @@ pub struct ConsistSchedule {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[serde(tag = "status", rename_all = "SCREAMING_SNAKE_CASE")]
+#[allow(clippy::large_enum_variant)]
+pub enum ProgressStatus {
+    InProgress {
+        point: ProgressCoordinates,
+        best_travel_time: u64,
+    },
+    Done {
+        result: Response,
+    },
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
+pub struct ProgressCoordinates {
+    pub lat: f64,
+    pub lon: f64,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(tag = "status", rename_all = "snake_case")]
 // We accepted the difference of memory size taken by variants
 // Since there is only on success and others are error cases
