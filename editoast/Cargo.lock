@@ -449,6 +449,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "axum-streams"
+version = "0.25.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e3e3b97b0eb0c163a3a7ed79c496f9b9e6f121259a8434d893c3245b2d9a42c9"
+dependencies = [
+ "axum",
+ "bytes",
+ "futures 0.3.32",
+ "http",
+ "http-body",
+ "serde",
+ "serde_json",
+ "tokio-stream",
+]
+
+[[package]]
 name = "axum-test"
 version = "19.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1335,6 +1351,7 @@ dependencies = [
  "authz",
  "axum",
  "axum-extra",
+ "axum-streams",
  "axum-test",
  "axum-tracing-opentelemetry",
  "cache",
@@ -1389,6 +1406,7 @@ dependencies = [
  "tempfile",
  "thiserror 2.0.18",
  "tokio",
+ "tokio-stream",
  "tower",
  "tower-http",
  "tracing",
