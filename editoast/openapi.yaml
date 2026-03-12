@@ -3568,53 +3568,26 @@ paths:
                 oneOf:
                 - type: object
                   required:
-                  - simulation
-                  - pathfinding_result
-                  - departure_time
-                  - status
+                  - data
+                  - event
                   properties:
-                    core_payload:
-                      oneOf:
-                      - type: 'null'
-                      - $ref: '#/components/schemas/core.StdcmRequest'
-                    departure_time:
-                      type: string
-                      format: date-time
-                    pathfinding_result:
-                      $ref: '#/components/schemas/core.PathfindingResultSuccess'
-                    simulation:
-                      $ref: '#/components/schemas/SimulationResponseSuccess'
-                    status:
+                    data:
+                      $ref: '#/components/schemas/StdcmProgressionEvent'
+                    event:
                       type: string
                       enum:
-                      - success
+                      - ongoing
                 - type: object
                   required:
-                  - status
+                  - data
+                  - event
                   properties:
-                    core_payload:
-                      oneOf:
-                      - type: 'null'
-                      - $ref: '#/components/schemas/core.StdcmRequest'
-                    status:
+                    data:
+                      $ref: '#/components/schemas/StdcmResponse'
+                    event:
                       type: string
                       enum:
-                      - path_not_found
-                - type: object
-                  required:
-                  - error
-                  - status
-                  properties:
-                    core_payload:
-                      oneOf:
-                      - type: 'null'
-                      - $ref: '#/components/schemas/core.StdcmRequest'
-                    error:
-                      $ref: '#/components/schemas/SimulationResponse'
-                    status:
-                      type: string
-                      enum:
-                      - preprocessing_simulation_error
+                      - completed
   /timetable/{id}/train_schedule_exception:
     post:
       tags:
@@ -13483,6 +13456,84 @@ components:
         value:
           type: string
           format: date-time
+    StdcmProgressionEvent:
+      type: object
+      required:
+      - point
+      - best_travel_time
+      properties:
+        best_travel_time:
+          type: integer
+          format: int64
+          minimum: 0
+        point:
+          $ref: '#/components/schemas/GeoJsonPoint'
+    StdcmResponse:
+      oneOf:
+      - type: object
+        required:
+        - simulation
+        - pathfinding_result
+        - departure_time
+        - status
+        properties:
+          core_payload:
+            oneOf:
+            - type: 'null'
+            - $ref: '#/components/schemas/core.StdcmRequest'
+          departure_time:
+            type: string
+            format: date-time
+          pathfinding_result:
+            $ref: '#/components/schemas/core.PathfindingResultSuccess'
+          simulation:
+            $ref: '#/components/schemas/SimulationResponseSuccess'
+          status:
+            type: string
+            enum:
+            - success
+      - type: object
+        required:
+        - status
+        properties:
+          core_payload:
+            oneOf:
+            - type: 'null'
+            - $ref: '#/components/schemas/core.StdcmRequest'
+          status:
+            type: string
+            enum:
+            - path_not_found
+      - type: object
+        required:
+        - error
+        - status
+        properties:
+          core_payload:
+            oneOf:
+            - type: 'null'
+            - $ref: '#/components/schemas/core.StdcmRequest'
+          error:
+            $ref: '#/components/schemas/SimulationResponse'
+          status:
+            type: string
+            enum:
+            - preprocessing_simulation_error
+      - type: object
+        required:
+        - error
+        - status
+        properties:
+          core_payload:
+            oneOf:
+            - type: 'null'
+            - $ref: '#/components/schemas/core.StdcmRequest'
+          error:
+            $ref: '#/components/schemas/InternalError'
+          status:
+            type: string
+            enum:
+            - internal_error
     StdcmSearchEnvironment:
       type: object
       required:
