@@ -114,7 +114,7 @@ fun initInfraExplorerWithEnvelope(
     location: BlockLocation,
     rollingStock: PhysicsRollingStock,
     steps: List<ExplorerStep> = listOf(),
-    constraints: List<PathfindingConstraint> = listOf(),
+    constraints: PathfindingConstraint? = null,
 ): Collection<InfraExplorerWithEnvelope> {
     return initInfraExplorers(
             fullInfra.rawInfra,
