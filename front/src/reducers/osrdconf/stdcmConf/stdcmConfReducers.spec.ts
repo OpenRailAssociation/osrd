@@ -242,26 +242,69 @@ describe('stdcmConfReducers', () => {
     });
   });
 
-  it('should handle updateInitialConsist', () => {
-    const consist: ConsistData = {
-      rollingStockID: 1,
-      towedRollingStockID: 2,
-      totalMass: 500,
-      totalLength: 400,
-      maxSpeed: 160,
-      loadingGauge: 'GB',
-      speedLimitByTag: 'some-tag',
-    };
-    const store = createStore();
-    store.dispatch(updateInitialConsist(consist));
-    const state = store.getState()[stdcmConfSlice.name];
-    expect(state.rollingStockID).toBe(1);
-    expect(state.towedRollingStockID).toBe(2);
-    expect(state.totalMass).toBe(500);
-    expect(state.totalLength).toBe(400);
-    expect(state.maxSpeed).toBe(160);
-    expect(state.loadingGauge).toBe('GB');
-    expect(state.speedLimitByTag).toBe('some-tag');
+  describe('should handle updateInitialConsist', () => {
+    it('should update all consist fields', () => {
+      const consist: ConsistData = {
+        rollingStockID: 1,
+        towedRollingStockID: 2,
+        totalMass: 500,
+        totalLength: 400,
+        maxSpeed: 160,
+        loadingGauge: 'GB',
+        speedLimitByTag: 'some-tag',
+      };
+      const store = createStore();
+      store.dispatch(updateInitialConsist(consist));
+      const state = store.getState()[stdcmConfSlice.name];
+      expect(state.rollingStockID).toBe(1);
+      expect(state.towedRollingStockID).toBe(2);
+      expect(state.totalMass).toBe(500);
+      expect(state.totalLength).toBe(400);
+      expect(state.maxSpeed).toBe(160);
+      expect(state.loadingGauge).toBe('GB');
+      expect(state.speedLimitByTag).toBe('some-tag');
+    });
+
+    it('should reset consist fields to undefined when payload fields are undefined', () => {
+      const store = createStore({
+        rollingStockID: 10,
+        towedRollingStockID: 20,
+        totalMass: 500,
+        totalLength: 400,
+        maxSpeed: 160,
+        speedLimitByTag: 'old-tag',
+      });
+      store.dispatch(
+        updateInitialConsist({
+          rollingStockID: undefined,
+          towedRollingStockID: undefined,
+          totalMass: undefined,
+          totalLength: undefined,
+          maxSpeed: undefined,
+          loadingGauge: undefined,
+          speedLimitByTag: undefined,
+        })
+      );
+      const state = store.getState()[stdcmConfSlice.name];
+      expect(state.rollingStockID).toBeUndefined();
+      expect(state.towedRollingStockID).toBeUndefined();
+      expect(state.totalMass).toBeUndefined();
+      expect(state.totalLength).toBeUndefined();
+      expect(state.maxSpeed).toBeUndefined();
+      expect(state.loadingGauge).toBeUndefined();
+      expect(state.speedLimitByTag).toBeUndefined();
+    });
+
+    it('should not affect pathSteps or margins', () => {
+      const store = createStore(initialStateSTDCMConfig);
+      const stateBefore = store.getState()[stdcmConfSlice.name];
+      store.dispatch(
+        updateInitialConsist({ rollingStockID: 99, totalMass: 200, totalLength: 150 })
+      );
+      const stateAfter = store.getState()[stdcmConfSlice.name];
+      expect(stateAfter.stdcmPathSteps).toEqual(stateBefore.stdcmPathSteps);
+      expect(stateAfter.margins).toEqual(stateBefore.margins);
+    });
   });
 
   describe('StdcmPathStep updates', () => {
