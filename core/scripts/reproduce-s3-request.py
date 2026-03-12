@@ -17,7 +17,7 @@ The trace ID refers to datadog traces,
 it's also included at the bottom of the simulation sheet.
 """
 )
-@click.option("--profile", "-p", default="default-ops-912306251540", type=str)
+@click.option("--profile", "-p", default=None, type=str)
 @click.option(
     "--s3-cache",
     "-s",
@@ -40,7 +40,7 @@ it's also included at the bottom of the simulation sheet.
 )
 @click.argument("trace-id")
 def main(
-    profile: str,
+    profile: str | None,
     s3_cache: Path | None,
     bucket: str,
     trace_id: str,
@@ -49,6 +49,8 @@ def main(
 ):
     if s3_cache is None:
         s3_cache = Path(__file__).resolve().parent / ".s3_cache"
+    if profile is None:
+        profile = os.environ.get("AWS_PROFILE", default="default-ops-912306251540")
 
     session = create_aws_session(profile)
     s3 = session.client("s3")
