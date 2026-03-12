@@ -60,9 +60,6 @@ fun runScheduleMetadataExtractor(
             .map { TrainStop(it.pathOffset.meters, it.stopFor!!.seconds, it.receptionSignal) }
 
     val rawInfra = fullInfra.rawInfra
-    val loadedSignalInfra = fullInfra.loadedSignalInfra
-    val blockInfra = fullInfra.blockInfra
-    val simulator = fullInfra.signalingSimulator
 
     // Compute speeds, head and tail positions
     val envelopeWithStops = EnvelopeStopWrapper(envelope, legacyStops)
@@ -74,8 +71,6 @@ fun runScheduleMetadataExtractor(
         headPositions.add(ResultPosition.from(point.time, point.position, trainPath, rawInfra))
     }
 
-    // Compute signal updates
-    val pathSignals = pathSignalsInEnvelope(trainPath, blockInfra, envelopeWithStops)
     val zoneOccupationChangeEvents =
         zoneOccupationChangeEvents(trainPath, envelopeWithStops, trainLength)
 
@@ -88,6 +83,51 @@ fun runScheduleMetadataExtractor(
         schedule.filter { it.stopFor != null }.map { PathStop(it.pathOffset, it.receptionSignal) }
     val closedSignalStops = pathStops.filter { it.receptionSignal.isStopOnClosedSignal }
 
+    val signalCriticalPositions =
+        getSignalCriticalPositions(fullInfra, envelopeWithStops, trainPath, closedSignalStops)
+
+    val envelopeAdapter =
+        IncrementalRequirementEnvelopeAdapter(rollingStock, envelopeWithStops, true)
+    val spacingGenerator = SpacingResourceGenerator(fullInfra, context, envelopeAdapter)
+    spacingGenerator.extendPath(trainPath.getBlocks(), trainPath.getRoutes(), pathStops, true)
+    // as the provided path is complete, the resource generator should never return NotEnoughPath
+    val spacingRequirements = spacingGenerator.processUpdate()!!
+
+    val routingRequirements =
+        routingRequirements(
+            fullInfra,
+            trainPath,
+            closedSignalStops,
+            envelopeWithStops,
+            context,
+            rollingStock,
+        )
+    val reportTrain =
+        makeSimpleReportTrain(envelope, trainPath, rollingStock, schedule, pathItemPositions)
+    return CompleteReportTrain(
+        reportTrain.positions,
+        reportTrain.times,
+        reportTrain.speeds,
+        reportTrain.energyConsumption,
+        reportTrain.pathItemTimes,
+        signalCriticalPositions,
+        zoneUpdates,
+        spacingRequirements.map { it.toRJS(rawInfra) },
+        routingRequirements.map { it.toRJS(rawInfra) },
+    )
+}
+
+fun getSignalCriticalPositions(
+    fullInfra: FullInfra,
+    envelopeWithStops: EnvelopeStopWrapper,
+    trainPath: TrainPath,
+    closedSignalStops: List<PathStop>,
+): List<SignalCriticalPosition> {
+    val rawInfra = fullInfra.rawInfra
+    val loadedSignalInfra = fullInfra.loadedSignalInfra
+
+    val pathSignals = pathSignalsInEnvelope(trainPath, fullInfra.blockInfra, envelopeWithStops)
+
     val signalCriticalPositions = mutableListOf<SignalCriticalPosition>()
     var indexClosedSignalStop = 0
 
@@ -95,7 +135,7 @@ fun runScheduleMetadataExtractor(
         getStopTravelledPathOffset(closedSignalStops, indexClosedSignalStop)
     for ((indexPathSignal, pathSignal) in pathSignals.withIndex()) {
         val sigSystemId = loadedSignalInfra.getSignalingSystem(pathSignal.signal)
-        if (simulator.sigModuleManager.isCurveBased(sigSystemId)) {
+        if (fullInfra.signalingSimulator.sigModuleManager.isCurveBased(sigSystemId)) {
             // no on-sight green block in space-time chart (VL requirement) for curve-based signals
             continue
         }
@@ -149,36 +189,7 @@ fun runScheduleMetadataExtractor(
             )
         )
     }
-
-    val envelopeAdapter =
-        IncrementalRequirementEnvelopeAdapter(rollingStock, envelopeWithStops, true)
-    val spacingGenerator = SpacingResourceGenerator(fullInfra, context, envelopeAdapter)
-    spacingGenerator.extendPath(trainPath.getBlocks(), trainPath.getRoutes(), pathStops, true)
-    // as the provided path is complete, the resource generator should never return NotEnoughPath
-    val spacingRequirements = spacingGenerator.processUpdate()!!
-
-    val routingRequirements =
-        routingRequirements(
-            fullInfra,
-            trainPath,
-            closedSignalStops,
-            envelopeWithStops,
-            context,
-            rollingStock,
-        )
-    val reportTrain =
-        makeSimpleReportTrain(envelope, trainPath, rollingStock, schedule, pathItemPositions)
-    return CompleteReportTrain(
-        reportTrain.positions,
-        reportTrain.times,
-        reportTrain.speeds,
-        reportTrain.energyConsumption,
-        reportTrain.pathItemTimes,
-        signalCriticalPositions,
-        zoneUpdates,
-        spacingRequirements.map { it.toRJS(rawInfra) },
-        routingRequirements.map { it.toRJS(rawInfra) },
-    )
+    return signalCriticalPositions
 }
 
 fun getStopTravelledPathOffset(pathStops: List<PathStop>, indexStop: Int): Offset<PhysicsPath>? {
