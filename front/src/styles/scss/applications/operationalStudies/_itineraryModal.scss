@@ -165,14 +165,14 @@
 
         .path-step-gap .add-pathitem {
           position: absolute;
-          left: 12px;
-          top: 12px;
+          left: 13px;
+          top: 13px;
           z-index: 2;
           padding: 0;
           margin: 0;
           border: 0;
-          width: 24px;
-          height: 24px;
+          width: 22px;
+          height: 22px;
           display: grid;
           place-items: center;
           cursor: pointer;
@@ -248,7 +248,6 @@
           .path-step-counter:not(.is-only-step):not(.is-trailing-placeholder):hover {
             opacity: 1;
             background-color: var(--error60) !important;
-            border-color: var(--error30) !important;
 
             .remove-path-step-icon {
               display: block !important;
