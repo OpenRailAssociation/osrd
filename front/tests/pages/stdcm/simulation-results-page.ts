@@ -35,9 +35,11 @@ class SimulationResultPage {
     this.page = page;
     this.simulationItem = page.getByTestId('simulation-item-button');
     this.mapResultContainer = page.locator('#stdcm-map-result');
-    this.originResultMarker = this.mapResultContainer.locator('img[alt="origin"]');
-    this.destinationResultMarker = this.mapResultContainer.locator('img[alt="destination"]');
-    this.viaResultMarker = this.mapResultContainer.locator('img[alt="via"]');
+    this.originResultMarker = this.mapResultContainer.getByTestId('stdcm-map-result-marker-origin');
+    this.destinationResultMarker = this.mapResultContainer.getByTestId(
+      'stdcm-map-result-marker-destination'
+    );
+    this.viaResultMarker = this.mapResultContainer.getByTestId('stdcm-map-result-marker-via');
     this.simulationResultTable = page.getByTestId('table-results');
     this.simulationTableRows = this.simulationResultTable.locator('tbody tr');
     this.allViasButton = page.getByTestId('all-vias-button');

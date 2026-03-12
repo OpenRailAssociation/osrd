@@ -5,7 +5,6 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import IntermediatePointIcon from 'assets/pictures/mapMarkers/intermediate-point.svg';
 import { updateStdcmPathStep, deleteStdcmVia, addStdcmVia } from 'reducers/osrdconf/stdcmConf';
 import { getStdcmPathSteps } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { StdcmPathStep, StdcmViaPathStep } from 'reducers/osrdconf/types';
@@ -19,6 +18,7 @@ import StdcmStopType from './StdcmStopType';
 import StopDurationInput from './StopDurationInput';
 import { StdcmStopTypes } from '../../types';
 import type { StdcmItineraryProps } from '../../types';
+import StdcmCardMarkerIcon from '../StdcmCardMarkerIcon';
 
 type StdcmViasProps = StdcmItineraryProps & {
   skipAnimation: boolean;
@@ -196,12 +196,6 @@ const StdcmVias = ({
               name={t('trainPath.vias')}
               title={
                 <div data-testid="stdcm-via-icons" className="stdcm-via-icons">
-                  <div className="icon-bundle mt-1">
-                    <img src={IntermediatePointIcon} alt="intermediate-point" />
-                    <span data-testid="stdcm-icon-index" className="icon-index">
-                      {pathStepIndex}
-                    </span>
-                  </div>
                   <button
                     data-testid="delete-via-button"
                     type="button"
@@ -209,6 +203,7 @@ const StdcmVias = ({
                   >
                     {t('translation:common.delete')}
                   </button>
+                  <StdcmCardMarkerIcon markerIndex={pathStepIndex + 1} />
                 </div>
               }
               tip="bottom"

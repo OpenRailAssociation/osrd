@@ -20,8 +20,9 @@ export const getTimesInfoFromDate = (date?: Date) =>
       }
     : undefined;
 
-export const extractMarkersInfo = (pathSteps: StdcmPathStep[]): MarkerInformation[] =>
-  pathSteps.reduce((acc: MarkerInformation[], step, index) => {
+type ExtractedMarkerInfo = Required<Omit<MarkerInformation, 'metadata'>>;
+export const extractMarkersInfo = (pathSteps: StdcmPathStep[]): ExtractedMarkerInfo[] =>
+  pathSteps.reduce((acc: ExtractedMarkerInfo[], step, index) => {
     if (!step.operationalPoint) return acc;
 
     let pointType = MARKER_TYPE.VIA;
@@ -33,6 +34,7 @@ export const extractMarkersInfo = (pathSteps: StdcmPathStep[]): MarkerInformatio
     }
 
     acc.push({
+      id: step.id,
       pointType,
       location: {
         operational_point: {
