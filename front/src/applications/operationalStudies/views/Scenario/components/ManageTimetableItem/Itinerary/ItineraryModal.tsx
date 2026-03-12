@@ -74,6 +74,8 @@ const ItineraryModal = ({
   const { categoryColors, currentSubCategory } = useCategoryColors(category);
 
   const modalRef = useRef<HTMLDialogElement>(null);
+  const editingStepIdRef = useRef<string>('');
+  const pendingStepIdRef = useRef<string>('');
 
   const [pathSteps, setPathSteps] = useState<PathStepV2[]>([]);
   const [categoryWarning, setCategoryWarning] = useState<string | undefined>(undefined);
@@ -95,7 +97,7 @@ const ItineraryModal = ({
 
   const { launchPathfinding } = useManageTimetableItemContext();
 
-  const { pathStepsMetadataById } = usePathStepsMetadata(pathSteps);
+  const { pathStepsMetadataById } = usePathStepsMetadata(pathSteps, pendingStepIdRef);
   const { launchPathfindingV2, pathProperties, pathfindingError } = usePathfindingV2();
   const applyOperationalPointToStep = (
     stepId: string,
@@ -104,7 +106,7 @@ const ItineraryModal = ({
   ) => {
     const chosenCh = chooseChForSuggestion(stepId, suggestion, forcedCh);
     if (!chosenCh) return;
-
+    pendingStepIdRef.current = stepId;
     const newLocation: PathItemLocation = {
       operational_point: {
         type: 'trigram',
@@ -158,22 +160,20 @@ const ItineraryModal = ({
     setInputForStep(newStep.id, '');
   };
 
-  const editingStepIdRef = useRef<string>('');
-
   const isStepInvalidAndIsEditing = (step: PathStepV2, metadata?: PathStepMetadata) => {
     if (!metadata?.isInvalid) return false;
 
+    const query = (getInputForStep(step.id) ?? '').trim();
     const isEditing = editingStepIdRef.current === step.id;
-
+    const isPending = pendingStepIdRef.current === step.id;
     // A step with no location is invalid only if the user typed something and isn't currently editing
     if (!step.location) {
-      const query = (getInputForStep(step.id) ?? '').trim();
       return query.length > 0 && !isEditing;
     }
 
     // A step with a location can still be invalid (OP not found in current infra).
     // Show the error as long as the user is not actively editing it.
-    return !isEditing;
+    return !isEditing && !isPending;
   };
 
   const hasInvalidPathStepDisplay = pathSteps.some((step) =>

@@ -303,7 +303,9 @@ const PathStepItem = ({
             getSuggestionLabel={(op) => {
               if (!op) return '';
               if (typeof op === 'string') return op;
-              return `${op.trigram} ${op.name}`;
+
+              const secondaryCode = op.secondaryCodeList[0]?.code;
+              return `${op.name} ${secondaryCode}`;
             }}
             onSelectSuggestion={(op) => {
               if (!op) {

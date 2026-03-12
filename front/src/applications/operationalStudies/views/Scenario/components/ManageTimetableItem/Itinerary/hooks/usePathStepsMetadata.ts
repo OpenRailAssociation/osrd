@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type RefObject } from 'react';
 
 import type { Position } from 'geojson';
 
@@ -13,7 +13,10 @@ import { mToMm } from 'utils/physics';
  * For each path step, get all its secondary codes and track names to display in the form
  * and update the pathStepsMetadataById state.
  */
-export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
+export const usePathStepsMetadata = (
+  pathSteps: PathStepV2[],
+  pendingStepIdRef: RefObject<string>
+) => {
   const { infraId, getTrackSectionsByIds } = useScenarioContext();
 
   const [pathStepsMetadataById, setPathStepsMetadataById] = useState<Map<string, PathStepMetadata>>(
@@ -130,7 +133,14 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
           parts,
         });
       });
+      const pendingStepId = pendingStepIdRef?.current;
 
+      if (pendingStepId) {
+        const metadata = newPathStepsMetadataById.get(pendingStepId);
+        if (metadata && !metadata.isInvalid) {
+          pendingStepIdRef.current = '';
+        }
+      }
       setPathStepsMetadataById(newPathStepsMetadataById);
     };
     fetchAndSetMetadata();
