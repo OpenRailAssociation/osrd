@@ -30,7 +30,7 @@ use tracing::Instrument;
 use url::Url;
 use uuid::Uuid;
 
-const NON_FINAL_MESSAGE_HEADER: &str = "x-non-final-message";
+const NON_TERMINATING_RESPONSE_HEADER: &str = "x-non-terminating-response";
 
 #[derive(Debug, Clone)]
 pub struct RabbitMQClient {
@@ -172,9 +172,9 @@ impl ChannelWorker {
                     .properties
                     .headers()
                     .as_ref()
-                    .and_then(|f| f.inner().get(NON_FINAL_MESSAGE_HEADER))
+                    .and_then(|f| f.inner().get(NON_TERMINATING_RESPONSE_HEADER))
                     .and_then(|s| s.as_bool())
-                    .unwrap_or(true);
+                    .unwrap_or(false);
 
                 let Some(sender_entry) = response_tracker
                     .get(correlation_id.as_str())
@@ -496,10 +496,10 @@ impl RabbitMQClient {
                         .map(|s| Ok(s.as_slice().to_owned()))
                         .unwrap_or(Err(MqClientError::StatusParsing));
 
-                    let final_message = headers
-                        .and_then(|f| f.inner().get(NON_FINAL_MESSAGE_HEADER))
+                    let final_message = !headers
+                        .and_then(|f| f.inner().get(NON_TERMINATING_RESPONSE_HEADER))
                         .and_then(|s| s.as_bool())
-                        .unwrap_or(true);
+                        .unwrap_or(false);
 
                     (
                         status.map(|status| MQResponse {
