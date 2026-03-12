@@ -80,6 +80,7 @@ export async function handleAndVerifyInput(inputField: Locator, value?: string):
   await expect(inputField).toBeVisible();
   await inputField.fill(value);
   await expect(inputField).toHaveValue(value);
+  await inputField.blur();
 }
 
 /**
