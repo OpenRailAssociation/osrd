@@ -190,7 +190,8 @@ pub(in crate::views) async fn delete(
 
 #[cfg(test)]
 mod tests {
-    use crate::models::fixtures::{create_catalog_entry, create_catalog_entry_with_name};
+    use crate::models::fixtures::create_catalog_entry;
+    use crate::models::fixtures::create_catalog_entry_with_name;
     use crate::views::test_app::TestAppBuilder;
 
     use super::*;
