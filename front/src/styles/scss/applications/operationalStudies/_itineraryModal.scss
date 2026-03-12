@@ -418,10 +418,6 @@
       border-radius: 7px;
       border: 1px solid var(--black25);
     }
-
-    .path-step-marker {
-      @extend %path-step-marker;
-    }
   }
 }
 

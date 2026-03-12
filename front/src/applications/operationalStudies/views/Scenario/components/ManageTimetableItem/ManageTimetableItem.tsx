@@ -11,6 +11,7 @@ import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
 import simulationSettings from 'assets/pictures/components/simulationSettings.svg';
 import rollingStockPic from 'assets/pictures/components/train.svg';
 import { type Comfort } from 'common/api/osrdEditoastApi';
+import { type MarkerInformation, MARKER_TYPE } from 'common/Map/components/ItineraryMarkers';
 import { useOsrdConfActions } from 'common/osrdContext';
 import useSpeedLimitTags from 'common/SpeedLimitTagSelector/useSpeedLimitTags';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
@@ -42,7 +43,6 @@ import { useAppDispatch } from 'store';
 import { formatKmValue } from 'utils/strings';
 
 import ManageTimetableItemMap from './ManageTimetableItemMap';
-import { type MarkerInformation, MARKER_TYPE } from './ManageTimetableItemMap/ItineraryMarkers';
 import PowerRestrictionsSelector from './PowerRestrictionsSelector/PowerRestrictionsSelector';
 import SimulationSettings from './SimulationSettings';
 import TrainSettings from './TrainSettings';

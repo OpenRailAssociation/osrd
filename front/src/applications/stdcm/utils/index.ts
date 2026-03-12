@@ -1,11 +1,8 @@
-import {
-  type MarkerInformation,
-  MARKER_TYPE,
-} from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/ManageTimetableItemMap/ItineraryMarkers';
 import type {
   OperationalPointPartReference,
   PostSimilarTrainsApiResponse,
 } from 'common/api/osrdEditoastApi';
+import { type MarkerInformation, MARKER_TYPE } from 'common/Map/components/ItineraryMarkers';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 
 export const getTimesInfoFromDate = (date?: Date) =>

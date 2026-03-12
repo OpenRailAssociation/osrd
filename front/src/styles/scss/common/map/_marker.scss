@@ -1,0 +1,33 @@
+.maplibregl-canvas-container {
+  /* Style for itinerary markers */
+  .path-step-marker {
+    display: flex;
+    justify-content: center;
+    font-family: 'IBM Plex Sans';
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--white100);
+
+    .indicator {
+      position: absolute;
+      top: 12px;
+    }
+
+    .label {
+      position: absolute;
+      top: 10px;
+      left: 44px;
+      display: flex;
+      align-items: center;
+      height: 24px;
+      font-size: 0.875rem;
+      outline: 3px solid rgba(246, 245, 241, 0.8);
+      border-radius: 4px;
+      color: var(--white100);
+      background-color: var(--grey90);
+      padding-inline: 8px;
+      padding-bottom: 1px;
+      white-space: nowrap;
+    }
+  }
+}
