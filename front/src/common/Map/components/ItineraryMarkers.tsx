@@ -6,9 +6,6 @@ import { Marker } from 'react-map-gl/maplibre';
 
 import useCachedTrackSections from 'applications/operationalStudies/hooks/useCachedTrackSections';
 import destinationSVG from 'assets/pictures/destination.svg';
-import stdcmDestination from 'assets/pictures/mapMarkers/destination.svg';
-import stdcmVia from 'assets/pictures/mapMarkers/intermediate-point.svg';
-import stdcmOrigin from 'assets/pictures/mapMarkers/start.svg';
 import originSVG from 'assets/pictures/origin.svg';
 import viaSVG from 'assets/pictures/via.svg';
 import type { PathItemLocation, TrackSection } from 'common/api/osrdEditoastApi';
@@ -16,7 +13,7 @@ import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import type { SuggestedOP } from 'modules/timetableItem/types';
 import type { PathStep } from 'reducers/osrdconf/types';
 
-export type MarkerInformation = Pick<PathStep, 'name' | 'coordinates' | 'metadata'> & {
+export type MarkerInformation = Pick<PathStep, 'id' | 'name' | 'coordinates' | 'metadata'> & {
   pointType: MARKER_TYPE;
   location: PathItemLocation;
 };
@@ -45,7 +42,6 @@ type MarkerProperties = {
 type ItineraryMarkersProps = {
   simulationPathSteps: MarkerInformation[];
   pathStepsAndSuggestedOPs?: SuggestedOP[];
-  showStdcmAssets?: boolean;
   infraId: number;
 };
 
@@ -70,15 +66,8 @@ const MARKER_IMAGES = {
   [MARKER_TYPE.VIA]: viaSVG,
 };
 
-const STDCM_MARKER_IMAGES = {
-  [MARKER_TYPE.ORIGIN]: stdcmOrigin,
-  [MARKER_TYPE.DESTINATION]: stdcmDestination,
-  [MARKER_TYPE.VIA]: stdcmVia,
-};
-
 const extractMarkerInformation = (
   pathSteps: MarkerInformation[],
-  showStdcmAssets: boolean,
   suggestedOP?: SuggestedOP[]
 ): MarkerProperties[] =>
   pathSteps
@@ -89,7 +78,7 @@ const extractMarkerInformation = (
         ? suggestedOP.find((op) => matchPathStepAndOp(pathStep.location, op))
         : undefined;
 
-      const images = showStdcmAssets ? STDCM_MARKER_IMAGES : MARKER_IMAGES;
+      const images = MARKER_IMAGES;
       return {
         coordinates: pathStep.coordinates,
         imageSource: images[pathStep.pointType],
@@ -108,14 +97,13 @@ const extractMarkerInformation = (
 const ItineraryMarkers = ({
   simulationPathSteps,
   pathStepsAndSuggestedOPs,
-  showStdcmAssets = false,
   infraId,
 }: ItineraryMarkersProps) => {
   const { getTrackSectionsByIds } = useCachedTrackSections(infraId);
 
   const markersInformation = useMemo(
-    () => extractMarkerInformation(simulationPathSteps, showStdcmAssets, pathStepsAndSuggestedOPs),
-    [simulationPathSteps, showStdcmAssets, pathStepsAndSuggestedOPs]
+    () => extractMarkerInformation(simulationPathSteps, pathStepsAndSuggestedOPs),
+    [simulationPathSteps, pathStepsAndSuggestedOPs]
   );
 
   const [trackSections, setTrackSections] = useState<Record<string, TrackSection>>({});
@@ -184,26 +172,22 @@ const ItineraryMarkers = ({
       <Marker
         longitude={markerInfo.coordinates[0]}
         latitude={markerInfo.coordinates[1]}
-        offset={isDestination && !showStdcmAssets ? [0, -24] : [0, -12]}
+        offset={isDestination ? [0, -24] : [0, -12]}
         key={isVia ? `via-${markerInfo.index}` : markerInfo.type}
       >
         <img
           src={markerInfo.imageSource}
           alt={markerInfo.type}
-          style={showStdcmAssets ? {} : { height: isDestination ? '3rem' : '1.5rem' }}
+          style={{ height: isDestination ? '3rem' : '1.5rem' }}
         />
         {isVia && (
-          <span
-            className={cx('map-pathfinding-marker', 'via-number', {
-              'stdcm-via': isVia && showStdcmAssets,
-            })}
-          >
+          <span className={cx('map-pathfinding-marker', 'via-number')}>
             {markersInformation[0].type === MARKER_TYPE.ORIGIN
               ? markerInfo.index
               : markerInfo.index + 1}
           </span>
         )}
-        {!showStdcmAssets && markerInfo.pathStep.metadata && (
+        {markerInfo.pathStep.metadata && (
           <div className={`map-pathfinding-marker ${markerInfo.type}-name`}>
             {getMarkerDisplayInformation(markerInfo)}
           </div>

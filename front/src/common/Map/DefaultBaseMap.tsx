@@ -1,4 +1,4 @@
-import { type PropsWithChildren, useCallback, useEffect, useRef } from 'react';
+import { Fragment, type PropsWithChildren, useCallback, useEffect, useRef } from 'react';
 
 import bbox from '@turf/bbox';
 import type { Geometry } from 'geojson';
@@ -9,11 +9,12 @@ import type { GeoJsonLineString } from 'common/api/osrdEditoastApi';
 import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import ItineraryLayer from 'common/Map/components/ItineraryLayer';
-import ItineraryMarkers, { type MarkerInformation } from 'common/Map/components/ItineraryMarkers';
+import { type MarkerInformation } from 'common/Map/components/ItineraryMarkers';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 
+import PathStepMarker from './components/PathStepMarker';
 import { MapContextProvider } from './useMapContext';
 
 type DefaultBaseMapProps = {
@@ -128,14 +129,19 @@ const DefaultBaseMap = ({
           isFeasible={isFeasible}
           showStdcmAssets
         />
-        {infraId && (
-          <ItineraryMarkers
-            infraId={infraId}
-            simulationPathSteps={pathStepMarkers}
-            showStdcmAssets
-          />
-        )}
 
+        {pathStepMarkers?.map((marker, index) => (
+          <Fragment key={marker.id}>
+            {marker.coordinates ? (
+              <PathStepMarker
+                id={marker.id}
+                testId={`${mapId}-marker-${marker.pointType}`}
+                coordinates={marker.coordinates}
+                markerIndicator={`${index + 1}`}
+              />
+            ) : null}
+          </Fragment>
+        ))}
         {children}
       </BaseMap>
     </MapContextProvider>

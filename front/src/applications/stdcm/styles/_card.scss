@@ -11,25 +11,6 @@
     color: #1844ef;
   }
 
-  .stdcm-via-icons {
-    button {
-      display: none;
-    }
-    .icon-bundle {
-      img {
-        width: 45px;
-      }
-    }
-    .icon-index {
-      position: absolute;
-      width: 44.992px;
-      text-align: center;
-      right: 16.32px;
-      top: 5.12px;
-      font-size: 0.7rem;
-    }
-  }
-
   &.tip-bottom::after {
     content: '';
     position: absolute;
@@ -64,10 +45,32 @@
     letter-spacing: 0px;
     text-align: left;
     line-height: 24px;
-    padding: 7px 16px 0px 16px;
+    padding: 7px 10px 9px 12px;
     height: 40px;
-    span {
-      padding-bottom: 6px;
+
+    .stdcm-card-marker-icon {
+      color: var(--color-white-100);
+      font-size: 0.75rem;
+      font-weight: 600;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background-color: var(--color-grey-60);
+      border: 2px solid var(--color-grey-20);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .stdcm-via-icons {
+      display: flex;
+      button {
+        font-size: 0.875rem;
+        font-weight: 400;
+        text-transform: lowercase;
+        color: var(--primary60);
+        margin-right: 10px;
+      }
     }
   }
 
@@ -209,20 +212,5 @@
 
   &-via-button {
     padding: 8px;
-  }
-}
-
-.stdcm-card:hover {
-  .stdcm-via-icons {
-    .icon-bundle {
-      display: none;
-    }
-    button {
-      display: contents;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      color: var(--primary60);
-    }
   }
 }

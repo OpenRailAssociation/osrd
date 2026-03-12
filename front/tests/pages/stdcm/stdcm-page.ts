@@ -61,9 +61,9 @@ class STDCMPage {
 
     this.simulationStatus = page.getByTestId('simulation-status');
 
-    this.originMarker = this.mapContainer.locator('img[alt="origin"]');
-    this.destinationMarker = this.mapContainer.locator('img[alt="destination"]');
-    this.viaMarker = this.mapContainer.locator('img[alt="via"]');
+    this.originMarker = this.mapContainer.getByTestId('stdcm-map-config-marker-origin');
+    this.destinationMarker = this.mapContainer.getByTestId('stdcm-map-config-marker-destination');
+    this.viaMarker = this.mapContainer.getByTestId('stdcm-map-config-marker-via');
 
     this.warningBox = page.getByTestId('warning-box');
 

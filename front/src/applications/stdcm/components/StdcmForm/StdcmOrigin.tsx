@@ -1,13 +1,13 @@
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import OriginIcon from 'assets/pictures/mapMarkers/start.svg';
 import { getStdcmOrigin } from 'reducers/osrdconf/stdcmConf/selectors';
 
 import StdcmCard from './StdcmCard';
 import StdcmOperationalPoint from './StdcmOperationalPoint';
 import StdcmOpSchedule from './StdcmOpSchedule';
 import type { StdcmItineraryProps } from '../../types';
+import StdcmCardMarkerIcon from '../StdcmCardMarkerIcon';
 
 const StdcmOrigin = ({ disabled = false, onItineraryChange }: StdcmItineraryProps) => {
   const { t } = useTranslation('stdcm');
@@ -17,7 +17,7 @@ const StdcmOrigin = ({ disabled = false, onItineraryChange }: StdcmItineraryProp
   return (
     <StdcmCard
       name={t('trainPath.origin')}
-      title={<img src={OriginIcon} alt="origin" className="stdcm-origin-icon" />}
+      title={<StdcmCardMarkerIcon markerIndex={1} />}
       className="extremity"
       disabled={disabled}
       tip="bottom"

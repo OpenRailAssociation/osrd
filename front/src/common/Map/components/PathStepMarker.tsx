@@ -26,20 +26,27 @@ const MARKER_IMAGES = {
 export type PathStepsMarkerProps = {
   id: string;
   markerIndicator: string;
-  name: string;
+  name?: string;
   coordinates: Position;
+  testId?: string;
 };
 
-const PathStepMarker = ({ id, markerIndicator, name, coordinates }: PathStepsMarkerProps) => (
+const PathStepMarker = ({
+  id,
+  markerIndicator,
+  name,
+  coordinates,
+  testId,
+}: PathStepsMarkerProps) => (
   <Marker longitude={coordinates[0]} latitude={coordinates[1]} offset={[0, -20]} key={id}>
-    <div className="path-step-marker">
+    <div className="path-step-marker" data-testid={testId}>
       <img
         src={MARKER_IMAGES[PATH_STEP_MARKER_STATE.REST]}
         alt={MARKER_IMAGES[PATH_STEP_MARKER_STATE.REST]}
       />
 
       <span className="indicator">{markerIndicator}</span>
-      <div className="label">{name}</div>
+      {name && <div className="label">{name}</div>}
     </div>
   </Marker>
 );

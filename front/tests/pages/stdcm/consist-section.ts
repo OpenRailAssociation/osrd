@@ -7,7 +7,9 @@ import type { ConsistFields } from '../../utils/types';
 class ConsistSection {
   readonly page: Page;
   private readonly tractionEngineField: Locator;
+  private readonly tractionEngineAutocompleteList: Locator;
   private readonly towedRollingStockField: Locator;
+  private readonly towedRollingStockAutocompleteList: Locator;
   private readonly tonnageField: Locator;
   private readonly lengthField: Locator;
   private readonly speedLimitTagField: Locator;
@@ -16,11 +18,13 @@ class ConsistSection {
   constructor(page: Page) {
     this.page = page;
     this.towedRollingStockField = page.getByTestId('towedRollingStock-input');
+    this.towedRollingStockAutocompleteList = page.getByTestId('towed-rolling-stock-list');
     this.tonnageField = page.getByTestId('tonnage-input');
     this.lengthField = page.getByTestId('length-input');
     this.speedLimitTagField = page.getByTestId('speed-limit-by-tag-selector');
     this.maxSpeedField = page.getByTestId('maxSpeed-input');
     this.tractionEngineField = page.getByTestId('tractionEngine-input');
+    this.tractionEngineAutocompleteList = page.getByTestId('traction-engine-list');
   }
 
   async verifyDefaultConsistFields() {
@@ -47,12 +51,14 @@ class ConsistSection {
     // Generic utility for handling dropdown selection and value verification
     const handleAndVerifyDropdown = async (
       dropdownField: Locator,
+      dropdownAutocompleteList: Locator,
       expectedValues: { expectedTonnage: string; expectedLength: string },
       selectedValue?: string
     ) => {
       if (!selectedValue) return;
 
       await dropdownField.fill(selectedValue);
+      await expect(dropdownAutocompleteList).toBeVisible();
       await dropdownField.press('ArrowDown');
       await dropdownField.press('Enter');
       await dropdownField.blur();
@@ -86,6 +92,7 @@ class ConsistSection {
     // Fill and verify traction engine dropdown
     await handleAndVerifyDropdown(
       this.tractionEngineField,
+      this.tractionEngineAutocompleteList,
       {
         expectedTonnage: tractionEngineTonnage,
         expectedLength: tractionEngineLength,
@@ -96,6 +103,7 @@ class ConsistSection {
     // Fill and verify towed rolling stock dropdown
     await handleAndVerifyDropdown(
       this.towedRollingStockField,
+      this.towedRollingStockAutocompleteList,
       towedPrefilledValues,
       towedRollingStock
     );

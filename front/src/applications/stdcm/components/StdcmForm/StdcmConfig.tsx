@@ -375,7 +375,6 @@ const StdcmConfig = ({
           <DefaultBaseMap
             mapId="stdcm-map-config"
             infraId={infra?.id}
-            pathStepMarkers={markersInfo}
             highlightedOperationalPoints={operationalPoints}
             highlightedTrackSections={
               trackSectionIdsByLoadingGauge && loadingGaugeType
@@ -383,6 +382,7 @@ const StdcmConfig = ({
                 : undefined
             }
             mapSettings={{ ...mapSettings, viewport: stdcmConfigViewport }}
+            pathStepMarkers={markersInfo}
             updateMapSettings={updateMapSettings}
             updateViewport={updateViewport}
           />
