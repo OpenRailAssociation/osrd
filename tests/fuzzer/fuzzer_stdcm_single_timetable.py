@@ -58,7 +58,7 @@ class TimetableTimeRange:
 
 def run(
     editoast_url: str,
-    towed_rs: list[int],
+    towed_rs: list[int] | None,
     scenario: Scenario,
     session: Session,
     n_test: int = 1000,
@@ -68,6 +68,8 @@ def run(
     """
     Run the given number of tests, logging errors in the given folder as json files
     """
+    if towed_rs is None:
+        towed_rs = _get_towed_rolling_stock_ids(session, editoast_url)
     timetable_range = _build_timetable_range(editoast_url, scenario, session)
     seed = seed or random.randint(0, 2**32)
     op_list = list(_make_op_list(editoast_url, scenario.infra, session))
@@ -76,7 +78,9 @@ def run(
         print("seed:", seed)
         random.seed(seed)
         try:
-            _test_stdcm(editoast_url, op_list, scenario, timetable_range, session)
+            _test_stdcm(
+                editoast_url, op_list, scenario, timetable_range, session, towed_rs
+            )
         except STDCMException as e:
             if log_folder is None:
                 raise e
@@ -162,6 +166,7 @@ def _test_stdcm(
     scenario: Scenario,
     timetable_range: TimetableTimeRange,
     session: Session,
+    towed_rs: list[int],
 ):
     """
     Run a single test instance
@@ -266,10 +271,9 @@ def _get_towed_rolling_stock_ids(session: Session, editoast_url: str) -> list[in
 if __name__ == "__main__":
     session = conftest.session_no_fixture()
     infra_id = _INFRA_ID or get_infra(_EDITOAST_URL, _INFRA_NAME, session)
-    towed_rs = _get_towed_rolling_stock_ids(session, _EDITOAST_URL)
     run(
         _EDITOAST_URL,
-        towed_rs,
+        towed_rs=None,
         scenario=Scenario(-1, -1, -1, infra_id, _TIMETABLE_ID, _TRAIN_SCHEDULE_SET_ID),
         session=session,
         n_test=10_000,
