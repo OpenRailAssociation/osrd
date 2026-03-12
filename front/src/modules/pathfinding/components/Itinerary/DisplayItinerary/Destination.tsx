@@ -8,6 +8,7 @@ import { useSelector } from 'react-redux';
 import { useManageTimetableItemContext } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
 import { isPathStepInvalid } from 'modules/pathfinding/utils';
 import { getDestination, getPathSteps } from 'reducers/osrdconf/operationalStudiesConf/selectors';
+import { formatUicToCi } from 'utils/strings';
 
 type DestinationProps = {
   zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;
@@ -18,6 +19,7 @@ const Destination = ({ zoomToFeaturePoint }: DestinationProps) => {
 
   const destination = useSelector(getDestination);
   const pathSteps = useSelector(getPathSteps);
+  const location = destination?.location;
 
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
   if (!destination || pathSteps.length === 1)
@@ -47,11 +49,24 @@ const Destination = ({ zoomToFeaturePoint }: DestinationProps) => {
         >
           <strong data-testid="destination-op-info" className="mr-1 text-nowrap">
             {/* If destination doesn't have name, we know that it has been added by click on map and has a track property */}
-            {destination?.name ||
-              (destination &&
-                'track' in destination.location &&
-                destination.location.track.split('-')[0])}
+            {destination?.name || (location && 'track' in location && location.track.split('-')[0])}
           </strong>
+          {location &&
+            'operational_point' in location &&
+            location.operational_point.type !== 'id' && (
+              <>
+                {location.operational_point.secondary_code && (
+                  <small data-testid="destination-ch" className="ml-1">
+                    {location.operational_point.secondary_code}
+                  </small>
+                )}
+                {location.operational_point.type === 'uic' && (
+                  <small data-testid="destination-uic" className="text-muted ml-3">
+                    {formatUicToCi(location.operational_point.uic)}
+                  </small>
+                )}
+              </>
+            )}
         </div>
         <button
           data-testid="delete-destination-button"

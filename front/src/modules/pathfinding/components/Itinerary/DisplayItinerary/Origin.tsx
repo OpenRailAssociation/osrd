@@ -8,6 +8,7 @@ import { useSelector } from 'react-redux';
 import { useManageTimetableItemContext } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
 import { isPathStepInvalid } from 'modules/pathfinding/utils';
 import { getOrigin, getPathSteps } from 'reducers/osrdconf/operationalStudiesConf/selectors';
+import { formatUicToCi } from 'utils/strings';
 
 type OriginProps = {
   zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;
@@ -19,6 +20,7 @@ const Origin = ({ zoomToFeaturePoint }: OriginProps) => {
 
   const origin = useSelector(getOrigin);
   const pathSteps = useSelector(getPathSteps);
+  const location = origin?.location;
 
   const originPointName = (
     <div
@@ -30,9 +32,22 @@ const Origin = ({ zoomToFeaturePoint }: OriginProps) => {
     >
       <strong data-testid="origin-op-info" className="mr-1 text-nowrap">
         {/* If origin doesn't have name, we know that it has been added by click on map and has a track property */}
-        {origin?.name ||
-          (origin && 'track' in origin.location && origin.location.track.split('-')[0])}
+        {origin?.name || (location && 'track' in location && location.track.split('-')[0])}
       </strong>
+      {location && 'operational_point' in location && location.operational_point.type !== 'id' && (
+        <>
+          {location.operational_point.secondary_code && (
+            <small data-testid="origin-ch" className="ml-1">
+              {location.operational_point.secondary_code}
+            </small>
+          )}
+          {location.operational_point.type === 'uic' && (
+            <small data-testid="origin-uic" className="text-muted ml-3">
+              {formatUicToCi(location.operational_point.uic)}
+            </small>
+          )}
+        </>
+      )}
     </div>
   );
 
