@@ -174,7 +174,7 @@ fun initInfraExplorers(
     blockInfra: BlockInfra,
     location: BlockLocation,
     steps: List<ExplorerStep> = listOf(),
-    constraints: List<PathfindingConstraint> = listOf(),
+    constraints: PathfindingConstraint? = null,
 ): Collection<InfraExplorer> {
     val infraExplorers = mutableListOf<InfraExplorer>()
     val block = location.edge
@@ -211,7 +211,7 @@ private class InfraExplorerImpl(
     private var trainPathCache: MutableMap<BlockId, TrainPath>,
     private var currentIndex: Int = 0,
     private var stepTracker: StepTracker,
-    private var constraints: List<PathfindingConstraint>,
+    private var constraints: PathfindingConstraint?,
     override var isPathComplete: Boolean = false,
 ) : InfraExplorer {
     override fun getCurrentEdgePathProperties(offset: Offset<Block>, length: Distance?): TrainPath {
@@ -430,11 +430,9 @@ private class InfraExplorerImpl(
 
                 // If a block cannot be explored, give up
                 val isRouteBlocked =
-                    constraints.any { constraint ->
-                        constraint.apply(block).any {
-                            blockStartOffset < it.end && blockEndOffset > it.start
-                        }
-                    }
+                    constraints?.apply(block)?.any {
+                        blockStartOffset < it.end && blockEndOffset > it.start
+                    } ?: false
                 if (isRouteBlocked) return false
 
                 val rangePathBegin = getLookaheadEndOffset()

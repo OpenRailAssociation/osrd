@@ -163,7 +163,7 @@ class Pathfinding(
                 fullInfra.rawInfra,
                 fullInfra.blockInfra,
                 waypoints,
-                listOf(constraintCombiner),
+                constraintCombiner,
             )
         for (infraExplorer in startInfraExplorers) {
             val currentRange = infraExplorer.getCurrentBlockRange()
@@ -223,7 +223,7 @@ class Pathfinding(
         rawInfra: RawSignalingInfra,
         blockInfra: BlockInfra,
         waypoints: List<Collection<BlockLocation>>,
-        constraints: List<PathfindingConstraint>,
+        constraints: PathfindingConstraint,
     ): Collection<InfraExplorer> {
         val res = mutableListOf<InfraExplorer>()
         val firstStep = waypoints[0]

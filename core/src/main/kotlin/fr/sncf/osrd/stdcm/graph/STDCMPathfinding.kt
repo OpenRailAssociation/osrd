@@ -134,7 +134,7 @@ class STDCMPathfinding(
         runInputSanityChecks()
 
         assert(steps.last().stop) { "The last stop is supposed to be an actual stop" }
-        starts = getStartNodes(graph, listOf(constraints))
+        starts = getStartNodes(graph, constraints)
         val path = findPathImpl()
         graph.stdcmSimulations.logWarnings()
         if (path == null) {
@@ -293,7 +293,7 @@ class STDCMPathfinding(
     /** Converts start locations into starting nodes. */
     private fun getStartNodes(
         graph: STDCMGraph,
-        constraints: List<PathfindingConstraint>,
+        constraints: PathfindingConstraint,
     ): Set<STDCMNode> {
         val res = HashSet<STDCMNode>()
         val firstStep = steps[0]

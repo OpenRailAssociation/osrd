@@ -205,7 +205,6 @@ class InfraExplorerTests {
 
         val electrificationConstraints =
             ElectrificationConstraints(infra, infra, TestTrains.FAST_ELECTRIC_TRAIN.modeNames)
-        val constraints = listOf(electrificationConstraints)
 
         // a --> b
         val firstExplorers =
@@ -213,7 +212,7 @@ class InfraExplorerTests {
                 infra,
                 infra,
                 BlockLocation(blocks[0], Offset(0.meters)),
-                constraints = constraints,
+                constraints = electrificationConstraints,
             )
         assertEquals(1, firstExplorers.size)
         val firstExplorer = firstExplorers.first()
