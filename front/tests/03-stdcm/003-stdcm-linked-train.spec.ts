@@ -4,7 +4,6 @@ import { fastRollingStockName } from './../assets/constants/project-const';
 import test, { createStdcmTab } from './../page-object-fixture';
 import { waitForInfraStateToBeCached } from './../utils';
 import { getInfra, setTowedRollingStock } from './../utils/api-utils';
-import type { ConsistFields } from './../utils/types';
 import {
   ANTERIOR_LINKED_TRAIN_TABLE_DATA_PATH,
   DEFAULT_DETAILS,
@@ -13,6 +12,7 @@ import {
   STDCM_URL,
   TOWED_ROLLING_STOCK_PREFILLED_VALUES,
 } from '../assets/constants/stdcm/stdcm-const';
+import type { ConsistFields } from '../utils/stdcm-types';
 
 test.describe('@stdcm @stdcm-linked-train', () => {
   let infra: Infra;
@@ -44,13 +44,18 @@ test.describe('@stdcm @stdcm-linked-train', () => {
     stdcmSimulationResultPage,
   }, testInfo) => {
     await test.step('Fill consist with traction engine details + towed RS and verify prefilled values', async () => {
-      await consistSection.fillAndVerifyConsistDetails(
-        towedConsistDetails,
-        FAST_ROLLING_STOCK_PREFILLED_VALUES.tonnage,
-        FAST_ROLLING_STOCK_PREFILLED_VALUES.length,
-        TOWED_ROLLING_STOCK_PREFILLED_VALUES.tonnage,
-        TOWED_ROLLING_STOCK_PREFILLED_VALUES.length
-      );
+      await consistSection.fillAndVerifyConsistDetails({
+        consistFields: towedConsistDetails,
+        defaultMaxSpeed: DEFAULT_DETAILS.maxSpeed,
+        tractionEnginePrefilledValues: {
+          expectedTonnage: FAST_ROLLING_STOCK_PREFILLED_VALUES.tonnage,
+          expectedLength: FAST_ROLLING_STOCK_PREFILLED_VALUES.length,
+        },
+        towedRollingStockPrefilledValues: {
+          tonnage: TOWED_ROLLING_STOCK_PREFILLED_VALUES.tonnage,
+          length: TOWED_ROLLING_STOCK_PREFILLED_VALUES.length,
+        },
+      });
     });
 
     await test.step('Configure anterior linked path, destinations and vias', async () => {
@@ -88,6 +93,7 @@ test.describe('@stdcm @stdcm-linked-train', () => {
         viaSection: newViaSection,
         destinationSection: newDestinationSection,
       } = createStdcmTab(newPage);
+
       await newConsistSection.verifyConsistDetails({
         tractionEngine: fastRollingStockName,
         towedRollingStock: createdTowedRollingStock.name,
@@ -118,13 +124,18 @@ test.describe('@stdcm @stdcm-linked-train', () => {
     });
 
     await test.step('Fill consist with traction engine details + towed RS and verify prefilled values', async () => {
-      await consistSection.fillAndVerifyConsistDetails(
-        towedConsistDetails,
-        FAST_ROLLING_STOCK_PREFILLED_VALUES.tonnage,
-        FAST_ROLLING_STOCK_PREFILLED_VALUES.length,
-        TOWED_ROLLING_STOCK_PREFILLED_VALUES.tonnage,
-        TOWED_ROLLING_STOCK_PREFILLED_VALUES.length
-      );
+      await consistSection.fillAndVerifyConsistDetails({
+        consistFields: towedConsistDetails,
+        defaultMaxSpeed: DEFAULT_DETAILS.maxSpeed,
+        tractionEnginePrefilledValues: {
+          expectedTonnage: FAST_ROLLING_STOCK_PREFILLED_VALUES.tonnage,
+          expectedLength: FAST_ROLLING_STOCK_PREFILLED_VALUES.length,
+        },
+        towedRollingStockPrefilledValues: {
+          tonnage: TOWED_ROLLING_STOCK_PREFILLED_VALUES.tonnage,
+          length: TOWED_ROLLING_STOCK_PREFILLED_VALUES.length,
+        },
+      });
     });
 
     await test.step('Launch simulation and verify outputs', async () => {

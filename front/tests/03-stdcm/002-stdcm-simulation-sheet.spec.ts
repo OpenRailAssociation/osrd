@@ -13,6 +13,7 @@ import { findFirstPdf, parsePdfText, verifySimulationContent } from './../utils/
 import type { PdfSimulationContent } from './../utils/types';
 import {
   CONSIST_DETAILS,
+  DEFAULT_DETAILS,
   STDCM_URL,
   STDCM_WITH_ALL_VIA_DATA_PATH,
   STDCM_WITHOUT_ALL_VIA_DATA_PATH,
@@ -46,12 +47,14 @@ test.describe('@stdcm @stdcm-sheet', () => {
     stdcmSimulationResultPage,
   }, testInfo) => {
     await test.step('Fill consist, origin, destination and via', async () => {
-      await consistSection.fillAndVerifyConsistDetails(
-        CONSIST_DETAILS,
-        TRACTION_ENGINE_PREFILLED_VALUES.tonnage,
-        TRACTION_ENGINE_PREFILLED_VALUES.length,
-        TRACTION_ENGINE_PREFILLED_VALUES.maxSpeed
-      );
+      await consistSection.fillAndVerifyConsistDetails({
+        consistFields: CONSIST_DETAILS,
+        defaultMaxSpeed: DEFAULT_DETAILS.maxSpeed,
+        tractionEnginePrefilledValues: {
+          expectedTonnage: TRACTION_ENGINE_PREFILLED_VALUES.tonnage,
+          expectedLength: TRACTION_ENGINE_PREFILLED_VALUES.length,
+        },
+      });
       await originSection.fillOriginDetailsLight();
       await destinationSection.fillDestinationDetailsLight();
       await viaSection.fillAndVerifyViaDetails({ viaNumber: 1, ciSearchText: 'mid_west' });
@@ -95,7 +98,9 @@ test.describe('@stdcm @stdcm-sheet', () => {
         new DestinationSection(newPage),
       ];
 
-      await newConsistSection.verifyDefaultConsistFields();
+      await newConsistSection.verifyDefaultConsistFields({
+        defaultSpeedLimitTag: DEFAULT_DETAILS.speedLimitTag,
+      });
       await newOriginSection.verifyDefaultOriginFields();
       await newDestinationSection.verifyDefaultDestinationFields();
     });
