@@ -208,11 +208,6 @@ const TimesStopsTable = ({
         header: () => t('departureTime'),
         cell: (info) => {
           const row = info.row.original;
-          // Disable departure editing on the first row (origin)
-          if (row.opOnPathIndex === 0) {
-            const value = info.getValue();
-            return <span>{value ? formatLocalTime(value) : ''}</span>;
-          }
           return (
             <TimeCell
               {...info}
