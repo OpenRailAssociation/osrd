@@ -11,6 +11,7 @@ export type SelectProps<T> = Omit<
   Omit<FieldWrapperProps, 'children'> & {
     options: Array<T>;
     value?: T;
+    dataTestId?: string;
     getOptionLabel: (option: T) => string;
     getOptionValue: (option: T) => string;
     onChange: (option?: T) => void;
@@ -34,6 +35,7 @@ const Select = <T,>({
   getOptionLabel,
   getOptionValue,
   onChange,
+  dataTestId,
   ...props
 }: SelectProps<T>) => {
   const [selectedOption, setSelectedOption] = useState<T | undefined>(value);
@@ -63,6 +65,7 @@ const Select = <T,>({
     >
       <select
         id={id}
+        data-testid={dataTestId}
         className={cx('ui-select', statusWithMessage?.status, {
           'placeholder-selected': placeholder && !selectedOption,
           small,

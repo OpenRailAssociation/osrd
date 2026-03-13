@@ -13,6 +13,7 @@ const StdcmStopType = ({ stopTypes, updatePathStepStopType }: StdcmStopTypeProps
 
   return (
     <Select
+      dataTestId="stdcm-stop-type"
       label={t('trainPath.type')}
       id="type"
       value={stopTypes}

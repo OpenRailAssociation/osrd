@@ -1,6 +1,6 @@
 import { readJsonFile } from '../../../utils/file-utils';
-import type { ConsistFields } from '../../../utils/stdcm-types';
-import type { StdcmTranslations, ViaSearchText } from '../../../utils/types';
+import type { ConsistFields, ViaSearchText } from '../../../utils/stdcm-types';
+import type { StdcmTranslations } from '../../../utils/types';
 import { electricRollingStockName } from '../project-const';
 
 export const STDCM_TRANSLATIONS: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');
@@ -26,6 +26,8 @@ export const CI_SUGGESTIONS = {
   north: ['NES North_East_station', 'NS North_station', 'NWS North_West_station'],
   south: ['SES South_East_station', 'SS South_station', 'SWS South_West_station'],
 };
+
+export const VIA_SUGGESTIONS = ['MWS Mid_West_station', 'MES Mid_East_station', 'NS North_station'];
 
 export const DEFAULT_DETAILS = {
   chValue: 'BV',

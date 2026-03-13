@@ -19,10 +19,14 @@ import {
   LIGHT_DESTINATION_DETAILS,
   LIGHT_ORIGIN_DETAILS,
   ORIGIN_DETAILS,
+  STDCM_TRANSLATIONS,
   STDCM_URL,
   STDCM_WITH_ALL_VIA_DATA_PATH,
   STDCM_WITHOUT_ALL_VIA_DATA_PATH,
   TRACTION_ENGINE_PREFILLED_VALUES,
+  VIA_STOP_TIMES,
+  VIA_STOP_TYPES,
+  VIA_SUGGESTIONS,
 } from '../assets/constants/stdcm/stdcm-const';
 
 test.describe('@stdcm @stdcm-sheet', () => {
@@ -78,7 +82,21 @@ test.describe('@stdcm @stdcm-sheet', () => {
         southSuggestions: CI_SUGGESTIONS.south,
         suggestionText: CI_SUGGESTIONS.south[1],
       });
-      await viaSection.fillAndVerifyViaDetails({ viaNumber: 1, ciSearchText: 'mid_west' });
+
+      await viaSection.fillAndVerifyViaDetails({
+        viaNumber: 1,
+        ciSearchText: 'mid_west',
+        expectedChValue: DEFAULT_DETAILS.chValue,
+        stopTypes: VIA_STOP_TYPES,
+        stopTimes: VIA_STOP_TIMES,
+        suggestionTextBySearch: {
+          mid_west: VIA_SUGGESTIONS[0],
+          mid_east: VIA_SUGGESTIONS[1],
+          nS: VIA_SUGGESTIONS[2],
+        },
+        driverSwitchTooShortWarning:
+          STDCM_TRANSLATIONS.stdcmErrors.routeErrors.viaStopDurationDriverSwitchTooShort,
+      });
     });
 
     await test.step('Verify input map markers (Chromium only)', async () => {
