@@ -1,10 +1,12 @@
 import React, { useRef, useState } from 'react';
 
+import { Slider } from '@osrd-project/ui-core';
+
 import { ChronogramCanvas } from './ChronogramCanvas';
 import ChronogramManchette from './ChronogramManchette';
 import { zoomValueToTimeScale } from '../../manchette/utils/helpers';
 import useChronogram from '../hooks/useChronogram';
-import { INITIAL_CHRONOGRAM_HEIGHT } from '../lib/const';
+import { CHRONOGRAM_SLIDER_WIDTH, INITIAL_CHRONOGRAM_HEIGHT } from '../lib/const';
 import type { ChronogramProps } from '../lib/types';
 
 export const Chronogram = ({
@@ -20,6 +22,7 @@ export const Chronogram = ({
   const {
     height: chronogramHeight,
     handleVerticalScroll,
+    handleXZoom,
     handleXZoomOnWheelEvent,
     onPan,
     xOffset,
@@ -64,6 +67,15 @@ export const Chronogram = ({
           />
         </div>
       </div>
+      <Slider
+        containerClassName="chronogram-slider-container"
+        className="chronogram-slider"
+        width={CHRONOGRAM_SLIDER_WIDTH}
+        value={xZoom}
+        onChange={(e) => {
+          handleXZoom(Number(e.target.value));
+        }}
+      />
     </div>
   );
 };

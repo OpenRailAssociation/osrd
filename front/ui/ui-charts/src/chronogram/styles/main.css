@@ -5,6 +5,7 @@
   --chronogram-manchette-header-height: 33px;
   --chronogram-manchette-footer-height: 39px;
 
+  position: relative;
   width: 100%;
   border-radius: 10px;
   box-shadow:
@@ -85,6 +86,21 @@
       .x-circle {
         color: unset;
       }
+    }
+  }
+
+  .chronogram-slider-container {
+    position: absolute;
+    height: 28px;
+    right: 0;
+    bottom: 6px;
+    z-index: 10;
+    padding: 12px 11px;
+    background-color: rgb(255, 255, 255);
+
+    .chronogram-slider {
+      display: flex;
+      align-items: center;
     }
   }
 }
