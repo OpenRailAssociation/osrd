@@ -15,14 +15,14 @@ pub struct SystemAuthorizer<'a> {
     pub conn: database::DbConnection,
 }
 
-impl<'a> Authorizer<'a> for SystemAuthorizer<'a> {
+impl Authorizer for SystemAuthorizer<'_> {
     type Error = editoast_models::Error;
     type Rejection = Rejection;
 
     #[tracing::instrument(skip_all)]
-    async fn authorize<T>(
-        &self,
-        data: Protected<'a, T>,
+    async fn authorize<'a, T>(
+        &'a self,
+        data: Protected<T>,
     ) -> Result<Access<'a, T, Self::Rejection>, Self::Error> {
         let conn = &mut self.conn.clone();
         for check in &data.sanity_checks {

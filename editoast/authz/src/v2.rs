@@ -13,7 +13,12 @@ use crate::User;
 
 pub type OpenFgaError = fga::client::RequestFailure;
 type ValueFut<'a, T> = BoxFuture<'a, Result<T, OpenFgaError>>;
-type Operation<'a, T> = dyn for<'c> FnOnce(&'c fga::Client) -> ValueFut<'c, T> + 'a;
+/// An alias for the type of a protected operation
+///
+/// The operation cannot capture any references in the closure context on purpose.
+/// This is to allow eventually combining [Protected] objects together. It would
+/// "merge" the lifetime of the context and the client together.
+type Operation<T> = dyn for<'c> FnOnce(&'c fga::Client) -> ValueFut<'c, T> + 'static;
 
 /// Represents a protected operation yielding a value `T` and the necessary checks required to run it
 ///
@@ -21,9 +26,9 @@ type Operation<'a, T> = dyn for<'c> FnOnce(&'c fga::Client) -> ValueFut<'c, T> +
 /// but rather by an [Authorizer] implementation, which can choose which checks to enforce or not.
 /// Running a [Protected] through an [Authorizer] will yield an [Access], which represents either an authorization, a bypass or a denial.
 #[derive(derive_more::Debug)]
-pub struct Protected<'a, T> {
+pub struct Protected<T> {
     #[debug(skip)]
-    op: Box<Operation<'a, T>>,
+    op: Box<Operation<T>>,
     pub guardrails: HashSet<Guardrail>,
     pub sanity_checks: HashSet<SanityCheck>,
 }
@@ -66,19 +71,19 @@ pub enum Access<'a, T, R> {
 /// The authorization logic is up to the implementation, but it should take into account the guardrails and sanity checks of the [Protected] operation.
 /// Not every check needs to be enforced depending on the purpose of the implementor, but make sure to authorize each protected operation with
 /// an appropriate [Authorizer], otherwise that *will result in security issues*.
-pub trait Authorizer<'a> {
+pub trait Authorizer {
     type Rejection;
     type Error;
 
     /// Turns a [Protected] operation into an [Access] by enforcing the necessary checks
-    async fn authorize<T>(
-        &self,
-        data: Protected<'a, T>,
+    async fn authorize<'a, T>(
+        &'a self,
+        data: Protected<T>,
     ) -> Result<Access<'a, T, Self::Rejection>, Self::Error>;
 }
 
-impl<'a, T> Protected<'a, T> {
-    pub fn new(f: impl for<'c> FnOnce(&'c fga::Client) -> ValueFut<'c, T> + 'a) -> Self {
+impl<T> Protected<T> {
+    pub fn new(f: impl for<'c> FnOnce(&'c fga::Client) -> ValueFut<'c, T> + 'static) -> Self {
         Self {
             op: Box::new(f),
             guardrails: HashSet::new(),
@@ -87,9 +92,9 @@ impl<'a, T> Protected<'a, T> {
     }
 
     /// For convenient chaining
-    pub async fn authorize<A: Authorizer<'a>>(
+    pub async fn authorize<'a, A: Authorizer>(
         self,
-        authorizer: &A,
+        authorizer: &'a A,
     ) -> Result<Access<'a, T, A::Rejection>, A::Error> {
         authorizer.authorize(self).await
     }
@@ -97,7 +102,7 @@ impl<'a, T> Protected<'a, T> {
     /// Consumes the protection and produces an [Access::Authorized] without performing any check
     ///
     /// Only use this in trusted context or in an [Authorizer] implementation after performing the necessary checks.
-    pub fn blindly_authorize<R>(self, openfga: &'a fga::Client) -> Access<'a, T, R> {
+    pub fn blindly_authorize<'a, R>(self, openfga: &'a fga::Client) -> Access<'a, T, R> {
         Access::Authorized((self.op)(openfga))
     }
 
@@ -152,7 +157,7 @@ impl<'a, T, R: std::fmt::Debug> Access<'a, T, R> {
 /// Adds some members to a group
 ///
 /// Idempotent but not atomic due to the lack of transactions in OpenFGA.
-pub fn add_members(group: Group, members: HashSet<User>) -> Protected<'static, ()> {
+pub fn add_members(group: Group, members: HashSet<User>) -> Protected<()> {
     let user_exists_checks = members
         .iter()
         .map(|user| SanityCheck::UserExists(*user))
@@ -192,7 +197,7 @@ pub fn add_members(group: Group, members: HashSet<User>) -> Protected<'static, (
 /// Gives the subject the specified roles
 ///
 /// Idempotent but not atomic due to the lack of transactions in OpenFGA.
-pub fn add_roles(subject: Subject, roles: HashSet<Role>) -> Protected<'static, ()> {
+pub fn add_roles(subject: Subject, roles: HashSet<Role>) -> Protected<()> {
     Protected::new(move |openfga| {
         async move {
             let existing_roles = match &subject {
@@ -230,7 +235,7 @@ pub fn add_roles(subject: Subject, roles: HashSet<Role>) -> Protected<'static, (
 /// Removes some members from a group
 ///
 /// Idempotent but not atomic due to the lack of transactions in OpenFGA.
-pub fn remove_members(group: Group, members: HashSet<User>) -> Protected<'static, ()> {
+pub fn remove_members(group: Group, members: HashSet<User>) -> Protected<()> {
     let user_exists_checks = members
         .iter()
         .map(|user| SanityCheck::UserExists(*user))
@@ -269,7 +274,7 @@ pub fn remove_members(group: Group, members: HashSet<User>) -> Protected<'static
 /// Removes the specified roles from the subject
 ///
 /// Idempotent but not atomic due to the lack of transactions in OpenFGA.
-pub fn remove_roles(subject: Subject, roles: HashSet<Role>) -> Protected<'static, ()> {
+pub fn remove_roles(subject: Subject, roles: HashSet<Role>) -> Protected<()> {
     Protected::new(move |openfga| {
         async move {
             let existing_roles = match &subject {
@@ -317,25 +322,25 @@ pub mod test_authorizers {
     /// Always rejects with the given rejection reason
     pub struct Reject<Rejection>(Rejection);
 
-    impl<'a> Authorizer<'a> for Authorize<'a> {
+    impl Authorizer for Authorize<'_> {
         type Rejection = ();
         type Error = Infallible;
 
-        async fn authorize<T>(
-            &self,
-            data: Protected<'a, T>,
+        async fn authorize<'a, T>(
+            &'a self,
+            data: Protected<T>,
         ) -> Result<Access<'a, T, Self::Rejection>, Self::Error> {
             Ok(data.blindly_authorize(self.0))
         }
     }
 
-    impl<'a, Rejection: Clone> Authorizer<'a> for Reject<Rejection> {
+    impl<Rejection: Clone> Authorizer for Reject<Rejection> {
         type Rejection = Rejection;
         type Error = Infallible;
 
-        async fn authorize<T>(
-            &self,
-            _data: Protected<'a, T>,
+        async fn authorize<'a, T>(
+            &'a self,
+            _data: Protected<T>,
         ) -> Result<Access<'a, T, Self::Rejection>, Self::Error> {
             Ok(Access::Denied {
                 rejection: self.0.clone(),
