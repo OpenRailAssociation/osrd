@@ -11,9 +11,11 @@ import test from './../page-object-fixture';
 import { waitForInfraStateToBeCached } from './../utils';
 import { getInfra } from './../utils/api-utils';
 import {
+  DEFAULT_DETAILS,
   INVALID_CONSIST_DATA,
   STDCM_TRANSLATIONS,
   STDCM_URL,
+  TRACTION_ENGINE_PREFILLED_VALUES,
   VALID_CONSIST_DATA,
 } from '../assets/constants/stdcm/stdcm-const';
 
@@ -56,11 +58,14 @@ test.describe('@stdcm @stdcm-missing-fields', () => {
     });
 
     await test.step('Fill all mandatory fields → expect valid simulation', async () => {
-      await consistSection.fillAndVerifyConsistDetails(
-        { tractionEngine: electricRollingStockName },
-        '900',
-        '400'
-      );
+      await consistSection.fillAndVerifyConsistDetails({
+        consistFields: { tractionEngine: electricRollingStockName },
+        defaultMaxSpeed: DEFAULT_DETAILS.maxSpeed,
+        tractionEnginePrefilledValues: {
+          expectedTonnage: TRACTION_ENGINE_PREFILLED_VALUES.tonnage,
+          expectedLength: TRACTION_ENGINE_PREFILLED_VALUES.length,
+        },
+      });
       await stdcmPage.verifyValidSimulationLaunch();
       await stdcmPage.expectWarningBoxHidden();
       await stdcmSimulationResultPage.verifySimulationDetails(SIMULATION_RESULTS_DETAILS);

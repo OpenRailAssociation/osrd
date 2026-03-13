@@ -1,5 +1,6 @@
 import { readJsonFile } from '../../../utils/file-utils';
-import type { ConsistFields, StdcmTranslations, ViaSearchText } from '../../../utils/types';
+import type { ConsistFields } from '../../../utils/stdcm-types';
+import type { StdcmTranslations, ViaSearchText } from '../../../utils/types';
 import { electricRollingStockName } from '../project-const';
 
 export const STDCM_TRANSLATIONS: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');

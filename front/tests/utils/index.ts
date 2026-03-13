@@ -75,11 +75,47 @@ export async function extractNumberFromString(input: string): Promise<number> {
  * @returns {Promise<void>} A promise that resolves once the input field is filled and verified.
  */
 export async function handleAndVerifyInput(inputField: Locator, value?: string): Promise<void> {
-  if (value) {
-    await inputField.click();
-    await inputField.fill(value);
-    await expect(inputField).toHaveValue(value);
-  }
+  if (value === undefined) return;
+
+  await expect(inputField).toBeVisible();
+  await inputField.fill(value);
+  await expect(inputField).toHaveValue(value);
+}
+
+/**
+ * Verifies that multiple input fields contain their expected values.
+ *
+ * @param {Array<[locator: Locator, expectedValue: string]>} fields - An array of tuples containing
+ * the field locator and its expected value.
+ * @returns {Promise<void>} A promise that resolves once all field values are verified.
+ */
+export async function expectFieldsToHaveValues(
+  fields: Array<[locator: Locator, expectedValue: string]>
+): Promise<void> {
+  await Promise.all(
+    fields.map(([locator, expectedValue]) => expect(locator).toHaveValue(expectedValue))
+  );
+}
+
+/**
+ * Selects the first matching item from a dropdown field and verifies the selected value.
+ *
+ * @param {Locator} field - The locator for the dropdown input field.
+ * @param {string} value - The value to type and select from the dropdown.
+ * @returns {Promise<void>} A promise that resolves once the dropdown value is selected and verified.
+ */
+export async function selectFirstDropDownItem(
+  field: Locator,
+  list: Locator,
+  value: string
+): Promise<void> {
+  await field.fill(value);
+  await expect(list).toBeVisible();
+  await field.press('ArrowDown');
+  await field.press('Enter');
+  await field.blur();
+
+  await expect(field).toHaveValue(value);
 }
 
 /**

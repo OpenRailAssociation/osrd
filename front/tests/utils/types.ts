@@ -63,16 +63,6 @@ export type PdfSimulationContent = {
   };
 };
 
-// STDCM consist block type
-export type ConsistFields = {
-  tractionEngine: string;
-  towedRollingStock?: string;
-  tonnage?: string;
-  length?: string;
-  maxSpeed?: string;
-  speedLimitTag?: string;
-};
-
 type Margin = {
   theoretical: string;
   theoreticalS: string;

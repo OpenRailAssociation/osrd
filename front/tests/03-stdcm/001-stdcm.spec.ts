@@ -4,12 +4,12 @@ import { fastRollingStockName } from './../assets/constants/project-const';
 import test, { createStdcmTab } from './../page-object-fixture';
 import { waitForInfraStateToBeCached } from './../utils';
 import { getInfra, setTowedRollingStock } from './../utils/api-utils';
-import type { ConsistFields } from './../utils/types';
 import {
   ALL_STOPS_TABLE_DATA_PATH,
   ALTERNATIVE_SIMULATION_RESULTS_DETAILS,
   CONFLICT_ARRIVAL_TIME,
   CONSIST_DETAILS,
+  DEFAULT_DETAILS,
   FAST_ROLLING_STOCK_PREFILLED_VALUES,
   SIMULATION_RESULTS_WITH_STOPS_DETAILS,
   STDCM_URL,
@@ -18,14 +18,14 @@ import {
   TRACTION_ENGINE_PREFILLED_VALUES,
   VIA_DETAILS,
 } from '../assets/constants/stdcm/stdcm-const';
+import type { ConsistFields } from '../utils/stdcm-types';
 
 test.describe('@stdcm', () => {
   let infra: Infra;
   let createdTowedRollingStock: TowedRollingStock;
 
   test.beforeAll('Fetch infrastructure', async () => {
-    infra = await getInfra();
-    createdTowedRollingStock = await setTowedRollingStock();
+    [infra, createdTowedRollingStock] = await Promise.all([getInfra(), setTowedRollingStock()]);
   });
 
   test.beforeEach('Navigate to the STDCM page', async ({ page }) => {
@@ -47,7 +47,9 @@ test.describe('@stdcm', () => {
     });
 
     await test.step('Verify default input values', async () => {
-      await consistSection.verifyDefaultConsistFields();
+      await consistSection.verifyDefaultConsistFields({
+        defaultSpeedLimitTag: DEFAULT_DETAILS.speedLimitTag,
+      });
       await originSection.verifyDefaultOriginFields();
       await destinationSection.verifyDefaultDestinationFields();
     });
@@ -69,11 +71,14 @@ test.describe('@stdcm', () => {
     stdcmSimulationResultPage,
   }) => {
     await test.step('Fill consist, origin and destination', async () => {
-      await consistSection.fillAndVerifyConsistDetails(
-        CONSIST_DETAILS,
-        TRACTION_ENGINE_PREFILLED_VALUES.tonnage,
-        TRACTION_ENGINE_PREFILLED_VALUES.length
-      );
+      await consistSection.fillAndVerifyConsistDetails({
+        consistFields: CONSIST_DETAILS,
+        defaultMaxSpeed: DEFAULT_DETAILS.maxSpeed,
+        tractionEnginePrefilledValues: {
+          expectedTonnage: TRACTION_ENGINE_PREFILLED_VALUES.tonnage,
+          expectedLength: TRACTION_ENGINE_PREFILLED_VALUES.length,
+        },
+      });
       await originSection.fillAndVerifyOriginDetails();
       await destinationSection.fillAndVerifyDestinationDetails();
     });
@@ -99,15 +104,19 @@ test.describe('@stdcm', () => {
         page.context().waitForEvent('page'),
         stdcmSimulationResultPage.startNewQueryWithoutData(),
       ]);
+
       await newPage.bringToFront();
       await newPage.waitForLoadState('domcontentloaded');
+
       const {
         consistSection: newConsistSection,
         originSection: newOriginSection,
         destinationSection: newDestinationSection,
       } = createStdcmTab(newPage);
 
-      await newConsistSection.verifyDefaultConsistFields();
+      await newConsistSection.verifyDefaultConsistFields({
+        defaultSpeedLimitTag: DEFAULT_DETAILS.speedLimitTag,
+      });
       await newOriginSection.verifyDefaultOriginFields();
       await newDestinationSection.verifyDefaultDestinationFields();
     });
@@ -128,13 +137,18 @@ test.describe('@stdcm', () => {
     };
 
     await test.step('Fill consist section with towed RS and route', async () => {
-      await consistSection.fillAndVerifyConsistDetails(
-        towedConsistDetails,
-        FAST_ROLLING_STOCK_PREFILLED_VALUES.tonnage,
-        FAST_ROLLING_STOCK_PREFILLED_VALUES.length,
-        TOWED_ROLLING_STOCK_PREFILLED_VALUES.tonnage,
-        TOWED_ROLLING_STOCK_PREFILLED_VALUES.length
-      );
+      await consistSection.fillAndVerifyConsistDetails({
+        consistFields: towedConsistDetails,
+        defaultMaxSpeed: DEFAULT_DETAILS.maxSpeed,
+        tractionEnginePrefilledValues: {
+          expectedTonnage: FAST_ROLLING_STOCK_PREFILLED_VALUES.tonnage,
+          expectedLength: FAST_ROLLING_STOCK_PREFILLED_VALUES.length,
+        },
+        towedRollingStockPrefilledValues: {
+          tonnage: TOWED_ROLLING_STOCK_PREFILLED_VALUES.tonnage,
+          length: TOWED_ROLLING_STOCK_PREFILLED_VALUES.length,
+        },
+      });
       await originSection.fillOriginDetailsLight(CONFLICT_ARRIVAL_TIME);
       await destinationSection.fillDestinationDetailsLight();
       await viaSection.fillAndVerifyViaDetails({ viaNumber: 1, ciSearchText: 'mid_west' });
