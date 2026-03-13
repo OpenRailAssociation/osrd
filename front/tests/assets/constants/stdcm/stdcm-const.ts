@@ -38,7 +38,7 @@ export const DEFAULT_DETAILS = {
 
 export const ORIGIN_DETAILS = {
   input: 'North',
-  suggestion: 'North_West_station',
+  suggestion: 'NWS North_West_station',
   ...DEFAULT_DETAILS,
   updatedChValue: 'BC',
   arrivalType: {

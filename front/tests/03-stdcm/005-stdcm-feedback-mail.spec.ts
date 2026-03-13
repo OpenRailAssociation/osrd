@@ -5,8 +5,10 @@ import { waitForInfraStateToBeCached } from './../utils';
 import { getInfra } from './../utils/api-utils';
 import getMailFeedbackData from '../assets/constants/stdcm/mail-feedback-const';
 import {
+  CI_SUGGESTIONS,
   CONSIST_DETAILS,
   DEFAULT_DETAILS,
+  LIGHT_ORIGIN_DETAILS,
   SIMULATION_RESULTS_DETAILS,
   STDCM_URL,
   TRACTION_ENGINE_PREFILLED_VALUES,
@@ -44,7 +46,14 @@ test.describe('@stdcm @stdcm-feedback', () => {
     });
 
     await test.step('Fill origin and destination', async () => {
-      await originSection.fillOriginDetailsLight();
+      await originSection.fillOriginDetailsLight({
+        originDetails: {
+          ...LIGHT_ORIGIN_DETAILS,
+          suggestionText: CI_SUGGESTIONS.north[2],
+        },
+        expectedSuggestions: CI_SUGGESTIONS.north,
+        expectedCiValue: CI_SUGGESTIONS.north[2],
+      });
       await destinationSection.fillDestinationDetailsLight();
     });
 

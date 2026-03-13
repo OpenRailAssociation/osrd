@@ -12,8 +12,11 @@ import { getInfra } from './../utils/api-utils';
 import { findFirstPdf, parsePdfText, verifySimulationContent } from './../utils/pdf-parser';
 import type { PdfSimulationContent } from './../utils/types';
 import {
+  CI_SUGGESTIONS,
   CONSIST_DETAILS,
   DEFAULT_DETAILS,
+  LIGHT_ORIGIN_DETAILS,
+  ORIGIN_DETAILS,
   STDCM_URL,
   STDCM_WITH_ALL_VIA_DATA_PATH,
   STDCM_WITHOUT_ALL_VIA_DATA_PATH,
@@ -55,7 +58,15 @@ test.describe('@stdcm @stdcm-sheet', () => {
           expectedLength: TRACTION_ENGINE_PREFILLED_VALUES.length,
         },
       });
-      await originSection.fillOriginDetailsLight();
+
+      await originSection.fillOriginDetailsLight({
+        originDetails: {
+          ...LIGHT_ORIGIN_DETAILS,
+          suggestionText: CI_SUGGESTIONS.north[2],
+        },
+        expectedSuggestions: CI_SUGGESTIONS.north,
+        expectedCiValue: CI_SUGGESTIONS.north[2],
+      });
       await destinationSection.fillDestinationDetailsLight();
       await viaSection.fillAndVerifyViaDetails({ viaNumber: 1, ciSearchText: 'mid_west' });
     });
@@ -101,7 +112,13 @@ test.describe('@stdcm @stdcm-sheet', () => {
       await newConsistSection.verifyDefaultConsistFields({
         defaultSpeedLimitTag: DEFAULT_DETAILS.speedLimitTag,
       });
-      await newOriginSection.verifyDefaultOriginFields();
+
+      await newOriginSection.verifyDefaultOriginFields({
+        arrivalType: ORIGIN_DETAILS.arrivalType.default,
+        arrivalDate: DEFAULT_DETAILS.arrivalDate,
+        arrivalTime: DEFAULT_DETAILS.arrivalTime,
+        tolerance: DEFAULT_DETAILS.tolerance,
+      });
       await newDestinationSection.verifyDefaultDestinationFields();
     });
   });

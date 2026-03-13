@@ -4,10 +4,14 @@ import { fastRollingStockName } from './../assets/constants/project-const';
 import test, { createStdcmTab } from './../page-object-fixture';
 import { waitForInfraStateToBeCached } from './../utils';
 import { getInfra, setTowedRollingStock } from './../utils/api-utils';
+import LINKED_TRAIN_DETAILS from '../assets/constants/stdcm/linked-train-const';
 import {
   ANTERIOR_LINKED_TRAIN_TABLE_DATA_PATH,
+  CI_SUGGESTIONS,
   DEFAULT_DETAILS,
   FAST_ROLLING_STOCK_PREFILLED_VALUES,
+  LIGHT_ORIGIN_DETAILS,
+  ORIGIN_DETAILS,
   POSTERIOR_LINKED_TRAIN_TABLE_DATA_PATH,
   STDCM_URL,
   TOWED_ROLLING_STOCK_PREFILLED_VALUES,
@@ -102,7 +106,15 @@ test.describe('@stdcm @stdcm-linked-train', () => {
         maxSpeed: DEFAULT_DETAILS.maxSpeed,
         speedLimitTag: DEFAULT_DETAILS.speedLimitTag,
       });
-      await newOriginSection.verifyOriginDetails();
+
+      await newOriginSection.verifyOriginDetails({
+        originCi: LINKED_TRAIN_DETAILS.anterior.originCi,
+        originCh: LINKED_TRAIN_DETAILS.anterior.originCh,
+        originArrival: LINKED_TRAIN_DETAILS.anterior.originArrival,
+        dateOriginArrival: LINKED_TRAIN_DETAILS.anterior.dateOriginArrival,
+        timeOriginArrival: LINKED_TRAIN_DETAILS.anterior.timeOriginArrival,
+        toleranceOriginArrival: `${LINKED_TRAIN_DETAILS.anterior.toleranceFields.min}/${LINKED_TRAIN_DETAILS.anterior.toleranceFields.max}`,
+      });
       await newDestinationSection.verifyDestinationDetails();
       await newViaSection.verifyViaDetails();
     });
@@ -118,7 +130,16 @@ test.describe('@stdcm @stdcm-linked-train', () => {
     stdcmSimulationResultPage,
   }, testInfo) => {
     await test.step('Fill origin with posterior constraints and linked path', async () => {
-      await originSection.fillOriginDetailsLight(undefined, 'respectDestinationSchedule', true);
+      await originSection.fillOriginDetailsLight({
+        originDetails: {
+          ...LIGHT_ORIGIN_DETAILS,
+          suggestionText: CI_SUGGESTIONS.north[2],
+        },
+        expectedSuggestions: CI_SUGGESTIONS.north,
+        expectedCiValue: CI_SUGGESTIONS.north[2],
+        arrivalTypeOverride: ORIGIN_DETAILS.arrivalType.updated,
+        isPrecise: true,
+      });
       await linkedTrainSection.posteriorLinkedPathDetails();
       await viaSection.fillAndVerifyViaDetails({ viaNumber: 1, ciSearchText: 'mid_east' });
     });
