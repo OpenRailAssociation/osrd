@@ -21,7 +21,7 @@ logback = '1.5.+'
 moshi = '1.15.2'
 junit = '6.0.+'
 mockito = '5.2.+'
-otel = '1.59.0'
+otel = '1.60.1'
 
 [libraries]
 # kotlin stuff
@@ -79,7 +79,7 @@ kotlin-multiplatform = { id = 'org.jetbrains.kotlin.multiplatform', version.ref 
 kotlin-serialization = { id = 'org.jetbrains.kotlin.plugin.serialization', version.ref = 'kotlin' }
 
 # java
-spotbugs = { id = 'com.github.spotbugs', version = '6.0.9' }
+spotbugs = { id = 'com.github.spotbugs', version = '6.4.8' }
 spotless = { id = 'com.diffplug.spotless', version = '8.3.0' }
 shadow = { id = 'com.gradleup.shadow', version = '9.3.2' }
 versions = { id = 'com.github.ben-manes.versions', version = '0.53.0' }
