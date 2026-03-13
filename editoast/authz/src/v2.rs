@@ -225,18 +225,29 @@ pub fn add_members(group: Group, members: HashSet<User>) -> Protected<()> {
         .with_guardrail(Guardrail::IssuerHasRole(Role::Admin))
 }
 
+pub fn subject_roles(subject: Subject) -> Protected<Vec<Role>> {
+    Protected::new(move |openfga| {
+        async move {
+            match &subject {
+                Subject::User(user) => Role::list_roles(openfga, User::role(), user).await,
+                Subject::Group(group) => Role::list_roles(openfga, Group::role(), group).await,
+            }
+        }
+        .boxed()
+    })
+    .with_check(match subject {
+        Subject::User(user) => SanityCheck::UserExists(user),
+        Subject::Group(group) => SanityCheck::GroupExists(group),
+    })
+}
+
 // TODO: move somewhere more appropriate
 /// Gives the subject the specified roles
 ///
 /// Idempotent but not atomic due to the lack of transactions in OpenFGA.
 pub fn add_roles(subject: Subject, roles: HashSet<Role>) -> Protected<()> {
-    Protected::new(move |openfga| {
-        async move {
-            let existing_roles = match &subject {
-                Subject::User(user) => Role::list_roles(openfga, User::role(), user).await?,
-                Subject::Group(group) => Role::list_roles(openfga, Group::role(), group).await?,
-            };
-
+    subject_roles(subject)
+        .map(async move |openfga, existing_roles| {
             let existing_roles = HashSet::from_iter(existing_roles);
             let new_roles = roles.difference(&existing_roles);
             let mut writes = openfga.prepare_writes();
@@ -254,14 +265,8 @@ pub fn add_roles(subject: Subject, roles: HashSet<Role>) -> Protected<()> {
             }
             writes.execute().await?;
             Ok(())
-        }
-        .boxed()
-    })
-    .with_guardrail(Guardrail::IssuerHasRole(Role::Admin))
-    .with_check(match &subject {
-        Subject::User(user) => SanityCheck::UserExists(*user),
-        Subject::Group(group) => SanityCheck::GroupExists(*group),
-    })
+        })
+        .with_guardrail(Guardrail::IssuerHasRole(Role::Admin))
 }
 
 /// Removes some members from a group
@@ -294,13 +299,8 @@ pub fn remove_members(group: Group, members: HashSet<User>) -> Protected<()> {
 ///
 /// Idempotent but not atomic due to the lack of transactions in OpenFGA.
 pub fn remove_roles(subject: Subject, roles: HashSet<Role>) -> Protected<()> {
-    Protected::new(move |openfga| {
-        async move {
-            let existing_roles = match &subject {
-                Subject::User(user) => Role::list_roles(openfga, User::role(), user).await?,
-                Subject::Group(group) => Role::list_roles(openfga, Group::role(), group).await?,
-            };
-
+    subject_roles(subject)
+        .map(async move |openfga, existing_roles| {
             let existing_roles = HashSet::from_iter(existing_roles);
             let removed_roles = roles.intersection(&existing_roles);
             let mut writes = openfga.prepare_deletes();
@@ -318,14 +318,8 @@ pub fn remove_roles(subject: Subject, roles: HashSet<Role>) -> Protected<()> {
             }
             writes.execute().await?;
             Ok(())
-        }
-        .boxed()
-    })
-    .with_guardrail(Guardrail::IssuerHasRole(Role::Admin))
-    .with_check(match &subject {
-        Subject::User(user) => SanityCheck::UserExists(*user),
-        Subject::Group(group) => SanityCheck::GroupExists(*group),
-    })
+        })
+        .with_guardrail(Guardrail::IssuerHasRole(Role::Admin))
 }
 
 pub mod test_authorizers {
