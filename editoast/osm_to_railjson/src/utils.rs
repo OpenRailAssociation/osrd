@@ -29,6 +29,8 @@ use schemas::primitives::Identifier;
 use schemas::primitives::NonBlankString;
 use std::collections::HashMap;
 use std::str::FromStr;
+use std::sync::atomic::AtomicU32;
+use std::sync::atomic::Ordering;
 use tracing::error;
 use tracing::warn;
 
@@ -533,6 +535,10 @@ pub fn operational_points(
         .collect()
 }
 
+// TODO: the generation of fake UIC and name is here as a temporary solution.
+// The front crashes when this function return None.
+// This function will probably be changed when the data model will change.
+// The necessity of a fake UIC and name should be re-evaluated at that time.
 fn identifier(
     tags: &osm4routing::osmpbfreader::Tags,
 ) -> Option<OperationalPointIdentifierExtension> {
@@ -545,13 +551,22 @@ fn identifier(
                 None
             }
         })
-        .unwrap_or_default();
+        .unwrap_or_else(|| {
+            // Generate a fake UIC with code 11
+            static UIC_COUNTER: AtomicU32 = AtomicU32::new(0);
+            11_00000 + UIC_COUNTER.fetch_add(1, Ordering::Relaxed)
+        });
 
     tags.get("name")
         .map(|name| OperationalPointIdentifierExtension {
             name: name.as_str().into(),
             uic,
         })
+        .or(Some(OperationalPointIdentifierExtension {
+            // Generate a fake name from the UIC
+            name: format!("op_{}", uic).into(),
+            uic,
+        }))
 }
 
 #[cfg(test)]
