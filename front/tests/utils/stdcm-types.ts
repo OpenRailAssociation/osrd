@@ -8,6 +8,11 @@ export type ArrivalToleranceFields = {
   positive: string;
 };
 
+export type ToleranceFields = {
+  min: string;
+  max: string;
+};
+
 // ─── Origin ───────────────────────────────────────────────────────────────────
 
 export type DefaultOriginFields = {
@@ -155,4 +160,40 @@ export type FillAndVerifyConsistDetailsParams = {
   defaultMaxSpeed: string;
   tractionEnginePrefilledValues: ExpectedPrefilledValues;
   towedRollingStockPrefilledValues?: TowedRollingStockPrefilledValues;
+};
+
+// ─── Linked paths ─────────────────────────────────────────────────────────────
+
+export type LinkedTrainInfo = {
+  trainName: string;
+  segments: string[][];
+};
+
+export type LinkedPathDefaultFields = {
+  defaultDate: string;
+};
+
+type LinkedPathBaseDetails = {
+  trainName: string;
+  trainDate: string;
+  trainDetails: LinkedTrainInfo[];
+  toleranceFields: ToleranceFields;
+};
+
+export type AnteriorLinkedPathDetails = LinkedPathBaseDetails & {
+  originCi: string;
+  originCh: string;
+  originArrival: string;
+  dateOriginArrival: string;
+  timeOriginArrival: string;
+  toleranceOriginArrival: string;
+};
+
+export type PosteriorLinkedPathDetails = LinkedPathBaseDetails & {
+  destinationCi: string;
+  destinationCh: string;
+  destinationArrival: string;
+  dateDestinationArrival: string;
+  timeDestinationArrival: string;
+  toleranceDestinationArrival: string;
 };

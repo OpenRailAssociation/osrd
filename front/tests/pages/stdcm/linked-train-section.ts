@@ -3,8 +3,13 @@ import { expect, type Locator, type Page } from '@playwright/test';
 import DestinationSection from './destination-section';
 import OriginSection from './origin-section';
 import STDCMPage from './stdcm-page';
-import LINKED_TRAIN_DETAILS from '../../assets/constants/stdcm/linked-train-const';
-import { DEFAULT_DETAILS } from '../../assets/constants/stdcm/stdcm-const';
+import { expectFieldsToHaveValues } from '../../utils';
+import type {
+  AnteriorLinkedPathDetails,
+  LinkedPathDefaultFields,
+  LinkedTrainInfo,
+  PosteriorLinkedPathDetails,
+} from '../../utils/stdcm-types';
 
 class LinkedTrainSection extends STDCMPage {
   readonly originPage: OriginSection;
@@ -53,30 +58,31 @@ class LinkedTrainSection extends STDCMPage {
     );
   }
 
-  async addAndDeleteDefaultLinkedPath() {
+  async addAndDeleteDefaultLinkedPath({ defaultDate }: LinkedPathDefaultFields): Promise<void> {
     await this.anteriorAddLinkedPathButton.click();
     await expect(this.anteriorLinkedTrainField).toHaveValue('');
-    await expect(this.anteriorLinkedTrainDate).toHaveValue(DEFAULT_DETAILS.arrivalDate);
+    await expect(this.anteriorLinkedTrainDate).toHaveValue(defaultDate);
     await expect(this.anteriorLinkedTrainSearchButton).toBeVisible();
     await this.anteriorDeleteLinkedPathButton.click();
-    await expect(this.anteriorLinkedTrainField).not.toBeVisible();
-    await expect(this.anteriorLinkedTrainDate).not.toBeVisible();
-    await expect(this.anteriorLinkedTrainSearchButton).not.toBeVisible();
+    await expect(this.anteriorLinkedTrainField).toBeHidden();
+    await expect(this.anteriorLinkedTrainDate).toBeHidden();
+    await expect(this.anteriorLinkedTrainSearchButton).toBeHidden();
 
     await this.posteriorAddLinkedPathButton.click();
     await expect(this.posteriorLinkedTrainField).toHaveValue('');
-    await expect(this.posteriorLinkedTrainDate).toHaveValue(DEFAULT_DETAILS.arrivalDate);
+    await expect(this.posteriorLinkedTrainDate).toHaveValue(defaultDate);
     await expect(this.posteriorLinkedTrainSearchButton).toBeVisible();
     await this.posteriorDeleteLinkedPathButton.click();
-    await expect(this.posteriorLinkedTrainField).not.toBeVisible();
-    await expect(this.posteriorLinkedTrainDate).not.toBeVisible();
-    await expect(this.posteriorLinkedTrainSearchButton).not.toBeVisible();
+    await expect(this.posteriorLinkedTrainField).toBeHidden();
+    await expect(this.posteriorLinkedTrainDate).toBeHidden();
+    await expect(this.posteriorLinkedTrainSearchButton).toBeHidden();
   }
 
-  private async getLinkedTrainDetails(isAnterior = true) {
+  private async getLinkedTrainDetails(isAnterior = true): Promise<LinkedTrainInfo[]> {
     const trainResultInfosButton = isAnterior
       ? this.anteriorLinkedTrainResultInfosButton
       : this.posteriorLinkedTrainResultInfosButton;
+
     await expect(trainResultInfosButton).toBeVisible();
 
     return trainResultInfosButton.evaluateAll((buttons) =>
@@ -88,12 +94,13 @@ class LinkedTrainSection extends STDCMPage {
             (detail) => detail.textContent?.trim() ?? ''
           )
         );
+
         return { trainName, segments };
       })
     );
   }
 
-  async anteriorLinkedPathDetails() {
+  async anteriorLinkedPathDetails(details: AnteriorLinkedPathDetails): Promise<void> {
     const {
       trainName,
       trainDate,
@@ -105,7 +112,7 @@ class LinkedTrainSection extends STDCMPage {
       timeOriginArrival,
       toleranceOriginArrival,
       toleranceFields,
-    } = LINKED_TRAIN_DETAILS.anterior;
+    } = details;
 
     await this.anteriorAddLinkedPathButton.click();
     await this.anteriorLinkedTrainField.fill(trainName);
@@ -115,12 +122,15 @@ class LinkedTrainSection extends STDCMPage {
 
     const actualTrainDetails = await this.getLinkedTrainDetails(true);
     expect(actualTrainDetails).toEqual(trainDetails);
-    await expect(this.originPage.originCiField).toHaveValue(originCi);
-    await expect(this.originPage.originChField).toHaveValue(originCh);
-    await expect(this.originPage.originArrival).toHaveValue(originArrival);
-    await expect(this.originPage.dateOriginArrival).toHaveValue(dateOriginArrival);
-    await expect(this.originPage.timeOriginArrival).toHaveValue(timeOriginArrival);
-    await expect(this.originPage.toleranceOriginArrival).toHaveValue(toleranceOriginArrival);
+
+    await expectFieldsToHaveValues([
+      [this.originPage.originCiField, originCi],
+      [this.originPage.originChField, originCh],
+      [this.originPage.originArrival, originArrival],
+      [this.originPage.dateOriginArrival, dateOriginArrival],
+      [this.originPage.timeOriginArrival, timeOriginArrival],
+      [this.originPage.toleranceOriginArrival, toleranceOriginArrival],
+    ]);
 
     await this.fillToleranceField({
       toleranceInput: this.originPage.toleranceOriginArrival,
@@ -130,7 +140,7 @@ class LinkedTrainSection extends STDCMPage {
     });
   }
 
-  async posteriorLinkedPathDetails() {
+  async posteriorLinkedPathDetails(details: PosteriorLinkedPathDetails): Promise<void> {
     const {
       trainName,
       trainDate,
@@ -142,7 +152,7 @@ class LinkedTrainSection extends STDCMPage {
       timeDestinationArrival,
       toleranceDestinationArrival,
       toleranceFields,
-    } = LINKED_TRAIN_DETAILS.posterior;
+    } = details;
 
     await this.posteriorAddLinkedPathButton.click();
     await this.posteriorLinkedTrainField.fill(trainName);
@@ -152,14 +162,15 @@ class LinkedTrainSection extends STDCMPage {
 
     const actualTrainDetails = await this.getLinkedTrainDetails(false);
     expect(actualTrainDetails).toEqual(trainDetails);
-    await expect(this.destinationPage.destinationCiField).toHaveValue(destinationCi);
-    await expect(this.destinationPage.destinationChField).toHaveValue(destinationCh);
-    await expect(this.destinationPage.destinationArrival).toHaveValue(destinationArrival);
-    await expect(this.destinationPage.dateDestinationArrival).toHaveValue(dateDestinationArrival);
-    await expect(this.destinationPage.timeDestinationArrival).toHaveValue(timeDestinationArrival);
-    await expect(this.destinationPage.toleranceDestinationArrival).toHaveValue(
-      toleranceDestinationArrival
-    );
+
+    await expectFieldsToHaveValues([
+      [this.destinationPage.destinationCiField, destinationCi],
+      [this.destinationPage.destinationChField, destinationCh],
+      [this.destinationPage.destinationArrival, destinationArrival],
+      [this.destinationPage.dateDestinationArrival, dateDestinationArrival],
+      [this.destinationPage.timeDestinationArrival, timeDestinationArrival],
+      [this.destinationPage.toleranceDestinationArrival, toleranceDestinationArrival],
+    ]);
 
     await this.fillToleranceField({
       toleranceInput: this.destinationPage.toleranceDestinationArrival,
