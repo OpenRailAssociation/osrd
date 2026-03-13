@@ -85,7 +85,7 @@ RUN if [ "$SKIP_FRONT" = "1" ]; then \
     mkdir -p build; \
     echo '<html><body><h1>No front, as this image was built for running it in dev mode</h1></body></html>' > build/index.html; \
     else \
-    npm run build; \
+    CI=true npm run build; \
     fi
 
 #######################
