@@ -25,6 +25,7 @@ async def download_timetable(
     paced_trains = []
     for paced_train in raw_paced_trains:
         del paced_train["id"]
+        del paced_train["train_schedule_set_id"]
         paced_trains.append(paced_train)
     return {
         "train_schedules": [],
@@ -39,7 +40,7 @@ Downloads a full timetable into a json file that can be reimported in OSRD opera
 )
 @click.option("--editoast-url", "-e", default="https://dev-osrd.reseau.sncf.fr/")
 @click.option("--timetable-id", "-t", required=True, type=int)
-@click.option("--path", "-p", default="requirements.json")
+@click.option("--path", "-p", default="timetable.json")
 @click.option("--gateway-cookie", "-c", envvar="GATEWAY_COOKIE")
 @click.option("--page-size", "-s", default=100)
 def main(editoast_url, timetable_id, path, gateway_cookie, page_size):
