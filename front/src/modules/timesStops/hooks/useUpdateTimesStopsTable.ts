@@ -64,6 +64,7 @@ const useUpdateTimesStopsTable = (
       const { pathStepId, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
       const currentSchedule = selectedTrain.schedule ?? [];
       const existingItemIndex = currentSchedule.findIndex((item) => item.at === pathStepId);
+      const isOrigin = pathStepId === updatedPath[0].id;
 
       // Convert CellUpdate to OptimisticEdit (stopDuration: number → Duration)
       let edit: OptimisticEdit;
@@ -98,13 +99,13 @@ const useUpdateTimesStopsTable = (
         // Update existing schedule item
         updatedSchedule = replaceElementAtIndex(currentSchedule, existingItemIndex, {
           ...currentSchedule[existingItemIndex],
-          arrival: newArrival,
+          arrival: isOrigin ? null : newArrival,
           stop_for: newStopFor,
         });
       } else {
         // Insert new schedule item in path order
         const newItem: ScheduleItem = { at: pathStepId };
-        if (newArrival !== null) newItem.arrival = newArrival;
+        if (newArrival !== null && !isOrigin) newItem.arrival = newArrival;
         if (newStopFor !== null) newItem.stop_for = newStopFor;
         updatedSchedule = insertScheduleItemInOrder(currentSchedule, newItem, updatedPath);
       }
