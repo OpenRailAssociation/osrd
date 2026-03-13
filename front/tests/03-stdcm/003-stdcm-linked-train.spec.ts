@@ -97,9 +97,8 @@ test.describe('@stdcm @stdcm-linked-train', () => {
     });
 
     await test.step('Launch simulation and verify outputs', async () => {
-      await stdcmPage.verifyValidSimulationLaunch();
-      await stdcmSimulationResultPage.verifyTableData(
-        './tests/assets/stdcm/linked-train/anterior-linked-train-table.json'
+      await stdcmPage.verifyValidSimulationLaunch(
+        STDCM_TRANSLATIONS.simulation.results.status.completed
       );
       await stdcmSimulationResultPage.verifyTableData(ANTERIOR_LINKED_TRAIN_TABLE_DATA_PATH);
     });
@@ -211,9 +210,8 @@ test.describe('@stdcm @stdcm-linked-train', () => {
     });
 
     await test.step('Launch simulation and verify outputs', async () => {
-      await stdcmPage.verifyValidSimulationLaunch();
-      await stdcmSimulationResultPage.verifyTableData(
-        './tests/assets/stdcm/linked-train/posterior-linked-train-table.json'
+      await stdcmPage.verifyValidSimulationLaunch(
+        STDCM_TRANSLATIONS.simulation.results.status.completed
       );
       await stdcmSimulationResultPage.verifyTableData(POSTERIOR_LINKED_TRAIN_TABLE_DATA_PATH);
     });

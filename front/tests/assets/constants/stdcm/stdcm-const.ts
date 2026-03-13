@@ -153,6 +153,12 @@ export const ALTERNATIVE_SIMULATION_RESULTS_DETAILS = {
   validSimulationNumber: 1,
 };
 
+export const MISSING_FIELDS_SIMULATION_RESULTS_DETAILS = {
+  simulationIndex: 1,
+  simulationLengthAndDuration: '51 km — 22min',
+  validSimulationNumber: 2,
+};
+
 export const INVALID_CONSIST_DATA = {
   invalidTonnage: '30',
   invalidLength: '12',

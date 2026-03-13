@@ -156,18 +156,6 @@ export type ScenarioDetails = {
   electricProfileName?: string;
 };
 
-export type STDCMResultTableRow = {
-  index: number;
-  operationalPoint: string;
-  code: string;
-  track: string;
-  endStop: string | null;
-  passageStop: string | null;
-  startStop: string | null;
-  weight: string | null;
-  refEngine: string | null;
-};
-
 // Define type for table cell data
 export type CellData = {
   stationName: string;

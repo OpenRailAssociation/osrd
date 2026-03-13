@@ -16,6 +16,8 @@ import {
   INVALID_CONSIST_DATA,
   LIGHT_DESTINATION_DETAILS,
   LIGHT_ORIGIN_DETAILS,
+  MISSING_FIELDS_SIMULATION_RESULTS_DETAILS,
+  SIMULATION_RESULTS_DETAILS,
   STDCM_TRANSLATIONS,
   STDCM_URL,
   TRACTION_ENGINE_PREFILLED_VALUES,
@@ -85,9 +87,15 @@ test.describe('@stdcm @stdcm-missing-fields', () => {
           expectedLength: TRACTION_ENGINE_PREFILLED_VALUES.length,
         },
       });
-      await stdcmPage.verifyValidSimulationLaunch();
+
+      await stdcmPage.verifyValidSimulationLaunch(
+        STDCM_TRANSLATIONS.simulation.results.status.completed
+      );
       await stdcmPage.expectWarningBoxHidden();
-      await stdcmSimulationResultPage.verifySimulationDetails(SIMULATION_RESULTS_DETAILS);
+      await stdcmSimulationResultPage.verifySimulationDetails({
+        ...SIMULATION_RESULTS_DETAILS,
+        noOutputSimulationName: STDCM_TRANSLATIONS.simulation.results.simulationName.withoutOutputs,
+      });
     });
 
     await test.step('Enter invalid tonnage, length and max speed → expect invalid field warnings', async () => {
@@ -128,12 +136,14 @@ test.describe('@stdcm @stdcm-missing-fields', () => {
         southSuggestions: CI_SUGGESTIONS.south,
         suggestionText: CI_SUGGESTIONS.south[1],
       });
-      await stdcmPage.verifyValidSimulationLaunch();
+
+      await stdcmPage.verifyValidSimulationLaunch(
+        STDCM_TRANSLATIONS.simulation.results.status.completed
+      );
       await stdcmPage.expectWarningBoxHidden();
       await stdcmSimulationResultPage.verifySimulationDetails({
-        simulationIndex: 1,
-        simulationLengthAndDuration: '51 km — 22min',
-        validSimulationNumber: 2,
+        ...MISSING_FIELDS_SIMULATION_RESULTS_DETAILS,
+        noOutputSimulationName: STDCM_TRANSLATIONS.simulation.results.simulationName.withoutOutputs,
       });
     });
   });

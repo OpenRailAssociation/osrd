@@ -106,7 +106,9 @@ test.describe('@stdcm @stdcm-sheet', () => {
     });
 
     await test.step('Launch simulation', async () => {
-      await stdcmPage.verifyValidSimulationLaunch();
+      await stdcmPage.verifyValidSimulationLaunch(
+        STDCM_TRANSLATIONS.simulation.results.status.completed
+      );
     });
 
     await test.step('Verify result map markers and tables', async () => {
