@@ -142,10 +142,13 @@ test.describe('@stdcm', () => {
     });
 
     await test.step('Launch simulation and verify results table', async () => {
-      await stdcmPage.verifyValidSimulationLaunch();
-      await stdcmSimulationResultPage.verifySimulationDetails(
-        SIMULATION_RESULTS_WITH_STOPS_DETAILS
+      await stdcmPage.verifyValidSimulationLaunch(
+        STDCM_TRANSLATIONS.simulation.results.status.completed
       );
+      await stdcmSimulationResultPage.verifySimulationDetails({
+        ...SIMULATION_RESULTS_WITH_STOPS_DETAILS,
+        noOutputSimulationName: STDCM_TRANSLATIONS.simulation.results.simulationName.withoutOutputs,
+      });
       await stdcmSimulationResultPage.verifyTableData(ALL_STOPS_TABLE_DATA_PATH);
     });
 
@@ -247,22 +250,31 @@ test.describe('@stdcm', () => {
     });
 
     await test.step('Launch simulation (expect alternative simulations triggered)', async () => {
-      await stdcmPage.verifyValidSimulationLaunch();
+      await stdcmPage.verifyValidSimulationLaunch(
+        STDCM_TRANSLATIONS.simulation.results.status.completed
+      );
     });
 
     await test.step('Initial simulation result is "No capacity"', async () => {
-      await stdcmSimulationResultPage.verifySimulationDetails({ simulationIndex: 0 });
+      await stdcmSimulationResultPage.verifySimulationDetails({
+        simulationIndex: 0,
+        noOutputSimulationName: STDCM_TRANSLATIONS.simulation.results.simulationName.withoutOutputs,
+      });
     });
 
     await test.step('First alternative simulation is VALID (51 km — 2h 35min) and verify details', async () => {
-      await stdcmSimulationResultPage.verifySimulationDetails(
-        ALTERNATIVE_SIMULATION_RESULTS_DETAILS
-      );
+      await stdcmSimulationResultPage.verifySimulationDetails({
+        ...ALTERNATIVE_SIMULATION_RESULTS_DETAILS,
+        noOutputSimulationName: STDCM_TRANSLATIONS.simulation.results.simulationName.withoutOutputs,
+      });
       await stdcmSimulationResultPage.verifyTableData(TOWED_ROLLING_STOCK_TABLE_DATA_PATH);
     });
 
     await test.step('Second alternative simulation result is "No capacity"', async () => {
-      await stdcmSimulationResultPage.verifySimulationDetails({ simulationIndex: 2 });
+      await stdcmSimulationResultPage.verifySimulationDetails({
+        simulationIndex: 2,
+        noOutputSimulationName: STDCM_TRANSLATIONS.simulation.results.simulationName.withoutOutputs,
+      });
     });
   });
 });

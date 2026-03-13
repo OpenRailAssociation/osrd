@@ -1,7 +1,5 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import { STDCM_TRANSLATIONS } from '../../assets/constants/stdcm/stdcm-const';
-
 class STDCMPage {
   readonly page: Page;
   private readonly consistCard: Locator;
@@ -70,7 +68,7 @@ class STDCMPage {
     expect(actualSuggestions).toEqual(expectedSuggestions);
   }
 
-  async verifyStdcmElementsVisibility() {
+  async verifyStdcmElementsVisibility(): Promise<void> {
     const elements = [
       this.debugButton,
       this.helpButton,
@@ -122,11 +120,9 @@ class STDCMPage {
     await this.launchSimulationButton.click({ force: true });
   }
 
-  async verifyValidSimulationLaunch(): Promise<void> {
+  async verifyValidSimulationLaunch(expectedCompletedStatus: string): Promise<void> {
     await this.launchSimulation();
-    await expect(this.simulationStatus).toHaveText(
-      STDCM_TRANSLATIONS.simulation.results.status.completed
-    );
+    await expect(this.simulationStatus).toHaveText(expectedCompletedStatus);
   }
 
   async verifyInvalidSimulationLaunch(): Promise<void> {
@@ -134,10 +130,9 @@ class STDCMPage {
     await expect(this.simulationStatus).not.toBeVisible();
   }
 
-  async mapMarkerVisibility() {
-    await expect(this.originMarker).toBeVisible();
-    await expect(this.destinationMarker).toBeVisible();
-    await expect(this.viaMarker).toBeVisible();
+  async mapMarkerVisibility(): Promise<void> {
+    const elements = [this.originMarker, this.destinationMarker, this.viaMarker];
+    await Promise.all(elements.map((element) => expect(element).toBeVisible()));
   }
 
   async expectWarningBoxVisible() {
@@ -152,6 +147,7 @@ class STDCMPage {
     await Promise.all(
       expectedFields.map((field) => expect(this.warningBox).toContainText(new RegExp(field, 'i')))
     );
+
     if (absentFields) {
       await Promise.all(
         absentFields.map((field) =>

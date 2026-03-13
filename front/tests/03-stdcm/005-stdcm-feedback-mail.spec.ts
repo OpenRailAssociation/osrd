@@ -11,6 +11,7 @@ import {
   LIGHT_DESTINATION_DETAILS,
   LIGHT_ORIGIN_DETAILS,
   SIMULATION_RESULTS_DETAILS,
+  STDCM_TRANSLATIONS,
   STDCM_URL,
   TRACTION_ENGINE_PREFILLED_VALUES,
 } from '../assets/constants/stdcm/stdcm-const';
@@ -67,8 +68,13 @@ test.describe('@stdcm @stdcm-feedback', () => {
     });
 
     await test.step('Launch simulation and verify simulation details', async () => {
-      await stdcmPage.verifyValidSimulationLaunch();
-      await stdcmSimulationResultPage.verifySimulationDetails(SIMULATION_RESULTS_DETAILS);
+      await stdcmPage.verifyValidSimulationLaunch(
+        STDCM_TRANSLATIONS.simulation.results.status.completed
+      );
+      await stdcmSimulationResultPage.verifySimulationDetails({
+        ...SIMULATION_RESULTS_DETAILS,
+        noOutputSimulationName: STDCM_TRANSLATIONS.simulation.results.simulationName.withoutOutputs,
+      });
     });
 
     await test.step('Verify feedback card is visible', async () => {

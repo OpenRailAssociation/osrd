@@ -1,6 +1,5 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import { STDCM_TRANSLATIONS } from '../../assets/constants/stdcm/stdcm-const';
 import { logger } from '../../logging-fixture';
 import {
   assertSuggestedFilename,
@@ -8,7 +7,7 @@ import {
   saveDownloadToDir,
   triggerFileDownload,
 } from '../../utils/file-utils';
-import type { STDCMResultTableRow } from '../../utils/types';
+import type { STDCMResultTableRow } from '../../utils/stdcm-types';
 
 class SimulationResultPage {
   readonly page: Page;
@@ -62,43 +61,55 @@ class SimulationResultPage {
   }
 
   async verifyTableData(tableDataPath: string): Promise<void> {
-    // Load expected data from JSON file
     const jsonData: STDCMResultTableRow[] = readJsonFile(tableDataPath);
-    // Extract rows from the HTML table and map each row's data to match JSON structure
+
     await expect(this.simulationTableRows.first()).toBeVisible();
+
     const tableRows = await this.simulationTableRows.evaluateAll((rows) =>
       rows.map((row) => {
         const cells = row.querySelectorAll('td');
+        const getCellText = (index: number): string => cells[index]?.textContent?.trim() || '';
+
         return {
-          index: Number(cells[0]?.textContent?.trim()) || 0,
-          operationalPoint: cells[1]?.textContent?.trim() || '',
-          code: cells[2]?.textContent?.trim() || '',
-          endStop: cells[3]?.textContent?.trim() || '',
-          passageStop: cells[4]?.textContent?.trim() || '',
-          startStop: cells[5]?.textContent?.trim() || '',
-          weight: cells[6]?.textContent?.trim() || '',
-          refEngine: cells[7]?.textContent?.trim() || '',
+          index: Number(getCellText(0)) || 0,
+          operationalPoint: getCellText(1),
+          code: getCellText(2),
+          endStop: getCellText(3),
+          passageStop: getCellText(4),
+          startStop: getCellText(5),
+          weight: getCellText(6),
+          refEngine: getCellText(7),
         };
       })
     );
 
-    // Compare JSON data and table rows by index for consistency
+    expect(tableRows).toHaveLength(jsonData.length);
+
     jsonData.forEach((jsonRow, index) => {
       const tableRow = tableRows[index];
 
-      // Check if the row exists in the HTML table
       if (!tableRow) {
         logger.error(`Row ${index + 1} is missing in the HTML table`);
         return;
       }
 
-      expect(tableRow.operationalPoint).toBe(jsonRow.operationalPoint);
-      expect(tableRow.code).toBe(jsonRow.code);
-      expect(tableRow.endStop).toBe(jsonRow.endStop);
-      expect(tableRow.passageStop).toBe(jsonRow.passageStop);
-      expect(tableRow.startStop).toBe(jsonRow.startStop);
-      expect(tableRow.weight).toBe(jsonRow.weight);
-      expect(tableRow.refEngine).toBe(jsonRow.refEngine);
+      expect({
+        operationalPoint: tableRow.operationalPoint,
+        code: tableRow.code,
+        endStop: tableRow.endStop,
+        passageStop: tableRow.passageStop,
+        startStop: tableRow.startStop,
+        weight: tableRow.weight,
+        refEngine: tableRow.refEngine,
+      }).toEqual({
+        operationalPoint: jsonRow.operationalPoint,
+        code: jsonRow.code,
+        endStop: jsonRow.endStop,
+        passageStop: jsonRow.passageStop,
+        startStop: jsonRow.startStop,
+        weight: jsonRow.weight,
+        refEngine: jsonRow.refEngine,
+      });
     });
   }
 
@@ -138,63 +149,72 @@ class SimulationResultPage {
     await this.startNewQueryButton.click();
   }
 
-  async mapMarkerResultVisibility() {
-    await expect(this.originResultMarker).toBeVisible();
-    await expect(this.destinationResultMarker).toBeVisible();
-    await expect(this.viaResultMarker).toBeVisible();
+  async mapMarkerResultVisibility(): Promise<void> {
+    const elements = [this.originResultMarker, this.destinationResultMarker, this.viaResultMarker];
+    await Promise.all(elements.map((element) => expect(element).toBeVisible()));
   }
 
   async verifySimulationDetails({
     simulationIndex,
     simulationLengthAndDuration,
     validSimulationNumber,
+    noOutputSimulationName,
   }: {
     simulationIndex: number;
     simulationLengthAndDuration?: string | null;
     validSimulationNumber?: number;
+    noOutputSimulationName: string;
   }): Promise<void> {
     const noCapacityLengthAndDuration = '— ';
+
     await this.simulationItem.nth(simulationIndex).click();
-    // Determine expected simulation name
+
     const isResultTableVisible = await this.simulationResultTable.isVisible();
+
     const expectedSimulationName = isResultTableVisible
       ? `Simulation n°${validSimulationNumber}`
-      : STDCM_TRANSLATIONS.simulation.results.simulationName.withoutOutputs;
-    // Validate simulation name
+      : noOutputSimulationName;
+
     const actualSimulationName = await this.getSimulationNameLocator(simulationIndex).textContent();
     expect(actualSimulationName).toEqual(expectedSimulationName);
 
-    // Determine expected length and duration
     const expectedLengthAndDuration = isResultTableVisible
       ? simulationLengthAndDuration
       : noCapacityLengthAndDuration;
+
     const actualLengthAndDuration =
       await this.getSimulationLengthAndDurationLocator(simulationIndex).textContent();
 
-    // Validate length and duration
     expect(actualLengthAndDuration).toEqual(expectedLengthAndDuration);
   }
 
-  async verifyFeedbackCardVisibility() {
-    await expect(this.simulationResultTable).toBeVisible();
-    await expect(this.feedbackCardContainer).toBeVisible();
-    await expect(this.feedbackTitle).toBeVisible();
-    await expect(this.feedbackDescription).toBeVisible();
-    await expect(this.feedbackButton).toBeVisible();
+  async verifyFeedbackCardVisibility(): Promise<void> {
+    const elements = [
+      this.simulationResultTable,
+      this.feedbackCardContainer,
+      this.feedbackTitle,
+      this.feedbackDescription,
+      this.feedbackButton,
+    ];
+
+    await Promise.all(elements.map((element) => expect(element).toBeVisible()));
   }
 
   async verifyMailRedirection(
     expectedSubject: string,
     expectedBody: string,
     expectedEmail: string
-  ) {
+  ): Promise<void> {
     const mailtoUrl = await this.feedbackButton.getAttribute('href');
 
-    const decodedUrl = decodeURIComponent(mailtoUrl!);
+    expect(mailtoUrl).toBeTruthy();
 
-    expect(decodedUrl).toContain(`${expectedEmail}`);
-    expect(decodedUrl).toContain(`${expectedSubject}`);
-    expect(decodedUrl).toContain(`${expectedBody}`);
+    const decodedMailtoUrl = decodeURIComponent(mailtoUrl ?? '');
+
+    expect(decodedMailtoUrl).toContain(expectedEmail);
+    expect(decodedMailtoUrl).toContain(expectedSubject);
+    expect(decodedMailtoUrl).toContain(expectedBody);
   }
 }
+
 export default SimulationResultPage;
