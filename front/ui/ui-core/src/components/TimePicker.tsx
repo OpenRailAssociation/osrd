@@ -33,16 +33,21 @@ type TimeRangeProps = {
 };
 
 const TimeRange = ({ range, selectedItem, className, onSelectItem }: TimeRangeProps) => (
-  <div className="time-grid">
-    {range.map((item) => (
-      <div
-        key={item}
-        className={cx(className, { selected: selectedItem === item })}
-        onClick={() => onSelectItem(item)}
-      >
-        {item.toString().padStart(2, '0')}
-      </div>
-    ))}
+  <div className="time-grid" data-testid="time-grid">
+    {range.map((item) => {
+      const formattedItem = item.toString().padStart(2, '0');
+
+      return (
+        <div
+          key={item}
+          className={cx(className, { selected: selectedItem === item })}
+          data-testid={className === 'hour' ? `hour-${formattedItem}` : `minute-${formattedItem}`}
+          onClick={() => onSelectItem(item)}
+        >
+          {formattedItem}
+        </div>
+      );
+    })}
   </div>
 );
 

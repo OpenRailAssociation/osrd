@@ -9,7 +9,9 @@ import {
   ANTERIOR_LINKED_TRAIN_TABLE_DATA_PATH,
   CI_SUGGESTIONS,
   DEFAULT_DETAILS,
+  DESTINATION_DETAILS,
   FAST_ROLLING_STOCK_PREFILLED_VALUES,
+  LIGHT_DESTINATION_DETAILS,
   LIGHT_ORIGIN_DETAILS,
   ORIGIN_DETAILS,
   POSTERIOR_LINKED_TRAIN_TABLE_DATA_PATH,
@@ -64,7 +66,14 @@ test.describe('@stdcm @stdcm-linked-train', () => {
 
     await test.step('Configure anterior linked path, destinations and vias', async () => {
       await linkedTrainSection.anteriorLinkedPathDetails();
-      await destinationSection.fillDestinationDetailsLight();
+      await destinationSection.fillDestinationDetailsLight({
+        destinationDetails: {
+          ...LIGHT_DESTINATION_DETAILS,
+          expectedCiValue: CI_SUGGESTIONS.south[1],
+        },
+        southSuggestions: CI_SUGGESTIONS.south,
+        suggestionText: CI_SUGGESTIONS.south[1],
+      });
       await viaSection.fillAndVerifyViaDetails({ viaNumber: 1, ciSearchText: 'nS' });
       await destinationSection.fillDestinationDetailsLight();
     });
@@ -115,7 +124,12 @@ test.describe('@stdcm @stdcm-linked-train', () => {
         timeOriginArrival: LINKED_TRAIN_DETAILS.anterior.timeOriginArrival,
         toleranceOriginArrival: `${LINKED_TRAIN_DETAILS.anterior.toleranceFields.min}/${LINKED_TRAIN_DETAILS.anterior.toleranceFields.max}`,
       });
-      await newDestinationSection.verifyDestinationDetails();
+
+      await newDestinationSection.verifyDestinationDetails({
+        expectedCiValue: CI_SUGGESTIONS.south[1],
+        chValue: DESTINATION_DETAILS.chValue,
+        updatedArrivalType: DESTINATION_DETAILS.arrivalType.default,
+      });
       await newViaSection.verifyViaDetails();
     });
   });

@@ -14,6 +14,7 @@ import {
   CI_SUGGESTIONS,
   DEFAULT_DETAILS,
   INVALID_CONSIST_DATA,
+  LIGHT_DESTINATION_DETAILS,
   LIGHT_ORIGIN_DETAILS,
   STDCM_TRANSLATIONS,
   STDCM_URL,
@@ -57,7 +58,16 @@ test.describe('@stdcm @stdcm-missing-fields', () => {
         expectedSuggestions: CI_SUGGESTIONS.north,
         expectedCiValue: CI_SUGGESTIONS.north[2],
       });
-      await destinationSection.fillDestinationDetailsLight();
+
+      await destinationSection.fillDestinationDetailsLight({
+        destinationDetails: {
+          ...LIGHT_DESTINATION_DETAILS,
+          expectedCiValue: CI_SUGGESTIONS.south[1],
+        },
+        southSuggestions: CI_SUGGESTIONS.south,
+        suggestionText: CI_SUGGESTIONS.south[1],
+      });
+
       await stdcmPage.verifyInvalidSimulationLaunch();
       await stdcmPage.expectWarningBoxVisible();
 
@@ -109,8 +119,15 @@ test.describe('@stdcm @stdcm-missing-fields', () => {
     await test.step('Fill all fields with valid values → expect valid simulation', async () => {
       await consistSection.setLength(VALID_CONSIST_DATA.validLength);
       await consistSection.setMaxSpeed(VALID_CONSIST_DATA.validMaxSpeed);
-      await destinationSection.fillDestinationDetailsLight();
 
+      await destinationSection.fillDestinationDetailsLight({
+        destinationDetails: {
+          ...LIGHT_DESTINATION_DETAILS,
+          expectedCiValue: CI_SUGGESTIONS.south[1],
+        },
+        southSuggestions: CI_SUGGESTIONS.south,
+        suggestionText: CI_SUGGESTIONS.south[1],
+      });
       await stdcmPage.verifyValidSimulationLaunch();
       await stdcmPage.expectWarningBoxHidden();
       await stdcmSimulationResultPage.verifySimulationDetails({
