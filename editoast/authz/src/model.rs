@@ -195,6 +195,6 @@ impl Role {
             roles.public_access.is_none(),
             "we don't write public accesses for roles"
         );
-        Ok(roles.users.into_iter().collect())
+        Ok(roles.users)
     }
 }
