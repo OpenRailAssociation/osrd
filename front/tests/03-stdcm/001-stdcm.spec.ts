@@ -17,11 +17,15 @@ import {
   LIGHT_ORIGIN_DETAILS,
   ORIGIN_DETAILS,
   SIMULATION_RESULTS_WITH_STOPS_DETAILS,
+  STDCM_TRANSLATIONS,
   STDCM_URL,
   TOWED_ROLLING_STOCK_PREFILLED_VALUES,
   TOWED_ROLLING_STOCK_TABLE_DATA_PATH,
   TRACTION_ENGINE_PREFILLED_VALUES,
   VIA_DETAILS,
+  VIA_STOP_TIMES,
+  VIA_STOP_TYPES,
+  VIA_SUGGESTIONS,
 } from '../assets/constants/stdcm/stdcm-const';
 import type { ConsistFields } from '../utils/stdcm-types';
 
@@ -69,7 +73,7 @@ test.describe('@stdcm', () => {
     });
 
     await test.step('Add/delete default via and linked path', async () => {
-      await viaSection.addAndDeletedDefaultVia();
+      await viaSection.addAndDeletedDefaultVia(VIA_STOP_TYPES.PASSAGE_TIME);
       await linkedTrainSection.addAndDeleteDefaultLinkedPath();
     });
   });
@@ -119,7 +123,19 @@ test.describe('@stdcm', () => {
 
     await test.step('Fill three vias and verify each', async () => {
       for (const viaDetail of VIA_DETAILS) {
-        await viaSection.fillAndVerifyViaDetails(viaDetail);
+        await viaSection.fillAndVerifyViaDetails({
+          ...viaDetail,
+          expectedChValue: DEFAULT_DETAILS.chValue,
+          stopTypes: VIA_STOP_TYPES,
+          stopTimes: VIA_STOP_TIMES,
+          suggestionTextBySearch: {
+            mid_west: VIA_SUGGESTIONS[0],
+            mid_east: VIA_SUGGESTIONS[1],
+            nS: VIA_SUGGESTIONS[2],
+          },
+          driverSwitchTooShortWarning:
+            STDCM_TRANSLATIONS.stdcmErrors.routeErrors.viaStopDurationDriverSwitchTooShort,
+        });
       }
     });
 
@@ -211,7 +227,21 @@ test.describe('@stdcm', () => {
         southSuggestions: CI_SUGGESTIONS.south,
         suggestionText: CI_SUGGESTIONS.south[1],
       });
-      await viaSection.fillAndVerifyViaDetails({ viaNumber: 1, ciSearchText: 'mid_west' });
+
+      await viaSection.fillAndVerifyViaDetails({
+        viaNumber: 1,
+        ciSearchText: 'mid_west',
+        expectedChValue: DEFAULT_DETAILS.chValue,
+        stopTypes: VIA_STOP_TYPES,
+        stopTimes: VIA_STOP_TIMES,
+        suggestionTextBySearch: {
+          mid_west: VIA_SUGGESTIONS[0],
+          mid_east: VIA_SUGGESTIONS[1],
+          nS: VIA_SUGGESTIONS[2],
+        },
+        driverSwitchTooShortWarning:
+          STDCM_TRANSLATIONS.stdcmErrors.routeErrors.viaStopDurationDriverSwitchTooShort,
+      });
     });
 
     await test.step('Launch simulation (expect alternative simulations triggered)', async () => {

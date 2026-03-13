@@ -15,8 +15,12 @@ import {
   LIGHT_ORIGIN_DETAILS,
   ORIGIN_DETAILS,
   POSTERIOR_LINKED_TRAIN_TABLE_DATA_PATH,
+  STDCM_TRANSLATIONS,
   STDCM_URL,
   TOWED_ROLLING_STOCK_PREFILLED_VALUES,
+  VIA_STOP_TIMES,
+  VIA_STOP_TYPES,
+  VIA_SUGGESTIONS,
 } from '../assets/constants/stdcm/stdcm-const';
 import type { ConsistFields } from '../utils/stdcm-types';
 
@@ -74,8 +78,21 @@ test.describe('@stdcm @stdcm-linked-train', () => {
         southSuggestions: CI_SUGGESTIONS.south,
         suggestionText: CI_SUGGESTIONS.south[1],
       });
-      await viaSection.fillAndVerifyViaDetails({ viaNumber: 1, ciSearchText: 'nS' });
-      await destinationSection.fillDestinationDetailsLight();
+
+      await viaSection.fillAndVerifyViaDetails({
+        viaNumber: 1,
+        ciSearchText: 'nS',
+        expectedChValue: DEFAULT_DETAILS.chValue,
+        stopTypes: VIA_STOP_TYPES,
+        stopTimes: VIA_STOP_TIMES,
+        suggestionTextBySearch: {
+          mid_west: VIA_SUGGESTIONS[0],
+          mid_east: VIA_SUGGESTIONS[1],
+          nS: VIA_SUGGESTIONS[2],
+        },
+        driverSwitchTooShortWarning:
+          STDCM_TRANSLATIONS.stdcmErrors.routeErrors.viaStopDurationDriverSwitchTooShort,
+      });
     });
 
     await test.step('Launch simulation and verify outputs', async () => {
@@ -130,7 +147,12 @@ test.describe('@stdcm @stdcm-linked-train', () => {
         chValue: DESTINATION_DETAILS.chValue,
         updatedArrivalType: DESTINATION_DETAILS.arrivalType.default,
       });
-      await newViaSection.verifyViaDetails();
+
+      await newViaSection.verifyViaDetails({
+        expectedCiValue: CI_SUGGESTIONS.north[1],
+        expectedViaType: VIA_STOP_TYPES.DRIVER_SWITCH,
+        expectedStopTime: VIA_STOP_TIMES.driverSwitch.validInput,
+      });
     });
   });
 
@@ -155,7 +177,20 @@ test.describe('@stdcm @stdcm-linked-train', () => {
         isPrecise: true,
       });
       await linkedTrainSection.posteriorLinkedPathDetails();
-      await viaSection.fillAndVerifyViaDetails({ viaNumber: 1, ciSearchText: 'mid_east' });
+      await viaSection.fillAndVerifyViaDetails({
+        viaNumber: 1,
+        ciSearchText: 'mid_east',
+        expectedChValue: DEFAULT_DETAILS.chValue,
+        stopTypes: VIA_STOP_TYPES,
+        stopTimes: VIA_STOP_TIMES,
+        suggestionTextBySearch: {
+          mid_west: VIA_SUGGESTIONS[0],
+          mid_east: VIA_SUGGESTIONS[1],
+          nS: VIA_SUGGESTIONS[2],
+        },
+        driverSwitchTooShortWarning:
+          STDCM_TRANSLATIONS.stdcmErrors.routeErrors.viaStopDurationDriverSwitchTooShort,
+      });
     });
 
     await test.step('Fill consist with traction engine details + towed RS and verify prefilled values', async () => {

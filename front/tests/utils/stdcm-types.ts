@@ -77,6 +77,45 @@ export type LightDestinationDetailsData = {
   arrivalType: string;
 };
 
+// ─── Via ──────────────────────────────────────────────────────────────────────
+
+export type ViaSearchText = 'mid_west' | 'mid_east' | 'nS';
+
+export type ViaStopTypes = {
+  PASSAGE_TIME: string;
+  SERVICE_STOP: string;
+  DRIVER_SWITCH: string;
+};
+
+export type ViaStopTimes = {
+  serviceStop: {
+    default: string;
+    input: string;
+  };
+  driverSwitch: {
+    default: string;
+    invalidInput: string;
+    validInput: string;
+  };
+};
+
+export type FillAndVerifyViaDetailsParams = {
+  viaNumber: number;
+  ciSearchText: ViaSearchText;
+  expectedChValue: string;
+  stopTypes: ViaStopTypes;
+  stopTimes: ViaStopTimes;
+  suggestionTextBySearch: Record<ViaSearchText, string>;
+  driverSwitchTooShortWarning: string;
+};
+
+export type VerifyViaDetailsParams = {
+  viaNumber?: number;
+  expectedCiValue: string;
+  expectedViaType: string;
+  expectedStopTime: string;
+};
+
 // ─── Consist ──────────────────────────────────────────────────────────────────
 
 export type ConsistFields = {
