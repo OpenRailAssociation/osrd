@@ -49,7 +49,7 @@ export const ORIGIN_DETAILS = {
 
 export const DESTINATION_DETAILS = {
   input: 'South',
-  suggestion: 'South_station',
+  suggestion: 'SS South_station',
   ...DEFAULT_DETAILS,
   arrivalType: {
     default: 'asSoonAsPossible',

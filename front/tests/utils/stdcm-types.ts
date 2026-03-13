@@ -49,6 +49,34 @@ export type LightOriginDetailsData = {
   arrivalType: string;
 };
 
+// ─── Destination ──────────────────────────────────────────────────────────────
+
+export type DestinationUpdatedDetails = {
+  date: string;
+  hour: string;
+  minute: string;
+  timeValue: string;
+  tolerance: ArrivalToleranceFields;
+};
+
+export type DestinationDetailsData = {
+  input: string;
+  expectedCiValue: string;
+  chValue: string;
+  arrivalDate: string;
+  arrivalTime: string;
+  tolerance: string;
+  arrivalType: ArrivalType;
+  updatedDetails: DestinationUpdatedDetails;
+};
+
+export type LightDestinationDetailsData = {
+  input: string;
+  expectedCiValue: string;
+  chValue: string;
+  arrivalType: string;
+};
+
 // ─── Consist ──────────────────────────────────────────────────────────────────
 
 export type ConsistFields = {

@@ -1,12 +1,8 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
 import STDCMPage from './stdcm-page';
-import {
-  CI_SUGGESTIONS,
-  DESTINATION_DETAILS,
-  LIGHT_DESTINATION_DETAILS,
-  STDCM_TRANSLATIONS,
-} from '../../assets/constants/stdcm/stdcm-const';
+import { expectFieldsToHaveValues } from '../../utils';
+import type { DestinationDetailsData, LightDestinationDetailsData } from '../../utils/stdcm-types';
 
 class DestinationSection extends STDCMPage {
   readonly destinationCiField: Locator;
@@ -15,7 +11,6 @@ class DestinationSection extends STDCMPage {
   readonly dateDestinationArrival: Locator;
   readonly timeDestinationArrival: Locator;
   readonly toleranceDestinationArrival: Locator;
-  private readonly suggestionSS: Locator;
   private readonly closeDestinationTimePickerButton: Locator;
   private readonly clearButton: Locator;
   private readonly destinationIncrementTimeButton: Locator;
@@ -24,11 +19,10 @@ class DestinationSection extends STDCMPage {
     super(page);
     this.destinationCiField = this.destinationCard.getByTestId('operational-point-ci');
     this.destinationChField = this.destinationCard.getByTestId('operational-point-ch');
-    this.destinationArrival = page.locator('#select-destination-arrival');
+    this.destinationArrival = page.getByTestId('select-destination-arrival');
     this.dateDestinationArrival = page.getByTestId('date-destination-arrival-input');
     this.timeDestinationArrival = page.getByTestId('time-destination-arrival-input');
     this.toleranceDestinationArrival = page.getByTestId('tolerance-destination-arrival-input');
-    this.suggestionSS = this.suggestionItems.filter({ hasText: 'SS South_station' });
     this.clearButton = this.destinationCard.locator('.clear-icon');
     this.destinationIncrementTimeButton = page.getByTestId(
       'time-destination-arrival-increment-minute'
@@ -38,86 +32,160 @@ class DestinationSection extends STDCMPage {
     );
   }
 
-  private async setMinuteLocator(minuteValue: string) {
-    await this.page.locator('.time-grid .minute', { hasText: minuteValue }).click();
+  private getSuggestionByText(text: string): Locator {
+    return this.suggestionItems.filter({ hasText: text });
   }
 
-  private async setHourLocator(hourValue: string) {
-    await this.page.locator('.time-grid .hour', { hasText: hourValue }).click();
+  private async selectHour(hourValue: string): Promise<void> {
+    await this.page.getByTestId('time-grid').getByTestId(`hour-${hourValue}`).click();
   }
 
-  async verifyDefaultDestinationFields() {
-    const emptyFields = [this.destinationCiField, this.destinationChField];
-    for (const field of emptyFields) await expect(field).toHaveValue('');
-    await expect(this.destinationArrival).toHaveValue(DESTINATION_DETAILS.arrivalType.default);
+  private async selectMinute(minuteValue: string): Promise<void> {
+    await this.page.getByTestId('time-grid').getByTestId(`minute-${minuteValue}`).click();
   }
 
-  // Verify the destination suggestions when searching for south
-  private async verifyDestinationSouthSuggestions() {
-    await this.verifySuggestions(CI_SUGGESTIONS.south);
+  private async selectDestination({
+    input,
+    expectedCiValue,
+    expectedSuggestions,
+  }: {
+    input: string;
+    expectedCiValue: string;
+    expectedSuggestions: string[];
+  }): Promise<void> {
+    await this.destinationCiField.fill(input);
+    await this.verifySuggestions(expectedSuggestions);
+    await this.getSuggestionByText(expectedCiValue).click();
+    await expect(this.destinationCiField).toHaveValue(expectedCiValue);
   }
 
-  async fillAndVerifyDestinationDetails() {
+  private async expectNoScheduledPointWarning(expectedMessage: string): Promise<void> {
+    await expect(this.warningBox).toContainText(expectedMessage);
+  }
+
+  private async expectArrivalFieldsToBeHidden(): Promise<void> {
+    await Promise.all([
+      expect(this.dateDestinationArrival).toBeHidden(),
+      expect(this.timeDestinationArrival).toBeHidden(),
+      expect(this.toleranceDestinationArrival).toBeHidden(),
+    ]);
+  }
+
+  private async setDestinationTime(
+    hourValue: string,
+    minuteValue: string,
+    incrementOneMinuteTwice = false
+  ): Promise<void> {
+    await this.timeDestinationArrival.click();
+    await this.selectHour(hourValue);
+    await this.selectMinute(minuteValue);
+
+    if (incrementOneMinuteTwice) {
+      await this.destinationIncrementTimeButton.dblclick();
+    }
+
+    await this.closeDestinationTimePickerButton.click();
+  }
+
+  async verifyDefaultDestinationFields(defaultArrivalType: string): Promise<void> {
+    await expectFieldsToHaveValues([
+      [this.destinationCiField, ''],
+      [this.destinationChField, ''],
+      [this.destinationArrival, defaultArrivalType],
+    ]);
+  }
+
+  async fillAndVerifyDestinationDetails({
+    destinationDetails,
+    southSuggestions,
+    noScheduledPointMessage,
+  }: {
+    destinationDetails: DestinationDetailsData;
+    southSuggestions: string[];
+    noScheduledPointMessage: string;
+  }): Promise<void> {
     const {
       input,
-      suggestion,
+      expectedCiValue,
       chValue,
       arrivalDate,
       arrivalTime,
       tolerance,
       arrivalType,
       updatedDetails,
-    } = DESTINATION_DETAILS;
+    } = destinationDetails;
 
-    await this.destinationCiField.fill(input);
-    await this.verifyDestinationSouthSuggestions();
-    await this.suggestionSS.click();
-    const destinationCiValue = await this.destinationCiField.getAttribute('value');
-    expect(destinationCiValue).toContain(suggestion);
+    await this.selectDestination({
+      input,
+      expectedCiValue,
+      expectedSuggestions: southSuggestions,
+    });
+
     await expect(this.destinationChField).toHaveValue(chValue);
     await expect(this.destinationArrival).toHaveValue(arrivalType.default);
+
     await this.launchSimulationButton.click();
-    await expect(this.warningBox).toContainText(
-      STDCM_TRANSLATIONS.stdcmErrors.routeErrors.noScheduledPoint
-    );
-    await expect(this.dateDestinationArrival).not.toBeVisible();
-    await expect(this.timeDestinationArrival).not.toBeVisible();
-    await expect(this.toleranceDestinationArrival).not.toBeVisible();
+    await this.expectNoScheduledPointWarning(noScheduledPointMessage);
+    await this.expectArrivalFieldsToBeHidden();
+
     await this.destinationArrival.selectOption(arrivalType.updated);
-    await expect(this.destinationArrival).toHaveValue(arrivalType.updated);
-    await expect(this.dateDestinationArrival).toHaveValue(arrivalDate);
-    await expect(this.timeDestinationArrival).toHaveValue(arrivalTime);
-    await expect(this.toleranceDestinationArrival).toHaveValue(tolerance);
+    await expectFieldsToHaveValues([
+      [this.dateDestinationArrival, arrivalDate],
+      [this.timeDestinationArrival, arrivalTime],
+      [this.toleranceDestinationArrival, tolerance],
+      [this.destinationArrival, arrivalType.updated],
+    ]);
+
     await this.dateDestinationArrival.fill(updatedDetails.date);
     await expect(this.dateDestinationArrival).toHaveValue(updatedDetails.date);
-    await this.timeDestinationArrival.click();
-    await this.setHourLocator(updatedDetails.hour);
-    await this.setMinuteLocator(updatedDetails.minute);
-    await this.destinationIncrementTimeButton.dblclick(); // Double-click the +1 minute button to reach 37
-    await this.closeDestinationTimePickerButton.click();
+
+    await this.setDestinationTime(updatedDetails.hour, updatedDetails.minute, true);
     await expect(this.timeDestinationArrival).toHaveValue(updatedDetails.timeValue);
+
     await this.fillToleranceField({
       toleranceInput: this.toleranceDestinationArrival,
       minusValue: updatedDetails.tolerance.negative,
       plusValue: updatedDetails.tolerance.positive,
       toleranceOp: 'destination',
     });
+
     await expect(this.warningBox).not.toBeVisible();
   }
 
-  async fillDestinationDetailsLight() {
-    const { input, chValue, arrivalType } = LIGHT_DESTINATION_DETAILS;
-    await this.destinationCiField.fill(input);
-    await this.suggestionSS.click();
+  async fillDestinationDetailsLight({
+    destinationDetails,
+    southSuggestions,
+  }: {
+    destinationDetails: LightDestinationDetailsData;
+    southSuggestions: string[];
+    suggestionText: string;
+  }): Promise<void> {
+    const { input, expectedCiValue, chValue, arrivalType } = destinationDetails;
+
+    await this.selectDestination({
+      input,
+      expectedCiValue,
+      expectedSuggestions: southSuggestions,
+    });
+
     await expect(this.destinationChField).toHaveValue(chValue);
     await expect(this.destinationArrival).toHaveValue(arrivalType);
   }
 
-  async verifyDestinationDetails() {
-    const { chValue, arrivalType } = DESTINATION_DETAILS;
-    await expect(this.destinationCiField).toHaveValue(CI_SUGGESTIONS.south[1]);
-    await expect(this.destinationChField).toHaveValue(chValue);
-    await expect(this.destinationArrival).toHaveValue(arrivalType.default);
+  async verifyDestinationDetails({
+    expectedCiValue,
+    chValue,
+    updatedArrivalType,
+  }: {
+    expectedCiValue: string;
+    chValue: string;
+    updatedArrivalType: string;
+  }): Promise<void> {
+    await expectFieldsToHaveValues([
+      [this.destinationCiField, expectedCiValue],
+      [this.destinationChField, chValue],
+      [this.destinationArrival, updatedArrivalType],
+    ]);
   }
 
   async clearDestination(): Promise<void> {

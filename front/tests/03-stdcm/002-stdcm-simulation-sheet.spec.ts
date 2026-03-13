@@ -15,6 +15,8 @@ import {
   CI_SUGGESTIONS,
   CONSIST_DETAILS,
   DEFAULT_DETAILS,
+  DESTINATION_DETAILS,
+  LIGHT_DESTINATION_DETAILS,
   LIGHT_ORIGIN_DETAILS,
   ORIGIN_DETAILS,
   STDCM_URL,
@@ -67,7 +69,15 @@ test.describe('@stdcm @stdcm-sheet', () => {
         expectedSuggestions: CI_SUGGESTIONS.north,
         expectedCiValue: CI_SUGGESTIONS.north[2],
       });
-      await destinationSection.fillDestinationDetailsLight();
+
+      await destinationSection.fillDestinationDetailsLight({
+        destinationDetails: {
+          ...LIGHT_DESTINATION_DETAILS,
+          expectedCiValue: CI_SUGGESTIONS.south[1],
+        },
+        southSuggestions: CI_SUGGESTIONS.south,
+        suggestionText: CI_SUGGESTIONS.south[1],
+      });
       await viaSection.fillAndVerifyViaDetails({ viaNumber: 1, ciSearchText: 'mid_west' });
     });
 
@@ -119,7 +129,10 @@ test.describe('@stdcm @stdcm-sheet', () => {
         arrivalTime: DEFAULT_DETAILS.arrivalTime,
         tolerance: DEFAULT_DETAILS.tolerance,
       });
-      await newDestinationSection.verifyDefaultDestinationFields();
+
+      await newDestinationSection.verifyDefaultDestinationFields(
+        DESTINATION_DETAILS.arrivalType.default
+      );
     });
   });
 

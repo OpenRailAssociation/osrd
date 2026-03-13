@@ -11,7 +11,9 @@ import {
   CONFLICT_ARRIVAL_TIME,
   CONSIST_DETAILS,
   DEFAULT_DETAILS,
+  DESTINATION_DETAILS,
   FAST_ROLLING_STOCK_PREFILLED_VALUES,
+  LIGHT_DESTINATION_DETAILS,
   LIGHT_ORIGIN_DETAILS,
   ORIGIN_DETAILS,
   SIMULATION_RESULTS_WITH_STOPS_DETAILS,
@@ -60,7 +62,10 @@ test.describe('@stdcm', () => {
         arrivalTime: DEFAULT_DETAILS.arrivalTime,
         tolerance: DEFAULT_DETAILS.tolerance,
       });
-  await destinationSection.verifyDefaultDestinationFields();
+
+      await destinationSection.verifyDefaultDestinationFields(
+        DESTINATION_DETAILS.arrivalType.default
+      );
     });
 
     await test.step('Add/delete default via and linked path', async () => {
@@ -101,7 +106,15 @@ test.describe('@stdcm', () => {
         updatedChValue: ORIGIN_DETAILS.updatedChValue,
         arrivalType: ORIGIN_DETAILS.arrivalType,
       });
-      await destinationSection.fillAndVerifyDestinationDetails();
+
+      await destinationSection.fillAndVerifyDestinationDetails({
+        destinationDetails: {
+          ...DESTINATION_DETAILS,
+          expectedCiValue: CI_SUGGESTIONS.south[1],
+        },
+        southSuggestions: CI_SUGGESTIONS.south,
+        noScheduledPointMessage: STDCM_TRANSLATIONS.stdcmErrors.routeErrors.noScheduledPoint,
+      });
     });
 
     await test.step('Fill three vias and verify each', async () => {
@@ -145,7 +158,10 @@ test.describe('@stdcm', () => {
         arrivalTime: DEFAULT_DETAILS.arrivalTime,
         tolerance: DEFAULT_DETAILS.tolerance,
       });
-      await newDestinationSection.verifyDefaultDestinationFields();
+
+      await newDestinationSection.verifyDefaultDestinationFields(
+        DESTINATION_DETAILS.arrivalType.default
+      );
     });
   });
 
@@ -186,7 +202,15 @@ test.describe('@stdcm', () => {
         expectedCiValue: CI_SUGGESTIONS.north[2],
         arrivalTimeOverride: CONFLICT_ARRIVAL_TIME,
       });
-      await destinationSection.fillDestinationDetailsLight();
+
+      await destinationSection.fillDestinationDetailsLight({
+        destinationDetails: {
+          ...LIGHT_DESTINATION_DETAILS,
+          expectedCiValue: CI_SUGGESTIONS.south[1],
+        },
+        southSuggestions: CI_SUGGESTIONS.south,
+        suggestionText: CI_SUGGESTIONS.south[1],
+      });
       await viaSection.fillAndVerifyViaDetails({ viaNumber: 1, ciSearchText: 'mid_west' });
     });
 

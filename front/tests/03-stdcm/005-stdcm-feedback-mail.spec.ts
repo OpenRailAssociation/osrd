@@ -8,6 +8,7 @@ import {
   CI_SUGGESTIONS,
   CONSIST_DETAILS,
   DEFAULT_DETAILS,
+  LIGHT_DESTINATION_DETAILS,
   LIGHT_ORIGIN_DETAILS,
   SIMULATION_RESULTS_DETAILS,
   STDCM_URL,
@@ -54,7 +55,15 @@ test.describe('@stdcm @stdcm-feedback', () => {
         expectedSuggestions: CI_SUGGESTIONS.north,
         expectedCiValue: CI_SUGGESTIONS.north[2],
       });
-      await destinationSection.fillDestinationDetailsLight();
+
+      await destinationSection.fillDestinationDetailsLight({
+        destinationDetails: {
+          ...LIGHT_DESTINATION_DETAILS,
+          expectedCiValue: CI_SUGGESTIONS.south[1],
+        },
+        southSuggestions: CI_SUGGESTIONS.south,
+        suggestionText: CI_SUGGESTIONS.south[1],
+      });
     });
 
     await test.step('Launch simulation and verify simulation details', async () => {
