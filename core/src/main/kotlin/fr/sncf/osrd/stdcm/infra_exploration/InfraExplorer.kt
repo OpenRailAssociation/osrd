@@ -164,6 +164,24 @@ data class ExplorerStep(
     val plannedTimingData: PlannedTimingData? = null,
 )
 
+private fun ExplorerStep.deduplicateLocations(isFirstStep: Boolean = false): ExplorerStep {
+    val deduplicatedLocations =
+        locations
+            .groupBy { it.edge }
+            .values
+            .map { locationsForEdge ->
+                // If first step, we want to minimize the path and keep the highest offset.
+                if (isFirstStep) locationsForEdge.maxBy { it.offset }
+                // Else, especially for the last step, keep the lowest offset.
+                else locationsForEdge.minBy { it.offset }
+            }
+    return copy(locations = deduplicatedLocations)
+}
+
+fun List<ExplorerStep>.deduplicateLocations(): List<ExplorerStep> = mapIndexed { index, step ->
+    step.deduplicateLocations(isFirstStep = index == 0)
+}
+
 /**
  * Init all InfraExplorers starting at the given location. The last of `stops` are used to identify
  * when the incremental path is complete. `constraints` are used to determine if a block can be

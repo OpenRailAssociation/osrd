@@ -518,8 +518,8 @@ class STDCMPathfindingTests {
     }
 
     /**
-     * This is mostly a malformed input, but it can happen on misplaced operational points. It's
-     * actually really hard to handle it *perfectly* but we should at least not crash.
+     * This is mostly a malformed input, but it can happen on misplaced operational points. Right
+     * now, we're merging duplicate locations of a same ExplorerStep to handle the case.
      */
     @Test
     fun repeatedLocationsOnEdge() {

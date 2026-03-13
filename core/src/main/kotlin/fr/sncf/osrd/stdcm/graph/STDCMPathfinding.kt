@@ -14,6 +14,7 @@ import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
+import fr.sncf.osrd.stdcm.infra_exploration.deduplicateLocations
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.stdcm.tracing.FailureExplainer
@@ -64,12 +65,14 @@ fun findPath(
     searchMetadata: STDCMGraph.SearchMetadata? = null,
     failureExplainer: FailureExplainer? = null,
 ): STDCMResult? {
+    // Remove duplicate locations (i.e. have the same block).
+    val uniqueSteps = steps.deduplicateLocations()
     return STDCMPathfinding(
             fullInfra,
             rollingStock,
             comfort,
             startTime,
-            steps,
+            uniqueSteps,
             blockAvailability,
             timeStep,
             maxDepartureDelay,
