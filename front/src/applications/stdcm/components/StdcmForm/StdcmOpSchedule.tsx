@@ -91,6 +91,7 @@ const StdcmOpSchedule = ({ disabled, pathStep, opId, isOrigin = false }: StdcmOp
       <div className="arrival-type-select">
         <Select
           id={`select-${opId}`}
+          data-testid={`select-${opId}`}
           value={pathStep.arrivalType}
           onChange={(e?: ArrivalTimeTypes) => {
             if (e) {

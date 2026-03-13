@@ -7,10 +7,13 @@ import { getInfra, setTowedRollingStock } from './../utils/api-utils';
 import {
   ALL_STOPS_TABLE_DATA_PATH,
   ALTERNATIVE_SIMULATION_RESULTS_DETAILS,
+  CI_SUGGESTIONS,
   CONFLICT_ARRIVAL_TIME,
   CONSIST_DETAILS,
   DEFAULT_DETAILS,
   FAST_ROLLING_STOCK_PREFILLED_VALUES,
+  LIGHT_ORIGIN_DETAILS,
+  ORIGIN_DETAILS,
   SIMULATION_RESULTS_WITH_STOPS_DETAILS,
   STDCM_URL,
   TOWED_ROLLING_STOCK_PREFILLED_VALUES,
@@ -50,8 +53,14 @@ test.describe('@stdcm', () => {
       await consistSection.verifyDefaultConsistFields({
         defaultSpeedLimitTag: DEFAULT_DETAILS.speedLimitTag,
       });
-      await originSection.verifyDefaultOriginFields();
-      await destinationSection.verifyDefaultDestinationFields();
+
+      await originSection.verifyDefaultOriginFields({
+        arrivalType: ORIGIN_DETAILS.arrivalType.default,
+        arrivalDate: DEFAULT_DETAILS.arrivalDate,
+        arrivalTime: DEFAULT_DETAILS.arrivalTime,
+        tolerance: DEFAULT_DETAILS.tolerance,
+      });
+  await destinationSection.verifyDefaultDestinationFields();
     });
 
     await test.step('Add/delete default via and linked path', async () => {
@@ -79,7 +88,19 @@ test.describe('@stdcm', () => {
           expectedLength: TRACTION_ENGINE_PREFILLED_VALUES.length,
         },
       });
-      await originSection.fillAndVerifyOriginDetails();
+
+      await originSection.fillAndVerifyOriginDetails({
+        input: ORIGIN_DETAILS.input,
+        expectedCiValue: ORIGIN_DETAILS.suggestion,
+        suggestionText: CI_SUGGESTIONS.north[2],
+        expectedSuggestions: CI_SUGGESTIONS.north,
+        chValue: ORIGIN_DETAILS.chValue,
+        arrivalDate: ORIGIN_DETAILS.arrivalDate,
+        arrivalTime: ORIGIN_DETAILS.arrivalTime,
+        tolerance: ORIGIN_DETAILS.tolerance,
+        updatedChValue: ORIGIN_DETAILS.updatedChValue,
+        arrivalType: ORIGIN_DETAILS.arrivalType,
+      });
       await destinationSection.fillAndVerifyDestinationDetails();
     });
 
@@ -117,7 +138,13 @@ test.describe('@stdcm', () => {
       await newConsistSection.verifyDefaultConsistFields({
         defaultSpeedLimitTag: DEFAULT_DETAILS.speedLimitTag,
       });
-      await newOriginSection.verifyDefaultOriginFields();
+
+      await newOriginSection.verifyDefaultOriginFields({
+        arrivalType: ORIGIN_DETAILS.arrivalType.default,
+        arrivalDate: DEFAULT_DETAILS.arrivalDate,
+        arrivalTime: DEFAULT_DETAILS.arrivalTime,
+        tolerance: DEFAULT_DETAILS.tolerance,
+      });
       await newDestinationSection.verifyDefaultDestinationFields();
     });
   });
@@ -149,7 +176,16 @@ test.describe('@stdcm', () => {
           length: TOWED_ROLLING_STOCK_PREFILLED_VALUES.length,
         },
       });
-      await originSection.fillOriginDetailsLight(CONFLICT_ARRIVAL_TIME);
+
+      await originSection.fillOriginDetailsLight({
+        originDetails: {
+          ...LIGHT_ORIGIN_DETAILS,
+          suggestionText: CI_SUGGESTIONS.north[2],
+        },
+        expectedSuggestions: CI_SUGGESTIONS.north,
+        expectedCiValue: CI_SUGGESTIONS.north[2],
+        arrivalTimeOverride: CONFLICT_ARRIVAL_TIME,
+      });
       await destinationSection.fillDestinationDetailsLight();
       await viaSection.fillAndVerifyViaDetails({ viaNumber: 1, ciSearchText: 'mid_west' });
     });

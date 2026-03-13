@@ -11,8 +11,10 @@ import test from './../page-object-fixture';
 import { waitForInfraStateToBeCached } from './../utils';
 import { getInfra } from './../utils/api-utils';
 import {
+  CI_SUGGESTIONS,
   DEFAULT_DETAILS,
   INVALID_CONSIST_DATA,
+  LIGHT_ORIGIN_DETAILS,
   STDCM_TRANSLATIONS,
   STDCM_URL,
   TRACTION_ENGINE_PREFILLED_VALUES,
@@ -47,7 +49,14 @@ test.describe('@stdcm @stdcm-missing-fields', () => {
     });
 
     await test.step('Fill origin and destination → expect partial missing field warnings', async () => {
-      await originSection.fillOriginDetailsLight();
+      await originSection.fillOriginDetailsLight({
+        originDetails: {
+          ...LIGHT_ORIGIN_DETAILS,
+          suggestionText: CI_SUGGESTIONS.north[2],
+        },
+        expectedSuggestions: CI_SUGGESTIONS.north,
+        expectedCiValue: CI_SUGGESTIONS.north[2],
+      });
       await destinationSection.fillDestinationDetailsLight();
       await stdcmPage.verifyInvalidSimulationLaunch();
       await stdcmPage.expectWarningBoxVisible();
