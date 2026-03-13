@@ -163,6 +163,7 @@ const useChronogram = ({
   return useMemo(
     () => ({
       handleVerticalScroll,
+      handleXZoom,
       handleXZoomOnWheelEvent,
       height,
       onPan: onTimePan,
@@ -178,6 +179,7 @@ const useChronogram = ({
       xZoom,
       yOffset,
       handleVerticalScroll,
+      handleXZoom,
       handleXZoomOnWheelEvent,
       onTimePan,
     ]
