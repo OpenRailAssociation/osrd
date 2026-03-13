@@ -1,9 +1,10 @@
 use std::collections::HashSet;
 
 use fga::client::QueryError;
+use fga::client::UserList;
 use fga::model::Relation as _;
 use futures::FutureExt;
-use futures::future::BoxFuture;
+use futures::future::LocalBoxFuture;
 use itertools::Itertools;
 
 use crate::Group;
@@ -12,7 +13,7 @@ use crate::Subject;
 use crate::User;
 
 pub type OpenFgaError = fga::client::RequestFailure;
-type ValueFut<'a, T> = BoxFuture<'a, Result<T, OpenFgaError>>;
+type ValueFut<'a, T> = LocalBoxFuture<'a, Result<T, OpenFgaError>>;
 /// An alias for the type of a protected operation
 ///
 /// The operation cannot capture any references in the closure context on purpose.
@@ -125,6 +126,30 @@ impl<T> Protected<T> {
     }
 }
 
+impl<T: 'static> Protected<T> {
+    pub fn map<U: 'static>(
+        self,
+        f: impl for<'c> AsyncFnOnce(&'c fga::Client, T) -> Result<U, OpenFgaError> + 'static,
+    ) -> Protected<U> {
+        let Self {
+            op,
+            guardrails,
+            sanity_checks,
+        } = self;
+        Protected {
+            op: Box::new(move |openfga| {
+                async move {
+                    let t = op(openfga).await?;
+                    f(openfga, t).await
+                }
+                .boxed_local()
+            }),
+            guardrails,
+            sanity_checks,
+        }
+    }
+}
+
 impl<'a, T, R> Access<'a, T, R> {
     /// Awaits the authorized operation future if authorized or yields the rejection if not
     ///
@@ -153,6 +178,27 @@ impl<'a, T, R: std::fmt::Debug> Access<'a, T, R> {
     }
 }
 
+pub fn group_members(group: Group) -> Protected<Vec<User>> {
+    Protected::new(move |openfga| {
+        async move {
+            let UserList {
+                users,
+                public_access,
+            } = openfga
+                .list_users(Group::member().query_users(&group))
+                .await
+                .map_err(QueryError::parsing_ok)?;
+            debug_assert!(
+                public_access.is_none(),
+                "we don't write public accesses for groups"
+            );
+            Ok(users)
+        }
+        .boxed()
+    })
+    .with_check(SanityCheck::GroupExists(group))
+}
+
 // TODO: move somewhere more appropriate
 /// Adds some members to a group
 ///
@@ -163,19 +209,9 @@ pub fn add_members(group: Group, members: HashSet<User>) -> Protected<()> {
         .map(|user| SanityCheck::UserExists(*user))
         .collect_vec(); // members is moved in Protected
 
-    Protected::new(move |openfga| {
-        async move {
-            let existing_members = openfga
-                .list_users(Group::member().query_users(&group))
-                .await
-                .map_err(QueryError::parsing_ok)?;
-
-            debug_assert!(
-                existing_members.public_access.is_none(),
-                "we don't write public accesses for groups"
-            );
-
-            let existing_members = HashSet::from_iter(existing_members.users);
+    group_members(group)
+        .map(async move |openfga, existing_members| {
+            let existing_members = HashSet::from_iter(existing_members);
             let new_members = members.difference(&existing_members);
             let mut writes = openfga.prepare_writes();
             for user in new_members {
@@ -183,14 +219,10 @@ pub fn add_members(group: Group, members: HashSet<User>) -> Protected<()> {
                 writes.push(&User::group().tuple(&group, user));
             }
             writes.execute().await?;
-
             Ok(())
-        }
-        .boxed()
-    })
-    .with_check(SanityCheck::GroupExists(group))
-    .with_check_iter(user_exists_checks)
-    .with_guardrail(Guardrail::IssuerHasRole(Role::Admin))
+        })
+        .with_check_iter(user_exists_checks)
+        .with_guardrail(Guardrail::IssuerHasRole(Role::Admin))
 }
 
 // TODO: move somewhere more appropriate
@@ -241,19 +273,9 @@ pub fn remove_members(group: Group, members: HashSet<User>) -> Protected<()> {
         .map(|user| SanityCheck::UserExists(*user))
         .collect_vec(); // members is moved in Protected
 
-    Protected::new(move |openfga| {
-        async move {
-            let existing_members = openfga
-                .list_users(Group::member().query_users(&group))
-                .await
-                .map_err(QueryError::parsing_ok)?;
-
-            debug_assert!(
-                existing_members.public_access.is_none(),
-                "we don't write public accesses for groups"
-            );
-
-            let existing_members = HashSet::from_iter(existing_members.users);
+    group_members(group)
+        .map(async move |openfga, existing_members| {
+            let existing_members = HashSet::from_iter(existing_members);
             let expelled = members.intersection(&existing_members);
             let mut writes = openfga.prepare_deletes();
             for user in expelled {
@@ -262,12 +284,9 @@ pub fn remove_members(group: Group, members: HashSet<User>) -> Protected<()> {
             }
             writes.execute().await?;
             Ok(())
-        }
-        .boxed()
-    })
-    .with_check(SanityCheck::GroupExists(group))
-    .with_check_iter(user_exists_checks)
-    .with_guardrail(Guardrail::IssuerHasRole(Role::Admin))
+        })
+        .with_check_iter(user_exists_checks)
+        .with_guardrail(Guardrail::IssuerHasRole(Role::Admin))
 }
 
 // TODO: move somewhere more appropriate
