@@ -74,7 +74,9 @@ test.describe('@stdcm', () => {
 
     await test.step('Add/delete default via and linked path', async () => {
       await viaSection.addAndDeletedDefaultVia(VIA_STOP_TYPES.PASSAGE_TIME);
-      await linkedTrainSection.addAndDeleteDefaultLinkedPath();
+      await linkedTrainSection.addAndDeleteDefaultLinkedPath({
+        defaultDate: DEFAULT_DETAILS.arrivalDate,
+      });
     });
   });
 

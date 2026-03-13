@@ -69,7 +69,8 @@ test.describe('@stdcm @stdcm-linked-train', () => {
     });
 
     await test.step('Configure anterior linked path, destinations and vias', async () => {
-      await linkedTrainSection.anteriorLinkedPathDetails();
+      await linkedTrainSection.anteriorLinkedPathDetails(LINKED_TRAIN_DETAILS.anterior);
+
       await destinationSection.fillDestinationDetailsLight({
         destinationDetails: {
           ...LIGHT_DESTINATION_DETAILS,
@@ -176,7 +177,8 @@ test.describe('@stdcm @stdcm-linked-train', () => {
         arrivalTypeOverride: ORIGIN_DETAILS.arrivalType.updated,
         isPrecise: true,
       });
-      await linkedTrainSection.posteriorLinkedPathDetails();
+
+      await linkedTrainSection.posteriorLinkedPathDetails(LINKED_TRAIN_DETAILS.posterior);
       await viaSection.fillAndVerifyViaDetails({
         viaNumber: 1,
         ciSearchText: 'mid_east',
