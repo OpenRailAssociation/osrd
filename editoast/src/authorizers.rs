@@ -46,11 +46,11 @@ async fn sanity_check(
     conn: &mut database::DbConnection,
 ) -> Result<Option<Rejection>, editoast_models::Error> {
     match sanity_check {
-        SanityCheck::UserExists(authz::User(user_id)) => {
+        SanityCheck::SubjectExists(authz::Subject::User(authz::User(user_id))) => {
             Ok((!editoast_models::User::exists(conn, *user_id).await?)
                 .then_some(Rejection::NoSuchUser(*user_id)))
         }
-        SanityCheck::GroupExists(authz::Group(group_id)) => {
+        SanityCheck::SubjectExists(authz::Subject::Group(authz::Group(group_id))) => {
             Ok((!editoast_models::Group::exists(conn, *group_id).await?)
                 .then_some(Rejection::NoSuchGroup(*group_id)))
         }

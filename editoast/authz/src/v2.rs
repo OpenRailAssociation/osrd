@@ -51,8 +51,17 @@ pub enum Guardrail {
 /// Not to be confused with [Guardrail]s, which are checks to ensure the permission workflow of editoast is respected.
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub enum SanityCheck {
-    UserExists(User),
-    GroupExists(Group),
+    SubjectExists(Subject),
+}
+
+impl SanityCheck {
+    pub fn user(user: User) -> Self {
+        SanityCheck::SubjectExists(Subject::User(user))
+    }
+
+    pub fn group(group: Group) -> Self {
+        SanityCheck::SubjectExists(Subject::Group(group))
+    }
 }
 
 /// The result of authorizing a [Protected] operation via [Authorizer::authorize]
@@ -196,7 +205,7 @@ pub fn group_members(group: Group) -> Protected<Vec<User>> {
         }
         .boxed()
     })
-    .with_check(SanityCheck::GroupExists(group))
+    .with_check(SanityCheck::group(group))
 }
 
 // TODO: move somewhere more appropriate
@@ -206,7 +215,7 @@ pub fn group_members(group: Group) -> Protected<Vec<User>> {
 pub fn add_members(group: Group, members: HashSet<User>) -> Protected<()> {
     let user_exists_checks = members
         .iter()
-        .map(|user| SanityCheck::UserExists(*user))
+        .map(|user| SanityCheck::user(*user))
         .collect_vec(); // members is moved in Protected
 
     group_members(group)
@@ -235,10 +244,7 @@ pub fn subject_roles(subject: Subject) -> Protected<Vec<Role>> {
         }
         .boxed()
     })
-    .with_check(match subject {
-        Subject::User(user) => SanityCheck::UserExists(user),
-        Subject::Group(group) => SanityCheck::GroupExists(group),
-    })
+    .with_check(SanityCheck::SubjectExists(subject))
 }
 
 // TODO: move somewhere more appropriate
@@ -275,7 +281,7 @@ pub fn add_roles(subject: Subject, roles: HashSet<Role>) -> Protected<()> {
 pub fn remove_members(group: Group, members: HashSet<User>) -> Protected<()> {
     let user_exists_checks = members
         .iter()
-        .map(|user| SanityCheck::UserExists(*user))
+        .map(|user| SanityCheck::user(*user))
         .collect_vec(); // members is moved in Protected
 
     group_members(group)
