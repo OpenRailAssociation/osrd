@@ -76,6 +76,12 @@ data class TrainPathImpl(
         }
         checkRangeList(blocks) { blockInfra.getBlockLength(it) }
         checkRangeList(chunks) { rawInfra.getTrackChunkLength(it.value).forceDirected() }
+        require(
+            backtrackLocations
+                .asSequence()
+                .zipWithNext { current, next -> current < next }
+                .all { it }
+        )
     }
 
     override fun subPath(

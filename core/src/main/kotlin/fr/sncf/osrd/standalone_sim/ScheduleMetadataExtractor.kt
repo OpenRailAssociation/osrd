@@ -21,6 +21,7 @@ import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.RouteRange
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.ZoneRange
+import fr.sncf.osrd.path.interfaces.getNonBacktrackingSubPathBoundariesContainingOffset
 import fr.sncf.osrd.signaling.SigSystemManager
 import fr.sncf.osrd.signaling.SignalingTrainState
 import fr.sncf.osrd.signaling.ZoneStatus
@@ -126,7 +127,7 @@ fun getSignalCriticalPositions(
     val rawInfra = fullInfra.rawInfra
     val loadedSignalInfra = fullInfra.loadedSignalInfra
 
-    val pathSignals = pathSignalsInEnvelope(trainPath, fullInfra.blockInfra, envelopeWithStops)
+    val pathSignals = pathSignals(trainPath, fullInfra.blockInfra)
 
     val signalCriticalPositions = mutableListOf<SignalCriticalPosition>()
     var indexClosedSignalStop = 0
@@ -141,9 +142,11 @@ fun getSignalCriticalPositions(
         }
 
         val physicalSignal = loadedSignalInfra.getPhysicalSignal(pathSignal.signal)
+        val straightSubPathRange =
+            trainPath.getNonBacktrackingSubPathBoundariesContainingOffset(pathSignal.pathOffset)
         var signalCriticalOffset =
             Offset.max(
-                Offset.zero(),
+                straightSubPathRange.start,
                 pathSignal.pathOffset - rawInfra.getSignalSightDistance(physicalSignal),
             )
         if (indexPathSignal > 0) {
@@ -154,7 +157,7 @@ fun getSignalCriticalPositions(
             envelopeWithStops.interpolateArrivalAt(signalCriticalOffset.meters).seconds
 
         // advance to the first stop after sightOffset
-        while (closedSignalStopOffset != null && closedSignalStopOffset <= signalCriticalOffset) {
+        while (closedSignalStopOffset != null && closedSignalStopOffset < signalCriticalOffset) {
             closedSignalStopOffset =
                 getStopTravelledPathOffset(closedSignalStops, indexClosedSignalStop++)
         }
@@ -693,42 +696,36 @@ data class PathSignal(
 )
 
 // Returns all the signals on the path
+// This doesn't generate path signals outside the trainPath (exclude signals before
+// or after any straight sub-path between start, backtracking locations and end).
+// The reason being that:
+// - train doesn't see signals before the (re-)start of the head
+// - even if a train sees a red signal after the end, it won't matter since the
+//   train was going to stop before it anyway.
 fun pathSignals(trainPath: TrainPath, blockInfra: BlockInfra): List<PathSignal> {
     val pathSignals = mutableListOf<PathSignal>()
     for ((blockIndex, blockRange) in trainPath.getBlocks().withIndex()) {
         val block = blockRange.value
+        val straightSubPathRange =
+            trainPath.getNonBacktrackingSubPathBoundariesContainingOffset(blockRange.pathBegin)
         val blockSignals = blockInfra.getBlockSignals(block)
         val blockSignalPositions = blockInfra.getSignalsPositions(block)
         for (signalIndex in 0 until blockSignals.size) {
             // As consecutive blocks share a signal, skip the first signal of each block, except the
-            // first. This way, each signal is only iterated on once
-            if (signalIndex == 0 && blockIndex != 0) continue
+            // first ones of each straight sub-path. This way, each signal is only iterated on once
+            if (
+                signalIndex == 0 &&
+                    !(blockRange.pathBegin == Offset<PhysicsPath>(0.meters) ||
+                        blockRange.pathBegin in trainPath.getBacktrackLocations())
+            )
+                continue
             val signal = blockSignals[signalIndex]
-            val position = blockSignalPositions[signalIndex]
-            pathSignals.add(PathSignal(signal, blockRange.offsetToTrainPath(position), blockIndex))
+            val pathOffset = blockRange.offsetToTrainPath(blockSignalPositions[signalIndex])
+
+            if (pathOffset in straightSubPathRange.start..straightSubPathRange.end) {
+                pathSignals.add(PathSignal(signal, pathOffset, blockIndex))
+            }
         }
     }
     return pathSignals
-}
-
-// This doesn't generate path signals outside the envelope
-// The reason being that even if a train see a red signal, it won't
-// matter since the train was going to stop before it anyway
-fun pathSignalsInEnvelope(
-    trainPath: TrainPath,
-    blockInfra: BlockInfra,
-    envelope: EnvelopeTimeInterpolate,
-): List<PathSignal> {
-    return pathSignalsInRange(trainPath, blockInfra, Offset.zero(), Offset(envelope.endPos.meters))
-}
-
-fun pathSignalsInRange(
-    trainPath: TrainPath,
-    blockInfra: BlockInfra,
-    rangeStart: Offset<PhysicsPath>,
-    rangeEnd: Offset<PhysicsPath>,
-): List<PathSignal> {
-    return pathSignals(trainPath, blockInfra).filter { signal ->
-        signal.pathOffset in rangeStart..rangeEnd
-    }
 }

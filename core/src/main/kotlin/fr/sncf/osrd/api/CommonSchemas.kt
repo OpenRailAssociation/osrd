@@ -62,7 +62,7 @@ class ZoneUpdate(
     @Json(name = "is_entry") val isEntry: Boolean,
 )
 
-class SignalCriticalPosition(
+data class SignalCriticalPosition(
     val signal: String,
     val time: TimeDelta,
     val position: Offset<PhysicsPath>,

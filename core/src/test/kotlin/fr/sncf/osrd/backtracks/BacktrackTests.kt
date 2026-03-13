@@ -2,8 +2,10 @@ package fr.sncf.osrd.backtracks
 
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.RangeValues
+import fr.sncf.osrd.api.SignalCriticalPosition
 import fr.sncf.osrd.api.path_properties.makePathPropResponse
 import fr.sncf.osrd.api.standalone_sim.SimulationScheduleItem
+import fr.sncf.osrd.conflicts.PathStop
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.path.implementations.PartialBlockRange
 import fr.sncf.osrd.path.implementations.buildRangeList
@@ -21,6 +23,7 @@ import fr.sncf.osrd.sim_infra.api.ZoneId
 import fr.sncf.osrd.sim_infra.api.getLogicalSignalName
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
 import fr.sncf.osrd.standalone_sim.ZoneOccupationChangeEvent
+import fr.sncf.osrd.standalone_sim.getSignalCriticalPositions
 import fr.sncf.osrd.standalone_sim.runStandaloneSimulation
 import fr.sncf.osrd.standalone_sim.zoneOccupationChangeEvents
 import fr.sncf.osrd.train.RollingStock
@@ -371,6 +374,57 @@ class BacktrackTests {
         assertEquals(
             ZoneOccupationChangeEvent(157.200.seconds, Offset(8100.meters), false, ZoneId(7u)),
             zoneOccupationChangeEvents[6],
+        )
+    }
+
+    @Test
+    fun testSignalCriticalPositionBacktrackingOverNothing() {
+        val path = buildPathBacktrackingOverNothing(infra, rollingStock.length.meters)
+        val stops = listOf(TrainStop(9400.0, 60.0, SHORT_SLIP_STOP), TrainStop(18100.0, 0.0, OPEN))
+        val envelope = computeMrspWithStops(path, stops)
+
+        val pos =
+            getSignalCriticalPositions(
+                infra,
+                envelope,
+                path,
+                stops
+                    .filter { it.receptionSignal.isStopOnClosedSignal }
+                    .map { PathStop(Offset(it.position.meters), it.receptionSignal) },
+            )
+        assertEquals(
+            listOf(
+                SignalCriticalPosition("s.right.a2", 30.seconds, Offset(2500.meters), "VL"),
+                SignalCriticalPosition("s.right.a3", 66.seconds, Offset(5500.meters), "VL"),
+                SignalCriticalPosition("s.left.c1", 181.200.seconds, Offset(10100.meters), "VL"),
+                SignalCriticalPosition("s.left.b2", 241.201.seconds, Offset(15100.meters), "VL"),
+            ),
+            pos,
+        )
+    }
+
+    @Test
+    fun testSignalCriticalPositionBacktrackingOverRouteDelimiter() {
+        val path = buildPathBacktrackingOverRouteDelimiter(infra, rollingStock.length.meters)
+        val stops = listOf(TrainStop(8000.0, 60.0, SHORT_SLIP_STOP), TrainStop(15300.0, 0.0, OPEN))
+        val envelope = computeMrspWithStops(path, stops)
+
+        val pos =
+            getSignalCriticalPositions(
+                infra,
+                envelope,
+                path,
+                stops
+                    .filter { it.receptionSignal.isStopOnClosedSignal }
+                    .map { PathStop(Offset(it.position.meters), it.receptionSignal) },
+            )
+        assertEquals(
+            listOf(
+                SignalCriticalPosition("s.right.a2", 30.seconds, Offset(2500.meters), "VL"),
+                SignalCriticalPosition("s.right.a3", 66.seconds, Offset(5500.meters), "VL"),
+                SignalCriticalPosition("s.left.b2", 207.601.seconds, Offset(12300.meters), "VL"),
+            ),
+            pos,
         )
     }
 

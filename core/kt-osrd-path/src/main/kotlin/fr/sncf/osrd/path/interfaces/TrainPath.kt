@@ -2,6 +2,8 @@ package fr.sncf.osrd.path.interfaces
 
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.OffsetRange
+import fr.sncf.osrd.utils.units.meters
 
 /**
  * A `TrainPath` describes the path taken by a train and its properties. It is built in a way that
@@ -111,4 +113,22 @@ fun TrainPath.splitAtBacktracks(): List<TrainPath> {
         )
     )
     return res
+}
+
+/**
+ * Retrieve the boundaries of the non-backtracking sub-path that contains the offset. Considering
+ * backtracking locations as part of the next straight sub-path.
+ */
+fun TrainPath.getNonBacktrackingSubPathBoundariesContainingOffset(
+    offset: Offset<PhysicsPath>
+): OffsetRange<PhysicsPath> {
+    require(offset <= getLength())
+    for (it in getBacktrackLocations().withIndex()) {
+        if (it.value > offset) {
+            val start = getBacktrackLocations().getOrNull(it.index - 1) ?: Offset(0.meters)
+            return OffsetRange(start, it.value)
+        }
+    }
+    val start = getBacktrackLocations().lastOrNull() ?: Offset(0.meters)
+    return OffsetRange(start, getLength())
 }
