@@ -233,7 +233,8 @@ const useTimesStopsTableData = (
         const hasRequestedTrack =
           'track' in pathStepLocation || !!pathStepLocation.local_track_name;
 
-        const schedule = scheduleByAt[pathStep.id];
+        const schedule = { ...scheduleByAt[pathStep.id] };
+        if (stepIndex === 0) schedule.arrival = 'PT0S'; // The first step has no stored scheduled arrival as redundant with start date
         const computedArrival =
           stablePathItemTimes?.final[stepIndex] !== undefined
             ? new Duration({ milliseconds: stablePathItemTimes.final[stepIndex] })
@@ -333,11 +334,6 @@ const useTimesStopsTableData = (
         ...row,
         opOnPathIndex: rowIndex,
       }));
-    }
-
-    // The first row has no schedule.arrival, so we set requestedArrival to startDate.
-    if (formattedRows.length > 0 && !formattedRows[0].requestedArrival) {
-      formattedRows[0] = { ...formattedRows[0], requestedArrival: startDate };
     }
 
     return formattedRows;
