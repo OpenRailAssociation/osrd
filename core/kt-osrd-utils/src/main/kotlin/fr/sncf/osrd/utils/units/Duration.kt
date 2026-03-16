@@ -30,8 +30,8 @@ value class Duration(val milliseconds: Long) : Comparable<Duration> {
     override fun toString(): String {
         val seconds = milliseconds / 1000
         val decimal = (milliseconds % 1000).absoluteValue
-        if (decimal == 0L) return String.format("%ss", seconds)
-        else return String.format("%s.%ss", seconds, decimal)
+        return if (decimal == 0L) "${seconds}s"
+        else "${seconds}.${decimal.toString().padStart(3, '0')}s"
     }
 
     companion object {
