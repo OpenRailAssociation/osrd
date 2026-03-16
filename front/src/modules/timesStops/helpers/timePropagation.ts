@@ -40,6 +40,40 @@ export const formatPropagationDeltaLabel = (
     .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 };
 
+/**
+ * Propagate a time edit to all waypoints before (and including) the edited point.
+ * Items after the edited points stay at the same time.
+ */
+const propagateFromDeparture = (
+  oldValue: Date | null,
+  newValue: Date | null,
+  editedPathStepId: string,
+  selectedTrain: Train
+): PropagationResult | undefined => {
+  const deltaMs = computeTimeDeltaMs(oldValue, newValue);
+  if (deltaMs === null) return undefined;
+
+  const editedPathIndex = selectedTrain.path.findIndex((step) => step.id === editedPathStepId);
+  if (editedPathIndex < 0) return undefined;
+
+  const updatedSchedule = (selectedTrain.schedule ?? []).map((item) => {
+    const itemPathIndex = selectedTrain.path.findIndex((step) => step.id === item.at);
+    if (itemPathIndex <= editedPathIndex || item.arrival == null) return item;
+    return {
+      ...item,
+      arrival: new Duration({
+        milliseconds: Duration.parse(item.arrival).ms - deltaMs,
+      }).toISOString(),
+    };
+  });
+
+  return {
+    updatedPath: selectedTrain.path,
+    updatedSchedule,
+    updatedStartTime: new Date(new Date(selectedTrain.start_time).getTime() + deltaMs),
+  };
+};
+
 const propagateShiftAll = (
   oldValue: Date | null,
   newValue: Date | null,
@@ -65,10 +99,26 @@ export const propagateTime = (
       if (update.propagationMode === 'toAllWaypoints') {
         return propagateShiftAll(update.row.requestedArrival, update.value, selectedTrain);
       }
+      if (update.propagationMode === 'fromDeparture' && update.row.isPathStep) {
+        return propagateFromDeparture(
+          update.row.requestedArrival,
+          update.value,
+          update.row.id,
+          selectedTrain
+        );
+      }
       return undefined;
     case 'requestedDeparture':
       if (update.propagationMode === 'toAllWaypoints') {
         return propagateShiftAll(update.row.requestedDeparture, update.value, selectedTrain);
+      }
+      if (update.propagationMode === 'fromDeparture' && update.row.isPathStep) {
+        return propagateFromDeparture(
+          update.row.requestedDeparture,
+          update.value,
+          update.row.id,
+          selectedTrain
+        );
       }
       return undefined;
     default:
