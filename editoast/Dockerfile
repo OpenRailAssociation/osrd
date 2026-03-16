@@ -18,10 +18,20 @@ RUN cargo chef prepare --recipe-path recipe.json
 # Cargo chef : build #
 ######################
 FROM chef AS base_builder
-RUN apk add --no-cache build-base openssl openssl-dev openssl-libs-static mold libpq-dev geos-dev
+RUN apk add --no-cache build-base curl openssl openssl-dev openssl-libs-static mold libpq-dev geos-dev
 ENV RUSTFLAGS="-C target-feature=-crt-static -C link-arg=-fuse-ld=mold"
-ADD --unpack=true --checksum=sha256:e20a1429f91c3ec5b2565b1af7395c0a89b3bb405e81abba9d589f9d46991c25 \
-    https://github.com/osrd-project/diesel_cli_bin/releases/download/diesel-cli-v2.3.6/diesel_cli-2.3.6-x86_64-unknown-linux-musl.tar.gz /cargo_editoast/bin/
+RUN set -eux; \
+    arch="$(uname -m)"; \
+    mkdir -p /cargo_editoast/bin; \
+    if [ "$arch" = "x86_64" ]; then \
+        curl -L \
+          https://github.com/osrd-project/diesel_cli_bin/releases/download/diesel-cli-v2.3.6/diesel_cli-2.3.6-x86_64-unknown-linux-musl.tar.gz \
+          -o /tmp/diesel_cli.tar.gz; \
+        tar -xzf /tmp/diesel_cli.tar.gz -C /cargo_editoast/bin; \
+        rm /tmp/diesel_cli.tar.gz; \
+    else \
+        cargo install diesel_cli --no-default-features --features postgres; \
+    fi
 COPY --from=static_assets . /assets
 
 # install `fga` binary used when authorization is enabled (production) and in `crate fga` unit tests
