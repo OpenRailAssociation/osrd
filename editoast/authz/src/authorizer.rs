@@ -139,7 +139,7 @@ mod tests {
     use crate::model;
     use crate::model::Group;
     use crate::v2;
-    use crate::v2::test_authorizers;
+    use crate::v2::special_authorizers;
     use pretty_assertions::assert_eq;
 
     #[tokio::test]
@@ -183,7 +183,7 @@ mod tests {
                 Subject::user(user_id),
                 HashSet::from([Role::OperationalStudies, Role::Stdcm]),
             )
-            .authorize(&v2::test_authorizers::Authorize(regulator().openfga()))
+            .authorize(&v2::special_authorizers::Authorize(regulator().openfga()))
             .await
             .expect("roles should be granted")
             .unwrap_authorized()
@@ -221,7 +221,7 @@ mod tests {
                 Subject::user(user_id),
                 HashSet::from([Role::OperationalStudies]),
             )
-            .authorize(&v2::test_authorizers::Authorize(regulator().openfga()))
+            .authorize(&v2::special_authorizers::Authorize(regulator().openfga()))
             .await
             .expect("roles should be stripped")
             .unwrap_authorized()
@@ -315,7 +315,7 @@ mod tests {
 
         // add members
         v2::add_members(friends, HashSet::from([User(alice_id), User(bob_id)]))
-            .authorize(&test_authorizers::Authorize(regulator().openfga()))
+            .authorize(&special_authorizers::Authorize(regulator().openfga()))
             .await
             .expect("members should be added")
             .unwrap_authorized()
@@ -323,14 +323,14 @@ mod tests {
 
         // setup roles
         v2::add_roles(friends.into(), HashSet::from([Role::OperationalStudies]))
-            .authorize(&v2::test_authorizers::Authorize(regulator().openfga()))
+            .authorize(&v2::special_authorizers::Authorize(regulator().openfga()))
             .await
             .expect("group's roles should be granted")
             .unwrap_authorized()
             .await;
 
         v2::add_roles(Subject::user(bob_id), HashSet::from([Role::Stdcm]))
-            .authorize(&v2::test_authorizers::Authorize(regulator().openfga()))
+            .authorize(&v2::special_authorizers::Authorize(regulator().openfga()))
             .await
             .expect("bob's roles should be granted")
             .unwrap_authorized()
@@ -375,7 +375,7 @@ mod tests {
 
         // remove user
         v2::remove_members(friends, HashSet::from([User(bob_id)]))
-            .authorize(&test_authorizers::Authorize(regulator().openfga()))
+            .authorize(&special_authorizers::Authorize(regulator().openfga()))
             .await
             .expect("bob should be removed from the group")
             .unwrap_authorized()
