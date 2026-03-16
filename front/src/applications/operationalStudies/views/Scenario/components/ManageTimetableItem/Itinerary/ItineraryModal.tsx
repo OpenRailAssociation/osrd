@@ -205,13 +205,14 @@ const ItineraryModal = ({
     const isEditing = editingStepIdRef.current === step.id;
     const isPending = pendingStepIdRef.current === step.id;
     // A step with no location is invalid only if the user typed something and isn't currently editing
+
     if (!step.location) {
       return query.length > 0 && !isEditing;
     }
 
     // A step with a location can still be invalid (OP not found in current infra).
-    // Show the error as long as the user is not actively editing it.
-    return !isEditing && !isPending;
+    // Show the error as long as the user is not actively editing it, or if the query is empty
+    return !isEditing && !isPending && query.length === 0;
   };
 
   const hasInvalidPathStepDisplay = pathSteps.some((step) =>
