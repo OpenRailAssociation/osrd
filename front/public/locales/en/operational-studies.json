@@ -4,6 +4,7 @@
     "std": "Space Time Diagram"
   },
   "boards": {
+    "chronogram": "Chronogram",
     "conflicts": "Conflicts",
     "macro": "Macro",
     "map": "Map",

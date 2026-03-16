@@ -16,6 +16,7 @@ const Scenario = () => {
     'std',
     'sdd',
     'tables',
+    'chronogram',
   ]);
 
   if (!scenario || !sandboxId) return null;
