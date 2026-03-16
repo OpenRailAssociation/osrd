@@ -45,6 +45,7 @@ utoipa.workspace = true
 database = { path = "../database", features = ["testing"] }
 editoast_models = { path = "./", features = ["testing"] }
 pretty_assertions.workspace = true
+schemas = { path = "../schemas", features = ["testing"] }
 
 [lints]
 workspace = true
