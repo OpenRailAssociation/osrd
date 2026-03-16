@@ -1,7 +1,9 @@
 import { consistErrorFields } from '../consts';
 import type { ConsistErrors, InvalidFields } from '../types';
 
-const getInvalidFields = (consistErrors: ConsistErrors[]): InvalidFields[] => {
+const getInvalidFields = (consistErrors: ConsistErrors[] | undefined): InvalidFields[] => {
+  if (!consistErrors) return [];
+
   const seen = new Set<string>();
   return consistErrors.flatMap((errors) =>
     consistErrorFields.reduce<InvalidFields[]>((acc, key) => {

@@ -137,6 +137,7 @@ const StdcmConfig = ({
     towedRollingStockID,
     totalMass,
     totalLength,
+    maxSpeed,
   };
 
   const { updateRollingStockID, updateSpeedLimitByTag } = useOsrdConfActions();
@@ -366,6 +367,7 @@ const StdcmConfig = ({
             skipAnimation={skipPathfindingStatusMessage}
             onItineraryChange={onItineraryChange}
             initialConsist={initialConsist}
+            initialConsistErrors={initialConsistErrors}
             onHasViaConsistErrorsChange={setViaConsistErrors}
           />
           <StdcmDestination disabled={disabled} onItineraryChange={onItineraryChange} />

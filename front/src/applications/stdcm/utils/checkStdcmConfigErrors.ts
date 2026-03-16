@@ -51,7 +51,7 @@ const checkStdcmConfigErrors = ({
     })
   );
 
-  let invalidFields = consistErrors ? getInvalidFields(consistErrors) : [];
+  let invalidFields = getInvalidFields(consistErrors);
 
   if (!shouldCheckMandatoryFields) {
     const prevInvalid = prevFormErrors?.errorDetails?.invalidFields || [];

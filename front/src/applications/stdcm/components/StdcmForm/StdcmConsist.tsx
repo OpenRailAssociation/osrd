@@ -5,7 +5,6 @@ import { skipToken } from '@reduxjs/toolkit/query';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { consistErrorFields } from 'applications/stdcm/consts';
 import useConsistFieldStatus from 'applications/stdcm/hooks/useConsistFieldStatus';
 import useFilterTowedRollingStock from 'applications/stdcm/hooks/useFilterTowedRollingStock';
 import type { ConsistData, ConsistErrors } from 'applications/stdcm/types';
@@ -79,12 +78,6 @@ const StdcmConsist = ({
 }: StdcmConsistProps) => {
   const { t } = useTranslation('stdcm');
 
-  const [consistErrors, setConsistErrors] = useState<ConsistErrors>({
-    totalMass: { message: undefined, display: false, type: 'missing' },
-    totalLength: { message: undefined, display: false, type: 'missing' },
-    maxSpeed: { message: undefined, display: false, type: 'missing' },
-  });
-
   const speedLimitsByTag = useSelector(getStdcmSpeedLimitsByTag);
   const speedLimitTags = useMemo(
     () => removeDuplicates(Object.keys(speedLimitsByTag)).sort(),
@@ -119,6 +112,11 @@ const StdcmConsist = ({
     prefillConsist,
     statusWithMessage,
     setMaxSpeedChanged,
+    consistErrors,
+    updateConsistErrors,
+    totalMassError,
+    totalLengthError,
+    maxSpeedError,
   } = useStdcmConsist(consist, onConsistChange, rollingStock, towedRollingStock);
 
   const useFieldStatus = (field: 'totalMass' | 'totalLength' | 'maxSpeed') =>
@@ -275,7 +273,7 @@ const StdcmConsist = ({
             onChange={(e) => {
               onTotalMassChange(e);
             }}
-            onBlur={() => handleBlurError('totalMass', totalMassError)}
+            onBlur={() => updateConsistErrors({ totalMass: totalMassError })}
             disabled={disabled}
             statusWithMessage={massFieldStatus}
             onCloseStatusMessage={() => handleCloseStatusMessage('mass')}
@@ -292,7 +290,7 @@ const StdcmConsist = ({
             onChange={(e) => {
               onTotalLengthChange(e);
             }}
-            onBlur={() => handleBlurError('totalLength', totalLengthError)}
+            onBlur={() => updateConsistErrors({ totalLength: totalLengthError })}
             disabled={disabled}
             statusWithMessage={lengthFieldStatus}
             onCloseStatusMessage={() => handleCloseStatusMessage('length')}
@@ -321,7 +319,7 @@ const StdcmConsist = ({
                 onChange={(e) => {
                   onMaxSpeedChange(e);
                 }}
-                onBlur={() => handleBlurError('maxSpeed', maxSpeedError)}
+                onBlur={() => updateConsistErrors({ maxSpeed: maxSpeedError })}
                 disabled={disabled}
                 statusWithMessage={speedFieldStatus}
                 onCloseStatusMessage={() => handleCloseStatusMessage('speed')}
