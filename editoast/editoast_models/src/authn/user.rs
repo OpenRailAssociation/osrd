@@ -11,10 +11,11 @@ use diesel::QueryDsl;
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
+use itertools::Itertools as _;
 
 use crate as editoast_models; // HACK: remove after all models are in this crate
 
-#[derive(Debug, Clone, Model)]
+#[derive(Debug, Clone, PartialEq, Eq, Model)]
 #[model(table = database::tables::authn_user)]
 #[model(gen(ops = r, batch_ops = r, list))]
 pub struct User {
@@ -23,6 +24,53 @@ pub struct User {
 }
 
 impl User {
+    /// Inserts a new [User], fails if the identity is already associated with another user
+    #[tracing::instrument(skip(conn), ret(level = "debug"), err)]
+    pub async fn register(
+        conn: DbConnection,
+        identities: Vec<String>,
+        name: String,
+    ) -> Result<User, database::DatabaseError> {
+        conn.transaction(async move |conn| {
+            let id = diesel::dsl::insert_into(authn_user::table)
+                .values(authn_user::name.eq(&name))
+                .returning(authn_user::id)
+                .get_result::<i64>(&mut conn.write().await)
+                .await?;
+            diesel::dsl::insert_into(authn_user_identity::table)
+                .values(
+                    identities
+                        .iter()
+                        .map(|identity| {
+                            (
+                                authn_user_identity::identity.eq(identity),
+                                authn_user_identity::user_id.eq(id),
+                            )
+                        })
+                        .collect_vec(),
+                )
+                .execute(&mut conn.write().await)
+                .await?;
+            Ok(Self { id, name })
+        })
+        .await
+    }
+
+    /// Return the [User] with the provided identity, if any
+    pub async fn retrieve_by_identity(
+        identity: &UserIdentity,
+        conn: DbConnection,
+    ) -> Result<Option<User>, database::DatabaseError> {
+        Ok(authn_user::table
+            .inner_join(authn_user_identity::table)
+            .select(authn_user::all_columns)
+            .filter(authn_user_identity::identity.eq(identity))
+            .first::<(i64, String)>(conn.write().await.deref_mut())
+            .await
+            .optional()?
+            .map(|(id, name)| User { id, name }))
+    }
+
     /// Return the list of [User] associated with the input list of identities.
     pub async fn get_batch_users_by_identity(
         identities: &[&UserIdentity],
@@ -82,5 +130,45 @@ impl User {
             })
             .collect();
         Ok(user_to_identities)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn register_twice_fails() {
+        let pool = database::DbConnectionPoolV2::for_tests();
+        let conn = pool.get_ok();
+
+        let identity = "toto".to_string();
+        let name = "Toto".to_string();
+
+        // First registration should succeed
+        let user1 = User::register(conn.clone(), vec![identity.clone()], name.clone())
+            .await
+            .expect("First registration should succeed");
+
+        // Verify the user can be retrieved
+        let retrieved = User::retrieve_by_identity(&identity, conn.clone())
+            .await
+            .expect("Query should succeed")
+            .expect("User should exist");
+
+        assert_eq!(user1, retrieved);
+
+        // Second registration with the same identity should fail
+        let result = User::register(
+            conn.clone(),
+            vec![identity.clone()],
+            "Toto Imposter".to_string(),
+        )
+        .await;
+
+        assert!(
+            result.is_err(),
+            "Second registration with same identity should fail"
+        );
     }
 }
