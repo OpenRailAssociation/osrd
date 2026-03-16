@@ -163,6 +163,12 @@ impl<T: Send + 'static> Protected<T> {
     }
 }
 
+impl<T: Default> Default for Protected<T> {
+    fn default() -> Self {
+        Self::new(|_| async { Ok(T::default()) }.boxed())
+    }
+}
+
 impl<'a, T, R> Access<'a, T, R> {
     /// Awaits the authorized operation future if authorized or yields the rejection if not
     ///
