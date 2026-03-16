@@ -17,6 +17,7 @@ import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.OPEN
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.STOP
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.ZoneId
@@ -230,6 +231,79 @@ class BacktrackTests {
         )
     }
 
+    private fun buildPathBacktrackingShortlyAfterRouteDelimiter(
+        infra: FullInfra,
+        rollingStockLength: Distance,
+    ): TrainPath {
+        val firstSignalNameList = listOf("s.right.a1", "s.right.a2", "s.right.a3", "s.right.c2")
+        val secondSignalNameList = listOf("s.left.c3", "s.left.c1", "s.left.b2", "s.left.b1")
+
+        val firstBlocks = signalsToBlocks(firstSignalNameList)
+        val secondBlocks = signalsToBlocks(secondSignalNameList)
+
+        // This is verbose, but it makes it easier to follow along
+        val blockRanges =
+            listOf(
+                // a1 -> a2
+                PartialBlockRange(
+                    firstBlocks[0].first,
+                    Offset(100.meters), // Start at offset 100m on first block
+                    firstBlocks[0].second,
+                    firstBlocks[0].second,
+                ),
+                // a2 -> a3
+                PartialBlockRange(
+                    firstBlocks[1].first,
+                    Offset(0.meters),
+                    firstBlocks[1].second,
+                    firstBlocks[1].second,
+                ),
+                // a3 -> c2
+                PartialBlockRange(
+                    firstBlocks[2].first,
+                    Offset(0.meters),
+                    // Last block before backtrack ends at c2 (offset 3000m), and backtrack is at
+                    // offset 1500m
+                    firstBlocks[2].second - (3000.meters - 1500.meters),
+                    firstBlocks[2].second,
+                ),
+                // Backtrack there: on track t.center at offset 1500m
+                // c3 -> c1
+                PartialBlockRange(
+                    secondBlocks[0].first,
+                    // c3 is at offset 5000m, 400m of train length
+                    Offset(5000.meters - 1500.meters + rollingStockLength),
+                    secondBlocks[0].second,
+                    secondBlocks[0].second,
+                ),
+                // c1 -> b2
+                PartialBlockRange(
+                    secondBlocks[1].first,
+                    Offset(0.meters),
+                    secondBlocks[1].second,
+                    secondBlocks[1].second,
+                ),
+                // b2 -> b1
+                PartialBlockRange(
+                    secondBlocks[2].first,
+                    Offset(0.meters),
+                    secondBlocks[2].second - 100.meters, // stop 100m before the end of the block
+                    secondBlocks[2].second,
+                ),
+            )
+        val backtrackLocation =
+            Offset<PhysicsPath>(blockRanges.subList(0, 3).map { it.length }.sumDistances())
+
+        return buildTrainPathFromBlockRanges(
+            infra.rawInfra,
+            infra.blockInfra,
+            buildRangeList(blockRanges),
+            routeNames =
+                listOf("rt.bf.a->det.a3", "rt.det.a3->bf.c", "rt.bf.c->det.c1", "rt.det.c1->bf.b"),
+            backtrackLocations = listOf(backtrackLocation),
+        )
+    }
+
     @Test
     fun testPathProperties() {
         // Smoke test, we only test for uncaught exceptions and failed asserts
@@ -378,6 +452,55 @@ class BacktrackTests {
     }
 
     @Test
+    fun testZoneOccupationBacktrackShortlyAfterRouteDelimiter() {
+        val path =
+            buildPathBacktrackingShortlyAfterRouteDelimiter(infra, rollingStock.length.meters)
+        val stops = listOf(TrainStop(8400.0, 60.0, STOP), TrainStop(16400.0, 0.0, OPEN))
+        val envelope = computeMrspWithStops(path, stops)
+        val zoneOccupationChangeEvents = zoneOccupationChangeEvents(path, envelope, 400.meters)
+
+        assertEquals(
+            mapOf(
+                Pair(ZoneId(1u), listOf(ZoneOccupation(Offset(0.meters), Offset(3300.meters)))),
+                Pair(ZoneId(2u), listOf(ZoneOccupation(Offset(2900.meters), Offset(6300.meters)))),
+                Pair(
+                    ZoneId(3u),
+                    listOf(
+                        ZoneOccupation(Offset(5900.meters), Offset(8300.meters)),
+                        ZoneOccupation(Offset(8500.meters), Offset(10900.meters)),
+                    ),
+                ),
+                Pair(ZoneId(7u), listOf(ZoneOccupation(Offset(7900.meters), Offset(8900.meters)))),
+                Pair(
+                    ZoneId(6u),
+                    listOf(ZoneOccupation(Offset(10500.meters), Offset(13900.meters))),
+                ),
+                Pair(ZoneId(5u), listOf(ZoneOccupation(Offset(13500.meters), Offset(16800.meters)))),
+            ),
+            getZoneOccupations(zoneOccupationChangeEvents),
+        )
+        assertEquals(
+            ZoneOccupationChangeEvent(99.600.seconds, Offset(8300.meters), false, ZoneId(3u)),
+            zoneOccupationChangeEvents[6],
+        )
+        // check that stop time is correctly considered
+        assertEquals(
+            ZoneOccupationChangeEvent(162.seconds, Offset(8500.meters), true, ZoneId(3u)),
+            zoneOccupationChangeEvents[7],
+        )
+
+        assertEquals(
+            ZoneOccupationChangeEvent(94.800.seconds, Offset(7900.meters), true, ZoneId(7u)),
+            zoneOccupationChangeEvents[5],
+        )
+        // check that stop time is correctly considered
+        assertEquals(
+            ZoneOccupationChangeEvent(166.800.seconds, Offset(8900.meters), false, ZoneId(7u)),
+            zoneOccupationChangeEvents[8],
+        )
+    }
+
+    @Test
     fun testSignalCriticalPositionBacktrackingOverNothing() {
         val path = buildPathBacktrackingOverNothing(infra, rollingStock.length.meters)
         val stops = listOf(TrainStop(9400.0, 60.0, SHORT_SLIP_STOP), TrainStop(18100.0, 0.0, OPEN))
@@ -423,6 +546,34 @@ class BacktrackTests {
                 SignalCriticalPosition("s.right.a2", 30.seconds, Offset(2500.meters), "VL"),
                 SignalCriticalPosition("s.right.a3", 66.seconds, Offset(5500.meters), "VL"),
                 SignalCriticalPosition("s.left.b2", 207.601.seconds, Offset(12300.meters), "VL"),
+            ),
+            pos,
+        )
+    }
+
+    @Test
+    fun testSignalCriticalPositionBacktrackingShortlyAfterRouteDelimiter() {
+        val path =
+            buildPathBacktrackingShortlyAfterRouteDelimiter(infra, rollingStock.length.meters)
+        val stops = listOf(TrainStop(8400.0, 60.0, STOP), TrainStop(16400.0, 0.0, OPEN))
+        val envelope = computeMrspWithStops(path, stops)
+
+        val pos =
+            getSignalCriticalPositions(
+                infra,
+                envelope,
+                path,
+                stops
+                    .filter { it.receptionSignal.isStopOnClosedSignal }
+                    .map { PathStop(Offset(it.position.meters), it.receptionSignal) },
+            )
+        assertEquals(
+            listOf(
+                SignalCriticalPosition("s.right.a2", 30.seconds, Offset(2500.meters), "VL"),
+                SignalCriticalPosition("s.right.a3", 66.seconds, Offset(5500.meters), "VL"),
+                // Start seeing the signal only after backtracking
+                SignalCriticalPosition("s.left.c1", 140.800.seconds, Offset(8400.meters), "VL"),
+                SignalCriticalPosition("s.left.b2", 217.201.seconds, Offset(13100.meters), "VL"),
             ),
             pos,
         )
@@ -479,6 +630,34 @@ class BacktrackTests {
             initialSpeed = 0.0,
             margins = RangeValues(),
             pathItemPositions = listOf(Offset(8000.meters), Offset(15300.meters)),
+        )
+    }
+
+    @Test
+    @Disabled("Not working yet")
+    fun testSimulationBacktrackingShortlyAfterRouteDelimiter() {
+        val path =
+            buildPathBacktrackingShortlyAfterRouteDelimiter(infra, rollingStock.length.meters)
+        // Smoke test, we only test for uncaught exceptions and failed asserts
+        runStandaloneSimulation(
+            infra = infra,
+            trainPath = path,
+            rollingStock = REALISTIC_FAST_TRAIN,
+            comfort = Comfort.STANDARD,
+            constraintDistribution = RJSAllowanceDistribution.LINEAR,
+            speedLimitTag = null,
+            powerRestrictions = distanceRangeMapOf(),
+            useElectricalProfiles = false,
+            useSpeedLimits = true,
+            timeStep = 2.0,
+            schedule =
+                listOf(
+                    SimulationScheduleItem(Offset(8400.meters), null, 60.seconds, STOP),
+                    SimulationScheduleItem(Offset(16400.meters), null, 0.seconds, OPEN),
+                ),
+            initialSpeed = 0.0,
+            margins = RangeValues(),
+            pathItemPositions = listOf(Offset(8400.meters), Offset(16400.meters)),
         )
     }
 }
