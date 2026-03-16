@@ -3,7 +3,7 @@
 //! components.
 
 use authz::v2;
-use authz::v2::test_authorizers;
+use authz::v2::special_authorizers;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::path::PathBuf;
@@ -515,7 +515,7 @@ impl<'a> UserBuilder<'a> {
             .expect("User should be created successfully");
         if app.app_state.config.enable_authorization {
             v2::add_roles(authz::Subject::user(user.id), roles)
-                .authorize(&test_authorizers::Authorize(regulator.openfga()))
+                .authorize(&special_authorizers::Authorize(regulator.openfga()))
                 .await
                 .expect("roles should be granted successfully")
                 .unwrap_authorized()
@@ -591,7 +591,7 @@ impl<'a> GroupBuilder<'a> {
         if !authz_disabled {
             let group_auth = authz::Group(group.id);
             v2::add_roles(group_auth.into(), roles)
-                .authorize(&test_authorizers::Authorize(regulator.openfga()))
+                .authorize(&special_authorizers::Authorize(regulator.openfga()))
                 .await
                 .expect("roles should be granted successfully")
                 .unwrap_authorized()
@@ -604,7 +604,7 @@ impl<'a> GroupBuilder<'a> {
                     .map(|authz::identity::User { id, .. }| authz::User(*id))
                     .collect(),
             )
-            .authorize(&test_authorizers::Authorize(regulator.openfga()))
+            .authorize(&special_authorizers::Authorize(regulator.openfga()))
             .await
             .expect("members should be added successfully")
             .unwrap_authorized()

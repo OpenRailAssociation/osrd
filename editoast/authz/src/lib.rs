@@ -170,7 +170,7 @@ mod mock_driver {
 
         pub async fn set_role(&self, user: model::User, role: Role) {
             v2::add_roles(user.into(), HashSet::from([role]))
-                .authorize(&v2::test_authorizers::Authorize(self.openfga()))
+                .authorize(&v2::special_authorizers::Authorize(self.openfga()))
                 .await
                 .expect("role set should succeed")
                 .unwrap_authorized()

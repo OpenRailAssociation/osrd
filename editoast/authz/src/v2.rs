@@ -344,7 +344,7 @@ pub fn remove_roles(subject: Subject, roles: HashSet<Role>) -> Protected<()> {
         .with_guardrail(Guardrail::IssuerHasRole(Role::Admin))
 }
 
-pub mod test_authorizers {
+pub mod special_authorizers {
     use std::convert::Infallible;
 
     use crate::v2::Access;
@@ -412,7 +412,7 @@ impl TestClientExt for fga::Client {
 
 #[cfg(test)]
 mod tests {
-    use crate::v2::test_authorizers::Authorize;
+    use crate::v2::special_authorizers::Authorize;
 
     use super::*;
 
