@@ -4,7 +4,7 @@ use fga::client::QueryError;
 use fga::client::UserList;
 use fga::model::Relation as _;
 use futures::FutureExt;
-use futures::future::LocalBoxFuture;
+use futures::future::BoxFuture;
 use itertools::Itertools;
 
 use crate::Group;
@@ -13,13 +13,13 @@ use crate::Subject;
 use crate::User;
 
 pub type OpenFgaError = fga::client::RequestFailure;
-type ValueFut<'a, T> = LocalBoxFuture<'a, Result<T, OpenFgaError>>;
+type ValueFut<'a, T> = BoxFuture<'a, Result<T, OpenFgaError>>;
 /// An alias for the type of a protected operation
 ///
 /// The operation cannot capture any references in the closure context on purpose.
 /// This is to allow eventually combining [Protected] objects together. It would
 /// "merge" the lifetime of the context and the client together.
-type Operation<T> = dyn for<'c> FnOnce(&'c fga::Client) -> ValueFut<'c, T> + 'static;
+type Operation<T> = dyn for<'c> FnOnce(&'c fga::Client) -> ValueFut<'c, T> + Send + 'static;
 
 /// Represents a protected operation yielding a value `T` and the necessary checks required to run it
 ///
@@ -93,7 +93,9 @@ pub trait Authorizer {
 }
 
 impl<T> Protected<T> {
-    pub fn new(f: impl for<'c> FnOnce(&'c fga::Client) -> ValueFut<'c, T> + 'static) -> Self {
+    pub fn new(
+        f: impl for<'c> FnOnce(&'c fga::Client) -> ValueFut<'c, T> + Send + 'static,
+    ) -> Self {
         Self {
             op: Box::new(f),
             guardrails: HashSet::new(),
@@ -135,10 +137,12 @@ impl<T> Protected<T> {
     }
 }
 
-impl<T: 'static> Protected<T> {
-    pub fn map<U: 'static>(
+impl<T: Send + 'static> Protected<T> {
+    pub fn map<U: Send + 'static>(
         self,
-        f: impl for<'c> AsyncFnOnce(&'c fga::Client, T) -> Result<U, OpenFgaError> + 'static,
+        f: impl for<'c> FnOnce(&'c fga::Client, T) -> BoxFuture<'c, Result<U, OpenFgaError>>
+        + Send
+        + 'static,
     ) -> Protected<U> {
         let Self {
             op,
@@ -151,7 +155,7 @@ impl<T: 'static> Protected<T> {
                     let t = op(openfga).await?;
                     f(openfga, t).await
                 }
-                .boxed_local()
+                .boxed()
             }),
             guardrails,
             sanity_checks,
@@ -219,16 +223,19 @@ pub fn add_members(group: Group, members: HashSet<User>) -> Protected<()> {
         .collect_vec(); // members is moved in Protected
 
     group_members(group)
-        .map(async move |openfga, existing_members| {
-            let existing_members = HashSet::from_iter(existing_members);
-            let new_members = members.difference(&existing_members);
-            let mut writes = openfga.prepare_writes();
-            for user in new_members {
-                writes.push(&Group::member().tuple(user, &group));
-                writes.push(&User::group().tuple(&group, user));
+        .map(move |openfga, existing_members| {
+            async move {
+                let existing_members = HashSet::from_iter(existing_members);
+                let new_members = members.difference(&existing_members);
+                let mut writes = openfga.prepare_writes();
+                for user in new_members {
+                    writes.push(&Group::member().tuple(user, &group));
+                    writes.push(&User::group().tuple(&group, user));
+                }
+                writes.execute().await?;
+                Ok(())
             }
-            writes.execute().await?;
-            Ok(())
+            .boxed()
         })
         .with_check_iter(user_exists_checks)
         .with_guardrail(Guardrail::IssuerHasRole(Role::Admin))
@@ -253,24 +260,27 @@ pub fn subject_roles(subject: Subject) -> Protected<Vec<Role>> {
 /// Idempotent but not atomic due to the lack of transactions in OpenFGA.
 pub fn add_roles(subject: Subject, roles: HashSet<Role>) -> Protected<()> {
     subject_roles(subject)
-        .map(async move |openfga, existing_roles| {
-            let existing_roles = HashSet::from_iter(existing_roles);
-            let new_roles = roles.difference(&existing_roles);
-            let mut writes = openfga.prepare_writes();
-            match subject {
-                Subject::User(user) => {
-                    for role in new_roles {
-                        writes.push(&User::role().tuple(role, &user));
+        .map(move |openfga, existing_roles| {
+            async move {
+                let existing_roles = HashSet::from_iter(existing_roles);
+                let new_roles = roles.difference(&existing_roles);
+                let mut writes = openfga.prepare_writes();
+                match subject {
+                    Subject::User(user) => {
+                        for role in new_roles {
+                            writes.push(&User::role().tuple(role, &user));
+                        }
+                    }
+                    Subject::Group(group) => {
+                        for role in new_roles {
+                            writes.push(&Group::role().tuple(role, &group));
+                        }
                     }
                 }
-                Subject::Group(group) => {
-                    for role in new_roles {
-                        writes.push(&Group::role().tuple(role, &group));
-                    }
-                }
+                writes.execute().await?;
+                Ok(())
             }
-            writes.execute().await?;
-            Ok(())
+            .boxed()
         })
         .with_guardrail(Guardrail::IssuerHasRole(Role::Admin))
 }
@@ -285,16 +295,19 @@ pub fn remove_members(group: Group, members: HashSet<User>) -> Protected<()> {
         .collect_vec(); // members is moved in Protected
 
     group_members(group)
-        .map(async move |openfga, existing_members| {
-            let existing_members = HashSet::from_iter(existing_members);
-            let expelled = members.intersection(&existing_members);
-            let mut writes = openfga.prepare_deletes();
-            for user in expelled {
-                writes.push(&Group::member().tuple(user, &group));
-                writes.push(&User::group().tuple(&group, user));
+        .map(move |openfga, existing_members| {
+            async move {
+                let existing_members = HashSet::from_iter(existing_members);
+                let expelled = members.intersection(&existing_members);
+                let mut writes = openfga.prepare_deletes();
+                for user in expelled {
+                    writes.push(&Group::member().tuple(user, &group));
+                    writes.push(&User::group().tuple(&group, user));
+                }
+                writes.execute().await?;
+                Ok(())
             }
-            writes.execute().await?;
-            Ok(())
+            .boxed()
         })
         .with_check_iter(user_exists_checks)
         .with_guardrail(Guardrail::IssuerHasRole(Role::Admin))
@@ -306,24 +319,27 @@ pub fn remove_members(group: Group, members: HashSet<User>) -> Protected<()> {
 /// Idempotent but not atomic due to the lack of transactions in OpenFGA.
 pub fn remove_roles(subject: Subject, roles: HashSet<Role>) -> Protected<()> {
     subject_roles(subject)
-        .map(async move |openfga, existing_roles| {
-            let existing_roles = HashSet::from_iter(existing_roles);
-            let removed_roles = roles.intersection(&existing_roles);
-            let mut writes = openfga.prepare_deletes();
-            match subject {
-                Subject::User(user) => {
-                    for role in removed_roles {
-                        writes.push(&User::role().tuple(role, &user));
+        .map(move |openfga, existing_roles| {
+            async move {
+                let existing_roles = HashSet::from_iter(existing_roles);
+                let removed_roles = roles.intersection(&existing_roles);
+                let mut writes = openfga.prepare_deletes();
+                match subject {
+                    Subject::User(user) => {
+                        for role in removed_roles {
+                            writes.push(&User::role().tuple(role, &user));
+                        }
+                    }
+                    Subject::Group(group) => {
+                        for role in removed_roles {
+                            writes.push(&Group::role().tuple(role, &group));
+                        }
                     }
                 }
-                Subject::Group(group) => {
-                    for role in removed_roles {
-                        writes.push(&Group::role().tuple(role, &group));
-                    }
-                }
+                writes.execute().await?;
+                Ok(())
             }
-            writes.execute().await?;
-            Ok(())
+            .boxed()
         })
         .with_guardrail(Guardrail::IssuerHasRole(Role::Admin))
 }
