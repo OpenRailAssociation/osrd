@@ -73,8 +73,8 @@ value class Distance(val millimeters: Long) : Comparable<Distance> {
     override fun toString(): String {
         val meters = millimeters / 1000
         val decimal = (millimeters % 1000).absoluteValue
-        if (decimal == 0L) return "${meters}m"
-        else return "${meters}.${decimal.toString().padStart(3, '0')}m"
+        return if (decimal == 0L) "${meters}m"
+        else "${meters}.${decimal.toString().padStart(3, '0')}m"
     }
 
     operator fun div(d: Double): Distance = Distance(round(millimeters / d).toLong())

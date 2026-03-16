@@ -19,8 +19,8 @@ value class Speed(val millimetersPerSecond: ULong) : Comparable<Speed> {
     override fun toString(): String {
         val metersPerSecond = millimetersPerSecond / multiplier.toUInt()
         val decimal = millimetersPerSecond % multiplier.toUInt()
-        if (decimal == 0UL) return String.format("%sm/s", metersPerSecond)
-        else return String.format("%s.%sm/s", metersPerSecond, decimal)
+        return if (decimal == 0UL) "${metersPerSecond}m/s"
+        else "${metersPerSecond}.${decimal.toString().padStart(3, '0')}m/s"
     }
 
     companion object {
