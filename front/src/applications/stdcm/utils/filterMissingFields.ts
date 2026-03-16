@@ -1,5 +1,3 @@
-import { isNil } from 'lodash';
-
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 
 import type { MissingFields } from '../types';
@@ -24,6 +22,8 @@ const ALL_MISSING_FIELDS: MissingFields[] = [
   'origin',
   'vias',
   'destination',
+  'viaConsistTotalMass',
+  'viaConsistTotalLength',
 ];
 
 const filterMissingFields = ({
@@ -44,17 +44,25 @@ const filterMissingFields = ({
       case 'tractionEngine':
         return !rollingStockID;
       case 'totalMass':
-        return isNil(totalMass);
+        return totalMass === undefined;
       case 'totalLength':
-        return isNil(totalLength);
+        return totalLength === undefined;
       case 'maxSpeed':
-        return isNil(maxSpeed);
+        return maxSpeed === undefined;
       case 'origin':
         return !origin?.operationalPoint;
       case 'vias':
-        return vias?.some((via) => !via.operationalPoint) ?? false;
+        return vias?.some((via) => !via.operationalPoint);
       case 'destination':
         return !destination?.operationalPoint;
+      case 'viaConsistTotalMass':
+        return vias?.some(
+          (via) => via.isVia && via.consistChange && via.consistChange?.totalMass === undefined
+        );
+      case 'viaConsistTotalLength':
+        return vias?.some(
+          (via) => via.isVia && via.consistChange && via.consistChange?.totalLength === undefined
+        );
       default:
         return false;
     }

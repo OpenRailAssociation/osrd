@@ -5,6 +5,8 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import filterMissingFields from 'applications/stdcm/utils/filterMissingFields';
+import getInvalidFields from 'applications/stdcm/utils/getInvalidFields';
 import { updateStdcmPathStep, deleteStdcmVia, addStdcmVia } from 'reducers/osrdconf/stdcmConf';
 import { getStdcmPathSteps } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { StdcmViaPathStep } from 'reducers/osrdconf/types';
@@ -24,6 +26,7 @@ import StdcmCardMarkerIcon from '../StdcmCardMarkerIcon';
 type StdcmViasProps = StdcmItineraryProps & {
   skipAnimation: boolean;
   initialConsist: ConsistData;
+  initialConsistErrors: ConsistErrors;
   onHasViaConsistErrorsChange: (errors: ConsistErrors[]) => void;
 };
 
@@ -33,6 +36,7 @@ const StdcmVias = ({
   skipAnimation,
   onItineraryChange,
   initialConsist,
+  initialConsistErrors,
   onHasViaConsistErrorsChange,
 }: StdcmViasProps) => {
   const { t } = useTranslation('stdcm');
@@ -48,6 +52,11 @@ const StdcmVias = ({
     [pathSteps]
   ) as StdcmViaPathStep[];
 
+  const cleanupConsistErrors = (pathStepId: string) => {
+    delete consistErrorsByStep.current[pathStepId];
+    onHasViaConsistErrorsChange(Object.values(consistErrorsByStep.current));
+  };
+
   const updateStopType = (newStopType: StdcmStopTypes, pathStep: StdcmViaPathStep) => {
     let defaultStopTime: Duration | undefined;
     if (newStopType === StdcmStopTypes.DRIVER_SWITCH) {
@@ -60,6 +69,8 @@ const StdcmVias = ({
     if (newStopType !== StdcmStopTypes.SERVICE_STOP && pathStep.consistChange) {
       // Disable consist change
       newConsistChange = undefined;
+
+      cleanupConsistErrors(pathStep.id);
     }
 
     dispatch(
@@ -120,6 +131,7 @@ const StdcmVias = ({
   }, [newIntermediateOpIndex]);
 
   const deleteViaOnClick = (pathStepId: string) => {
+    cleanupConsistErrors(pathStepId);
     dispatch(deleteStdcmVia(pathStepId));
     onItineraryChange();
   };
@@ -141,13 +153,14 @@ const StdcmVias = ({
   };
 
   const addConsistChange = (viaPathStep: StdcmViaPathStep, index: number) => {
+    const previousConsistChange = getPreviousConsistChange(index);
     if (viaPathStep.stopFor && viaPathStep.stopFor < new Duration({ minutes: 30 })) {
       dispatch(
         updateStdcmPathStep({
           id: viaPathStep.id,
           updates: {
             stopFor: new Duration({ minutes: 30 }),
-            consistChange: getPreviousConsistChange(index),
+            consistChange: previousConsistChange,
           },
         })
       );
@@ -156,7 +169,7 @@ const StdcmVias = ({
         updateStdcmPathStep({
           id: viaPathStep.id,
           updates: {
-            consistChange: getPreviousConsistChange(index),
+            consistChange: previousConsistChange,
           },
         })
       );
@@ -164,8 +177,7 @@ const StdcmVias = ({
   };
 
   const removeConsistChange = (viaPathStep: StdcmViaPathStep) => {
-    delete consistErrorsByStep.current[viaPathStep.id];
-    onHasViaConsistErrorsChange(Object.values(consistErrorsByStep.current));
+    cleanupConsistErrors(viaPathStep.id);
 
     dispatch(
       updateStdcmPathStep({
@@ -180,6 +192,28 @@ const StdcmVias = ({
   const handleConsistErrors = (id: string, errors: ConsistErrors) => {
     consistErrorsByStep.current[id] = errors;
     onHasViaConsistErrorsChange(Object.values(consistErrorsByStep.current));
+  };
+
+  const hasConsistsErrors = (): boolean | undefined => {
+    const invalidConsistsFields = getInvalidFields([
+      initialConsistErrors,
+      ...Object.values(consistErrorsByStep.current),
+    ]);
+    const missingConsistsFields = filterMissingFields({
+      totalMass: initialConsist.totalMass,
+      totalLength: initialConsist.totalLength,
+      maxSpeed: initialConsist.maxSpeed,
+      vias: pathSteps,
+      missingFields: [
+        'totalMass',
+        'totalLength',
+        'maxSpeed',
+        'viaConsistTotalMass',
+        'viaConsistTotalLength',
+      ],
+    });
+
+    return invalidConsistsFields.length !== 0 || missingConsistsFields.length !== 0;
   };
 
   return (
@@ -211,8 +245,12 @@ const StdcmVias = ({
                 <StdcmDefaultCard
                   testId="edit-consist"
                   className="edit-consist"
+                  disabled={hasConsistsErrors()}
                   tip="right"
                   text={t('trainPath.consistChange.add')}
+                  tooltip={
+                    hasConsistsErrors() ? t('trainPath.consistChange.fixErrorsFirst') : undefined
+                  }
                   Icon={<Location size="lg" variant="base" />}
                   onClick={() => addConsistChange(pathStep, index)}
                 />

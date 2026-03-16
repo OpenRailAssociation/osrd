@@ -198,7 +198,9 @@ export type MissingFields =
   | 'maxSpeed'
   | 'origin'
   | 'vias'
-  | 'destination';
+  | 'destination'
+  | 'viaConsistTotalMass'
+  | 'viaConsistTotalLength';
 
 export type InvalidFields = {
   fieldName: 'totalMass' | 'totalLength' | 'maxSpeed';

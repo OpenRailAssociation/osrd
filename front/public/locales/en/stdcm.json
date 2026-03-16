@@ -246,6 +246,8 @@
       "totalLength": "the total length of the consist",
       "totalMass": "the total mass of the consist",
       "tractionEngine": "the traction engine",
+      "viaConsistTotalLength": "the total length of a consist change",
+      "viaConsistTotalMass": "the total mass of a consist change",
       "vias": "At least one intermediate OP"
     },
     "missingInformations": "Missing informations for calculation:",
@@ -269,7 +271,8 @@
     "ch": "CH",
     "ci": "CI",
     "consistChange": {
-      "add": "Edit consist"
+      "add": "Edit consist",
+      "fixErrorsFirst": "Fix errors before editing consist"
     },
     "date": "Date",
     "destination": "Destination",
