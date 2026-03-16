@@ -478,6 +478,56 @@ fn service_router() -> router::DocumentedRouter {
     })
 }
 
+async fn authentication_extraction_middleware(mut req: Request, next: Next) -> Result<Response> {
+    const IDENTITY: &str = "x-remote-user-identity";
+    const NAME: &str = "x-remote-user-name";
+    const SKIP_AUTHZ: &str = "x-osrd-skip-authz";
+    const IMPERSONATE: &str = "x-impersonate";
+
+    let headers = req.headers();
+    let identity = headers.get(IDENTITY).map(|hv| {
+        str::from_utf8(hv.as_bytes())
+            .expect("unexpected non-utf8 characters in x-remote-user-identity")
+            .to_owned()
+    });
+    let name = headers.get(NAME).map(|hv| {
+        str::from_utf8(hv.as_bytes())
+            .expect("unexpected non-utf8 characters in x-remote-user-name")
+            .to_owned()
+    });
+    let impersonate = headers.get(IMPERSONATE).map(|hv| {
+        str::from_utf8(hv.as_bytes())
+            .expect("unexpected non-utf8 characters in x-impersonate")
+            .to_owned()
+    });
+    let skip_authz = headers.contains_key(SKIP_AUTHZ);
+
+    let authn = tracing::info_span!(
+        "authenticating request",
+        identity,
+        name,
+        impersonate,
+        skip_authz,
+    )
+    .in_scope(move || {
+        crate::authentication::Authentication::builder()
+            .identity(identity)
+            .name(name)
+            .impersonate(impersonate)
+            .skip(skip_authz)
+            .build()
+            .map_err(|()| {
+                tracing::error!("invalid authentication parameters");
+                AuthorizationError::Unauthorized
+            })
+    })?;
+
+    tracing::info!(?authn, "authentication complete");
+
+    req.extensions_mut().insert(authn);
+    Ok(next.run(req).await)
+}
+
 /// Represents the bundle of information about the issuer of a request
 /// that can be extracted form recognized headers.
 #[derive(Debug, Clone)]
@@ -1034,6 +1084,9 @@ impl Server {
             .route_layer(axum::middleware::from_fn_with_state(
                 app_state.clone(),
                 authentication_middleware,
+            ))
+            .route_layer(axum::middleware::from_fn(
+                authentication_extraction_middleware,
             ))
             .layer(OtelInResponseLayer)
             .layer(OtelAxumLayer::default())
