@@ -358,7 +358,7 @@ pub mod special_authorizers {
     pub struct Reject<Rejection>(Rejection);
 
     impl Authorizer for Authorize<'_> {
-        type Rejection = ();
+        type Rejection = Infallible;
         type Error = Infallible;
 
         async fn authorize<'a, T>(
