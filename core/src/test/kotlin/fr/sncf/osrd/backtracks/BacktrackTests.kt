@@ -125,16 +125,16 @@ class BacktrackTests {
                     firstBlocks[2].first,
                     Offset(0.meters),
                     // Last block before backtrack ends at c2 (offset 3000m), and backtrack is at
-                    // offset 2500m
-                    firstBlocks[2].second - (3000.meters - 2500.meters),
+                    // offset 2800m
+                    firstBlocks[2].second - (3000.meters - 2800.meters),
                     firstBlocks[2].second,
                 ),
-                // Backtrack there: on track t.center at offset 2500m
+                // Backtrack there: on track t.center at offset 2800m
                 // c3 -> c1
                 PartialBlockRange(
                     secondBlocks[0].first,
                     // c3 is at offset 5000m, 400m of train length
-                    Offset(5000.meters - 2500.meters + rollingStockLength),
+                    Offset(5000.meters - 2800.meters + rollingStockLength),
                     secondBlocks[0].second,
                     secondBlocks[0].second,
                 ),
@@ -375,9 +375,9 @@ class BacktrackTests {
     }
 
     @Test
-    fun testZoneOccupationBacktrackSingleZone() {
+    fun testZoneOccupationBacktrackOverNothing() {
         val path = buildPathBacktrackingOverNothing(infra, rollingStock.length.meters)
-        val stops = listOf(TrainStop(9400.0, 60.0, SHORT_SLIP_STOP), TrainStop(18100.0, 0.0, OPEN))
+        val stops = listOf(TrainStop(9700.0, 60.0, SHORT_SLIP_STOP), TrainStop(18700.0, 0.0, OPEN))
         val envelope = computeMrspWithStops(path, stops)
         val zoneOccupationChangeEvents = zoneOccupationChangeEvents(path, envelope, 400.meters)
 
@@ -389,15 +389,15 @@ class BacktrackTests {
                     ZoneId(3u),
                     listOf(
                         ZoneOccupation(Offset(5900.meters), Offset(8300.meters)),
-                        ZoneOccupation(Offset(10500.meters), Offset(12900.meters)),
+                        ZoneOccupation(Offset(11100.meters), Offset(13500.meters)),
                     ),
                 ),
-                Pair(ZoneId(7u), listOf(ZoneOccupation(Offset(7900.meters), Offset(10900.meters)))),
+                Pair(ZoneId(7u), listOf(ZoneOccupation(Offset(7900.meters), Offset(11500.meters)))),
                 Pair(
                     ZoneId(6u),
-                    listOf(ZoneOccupation(Offset(12500.meters), Offset(15900.meters))),
+                    listOf(ZoneOccupation(Offset(13100.meters), Offset(16500.meters))),
                 ),
-                Pair(ZoneId(5u), listOf(ZoneOccupation(Offset(15500.meters), Offset(18500.meters)))),
+                Pair(ZoneId(5u), listOf(ZoneOccupation(Offset(16100.meters), Offset(19100.meters)))),
             ),
             getZoneOccupations(zoneOccupationChangeEvents),
         )
@@ -407,7 +407,7 @@ class BacktrackTests {
         )
         // check that stop time is correctly considered
         assertEquals(
-            ZoneOccupationChangeEvent(186.001.seconds, Offset(10500.meters), true, ZoneId(3u)),
+            ZoneOccupationChangeEvent(193.201.seconds, Offset(11100.meters), true, ZoneId(3u)),
             zoneOccupationChangeEvents[7],
         )
 
@@ -417,7 +417,7 @@ class BacktrackTests {
         )
         // check that stop time is correctly considered
         assertEquals(
-            ZoneOccupationChangeEvent(190.801.seconds, Offset(10900.meters), false, ZoneId(7u)),
+            ZoneOccupationChangeEvent(198.001.seconds, Offset(11500.meters), false, ZoneId(7u)),
             zoneOccupationChangeEvents[8],
         )
     }
@@ -503,7 +503,7 @@ class BacktrackTests {
     @Test
     fun testSignalCriticalPositionBacktrackingOverNothing() {
         val path = buildPathBacktrackingOverNothing(infra, rollingStock.length.meters)
-        val stops = listOf(TrainStop(9400.0, 60.0, SHORT_SLIP_STOP), TrainStop(18100.0, 0.0, OPEN))
+        val stops = listOf(TrainStop(9700.0, 60.0, SHORT_SLIP_STOP), TrainStop(18700.0, 0.0, OPEN))
         val envelope = computeMrspWithStops(path, stops)
 
         val pos =
@@ -519,8 +519,8 @@ class BacktrackTests {
             listOf(
                 SignalCriticalPosition("s.right.a2", 30.seconds, Offset(2500.meters), "VL"),
                 SignalCriticalPosition("s.right.a3", 66.seconds, Offset(5500.meters), "VL"),
-                SignalCriticalPosition("s.left.c1", 181.200.seconds, Offset(10100.meters), "VL"),
-                SignalCriticalPosition("s.left.b2", 241.201.seconds, Offset(15100.meters), "VL"),
+                SignalCriticalPosition("s.left.c1", 188.401.seconds, Offset(10700.meters), "VL"),
+                SignalCriticalPosition("s.left.b2", 248.401.seconds, Offset(15700.meters), "VL"),
             ),
             pos,
         )
@@ -597,12 +597,12 @@ class BacktrackTests {
             timeStep = 2.0,
             schedule =
                 listOf(
-                    SimulationScheduleItem(Offset(9400.meters), null, 60.seconds, SHORT_SLIP_STOP),
-                    SimulationScheduleItem(Offset(18100.meters), null, 0.seconds, OPEN),
+                    SimulationScheduleItem(Offset(9700.meters), null, 60.seconds, SHORT_SLIP_STOP),
+                    SimulationScheduleItem(Offset(18700.meters), null, 0.seconds, OPEN),
                 ),
             initialSpeed = 0.0,
             margins = RangeValues(),
-            pathItemPositions = listOf(Offset(9400.meters), Offset(18100.meters)),
+            pathItemPositions = listOf(Offset(9700.meters), Offset(18700.meters)),
         )
     }
 
