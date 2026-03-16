@@ -19,11 +19,13 @@ import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.ZoneId
 import fr.sncf.osrd.sim_infra.api.getLogicalSignalName
+import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
 import fr.sncf.osrd.standalone_sim.ZoneOccupationChangeEvent
 import fr.sncf.osrd.standalone_sim.runStandaloneSimulation
 import fr.sncf.osrd.standalone_sim.zoneOccupationChangeEvents
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN
+import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.Helpers.fullInfraFromFile
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.units.Distance
@@ -290,11 +292,17 @@ class BacktrackTests {
         return mapZoneOccupations
     }
 
+    private fun computeMrspWithStops(path: TrainPath, stops: List<TrainStop>): EnvelopeStopWrapper {
+        val mrsp = computeMRSP(path, rollingStock, true, null, null, distanceRangeMapOf(), true)
+        return EnvelopeStopWrapper(mrsp, stops)
+    }
+
     @Test
     fun testZoneOccupationBacktrackSingleZone() {
         val path = buildPathBacktrackingOverNothing(infra, rollingStock.length.meters)
-        val mrsp = computeMRSP(path, rollingStock, true, null, null, distanceRangeMapOf(), true)
-        val zoneOccupationChangeEvents = zoneOccupationChangeEvents(path, mrsp, 400.meters)
+        val stops = listOf(TrainStop(9400.0, 60.0, SHORT_SLIP_STOP), TrainStop(18100.0, 0.0, OPEN))
+        val envelope = computeMrspWithStops(path, stops)
+        val zoneOccupationChangeEvents = zoneOccupationChangeEvents(path, envelope, 400.meters)
 
         assertEquals(
             mapOf(
@@ -316,13 +324,33 @@ class BacktrackTests {
             ),
             getZoneOccupations(zoneOccupationChangeEvents),
         )
+        assertEquals(
+            ZoneOccupationChangeEvent(99.600.seconds, Offset(8300.meters), false, ZoneId(3u)),
+            zoneOccupationChangeEvents[6],
+        )
+        // check that stop time is correctly considered
+        assertEquals(
+            ZoneOccupationChangeEvent(186.001.seconds, Offset(10500.meters), true, ZoneId(3u)),
+            zoneOccupationChangeEvents[7],
+        )
+
+        assertEquals(
+            ZoneOccupationChangeEvent(94.800.seconds, Offset(7900.meters), true, ZoneId(7u)),
+            zoneOccupationChangeEvents[5],
+        )
+        // check that stop time is correctly considered
+        assertEquals(
+            ZoneOccupationChangeEvent(190.801.seconds, Offset(10900.meters), false, ZoneId(7u)),
+            zoneOccupationChangeEvents[8],
+        )
     }
 
     @Test
     fun testZoneOccupationBacktrackingOverRouteDelimiter() {
         val path = buildPathBacktrackingOverRouteDelimiter(infra, rollingStock.length.meters)
-        val mrsp = computeMRSP(path, rollingStock, true, null, null, distanceRangeMapOf(), true)
-        val zoneOccupationChangeEvents = zoneOccupationChangeEvents(path, mrsp, 400.meters)
+        val stops = listOf(TrainStop(8000.0, 60.0, SHORT_SLIP_STOP), TrainStop(15300.0, 0.0, OPEN))
+        val envelope = computeMrspWithStops(path, stops)
+        val zoneOccupationChangeEvents = zoneOccupationChangeEvents(path, envelope, 400.meters)
 
         assertEquals(
             mapOf(
@@ -334,6 +362,15 @@ class BacktrackTests {
                 Pair(ZoneId(5u), listOf(ZoneOccupation(Offset(12700.meters), Offset(15700.meters)))),
             ),
             getZoneOccupations(zoneOccupationChangeEvents),
+        )
+        assertEquals(
+            ZoneOccupationChangeEvent(94.800.seconds, Offset(7900.meters), true, ZoneId(7u)),
+            zoneOccupationChangeEvents[5],
+        )
+        // check that stop time is correctly considered
+        assertEquals(
+            ZoneOccupationChangeEvent(157.200.seconds, Offset(8100.meters), false, ZoneId(7u)),
+            zoneOccupationChangeEvents[6],
         )
     }
 
