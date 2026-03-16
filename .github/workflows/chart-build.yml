@@ -22,6 +22,17 @@ jobs:
       - name: Set up Helm
         uses: azure/setup-helm@v4
 
+      - name: Setup go
+        uses: actions/setup-go@v6
+        with:
+          go-version: '1.26'
+
+      - name: Check that the documentation is up to date
+        run: |
+          go install github.com/norwoodj/helm-docs/cmd/helm-docs@latest
+          .github/scripts/check-chart-diff.sh
+
+
       - name: Set Name and Version
         run: |
           CHART_NAME="osrd-dev"
