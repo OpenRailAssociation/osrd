@@ -257,6 +257,32 @@ const PathStepItem = ({
     ? visibleSuggestions.length + 1
     : visibleSuggestions.length;
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'Enter') return;
+
+    const activeSuggestion = e.currentTarget.querySelector('.suggestion-item.active');
+    if (activeSuggestion) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const firstSuggestion = visibleSuggestions[0];
+
+    if (firstSuggestion && typeof firstSuggestion !== 'string') {
+      const defaultSecondaryCode =
+        firstSuggestion.secondaryCodeList.find((sc) => sc.isBestSuggestion)?.code ??
+        firstSuggestion.secondaryCodeList[0]?.code;
+
+      onSelectOpSuggestion(firstSuggestion, defaultSecondaryCode);
+      resetOpSuggestions();
+      blurActiveElement();
+      return;
+    }
+
+    resetOpSuggestions();
+    blurActiveElement();
+  };
+
   return (
     <div
       className={cx('path-step-wrapper', {
@@ -328,8 +354,9 @@ const PathStepItem = ({
               role="button"
               tabIndex={0}
               className={cx('path-step-op-name', {
-                invalid: shouldShowInvalidMessage,
+                invalid: isInvalidAndIsEditing,
               })}
+              onKeyDownCapture={handleKeyDown}
               onMouseDownCapture={(e) => {
                 const target = e.target as HTMLElement | null;
                 if (target?.closest('.chevron-icon')) {
@@ -417,12 +444,12 @@ const PathStepItem = ({
                 onChange={(e) => onOpInputChange(e.target.value)}
               />
             </div>
-            {isTrackOffset ? (
+            {pathStep.location && 'track' in pathStep.location ? (
               <div className="requested-point-block" />
             ) : (
               <div
                 className={cx('track-name', {
-                  invalid: shouldShowInvalidMessage,
+                  invalid: isInvalidAndIsEditing,
                 })}
               >
                 <Select
