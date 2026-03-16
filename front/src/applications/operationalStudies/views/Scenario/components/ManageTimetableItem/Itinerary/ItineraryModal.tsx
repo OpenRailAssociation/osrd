@@ -443,33 +443,29 @@ const ItineraryModal = ({
               const isInvalid = isStepInvalidAndIsEditing(pathStep, pathStepMetadata);
 
               const previousPathStepMetadata = pathStepsMetadataById.get(pathSteps[i - 1]?.id);
-              const hideLine =
-                i > 0 && (pathStepMetadata?.isInvalid || previousPathStepMetadata?.isInvalid);
               const isTrailingPlaceholder =
                 i === pathSteps.length - 1 && isEmptyStep(pathStep, getInputForStep(pathStep.id));
 
               return (
                 <>
                   <div>
-                    {!hideLine && (
-                      <div className="path-step-gap">
-                        <div
-                          className="path-step-gap-hitbox"
-                          onPointerEnter={() => setHoveredGapIndex(i)}
-                          onPointerLeave={() => setHoveredGapIndex(null)}
-                        >
-                          {hoveredGapIndex === i && (
-                            <button
-                              type="button"
-                              className="add-pathitem"
-                              onClick={() => handleAddIntermediateStep(i)}
-                            >
-                              <Plus iconColor="var(--white100)" />
-                            </button>
-                          )}
-                        </div>
+                    <div className="path-step-gap">
+                      <div
+                        className="path-step-gap-hitbox"
+                        onPointerEnter={() => setHoveredGapIndex(i)}
+                        onPointerLeave={() => setHoveredGapIndex(null)}
+                      >
+                        {hoveredGapIndex === i && (
+                          <button
+                            type="button"
+                            className="add-pathitem"
+                            onClick={() => handleAddIntermediateStep(i)}
+                          >
+                            <Plus iconColor="var(--white100)" />
+                          </button>
+                        )}
                       </div>
-                    )}
+                    </div>
                   </div>
                   <PathStepItem
                     key={pathStep.id}
