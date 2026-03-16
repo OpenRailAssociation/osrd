@@ -153,7 +153,7 @@
       "Database": "Erreur interne (base de données)",
       "ExceptionNotFound": "Exception '{{exception_key}}' non trouvée",
       "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
-      "NotFound": "Mission '{{train_schedule_id}}' non trouvée",
+      "NotFound": "La circulation '{{train_schedule_id}}' n’a pas été trouvée",
       "PathfindingFailed": "La recherche de chemin n'a pas abouti pour la mission '{{train_schedule_id}}'",
       "RollingStockNotFound": "Matériel roulant '{{rolling_stock_name}}' non trouvé",
       "SimulationFailed": "La simulation n'a pas abouti pour la circulation '{{train_schedule_id}}'",

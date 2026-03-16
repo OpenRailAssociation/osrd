@@ -398,34 +398,6 @@ impl OperationalPointCache {
         };
         Ok(related_operational_points)
     }
-
-    /// Merge another cache into this one.
-    ///
-    /// Useful to add OPs that were not part of the original path items
-    /// (e.g. passage points loaded on demand from the database).
-    pub fn extend(&mut self, other: OperationalPointCache) {
-        let offset = self.ops.len();
-        self.ops.extend(other.ops);
-
-        for (id, idx) in other.obj_id_to_index {
-            self.obj_id_to_index.insert(id, idx + offset);
-        }
-        for (uic, indices) in other.uic_to_indices {
-            self.uic_to_indices
-                .entry(uic)
-                .or_default()
-                .extend(indices.into_iter().map(|i| i + offset));
-        }
-        for (trigram, indices) in other.trigram_to_indices {
-            self.trigram_to_indices
-                .entry(trigram)
-                .or_default()
-                .extend(indices.into_iter().map(|i| i + offset));
-        }
-        self.track_ids.extend(other.track_ids);
-        self.track_ids_to_local_track_name
-            .extend(other.track_ids_to_local_track_name);
-    }
 }
 
 /// Collect the ids of the operational points from the path items
