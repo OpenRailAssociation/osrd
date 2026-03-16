@@ -1,6 +1,7 @@
 use std::fmt::Debug;
 
 use database::DbConnection;
+use futures::TryStream;
 
 use super::Model;
 
@@ -87,7 +88,11 @@ where
     >(
         conn: &mut DbConnection,
         ids: I,
-    ) -> Result<C, Self::Error>;
+    ) -> Result<C, Self::Error> {
+        use futures_util::TryStreamExt;
+        let stream = Self::retrieve_stream(conn, ids).await?;
+        stream.map_ok(|(_, model)| model).try_collect().await
+    }
 
     /// Just like [RetrieveBatchUnchecked::retrieve_batch_unchecked] but the returned models are paired with their key
     ///
@@ -102,7 +107,16 @@ where
     >(
         conn: &mut DbConnection,
         ids: I,
-    ) -> Result<C, Self::Error>;
+    ) -> Result<C, Self::Error> {
+        use futures_util::TryStreamExt;
+        let stream = Self::retrieve_stream(conn, ids).await?;
+        stream.try_collect().await
+    }
+
+    async fn retrieve_stream<I: IntoIterator<Item = K> + Send>(
+        conn: &mut DbConnection,
+        ids: I,
+    ) -> Result<impl TryStream<Ok = (K, Self), Error = Self::Error>, Self::Error>;
 }
 
 /// Describes how a [Model] can be retrieved from the database given a batch of keys

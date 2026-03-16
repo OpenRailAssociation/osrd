@@ -18,7 +18,7 @@ impl ToTokens for ListImpl {
             columns,
             error,
         } = self;
-        let span_name = format!("model:list<{model}>");
+        let span_name = format!("model:list_stream<{model}>");
 
         tokens.extend(quote! {
             #[automatically_derived]
@@ -32,13 +32,13 @@ impl ToTokens for ListImpl {
                     limit,
                     offset,
                 ))]
-                async fn list(
+                async fn list_stream(
                     conn: &mut database::DbConnection,
                     settings: crate::prelude::SelectionSettings<Self>,
-                ) -> std::result::Result<Vec<Self>, Self::Error> {
+                ) -> std::result::Result<impl futures::TryStream<Ok = Self, Error = Self::Error>, Self::Error> {
                     use diesel::QueryDsl;
                     use diesel_async::RunQueryDsl;
-                    use futures_util::stream::TryStreamExt;
+                    use futures_util::{StreamExt, TryStreamExt};
                     use #table_mod::dsl;
                     use std::ops::DerefMut;
 
@@ -64,18 +64,21 @@ impl ToTokens for ListImpl {
                         query = query.offset(offset);
                     }
 
-                    query
+                    let stream = query
                         .select((#(dsl::#columns,)*))
                         .load_stream::<#row>(conn.write().await.deref_mut())
-                        .await
-                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
+                        .await;
+
+                    let inner = match stream {
+                        Ok(inner) => inner,
+                        Err(e) => return Err(Self::Error::from(editoast_models::Error::from(e))),
+                    };
+
+                    Ok(inner
                         .map_ok(<#model as crate::prelude::Model>::from_row)
-                        .try_collect::<Vec<_>>()
-                        .await
-                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
+                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e))))
                 }
             }
-
         });
     }
 }

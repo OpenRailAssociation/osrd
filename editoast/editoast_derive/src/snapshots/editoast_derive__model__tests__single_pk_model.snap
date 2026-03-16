@@ -205,7 +205,7 @@ impl crate::prelude::Delete for Timetable {
 impl crate::prelude::List for Timetable {
     type Error = editoast_models::Error;
     #[tracing::instrument(
-        name = "model:list<Timetable>",
+        name = "model:list_stream<Timetable>",
         skip_all,
         err,
         fields(
@@ -216,13 +216,16 @@ impl crate::prelude::List for Timetable {
             offset,
         )
     )]
-    async fn list(
+    async fn list_stream(
         conn: &mut database::DbConnection,
         settings: crate::prelude::SelectionSettings<Self>,
-    ) -> std::result::Result<Vec<Self>, Self::Error> {
+    ) -> std::result::Result<
+        impl futures::TryStream<Ok = Self, Error = Self::Error>,
+        Self::Error,
+    > {
         use diesel::QueryDsl;
         use diesel_async::RunQueryDsl;
-        use futures_util::stream::TryStreamExt;
+        use futures_util::{StreamExt, TryStreamExt};
         use database::tables::timetable::dsl;
         use std::ops::DerefMut;
         let mut query = database::tables::timetable::table.into_boxed();
@@ -242,15 +245,19 @@ impl crate::prelude::List for Timetable {
             tracing::Span::current().record("offset", offset);
             query = query.offset(offset);
         }
-        query
+        let stream = query
             .select((dsl::id,))
             .load_stream::<TimetableRow>(conn.write().await.deref_mut())
-            .await
-            .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
-            .map_ok(<Timetable as crate::prelude::Model>::from_row)
-            .try_collect::<Vec<_>>()
-            .await
-            .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
+            .await;
+        let inner = match stream {
+            Ok(inner) => inner,
+            Err(e) => return Err(Self::Error::from(editoast_models::Error::from(e))),
+        };
+        Ok(
+            inner
+                .map_ok(<Timetable as crate::prelude::Model>::from_row)
+                .map_err(|e| Self::Error::from(editoast_models::Error::from(e))),
+        )
     }
 }
 #[automatically_derived]
