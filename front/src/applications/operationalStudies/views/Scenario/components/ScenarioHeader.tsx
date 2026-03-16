@@ -15,7 +15,16 @@ import useAuth from 'utils/hooks/useAuth';
 
 import InfraLoadingState from './InfraLoadingState';
 
-const BOARDS: Board[] = ['trains', 'map', 'macro', 'std', 'sdd', 'tables', 'conflicts'];
+const BOARDS: Board[] = [
+  'trains',
+  'map',
+  'macro',
+  'std',
+  'sdd',
+  'chronogram',
+  'tables',
+  'conflicts',
+];
 
 type ScenarioHeaderProps = {
   activeBoards: Set<Board>;

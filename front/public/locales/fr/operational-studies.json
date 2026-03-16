@@ -4,6 +4,7 @@
     "std": "Graphique Espace Temps"
   },
   "boards": {
+    "chronogram": "Chronogramme",
     "conflicts": "Conflits",
     "macro": "Macro",
     "map": "Carte",

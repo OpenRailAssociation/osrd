@@ -26,7 +26,15 @@ import type { Train, TimetableItemWithPathOps, PacedTrainId } from 'reducers/osr
 import type { Duration } from 'utils/duration';
 import type { ArrayElement } from 'utils/types';
 
-export type Board = 'trains' | 'map' | 'macro' | 'std' | 'sdd' | 'tables' | 'conflicts';
+export type Board =
+  | 'trains'
+  | 'map'
+  | 'macro'
+  | 'std'
+  | 'sdd'
+  | 'tables'
+  | 'conflicts'
+  | 'chronogram';
 
 export type PacedTrainWithPaced = Omit<TrainScheduleResponse, 'id' | 'paced'> & {
   paced: NonNullable<TrainScheduleResponse['paced']>;

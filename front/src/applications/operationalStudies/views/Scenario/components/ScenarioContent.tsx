@@ -126,7 +126,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
     [updateTrainDepartureTime, refreshNge]
   );
 
-  const simulationResultBoards = ['map', 'tables', 'std', 'sdd'] as Board[];
+  const simulationResultBoards = ['map', 'tables', 'std', 'sdd', 'chronogram'] as Board[];
   const isBoardSimulationResultsActive = simulationResultBoards.some((board) =>
     activeBoards.has(board)
   );
