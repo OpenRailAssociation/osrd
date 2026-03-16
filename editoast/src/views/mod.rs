@@ -523,9 +523,12 @@ async fn authentication_extraction_middleware(mut req: Request, next: Next) -> R
     })?;
 
     tracing::info!(?authn, "authentication complete");
-
-    req.extensions_mut().insert(authn);
-    Ok(next.run(req).await)
+    Ok(tracing::info_span!("authentication", ?authn)
+        .in_scope(move || {
+            req.extensions_mut().insert(authn.clone());
+            next.run(req).in_current_span()
+        })
+        .await)
 }
 
 /// Represents the bundle of information about the issuer of a request
