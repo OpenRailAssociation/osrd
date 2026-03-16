@@ -7,12 +7,14 @@ import type { TimeChartContextType, DrawingFunction } from '../../common/types';
 import { CHRONOGRAM_HEADER_HEIGHT, LEVEL_CROSSING_ITEM_HEIGHT } from '../lib/const';
 import { ChronogramContext } from '../lib/context';
 import type { OccupancyBlock } from '../lib/types';
+import { formatDuration } from '../utils/format';
 
 const BLOCK_HEIGHT = 10;
 const PADDING_TOP = 18;
 const STRIPE_SPACING = 24;
 const STRIPE_WIDTH = 8;
 const TRACKS_INTERVALS = 3;
+const CLOSING_TIME_Y_OFFSET = 5;
 
 const drawTrackLines = (
   ctx: CanvasRenderingContext2D,
@@ -80,6 +82,24 @@ const drawGapBlock = (
   }
 };
 
+/** Draws the closing time text above an occupancy block */
+const drawClosingTime = (
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  blockWidth: number,
+  text: string
+) => {
+  ctx.save();
+  ctx.font = '12px IBM Plex Sans';
+
+  const textWidth = ctx.measureText(text).width;
+  const startX = textWidth < blockWidth ? x + (blockWidth - textWidth) / 2 : x;
+
+  ctx.fillText(text, startX, y - CLOSING_TIME_Y_OFFSET, blockWidth);
+  ctx.restore();
+};
+
 const drawBlocks = (
   ctx: CanvasRenderingContext2D,
   blocks: OccupancyBlock[],
@@ -98,6 +118,13 @@ const drawBlocks = (
       drawGapBlock(ctx, bandTop, previousBlockEndX, blockStartX);
     }
 
+    drawClosingTime(
+      ctx,
+      blockStartX,
+      bandTop,
+      blockWidth,
+      formatDuration(block.startTime, block.endTime)
+    );
     drawStripedBlock(ctx, blockStartX, bandTop, blockWidth);
 
     previousBlockEndX = blockEndX;
