@@ -33,6 +33,8 @@ mod test_app;
 use ::authz::Authorization;
 use ::authz::Infra;
 use ::authz::StorageDriver;
+use ::authz::v2::special_authorizers;
+use axum::Extension;
 use common::Version;
 use fga::client::Limits;
 #[cfg(test)]
@@ -41,6 +43,7 @@ use tracing::Instrument;
 
 use ::core::str;
 use std::collections::HashSet;
+use std::convert::Infallible;
 use std::env;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -545,6 +548,137 @@ async fn authentication_extraction_middleware(mut req: Request, next: Next) -> R
         .await)
 }
 
+/// Takes an authenticated request and performs a few verifications
+///
+/// - the origin user exists in the database, if not we create it
+/// - the impersonator must be an admin
+/// - the impersonated user must already exist in the database, we do not create it if it does not
+/// - push the roles of the origin user in the request extensions
+async fn authentication_validation_middleware(
+    Extension(authn): Extension<crate::authentication::Authentication>,
+    State(AppState {
+        db_pool, regulator, ..
+    }): State<AppState>,
+    mut req: Request,
+    next: Next,
+) -> Result<Response> {
+    use ::authz::v2::Authorizer as _;
+
+    let openfga = regulator.openfga(); // to remove once OpenFGA is in the AppState directly
+    let conn = db_pool.get().await?;
+
+    let is_impersonation = matches!(
+        authn,
+        crate::authentication::Authentication::Impersonating { .. }
+    );
+
+    fn origin_user_roles(
+        user: Option<editoast_models::User>,
+        identity: &str,
+        header_name: &str,
+    ) -> Option<::authz::v2::Protected<Vec<Role>>> {
+        user.inspect(|user| {
+            if user.name != header_name {
+                tracing::warn!(
+                    identity,
+                    header = header_name,
+                    stored = user.name,
+                    "provided name for identity differ from stored",
+                );
+            }
+        })
+        .map(|user| ::authz::v2::subject_roles(::authz::Subject::user(user.id)))
+    }
+
+    async fn register_origin_user(
+        conn: database::DbConnection,
+        (identity, name): (&str, &str),
+    ) -> Result<::authz::v2::Protected<Vec<Role>>> {
+        tracing::info!(identity, name, "registering new user");
+        let user =
+            editoast_models::User::register(conn, vec![identity.to_owned()], name.to_owned())
+                .await?;
+        Ok(::authz::v2::subject_roles(::authz::Subject::user(user.id)))
+    }
+
+    let roles_prot = conn
+        .transaction(async move |conn| {
+            let roles_prot = match &authn {
+                crate::authentication::Authentication::Authenticated { identity, name } => {
+                    let user =
+                        editoast_models::User::retrieve_by_identity(identity, conn.clone()).await?;
+                    origin_user_roles(user, identity, name)
+                }
+                crate::authentication::Authentication::Impersonating {
+                    impersonator_identity,
+                    impersonator_name,
+                    impersonated_identity,
+                } => {
+                    let (impersonator, impersonated) = tokio::try_join!(
+                        // The batching API is annoying, that's the best I can do concisely for now. We should
+                        // work on the DB user management that got worse since we added multiple identities support.
+                        editoast_models::User::retrieve_by_identity(
+                            impersonator_identity,
+                            conn.clone()
+                        ),
+                        editoast_models::User::retrieve_by_identity(
+                            impersonated_identity,
+                            conn.clone()
+                        )
+                    )?;
+                    if impersonated.is_none() {
+                        return Err::<_, crate::error::InternalError>(
+                            AuthorizationError::ImpersonatedUserNotFound {
+                                identity: impersonated_identity.to_owned(),
+                            }
+                            .into(),
+                        );
+                    }
+                    origin_user_roles(impersonator, impersonator_identity, impersonator_name)
+                }
+                crate::authentication::Authentication::Unauthenticated
+                | crate::authentication::Authentication::Skip { .. } => None,
+            };
+
+            let roles_prot = match roles_prot {
+                // origin user does exist, we use the Protected afterwards
+                Some(roles_prot) => roles_prot,
+                // origin user does not exist
+                None => {
+                    // if there is an origin user (no skip or unauthenticated)
+                    if let Some(origin) = authn.origin() {
+                        register_origin_user(conn, origin).await?
+                    } else {
+                        ::authz::v2::Protected::default()
+                    }
+                }
+            };
+
+            Ok(roles_prot)
+        })
+        .await?;
+
+    // A failed OpenFGA request does not invalidate the creation of a new user
+    let bypass = special_authorizers::Authorize(openfga);
+    let Ok::<_, Infallible>(access) = bypass.authorize(roles_prot).await;
+    let Ok::<_, Infallible>(roles) = access.access().await.map_err(AuthorizationError::from)?;
+
+    if is_impersonation {
+        if !roles.contains(&Role::Admin) {
+            return Err(AuthorizationError::ForbiddenImpersonation.into());
+        } else {
+            tracing::info!("impersonation enabled");
+        }
+    }
+
+    Ok(tracing::info_span!("authentication validation", ?roles)
+        .in_scope(move || {
+            req.extensions_mut().insert(roles);
+            next.run(req).in_current_span()
+        })
+        .await)
+}
+
 /// Represents the bundle of information about the issuer of a request
 /// that can be extracted form recognized headers.
 #[derive(Debug, Clone)]
@@ -755,7 +889,7 @@ async fn authentication_middleware(
 
 pub type AuthorizerError = ::authz::Error<<PgAuthDriver as ::authz::StorageDriver>::Error>;
 
-#[derive(Debug, Error, EditoastError)]
+#[derive(Debug, Error, derive_more::From, EditoastError)]
 #[editoast_error(base_id = "authz")]
 pub enum AuthorizationError {
     #[error("Unauthorized — user must be authenticated")]
@@ -772,7 +906,8 @@ pub enum AuthorizationError {
     ImpersonatedUserNotFound { identity: String },
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    AuthError(#[from] AuthorizerError),
+    #[from(AuthorizerError, fga::client::RequestFailure)]
+    AuthError(AuthorizerError),
     #[error(transparent)]
     #[editoast_error(status = 500)]
     DbError(#[from] database::db_connection_pool::DatabasePoolError),
@@ -1101,6 +1236,10 @@ impl Server {
             .route_layer(axum::middleware::from_fn_with_state(
                 app_state.clone(),
                 authentication_middleware,
+            ))
+            .route_layer(axum::middleware::from_fn_with_state(
+                app_state.clone(),
+                authentication_validation_middleware,
             ))
             .route_layer(axum::middleware::from_fn(
                 authentication_extraction_middleware,
