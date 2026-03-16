@@ -1,6 +1,3 @@
-use std::str::FromStr;
-
-use chrono::DateTime;
 use chrono::Duration as ChronoDuration;
 use chrono::Utc;
 use database::DbConnection;
@@ -25,35 +22,13 @@ use schemas::fixtures::simple_created_exception_with_change_groups;
 use schemas::fixtures::simple_modified_exception_with_change_groups;
 use schemas::infra::InfraObject;
 use schemas::infra::RailJson;
-use schemas::infra::TrackOffset;
-use schemas::paced_train::ConstraintDistributionChangeGroup;
 use schemas::paced_train::ExceptionType;
-use schemas::paced_train::InitialSpeedChangeGroup;
-use schemas::paced_train::LabelsChangeGroup;
-use schemas::paced_train::OptionsChangeGroup;
 use schemas::paced_train::Paced;
 use schemas::paced_train::PacedTrainException;
-use schemas::paced_train::PathAndScheduleChangeGroup;
-use schemas::paced_train::RollingStockCategoryChangeGroup;
-use schemas::paced_train::RollingStockChangeGroup;
-use schemas::paced_train::SpeedLimitTagChangeGroup;
-use schemas::paced_train::StartTimeChangeGroup;
 use schemas::paced_train::TrainNameChangeGroup;
 use schemas::paced_train::TrainSchedule;
-use schemas::primitives::Identifier;
-use schemas::primitives::NonBlankString;
 use schemas::primitives::OSRDObject;
 use schemas::rolling_stock::SubCategoryColor;
-use schemas::train_schedule::Comfort;
-use schemas::train_schedule::Distribution;
-use schemas::train_schedule::MarginValue;
-use schemas::train_schedule::Margins;
-use schemas::train_schedule::OperationalPointPartReference;
-use schemas::train_schedule::OperationalPointReference;
-use schemas::train_schedule::PathItem;
-use schemas::train_schedule::PathItemLocation;
-use schemas::train_schedule::ScheduleItem;
-use schemas::train_schedule::TrainScheduleOptions;
 
 use crate::infra_cache::operation::create::apply_create_operation;
 use crate::models;
@@ -139,91 +114,7 @@ pub fn create_created_exception_with_change_groups(key: &str) -> PacedTrainExcep
         key: key.into(),
         exception_type: ExceptionType::Created {},
         disabled: false,
-        change_groups: TrainScheduleExceptionChangeGroups {
-            train_name: Some(TrainNameChangeGroup {
-                value: "created_exception_train_name".into(),
-            }),
-            constraint_distribution: Some(ConstraintDistributionChangeGroup {
-                value: Distribution::Mareco,
-            }),
-            initial_speed: Some(InitialSpeedChangeGroup { value: 10.0 }),
-            labels: Some(LabelsChangeGroup {
-                value: vec!["Label 1".to_string(), "Label 3".to_string()],
-            }),
-            options: Some(OptionsChangeGroup {
-                value: TrainScheduleOptions::default(),
-            }),
-            path_and_schedule: Some(PathAndScheduleChangeGroup {
-                power_restrictions: vec![],
-                schedule: vec![
-                    ScheduleItem {
-                        at: NonBlankString("aa".to_string()),
-                        ..Default::default()
-                    },
-                    ScheduleItem {
-                        at: NonBlankString("bb".to_string()),
-                        ..Default::default()
-                    },
-                    ScheduleItem {
-                        at: NonBlankString("cc".to_string()),
-                        ..Default::default()
-                    },
-                    ScheduleItem {
-                        at: NonBlankString("dd".to_string()),
-                        ..Default::default()
-                    },
-                ],
-                path: vec![
-                    PathItem {
-                        id: "aa".into(),
-                        location: PathItemLocation::TrackOffset(TrackOffset {
-                            offset: 300,
-                            track: Identifier("TC0".to_string()),
-                        }),
-                    },
-                    PathItem {
-                        id: "bb".into(),
-                        location: PathItemLocation::OperationalPointPartReference(
-                            OperationalPointPartReference {
-                                operational_point: OperationalPointReference::Id {
-                                    operational_point: Identifier("Mid_East_station".to_string()),
-                                },
-                                local_track_name: None,
-                            },
-                        ),
-                    },
-                    PathItem {
-                        id: "cc".into(),
-                        location: PathItemLocation::TrackOffset(TrackOffset {
-                            offset: 300,
-                            track: Identifier("TC1".to_string()),
-                        }),
-                    },
-                    PathItem {
-                        id: "dd".into(),
-                        location: PathItemLocation::TrackOffset(TrackOffset {
-                            offset: 300,
-                            track: Identifier("TC2".to_string()),
-                        }),
-                    },
-                ],
-                margins: Margins {
-                    boundaries: vec![],
-                    values: vec![MarginValue::Percentage(5.0)],
-                },
-            }),
-            rolling_stock: Some(RollingStockChangeGroup {
-                rolling_stock_name: "simulation_rolling_stock".into(),
-                comfort: Comfort::AirConditioning,
-            }),
-            rolling_stock_category: Some(RollingStockCategoryChangeGroup { value: None }),
-            speed_limit_tag: Some(SpeedLimitTagChangeGroup {
-                value: Some(NonBlankString("GB".into())),
-            }),
-            start_time: Some(StartTimeChangeGroup {
-                value: DateTime::<Utc>::from_str("2025-05-15T15:10:00+02:00").unwrap(),
-            }),
-        },
+        change_groups: TrainScheduleExceptionChangeGroups::fake_created(),
     }
 }
 
