@@ -252,7 +252,7 @@ const TrainList = ({
   );
 
   return (
-    <Virtualizer overscan={15}>
+    <Virtualizer>
       {timetableMode === 'calendar' && trainsToItems(timetableItemsWithDetails)}
       {timetableMode === 'trainScheduleSet' &&
         (timetableItemsByTrainScheduleSets ? (
