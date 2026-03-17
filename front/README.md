@@ -49,7 +49,22 @@ to open OSRD, as requests must pass through the `gateway`.
 
 Make sure you configure your IDE to enable Oxfmt and ESLint integrations.
 
-For example, in VSCode, make sure to install and enable both the [Oxc](https://marketplace.visualstudio.com/items?itemName=oxc.oxc-vscode) and [ESLint](https://github.com/microsoft/vscode-eslint) extensions.
+### VSCode
+
+To lint your code directly from your VSCode editor, enable the [ESLint extension](https://github.com/microsoft/vscode-eslint).
+
+Also, make sure to install the [Oxc extension](https://marketplace.visualstudio.com/items?itemName=oxc.oxc-vscode), and to configure it in `.vscode/settings.json` like this:
+
+```jsonc
+{
+  // ...your previous settings...
+  "oxc.enable.oxfmt": true,
+  "oxc.requireConfig": false,
+  "oxc.fmt.configPath": "front/.oxfmtrc.json",
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "oxc.oxc-vscode"
+}
+```
 
 > [!NOTE]
 > Make sure the extension or integration you use inside your IDE adds `--flag v10_config_lookup_from_file`
