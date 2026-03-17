@@ -60,7 +60,7 @@ const TrainScheduleSetMenuItem = ({
         <div className="title">
           <div className="name">
             <span>{trainScheduleSet.name}</span>
-            {/* 
+            {/*
               If the item is imported as a ref, we display the icon, 
               Same for disable because it can only be a ref 
             */}
