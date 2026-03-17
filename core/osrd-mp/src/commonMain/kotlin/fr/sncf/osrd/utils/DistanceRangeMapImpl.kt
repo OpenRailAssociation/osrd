@@ -169,11 +169,33 @@ data class DistanceRangeMapImpl<T>(
     }
 
     override fun get(offset: Distance): T? {
-        // TODO: use a binary search
-        for (entry in this.reversed()) {
-            if (entry.lower <= offset && offset <= entry.upper) return entry.value
+        val i = bounds.binarySearch { it.compareTo(offset) }
+        return if (i == bounds.size - 1) {
+            // Here, either `offset` is the upper bound of the map, or the map is empty. In the
+            // first case, we return the last value to replicate the old behavior of `get` (and not
+            // break the ETCS simulator...). In the second case, `values` is empty so we return
+            // `null`.
+            values.lastOrNull()
+        } else if (i >= 0) {
+            // Here, we have `0 < i <= bounds.size-2 == values.size-1` so the value is `values[i]`.
+            // In case `values[i]` is null, `i` is guaranteed to be one or greater, and then we
+            // return the previous value to replicate the old behavior of `get` (and not break the
+            // ETCS simulator)
+            values[i] ?: values[i - 1]
+        } else if (i == -1 || i == -bounds.size - 1) {
+            // When [i] is negative, [binarySearch] specifies that inserting [offset] at index
+            // `-i - 1` keeps [bounds] sorted. This means that:
+            // - when [i] is -1, [offset] points to the left of the lowest bound, and therefore out
+            //   of bounds (inserting [offset] at `-(-1) - 1 == 0` would keep bounds sorted.
+            // - when [i] is `-bounds.size - 1`, [offset] points to the right of the highest bound
+            //   (would insert [offset] at `-(-bounds.size - 1) - 1 == bounds.size`)
+            null
+        } else {
+            // - otherwise, `-i - 1` is the index of the upper bound of the range containing
+            //   [offset], so we have to get the value below it. Here, we have
+            //   `-bounds.size <= i <= -2`, so `0 <= -i - 2 <= values.size - 1`.
+            values[-i - 2]
         }
-        return null
     }
 
     override fun clone(): DistanceRangeMap<T> {
