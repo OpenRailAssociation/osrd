@@ -268,8 +268,9 @@ const useTimesStopsTableData = (
 
     let formattedRows: TimesStopsRowNew[] = [];
 
-    // Case 1: Valid train with simulation results
-    if (stableIsValid && stableTrain && stableOPs) {
+    // Case 1: Path is known show all OPs on path (intermediate OPs included).
+    // Computed arrival times are only filled in when simulation results are available.
+    if (stableOPs) {
       stableOPs.forEach((op, opIndex) => {
         const trackName = op.part.local_track_name;
 
@@ -288,17 +289,20 @@ const useTimesStopsTableData = (
             opOnPathIndex: opIndex,
           });
         } else if (!displayOnlyPathSteps) {
-          const matchingReportTrainIndex = stableTrain.positions.findIndex(
-            (position) => position === op.position
-          );
-          const computedArrivalMs =
-            matchingReportTrainIndex === -1
-              ? interpolateValue(stableTrain, op.position, 'times')
-              : stableTrain.times[matchingReportTrainIndex];
-          const computedArrival =
-            computedArrivalMs !== undefined
-              ? new Duration({ milliseconds: computedArrivalMs })
-              : undefined;
+          let computedArrival: Duration | undefined;
+          if (stableTrain) {
+            const matchingReportTrainIndex = stableTrain.positions.findIndex(
+              (position) => position === op.position
+            );
+            const computedArrivalMs =
+              matchingReportTrainIndex === -1
+                ? interpolateValue(stableTrain, op.position, 'times')
+                : stableTrain.times[matchingReportTrainIndex];
+            computedArrival =
+              computedArrivalMs !== undefined
+                ? new Duration({ milliseconds: computedArrivalMs })
+                : undefined;
+          }
 
           formattedRows.push({
             ...buildTableRow({

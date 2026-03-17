@@ -338,13 +338,13 @@ const SimulationResults = ({
                 timetableItemsWithDetails={timetableItemsWithDetails}
                 upsertTimetableItems={upsertTimetableItems}
                 isSimulationDataLoading={isSimulationDataLoading}
+                operationalPointsOnPath={simulationResults.pathProperties?.operationalPoints}
                 {...(simulationResults?.isValid &&
                   simulationSummary?.isValid && {
                     isValid: true,
                     simulatedTrain: simulationResults.simulation.final_output,
                     simulatedPathItemTimes: simulationSummary.pathItemTimes,
                     simulatedPathItemRespect: simulationSummary.pathItemRespect,
-                    operationalPointsOnPath: simulationResults.pathProperties.operationalPoints,
                   })}
               />
             </div>
