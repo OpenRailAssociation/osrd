@@ -47,9 +47,9 @@ to open OSRD, as requests must pass through the `gateway`.
 
 ## IDE integrations
 
-Make sure you configure your IDE to enable Prettier and ESLint integrations.
+Make sure you configure your IDE to enable Oxfmt and ESLint integrations.
 
-For example, in VSCode, make sure to install and enable both the [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) and [ESLint](https://github.com/microsoft/vscode-eslint) extensions.
+For example, in VSCode, make sure to install and enable both the [Oxc](https://marketplace.visualstudio.com/items?itemName=oxc.oxc-vscode) and [ESLint](https://github.com/microsoft/vscode-eslint) extensions.
 
 > [!NOTE]
 > Make sure the extension or integration you use inside your IDE adds `--flag v10_config_lookup_from_file`
@@ -243,21 +243,18 @@ keys. You can use `./scripts/i18n-order-checker.sh --fix` to automatically sort 
 
 ### Javascript / Javascript-React
 
-- ESLint is used as linter and prettier as formatter. Both are configured as devDependencies to
+- ESLint is used as linter and oxfmt as formatter. Both are configured as devDependencies to
   enforce default eslint configuration eventually overridden by
   [airbnb rules](https://airbnb.io/javascript/) translation. A few rules (see eslintrc) has been
   disabled and will be re-enabled in the near future:
   - 'no-named-as-default': 'off',
   - 'react/jsx-props-no-spreading': 0,
   - 'react/static-property-placement': 0,
-- eslint rules incompatible with prettier usage are disabled, yet these styling errors will be
-  displayed as prettier issues.
-- Do not set your IDE to auto format with current prettier rules for now, as some old files will be
-  widely updated and less readable for reviewers.
+- eslint rules incompatible with oxfmt usage are disabled, yet these styling errors will be
+  displayed as oxfmt issues.
 - Please push commits exclusively dedicated to styling issues
-- _For VSCode Users_: Install
-  [Prettier - Code Formatter Extension](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
-  and follow instructions.
+- _For VSCode Users_: Install [Oxc](https://marketplace.visualstudio.com/items?itemName=oxc.oxc-vscode)
+  and follow instructions from [Oxfmt documentation](https://oxc.rs/docs/guide/usage/formatter/editors.html#vs-code).
 
 You may also use `npm run lint-fix` to format/lint.
 

@@ -2,7 +2,6 @@ import js from '@eslint/js';
 import vitestPlugin from '@vitest/eslint-plugin';
 import importPlugin from 'eslint-plugin-import';
 import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';
-import prettierPluginRecommended from 'eslint-plugin-prettier/recommended';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import tseslint from 'typescript-eslint';
@@ -23,7 +22,6 @@ export default [
     ],
   },
   ...tseslint.config(js.configs.recommended, ...tseslint.configs.recommended),
-  prettierPluginRecommended,
   importPlugin.flatConfigs.recommended,
   importPlugin.flatConfigs.typescript,
   reactPlugin.configs.flat.recommended,
@@ -140,7 +138,6 @@ export default [
       'no-param-reassign': 'off',
       'no-use-before-define': 'off',
       'no-restricted-syntax': 'off',
-      'prettier/prettier': ['warn'],
       'react/forbid-prop-types': 'off',
       'react/jsx-filename-extension': 'off',
       'react/jsx-no-useless-fragment': 'error',

@@ -32,8 +32,8 @@
     "watch": "rollup -c -w",
     "test": "vitest run",
     "prepublishOnly": "npm run clean && npm run build",
-    "lint": "eslint src --max-warnings 0 && prettier '**/*.{css,json}' --check --ignore-path ../.prettierignore",
-    "lint:fix": "eslint src --fix && prettier '**/*.{css,json}' --write --ignore-path ../.prettierignore"
+    "lint": "eslint src --max-warnings 0 && oxfmt . --check",
+    "lint:fix": "eslint src --fix && oxfmt . --write"
   },
   "peerDependencies": {
     "classnames": ">=2.5",

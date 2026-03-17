@@ -17,8 +17,8 @@
     "clean": "rimraf storybook-static",
     "start": "storybook dev -p 6006",
     "build": "storybook build",
-    "lint": "eslint stories .storybook --max-warnings 0 && prettier '**/*.{css,json}' --check --ignore-path ../.prettierignore",
-    "lint:fix": "eslint stories .storybook --fix && prettier '**/*.{css,json}' --write --ignore-path ../.prettierignore"
+    "lint": "eslint stories .storybook --max-warnings 0 && oxfmt . --check",
+    "lint:fix": "eslint stories .storybook --fix && oxfmt . --write"
   },
   "dependencies": {
     "@osrd-project/ui-charts": "0.0.1-dev",

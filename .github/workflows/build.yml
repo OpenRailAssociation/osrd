@@ -652,11 +652,10 @@ jobs:
           docker load --input ./osrd-front-tests.tar
 
       - name: Check code formatting
-        # TODO: Once we migrate to eslint v9 and add support for json and css this can be dropped
         run: |
           docker run --name=front-format --net=host \
             ${{ fromJSON(needs.build-front.outputs.stable_tags).front-tests }} \
-            sh -c "npx prettier . --check && cd ui && npx prettier . --check"
+            sh -c "npx oxfmt . --check && cd ui && npx oxfmt . --check"
 
           exit $(docker wait front-format)
 

@@ -3,7 +3,6 @@ import { join } from 'node:path';
 import js from '@eslint/js';
 import { defineConfig, globalIgnores } from 'eslint/config';
 import importPlugin from 'eslint-plugin-import';
-import prettierPluginRecommended from 'eslint-plugin-prettier/recommended';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import { configs as storybookPluginConfigs } from 'eslint-plugin-storybook';
@@ -16,7 +15,6 @@ export default defineConfig([
   globalIgnores(['**/ui-icons/src/**', '**/dist/**', '**/storybook-static/**']),
   js.configs.recommended,
   tsEslintConfigs.recommended,
-  prettierPluginRecommended,
   importPlugin.flatConfigs.recommended,
   importPlugin.flatConfigs.typescript,
   reactPlugin.configs.flat.recommended,
@@ -158,7 +156,6 @@ export default defineConfig([
       'no-named-as-default': 'off',
       'no-param-reassign': 0,
       'no-use-before-define': 'off',
-      'prettier/prettier': ['warn'],
       'react/forbid-prop-types': 'off',
       'react/jsx-filename-extension': 'off',
       'react/jsx-no-useless-fragment': 'error',
