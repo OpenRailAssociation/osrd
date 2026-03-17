@@ -1907,12 +1907,14 @@ export type PostLevelCrossingOccupancyApiResponse =
           type: 'base';
         }
       | {
+          exception_id: number;
           exception_key: string;
           index: number;
           train_schedule_id: number;
           type: 'modified';
         }
       | {
+          exception_id: number;
           exception_key: string;
           train_schedule_id: number;
           type: 'created';
@@ -2573,12 +2575,14 @@ export type PostTrainSchedulesTrackOccupancyApiResponse =
           type: 'base';
         }
       | {
+          exception_id: number;
           exception_key: string;
           index: number;
           train_schedule_id: number;
           type: 'modified';
         }
       | {
+          exception_id: number;
           exception_key: string;
           train_schedule_id: number;
           type: 'created';
@@ -4363,12 +4367,14 @@ export type Conflict = {
         type: 'base';
       }
     | {
+        exception_id: number;
         exception_key: string;
         index: number;
         train_schedule_id: number;
         type: 'modified';
       }
     | {
+        exception_id: number;
         exception_key: string;
         train_schedule_id: number;
         type: 'created';
