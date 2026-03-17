@@ -4887,6 +4887,7 @@ export type ProjectPathForm = {
   electrical_profile_set_id?: number | null;
   ids: number[];
   infra_id: number;
+  timetable_id: number;
   track_section_ranges: {
     /** The beginning of the range in mm. */
     begin: number;
