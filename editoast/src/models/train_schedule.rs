@@ -186,6 +186,7 @@ impl TrainSchedule {
         }
     }
 
+    // TODO remove it
     /// Returns an iterator over "created" train exceptions with their IDs and schedules.
     fn get_created_occurrences_exceptions(
         &self,
@@ -195,7 +196,11 @@ impl TrainSchedule {
             .filter(|exception| matches!(exception.exception_type, ExceptionType::Created { .. }))
             .map(|exception| {
                 (
-                    OccurrenceId::new_created(self.id, exception.key.clone()),
+                    OccurrenceId::new_created(
+                        self.id,
+                        exception.id.unwrap_or_default(), // TODO use only id
+                        exception.key.clone(),
+                    ),
                     self.apply_exception(exception),
                 )
             })
@@ -226,6 +231,7 @@ impl TrainSchedule {
             .collect()
     }
 
+    // TODO remove it
     /// Returns an iterator over all train occurrences, including:
     /// - base occurrences, minus the ones disabled by a modified exception
     /// - occurrences modified by exceptions (which replace a base one)
@@ -258,6 +264,7 @@ impl TrainSchedule {
                     let occurrence_id = OccurrenceId::new_modified(
                         self.id,
                         occurrence_index,
+                        exception.id.unwrap_or_default(), // TODO use only id
                         exception.key.clone(),
                     );
                     *occurrence = (occurrence_id, self.apply_exception(exception));
@@ -289,6 +296,91 @@ impl TrainSchedule {
         } else {
             1
         }
+    }
+
+    /// Returns an iterator over "created" train exceptions with their IDs and schedules.
+    fn get_created_occurrences_exceptions_v2(
+        &self,
+        exceptions: &[TrainScheduleException],
+    ) -> impl Iterator<Item = (OccurrenceId, TrainOccurrence)> {
+        exceptions
+            .iter()
+            .filter(|exception| exception.occurrence_index.is_none())
+            .map(|exception| {
+                (
+                    OccurrenceId::new_created(
+                        self.id,
+                        exception.id,
+                        exception
+                            .key
+                            .clone()
+                            .unwrap_or_else(|| exception.id.to_string()),
+                    ),
+                    self.apply_train_schedule_exception(exception),
+                )
+            })
+    }
+
+    /// Returns an iterator over all train occurrences, including:
+    /// - base occurrences, minus the ones disabled by a modified exception
+    /// - occurrences modified by exceptions (which replace a base one)
+    /// - occurrences created by exceptions (additional trains)
+    ///
+    /// If it's not a paced train (i.e., no time window), this will return the single train schedule.
+    ///
+    /// This function replaces any base occurrence that has a `Modified` exception,
+    /// and appends any `Created` exceptions as new trains.
+    ///
+    /// The result is sorted by `start_time` to reflect the chronological order of the trains.
+    pub fn iter_occurrences_v2(
+        &self,
+        exceptions: &[TrainScheduleException],
+    ) -> impl Iterator<Item = (OccurrenceId, TrainOccurrence)> {
+        let mut base_occurrences = self.get_base_occurrences();
+
+        let modified_exceptions = exceptions.iter().filter_map(|e| {
+            e.occurrence_index
+                .map(|occurrence_index| (occurrence_index, e))
+        });
+
+        let mut to_remove = vec![false; base_occurrences.len()];
+        // Modify corresponding occurrences.
+        for (occurrence_index, exception) in modified_exceptions {
+            if let Some(occurrence) = base_occurrences.get_mut(occurrence_index as usize) {
+                if exception.disabled {
+                    to_remove[occurrence_index as usize] = true;
+                } else {
+                    let occurrence_id = OccurrenceId::new_modified(
+                        self.id,
+                        occurrence_index as usize,
+                        exception.id,
+                        exception
+                            .key
+                            .clone()
+                            .unwrap_or_else(|| exception.id.to_string()),
+                    );
+                    *occurrence = (
+                        occurrence_id,
+                        self.apply_train_schedule_exception(exception),
+                    );
+                }
+            }
+        }
+        // Remove disabled occurrences.
+        let occurrences = base_occurrences
+            .into_iter()
+            .zip(to_remove)
+            .filter_map(|(occ, disabled)| if disabled { None } else { Some(occ) });
+
+        let created_occurrences = self
+            .get_created_occurrences_exceptions_v2(exceptions)
+            .collect::<Vec<_>>();
+        dbg!(created_occurrences);
+
+        occurrences
+            .into_iter()
+            .chain(self.get_created_occurrences_exceptions_v2(exceptions))
+            .sorted_by_key(|(_, ts)| ts.start_time)
     }
 }
 
@@ -378,11 +470,13 @@ pub enum OccurrenceId {
     Modified {
         train_schedule_id: i64,
         index: usize,
-        exception_key: String,
+        exception_id: i64,
+        exception_key: String, // TODO remove it
     },
     Created {
         train_schedule_id: i64,
-        exception_key: String,
+        exception_id: i64,
+        exception_key: String, // TODO remove it
     },
 }
 
@@ -396,18 +490,20 @@ impl OccurrenceId {
     }
 
     /// Create a new `Occurrence::Modified` without an exception key.
-    pub fn new_modified(id: i64, index: usize, exception_key: String) -> Self {
+    pub fn new_modified(id: i64, index: usize, exception_id: i64, exception_key: String) -> Self {
         OccurrenceId::Modified {
             train_schedule_id: id,
             index,
+            exception_id,
             exception_key,
         }
     }
 
     /// Creates a new `Occurrence::Created`.
-    pub fn new_created(id: i64, exception_key: String) -> Self {
+    pub fn new_created(id: i64, exception_id: i64, exception_key: String) -> Self {
         OccurrenceId::Created {
             train_schedule_id: id,
+            exception_id,
             exception_key,
         }
     }
@@ -423,13 +519,15 @@ impl Display for OccurrenceId {
             OccurrenceId::Modified {
                 train_schedule_id: id,
                 index,
-                exception_key,
-            } => write!(f, "{}@{}#{}", id, exception_key, index),
+                exception_id,
+                ..
+            } => write!(f, "{}@{}#{}", id, exception_id, index),
             OccurrenceId::Created {
                 train_schedule_id: id,
-                exception_key,
+                exception_id,
+                ..
             } => {
-                write!(f, "{}@{}", id, exception_key)
+                write!(f, "{}@{}", id, exception_id)
             }
         }
     }
@@ -449,11 +547,13 @@ mod tests {
     use chrono::DateTime;
     use chrono::Utc;
     use database::DbConnectionPoolV2;
+    use editoast_models::TrainScheduleException;
     use editoast_models::prelude::*;
     use editoast_models::rolling_stock::TrainMainCategory;
     use editoast_models::tags::Tags;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
+    use schemas::TrainScheduleExceptionChangeGroups;
     use schemas::paced_train::PacedTrainException;
     use schemas::paced_train::RollingStockCategoryChangeGroup;
     use schemas::paced_train::StartTimeChangeGroup;
@@ -622,14 +722,46 @@ mod tests {
 
     #[tokio::test]
     async fn iter_occurrences_with_exceptions() {
-        let exception_1 = create_modified_exception_with_change_groups("key_1", 1);
-        let exception_2 = create_created_exception_with_change_groups("key_2");
-        let mut exception_3 = create_modified_exception_with_change_groups("key_3", 0);
-        exception_3.disabled = true;
+        let exception_1: schemas::TrainScheduleException = TrainScheduleException {
+            id: 1,
+            timetable_id: 1,
+            train_schedule_id: 1,
+            key: Some("key_1".into()),
+            occurrence_index: Some(1),
+            disabled: false,
+            change_groups: TrainScheduleExceptionChangeGroups::fake_modified(),
+        }
+        .into();
 
-        let paced_train =
-            create_paced_train(vec![exception_1.clone(), exception_2.clone(), exception_3]);
-        let occurrences: Vec<_> = paced_train.iter_occurrences().collect();
+        let exception_2: schemas::TrainScheduleException = TrainScheduleException {
+            id: 2,
+            timetable_id: 1,
+            train_schedule_id: 1,
+            key: Some("key_2".into()),
+            occurrence_index: None,
+            disabled: false,
+            change_groups: TrainScheduleExceptionChangeGroups::fake_created(),
+        }
+        .into();
+        let exception_3: schemas::TrainScheduleException = TrainScheduleException {
+            id: 3,
+            timetable_id: 1,
+            train_schedule_id: 1,
+            key: Some("key_3".into()),
+            occurrence_index: Some(0),
+            disabled: true,
+            change_groups: TrainScheduleExceptionChangeGroups::fake_modified(),
+        }
+        .into();
+
+        let paced_train = create_paced_train(vec![]);
+        let exceptions: Vec<schemas::TrainScheduleException> = vec![
+            exception_1.clone(),
+            exception_2.clone(),
+            exception_3.clone(),
+        ];
+
+        let occurrences: Vec<_> = paced_train.iter_occurrences_v2(&exceptions).collect();
 
         assert_eq!(occurrences.len(), 4);
 
@@ -664,9 +796,9 @@ mod tests {
         assert_eq!(
             types,
             vec![
-                OccurrenceId::new_modified(paced_train.id, 1, "key_1".to_string()),
+                OccurrenceId::new_modified(paced_train.id, 1, 1, "key_1".into()),
                 OccurrenceId::new_base(paced_train.id, 2),
-                OccurrenceId::new_created(paced_train.id, "key_2".to_string()),
+                OccurrenceId::new_created(paced_train.id, 2, "key_2".into()),
                 OccurrenceId::new_base(paced_train.id, 3),
             ]
         );
@@ -678,9 +810,21 @@ mod tests {
         exception_1.change_groups.start_time = Some(StartTimeChangeGroup {
             value: DateTime::<Utc>::from_str("2025-05-15T14:31:00+02:00").unwrap(),
         });
+        let exception_1: schemas::TrainScheduleException = TrainScheduleException {
+            id: 1,
+            timetable_id: 1,
+            train_schedule_id: 1,
+            key: Some("key_1".into()),
+            occurrence_index: Some(1),
+            disabled: false,
+            change_groups: exception_1.change_groups,
+        }
+        .into();
 
-        let paced_train = create_paced_train(vec![exception_1.clone()]);
-        let occurrences: Vec<_> = paced_train.iter_occurrences().collect();
+        let paced_train = create_paced_train(vec![]);
+        let occurrences: Vec<_> = paced_train
+            .iter_occurrences_v2(&vec![exception_1.clone()])
+            .collect();
 
         assert_eq!(occurrences.len(), 4);
 
@@ -716,7 +860,14 @@ mod tests {
             types,
             vec![
                 OccurrenceId::new_base(paced_train.id, 0),
-                OccurrenceId::new_modified(paced_train.id, 1, "key_1".to_string()),
+                OccurrenceId::new_modified(
+                    paced_train.id,
+                    1,
+                    exception_1.id,
+                    exception_1
+                        .key
+                        .unwrap_or_else(|| exception_1.id.to_string())
+                ),
                 OccurrenceId::new_base(paced_train.id, 2),
                 OccurrenceId::new_base(paced_train.id, 3),
             ]
