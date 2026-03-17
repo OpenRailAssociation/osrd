@@ -148,17 +148,6 @@
       "InvalidNumberOfDistances": "Excpected {{expected}} distances, but got {{found}}",
       "InvalidNumberOfRefs": "Expected at least two operational points references"
     },
-    "paced_train": {
-      "BatchNotFound": "'{{count}}' train schedule(s) could not be found",
-      "Database": "Internal error (database)",
-      "ExceptionNotFound": "Exception '{{exception_key}}' could not be found",
-      "InfraNotFound": "Infrastructure '{{infra_id}}' could not be found",
-      "NotFound": "Train schedule '{{train_schedule_id}}' could not be found",
-      "PathfindingFailed": "Pathfinding failed for paced train '{{train_schedule_id}}'",
-      "RollingStockNotFound": "Rolling Stock '{{rolling_stock_name}}' could not be found",
-      "SimulationFailed": "Simulation failed for train schedule '{{train_schedule_id}}'",
-      "TrainScheduleSetNotFound": "Train schedule set '{{train_schedule_set_id}}' could not be found"
-    },
     "pathfinding": {
       "Database": "Internal error (database)",
       "ElectricalProfilesOverlap": "Electrical Profile overlaps with others",
@@ -286,6 +275,17 @@
       "Database": "Internal error",
       "IdNotFound": "Towed rolling stock '{{towed_rolling_stock_id}}' could not be found",
       "IsLocked": "Towed rolling stock '{{towed_rolling_stock_id}}' is locked"
+    },
+    "train_schedule": {
+      "BatchNotFound": "'{{count}}' train schedule(s) could not be found",
+      "Database": "Internal error (database)",
+      "ExceptionNotFound": "Exception '{{exception_key}}' could not be found",
+      "InfraNotFound": "Infrastructure '{{infra_id}}' could not be found",
+      "NotFound": "Train schedule '{{train_schedule_id}}' could not be found",
+      "PathfindingFailed": "Pathfinding failed for train schedule '{{train_schedule_id}}'",
+      "RollingStockNotFound": "Rolling Stock '{{rolling_stock_name}}' could not be found",
+      "SimulationFailed": "Simulation failed for train schedule '{{train_schedule_id}}'",
+      "TrainScheduleSetNotFound": "Train schedule set '{{train_schedule_set_id}}' could not be found"
     },
     "train_schedule_exception": {
       "BatchNotFound": "'{{count}}' train schedule exception(s) could not be found",

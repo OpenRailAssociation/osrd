@@ -8474,7 +8474,7 @@ components:
         type:
           type: string
           enum:
-          - editoast:paced_train:BatchNotFound
+          - editoast:train_schedule:BatchNotFound
     EditoastTrainScheduleErrorDatabase:
       type: object
       required:
@@ -8493,7 +8493,7 @@ components:
         type:
           type: string
           enum:
-          - editoast:paced_train:Database
+          - editoast:train_schedule:Database
     EditoastTrainScheduleErrorExceptionNotFound:
       type: object
       required:
@@ -8517,7 +8517,7 @@ components:
         type:
           type: string
           enum:
-          - editoast:paced_train:ExceptionNotFound
+          - editoast:train_schedule:ExceptionNotFound
     EditoastTrainScheduleErrorInfraNotFound:
       type: object
       required:
@@ -8541,7 +8541,7 @@ components:
         type:
           type: string
           enum:
-          - editoast:paced_train:InfraNotFound
+          - editoast:train_schedule:InfraNotFound
     EditoastTrainScheduleErrorNotFound:
       type: object
       required:
@@ -8565,7 +8565,7 @@ components:
         type:
           type: string
           enum:
-          - editoast:paced_train:NotFound
+          - editoast:train_schedule:NotFound
     EditoastTrainScheduleErrorPathfindingFailed:
       type: object
       required:
@@ -8589,7 +8589,7 @@ components:
         type:
           type: string
           enum:
-          - editoast:paced_train:PathfindingFailed
+          - editoast:train_schedule:PathfindingFailed
     EditoastTrainScheduleErrorRollingStockNotFound:
       type: object
       required:
@@ -8613,7 +8613,7 @@ components:
         type:
           type: string
           enum:
-          - editoast:paced_train:RollingStockNotFound
+          - editoast:train_schedule:RollingStockNotFound
     EditoastTrainScheduleErrorSimulationFailed:
       type: object
       required:
@@ -8637,7 +8637,7 @@ components:
         type:
           type: string
           enum:
-          - editoast:paced_train:SimulationFailed
+          - editoast:train_schedule:SimulationFailed
     EditoastTrainScheduleErrorTrainScheduleSetNotFound:
       type: object
       required:
@@ -8661,7 +8661,7 @@ components:
         type:
           type: string
           enum:
-          - editoast:paced_train:TrainScheduleSetNotFound
+          - editoast:train_schedule:TrainScheduleSetNotFound
     EditoastTrainScheduleExceptionErrorBatchNotFound:
       type: object
       required:

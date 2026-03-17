@@ -71,7 +71,7 @@ use crate::views::timetable::track_occupancy;
 use editoast_models::rolling_stock::RollingStock;
 
 #[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "paced_train")]
+#[editoast_error(base_id = "train_schedule")]
 enum TrainScheduleError {
     #[error("{count} train schedule(s) could not be found")]
     #[editoast_error(status = 404)]
@@ -1940,7 +1940,7 @@ mod tests {
             .assert_status(StatusCode::NOT_FOUND)
             .json_into();
 
-        assert_eq!(&response.error_type, "editoast:paced_train:NotFound")
+        assert_eq!(&response.error_type, "editoast:train_schedule:NotFound")
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -2031,7 +2031,7 @@ mod tests {
 
         assert_eq!(
             &response.error_type,
-            "editoast:paced_train:ExceptionNotFound"
+            "editoast:train_schedule:ExceptionNotFound"
         )
     }
 
@@ -2154,7 +2154,7 @@ mod tests {
             .assert_status(StatusCode::NOT_FOUND)
             .json_into();
 
-        assert_eq!(&response.error_type, "editoast:paced_train:NotFound")
+        assert_eq!(&response.error_type, "editoast:train_schedule:NotFound")
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -2277,7 +2277,10 @@ mod tests {
             .assert_status(StatusCode::NOT_FOUND)
             .json_into();
 
-        assert_eq!(&response.error_type, "editoast:paced_train:BatchNotFound")
+        assert_eq!(
+            &response.error_type,
+            "editoast:train_schedule:BatchNotFound"
+        )
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -2299,7 +2302,10 @@ mod tests {
             .assert_status(StatusCode::NOT_FOUND)
             .json_into();
 
-        assert_eq!(&response.error_type, "editoast:paced_train:InfraNotFound")
+        assert_eq!(
+            &response.error_type,
+            "editoast:train_schedule:InfraNotFound"
+        )
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -2319,7 +2325,7 @@ mod tests {
             .assert_status(StatusCode::NOT_FOUND)
             .json_into();
 
-        assert_eq!(&response.error_type, "editoast:paced_train:NotFound");
+        assert_eq!(&response.error_type, "editoast:train_schedule:NotFound");
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -2345,7 +2351,7 @@ mod tests {
 
         assert_eq!(
             &response.error_type,
-            "editoast:paced_train:ExceptionNotFound"
+            "editoast:train_schedule:ExceptionNotFound"
         )
     }
 

@@ -148,17 +148,6 @@
       "InvalidNumberOfDistances": "{{expected}} distances attendues, mais {{found}} reçues",
       "InvalidNumberOfRefs": "Au moins 2 références de points opérationnels attendues"
     },
-    "paced_train": {
-      "BatchNotFound": "'{{count}}' circulation(s) sont introuvable(s)",
-      "Database": "Erreur interne (base de données)",
-      "ExceptionNotFound": "Exception '{{exception_key}}' non trouvée",
-      "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
-      "NotFound": "La circulation '{{train_schedule_id}}' n’a pas été trouvée",
-      "PathfindingFailed": "La recherche de chemin n'a pas abouti pour la mission '{{train_schedule_id}}'",
-      "RollingStockNotFound": "Matériel roulant '{{rolling_stock_name}}' non trouvé",
-      "SimulationFailed": "La simulation n'a pas abouti pour la circulation '{{train_schedule_id}}'",
-      "TrainScheduleSetNotFound": "Paquet de train '{{train_schedule_set_id}}' non trouvé"
-    },
     "pathfinding": {
       "Database": "Erreur interne (base de données)",
       "ElectricalProfilesOverlap": "Des profils électriques se chevauchent",
@@ -286,6 +275,17 @@
       "Database": "Erreur interne",
       "IdNotFound": "Matériel remorqué '{{towed_rolling_stock_id}}' non trouvé",
       "IsLocked": "Matériel remorqué '{{towed_rolling_stock_id}}' est verrouillé"
+    },
+    "train_schedule": {
+      "BatchNotFound": "'{{count}}' circulation(s) sont introuvable(s)",
+      "Database": "Erreur interne (base de données)",
+      "ExceptionNotFound": "Exception '{{exception_key}}' non trouvée",
+      "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
+      "NotFound": "Circulation '{{train_schedule_id}}' non trouvée",
+      "PathfindingFailed": "La recherche de chemin n'a pas abouti pour la circulation '{{train_schedule_id}}'",
+      "RollingStockNotFound": "Matériel roulant '{{rolling_stock_name}}' non trouvé",
+      "SimulationFailed": "La simulation n'a pas abouti pour la circulation '{{train_schedule_id}}'",
+      "TrainScheduleSetNotFound": "Paquet de train '{{train_schedule_set_id}}' non trouvé"
     },
     "train_schedule_exception": {
       "BatchNotFound": "'{{count}}' exception(s) non trouvée(s)",
