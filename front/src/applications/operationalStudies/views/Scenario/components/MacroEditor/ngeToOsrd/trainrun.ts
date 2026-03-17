@@ -19,11 +19,12 @@ import { isPacedTrainId } from 'utils/trainId';
 import { checkChangeGroups } from '../../ManageTimetableItem/helpers/buildPacedTrainException';
 import type {
   NetzgrafikDto,
-  NGEEvent,
   TrainrunSectionDto,
   NodeDto,
   TimeLockDto,
   TrainrunDto,
+  NGETrainrunEvent,
+  TrainrunUpdateTag,
 } from '../../NGE/types';
 import {
   DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
@@ -388,12 +389,25 @@ export const createPacedAttributesFromTrainrun = (
 const handleCreateTimetableItem = async (
   netzgrafikDto: NetzgrafikDto,
   trainrun: TrainrunDto,
+  duplicatedTrainrunId: number | undefined,
   trainScheduleSetId: number,
   infraId: number,
   state: MacroEditorState,
   dispatch: AppDispatch,
   addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void
 ) => {
+  const duplicatedTimetableItemIds = duplicatedTrainrunId
+    ? state.timetableItemIdByNgeId.get(duplicatedTrainrunId)
+    : undefined;
+  const duplicatedForwardTimetableItem = duplicatedTimetableItemIds?.[0]
+    ? await fetchTimetableItem(duplicatedTimetableItemIds[0], dispatch)
+    : { id: undefined, train_name: undefined };
+  const duplicatedReturnTimetableItem = duplicatedTimetableItemIds?.[1]
+    ? await fetchTimetableItem(duplicatedTimetableItemIds[1], dispatch)
+    : { id: undefined, train_name: undefined };
+  const { id: _id, train_name: _name, ...duplicatedForwardBase } = duplicatedForwardTimetableItem;
+  const { id: __id, train_name: __name, ...duplicatedReturnBase } = duplicatedReturnTimetableItem;
+
   const trainrunSections = getContinuousTrainrunSectionsByTrainrunId(netzgrafikDto, trainrun.id);
   const labels = getTrainrunLabels(netzgrafikDto, trainrun);
 
@@ -431,11 +445,14 @@ const handleCreateTimetableItem = async (
     train_name: trainrun.name,
     labels,
     category,
+    ...duplicatedForwardBase,
     ...pathAndSchedule,
   };
 
   const returnTrip =
-    trainrun.direction === 'round_trip' ? { ...forwardTrip, ...returnPathAndSchedule } : undefined;
+    trainrun.direction === 'round_trip'
+      ? { ...forwardTrip, ...duplicatedReturnBase, ...returnPathAndSchedule }
+      : undefined;
 
   const timetableItemsToCreate = returnTrip ? [forwardTrip, returnTrip] : [forwardTrip];
 
@@ -494,6 +511,8 @@ const handleDeleteTimetableItem = async (
 export const handleUpdateTimetableItem = async ({
   netzgrafikDto,
   trainrun,
+  tags,
+  oneWayDirection,
   trainScheduleSetId,
   infraId,
   state,
@@ -503,6 +522,8 @@ export const handleUpdateTimetableItem = async ({
 }: {
   netzgrafikDto: NetzgrafikDto;
   trainrun: TrainrunDto;
+  tags: TrainrunUpdateTag[];
+  oneWayDirection?: 'forward' | 'backward';
   infraId: number;
   trainScheduleSetId: number;
   state: MacroEditorState;
@@ -511,17 +532,24 @@ export const handleUpdateTimetableItem = async ({
   addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void;
 }) => {
   const timetableItemIds = state.timetableItemIdByNgeId.get(trainrun.id)!;
-  const oldForwardTimetableItem = await fetchTimetableItem(timetableItemIds[0], dispatch);
+  let oldForwardId = timetableItemIds[0];
+  if (oneWayDirection === 'backward') {
+    // Case 1: Switching from round trip to the return trip (now forward)
+    if (timetableItemIds[1]) oldForwardId = timetableItemIds[1];
+    // Case 2: Inverting the direction of a one way train (we sadly don't store the old return)
+    else tags.push('nodes', 'times');
+  }
+  const oldForwardTimetableItem = await fetchTimetableItem(oldForwardId, dispatch);
   const trainrunSections = getContinuousTrainrunSectionsByTrainrunId(netzgrafikDto, trainrun.id);
   const labels = getTrainrunLabels(netzgrafikDto, trainrun);
-  const forwardPathAndSchedule = generatePathAndSchedule(
+  const { path: forwardPath, ...forwardSchedule } = generatePathAndSchedule(
     trainrunSections,
     netzgrafikDto.nodes,
     new Date(oldForwardTimetableItem.start_time),
     TRAINRUN_DIRECTIONS.FORWARD,
     state
   );
-  await populateSecondaryCodesInPath(forwardPathAndSchedule.path, infraId, dispatch);
+  await populateSecondaryCodesInPath(forwardPath, infraId, dispatch);
 
   const { id: _id, ...timetableItemBase } = oldForwardTimetableItem;
 
@@ -534,13 +562,13 @@ export const handleUpdateTimetableItem = async ({
 
   const newForwardTrainBase: Omit<TrainScheduleResponse, 'id'> = {
     ...timetableItemBase,
-    train_name: trainrun.name,
-    labels,
-    // Reset margins because they contain references to path items
-    margins: undefined,
-    paced,
-    category,
-    ...forwardPathAndSchedule,
+    ...(tags.includes('name') && { train_name: trainrun.name }),
+    ...(tags.includes('labelIds') && { labels }),
+    // Reset margins if the path changed because they contain references to path items
+    ...(tags.includes('nodes') && { path: forwardPath, margins: undefined, ...forwardSchedule }),
+    ...(tags.includes('times') && { ...forwardSchedule }),
+    ...(tags.includes('frequencyId') && { paced }),
+    ...(tags.includes('categoryId') && { category }),
   };
 
   if (paced && oldForwardTimetableItem.paced) {
@@ -562,17 +590,17 @@ export const handleUpdateTimetableItem = async ({
 
   if (trainrun.direction === 'one_way') {
     if (timetableItemIds[1]) {
-      // NGE always selects the forward trip by default when going from round trip to one way trip,
-      // thus the trip that needs to be deleted is always the return trip
       await storeRoundTrip(dispatch, newForwardTimetableItem.id);
-      await deleteTimetableItemById(timetableItemIds[1], dispatch, addDeletedTimetableItemIds);
+      const oldReturnId =
+        oneWayDirection !== 'backward' ? timetableItemIds[1] : timetableItemIds[0];
+      await deleteTimetableItemById(oldReturnId, dispatch, addDeletedTimetableItemIds);
     }
 
     state.timetableItemIdByNgeId.set(trainrun.id, [newForwardTimetableItem.id, null]);
     return;
   }
 
-  const returnPathAndSchedule = generatePathAndSchedule(
+  const { path: returnPath, ...returnSchedule } = generatePathAndSchedule(
     trainrunSections,
     netzgrafikDto.nodes,
     new Date(oldForwardTimetableItem.start_time),
@@ -580,7 +608,7 @@ export const handleUpdateTimetableItem = async ({
     state
   );
 
-  await populateSecondaryCodesInPath(returnPathAndSchedule.path, infraId, dispatch);
+  await populateSecondaryCodesInPath(returnPath, infraId, dispatch);
 
   let newReturnTimetableItem: TimetableItem;
   const returnPaced: TrainSchedule['paced'] = paced ? { ...paced, exceptions: [] } : null;
@@ -591,13 +619,16 @@ export const handleUpdateTimetableItem = async ({
     const { id: _return_id, ...oldReturnTrainBase } = oldReturnTimetableItem;
     const newReturnTrainBase: Omit<TrainScheduleResponse, 'id'> = {
       ...oldReturnTrainBase,
-      train_name: trainrun.name,
-      labels,
-      // Reset margins because they contain references to path items
-      margins: undefined,
-      paced: returnPaced,
-      category,
-      ...returnPathAndSchedule,
+      ...(tags.includes('name') && { train_name: trainrun.name }),
+      ...(tags.includes('labelIds') && { labels }),
+      // Reset margins if the path changed because they contain references to path items
+      ...(tags.includes('nodes') && { path: returnPath, margins: undefined, ...returnSchedule }),
+      ...(tags.includes('times') && {
+        schedule: returnSchedule.schedule,
+        start_time: returnSchedule.start_time,
+      }),
+      ...(tags.includes('frequencyId') && { paced: returnPaced }),
+      ...(tags.includes('categoryId') && { category }),
     };
 
     if (returnPaced && oldReturnTimetableItem.paced) {
@@ -625,7 +656,8 @@ export const handleUpdateTimetableItem = async ({
 
     const returnPacedTrain: TrainSchedule = {
       ...pacedTrainWithoutTrainScheduleSetId,
-      ...returnPathAndSchedule,
+      ...returnSchedule,
+      path: returnPath,
       paced: returnPaced,
     };
 
@@ -646,9 +678,8 @@ export const handleUpdateTimetableItem = async ({
 };
 
 export const handleTrainrunOperation = async ({
-  type,
   netzgrafikDto,
-  trainrunId,
+  trainrunEvent,
   trainScheduleSetId,
   infraId,
   state,
@@ -656,9 +687,8 @@ export const handleTrainrunOperation = async ({
   addUpsertedTimetableItems,
   addDeletedTimetableItemIds,
 }: {
-  type: NGEEvent['type'];
   netzgrafikDto: NetzgrafikDto;
-  trainrunId: number;
+  trainrunEvent: NGETrainrunEvent;
   trainScheduleSetId: number;
   infraId: number;
   state: MacroEditorState;
@@ -666,12 +696,13 @@ export const handleTrainrunOperation = async ({
   addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void;
   addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void;
 }) => {
-  const trainrun = netzgrafikDto.trainruns.find((tr) => tr.id === trainrunId);
-  switch (type) {
+  const trainrun = trainrunEvent.trainrun;
+  switch (trainrunEvent.type) {
     case 'create': {
       await handleCreateTimetableItem(
         netzgrafikDto,
-        trainrun!,
+        trainrun,
+        trainrunEvent.duplicatedTrainrunId,
         trainScheduleSetId,
         infraId,
         state,
@@ -683,7 +714,9 @@ export const handleTrainrunOperation = async ({
     case 'update': {
       await handleUpdateTimetableItem({
         netzgrafikDto,
-        trainrun: trainrun!,
+        trainrun,
+        tags: trainrunEvent.tags,
+        oneWayDirection: trainrunEvent.oneWayDirection,
         trainScheduleSetId,
         infraId,
         dispatch,
@@ -694,7 +727,7 @@ export const handleTrainrunOperation = async ({
       break;
     }
     case 'delete': {
-      await handleDeleteTimetableItem(trainrunId, state, dispatch, addDeletedTimetableItemIds);
+      await handleDeleteTimetableItem(trainrun.id, state, dispatch, addDeletedTimetableItemIds);
       break;
     }
     default:
@@ -738,6 +771,7 @@ export const updateTrainrunsByNode = async ({
     await handleUpdateTimetableItem({
       netzgrafikDto,
       trainrun,
+      tags: ['nodes'],
       trainScheduleSetId,
       infraId,
       dispatch,
