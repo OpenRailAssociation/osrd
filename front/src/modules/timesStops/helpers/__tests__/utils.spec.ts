@@ -189,8 +189,8 @@ describe('updateRowTimesAndMargin', () => {
         expect(result.stopFor).toBe(undefined);
       });
 
-      it('should set departure time as arrival time', () => {
-        expect(result.departure?.time).toEqual('10:00:00');
+      it('should remove departure time', () => {
+        expect(result.departure?.time).toBe(undefined);
       });
 
       it('should keep arrival time as it was beforehand', () => {
