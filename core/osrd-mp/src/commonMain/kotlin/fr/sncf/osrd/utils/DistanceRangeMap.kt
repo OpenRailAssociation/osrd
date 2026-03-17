@@ -13,7 +13,23 @@ import fr.sncf.osrd.utils.units.Distance
  * intervals.
  *
  * `DistanceRangeMap` should be used when memory footprint is a concern (in particular to store
- * infra data), and only when precise interval semantics aren't necessary.
+ * infra data).
+ *
+ * # Interval semantics
+ *
+ * Ranges in a [DistanceRangeMap] are closed-open with the following exception: ranges whose upper
+ * bound aren't any range's lower bound (i.e. ranges that are followed by empty intervals, or the
+ * last range) are closed.
+ *
+ * For example, if a [DistanceRangeMap] has these ranges:
+ *
+ *        A          B            C            D
+ *     [1;100[   [100;128]   [256;1000[   [1000;1234]
+ *
+ * Then ranges A and C are closed-open, and ranges B and D are closed.
+ *
+ * TODO simplify bound management to have [closed;open[ intervals only (and dig on the impact for
+ * the ETCS simulator, which _should_ be acceptable)
  *
  * # Note to implementors
  *
@@ -53,8 +69,9 @@ interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
     fun shiftPositions(offset: Distance): DistanceRangeMap<T>
 
     /**
-     * Get the value at the given offset, if there is any. On exact transition offsets, the value
-     * for the higher offset is used.
+     * Get the value at the given offset, if there is any.
+     *
+     * See "Interval semantics" in the [DistanceRangeMap] doc-comment.
      */
     fun get(offset: Distance): T?
 
