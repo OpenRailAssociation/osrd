@@ -587,16 +587,36 @@ pub(in crate::views) async fn requirements(
     )
     .await?;
 
-    let (train_ids, trains): (Vec<_>, Vec<_>) = paced_trains
+    let mut exceptions =
+        editoast_models::TrainScheduleException::retrieve_exceptions_by_train_schedules(
+            conn,
+            timetable_id,
+            paced_trains.iter().map(|pt| pt.id).collect(),
+        )
+        .await?
+        .into_iter()
+        .into_group_map_by(|e| e.train_schedule_id);
+
+    let (occurrence_ids, occurrences): (Vec<_>, Vec<_>) = paced_trains
         .iter()
-        .flat_map(|pt| pt.iter_occurrences())
+        .flat_map(|train_schedule| {
+            let exceptions = exceptions
+                .remove(&train_schedule.id)
+                .unwrap_or_default()
+                .into_iter()
+                .map_into()
+                .collect_vec();
+            train_schedule
+                .iter_occurrences_v2(&exceptions)
+                .collect_vec()
+        })
         .unzip();
 
     let simulations = train_simulation_batch(
         conn,
         valkey_client.clone(),
         core_client.clone(),
-        &trains,
+        &occurrences,
         &infra,
         electrical_profile_set_id,
         config.app_version.as_deref(),
@@ -605,11 +625,15 @@ pub(in crate::views) async fn requirements(
     .into_iter()
     .map(|(sim, _)| Arc::unwrap_or_clone(sim));
 
-    let start_times = trains.iter().map(|ts| ts.start_time());
-    let train_names = trains.iter().map(|ts| ts.train_name.clone());
-    let results =
-        build_trains_requirements(train_ids.into_iter(), start_times, simulations, train_names)
-            .collect();
+    let start_times = occurrences.iter().map(|ts| ts.start_time());
+    let train_names = occurrences.iter().map(|ts| ts.train_name.clone());
+    let results = build_trains_requirements(
+        occurrence_ids.into_iter(),
+        start_times,
+        simulations,
+        train_names,
+    )
+    .collect();
 
     Ok(Json(TrainRequirementsPage { results, stats }))
 }
