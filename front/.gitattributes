@@ -1,4 +1,4 @@
-# Explicitly mark end of line so Windows compilation is not blocked by prettier
+# Explicitly mark end of line so Windows compilation is not blocked by oxfmt
 
 *.ts text eol=lf
 *.js text eol=lf
