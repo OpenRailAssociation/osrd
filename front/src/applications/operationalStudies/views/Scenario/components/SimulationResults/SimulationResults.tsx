@@ -10,6 +10,7 @@ import useSimulationResults from 'applications/operationalStudies/hooks/useSimul
 import type { Board } from 'applications/operationalStudies/types';
 import { type Conflict } from 'common/api/osrdEditoastApi';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
+import ChronogramWrapper from 'modules/simulationResult/components/Chronogram/ChronogramWrapper';
 import createHandleTrainDrag from 'modules/simulationResult/components/SpaceTimeChartWrapper/helpers/createHandleTrainDrag';
 import SpaceTimeChartWrapper, {
   MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
@@ -40,6 +41,8 @@ import SimulationResultsMap from './SimulationResultsMap';
 export const HIDDEN_CHART_TOP_HEIGHT = 23;
 const SDD_INITIAL_HEIGHT = 460;
 const SDD_MIN_HEIGHT = 400;
+const CHRONOGRAM_INITIAL_HEIGHT = 492;
+const CHRONOGRAM_MIN_HEIGHT = 398;
 
 type SimulationResultsProps = {
   scenarioData: { name: string; infraName: string };
@@ -80,6 +83,8 @@ const SimulationResults = ({
   );
 
   const [SDDHeight, setSDDHeight] = useState(SDD_INITIAL_HEIGHT);
+
+  const [chronogramHeight, setChronogramHeight] = useState(CHRONOGRAM_INITIAL_HEIGHT);
 
   const [mapCanvas, setMapCanvas] = useState<string>();
 
@@ -296,6 +301,27 @@ const SimulationResults = ({
               />
             </div>
           </BoardWrapper>
+
+          {/* CHRONOGRAMME */}
+          {timetableItemsWithDetails.length > 0 && (
+            <BoardWrapper
+              hidden={!activeBoards.has('chronogram')}
+              name={t('boards.chronogram')}
+              resizable={{
+                height: chronogramHeight,
+                setHeight: setChronogramHeight,
+                minHeight: CHRONOGRAM_MIN_HEIGHT,
+              }}
+              withFooter
+            >
+              <div data-testid="chronogram" className="simulation-chronogram">
+                <ChronogramWrapper
+                  timetableItemsWithDetails={timetableItemsWithDetails}
+                  chronogramHeight={chronogramHeight}
+                />
+              </div>
+            </BoardWrapper>
+          )}
 
           {/* TIME STOPS TABLE */}
           <BoardWrapper
