@@ -509,7 +509,7 @@ const injectedRtkApi = api
         }),
         providesTags: ['layers'],
       }),
-      postLevelCrossingOccupancy: build.mutation<
+      postLevelCrossingOccupancy: build.query<
         PostLevelCrossingOccupancyApiResponse,
         PostLevelCrossingOccupancyApiArg
       >({
@@ -518,7 +518,7 @@ const injectedRtkApi = api
           method: 'POST',
           body: queryArg.body,
         }),
-        invalidatesTags: ['level_crossing'],
+        providesTags: ['level_crossing'],
       }),
       getLightRollingStock: build.query<
         GetLightRollingStockApiResponse,
