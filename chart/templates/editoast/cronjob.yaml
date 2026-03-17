@@ -71,6 +71,8 @@ spec:
               {{- with .Values.services.editoast.cronjob.env | default dict }}
               {{- toYaml . | nindent 14 }}
               {{- end }}
+            resources:
+              {{- toYaml .Values.services.editoast.resources | nindent 14 }}
             volumeMounts:
               - name: config
                 mountPath: /crons/cronjob.sh
