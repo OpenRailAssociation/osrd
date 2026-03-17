@@ -35,6 +35,7 @@ use crate::views::timetable::simulation::train_simulation_batch;
 #[derive(Debug, Deserialize, ToSchema)]
 pub struct ProjectPathForm {
     pub infra_id: i64,
+    pub timetable_id: i64,
     pub electrical_profile_set_id: Option<i64>,
     pub ids: HashSet<i64>,
     #[schema(inline, value_type = Vec<core_client::pathfinding::TrackRange>)]
