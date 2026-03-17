@@ -195,6 +195,7 @@ const Timetable = ({
           handleClickTrainScheduleSet={handleClickTrainScheduleSet}
           handleSelectTrainScheduleSet={handleSelectTrainScheduleSet}
           catalogEntries={catalogEntries}
+          moveTimetableItem={(pacedTrainIds) => openMoveDialog(pacedTrainIds)}
           publishTrainScheduleSet={publishTrainScheduleSet}
           getTrainScheduleSetByCatalogAndName={getTrainScheduleSetByCatalogAndName}
           localCopyTrainScheduleSet={localCopyTrainScheduleSet}
