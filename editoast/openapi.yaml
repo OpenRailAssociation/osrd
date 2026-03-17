@@ -1859,9 +1859,13 @@ paths:
                         required:
                         - train_schedule_id
                         - index
+                        - exception_id
                         - exception_key
                         - type
                         properties:
+                          exception_id:
+                            type: integer
+                            format: int64
                           exception_key:
                             type: string
                           index:
@@ -1878,9 +1882,13 @@ paths:
                         title: OccurrenceIdCreated
                         required:
                         - train_schedule_id
+                        - exception_id
                         - exception_key
                         - type
                         properties:
+                          exception_id:
+                            type: integer
+                            format: int64
                           exception_key:
                             type: string
                           train_schedule_id:
@@ -4459,9 +4467,13 @@ paths:
                             required:
                             - train_schedule_id
                             - index
+                            - exception_id
                             - exception_key
                             - type
                             properties:
+                              exception_id:
+                                type: integer
+                                format: int64
                               exception_key:
                                 type: string
                               index:
@@ -4478,9 +4490,13 @@ paths:
                             title: OccurrenceIdCreated
                             required:
                             - train_schedule_id
+                            - exception_id
                             - exception_key
                             - type
                             properties:
+                              exception_id:
+                                type: integer
+                                format: int64
                               exception_key:
                                 type: string
                               train_schedule_id:
@@ -5120,9 +5136,13 @@ components:
               required:
               - train_schedule_id
               - index
+              - exception_id
               - exception_key
               - type
               properties:
+                exception_id:
+                  type: integer
+                  format: int64
                 exception_key:
                   type: string
                 index:
@@ -5139,9 +5159,13 @@ components:
               title: OccurrenceIdCreated
               required:
               - train_schedule_id
+              - exception_id
               - exception_key
               - type
               properties:
+                exception_id:
+                  type: integer
+                  format: int64
                 exception_key:
                   type: string
                 train_schedule_id:
