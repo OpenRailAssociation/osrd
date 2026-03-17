@@ -25,7 +25,8 @@ type TrainScheduleSetFormProps = {
 };
 
 /**
- * Compute a basic train set name (series), defined as a few years in the future.
+ * Compute a basic train set name (series), defined as a 3 years in the future as it
+ * was identified as a good middle point between long-term and short-term use cases.
  */
 function trainSetNameExample(): string {
   const currentYear = new Date().getFullYear();
