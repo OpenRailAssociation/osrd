@@ -158,11 +158,15 @@ export function updateRowTimesAndMargin(
       newRowData.arrival = undefined;
     } else {
       if (arrivalChanged || stopDurationChanged) {
-        newRowData.departure = {
-          time: secToHoursString(
-            time2sec(newRowData.arrival.time) + (newRowData.stopFor?.total('second') ?? 0)
-          ),
-        };
+        if (stopDurationChanged && !newRowData.stopFor) {
+          newRowData.departure = undefined;
+        } else {
+          newRowData.departure = {
+            time: secToHoursString(
+              time2sec(newRowData.arrival.time) + (newRowData.stopFor?.total('second') ?? 0)
+            ),
+          };
+        }
       }
       if (departureChanged) {
         if (newRowData.departure?.time) {
