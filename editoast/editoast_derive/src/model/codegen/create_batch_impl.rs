@@ -39,13 +39,13 @@ impl ToTokens for CreateBatchImpl {
             },
             chunk_iteration_ident: syn::parse_quote! { chunk },
             chunk_iteration_body: quote! {
-                diesel::insert_into(dsl::#table_name)
+                let stream = diesel::insert_into(dsl::#table_name)
                     .values(chunk)
                     .returning((#(dsl::#columns,)*))
                     .load_stream::<#row>(conn.write().await.deref_mut())
                     .await
-                    .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
-                    .map_ok(<#model as Model>::from_row)
+                    .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?;
+                futures_util::TryStreamExt::map_ok(stream, <#model as Model>::from_row)
                     .try_collect::<Vec<_>>()
                     .await
                     .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
@@ -70,7 +70,7 @@ impl ToTokens for CreateBatchImpl {
                     use std::ops::DerefMut;
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
-                    use futures_util::stream::TryStreamExt;
+                    use futures_util::TryStreamExt;
                     let values = values.into_iter().collect::<Vec<_>>();
                     Ok({ #create_loop })
                 }

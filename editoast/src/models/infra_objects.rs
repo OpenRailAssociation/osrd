@@ -74,13 +74,13 @@ macro_rules! infra_model {
             ) -> Result<C, database::DatabaseError> {
                 use diesel::prelude::*;
                 use diesel_async::RunQueryDsl;
-                use futures::stream::TryStreamExt;
+                use futures::TryStreamExt;
                 use $table::dsl;
-                Ok($table::table
+                let stream = $table::table
                     .filter(dsl::infra_id.eq(infra_id))
                     .load_stream(conn.write().await.deref_mut())
-                    .await?
-                    .map_ok(Self::from_row)
+                    .await?;
+                Ok(futures::TryStreamExt::map_ok(stream, Self::from_row)
                     .try_collect::<C>()
                     .await?)
             }
