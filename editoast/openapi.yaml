@@ -11488,6 +11488,7 @@ components:
       type: object
       required:
       - infra_id
+      - timetable_id
       - ids
       - track_section_ranges
       properties:
@@ -11503,6 +11504,9 @@ components:
             format: int64
           uniqueItems: true
         infra_id:
+          type: integer
+          format: int64
+        timetable_id:
           type: integer
           format: int64
         track_section_ranges:

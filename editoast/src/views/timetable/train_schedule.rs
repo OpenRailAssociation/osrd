@@ -790,6 +790,7 @@ pub(in crate::views) async fn project_path(
     Extension(auth): AuthenticationExt,
     Json(ProjectPathForm {
         infra_id,
+        timetable_id,
         ids: train_schedule_ids,
         track_section_ranges,
         electrical_profile_set_id,
@@ -825,21 +826,34 @@ pub(in crate::views) async fn project_path(
         })
         .await?;
 
+    let train_schedule_ids = train_schedules.iter().map(|t| t.id).collect::<Vec<_>>();
+    let mut exceptions = TrainScheduleException::retrieve_exceptions_by_train_schedules(
+        conn,
+        timetable_id,
+        train_schedule_ids,
+    )
+    .await?
+    .into_iter()
+    .map_into::<schemas::TrainScheduleException>()
+    .into_group_map_by(|e| e.timetable_id);
+
     let simulation_contexts: Vec<SimulationContext> = train_schedules
         .iter()
         .flat_map(|train_schedule| {
+            let ts_exceptions = exceptions.remove(&train_schedule.id).unwrap_or_default();
             std::iter::once(SimulationContext {
                 paced_train_id: train_schedule.id,
                 exception_key: None,
                 train_schedule: train_schedule.clone().into_train_occurrence(),
             })
-            .chain(train_schedule.exceptions.iter().map(|exception| {
+            .chain(ts_exceptions.iter().map(|exception| {
                 SimulationContext {
                     paced_train_id: train_schedule.id,
-                    exception_key: Some(exception.key.clone()),
-                    train_schedule: train_schedule.apply_exception(exception),
+                    exception_key: exception.key.clone(), // TODO use exception.id instead of key
+                    train_schedule: train_schedule.apply_train_schedule_exception(exception),
                 }
             }))
+            .collect::<Vec<_>>()
         })
         .collect();
 
@@ -2630,7 +2644,8 @@ mod tests {
         let db_pool = DbConnectionPoolV2::for_tests();
 
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
-        let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
+        let (timetable, train_schedule_set) =
+            create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
         let _ = create_fast_rolling_stock(&mut db_pool.get_ok(), "R2D2").await;
         let paced_train_valid =
             create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.id).await;
@@ -2650,6 +2665,7 @@ mod tests {
         // TEST
         let request = app.post("/train_schedules/project_path").json(&json!({
             "infra_id": small_infra.id,
+            "timetable_id": timetable.id,
             "electrical_profile_set_id": null,
             "ids": vec![paced_train_fail.id, paced_train_valid.id],
             "track_section_ranges": [

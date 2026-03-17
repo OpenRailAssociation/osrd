@@ -32,7 +32,7 @@ export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyL
   }
 
   async processBatch(ids: number[]) {
-    const { infraId, path, electricalProfileSetId } = this.options;
+    const { infraId, timetableId, path, electricalProfileSetId } = this.options;
 
     let pacedTrainPromise: Promise<PostTrainSchedulesProjectPathApiResponse> = Promise.resolve({});
     let trainSchedulesOccupancyBlocksPromise: Promise<PostTrainSchedulesOccupancyBlocksApiResponse> =
@@ -44,6 +44,7 @@ export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyL
             {
               projectPathForm: {
                 infra_id: infraId,
+                timetable_id: timetableId,
                 track_section_ranges: path.track_section_ranges,
                 ids,
                 electrical_profile_set_id: electricalProfileSetId,
