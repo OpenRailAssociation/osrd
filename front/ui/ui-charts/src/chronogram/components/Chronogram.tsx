@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { Slider } from '@osrd-project/ui-core';
 
@@ -40,6 +40,10 @@ export const Chronogram = ({
       previousLevelCrossingsOccupancies.filter((lc) => lc.name !== name)
     );
   }
+
+  useEffect(() => {
+    setLevelCrossingsOccupancies(levelCrossingData);
+  }, [levelCrossingData]);
 
   return (
     <div className="ui-chronogram" style={{ height }}>
