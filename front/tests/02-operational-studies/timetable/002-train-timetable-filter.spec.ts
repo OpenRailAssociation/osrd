@@ -40,6 +40,10 @@ const frTranslations = {
   ...frCommonTranslations,
 };
 
+// TODO: Properly count trains even if the virtualised train list does not render them yet;
+//       this workaround simply makes the viewport bigger so the whole list is rendered.
+test.use({ viewport: { width: 1920, height: 1920 } });
+
 test.describe('@op @timetable-items @filter', () => {
   let project: Project;
   let study: Study;
