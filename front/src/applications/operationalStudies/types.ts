@@ -122,7 +122,12 @@ export type ElectrificationVoltage = {
 };
 
 export type SimulationResults =
-  | { isValid: false; train: Train; rollingStock?: RollingStockWithLiveries }
+  | {
+      isValid: false;
+      train: Train;
+      rollingStock?: RollingStockWithLiveries;
+      pathProperties?: PathPropertiesFormatted;
+    }
   | {
       isValid: true;
       train: Train;

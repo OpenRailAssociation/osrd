@@ -181,7 +181,7 @@ export const transformElectricalBoundariesToRanges = (
  * Format path properties data to be used in simulation results charts
  */
 export const preparePathPropertiesData = (
-  electricalProfiles: SimulationResponseSuccess['electrical_profiles'],
+  electricalProfiles: SimulationResponseSuccess['electrical_profiles'] | undefined,
   { slopes, curves, electrifications, operational_points, geometry }: PathProperties,
   { path_item_positions, length }: CorePathfindingResultSuccess,
   trainSchedulePath: TrainSchedule['path'],
@@ -190,17 +190,16 @@ export const preparePathPropertiesData = (
   const formattedSlopes = transformBoundariesDataToPositionDataArray(slopes, length, 'gradient');
   const formattedCurves = transformBoundariesDataToPositionDataArray(curves, length, 'radius');
 
-  const mergedElectrificationAndProfiles = mergeElectrificationAndProfiles(
-    electrifications,
-    electricalProfiles
-  );
+  const mergedElectrificationAndProfiles = electricalProfiles
+    ? mergeElectrificationAndProfiles(electrifications, electricalProfiles)
+    : undefined;
 
   const electrificationAndProfilesRanges = transformElectricalBoundariesToRanges(
     mergedElectrificationAndProfiles,
     length
   );
 
-  const voltageRanges = getPathVoltages(electrifications, length);
+  const voltageRanges = electricalProfiles ? getPathVoltages(electrifications, length) : [];
 
   const operationalPointsWithAllWaypoints = upsertMapWaypointsInOperationalPoints(
     'EditoastPathOperationalPoint',

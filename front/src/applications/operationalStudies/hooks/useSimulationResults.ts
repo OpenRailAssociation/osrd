@@ -126,12 +126,7 @@ const useSimulationResults = (): {
     return { results: undefined, isSimulationDataLoading };
   }
 
-  if (
-    pathfinding?.status !== 'success' ||
-    simulation?.status !== 'success' ||
-    !rawPathProperties ||
-    !rollingStock
-  ) {
+  if (pathfinding?.status !== 'success' || !rawPathProperties || !rollingStock) {
     return {
       results: { isValid: false, train, rollingStock },
       isSimulationDataLoading,
@@ -139,12 +134,24 @@ const useSimulationResults = (): {
   }
 
   const pathProperties = preparePathPropertiesData(
-    simulation.electrical_profiles,
+    simulation?.status === 'success' ? simulation.electrical_profiles : undefined,
     rawPathProperties,
     pathfinding,
     train.path,
     t
   );
+
+  if (simulation?.status !== 'success') {
+    return {
+      results: {
+        isValid: false,
+        train,
+        rollingStock,
+        pathProperties,
+      },
+      isSimulationDataLoading,
+    };
+  }
 
   const powerRestrictions =
     formatPowerRestrictionRangesWithHandled({
