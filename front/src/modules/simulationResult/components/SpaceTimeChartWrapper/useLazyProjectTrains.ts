@@ -15,6 +15,7 @@ import { useAppDispatch } from 'store';
 
 type UseLazyProjectTrainsOptions = {
   infraId: number;
+  timetableId: number;
   electricalProfileSetId?: number;
   path?: CoreTrainPath;
   operationalPointDistances?: number[];
@@ -23,6 +24,7 @@ type UseLazyProjectTrainsOptions = {
 
 const useLazyProjectTrains = ({
   infraId,
+  timetableId,
   electricalProfileSetId,
   path,
   operationalPointDistances = [],
@@ -47,6 +49,7 @@ const useLazyProjectTrains = ({
     const baseOptions = {
       dispatch,
       infraId,
+      timetableId,
       electricalProfileSetId,
       onProgress,
     };
