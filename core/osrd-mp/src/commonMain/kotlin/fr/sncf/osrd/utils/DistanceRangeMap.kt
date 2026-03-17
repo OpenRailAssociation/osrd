@@ -84,7 +84,7 @@ interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
 }
 
 fun <T> distanceRangeMapOf(vararg entries: DistanceRangeMap.RangeMapEntry<T>): DistanceRangeMap<T> {
-    return DistanceRangeMapImpl(entries.asList())
+    return DistanceRangeMapImpl(entries.asIterable())
 }
 
 fun <T> distanceRangeMapOf(
