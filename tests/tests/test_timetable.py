@@ -227,6 +227,7 @@ def test_conflicts_with_reception_on_closed_signal(
     project_path_payload = {
         "ids": [train_id],
         "infra_id": small_infra.id,
+        "timetable_id": timetable_id,
         "track_section_ranges": path_response_json["path"]["track_section_ranges"],
     }
     response_project_path = session.post(
