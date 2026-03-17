@@ -93,6 +93,8 @@ class BacktrackTests {
         }
     }
 
+    // Backtracking fully inside a unique detection zone, but just before backtracking, head is
+    // in-sight of the next signal.
     private fun buildPathBacktrackingOverNothing(
         infra: FullInfra,
         rollingStockLength: Distance,
@@ -129,7 +131,8 @@ class BacktrackTests {
                     firstBlocks[2].second - (3000.meters - 2800.meters),
                     firstBlocks[2].second,
                 ),
-                // Backtrack there: on track t.center at offset 2800m
+                // Backtrack there: on track t.center at offset 2800m, within sight-distance of the
+                // next signal just before backtracking.
                 // c3 -> c1
                 PartialBlockRange(
                     secondBlocks[0].first,
@@ -166,6 +169,9 @@ class BacktrackTests {
         )
     }
 
+    // Backtracking with the queue over a route delimiter (signal is at the same place as detector).
+    // So over multiple detection zones and the head passed the signal at the restart, not seeing
+    // it.
     private fun buildPathBacktrackingOverRouteDelimiter(
         infra: FullInfra,
         rollingStockLength: Distance,
@@ -202,7 +208,8 @@ class BacktrackTests {
                     firstBlocks[2].second - (3000.meters - 1100.meters),
                     firstBlocks[2].second,
                 ),
-                // Backtrack there: on track t.center at offset 1100m
+                // Backtrack there: on track t.center at offset 1100m, so that the tail is over the
+                // signal (head passed it).
                 // c1 -> b2
                 PartialBlockRange(
                     secondBlocks[1].first,
@@ -231,6 +238,10 @@ class BacktrackTests {
         )
     }
 
+    // Backtracking shortly after route delimiter, in a single detection zone.
+    // But at the restart, head is seeing the signal, already closer to it than signal's
+    // sight-distance.
+    // The final stop of the train is also with sight-distance of the last signal.
     private fun buildPathBacktrackingShortlyAfterRouteDelimiter(
         infra: FullInfra,
         rollingStockLength: Distance,
@@ -267,7 +278,8 @@ class BacktrackTests {
                     firstBlocks[2].second - (3000.meters - 1500.meters),
                     firstBlocks[2].second,
                 ),
-                // Backtrack there: on track t.center at offset 1500m
+                // Backtrack there: on track t.center at offset 1500m, so that the restart is within
+                // sight-distance of the signal
                 // c3 -> c1
                 PartialBlockRange(
                     secondBlocks[0].first,
@@ -287,7 +299,9 @@ class BacktrackTests {
                 PartialBlockRange(
                     secondBlocks[2].first,
                     Offset(0.meters),
-                    secondBlocks[2].second - 100.meters, // stop 100m before the end of the block
+                    secondBlocks[2].second -
+                        100.meters, // stop 100m before the end of the block, within sight-distance
+                    // of the signal
                     secondBlocks[2].second,
                 ),
             )
