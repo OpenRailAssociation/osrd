@@ -90,7 +90,7 @@ data class DistanceRangeMapImpl<T>(
 
         // Order matters and existing entries should come first.
         // E.g. allEntries = [(lower=0, upper=5, value=1), (lower=5, upper=10, value=1)]
-        val allEntries = this + entries
+        val allEntries = this + entries.asSequence().filter { it.lower < it.upper }
 
         // Start from scratch.
         values.clear()
