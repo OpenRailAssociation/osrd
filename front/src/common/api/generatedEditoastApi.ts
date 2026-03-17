@@ -40,7 +40,11 @@ const injectedRtkApi = api
   .injectEndpoints({
     endpoints: (build) => ({
       postAuthzGrants: build.mutation<PostAuthzGrantsApiResponse, PostAuthzGrantsApiArg>({
-        query: (queryArg) => ({ url: `/authz/grants`, method: 'POST', body: queryArg.body }),
+        query: (queryArg) => ({
+          url: `/authz/grants`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
         invalidatesTags: ['authz'],
       }),
       getAuthzGroups: build.query<GetAuthzGroupsApiResponse, GetAuthzGroupsApiArg>({
@@ -52,7 +56,11 @@ const injectedRtkApi = api
         providesTags: ['authz'],
       }),
       postAuthzMeGrants: build.mutation<PostAuthzMeGrantsApiResponse, PostAuthzMeGrantsApiArg>({
-        query: (queryArg) => ({ url: `/authz/me/grants`, method: 'POST', body: queryArg.body }),
+        query: (queryArg) => ({
+          url: `/authz/me/grants`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
         invalidatesTags: ['authz'],
       }),
       getAuthzMeGroups: build.query<GetAuthzMeGroupsApiResponse, GetAuthzMeGroupsApiArg>({
@@ -63,18 +71,28 @@ const injectedRtkApi = api
         PostAuthzMePrivilegesApiResponse,
         PostAuthzMePrivilegesApiArg
       >({
-        query: (queryArg) => ({ url: `/authz/me/privileges`, method: 'POST', body: queryArg.body }),
+        query: (queryArg) => ({
+          url: `/authz/me/privileges`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
         invalidatesTags: ['authz'],
       }),
       postAuthzUserInfo: build.query<PostAuthzUserInfoApiResponse, PostAuthzUserInfoApiArg>({
-        query: (queryArg) => ({ url: `/authz/user/info`, method: 'POST', body: queryArg.body }),
+        query: (queryArg) => ({
+          url: `/authz/user/info`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
         providesTags: ['authz'],
       }),
       getAuthzByResourceTypeAndResourceId: build.query<
         GetAuthzByResourceTypeAndResourceIdApiResponse,
         GetAuthzByResourceTypeAndResourceIdApiArg
       >({
-        query: (queryArg) => ({ url: `/authz/${queryArg.resourceType}/${queryArg.resourceId}` }),
+        query: (queryArg) => ({
+          url: `/authz/${queryArg.resourceType}/${queryArg.resourceId}`,
+        }),
         providesTags: ['authz'],
       }),
       getCatalogEntries: build.query<GetCatalogEntriesApiResponse, GetCatalogEntriesApiArg>({
@@ -110,7 +128,10 @@ const injectedRtkApi = api
         DeleteCatalogEntriesByIdApiResponse,
         DeleteCatalogEntriesByIdApiArg
       >({
-        query: (queryArg) => ({ url: `/catalog_entries/${queryArg.id}`, method: 'DELETE' }),
+        query: (queryArg) => ({
+          url: `/catalog_entries/${queryArg.id}`,
+          method: 'DELETE',
+        }),
         invalidatesTags: ['catalog_entry'],
       }),
       postDocuments: build.mutation<PostDocumentsApiResponse, PostDocumentsApiArg>({
@@ -135,7 +156,10 @@ const injectedRtkApi = api
         DeleteDocumentsByDocumentKeyApiResponse,
         DeleteDocumentsByDocumentKeyApiArg
       >({
-        query: (queryArg) => ({ url: `/documents/${queryArg.documentKey}`, method: 'DELETE' }),
+        query: (queryArg) => ({
+          url: `/documents/${queryArg.documentKey}`,
+          method: 'DELETE',
+        }),
         invalidatesTags: ['documents'],
       }),
       getElectricalProfileSet: build.query<
@@ -191,7 +215,9 @@ const injectedRtkApi = api
         GetFontsByFontAndGlyphApiResponse,
         GetFontsByFontAndGlyphApiArg
       >({
-        query: (queryArg) => ({ url: `/fonts/${queryArg.font}/${queryArg.glyph}` }),
+        query: (queryArg) => ({
+          url: `/fonts/${queryArg.font}/${queryArg.glyph}`,
+        }),
         providesTags: ['fonts'],
       }),
       getHealth: build.query<GetHealthApiResponse, GetHealthApiArg>({
@@ -209,7 +235,11 @@ const injectedRtkApi = api
         providesTags: ['infra'],
       }),
       postInfra: build.mutation<PostInfraApiResponse, PostInfraApiArg>({
-        query: (queryArg) => ({ url: `/infra`, method: 'POST', body: queryArg.body }),
+        query: (queryArg) => ({
+          url: `/infra`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
         invalidatesTags: ['infra'],
       }),
       postInfraRailjson: build.mutation<PostInfraRailjsonApiResponse, PostInfraRailjsonApiArg>({
@@ -263,14 +293,19 @@ const injectedRtkApi = api
         DeleteInfraByInfraIdApiResponse,
         DeleteInfraByInfraIdApiArg
       >({
-        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}`, method: 'DELETE' }),
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.infraId}`,
+          method: 'DELETE',
+        }),
         invalidatesTags: ['infra'],
       }),
       getInfraByInfraIdAttachedAndTrackId: build.query<
         GetInfraByInfraIdAttachedAndTrackIdApiResponse,
         GetInfraByInfraIdAttachedAndTrackIdApiArg
       >({
-        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/attached/${queryArg.trackId}` }),
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.infraId}/attached/${queryArg.trackId}`,
+        }),
         providesTags: ['infra'],
       }),
       getInfraByInfraIdAutoFixes: build.query<
@@ -332,7 +367,10 @@ const injectedRtkApi = api
         PostInfraByInfraIdLockApiResponse,
         PostInfraByInfraIdLockApiArg
       >({
-        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/lock`, method: 'POST' }),
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.infraId}/lock`,
+          method: 'POST',
+        }),
         invalidatesTags: ['infra'],
       }),
       postInfraByInfraIdMatchOperationalPoints: build.query<
@@ -445,7 +483,9 @@ const injectedRtkApi = api
         GetInfraByInfraIdSpeedLimitTagsApiResponse,
         GetInfraByInfraIdSpeedLimitTagsApiArg
       >({
-        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/speed_limit_tags` }),
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.infraId}/speed_limit_tags`,
+        }),
         providesTags: ['infra'],
       }),
       postInfraByInfraIdSplitTrackSection: build.mutation<
@@ -463,14 +503,19 @@ const injectedRtkApi = api
         GetInfraByInfraIdSwitchTypesApiResponse,
         GetInfraByInfraIdSwitchTypesApiArg
       >({
-        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/switch_types` }),
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.infraId}/switch_types`,
+        }),
         providesTags: ['infra'],
       }),
       postInfraByInfraIdUnlock: build.mutation<
         PostInfraByInfraIdUnlockApiResponse,
         PostInfraByInfraIdUnlockApiArg
       >({
-        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/unlock`, method: 'POST' }),
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.infraId}/unlock`,
+          method: 'POST',
+        }),
         invalidatesTags: ['infra'],
       }),
       getInfraByInfraIdVoltages: build.query<
@@ -537,14 +582,18 @@ const injectedRtkApi = api
         GetLightRollingStockNameByRollingStockNameApiResponse,
         GetLightRollingStockNameByRollingStockNameApiArg
       >({
-        query: (queryArg) => ({ url: `/light_rolling_stock/name/${queryArg.rollingStockName}` }),
+        query: (queryArg) => ({
+          url: `/light_rolling_stock/name/${queryArg.rollingStockName}`,
+        }),
         providesTags: ['rolling_stock'],
       }),
       getLightRollingStockByRollingStockId: build.query<
         GetLightRollingStockByRollingStockIdApiResponse,
         GetLightRollingStockByRollingStockIdApiArg
       >({
-        query: (queryArg) => ({ url: `/light_rolling_stock/${queryArg.rollingStockId}` }),
+        query: (queryArg) => ({
+          url: `/light_rolling_stock/${queryArg.rollingStockId}`,
+        }),
         providesTags: ['rolling_stock'],
       }),
       getMacroNodes: build.query<GetMacroNodesApiResponse, GetMacroNodesApiArg>({
@@ -588,7 +637,10 @@ const injectedRtkApi = api
         DeleteMacroNodesByNodeIdApiResponse,
         DeleteMacroNodesByNodeIdApiArg
       >({
-        query: (queryArg) => ({ url: `/macro_nodes/${queryArg.nodeId}`, method: 'DELETE' }),
+        query: (queryArg) => ({
+          url: `/macro_nodes/${queryArg.nodeId}`,
+          method: 'DELETE',
+        }),
         invalidatesTags: ['scenarios'],
       }),
       getMacroNotes: build.query<GetMacroNotesApiResponse, GetMacroNotesApiArg>({
@@ -632,7 +684,10 @@ const injectedRtkApi = api
         DeleteMacroNotesByNoteIdApiResponse,
         DeleteMacroNotesByNoteIdApiArg
       >({
-        query: (queryArg) => ({ url: `/macro_notes/${queryArg.noteId}`, method: 'DELETE' }),
+        query: (queryArg) => ({
+          url: `/macro_notes/${queryArg.noteId}`,
+          method: 'DELETE',
+        }),
         invalidatesTags: ['scenarios'],
       }),
       getProjects: build.query<GetProjectsApiResponse, GetProjectsApiArg>({
@@ -665,7 +720,10 @@ const injectedRtkApi = api
         DeleteProjectsByProjectIdApiResponse,
         DeleteProjectsByProjectIdApiArg
       >({
-        query: (queryArg) => ({ url: `/projects/${queryArg.projectId}`, method: 'DELETE' }),
+        query: (queryArg) => ({
+          url: `/projects/${queryArg.projectId}`,
+          method: 'DELETE',
+        }),
         invalidatesTags: ['projects'],
       }),
       patchProjectsByProjectId: build.mutation<
@@ -694,7 +752,9 @@ const injectedRtkApi = api
         GetRollingStockNameByRollingStockNameApiResponse,
         GetRollingStockNameByRollingStockNameApiArg
       >({
-        query: (queryArg) => ({ url: `/rolling_stock/name/${queryArg.rollingStockName}` }),
+        query: (queryArg) => ({
+          url: `/rolling_stock/name/${queryArg.rollingStockName}`,
+        }),
         providesTags: ['rolling_stock'],
       }),
       getRollingStockPowerRestrictions: build.query<
@@ -708,7 +768,9 @@ const injectedRtkApi = api
         GetRollingStockByRollingStockIdApiResponse,
         GetRollingStockByRollingStockIdApiArg
       >({
-        query: (queryArg) => ({ url: `/rolling_stock/${queryArg.rollingStockId}` }),
+        query: (queryArg) => ({
+          url: `/rolling_stock/${queryArg.rollingStockId}`,
+        }),
         providesTags: ['rolling_stock'],
       }),
       putRollingStockByRollingStockId: build.mutation<
@@ -761,7 +823,9 @@ const injectedRtkApi = api
         GetRollingStockByRollingStockIdUsageApiResponse,
         GetRollingStockByRollingStockIdUsageApiArg
       >({
-        query: (queryArg) => ({ url: `/rolling_stock/${queryArg.rollingStockId}/usage` }),
+        query: (queryArg) => ({
+          url: `/rolling_stock/${queryArg.rollingStockId}/usage`,
+        }),
         providesTags: ['rolling_stock'],
       }),
       postRoundTripsTrainSchedules: build.mutation<
@@ -817,7 +881,10 @@ const injectedRtkApi = api
         DeleteScenariosByScenarioIdApiResponse,
         DeleteScenariosByScenarioIdApiArg
       >({
-        query: (queryArg) => ({ url: `/scenarios/${queryArg.scenarioId}`, method: 'DELETE' }),
+        query: (queryArg) => ({
+          url: `/scenarios/${queryArg.scenarioId}`,
+          method: 'DELETE',
+        }),
         invalidatesTags: ['scenarios'],
       }),
       patchScenariosByScenarioId: build.mutation<
@@ -844,7 +911,11 @@ const injectedRtkApi = api
         providesTags: ['search'],
       }),
       postSimilarTrains: build.mutation<PostSimilarTrainsApiResponse, PostSimilarTrainsApiArg>({
-        query: (queryArg) => ({ url: `/similar_trains`, method: 'POST', body: queryArg.body }),
+        query: (queryArg) => ({
+          url: `/similar_trains`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
         invalidatesTags: ['similar_trains', 'stdcm', 'sncf'],
       }),
       getSpritesSignalingSystems: build.query<
@@ -858,7 +929,9 @@ const injectedRtkApi = api
         GetSpritesBySignalingSystemAndFileNameApiResponse,
         GetSpritesBySignalingSystemAndFileNameApiArg
       >({
-        query: (queryArg) => ({ url: `/sprites/${queryArg.signalingSystem}/${queryArg.fileName}` }),
+        query: (queryArg) => ({
+          url: `/sprites/${queryArg.signalingSystem}/${queryArg.fileName}`,
+        }),
         providesTags: ['sprites'],
       }),
       getStdcmSearchEnvironment: build.query<
@@ -915,7 +988,11 @@ const injectedRtkApi = api
         providesTags: ['studies'],
       }),
       postStudies: build.mutation<PostStudiesApiResponse, PostStudiesApiArg>({
-        query: (queryArg) => ({ url: `/studies`, method: 'POST', body: queryArg.studyCreateForm }),
+        query: (queryArg) => ({
+          url: `/studies`,
+          method: 'POST',
+          body: queryArg.studyCreateForm,
+        }),
         invalidatesTags: ['studies'],
       }),
       getStudiesByStudyId: build.query<GetStudiesByStudyIdApiResponse, GetStudiesByStudyIdApiArg>({
@@ -926,7 +1003,10 @@ const injectedRtkApi = api
         DeleteStudiesByStudyIdApiResponse,
         DeleteStudiesByStudyIdApiArg
       >({
-        query: (queryArg) => ({ url: `/studies/${queryArg.studyId}`, method: 'DELETE' }),
+        query: (queryArg) => ({
+          url: `/studies/${queryArg.studyId}`,
+          method: 'DELETE',
+        }),
         invalidatesTags: ['studies'],
       }),
       patchStudiesByStudyId: build.mutation<
@@ -951,14 +1031,21 @@ const injectedRtkApi = api
         providesTags: ['sub_categories'],
       }),
       postSubCategory: build.mutation<PostSubCategoryApiResponse, PostSubCategoryApiArg>({
-        query: (queryArg) => ({ url: `/sub_category`, method: 'POST', body: queryArg.body }),
+        query: (queryArg) => ({
+          url: `/sub_category`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
         invalidatesTags: ['sub_categories'],
       }),
       deleteSubCategoryByCode: build.mutation<
         DeleteSubCategoryByCodeApiResponse,
         DeleteSubCategoryByCodeApiArg
       >({
-        query: (queryArg) => ({ url: `/sub_category/${queryArg.code}`, method: 'DELETE' }),
+        query: (queryArg) => ({
+          url: `/sub_category/${queryArg.code}`,
+          method: 'DELETE',
+        }),
         invalidatesTags: ['sub_categories'],
       }),
       postTemporarySpeedLimitGroup: build.mutation<
@@ -980,7 +1067,10 @@ const injectedRtkApi = api
         DeleteTimetableByIdApiResponse,
         DeleteTimetableByIdApiArg
       >({
-        query: (queryArg) => ({ url: `/timetable/${queryArg.id}`, method: 'DELETE' }),
+        query: (queryArg) => ({
+          url: `/timetable/${queryArg.id}`,
+          method: 'DELETE',
+        }),
         invalidatesTags: ['timetable'],
       }),
       getTimetableByIdConflicts: build.query<
@@ -1054,7 +1144,9 @@ const injectedRtkApi = api
         GetTimetableByIdTrainScheduleSetsApiResponse,
         GetTimetableByIdTrainScheduleSetsApiArg
       >({
-        query: (queryArg) => ({ url: `/timetable/${queryArg.id}/train_schedule_sets` }),
+        query: (queryArg) => ({
+          url: `/timetable/${queryArg.id}/train_schedule_sets`,
+        }),
         providesTags: ['timetable', 'train_schedule_set'],
       }),
       postTimetableByIdTrainScheduleSets: build.mutation<
@@ -1112,7 +1204,9 @@ const injectedRtkApi = api
         GetTowedRollingStockByTowedRollingStockIdApiResponse,
         GetTowedRollingStockByTowedRollingStockIdApiArg
       >({
-        query: (queryArg) => ({ url: `/towed_rolling_stock/${queryArg.towedRollingStockId}` }),
+        query: (queryArg) => ({
+          url: `/towed_rolling_stock/${queryArg.towedRollingStockId}`,
+        }),
         providesTags: ['rolling_stock'],
       }),
       putTowedRollingStockByTowedRollingStockId: build.mutation<
@@ -1205,14 +1299,19 @@ const injectedRtkApi = api
         DeleteTrainScheduleSetsByIdApiResponse,
         DeleteTrainScheduleSetsByIdApiArg
       >({
-        query: (queryArg) => ({ url: `/train_schedule_sets/${queryArg.id}`, method: 'DELETE' }),
+        query: (queryArg) => ({
+          url: `/train_schedule_sets/${queryArg.id}`,
+          method: 'DELETE',
+        }),
         invalidatesTags: ['train_schedule_set'],
       }),
       getTrainScheduleSetsByIdTrainSchedules: build.query<
         GetTrainScheduleSetsByIdTrainSchedulesApiResponse,
         GetTrainScheduleSetsByIdTrainSchedulesApiArg
       >({
-        query: (queryArg) => ({ url: `/train_schedule_sets/${queryArg.id}/train_schedules` }),
+        query: (queryArg) => ({
+          url: `/train_schedule_sets/${queryArg.id}/train_schedules`,
+        }),
         providesTags: ['train_schedule_set', 'train_schedule'],
       }),
       postTrainScheduleSetsByIdTrainSchedules: build.mutation<
@@ -1230,7 +1329,11 @@ const injectedRtkApi = api
         DeleteTrainSchedulesApiResponse,
         DeleteTrainSchedulesApiArg
       >({
-        query: (queryArg) => ({ url: `/train_schedules`, method: 'DELETE', body: queryArg.body }),
+        query: (queryArg) => ({
+          url: `/train_schedules`,
+          method: 'DELETE',
+          body: queryArg.body,
+        }),
         invalidatesTags: ['timetable', 'train_schedule'],
       }),
       patchTrainSchedulesMove: build.mutation<
@@ -1363,7 +1466,11 @@ const injectedRtkApi = api
         providesTags: [],
       }),
       postWorkSchedules: build.mutation<PostWorkSchedulesApiResponse, PostWorkSchedulesApiArg>({
-        query: (queryArg) => ({ url: `/work_schedules`, method: 'POST', body: queryArg.body }),
+        query: (queryArg) => ({
+          url: `/work_schedules`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
         invalidatesTags: ['work_schedules'],
       }),
       getWorkSchedulesGroup: build.query<
@@ -1413,7 +1520,10 @@ const injectedRtkApi = api
         DeleteWorkSchedulesGroupByIdApiResponse,
         DeleteWorkSchedulesGroupByIdApiArg
       >({
-        query: (queryArg) => ({ url: `/work_schedules/group/${queryArg.id}`, method: 'DELETE' }),
+        query: (queryArg) => ({
+          url: `/work_schedules/group/${queryArg.id}`,
+          method: 'DELETE',
+        }),
         invalidatesTags: ['work_schedules'],
       }),
       postWorkSchedulesProjectPath: build.query<
@@ -1428,7 +1538,11 @@ const injectedRtkApi = api
         providesTags: ['work_schedules'],
       }),
       postWorkerLoad: build.query<PostWorkerLoadApiResponse, PostWorkerLoadApiArg>({
-        query: (queryArg) => ({ url: `/worker_load`, method: 'POST', body: queryArg.body }),
+        query: (queryArg) => ({
+          url: `/worker_load`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
         providesTags: ['worker'],
       }),
     }),
@@ -1446,16 +1560,18 @@ export type PostAuthzGrantsApiArg = {
         revoke: RevokeBody[];
       };
 };
-export type GetAuthzGroupsApiResponse = /** status 200 List all the groups */ {
-  id: number;
-  name: string;
-}[];
+export type GetAuthzGroupsApiResponse =
+  /** status 200 List all the groups */ {
+    id: number;
+    name: string;
+  }[];
 export type GetAuthzGroupsApiArg = void;
-export type GetAuthzMeApiResponse = /** status 200 Get the info of the current user */ {
-  id: number;
-  name: string;
-  roles: Role[];
-};
+export type GetAuthzMeApiResponse =
+  /** status 200 Get the info of the current user */ {
+    id: number;
+    name: string;
+    roles: Role[];
+  };
 export type GetAuthzMeApiArg = void;
 export type PostAuthzMeGrantsApiResponse =
   /** status 200 Get grants info of the current user for the given resources in body */ {
@@ -1470,10 +1586,11 @@ export type PostAuthzMeGrantsApiArg = {
     [key: string]: number[];
   };
 };
-export type GetAuthzMeGroupsApiResponse = /** status 200 Get the groups of the current user */ {
-  id: number;
-  name: string;
-}[];
+export type GetAuthzMeGroupsApiResponse =
+  /** status 200 Get the groups of the current user */ {
+    id: number;
+    name: string;
+  }[];
 export type GetAuthzMeGroupsApiArg = void;
 export type PostAuthzMePrivilegesApiResponse =
   /** status 200 The privileges of the user sending the request over each requested resource. */ {
@@ -1488,16 +1605,17 @@ export type PostAuthzMePrivilegesApiArg = {
     [key: string]: number[];
   };
 };
-export type PostAuthzUserInfoApiResponse = /** status 200 Get information on a list of users */ {
-  groups: {
+export type PostAuthzUserInfoApiResponse =
+  /** status 200 Get information on a list of users */ {
+    groups: {
+      id: number;
+      name: string;
+    }[];
     id: number;
+    identities: string[];
     name: string;
+    roles: Role[];
   }[];
-  id: number;
-  identities: string[];
-  name: string;
-  roles: Role[];
-}[];
 export type PostAuthzUserInfoApiArg = {
   /** A list of user IDs and identities to get information on */
   body: {
@@ -1590,9 +1708,10 @@ export type GetFontsByFontAndGlyphApiArg = {
 };
 export type GetHealthApiResponse = unknown;
 export type GetHealthApiArg = void;
-export type GetInfraApiResponse = /** status 200 All infras, paginated */ PaginationStats & {
-  results: Infra[];
-};
+export type GetInfraApiResponse =
+  /** status 200 All infras, paginated */ PaginationStats & {
+    results: Infra[];
+  };
 export type GetInfraApiArg = {
   page?: number;
   pageSize?: number;
@@ -1604,9 +1723,10 @@ export type PostInfraApiArg = {
     name: string;
   };
 };
-export type PostInfraRailjsonApiResponse = /** status 201 The imported infra id */ {
-  infra: number;
-};
+export type PostInfraRailjsonApiResponse =
+  /** status 201 The imported infra id */ {
+    infra: number;
+  };
 export type PostInfraRailjsonApiArg = {
   /** The name of the infrastructure. */
   name: string;
@@ -1614,10 +1734,11 @@ export type PostInfraRailjsonApiArg = {
   generateData?: boolean;
   railJson: RailJson;
 };
-export type PostInfraRefreshApiResponse = /** status 200  */ {
-  /** The list of infras that were refreshed successfully */
-  infra_refreshed: number[];
-};
+export type PostInfraRefreshApiResponse =
+  /** status 200  */ {
+    /** The list of infras that were refreshed successfully */
+    infra_refreshed: number[];
+  };
 export type PostInfraRefreshApiArg = {
   force?: boolean;
   /** A comma-separated list of infra IDs to refresh
@@ -1735,12 +1856,13 @@ export type PostInfraByInfraIdLockApiArg = {
   /** An existing infra ID */
   infraId: number;
 };
-export type PostInfraByInfraIdMatchOperationalPointsApiResponse = /** status 200
+export type PostInfraByInfraIdMatchOperationalPointsApiResponse =
+  /** status 200
 Take a list of operational point references and return for each of them the list
 of operational points that they match on a given infrastructure.
  */ {
-  related_operational_points: RelatedOperationalPoint[][];
-};
+    related_operational_points: RelatedOperationalPoint[][];
+  };
 export type PostInfraByInfraIdMatchOperationalPointsApiArg = {
   /** An existing infra ID */
   infraId: number;
@@ -1932,9 +2054,10 @@ export type PostLevelCrossingOccupancyApiArg = {
     train_ids: number[];
   };
 };
-export type GetLightRollingStockApiResponse = /** status 200  */ PaginationStats & {
-  results: LightRollingStockWithLiveries[];
-};
+export type GetLightRollingStockApiResponse =
+  /** status 200  */ PaginationStats & {
+    results: LightRollingStockWithLiveries[];
+  };
 export type GetLightRollingStockApiArg = {
   page?: number;
   pageSize?: number;
@@ -2003,9 +2126,10 @@ export type DeleteMacroNotesByNoteIdApiResponse = unknown;
 export type DeleteMacroNotesByNoteIdApiArg = {
   noteId: number;
 };
-export type GetProjectsApiResponse = /** status 200 The list of projects */ PaginationStats & {
-  results: ProjectWithStudies[];
-};
+export type GetProjectsApiResponse =
+  /** status 200 The list of projects */ PaginationStats & {
+    results: ProjectWithStudies[];
+  };
 export type GetProjectsApiArg = {
   page?: number;
   pageSize?: number;
@@ -2188,9 +2312,10 @@ export type DeleteStdcmSearchEnvironmentByEnvIdApiArg = {
   /** An stdcm search environment ID */
   envId: number;
 };
-export type GetStudiesApiResponse = /** status 200 The list of studies */ PaginationStats & {
-  results: StudyWithScenarios[];
-};
+export type GetStudiesApiResponse =
+  /** status 200 The list of studies */ PaginationStats & {
+    results: StudyWithScenarios[];
+  };
 export type GetStudiesApiArg = {
   projectId: number;
   page?: number;
@@ -2289,7 +2414,8 @@ export type GetTimetableByIdRoundTripsTrainSchedulesApiArg = {
   page?: number;
   pageSize?: number;
 };
-export type PostTimetableByIdStdcmApiResponse = /** status 200 The simulation result */
+export type PostTimetableByIdStdcmApiResponse =
+  /** status 200 The simulation result */
   | {
       core_payload?: null | CoreStdcmRequest;
       departure_time: string;
@@ -2401,9 +2527,10 @@ export type GetTimetableByIdTrainSchedulesApiArg = {
   page?: number;
   pageSize?: number;
 };
-export type GetTowedRollingStockApiResponse = /** status 200  */ PaginationStats & {
-  results: TowedRollingStock[];
-};
+export type GetTowedRollingStockApiResponse =
+  /** status 200  */ PaginationStats & {
+    results: TowedRollingStock[];
+  };
 export type GetTowedRollingStockApiArg = {
   page?: number;
   pageSize?: number;
@@ -2505,15 +2632,17 @@ export type PatchTrainSchedulesMoveApiArg = {
     train_schedule_set_id: number;
   };
 };
-export type PostTrainSchedulesOccupancyBlocksApiResponse = /** status 200  */ {
-  [key: string]: OccupancyBlocksTrainScheduleResult;
-};
+export type PostTrainSchedulesOccupancyBlocksApiResponse =
+  /** status 200  */ {
+    [key: string]: OccupancyBlocksTrainScheduleResult;
+  };
 export type PostTrainSchedulesOccupancyBlocksApiArg = {
   occupancyBlockForm: OccupancyBlockForm;
 };
-export type PostTrainSchedulesProjectPathApiResponse = /** status 200 Project Path Output */ {
-  [key: string]: ProjectPathTrainScheduleResult;
-};
+export type PostTrainSchedulesProjectPathApiResponse =
+  /** status 200 Project Path Output */ {
+    [key: string]: ProjectPathTrainScheduleResult;
+  };
 export type PostTrainSchedulesProjectPathApiArg = {
   projectPathForm: ProjectPathForm;
 };

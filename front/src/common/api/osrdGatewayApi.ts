@@ -19,7 +19,10 @@ const injectedRtkApi = api
         providesTags: ['authentication'],
       }),
       providerLogin: build.mutation<ProviderLoginApiResponse, ProviderLoginApiArg>({
-        query: (queryArg) => ({ url: `/auth/provider/${queryArg.provider}/login`, method: 'POST' }),
+        query: (queryArg) => ({
+          url: `/auth/provider/${queryArg.provider}/login`,
+          method: 'POST',
+        }),
         invalidatesTags: ['authentication'],
       }),
     }),

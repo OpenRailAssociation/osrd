@@ -50,10 +50,11 @@ export type PostTransformTimetableApiArg = {
   /** Arbitrary file to transform into a standard OSRD timetable json file */
   body: Blob;
 };
-export type GetSendLastMinuteRequestAuthorizedApiResponse = /** status 200 Authorization result */ {
-  /** Whether the user is authenticated and authorized to send last-minute requests */
-  authorized: boolean;
-};
+export type GetSendLastMinuteRequestAuthorizedApiResponse =
+  /** status 200 Authorization result */ {
+    /** Whether the user is authenticated and authorized to send last-minute requests */
+    authorized: boolean;
+  };
 export type GetSendLastMinuteRequestAuthorizedApiArg = void;
 export type PostSendLastMinuteRequestApiResponse =
   /** status 200 User successfully identified, the last-minute request has been formatted and transferred. */ SendLastMinuteRequestResponse;

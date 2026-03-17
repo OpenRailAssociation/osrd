@@ -10,8 +10,6 @@
     "public/locales/en/infraEditor.json",
     "src/applications/OperationalStudies/views/Scenario/components/ImportTimetableItem/rollingstock_opendata2osrd.json",
     "src/assets/mapstyles/*.json",
-    "src/common/api/generatedEditoastApi.ts",
-    "src/common/api/osrdGatewayApi.ts",
     "src/common/NavBar/json/licenses.json",
     "src/reducers/osrdconf/infra_schema.json",
     "src/utils/__tests__/assets/*.json",
