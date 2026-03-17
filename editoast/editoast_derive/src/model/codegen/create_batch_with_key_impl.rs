@@ -44,13 +44,13 @@ impl ToTokens for CreateBatchWithKeyImpl {
                 collection_init: syn::parse_quote! { C::default() },
             },
             chunk_iteration_body: quote! {
-                diesel::insert_into(dsl::#table_name)
+                let stream = diesel::insert_into(dsl::#table_name)
                     .values(chunk)
                     .returning((#(dsl::#columns,)*))
                     .load_stream::<#row>(conn.write().await.deref_mut())
                     .await
-                    .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
-                    .map_ok(|row| {
+                    .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?;
+                futures_util::TryStreamExt::map_ok(stream, |row| {
                         let model = <#model as Model>::from_row(row);
                         (model.get_id(), model)
                     })
@@ -79,7 +79,7 @@ impl ToTokens for CreateBatchWithKeyImpl {
                     use #table_mod::dsl;
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
-                    use futures_util::stream::TryStreamExt;
+                    use futures_util::TryStreamExt;
                     let values = values.into_iter().collect::<Vec<_>>();
                     Ok({ #create_loop })
                 }

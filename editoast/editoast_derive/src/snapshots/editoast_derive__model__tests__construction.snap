@@ -510,7 +510,7 @@ impl crate::prelude::List for Document {
     ) -> std::result::Result<Vec<Self>, Self::Error> {
         use diesel::QueryDsl;
         use diesel_async::RunQueryDsl;
-        use futures_util::stream::TryStreamExt;
+        use futures_util::TryStreamExt;
         use database::tables::osrd_infra_document::dsl;
         use std::ops::DerefMut;
         let mut query = database::tables::osrd_infra_document::table.into_boxed();
@@ -530,12 +530,15 @@ impl crate::prelude::List for Document {
             tracing::Span::current().record("offset", offset);
             query = query.offset(offset);
         }
-        query
+        let stream = query
             .select((dsl::id, dsl::content_type, dsl::data))
             .load_stream::<DocumentRow>(conn.write().await.deref_mut())
             .await
-            .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
-            .map_ok(<Document as crate::prelude::Model>::from_row)
+            .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?;
+        futures_util::TryStreamExt::map_ok(
+                stream,
+                <Document as crate::prelude::Model>::from_row,
+            )
             .try_collect::<Vec<_>>()
             .await
             .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
@@ -604,7 +607,7 @@ impl crate::prelude::CreateBatch for Document {
         use std::ops::DerefMut;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
-        use futures_util::stream::TryStreamExt;
+        use futures_util::TryStreamExt;
         let values = values.into_iter().collect::<Vec<_>>();
         Ok({
             const LIBPQ_MAX_PARAMETERS: usize = 2_usize.pow(16) - 1;
@@ -614,13 +617,18 @@ impl crate::prelude::CreateBatch for Document {
             let chunks = values.chunks(CHUNK_SIZE.min(2048usize));
             for chunk in chunks {
                 let chunk_result = {
-                    diesel::insert_into(dsl::osrd_infra_document)
+                    let stream = diesel::insert_into(dsl::osrd_infra_document)
                         .values(chunk)
                         .returning((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
-                        .map_ok(<Document as Model>::from_row)
+                        .map_err(|e| Self::Error::from(
+                            editoast_models::Error::from(e),
+                        ))?;
+                    futures_util::TryStreamExt::map_ok(
+                            stream,
+                            <Document as Model>::from_row,
+                        )
                         .try_collect::<Vec<_>>()
                         .await
                         .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
@@ -648,7 +656,7 @@ impl crate::prelude::CreateBatchWithKey<(String)> for Document {
         use database::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
-        use futures_util::stream::TryStreamExt;
+        use futures_util::TryStreamExt;
         let values = values.into_iter().collect::<Vec<_>>();
         Ok({
             const LIBPQ_MAX_PARAMETERS: usize = 2_usize.pow(16) - 1;
@@ -658,16 +666,21 @@ impl crate::prelude::CreateBatchWithKey<(String)> for Document {
             let chunks = values.chunks(CHUNK_SIZE.min(2048usize));
             for chunk in chunks {
                 let chunk_result = {
-                    diesel::insert_into(dsl::osrd_infra_document)
+                    let stream = diesel::insert_into(dsl::osrd_infra_document)
                         .values(chunk)
                         .returning((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
-                        .map_ok(|row| {
-                            let model = <Document as Model>::from_row(row);
-                            (model.get_id(), model)
-                        })
+                        .map_err(|e| Self::Error::from(
+                            editoast_models::Error::from(e),
+                        ))?;
+                    futures_util::TryStreamExt::map_ok(
+                            stream,
+                            |row| {
+                                let model = <Document as Model>::from_row(row);
+                                (model.get_id(), model)
+                            },
+                        )
                         .try_collect::<Vec<_>>()
                         .await
                         .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
@@ -695,7 +708,7 @@ impl crate::prelude::CreateBatchWithKey<(i64)> for Document {
         use database::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
-        use futures_util::stream::TryStreamExt;
+        use futures_util::TryStreamExt;
         let values = values.into_iter().collect::<Vec<_>>();
         Ok({
             const LIBPQ_MAX_PARAMETERS: usize = 2_usize.pow(16) - 1;
@@ -705,16 +718,21 @@ impl crate::prelude::CreateBatchWithKey<(i64)> for Document {
             let chunks = values.chunks(CHUNK_SIZE.min(2048usize));
             for chunk in chunks {
                 let chunk_result = {
-                    diesel::insert_into(dsl::osrd_infra_document)
+                    let stream = diesel::insert_into(dsl::osrd_infra_document)
                         .values(chunk)
                         .returning((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
-                        .map_ok(|row| {
-                            let model = <Document as Model>::from_row(row);
-                            (model.get_id(), model)
-                        })
+                        .map_err(|e| Self::Error::from(
+                            editoast_models::Error::from(e),
+                        ))?;
+                    futures_util::TryStreamExt::map_ok(
+                            stream,
+                            |row| {
+                                let model = <Document as Model>::from_row(row);
+                                (model.get_id(), model)
+                            },
+                        )
                         .try_collect::<Vec<_>>()
                         .await
                         .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
@@ -742,7 +760,7 @@ impl crate::prelude::RetrieveBatchUnchecked<(String)> for Document {
         use database::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
-        use futures_util::stream::TryStreamExt;
+        use futures_util::TryStreamExt;
         use std::ops::DerefMut;
         let ids = ids.into_iter().collect::<Vec<_>>();
         tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
@@ -758,12 +776,17 @@ impl crate::prelude::RetrieveBatchUnchecked<(String)> for Document {
                     for content_type in chunk.into_iter() {
                         query = query.or_filter(dsl::content_type.eq(content_type));
                     }
-                    query
+                    let stream = query
                         .select((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
-                        .map_ok(<Document as Model>::from_row)
+                        .map_err(|e| Self::Error::from(
+                            editoast_models::Error::from(e),
+                        ))?;
+                    futures_util::TryStreamExt::map_ok(
+                            stream,
+                            <Document as Model>::from_row,
+                        )
                         .try_collect::<Vec<_>>()
                         .await
                         .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
@@ -788,7 +811,7 @@ impl crate::prelude::RetrieveBatchUnchecked<(String)> for Document {
         use database::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
-        use futures_util::stream::TryStreamExt;
+        use futures_util::TryStreamExt;
         use std::ops::DerefMut;
         let ids = ids.into_iter().collect::<Vec<_>>();
         tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
@@ -804,15 +827,20 @@ impl crate::prelude::RetrieveBatchUnchecked<(String)> for Document {
                     for content_type in chunk.into_iter() {
                         query = query.or_filter(dsl::content_type.eq(content_type));
                     }
-                    query
+                    let stream = query
                         .select((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
-                        .map_ok(|row| {
-                            let model = <Document as Model>::from_row(row);
-                            (model.get_id(), model)
-                        })
+                        .map_err(|e| Self::Error::from(
+                            editoast_models::Error::from(e),
+                        ))?;
+                    futures_util::TryStreamExt::map_ok(
+                            stream,
+                            |row| {
+                                let model = <Document as Model>::from_row(row);
+                                (model.get_id(), model)
+                            },
+                        )
                         .try_collect::<Vec<_>>()
                         .await
                         .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
@@ -840,7 +868,7 @@ impl crate::prelude::RetrieveBatchUnchecked<(i64)> for Document {
         use database::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
-        use futures_util::stream::TryStreamExt;
+        use futures_util::TryStreamExt;
         use std::ops::DerefMut;
         let ids = ids.into_iter().collect::<Vec<_>>();
         tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
@@ -856,12 +884,17 @@ impl crate::prelude::RetrieveBatchUnchecked<(i64)> for Document {
                     for id_ in chunk.into_iter() {
                         query = query.or_filter(dsl::id.eq(id_));
                     }
-                    query
+                    let stream = query
                         .select((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
-                        .map_ok(<Document as Model>::from_row)
+                        .map_err(|e| Self::Error::from(
+                            editoast_models::Error::from(e),
+                        ))?;
+                    futures_util::TryStreamExt::map_ok(
+                            stream,
+                            <Document as Model>::from_row,
+                        )
                         .try_collect::<Vec<_>>()
                         .await
                         .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
@@ -886,7 +919,7 @@ impl crate::prelude::RetrieveBatchUnchecked<(i64)> for Document {
         use database::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
-        use futures_util::stream::TryStreamExt;
+        use futures_util::TryStreamExt;
         use std::ops::DerefMut;
         let ids = ids.into_iter().collect::<Vec<_>>();
         tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
@@ -902,15 +935,20 @@ impl crate::prelude::RetrieveBatchUnchecked<(i64)> for Document {
                     for id_ in chunk.into_iter() {
                         query = query.or_filter(dsl::id.eq(id_));
                     }
-                    query
+                    let stream = query
                         .select((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
-                        .map_ok(|row| {
-                            let model = <Document as Model>::from_row(row);
-                            (model.get_id(), model)
-                        })
+                        .map_err(|e| Self::Error::from(
+                            editoast_models::Error::from(e),
+                        ))?;
+                    futures_util::TryStreamExt::map_ok(
+                            stream,
+                            |row| {
+                                let model = <Document as Model>::from_row(row);
+                                (model.get_id(), model)
+                            },
+                        )
                         .try_collect::<Vec<_>>()
                         .await
                         .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
@@ -942,7 +980,7 @@ impl crate::prelude::UpdateBatchUnchecked<Document, (String)> for DocumentChange
         use database::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
-        use futures_util::stream::TryStreamExt as _;
+        use futures_util::TryStreamExt as _;
         use futures_util::TryFutureExt as _;
         use std::ops::DerefMut;
         let ids = ids.into_iter().collect::<Vec<_>>();
@@ -961,14 +999,19 @@ impl crate::prelude::UpdateBatchUnchecked<Document, (String)> for DocumentChange
                     for content_type in chunk.into_iter() {
                         query = query.or_filter(dsl::content_type.eq(content_type));
                     }
-                    diesel::update(dsl::osrd_infra_document)
+                    let stream = diesel::update(dsl::osrd_infra_document)
                         .filter(dsl::id.eq_any(query))
                         .set(&self)
                         .returning((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
-                        .map_ok(<Document as Model>::from_row)
+                        .map_err(|e| Self::Error::from(
+                            editoast_models::Error::from(e),
+                        ))?;
+                    futures_util::TryStreamExt::map_ok(
+                            stream,
+                            <Document as Model>::from_row,
+                        )
                         .try_collect::<Vec<_>>()
                         .await
                         .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
@@ -998,7 +1041,7 @@ impl crate::prelude::UpdateBatchUnchecked<Document, (String)> for DocumentChange
         use std::ops::DerefMut;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
-        use futures_util::stream::TryStreamExt as _;
+        use futures_util::TryStreamExt as _;
         use futures_util::TryFutureExt as _;
         let ids = ids.into_iter().collect::<Vec<_>>();
         tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
@@ -1016,17 +1059,22 @@ impl crate::prelude::UpdateBatchUnchecked<Document, (String)> for DocumentChange
                     for content_type in chunk.into_iter() {
                         query = query.or_filter(dsl::content_type.eq(content_type));
                     }
-                    diesel::update(dsl::osrd_infra_document)
+                    let stream = diesel::update(dsl::osrd_infra_document)
                         .filter(dsl::id.eq_any(query))
                         .set(&self)
                         .returning((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
-                        .map_ok(|row| {
-                            let model = <Document as Model>::from_row(row);
-                            (model.get_id(), model)
-                        })
+                        .map_err(|e| Self::Error::from(
+                            editoast_models::Error::from(e),
+                        ))?;
+                    futures_util::TryStreamExt::map_ok(
+                            stream,
+                            |row| {
+                                let model = <Document as Model>::from_row(row);
+                                (model.get_id(), model)
+                            },
+                        )
                         .try_collect::<Vec<_>>()
                         .await
                         .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
@@ -1058,7 +1106,7 @@ impl crate::prelude::UpdateBatchUnchecked<Document, (i64)> for DocumentChangeset
         use database::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
-        use futures_util::stream::TryStreamExt as _;
+        use futures_util::TryStreamExt as _;
         use futures_util::TryFutureExt as _;
         use std::ops::DerefMut;
         let ids = ids.into_iter().collect::<Vec<_>>();
@@ -1077,14 +1125,19 @@ impl crate::prelude::UpdateBatchUnchecked<Document, (i64)> for DocumentChangeset
                     for id_ in chunk.into_iter() {
                         query = query.or_filter(dsl::id.eq(id_));
                     }
-                    diesel::update(dsl::osrd_infra_document)
+                    let stream = diesel::update(dsl::osrd_infra_document)
                         .filter(dsl::id.eq_any(query))
                         .set(&self)
                         .returning((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
-                        .map_ok(<Document as Model>::from_row)
+                        .map_err(|e| Self::Error::from(
+                            editoast_models::Error::from(e),
+                        ))?;
+                    futures_util::TryStreamExt::map_ok(
+                            stream,
+                            <Document as Model>::from_row,
+                        )
                         .try_collect::<Vec<_>>()
                         .await
                         .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
@@ -1114,7 +1167,7 @@ impl crate::prelude::UpdateBatchUnchecked<Document, (i64)> for DocumentChangeset
         use std::ops::DerefMut;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
-        use futures_util::stream::TryStreamExt as _;
+        use futures_util::TryStreamExt as _;
         use futures_util::TryFutureExt as _;
         let ids = ids.into_iter().collect::<Vec<_>>();
         tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
@@ -1132,17 +1185,22 @@ impl crate::prelude::UpdateBatchUnchecked<Document, (i64)> for DocumentChangeset
                     for id_ in chunk.into_iter() {
                         query = query.or_filter(dsl::id.eq(id_));
                     }
-                    diesel::update(dsl::osrd_infra_document)
+                    let stream = diesel::update(dsl::osrd_infra_document)
                         .filter(dsl::id.eq_any(query))
                         .set(&self)
                         .returning((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
-                        .map_ok(|row| {
-                            let model = <Document as Model>::from_row(row);
-                            (model.get_id(), model)
-                        })
+                        .map_err(|e| Self::Error::from(
+                            editoast_models::Error::from(e),
+                        ))?;
+                    futures_util::TryStreamExt::map_ok(
+                            stream,
+                            |row| {
+                                let model = <Document as Model>::from_row(row);
+                                (model.get_id(), model)
+                            },
+                        )
                         .try_collect::<Vec<_>>()
                         .await
                         .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?

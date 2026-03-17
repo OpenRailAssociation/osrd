@@ -56,14 +56,14 @@ impl ToTokens for UpdateBatchImpl {
                 for #id_ident in chunk.into_iter() {
                     query = query.or_filter(#filters);
                 }
-                diesel::update(dsl::#table_name)
+                let stream = diesel::update(dsl::#table_name)
                     .filter(dsl::#primary_key_column.eq_any(query))
                     .set(&self)
                     .returning((#(dsl::#columns,)*))
                     .load_stream::<#row>(conn.write().await.deref_mut())
                     .await
-                    .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
-                    .map_ok(<#model as Model>::from_row)
+                    .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?;
+                futures_util::TryStreamExt::map_ok(stream, <#model as Model>::from_row)
                     .try_collect::<Vec<_>>()
                     .await
                     .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
@@ -75,14 +75,14 @@ impl ToTokens for UpdateBatchImpl {
             for #id_ident in chunk.into_iter() {
                 query = query.or_filter(#filters);
             }
-            diesel::update(dsl::#table_name)
+            let stream = diesel::update(dsl::#table_name)
                 .filter(dsl::#primary_key_column.eq_any(query))
                 .set(&self)
                 .returning((#(dsl::#columns,)*))
                 .load_stream::<#row>(conn.write().await.deref_mut())
                 .await
-                .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
-                .map_ok(|row| {
+                .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?;
+            futures_util::TryStreamExt::map_ok(stream, |row| {
                     let model = <#model as Model>::from_row(row);
                     (model.get_id(), model)
                 })
@@ -109,7 +109,7 @@ impl ToTokens for UpdateBatchImpl {
                     use #table_mod::dsl;
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
-                    use futures_util::stream::TryStreamExt as _;
+                    use futures_util::TryStreamExt as _;
                     use futures_util::TryFutureExt as _;
                     use std::ops::DerefMut;
                     let ids = ids.into_iter().collect::<Vec<_>>();
@@ -132,7 +132,7 @@ impl ToTokens for UpdateBatchImpl {
                     use std::ops::DerefMut;
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
-                    use futures_util::stream::TryStreamExt as _;
+                    use futures_util::TryStreamExt as _;
                     use futures_util::TryFutureExt as _;
                     let ids = ids.into_iter().collect::<Vec<_>>();
                     tracing::Span::current().record("query_ids", tracing::field::debug(&ids));

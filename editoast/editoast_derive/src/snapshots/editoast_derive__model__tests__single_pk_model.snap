@@ -222,7 +222,7 @@ impl crate::prelude::List for Timetable {
     ) -> std::result::Result<Vec<Self>, Self::Error> {
         use diesel::QueryDsl;
         use diesel_async::RunQueryDsl;
-        use futures_util::stream::TryStreamExt;
+        use futures_util::TryStreamExt;
         use database::tables::timetable::dsl;
         use std::ops::DerefMut;
         let mut query = database::tables::timetable::table.into_boxed();
@@ -242,12 +242,15 @@ impl crate::prelude::List for Timetable {
             tracing::Span::current().record("offset", offset);
             query = query.offset(offset);
         }
-        query
+        let stream = query
             .select((dsl::id,))
             .load_stream::<TimetableRow>(conn.write().await.deref_mut())
             .await
-            .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
-            .map_ok(<Timetable as crate::prelude::Model>::from_row)
+            .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?;
+        futures_util::TryStreamExt::map_ok(
+                stream,
+                <Timetable as crate::prelude::Model>::from_row,
+            )
             .try_collect::<Vec<_>>()
             .await
             .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
@@ -317,7 +320,7 @@ impl crate::prelude::RetrieveBatchUnchecked<(i64)> for Timetable {
         use database::tables::timetable::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
-        use futures_util::stream::TryStreamExt;
+        use futures_util::TryStreamExt;
         use std::ops::DerefMut;
         let ids = ids.into_iter().collect::<Vec<_>>();
         tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
@@ -333,12 +336,17 @@ impl crate::prelude::RetrieveBatchUnchecked<(i64)> for Timetable {
                     for id in chunk.into_iter() {
                         query = query.or_filter(dsl::id.eq(id));
                     }
-                    query
+                    let stream = query
                         .select((dsl::id,))
                         .load_stream::<TimetableRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
-                        .map_ok(<Timetable as Model>::from_row)
+                        .map_err(|e| Self::Error::from(
+                            editoast_models::Error::from(e),
+                        ))?;
+                    futures_util::TryStreamExt::map_ok(
+                            stream,
+                            <Timetable as Model>::from_row,
+                        )
                         .try_collect::<Vec<_>>()
                         .await
                         .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
@@ -363,7 +371,7 @@ impl crate::prelude::RetrieveBatchUnchecked<(i64)> for Timetable {
         use database::tables::timetable::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
-        use futures_util::stream::TryStreamExt;
+        use futures_util::TryStreamExt;
         use std::ops::DerefMut;
         let ids = ids.into_iter().collect::<Vec<_>>();
         tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
@@ -379,15 +387,20 @@ impl crate::prelude::RetrieveBatchUnchecked<(i64)> for Timetable {
                     for id in chunk.into_iter() {
                         query = query.or_filter(dsl::id.eq(id));
                     }
-                    query
+                    let stream = query
                         .select((dsl::id,))
                         .load_stream::<TimetableRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
-                        .map_ok(|row| {
-                            let model = <Timetable as Model>::from_row(row);
-                            (model.get_id(), model)
-                        })
+                        .map_err(|e| Self::Error::from(
+                            editoast_models::Error::from(e),
+                        ))?;
+                    futures_util::TryStreamExt::map_ok(
+                            stream,
+                            |row| {
+                                let model = <Timetable as Model>::from_row(row);
+                                (model.get_id(), model)
+                            },
+                        )
                         .try_collect::<Vec<_>>()
                         .await
                         .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
