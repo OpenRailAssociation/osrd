@@ -63,6 +63,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     updateProjectedTimetableItemDepartureTime,
   } = useLazyProjectTrains({
     infraId,
+    timetableId: scenario.timetable_id,
     electricalProfileSetId: scenario.electrical_profile_set_id,
     path:
       projectionPath?.pathfindingStatus === 'succeeded'
