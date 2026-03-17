@@ -4,7 +4,7 @@ import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.MutableDistanceArrayList
 import kotlin.math.min
 
-data class DistanceRangeMapImpl<T>(
+class MutableDistanceRangeMap<T>(
     private val bounds: MutableDistanceArrayList,
     private val values: MutableList<T?>,
 ) : DistanceRangeMap<T> {
@@ -16,7 +16,7 @@ data class DistanceRangeMapImpl<T>(
     }
 
     /** Sets the value between the lower and upper distances */
-    override fun put(lower: Distance, upper: Distance, value: T) {
+    fun put(lower: Distance, upper: Distance, value: T) {
         putOptional(lower, upper, value)
     }
 
@@ -29,7 +29,7 @@ data class DistanceRangeMapImpl<T>(
      * Another idea would be to use a temporary (so we can free the memory later) tree-like
      * structure (RangeMaps lib).
      */
-    override fun putMany(entries: Iterable<DistanceRangeMap.RangeMapEntry<T>>) {
+    fun putMany(entries: Iterable<DistanceRangeMap.RangeMapEntry<T>>) {
         // Unfortunately, built-in groupBy doesn't consider the original order, here we want
         // consecutive values.
         fun <U, V> groupByConsecutiveFirst(pairs: List<Pair<U, V>>): List<Pair<U, List<V>>> {
@@ -154,18 +154,14 @@ data class DistanceRangeMapImpl<T>(
         return bounds[bounds.size - 1]
     }
 
-    override fun truncate(beginOffset: Distance, endOffset: Distance) {
+    /** Removes all values outside the given range */
+    fun truncate(beginOffset: Distance, endOffset: Distance) {
         if (bounds.isNotEmpty()) {
             putOptional(lowerBound(), beginOffset, null)
             if (bounds.isNotEmpty()) {
                 putOptional(endOffset, upperBound(), null)
             }
         }
-    }
-
-    override fun shiftPositions(offset: Distance): DistanceRangeMap<T> {
-        for (i in 0 until bounds.size) bounds[i] = bounds[i] + offset
-        return this
     }
 
     override fun get(offset: Distance): T? {
@@ -176,36 +172,44 @@ data class DistanceRangeMapImpl<T>(
         return null
     }
 
-    override fun clone(): DistanceRangeMap<T> {
-        return DistanceRangeMapImpl(bounds.clone(), values.toMutableList())
+    override fun toMutableDistanceRangeMap(): MutableDistanceRangeMap<T> {
+        return MutableDistanceRangeMap(bounds.clone(), values.toMutableList())
     }
 
-    override fun subMap(lower: Distance, upper: Distance): DistanceRangeMap<T> {
-        require(lower < upper)
-        val res = this.clone()
-        res.truncate(lower, upper)
-        return res
+    override fun subMap(lower: Distance, upper: Distance, shift: Distance): DistanceRangeMap<T> {
+        return DistanceRangeSubMap(
+            fullMap = this,
+            lower = lower + shift,
+            upper = upper + shift,
+            shift = shift,
+        )
     }
 
     override fun isEmpty(): Boolean {
         return bounds.isEmpty()
     }
 
-    override fun <U> updateMapIntersection(
-        update: DistanceRangeMap<U>,
-        updateFunction: (T, U) -> T,
-    ) {
+    /**
+     * Updates the map with another one, using a merge function to fuse the values of intersecting
+     * ranges. Doesn't keep any range from update where there is no intersection.
+     */
+    fun <U> updateMapIntersection(update: DistanceRangeMap<U>, updateFunction: (T, U) -> T) {
         for ((updateLower, updateUpper, updateValue) in update) {
-            for ((subMapLower, subMapUpper, subMapValue) in this.subMap(updateLower, updateUpper)) {
+            val subMap = this.subMap(updateLower, updateUpper).toMutableDistanceRangeMap()
+            for ((subMapLower, subMapUpper, subMapValue) in subMap) {
                 this.put(subMapLower, subMapUpper, updateFunction(subMapValue, updateValue))
             }
         }
     }
 
-    override fun updateMap(
+    /**
+     * Updates the map with another one, using a merge function to fuse the values of intersecting
+     * ranges. Calls default on the values of the ranges from update where there is no intersection.
+     */
+    fun updateMap(
         update: DistanceRangeMap<T>,
         updateFunction: (T, T) -> T,
-        default: (T) -> T,
+        default: (T) -> T = { it },
     ) {
         val resultEntries = mutableListOf<DistanceRangeMap.RangeMapEntry<T>>()
 
@@ -295,7 +299,8 @@ data class DistanceRangeMapImpl<T>(
         this.putMany(resultEntries)
     }
 
-    override fun clear() {
+    /** Clear the map */
+    fun clear() {
         bounds.clear()
         values.clear()
     }
@@ -396,7 +401,7 @@ data class DistanceRangeMapImpl<T>(
         }
     }
 
-    private class IteratorImpl<T>(val rangeMap: DistanceRangeMapImpl<T>) :
+    private class IteratorImpl<T>(val rangeMap: MutableDistanceRangeMap<T>) :
         Iterator<DistanceRangeMap.RangeMapEntry<T>> {
         private var cursor = -1
 
@@ -421,6 +426,15 @@ data class DistanceRangeMapImpl<T>(
 
         override fun hasNext(): Boolean = cursor + 1 < rangeMap.values.size
     }
+
+    override fun equals(other: Any?): Boolean =
+        other is DistanceRangeMap<*> &&
+            this.asSequence().zip(other.asSequence()).all { (t, o) -> t == o }
+
+    override fun hashCode(): Int = fold(1) { hashCode, entry -> hashCode * 31 + entry.hashCode() }
+
+    override fun toString(): String =
+        joinToString(prefix = "{", postfix = "}") { "[${it.lower},${it.upper}]=${it.value}" }
 
     // This declaration is needed for the extension methods in kt-osrd-utils
     companion object

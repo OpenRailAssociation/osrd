@@ -14,17 +14,25 @@ import fr.sncf.osrd.utils.units.Distance
  *
  * `DistanceRangeMap` should be used when memory footprint is a concern (in particular to store
  * infra data), and only when precise interval semantics aren't necessary.
+ *
+ * # Note to implementors
+ *
+ * [DistanceRangeMap.iterator] must return entries in ascending order.
+ *
+ * Like [List] implementations, [DistanceRangeMap] implementations must override [Any.toString],
+ * [Any.equals] and [Any.hashCode] functions and provide implementations such that:
+ * - [DistanceRangeMap.toString] should return a string containing string representation of the
+ *   range entries in ascending order.
+ * - [DistanceRangeMap.equals] should consider two maps equal if and only if they contain the same
+ *   entries.
+ * - [DistanceRangeMap.hashCode] should be computed as a combination of the entries' hash codes
+ *   using the following algorithm: ```kotlin var hashCode: Int = 1 for (entry in
+ *   this.sortedAscending()) hashCode = hashCode * 31 + entry.hashCode() ```
  */
 interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
 
     /** When iterating over the values of the map, this represents one range of constant value */
     data class RangeMapEntry<T>(val lower: Distance, val upper: Distance, val value: T)
-
-    /** Sets the value between the lower and upper distances */
-    fun put(lower: Distance, upper: Distance, value: T)
-
-    /** Sets many values more efficiently than many calls to `put` */
-    fun putMany(entries: Iterable<RangeMapEntry<T>>)
 
     /** Returns a list of the entries in the map */
     @Deprecated(
@@ -39,64 +47,46 @@ interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
     /** Upper bound of the entry with the highest distance */
     fun upperBound(): Distance
 
-    /** Removes all values outside the given range */
-    fun truncate(beginOffset: Distance, endOffset: Distance)
-
-    /**
-     * Shifts the positions by adding the given value. Map is changed inplace, but still returned
-     * for call chains.
-     */
-    fun shiftPositions(offset: Distance): DistanceRangeMap<T>
-
     /**
      * Get the value at the given offset, if there is any. On exact transition offsets, the value
      * for the higher offset is used.
      */
     fun get(offset: Distance): T?
 
-    /** Returns a deep copy of the map */
-    fun clone(): DistanceRangeMap<T>
-
-    /** Returns a new DistanceRangeMap of the ranges between lower and upper */
-    fun subMap(lower: Distance, upper: Distance): DistanceRangeMap<T>
+    /** Returns a deep copy of the map as a [MutableDistanceRangeMap] */
+    fun toMutableDistanceRangeMap(): MutableDistanceRangeMap<T>
 
     /**
-     * Updates the map with another one, using a merge function to fuse the values of intersecting
-     * ranges. Doesn't keep any range from update where there is no intersection.
+     * Returns a new [DistanceRangeMap] of the ranges between [lower] and [upper].
+     *
+     * Optionally, it shifts the ranges of the resulting map by [shift].
      */
-    fun <U> updateMapIntersection(update: DistanceRangeMap<U>, updateFunction: (T, U) -> T)
-
-    /**
-     * Updates the map with another one, using a merge function to fuse the values of intersecting
-     * ranges. Calls default on the values of the ranges from update where there is no intersection.
-     */
-    fun updateMap(
-        update: DistanceRangeMap<T>,
-        updateFunction: (T, T) -> T,
-        default: (T) -> T = { it },
-    )
+    fun subMap(
+        lower: Distance,
+        upper: Distance,
+        shift: Distance = Distance.ZERO,
+    ): DistanceRangeMap<T>
 
     /** Returns true if there is no entry at all */
     fun isEmpty(): Boolean
-
-    /** Clear the map */
-    fun clear()
 }
 
-fun <T> distanceRangeMapOf(vararg entries: DistanceRangeMap.RangeMapEntry<T>): DistanceRangeMap<T> {
-    return DistanceRangeMapImpl(entries.asList())
+fun <T> distanceRangeMapOf(
+    vararg entries: DistanceRangeMap.RangeMapEntry<T>
+): MutableDistanceRangeMap<T> {
+    return MutableDistanceRangeMap(entries.asList())
 }
 
 fun <T> distanceRangeMapOf(
     entries: Sequence<DistanceRangeMap.RangeMapEntry<T>>
-): DistanceRangeMap<T> {
-    return DistanceRangeMapImpl(entries.asIterable())
+): MutableDistanceRangeMap<T> {
+    return MutableDistanceRangeMap(entries.asIterable())
 }
 
 fun <T> distanceRangeMapOf(
     entries: Iterable<DistanceRangeMap.RangeMapEntry<T>>
-): DistanceRangeMap<T> {
-    return DistanceRangeMapImpl(entries)
+): MutableDistanceRangeMap<T> {
+    return MutableDistanceRangeMap(entries)
 }
 
 /**

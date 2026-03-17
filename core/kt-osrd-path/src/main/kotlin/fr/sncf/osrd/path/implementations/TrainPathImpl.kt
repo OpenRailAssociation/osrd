@@ -309,8 +309,11 @@ data class TrainPathImpl(
                 .filter { !it.isSinglePoint() }
                 .flatMap {
                     getData(it.value)
-                        .subMap(it.objectBegin.distance, it.objectEnd.distance)
-                        .shiftPositions(it.pathBegin.distance - it.objectBegin.distance)
+                        .subMap(
+                            lower = it.objectBegin.distance,
+                            upper = it.objectEnd.distance,
+                            shift = it.pathBegin.distance - it.objectBegin.distance,
+                        )
                 }
         return distanceRangeMapOf(entries)
     }

@@ -103,12 +103,15 @@ private fun getChunkDirectionalDistanceRange(
     chunkEndOffset: Offset<TrackSection>,
 ): DirectionalMap<DistanceRangeMap<Double>> {
     val increasingChunkRange =
-        distanceRangeMap.subMap(chunkStartOffset.distance, chunkEndOffset.distance)
-    increasingChunkRange.shiftPositions(-chunkStartOffset.distance)
+        distanceRangeMap.subMap(
+            lower = chunkStartOffset.distance,
+            upper = chunkEndOffset.distance,
+            shift = -chunkStartOffset.distance,
+        )
     val chunkLength = chunkEndOffset - chunkStartOffset
     return DirectionalMap(
         increasingChunkRange,
-        DistanceRangeMapImpl(
+        MutableDistanceRangeMap(
             increasingChunkRange.reversed().map {
                 DistanceRangeMap.RangeMapEntry(
                     chunkLength - it.upper,
@@ -366,8 +369,11 @@ private fun parseRjsTrackSection(
             getChunkDirectionalDistanceRange(trackSectionCurves, chunkStartOffset, chunkEndOffset)
 
         val chunkBlockedGauges =
-            trackSectionBlockedGauges.subMap(chunkStartOffset.distance, chunkEndOffset.distance)
-        chunkBlockedGauges.shiftPositions(-chunkStartOffset.distance)
+            trackSectionBlockedGauges.subMap(
+                lower = chunkStartOffset.distance,
+                upper = chunkEndOffset.distance,
+                shift = -chunkStartOffset.distance,
+            )
 
         val chunkLength = chunkEndOffset - chunkStartOffset
 
@@ -468,7 +474,7 @@ fun parseNeutralRanges(
 
 // Parse speed-sections
 fun mergeIntoSpeedSections(
-    initialSpeedSections: DirectionalMap<DistanceRangeMap<SpeedSection>>,
+    initialSpeedSections: DirectionalMap<MutableDistanceRangeMap<SpeedSection>>,
     direction: Direction,
     lower: Distance,
     upper: Distance,
