@@ -11,10 +11,9 @@ import {
   fetchTimetableItem,
   storePacedTrain,
 } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
-import type { TimetableItem, TimetableItemId, PacedTrainId } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration } from 'utils/duration';
-import { isPacedTrainId } from 'utils/trainId';
 
 import { checkChangeGroups } from '../../ManageTimetableItem/helpers/buildPacedTrainException';
 import type {
@@ -449,7 +448,7 @@ const handleCreateTimetableItem = async (
   }
   addUpsertedTimetableItems(newTimetableItems);
 
-  const newTrainIds: [PacedTrainId, PacedTrainId | null] = [
+  const newTrainIds: [number, number | null] = [
     newTimetableItems[0].id,
     newTimetableItems.at(1)?.id ?? null,
   ];
@@ -458,12 +457,11 @@ const handleCreateTimetableItem = async (
 };
 
 const deleteTimetableItemById = async (
-  timetableItemId: TimetableItemId,
+  timetableItemId: number,
   dispatch: AppDispatch,
-  addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void
+  addDeletedTimetableItemIds: (timetableItemIds: number[]) => void
 ) => {
-  if (isPacedTrainId(timetableItemId)) await deleteTrainSchedules(dispatch, [timetableItemId]);
-  else throw new Error('TrainSchedules are not handled anymore.');
+  await deleteTrainSchedules(dispatch, [timetableItemId]);
 
   addDeletedTimetableItemIds([timetableItemId]);
 };
@@ -472,7 +470,7 @@ const handleDeleteTimetableItem = async (
   trainrunId: number,
   state: MacroEditorState,
   dispatch: AppDispatch,
-  addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void
+  addDeletedTimetableItemIds: (timetableItemIds: number[]) => void
 ) => {
   const timetableItemIds = state.timetableItemIdByNgeId.get(trainrunId);
   for (const timetableItemId of timetableItemIds ?? []) {
@@ -508,7 +506,7 @@ export const handleUpdateTimetableItem = async ({
   state: MacroEditorState;
   dispatch: AppDispatch;
   addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void;
-  addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void;
+  addDeletedTimetableItemIds: (timetableItemIds: number[]) => void;
 }) => {
   const timetableItemIds = state.timetableItemIdByNgeId.get(trainrun.id)!;
   const oldForwardTimetableItem = await fetchTimetableItem(timetableItemIds[0], dispatch);
@@ -664,7 +662,7 @@ export const handleTrainrunOperation = async ({
   state: MacroEditorState;
   dispatch: AppDispatch;
   addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void;
-  addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void;
+  addDeletedTimetableItemIds: (timetableItemIds: number[]) => void;
 }) => {
   const trainrun = netzgrafikDto.trainruns.find((tr) => tr.id === trainrunId);
   switch (type) {
@@ -718,7 +716,7 @@ export const updateTrainrunsByNode = async ({
   infraId: number;
   trainScheduleSetId: number;
   addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void;
-  addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void;
+  addDeletedTimetableItemIds: (timetableItemIds: number[]) => void;
   node: NodeDto;
 }) => {
   const trainrunsById = new Map<number, TrainrunDto>();

@@ -12,6 +12,7 @@ import {
 } from 'modules/timetableItem/helpers/pacedTrain';
 import type { Occurrence, PacedTrainWithPacedWithDetails } from 'modules/timetableItem/types';
 import {
+  formatEditoastIdToPacedTrainId,
   formatPacedTrainIdToExceptionId,
   formatPacedTrainIdToIndexedOccurrenceId,
 } from 'utils/trainId';
@@ -35,10 +36,11 @@ const useOccurrences = (
 
   const occurrences = useMemo(() => {
     const computedOccurrences: Occurrence[] = [];
+    const pacedTrainId = formatEditoastIdToPacedTrainId(id);
 
     // Handle indexed occurrences
     for (let i = 0; i < occurrencesCount; i += 1) {
-      const occurrenceId = formatPacedTrainIdToIndexedOccurrenceId(id, i);
+      const occurrenceId = formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, i);
 
       const correspondingException = findExceptionWithOccurrenceId(exceptions, occurrenceId);
 
@@ -87,7 +89,7 @@ const useOccurrences = (
       const startTime = new Date(exception.start_time!.value);
 
       computedOccurrences.push({
-        id: formatPacedTrainIdToExceptionId(id, exception.key),
+        id: formatPacedTrainIdToExceptionId(pacedTrainId, exception.key),
         trainName: exception.train_name?.value ?? `${name}/+`,
         rollingStock: occurrenceRollingStock,
         startTime,

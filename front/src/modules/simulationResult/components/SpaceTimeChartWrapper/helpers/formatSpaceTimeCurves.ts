@@ -13,8 +13,12 @@ import {
   isPacedTrainWithDetails,
 } from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
-import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
-import { isOccurrenceId, extractPacedTrainIdFromOccurrenceId } from 'utils/trainId';
+import type { TrainId } from 'reducers/osrdconf/types';
+import {
+  isOccurrenceId,
+  extractPacedTrainIdFromOccurrenceId,
+  extractEditoastIdFromPacedTrainId,
+} from 'utils/trainId';
 
 export type PathDataWithSimulated = PathData & {
   colors: CategoryColors;
@@ -22,12 +26,12 @@ export type PathDataWithSimulated = PathData & {
 };
 
 const getTrainCategory = (
-  timetableItemsWithDetailsById: Map<TimetableItemId, TimetableItemWithDetails>,
+  timetableItemsWithDetailsById: Map<number, TimetableItemWithDetails>,
   trainId: TrainId
 ) => {
-  const timetableItemId = isOccurrenceId(trainId)
-    ? extractPacedTrainIdFromOccurrenceId(trainId)
-    : trainId;
+  const timetableItemId = extractEditoastIdFromPacedTrainId(
+    isOccurrenceId(trainId) ? extractPacedTrainIdFromOccurrenceId(trainId) : trainId
+  );
 
   const item = timetableItemsWithDetailsById.get(timetableItemId);
 
@@ -40,7 +44,7 @@ const getTrainCategory = (
 const formatSpaceTimeCurves = (
   subCategories: SubCategory[],
   individualTrainProjections: IndividualTrainProjection[],
-  timetableItemsWithDetailsById: Map<TimetableItemId, TimetableItemWithDetails>
+  timetableItemsWithDetailsById: Map<number, TimetableItemWithDetails>
 ): PathDataWithSimulated[] =>
   individualTrainProjections.flatMap((train) => {
     const category = getTrainCategory(timetableItemsWithDetailsById, train.id);

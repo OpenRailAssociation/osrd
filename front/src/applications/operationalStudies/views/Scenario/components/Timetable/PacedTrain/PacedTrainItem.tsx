@@ -29,13 +29,7 @@ import {
 } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import type { PacedTrainWithPacedWithDetails } from 'modules/timetableItem/types';
 import { setFailure, setSuccess } from 'reducers/main';
-import type {
-  PacedTrainId,
-  TimetableItem,
-  TimetableItemId,
-  TrainId,
-  OccurrenceId,
-} from 'reducers/osrdconf/types';
+import type { TimetableItem, TrainId, OccurrenceId } from 'reducers/osrdconf/types';
 import {
   updateHoveredTrainId,
   updateProjectionType,
@@ -51,6 +45,7 @@ import {
   extractPacedTrainIdFromOccurrenceId,
   isPacedTrainId,
   formatPacedTrainIdToOccurrenceId,
+  formatEditoastIdToPacedTrainId,
 } from 'utils/trainId';
 
 import { TIMETABLE_ITEM_DELTA } from '../consts';
@@ -62,9 +57,9 @@ import OccurrenceItem from './OccurrenceItem';
 
 type PacedTrainItemProps = {
   isInSelection: boolean;
-  handleSelectPacedTrain: (pacedTrainId: PacedTrainId) => void;
+  handleSelectPacedTrain: (pacedTrainId: number) => void;
   isOccurrencesListOpen: boolean;
-  handleOpenOccurrencesList: (pacedTrainId: PacedTrainId) => void;
+  handleOpenOccurrencesList: (pacedTrainId: number) => void;
   pacedTrain: PacedTrainWithPacedWithDetails;
   isOnEdit: boolean;
   selectedTrainId?: TrainId;
@@ -74,8 +69,8 @@ type PacedTrainItemProps = {
     occurrenceId?: OccurrenceId
   ) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
-  removePacedTrains: (pacedTrainIdsToRemove: TimetableItemId[]) => void;
-  setSelectedTimetableItemIds: React.Dispatch<React.SetStateAction<TimetableItemId[]>>;
+  removePacedTrains: (pacedTrainIdsToRemove: number[]) => void;
+  setSelectedTimetableItemIds: React.Dispatch<React.SetStateAction<number[]>>;
   subCategories: SubCategory[];
   infraIsCached: boolean;
   projectingOnSimulatedPathException: boolean | undefined;
@@ -113,16 +108,20 @@ const PacedTrainItem = ({
 
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
 
+  const formattedPacedTrainId = formatEditoastIdToPacedTrainId(pacedTrain.id);
+
   const { showPacedTrainProjectionIcon, pathUsedForProjectionIsException } = useMemo(() => {
     if (!trainIdUsedForProjection)
       return { showPacedTrainProjectionIcon: false, pathUsedForProjectionIsException: false };
     if (isPacedTrainId(trainIdUsedForProjection))
       return {
-        showPacedTrainProjectionIcon: pacedTrain.id === trainIdUsedForProjection,
+        showPacedTrainProjectionIcon:
+          pacedTrain.id === extractEditoastIdFromPacedTrainId(trainIdUsedForProjection),
         pathUsedForProjectionIsException: false,
       };
     const exception = pacedTrain.paced.exceptions.find(
-      (ex) => formatPacedTrainIdToOccurrenceId(pacedTrain.id, ex) === trainIdUsedForProjection
+      (ex) =>
+        formatPacedTrainIdToOccurrenceId(formattedPacedTrainId, ex) === trainIdUsedForProjection
     );
     const pacedTrainTrackOffsets = pacedTrain.path.filter((step) => 'track' in step);
     const exceptionTrackOffsets = exception?.path_and_schedule?.path?.filter(
@@ -133,7 +132,9 @@ const PacedTrainItem = ({
 
     return {
       showPacedTrainProjectionIcon:
-        extractPacedTrainIdFromOccurrenceId(trainIdUsedForProjection) === pacedTrain.id,
+        extractEditoastIdFromPacedTrainId(
+          extractPacedTrainIdFromOccurrenceId(trainIdUsedForProjection)
+        ) === pacedTrain.id,
       pathUsedForProjectionIsException:
         projectingOnSimulatedPathException || isTrackOffsetsException,
     };
@@ -152,7 +153,7 @@ const PacedTrainItem = ({
   const [getTrainScheduleById] = osrdEditoastApi.endpoints.getTrainSchedulesById.useLazyQuery();
 
   const selectPathProjection = async () => {
-    dispatch(updateTrainIdUsedForProjection(pacedTrain.id));
+    dispatch(updateTrainIdUsedForProjection(formattedPacedTrainId));
     if (!summary?.isValid) dispatch(updateProjectionType('operationalPointProjection'));
   };
 
@@ -172,8 +173,8 @@ const PacedTrainItem = ({
     }
   };
 
-  const selectPacedTrainId = (pacedId: PacedTrainId) => {
-    dispatch(updateSelectedTrainId(pacedId));
+  const selectPacedTrainId = () => {
+    dispatch(updateSelectedTrainId(formattedPacedTrainId));
   };
 
   async function deleteExceptions() {
@@ -196,12 +197,10 @@ const PacedTrainItem = ({
     // Static for now, will be dynamic when UI will be ready
     const pacedTrainName = `${pacedTrain.name} (${t('timetable.copy')})`;
 
-    const editoastTrainId = extractEditoastIdFromPacedTrainId(pacedTrain.id);
-
     let pacedTrainDetail: TrainScheduleResponse;
     try {
       const pacedTrainDetailPromise = getTrainScheduleById({
-        id: editoastTrainId,
+        id: pacedTrain.id,
       });
       pacedTrainDetail = await pacedTrainDetailPromise.unwrap();
       pacedTrainDetailPromise.unsubscribe();
@@ -260,9 +259,9 @@ const PacedTrainItem = ({
           invalid: summary && !summary.isValid,
           warning: !!worstCase,
           [`warning-${worstCase}`]: !!worstCase,
-          selected: selectedTrainId === pacedTrain.id,
+          selected: selectedTrainId === formattedPacedTrainId,
         })}
-        onMouseEnter={() => dispatch(updateHoveredTrainId(pacedTrain.id))}
+        onMouseEnter={() => dispatch(updateHoveredTrainId(formattedPacedTrainId))}
         onMouseLeave={() => dispatch(updateHoveredTrainId(undefined))}
       >
         {isSelectMode && (
@@ -312,7 +311,7 @@ const PacedTrainItem = ({
             className="train-info"
             data-testid="selected-paced-train-area"
             role="button"
-            onClick={() => selectPacedTrainId(pacedTrain.id)}
+            onClick={selectPacedTrainId}
             tabIndex={0}
           >
             <span

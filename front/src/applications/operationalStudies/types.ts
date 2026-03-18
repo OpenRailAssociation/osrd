@@ -22,7 +22,7 @@ import type {
 import type { RangedValue } from 'common/types';
 import type { PathOperationalPoint } from 'modules/simulationResult/types';
 import type { SuggestedOP } from 'modules/timetableItem/types';
-import type { Train, TimetableItemWithPathOps, PacedTrainId } from 'reducers/osrdconf/types';
+import type { Train, TimetableItemWithPathOps } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
 import type { ArrayElement } from 'utils/types';
 
@@ -41,7 +41,7 @@ export type PacedTrainWithPaced = Omit<TrainScheduleResponse, 'id' | 'paced'> & 
 };
 
 export type PacedTrainResponseWithPaced = PacedTrainWithPaced & {
-  id: PacedTrainId;
+  id: number;
 };
 
 export type PacedTrainFromJson = Omit<TrainSchedule, 'category'> & {

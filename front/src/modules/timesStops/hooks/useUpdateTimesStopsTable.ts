@@ -132,7 +132,9 @@ const useUpdateTimesStopsTable = (
    */
   const updateOccurrence = useCallback(
     async (occurrenceId: OccurrenceId, update: CellUpdate) => {
-      const pacedTrainId = extractPacedTrainIdFromOccurrenceId(occurrenceId);
+      const pacedTrainId = extractEditoastIdFromPacedTrainId(
+        extractPacedTrainIdFromOccurrenceId(occurrenceId)
+      );
       const originalPacedTrainWithDetails = timetableItemsWithDetails.find(
         (item) => item.id === pacedTrainId
       );
@@ -189,7 +191,7 @@ const useUpdateTimesStopsTable = (
       );
 
       await updateTrainSchedule({
-        id: extractEditoastIdFromPacedTrainId(pacedTrainId),
+        id: pacedTrainId,
         trainSchedule: updatedPacedTrain,
       }).unwrap();
       upsertTimetableItems([{ ...updatedPacedTrain, id: pacedTrainId }]);
@@ -202,18 +204,20 @@ const useUpdateTimesStopsTable = (
    */
   const updateTimetableItem = useCallback(
     async (trainId: PacedTrainId, update: CellUpdate) => {
+      const editoastId = extractEditoastIdFromPacedTrainId(trainId);
+
       // Handle first row
       if (update.field === 'requestedArrival' && update.row.opOnPathIndex === 0) {
         if (!update.value) return;
 
         const train: TimetableItem = {
           ...selectedTrain,
-          id: trainId,
+          id: editoastId,
           start_time: update.value.toISOString(),
         };
 
         await updateTrainSchedule({
-          id: extractEditoastIdFromPacedTrainId(trainId),
+          id: editoastId,
           trainSchedule: train,
         }).unwrap();
         upsertTimetableItems([train]);
@@ -226,13 +230,13 @@ const useUpdateTimesStopsTable = (
       const { updatedPath, updatedSchedule } = result;
       const train: TimetableItem = {
         ...selectedTrain,
-        id: trainId,
+        id: extractEditoastIdFromPacedTrainId(trainId),
         path: updatedPath,
         schedule: updatedSchedule,
       };
 
       await updateTrainSchedule({
-        id: extractEditoastIdFromPacedTrainId(trainId),
+        id: editoastId,
         trainSchedule: train,
       }).unwrap();
       upsertTimetableItems([train]);

@@ -6,8 +6,6 @@ import {
   type PostTrainSchedulesOccupancyBlocksApiResponse,
   type CoreTrainPath,
 } from 'common/api/osrdEditoastApi';
-import type { TimetableItemId } from 'reducers/osrdconf/types';
-import { extractEditoastIdFromPacedTrainId, formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
 import TrainProjectionLazyLoaderAbstract from './TrainProjectionLazyLoaderAbstract';
 import type {
@@ -33,15 +31,13 @@ export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyL
     super(options);
   }
 
-  async processBatch(batch: TimetableItemId[]) {
+  async processBatch(ids: number[]) {
     const { infraId, path, electricalProfileSetId } = this.options;
-
-    const editoastIds = batch.map((id) => extractEditoastIdFromPacedTrainId(id));
 
     let pacedTrainPromise: Promise<PostTrainSchedulesProjectPathApiResponse> = Promise.resolve({});
     let trainSchedulesOccupancyBlocksPromise: Promise<PostTrainSchedulesOccupancyBlocksApiResponse> =
       Promise.resolve({});
-    if (editoastIds.length > 0) {
+    if (ids.length > 0) {
       pacedTrainPromise = this.options
         .dispatch(
           osrdEditoastApi.endpoints.postTrainSchedulesProjectPath.initiate(
@@ -49,7 +45,7 @@ export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyL
               projectPathForm: {
                 infra_id: infraId,
                 track_section_ranges: path.track_section_ranges,
-                ids: editoastIds,
+                ids,
                 electrical_profile_set_id: electricalProfileSetId,
               },
             },
@@ -65,7 +61,7 @@ export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyL
               occupancyBlockForm: {
                 infra_id: infraId,
                 path,
-                ids: editoastIds,
+                ids,
                 electrical_profile_set_id: electricalProfileSetId,
               },
             },
@@ -82,10 +78,9 @@ export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyL
       return;
     }
 
-    const rawResults = new Map<TimetableItemId, ProjectionResult>();
+    const rawResults = new Map<number, ProjectionResult>();
 
     for (const [id, result] of Object.entries(rawPacedTrainResults)) {
-      const pacedTrainId = formatEditoastIdToPacedTrainId(Number(id));
       const pacedTrainProjectionResult: ProjectionResult = {
         space_time_curves: result.train_schedule,
         signal_updates: rawTrainSchedulesOccupancyBlocks[id].train_schedule,
@@ -101,7 +96,7 @@ export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyL
         }
       }
 
-      rawResults.set(pacedTrainId, pacedTrainProjectionResult);
+      rawResults.set(Number(id), pacedTrainProjectionResult);
     }
 
     this.options.onProgress(rawResults);

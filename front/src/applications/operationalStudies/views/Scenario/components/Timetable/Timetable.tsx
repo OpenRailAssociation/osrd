@@ -7,15 +7,9 @@ import useScenarioTrainScheduleSet from 'applications/operationalStudies/hooks/u
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import { setFailure } from 'reducers/main';
-import type {
-  TimetableItemId,
-  TimetableItem,
-  TimetableItemToEditData,
-  PacedTrainId,
-} from 'reducers/osrdconf/types';
+import type { TimetableItem, TimetableItemToEditData } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
-import { extractEditoastIdFromPacedTrainId } from 'utils/trainId';
 
 import TimetableToolbar from './TimetableToolbar';
 import TrainList from './TrainList';
@@ -28,14 +22,14 @@ type TimetableProps = {
   setDisplayTimetableItemManagement: (mode: string) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   setTimetableItemToEditData: (timetableItemToEditData?: TimetableItemToEditData) => void;
-  setSelectedTimetableItemIds: React.Dispatch<React.SetStateAction<TimetableItemId[]>>;
-  removeAndUnselectTrains: (trainIds: TimetableItemId[]) => void;
+  setSelectedTimetableItemIds: React.Dispatch<React.SetStateAction<number[]>>;
+  removeAndUnselectTrains: (trainIds: number[]) => void;
   handleDeleteTimetableItems: () => void;
   timetableItemToEditData?: TimetableItemToEditData;
   timetableItems?: TimetableItem[];
   timetableItemsWithDetails: TimetableItemWithDetails[];
   refreshNge: () => Promise<void>;
-  selectedTimetableItemIds: TimetableItemId[];
+  selectedTimetableItemIds: number[];
   projectingOnSimulatedPathException: boolean | undefined;
 };
 
@@ -70,7 +64,7 @@ const Timetable = ({
   );
 
   const [showTrainScheduleMoveDialog, setShowTrainScheduleMoveDialog] = useState(false);
-  const [pacedTrainIdsToMove, setPacedTrainIdsToMove] = useState<PacedTrainId[]>([]);
+  const [pacedTrainIdsToMove, setPacedTrainIdsToMove] = useState<number[]>([]);
   const [trainScheduleSetIdSelected, setTrainScheduleSetIdSelected] = useState<number>();
 
   const { timetableItemsByTrainScheduleSets, catalogEntries, manageTrainScheduleSet } =
@@ -93,7 +87,7 @@ const Timetable = ({
   );
 
   const handleSelectTrainScheduleSet = useCallback(
-    (trainIds: TimetableItemId[]) => {
+    (trainIds: number[]) => {
       const allSelected = trainIds.every((id) => selectedTimetableItemIds.includes(id));
       if (allSelected) {
         // Deselect all
@@ -111,7 +105,7 @@ const Timetable = ({
     [selectedTimetableItemIds]
   );
 
-  const openMoveDialog = useCallback((pacedTrainIds: PacedTrainId[]) => {
+  const openMoveDialog = useCallback((pacedTrainIds: number[]) => {
     if (pacedTrainIds.length === 0) return;
 
     setPacedTrainIdsToMove(pacedTrainIds);
@@ -120,11 +114,10 @@ const Timetable = ({
 
   const handleSubmitMove = useCallback(
     async (trainScheduleSetId: number) => {
-      const formattedPacedTrainIds = pacedTrainIdsToMove.map(extractEditoastIdFromPacedTrainId);
       try {
         await updateTrainSchedulesTssId({
           body: {
-            train_schedule_ids: formattedPacedTrainIds,
+            train_schedule_ids: pacedTrainIdsToMove,
             train_schedule_set_id: trainScheduleSetId,
           },
         }).unwrap();

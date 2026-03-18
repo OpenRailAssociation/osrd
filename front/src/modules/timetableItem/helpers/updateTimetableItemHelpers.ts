@@ -3,36 +3,29 @@ import {
   type TrainSchedule,
   type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
-import type { PacedTrainId, TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 import {
   unsetTrainIdsMatching,
   unsetTrainIdsMatchingMissingOccurencesOf,
 } from 'reducers/simulationResults';
 import type { AppDispatch } from 'store';
-import {
-  extractEditoastIdFromPacedTrainId,
-  formatEditoastIdToPacedTrainId,
-  isPacedTrainId,
-} from 'utils/trainId';
+import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
 import { getOcurrencesIds, isPacedTrainBase } from './pacedTrain';
 
 export async function fetchTimetableItem(
-  timetableItemId: TimetableItemId,
+  id: number,
   dispatch: AppDispatch
 ): Promise<TimetableItem> {
-  if (isPacedTrainId(timetableItemId)) {
-    const pacedTrain = await dispatch(
-      osrdEditoastApi.endpoints.getTrainSchedulesById.initiate(
-        {
-          id: extractEditoastIdFromPacedTrainId(timetableItemId),
-        },
-        { subscribe: false }
-      )
-    ).unwrap();
-    return { ...pacedTrain, id: timetableItemId };
-  }
-  throw new Error('TrainSchedules are not handled anymore.');
+  const trainSchedule = await dispatch(
+    osrdEditoastApi.endpoints.getTrainSchedulesById.initiate(
+      {
+        id,
+      },
+      { subscribe: false }
+    )
+  ).unwrap();
+  return trainSchedule;
 }
 
 export async function createPacedTrains(
@@ -47,45 +40,39 @@ export async function createPacedTrains(
       body: pacedTrains,
     })
   ).unwrap();
-  return newPacedTrains.map((pacedTrain) => ({
-    ...pacedTrain,
-    id: formatEditoastIdToPacedTrainId(pacedTrain.id),
-  }));
+  return newPacedTrains;
 }
 
-async function updatePacedTrain(
-  dispatch: AppDispatch,
-  id: PacedTrainId,
-  trainSchedule: TrainSchedule
-) {
+async function updatePacedTrain(dispatch: AppDispatch, id: number, trainSchedule: TrainSchedule) {
   await dispatch(
     osrdEditoastApi.endpoints.putTrainSchedulesById.initiate({
-      id: extractEditoastIdFromPacedTrainId(id),
+      id,
       trainSchedule,
     })
   ).unwrap();
 }
 
-export async function deleteTrainSchedules(dispatch: AppDispatch, ids: PacedTrainId[]) {
-  ids.forEach((id) => dispatch(unsetTrainIdsMatching(id)));
+export async function deleteTrainSchedules(dispatch: AppDispatch, ids: number[]) {
+  ids.forEach((id) => dispatch(unsetTrainIdsMatching(formatEditoastIdToPacedTrainId(id))));
   await dispatch(
     osrdEditoastApi.endpoints.deleteTrainSchedules.initiate({
-      body: { ids: ids.map((id) => extractEditoastIdFromPacedTrainId(id)) },
+      body: { ids },
     })
   ).unwrap();
 }
 
 export async function storePacedTrain(
-  timetableItemIdToUpdate: TimetableItemId,
+  timetableItemIdToUpdate: number,
   pacedTrain: Omit<TrainScheduleResponse, 'id'>,
   dispatch: AppDispatch,
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void
 ): Promise<TimetableItem> {
   if (isPacedTrainBase(pacedTrain)) {
+    const pacedTrainId = formatEditoastIdToPacedTrainId(timetableItemIdToUpdate);
     dispatch(
       unsetTrainIdsMatchingMissingOccurencesOf({
-        pacedTrainId: timetableItemIdToUpdate,
-        occurrencesPresent: getOcurrencesIds(pacedTrain, timetableItemIdToUpdate),
+        pacedTrainId,
+        occurrencesPresent: getOcurrencesIds(pacedTrain, pacedTrainId),
       })
     );
   }

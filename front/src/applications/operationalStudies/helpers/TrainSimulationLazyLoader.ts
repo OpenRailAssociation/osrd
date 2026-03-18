@@ -3,9 +3,7 @@ import {
   type TrainScheduleSimulationSummaryResult,
   type PostTrainSchedulesSimulationSummaryApiResponse,
 } from 'common/api/osrdEditoastApi';
-import type { PacedTrainId, TimetableItemId } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
-import { formatEditoastIdToPacedTrainId, extractEditoastIdFromPacedTrainId } from 'utils/trainId';
 
 const BATCH_SIZE = 20;
 
@@ -13,9 +11,7 @@ type TrainSimulationLazyLoaderOptions = {
   dispatch: AppDispatch;
   infraId: number;
   electricalProfileSetId?: number;
-  onProgress: (
-    pacedTrainSummaries: Map<PacedTrainId, TrainScheduleSimulationSummaryResult>
-  ) => void;
+  onProgress: (pacedTrainSummaries: Map<number, TrainScheduleSimulationSummaryResult>) => void;
 };
 
 /**
@@ -28,7 +24,7 @@ type TrainSimulationLazyLoaderOptions = {
 export default class TrainSimulationLazyLoader {
   readonly options: TrainSimulationLazyLoaderOptions;
 
-  pending: TimetableItemId[] = [];
+  pending: number[] = [];
 
   prevPromise: Promise<void> = Promise.resolve();
 
@@ -44,7 +40,7 @@ export default class TrainSimulationLazyLoader {
   /**
    * Queue train IDs for simulation.
    */
-  simulateTimetableItems(ids: TimetableItemId[]) {
+  simulateTimetableItems(ids: number[]) {
     if (this.cancelled) {
       throw new Error('simulateTimetableItems() called after cancel()');
     }
@@ -69,19 +65,17 @@ export default class TrainSimulationLazyLoader {
     }
   }
 
-  async processBatch(batch: TimetableItemId[]) {
-    const editoastIds = batch.map((id) => extractEditoastIdFromPacedTrainId(id));
-
+  async processBatch(ids: number[]) {
     let pacedTrainPromise: Promise<PostTrainSchedulesSimulationSummaryApiResponse> =
       Promise.resolve({});
-    if (editoastIds.length > 0) {
+    if (ids.length > 0) {
       pacedTrainPromise = this.options
         .dispatch(
           osrdEditoastApi.endpoints.postTrainSchedulesSimulationSummary.initiate(
             {
               body: {
                 infra_id: this.options.infraId,
-                ids: editoastIds,
+                ids,
                 electrical_profile_set_id: this.options.electricalProfileSetId,
               },
             },
@@ -98,9 +92,8 @@ export default class TrainSimulationLazyLoader {
     }
 
     const pacedTrainSummaries = new Map();
-    for (const [rawId, rawSummary] of Object.entries(rawPacedTrainSummaries)) {
-      const id = formatEditoastIdToPacedTrainId(Number(rawId));
-      pacedTrainSummaries.set(id, rawSummary);
+    for (const [id, rawSummary] of Object.entries(rawPacedTrainSummaries)) {
+      pacedTrainSummaries.set(Number(id), rawSummary);
     }
 
     this.options.onProgress(pacedTrainSummaries);

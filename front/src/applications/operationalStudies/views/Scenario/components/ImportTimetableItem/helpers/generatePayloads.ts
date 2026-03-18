@@ -8,22 +8,18 @@ import type {
 import { TrainMainCategoryDict } from 'modules/rollingStock/consts';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 
-export const generateRoundTripsPayload = <T>(
+export const generateRoundTripsPayload = (
   roundTripsIndexes: ([number, number] | [number, null])[],
-  trainIds: { id: T }[],
-  extractEditoastIdFromRoundTripId: (trainId: T) => number
+  trainIds: { id: number }[]
 ) => {
   const trainScheduleOneWays: number[] = [];
   const trainScheduleRoundTrips: [number, number][] = [];
 
   for (const [firstIndex, secondIndex] of roundTripsIndexes) {
     if (secondIndex === null) {
-      trainScheduleOneWays.push(extractEditoastIdFromRoundTripId(trainIds[firstIndex].id));
+      trainScheduleOneWays.push(trainIds[firstIndex].id);
     } else {
-      trainScheduleRoundTrips.push([
-        extractEditoastIdFromRoundTripId(trainIds[firstIndex].id),
-        extractEditoastIdFromRoundTripId(trainIds[secondIndex].id),
-      ]);
+      trainScheduleRoundTrips.push([trainIds[firstIndex].id, trainIds[secondIndex].id]);
     }
   }
   return {

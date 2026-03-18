@@ -14,11 +14,7 @@ import Conflicts from 'modules/conflict/components/Conflicts';
 import useConflictsFilter from 'modules/conflict/hooks/useConflictsFilter';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
 import { setFailure } from 'reducers/main';
-import type {
-  TimetableItemId,
-  TimetableItem,
-  TimetableItemToEditData,
-} from 'reducers/osrdconf/types';
+import type { TimetableItem, TimetableItemToEditData } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { usePrevious } from 'utils/hooks/state';
@@ -111,7 +107,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
   );
 
   const removeTimetableItemsWithNge = useCallback(
-    (timetableItemIds: TimetableItemId[]) => {
+    (timetableItemIds: number[]) => {
       removeTimetableItems(timetableItemIds);
       refreshNge();
     },
@@ -119,7 +115,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
   );
 
   const updateTrainDepartureTimeWithNge = useCallback(
-    async (timetableItemId: TimetableItemId, newDeparture: Date) => {
+    async (timetableItemId: number, newDeparture: Date) => {
       await updateTrainDepartureTime(timetableItemId, newDeparture);
       refreshNge();
     },

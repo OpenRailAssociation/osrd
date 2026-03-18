@@ -14,19 +14,14 @@ import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { isPacedTrainWithDetails } from 'modules/timetableItem/helpers/pacedTrain';
 import type { PacedTrainWithDetails, TimetableItemWithDetails } from 'modules/timetableItem/types';
 import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
-import type {
-  OccurrenceId,
-  PacedTrainId,
-  TimetableItem,
-  TimetableItemId,
-  TimetableItemToEditData,
-} from 'reducers/osrdconf/types';
+import type { OccurrenceId, TimetableItem, TimetableItemToEditData } from 'reducers/osrdconf/types';
 import {
   getSelectedTrainId,
   getTrainIdUsedForProjection,
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { useDateTimeLocale } from 'utils/date';
+import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
 import { MANAGE_TIMETABLE_ITEM_TYPES } from '../../consts';
 import PacedTrainItem from './PacedTrain/PacedTrainItem';
@@ -39,18 +34,18 @@ type TrainListProps = {
   setDisplayTimetableItemManagement: (mode: string) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   setTimetableItemToEditData: (timetableItemToEditData?: TimetableItemToEditData) => void;
-  setSelectedTimetableItemIds: React.Dispatch<React.SetStateAction<TimetableItemId[]>>;
-  removeAndUnselectTrains: (trainIds: TimetableItemId[]) => void;
+  setSelectedTimetableItemIds: React.Dispatch<React.SetStateAction<number[]>>;
+  removeAndUnselectTrains: (trainIds: number[]) => void;
   timetableItemToEditData?: TimetableItemToEditData;
   timetableItemsWithDetails: TimetableItemWithDetails[];
-  selectedTimetableItemIds: TimetableItemId[];
+  selectedTimetableItemIds: number[];
   projectingOnSimulatedPathException: boolean | undefined;
   isSelectMode: boolean;
   timetableMode: TimetableMode;
-  moveTimetableItem?: (pacedTrainIds: PacedTrainId[]) => void;
+  moveTimetableItem?: (pacedTrainIds: number[]) => void;
   timetableItemsByTrainScheduleSets: TimetableItemsByTrainScheduleSet[] | null;
   handleClickTrainScheduleSet: (id: number) => void;
-  handleSelectTrainScheduleSet: (trainIds: TimetableItemId[]) => void;
+  handleSelectTrainScheduleSet: (trainIds: number[]) => void;
   catalogEntries: CatalogEntry[];
   manageTrainScheduleSet: TrainScheduleSetManager;
   expandedTrainScheduleSetIds: Set<number>;
@@ -86,17 +81,15 @@ const TrainList = ({
   const { workerStatus } = useScenarioContext();
   const subCategories = useSubCategoryContext();
 
-  const [expandedTimetableItemIds, setExpandedTimetableItemIds] = useState<Set<TimetableItemId>>(
-    new Set()
-  );
+  const [expandedTimetableItemIds, setExpandedTimetableItemIds] = useState<Set<number>>(new Set());
 
   const selectedTrainId = useSelector(getSelectedTrainId);
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
   const dispatch = useAppDispatch();
 
   const handleSelectTimetableItem = useCallback(
-    (id: TimetableItemId) => {
-      const currentSelectedTrainIds: TimetableItemId[] = selectedTimetableItemIds;
+    (id: number) => {
+      const currentSelectedTrainIds: number[] = selectedTimetableItemIds;
       const index = currentSelectedTrainIds.indexOf(id);
 
       if (index === -1) {
@@ -110,7 +103,7 @@ const TrainList = ({
     [selectedTimetableItemIds]
   );
 
-  const handleExpandTimetableItem = useCallback((id: TimetableItemId) => {
+  const handleExpandTimetableItem = useCallback((id: number) => {
     setExpandedTimetableItemIds((prevExpandedIds) => {
       const newExpandedIds = new Set(prevExpandedIds);
       if (newExpandedIds.has(id)) {
@@ -172,14 +165,18 @@ const TrainList = ({
               isInSelection={selectedTimetableItemIds.includes(timetableItem.id)}
               handleSelectTrain={handleSelectTimetableItem}
               train={timetableItem}
-              isSelected={workerStatus === 'READY' && selectedTrainId === timetableItem.id}
+              isSelected={
+                workerStatus === 'READY' &&
+                selectedTrainId === formatEditoastIdToPacedTrainId(timetableItem.id)
+              }
               isModified={timetableItem.id === timetableItemToEditData?.timetableItemId}
               upsertUniqueTrains={upsertTimetableItems}
               removeTrains={removeAndUnselectTrains}
               selectTrainToEdit={selectTimetableItemToEdit}
               setSelectedTimetableItemIds={setSelectedTimetableItemIds}
               projectionPathIsUsed={
-                workerStatus === 'READY' && trainIdUsedForProjection === timetableItem.id
+                workerStatus === 'READY' &&
+                trainIdUsedForProjection === formatEditoastIdToPacedTrainId(timetableItem.id)
               }
               subCategories={subCategories}
               isSelectMode={isSelectMode}

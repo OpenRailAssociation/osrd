@@ -1,6 +1,10 @@
 import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
-import type { TrainId, TimetableItemId } from 'reducers/osrdconf/types';
-import { extractPacedTrainIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
+import type { TrainId } from 'reducers/osrdconf/types';
+import {
+  extractEditoastIdFromPacedTrainId,
+  extractPacedTrainIdFromOccurrenceId,
+  isOccurrenceId,
+} from 'utils/trainId';
 
 export default function createHandleTrainDrag({
   timetableItemProjections,
@@ -16,7 +20,7 @@ export default function createHandleTrainDrag({
     initialDepartureTime: Date;
     stopPanning: boolean;
   }) => Promise<void>;
-  updateTrainDepartureTime: (trainId: TimetableItemId, newDepartureTime: Date) => Promise<void>;
+  updateTrainDepartureTime: (trainId: number, newDepartureTime: Date) => Promise<void>;
 }) {
   return async function handleTrainDrag({
     draggedTrainId,
@@ -29,11 +33,12 @@ export default function createHandleTrainDrag({
     initialDepartureTime: Date;
     stopPanning: boolean;
   }) {
-    const trainToDragId = isOccurrenceId(draggedTrainId)
-      ? extractPacedTrainIdFromOccurrenceId(draggedTrainId)
-      : draggedTrainId;
-
-    const draggedTrain = timetableItemProjections.find((train) => train.id === trainToDragId);
+    const draggedItemId = extractEditoastIdFromPacedTrainId(
+      isOccurrenceId(draggedTrainId)
+        ? extractPacedTrainIdFromOccurrenceId(draggedTrainId)
+        : draggedTrainId
+    );
+    const draggedTrain = timetableItemProjections.find((train) => train.id === draggedItemId);
     if (!draggedTrain) return;
 
     const newTrainData = {
@@ -43,7 +48,7 @@ export default function createHandleTrainDrag({
 
     // Handle updating track occupancy data (with no distant update yet, so with stopPanning: false)
     await handleTrainDragInTrackOccupancy({
-      draggedTrainId: trainToDragId,
+      draggedTrainId,
       stopPanning: false,
       initialDepartureTime,
       newTrainData,
@@ -52,16 +57,16 @@ export default function createHandleTrainDrag({
     if (!stopPanning) {
       // update in the state
       setTimetableItemProjections(
-        timetableItemProjections.map((train) => (train.id === trainToDragId ? newTrainData : train))
+        timetableItemProjections.map((train) => (train.id === draggedItemId ? newTrainData : train))
       );
       return;
     }
 
-    await updateTrainDepartureTime(trainToDragId, newDepartureTime);
+    await updateTrainDepartureTime(draggedItemId, newDepartureTime);
 
     // Handle retrieving track occupancy data from server (so with stopPanning: true):
     await handleTrainDragInTrackOccupancy({
-      draggedTrainId: trainToDragId,
+      draggedTrainId,
       stopPanning: true,
       initialDepartureTime,
       newTrainData,

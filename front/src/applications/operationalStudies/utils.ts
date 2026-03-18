@@ -18,15 +18,10 @@ import type {
 import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
 import { isPacedTrain } from 'modules/timetableItem/helpers/pacedTrain';
 import type { SimulationSummary } from 'modules/timetableItem/types';
-import type {
-  TimetableItem,
-  TimetableItemId,
-  TimetableItemWithPathOps,
-} from 'reducers/osrdconf/types';
+import type { TimetableItem, TimetableItemWithPathOps } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 import { mmToM } from 'utils/physics';
 import { SMALL_INPUT_MAX_LENGTH } from 'utils/strings';
-import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
 import { upsertMapWaypointsInOperationalPoints } from './helpers/upsertMapWaypointsInOperationalPoints';
 import type {
@@ -400,14 +395,11 @@ export const checkRoundTripCompatible = (
  * Group timetable items in three columns: one-ways, round-trips and others.
  */
 export const groupRoundTrips = (
-  timetableItemsById: Map<TimetableItemId, TimetableItemWithPathOps>,
+  timetableItemsById: Map<number, TimetableItemWithPathOps>,
   rawRoundTrips?: RoundTrips
 ): TimetableItemRoundTripGroups => {
-  const oneWayIds = (rawRoundTrips?.one_ways ?? []).map(formatEditoastIdToPacedTrainId);
-  const roundTripIds = (rawRoundTrips?.round_trips ?? []).map(
-    ([leftId, rightId]) =>
-      [formatEditoastIdToPacedTrainId(leftId), formatEditoastIdToPacedTrainId(rightId)] as const
-  );
+  const oneWayIds = rawRoundTrips?.one_ways ?? [];
+  const roundTripIds = rawRoundTrips?.round_trips ?? [];
 
   const oneWays = oneWayIds.map((id) => timetableItemsById.get(id)!);
   const roundTrips = roundTripIds.map(
@@ -415,7 +407,7 @@ export const groupRoundTrips = (
       [timetableItemsById.get(leftId)!, timetableItemsById.get(rightId)!] as const
   );
 
-  const oneWayOrRoundTripIds = new Set<TimetableItemId>([...oneWayIds, ...roundTripIds.flat()]);
+  const oneWayOrRoundTripIds = new Set<number>([...oneWayIds, ...roundTripIds.flat()]);
   const others = [...timetableItemsById.values()].filter(
     (timetableItem) => !oneWayOrRoundTripIds.has(timetableItem.id)
   );

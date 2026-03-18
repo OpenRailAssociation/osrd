@@ -10,7 +10,6 @@ import type { OperationalPoint, TrainSchedule, RoundTrips } from 'common/api/osr
 import { isPacedTrain } from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItemWithPathOps } from 'reducers/osrdconf/types';
 import { addDurationToDate, Duration } from 'utils/duration';
-import { extractEditoastIdFromPacedTrainId } from 'utils/trainId';
 
 import type { PairingItem } from './types';
 
@@ -133,22 +132,20 @@ export const buildRoundTripsPayload = (pairingItems: PairingItem[], roundTrips: 
   const roundTripsIds: number[][] = [];
 
   for (const item of pairingItems) {
-    const itemRawId = extractEditoastIdFromPacedTrainId(item.id);
-    const initialStatus = getItemInitialStatus(itemRawId, roundTrips);
+    const initialStatus = getItemInitialStatus(item.id, roundTrips);
 
     if (
       item.status === 'roundTrips' &&
       initialStatus !== item.status &&
-      !roundTripsIds.flat().includes(itemRawId)
+      !roundTripsIds.flat().includes(item.id)
     ) {
-      const pairedItemRawId = extractEditoastIdFromPacedTrainId(item.pairedItemId);
-      roundTripsIds.push([itemRawId, pairedItemRawId]);
+      roundTripsIds.push([item.id, item.pairedItemId]);
     }
     if (item.status === 'oneWays' && initialStatus !== item.status) {
-      oneWaysIds.push(itemRawId);
+      oneWaysIds.push(item.id);
     }
     if (item.status === 'todo' && initialStatus !== item.status) {
-      idsToDelete.push(itemRawId);
+      idsToDelete.push(item.id);
     }
   }
 

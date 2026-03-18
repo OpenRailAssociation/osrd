@@ -9,7 +9,7 @@ import useTimetableItemsWithPathOps from 'applications/operationalStudies/hooks/
 import { checkRoundTripCompatible, groupRoundTrips } from 'applications/operationalStudies/utils';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
-import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 import { useDebounce } from 'utils/hooks/useDebounce';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 import { mapBy } from 'utils/types';
@@ -47,7 +47,7 @@ const RoundTripsModal = ({
   const modalRef = useRef<HTMLDialogElement>(null);
 
   const [pairingItems, setPairingItems] = useState<PairingItem[]>([]);
-  const [itemIdToPair, setItemIdToPair] = useState<TimetableItemId>();
+  const [itemIdToPair, setItemIdToPair] = useState<number>();
   const [filter, setFilter] = useState('');
   const debouncedFilter = useDebounce(filter, 300);
 

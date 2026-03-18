@@ -6,8 +6,6 @@ import {
   type PostTrainSchedulesOccupancyBlocksApiResponse,
   type PostTrainSchedulesProjectPathOpApiResponse,
 } from 'common/api/osrdEditoastApi';
-import type { TimetableItemId } from 'reducers/osrdconf/types';
-import { extractEditoastIdFromPacedTrainId, formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
 import TrainProjectionLazyLoaderAbstract, {
   type ProjectionResult,
@@ -35,7 +33,7 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
     this.opDistances = opDistances;
   }
 
-  async processBatch(batch: TimetableItemId[]) {
+  async processBatch(ids: number[]) {
     const { infraId, path, electricalProfileSetId } = this.options;
 
     if (this.opRefs.length < 2) {
@@ -43,21 +41,19 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
       return;
     }
 
-    const editoastIds = batch.map((id) => extractEditoastIdFromPacedTrainId(id));
-
     let pacedTrainPromise: Promise<PostTrainSchedulesProjectPathOpApiResponse> = Promise.resolve(
       {}
     );
     let pacedTrainOccupancyBlocksPromise: Promise<PostTrainSchedulesOccupancyBlocksApiResponse> =
       Promise.resolve({});
-    if (editoastIds.length > 0) {
+    if (ids.length > 0) {
       pacedTrainPromise = this.options
         .dispatch(
           osrdEditoastApi.endpoints.postTrainSchedulesProjectPathOp.initiate(
             {
               body: {
                 infra_id: infraId,
-                train_ids: editoastIds,
+                train_ids: ids,
                 operational_points_refs: this.opRefs,
                 operational_points_distances: this.opDistances,
                 use_simulation: this.options.isSimulationEnabled,
@@ -77,7 +73,7 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
                 occupancyBlockForm: {
                   infra_id: infraId,
                   path,
-                  ids: editoastIds,
+                  ids,
                   electrical_profile_set_id: electricalProfileSetId,
                 },
               },
@@ -95,10 +91,9 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
       return;
     }
 
-    const rawResults = new Map<TimetableItemId, ProjectionResult>();
+    const rawResults = new Map<number, ProjectionResult>();
 
     for (const [id, result] of Object.entries(rawPacedTrainResults)) {
-      const pacedTrainId = formatEditoastIdToPacedTrainId(Number(id));
       const pacedTrainProjectionResult: ProjectionResult = {
         space_time_curves: result.train_schedule,
         signal_updates: rawPacedTrainOccupancyBlocks[id]?.train_schedule,
@@ -114,7 +109,7 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
         }
       }
 
-      rawResults.set(pacedTrainId, pacedTrainProjectionResult);
+      rawResults.set(Number(id), pacedTrainProjectionResult);
     }
 
     this.options.onProgress(rawResults);

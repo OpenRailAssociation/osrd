@@ -1,14 +1,14 @@
 import type { BaseTrainProjection, TrainSpaceTimeData } from 'modules/simulationResult/types';
-import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 
 import type { ProjectionResult } from './TrainProjectionLazyLoaderAbstract';
 
 /** Formats ProjectionResult into TrainSpaceTimeData and upsert into previous projectedTrains */
 const upsertNewProjectedTrains = (
-  projectedTrains: Map<TimetableItemId, TrainSpaceTimeData>,
-  projectedTrainsToUpsert: Map<TimetableItemId, ProjectionResult>,
-  timetableItemsById: Map<TimetableItemId, TimetableItem>
+  projectedTrains: Map<number, TrainSpaceTimeData>,
+  projectedTrainsToUpsert: Map<number, ProjectionResult>,
+  timetableItemsById: Map<number, TimetableItem>
 ) => {
   const newProjectedTrains = new Map(projectedTrains);
 

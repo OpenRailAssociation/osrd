@@ -5,7 +5,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { isValidPathfinding } from 'applications/operationalStudies/views/Scenario/components/Timetable/utils';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
-import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
+import type { TrainId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import {
   getSelectedTrainId,
@@ -13,7 +13,9 @@ import {
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import {
+  extractEditoastIdFromPacedTrainId,
   extractPacedTrainIdFromOccurrenceId,
+  formatEditoastIdToPacedTrainId,
   formatPacedTrainIdToIndexedOccurrenceId,
   isOccurrenceId,
   isPacedTrainId,
@@ -35,7 +37,7 @@ type SimulationParams = {
  * currentTrainIdForProjection will still be undefined and must be updated)
  */
 const useAutoSelectTrainIds = (
-  timetableItemIds: TimetableItemId[] | undefined,
+  timetableItemIds: number[] | undefined,
   timetableItemsWithDetails: TimetableItemWithDetails[]
 ) => {
   const dispatch = useAppDispatch();
@@ -128,11 +130,13 @@ const useAutoSelectTrainIds = (
       return;
     }
 
-    let timetableItemId: TimetableItemId | undefined;
+    let timetableItemId: number | undefined;
     if (selectedTrainId) {
-      timetableItemId = !isOccurrenceId(selectedTrainId)
-        ? selectedTrainId
-        : extractPacedTrainIdFromOccurrenceId(selectedTrainId);
+      timetableItemId = extractEditoastIdFromPacedTrainId(
+        !isOccurrenceId(selectedTrainId)
+          ? selectedTrainId
+          : extractPacedTrainIdFromOccurrenceId(selectedTrainId)
+      );
     }
 
     const isSelectedTimetableItemIncluded =
@@ -142,7 +146,7 @@ const useAutoSelectTrainIds = (
     if (timetableItemId && isSelectedTimetableItemIncluded) {
       // if no train is used for the projection, use the selected train
       if (!currentTrainIdForProjection) {
-        dispatch(updateTrainIdUsedForProjection(timetableItemId));
+        dispatch(updateTrainIdUsedForProjection(formatEditoastIdToPacedTrainId(timetableItemId)));
       }
       return;
     }
@@ -155,15 +159,13 @@ const useAutoSelectTrainIds = (
       timetableItemsWithDetails.find((item) => item.summary && isValidPathfinding(item.summary));
 
     if (firstTrainCanBeUsedForProjection) {
-      dispatch(updateTrainIdUsedForProjection(firstTrainCanBeUsedForProjection.id));
+      const pacedTrainId = formatEditoastIdToPacedTrainId(firstTrainCanBeUsedForProjection.id);
+      dispatch(updateTrainIdUsedForProjection(pacedTrainId));
       let newTrainIdToSelect: TrainId;
       if (!firstTrainCanBeUsedForProjection.paced) {
-        newTrainIdToSelect = firstTrainCanBeUsedForProjection.id;
+        newTrainIdToSelect = pacedTrainId;
       } else {
-        newTrainIdToSelect = formatPacedTrainIdToIndexedOccurrenceId(
-          firstTrainCanBeUsedForProjection.id,
-          0
-        );
+        newTrainIdToSelect = formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, 0);
       }
       dispatch(updateSelectedTrainId(newTrainIdToSelect));
     }

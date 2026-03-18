@@ -5,7 +5,6 @@ import { Filter } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 import type { SubCategory } from 'common/api/osrdEditoastApi';
-import type { TimetableItemId } from 'reducers/osrdconf/types';
 import useOutsideClick from 'utils/hooks/useOutsideClick';
 
 import RoundTripsModalCard from './RoundTripsModalCard';
@@ -16,7 +15,7 @@ type RoundTripsModalPairingColumnProps = {
   suggestions: PairingItem[];
   others: PairingItem[];
   pairItems: (candidate: PairingItem) => void;
-  pairingItemsById: Map<TimetableItemId, PairingItem>;
+  pairingItemsById: Map<number, PairingItem>;
 
   subCategories: SubCategory[];
 };

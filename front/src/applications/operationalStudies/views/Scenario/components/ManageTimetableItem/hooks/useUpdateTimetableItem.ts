@@ -16,8 +16,10 @@ import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import {
+  extractEditoastIdFromPacedTrainId,
   extractPacedTrainIdFromOccurrenceId,
-  formatPacedTrainIdToIndexedOccurrenceId,
+  formatEditoastIdToIndexedOccurrenceId,
+  formatEditoastIdToPacedTrainId,
   isOccurrenceId,
 } from 'utils/trainId';
 
@@ -74,10 +76,14 @@ const useUpdateTimetableItem = (
     const trainIdToSelect =
       (selectedTrainId &&
         isOccurrenceId(selectedTrainId) &&
-        extractPacedTrainIdFromOccurrenceId(selectedTrainId) === timetableItemId) ||
+        extractEditoastIdFromPacedTrainId(extractPacedTrainIdFromOccurrenceId(selectedTrainId)) ===
+          timetableItemId) ||
       !updatedItem.paced
         ? selectedTrainId
-        : formatPacedTrainIdToIndexedOccurrenceId(updatedItem.id, 0);
+        : formatEditoastIdToIndexedOccurrenceId({
+            pacedTrainId: updatedItem.id,
+            occurrenceIndex: 0,
+          });
 
     // dispatch success and update the selected train id
     dispatch(
@@ -91,13 +97,15 @@ const useUpdateTimetableItem = (
     );
     dispatch(updateSelectedTrainId(trainIdToSelect));
 
-    // if the updated train was used for the projection, update the projectedTrainId
+    // if the updated train was just transformed from pacedTrain to uniqueTrain
+    // and one of the occurrences was used for the projection, update the projectedTrainId
     if (
       trainIdUsedForProjection &&
-      timetableItemId !== updatedItem.id &&
-      trainIdUsedForProjection === timetableItemId
+      isOccurrenceId(trainIdUsedForProjection) &&
+      trainIdUsedForProjection.includes(`_${updatedItem.id}_`) &&
+      !updatedItem.paced
     ) {
-      dispatch(updateTrainIdUsedForProjection(updatedItem.id));
+      dispatch(updateTrainIdUsedForProjection(formatEditoastIdToPacedTrainId(updatedItem.id)));
     }
 
     // close the modal

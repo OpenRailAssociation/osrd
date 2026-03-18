@@ -10,7 +10,7 @@ import {
 import {
   formatPacedTrainIdToIndexedOccurrenceId,
   formatEditoastIdToExceptionId,
-  extractEditoastIdFromPacedTrainId,
+  formatEditoastIdToPacedTrainId,
 } from 'utils/trainId';
 
 /**
@@ -19,8 +19,9 @@ import {
  */
 const makeProjectedItems = (timetableItemProjections: TrainSpaceTimeData[]) =>
   timetableItemProjections.flatMap<IndividualTrainProjection>((projectedItem) => {
+    const pacedTrainId = formatEditoastIdToPacedTrainId(projectedItem.id);
     if (!projectedItem.paced) {
-      return projectedItem;
+      return { ...projectedItem, id: pacedTrainId };
     }
 
     const occurrences: IndividualTrainProjection[] = [];
@@ -33,7 +34,7 @@ const makeProjectedItems = (timetableItemProjections: TrainSpaceTimeData[]) =>
     // =========== indexed occurrences ===========
     const occurrencesCount = getOccurrencesNb(projectedItem.paced);
     for (let i = 0; i < occurrencesCount; i += 1) {
-      const occurrenceId = formatPacedTrainIdToIndexedOccurrenceId(projectedItem.id, i);
+      const occurrenceId = formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, i);
       const correspondingException = findExceptionWithOccurrenceId(
         projectedItem.paced.exceptions,
         occurrenceId
@@ -94,7 +95,7 @@ const makeProjectedItems = (timetableItemProjections: TrainSpaceTimeData[]) =>
       if (!exception.start_time) throw new Error('added exception should have a start time');
 
       const id = formatEditoastIdToExceptionId({
-        pacedTrainId: extractEditoastIdFromPacedTrainId(projectedItem.id),
+        pacedTrainId: projectedItem.id,
         exceptionId: exception.key,
       });
       const name = exception.train_name ? exception.train_name.value : `${projectedItem.name}/+`;

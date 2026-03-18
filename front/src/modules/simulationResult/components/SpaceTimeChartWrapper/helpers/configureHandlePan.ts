@@ -10,6 +10,7 @@ import { updateSelectedTrainId } from 'reducers/simulationResults';
 import type { AppDispatch } from 'store';
 import { Duration, subtractDurationFromDate } from 'utils/duration';
 import {
+  extractEditoastIdFromPacedTrainId,
   extractOccurrenceIndexFromOccurrenceId,
   extractPacedTrainIdFromOccurrenceId,
   isTrainId,
@@ -86,7 +87,9 @@ export function configureHandlePan({
         (!draggedTrain.exception || !draggedTrain.exception.start_time)
       ) {
         const occurrencesIndex = extractOccurrenceIndexFromOccurrenceId(draggedTrain.id);
-        const pacedTrainId = extractPacedTrainIdFromOccurrenceId(draggedTrain.id);
+        const pacedTrainId = extractEditoastIdFromPacedTrainId(
+          extractPacedTrainIdFromOccurrenceId(draggedTrain.id)
+        );
         const pacedTrain = timetableItemProjections.find(({ id }) => id === pacedTrainId);
         if (pacedTrain?.paced) {
           newDepartureTime = subtractDurationFromDate(

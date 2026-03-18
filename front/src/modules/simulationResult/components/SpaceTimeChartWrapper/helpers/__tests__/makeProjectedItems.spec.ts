@@ -3,7 +3,6 @@ import { describe, expect, test } from 'vitest';
 
 import type { PacedTrainException } from 'common/api/osrdEditoastApi';
 import { type TrainSpaceTimeData } from 'modules/simulationResult/types';
-import type { PacedTrainId } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 
 import makeProjectedItems from '../makeProjectedItems';
@@ -73,7 +72,7 @@ describe('makeProjectedItems', () => {
       {
         name: 'GE LYD',
         departureTime: new Date('2025-07-09T05:30:00.000Z'),
-        id: 'paced_2562' as PacedTrainId,
+        id: 2562,
         paced: {
           timeWindow: Duration.parse('PT2H'),
           interval: Duration.parse('PT1H'),
@@ -212,7 +211,7 @@ describe('makeProjectedItems', () => {
           },
         ],
         signalUpdates: [],
-        id: 'paced_2564' as PacedTrainId,
+        id: 2564,
         paced: {
           timeWindow: Duration.parse('PT3H'),
           interval: Duration.parse('PT1H'),
