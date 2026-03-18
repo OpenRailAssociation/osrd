@@ -42,6 +42,7 @@ type BuildTableRowParams = {
   scheduleNotHonored?: boolean;
   marginNotHonored?: boolean;
   location: PathItemLocation;
+  isPathStep: boolean;
   shortSlipDistance?: boolean;
   closedSignal?: boolean;
 };
@@ -60,6 +61,7 @@ const buildTableRow = ({
   scheduleNotHonored,
   marginNotHonored,
   location,
+  isPathStep,
   shortSlipDistance,
   closedSignal,
 }: BuildTableRowParams): TimesStopsRowNew => {
@@ -116,7 +118,7 @@ const buildTableRow = ({
     stopDuration,
     requestedDeparture,
     computedDeparture,
-    isPathStep: true,
+    isPathStep,
     hasRequestedTrack,
     location,
     closedSignal,
@@ -273,6 +275,7 @@ const useTimesStopsTableData = (
           scheduleNotHonored,
           marginNotHonored,
           location: pathStep.location,
+          isPathStep: true,
           shortSlipDistance,
           closedSignal: onStopSignal,
         });
@@ -345,8 +348,8 @@ const useTimesStopsTableData = (
                 },
                 local_track_name: op.part.local_track_name,
               },
+              isPathStep: false,
             }),
-            isPathStep: false,
           });
         }
       });
