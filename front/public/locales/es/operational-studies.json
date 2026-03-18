@@ -1,4 +1,8 @@
 {
+  "boardFullNames": {
+    "sdd": "Gráfico velocidad-distancia",
+    "std": "Gráfico espacio-tiempo"
+  },
   "boards": {
     "conflicts": "Conflictos",
     "macro": "Macro",
@@ -18,10 +22,32 @@
     },
     "title": "Importar paquetes de trenes",
     "trainScheduleSet": "Paquete",
-    "trainScheduleSetAlreadyImported": "Este paquete ya existe en su escenario como referencia"
+    "trainScheduleSetAlreadyImported": "Este paquete ya existe en su escenario como referencia",
+    "trainScheduleSetsSelected_one": "{{count}} paquete seleccionado",
+    "trainScheduleSetsSelected_other": "{{count}} paquetes seleccionados",
+    "trainSchedulesCount_one": "{{count}} tren",
+    "trainSchedulesCount_other": "{{count}} trenes"
   },
   "importTrains": {
-    "failure": "Operación fallida"
+    "cancel": "Cancelar",
+    "chooseFile": "Buscar… Ningún archivo seleccionado.",
+    "download": "Descargar",
+    "errorMessages": {
+      "error": "An error has occurred",
+      "errorInvalidFile": "Archivo invalido"
+    },
+    "failure": "Operación fallida",
+    "selectedFile": "Archivo seleccionado: {{fileName}}",
+    "status": {
+      "invalidTimetableItems_one": "Registro de horario no válido.",
+      "invalidTimetableItems_other": "Registros de horarios no válidos.",
+      "successfulImport": "Todos los elementos se importaron correctamente.",
+      "successfulImport_one": "Un elemento se importo correctamente."
+    },
+    "success": "Operación exitosa",
+    "warningMessages": {
+      "warning": "Atención"
+    }
   },
   "main": {
     "Routing": "Itinerarios",
@@ -38,11 +64,25 @@
       "trainCategory": {
         "NO_CATEGORY": {
           "name": "Sin categoría"
+        },
+        "REGIONAL_TRAIN": {
+          "name": "Tren regional"
+        },
+        "TOURISTIC_TRAIN": {
+          "name": "Tren turistico"
+        },
+        "WORK_TRAIN": {
+          "name": "Tren de trabajo"
         }
       }
     },
+    "moreDetails": "Mostrar mas detalles",
     "occurrenceMenu": {
-      "edit": "Edición"
+      "delete": "Eliminar",
+      "disable": "Deshabilitar",
+      "edit": "Edición",
+      "enable": "Habilitar",
+      "project": "Proyecto"
     },
     "scenarioDeleteButton": "Borrar",
     "timetable": {
@@ -97,6 +137,8 @@
     }
   },
   "study": {
+    "date-modified": "Actualizado",
+    "date-real-end": "Fecha real de finalización",
     "date-start": "Comienzo",
     "modifyStudy": "Editar el estudio",
     "noDateFound": "No completado",
