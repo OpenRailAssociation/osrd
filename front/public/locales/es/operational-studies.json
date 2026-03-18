@@ -24,8 +24,15 @@
     "failure": "Operación fallida"
   },
   "main": {
+    "Routing": "Itinerarios",
+    "Spacing": "Separación",
+    "conflicts": {
+      "conflictsCount_one": "{{count}} conflicto",
+      "conflictsCount_other": "{{count}} conflictos",
+      "conflictsCount_zero": "Sin conflictos"
+    },
     "infrastructure": {
-      "label": "Infraestructura:"
+      "label": "Infraestructura"
     },
     "macroEditor": {
       "trainCategory": {
@@ -91,6 +98,53 @@
   },
   "study": {
     "date-start": "Comienzo",
-    "studyType": "Tipo"
+    "modifyStudy": "Editar el estudio",
+    "noDateFound": "No completado",
+    "nothingSelected": "— Ninguno —",
+    "selected_one": "{{count}} estudio seleccionado",
+    "selected_other": "{{count}} estudios seleccionados",
+    "study-business-code": "Código de negocio",
+    "study-service-code": "Código de servicio",
+    "studyBudgetInvalid": "El presupuesto del estudio debe ser un número entero positivo y no puede superar 2147483647 €",
+    "studyBusinessCodeInvalid": "El código de negocio del estudio no debe exceder los 128 caracteres",
+    "studyCancel": "Cancelar",
+    "studyCategories": {
+      "disturbanceTests": "Pruebas de interrupción",
+      "flowRate": "Caudal",
+      "garageRequirement": "Consideraciones para requisitos del garaje",
+      "nothingSelected": "— Ninguno —",
+      "operability": "Operatividad",
+      "operationOrSizing": "Operación o dimensionamiento de un centro de mantenimiento o garaje",
+      "parkSizing": "Dimensionamiento del parque",
+      "strategicPlanning": "Planificación estratégica",
+      "timeTables": "Horario"
+    },
+    "studyCreateButton": "Crear estudio",
+    "studyCreationTitle": "Crear un estudio",
+    "studyDeleteButton": "Eliminar",
+    "studyDeleted": "¡Se ha eliminado correctamente!",
+    "studyDeletedDetails": "El estudio {{ name }} se ha eliminado.",
+    "studyDescription": "Descripción",
+    "studyDescriptionInvalid": "La descripción del estudio no debe exceder los 1024 caracteres",
+    "studyDescriptionPlaceholder": "Descripción breve del estudio",
+    "studyExpectedEndDate": "Fecha prevista de finalización",
+    "studyModificationTitle": "Editar un estudio",
+    "studyModifyButton": "Guardar",
+    "studyName": "Nombre del estudio",
+    "studyNameInvalid": "Debes asignar un nombre al estudio que no exceda los 128 caracteres",
+    "studyRealEndDate": "Fecha real de finalización",
+    "studyServiceCodeInvalid": "El código de servicio del estudio no debe exceder los 128 caracteres",
+    "studyStartDate": "Fecha de inicio",
+    "studyState": "Estado",
+    "studyStates": {
+      "finish": "Finalizado",
+      "inProgress": "En progreso",
+      "started": "Iniciando"
+    },
+    "studyTags": "Etiqueta",
+    "studyType": "Tipo",
+    "studyUpdated": "¡Actualizado con éxito!",
+    "studyUpdatedDetails": "El estudio {{ name }} se ha actualizado.",
+    "updatedOn": "Última actualización"
   }
 }
