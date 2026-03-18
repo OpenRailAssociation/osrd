@@ -1,7 +1,6 @@
 mod envs;
 mod path_properties;
 
-use std::iter;
 use std::sync::Arc;
 
 // Crate-level exports
@@ -238,8 +237,8 @@ where
             // and sends a bunch of data to the 'aggregation' task
             tokio::spawn(
                 self.chunks(T::CACHE_READS_BATCH_SIZE)
-                    .zip(stream::iter(iter::repeat(vkconn.clone())))
-                    .zip(stream::iter(iter::repeat(cache_read_tx)))
+                    .zip(stream::repeat(vkconn.clone()))
+                    .zip(stream::repeat(cache_read_tx))
                     .for_each_concurrent(None, async move |((inputs, vkconn), cache_read_tx)| {
                         let mut vk = vkconn.lock().await;
 
