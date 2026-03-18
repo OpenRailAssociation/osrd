@@ -13,16 +13,15 @@ import { useManageTimetableItemContext } from 'applications/operationalStudies/h
 import { useOperationalPointSearch } from 'applications/operationalStudies/hooks/useOperationalPointSearch';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import AlertBox from 'common/AlertBox';
-import { type PathProperties, type PathItemLocation } from 'common/api/osrdEditoastApi';
+import type { PathProperties, PathItemLocation, TrainCategory } from 'common/api/osrdEditoastApi';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
 import IncompatibleConstraints from 'modules/pathfinding/components/IncompatibleConstraints';
 import TypeAndPath from 'modules/pathfinding/components/Pathfinding/TypeAndPath';
 import reversePathSteps from 'modules/pathfinding/helpers/reversePathSteps';
 import usePathfindingV2 from 'modules/pathfinding/hooks/usePathfindingV2';
-import type { RootState } from 'reducers';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
-import { updatePathSteps } from 'reducers/osrdconf/operationalStudiesConf';
+import { updateItineraryForm } from 'reducers/osrdconf/operationalStudiesConf';
 import {
   getCategory,
   getName,
@@ -58,6 +57,13 @@ type ItineraryModalProps = {
   displayTimetableItemManagement: string;
 };
 
+export type ItineraryModalFormState = {
+  name?: string;
+  rollingStockId?: number;
+  speedLimitTag?: string;
+  category?: TrainCategory;
+};
+
 const ItineraryModal = ({
   itineraryModalIsOpen,
   setItineraryModalIsOpen,
@@ -70,13 +76,21 @@ const ItineraryModal = ({
   const category = useSelector(getCategory);
   const { workerStatus } = useScenarioContext();
   const rollingStockId = useSelector(getOperationalStudiesRollingStockID);
+  const name = useSelector(getName);
   const speedLimitTag = useSelector(getOperationalStudiesSpeedLimitByTag);
   const mapSettings = useMapSettings();
   const dispatch = useAppDispatch();
   const { updateViewport } = useMapSettingsActions();
   const infraId = useInfraID();
 
-  const { categoryColors, currentSubCategory } = useCategoryColors(category);
+  const [modalFormState, setModalFormState] = useState<ItineraryModalFormState>({
+    name,
+    rollingStockId,
+    speedLimitTag,
+    category: category ?? undefined,
+  });
+
+  const { categoryColors, currentSubCategory } = useCategoryColors(modalFormState.category);
 
   const modalRef = useRef<HTMLDialogElement>(null);
   const editingStepIdRef = useRef<string>('');
@@ -299,12 +313,7 @@ const ItineraryModal = ({
     }
   };
 
-  // Use a boolean selector so typing doesn't re-render the whole modal on every keystroke.
-  // Re-renders only when the name transitions between empty and non-empty.
-  const isNameEmpty = useSelector((state: RootState) => {
-    const n = getName(state);
-    return !n || n.trim() === '';
-  });
+  const isNameEmpty = !modalFormState.name || modalFormState.name.trim() === '';
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
   useEffect(() => {
@@ -353,7 +362,8 @@ const ItineraryModal = ({
   }, [pathfindingStepsWithLocations]);
 
   useEffect(() => {
-    if (workerStatus !== 'READY' || !rollingStockId || pathfindingSteps.length < 2) return;
+    if (workerStatus !== 'READY' || !modalFormState.rollingStockId || pathfindingSteps.length < 2)
+      return;
 
     const pathfindingLocations = pathfindingSteps.map((s) => s.location!);
     const metadataByPathStepId = new Map(
@@ -363,10 +373,10 @@ const ItineraryModal = ({
     launchPathfindingV2({
       pathSteps: pathfindingLocations,
       pathStepsMetadataById: metadataByPathStepId,
-      rollingStockId,
-      speedLimitTag,
+      rollingStockId: modalFormState.rollingStockId,
+      speedLimitTag: modalFormState.speedLimitTag ?? null,
     });
-  }, [workerStatus, rollingStockId, speedLimitTag, pathfindingSteps]);
+  }, [workerStatus, modalFormState.rollingStockId, modalFormState.speedLimitTag, pathfindingSteps]);
 
   const onPathfindingLoad = useEffectEvent((geometry: PathProperties['geometry']) => {
     const newViewport = computeBBoxViewport(bbox(geometry), mapSettings.viewport, {
@@ -429,7 +439,7 @@ const ItineraryModal = ({
 
     if (updatedPathSteps.length < 2) return;
 
-    launchPathfinding(reversePathSteps(updatedPathSteps));
+    launchPathfinding(reversePathSteps(updatedPathSteps), modalFormState.rollingStockId);
   };
   const submitItinerary = () => {
     setSubmitAttempted(true);
@@ -450,8 +460,17 @@ const ItineraryModal = ({
 
     if (pathStepsFromV2.length < 2) return;
 
-    dispatch(updatePathSteps(pathStepsFromV2));
-    launchPathfinding(pathStepsFromV2, rollingStockId, { isInitialization: true });
+    dispatch(
+      updateItineraryForm({
+        name: modalFormState.name ?? '',
+        category: modalFormState.category ?? null,
+        rollingStockId: modalFormState.rollingStockId,
+        speedLimitTag: modalFormState.speedLimitTag,
+        pathSteps: pathStepsFromV2,
+      })
+    );
+
+    launchPathfinding(pathStepsFromV2, modalFormState.rollingStockId, { isInitialization: true });
     closeModal();
   };
 
@@ -484,8 +503,9 @@ const ItineraryModal = ({
         {mapSelectionStepId && <div className="map-selection-form-overlay" />}
         <div className="itinerary-modal-form-header">
           <ItineraryModalFormHeader
+            modalFormState={modalFormState}
+            onModalFormStateChange={setModalFormState}
             onCategoryWarningChange={setCategoryWarning}
-            category={category}
             currentSubCategory={currentSubCategory}
             categoryColors={categoryColors}
             submitAttempted={submitAttempted}
@@ -498,7 +518,7 @@ const ItineraryModal = ({
           {!hasInvalidPathStepDisplay && pathfindingError && (
             <AlertBox type="error" message={pathfindingError} />
           )}
-          <TypeAndPath rollingStockId={rollingStockId} isInNewModal />
+          <TypeAndPath rollingStockId={modalFormState.rollingStockId} isInNewModal />
           <div className="path-step-list">
             <button
               data-testid="reverse-itinerary-button"

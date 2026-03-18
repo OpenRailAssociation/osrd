@@ -9,32 +9,22 @@ import {
 } from '@osrd-project/ui-core';
 import { isEqual } from 'lodash';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 
 import type { CategoryColors } from 'applications/operationalStudies/types';
-import type {
-  LightRollingStockWithLiveries,
-  SubCategory,
-  TrainCategory,
-} from 'common/api/osrdEditoastApi';
-import { useOsrdConfActions } from 'common/osrdContext';
+import type { LightRollingStockWithLiveries, SubCategory } from 'common/api/osrdEditoastApi';
 import useSpeedLimitTags from 'common/SpeedLimitTagSelector/useSpeedLimitTags';
 import useStoreDataForRollingStockSelector from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import useCategoryOptions from 'modules/rollingStock/hooks/useCategoryOptions';
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
-import { updateCategory, updateName } from 'reducers/osrdconf/operationalStudiesConf';
-import {
-  getName,
-  getOperationalStudiesRollingStockID,
-  getOperationalStudiesSpeedLimitByTag,
-} from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import { useAppDispatch } from 'store';
 import { createStandardSelectOptions } from 'utils/uiCoreHelpers';
 
+import type { ItineraryModalFormState } from './ItineraryModal';
+
 type ItineraryModalFormHeaderProps = {
+  modalFormState: ItineraryModalFormState;
+  onModalFormStateChange: (context: ItineraryModalFormState) => void;
   onCategoryWarningChange: (categoryWarning?: string) => void;
-  category: TrainCategory | null;
   currentSubCategory?: SubCategory;
   categoryColors: CategoryColors;
   submitAttempted?: boolean;
@@ -42,17 +32,14 @@ type ItineraryModalFormHeaderProps = {
 };
 
 const ItineraryModalFormHeader = ({
+  modalFormState,
+  onModalFormStateChange,
   onCategoryWarningChange,
-  category,
   currentSubCategory,
   categoryColors,
   submitAttempted,
   isNameEmpty,
 }: ItineraryModalFormHeaderProps) => {
-  const name = useSelector(getName);
-  const dispatch = useAppDispatch();
-  const { updateSpeedLimitByTag, updateRollingStockID } = useOsrdConfActions();
-
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTimetableItem',
   });
@@ -62,14 +49,16 @@ const ItineraryModalFormHeader = ({
 
   const handleCategoryChange = (option?: (typeof categoryOptions)[number]) => {
     if (option !== undefined) {
-      dispatch(updateCategory(option.category));
+      onModalFormStateChange({
+        ...modalFormState,
+        category: option.category ?? undefined,
+      });
     }
   };
 
   // RollingStock
-  const rollingStockId = useSelector(getOperationalStudiesRollingStockID);
   const { rollingStock } = useStoreDataForRollingStockSelector({
-    rollingStockId,
+    rollingStockId: modalFormState.rollingStockId,
   });
   const getRollingStockLabel = (rs: LightRollingStockWithLiveries) => {
     const secondPart = rs.metadata?.series || rs.metadata?.reference || '';
@@ -85,23 +74,24 @@ const ItineraryModalFormHeader = ({
 
   const handleRollingStockSelect = (rs?: LightRollingStockWithLiveries) => {
     if (!rs) {
-      dispatch(updateRollingStockID(undefined));
-      dispatch(updateCategory(null));
+      onModalFormStateChange({
+        ...modalFormState,
+        category: undefined,
+        rollingStockId: undefined,
+      });
       return;
     }
 
-    dispatch(updateRollingStockID(rs.id));
-    dispatch(updateCategory(rs.primary_category ? { main_category: rs.primary_category } : null));
+    onModalFormStateChange({
+      ...modalFormState,
+      category: rs.primary_category ? { main_category: rs.primary_category } : undefined,
+      rollingStockId: rs.id,
+    });
   };
 
   // Composition code/speed limit by tag
-  const speedLimitByTag = useSelector(getOperationalStudiesSpeedLimitByTag);
   const speedLimitTags = useSpeedLimitTags();
 
-  // Timetable item name
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    dispatch(updateName(e.target.value));
-  };
   // Timetable item name error
   const [isNameBlurred, setIsNameBlurred] = useState(false);
 
@@ -117,15 +107,15 @@ const ItineraryModalFormHeader = ({
 
   // Category warning
   const categoryWarningMessage = useMemo(() => {
-    if (!rollingStock || !category) return undefined;
+    if (!rollingStock || !modalFormState.category) return undefined;
 
-    const isMismatch = isMainCategory(category)
-      ? category.main_category !== rollingStock.primary_category &&
-        !rollingStock.other_categories.includes(category.main_category)
+    const isMismatch = isMainCategory(modalFormState.category)
+      ? modalFormState.category.main_category !== rollingStock.primary_category &&
+        !rollingStock.other_categories.includes(modalFormState.category.main_category)
       : currentSubCategory?.main_category !== rollingStock.primary_category;
 
     return isMismatch ? t('categoryMismatch') : undefined;
-  }, [rollingStock, category, currentSubCategory, t]);
+  }, [rollingStock, modalFormState.category, currentSubCategory, t]);
 
   useEffect(() => {
     onCategoryWarningChange(categoryWarningMessage);
@@ -146,7 +136,9 @@ const ItineraryModalFormHeader = ({
             narrow
             small
             options={categoryOptions}
-            value={categoryOptions.find((option) => isEqual(option.category, category))}
+            value={categoryOptions.find((option) =>
+              isEqual(option.category, modalFormState.category)
+            )}
             getOptionLabel={(option) => option.label}
             getOptionValue={(option) => option.id}
             onChange={handleCategoryChange}
@@ -174,10 +166,13 @@ const ItineraryModalFormHeader = ({
             narrow
             small
             placeholder={t('noSpeedLimitByTag')}
-            value={speedLimitByTag || ''}
+            value={modalFormState.speedLimitTag ?? ''}
             {...createStandardSelectOptions(speedLimitTags)}
             onChange={(e) => {
-              dispatch(updateSpeedLimitByTag(e ?? null));
+              onModalFormStateChange({
+                ...modalFormState,
+                speedLimitTag: e,
+              });
             }}
           ></Select>
         </div>
@@ -187,15 +182,16 @@ const ItineraryModalFormHeader = ({
             small
             id="itinerary-modal-timetable-item-name"
             label={t('itineraryModal.trainName')}
-            value={name}
-            title={name}
-            onChange={handleNameChange}
-            onBlur={() => {
-              setIsNameBlurred(true);
-            }}
-            onFocus={() => {
-              setIsNameBlurred(false);
-            }}
+            value={modalFormState.name}
+            title={modalFormState.name}
+            onChange={(e) =>
+              onModalFormStateChange({
+                ...modalFormState,
+                name: e.target.value,
+              })
+            }
+            onBlur={() => setIsNameBlurred(true)}
+            onFocus={() => setIsNameBlurred(false)}
             statusWithMessage={nameError}
           />
         </div>

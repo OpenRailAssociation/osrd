@@ -60,6 +60,28 @@ describe('simulationConfReducer', () => {
     expect(state).toEqual(operationalStudiesInitialConf);
   });
 
+  it('should update itinerary form data at once', () => {
+    const store = createStore();
+    store.dispatch(
+      operationalStudiesConfSlice.actions.updateItineraryForm({
+        name: 'train1',
+        category: {
+          main_category: 'INTERCITY_TRAIN',
+        },
+        rollingStockId: 1,
+        speedLimitTag: 'MA100',
+        pathSteps: [],
+      })
+    );
+
+    const state = store.getState()[operationalStudiesConfSlice.name];
+    expect(state.name).toBe('train1');
+    expect(state.category).toEqual({ main_category: 'INTERCITY_TRAIN' });
+    expect(state.rollingStockID).toBe(1);
+    expect(state.speedLimitByTag).toBe('MA100');
+    expect(state.pathSteps).toEqual([]);
+  });
+
   describe('selectTrainToEdit', () => {
     it('paced train case', () => {
       const pacedTrain: PacedTrainWithDetails = {
