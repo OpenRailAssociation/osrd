@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next';
 
 import { formatLocalTime } from 'utils/date';
 
-import DurationCell from './DurationCell';
+import DurationCell, { type DurationCellHandle } from './DurationCell';
 import TimeCell, { type TimeCellHandle } from './TimeCell';
 import { type TimesStopsRowNew } from './types';
 
@@ -20,6 +20,7 @@ declare module '@tanstack/react-table' {
   // eslint-disable-next-line @typescript-eslint/consistent-type-definitions, @typescript-eslint/no-unused-vars
   interface ColumnMeta<TData extends RowData, TValue> {
     className: string;
+    tabbable?: boolean;
   }
   // eslint-disable-next-line @typescript-eslint/consistent-type-definitions, @typescript-eslint/no-unused-vars
   interface TableMeta<TData extends RowData> {
@@ -78,6 +79,12 @@ type TimesStopsTableProps = {
 
 const columnHelper = createColumnHelper<TimesStopsRowNew>();
 const getTimeCellKey = (rowIndex: number, columnId: string) => `${rowIndex}-${columnId}`;
+type TabbableCellColumnId = 'requestedArrival' | 'stopDuration' | 'requestedDeparture';
+type TabbableCellHandle = TimeCellHandle | DurationCellHandle;
+type TimeCellTabEntry = {
+  next: string | null;
+  prev: string | null;
+};
 
 const TimesStopsTable = ({
   rows,
@@ -90,10 +97,11 @@ const TimesStopsTable = ({
 }: TimesStopsTableProps) => {
   const { t } = useTranslation('translation', { keyPrefix: 'timeStopTable' });
   const scheduleNotHonored = rows.some((row) => row.stepStatus === 'scheduleNotHonored');
-  const cellHandlesRef = useRef<Map<string, TimeCellHandle>>(new Map());
+  const cellHandlesRef = useRef<Map<string, TabbableCellHandle>>(new Map());
+  const cellTabOrderRef = useRef<Map<string, TimeCellTabEntry>>(new Map());
 
   const registerTimeCellRef = useCallback(
-    (rowIndex: number, columnId: string) => (handle: TimeCellHandle | null) => {
+    (rowIndex: number, columnId: string) => (handle: TabbableCellHandle | null) => {
       const key = getTimeCellKey(rowIndex, columnId);
       if (handle) {
         cellHandlesRef.current.set(key, handle);
@@ -112,6 +120,20 @@ const TimesStopsTable = ({
       cellHandlesRef.current.get(key)?.focus();
     },
     [rows.length]
+  );
+
+  const focusRequestedCellOnTab = useCallback(
+    (rowIndex: number, columnId: TabbableCellColumnId, direction: 'forward' | 'backward') => {
+      const currentKey = getTimeCellKey(rowIndex, columnId);
+      const entry = cellTabOrderRef.current.get(currentKey);
+      if (!entry) return false;
+      const key = direction === 'forward' ? entry.next : entry.prev;
+      if (!key) return false;
+
+      cellHandlesRef.current.get(key)?.focus();
+      return true;
+    },
+    []
   );
 
   const columns = useMemo(
@@ -198,12 +220,16 @@ const TimesStopsTable = ({
               referenceDate={getArrivalReferenceDate(row, allRows, startTime)}
               prefillValue={row.computedArrival}
               onEnterKeyDown={() => focusCellBelow(info.row.index, 'requestedArrival')}
+              onTabKeyDown={(direction) =>
+                focusRequestedCellOnTab(info.row.index, 'requestedArrival', direction)
+              }
               onCommit={(date) => onArrival(row, date)}
             />
           );
         },
         meta: {
           className: 'col-requested-arrival',
+          tabbable: true,
         },
       }),
       columnHelper.accessor('computedArrival', {
@@ -223,6 +249,7 @@ const TimesStopsTable = ({
         header: () => t('stopTime'),
         cell: (info) => (
           <DurationCell
+            ref={registerTimeCellRef(info.row.index, 'stopDuration')}
             {...info}
             onChange={(e) =>
               info.table.options.meta!.onStopDurationChange(info.row.original, e.target.value)
@@ -231,6 +258,7 @@ const TimesStopsTable = ({
         ),
         meta: {
           className: 'col-stop-duration',
+          tabbable: true,
         },
       }),
       columnHelper.accessor('requestedDeparture', {
@@ -249,12 +277,16 @@ const TimesStopsTable = ({
               referenceDate={getDepartureReferenceDate(row, startTime)}
               prefillValue={row.computedDeparture}
               onEnterKeyDown={() => focusCellBelow(info.row.index, 'requestedDeparture')}
+              onTabKeyDown={(direction) =>
+                focusRequestedCellOnTab(info.row.index, 'requestedDeparture', direction)
+              }
               onCommit={(date) => info.table.options.meta!.onDepartureChange(row, date)}
             />
           );
         },
         meta: {
           className: 'col-requested-departure',
+          tabbable: true,
         },
       }),
       columnHelper.accessor('computedDeparture', {
@@ -332,7 +364,7 @@ const TimesStopsTable = ({
         },
       }),
     ],
-    [startTime, focusCellBelow]
+    [startTime, focusCellBelow, focusRequestedCellOnTab]
   );
 
   // eslint-disable-next-line react-hooks/incompatible-library
@@ -348,6 +380,24 @@ const TimesStopsTable = ({
       onDepartureChange,
     },
   });
+
+  const tabbableColumns = table
+    .getAllColumns()
+    .filter((column) => column.columnDef.meta?.tabbable)
+    .map((column) => column.id as TabbableCellColumnId);
+
+  const tabOrder = rows.flatMap((row, index) =>
+    tabbableColumns
+      .filter((columnId) => !(columnId === 'requestedDeparture' && row.opOnPathIndex === 0))
+      .map((columnId) => getTimeCellKey(index, columnId))
+  );
+
+  cellTabOrderRef.current = new Map(
+    tabOrder.map((key, i) => [
+      key,
+      { next: tabOrder[i + 1] ?? null, prev: tabOrder[i - 1] ?? null },
+    ])
+  );
 
   if (rows.length === 0) {
     return (

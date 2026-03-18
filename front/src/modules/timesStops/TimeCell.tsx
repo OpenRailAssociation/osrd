@@ -481,6 +481,8 @@ type TimeCellProps = CellContext<TimesStopsRowNew, Date | null> &
     prefillValue?: Date | null;
     /** Called after Enter validates the input. Use to move focus (e.g. to the cell below). */
     onEnterKeyDown?: () => void;
+    /** Called on Tab key to move focus to the next/previous editable time cell. */
+    onTabKeyDown?: (direction: 'forward' | 'backward') => boolean;
     onCommit?: (date: Date | null) => void;
     ref?: React.Ref<TimeCellHandle>;
   };
@@ -490,6 +492,7 @@ const TimeCell = ({
   referenceDate,
   prefillValue,
   onEnterKeyDown,
+  onTabKeyDown,
   onCommit,
   ref,
   ...props
@@ -542,6 +545,13 @@ const TimeCell = ({
         e.preventDefault();
         blurIntentRef.current = 'cancel';
         e.currentTarget.blur();
+        break;
+      case 'Tab':
+        blurIntentRef.current = 'commit';
+        if (onTabKeyDown?.(e.shiftKey ? 'backward' : 'forward')) {
+          e.preventDefault();
+          e.currentTarget.blur();
+        }
         break;
       case 'Backspace':
         e.preventDefault();

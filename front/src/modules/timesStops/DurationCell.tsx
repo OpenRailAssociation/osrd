@@ -1,6 +1,14 @@
 /* eslint-disable jsx-a11y/no-noninteractive-tabindex */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
-import { useReducer, useRef, useLayoutEffect, useEffect, useState, type Dispatch } from 'react';
+import {
+  useReducer,
+  useRef,
+  useLayoutEffect,
+  useEffect,
+  useState,
+  useImperativeHandle,
+  type Dispatch,
+} from 'react';
 
 import { Clear } from '@osrd-project/ui-icons';
 import type { CellContext } from '@tanstack/react-table';
@@ -360,13 +368,19 @@ const UnitDisplay = ({ unit, state, dispatch, startEditing, isEdited }: UnitDisp
   );
 };
 
+export type DurationCellHandle = {
+  focus: () => void;
+};
+
 const DurationCell = ({
   disabled,
+  ref,
   ...props
 }: CellContext<TimesStopsRowNew, Duration | null> &
   Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'> & {
     onChange?: (e: { target: { value: number | null } }) => void;
     disabled?: boolean;
+    ref?: React.Ref<DurationCellHandle>;
   }) => {
   const { onChange, getValue } = props || {};
   const controlledValue = getValue();
@@ -374,6 +388,14 @@ const DurationCell = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const mouseDownRef = useRef(false);
   const [btnPos, setBtnPos] = useState<{ top: number; left: number } | null>(null);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      focus: () => containerRef.current?.focus(),
+    }),
+    []
+  );
 
   // Sync internal state with external value when it changes (and not editing)
   useEffect(() => {
