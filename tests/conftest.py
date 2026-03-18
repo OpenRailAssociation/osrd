@@ -233,14 +233,14 @@ def create_rolling_stock(
     return ids
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def fast_rolling_stock(session: Session) -> Iterator[int]:
     rs_id = create_rolling_stock(session, FAST_ROLLING_STOCK_JSON_PATH)[0]
     yield rs_id
     session.delete(f"{EDITOAST_URL}rolling_stock/{rs_id}?force=true")
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def etcs_rolling_stock(session: Session) -> Iterator[int]:
     rs_id = create_rolling_stock(session, ETCS_ROLLING_STOCK_JSON_PATH)[0]
     yield rs_id

@@ -41,11 +41,11 @@ def run(
     editoast_url: str,
     scenario: Scenario,
     session: Session,
+    rolling_stock_name: str | None,
     scenario_ttl: int = 20,
     n_test: int = 1000,
     log_folder: Path | None = None,
     seed: int | None = None,
-    rolling_stock_name: str | None = None,
 ):
     """
     Runs every test
@@ -71,13 +71,18 @@ def run(
         time.sleep(0.1)
 
         try:
+            rs_name = (
+                _get_random_rolling_stock(editoast_url, session).name
+                if rolling_stock_name is None
+                else rolling_stock_name
+            )
             _run_test(
                 infra_graph,
                 editoast_url,
                 scenario,
                 session,
                 prelude,
-                rolling_stock_name,
+                rs_name,
             )
         except Exception as e:
             if log_folder is None:
@@ -221,7 +226,7 @@ def _run_test(
     scenario: Scenario,
     session: Session,
     prelude: list,
-    rolling_stock_name: str | None,
+    rolling_stock_name: str,
 ):
     """
     Runs a single random test
@@ -229,13 +234,9 @@ def _run_test(
     :param editoast_url: Api url
     :param scenario: Scenario to use for the test
     :param prelude: path/schedule requests sent so far
-    :param rolling_stock_name: rolling stock to use, random if None
+    :param rolling_stock_name: rolling stock to use (use _get_random_rolling_stock() if necessary)
     """
-    rolling_stock = (
-        _get_random_rolling_stock(editoast_url, session)
-        if rolling_stock_name is None
-        else _get_rolling_stock(editoast_url, rolling_stock_name, session)
-    )
+    rolling_stock = _get_rolling_stock(editoast_url, rolling_stock_name, session)
     path = _make_valid_path(infra)
 
     if random.randint(0, 1) == 1:
@@ -364,7 +365,6 @@ def _get_rolling_stock(
 def _get_random_rolling_stock(editoast_url: str, session: Session) -> _RollingStock:
     """
     Returns a random rolling stock ID
-    :param editoast_url: Api url
     :return: ID of a valid rolling stock
     """
     # TODO: we may want to check more pages, for more randomness
