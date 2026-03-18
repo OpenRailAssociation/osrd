@@ -21,7 +21,11 @@ import { getDisplayOnlyPathSteps } from 'reducers/simulationResults/selectors';
 import { Duration } from 'utils/duration';
 
 import { ARRIVAL_TIME_ACCEPTABLE_ERROR } from '../consts';
-import { buildOpMatchParams, getOperationalPointName } from '../helpers/utils';
+import {
+  buildOpMatchParams,
+  getOperationalPointName,
+  receptionSignalToSignalBooleans,
+} from '../helpers/utils';
 import { type StepStatus, type TimesStopsRowNew } from '../types';
 
 type BuildTableRowParams = {
@@ -38,6 +42,8 @@ type BuildTableRowParams = {
   scheduleNotHonored?: boolean;
   marginNotHonored?: boolean;
   location: PathItemLocation;
+  shortSlipDistance?: boolean;
+  closedSignal?: boolean;
 };
 
 const buildTableRow = ({
@@ -54,6 +60,8 @@ const buildTableRow = ({
   scheduleNotHonored,
   marginNotHonored,
   location,
+  shortSlipDistance,
+  closedSignal,
 }: BuildTableRowParams): TimesStopsRowNew => {
   const requestedArrival = schedule?.arrival
     ? new Date(startDate.getTime() + Duration.parse(schedule.arrival).ms)
@@ -111,9 +119,9 @@ const buildTableRow = ({
     isPathStep: true,
     hasRequestedTrack,
     location,
-    closedSignal: false, // TODO : Implementation to be done with the integration of the new columns
-    shortSlipDistance: false, // TODO : Idem
-    powerRestriction: null, // TODO : Idem
+    closedSignal,
+    shortSlipDistance,
+    powerRestriction: null, // TODO : Implementation to be done with the integration of the new columns
     requestedTheoreticalMargin: null, // TODO : Idem
     isTheoreticalMarginBoundary: false, // TODO : Idem
     computedTheoreticalMarginSeconds: null, // TODO : Idem
@@ -246,6 +254,10 @@ const useTimesStopsTableData = (
           stepIndex < selectedTrain.path.length - 1 &&
           !stablePathItemRespect?.margins[stepIndex + 1];
 
+        const { shortSlipDistance, onStopSignal } = receptionSignalToSignalBooleans(
+          schedule?.reception_signal
+        );
+
         const row = buildTableRow({
           id: pathStep.id,
           // opOnPathIndex is a placeholder here (-1), it will be replaced by opIndex when matching with operationalPointsOnPath
@@ -261,6 +273,8 @@ const useTimesStopsTableData = (
           scheduleNotHonored,
           marginNotHonored,
           location: pathStep.location,
+          shortSlipDistance,
+          closedSignal: onStopSignal,
         });
 
         return [pathStep.id, row];
@@ -305,6 +319,11 @@ const useTimesStopsTableData = (
                 : undefined;
           }
 
+          const receptionSignal = scheduleByAt[op.id]?.reception_signal;
+
+          const { shortSlipDistance, onStopSignal } =
+            receptionSignalToSignalBooleans(receptionSignal);
+
           formattedRows.push({
             ...buildTableRow({
               id: op.id,
@@ -314,6 +333,8 @@ const useTimesStopsTableData = (
               trackName,
               startDate,
               computedArrival,
+              shortSlipDistance,
+              closedSignal: onStopSignal,
               // Build location from OP data for creating a new PathItem if user edits this row
               // OPs on path always have a UIC identifier
               location: {
