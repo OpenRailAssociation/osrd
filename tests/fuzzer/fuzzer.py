@@ -99,15 +99,13 @@ def run(
         # Let's reset the scenario (empty timetable) so we can keep a
         # manageable/reproducible state.
         if seed % scenario_ttl == 0:
-            scenario = _reset_timetable(editoast_url, scenario)
+            scenario = _reset_timetable(editoast_url, scenario, session)
             prelude = []
 
 
 def get_infra(editoast_url: str, infra_name: str, session: Session) -> int:
     """
     Returns the ID corresponding to the infra name, if available.
-    :param editoast_url: Api url
-    :param infra_name: name of the infra
     :return: ID the infra
     """
     # TODO: we may want a generic pages handler, if we keep adding queries
@@ -124,7 +122,7 @@ def get_infra(editoast_url: str, infra_name: str, session: Session) -> int:
     raise ValueError(f"Unable to find infra {infra_name}")
 
 
-def create_scenario(editoast_url: str, infra_id: int) -> Scenario:
+def create_scenario(editoast_url: str, infra_id: int, session: Session) -> Scenario:
     # Create the timetable
     r = _post_with_timeout(session, editoast_url + "/timetable/", json={})
     timetable_id = r.json()["timetable_id"]
@@ -139,7 +137,7 @@ def create_scenario(editoast_url: str, infra_id: int) -> Scenario:
         },
     )
     train_schedule_set_id = r.json()["id"]
-    r = _post_with_timeout(
+    _resp = _post_with_timeout(
         session,
         editoast_url + "/timetable/{timetable_id}/train_schedule_sets/",
         json=[train_schedule_set_id],
@@ -367,16 +365,9 @@ def _make_stdcm_payload(path: list[tuple[str, float]], rolling_stock: int) -> di
 def _get_rolling_stock(
     editoast_url: str, rolling_stock_name: str, session: Session
 ) -> _RollingStock:
-    """
-    Returns the ID corresponding to the rolling stock name, if available.
-    :param editoast_url: Api url
-    :param rolling_stock_name: name of the rolling stock
-    :return: ID the rolling stock
-    """
-    session = conftest.session_no_fixture()
     return _RollingStock(
         rolling_stock_name,
-        conftest.get_rolling_stock(session, editoast_url, rolling_stock_name),
+        conftest.get_rolling_stock_id(session, editoast_url, rolling_stock_name),
     )
 
 
@@ -398,8 +389,6 @@ def _get_random_rolling_stock(editoast_url: str, session: Session) -> _RollingSt
 def _make_graph(editoast_url: str, infra_id: int, session: Session) -> _InfraGraph:
     """
     Makes a graph from the infra
-    :param editoast_url: editoast url
-    :param infra: infra id
     """
     url = editoast_url + f"infra/{infra_id}/railjson/"
     r = _get_with_timeout(session, url)
@@ -536,7 +525,9 @@ def _convert_stop(stop: tuple[str, float], i: int) -> dict:
     }
 
 
-def _reset_timetable(editoast_url: str, scenario: Scenario) -> Scenario:
+def _reset_timetable(
+    editoast_url: str, scenario: Scenario, session: Session
+) -> Scenario:
     """Deletes the current timetable and creates a new one."""
     # Delete the current timetable
     _raise_if_error(
@@ -559,7 +550,7 @@ def _reset_timetable(editoast_url: str, scenario: Scenario) -> Scenario:
         },
     )
     train_schedule_set_id = r.json()["id"]
-    r = _post_with_timeout(
+    _resp = _post_with_timeout(
         session,
         editoast_url + f"/timetable/{timetable_id}/train_schedule_sets",
         json=[train_schedule_set_id],
@@ -684,20 +675,22 @@ _to_ms = _to_mm
 
 
 if __name__ == "__main__":
-    session = conftest.session_no_fixture()
-    infra_id = get_infra(_EDITOAST_URL, _INFRA_NAME, session)
-    new_scenario = create_scenario(_EDITOAST_URL, infra_id)
+    main_session = conftest.session_no_fixture()
+    main_infra_id = get_infra(_EDITOAST_URL, _INFRA_NAME, main_session)
+    new_scenario = create_scenario(_EDITOAST_URL, main_infra_id, main_session)
     if _ROLLING_STOCK_NAME == "fast_rolling_stock":
         try:
-            _get_rolling_stock(_EDITOAST_URL, _ROLLING_STOCK_NAME, session)
+            _get_rolling_stock(_EDITOAST_URL, _ROLLING_STOCK_NAME, main_session)
         except ValueError:
             conftest.create_rolling_stock(
-                session, conftest.FAST_ROLLING_STOCK_JSON_PATH, test_rolling_stocks=None
+                main_session,
+                conftest.FAST_ROLLING_STOCK_JSON_PATH,
+                test_rolling_stocks=None,
             )
     run(
         _EDITOAST_URL,
         new_scenario,
-        session,
+        main_session,
         scenario_ttl=20,
         n_test=100,
         log_folder=Path(__file__).parent / "errors",

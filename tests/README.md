@@ -9,7 +9,7 @@ To run tests `uv run pytest` after starting docker containers (`docker compose u
 
 To run a list of specific tests, run `uv run pytest -k test_name_1 test_name_2 ...`.
 
-To setup end-to-end (e2e) tests, please see [front readme](../front/README.md#npm-run-e2e-tests).
+To setup end-to-end (e2e) tests, please see [the dedicated readme](../front/tests/README.md).
 
 ### Create new integration tests
 

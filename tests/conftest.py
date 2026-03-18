@@ -1,5 +1,5 @@
 import json
-from collections.abc import Iterable, Iterator, Mapping
+from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -154,14 +154,11 @@ def etcs_scenario(
     )
 
 
-def get_rolling_stock(
+def get_rolling_stock_id(
     session: Session, editoast_url: str, rolling_stock_name: str
 ) -> int:
     """
     Returns the ID corresponding to the rolling stock name, if available.
-    :param editoast_url: Api url
-    :param rolling_stock_name: name of the rolling stock
-    :return: ID the rolling stock
     """
     page = 1
     while page is not None:
@@ -220,7 +217,9 @@ def create_rolling_stock(
         response = session.post(f"{EDITOAST_URL}rolling_stock/", json=payload)
         rjson = response.json()
         if response.status_code // 100 == 4 and "NameAlreadyUsed" in rjson["type"]:
-            return [get_rolling_stock(session, EDITOAST_URL, rjson["context"]["name"])]
+            return [
+                get_rolling_stock_id(session, EDITOAST_URL, rjson["context"]["name"])
+            ]
         assert "id" in rjson, f"Failed to create rolling stock: {rjson}"
         return [rjson["id"]]
     ids = []
@@ -235,33 +234,17 @@ def create_rolling_stock(
 
 
 @pytest.fixture
-def fast_rolling_stocks(
-    request: pytest.FixtureRequest, session: Session
-) -> Iterator[Iterable[int]]:
-    closest_marker = request.node.get_closest_marker("names_and_metadata")
-    assert closest_marker is not None
-    ids = create_rolling_stock(
-        session,
-        FAST_ROLLING_STOCK_JSON_PATH,
-        closest_marker.args[0],
-    )
-    yield ids
-    for id in ids:
-        session.delete(f"{EDITOAST_URL}rolling_stock/{id}?force=true")
-
-
-@pytest.fixture
 def fast_rolling_stock(session: Session) -> Iterator[int]:
-    id = create_rolling_stock(session, FAST_ROLLING_STOCK_JSON_PATH)[0]
-    yield id
-    session.delete(f"{EDITOAST_URL}rolling_stock/{id}?force=true")
+    rs_id = create_rolling_stock(session, FAST_ROLLING_STOCK_JSON_PATH)[0]
+    yield rs_id
+    session.delete(f"{EDITOAST_URL}rolling_stock/{rs_id}?force=true")
 
 
 @pytest.fixture
 def etcs_rolling_stock(session: Session) -> Iterator[int]:
-    id = create_rolling_stock(session, ETCS_ROLLING_STOCK_JSON_PATH)[0]
-    yield id
-    session.delete(f"{EDITOAST_URL}rolling_stock/{id}?force=true")
+    rs_id = create_rolling_stock(session, ETCS_ROLLING_STOCK_JSON_PATH)[0]
+    yield rs_id
+    session.delete(f"{EDITOAST_URL}rolling_stock/{rs_id}?force=true")
 
 
 @pytest.fixture
