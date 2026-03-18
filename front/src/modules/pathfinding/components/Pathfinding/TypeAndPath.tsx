@@ -117,9 +117,11 @@ const TypeAndPath = ({
     })
       .unwrap()
       .then((results) => {
-        const filteredResults = results.filter((result) =>
-          MAIN_OP_CH_CODES.includes((result as SearchResultItemOperationalPoint).ch)
-        );
+        const filteredResults = results.filter((result) => {
+          const searchResult = result as SearchResultItemOperationalPoint;
+          // We need to ensure the name is not null since we sort the results depending on it.
+          return searchResult.name != null && MAIN_OP_CH_CODES.includes(searchResult.ch);
+        });
         setSearchResults(filteredResults as SearchResultItemOperationalPoint[]);
       })
       .catch(() => {
