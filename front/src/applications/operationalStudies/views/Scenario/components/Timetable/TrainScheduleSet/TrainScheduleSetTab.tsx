@@ -18,7 +18,7 @@ import { noop } from 'lodash';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
-import type useScenarioTrainScheduleSet from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
+import type { TrainScheduleSetManager } from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
 import type { CatalogEntry, TrainScheduleSet } from 'common/api/osrdEditoastApi';
 import MenuTriggerButton, { type MenuProps } from 'common/MenuTriggerButton';
 
@@ -47,17 +47,7 @@ type TrainScheduleSetTabProps = PropsWithChildren<{
   isCheckboxDisabled: boolean;
   isTrainListOpen: boolean;
   catalogEntries: CatalogEntry[];
-  publishTrainScheduleSet: ReturnType<
-    typeof useScenarioTrainScheduleSet
-  >['publishTrainScheduleSet'];
-  getTrainScheduleSetByCatalogAndName: ReturnType<
-    typeof useScenarioTrainScheduleSet
-  >['getTrainScheduleSetByCatalogAndName'];
-  localCopyTrainScheduleSet: ReturnType<
-    typeof useScenarioTrainScheduleSet
-  >['localCopyTrainScheduleSet'];
-  updateTrainScheduleSet: ReturnType<typeof useScenarioTrainScheduleSet>['updateTrainScheduleSet'];
-  removeTrainScheduleSet: ReturnType<typeof useScenarioTrainScheduleSet>['removeTrainScheduleSet'];
+  manageTrainScheduleSet: TrainScheduleSetManager;
 }>;
 
 const TrainScheduleSetTab = ({
@@ -71,11 +61,7 @@ const TrainScheduleSetTab = ({
   isCheckboxDisabled,
   isTrainListOpen,
   catalogEntries,
-  publishTrainScheduleSet,
-  getTrainScheduleSetByCatalogAndName,
-  localCopyTrainScheduleSet,
-  updateTrainScheduleSet,
-  removeTrainScheduleSet,
+  manageTrainScheduleSet,
 }: TrainScheduleSetTabProps) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'main.timetable.trainScheduleSets',
@@ -193,10 +179,10 @@ const TrainScheduleSetTab = ({
             }}
             onCancel={() => setOpenedDialog(null)}
             onSubmit={async (data) => {
-              await publishTrainScheduleSet(trainScheduleSet, data);
+              await manageTrainScheduleSet.publishSet(trainScheduleSet, data);
             }}
             checkNameInCatalogIsUniq={async (name, catalogId) => {
-              const result = getTrainScheduleSetByCatalogAndName(name, catalogId);
+              const result = manageTrainScheduleSet.getSetByCatalogAndName(name, catalogId);
               if (!result) return true;
               return result.id === trainScheduleSet.id;
             }}
@@ -210,7 +196,7 @@ const TrainScheduleSetTab = ({
             trainScheduleSet={trainScheduleSet}
             onCancel={() => setOpenedDialog(null)}
             onSubmit={async () => {
-              await localCopyTrainScheduleSet(trainScheduleSet);
+              await manageTrainScheduleSet.localCopySet(trainScheduleSet);
             }}
           />,
           document.body
@@ -227,7 +213,7 @@ const TrainScheduleSetTab = ({
             }}
             onCancel={() => setOpenedDialog(null)}
             onSubmit={async (data) => {
-              await updateTrainScheduleSet(trainScheduleSet, data);
+              await manageTrainScheduleSet.updateSet(trainScheduleSet, data);
             }}
           />,
           document.body
@@ -252,7 +238,7 @@ const TrainScheduleSetTab = ({
             }}
             onCancel={() => setOpenedDialog(null)}
             onDelete={async () => {
-              await removeTrainScheduleSet(trainScheduleSet.id);
+              await manageTrainScheduleSet.removeSet(trainScheduleSet.id);
             }}
           />,
           document.body

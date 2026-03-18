@@ -4,8 +4,11 @@ import { useSelector } from 'react-redux';
 import { Virtualizer } from 'virtua';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
-import type useScenarioTrainScheduleSet from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
-import type { CatalogEntry, TrainScheduleSet } from 'common/api/osrdEditoastApi';
+import type {
+  TimetableItemsByTrainScheduleSet,
+  TrainScheduleSetManager,
+} from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
+import type { CatalogEntry } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { isPacedTrainWithDetails } from 'modules/timetableItem/helpers/pacedTrain';
@@ -32,14 +35,6 @@ import TrainScheduleSetTab from './TrainScheduleSet/TrainScheduleSetTab';
 import type { TimetableMode } from './types';
 import UniqueTrainItem from './UniqueTrainItem';
 
-type TimetableItemByTrainScheduleSets =
-  | {
-      trainScheduleSet: TrainScheduleSet;
-      trains: PacedTrainWithDetails[];
-      catalog: CatalogEntry | undefined;
-    }[]
-  | null;
-
 type TrainListProps = {
   setDisplayTimetableItemManagement: (mode: string) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
@@ -53,21 +48,11 @@ type TrainListProps = {
   isSelectMode: boolean;
   timetableMode: TimetableMode;
   moveTimetableItem?: (pacedTrainIds: PacedTrainId[]) => void;
-  timetableItemsByTrainScheduleSets: TimetableItemByTrainScheduleSets;
+  timetableItemsByTrainScheduleSets: TimetableItemsByTrainScheduleSet[] | null;
   handleClickTrainScheduleSet: (id: number) => void;
   handleSelectTrainScheduleSet: (trainIds: TimetableItemId[]) => void;
   catalogEntries: CatalogEntry[];
-  publishTrainScheduleSet: ReturnType<
-    typeof useScenarioTrainScheduleSet
-  >['publishTrainScheduleSet'];
-  getTrainScheduleSetByCatalogAndName: ReturnType<
-    typeof useScenarioTrainScheduleSet
-  >['getTrainScheduleSetByCatalogAndName'];
-  localCopyTrainScheduleSet: ReturnType<
-    typeof useScenarioTrainScheduleSet
-  >['localCopyTrainScheduleSet'];
-  updateTrainScheduleSet: ReturnType<typeof useScenarioTrainScheduleSet>['updateTrainScheduleSet'];
-  removeTrainScheduleSet: ReturnType<typeof useScenarioTrainScheduleSet>['removeTrainScheduleSet'];
+  manageTrainScheduleSet: TrainScheduleSetManager;
   expandedTrainScheduleSetIds: Set<number>;
   setShowTrainScheduleSetDialog: (value: boolean) => void;
 };
@@ -92,11 +77,7 @@ const TrainList = ({
   handleClickTrainScheduleSet,
   handleSelectTrainScheduleSet,
   catalogEntries,
-  publishTrainScheduleSet,
-  getTrainScheduleSetByCatalogAndName,
-  localCopyTrainScheduleSet,
-  updateTrainScheduleSet,
-  removeTrainScheduleSet,
+  manageTrainScheduleSet,
   expandedTrainScheduleSetIds,
   setShowTrainScheduleSetDialog,
 }: TrainListProps) => {
@@ -282,11 +263,7 @@ const TrainList = ({
                   isCheckboxDisabled={isCheckboxDisabled}
                   isTrainListOpen={isTrainListOpen}
                   catalogEntries={catalogEntries}
-                  publishTrainScheduleSet={publishTrainScheduleSet}
-                  getTrainScheduleSetByCatalogAndName={getTrainScheduleSetByCatalogAndName}
-                  localCopyTrainScheduleSet={localCopyTrainScheduleSet}
-                  updateTrainScheduleSet={updateTrainScheduleSet}
-                  removeTrainScheduleSet={removeTrainScheduleSet}
+                  manageTrainScheduleSet={manageTrainScheduleSet}
                 />
               );
 

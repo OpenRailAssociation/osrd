@@ -73,16 +73,8 @@ const Timetable = ({
   const [pacedTrainIdsToMove, setPacedTrainIdsToMove] = useState<PacedTrainId[]>([]);
   const [trainScheduleSetIdSelected, setTrainScheduleSetIdSelected] = useState<number>();
 
-  const {
-    timetableItemsByTrainScheduleSets,
-    catalogEntries,
-    createTrainScheduleSet,
-    publishTrainScheduleSet,
-    getTrainScheduleSetByCatalogAndName,
-    localCopyTrainScheduleSet,
-    updateTrainScheduleSet,
-    removeTrainScheduleSet,
-  } = useScenarioTrainScheduleSet(timetableItemsWithDetails, timetableItems, upsertTimetableItems);
+  const { timetableItemsByTrainScheduleSets, catalogEntries, manageTrainScheduleSet } =
+    useScenarioTrainScheduleSet(timetableItemsWithDetails, timetableItems, upsertTimetableItems);
 
   const { filteredTimetableItems, ...timetableFilters } =
     useFilterTimetableItems(timetableItemsWithDetails);
@@ -196,11 +188,7 @@ const Timetable = ({
           handleSelectTrainScheduleSet={handleSelectTrainScheduleSet}
           catalogEntries={catalogEntries}
           moveTimetableItem={(pacedTrainIds) => openMoveDialog(pacedTrainIds)}
-          publishTrainScheduleSet={publishTrainScheduleSet}
-          getTrainScheduleSetByCatalogAndName={getTrainScheduleSetByCatalogAndName}
-          localCopyTrainScheduleSet={localCopyTrainScheduleSet}
-          updateTrainScheduleSet={updateTrainScheduleSet}
-          removeTrainScheduleSet={removeTrainScheduleSet}
+          manageTrainScheduleSet={manageTrainScheduleSet}
           expandedTrainScheduleSetIds={expandedTrainScheduleSetIds}
           setShowTrainScheduleSetDialog={setShowTrainScheduleSetDialog}
         />
@@ -209,7 +197,7 @@ const Timetable = ({
         <TrainScheduleSetDialog
           catalogEntries={catalogEntries}
           onCancel={() => setShowTrainScheduleSetDialog(false)}
-          onSubmit={createTrainScheduleSet}
+          onSubmit={manageTrainScheduleSet.createSet}
           labels={{
             title: t('trainScheduleSets.newLocalTrainScheduleSet'),
             submit: t('trainScheduleSets.addTrainScheduleSet'),

@@ -9,7 +9,7 @@ import {
   type TrainScheduleSet,
 } from 'common/api/osrdEditoastApi';
 import { createPacedTrains } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
-import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
+import type { PacedTrainWithDetails, TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
@@ -26,6 +26,21 @@ export type ImportTrainScheduleSetsPayload = Array<{
   type: TrainScheduleSetImportType;
   trainScheduleSet: TrainScheduleSet;
 }>;
+
+export type TimetableItemsByTrainScheduleSet = {
+  trainScheduleSet: TrainScheduleSet;
+  trains: PacedTrainWithDetails[];
+  catalog?: CatalogEntry;
+};
+
+export type TrainScheduleSetManager = {
+  createSet: (data: TrainScheduleSetFormData) => Promise<void>;
+  publishSet: (trainScheduleSet: TrainScheduleSet, data: TrainScheduleSetFormData) => Promise<void>;
+  getSetByCatalogAndName: (name: string, catalogId: number) => TrainScheduleSet | null;
+  localCopySet: (trainScheduleSet: TrainScheduleSet) => Promise<void>;
+  updateSet: (trainScheduleSet: TrainScheduleSet, data: TrainScheduleSetFormData) => Promise<void>;
+  removeSet: (id: number) => Promise<void>;
+};
 
 export default function useScenarioTrainScheduleSet(
   timetableItemsWithDetails: TimetableItemWithDetails[],
@@ -350,24 +365,45 @@ export default function useScenarioTrainScheduleSet(
 
     return Array.from(trainScheduleSetsById.values())
       .sort((a, b) => sortTrainScheduleSets(a, b, catalogEntriesIndex))
-      .map((trainScheduleSet) => ({
-        trainScheduleSet,
-        trains: trainsByTrainScheduleSetId.get(trainScheduleSet.id) || [],
-        catalog: trainScheduleSet.catalog_entry_id
-          ? catalogEntriesIndex.get(trainScheduleSet.catalog_entry_id)
-          : undefined, // can happen if it's the sandbox
-      }));
+      .map(
+        (trainScheduleSet): TimetableItemsByTrainScheduleSet => ({
+          trainScheduleSet,
+          trains: trainsByTrainScheduleSetId.get(trainScheduleSet.id) || [],
+          catalog: trainScheduleSet.catalog_entry_id
+            ? catalogEntriesIndex.get(trainScheduleSet.catalog_entry_id)
+            : undefined, // can happen if it's the sandbox
+        })
+      );
   }, [trainScheduleSets, catalogEntries, timetableItemsWithDetails]);
+
+  const manageTrainScheduleSet = useMemo(
+    (): TrainScheduleSetManager => ({
+      createSet: createTrainScheduleSet,
+      publishSet: publishTrainScheduleSet,
+      getSetByCatalogAndName: getTrainScheduleSetByCatalogAndName,
+      localCopySet: localCopyTrainScheduleSet,
+      updateSet: updateTrainScheduleSet,
+      removeSet: removeTrainScheduleSet,
+    }),
+    [
+      createTrainScheduleSet,
+      publishTrainScheduleSet,
+      getTrainScheduleSetByCatalogAndName,
+      localCopyTrainScheduleSet,
+      updateTrainScheduleSet,
+      removeTrainScheduleSet,
+    ]
+  );
 
   return {
     catalogEntries: catalogEntries ?? [],
     timetableItemsByTrainScheduleSets,
-    createTrainScheduleSet,
-    updateTrainScheduleSet,
-    removeTrainScheduleSet,
-    publishTrainScheduleSet,
-    localCopyTrainScheduleSet,
-    getTrainScheduleSetByCatalogAndName,
+    manageTrainScheduleSet,
     importTrainScheduleSets,
+  } satisfies {
+    catalogEntries?: CatalogEntry[];
+    timetableItemsByTrainScheduleSets: TimetableItemsByTrainScheduleSet[] | null;
+    manageTrainScheduleSet: TrainScheduleSetManager;
+    importTrainScheduleSets: (data: ImportTrainScheduleSetsPayload) => Promise<void>;
   };
 }
