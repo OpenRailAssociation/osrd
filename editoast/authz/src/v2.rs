@@ -787,4 +787,39 @@ mod tests {
             HashSet::from_iter([])
         );
     }
+
+    #[tokio::test]
+    async fn infra_effective_grant_direct_and_inherited() {
+        let openfga = crate::authz_client!();
+        let authorize = Authorize(&openfga);
+
+        openfga
+            .write_tuples(&[Infra::reader().tuple(&User(1), &Infra(1))])
+            .await
+            .unwrap();
+
+        let grant = infra_effective_grant(Subject::user(1), Infra(1))
+            .authorize(&authorize)
+            .await
+            .unwrap()
+            .unwrap_authorized()
+            .await;
+        assert_eq!(grant, Some(InfraGrant::Reader));
+
+        openfga
+            .prepare_writes()
+            .write(&Group::member().tuple(&User(1), &Group(1)))
+            .write(&Infra::owner().tuple(Group::member().userset(&Group(1)), &Infra(1)))
+            .execute()
+            .await
+            .unwrap();
+
+        let grant = infra_effective_grant(Subject::user(1), Infra(1))
+            .authorize(&authorize)
+            .await
+            .unwrap()
+            .unwrap_authorized()
+            .await;
+        assert_eq!(grant, Some(InfraGrant::Owner));
+    }
 }
