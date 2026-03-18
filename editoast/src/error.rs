@@ -321,6 +321,21 @@ impl From<crate::views::AuthorizerError> for InternalError {
     }
 }
 
+impl From<fga::client::RequestFailure> for InternalError {
+    fn from(value: fga::client::RequestFailure) -> Self {
+        crate::views::AuthorizationError::from(value).into()
+    }
+}
+
+impl From<crate::authorizers::Error> for InternalError {
+    fn from(value: crate::authorizers::Error) -> Self {
+        match value {
+            crate::authorizers::Error::Database(error) => error.into(),
+            crate::authorizers::Error::OpenFga(error) => error.into(),
+        }
+    }
+}
+
 // error definition : uses by the macro EditoastError to generate
 // the list of error and share it with the openAPI generator
 #[derive(Debug)]

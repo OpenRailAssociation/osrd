@@ -21,6 +21,7 @@ use editoast_models::PgAuthDriver;
 
 use crate::authorizers::Rejection;
 use crate::authorizers::SystemAuthorizer;
+use crate::authorizers::impossible;
 
 use super::openfga_config::OpenfgaConfig;
 
@@ -198,6 +199,7 @@ pub async fn add_roles(
         Err(Rejection::NoSuchUser(_)) | Err(Rejection::NoSuchGroup(_)) => {
             unreachable!("checked by parse_and_fetch_subject")
         }
+        Err(rejection) => impossible!(rejection),
     }
 }
 
@@ -232,5 +234,6 @@ pub async fn remove_roles(
         Err(Rejection::NoSuchUser(_)) | Err(Rejection::NoSuchGroup(_)) => {
             unreachable!("checked by parse_and_fetch_subject")
         }
+        Err(rejection) => impossible!(rejection),
     }
 }

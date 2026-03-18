@@ -19,6 +19,7 @@ use editoast_models::PgAuthDriver;
 
 use crate::authorizers::Rejection;
 use crate::authorizers::SystemAuthorizer;
+use crate::authorizers::impossible;
 
 use super::openfga_config::OpenfgaConfig;
 
@@ -161,6 +162,7 @@ pub async fn exclude_group(
         Ok(()) => Ok(()),
         Err(Rejection::NoSuchGroup(_)) => unreachable!("tested above"),
         Err(Rejection::NoSuchUser(user_id)) => bail!("No such user {user_id}"),
+        Err(rejection) => impossible!(rejection),
     }
 }
 
@@ -201,6 +203,7 @@ pub async fn include_group(
         Ok(()) => Ok(()),
         Err(Rejection::NoSuchGroup(_)) => unreachable!("tested above"),
         Err(Rejection::NoSuchUser(user_id)) => bail!("No such user {user_id}"),
+        Err(rejection) => impossible!(rejection),
     }
 }
 
@@ -229,6 +232,7 @@ pub async fn delete_group(
         Ok(()) => {}
         Err(Rejection::NoSuchGroup(_)) => unreachable!("tested above"),
         Err(Rejection::NoSuchUser(_)) => unreachable!("tested above"),
+        Err(rejection) => impossible!(rejection),
     }
 
     let deleted = driver.delete_group(group_id).await?;

@@ -2,6 +2,9 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;
 
+use crate::authorizers::Rejection;
+use crate::authorizers::UserAuthorizer;
+use crate::authorizers::impossible;
 use crate::error::Result;
 use crate::models::Infra;
 use crate::views::Authentication;
@@ -388,33 +391,51 @@ pub(in crate::views) struct UserResourceGrant {
     )),
 )]
 pub(in crate::views) async fn user_grants(
-    State(AppState { db_pool, .. }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    State(AppState {
+        db_pool, regulator, ..
+    }): State<AppState>,
+    Extension(roles): Extension<Vec<authz::Role>>,
+    Extension(user): Extension<Option<authz::User>>,
     Json(body): Json<HashMap<ResourceType, Vec<i64>>>,
 ) -> Result<Json<HashMap<ResourceType, Vec<UserResourceGrant>>>> {
-    let authorizer = auth.authorizer()?;
-    let mut response = HashMap::<_, Vec<UserResourceGrant>>::new();
-    let conn = &mut db_pool.get().await?;
+    let Some(user) = user else {
+        return Err(AuthorizationError::Unauthorized.into());
+    };
+    let authorizer = UserAuthorizer::new(user, roles, regulator.openfga(), db_pool.get().await?);
 
+    let mut response = HashMap::<_, Vec<UserResourceGrant>>::new();
     if let Some(infra_ids) = body.get(&ResourceType::Infra) {
         for infra_id in infra_ids {
-            // check that the infra exists before to check the grants
-            if Infra::exists(conn, *infra_id).await? {
-                let Some(grant) = authorizer
-                    .infra_grant(&authz::Infra(*infra_id))
-                    .await
-                    .map_err(AuthzError::from)?
-                else {
-                    continue; // skip if the user has no grant on this infra
-                };
-                response
-                    .entry(ResourceType::Infra)
-                    .or_default()
-                    .push(UserResourceGrant {
-                        id: *infra_id,
-                        grant,
-                    });
-            }
+            let grant_access = authz::v2::infra_effective_grant(
+                authz::Subject::user(user),
+                authz::Infra(*infra_id),
+            )
+            .authorize(&authorizer)
+            .await?;
+            let grant = match grant_access.access().await? {
+                Ok(Some(grant)) => grant,
+                Ok(None) => continue,
+                Err(Rejection::NoSuchInfra(infra_id)) => {
+                    tracing::warn!(infra_id, "non-existent infra — skipping");
+                    continue;
+                }
+                Err(Rejection::LackingInfraPrivilege(privilege, ..)) => {
+                    debug_assert_eq!(privilege, InfraPrivilege::CanRead);
+                    tracing::warn!(infra_id, "user cannot read infra — skipping");
+                    continue;
+                }
+                Err(Rejection::NoSuchUser(user_id)) => {
+                    unreachable!("user {user_id} exists or race condition")
+                }
+                Err(rejection) => impossible!(rejection),
+            };
+            response
+                .entry(ResourceType::Infra)
+                .or_default()
+                .push(UserResourceGrant {
+                    id: *infra_id,
+                    grant,
+                });
         }
     }
 
@@ -927,6 +948,7 @@ mod tests {
         let app = test_app!().enable_authorization(true).build();
         let db_pool = app.db_pool();
         let infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let infra_no_grant = create_small_infra(&mut db_pool.get_ok()).await;
         let user = app
             .user("test", "Test")
             .with_roles([Role::OperationalStudies])
@@ -962,7 +984,7 @@ mod tests {
 
         // Ask the grant of the user for the infra again
         let request = app.post("/authz/me/grants").by_user(&user).json(&json!({
-            "infra": [infra.id],
+            "infra": [infra.id, infra_no_grant.id, infra_no_grant.id + 1000],
         }));
         let response: HashMap<ResourceType, Vec<UserResourceGrant>> = app
             .fetch(request)
@@ -971,6 +993,7 @@ mod tests {
             .json_into();
 
         // Check the inherited grant from the group has overridden by the user's direct grant
+        // Unreadable and non-existent infras are filtered out
         assert_eq!(
             response.get(&ResourceType::Infra).unwrap(),
             &[UserResourceGrant {
