@@ -13,12 +13,12 @@ pub enum Subject {
 }
 
 impl Subject {
-    pub fn user(id: i64) -> Self {
-        Subject::User(User(id))
+    pub fn user(user: impl Into<User>) -> Self {
+        Subject::User(user.into())
     }
 
-    pub fn group(id: i64) -> Self {
-        Subject::Group(Group(id))
+    pub fn group(group: impl Into<Group>) -> Self {
+        Subject::Group(group.into())
     }
 
     pub fn id(&self) -> i64 {
@@ -65,12 +65,32 @@ impl AsRef<Group> for Subject {
 }
 
 #[derive(
-    fga::Type, fga::User, fga::Object, derive_more::FromStr, Debug, Clone, Copy, PartialEq, Eq, Hash,
+    fga::Type,
+    fga::User,
+    fga::Object,
+    derive_more::From,
+    derive_more::FromStr,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
 )]
 pub struct User(pub i64);
 
 #[derive(
-    fga::Type, fga::User, fga::Object, derive_more::FromStr, Debug, Clone, Copy, PartialEq, Eq, Hash,
+    fga::Type,
+    fga::User,
+    fga::Object,
+    derive_more::From,
+    derive_more::FromStr,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
 )]
 pub struct Group(pub i64);
 
