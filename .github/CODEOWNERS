@@ -34,7 +34,7 @@
 /front/playwright.config.ts
 
 # --- INTEGRATION TESTS  ---
-/tests                                                   @openrailassociation/OSRD-Tests
+/tests                                                   @openrailassociation/OSRD-Editoast @openrailassociation/OSRD-Core
 
 # --- CORE ---
 /core                                                    @openrailassociation/OSRD-Core
