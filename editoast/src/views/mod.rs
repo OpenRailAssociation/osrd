@@ -573,11 +573,11 @@ async fn authentication_validation_middleware(
         crate::authentication::Authentication::Impersonating { .. }
     );
 
-    fn origin_user_roles(
+    fn origin_user(
         user: Option<editoast_models::User>,
         identity: &str,
         header_name: &str,
-    ) -> Option<::authz::v2::Protected<Vec<Role>>> {
+    ) -> Option<(editoast_models::User, ::authz::v2::Protected<Vec<Role>>)> {
         user.inspect(|user| {
             if user.name != header_name {
                 tracing::warn!(
@@ -588,27 +588,34 @@ async fn authentication_validation_middleware(
                 );
             }
         })
-        .map(|user| ::authz::v2::subject_roles(::authz::Subject::user(user.id)))
+        .map(|user| {
+            let authz_user = ::authz::Subject::user(user.id);
+            (user, ::authz::v2::subject_roles(authz_user))
+        })
     }
 
     async fn register_origin_user(
         conn: database::DbConnection,
         (identity, name): (&str, &str),
-    ) -> Result<::authz::v2::Protected<Vec<Role>>> {
+    ) -> Result<(
+        Option<editoast_models::User>,
+        ::authz::v2::Protected<Vec<Role>>,
+    )> {
         tracing::info!(identity, name, "registering new user");
         let user =
             editoast_models::User::register(conn, vec![identity.to_owned()], name.to_owned())
                 .await?;
-        Ok(::authz::v2::subject_roles(::authz::Subject::user(user.id)))
+        let authz_user = ::authz::Subject::user(user.id);
+        Ok((Some(user), ::authz::v2::subject_roles(authz_user)))
     }
 
-    let roles_prot = conn
+    let (user, roles_prot) = conn
         .transaction(async move |conn| {
-            let roles_prot = match &authn {
+            let origin = match &authn {
                 crate::authentication::Authentication::Authenticated { identity, name } => {
                     let user =
                         editoast_models::User::retrieve_by_identity(identity, conn.clone()).await?;
-                    origin_user_roles(user, identity, name)
+                    origin_user(user, identity, name)
                 }
                 crate::authentication::Authentication::Impersonating {
                     impersonator_identity,
@@ -635,27 +642,25 @@ async fn authentication_validation_middleware(
                             .into(),
                         );
                     }
-                    origin_user_roles(impersonator, impersonator_identity, impersonator_name)
+                    origin_user(impersonator, impersonator_identity, impersonator_name)
                 }
                 crate::authentication::Authentication::Unauthenticated
                 | crate::authentication::Authentication::Skip { .. } => None,
             };
 
-            let roles_prot = match roles_prot {
+            Ok(match origin {
                 // origin user does exist, we use the Protected afterwards
-                Some(roles_prot) => roles_prot,
+                Some((user, roles_prot)) => (Some(user), roles_prot),
                 // origin user does not exist
                 None => {
                     // if there is an origin user (no skip or unauthenticated)
                     if let Some(origin) = authn.origin() {
                         register_origin_user(conn, origin).await?
                     } else {
-                        ::authz::v2::Protected::default()
+                        (None, ::authz::v2::Protected::default())
                     }
                 }
-            };
-
-            Ok(roles_prot)
+            })
         })
         .await?;
 
@@ -678,12 +683,19 @@ async fn authentication_validation_middleware(
         }
     }
 
-    Ok(tracing::info_span!("authentication validation", ?roles)
-        .in_scope(move || {
-            req.extensions_mut().insert(roles);
-            next.run(req).in_current_span()
-        })
-        .await)
+    let user_id = user.as_ref().map(|editoast_models::User { id, .. }| *id);
+    Ok(
+        tracing::info_span!("authentication validation", user_id, ?roles)
+            .in_scope(move || {
+                req.extensions_mut().insert(roles);
+                // for `fga` queries and `authz` interface
+                req.extensions_mut().insert(user_id.map(::authz::User));
+                // database model, also carries the user name
+                req.extensions_mut().insert(user);
+                next.run(req).in_current_span()
+            })
+            .await,
+    )
 }
 
 /// Represents the bundle of information about the issuer of a request
