@@ -70,7 +70,7 @@ def _check_result(editoast_url: str, schedule_id: int, infra_id: int, session: S
     Get the /result/ of the given train id. The function doesn't return anything, it just raises any error
     """
     r = session.get(
-        f"{EDITOAST_URL}train_schedules/{schedule_id}/simulation/?infra_id={infra_id}"
+        f"{editoast_url}train_schedules/{schedule_id}/simulation/?infra_id={infra_id}"
     )
     if r.status_code // 100 != 2 or r.json().get("status", "") != "success":
         raise RuntimeError(
@@ -113,7 +113,7 @@ def _reproduce_test(
     is_private_infra = fuzzer_output["infra_name"] not in ["small_infra", "Small Infra"]
     if is_private_infra:
         infra_id = get_infra(EDITOAST_URL, fuzzer_output["infra_name"], session)
-        scenario = create_scenario(EDITOAST_URL, infra_id)
+        scenario = create_scenario(EDITOAST_URL, infra_id, session)
 
     if fuzzer_output["error_type"] == "STDCM":
         _apply_prelude(
