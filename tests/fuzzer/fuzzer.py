@@ -44,7 +44,6 @@ def run(
     scenario_ttl: int = 20,
     n_test: int = 1000,
     log_folder: Path | None = None,
-    infra_name: str = _INFRA_NAME,
     seed: int | None = None,
     rolling_stock_name: str | None = None,
 ):
@@ -56,7 +55,6 @@ def run(
     :param scenario_ttl: number of tests to run before a scenario reset
     :param n_test: number of tests to run
     :param log_folder: (optional) path to a folder to log errors in
-    :param infra_name: name of the infra, for better reporting
     :param seed: first seed, incremented by 1 for each individual test
     :param rolling_stock_name: rolling stock to use, random if None
     """
@@ -78,7 +76,6 @@ def run(
                 editoast_url,
                 scenario,
                 session,
-                infra_name,
                 prelude,
                 rolling_stock_name,
             )
@@ -200,7 +197,7 @@ U = TypeVar("U")
 def _make_error(
     error_type: _ErrorType,
     response: Response,
-    infra_name: str,
+    infra_id: int,
     **kwargs,
 ):
     """
@@ -212,7 +209,7 @@ def _make_error(
             "error_type": error_type.value,
             "code": response.status_code,
             "error": error,
-            "infra_name": infra_name,
+            "infra_id": infra_id,
             **kwargs,
         }
     )
@@ -223,7 +220,6 @@ def _run_test(
     editoast_url: str,
     scenario: Scenario,
     session: Session,
-    infra_name: str,
     prelude: list,
     rolling_stock_name: str | None,
 ):
@@ -232,7 +228,6 @@ def _run_test(
     :param infra: infra graph
     :param editoast_url: Api url
     :param scenario: Scenario to use for the test
-    :param infra_name: name of the infra, for better reporting
     :param prelude: path/schedule requests sent so far
     :param rolling_stock_name: rolling stock to use, random if None
     """
@@ -249,22 +244,18 @@ def _run_test(
             session,
             scenario,
             rolling_stock.name,
-            infra_name,
             path,
             prelude,
         )
     else:
-        _test_stdcm(
-            editoast_url, session, scenario, rolling_stock.id, infra_name, path, prelude
-        )
+        _test_stdcm(editoast_url, session, scenario, rolling_stock.id, path, prelude)
 
 
 def _test_new_train(
     editoast_url: str,
     session: Session,
     scenario: Scenario,
-    rolling_stock: str,
-    infra_name: str,
+    rolling_stock_name: str,
     path: list[tuple[str, float]],
     prelude: list,
 ):
@@ -272,7 +263,7 @@ def _test_new_train(
     Try to create a new train on the given path.
     """
     print("testing new train")
-    schedule_payload = _make_payload_schedule(path, rolling_stock)
+    schedule_payload = _make_payload_schedule(path, rolling_stock_name)
     r = _post_with_timeout(
         session,
         editoast_url
@@ -283,7 +274,7 @@ def _test_new_train(
         _make_error(
             _ErrorType.SCHEDULE,
             r,
-            infra_name,
+            scenario.infra,
             schedule_payload=schedule_payload,
         )
 
@@ -297,7 +288,7 @@ def _test_new_train(
         _make_error(
             _ErrorType.RESULT,
             r,
-            infra_name,
+            scenario.infra,
             schedule_payload=schedule_payload,
         )
     prelude.append({"schedule_payload": schedule_payload})
@@ -309,7 +300,6 @@ def _test_stdcm(
     session: Session,
     scenario: Scenario,
     rolling_stock: int,
-    infra_name: str,
     path: list[tuple[str, float]],
     prelude: list,
 ):
@@ -332,7 +322,7 @@ def _test_stdcm(
         _make_error(
             _ErrorType.STDCM,
             r,
-            infra_name,
+            scenario.infra,
             stdcm_payload=stdcm_payload,
             prelude=prelude,
         )
@@ -694,6 +684,5 @@ if __name__ == "__main__":
         scenario_ttl=20,
         n_test=100,
         log_folder=Path(__file__).parent / "errors",
-        infra_name=_INFRA_NAME,
         rolling_stock_name=_ROLLING_STOCK_NAME,
     )
