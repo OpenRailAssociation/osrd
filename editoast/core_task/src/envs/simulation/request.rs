@@ -86,13 +86,22 @@ pub(super) fn build_request(
         }
     }
 
+    let margin_boundaries_len = margin_boundaries.len();
     Ok(core_client::simulation::Request {
         infra: core_env.infra_id as i64,
         expected_version: core_env.infra_version,
         electrical_profile_set_id: electrical_profile_set_id.map(|id| id as i64),
         schedule,
         margins: core_client::simulation::SimulationMargins {
-            boundaries: margin_boundaries,
+            // Margins are defined on the entire path, from origin to
+            // destination. Therefore, the only interesting boundaries are the
+            // one in-between. Origin and Destination are not part of the API
+            // contract.
+            boundaries: margin_boundaries
+                .into_iter()
+                .skip(1)
+                .take(margin_boundaries_len.saturating_sub(2))
+                .collect(),
             values: margin_values,
         },
         power_restrictions,
@@ -344,7 +353,7 @@ mod tests {
                 },
             ],
             margins: core_client::simulation::SimulationMargins {
-                boundaries: vec![0u64, 10u64, 30u64, 40u64],
+                boundaries: vec![10u64, 30u64],
                 values: vec![
                     MarginValue::Percentage(10.0),
                     MarginValue::Percentage(5.0),
