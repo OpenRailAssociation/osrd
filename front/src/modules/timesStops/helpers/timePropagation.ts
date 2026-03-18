@@ -3,7 +3,7 @@ import type { Train } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 
 import { TIME_PROPAGATION_DEFAULT_DELTA } from '../consts';
-import type { CellUpdate } from '../types';
+import type { ArrivalUpdate, CellUpdate, DepartureUpdate } from '../types';
 
 type PropagationResult = {
   updatedPath: PathItem[];
@@ -41,14 +41,17 @@ export const formatPropagationDeltaLabel = (
 };
 
 /**
- * Propagate a time edit to all waypoints before (and including) the edited point.
- * Items after the edited points stay at the same time.
+ * Propagate a time edit along the path.
+ * - toDestination: adds delta to arrivals from the edited point and after.
+ * - fromDeparture: shifts start_time by +delta and arrivals after by -delta (they cancel out,
+ *   so only the edited point and everything before it actually moves).
  */
-const propagateFromDeparture = (
+const propagateFromEditedPoint = (
   oldValue: Date | null,
   newValue: Date | null,
   editedPathStepId: string,
-  selectedTrain: Train
+  selectedTrain: Train,
+  direction: 'fromDeparture' | 'toDestination'
 ): PropagationResult | undefined => {
   const deltaMs = computeTimeDeltaMs(oldValue, newValue);
   if (deltaMs === null) return undefined;
@@ -58,19 +61,30 @@ const propagateFromDeparture = (
 
   const updatedSchedule = (selectedTrain.schedule ?? []).map((item) => {
     const itemPathIndex = selectedTrain.path.findIndex((step) => step.id === item.at);
-    if (itemPathIndex <= editedPathIndex || item.arrival == null) return item;
+    if (item.arrival == null) return item;
+
+    const isAffectedByDelta =
+      direction === 'fromDeparture'
+        ? itemPathIndex > editedPathIndex
+        : itemPathIndex >= editedPathIndex;
+
+    if (!isAffectedByDelta) return item;
+
     return {
       ...item,
       arrival: new Duration({
-        milliseconds: Duration.parse(item.arrival).ms - deltaMs,
+        milliseconds:
+          Duration.parse(item.arrival).ms + (direction === 'fromDeparture' ? -deltaMs : deltaMs),
       }).toISOString(),
     };
   });
 
+  const startTimeMs = new Date(selectedTrain.start_time).getTime();
+
   return {
     updatedPath: selectedTrain.path,
     updatedSchedule,
-    updatedStartTime: new Date(new Date(selectedTrain.start_time).getTime() + deltaMs),
+    updatedStartTime: new Date(direction === 'fromDeparture' ? startTimeMs + deltaMs : startTimeMs),
   };
 };
 
@@ -90,37 +104,39 @@ const propagateShiftAll = (
   };
 };
 
+const propagateByMode = (
+  oldValue: Date | null,
+  newValue: Date | null,
+  update: ArrivalUpdate | DepartureUpdate,
+  selectedTrain: Train
+): PropagationResult | undefined => {
+  if (update.propagationMode === 'toAllWaypoints') {
+    return propagateShiftAll(oldValue, newValue, selectedTrain);
+  }
+  if (
+    (update.propagationMode === 'fromDeparture' || update.propagationMode === 'toDestination') &&
+    update.row.isPathStep
+  ) {
+    return propagateFromEditedPoint(
+      oldValue,
+      newValue,
+      update.row.id,
+      selectedTrain,
+      update.propagationMode
+    );
+  }
+  return undefined;
+};
+
 export const propagateTime = (
   update: CellUpdate,
   selectedTrain: Train
 ): PropagationResult | undefined => {
   switch (update.field) {
     case 'requestedArrival':
-      if (update.propagationMode === 'toAllWaypoints') {
-        return propagateShiftAll(update.row.requestedArrival, update.value, selectedTrain);
-      }
-      if (update.propagationMode === 'fromDeparture' && update.row.isPathStep) {
-        return propagateFromDeparture(
-          update.row.requestedArrival,
-          update.value,
-          update.row.id,
-          selectedTrain
-        );
-      }
-      return undefined;
+      return propagateByMode(update.row.requestedArrival, update.value, update, selectedTrain);
     case 'requestedDeparture':
-      if (update.propagationMode === 'toAllWaypoints') {
-        return propagateShiftAll(update.row.requestedDeparture, update.value, selectedTrain);
-      }
-      if (update.propagationMode === 'fromDeparture' && update.row.isPathStep) {
-        return propagateFromDeparture(
-          update.row.requestedDeparture,
-          update.value,
-          update.row.id,
-          selectedTrain
-        );
-      }
-      return undefined;
+      return propagateByMode(update.row.requestedDeparture, update.value, update, selectedTrain);
     default:
       return undefined;
   }
