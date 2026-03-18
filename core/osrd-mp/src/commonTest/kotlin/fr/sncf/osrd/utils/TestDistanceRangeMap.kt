@@ -460,4 +460,47 @@ class TestDistanceRangeMap {
             distanceRangeMapOf<Unit>().commonRanges(map).toList()
         }
     }
+
+    @Test
+    fun get() {
+        val map =
+            distanceRangeMapOf(
+                DistanceRangeMap.RangeMapEntry(lower = 0.meters, upper = 1.meters, value = 1),
+                DistanceRangeMap.RangeMapEntry(lower = 1.meters, upper = 2.meters, value = 12),
+                DistanceRangeMap.RangeMapEntry(lower = 2.meters, upper = 3.meters, value = 23),
+                DistanceRangeMap.RangeMapEntry(lower = 3.meters, upper = 4.meters, value = 34),
+                DistanceRangeMap.RangeMapEntry(lower = 6.meters, upper = 7.meters, value = 67),
+            )
+
+        val tests =
+            listOf(
+                -0.5 to null,
+                0.0 to 1,
+                0.5 to 1,
+                1.0 to 12,
+                1.5 to 12,
+                2.0 to 23,
+                2.5 to 23,
+                3.0 to 34,
+                3.5 to 34,
+                4.0 to 34,
+                4.5 to null,
+                5.0 to null,
+                5.5 to null,
+                6.0 to 67,
+                6.5 to 67,
+                7.0 to 67,
+                7.5 to null,
+            )
+
+        val expectedValues = tests.map { it.second }
+        val actualValues = tests.map { map.get(it.first.meters) }
+
+        assertEquals(expectedValues, actualValues)
+    }
+
+    @Test
+    fun getEmpty() {
+        assertNull(distanceRangeMapOf<Unit>().get(42.meters))
+    }
 }
