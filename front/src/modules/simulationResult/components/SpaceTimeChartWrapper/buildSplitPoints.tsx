@@ -14,7 +14,7 @@ import { keyBy, sortBy } from 'lodash';
 
 import type { CategoryColors } from 'applications/operationalStudies/types';
 import { Spinner } from 'common/Loaders';
-import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
+import type { TrainId } from 'reducers/osrdconf/types';
 import { extractPacedTrainIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
 
 import getPathStyle from './helpers/getPathStyle';
@@ -54,7 +54,7 @@ export function buildSplitPoints(
   const pathsById = keyBy(paths, ({ id }) => id);
 
   const countZonesByPacedTrainId = (zones: OccupancyZone[] = []) => {
-    const counts = new Map<TimetableItemId, Map<string, number>>();
+    const counts = new Map<TrainId, Map<string, number>>();
     for (const zone of zones) {
       if (isOccurrenceId(zone.trainId)) {
         const pacedTrainId = extractPacedTrainIdFromOccurrenceId(zone.trainId);

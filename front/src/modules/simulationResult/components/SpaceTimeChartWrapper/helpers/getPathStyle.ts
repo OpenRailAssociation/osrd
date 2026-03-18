@@ -1,8 +1,13 @@
 import type { PathLevel, HoveredItem } from '@osrd-project/ui-charts';
 
 import type { CategoryColors } from 'applications/operationalStudies/types';
-import type { TrainId } from 'reducers/osrdconf/types';
-import { extractPacedTrainIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
+import type { PacedTrainId, TrainId } from 'reducers/osrdconf/types';
+import {
+  extractEditoastIdFromPacedTrainId,
+  extractPacedTrainIdFromOccurrenceId,
+  isOccurrenceId,
+  isPacedTrainId,
+} from 'utils/trainId';
 
 const getPathStyle = (
   hovered: HoveredItem | null,
@@ -20,9 +25,14 @@ const getPathStyle = (
     backgroundColor?: string;
   };
 } => {
-  const timetableItemId = isOccurrenceId(train.id)
-    ? extractPacedTrainIdFromOccurrenceId(train.id)
-    : train.id;
+  let pacedTrainId: PacedTrainId;
+  if (isOccurrenceId(train.id)) {
+    pacedTrainId = extractPacedTrainIdFromOccurrenceId(train.id);
+  } else {
+    if (!isPacedTrainId(train.id)) throw new Error();
+    pacedTrainId = train.id;
+  }
+  const timetableItemId = extractEditoastIdFromPacedTrainId(pacedTrainId);
   const { colors } = train;
 
   const invalidBorder = {
@@ -39,7 +49,10 @@ const getPathStyle = (
       train.id === hoveredTrainIdFromChart ||
       // if the hovered train is an occurrence from the same paced train, apply the hovered style
       (isOccurrenceId(hoveredTrainIdFromChart) &&
-        timetableItemId === extractPacedTrainIdFromOccurrenceId(hoveredTrainIdFromChart))
+        timetableItemId ===
+          extractEditoastIdFromPacedTrainId(
+            extractPacedTrainIdFromOccurrenceId(hoveredTrainIdFromChart)
+          ))
     ) {
       return {
         color: colors.hovered,
@@ -62,7 +75,7 @@ const getPathStyle = (
           ...(train.isSimulated === false && { border: invalidBorder }),
         };
       }
-    } else if (timetableItemId === hoveredTrainIdFromTimetable) {
+    } else if (timetableItemId === extractEditoastIdFromPacedTrainId(hoveredTrainIdFromTimetable)) {
       return {
         color: colors.hovered,
         level: 1,

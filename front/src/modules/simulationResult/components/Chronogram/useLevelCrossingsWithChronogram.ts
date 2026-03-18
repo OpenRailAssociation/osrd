@@ -8,7 +8,6 @@ import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
-import { extractEditoastIdFromPacedTrainId } from 'utils/trainId';
 
 import { formatLevelCrossingOccupanciesForChronogram } from './buildOccupancyBlocks';
 
@@ -22,10 +21,7 @@ const useLevelCrossingsWithChronogram = ({ trains }: UseLevelCrossingsWithChrono
 
   const timeOrigin = useMemo(() => new Date(trains[0].startTime).getTime(), [trains]);
 
-  const trainIds = useMemo(
-    () => trains.map((train) => extractEditoastIdFromPacedTrainId(train.id)),
-    [trains]
-  );
+  const trainIds = useMemo(() => trains.map((train) => train.id), [trains]);
 
   const { currentData: levelCrossingsIds } =
     osrdEditoastApi.endpoints.getInfraByInfraIdObjectsAndObjectTypeIds.useQuery(

@@ -1,6 +1,6 @@
 import { isNil, sortBy } from 'lodash';
 
-import type { TimetableItem, TimetableItemId, TrainId } from 'reducers/osrdconf/types';
+import type { TimetableItem, TrainId } from 'reducers/osrdconf/types';
 import {
   extractEditoastIdFromPacedTrainId,
   extractPacedTrainIdFromOccurrenceId,
@@ -58,18 +58,17 @@ const osrdEditoastApi = generatedEditoastApi
         },
         providesTags: ['timetable'],
       }),
-      getTimetableItemById: builder.query<TimetableItem, { id: TimetableItemId }>({
-        queryFn: async ({ id: timetableItemId }, { dispatch }) => {
+      getTimetableItemById: builder.query<TimetableItem, { id: number }>({
+        queryFn: async ({ id }, { dispatch }) => {
           const pacedTrain = await dispatch(
             generatedEditoastApi.endpoints.getTrainSchedulesById.initiate(
               {
-                id: extractEditoastIdFromPacedTrainId(timetableItemId),
+                id,
               },
               { subscribe: false }
             )
           ).unwrap();
-          const data: TimetableItem = { ...pacedTrain, id: timetableItemId };
-          return { data };
+          return { data: pacedTrain };
         },
         providesTags: ['timetable', 'train_schedule'],
       }),

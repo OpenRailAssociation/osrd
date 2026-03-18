@@ -50,6 +50,7 @@ import {
   extractOccurrenceIndexFromOccurrenceId,
   extractExceptionIdFromOccurrenceId,
   isAddedExceptionId,
+  extractEditoastIdFromPacedTrainId,
 } from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
@@ -152,9 +153,11 @@ const SpaceTimeChartWrapper = ({
   const translations = { linearMode: t('main.linearMode') };
 
   const isTimetableItemValid = useMemo(() => {
-    const selectedItemId = isOccurrenceId(selectedProjectionId)
-      ? extractPacedTrainIdFromOccurrenceId(selectedProjectionId)
-      : selectedProjectionId;
+    const selectedItemId = extractEditoastIdFromPacedTrainId(
+      isOccurrenceId(selectedProjectionId)
+        ? extractPacedTrainIdFromOccurrenceId(selectedProjectionId)
+        : selectedProjectionId
+    );
 
     const timetableItemUsedForProjectionWithDetails = timetableItemsWithDetails?.find(
       (item) => item.id === selectedItemId

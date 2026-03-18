@@ -13,7 +13,7 @@ import {
   type OperationalPointReference,
 } from 'common/api/osrdEditoastApi';
 import { getExceptionFromOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
-import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 import { updateProjectionType } from 'reducers/simulationResults';
 import {
   getProjectionType,
@@ -103,7 +103,7 @@ const pathfindingResultsDiffer = (
 
 const usePathProjection = (
   infraId: number,
-  timetableItemsById: Map<TimetableItemId, TimetableItem>
+  timetableItemsById: Map<number, TimetableItem>
 ): PathProjectionResult | undefined => {
   const { t } = useTranslation('operational-studies');
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
@@ -148,10 +148,13 @@ const usePathProjection = (
   const pathUsedForProjection = useMemo(() => {
     if (!trainIdUsedForProjection) return undefined;
     if (!isOccurrenceId(trainIdUsedForProjection)) {
-      return timetableItemsById.get(trainIdUsedForProjection)?.path;
+      return timetableItemsById.get(extractEditoastIdFromPacedTrainId(trainIdUsedForProjection))
+        ?.path;
     }
     const pacedTrain = timetableItemsById.get(
-      extractPacedTrainIdFromOccurrenceId(trainIdUsedForProjection)
+      extractEditoastIdFromPacedTrainId(
+        extractPacedTrainIdFromOccurrenceId(trainIdUsedForProjection)
+      )
     );
     const exception = getExceptionFromOccurrenceId(timetableItemsById, trainIdUsedForProjection);
     return exception?.path_and_schedule?.path ?? pacedTrain!.path;

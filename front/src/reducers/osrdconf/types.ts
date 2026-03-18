@@ -203,15 +203,14 @@ export type OccurrenceId = IndexedOccurrenceId | AddedExceptionId;
 export type PacedTrainId = string & { readonly __type: unique symbol };
 
 export type TrainId = OccurrenceId | PacedTrainId;
-export type TimetableItemId = PacedTrainId;
 export type TimetableItemToEditData = {
-  timetableItemId: PacedTrainId;
+  timetableItemId: number;
   originalPacedTrain: PacedTrainWithDetails;
   occurrenceId?: OccurrenceId;
 };
 
 export type TimetableItem = Omit<TrainScheduleResponse, 'id'> & {
-  id: PacedTrainId;
+  id: number;
 };
 export type TrainBaseWithPacedTrainId = Omit<TrainScheduleResponse, 'id'> & {
   id: PacedTrainId;

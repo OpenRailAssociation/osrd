@@ -3,7 +3,7 @@ import type {
   TimetableJsonPayload,
 } from 'applications/operationalStudies/types';
 import { type MacroNodeForm } from 'common/api/osrdEditoastApi';
-import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 
 import type { NetzgrafikDto, NGEEvent, NodeDto, LabelDto } from '../../NGE/types';
@@ -40,7 +40,7 @@ const handleLabelOperation = async ({
   state: MacroEditorState;
   dispatch: AppDispatch;
   addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void;
-  addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void;
+  addDeletedTimetableItemIds: (timetableItemIds: number[]) => void;
 }) => {
   const { trainruns } = netzgrafikDto;
   switch (type) {
@@ -85,7 +85,7 @@ export const handleOperation = async ({
   state: MacroEditorState;
   dispatch: AppDispatch;
   addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void;
-  addDeletedTimetableItemIds: (timetableItemsIds: TimetableItemId[]) => void;
+  addDeletedTimetableItemIds: (timetableItemsIds: number[]) => void;
 }) => {
   const { type } = event;
   switch (event.objectType) {

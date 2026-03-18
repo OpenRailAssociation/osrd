@@ -12,7 +12,7 @@ export const STDCM_REQUEST_STATUS = Object.freeze({
   pending_additional: 'PENDING_ADDITIONAL',
 });
 
-const STDCM_TRAIN_ID = -10;
+export const STDCM_TRAIN_ID = -10;
 export const STDCM_TRAIN_TIMETABLE_ID = formatEditoastIdToPacedTrainId(STDCM_TRAIN_ID);
 
 export const consistErrorFields: (keyof ConsistErrors)[] = ['totalMass', 'totalLength', 'maxSpeed'];

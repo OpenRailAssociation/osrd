@@ -3,10 +3,8 @@ import { FileDirectorySymlink, Trash, Upload } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
-import type { TimetableItemId } from 'reducers/osrdconf/types';
-
 type TimetableSelectionToolbarProps = {
-  selectedTimetableItemIds: TimetableItemId[];
+  selectedTimetableItemIds: number[];
   areAllItemsSelected: boolean;
   areInvalidItems: boolean;
   toggleAllTrainsSelection: () => void;

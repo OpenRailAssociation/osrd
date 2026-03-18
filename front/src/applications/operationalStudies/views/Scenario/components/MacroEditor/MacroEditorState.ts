@@ -5,7 +5,6 @@ import type {
   OperationalPoint,
   PathItemLocation,
 } from 'common/api/osrdEditoastApi';
-import type { TimetableItemId } from 'reducers/osrdconf/types';
 
 import type { TrainrunCategory, TrainrunFrequency } from '../NGE/types';
 
@@ -81,7 +80,7 @@ export default class MacroEditorState {
   /**
    * Given a NGE `Trainrun.id`, returns the OSRD `TimetableItemId`.
    */
-  timetableItemIdByNgeId: Map<number, [TimetableItemId, TimetableItemId | null]>;
+  timetableItemIdByNgeId: Map<number, [number, number | null]>;
 
   /**
    * Default constructor

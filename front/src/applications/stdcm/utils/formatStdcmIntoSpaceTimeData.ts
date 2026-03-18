@@ -1,6 +1,6 @@
 import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
 
-import { STDCM_TRAIN_TIMETABLE_ID } from '../consts';
+import { STDCM_TRAIN_ID } from '../consts';
 import type { StdcmSuccessResponse } from '../types';
 
 const formatStdcmTrainIntoSpaceTimeData = (
@@ -14,7 +14,7 @@ const formatStdcmTrainIntoSpaceTimeData = (
   if (!destination?.operationalPoint) throw new Error('Origin point not defined');
 
   return {
-    id: STDCM_TRAIN_TIMETABLE_ID,
+    id: STDCM_TRAIN_ID,
     name: 'stdcm',
     originPathItem: {
       id: origin.id,

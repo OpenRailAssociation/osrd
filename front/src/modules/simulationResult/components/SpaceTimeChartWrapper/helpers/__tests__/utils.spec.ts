@@ -1,7 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
-
 import { batchFetchTrackOccupancy } from '../utils';
 
 describe('batchFetch', () => {
@@ -13,7 +11,7 @@ describe('batchFetch', () => {
     const fetchSpy = vi.fn().mockResolvedValueOnce(['a', 'b']).mockResolvedValueOnce(['c', 'd']);
 
     const onComplete = vi.fn();
-    batchFetchTrackOccupancy([1, 2, 3, 4].map(formatEditoastIdToPacedTrainId), fetchSpy, {
+    batchFetchTrackOccupancy([1, 2, 3, 4], fetchSpy, {
       batchSize: 2,
       onComplete,
     });
@@ -21,8 +19,8 @@ describe('batchFetch', () => {
     await vi.waitFor(() => expect(onComplete).toHaveBeenCalled());
 
     expect(fetchSpy).toHaveBeenCalledTimes(2);
-    expect(fetchSpy).toHaveBeenNthCalledWith(1, [1, 2].map(formatEditoastIdToPacedTrainId));
-    expect(fetchSpy).toHaveBeenNthCalledWith(2, [3, 4].map(formatEditoastIdToPacedTrainId));
+    expect(fetchSpy).toHaveBeenNthCalledWith(1, [1, 2]);
+    expect(fetchSpy).toHaveBeenNthCalledWith(2, [3, 4]);
     expect(onComplete).toHaveBeenCalledExactlyOnceWith(['a', 'b', 'c', 'd']);
   });
 
@@ -37,7 +35,7 @@ describe('batchFetch', () => {
     );
     const onComplete = vi.fn();
 
-    const ids = [1, 2, 3, 4].map(formatEditoastIdToPacedTrainId);
+    const ids = [1, 2, 3, 4];
     const abort = batchFetchTrackOccupancy(ids, fetchSpy, {
       batchSize: 2,
       onComplete,
@@ -61,7 +59,7 @@ describe('batchFetch', () => {
     const onProgress = vi.fn();
     const onComplete = vi.fn();
 
-    batchFetchTrackOccupancy([1, 2, 3, 4].map(formatEditoastIdToPacedTrainId), fetchSpy, {
+    batchFetchTrackOccupancy([1, 2, 3, 4], fetchSpy, {
       batchSize: 2,
       onProgress,
       onComplete,
@@ -82,7 +80,7 @@ describe('batchFetch', () => {
     const onError = vi.fn();
     const onComplete = vi.fn();
 
-    batchFetchTrackOccupancy([1, 2].map(formatEditoastIdToPacedTrainId), fetchSpy, {
+    batchFetchTrackOccupancy([1, 2], fetchSpy, {
       onError,
       onComplete,
     });

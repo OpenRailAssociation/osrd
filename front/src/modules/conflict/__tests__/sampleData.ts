@@ -1,10 +1,5 @@
 import type { Conflict, TrainCategory } from 'common/api/osrdEditoastApi';
-import type {
-  TimetableItem,
-  TimetableItemId,
-  PacedTrainId,
-  OccurrenceId,
-} from 'reducers/osrdconf/types';
+import type { TimetableItem, PacedTrainId, OccurrenceId } from 'reducers/osrdconf/types';
 
 export const pacedId = (n: number) => `paced_${n}` as PacedTrainId;
 export const occurrenceId = (paced: number, index = 0) =>
@@ -15,7 +10,7 @@ export const uniqueTrain = ({
   train_name,
   category,
 }: {
-  id: TimetableItemId;
+  id: number;
   train_name: string;
   category?: TrainCategory | null;
 }): TimetableItem =>
@@ -31,7 +26,7 @@ export const pacedTrain = ({
   category,
   exceptions,
 }: {
-  id: PacedTrainId;
+  id: number;
   train_name: string;
   category?: TrainCategory | null;
   exceptions?: Array<{ key?: string; occurrence_index?: number; train_name?: { value: string } }>;

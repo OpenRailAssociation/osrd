@@ -10,7 +10,6 @@ import { createPacedTrains } from 'modules/timetableItem/helpers/updateTimetable
 import { setWarning, setFailure } from 'reducers/main';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
-import { extractEditoastIdFromPacedTrainId } from 'utils/trainId';
 
 import { generateRoundTripsPayload, generateTrainPayloads } from './generatePayloads';
 
@@ -22,8 +21,7 @@ const postRoundTrips = async (
   if (roundTrips.length > 0) {
     const payload = generateRoundTripsPayload(
       roundTrips,
-      formattedPacedTrains,
-      extractEditoastIdFromPacedTrainId
+      formattedPacedTrains.map(({ id }) => ({ id }))
     );
     await dispatch(
       osrdEditoastApi.endpoints.postRoundTripsTrainSchedules.initiate(payload)

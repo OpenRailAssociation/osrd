@@ -13,9 +13,8 @@ import {
   getStdcmInfraID,
   getStdcmTimetableID,
 } from 'reducers/osrdconf/stdcmConf/selectors';
-import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 import { Duration, addDurationToDate } from 'utils/duration';
-import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
 import formatStdcmTrainIntoSpaceTimeData from '../utils/formatStdcmIntoSpaceTimeData';
@@ -26,9 +25,9 @@ import formatStdcmTrainIntoSpaceTimeData from '../utils/formatStdcmIntoSpaceTime
  */
 const keepTrainsRunningDuringStdcm = (
   stdcmResult: StdcmSuccessResponse,
-  trainSchedules: Map<TimetableItemId, TimetableItemWithDetails>
+  trainSchedules: Map<number, TimetableItemWithDetails>
 ) => {
-  const relevantTrainScheduleIds = new Set<TimetableItemId>();
+  const relevantTrainScheduleIds = new Set<number>();
 
   const stdcmDepartureTime = new Date(stdcmResult.departure_time);
   const stdcmArrivalTime = addDurationToDate(
@@ -66,25 +65,17 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
 
   const [spaceTimeData, setSpaceTimeData] = useState<TrainSpaceTimeData[]>([]);
 
-  const { data: timetable } = osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.useQuery({
-    timetableId,
-  });
+  const { data: trainSchedules = [] } =
+    osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.useQuery({
+      timetableId,
+    });
 
   const { data: { results: rollingStocks } = { results: null } } =
     osrdEditoastApi.endpoints.getLightRollingStock.useQuery({ pageSize: 1000 });
 
-  const formattedTrainSchedules: TimetableItem[] = useMemo(
-    () =>
-      timetable?.map((trainSchedule) => ({
-        ...trainSchedule,
-        id: formatEditoastIdToPacedTrainId(trainSchedule.id),
-      })) || [],
-    [timetable]
-  );
-
-  const trainSchedulesById: Map<TimetableItemId, TimetableItem> = useMemo(
-    () => mapBy(formattedTrainSchedules, 'id'),
-    [formattedTrainSchedules]
+  const trainSchedulesById: Map<number, TimetableItem> = useMemo(
+    () => mapBy(trainSchedules, 'id'),
+    [trainSchedules]
   );
 
   // Progressive projection of the trains
@@ -107,8 +98,8 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
   });
 
   useEffect(() => {
-    simulateTimetableItems(formattedTrainSchedules);
-  }, [formattedTrainSchedules]);
+    simulateTimetableItems(trainSchedules);
+  }, [trainSchedules]);
 
   useEffect(() => {
     if (stdcmResponse) {
@@ -135,7 +126,7 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
 
   return {
     spaceTimeData,
-    projectionLoaderData: { allTrainsProjected, totalTrains: timetable?.length ?? 0 },
+    projectionLoaderData: { allTrainsProjected, totalTrains: trainSchedules.length },
   };
 };
 

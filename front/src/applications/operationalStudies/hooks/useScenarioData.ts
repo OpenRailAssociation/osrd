@@ -7,9 +7,8 @@ import { osrdEditoastApi, type ScenarioWithDetails } from 'common/api/osrdEditoa
 import { useRollingStockContext } from 'common/RollingStockContext';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChartWrapper/useLazyProjectTrains';
 import { formatPacedTrainWithDetails } from 'modules/timetableItem/helpers/formatTimetableItemWithDetails';
-import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
-import { formatEditoastIdToPacedTrainId, extractEditoastIdFromPacedTrainId } from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
 import useAutoSelectTrainIds from './useAutoSelectTrainIds';
@@ -19,15 +18,15 @@ import { useScenarioContext } from './useScenarioContext';
 
 type ScenarioBroadcastMessage =
   | { type: 'upsertTimetableItems'; timetableItems: TimetableItem[] }
-  | { type: 'removeTimetableItems'; timetableItemIds: TimetableItemId[] }
-  | { type: 'setTimetableItemDepartureTime'; timetableItemId: TimetableItemId; newDeparture: Date };
+  | { type: 'removeTimetableItems'; timetableItemIds: number[] }
+  | { type: 'setTimetableItemDepartureTime'; timetableItemId: number; newDeparture: Date };
 
 const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
   const dispatch = useAppDispatch();
 
   const [timetableItems, setTimetableItems] = useState<TimetableItem[]>();
   const timetableItemsById = useMemo(() => mapBy(timetableItems, 'id'), [timetableItems]);
-  const [selectedTimetableItemIds, setSelectedTimetableItemIds] = useState<TimetableItemId[]>([]);
+  const [selectedTimetableItemIds, setSelectedTimetableItemIds] = useState<number[]>([]);
 
   const [updateTrainSchedule] = osrdEditoastApi.endpoints.putTrainSchedulesById.useMutation();
 
@@ -44,12 +43,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
     );
 
     const fetchTimetableItems = async () => {
-      const rawPacedTrains = (await pacedTrainsResult.unwrap()) ?? [];
-
-      const pacedTrains = rawPacedTrains.map((pacedTrain) => ({
-        ...pacedTrain,
-        id: formatEditoastIdToPacedTrainId(pacedTrain.id),
-      }));
+      const pacedTrains = (await pacedTrainsResult.unwrap()) ?? [];
 
       setTimetableItems(sortBy(pacedTrains, 'start_time'));
     };
@@ -153,7 +147,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
     []
   );
 
-  const removeTimetableItems = useCallback((_timetableItemsToRemove: TimetableItemId[]) => {
+  const removeTimetableItems = useCallback((_timetableItemsToRemove: number[]) => {
     setTimetableItems((prev) => {
       const prevTimetableItemsById = mapBy(prev, 'id');
       _timetableItemsToRemove.forEach((timetableItemId) => {
@@ -171,7 +165,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
   }, []);
 
   const setTimetableItemDepartureTime = useCallback(
-    (timetableItemId: TimetableItemId, newDeparture: Date) => {
+    (timetableItemId: number, newDeparture: Date) => {
       setTimetableItems((prev) => {
         const timetableItem = prev?.find((item) => item.id === timetableItemId);
         if (!timetableItem) {
@@ -196,16 +190,14 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
 
   /** Update only departure time of a timetable item */
   const updateTrainDepartureTime = useCallback(
-    async (timetableItemId: TimetableItemId, newDeparture: Date) => {
+    async (timetableItemId: number, newDeparture: Date) => {
       const timetableItem = timetableItems?.find((item) => item.id === timetableItemId);
       if (!timetableItem) {
         throw new Error(`Timetable item "${timetableItemId}" not found`);
       }
 
-      const editoastPacedTrainId = extractEditoastIdFromPacedTrainId(timetableItem.id);
-
       await updateTrainSchedule({
-        id: editoastPacedTrainId,
+        id: timetableItem.id,
         trainSchedule: {
           ...timetableItem,
           start_time: newDeparture.toISOString(),
@@ -229,7 +221,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
   );
 
   const removeTimetableItemsWithBroadcast = useCallback(
-    (ids: TimetableItemId[]) => {
+    (ids: number[]) => {
       removeTimetableItems(ids);
       broadcastScenarioMessage({
         type: 'removeTimetableItems',
@@ -240,7 +232,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
   );
 
   const updateTrainDepartureTimeWithBroadcast = useCallback(
-    async (timetableItemId: TimetableItemId, newDeparture: Date) => {
+    async (timetableItemId: number, newDeparture: Date) => {
       await updateTrainDepartureTime(timetableItemId, newDeparture);
       broadcastScenarioMessage({
         type: 'setTimetableItemDepartureTime',

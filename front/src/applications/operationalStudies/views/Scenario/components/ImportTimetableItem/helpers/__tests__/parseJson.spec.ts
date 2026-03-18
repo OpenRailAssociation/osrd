@@ -20,8 +20,8 @@ const buildTrainSchedule = (overrides: Record<string, unknown> = {}) => ({
 });
 
 describe('processJsonFile', () => {
-  const train0 = buildTrainSchedule({ train_name: 'train_0', id: 'paced_0' });
-  const train1 = buildTrainSchedule({ train_name: 'train_1', id: 'paced_1' });
+  const train0 = buildTrainSchedule({ train_name: 'train_0', id: 0 });
+  const train1 = buildTrainSchedule({ train_name: 'train_1', id: 1 });
 
   describe('Export/Import of timetable', () => {
     it('Should export and import timetable', () => {

@@ -3,7 +3,6 @@ import {
   type SpaceTimeCurve,
   type CoreTrainPath,
 } from 'common/api/osrdEditoastApi';
-import type { TimetableItemId } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 
 const BATCH_SIZE = 20;
@@ -22,13 +21,13 @@ export type TrainProjectionLazyLoaderOptions = {
   infraId: number;
   path?: CoreTrainPath;
   electricalProfileSetId?: number;
-  onProgress: (results: Map<TimetableItemId, ProjectionResult>) => void;
+  onProgress: (results: Map<number, ProjectionResult>) => void;
 };
 
 export default abstract class TrainProjectionLazyLoaderAbstract {
   readonly options: TrainProjectionLazyLoaderOptions;
 
-  pending: TimetableItemId[] = [];
+  pending: number[] = [];
 
   prevPromise: Promise<void> = Promise.resolve();
 
@@ -38,7 +37,7 @@ export default abstract class TrainProjectionLazyLoaderAbstract {
     this.options = options;
   }
 
-  projectTimetableItems(ids: TimetableItemId[]) {
+  projectTimetableItems(ids: number[]) {
     if (this.cancelled) {
       throw new Error('projectTimetableItems() called after cancel()');
     }
@@ -59,5 +58,5 @@ export default abstract class TrainProjectionLazyLoaderAbstract {
     }
   }
 
-  abstract processBatch(batch: TimetableItemId[]): Promise<void>;
+  abstract processBatch(batch: number[]): Promise<void>;
 }

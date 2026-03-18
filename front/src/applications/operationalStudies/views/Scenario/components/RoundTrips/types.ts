@@ -1,9 +1,8 @@
 import type { TrainCategory } from 'common/api/osrdEditoastApi';
-import type { TimetableItemId } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
 
 export type PairingItem = {
-  id: TimetableItemId;
+  id: number;
   name: string;
   category?: TrainCategory | null;
   interval: Duration | null;
@@ -15,7 +14,7 @@ export type PairingItem = {
 } & (
   | {
       status: 'roundTrips';
-      pairedItemId: TimetableItemId;
+      pairedItemId: number;
       isValidPair: boolean;
     }
   | {

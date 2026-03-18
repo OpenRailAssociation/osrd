@@ -4,17 +4,17 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import { formatPacedTrainWithDetails } from 'modules/timetableItem/helpers/formatTimetableItemWithDetails';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
-import type { TimetableItemId, TimetableItem, PacedTrainId } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 import { mapBy } from 'utils/types';
 
 type SummaryWithCorrespondingTimetableItemId = {
-  timetableItemId: PacedTrainId;
+  timetableItemId: number;
   summary: TrainScheduleSimulationSummaryResult;
 };
 
 const formatTimetableItemWithDetails = (
   inputs: SummaryWithCorrespondingTimetableItemId,
-  rawTimetableItems: Map<TimetableItemId, TimetableItem>,
+  rawTimetableItems: Map<number, TimetableItem>,
   rollingStocks: LightRollingStockWithLiveries[]
 ) => {
   const timetableItem = rawTimetableItems.get(inputs.timetableItemId);
@@ -27,10 +27,10 @@ const formatTimetableItemWithDetails = (
 
 /** Format the timetable items with their simulation summaries */
 const formatTimetableItemSummaries = (
-  rawPacedTrainSummaries: Map<PacedTrainId, TrainScheduleSimulationSummaryResult>,
-  rawTimetableItems: Map<TimetableItemId, TimetableItem>,
+  rawPacedTrainSummaries: Map<number, TrainScheduleSimulationSummaryResult>,
+  rawTimetableItems: Map<number, TimetableItem>,
   rollingStocks: LightRollingStockWithLiveries[]
-): Map<TimetableItemId, TimetableItemWithDetails> => {
+): Map<number, TimetableItemWithDetails> => {
   const items: TimetableItemWithDetails[] = [...rawPacedTrainSummaries].map(
     ([id, pacedTrainSummary]) =>
       formatTimetableItemWithDetails(

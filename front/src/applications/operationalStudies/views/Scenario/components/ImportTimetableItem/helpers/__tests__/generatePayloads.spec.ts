@@ -1,28 +1,17 @@
 import { describe, it, expect } from 'vitest';
 
-import type { PacedTrainId } from 'reducers/osrdconf/types';
-import { extractEditoastIdFromPacedTrainId } from 'utils/trainId';
-
 import { generateRoundTripsPayload } from '../generatePayloads';
 
 describe('generateRoundTripsPayload', () => {
   it('correctly generates payload for a mix of one-ways and round-trips paced trains', () => {
-    const pacedTrains = [
-      { id: 'paced_101' as PacedTrainId },
-      { id: 'paced_102' as PacedTrainId },
-      { id: 'paced_103' as PacedTrainId },
-    ];
+    const pacedTrains = [{ id: 101 }, { id: 102 }, { id: 103 }];
 
     const pacedTrainIndexes: ([number, number] | [number, null])[] = [
       [0, 2],
       [1, null],
     ];
 
-    const trainSchedulePayload = generateRoundTripsPayload(
-      pacedTrainIndexes,
-      pacedTrains,
-      extractEditoastIdFromPacedTrainId
-    );
+    const trainSchedulePayload = generateRoundTripsPayload(pacedTrainIndexes, pacedTrains);
 
     expect(trainSchedulePayload).toEqual({
       roundTrips: {
@@ -32,12 +21,7 @@ describe('generateRoundTripsPayload', () => {
     });
   });
 
-  const pacedTrains = [
-    { id: 'paced_7' as PacedTrainId },
-    { id: 'paced_8' as PacedTrainId },
-    { id: 'paced_9' as PacedTrainId },
-    { id: 'paced_15' as PacedTrainId },
-  ];
+  const pacedTrains = [{ id: 7 }, { id: 8 }, { id: 9 }, { id: 15 }];
 
   it('correctly generates payload for only one-ways paced trains', () => {
     const oneWayPacedIndexes: ([number, number] | [number, null])[] = [
@@ -47,11 +31,7 @@ describe('generateRoundTripsPayload', () => {
       [3, null],
     ];
 
-    const oneWayPayload = generateRoundTripsPayload(
-      oneWayPacedIndexes,
-      pacedTrains,
-      extractEditoastIdFromPacedTrainId
-    );
+    const oneWayPayload = generateRoundTripsPayload(oneWayPacedIndexes, pacedTrains);
 
     expect(oneWayPayload).toEqual({
       roundTrips: {
@@ -67,11 +47,7 @@ describe('generateRoundTripsPayload', () => {
       [0, 3],
     ];
 
-    const roundTripsPayload = generateRoundTripsPayload(
-      roundTripsPacedIndexes,
-      pacedTrains,
-      extractEditoastIdFromPacedTrainId
-    );
+    const roundTripsPayload = generateRoundTripsPayload(roundTripsPacedIndexes, pacedTrains);
 
     expect(roundTripsPayload).toEqual({
       roundTrips: {

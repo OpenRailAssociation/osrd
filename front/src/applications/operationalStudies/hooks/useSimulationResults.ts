@@ -15,7 +15,11 @@ import useSelectedTimetableItem from 'modules/timetableItem/hooks/useSelectedTim
 import type { Train } from 'reducers/osrdconf/types';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { Duration } from 'utils/duration';
-import { extractOccurrenceIndexFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
+import {
+  extractOccurrenceIndexFromOccurrenceId,
+  formatEditoastIdToPacedTrainId,
+  isOccurrenceId,
+} from 'utils/trainId';
 
 import type { SimulationResults } from '../types';
 import { preparePathPropertiesData } from '../utils';
@@ -38,7 +42,7 @@ const useSimulationResults = (): {
   const train: Train | undefined = useMemo(() => {
     if (!selectedTrainId || !timetableItem) return undefined;
     if (!isOccurrenceId(selectedTrainId) || !timetableItem.paced) {
-      return timetableItem;
+      return { ...timetableItem, id: formatEditoastIdToPacedTrainId(timetableItem.id) };
     }
 
     const exception = findExceptionWithOccurrenceId(

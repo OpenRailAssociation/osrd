@@ -12,13 +12,14 @@ import {
 } from 'reducers/osrdconf/operationalStudiesConf';
 import commonConfBuilder from 'reducers/osrdconf/osrdConfCommon/__tests__/commonConfBuilder';
 import testCommonConfReducers from 'reducers/osrdconf/osrdConfCommon/__tests__/utils';
-import type { OperationalStudiesConfState, PacedTrainId, PathStep } from 'reducers/osrdconf/types';
+import type { OperationalStudiesConfState, PathStep } from 'reducers/osrdconf/types';
 import { createStoreWithoutMiddleware } from 'store';
 import { Duration } from 'utils/duration';
 
 import testTrainSettingsReducer from './trainSettingsReducer';
 
 const baseTimetableItemWithSummary: TimetableItemWithSummaries = {
+  id: 1,
   name: 'train1',
   train_schedule_set_id: 1000,
   constraint_distribution: 'MARECO',
@@ -63,7 +64,6 @@ describe('simulationConfReducer', () => {
     it('paced train case', () => {
       const pacedTrain: PacedTrainWithDetails = {
         ...baseTimetableItemWithSummary,
-        id: 'paced_1' as PacedTrainId,
         paced: {
           timeWindow: new Duration({ minutes: 60 }),
           interval: new Duration({ minutes: 30 }),

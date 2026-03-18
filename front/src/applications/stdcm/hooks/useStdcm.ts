@@ -5,7 +5,11 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { v4 as uuidV4 } from 'uuid';
 
-import { STDCM_REQUEST_STATUS, STDCM_TRAIN_TIMETABLE_ID } from 'applications/stdcm/consts';
+import {
+  STDCM_REQUEST_STATUS,
+  STDCM_TRAIN_ID,
+  STDCM_TRAIN_TIMETABLE_ID,
+} from 'applications/stdcm/consts';
 import type {
   StdcmRequestStatus,
   StdcmSimulation,
@@ -96,7 +100,7 @@ const useStdcm = ({
         dispatch
       );
       const stdcmTrain: Omit<TimetableItem, 'train_schedule_set_id'> = {
-        id: STDCM_TRAIN_TIMETABLE_ID,
+        id: STDCM_TRAIN_ID,
         comfort: payload.body.comfort,
         constraint_distribution: 'MARECO',
         path: payload.body.steps.map((step) => ({ location: step.location, id: uuidV4() })),

@@ -11,7 +11,6 @@ import type { OSRDMenuItem } from 'common/OSRDMenu';
 import OSRDMenu from 'common/OSRDMenu';
 import OSRDTooltip from 'common/OSRDTooltip';
 import isMainCategory from 'modules/rollingStock/helpers/category';
-import type { TimetableItemId } from 'reducers/osrdconf/types';
 
 import type { PairDataToolTip, PairingItem } from './types';
 import { getTrainCategoryClassName } from '../Timetable/utils';
@@ -21,7 +20,7 @@ type RoundTripsModalCardProps = {
   isItemToPair?: boolean;
   restoreItems?: () => void;
   moveItemToOneWays?: (item: PairingItem) => void;
-  openPairingMode?: (itemId: TimetableItemId) => void | undefined;
+  openPairingMode?: (itemId: number) => void | undefined;
   isCandidate?: boolean;
   pairData?: PairDataToolTip;
   subCategories: SubCategory[];

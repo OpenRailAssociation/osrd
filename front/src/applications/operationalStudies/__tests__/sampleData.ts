@@ -8,7 +8,7 @@ import type {
   PositionData,
 } from 'applications/operationalStudies/types';
 import type { SimulationSummaryResult } from 'common/api/osrdEditoastApi';
-import type { PacedTrainId, TimetableItem } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 
 export const pathLength = 4000;
 export const pathLengthLong = 6000;
@@ -351,7 +351,7 @@ export const trainSummaryNotHonored: Extract<SimulationSummaryResult, { status: 
 };
 
 export const uniqueTrainHonored: TimetableItem = {
-  id: 'paced_95' as PacedTrainId,
+  id: 95,
   train_schedule_set_id: 1000,
   train_name: 'normal',
   labels: [],

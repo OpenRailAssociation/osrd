@@ -18,7 +18,6 @@ import { isPacedTrain } from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItem, TimetableItemWithPathOps } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration, addDurationToDate } from 'utils/duration';
-import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
 import {
   TRAINRUN_CATEGORY_HALTEZEITEN,
@@ -731,12 +730,9 @@ export const loadNgeDto = async (
       { subscribe: false }
     )
   );
-  const pacedTrains = (await pacedTrainsPromise.unwrap())
-    .filter((pacedTrain) => pacedTrain.path.length >= 2)
-    .map((pacedTrain) => ({
-      ...pacedTrain,
-      id: formatEditoastIdToPacedTrainId(pacedTrain.id),
-    }));
+  const pacedTrains = (await pacedTrainsPromise.unwrap()).filter(
+    (pacedTrain) => pacedTrain.path.length >= 2
+  );
 
   const timetableItems = await fetchTimetableItemPathOps(state.infraId, pacedTrains, dispatch);
 

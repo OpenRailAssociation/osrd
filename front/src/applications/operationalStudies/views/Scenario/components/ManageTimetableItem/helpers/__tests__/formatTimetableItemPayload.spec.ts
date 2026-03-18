@@ -12,7 +12,6 @@ import type {
   IndexedOccurrenceId,
   TimetableItemToEditData,
   OperationalStudiesConfState,
-  PacedTrainId,
 } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 
@@ -74,10 +73,10 @@ describe('formatTimetableItemPayload', () => {
   };
   const rollingStockName = 'DUAL-MODE_RS_E2Ee';
   const rawTimetableItemToEditData: {
-    timetableItemId: PacedTrainId;
+    timetableItemId: number;
     originalPacedTrain: PacedTrainWithPacedWithDetails;
   } = {
-    timetableItemId: 'paced_238' as PacedTrainId,
+    timetableItemId: 238,
     originalPacedTrain: {
       category: {
         main_category: 'FREIGHT_TRAIN',
@@ -119,7 +118,7 @@ describe('formatTimetableItemPayload', () => {
       power_restrictions: [],
       schedule: [],
       speed_limit_tag: null,
-      id: 'paced_238' as PacedTrainId,
+      id: 238,
       train_schedule_set_id: 1000,
       name: 'test',
       startTime: new Date('2025-06-02T12:45:00.000Z'),
@@ -279,10 +278,7 @@ describe('formatTimetableItemPayload', () => {
           ...rawOsrdconf,
           ...userChanges,
         };
-        const itemDataWithPREVIOUSLYAddedException: Extract<
-          TimetableItemToEditData,
-          { timetableItemId: PacedTrainId }
-        > = {
+        const itemDataWithPREVIOUSLYAddedException: TimetableItemToEditData = {
           ...rawTimetableItemToEditData,
           originalPacedTrain: {
             ...rawTimetableItemToEditData.originalPacedTrain,

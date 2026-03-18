@@ -12,7 +12,6 @@ import { createPacedTrains } from 'modules/timetableItem/helpers/updateTimetable
 import type { PacedTrainWithDetails, TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
-import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
 import { useScenarioContext } from './useScenarioContext';
 import type { TrainScheduleSetImportType } from '../views/Scenario/components/ImportTrainScheduleSets/types';
@@ -280,11 +279,7 @@ export default function useScenarioTrainScheduleSet(
             id: item.trainScheduleSet.id,
           }).unwrap();
 
-          const formattedTrains = referencedPacedTrains.map((train) => ({
-            ...train,
-            id: formatEditoastIdToPacedTrainId(train.id),
-          }));
-          allTrainsToUpsert.push(...formattedTrains);
+          allTrainsToUpsert.push(...referencedPacedTrains);
         } else {
           // For copy imports, create a new train schedule set and copy the trains
           const sourcePacedTrains = await getTrainScheduleSetTrainSchedules({

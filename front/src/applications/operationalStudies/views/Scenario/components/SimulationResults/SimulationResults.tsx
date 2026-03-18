@@ -24,7 +24,7 @@ import type { ProjectionData, TrainSpaceTimeData } from 'modules/simulationResul
 import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
 import { findExceptionWithOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
-import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 import { toggleDisplayOnlyPathSteps, updateSelectedTrainId } from 'reducers/simulationResults';
 import {
   getDisplayOnlyPathSteps,
@@ -32,7 +32,11 @@ import {
 } from 'reducers/simulationResults/selectors';
 import { getUseNewTimesStopsTable } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
-import { extractPacedTrainIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
+import {
+  extractEditoastIdFromPacedTrainId,
+  extractPacedTrainIdFromOccurrenceId,
+  isOccurrenceId,
+} from 'utils/trainId';
 
 import BoardWrapper from '../BoardWrapper';
 import SimulationResultsExport from './SimulationResultsExport';
@@ -50,7 +54,7 @@ type SimulationResultsProps = {
   timetableItemsWithDetails: TimetableItemWithDetails[];
   conflicts?: Conflict[];
   activeBoards: Set<Board>;
-  updateTrainDepartureTime: (trainId: TimetableItemId, newDepartureTime: Date) => Promise<void>;
+  updateTrainDepartureTime: (trainId: number, newDepartureTime: Date) => Promise<void>;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
 };
 
@@ -129,12 +133,17 @@ const SimulationResults = ({
     if (!selectedTrainId) return undefined;
 
     if (!isOccurrenceId(selectedTrainId)) {
-      return timetableItemsWithDetails.find((timetableItem) => timetableItem.id === selectedTrainId)
-        ?.summary;
+      const selectedTrainScheduleId = extractEditoastIdFromPacedTrainId(selectedTrainId);
+      return timetableItemsWithDetails.find(
+        (timetableItem) => timetableItem.id === selectedTrainScheduleId
+      )?.summary;
     }
 
+    const selectedTrainScheduleId = extractEditoastIdFromPacedTrainId(
+      extractPacedTrainIdFromOccurrenceId(selectedTrainId)
+    );
     const pacedTrain = timetableItemsWithDetails.find(
-      (timetableItem) => timetableItem.id === extractPacedTrainIdFromOccurrenceId(selectedTrainId)
+      (timetableItem) => timetableItem.id === selectedTrainScheduleId
     );
     // WARNING TODO: race condition here, to fix
     // When turning a train into a service, then pacedTrain and selectedTrainId may be desynchronized.

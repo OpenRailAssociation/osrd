@@ -17,7 +17,7 @@ import {
 } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import { setFailure, setSuccess } from 'reducers/main';
-import type { TimetableItem, TimetableItemId, TrainId } from 'reducers/osrdconf/types';
+import type { TimetableItem, TrainId } from 'reducers/osrdconf/types';
 import {
   updateHoveredTrainId,
   updateTrainIdUsedForProjection,
@@ -28,7 +28,7 @@ import { useAppDispatch } from 'store';
 import { timeToLocaleStringRounded, useDateTimeLocale } from 'utils/date';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
-import { extractEditoastIdFromPacedTrainId } from 'utils/trainId';
+import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
 import ArrivalTimeLoader from './ArrivalTimeLoader';
 import { TIMETABLE_ITEM_DELTA } from './consts';
@@ -40,12 +40,12 @@ type UniqueTrainItemProps = {
   train: TimetableItemWithDetails;
   isSelected: boolean;
   isModified?: boolean;
-  handleSelectTrain: (trainId: TimetableItemId) => void;
+  handleSelectTrain: (trainId: number) => void;
   upsertUniqueTrains: (uniqueTrains: TimetableItem[]) => void;
-  removeTrains: (trainIds: TimetableItemId[]) => void;
+  removeTrains: (trainIds: number[]) => void;
   projectionPathIsUsed: boolean;
   selectTrainToEdit: (train: TimetableItemWithDetails) => void;
-  setSelectedTimetableItemIds: React.Dispatch<React.SetStateAction<TimetableItemId[]>>;
+  setSelectedTimetableItemIds: React.Dispatch<React.SetStateAction<number[]>>;
   subCategories: SubCategory[];
   isSelectMode: boolean;
   moveTimetableItem: () => void;
@@ -76,6 +76,8 @@ const UniqueTrainItem = ({
 
   const { summary } = train;
 
+  const formattedTrainId = formatEditoastIdToPacedTrainId(train.id);
+
   const changeSelectedTrainId = (trainId: TrainId) => {
     dispatch(updateSelectedTrainId(trainId));
   };
@@ -95,7 +97,7 @@ const UniqueTrainItem = ({
       .catch((e) => {
         dispatch(setFailure(castErrorToFailure(e)));
         if (isSelected) {
-          dispatch(updateSelectedTrainId(train.id));
+          dispatch(updateSelectedTrainId(formattedTrainId));
         }
       });
   };
@@ -104,9 +106,8 @@ const UniqueTrainItem = ({
     const trainName = `${train.name} (${t('timetable.copy')})`;
 
     try {
-      const editoastTrainId = extractEditoastIdFromPacedTrainId(train.id);
       const trainDetail = await getTrainSchedule({
-        id: editoastTrainId,
+        id: train.id,
       }).unwrap();
 
       const startTime = addDurationToDate(
@@ -138,7 +139,7 @@ const UniqueTrainItem = ({
   };
 
   const selectPathProjection = async () => {
-    dispatch(updateTrainIdUsedForProjection(train.id));
+    dispatch(updateTrainIdUsedForProjection(formattedTrainId));
     if (!summary?.isValid) dispatch(updateProjectionType('operationalPointProjection'));
   };
 
@@ -166,14 +167,14 @@ const UniqueTrainItem = ({
         'in-selection': isInSelection,
         invalid: summary && !summary.isValid,
       })}
-      onMouseEnter={() => dispatch(updateHoveredTrainId(train.id))}
+      onMouseEnter={() => dispatch(updateHoveredTrainId(formattedTrainId))}
       onMouseLeave={() => dispatch(updateHoveredTrainId(undefined))}
     >
       <div
         data-testid="scenario-timetable-unique-train-button"
         role="button"
         tabIndex={0}
-        onClick={() => changeSelectedTrainId(train.id)}
+        onClick={() => changeSelectedTrainId(formattedTrainId)}
         className="w-full clickable-button"
       >
         <div

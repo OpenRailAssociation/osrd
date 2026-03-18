@@ -46,7 +46,7 @@ export type BaseTrainProjection = {
 };
 
 export type TrainSpaceTimeData = {
-  id: PacedTrainId;
+  id: number;
   name: string;
   departureTime: Date;
   originPathItem: PathItem;
