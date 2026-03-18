@@ -40,6 +40,8 @@ use url::Url;
 use crate::AppState;
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::infra_cache::InfraCache;
+use crate::views::authentication_extraction_middleware;
+use crate::views::authentication_validation_middleware;
 use crate::views::service_router;
 use crate::views::timetable::similar_trains::trains_traffic::TrainTraffic;
 use crate::views::timetable::similar_trains::trains_traffic::TrainsTrafficPool;
@@ -278,6 +280,13 @@ impl TestAppBuilder {
             .route_layer(axum::middleware::from_fn_with_state(
                 app_state.clone(),
                 authentication_middleware,
+            ))
+            .route_layer(axum::middleware::from_fn_with_state(
+                app_state.clone(),
+                authentication_validation_middleware,
+            ))
+            .route_layer(axum::middleware::from_fn(
+                authentication_extraction_middleware,
             ))
             .layer(OtelAxumLayer::default())
             .layer(TraceLayer::new_for_http())
