@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 
 import {
   createColumnHelper,
@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { formatLocalTime } from 'utils/date';
 
 import DurationCell from './DurationCell';
-import TimeCell from './TimeCell';
+import TimeCell, { type TimeCellHandle } from './TimeCell';
 import { type TimesStopsRowNew } from './types';
 
 declare module '@tanstack/react-table' {
@@ -24,6 +24,7 @@ declare module '@tanstack/react-table' {
   // eslint-disable-next-line @typescript-eslint/consistent-type-definitions, @typescript-eslint/no-unused-vars
   interface TableMeta<TData extends RowData> {
     allRows: TimesStopsRowNew[];
+    isComputedDataPending?: boolean;
     onArrivalChange: (row: TimesStopsRowNew, arrival: Date | null) => void;
     onStopDurationChange: (row: TimesStopsRowNew, durationSeconds: number | null) => void;
     onDepartureChange: (row: TimesStopsRowNew, departure: Date | null) => void;
@@ -76,6 +77,7 @@ type TimesStopsTableProps = {
 };
 
 const columnHelper = createColumnHelper<TimesStopsRowNew>();
+const getTimeCellKey = (rowIndex: number, columnId: string) => `${rowIndex}-${columnId}`;
 
 const TimesStopsTable = ({
   rows,
@@ -87,8 +89,30 @@ const TimesStopsTable = ({
   onDepartureChange,
 }: TimesStopsTableProps) => {
   const { t } = useTranslation('translation', { keyPrefix: 'timeStopTable' });
-
   const scheduleNotHonored = rows.some((row) => row.stepStatus === 'scheduleNotHonored');
+  const cellHandlesRef = useRef<Map<string, TimeCellHandle>>(new Map());
+
+  const registerTimeCellRef = useCallback(
+    (rowIndex: number, columnId: string) => (handle: TimeCellHandle | null) => {
+      const key = getTimeCellKey(rowIndex, columnId);
+      if (handle) {
+        cellHandlesRef.current.set(key, handle);
+      } else {
+        cellHandlesRef.current.delete(key);
+      }
+    },
+    []
+  );
+
+  const focusCellBelow = useCallback(
+    (rowIndex: number, columnId: string) => {
+      const targetRowIndex = rowIndex + 1;
+      if (targetRowIndex >= rows.length) return;
+      const key = getTimeCellKey(targetRowIndex, columnId);
+      cellHandlesRef.current.get(key)?.focus();
+    },
+    [rows.length]
+  );
 
   const columns = useMemo(
     () => [
@@ -104,7 +128,7 @@ const TimesStopsTable = ({
         id: 'stepStatus',
         header: '',
         cell: (info) => {
-          if (isComputedDataPending) {
+          if (info.table.options.meta!.isComputedDataPending) {
             return <span>&nbsp;</span>;
           }
 
@@ -169,9 +193,11 @@ const TimesStopsTable = ({
           const { allRows, onArrivalChange: onArrival } = info.table.options.meta!;
           return (
             <TimeCell
+              ref={registerTimeCellRef(info.row.index, 'requestedArrival')}
               {...info}
               referenceDate={getArrivalReferenceDate(row, allRows, startTime)}
-              computedValue={row.computedArrival}
+              prefillValue={row.computedArrival}
+              onEnterKeyDown={() => focusCellBelow(info.row.index, 'requestedArrival')}
               onCommit={(date) => onArrival(row, date)}
             />
           );
@@ -183,7 +209,7 @@ const TimesStopsTable = ({
       columnHelper.accessor('computedArrival', {
         header: () => t('calculatedArrivalTime'),
         cell: (info) => {
-          if (isComputedDataPending) {
+          if (info.table.options.meta!.isComputedDataPending) {
             return <span className="cell-loading-placeholder" />;
           }
           const value = info.getValue();
@@ -218,9 +244,11 @@ const TimesStopsTable = ({
           }
           return (
             <TimeCell
+              ref={registerTimeCellRef(info.row.index, 'requestedDeparture')}
               {...info}
               referenceDate={getDepartureReferenceDate(row, startTime)}
-              computedValue={row.computedDeparture}
+              prefillValue={row.computedDeparture}
+              onEnterKeyDown={() => focusCellBelow(info.row.index, 'requestedDeparture')}
               onCommit={(date) => info.table.options.meta!.onDepartureChange(row, date)}
             />
           );
@@ -232,7 +260,7 @@ const TimesStopsTable = ({
       columnHelper.accessor('computedDeparture', {
         header: () => t('calculatedDepartureTime'),
         cell: (info) => {
-          if (isComputedDataPending) {
+          if (info.table.options.meta!.isComputedDataPending) {
             return <span className="cell-loading-placeholder" />;
           }
           const value = info.getValue();
@@ -304,7 +332,7 @@ const TimesStopsTable = ({
         },
       }),
     ],
-    [startTime, isComputedDataPending]
+    [startTime, focusCellBelow]
   );
 
   // eslint-disable-next-line react-hooks/incompatible-library
@@ -314,6 +342,7 @@ const TimesStopsTable = ({
     getCoreRowModel: getCoreRowModel(),
     meta: {
       allRows: rows,
+      isComputedDataPending,
       onArrivalChange,
       onStopDurationChange,
       onDepartureChange,

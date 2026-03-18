@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useRef, type ChangeEvent } from 'react';
+import { useEffect, useImperativeHandle, useReducer, useRef, type ChangeEvent } from 'react';
 
 import type { CellContext } from '@tanstack/react-table';
 
@@ -28,10 +28,17 @@ type TimeState = {
   hasTyped: boolean;
 };
 
+type BlurIntent = 'none' | 'commit' | 'cancel';
+
+export type TimeCellHandle = {
+  focus: () => void;
+};
+
 type TimeAction =
   | { type: 'DIGIT_PRESSED'; digit: string }
   | { type: 'BACKSPACE_PRESSED' }
   | { type: 'ENTER_PRESSED' }
+  | { type: 'ESCAPE_PRESSED'; value: Date | null }
   | { type: 'SECTION_CLICKED'; section: Section }
   | { type: 'FOCUSED'; section: Section }
   | { type: 'FOCUSED_WITH_PREFILL'; section: Section; prefillValue: Date }
@@ -405,6 +412,8 @@ const timeReducer = (state: TimeState, action: TimeAction): TimeState => {
       return computeSectionClickState(state, action.section);
     case 'ENTER_PRESSED':
       return computeBlurState(state);
+    case 'ESCAPE_PRESSED':
+      return initialTimeState(action.value);
     case 'LEFT_ARROW_PRESSED':
       return computeArrowState(state, 'left');
     case 'RIGHT_ARROW_PRESSED':
@@ -469,21 +478,38 @@ type TimeCellProps = CellContext<TimesStopsRowNew, Date | null> &
     /** Reference date used as the calendar day base. If the entered time is before this date, the next day is assumed. */
     referenceDate?: Date;
     /** When the cell is empty, pre-fill the input with this value when the user focuses to edit. */
-    computedValue?: Date | null;
+    prefillValue?: Date | null;
+    /** Called after Enter validates the input. Use to move focus (e.g. to the cell below). */
+    onEnterKeyDown?: () => void;
     onCommit?: (date: Date | null) => void;
+    ref?: React.Ref<TimeCellHandle>;
   };
 
 const TimeCell = ({
   getValue,
   referenceDate,
-  computedValue,
+  prefillValue,
+  onEnterKeyDown,
   onCommit,
+  ref,
   ...props
 }: TimeCellProps) => {
   const { onKeyDown, onBlur, onFocus, onChange, ...userProps } = props || {};
 
   const controlledValue = getValue();
   const inputRef = useRef<HTMLInputElement>(null);
+  const shouldPrefillRef = useRef(false);
+  const blurIntentRef = useRef<BlurIntent>('none');
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      focus: () => {
+        inputRef.current?.focus();
+      },
+    }),
+    []
+  );
 
   const [state, dispatch] = useReducer(timeReducer, controlledValue, initialTimeState);
 
@@ -507,6 +533,14 @@ const TimeCell = ({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     switch (e.key) {
       case 'Enter':
+        e.preventDefault();
+        blurIntentRef.current = 'commit';
+        onEnterKeyDown?.();
+        e.currentTarget.blur();
+        break;
+      case 'Escape':
+        e.preventDefault();
+        blurIntentRef.current = 'cancel';
         e.currentTarget.blur();
         break;
       case 'Backspace':
@@ -541,18 +575,19 @@ const TimeCell = ({
   };
 
   const handlePlaceholderClick = () => {
-    if (state.empty && computedValue) {
-      dispatch({ type: 'FOCUSED_WITH_PREFILL', section: 'minutes', prefillValue: computedValue });
-    }
+    shouldPrefillRef.current = true;
     inputRef.current?.focus();
   };
 
   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    const shouldPrefill = shouldPrefillRef.current;
+    shouldPrefillRef.current = false;
+
     let section: Section;
     if (state.empty) {
       section = 'minutes';
-      if (computedValue) {
-        dispatch({ type: 'FOCUSED_WITH_PREFILL', section, prefillValue: computedValue });
+      if (prefillValue && shouldPrefill) {
+        dispatch({ type: 'FOCUSED_WITH_PREFILL', section, prefillValue });
         onFocus?.(e);
         return;
       }
@@ -565,18 +600,33 @@ const TimeCell = ({
   };
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const blurIntent = blurIntentRef.current;
+
+    if (blurIntent === 'cancel') {
+      blurIntentRef.current = 'none';
+      dispatch({ type: 'ESCAPE_PRESSED', value: controlledValue });
+      onBlur?.(e);
+      return;
+    }
+
     // Commit first: useReducer updates are async, so we compute the clamped state
     // ourselves rather than waiting for the BLURRED dispatch to take effect.
     // This ensures "14:45" (no seconds) commits as "14:45:00" instead of null.
+
     if (onCommit && referenceDate) {
       const newDate = buildDateFromState(computeBlurState(state), referenceDate);
       const hasChanged = newDate?.getTime() !== controlledValue?.getTime();
       if (hasChanged) {
-        onCommit(newDate);
+        if (blurIntent === 'commit') {
+          setTimeout(() => onCommit(newDate), 0);
+        } else {
+          onCommit(newDate);
+        }
       }
     }
 
     dispatch({ type: 'BLURRED' });
+    blurIntentRef.current = 'none';
     onBlur?.(e);
   };
 
