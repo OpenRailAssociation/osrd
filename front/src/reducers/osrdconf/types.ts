@@ -41,6 +41,14 @@ export type StandardAllowance = {
   value?: number;
 };
 
+export type ItineraryForm = {
+  name: string;
+  category: TrainCategory | null;
+  rollingStockId?: number;
+  speedLimitTag?: string;
+  pathSteps: (PathStep | null)[];
+};
+
 export type OperationalStudiesConfState = OsrdConfState & {
   name: string;
   category: TrainCategory | null;

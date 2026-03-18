@@ -1,7 +1,7 @@
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { Draft } from 'immer';
 
-import type { OperationalStudiesConfState } from '../types';
+import type { ItineraryForm, OperationalStudiesConfState } from '../types';
 
 const trainSettingsReducer = {
   updateConstraintDistribution(
@@ -63,6 +63,16 @@ const trainSettingsReducer = {
   },
   toggleEditingItemType(state: Draft<OperationalStudiesConfState>) {
     state.editingItemType = state.editingItemType === 'pacedTrain' ? 'uniqueTrain' : 'pacedTrain';
+  },
+  updateItineraryForm(
+    state: Draft<OperationalStudiesConfState>,
+    action: PayloadAction<ItineraryForm>
+  ) {
+    state.name = action.payload.name;
+    state.category = action.payload.category;
+    state.rollingStockID = action.payload.rollingStockId;
+    state.speedLimitByTag = action.payload.speedLimitTag;
+    state.pathSteps = action.payload.pathSteps;
   },
 };
 

@@ -154,6 +154,7 @@ export const {
   clearAddedExceptionsList,
   toggleEditingItemType,
   updateCategory,
+  updateItineraryForm,
 
   // itinerary reducer
   updatePathSteps,
