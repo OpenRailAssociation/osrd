@@ -38,7 +38,6 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.seconds
 import fr.sncf.osrd.utils.units.sumDistances
-import java.util.Objects
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Disabled
@@ -351,16 +350,7 @@ class BacktrackTests {
         assertEquals(allBlocks, firstBlocks.union(secondBlocks))
     }
 
-    class ZoneOccupation(val entry: Offset<PhysicsPath>, var exit: Offset<PhysicsPath>?) {
-        override fun equals(other: Any?): Boolean {
-            if (other !is ZoneOccupation) return false
-            return entry == other.entry && exit == other.exit
-        }
-
-        override fun hashCode(): Int {
-            return Objects.hash(entry, exit)
-        }
-    }
+    data class ZoneOccupation(val entry: Offset<PhysicsPath>, var exit: Offset<PhysicsPath>?)
 
     fun getZoneOccupations(
         zoneOccupationChangeEvents: List<ZoneOccupationChangeEvent>
