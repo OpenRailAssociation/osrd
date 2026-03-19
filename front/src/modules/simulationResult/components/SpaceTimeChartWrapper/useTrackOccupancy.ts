@@ -43,6 +43,8 @@ type DeployedWaypoint = {
   loading?: boolean;
 };
 
+const NO_TRACK_SPECIFIED_SYMBOL = '[ ]';
+
 type StationLabel = { type?: 'label'; label: string } | { type: 'requestedPoint' };
 function extractStationLabel(
   stationLabel: StationLabel | undefined,
@@ -58,11 +60,18 @@ function getOperationalPointReference(
   op: PathOperationalPoint | undefined
 ): OperationalPointReference | undefined {
   if (!op) return undefined;
-  if (op.opId) return { type: 'id', operational_point: op.opId };
+  // Only use the opId when it refers to a real infra OP. Virtual OPs (unrecognised, created
+  // by usePathProjection when pathfinding fails) have a synthetic id like "virtual_op_Zürich"
+  // and an empty part.track — they must be matched by trigram/uic instead.
+  if (op.opId && op.part?.track) return { type: 'id', operational_point: op.opId };
+  // Normalize empty string ch to null — virtual OPs store ch as '' when the original
+  // secondary_code was null (see usePathProjection createVirtualOp), and passing ''
+  // to the backend would filter for OPs with an empty secondary_code rather than any.
+  const ch = op.extensions?.sncf?.ch || null;
   const trigram = op.extensions?.sncf?.trigram;
-  if (trigram) return { type: 'trigram', trigram, secondary_code: op.extensions?.sncf?.ch };
+  if (trigram) return { type: 'trigram', trigram, secondary_code: ch };
   const uic = op.extensions?.identifier?.uic;
-  if (uic != null) return { type: 'uic', uic, secondary_code: op.extensions?.sncf?.ch };
+  if (uic != null) return { type: 'uic', uic, secondary_code: ch };
   return undefined;
 }
 
@@ -89,12 +98,10 @@ const useTrackOccupancy = ({
   infraId,
   timetableItemProjections,
   pathOperationalPoints,
-  pathfindingHasFailed = false,
 }: {
   infraId: number;
   timetableItemProjections: TrainSpaceTimeData[];
   pathOperationalPoints: PathOperationalPoint[];
-  pathfindingHasFailed?: boolean;
 }): {
   deployedWaypoints: DeployedWaypoint[];
   toggleWaypoint: (waypointId: string, selectedState?: boolean) => void;
@@ -171,7 +178,7 @@ const useTrackOccupancy = ({
   const fetchTrackOccupancy = useCallback(
     async (
       opRef: OperationalPointReference | undefined | null,
-      opId: string | undefined | null,
+      waypointId: string | undefined | null,
       trainsCollection: Record<TimetableItemId, TrainSpaceTimeData>
     ): Promise<MovableOccupancyZone[]> => {
       if (!opRef) return [];
@@ -200,11 +207,16 @@ const useTrackOccupancy = ({
       if (pacedResp?.data) {
         for (const trackItem of pacedResp.data) {
           const { local_track_name: localTrackName, trains } = trackItem;
-          if (!localTrackName) continue;
-          const trackId = opId
-            ? localTrackNameToTrackIdRef.current.get(opId)?.get(localTrackName)
-            : undefined;
-          if (!trackId) continue;
+          let trackId: string;
+          if (!localTrackName) {
+            trackId = NO_TRACK_SPECIFIED_SYMBOL;
+          } else {
+            const mappedTrackId = waypointId
+              ? localTrackNameToTrackIdRef.current.get(waypointId)?.get(localTrackName)
+              : undefined;
+            // If the track name isn't found in infra, use the name itself as a virtual track ID
+            trackId = mappedTrackId ?? localTrackName;
+          }
           for (const occupation of trains) {
             const pacedId = formatEditoastIdToPacedTrainId(occupation.train_schedule_id);
             const train = trainsCollection[pacedId];
@@ -287,33 +299,58 @@ const useTrackOccupancy = ({
 
   const deployedWaypoints = useMemo(() => {
     const res: DeployedWaypoint[] = [];
+    const tracksData = tracksState.data ?? {};
 
-    if (tracksState.type === 'ok')
-      forEach(pathOperationalPointsState, (opState, waypointId) => {
-        const op = pathOpsByWaypointId.get(waypointId);
-        if (opState.selected && op?.opId) {
-          const tracks = tracksState.data[op.opId];
-          res.push({
-            waypointId,
-            operationalPointId: op.opId,
-            operationalPointPosition: op.position,
-            operationalPointName: op.extensions?.identifier?.name || undefined,
-            zones: opState.zones.data?.map((zone) => {
-              const trainStationLabels = trainsStationLabelsRef.current[zone.trainId];
-              return {
-                ...zone,
-                originStation: extractStationLabel(trainStationLabels?.origin, t),
-                destinationStation: extractStationLabel(trainStationLabels?.destination, t),
-              };
-            }),
-            loading: opState.zones.type === 'loading',
-            tracks,
-          });
-        }
-      });
+    forEach(pathOperationalPointsState, (opState, waypointId) => {
+      const op = pathOpsByWaypointId.get(waypointId);
+      if (opState.selected && op) {
+        const infraTracks = tracksData[waypointId] || [];
+        const infraTrackIds = new Set(infraTracks.map((track) => track.id));
+        const virtualTrackIds = new Set<string>();
+        const trackMapping = localTrackNameToTrackIdRef.current.get(waypointId);
+
+        // Remap zones whose trackId is a local_track_name stored before the infra mapping was
+        // ready (race condition between fetchTrackOccupancy and loadAllTracks). Once the infra
+        // mapping is available via localTrackNameToTrackIdRef, resolve them to the real track
+        // section ID so zones land on the correct infra track row. Also collect virtual tracks
+        // (IDs still not found in infra after remapping).
+        const resolvedZones = opState.zones.data?.map((zone) => {
+          // Paced-train occurrences have OccurrenceId zone IDs, but labels are stored under
+          // the parent PacedTrainId — use toOwnerTimetableItemId to resolve both cases.
+          const trainStationLabels =
+            trainsStationLabelsRef.current[toOwnerTimetableItemId(zone.trainId)];
+          const withLabels = {
+            ...zone,
+            originStation: extractStationLabel(trainStationLabels?.origin, t),
+            destinationStation: extractStationLabel(trainStationLabels?.destination, t),
+          };
+          if (!infraTrackIds.has(zone.trackId) && trackMapping) {
+            const remappedId = trackMapping.get(zone.trackId);
+            if (remappedId) {
+              if (!infraTrackIds.has(remappedId)) virtualTrackIds.add(remappedId);
+              return { ...withLabels, trackId: remappedId };
+            }
+          }
+          if (!infraTrackIds.has(zone.trackId)) virtualTrackIds.add(zone.trackId);
+          return withLabels;
+        });
+
+        const virtualTracks: Track[] = [...virtualTrackIds].map((id) => ({ id, name: id }));
+
+        res.push({
+          waypointId,
+          operationalPointId: op.opId ?? waypointId,
+          operationalPointPosition: op.position,
+          operationalPointName: op.extensions?.identifier?.name || undefined,
+          zones: resolvedZones,
+          loading: opState.zones.type === 'loading',
+          tracks: [...infraTracks, ...virtualTracks],
+        });
+      }
+    });
 
     return res;
-  }, [pathOperationalPointsState, pathOpsByWaypointId, t]);
+  }, [pathOperationalPointsState, pathOpsByWaypointId, tracksState, t]);
 
   const toggleWaypoint = useCallback(
     (waypointId: string, selectedState?: boolean) => {
@@ -333,7 +370,7 @@ const useTrackOccupancy = ({
           (ids) =>
             fetchTrackOccupancy(
               getOperationalPointReference(waypoint),
-              waypoint.opId,
+              waypointId,
               Object.fromEntries(ids.map((id) => [id, timetableItemProjectionsById.get(id)!]))
             ),
           {
@@ -385,7 +422,7 @@ const useTrackOccupancy = ({
 
           const trains = Object.fromEntries(Array.from(timetableItemProjectionsById.entries()));
 
-          fetchTrackOccupancy(opRef, waypoint.opId, trains).then((newZones) => {
+          fetchTrackOccupancy(opRef, waypointId, trains).then((newZones) => {
             if (!newZones.length) return;
 
             updatePathOperationalPointState(waypointId, (state) =>
@@ -450,14 +487,13 @@ const useTrackOccupancy = ({
 
       // Fetch new occupation if dragging has stopped:
       if (stopPanning) {
-        const draggedTrainEditoastId = draggedTrainId;
         await Promise.all(
           [...impactedPathOperationalPointIDs].map(async (waypointId) => {
             const newZones = await fetchTrackOccupancy(
               getOperationalPointReference(pathOpsByWaypointId.get(waypointId)),
-              pathOpsByWaypointId.get(waypointId)?.opId,
+              waypointId,
               {
-                [draggedTrainEditoastId]: newTrainData,
+                [draggedTrainId]: newTrainData,
               }
             );
 
@@ -489,30 +525,26 @@ const useTrackOccupancy = ({
 
   // Load all tracks from all waypoints on mount / waypoints update:
   useEffect(() => {
-    if (pathfindingHasFailed) {
-      return;
-    }
-
     let aborted = false;
 
     const pathOperationalPointsWithoutTracks = pathOperationalPoints.filter(
       (op) => !(tracksState.data || {})[op.waypointId]
     );
     const loadAllTracks = async (
-      operationalPointReferences: { operational_point: string; type: 'id' }[]
+      opsWithReferences: { waypointId: string; reference: OperationalPointReference }[]
     ) => {
       setTracksState((state) => ({ type: 'loading', data: state.data || {} }));
 
       try {
         const data = await postInfraByInfraIdMatchOperationalPoints({
           infraId,
-          body: { operational_point_references: operationalPointReferences },
+          body: { operational_point_references: opsWithReferences.map((o) => o.reference) },
         }).unwrap();
 
         if (aborted) return;
 
         const allTrackIds = data.related_operational_points.flatMap(([points]) =>
-          points.parts.map((part) => part.track)
+          points ? points.parts.map((part) => part.track) : []
         );
         const fetchedTrackSections = await getTrackSectionsByIds(allTrackIds);
 
@@ -521,22 +553,21 @@ const useTrackOccupancy = ({
           if (trackSections.id) trackSectionByTrackId.set(trackSections.id, trackSections);
         }
 
-        localTrackNameToTrackIdRef.current = new Map();
-
-        data.related_operational_points.forEach(([operationalPoint]) => {
+        opsWithReferences.forEach(({ waypointId: wId }, i) => {
+          const [operationalPoint] = data.related_operational_points[i];
           if (!operationalPoint) return;
           const mapping = new Map<string, string>();
           for (const part of operationalPoint.parts) {
             mapping.set(part.local_track_name, part.track);
           }
-          localTrackNameToTrackIdRef.current.set(operationalPoint.id, mapping);
+          localTrackNameToTrackIdRef.current.set(wId, mapping);
         });
 
         const loadedTracks = fromPairs(
-          operationalPointReferences.map(({ operational_point }, i) => [
-            operational_point,
+          opsWithReferences.map(({ waypointId: wId }, i) => [
+            wId,
             uniqBy(
-              data.related_operational_points[i][0].parts.map((part) => {
+              (data.related_operational_points[i][0]?.parts ?? []).map((part) => {
                 const trackPart = trackSectionByTrackId.get(part.track);
                 return {
                   id: part.track,
@@ -548,24 +579,32 @@ const useTrackOccupancy = ({
             ),
           ])
         );
-        setTracksState({
+        setTracksState((state) => ({
           type: 'ok',
-          data: loadedTracks,
-        });
+          data: { ...(state.data ?? {}), ...loadedTracks },
+        }));
       } catch (e) {
         console.error(e);
       }
     };
-    const waypointsPayload = pathOperationalPointsWithoutTracks.flatMap((op) =>
-      op.opId ? [{ operational_point: op.opId, type: 'id' as const }] : []
-    );
-    if (!waypointsPayload.length) return noop;
+    const waypointsPayload = pathOperationalPointsWithoutTracks.flatMap<{
+      waypointId: string;
+      reference: OperationalPointReference;
+    }>((op) => {
+      const reference = getOperationalPointReference(op);
+      if (!reference) return [];
+      return [{ waypointId: op.waypointId, reference }];
+    });
+    if (!waypointsPayload.length) {
+      setTracksState((state) => ({ type: 'ok', data: state.data || {} }));
+      return noop;
+    }
 
     loadAllTracks(waypointsPayload);
     return () => {
       aborted = true;
     };
-  }, [pathOperationalPoints, pathfindingHasFailed]);
+  }, [pathOperationalPoints]);
 
   // Update train data for all deployed waypoints on trains update:
   useEffect(() => {
@@ -620,7 +659,7 @@ const useTrackOccupancy = ({
       forEach(pathOperationalPointsState, async (_, waypointId) => {
         const newZones = await fetchTrackOccupancy(
           getOperationalPointReference(pathOpsByWaypointId.get(waypointId)),
-          pathOpsByWaypointId.get(waypointId)?.opId,
+          waypointId,
           Object.fromEntries(
             [...addedTrainIDs, ...modifiedTrainIDs].map((id) => [
               id,
@@ -708,15 +747,10 @@ const useTrackOccupancy = ({
                 },
               });
             } else if (itemLocation.operational_point.type === 'trigram') {
-              requests.push({
-                side,
-                timetableItemId: timetableItem.id,
-                opReference: {
-                  trigram: itemLocation.operational_point.trigram,
-                  secondary_code: itemLocation.operational_point.secondary_code,
-                  type: 'trigram',
-                },
-              });
+              trainsStationLabels[timetableItem.id] = {
+                ...trainsStationLabels[timetableItem.id],
+                [side]: { type: 'label', label: itemLocation.operational_point.trigram },
+              };
             } else if (itemLocation.operational_point.type === 'uic') {
               requests.push({
                 side,
