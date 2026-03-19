@@ -6,6 +6,7 @@ import {
   ArrivalTimeTypes,
   MarginType,
   StdcmStopTypes,
+  type ConsistData,
   type ExtremityPathStepType,
   type StdcmLinkedTrainExtremity,
   type StdcmSimulation,
@@ -123,6 +124,15 @@ export const stdcmConfSlice = createSlice({
       action: PayloadAction<OsrdStdcmConfState['towedRollingStockID']>
     ) {
       state.towedRollingStockID = action.payload;
+    },
+    updateInitialConsist(state: Draft<OsrdStdcmConfState>, action: PayloadAction<ConsistData>) {
+      state.rollingStockID = action.payload.rollingStockID;
+      state.towedRollingStockID = action.payload.towedRollingStockID;
+      state.totalMass = action.payload.totalMass;
+      state.totalLength = action.payload.totalLength;
+      state.maxSpeed = action.payload.maxSpeed;
+      state.loadingGauge = action.payload.loadingGauge;
+      state.speedLimitByTag = action.payload.speedLimitByTag;
     },
     resetMargins(state: Draft<OsrdStdcmConfState>) {
       state.margins = {
@@ -336,6 +346,7 @@ export const {
   updateMaxSpeed,
   updateLoadingGauge,
   updateTowedRollingStockID,
+  updateInitialConsist,
   resetMargins,
   updateGridMarginAfter,
   updateGridMarginBefore,

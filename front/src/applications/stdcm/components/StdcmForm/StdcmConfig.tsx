@@ -9,19 +9,14 @@ import { useSelector } from 'react-redux';
 import { extractMarkersInfo } from 'applications/stdcm/utils';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import DefaultBaseMap from 'common/Map/DefaultBaseMap';
-import { useOsrdConfActions } from 'common/osrdContext';
 import useWorkerStatus from 'modules/pathfinding/hooks/useWorkerStatus';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 import {
   resetMargins,
   restoreStdcmConfig,
+  updateInitialConsist,
   updateStdcmPathStep,
-  updateTotalMass,
-  updateTotalLength,
-  updateMaxSpeed,
-  updateLoadingGauge,
-  updateTowedRollingStockID,
 } from 'reducers/osrdconf/stdcmConf';
 import {
   getOperationalPoints,
@@ -140,17 +135,9 @@ const StdcmConfig = ({
     maxSpeed,
   };
 
-  const { updateRollingStockID, updateSpeedLimitByTag } = useOsrdConfActions();
-
-  const onConsistChange = useCallback(
+  const onInitialConsistChange = useCallback(
     (newConsist: ConsistData) => {
-      dispatch(updateRollingStockID(newConsist.rollingStockID));
-      dispatch(updateTowedRollingStockID(newConsist.towedRollingStockID));
-      dispatch(updateTotalMass(newConsist.totalMass));
-      dispatch(updateTotalLength(newConsist.totalLength));
-      dispatch(updateMaxSpeed(newConsist.maxSpeed));
-      dispatch(updateLoadingGauge(newConsist.loadingGauge));
-      dispatch(updateSpeedLimitByTag(newConsist.speedLimitByTag));
+      dispatch(updateInitialConsist(newConsist));
     },
     [dispatch]
   );
@@ -357,7 +344,7 @@ const StdcmConfig = ({
               loadingGauge: loadingGaugeType,
               speedLimitByTag,
             }}
-            onConsistChange={onConsistChange}
+            onConsistChange={onInitialConsistChange}
           />
           <div className="stdcm__separator" />
           <StdcmOrigin disabled={disabled} onItineraryChange={onItineraryChange} />
