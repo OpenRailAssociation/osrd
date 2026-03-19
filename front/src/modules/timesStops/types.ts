@@ -3,6 +3,8 @@ import type { TimeString } from 'common/types';
 import type { SuggestedOP } from 'modules/timetableItem/types';
 import type { Duration } from 'utils/duration';
 
+import type { MarginUnit } from './consts';
+
 export type TimeExtraDays = {
   time: TimeString;
   daySinceDeparture?: number;
@@ -52,11 +54,11 @@ export type TimesStopsRowNew = {
   powerRestriction: string | null;
 
   // Margins
-  requestedTheoreticalMargin: string | null;
-  isTheoreticalMarginBoundary: boolean;
-  computedTheoreticalMarginSeconds: number | null;
-  realMargin: Duration | null;
-  marginsDifference: Duration | null;
+  requestedTheoreticalMargin: MarginValue | undefined;
+  isTheoreticalMarginBoundary: boolean | undefined;
+  computedTheoreticalMarginSeconds: MarginValue | undefined;
+  realMargin: MarginValue | undefined;
+  marginsDifference: MarginValue | undefined;
 
   // Travel Times
   timeFromPreviousOp: Duration | null;
@@ -137,16 +139,53 @@ export type ReceptionSignalUpdate = {
   value: ReceptionSignal | undefined;
 };
 
+export type RequestedMarginUpdate = {
+  row: TimesStopsRowNew;
+  field: 'requestedTheoreticalMargin';
+  value: MarginValue | null;
+};
+
 export type CellUpdate =
   | ArrivalUpdate
   | StopDurationUpdate
   | DepartureUpdate
   | ReceptionSignalUpdate;
+// | RequestedMarginUpdate; // TODO: properly implement the cell update for requestedTheoreticalMargin
 
 export type OptimisticEdit =
   | { field: 'requestedArrival'; value: Date | null }
   | { field: 'requestedDeparture'; value: Date | null }
   | { field: 'stopDuration'; value: Duration | null }
   | { field: 'receptionSignal'; value: ReceptionSignal | undefined };
+// | { field: 'requestedTheoreticalMargin'; value: MarginValue | null }; // TODO: properly implement the optimistic edit for requestedTheoreticalMargin
 
 export type PendingEdit = OptimisticEdit & { rowId: string };
+
+export type MarginUnitType = (typeof MarginUnit)[keyof typeof MarginUnit];
+
+export type MarginValue = {
+  value: number;
+  unit: MarginUnitType;
+};
+
+export type Margins<T = MarginValue> = {
+  theoreticalMargin?: T;
+  isTheoreticalMarginBoundary?: boolean;
+  theoreticalMarginSeconds?: T;
+  calculatedMargin?: T;
+  diffMargins?: T;
+};
+
+export type MarginsLegacyTable = Margins<string>;
+
+type MarginsCoreBase = {
+  theoreticalMargin: MarginValue;
+  isBoundary: boolean;
+};
+
+export type MarginsCoreComputed = MarginsCoreBase & {
+  provisionalLostTime: number;
+  finalLostTime: number;
+};
+
+export type MarginsCore = null | MarginsCoreBase | MarginsCoreComputed;

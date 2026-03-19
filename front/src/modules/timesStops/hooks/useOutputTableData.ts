@@ -21,7 +21,7 @@ import { Duration } from 'utils/duration';
 
 import { ARRIVAL_TIME_ACCEPTABLE_ERROR } from '../consts';
 import { computeInputDatetimes } from '../helpers/arrivalTime';
-import computeMargins, { getTheoreticalMargins } from '../helpers/computeMargins';
+import { computeMarginsLegacyTable, getTheoreticalMargins } from '../helpers/computeMargins';
 import { formatSchedule } from '../helpers/scheduleData';
 import { getOperationalPointName } from '../helpers/utils';
 import type { TimesStopsRow } from '../types';
@@ -111,7 +111,7 @@ const useOutputTableData = (
           theoreticalMarginSeconds,
           calculatedMargin,
           diffMargins,
-        } = computeMargins(
+        } = computeMarginsLegacyTable(
           theoreticalMargins,
           selectedTrain,
           scheduleByAt,

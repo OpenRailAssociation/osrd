@@ -95,7 +95,9 @@ export const useTimesStopsColumns = <T extends TimesStopsRow>(
               ...fixedWidth(90),
             },
             {
-              ...disabledTextColumn('calculatedMargin', t('realMargin'), { alignRight: true }),
+              ...disabledTextColumn('calculatedMargin', t('realMargin'), {
+                alignRight: true,
+              }),
               headerClassName: 'padded-header',
               ...fixedWidth(90),
             },
