@@ -5,7 +5,6 @@ import { ArrowSwitch, FrameAll, Plus } from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';
 import cx from 'classnames';
 import type { Position } from 'geojson';
-import { compact } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -387,31 +386,33 @@ const ItineraryModal = ({
   };
 
   const buildPathSteps = (steps: PathStepV2[], metadataById: Map<string, PathStepMetadata>) =>
-    steps.map<PathStep | null>((step) => {
-      if (!step.location) return null;
+    steps
+      .filter((step) => step.location !== null)
+      .map<PathStep>((step) => {
+        const metadata = metadataById.get(step.id);
 
-      const metadata = metadataById.get(step.id);
-      if (!metadata || metadata.isInvalid) return null;
+        const baseStep = {
+          id: step.id,
+          location: step.location!,
+          arrival: step.arrival,
+          stopFor: step.stopFor,
+          theoreticalMargin: step.theoreticalMargin ?? undefined,
+          receptionSignal: step.receptionSignal ?? undefined,
+        };
 
-      const coordinates =
-        metadata.type === 'trackOffset' ? metadata.coordinates : metadata.parts[0]?.coordinates;
+        if (!metadata || metadata.isInvalid) {
+          return { ...baseStep, isInvalid: true };
+        }
 
-      const secondary_code = metadata.type === 'opRef' ? metadata.secondaryCode : undefined;
-
-      return {
-        id: step.id,
-        location: step.location,
-        arrival: step.arrival,
-        stopFor: step.stopFor,
-        theoreticalMargin: step.theoreticalMargin ?? undefined,
-        receptionSignal: step.receptionSignal ?? undefined,
-
-        name: metadata.type === 'opRef' ? metadata.name : undefined,
-        uic: metadata.type === 'opRef' ? metadata.uic : undefined,
-        secondary_code,
-        coordinates,
-      };
-    });
+        return {
+          ...baseStep,
+          name: metadata.type === 'opRef' ? metadata.name : undefined,
+          uic: metadata.type === 'opRef' ? metadata.uic : undefined,
+          secondary_code: metadata.type === 'opRef' ? metadata.secondaryCode : undefined,
+          coordinates:
+            metadata.type === 'trackOffset' ? metadata.coordinates : metadata.parts[0]?.coordinates,
+        };
+      });
 
   const clearStep = (stepId: string) => {
     setInputForStep(stepId, '');
@@ -426,36 +427,31 @@ const ItineraryModal = ({
     const filledSteps = pathSteps.filter((step) => !isEmptyStep(step, getInputForStep(step.id)));
     const updatedPathSteps = buildPathSteps(filledSteps, pathStepsMetadataById);
 
-    // No step should be null when reverseItinerary is called (as start and arrival need to be defined), so compact should let the array unchanged but constrain the type
-    const cPathSteps = compact(updatedPathSteps);
+    if (updatedPathSteps.length < 2) return;
 
-    if (cPathSteps.length < 2) return;
-
-    launchPathfinding(reversePathSteps(cPathSteps));
+    launchPathfinding(reversePathSteps(updatedPathSteps));
   };
-
   const submitItinerary = () => {
     setSubmitAttempted(true);
     if (isNameEmpty) return;
-    if (locatedStepsCount < 2) {
-      return;
-    }
 
-    const filledSteps = pathSteps.filter((step) => !isEmptyStep(step, getInputForStep(step.id)));
-    if (filledSteps.length < 2) return;
-
-    const stepsWithStopAtDestination = filledSteps.map((step, i) =>
-      i === filledSteps.length - 1 ? { ...step, stopFor: new Duration({ minutes: 0 }) } : step
+    const stepsWithLocationOrInput = pathSteps.filter(
+      (step) => !isEmptyStep(step, getInputForStep(step.id))
     );
+    if (stepsWithLocationOrInput.length < 2) return;
 
-    const updatedPathSteps = buildPathSteps(stepsWithStopAtDestination, pathStepsMetadataById);
+    const stepsWithStopAtDestination = stepsWithLocationOrInput.map((step, i) =>
+      i === stepsWithLocationOrInput.length - 1
+        ? { ...step, stopFor: new Duration({ minutes: 0 }) }
+        : step
+    );
+    //TODO this variable name should be changed when we no longer have to convert from v2 to v1 for path steps
+    const pathStepsFromV2 = buildPathSteps(stepsWithStopAtDestination, pathStepsMetadataById);
 
-    const compacted = compact(updatedPathSteps);
+    if (pathStepsFromV2.length < 2) return;
 
-    if (compacted.length < 2) return;
-
-    dispatch(updatePathSteps(compacted));
-    launchPathfinding(compacted, rollingStockId, { isInitialization: true });
+    dispatch(updatePathSteps(pathStepsFromV2));
+    launchPathfinding(pathStepsFromV2, rollingStockId, { isInitialization: true });
     closeModal();
   };
 

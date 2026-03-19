@@ -41,7 +41,15 @@ const Vias = ({ zoomToFeaturePoint }: ViasProps) => {
             >
               <small className="font-weight-bold text-muted mr-1">{index + 1}</small>
               <small data-testid="via-dropped-name" className="mr-1 text-nowrap">
-                {`${via.name || (via.positionOnPath && `KM ${(Math.round(via.positionOnPath) / 1000000).toFixed(3)}`) || t('unavailableDistance')}`}
+                {`${
+                  via.name ||
+                  ('operational_point' in via.location &&
+                    via.location.operational_point.type === 'trigram' &&
+                    via.location.operational_point.trigram) ||
+                  (via.positionOnPath &&
+                    `KM ${(Math.round(via.positionOnPath) / 1000000).toFixed(3)}`) ||
+                  t('unavailableDistance')
+                }`}
               </small>
               {'operational_point' in via.location &&
                 via.location.operational_point.type !== 'id' &&
