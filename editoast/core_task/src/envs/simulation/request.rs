@@ -10,7 +10,7 @@ use crate::Task;
 use crate::envs::pathfinding;
 
 use super::SimulationKey;
-use super::SimulationWaypointSchedule;
+use super::SimulationWaypoint;
 
 pub(super) fn build_request(
     core_env: &CoreEnv,
@@ -70,7 +70,7 @@ pub(super) fn build_request(
 
     let mut schedule = Vec::new();
     for (i, point) in params.schedule().iter().enumerate() {
-        if let SimulationWaypointSchedule::Stop {
+        if let SimulationWaypoint::ScheduleItem {
             arrival_at,
             stop_for,
             reception_signal,
@@ -145,7 +145,7 @@ mod tests {
     use crate::envs::simulation;
     use crate::envs::simulation::SimulationTrain;
     use crate::envs::simulation::SimulationTrainParameters;
-    use crate::envs::simulation::SimulationWaypointSchedule;
+    use crate::envs::simulation::SimulationWaypoint;
 
     /// Simple request with only schedule items
     #[test]
@@ -188,12 +188,12 @@ mod tests {
         builder.push_waypoint(
             path_items[0].clone(),
             NonBlankString::from("a"),
-            SimulationWaypointSchedule::PassBy,
+            SimulationWaypoint::PathItem,
         );
         builder.push_waypoint(
             path_items[1].clone(),
             NonBlankString::from("b"),
-            SimulationWaypointSchedule::Stop {
+            SimulationWaypoint::ScheduleItem {
                 arrival_at: Some(300),
                 stop_for: 0,
                 reception_signal: Default::default(),
@@ -285,7 +285,7 @@ mod tests {
             builder.push_waypoint(
                 path_items[i].clone(),
                 NonBlankString::from(i.to_string()),
-                SimulationWaypointSchedule::Stop {
+                SimulationWaypoint::ScheduleItem {
                     arrival_at: *arrival,
                     stop_for: 0,
                     reception_signal: Default::default(),
@@ -417,12 +417,12 @@ mod tests {
         builder.push_waypoint(
             PathWaypointAlternatives::from_iter([]),
             NonBlankString::from("a"),
-            SimulationWaypointSchedule::PassBy,
+            SimulationWaypoint::PathItem,
         );
         builder.push_waypoint(
             PathWaypointAlternatives::from_iter([]),
             NonBlankString::from("b"),
-            SimulationWaypointSchedule::Stop {
+            SimulationWaypoint::ScheduleItem {
                 arrival_at: Some(300),
                 stop_for: 0,
                 reception_signal: Default::default(),

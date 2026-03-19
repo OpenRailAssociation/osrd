@@ -430,12 +430,12 @@ pub(crate) mod test_data {
         builder.push_waypoint(
             pathfinding::PathWaypointAlternatives::from_iter([TrackOffset::new("id", id as u64)]),
             NonBlankString::from("start"),
-            SimulationWaypointSchedule::PassBy,
+            SimulationWaypoint::PathItem,
         );
         builder.push_waypoint(
             pathfinding::PathWaypointAlternatives::from_iter([TrackOffset::new("a", 42)]),
             NonBlankString::from("a"),
-            SimulationWaypointSchedule::Stop {
+            SimulationWaypoint::ScheduleItem {
                 arrival_at: Some(1200),
                 stop_for: 60,
                 reception_signal: Default::default(),
@@ -447,7 +447,7 @@ pub(crate) mod test_data {
                 TrackOffset::new("bis", 34),
             ]),
             NonBlankString::from("b"),
-            SimulationWaypointSchedule::Stop {
+            SimulationWaypoint::ScheduleItem {
                 arrival_at: None,
                 stop_for: 120,
                 reception_signal: Default::default(),
@@ -456,7 +456,7 @@ pub(crate) mod test_data {
         builder.push_waypoint(
             pathfinding::PathWaypointAlternatives::from_iter([TrackOffset::new("finish", 44)]),
             NonBlankString::from("finish"),
-            SimulationWaypointSchedule::Stop {
+            SimulationWaypoint::ScheduleItem {
                 arrival_at: Some(2400),
                 stop_for: 0,
                 reception_signal: Default::default(),

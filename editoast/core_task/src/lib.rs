@@ -16,7 +16,7 @@ pub use envs::simulation::SimulationEnv;
 pub use envs::simulation::SimulationOutput;
 pub use envs::simulation::SimulationTrain;
 pub use envs::simulation::SimulationTrainParameters;
-pub use envs::simulation::SimulationWaypointSchedule;
+pub use envs::simulation::SimulationWaypoint;
 
 use futures::stream;
 use itertools::Itertools as _;
