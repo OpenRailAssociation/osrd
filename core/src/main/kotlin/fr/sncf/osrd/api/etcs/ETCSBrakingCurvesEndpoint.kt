@@ -181,8 +181,7 @@ class ETCSBrakingCurvesEndpoint(
     ): Envelope {
         val speedLimitDistanceRangeMap = rawMrsp.toDistanceRangeMap(beginPos, endPos)
         val mrspParts = mutableListOf<EnvelopePart>()
-        for (entry in speedLimitDistanceRangeMap) {
-            val speedLimitProperty = entry.value
+        speedLimitDistanceRangeMap.forEach { lower, upper, speedLimitProperty ->
             val speed = speedLimitProperty.speed.metersPerSecond
             val speedLimitSource = speedLimitProperty.source
             val attrs: MutableList<SelfTypeHolder> = mutableListOf(EnvelopeProfile.CONSTANT_SPEED)
@@ -190,7 +189,7 @@ class ETCSBrakingCurvesEndpoint(
             mrspParts.add(
                 EnvelopePart.generateTimes(
                     attrs,
-                    doubleArrayOf(entry.lower.meters, entry.upper.meters),
+                    doubleArrayOf(lower.meters, upper.meters),
                     doubleArrayOf(speed, speed),
                 )
             )

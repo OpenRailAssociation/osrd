@@ -532,8 +532,10 @@ class RawInfraImpl(
 
         val trainSpeedLimitTagDescriptor = speedLimitTagPool[trainTag]
 
-        for (entry in trackChunkPool[trackChunk.value].speedSections.get(trackChunk.direction)) {
-            val speedSection = entry.value
+        trackChunkPool[trackChunk.value].speedSections.get(trackChunk.direction).forEach {
+            lower,
+            upper,
+            speedSection ->
             val infraTagSpeedAndSource =
                 getInfraTagSpeedAndSource(speedSection, trainTag, trainSpeedLimitTagDescriptor)
 
@@ -563,7 +565,7 @@ class RawInfraImpl(
                         if (trainTag != null) SpeedLimitSource.UnknownTag() else null,
                     )
                 }
-            res.put(entry.lower, entry.upper, allowedSpeedAndTag)
+            res.put(lower, upper, allowedSpeedAndTag)
         }
         return res
     }

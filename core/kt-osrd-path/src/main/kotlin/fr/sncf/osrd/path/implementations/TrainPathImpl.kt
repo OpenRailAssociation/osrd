@@ -360,10 +360,10 @@ data class TrainPathImpl(
             if (dirChunk.direction == Direction.INCREASING) return data
             val chunkLength = rawInfra.getTrackChunkLength(dirChunk.value).distance
             val res = distanceRangeMapOf<T>()
-            for (entry in data) {
-                assert(0.meters <= entry.lower && entry.lower <= chunkLength)
-                assert(0.meters <= entry.upper && entry.upper <= chunkLength)
-                res.put(chunkLength - entry.upper, chunkLength - entry.lower, entry.value)
+            data.forEach { lower, upper, value ->
+                assert(0.meters <= lower && lower <= chunkLength)
+                assert(0.meters <= upper && upper <= chunkLength)
+                res.put(chunkLength - upper, chunkLength - lower, value)
             }
             return res
         }

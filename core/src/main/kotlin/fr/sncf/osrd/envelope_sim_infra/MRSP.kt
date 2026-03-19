@@ -86,11 +86,10 @@ fun computeMRSP(
     val speedLimitProperties =
         if (useSpeedLimits) path.getSpeedLimitProperties(trainTag, temporarySpeedLimitManager)
         else distanceRangeMapOf()
-    for (speedLimitPropertyRange in speedLimitProperties) {
+    speedLimitProperties.forEach { lowerSpeedLimitRange, upperSpeedLimitRange, speedLimitProp ->
         // Compute where this limit is active from and to
-        val start = toMeters(speedLimitPropertyRange.lower)
-        val end = min(pathLength, offset + toMeters(speedLimitPropertyRange.upper))
-        val speedLimitProp = speedLimitPropertyRange.value
+        val start = toMeters(lowerSpeedLimitRange)
+        val end = min(pathLength, offset + toMeters(upperSpeedLimitRange))
         val speed = toMetersPerSecond(speedLimitProp.speed)
         val attrs =
             mutableListOf<SelfTypeHolder>(
@@ -126,8 +125,7 @@ fun computeMRSP(
 
     // Add safety speeds
     if (useSpeedLimits && safetySpeedRanges != null) {
-        for (range in safetySpeedRanges) {
-            val speed = range.value
+        safetySpeedRanges.forEach { lower, upper, speed ->
             val newAttrs =
                 listOf<SelfTypeHolder>(
                     EnvelopeProfile.CONSTANT_SPEED,
@@ -135,8 +133,8 @@ fun computeMRSP(
                 )
             addSpeedSection(
                 builder,
-                range.lower,
-                Distance.min(range.upper, pathLength.meters),
+                lower,
+                Distance.min(upper, pathLength.meters),
                 speed,
                 newAttrs,
                 speedLimitProperties,
@@ -155,11 +153,11 @@ fun addSpeedSection(
     propertyRangeMap: DistanceRangeMap<SpeedLimitProperty>,
 ) {
     val propsRanges = makeSpeedLimitAttributes(lower, upper, propertyRangeMap, attrs)
-    for (propsRange in propsRanges) {
+    propsRanges.forEach { lower, upper, value ->
         builder.addPart(
             EnvelopePart.generateTimes(
-                propsRange.value,
-                doubleArrayOf(propsRange.lower.meters, propsRange.upper.meters),
+                value,
+                doubleArrayOf(lower.meters, upper.meters),
                 doubleArrayOf(speed.metersPerSecond, speed.metersPerSecond),
             )
         )
@@ -183,12 +181,12 @@ fun makeSpeedLimitAttributes(
     // Add important attributes from the old speed ranges
     val attrsWithMissingRange = baseAttrs.toMutableList()
     attrsWithMissingRange.add(HasMissingSpeedTag)
-    for (oldRange in propertyRangeMap.subMap(lower, upper)) {
-        if (oldRange.value.source is UnknownTag) {
+    propertyRangeMap.subMap(lower, upper).forEach { lower, upper, value ->
+        if (value.source is UnknownTag) {
             // TODO: ideally, it shouldn't be this method's job to figure out which attributes
             // should be kept. Eventually we may look into reworking this, either with warnings or
             // by making the builder handle this
-            result.put(oldRange.lower, oldRange.upper, attrsWithMissingRange)
+            result.put(lower, upper, attrsWithMissingRange)
         }
     }
 

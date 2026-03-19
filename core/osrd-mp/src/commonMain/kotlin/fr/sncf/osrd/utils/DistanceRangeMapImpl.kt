@@ -196,7 +196,7 @@ data class DistanceRangeMapImpl<T>(
         updateFunction: (T, U) -> T,
     ) {
         for ((updateLower, updateUpper, updateValue) in update) {
-            for ((subMapLower, subMapUpper, subMapValue) in this.subMap(updateLower, updateUpper)) {
+            subMap(updateLower, updateUpper).forEach { subMapLower, subMapUpper, subMapValue ->
                 this.put(subMapLower, subMapUpper, updateFunction(subMapValue, updateValue))
             }
         }
@@ -256,7 +256,7 @@ data class DistanceRangeMapImpl<T>(
         // Add non-overlapping segments from `this`
         // It's the same thing except we never add the overlapping segments
         // Iterate over each range in the update map
-        for ((thisLower, thisUpper, thisValue) in this) {
+        forEach { thisLower, thisUpper, thisValue ->
             val subMap = update.subMap(thisLower, thisUpper)
 
             // Track segments that are part of the updated map but not intersecting with `this`
@@ -298,6 +298,20 @@ data class DistanceRangeMapImpl<T>(
     override fun clear() {
         bounds.clear()
         values.clear()
+    }
+
+    override fun forEach(callback: (lower: Distance, upper: Distance, value: T) -> Unit) {
+        for ((i, value) in values.withIndex()) {
+            if (value == null) continue
+            callback(bounds[i], bounds[i + 1], value)
+        }
+    }
+
+    override fun forEachWhile(callback: (lower: Distance, upper: Distance, value: T) -> Boolean) {
+        for ((i, value) in values.withIndex()) {
+            if (value == null) continue
+            if (!callback(bounds[i], bounds[i + 1], value)) break
+        }
     }
 
     /** Merges adjacent values, removes 0-length ranges */

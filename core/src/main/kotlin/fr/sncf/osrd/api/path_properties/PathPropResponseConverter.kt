@@ -122,9 +122,9 @@ private fun makeZones(path: TrainPath, rawInfra: RawSignalingInfra): RangeValues
 private fun <T> makeRangeValues(distanceRangeMap: DistanceRangeMap<T>): RangeValues<T> {
     val boundaries = mutableListOf<Offset<PhysicsPath>>()
     val values = mutableListOf<T>()
-    for (entry in distanceRangeMap) {
-        boundaries.add(Offset(entry.upper))
-        values.add(entry.value)
+    distanceRangeMap.forEach { _, upper, value ->
+        boundaries.add(Offset(upper))
+        values.add(value)
     }
     boundaries.removeLast()
     return RangeValues(boundaries, values)
@@ -134,25 +134,19 @@ private fun makeElectrificationMap(
     distanceRangeMap: DistanceRangeMap<out Any>
 ): DistanceRangeMap<Electrification> {
     val res = DistanceRangeMapImpl<Electrification>()
-    for (entry in distanceRangeMap) {
-        when (entry.value) {
+    distanceRangeMap.forEach { lower, upper, value ->
+        when (value) {
             // Is electrified
             is Set<*> -> {
-                val values = (entry.value as Set<*>)
                 res.put(
-                    entry.lower,
-                    entry.upper,
-                    if (values.isEmpty()) NonElectrified()
-                    else Electrified(values.first() as String),
+                    lower,
+                    upper,
+                    if (value.isEmpty()) NonElectrified() else Electrified(value.first() as String),
                 )
             }
             // Is neutral
             is NeutralSection -> {
-                res.put(
-                    entry.lower,
-                    entry.upper,
-                    Neutral((entry.value as NeutralSection).lowerPantograph),
-                )
+                res.put(lower, upper, Neutral(value.lowerPantograph))
             }
             else -> {
                 throw IllegalArgumentException(

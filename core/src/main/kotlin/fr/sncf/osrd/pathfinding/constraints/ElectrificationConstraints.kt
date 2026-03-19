@@ -41,8 +41,8 @@ data class ElectrificationConstraints(
             val res = HashSet<OffsetRange<Block>>()
             val voltages = path.getElectrification()
             val neutralSections = rangeSetFromMap(path.getNeutralSections())
-            for ((lower, upper, value) in voltages) {
-                if (lower == upper) continue
+            voltages.forEach { lower, upper, value ->
+                if (lower == upper) return@forEach
                 if (compatibleElectrification.intersect(value).isEmpty()) {
                     val voltageInterval = Range.open(lower, upper)
                     val blockingRanges =

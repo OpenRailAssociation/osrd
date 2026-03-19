@@ -44,9 +44,9 @@ fun distanceRangeSetOf(): DistanceRangeSet {
  */
 fun <T> DistanceRangeMap<T>.mapToRangeSet(f: (T) -> Boolean): DistanceRangeSet {
     val res = distanceRangeSetOf()
-    for (entry in this) {
-        if (f(entry.value)) {
-            res.put(entry.lower, entry.upper)
+    forEach { lower, upper, value ->
+        if (f(value)) {
+            res.put(lower, upper)
         }
     }
     return res

@@ -81,6 +81,15 @@ interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
 
     /** Clear the map */
     fun clear()
+
+    /**
+     * Run the callback for each entry in the map, on (lower, upper, value). Similar to iterating
+     * over entries, but without allocating a `RangeMapEntry` for each entry.
+     */
+    fun forEach(callback: (lower: Distance, upper: Distance, value: T) -> Unit)
+
+    /** Same as [forEach], with early exit if the callback returns false. */
+    fun forEachWhile(callback: (lower: Distance, upper: Distance, value: T) -> Boolean)
 }
 
 fun <T> distanceRangeMapOf(vararg entries: DistanceRangeMap.RangeMapEntry<T>): DistanceRangeMap<T> {
@@ -108,8 +117,8 @@ fun <T, R> filterIntersection(
     filter: DistanceRangeMap<R>,
 ): DistanceRangeMap<T> {
     val res = distanceRangeMapOf<T>()
-    for (range in filter) {
-        val filteredRange = mapToFilter.subMap(range.lower, range.upper)
+    filter.forEach { lower, upper, _ ->
+        val filteredRange = mapToFilter.subMap(lower, upper)
         res.putMany(filteredRange)
     }
     return res
