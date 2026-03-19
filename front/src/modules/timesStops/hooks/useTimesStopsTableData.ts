@@ -20,13 +20,14 @@ import type { Train } from 'reducers/osrdconf/types';
 import { getDisplayOnlyPathSteps } from 'reducers/simulationResults/selectors';
 import { Duration } from 'utils/duration';
 
-import { ARRIVAL_TIME_ACCEPTABLE_ERROR } from '../consts';
+import { ARRIVAL_TIME_ACCEPTABLE_ERROR, marginsUndefined } from '../consts';
+import { computeMargins, getTheoreticalMargins } from '../helpers/computeMargins';
 import {
   buildOpMatchParams,
   getOperationalPointName,
   receptionSignalToSignalBooleans,
 } from '../helpers/utils';
-import { type StepStatus, type TimesStopsRowNew } from '../types';
+import { type Margins, type StepStatus, type TimesStopsRowNew } from '../types';
 
 type BuildTableRowParams = {
   id: string;
@@ -45,6 +46,7 @@ type BuildTableRowParams = {
   isPathStep: boolean;
   shortSlipDistance?: boolean;
   closedSignal?: boolean;
+  margins?: Margins;
 };
 
 const buildTableRow = ({
@@ -64,6 +66,7 @@ const buildTableRow = ({
   isPathStep,
   shortSlipDistance,
   closedSignal,
+  margins,
 }: BuildTableRowParams): TimesStopsRowNew => {
   const requestedArrival = schedule?.arrival
     ? new Date(startDate.getTime() + Duration.parse(schedule.arrival).ms)
@@ -96,6 +99,14 @@ const buildTableRow = ({
       ? new Date(computedArrivalDate.getTime() + stopDuration.ms)
       : null;
 
+  const {
+    theoreticalMargin,
+    isTheoreticalMarginBoundary,
+    theoreticalMarginSeconds,
+    calculatedMargin,
+    diffMargins,
+  } = margins ?? marginsUndefined;
+
   let stepStatus: StepStatus = 'allHonored';
 
   if (invalidPathStep) {
@@ -124,11 +135,11 @@ const buildTableRow = ({
     closedSignal,
     shortSlipDistance,
     powerRestriction: null, // TODO : Implementation to be done with the integration of the new columns
-    requestedTheoreticalMargin: null, // TODO : Idem
-    isTheoreticalMarginBoundary: false, // TODO : Idem
-    computedTheoreticalMarginSeconds: null, // TODO : Idem
-    realMargin: null, // TODO : Idem
-    marginsDifference: null, // TODO : Idem
+    requestedTheoreticalMargin: theoreticalMargin,
+    isTheoreticalMarginBoundary: isTheoreticalMarginBoundary,
+    computedTheoreticalMarginSeconds: theoreticalMarginSeconds,
+    realMargin: calculatedMargin,
+    marginsDifference: diffMargins,
     timeFromPreviousOp: null, // TODO : Idem
     totalTravelTime: null, // TODO : Idem
   };
@@ -265,6 +276,13 @@ const useTimesStopsTableData = (
           stableIsValid &&
           stepIndex < selectedTrain.path.length - 1 &&
           !stablePathItemRespect?.margins[stepIndex + 1];
+        const margins = computeMargins(
+          getTheoreticalMargins(selectedTrain),
+          selectedTrain,
+          scheduleByAt,
+          stepIndex,
+          stablePathItemTimes
+        );
 
         const { shortSlipDistance, onStopSignal } = receptionSignalToSignalBooleans(
           schedule?.reception_signal
@@ -288,6 +306,7 @@ const useTimesStopsTableData = (
           isPathStep: true,
           shortSlipDistance,
           closedSignal: onStopSignal,
+          margins,
         });
 
         return [pathStep.id, row];

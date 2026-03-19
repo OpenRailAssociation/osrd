@@ -232,6 +232,8 @@ const TimesStopsOutput = ({
       updateReceptionSignal(row, signal)
     );
 
+  const handleRequestedMarginChange = () => {}; // TODO: properly handle requested margin change
+
   if (useNewTimesStopsTable) {
     return (
       <TimesStopsTable
@@ -243,6 +245,7 @@ const TimesStopsOutput = ({
         onStopDurationChange={handleStopDurationChange}
         onDepartureChange={handleDepartureChange}
         onReceptionSignalChange={handleReceptionSignalChange}
+        onRequestedMarginChange={handleRequestedMarginChange}
       />
     );
   }

@@ -4,7 +4,7 @@ import { describe, it, expect } from 'vitest';
 import type { ScheduleItem } from 'common/api/osrdEditoastApi';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 
-import computeMargins, { getTheoreticalMargins } from '../computeMargins';
+import { getTheoreticalMargins, computeMarginsLegacyTable } from '../computeMargins';
 
 describe('computeMargins', () => {
   const path = [
@@ -79,35 +79,45 @@ describe('computeMargins', () => {
     const train = { path, margins, schedule } as TimetableItem;
     const scheduleByAt: Record<string, ScheduleItem> = keyBy(train.schedule, 'at');
     const theoreticalMargins = getTheoreticalMargins(train);
-    expect(computeMargins(theoreticalMargins, train, scheduleByAt, 0, pathItemTimes)).toEqual({
+    expect(
+      computeMarginsLegacyTable(theoreticalMargins, train, scheduleByAt, 0, pathItemTimes)
+    ).toEqual({
       theoreticalMargin: '10 %',
       isTheoreticalMarginBoundary: true,
       theoreticalMarginSeconds: '20 s',
       calculatedMargin: '30 s',
       diffMargins: '10 s',
     });
-    expect(computeMargins(theoreticalMargins, train, scheduleByAt, 1, pathItemTimes)).toEqual({
+    expect(
+      computeMarginsLegacyTable(theoreticalMargins, train, scheduleByAt, 1, pathItemTimes)
+    ).toEqual({
       theoreticalMargin: undefined,
       isTheoreticalMarginBoundary: undefined,
       theoreticalMarginSeconds: undefined,
       calculatedMargin: undefined,
       diffMargins: undefined,
     });
-    expect(computeMargins(theoreticalMargins, train, scheduleByAt, 2, pathItemTimes)).toEqual({
+    expect(
+      computeMarginsLegacyTable(theoreticalMargins, train, scheduleByAt, 2, pathItemTimes)
+    ).toEqual({
       theoreticalMargin: '5 %',
       isTheoreticalMarginBoundary: true,
       theoreticalMarginSeconds: '15 s',
       calculatedMargin: '15 s',
       diffMargins: '0 s',
     });
-    expect(computeMargins(theoreticalMargins, train, scheduleByAt, 3, pathItemTimes)).toEqual({
+    expect(
+      computeMarginsLegacyTable(theoreticalMargins, train, scheduleByAt, 3, pathItemTimes)
+    ).toEqual({
       theoreticalMargin: undefined,
       isTheoreticalMarginBoundary: undefined,
       theoreticalMarginSeconds: undefined,
       calculatedMargin: undefined,
       diffMargins: undefined,
     });
-    expect(computeMargins(theoreticalMargins, train, scheduleByAt, 4, pathItemTimes)).toEqual({
+    expect(
+      computeMarginsLegacyTable(theoreticalMargins, train, scheduleByAt, 4, pathItemTimes)
+    ).toEqual({
       theoreticalMargin: undefined,
       isTheoreticalMarginBoundary: undefined,
       theoreticalMarginSeconds: undefined,

@@ -1,0 +1,53 @@
+.margin-cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+
+  .unit {
+    color: var(--grey30);
+    font-size: 0.625rem;
+    line-height: 9px;
+    text-align: right;
+    width: 100%;
+    cursor: pointer;
+
+    &:hover:not(&-active) {
+      color: var(--primary40);
+    }
+
+    &:hover {
+      color: var(--primary80);
+    }
+
+    &-selection {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+    }
+
+    &-active {
+      color: var(--grey90);
+    }
+
+    &-letter {
+      color: var(--grey50);
+    }
+  }
+
+  .input {
+    color: var(--primary60);
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    max-width: 32px;
+    text-align: center;
+    background: transparent;
+    outline: none;
+  }
+}
