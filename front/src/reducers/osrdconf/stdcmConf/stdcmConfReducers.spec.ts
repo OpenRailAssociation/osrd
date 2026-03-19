@@ -4,6 +4,7 @@ import {
   ArrivalTimeTypes,
   StdcmStopTypes,
   MarginType,
+  type ConsistData,
   type LinkedTrains,
   type StdcmSimulation,
 } from 'applications/stdcm/types';
@@ -14,6 +15,7 @@ import {
   resetStdcmConfig,
   updateGridMarginAfter,
   updateGridMarginBefore,
+  updateInitialConsist,
   updateMaxSpeed,
   updateStandardAllowance,
   updateStdcmPathStep,
@@ -238,6 +240,28 @@ describe('stdcmConfReducers', () => {
       const state = store.getState()[stdcmConfSlice.name];
       expect(state.loadingGauge).toEqual('GB');
     });
+  });
+
+  it('should handle updateInitialConsist', () => {
+    const consist: ConsistData = {
+      rollingStockID: 1,
+      towedRollingStockID: 2,
+      totalMass: 500,
+      totalLength: 400,
+      maxSpeed: 160,
+      loadingGauge: 'GB',
+      speedLimitByTag: 'some-tag',
+    };
+    const store = createStore();
+    store.dispatch(updateInitialConsist(consist));
+    const state = store.getState()[stdcmConfSlice.name];
+    expect(state.rollingStockID).toBe(1);
+    expect(state.towedRollingStockID).toBe(2);
+    expect(state.totalMass).toBe(500);
+    expect(state.totalLength).toBe(400);
+    expect(state.maxSpeed).toBe(160);
+    expect(state.loadingGauge).toBe('GB');
+    expect(state.speedLimitByTag).toBe('some-tag');
   });
 
   describe('StdcmPathStep updates', () => {
