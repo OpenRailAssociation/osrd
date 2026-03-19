@@ -40,7 +40,7 @@ pub struct SimulationConsist(pub PhysicsConsist);
 #[derive(Debug, educe::Educe)]
 #[educe(Hash, PartialEq, Eq)]
 pub struct SimulationTrainParameters {
-    schedule: Vec<SimulationWaypointSchedule>,
+    path_items: Vec<SimulationWaypoint>,
     power_restrictions: rangemap::RangeMap<PathWaypointIndex, String>,
     margins: rangemap::RangeMap<PathWaypointIndex, MarginValue>,
 
@@ -55,11 +55,11 @@ pub struct SimulationTrainParameters {
 
 /// Schedule information for a path waypoint
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum SimulationWaypointSchedule {
+pub enum SimulationWaypoint {
     /// No specific requirement
-    PassBy,
+    PathItem,
     /// The train must stop at this waypoint
-    Stop {
+    ScheduleItem {
         stop_for: u64,
         arrival_at: Option<u64>,
         reception_signal: ReceptionSignal,
@@ -75,7 +75,7 @@ impl SimulationTrainParameters {
         options: TrainScheduleOptions,
     ) -> Self {
         Self {
-            schedule: Default::default(),
+            path_items: Default::default(),
             power_restrictions: Default::default(),
             margins: Default::default(),
             initial_speed,
@@ -86,8 +86,8 @@ impl SimulationTrainParameters {
         }
     }
 
-    pub fn schedule(&self) -> &[SimulationWaypointSchedule] {
-        &self.schedule
+    pub fn schedule(&self) -> &[SimulationWaypoint] {
+        &self.path_items
     }
 
     pub fn power_restrictions(&self) -> &rangemap::RangeMap<PathWaypointIndex, String> {
@@ -119,7 +119,7 @@ impl SimulationTrainParameters {
     }
 
     fn is_empty(&self) -> bool {
-        self.schedule.is_empty() && self.power_restrictions.is_empty() && self.margins.is_empty()
+        self.path_items.is_empty() && self.power_restrictions.is_empty() && self.margins.is_empty()
     }
 }
 
@@ -167,7 +167,7 @@ pub struct SimulationTrain {
     pub(super) pathfinding_consist: PathfindingConsist,
     pub(super) parameters: SimulationTrainParameters,
     pub(super) path_constraints: PathfindingConstraints,
-    schedule_item_to_index: HashMap<NonBlankString, PathWaypointIndex>,
+    path_item_to_index: HashMap<NonBlankString, PathWaypointIndex>,
 }
 
 type PathWaypointIndex = usize;
@@ -189,13 +189,13 @@ impl SimulationTrain {
             path_constraints: PathfindingConstraints {
                 path_items: Vec::new(),
             },
-            schedule_item_to_index: HashMap::default(),
+            path_item_to_index: HashMap::default(),
         }
     }
 
     fn waypoints(&self) -> usize {
         let n = self.path_constraints.path_items.len();
-        debug_assert_eq!(n, self.parameters.schedule.len());
+        debug_assert_eq!(n, self.parameters.path_items.len());
         debug_assert!(
             self.parameters
                 .power_restrictions
@@ -215,12 +215,12 @@ impl SimulationTrain {
         &mut self,
         path_constraint: PathWaypointAlternatives,
         label: NonBlankString,
-        point: SimulationWaypointSchedule,
+        point: SimulationWaypoint,
     ) {
-        let index = self.parameters.schedule.len();
-        self.parameters.schedule.push(point);
+        let index = self.parameters.path_items.len();
+        self.parameters.path_items.push(point);
         self.path_constraints.path_items.push(path_constraint);
-        self.schedule_item_to_index.insert(label, index);
+        self.path_item_to_index.insert(label, index);
     }
 
     /// Sets a power restriction for a range of waypoints.
@@ -236,12 +236,12 @@ impl SimulationTrain {
         Q: Hash + Eq + ?Sized,
     {
         let begin_index = self
-            .schedule_item_to_index
+            .path_item_to_index
             .get(begin_label)
             .copied()
             .expect("only names already inserted through “push_waypoint” can be used");
         let end_index = self
-            .schedule_item_to_index
+            .path_item_to_index
             .get(end_label)
             .copied()
             .expect("only names already inserted through “push_waypoint” can be used");
@@ -268,12 +268,12 @@ impl SimulationTrain {
         Q: Hash + Eq + ?Sized,
     {
         let begin_index = self
-            .schedule_item_to_index
+            .path_item_to_index
             .get(begin_label)
             .copied()
             .expect("only names already inserted through “push_waypoint” can be used");
         let end_index = self
-            .schedule_item_to_index
+            .path_item_to_index
             .get(end_label)
             .copied()
             .expect("only names already inserted through “push_waypoint” can be used");
@@ -303,7 +303,7 @@ where
                             pathfinding_consist,
                             parameters,
                             path_constraints,
-                            schedule_item_to_index: _,
+                            path_item_to_index: _,
                         },
                     )| {
                         (
