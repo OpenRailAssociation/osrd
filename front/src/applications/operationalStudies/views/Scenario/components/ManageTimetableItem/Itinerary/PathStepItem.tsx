@@ -222,7 +222,9 @@ const PathStepItem = ({
 
   const comboBoxValue = useMemo(() => {
     // Don't show invalid points in the combobox - they'll be shown in the error message instead
-    if (inputValue !== undefined && pathStepMetadata?.isInvalid) return undefined;
+    if (shouldShowInvalidMessage) {
+      return '';
+    }
 
     if (inputValue !== undefined) return inputValue;
 
@@ -231,7 +233,7 @@ const PathStepItem = ({
     }
 
     return undefined;
-  }, [inputValue, pathStepMetadata]);
+  }, [shouldShowInvalidMessage, inputValue, pathStepMetadata]);
 
   const maxVisibleSuggestions = 8;
   const visibleSuggestions = opSuggestions.slice(0, maxVisibleSuggestions);
