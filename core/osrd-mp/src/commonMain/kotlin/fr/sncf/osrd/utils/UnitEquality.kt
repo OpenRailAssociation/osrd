@@ -1,6 +1,8 @@
 package fr.sncf.osrd.utils
 
 import kotlin.math.abs
+import kotlin.math.pow
+import kotlin.math.round
 
 // A position delta lower than this value will be considered zero
 // Going back and forth with Distance and double (meters) often causes 1e-3 errors,
@@ -37,6 +39,11 @@ fun isTimeStrictlyPositive(time: Double): Boolean {
     return time > TIME_EPSILON
 }
 
-private fun areDoublesEqual(a: Double, b: Double, delta: Double): Boolean {
+fun Double.round(decimals: Int = 1): Double {
+    val factor = 10.0.pow(decimals)
+    return round(this * factor) / factor
+}
+
+fun areDoublesEqual(a: Double, b: Double, delta: Double): Boolean {
     return abs(a - b) < delta
 }

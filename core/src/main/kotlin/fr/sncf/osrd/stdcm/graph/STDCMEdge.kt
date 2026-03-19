@@ -9,6 +9,7 @@ import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import java.lang.Double.isNaN
+import java.lang.ref.SoftReference
 
 data class STDCMEdge(
     val timeData: TimeData,
@@ -55,7 +56,10 @@ data class STDCMEdge(
     )
 
     /** Returns the node at the end of this edge */
-    fun getEdgeEnd(graph: STDCMGraph): STDCMNode {
+    fun getEdgeEnd(
+        graph: STDCMGraph,
+        cachedPrevEdges: Map<Double, SoftReference<STDCMEdge>> = mapOf(),
+    ): STDCMNode {
         val previousPlannedNodeRelativeTimeDiff = getPreviousPlannedNodeRelativeTimeDiff()
         val stepTracker = infraExplorer.getStepTracker()
         val newExplorer = infraExplorerWithNewEnvelope.clone()
@@ -66,47 +70,51 @@ data class STDCMEdge(
                 envelopeStartOffset,
                 envelopeStartOffset + length.distance,
             )
-        return if (!endAtStop) {
-            // We move on to the next block
-            STDCMNode(
-                timeData.withAddedTime(totalTime, null, null),
-                endSpeed,
-                newExplorer,
-                this,
-                null,
-                null,
-                null,
-                previousPlannedNodeRelativeTimeDiff,
-                graph.remainingTimeEstimator.invoke(this, null, stepTracker),
-                graph,
-            )
-        } else {
-            // New edge on the same block, after a stop
-            val nextStop =
-                stepTracker.iterateStepsInLookaheadBackwards().last { it.originalStep.stop }
-            val stopDuration = nextStop.originalStep.duration
-            val locationOnEdge = envelopeStartOffset + length.distance
+        val node =
+            if (!endAtStop) {
+                // We move on to the next block
+                STDCMNode(
+                    timeData.withAddedTime(totalTime, null, null),
+                    endSpeed,
+                    newExplorer,
+                    this,
+                    null,
+                    null,
+                    null,
+                    previousPlannedNodeRelativeTimeDiff,
+                    graph.remainingTimeEstimator.invoke(this, null, stepTracker),
+                    graph,
+                )
+            } else {
+                // New edge on the same block, after a stop
+                val nextStop =
+                    stepTracker.iterateStepsInLookaheadBackwards().last { it.originalStep.stop }
+                val stopDuration = nextStop.originalStep.duration
+                val locationOnEdge = envelopeStartOffset + length.distance
 
-            STDCMNode(
-                timeData.withAddedTime(
-                    totalTime,
-                    stopDuration,
-                    graph.delayManager.getMaxAdditionalStopDuration(
-                        infraExplorerWithNewEnvelope,
-                        getEdgeEndTime(),
+                STDCMNode(
+                    timeData.withAddedTime(
+                        totalTime,
+                        stopDuration,
+                        graph.delayManager.getMaxAdditionalStopDuration(
+                            infraExplorerWithNewEnvelope,
+                            getEdgeEndTime(),
+                        ),
                     ),
-                ),
-                endSpeed,
-                newExplorer,
-                this,
-                envelopeStartOffset + length.distance,
-                stopDuration,
-                nextStop.originalStep.plannedTimingData,
-                previousPlannedNodeRelativeTimeDiff,
-                graph.remainingTimeEstimator.invoke(this, locationOnEdge, stepTracker),
-                graph,
-            )
-        }
+                    endSpeed,
+                    newExplorer,
+                    this,
+                    envelopeStartOffset + length.distance,
+                    stopDuration,
+                    nextStop.originalStep.plannedTimingData,
+                    previousPlannedNodeRelativeTimeDiff,
+                    graph.remainingTimeEstimator.invoke(this, locationOnEdge, stepTracker),
+                    graph,
+                )
+            }
+        // Add cached previous edges if any.
+        node.addCachedPrevEdges(cachedPrevEdges)
+        return node
     }
 
     /**

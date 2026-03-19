@@ -1,6 +1,8 @@
 package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.envelope.Envelope
+import fr.sncf.osrd.utils.areDoublesEqual
+import fr.sncf.osrd.utils.round
 
 /**
  * This class contains all the methods used to backtrack in the graph. We need to backtrack to
@@ -20,24 +22,38 @@ class BacktrackingManager(private val graph: STDCMGraph) {
      * the new edge is invalid (for example if it would cause conflicts), returns null.
      */
     fun backtrack(edge: STDCMEdge, envelope: Envelope): STDCMEdge? {
-        if (edge.previousNode.previousEdge == null) {
+        val previousNode = edge.previousNode
+        val previousEdge = previousNode.previousEdge
+        if (previousEdge == null) {
             // First edge of the path
             assert(edge.beginSpeed == 0.0)
             return edge
         }
-        if (edge.previousNode.speed == edge.beginSpeed) {
+        if (areDoublesEqual(previousNode.speed, edge.beginSpeed, 1e-1)) {
             // No need to backtrack any further
             return edge
         }
 
-        // We try to create a new previous edge with the end speed we need
-        val previousEdge = edge.previousNode.previousEdge
+        // To limit caching and improve performance as much as possible, speed should be rounded to
+        // 1e-1. Deltas related to this small approximation can and will be handled by the stdcm
+        // post-processing.
+        val roundedEdgeBeginSpeed = edge.beginSpeed.round()
+        val cachedEdge = previousNode.getCachedPrevEdge(roundedEdgeBeginSpeed)
+        if (cachedEdge != null) {
+            // No need to backtrack any further
+            return edge
+        }
+
+        // We try to create a new previous edge with the rounded end speed we need
         val newPreviousEdge =
-            rebuildEdgeBackward(previousEdge, edge.beginSpeed)
+            rebuildEdgeBackward(previousEdge, roundedEdgeBeginSpeed)
                 ?: return null // No valid result was found
 
+        // Add new previous edge to existing node's cache
+        edge.previousNode.addCachedPrevEdge(newPreviousEdge)
+
         // Create the new edge
-        val newNode = newPreviousEdge.getEdgeEnd(graph)
+        val newNode = newPreviousEdge.getEdgeEnd(graph, edge.previousNode.cachedPrevEdges)
         return STDCMEdgeBuilder.fromNode(graph, newNode, edge.infraExplorer)
             .setEnvelope(envelope)
             .findEdgeSameNextOccupancy(edge.timeData.timeOfNextConflictAtLocation)

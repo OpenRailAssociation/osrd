@@ -510,7 +510,7 @@ class StopTests {
         assertEquals(
             resWithConflict.stopResults.first().duration,
             10_000 - resTravelTime,
-            2 * timeStep,
+            3 * timeStep,
         )
         occupancyTest(resWithConflict, occupancy)
     }
@@ -656,7 +656,7 @@ class StopTests {
         val arrivalTime =
             res.departureTime + res.envelope.totalTime + res.stopResults.first().duration
         assertTrue(res.departureTime >= 3_000.0)
-        assertEquals(15_000.0, arrivalTime, timeStep)
+        assertEquals(15_000.0, arrivalTime, 2 * timeStep)
     }
 
     /** Checks that we can shift the departure time even when there are stops around. */
