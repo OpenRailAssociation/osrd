@@ -49,7 +49,8 @@ RUN cd install \
 #######################
 FROM chef AS editoast_assets
 # build_pbf_glyphs requires a c++ compiler
-RUN apk --no-cache add build-base
+RUN apk --no-cache add build-base zlib-dev
+ENV RUSTFLAGS="-C target-feature=-crt-static"
 RUN cargo install spreet
 RUN cargo install build_pbf_glyphs
 COPY ./assets /assets
