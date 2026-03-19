@@ -14,9 +14,7 @@ import fr.sncf.osrd.utils.units.Distance
  */
 fun <T : Any> DistanceRangeMap<T>.toRangeMap(): RangeMap<Double, T> {
     val res = ImmutableRangeMap.builder<Double, T>()
-    for (entry in this) {
-        res.put(Range.closedOpen(entry.lower.meters, entry.upper.meters), entry.value)
-    }
+    forEach { lower, upper, value -> res.put(Range.closedOpen(lower.meters, upper.meters), value) }
     return res.build()
 }
 
@@ -34,8 +32,8 @@ fun <T : Any> DistanceRangeMapImpl.Companion.toRangeMap(
     distanceRangeMap: DistanceRangeMap<T>
 ): RangeMap<Distance, T> {
     val rangeMap = TreeRangeMap.create<Distance, T>()
-    for (entry in distanceRangeMap) {
-        rangeMap.put(Range.closed(entry.lower, entry.upper), entry.value)
+    distanceRangeMap.forEach { lower, upper, value ->
+        rangeMap.put(Range.closed(lower, upper), value)
     }
     return rangeMap
 }

@@ -23,9 +23,9 @@ object EnvelopeTrainPath {
         val gradePositions = DoubleArrayList()
         gradePositions.add(0.0)
         val gradeValues = DoubleArrayList()
-        for (range in path.getGradients()) {
-            gradePositions.add(toMeters(range.upper))
-            gradeValues.add(range.value)
+        path.getGradients().forEach { _, upper, value ->
+            gradePositions.add(toMeters(upper))
+            gradeValues.add(value)
         }
 
         val distanceElectrificationMap = buildElectrificationMap(path)
@@ -72,8 +72,8 @@ object EnvelopeTrainPath {
         map: DistanceRangeMap<Electrification>
     ): ImmutableRangeMap<Double, Electrification> {
         val res = TreeRangeMap.create<Double, Electrification>()
-        for (entry in map) {
-            res.put(Range.closed(toMeters(entry.lower), toMeters(entry.upper)), entry.value)
+        map.forEach { lower, upper, value ->
+            res.put(Range.closed(toMeters(lower), toMeters(upper)), value)
         }
         return ImmutableRangeMap.copyOf(res)
     }

@@ -444,15 +444,16 @@ fun parseNeutralRanges(
 
                 val previousDirNeutralSections =
                     chunkDirNeutralSections.subMap(dirChunkLower, dirChunkUpper)
-                for (previousNeutralSection in previousDirNeutralSections) {
-                    if (previousNeutralSection.value != incomingNeutralSection) {
+                previousDirNeutralSections.forEachWhile { _, _, value ->
+                    if (value != incomingNeutralSection) {
                         logger.warn(
                             "Neutral-section conflict on track-range $track.$dir" +
                                 "[$chunkLower, $chunkUpper]: " +
-                                "${previousNeutralSection.value} != $incomingNeutralSection"
+                                "$value != $incomingNeutralSection"
                         )
-                        break
+                        return@forEachWhile false
                     }
+                    true
                 }
 
                 chunkDirNeutralSections.put(dirChunkLower, dirChunkUpper, incomingNeutralSection)
