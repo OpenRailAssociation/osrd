@@ -545,24 +545,31 @@ mod tests {
         use futures::StreamExt as _;
         let simulations = simenv
             .into_stream(Arc::new(Mutex::new(vk.get_connection().await.unwrap())))
-            .collect::<Vec<_>>()
+            .flat_map(
+                |Correlated {
+                     correlation_key,
+                     data,
+                 }| {
+                    futures::stream::iter(
+                        correlation_key
+                            .into_iter()
+                            .map(move |train| (train, data.clone())),
+                    )
+                },
+            )
+            .collect::<HashMap<_, _>>()
             .await;
         assert_eq!(
-            simulations,
-            vec![
-                Correlated::new(
-                    TrainSet::from([1usize]),
-                    Ok(SimulationOutput::Success(
-                        serde_json::from_value(simulation_success(1)).unwrap()
-                    ))
-                ),
-                Correlated::new(
-                    TrainSet::from([2usize]),
-                    Ok(SimulationOutput::Success(
-                        serde_json::from_value(simulation_success(2)).unwrap()
-                    ))
-                )
-            ]
+            *simulations.get(&1).unwrap(),
+            Ok(SimulationOutput::Success(
+                serde_json::from_value(simulation_success(1)).unwrap()
+            )),
+        );
+        assert_eq!(
+            *simulations.get(&2).unwrap(),
+            Ok(SimulationOutput::Success(
+                serde_json::from_value(simulation_success(2)).unwrap()
+            ))
         );
     }
 }
