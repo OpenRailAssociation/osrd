@@ -141,7 +141,7 @@ tracing = { version = "0.1.44", default-features = false, features = [
 tracing-opentelemetry = { version = "0.32.1", default-features = false, features = [
   "tracing-log",
 ] }
-tracing-subscriber = { version = "0.3.22", features = ["env-filter"] }
+tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 uom = { version = "0.38.0", default-features = false, features = ["f64", "si"] }
 url = { version = "2.5.8", features = ["serde"] }
 urlencoding = "2.1.3"
