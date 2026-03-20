@@ -32,10 +32,10 @@ impl Authentication {
 
 #[derive(Default)]
 pub struct AuthenticationBuilder {
-    identity: Option<String>,
-    name: Option<String>,
-    impersonate: Option<String>,
-    skip: bool,
+    pub identity: Option<String>,
+    pub name: Option<String>,
+    pub impersonate: Option<String>,
+    pub skip: bool,
 }
 
 impl AuthenticationBuilder {
@@ -59,7 +59,7 @@ impl AuthenticationBuilder {
         self
     }
 
-    pub fn build(self) -> Result<Authentication, ()> {
+    pub fn build(self) -> Result<Authentication, Self> {
         let authn = match self {
             Self {
                 skip: true,
@@ -88,7 +88,7 @@ impl AuthenticationBuilder {
                 impersonate: None,
                 ..
             } => Authentication::Unauthenticated,
-            _ => return Err(()),
+            params => return Err(params),
         };
         Ok(authn)
     }
