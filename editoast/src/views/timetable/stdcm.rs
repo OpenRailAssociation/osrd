@@ -19,6 +19,7 @@ use core_client::stdcm::Request as StdcmRequest;
 use core_client::stdcm::UndirectedTrackRange;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
+use itertools::Itertools as _;
 use request::Request;
 use request::convert_steps;
 use schemas::primitives::PositiveDuration;
@@ -30,7 +31,7 @@ use schemas::train_schedule::TrainOccurrence;
 use serde::Deserialize;
 use serde::Serialize;
 use std::cmp::max;
-use std::slice;
+use std::collections::HashSet;
 use std::sync::Arc;
 use thiserror::Error;
 use tracing::Span;
@@ -79,13 +80,14 @@ pub(in crate::views) enum StdcmResponse {
 #[derive(Debug, Error, EditoastError, Serialize, derive_more::From)]
 #[editoast_error(base_id = "stdcm")]
 enum StdcmError {
-    #[error("Infrastrcture {infra_id} does not exist")]
+    #[error("Infrastructure {infra_id} does not exist")]
     InfraNotFound { infra_id: i64 },
     #[error("Timetable {timetable_id} does not exist")]
     #[editoast_error(status = 404)]
     TimetableNotFound { timetable_id: i64 },
-    #[error("Rolling stock {rolling_stock_id} does not exist")]
-    RollingStockNotFound { rolling_stock_id: i64 },
+    #[error("{:?} rolling stock(s) could not be found", .ids)]
+    #[editoast_error(status = 404)]
+    BatchRollingStockNotFound { ids: HashSet<i64> },
     #[error("Towed rolling stock {towed_rolling_stock_id} does not exist")]
     TowedRollingStockNotFound { towed_rolling_stock_id: i64 },
     #[error("Train simulation fail")]
@@ -218,6 +220,8 @@ pub(in crate::views) async fn stdcm_handler(
 
     let timetable_id = id;
     let infra_id = query.infra;
+    // Default 12h value when the simulation fails
+    const DEFAULT_VALUE_FAILED_SIMULATION: u64 = 12 * 3_600_000;
 
     // 1. Get Infra
     let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || StdcmError::InfraNotFound {
@@ -242,54 +246,114 @@ pub(in crate::views) async fn stdcm_handler(
     let work_schedules = request.get_work_schedules(&mut conn).await?;
 
     // 3. Get RollingStock
-    let rolling_stock =
-        RollingStock::retrieve_or_fail(conn.clone(), request.rolling_stock_id, || {
-            StdcmError::RollingStockNotFound {
-                rolling_stock_id: request.rolling_stock_id,
-            }
-        })
-        .await?
-        .into();
-
-    let towed_rolling_stock = request
-        .get_towed_rolling_stock(&mut conn)
-        .await?
-        .map(From::from);
-
-    request.validate_consist(&rolling_stock, towed_rolling_stock.as_ref())?;
-
-    let physics_consist_parameters = PhysicsConsistParameters {
-        max_speed: request.max_speed,
-        total_length: request.total_length,
-        total_mass: request.total_mass,
-        towed_rolling_stock,
-        traction_engine: rolling_stock,
+    let consist_configs = if request.consist_schedule.values.is_empty() {
+        vec![request::ConsistConfiguration {
+            rolling_stock_id: request.rolling_stock_id,
+            towed_rolling_stock_id: request.towed_rolling_stock_id,
+            total_mass: request.total_mass,
+            total_length: request.total_length,
+            max_speed: request.max_speed,
+            speed_limit_tag: request.speed_limit_tags.clone(),
+            loading_gauge_type: request.loading_gauge_type,
+        }]
+    } else {
+        request.consist_schedule.values.clone()
     };
 
+    let rolling_stock_ids: Vec<i64> = consist_configs
+        .iter()
+        .map(|consist_config| consist_config.rolling_stock_id)
+        .collect();
+
+    let rolling_stocks_models: Vec<RollingStock> = RollingStock::retrieve_batch_or_fail(
+        &mut conn.clone(),
+        rolling_stock_ids.clone(),
+        |missing| StdcmError::BatchRollingStockNotFound { ids: missing },
+    )
+    .await?;
+
+    let rolling_stocks_models: Vec<RollingStock> = rolling_stock_ids
+        .iter()
+        .map(|id| {
+            rolling_stocks_models
+                .iter()
+                .find(|rs| rs.id == *id)
+                .cloned()
+                .unwrap()
+        })
+        .collect();
+
+    let rolling_stocks: Vec<schemas::RollingStock> =
+        rolling_stocks_models.into_iter().map(Into::into).collect();
+
+    let mut physics_consists_parameters = vec![];
+    for (consist, rolling_stock) in consist_configs.iter().zip(rolling_stocks) {
+        let towed_rolling_stock = consist
+            .get_towed_rolling_stock(&mut conn)
+            .await?
+            .map(From::from);
+
+        consist.validate_consist(&rolling_stock, towed_rolling_stock.as_ref())?;
+        physics_consists_parameters.push(PhysicsConsistParameters {
+            max_speed: consist.max_speed,
+            total_length: consist.total_length,
+            total_mass: consist.total_mass,
+            towed_rolling_stock,
+            traction_engine: rolling_stock,
+        });
+    }
+
     // 4. Compute the earliest start time and maximum departure delay
-    let virtual_train_run = VirtualTrainRun::simulate(
+    let virtual_train_runs = VirtualTrainRun::simulate_consists_sequence(
         db_pool.clone(),
         valkey_client.clone(),
         core_client.clone(),
         config.app_version.as_deref(),
         &request,
         &infra,
-        &physics_consist_parameters,
+        &physics_consists_parameters,
     )
     .await?;
 
-    let Some(simulation_run_time) = virtual_train_run.simulation.simulation_run_time().or_else(||
-        // Default 12h value when the simulation fails
-        matches!(virtual_train_run.simulation, simulation::Response::SimulationFailed { .. }).then_some(12 * 3_600_000))
-    else {
+    let (mut pathfinding_failures, runs): (Vec<_>, Vec<_>) =
+        virtual_train_runs.into_iter().partition(|run| {
+            matches!(
+                run.simulation,
+                simulation::Response::PathfindingFailed { .. }
+            )
+        });
+    if let Some(failure) = pathfinding_failures.pop() {
         return Ok(Json(StdcmResponse::PreprocessingSimulationError {
-            error: virtual_train_run.simulation,
+            error: failure.simulation,
             core_payload: None,
-        }))
-    };
+        }));
+    }
 
-    let earliest_departure_time = request.get_earliest_departure_time(simulation_run_time);
-    let latest_simulation_end = request.get_latest_simulation_end(simulation_run_time);
+    let total_simulation_run_time = runs
+        .iter()
+        .map(|run| run.simulation.simulation_run_time())
+        .sum::<Option<_>>()
+        .unwrap_or(DEFAULT_VALUE_FAILED_SIMULATION);
+
+    let earliest_departure_time = request.get_earliest_departure_time(total_simulation_run_time);
+    let latest_simulation_end = request.get_latest_simulation_end(total_simulation_run_time);
+
+    let stdcm_consist_schedule_values = consist_configs
+        .iter()
+        .zip(physics_consists_parameters.iter())
+        .map(
+            |(consist_config, physics_consist_param)| ConsistConfiguration {
+                loading_gauge_type: consist_config
+                    .loading_gauge_type
+                    .unwrap_or(physics_consist_param.traction_engine.loading_gauge),
+                supported_signaling_systems: physics_consist_param
+                    .traction_engine
+                    .supported_signaling_systems(),
+                speed_limit_tag: consist_config.speed_limit_tag.clone(),
+                physics_consist: physics_consist_param.clone().into(),
+            },
+        )
+        .collect_vec();
 
     // 5. Build STDCM request
     let stdcm_request = StdcmRequest {
@@ -298,26 +362,17 @@ pub(in crate::views) async fn stdcm_handler(
         timetable_id,
         allowed_track_sections: request.allowed_track_sections.clone(),
         consist_schedule: ConsistSchedule {
-            boundaries: vec![],
-            values: vec![ConsistConfiguration {
-                loading_gauge_type: request
-                    .loading_gauge_type
-                    .unwrap_or(physics_consist_parameters.traction_engine.loading_gauge),
-                supported_signaling_systems: physics_consist_parameters
-                    .traction_engine
-                    .supported_signaling_systems(),
-                speed_limit_tag: request.speed_limit_tags.clone(),
-                physics_consist: physics_consist_parameters.into(),
-            }],
+            boundaries: request.consist_schedule.boundaries.clone(),
+            values: stdcm_consist_schedule_values,
         },
         temporary_speed_limits: request
-            .get_temporary_speed_limits(&mut conn, simulation_run_time)
+            .get_temporary_speed_limits(&mut conn, total_simulation_run_time)
             .await?,
         comfort: request.comfort,
         path_items: request.get_stdcm_path_items(conn, infra_id).await?,
         start_time: earliest_departure_time,
-        maximum_departure_delay: request.get_maximum_departure_delay(simulation_run_time),
-        maximum_run_time: request.get_maximum_run_time(simulation_run_time),
+        maximum_departure_delay: request.get_maximum_departure_delay(total_simulation_run_time),
+        maximum_run_time: request.get_maximum_run_time(total_simulation_run_time),
         time_gap_before: request.time_gap_before,
         time_gap_after: request.time_gap_after,
         margin: request.margin,
@@ -367,65 +422,80 @@ struct VirtualTrainRun {
 
 impl VirtualTrainRun {
     #[allow(clippy::too_many_arguments)]
-    async fn simulate(
+    async fn simulate_consists_sequence(
         db_pool: Arc<DbConnectionPoolV2>,
         valkey_client: Arc<cache::Client>,
         core_client: Arc<CoreClient>,
         app_version: Option<&str>,
         stdcm_request: &Request,
         infra: &Infra,
-        consist_parameters: &PhysicsConsistParameters,
-    ) -> Result<Self> {
+        consists_parameters: &[PhysicsConsistParameters],
+    ) -> Result<Vec<Self>> {
         // Doesn't matter for now, but eventually it will affect tmp speed limits
         let approx_start_time = stdcm_request.get_earliest_step_time();
+        let mut train_schedules = vec![];
 
-        let path = convert_steps(&stdcm_request.steps);
-        let last_step = path.last().expect("empty step list");
+        for ((start, end), consist_parameters) in itertools::chain!(
+            std::iter::once(0),
+            stdcm_request.consist_schedule.boundaries.clone(),
+            std::iter::once(stdcm_request.steps.len() - 1)
+        )
+        .tuple_windows()
+        .zip(consists_parameters.iter())
+        {
+            let path = convert_steps(&stdcm_request.steps[start..=end]);
+            let last_step = path.last().expect("empty step list");
 
-        let train_schedule = TrainOccurrence {
-            train_name: "".to_string(),
-            labels: vec![],
-            rolling_stock_name: consist_parameters.traction_engine.name.clone(),
-            start_time: approx_start_time,
-            schedule: vec![ScheduleItem {
-                // Make the train stop at the end
-                at: last_step.id.clone(),
-                arrival: None,
-                stop_for: Some(PositiveDuration::try_from(Duration::zero()).unwrap()),
-                reception_signal: ReceptionSignal::Open,
-            }],
-            margins: build_single_margin(stdcm_request.margin),
-            initial_speed: 0.0,
-            comfort: stdcm_request.comfort,
-            path,
-            constraint_distribution: Default::default(),
-            speed_limit_tag: stdcm_request
-                .speed_limit_tags
-                .clone()
-                .map(schemas::primitives::NonBlankString::from),
-            power_restrictions: vec![],
-            options: Default::default(),
-            category: None,
-        };
+            train_schedules.push(TrainOccurrence {
+                train_name: "".to_string(),
+                labels: vec![],
+                rolling_stock_name: consist_parameters.traction_engine.name.clone(),
+                start_time: approx_start_time,
+                schedule: vec![ScheduleItem {
+                    // Make the train stop at the end
+                    at: last_step.id.clone(),
+                    arrival: None,
+                    stop_for: Some(PositiveDuration::try_from(Duration::zero()).unwrap()),
+                    reception_signal: ReceptionSignal::Open,
+                }],
+                margins: build_single_margin(stdcm_request.margin),
+                initial_speed: 0.0,
+                comfort: stdcm_request.comfort,
+                path,
+                constraint_distribution: Default::default(),
+                speed_limit_tag: stdcm_request
+                    .speed_limit_tags
+                    .clone()
+                    .map(schemas::primitives::NonBlankString::from),
+                power_restrictions: vec![],
+                options: Default::default(),
+                category: None,
+            });
+        }
 
         // Compute simulation of a train schedule
-        let (simulation, _) = consist_train_simulation_batch(
+        let simulations: Vec<Self> = consist_train_simulation_batch(
             &mut db_pool.get().await?,
             valkey_client,
             core_client,
             infra,
-            slice::from_ref(&train_schedule),
-            slice::from_ref(consist_parameters),
+            &train_schedules,
+            consists_parameters,
             None,
             app_version,
         )
         .await?
-        .pop()
-        .ok_or(StdcmError::TrainSimulationFail)?;
-
-        Ok(Self {
+        .into_iter()
+        .map(|(simulation, _)| Self {
             simulation: Arc::unwrap_or_clone(simulation),
         })
+        .collect();
+
+        if simulations.len() != train_schedules.len() {
+            return Err(StdcmError::TrainSimulationFail.into());
+        }
+
+        Ok(simulations)
     }
 }
 
@@ -507,6 +577,7 @@ mod tests {
 
     use crate::error::InternalError;
     use crate::models::fixtures::create_fast_rolling_stock;
+    use crate::models::fixtures::create_rolling_stock_with_energy_sources;
     use crate::models::fixtures::create_small_infra;
     use crate::models::fixtures::create_timetable;
     use crate::views::path::pathfinding::PathfindingResult;
@@ -524,6 +595,7 @@ mod tests {
         work_schedule_group_id: Option<i64>,
         total_mass: Option<f64>,
         total_length: Option<f64>,
+        consist_schedule: ConsistSchedule,
     ) -> Request {
         Request {
             start_time: Some(
@@ -579,10 +651,39 @@ mod tests {
             max_speed: None,
             loading_gauge_type: None,
             allowed_track_sections: None,
-            consist_schedule: ConsistSchedule {
-                boundaries: vec![],
-                values: vec![],
-            },
+            consist_schedule,
+        }
+    }
+
+    fn build_consist_config(
+        rolling_stock_id: i64,
+        total_mass: Option<f64>,
+    ) -> request::ConsistConfiguration {
+        request::ConsistConfiguration {
+            rolling_stock_id,
+            towed_rolling_stock_id: None,
+            total_mass: total_mass.map(Mass::new::<kilogram>),
+            total_length: None,
+            max_speed: None,
+            speed_limit_tag: None,
+            loading_gauge_type: None,
+        }
+    }
+
+    fn build_step(trigram: &str) -> PathfindingItem {
+        PathfindingItem {
+            duration: Some(0),
+            location: PathItemLocation::OperationalPointPartReference(
+                schemas::train_schedule::OperationalPointPartReference {
+                    operational_point:
+                        schemas::train_schedule::OperationalPointReference::Trigram {
+                            trigram: trigram.into(),
+                            secondary_code: Some("BV".to_string()),
+                        },
+                    local_track_name: None,
+                },
+            ),
+            timing_data: None,
         }
     }
 
@@ -802,7 +903,13 @@ mod tests {
 
         let request = app
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
-            .json(&get_stdcm_payload(rolling_stock.id, None, None, None));
+            .json(&get_stdcm_payload(
+                rolling_stock.id,
+                None,
+                None,
+                None,
+                ConsistSchedule::default(),
+            ));
 
         let stdcm_response: StdcmResponse = app
             .fetch(request)
@@ -849,7 +956,13 @@ mod tests {
         let total_mass = Some(80_000.0);
         let request = app
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
-            .json(&get_stdcm_payload(rolling_stock.id, None, total_mass, None));
+            .json(&get_stdcm_payload(
+                rolling_stock.id,
+                None,
+                total_mass,
+                None,
+                ConsistSchedule::default(),
+            ));
 
         let stdcm_response: InternalError = app
             .fetch(request)
@@ -895,6 +1008,7 @@ mod tests {
                 None,
                 None,
                 total_length,
+                ConsistSchedule::default(),
             ));
 
         let stdcm_response: InternalError = app
@@ -939,6 +1053,7 @@ mod tests {
                 None,
                 total_mass,
                 total_length,
+                ConsistSchedule::default(),
             ));
 
         let stdcm_response: StdcmResponse = app
@@ -980,7 +1095,13 @@ mod tests {
 
         let request = app
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
-            .json(&get_stdcm_payload(rolling_stock.id, None, None, None));
+            .json(&get_stdcm_payload(
+                rolling_stock.id,
+                None,
+                None,
+                None,
+                ConsistSchedule::default(),
+            ));
 
         let stdcm_response: StdcmResponse = app
             .fetch(request)
@@ -1038,5 +1159,249 @@ mod tests {
 
         // THEN
         assert!(filtered.is_empty() == filtered_out);
+    }
+
+    #[test]
+    fn consist_schedule_reject_same_len_values_and_boundaries() {
+        let req = get_stdcm_payload(
+            1,
+            None,
+            None,
+            None,
+            ConsistSchedule {
+                boundaries: vec![1, 2],
+                values: vec![build_consist_config(1, None), build_consist_config(2, None)],
+            },
+        );
+
+        let json = serde_json::to_string(&req).unwrap();
+        let result = serde_json::from_str::<Request>(&json);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn consist_schedule_reject_has_boundary_zero() {
+        let req = get_stdcm_payload(
+            1,
+            None,
+            None,
+            None,
+            ConsistSchedule {
+                boundaries: vec![0],
+                values: vec![build_consist_config(1, None), build_consist_config(2, None)],
+            },
+        );
+
+        let json = serde_json::to_string(&req).unwrap();
+        let result = serde_json::from_str::<Request>(&json);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn consist_schedule_reject_has_boundary_last_step() {
+        let req = get_stdcm_payload(
+            1,
+            None,
+            None,
+            None,
+            ConsistSchedule {
+                boundaries: vec![2],
+                values: vec![build_consist_config(1, None), build_consist_config(2, None)],
+            },
+        );
+
+        let json = serde_json::to_string(&req).unwrap();
+        let result = serde_json::from_str::<Request>(&json);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn consist_schedule_reject_decreasing_boundaries() {
+        let req = get_stdcm_payload(
+            1,
+            None,
+            None,
+            None,
+            ConsistSchedule {
+                boundaries: vec![5, 3],
+                values: vec![
+                    build_consist_config(1, None),
+                    build_consist_config(2, None),
+                    build_consist_config(3, None),
+                ],
+            },
+        );
+
+        let json = serde_json::to_string(&req).unwrap();
+        let result = serde_json::from_str::<Request>(&json);
+        assert!(result.is_err());
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn stdcm_with_two_consists_with_different_total_mass() {
+        let mut core = core_mocking_client();
+        // Repeat the stubs for the 2 requests for the 2 consists
+        core.stub("/pathfinding/blocks")
+            .response(StatusCode::OK)
+            .json(PathfindingResult::Success(pathfinding_result_success()))
+            .finish();
+        core.stub("/standalone_simulation")
+            .response(StatusCode::OK)
+            .json(simulation_empty_response())
+            .finish();
+        core.stub("/stdcm")
+            .response(StatusCode::OK)
+            .json(core_client::stdcm::Response::Success {
+                simulation: simulation_empty_response().success().unwrap(),
+                path: pathfinding_result_success(),
+                departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
+                    .expect("Failed to parse datetime"),
+            })
+            .finish();
+
+        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let db_pool = app.db_pool();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let first_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+        let second_rolling_stock = create_rolling_stock_with_energy_sources(
+            &mut db_pool.get_ok(),
+            &Uuid::new_v4().to_string(),
+        )
+        .await;
+
+        let total_mass_first_rolling_stock = Some(900_000.0);
+        let total_mass_second_rolling_stock = Some(50_000.0);
+
+        let mut payload = get_stdcm_payload(
+            first_rolling_stock.id,
+            None,
+            None,
+            None,
+            ConsistSchedule {
+                boundaries: vec![1],
+                values: vec![
+                    build_consist_config(first_rolling_stock.id, total_mass_first_rolling_stock),
+                    build_consist_config(second_rolling_stock.id, total_mass_second_rolling_stock),
+                ],
+            },
+        );
+
+        payload.steps.push(build_step("SS"));
+
+        // Three Stations [ "WS", "MWS", "SS" ]
+        // WS -> MWS
+        // Consist change
+        // MWS -> SS
+
+        let request = app
+            .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
+            .json(&payload);
+
+        let stdcm_response: StdcmResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
+
+        assert_eq!(
+            stdcm_response,
+            StdcmResponse::Success {
+                simulation: simulation_empty_response().success().unwrap().into(),
+                pathfinding_result: pathfinding_result_success(),
+                departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
+                    .expect("Failed to parse datetime"),
+                core_payload: None,
+            }
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn stdcm_with_multiple_consists() {
+        let mut core = core_mocking_client();
+        // Repeat the stubs for all the 3 requests for the 3 consists
+        core.stub("/pathfinding/blocks")
+            .response(StatusCode::OK)
+            .json(PathfindingResult::Success(pathfinding_result_success()))
+            .finish();
+        core.stub("/standalone_simulation")
+            .response(StatusCode::OK)
+            .json(simulation_empty_response())
+            .finish();
+        core.stub("/pathfinding/blocks")
+            .response(StatusCode::OK)
+            .json(PathfindingResult::Success(pathfinding_result_success()))
+            .finish();
+        core.stub("/standalone_simulation")
+            .response(StatusCode::OK)
+            .json(simulation_empty_response())
+            .finish();
+        core.stub("/stdcm")
+            .response(StatusCode::OK)
+            .json(core_client::stdcm::Response::Success {
+                simulation: simulation_empty_response().success().unwrap(),
+                path: pathfinding_result_success(),
+                departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
+                    .expect("Failed to parse datetime"),
+            })
+            .finish();
+
+        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let db_pool = app.db_pool();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let first_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+        let second_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+        let third_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+
+        let mut payload = get_stdcm_payload(
+            first_rolling_stock.id,
+            None,
+            None,
+            None,
+            ConsistSchedule {
+                boundaries: vec![1, 2],
+                values: vec![
+                    build_consist_config(first_rolling_stock.id, None),
+                    build_consist_config(second_rolling_stock.id, None),
+                    build_consist_config(third_rolling_stock.id, None),
+                ],
+            },
+        );
+
+        payload.steps.push(build_step("MES"));
+        payload.steps.push(build_step("SES"));
+
+        // Four Stations [ "WS", "MWS", "MES", "SES" ]
+        // WS -> WMS
+        // Consist change
+        // WNS -> MES
+        // Consist change
+        // MES -> SES
+
+        let request = app
+            .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
+            .json(&payload);
+
+        let stdcm_response: StdcmResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
+
+        assert_eq!(
+            stdcm_response,
+            StdcmResponse::Success {
+                simulation: simulation_empty_response().success().unwrap().into(),
+                pathfinding_result: pathfinding_result_success(),
+                departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
+                    .expect("Failed to parse datetime"),
+                core_payload: None,
+            }
+        );
     }
 }

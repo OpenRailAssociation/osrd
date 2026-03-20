@@ -226,12 +226,12 @@
       "UnknownSignalingSystem": "Système de signalisation inconnu"
     },
     "stdcm": {
+      "BatchRollingStockNotFound": "'{{ids}}' matériel roulant(s) non trouvé(s)",
       "Database": "Erreur interne (base de données)",
       "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
       "InvalidConsistLength": "Longueur du convoi invalide {{provided_consist_length}} : doit être supérieure à '{{expected_min}}'",
       "InvalidConsistMass": "Masse du convoi invalide {{provided_consist_mass}} : elle doit être supérieure à '{{expected_min}}",
       "InvalidPathItems": "Point(s) de passage {{items}} invalide(s)",
-      "RollingStockNotFound": "Matériel roulant '{{rolling_stock_id}}' non trouvé",
       "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée",
       "TowedRollingStockNotFound": "Matériel roulant remorqué {towed_rolling_stock_id} non trouvé",
       "TrainSimulationFail": "Échec de la simulation du train"

@@ -59,6 +59,7 @@ pub(crate) struct ConsistConfiguration {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
+#[cfg_attr(test, derive(Default))]
 pub(crate) struct ConsistSchedule {
     /// Indexes of steps where consist change occur
     /// It should not contain 0 and len(steps) and should be increasing
@@ -309,7 +310,9 @@ impl Request {
             .filter(move || WorkSchedule::WORK_SCHEDULE_GROUP_ID.eq(work_schedule_group_id));
         WorkSchedule::list(conn, selection_setting).await
     }
+}
 
+impl ConsistConfiguration {
     pub(super) async fn get_towed_rolling_stock(
         &self,
         conn: &mut DbConnection,

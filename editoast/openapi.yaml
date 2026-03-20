@@ -6293,12 +6293,12 @@ components:
       - $ref: '#/components/schemas/EditoastSimilarTrainsErrorSpeedLimitNotFound'
       - $ref: '#/components/schemas/EditoastSpriteErrorsFileNotFound'
       - $ref: '#/components/schemas/EditoastSpriteErrorsUnknownSignalingSystem'
+      - $ref: '#/components/schemas/EditoastStdcmErrorBatchRollingStockNotFound'
       - $ref: '#/components/schemas/EditoastStdcmErrorDatabase'
       - $ref: '#/components/schemas/EditoastStdcmErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastStdcmErrorInvalidConsistLength'
       - $ref: '#/components/schemas/EditoastStdcmErrorInvalidConsistMass'
       - $ref: '#/components/schemas/EditoastStdcmErrorInvalidPathItems'
-      - $ref: '#/components/schemas/EditoastStdcmErrorRollingStockNotFound'
       - $ref: '#/components/schemas/EditoastStdcmErrorTimetableNotFound'
       - $ref: '#/components/schemas/EditoastStdcmErrorTowedRollingStockNotFound'
       - $ref: '#/components/schemas/EditoastStdcmErrorTrainSimulationFail'
@@ -7780,6 +7780,30 @@ components:
           type: string
           enum:
           - editoast:sprites:UnknownSignalingSystem
+    EditoastStdcmErrorBatchRollingStockNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - ids
+          properties:
+            ids:
+              type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:stdcm:BatchRollingStockNotFound
     EditoastStdcmErrorDatabase:
       type: object
       required:
@@ -7901,30 +7925,6 @@ components:
           type: string
           enum:
           - editoast:stdcm:InvalidPathItems
-    EditoastStdcmErrorRollingStockNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - rolling_stock_id
-          properties:
-            rolling_stock_id:
-              type: integer
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:stdcm:RollingStockNotFound
     EditoastStdcmErrorTimetableNotFound:
       type: object
       required:
