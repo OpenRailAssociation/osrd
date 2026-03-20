@@ -2,12 +2,11 @@ use std::{collections::HashMap, fmt::Debug, future::Future, pin::Pin};
 
 use bollard::{
     Docker,
-    models::{ContainerCreateBody, NetworkingConfig},
+    models::{ContainerCreateBody, HostConfig, NetworkingConfig},
     query_parameters::{
         CreateContainerOptionsBuilder, ListContainersOptions, RemoveContainerOptions,
         StartContainerOptions,
     },
-    secret::HostConfig,
 };
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
