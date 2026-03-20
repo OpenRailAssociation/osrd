@@ -18,6 +18,7 @@ use core_client::simulation::PhysicsConsist;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
+use editoast_models::TrainScheduleException;
 use editoast_models::prelude::*;
 use editoast_models::round_trips::TrainScheduleRoundTrips;
 use itertools::Itertools;
@@ -399,6 +400,12 @@ pub(in crate::views) struct ExceptionQueryParam {
     exception_key: Option<String>,
 }
 
+#[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
+#[into_params(parameter_in = Query)]
+pub(in crate::views) struct TrainScheduleExceptionQueryParam {
+    exception_id: Option<i64>,
+}
+
 /// Get a path from a paced train given an infrastructure id and a paced train id
 #[editoast_derive::route]
 #[utoipa::path(
@@ -581,8 +588,10 @@ pub(in crate::views) async fn simulation(
 #[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
+
     tags = ["train_schedule", "etcs_braking_curves"],
     params(TrainScheduleIdParam, InfraIdQueryParam, ElectricalProfileSetIdQueryParam, ExceptionQueryParam),
+
     responses(
         (status = 200, description = "ETCS Braking Curves Output", body = core_client::etcs_braking_curves::Response),
     ),
@@ -603,7 +612,9 @@ pub(in crate::views) async fn etcs_braking_curves(
     Query(ElectricalProfileSetIdQueryParam {
         electrical_profile_set_id,
     }): Query<ElectricalProfileSetIdQueryParam>,
-    Query(ExceptionQueryParam { exception_key }): Query<ExceptionQueryParam>,
+    Query(TrainScheduleExceptionQueryParam { exception_id }): Query<
+        TrainScheduleExceptionQueryParam,
+    >,
 ) -> Result<Json<core_client::etcs_braking_curves::Response>> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
@@ -634,17 +645,19 @@ pub(in crate::views) async fn etcs_braking_curves(
         })
         .await?;
 
-    let train_schedule = match exception_key {
-        Some(exception_key) => {
-            let exception = train_schedule
-                .exceptions
-                .iter()
-                .find(|e| e.key == exception_key)
-                .ok_or_else(|| TrainScheduleError::ExceptionNotFound {
-                    exception_key: exception_key.clone(),
-                })?;
-
-            train_schedule.apply_exception(exception)
+    let train_occurrence = match exception_id {
+        Some(exception_id) => {
+            let exception: schemas::TrainScheduleException =
+                TrainScheduleException::retrieve_or_fail(
+                    db_pool.get().await?,
+                    exception_id,
+                    || TrainScheduleError::ExceptionNotFound {
+                        exception_key: exception_id.to_string(),
+                    },
+                )
+                .await?
+                .into();
+            train_schedule.apply_train_schedule_exception(&exception)
         }
         None => train_schedule.into_train_occurrence(),
     };
@@ -654,7 +667,7 @@ pub(in crate::views) async fn etcs_braking_curves(
         &mut db_pool.get().await?,
         valkey_client,
         core_client.clone(),
-        std::slice::from_ref(&train_schedule),
+        std::slice::from_ref(&train_occurrence),
         &infra,
         electrical_profile_set_id,
         config.app_version.as_deref(),
@@ -682,9 +695,9 @@ pub(in crate::views) async fn etcs_braking_curves(
     // Build physics consist
     let rs = RollingStock::retrieve_or_fail(
         db_pool.get().await?,
-        train_schedule.rolling_stock_name.clone(),
+        train_occurrence.rolling_stock_name.clone(),
         || TrainScheduleError::RollingStockNotFound {
-            rolling_stock_name: train_schedule.rolling_stock_name.clone(),
+            rolling_stock_name: train_occurrence.rolling_stock_name.clone(),
         },
     )
     .await?;
@@ -693,12 +706,12 @@ pub(in crate::views) async fn etcs_braking_curves(
 
     // Build schedule items and power restrictions
     let path_items_to_position = build_path_items_to_position(
-        &train_schedule.path,
+        &train_occurrence.path,
         &pathfinding_response.path_item_positions,
     );
-    let schedule = build_sim_schedule_items(&train_schedule.schedule, &path_items_to_position);
+    let schedule = build_sim_schedule_items(&train_occurrence.schedule, &path_items_to_position);
     let power_restrictions = build_sim_power_restriction_items(
-        &train_schedule.power_restrictions,
+        &train_occurrence.power_restrictions,
         &path_items_to_position,
     );
 
@@ -706,12 +719,12 @@ pub(in crate::views) async fn etcs_braking_curves(
         infra: infra.id,
         expected_version: infra.version,
         physics_consist,
-        comfort: train_schedule.comfort,
+        comfort: train_occurrence.comfort,
         path: pathfinding_response.path,
         schedule,
         power_restrictions,
         electrical_profile_set_id,
-        use_electrical_profiles: train_schedule.options.use_electrical_profiles,
+        use_electrical_profiles: train_occurrence.options.use_electrical_profiles,
         mrsp,
     };
 

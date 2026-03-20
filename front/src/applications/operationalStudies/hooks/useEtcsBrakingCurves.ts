@@ -82,7 +82,7 @@ const useEtcsBrakingCurves = (
         id: selectedTrainId,
         infraId,
         electricalProfileSetId,
-        exceptionKey: exception?.key,
+        exceptionId: exception?.id ?? undefined,
       }).unwrap();
       setEtcsBrakingCurves(formatEtcsCurves(data));
     } else {
