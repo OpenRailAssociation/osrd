@@ -226,12 +226,12 @@
       "UnknownSignalingSystem": "Unknown signaling system"
     },
     "stdcm": {
+      "BatchRollingStockNotFound": "'{{ids}}' rolling stock(s) could not be found",
       "Database": "Internal error (database)",
       "InfraNotFound": "Infrastructure '{{infra_id}}' does not exist",
       "InvalidConsistLength": "Invalid consist length {{provided_consist_length}}: it should be greater than '{{expected_min}}'",
       "InvalidConsistMass": "Invalid consist mass {{provided_consist_mass}}: it should be greater than '{{expected_min}}'",
       "InvalidPathItems": "Invalid waypoint(s) {{items}}",
-      "RollingStockNotFound": "Rolling stock '{{rolling_stock_id}}' does not exist",
       "TimetableNotFound": "Timetable '{{timetable_id}}' does not exist",
       "TowedRollingStockNotFound": "Towed rolling stock {towed_rolling_stock_id} does not exist",
       "TrainSimulationFail": "Train simulation failed"
