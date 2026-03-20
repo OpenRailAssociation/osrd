@@ -1,1 +1,11 @@
-{}
+{
+  "boards": {
+    "conflicts": "Conflitti",
+    "map": "Mappa",
+    "tables": "Tabelle",
+    "trains": "Treni"
+  },
+  "importTrainScheduleSet": {
+    "cancel": "Annullare"
+  }
+}
