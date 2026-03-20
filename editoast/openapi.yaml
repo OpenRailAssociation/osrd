@@ -4605,11 +4605,12 @@ paths:
         schema:
           type: integer
           format: int64
-      - name: exception_key
+      - name: exception_id
         in: query
         required: false
         schema:
-          type: string
+          type: integer
+          format: int64
       responses:
         '200':
           description: ETCS Braking Curves Output
