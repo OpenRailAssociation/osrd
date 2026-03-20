@@ -6,6 +6,31 @@
     "trains": "Treni"
   },
   "importTrainScheduleSet": {
-    "cancel": "Annullare"
+    "cancel": "Annullare",
+    "trainScheduleSetsSelected_other": "{{count}} pacchetti selezionati",
+    "trainSchedulesCount_one": "treno {{count}}",
+    "trainSchedulesCount_other": "{{count}} treni"
+  },
+  "main": {
+    "timetable": {
+      "showAllCategories": "Tutti",
+      "showAllTrains": "Tutti"
+    },
+    "trainCount_other": "{{count}}/{{totalCount}} treni",
+    "train_one": "1 treno",
+    "train_other": "{{count}} treni",
+    "train_zero": "0 treni"
+  },
+  "manageTimetableItem": {
+    "itineraryModal": {
+      "opType": "Tipo",
+      "track": "Binario"
+    },
+    "pacedTrains": {
+      "add": "Aggiungere"
+    }
+  },
+  "study": {
+    "studyType": "Tipo"
   }
 }
