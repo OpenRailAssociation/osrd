@@ -117,7 +117,7 @@ updates:
   - package-ecosystem: "uv"
     directory: "/core/scripts/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     cooldown:
       default-days: 5
     commit-message:
@@ -126,6 +126,13 @@ updates:
     labels:
       - "dependencies"
       - "area:core"
+    groups:
+      patch:
+        update-types:
+          - "patch"
+      minor:
+        update-types:
+          - "minor"
   - package-ecosystem: "uv"
     directory: "/tests/"
     schedule:
