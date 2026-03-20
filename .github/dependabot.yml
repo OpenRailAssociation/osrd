@@ -129,7 +129,7 @@ updates:
   - package-ecosystem: "uv"
     directory: "/tests/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     cooldown:
       default-days: 5
     commit-message:
@@ -138,6 +138,13 @@ updates:
     labels:
       - "dependencies"
       - "area:integration-tests"
+    groups:
+      patch:
+        update-types:
+          - "patch"
+      minor:
+        update-types:
+          - "minor"
   - package-ecosystem: "gradle"
     directory: "/core/"
     schedule:
