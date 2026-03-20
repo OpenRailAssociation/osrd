@@ -65,24 +65,23 @@ class ElectrificationRange(
         fun from(
             condsUsed: DistanceRangeMap<InfraConditions>,
             condsSeen: DistanceRangeMap<Electrification>,
-        ): MutableList<ElectrificationRange> {
+        ): Sequence<ElectrificationRange> {
             val ranges =
                 condsUsed.commonRanges(condsSeen) { lower, upper, usedCond, seenCond ->
                     ElectrificationRange(lower, upper, usedCond, seenCond)
                 }
-            var previous = ranges.firstOrNull() ?: return mutableListOf()
+            var previous = ranges.firstOrNull() ?: return sequenceOf()
             return sequence {
-                    for (next in ranges.drop(1)) {
-                        if (previous.shouldBeMergedWith(next)) {
-                            previous.stop = next.stop
-                        } else {
-                            yield(previous)
-                            previous = next
-                        }
+                for (next in ranges.drop(1)) {
+                    if (previous.shouldBeMergedWith(next)) {
+                        previous.stop = next.stop
+                    } else {
+                        yield(previous)
+                        previous = next
                     }
-                    yield(previous)
                 }
-                .toMutableList()
+                yield(previous)
+            }
         }
     }
 }
