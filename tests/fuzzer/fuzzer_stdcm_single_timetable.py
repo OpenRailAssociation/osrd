@@ -219,6 +219,7 @@ def _make_stdcm_payload(
         "total_length": random.randint(400, 750),  # 400 to 750m
         "total_mass": random.randint(500_000, 2_500_000),  # 500 to 2500t
         "max_speed": random.randint(22, 38),  # 80 to 140 km/h
+        "consist_schedule": {"boundaries": [], "values": []},
     }
     if towed_rs and random.randint(0, 5) > 0:
         res["towed_rolling_stock_id"] = random.choice(towed_rs)

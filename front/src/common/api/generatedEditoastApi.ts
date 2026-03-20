@@ -2318,6 +2318,7 @@ export type PostTimetableByIdStdcmApiArg = {
         None value means no zone restriction. */
     allowed_track_sections?: string[] | null;
     comfort: Comfort;
+    consist_schedule: ConsistSchedule;
     electrical_profile_set_id?: number | null;
     loading_gauge_type?: null | LoadingGaugeType;
     /** Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km` */
@@ -4407,44 +4408,23 @@ export type CoreTrainRequirementsById = {
   train_name: string;
 };
 export type ConsistConfiguration = {
-  /** The loading gauge of the rolling stock */
-  loading_gauge_type: LoadingGaugeType;
-  physics_consist: {
-    base_power_class?: string | null;
-    /** Acceleration in m·s⁻² */
-    comfort_acceleration: number;
-    /**  The constant gamma braking coefficient used when NOT circulating
-         under ETCS/ERTMS signaling system
-        Acceleration in m·s⁻² */
-    const_gamma: number;
-    effort_curves: EffortCurves;
-    /** The time the train takes before actually using electrical power.
-        Is null if the train is not electric or the value not specified. */
-    electrical_power_startup_time?: number | null;
-    etcs_brake_params?: null | EtcsBrakeParams;
-    inertia_coefficient: number;
-    length: number;
-    mass: number;
-    /** Velocity in m·s⁻¹ */
-    max_speed: number;
-    /** Mapping of power restriction code to power class */
-    power_restrictions?: {
-      [key: string]: string;
-    };
-    /** The time it takes to raise this train's pantograph.
-        Is null if the train is not electric or the value not specified. */
-    raise_pantograph_time?: number | null;
-    rolling_resistance: RollingResistance;
-    /** Acceleration in m·s⁻² */
-    startup_acceleration: number;
-    startup_time: number;
-  };
+  loading_gauge_type?: null | LoadingGaugeType;
+  /** Velocity in m·s⁻¹ */
+  max_speed?: number | null;
+  rolling_stock_id: number;
   speed_limit_tag?: string | null;
-  /** List of supported signaling systems */
-  supported_signaling_systems: string[];
+  /** Length in m */
+  total_length?: number | null;
+  /** Mass in kg */
+  total_mass?: number | null;
+  towed_rolling_stock_id?: number | null;
 };
 export type ConsistSchedule = {
+  /** Indexes of steps where consist change occur
+    It should not contain 0 and len(steps) and should be increasing */
   boundaries: number[];
+  /** Consist configuration for each segment
+    It should contains one more element than boundaries */
   values: ConsistConfiguration[];
 };
 export type CoreStepTimingData = {

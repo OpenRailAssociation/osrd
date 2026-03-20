@@ -344,6 +344,7 @@ def _make_stdcm_payload(path: list[tuple[str, float]], rolling_stock: int) -> di
         "steps": [_convert_stop_stdcm(stop) for stop in path],
         "comfort": "STANDARD",
         "margin": "0%",
+        "consist_schedule": {"boundaries": [], "values": []},
     }
     res["steps"][-1]["duration"] = 1  # Force a stop at the end
     allowance_value = _make_random_margin_value()

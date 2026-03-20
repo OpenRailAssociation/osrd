@@ -238,5 +238,6 @@ export const formatStdcmPayload = (
     electrical_profile_set_id: validConfig.electricalProfileSetId,
     loading_gauge_type: validConfig.loadingGauge,
     allowed_track_sections: validConfig.allowedTrackSections,
+    consist_schedule: { boundaries: [], values: [] },
   },
 });

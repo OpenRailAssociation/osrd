@@ -68,6 +68,7 @@ def test_empty_timetable(
         "comfort": "STANDARD",
         "maximum_departure_delay": 7200000,
         "maximum_run_time": 43200000,
+        "consist_schedule": {"boundaries": [], "values": []},
     }
     r = session.post(
         EDITOAST_URL + f"/timetable/{timetable}/stdcm?infra={small_infra.id}",
@@ -98,6 +99,7 @@ def test_empty_timetable_with_stop(
         "comfort": "STANDARD",
         "maximum_departure_delay": 7200000,
         "maximum_run_time": 43200000,
+        "consist_schedule": {"boundaries": [], "values": []},
     }
     r = session.post(
         EDITOAST_URL + f"/timetable/{timetable}/stdcm?infra={small_infra.id}",
@@ -138,6 +140,7 @@ def test_between_trains(
         "comfort": "STANDARD",
         "maximum_departure_delay": 7200000,
         "maximum_run_time": 43200000,
+        "consist_schedule": {"boundaries": [], "values": []},
     }
     r = session.post(
         EDITOAST_URL
@@ -189,6 +192,7 @@ def test_work_schedules(
         "comfort": "STANDARD",
         "margin": "0%",
         "work_schedule_group_id": work_schedules_response["work_schedule_group_id"],
+        "consist_schedule": {"boundaries": [], "values": []},
     }
     url = f"{EDITOAST_URL}timetable/{small_scenario.timetable}/stdcm/?infra={small_scenario.infra}"
     r = session.post(url, json=payload)
@@ -221,6 +225,7 @@ def test_mrsp_sources(
         "time_gap_after": 3600000,
         "margin": "0%",
         "standard_allowance": "3%",
+        "consist_schedule": {"boundaries": [], "values": []},
     }
 
     content = _get_stdcm_response(small_infra, timetable_id, stdcm_payload, session)
@@ -328,6 +333,7 @@ def test_max_running_time(
         "comfort": "STANDARD",
         "margin": "0%",
         "work_schedule_group_id": work_schedules_response["work_schedule_group_id"],
+        "consist_schedule": {"boundaries": [], "values": []},
     }
     url = f"{EDITOAST_URL}timetable/{small_scenario.timetable}/stdcm/?infra={small_scenario.infra}"
     r = session.post(url, json=payload)
