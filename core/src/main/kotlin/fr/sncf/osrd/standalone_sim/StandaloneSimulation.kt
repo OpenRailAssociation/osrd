@@ -188,7 +188,7 @@ fun buildSignalingRanges(infra: FullInfra, trainPath: TrainPath): DistanceRangeM
 }
 
 fun makeElectricalProfiles(
-    electrificationRanges: List<ElectrificationRange>
+    electrificationRanges: Sequence<ElectrificationRange>
 ): RangeValues<ElectricalProfileValue> {
     fun profileFromElectrification(electrification: ElectrificationUsage): ElectricalProfileValue {
         return when (electrification) {
