@@ -123,10 +123,10 @@ const osrdEditoastApi = generatedEditoastApi
       }),
       getEtcsBrakingCurves: builder.query<
         CoreEtcsBrakingCurvesResponse,
-        { id: TrainId; infraId: number; electricalProfileSetId?: number; exceptionKey?: string }
+        { id: TrainId; infraId: number; electricalProfileSetId?: number; exceptionId?: number }
       >({
         queryFn: async (
-          { id: trainId, infraId, electricalProfileSetId, exceptionKey },
+          { id: trainId, infraId, electricalProfileSetId, exceptionId },
           { dispatch }
         ) => {
           const pacedTrainId = isOccurrenceId(trainId)
@@ -138,7 +138,7 @@ const osrdEditoastApi = generatedEditoastApi
                 id: extractEditoastIdFromPacedTrainId(pacedTrainId),
                 infraId,
                 electricalProfileSetId,
-                exceptionKey,
+                exceptionId,
               },
               { subscribe: false }
             )
