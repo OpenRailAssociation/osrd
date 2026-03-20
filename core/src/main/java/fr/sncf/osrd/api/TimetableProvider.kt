@@ -15,6 +15,7 @@ import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import java.time.Duration
 import java.time.Instant
 import java.time.ZonedDateTime
+import java.util.concurrent.atomic.AtomicLong
 import kotlin.math.pow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -59,7 +60,17 @@ class TimetableDownloader(
         infraId: String,
         timetableId: TimetableId,
     ): Flow<TrainRequirementsById> = flow {
-        val firstPageTrainRequirements = getTrainPaginatedRequirements(infraId, timetableId, 1)
+        logger.info(
+            "Fetching train requirements for infra $infraId and timetable $timetableId: Start."
+        )
+
+        val lastLogSecond = AtomicLong(Long.MIN_VALUE)
+        val firstPageTrainRequirements =
+            getTrainPaginatedRequirements(infraId, timetableId, 1, lastLogSecond)
+
+        logger.info(
+            "Fetching train requirements for infra $infraId and timetable $timetableId: ${firstPageTrainRequirements.pageCount} total pages to get."
+        )
 
         emitAll(firstPageTrainRequirements.results.asFlow())
         emitAll(
@@ -69,11 +80,14 @@ class TimetableDownloader(
                 .flatMapMerge { page ->
                     flow {
                         val paginatedTrainRequirements =
-                            getTrainPaginatedRequirements(infraId, timetableId, page)
+                            getTrainPaginatedRequirements(infraId, timetableId, page, lastLogSecond)
                         emitAll(paginatedTrainRequirements.results.asFlow())
                     }
                 }
                 .flowOn(httpDispatcher)
+        )
+        logger.info(
+            "Fetching train requirements for infra $infraId and timetable $timetableId: End."
         )
     }
 
@@ -81,11 +95,23 @@ class TimetableDownloader(
         infraId: String,
         timetableId: TimetableId,
         page: Int,
+        lastLogSecond: AtomicLong,
     ): PaginatedRequirements {
         val endpointPath = "timetable/$timetableId/requirements/"
         val request =
             buildRequest(endpointPath, "infra_id=$infraId&page=$page&page_size=$PAGE_SIZE")
         val response = getWithRetries(request)
+
+        // Do not log more than once in 5s
+        val muteDuration = 5
+        val now = Instant.now().epochSecond
+        val lastLog = lastLogSecond.getAndUpdate { if (it + muteDuration < now) now else it }
+        if (lastLog + muteDuration < now) {
+            logger.info(
+                "Fetching train requirements for infra $infraId and timetable $timetableId: obtained page $page, HTTP status ${response.code} [muting this log for the next $muteDuration s]."
+            )
+        }
+
         return paginatedRequirementsAdapter.fromJson(response.body.source())!!
     }
 
