@@ -16,12 +16,13 @@ use crate::Correlated;
 use crate::PathfindingConsist;
 use crate::PathfindingConstraints;
 use crate::PathfindingTrain;
+use crate::TrainKey;
 use crate::envs::pathfinding::PathWaypointAlternatives;
 
 #[derive(Debug)]
 pub(crate) struct SimulationInputs<Train>
 where
-    Train: Clone + std::hash::Hash + Eq + Send + Sync + 'static,
+    Train: TrainKey + 'static,
 {
     pub(super) electrical_profile_set_id: Option<u64>,
 
@@ -125,7 +126,7 @@ impl SimulationTrainParameters {
 
 impl<Train> SimulationInputs<Train>
 where
-    Train: Clone + std::hash::Hash + Eq + Send + Sync + 'static,
+    Train: TrainKey + 'static,
 {
     pub(super) fn iter(
         &self,
@@ -290,7 +291,7 @@ impl SimulationTrain {
 
 impl<Train> Extend<(Train, SimulationTrain)> for super::SimulationEnv<Train>
 where
-    Train: Clone + std::hash::Hash + Eq + Send + Sync + 'static,
+    Train: TrainKey + 'static,
 {
     fn extend<T: IntoIterator<Item = (Train, SimulationTrain)>>(&mut self, iter: T) {
         let (simulation_consists, simulation_params, pathfinding_trains): (Vec<_>, Vec<_>, Vec<_>) =

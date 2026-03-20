@@ -15,6 +15,7 @@ use tokio::sync::Mutex;
 use crate::CoreEnv;
 use crate::Correlated;
 use crate::PathfindingEnv;
+use crate::TrainKey;
 use crate::TrainSet;
 use crate::envs::pathfinding;
 use crate::envs::pathfinding::PathfindingEnvInputs;
@@ -35,7 +36,7 @@ use crate::envs::pathfinding::PathfindingEnvInputs;
 /// It will be cloned several times over internally, so this operation should be cheap.
 pub struct SimulationEnv<Train>
 where
-    Train: Clone + Hash + Eq + Send + Sync + 'static,
+    Train: TrainKey + 'static,
 {
     pathfinding_env: PathfindingEnv<Train>,
     inputs: SimulationInputs<Train>,
@@ -60,7 +61,7 @@ pub enum SimulationOutput {
 
 impl<Train> SimulationEnv<Train>
 where
-    Train: Clone + Hash + Eq + Send + Sync + 'static,
+    Train: TrainKey + 'static,
 {
     pub fn new(core_env: CoreEnv) -> Self {
         Self {
@@ -120,7 +121,7 @@ where
 /// its internal state. Do not create this struct directly.
 pub(in crate::envs) struct Runner<Train>
 where
-    Train: Clone + Hash + Eq + Send + Sync + 'static,
+    Train: TrainKey + 'static,
 {
     core_env: CoreEnv,
     simulation_inputs: Arc<SimulationInputs<Train>>,
@@ -139,7 +140,7 @@ pub(in crate::envs) struct SimulationKey(
 
 impl<Train> Runner<Train>
 where
-    Train: Clone + Hash + Eq + Send + Sync + 'static,
+    Train: TrainKey + 'static,
 {
     pub(in crate::envs) fn new(
         SimulationEnv {
