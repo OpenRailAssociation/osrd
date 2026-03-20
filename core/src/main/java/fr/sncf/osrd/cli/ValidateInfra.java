@@ -2,6 +2,7 @@ package fr.sncf.osrd.cli;
 
 import static fr.sncf.osrd.RawInfraRJSParserKt.parseRJSInfra;
 import static fr.sncf.osrd.api.SignalingSimulatorKt.makeSignalingSimulator;
+import static fr.sncf.osrd.cli.TmpKt.foo;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -38,7 +39,8 @@ public class ValidateInfra implements CliCommand {
             SignalingSimulator signalingSimulator = makeSignalingSimulator();
             var loadedSignalInfra = signalingSimulator.loadSignals(rawInfra);
             logger.info("building blocks");
-            signalingSimulator.buildBlocks(rawInfra, loadedSignalInfra);
+            var blockInfra = signalingSimulator.buildBlocks(rawInfra, loadedSignalInfra);
+            foo(rawInfra, blockInfra);
             logger.info("done");
             return 0;
         } catch (Exception e) {

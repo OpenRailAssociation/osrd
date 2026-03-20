@@ -18,6 +18,7 @@ import fr.sncf.osrd.cli.RsText
 import fr.sncf.osrd.cli.RsWithBody
 import fr.sncf.osrd.cli.RsWithStatus
 import fr.sncf.osrd.cli.Take
+import fr.sncf.osrd.cli.logAllNodes
 import fr.sncf.osrd.conflicts.ParsedRequirements
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.Percentage
@@ -76,6 +77,7 @@ class STDCMEndpoint(
     @Throws(OSRDError::class)
     override fun act(req: Request): Response {
         // Parse request input
+        logAllNodes()
         val request = readRequest(req) ?: return RsWithStatus(RsText("missing request body"), 400)
 
         val logRequest = System.getenv("LOG_STDCM_REQUESTS")

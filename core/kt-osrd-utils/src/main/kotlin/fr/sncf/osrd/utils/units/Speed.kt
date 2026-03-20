@@ -1,5 +1,7 @@
 package fr.sncf.osrd.utils.units
 
+import kotlin.math.roundToInt
+
 private const val multiplier = 1000.0
 
 /**
@@ -15,6 +17,9 @@ private const val multiplier = 1000.0
 value class Speed(val millimetersPerSecond: ULong) : Comparable<Speed> {
     val metersPerSecond
         get() = millimetersPerSecond.toDouble() / multiplier
+
+    val kilometersPerHour
+        get() = (metersPerSecond * 3.6).roundToInt()
 
     override fun toString(): String {
         val metersPerSecond = millimetersPerSecond / multiplier.toUInt()

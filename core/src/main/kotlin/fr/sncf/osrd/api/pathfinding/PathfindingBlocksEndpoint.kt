@@ -11,6 +11,8 @@ import fr.sncf.osrd.cli.RsText
 import fr.sncf.osrd.cli.RsWithBody
 import fr.sncf.osrd.cli.RsWithStatus
 import fr.sncf.osrd.cli.Take
+import fr.sncf.osrd.cli.allNodeStats
+import fr.sncf.osrd.cli.foo
 import fr.sncf.osrd.graph.*
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.TrainPath
@@ -145,6 +147,16 @@ fun runPathfinding(infra: FullInfra, request: PathfindingBlockRequest): Pathfind
 
     // Compute the paths from the entry waypoint to the exit waypoint
     val path = computePaths(infra, waypoints, constraints, heuristics, request, request.timeout)
+
+    if (allNodeStats.isEmpty()) foo(infra.rawInfra, infra.blockInfra)
+    for (zonePathRange in path.path.getZonePaths()) {
+        val nodes = infra.rawInfra.getZonePathMovableElements(zonePathRange.value)
+        val configs = infra.rawInfra.getZonePathMovableElementsConfigs(zonePathRange.value)
+        for ((node, config) in nodes zip configs) {
+            allNodeStats[node]?.register(config)
+        }
+    }
+
     return runPathfindingPostProcessing(infra, request, path)
 }
 
