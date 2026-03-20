@@ -24,70 +24,44 @@ pub enum Authentication {
     },
 }
 
-impl Authentication {
-    pub fn builder() -> AuthenticationBuilder {
-        AuthenticationBuilder::default()
-    }
-}
-
 #[derive(Default)]
-pub struct AuthenticationBuilder {
+pub struct AuthenticationParameters {
     pub identity: Option<String>,
     pub name: Option<String>,
     pub impersonate: Option<String>,
     pub skip: bool,
 }
 
-impl AuthenticationBuilder {
-    pub fn identity(mut self, identity: Option<String>) -> Self {
-        self.identity = identity;
-        self
-    }
-
-    pub fn name(mut self, name: Option<String>) -> Self {
-        self.name = name;
-        self
-    }
-
-    pub fn impersonate(mut self, identity: Option<String>) -> Self {
-        self.impersonate = identity;
-        self
-    }
-
-    pub fn skip(mut self, skip: bool) -> Self {
-        self.skip = skip;
-        self
-    }
-
-    pub fn build(self) -> Result<Authentication, Self> {
-        let authn = match self {
-            Self {
+impl Authentication {
+    pub fn try_new(params: AuthenticationParameters) -> Result<Self, AuthenticationParameters> {
+        let authn = match params {
+            AuthenticationParameters {
                 skip: true,
                 identity,
                 name,
                 ..
-            } => Authentication::Skip { identity, name },
-            Self {
+            } => Self::Skip { identity, name },
+            AuthenticationParameters {
                 impersonate: Some(impersonated_identity),
                 identity: Some(impersonator_identity),
                 name: Some(impersonator_name),
                 ..
-            } => Authentication::Impersonating {
+            } => Self::Impersonating {
                 impersonator_identity,
                 impersonator_name,
                 impersonated_identity,
             },
-            Self {
+            AuthenticationParameters {
                 identity: Some(identity),
                 name: Some(name),
                 ..
-            } => Authentication::Authenticated { identity, name },
-            Self {
+            } => Self::Authenticated { identity, name },
+            AuthenticationParameters {
                 identity: None,
                 name: None,
                 impersonate: None,
                 ..
-            } => Authentication::Unauthenticated,
+            } => Self::Unauthenticated,
             params => return Err(params),
         };
         Ok(authn)

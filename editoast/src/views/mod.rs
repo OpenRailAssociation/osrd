@@ -84,7 +84,7 @@ use tracing::info;
 use tracing::warn;
 use url::Url;
 
-use crate::authentication::AuthenticationBuilder;
+use crate::authentication::AuthenticationParameters;
 use crate::error::Result;
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::infra_cache::InfraCache;
@@ -511,29 +511,29 @@ async fn authentication_extraction_middleware(mut req: Request, next: Next) -> R
         skip_authz,
     )
     .in_scope(move || {
-        crate::authentication::Authentication::builder()
-            .identity(identity)
-            .name(name)
-            .impersonate(impersonate)
-            .skip(skip_authz)
-            .build()
-            .map_err(
-                |AuthenticationBuilder {
-                     identity,
-                     name,
-                     impersonate,
-                     skip,
-                 }| {
-                    tracing::error!(
-                        identity,
-                        name,
-                        impersonate,
-                        skip,
-                        "invalid authentication parameters"
-                    );
-                    AuthorizationError::Unauthorized
-                },
-            )
+        crate::authentication::Authentication::try_new(AuthenticationParameters {
+            identity,
+            name,
+            impersonate,
+            skip: skip_authz,
+        })
+        .map_err(
+            |AuthenticationParameters {
+                 identity,
+                 name,
+                 impersonate,
+                 skip,
+             }| {
+                tracing::error!(
+                    identity,
+                    name,
+                    impersonate,
+                    skip,
+                    "invalid authentication parameters"
+                );
+                AuthorizationError::Unauthorized
+            },
+        )
     })?;
 
     tracing::info!(?authn, "authentication complete");
