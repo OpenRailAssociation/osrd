@@ -31,6 +31,7 @@ use schemas::TrainOccurrence;
 use schemas::infra::Direction;
 use schemas::infra::LevelCrossing;
 use schemas::infra::TrackOffset;
+use schemas::primitives::Identifier;
 use schemas::primitives::TimeWindow;
 use serde::Deserialize;
 use serde::Serialize;
@@ -58,7 +59,7 @@ enum LevelCrossingError {
 #[derive(Debug, Default, Clone, Serialize, Deserialize, ToSchema)]
 pub(in crate::views) struct LevelCrossingOccupancyForm {
     train_ids: Vec<i64>,
-    level_crossing_ids: Vec<i64>,
+    level_crossing_ids: Vec<Identifier>,
     infra_id: i64,
     electrical_profile_set_id: Option<i64>,
 }
@@ -81,7 +82,7 @@ pub(in crate::views) struct LevelCrossingOccupancy {
     tag = "level_crossing",
     request_body = inline(LevelCrossingOccupancyForm),
     responses(
-        (status = 200, description = "Occupancy periods of the given level crossings", body = inline(HashMap<i64, Vec<LevelCrossingOccupancy>>)),
+        (status = 200, description = "Occupancy periods of the given level crossings", body = inline(HashMap<Identifier, Vec<LevelCrossingOccupancy>>)),
     ),
 )]
 pub(in crate::views) async fn occupancy(
@@ -99,7 +100,7 @@ pub(in crate::views) async fn occupancy(
         infra_id,
         electrical_profile_set_id,
     }): Json<LevelCrossingOccupancyForm>,
-) -> Result<Json<HashMap<i64, Vec<LevelCrossingOccupancy>>>> {
+) -> Result<Json<HashMap<Identifier, Vec<LevelCrossingOccupancy>>>> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())
         .await
@@ -123,8 +124,12 @@ pub(in crate::views) async fn occupancy(
     })
     .await?;
 
+    let level_crossing_keys = level_crossing_ids
+        .into_iter()
+        .map(|obj_id| (infra_id, obj_id.to_string()));
+
     let level_crossings: Vec<LevelCrossingModel> =
-        LevelCrossingModel::retrieve_batch_or_fail(conn, level_crossing_ids, |missing| {
+        LevelCrossingModel::retrieve_batch_or_fail(conn, level_crossing_keys, |missing| {
             LevelCrossingError::LevelCrossingBatchNotFound {
                 count: missing.len(),
             }
@@ -165,30 +170,39 @@ pub(in crate::views) async fn occupancy(
     let rolling_stock_lengths = load_rolling_stock_lengths(&train_schedules, conn).await?;
 
     // For each occurrence + simulation result, compute level crossing occupancy and group by level crossing id
-    let mut results: HashMap<i64, Vec<LevelCrossingOccupancy>> = HashMap::new();
+    let mut results: HashMap<Identifier, Vec<LevelCrossingOccupancy>> = HashMap::new();
 
-    for ((occurrence_id, train_schedule), (simulation, pathfinding)) in
-        train_occurrences.into_iter().zip(simulations_result)
-    {
-        let Some(rolling_stock_length) =
-            rolling_stock_lengths.get(&train_schedule.rolling_stock_name)
-        else {
-            continue;
-        };
+    let train_occurences_with_rollingstock = train_occurrences
+        .into_iter()
+        .zip(simulations_result)
+        .filter_map(
+            |((occurrence_id, train_schedule), (simulation, pathfinding))| {
+                rolling_stock_lengths
+                    .get(&train_schedule.rolling_stock_name)
+                    .zip(Some((
+                        occurrence_id,
+                        train_schedule,
+                        simulation,
+                        pathfinding,
+                    )))
+            },
+        )
+        .collect_vec();
 
-        for level_crossing in &level_crossings {
+    for level_crossing in level_crossings {
+        let level_crossing_occupancies = results.entry(level_crossing.obj_id.into()).or_default();
+        for (rolling_stock_length, (occurrence_id, train_schedule, simulation, pathfinding)) in
+            &train_occurences_with_rollingstock
+        {
             if let Some(occupancy) = find_level_crossing_occupancy(
                 &level_crossing.schema,
-                &occurrence_id,
-                &simulation,
-                &pathfinding,
+                occurrence_id,
+                simulation,
+                pathfinding,
                 train_schedule.start_time,
                 rolling_stock_length,
             ) {
-                results
-                    .entry(level_crossing.id)
-                    .or_default()
-                    .push(occupancy);
+                level_crossing_occupancies.push(occupancy);
             }
         }
     }
@@ -489,7 +503,7 @@ mod tests {
         lc_position: f64,
         lc_id: &str,
         track: &str,
-    ) -> (TestResponse, i64, TrainSchedule) {
+    ) -> (TestResponse, Identifier, TrainSchedule) {
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
             .response(StatusCode::OK)
@@ -508,7 +522,7 @@ mod tests {
         lc_id: &str,
         track: &str,
         lc_position: f64,
-    ) -> (TestResponse, i64, TrainSchedule) {
+    ) -> (TestResponse, Identifier, TrainSchedule) {
         let app = TestAppBuilder::new().core_client(core.into()).build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
@@ -554,12 +568,16 @@ mod tests {
             .post("/level_crossing_occupancy")
             .json(&LevelCrossingOccupancyForm {
                 train_ids: vec![train.id],
-                level_crossing_ids: vec![level_crossing.id],
+                level_crossing_ids: vec![level_crossing.obj_id.clone().into()],
                 infra_id: small_infra.id,
                 electrical_profile_set_id: None,
             });
 
-        (app.fetch(request).await, level_crossing.id, train)
+        (
+            app.fetch(request).await,
+            level_crossing.obj_id.clone().into(),
+            train,
+        )
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -568,7 +586,7 @@ mod tests {
         let (response, level_crossing_id, train) =
             init_level_crossing_test(750.0, "LC_TC1", "TC1").await;
 
-        let occupancies: HashMap<i64, Vec<LevelCrossingOccupancy>> =
+        let occupancies: HashMap<Identifier, Vec<LevelCrossingOccupancy>> =
             response.assert_status(StatusCode::OK).json_into();
 
         assert!(occupancies.contains_key(&level_crossing_id));
@@ -598,9 +616,16 @@ mod tests {
         let (response, level_crossing_id, ..) =
             init_level_crossing_test(750.0, "LC_TX1", "TX1").await;
 
-        let occupancies: HashMap<i64, Vec<LevelCrossingOccupancy>> =
+        let occupancies: HashMap<Identifier, Vec<LevelCrossingOccupancy>> =
             response.assert_status(StatusCode::OK).json_into();
 
-        assert!(!occupancies.contains_key(&level_crossing_id));
+        // Level crossing should exist but have no occupancies
+        assert_eq!(
+            occupancies
+                .get(&level_crossing_id)
+                .map(|vec| vec.len())
+                .unwrap_or(0),
+            0
+        );
     }
 }

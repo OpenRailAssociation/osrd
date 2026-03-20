@@ -1818,8 +1818,7 @@ paths:
                 level_crossing_ids:
                   type: array
                   items:
-                    type: integer
-                    format: int64
+                    $ref: '#/components/schemas/Identifier'
                 train_ids:
                   type: array
                   items:
@@ -1907,8 +1906,9 @@ paths:
                         direction:
                           $ref: '#/components/schemas/Direction'
                 propertyNames:
-                  type: integer
-                  format: int64
+                  type: string
+                  maxLength: 255
+                  minLength: 1
   /light_rolling_stock:
     get:
       tags:
@@ -9433,6 +9433,10 @@ components:
         subject_id:
           type: integer
           format: int64
+    Identifier:
+      type: string
+      maxLength: 255
+      minLength: 1
     Infra:
       type: object
       required:

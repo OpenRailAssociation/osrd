@@ -1929,7 +1929,7 @@ export type PostLevelCrossingOccupancyApiArg = {
   body: {
     electrical_profile_set_id?: number | null;
     infra_id: number;
-    level_crossing_ids: number[];
+    level_crossing_ids: Identifier[];
     train_ids: number[];
   };
 };
@@ -3622,6 +3622,7 @@ export type RoutePath = {
   }[];
   track_ranges: DirectionalTrackRange[];
 };
+export type Identifier = string;
 export type LightModeEffortCurves = {
   is_electric: boolean;
 };
