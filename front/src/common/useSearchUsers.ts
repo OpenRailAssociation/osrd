@@ -15,9 +15,11 @@ export type User = {
   name: string;
 };
 
+export const DEBOUNCE_DURATION = 150;
+
 export default function useSearchUsers() {
   const [searchTerm, setSearchTerm] = useState('');
-  const debouncedSearchTerm = useDebounce(searchTerm, 150);
+  const debouncedSearchTerm = useDebounce(searchTerm, DEBOUNCE_DURATION);
 
   const { data: searchedUsersData } = osrdEditoastApi.endpoints.postSearch.useQuery(
     debouncedSearchTerm
