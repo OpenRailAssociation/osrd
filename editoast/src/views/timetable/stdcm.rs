@@ -513,6 +513,7 @@ mod tests {
     use crate::views::test_app::TestAppBuilder;
     use crate::views::timetable::simulation_empty_response;
     use crate::views::timetable::stdcm::Request;
+    use crate::views::timetable::stdcm::request::ConsistSchedule;
     use crate::views::timetable::stdcm::request::PathfindingItem;
     use crate::views::timetable::stdcm::request::StepTimingData;
 
@@ -578,6 +579,10 @@ mod tests {
             max_speed: None,
             loading_gauge_type: None,
             allowed_track_sections: None,
+            consist_schedule: ConsistSchedule {
+                boundaries: vec![],
+                values: vec![],
+            },
         }
     }
 

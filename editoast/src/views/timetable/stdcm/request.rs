@@ -43,6 +43,31 @@ pub(crate) struct PathfindingItem {
     pub(crate) timing_data: Option<StepTimingData>,
 }
 
+#[editoast_derive::annotate_units]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone, ToSchema)]
+pub(crate) struct ConsistConfiguration {
+    pub(crate) rolling_stock_id: i64,
+    pub(crate) towed_rolling_stock_id: Option<i64>,
+    #[serde(default, with = "units::kilogram::option")]
+    pub(crate) total_mass: Option<quantities::Mass>,
+    #[serde(default, with = "units::meter::option")]
+    pub(crate) total_length: Option<quantities::Length>,
+    #[serde(default, with = "units::meter_per_second::option")]
+    pub(crate) max_speed: Option<quantities::Velocity>,
+    pub(crate) speed_limit_tag: Option<String>,
+    pub(crate) loading_gauge_type: Option<LoadingGaugeType>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
+pub(crate) struct ConsistSchedule {
+    /// Indexes of steps where consist change occur
+    /// It should not contain 0 and len(steps) and should be increasing
+    pub(crate) boundaries: Vec<usize>,
+    /// Consist configuration for each segment
+    /// It should contains one more element than boundaries
+    pub(crate) values: Vec<ConsistConfiguration>,
+}
+
 /// Convert the list of pathfinding items into a list of path item
 pub(super) fn convert_steps(steps: &[PathfindingItem]) -> Vec<PathItem> {
     steps
@@ -116,6 +141,7 @@ pub(crate) struct Request {
     /// Set of authorized track section ids for the current loading gauge,
     /// None value means no zone restriction.
     pub(crate) allowed_track_sections: Option<HashSet<String>>,
+    pub(crate) consist_schedule: ConsistSchedule,
 }
 
 impl Request {
@@ -389,6 +415,29 @@ impl<'de> Deserialize<'de> for Request {
             return Err(serde::de::Error::custom(
                 "the max_speed must be strictly positive",
             ));
+        }
+
+        let consist_schedule = &request.consist_schedule;
+        if !consist_schedule.values.is_empty() {
+            if consist_schedule.boundaries.len() + 1 != consist_schedule.values.len() {
+                return Err(serde::de::Error::custom(
+                    "the boundaries should have one less element than values",
+                ));
+            }
+
+            if consist_schedule.boundaries.contains(&0)
+                || consist_schedule.boundaries.contains(&request.steps.len())
+            {
+                return Err(serde::de::Error::custom(
+                    "the boundaries should not contain 0 and len(steps)",
+                ));
+            }
+
+            if !consist_schedule.boundaries.is_sorted_by(|a, b| a < b) {
+                return Err(serde::de::Error::custom(
+                    "the boundaries should be increasing",
+                ));
+            }
         }
 
         Ok(request)

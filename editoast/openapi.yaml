@@ -3432,6 +3432,7 @@ paths:
               - steps
               - rolling_stock_id
               - comfort
+              - consist_schedule
               properties:
                 allowed_track_sections:
                   type:
@@ -3445,6 +3446,8 @@ paths:
                   uniqueItems: true
                 comfort:
                   $ref: '#/components/schemas/Comfort'
+                consist_schedule:
+                  $ref: '#/components/schemas/ConsistSchedule'
                 electrical_profile_set_id:
                   type:
                   - integer
@@ -5176,109 +5179,43 @@ components:
           description: List of work schedule ids involved in the conflict
     ConsistConfiguration:
       type: object
-      description: Represents a physics consist.
       required:
-      - supported_signaling_systems
-      - loading_gauge_type
-      - physics_consist
+      - rolling_stock_id
       properties:
         loading_gauge_type:
-          $ref: '#/components/schemas/LoadingGaugeType'
-          description: The loading gauge of the rolling stock
-        physics_consist:
-          type: object
-          required:
-          - effort_curves
-          - length
-          - max_speed
-          - startup_time
-          - startup_acceleration
-          - comfort_acceleration
-          - const_gamma
-          - inertia_coefficient
-          - mass
-          - rolling_resistance
-          properties:
-            base_power_class:
-              type:
-              - string
-              - 'null'
-            comfort_acceleration:
-              type: number
-              format: double
-              description: Acceleration in m·s⁻²
-            const_gamma:
-              type: number
-              format: double
-              description: |2-
-                 The constant gamma braking coefficient used when NOT circulating
-                 under ETCS/ERTMS signaling system
-                Acceleration in m·s⁻²
-            effort_curves:
-              $ref: '#/components/schemas/EffortCurves'
-            electrical_power_startup_time:
-              type:
-              - integer
-              - 'null'
-              format: int64
-              description: |-
-                The time the train takes before actually using electrical power.
-                Is null if the train is not electric or the value not specified.
-              minimum: 0
-            etcs_brake_params:
-              oneOf:
-              - type: 'null'
-              - $ref: '#/components/schemas/EtcsBrakeParams'
-            inertia_coefficient:
-              type: number
-              format: double
-            length:
-              type: integer
-              format: int64
-              minimum: 0
-            mass:
-              type: integer
-              format: int64
-              minimum: 0
-            max_speed:
-              type: number
-              format: double
-              description: Velocity in m·s⁻¹
-            power_restrictions:
-              type: object
-              description: Mapping of power restriction code to power class
-              additionalProperties:
-                type: string
-              propertyNames:
-                type: string
-            raise_pantograph_time:
-              type:
-              - integer
-              - 'null'
-              format: int64
-              description: |-
-                The time it takes to raise this train's pantograph.
-                Is null if the train is not electric or the value not specified.
-              minimum: 0
-            rolling_resistance:
-              $ref: '#/components/schemas/RollingResistance'
-            startup_acceleration:
-              type: number
-              format: double
-              description: Acceleration in m·s⁻²
-            startup_time:
-              type: integer
-              format: int64
-              minimum: 0
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/LoadingGaugeType'
+        max_speed:
+          type:
+          - number
+          - 'null'
+          format: double
+          description: Velocity in m·s⁻¹
+        rolling_stock_id:
+          type: integer
+          format: int64
         speed_limit_tag:
           type:
           - string
           - 'null'
-        supported_signaling_systems:
-          type: array
-          items:
-            type: string
-          description: List of supported signaling systems
+        total_length:
+          type:
+          - number
+          - 'null'
+          format: double
+          description: Length in m
+        total_mass:
+          type:
+          - number
+          - 'null'
+          format: double
+          description: Mass in kg
+        towed_rolling_stock_id:
+          type:
+          - integer
+          - 'null'
+          format: int64
     ConsistSchedule:
       type: object
       required:
@@ -5290,10 +5227,16 @@ components:
           items:
             type: integer
             minimum: 0
+          description: |-
+            Indexes of steps where consist change occur
+            It should not contain 0 and len(steps) and should be increasing
         values:
           type: array
           items:
             $ref: '#/components/schemas/ConsistConfiguration'
+          description: |-
+            Consist configuration for each segment
+            It should contains one more element than boundaries
     ConstraintDistributionChangeGroup:
       type: object
       required:
@@ -14822,6 +14765,111 @@ components:
           format: date-time
         zone:
           type: string
+    core.ConsistConfiguration:
+      type: object
+      description: Represents a physics consist.
+      required:
+      - supported_signaling_systems
+      - loading_gauge_type
+      - physics_consist
+      properties:
+        loading_gauge_type:
+          $ref: '#/components/schemas/LoadingGaugeType'
+          description: The loading gauge of the rolling stock
+        physics_consist:
+          type: object
+          required:
+          - effort_curves
+          - length
+          - max_speed
+          - startup_time
+          - startup_acceleration
+          - comfort_acceleration
+          - const_gamma
+          - inertia_coefficient
+          - mass
+          - rolling_resistance
+          properties:
+            base_power_class:
+              type:
+              - string
+              - 'null'
+            comfort_acceleration:
+              type: number
+              format: double
+              description: Acceleration in m·s⁻²
+            const_gamma:
+              type: number
+              format: double
+              description: |2-
+                 The constant gamma braking coefficient used when NOT circulating
+                 under ETCS/ERTMS signaling system
+                Acceleration in m·s⁻²
+            effort_curves:
+              $ref: '#/components/schemas/EffortCurves'
+            electrical_power_startup_time:
+              type:
+              - integer
+              - 'null'
+              format: int64
+              description: |-
+                The time the train takes before actually using electrical power.
+                Is null if the train is not electric or the value not specified.
+              minimum: 0
+            etcs_brake_params:
+              oneOf:
+              - type: 'null'
+              - $ref: '#/components/schemas/EtcsBrakeParams'
+            inertia_coefficient:
+              type: number
+              format: double
+            length:
+              type: integer
+              format: int64
+              minimum: 0
+            mass:
+              type: integer
+              format: int64
+              minimum: 0
+            max_speed:
+              type: number
+              format: double
+              description: Velocity in m·s⁻¹
+            power_restrictions:
+              type: object
+              description: Mapping of power restriction code to power class
+              additionalProperties:
+                type: string
+              propertyNames:
+                type: string
+            raise_pantograph_time:
+              type:
+              - integer
+              - 'null'
+              format: int64
+              description: |-
+                The time it takes to raise this train's pantograph.
+                Is null if the train is not electric or the value not specified.
+              minimum: 0
+            rolling_resistance:
+              $ref: '#/components/schemas/RollingResistance'
+            startup_acceleration:
+              type: number
+              format: double
+              description: Acceleration in m·s⁻²
+            startup_time:
+              type: integer
+              format: int64
+              minimum: 0
+        speed_limit_tag:
+          type:
+          - string
+          - 'null'
+        supported_signaling_systems:
+          type: array
+          items:
+            type: string
+          description: List of supported signaling systems
     core.ETCSBrakingCurvesResponse:
       type: object
       required:

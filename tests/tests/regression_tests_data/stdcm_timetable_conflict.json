@@ -41,7 +41,11 @@
             }
         ],
         "comfort": "STANDARD",
-        "margin": "0%"
+        "margin": "0%",
+        "consist_schedule": {
+            "boundaries": [],
+            "values": []
+        }
     },
     "prelude": [
         {

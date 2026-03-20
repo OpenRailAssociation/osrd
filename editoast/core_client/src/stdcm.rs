@@ -121,6 +121,7 @@ pub struct UndirectedTrackRange {
 
 /// Represents a physics consist.
 #[derive(Serialize, Deserialize, Clone, Debug, ToSchema, Hash, PartialEq, Eq)]
+#[schema(as = core::ConsistConfiguration)]
 pub struct ConsistConfiguration {
     /// List of supported signaling systems
     pub supported_signaling_systems: Vec<String>,

@@ -42,7 +42,11 @@
         ],
         "comfort": "STANDARD",
         "margin": "0%",
-        "standard_allowance": "14%"
+        "standard_allowance": "14%",
+        "consist_schedule": {
+            "boundaries": [],
+            "values": []
+        }
     },
     "prelude": [
         {
