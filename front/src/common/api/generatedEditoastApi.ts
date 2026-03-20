@@ -1326,7 +1326,7 @@ const injectedRtkApi = api
           params: {
             infra_id: queryArg.infraId,
             electrical_profile_set_id: queryArg.electricalProfileSetId,
-            exception_key: queryArg.exceptionKey,
+            exception_id: queryArg.exceptionId,
           },
         }),
         providesTags: ['train_schedule', 'etcs_braking_curves'],
@@ -2618,7 +2618,7 @@ export type GetTrainSchedulesByIdEtcsBrakingCurvesApiArg = {
   id: number;
   infraId: number;
   electricalProfileSetId?: number;
-  exceptionKey?: string;
+  exceptionId?: number;
 };
 export type GetTrainSchedulesByIdPathApiResponse = /** status 200 The path */ PathfindingResult;
 export type GetTrainSchedulesByIdPathApiArg = {
