@@ -244,6 +244,18 @@ class ScheduleItem(BaseModel):
     stop_for: timedelta | None = None
 
 
+class SendLastMinuteRequestAuthorizedGetResponse(BaseModel):
+    authorized: bool
+    """
+    Whether the user is authenticated and authorized to send last-minute requests
+    """
+
+
+class SendLastMinuteRequestPostRequest(BaseModel):
+    simulation_report: SimulationReport
+    simulation_report_sheet: bytes
+
+
 class SendLastMinuteRequestResponse(BaseModel):
     """
     Response model to validate and return when a last-minute request has been successfully sent.

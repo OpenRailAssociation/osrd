@@ -8,6 +8,7 @@ set -o pipefail
 uv run python generate_railway_interface_management_models.py \
     | uv run datamodel-codegen \
         --input-file-type openapi \
+        --openapi-scopes schemas paths \
         --use-standard-collections \
         --disable-timestamp \
         --use-union-operator \
