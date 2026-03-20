@@ -18,6 +18,7 @@ use tokio::sync::Mutex;
 use crate::CoreEnv;
 use crate::Correlated;
 use crate::Task;
+use crate::TrainKey;
 use crate::TrainSet;
 
 // ========== Environment public API ==========
@@ -32,7 +33,7 @@ use crate::TrainSet;
 /// It will be cloned several times over internally, so this operation should be cheap.
 pub struct PathfindingEnv<Train>
 where
-    Train: Clone + Hash + Eq + Send + Sync + 'static,
+    Train: TrainKey + 'static,
 {
     pub(in crate::envs) core_env: CoreEnv,
     pub(in crate::envs) inputs: PathfindingEnvInputs<Train>,
@@ -40,7 +41,7 @@ where
 
 impl<Train> PathfindingEnv<Train>
 where
-    Train: Clone + Hash + Eq + Send + Sync + 'static,
+    Train: TrainKey + 'static,
 {
     pub fn new(core_env: CoreEnv) -> Self {
         Self {
@@ -131,7 +132,7 @@ pub struct PathfindingTrain {
 #[cfg_attr(test, derive(Clone))]
 pub(crate) struct PathfindingEnvInputs<Train>
 where
-    Train: Clone + Hash + Eq + Send + Sync + 'static,
+    Train: TrainKey + 'static,
 {
     // TODO: deduplicate values
     consists: HashMap<Train, Arc<PathfindingConsist>>,
@@ -140,7 +141,7 @@ where
 
 impl<Train> Default for PathfindingEnvInputs<Train>
 where
-    Train: Clone + Hash + Eq + Send + Sync + 'static,
+    Train: TrainKey + 'static,
 {
     fn default() -> Self {
         Self {
@@ -198,7 +199,7 @@ impl IntoIterator for PathWaypointAlternatives {
 
 impl<Train> Extend<(Train, PathfindingTrain)> for PathfindingEnv<Train>
 where
-    Train: Clone + Hash + Eq + Send + Sync + 'static,
+    Train: TrainKey + 'static,
 {
     fn extend<T: IntoIterator<Item = (Train, PathfindingTrain)>>(&mut self, iter: T) {
         let iter = iter.into_iter().map(
@@ -223,7 +224,7 @@ where
 
 impl<Train> PathfindingEnvInputs<Train>
 where
-    Train: Clone + Hash + Eq + Send + Sync + 'static,
+    Train: TrainKey + 'static,
 {
     fn iter(&self) -> impl Iterator<Item = Correlated<Train, Input>> {
         self.consists.keys().map(|train| {
@@ -249,7 +250,7 @@ where
 /// its internal state. Do not create this struct directly.
 pub(in crate::envs) struct Runner<Train>
 where
-    Train: Clone + Hash + Eq + Send + Sync + 'static,
+    Train: TrainKey + 'static,
 {
     core_env: CoreEnv,
     pub(in crate::envs) pathfinding_inputs: Arc<PathfindingEnvInputs<Train>>,
@@ -264,7 +265,7 @@ pub(in crate::envs) struct Input(
 
 impl<Train> Runner<Train>
 where
-    Train: Clone + Hash + Eq + Send + Sync + 'static,
+    Train: TrainKey + 'static,
 {
     pub(in crate::envs) fn new(PathfindingEnv { core_env, inputs }: PathfindingEnv<Train>) -> Self {
         let input_index = DashMap::<Input, TrainSet<Train>>::new();
@@ -331,7 +332,7 @@ where
 #[derive(Debug, Clone)]
 pub struct PathfindingRun<Train>
 where
-    Train: Clone + Hash + Eq + Send + Sync + 'static,
+    Train: TrainKey + 'static,
 {
     inputs: Arc<PathfindingEnvInputs<Train>>,
     // optionally deduplicate similar outputs of different inputs
@@ -344,7 +345,7 @@ type PendingPathfindingResult =
 
 impl<Train> PathfindingRun<Train>
 where
-    Train: Clone + Hash + Eq + Send + Sync + 'static,
+    Train: TrainKey + 'static,
 {
     fn new(runner: &Runner<Train>) -> Self {
         let paths = DashMap::from_iter(

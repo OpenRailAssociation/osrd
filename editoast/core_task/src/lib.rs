@@ -1,6 +1,7 @@
 mod envs;
 mod path_properties;
 
+use std::hash::Hash;
 use std::sync::Arc;
 
 // Crate-level exports
@@ -24,6 +25,12 @@ use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
 use tokio::sync::Mutex;
 use tracing::Instrument;
+
+/// Interface required by [SimulationEnv] and friends for [Correlated] keys
+///
+/// A unique identifier to represent a train in environments.
+pub trait TrainKey: Clone + Hash + Eq + Send + Sync {}
+impl<T> TrainKey for T where T: Clone + Hash + Eq + Send + Sync {}
 
 /// Indicates that a Core task can be performed and cached
 ///
