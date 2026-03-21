@@ -142,7 +142,7 @@
     "vite-plugin-checker": "^0.12.0",
     "vite-plugin-static-copy": "^3.3.0",
     "vite-tsconfig-paths": "^6.1.1",
-    "vitest": "^4.0.18"
+    "vitest": "^4.1.0"
   },
   "scripts": {
     "compile": "tsc -b",
