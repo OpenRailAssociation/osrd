@@ -29,7 +29,7 @@
     "classnames": "^2.5.1",
     "file-saver": "^2.0.5",
     "lodash": "^4.17.23",
-    "maplibre-gl": "^5.19.0",
+    "maplibre-gl": "^5.20.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-map-gl": "^8.1.0"
