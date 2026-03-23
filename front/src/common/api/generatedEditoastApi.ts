@@ -1340,7 +1340,7 @@ const injectedRtkApi = api
           url: `/train_schedules/${queryArg.id}/path`,
           params: {
             infra_id: queryArg.infraId,
-            exception_key: queryArg.exceptionKey,
+            exception_id: queryArg.exceptionId,
           },
         }),
         providesTags: ['paced_train', 'pathfinding'],
@@ -2624,7 +2624,7 @@ export type GetTrainSchedulesByIdPathApiResponse = /** status 200 The path */ Pa
 export type GetTrainSchedulesByIdPathApiArg = {
   id: number;
   infraId: number;
-  exceptionKey?: string;
+  exceptionId?: number;
 };
 export type GetTrainSchedulesByIdSimulationApiResponse =
   /** status 200 Simulation Output */ SimulationResponse;
