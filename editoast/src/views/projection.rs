@@ -737,10 +737,8 @@ pub async fn compute_projected_train_path_op<T: TrainScheduleLike>(
     }
 
     let mut to_compute = HashMap::new();
-    for ((idx, train_schedule), (simulation, pathfinding)) in train_schedules
-        .iter()
-        .enumerate()
-        .zip(simulations.into_iter())
+    for ((idx, train_schedule), (simulation, pathfinding)) in
+        train_schedules.iter().enumerate().zip(simulations)
     {
         to_compute
             .entry(Arc::as_ptr(&simulation))

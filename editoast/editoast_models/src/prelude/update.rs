@@ -195,7 +195,7 @@ where
     {
         let ids = ids.into_iter().collect::<std::collections::HashSet<_>>();
         let (updated_ids, results): (std::collections::HashSet<_>, C) = self
-            .update_batch_with_key_unchecked::<_, Vec<(_, _)>>(conn, ids.clone().into_iter())
+            .update_batch_with_key_unchecked::<_, Vec<(_, _)>>(conn, ids.clone())
             .await?
             .into_iter()
             .unzip();
@@ -247,7 +247,7 @@ where
     {
         let ids = ids.into_iter().collect::<std::collections::HashSet<_>>();
         let (updated_ids, results): (std::collections::HashSet<_>, C) = self
-            .update_batch_with_key_unchecked::<_, Vec<(_, _)>>(conn, ids.clone().into_iter())
+            .update_batch_with_key_unchecked::<_, Vec<(_, _)>>(conn, ids.clone())
             .await?
             .into_iter()
             .map(|(k, v)| (k.clone(), (k, v)))

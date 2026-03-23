@@ -309,7 +309,7 @@ pub(in crate::views) async fn user_privileges(
 ) -> Result<Json<HashMap<ResourceType, Vec<ResourcePrivileges>>>> {
     let resources = body
         .into_iter()
-        .flat_map(|(rtype, ids)| std::iter::repeat(rtype).zip(ids.into_iter()));
+        .flat_map(|(rtype, ids)| std::iter::repeat(rtype).zip(ids));
 
     let mut result = HashMap::<_, Vec<_>>::new();
 

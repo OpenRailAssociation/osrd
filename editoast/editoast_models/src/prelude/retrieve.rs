@@ -157,13 +157,10 @@ where
     {
         let ids = ids.into_iter().collect::<std::collections::HashSet<_>>();
         let (retrieved_ids, results): (std::collections::HashSet<_>, C) =
-            Self::retrieve_batch_with_key_unchecked::<_, Vec<(_, _)>>(
-                conn,
-                ids.clone().into_iter(),
-            )
-            .await?
-            .into_iter()
-            .unzip();
+            Self::retrieve_batch_with_key_unchecked::<_, Vec<(_, _)>>(conn, ids.clone())
+                .await?
+                .into_iter()
+                .unzip();
         let missing = ids
             .difference(&retrieved_ids)
             .collect::<std::collections::HashSet<_>>();
@@ -206,14 +203,11 @@ where
     {
         let ids = ids.into_iter().collect::<std::collections::HashSet<_>>();
         let (retrieved_ids, results): (std::collections::HashSet<_>, C) =
-            Self::retrieve_batch_with_key_unchecked::<_, Vec<(_, _)>>(
-                conn,
-                ids.clone().into_iter(),
-            )
-            .await?
-            .into_iter()
-            .map(|(k, v)| (k.clone(), (k, v)))
-            .unzip();
+            Self::retrieve_batch_with_key_unchecked::<_, Vec<(_, _)>>(conn, ids.clone())
+                .await?
+                .into_iter()
+                .map(|(k, v)| (k.clone(), (k, v)))
+                .unzip();
         let missing = ids
             .difference(&retrieved_ids)
             .collect::<std::collections::HashSet<_>>();
