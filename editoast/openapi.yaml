@@ -7717,7 +7717,7 @@ components:
         status:
           type: integer
           enum:
-          - 404
+          - 400
         type:
           type: string
           enum:
@@ -7760,7 +7760,7 @@ components:
         status:
           type: integer
           enum:
-          - 404
+          - 400
         type:
           type: string
           enum:
@@ -7784,7 +7784,7 @@ components:
         status:
           type: integer
           enum:
-          - 404
+          - 400
         type:
           type: string
           enum:
