@@ -1,11 +1,17 @@
 import { renderHook, act } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 import { useDebounce, useDebouncedFunc } from '../useDebounce';
 
-vi.useFakeTimers();
-
 describe('useDebounce', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('should debounce value', () => {
     const { result, rerender } = renderHook((value) => useDebounce<string>(value, 500), {
       initialProps: 'Hello',
@@ -13,9 +19,7 @@ describe('useDebounce', () => {
 
     expect(result.current).toBe('Hello');
 
-    act(() => {
-      rerender('Hello, World!');
-    });
+    rerender('Hello, World!');
 
     act(() => {
       vi.advanceTimersByTime(500);
@@ -23,9 +27,7 @@ describe('useDebounce', () => {
 
     expect(result.current).toBe('Hello, World!');
 
-    act(() => {
-      rerender('Hello, World! Again!');
-    });
+    rerender('Hello, World! Again!');
 
     act(() => {
       vi.advanceTimersByTime(500);
@@ -41,13 +43,9 @@ describe('useDebounce', () => {
 
     expect(result.current).toBe('Hello');
 
-    act(() => {
-      rerender('Hello, World!');
-    });
+    rerender('Hello, World!');
 
-    act(() => {
-      unmount();
-    });
+    unmount();
 
     act(() => {
       vi.advanceTimersByTime(500);
@@ -58,6 +56,14 @@ describe('useDebounce', () => {
 });
 
 describe('useDebouncedFunc', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('should debounce function', () => {
     const mockFunc = vi.fn();
     const { rerender } = renderHook((value) => useDebouncedFunc<string>(value, 500, mockFunc), {
@@ -66,9 +72,7 @@ describe('useDebouncedFunc', () => {
 
     expect(mockFunc).not.toHaveBeenCalled();
 
-    act(() => {
-      rerender('Hello, World!');
-    });
+    rerender('Hello, World!');
 
     expect(mockFunc).not.toHaveBeenCalled();
 
@@ -78,9 +82,7 @@ describe('useDebouncedFunc', () => {
 
     expect(mockFunc).toHaveBeenLastCalledWith('Hello, World!');
 
-    act(() => {
-      rerender('Hello, World! Again!');
-    });
+    rerender('Hello, World! Again!');
 
     act(() => {
       vi.advanceTimersByTime(500);
@@ -100,13 +102,9 @@ describe('useDebouncedFunc', () => {
 
     expect(mockFunc).not.toHaveBeenCalled();
 
-    act(() => {
-      rerender('Hello, World!');
-    });
+    rerender('Hello, World!');
 
-    act(() => {
-      unmount();
-    });
+    unmount();
 
     act(() => {
       vi.advanceTimersByTime(500);
