@@ -188,7 +188,7 @@ pub(in crate::views) async fn delimited_area(
     if !(invalid_exits.is_empty() && invalid_entries.is_empty()) {
         let invalid_locations = invalid_entries
             .into_iter()
-            .chain(invalid_exits.into_iter())
+            .chain(invalid_exits)
             .collect::<Vec<_>>();
         return Err(DelimitedAreaError::InvalidLocations { invalid_locations }.into());
     }
