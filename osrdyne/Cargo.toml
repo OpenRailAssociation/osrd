@@ -16,7 +16,7 @@ futures-lite = "2.6.1"
 http = "1.4.0"
 im = "15.1.0"
 k8s-openapi = { version = "0.27", features = ["v1_35"] }
-kube = { version = "3.0", default-features = false, features = [
+kube = { version = "3.1", default-features = false, features = [
   "client",
   "derive",
   "rustls-tls",
