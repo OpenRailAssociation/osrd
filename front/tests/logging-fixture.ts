@@ -1,4 +1,4 @@
-import { test as baseTest, type Page } from '@playwright/test';
+import { test as baseTest, type Page, type Request, type Response } from '@playwright/test';
 
 // Simple logger
 export const logger = {
@@ -8,85 +8,97 @@ export const logger = {
   warn: (message: string) => console.warn(`[WARN] ${message}`),
 };
 
-// Extend baseTest with logging inside the test hooks
-const testWithLogging = baseTest.extend<{ page: Page; ignorePageErrors: boolean }>({
-  ignorePageErrors: [false, { option: true }],
-  page: async ({ page, browserName, ignorePageErrors }, use, testInfo) => {
-    const startTime = Date.now(); // Record the start time
+function isCriticalApiRequest(url: string, resourceType: string): boolean {
+  return (resourceType === 'xhr' || resourceType === 'fetch') && /\/api\//.test(url);
+}
 
-    // Log before the test starts
+function isAbortError(errorText: string): boolean {
+  return errorText === 'net::ERR_ABORTED' || errorText === 'NS_BINDING_ABORTED';
+}
+
+const testWithLogging = baseTest.extend<{ page: Page }>({
+  page: async ({ page, browserName }, use, testInfo) => {
+    const startTime = Date.now();
+    const runtimeErrors: string[] = [];
+
     logger.info(`START: '${testInfo.title}' | Browser: ${browserName}`);
 
-    // Attach browser metadata (name and version)
-    const browserVersion = page.context().browser()?.version();
-    testInfo.attachments.push({
-      name: 'metadata.json',
+    const browserVersion = page.context().browser()?.version() ?? 'unknown';
+
+    await testInfo.attach('metadata.json', {
+      body: Buffer.from(
+        JSON.stringify({ name: browserName, version: browserVersion }, null, 2),
+        'utf-8'
+      ),
       contentType: 'application/json',
-      body: Buffer.from(JSON.stringify({ name: browserName, version: browserVersion }), 'utf-8'),
     });
 
-    // Handle uncaught exceptions
-    if (!ignorePageErrors) {
-      page.on('pageerror', (exception) => {
-        logger.error('🚨Uncaught page error:', exception);
-        throw new Error(
-          `Test failed due to uncaught exception:\n${exception.message}\n${exception.stack}`
-        );
-      });
-    }
+    const onPageError = (exception: Error) => {
+      const message = `Uncaught page error:\n${exception.message}\n${exception.stack ?? ''}`;
+      logger.error('🚨 Uncaught page error:', exception);
+      runtimeErrors.push(message);
+    };
 
-    // Fail only on real API problems; ignore benign aborts/noisy assets.
-    page.on('requestfailed', (request) => {
+    const onRequestFailed = (request: Request) => {
       const url = request.url();
-      const type = request.resourceType(); // 'xhr' | 'fetch' | 'image' | ...
+      const type = request.resourceType();
       const errorText = request.failure()?.errorText ?? 'Unknown network error';
 
-      // Abort messages (Chromium & Firefox)
-      const isAbort =
-        errorText === 'net::ERR_ABORTED' || // Chromium
-        errorText === 'NS_BINDING_ABORTED'; // Firefox
-
-      // Consider only API calls made via XHR/Fetch
-      const isCriticalApi = (type === 'xhr' || type === 'fetch') && /\/api\//.test(url);
+      const isAbort = isAbortError(errorText);
+      const isCriticalApi = isCriticalApiRequest(url, type);
 
       if (isAbort || !isCriticalApi) return;
 
-      throw new Error(`Test failed: API request failed with "${errorText}"\n${url}`);
-    });
+      runtimeErrors.push(`API request failed with "${errorText}"\n${url}`);
+    };
 
-    page.on('response', async (response) => {
+    const onResponse = (response: Response) => {
       const url = response.url();
       const req = response.request();
       const type = req.resourceType();
       const status = response.status();
       const responseText = response.statusText();
 
-      // Guard only API XHR/Fetch
-      const isCriticalApi = (type === 'xhr' || type === 'fetch') && /\/api\//.test(url);
-
+      const isCriticalApi = isCriticalApiRequest(url, type);
       if (!isCriticalApi) return;
 
-      // Fail on server/client errors; allow 2xx/3xx (201,204,304, etc.)
-      if (status >= 400) {
-        throw new Error(`HTTP error ${status} on ${url}: ${responseText}`);
+      if (status > 400) {
+        runtimeErrors.push(`HTTP error ${status} on ${url}: ${responseText}`);
       }
-    });
+    };
 
-    // Run the actual test
-    await use(page);
+    page.on('pageerror', onPageError);
+    page.on('requestfailed', onRequestFailed);
+    page.on('response', onResponse);
 
-    // Calculate the duration
-    const duration = Math.round((Date.now() - startTime) / 1000); // Convert to seconds and round
+    try {
+      await use(page);
+    } finally {
+      page.removeListener('pageerror', onPageError);
+      page.removeListener('requestfailed', onRequestFailed);
+      page.removeListener('response', onResponse);
 
-    // Log after the test ends
-    const status = testInfo.status === 'passed' ? 'SUCCESS' : 'FAILED';
-    logger.info(
-      `END: '${testInfo.title}' | Status: ${status} | Browser: ${browserName} | Duration: ${duration} s`
-    );
+      const duration = Math.round((Date.now() - startTime) / 1000);
+      const status = testInfo.status === 'passed' ? 'SUCCESS' : 'FAILED';
 
-    // If the test failed, log the error
-    if (testInfo.status === 'failed') {
-      logger.error(`ERROR: '${testInfo.title}' | ${testInfo.error?.message}`);
+      logger.info(
+        `END: '${testInfo.title}' | Status: ${status} | Browser: ${browserName} | Duration: ${duration} s`
+      );
+
+      if (testInfo.status === 'failed') {
+        logger.error(`ERROR: '${testInfo.title}' | ${testInfo.error?.message}`);
+      }
+    }
+
+    if (runtimeErrors.length > 0) {
+      await testInfo.attach('runtime-errors.txt', {
+        body: Buffer.from(runtimeErrors.join('\n\n---\n\n'), 'utf-8'),
+        contentType: 'text/plain',
+      });
+
+      throw new Error(
+        `Test failed because runtime errors were detected:\n\n${runtimeErrors.join('\n\n')}`
+      );
     }
   },
 });
