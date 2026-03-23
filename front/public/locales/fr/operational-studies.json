@@ -312,7 +312,7 @@
         "package": "Série",
         "parentCatalogEntry": "Ensemble parent",
         "publishDialogTitle": "Publier le paquet local",
-        "publishSubmit": "Editer le paquet",
+        "publishSubmit": "Publier le paquet",
         "publishToCatalog": "Publier au catalogue",
         "removeDialogText": "Vous êtes sur le point de retirer {{name}} du scénario.",
         "removeDialogTitle": "Retirer le paquet",

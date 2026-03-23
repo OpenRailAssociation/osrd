@@ -22,6 +22,7 @@ type TrainScheduleSetFormProps = {
   ) => Partial<Record<FieldName, StatusWithMessage>>;
   onValidation: (hasError: boolean) => void;
   checkNameInCatalogIsUniq?: (name: string, catalogId: number) => Promise<boolean>;
+  setIsEditing: (hasChanged: boolean) => void;
 };
 
 /**
@@ -40,6 +41,7 @@ const TrainScheduleSetForm = ({
   onSubmit,
   onValidation,
   checkNameInCatalogIsUniq,
+  setIsEditing,
 }: TrainScheduleSetFormProps) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'main.timetable.trainScheduleSets',
@@ -175,6 +177,21 @@ const TrainScheduleSetForm = ({
     () => t('namePlaceholder', { series: trainSetNameExample() }),
     []
   );
+
+  const isEditing = useMemo(() => {
+    const catalogEntryChanged =
+      catalogEntry?.type === 'create' || trainScheduleSet?.catalog_entry_id !== catalogEntry?.id;
+
+    return (
+      trainScheduleSet?.name !== name ||
+      trainScheduleSet?.description !== description ||
+      catalogEntryChanged
+    );
+  }, [trainScheduleSet, name, description, catalogEntry]);
+
+  useEffect(() => {
+    setIsEditing(isEditing);
+  }, [isEditing]);
 
   return (
     <form

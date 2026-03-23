@@ -20,6 +20,7 @@ type TrainScheduleSetDialogProps = {
   labels: {
     title: string;
     submit: string;
+    submitWithChanges?: string;
     cancel: string;
   };
 };
@@ -35,6 +36,7 @@ const TrainScheduleSetDialog = ({
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [formHasError, setFormHasError] = useState<boolean>(false);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
 
   const submit = useCallback(
     async (data: TrainScheduleSetFormData) => {
@@ -74,7 +76,9 @@ const TrainScheduleSetDialog = ({
               isDisabled={loading}
             />
             <Button
-              label={labels.submit}
+              label={
+                labels.submitWithChanges && isEditing ? labels.submitWithChanges : labels.submit
+              }
               form="train-schedule-set"
               type="submit"
               className={cx('submit-button', formHasError && 'wizz-effect')}
@@ -93,6 +97,7 @@ const TrainScheduleSetDialog = ({
         onSubmit={submit}
         onValidation={(hasError) => setFormHasError(hasError)}
         checkNameInCatalogIsUniq={checkNameInCatalogIsUniq}
+        setIsEditing={setIsEditing}
       />
     </Dialog>
   );
