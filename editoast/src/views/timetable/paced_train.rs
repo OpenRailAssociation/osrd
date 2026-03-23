@@ -431,7 +431,9 @@ pub(in crate::views) async fn get_path(
         id: train_schedule_id,
     }): Path<TrainScheduleIdParam>,
     Query(InfraIdQueryParam { infra_id }): Query<InfraIdQueryParam>,
-    Query(ExceptionQueryParam { exception_key }): Query<ExceptionQueryParam>,
+    Query(TrainScheduleExceptionQueryParam { exception_id }): Query<
+        TrainScheduleExceptionQueryParam,
+    >,
 ) -> Result<Json<PathfindingResult>> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
@@ -462,17 +464,17 @@ pub(in crate::views) async fn get_path(
         })
         .await?;
 
-    let train_schedule = match exception_key {
-        Some(exception_key) => {
-            let exception = paced_train
-                .exceptions
-                .iter()
-                .find(|e| e.key == exception_key)
-                .ok_or_else(|| TrainScheduleError::ExceptionNotFound {
-                    exception_key: exception_key.clone(),
-                })?;
-
-            paced_train.apply_exception(exception)
+    let train_schedule = match exception_id {
+        Some(exception_id) => {
+            let exception =
+                TrainScheduleException::retrieve_or_fail(conn.clone(), exception_id, || {
+                    TrainScheduleError::ExceptionNotFound {
+                        // TODO rename to exception_id
+                        exception_key: exception_id.to_string(),
+                    }
+                })
+                .await?;
+            paced_train.apply_train_schedule_exception(&exception.into())
         }
         None => paced_train.into_train_occurrence(),
     };
@@ -1668,6 +1670,8 @@ mod tests {
     use crate::models::fixtures::create_paced_train_with_exceptions;
     use crate::models::fixtures::create_simple_paced_train;
     use crate::models::fixtures::create_small_infra;
+    use crate::models::fixtures::create_timetable_with_train_schedule_set;
+    use crate::models::fixtures::create_train_schedule_exception;
     use crate::models::fixtures::create_train_schedule_set;
     use crate::models::fixtures::simple_paced_train_base;
     use crate::models::fixtures::simple_paced_train_changeset;
@@ -2370,7 +2374,7 @@ mod tests {
             create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
         let request = app.get(
             format!(
-                "/train_schedules/{}/path/?infra_id={}&exception_key=toto",
+                "/train_schedules/{}/path/?infra_id={}&exception_id=1234",
                 paced_train.id, small_infra.id
             )
             .as_str(),
@@ -2455,24 +2459,40 @@ mod tests {
         let db_pool = app.db_pool();
 
         create_fast_rolling_stock(&mut db_pool.get_ok(), "R2D2").await;
-        let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
-        let mut exception = create_created_exception_with_change_groups("exception_created_key");
-        exception.change_groups.rolling_stock = Some(RollingStockChangeGroup {
-            rolling_stock_name: "exception_rolling_stock".into(),
-            comfort: Comfort::Standard,
-        });
-        let paced_train = create_paced_train_with_exceptions(
+        let (timetable, train_schedule_set) =
+            create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
+
+        let train_schedule = create_paced_train_with_exceptions(
             &mut db_pool.get_ok(),
             train_schedule_set.id,
-            vec![exception.clone()],
+            vec![],
+        )
+        .await;
+
+        let change_rolling_stock_exception = create_train_schedule_exception(
+            &mut db_pool.get_ok(),
+            timetable.id,
+            train_schedule.id,
+            None,
+            Some("exception_for_get_path".to_string()),
+            Some(TrainScheduleExceptionChangeGroups {
+                train_name: Some(TrainNameChangeGroup {
+                    value: "exception_name_for_get_path".into(),
+                }),
+                rolling_stock: Some(RollingStockChangeGroup {
+                    rolling_stock_name: "exception_rolling_stock".into(),
+                    comfort: Comfort::Standard,
+                }),
+                ..Default::default()
+            }),
         )
         .await;
 
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
 
         let request = app.get(&format!(
-            "/train_schedules/{}/path?infra_id={}&exception_key={}",
-            paced_train.id, small_infra.id, exception.key
+            "/train_schedules/{}/path?infra_id={}&exception_id={}",
+            train_schedule.id, small_infra.id, change_rolling_stock_exception.id
         ));
 
         let response = app
@@ -2510,21 +2530,38 @@ mod tests {
         let app = TestAppBuilder::new().core_client(core.into()).build();
         let db_pool = app.db_pool();
 
-        create_fast_rolling_stock(&mut db_pool.get_ok(), "simulation_rolling_stock").await;
-        let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
-        let exception = create_created_exception_with_change_groups("exception_created_key");
-        let paced_train = create_paced_train_with_exceptions(
+        let (timetable, train_schedule_set) =
+            create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
+
+        create_fast_rolling_stock(&mut db_pool.get_ok(), "R2D2").await;
+
+        let train_schedule = create_paced_train_with_exceptions(
             &mut db_pool.get_ok(),
             train_schedule_set.id,
-            vec![exception.clone()],
+            vec![],
+        )
+        .await;
+
+        let change_train_name_exception = create_train_schedule_exception(
+            &mut db_pool.get_ok(),
+            timetable.id,
+            train_schedule.id,
+            None,
+            Some("exception_for_get_path".to_string()),
+            Some(TrainScheduleExceptionChangeGroups {
+                train_name: Some(TrainNameChangeGroup {
+                    value: "exception_name_for_get_path".into(),
+                }),
+                ..Default::default()
+            }),
         )
         .await;
 
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
 
         let request = app.get(&format!(
-            "/train_schedules/{}/path?infra_id={}&exception_key={}",
-            paced_train.id, small_infra.id, exception.key
+            "/train_schedules/{}/path?infra_id={}&exception_id={}",
+            train_schedule.id, small_infra.id, change_train_name_exception.id
         ));
 
         let response = app
