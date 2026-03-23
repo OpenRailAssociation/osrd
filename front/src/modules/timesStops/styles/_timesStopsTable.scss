@@ -150,7 +150,8 @@
     td.col-computed-arrival,
     td.col-requested-departure,
     td.col-computed-departure {
-      width: 68px;
+      min-width: 68px;
+      max-width: 68px;
       font-size: 0.875rem;
     }
 
@@ -188,7 +189,8 @@
       td.col-computed-arrival,
       td.col-requested-departure,
       td.col-computed-departure {
-        width: 84px;
+        min-width: 84px;
+        max-width: 84px;
       }
 
       td.col-stop-duration {
