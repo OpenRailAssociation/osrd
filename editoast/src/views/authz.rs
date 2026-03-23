@@ -203,9 +203,9 @@ pub(in crate::views) async fn users_info(
 
     // Retrieve users by IDs
     let users_1: Vec<_> =
-        User::retrieve_batch_or_fail(&mut db_pool.get().await?, user_ids, |missings| {
+        User::retrieve_batch_or_fail(&mut db_pool.get().await?, user_ids, |missing| {
             AuthzError::UnknownUser {
-                id: *missings.iter().next().unwrap(),
+                id: *missing.iter().next().unwrap(),
             }
         })
         .await?;
