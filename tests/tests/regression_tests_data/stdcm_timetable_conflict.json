@@ -14,6 +14,7 @@
             {
                 "duration": 180125,
                 "location": {
+                    "type": "track_offset",
                     "track": "TE0",
                     "offset": 581924
                 }
@@ -21,6 +22,7 @@
             {
                 "duration": 905261,
                 "location": {
+                    "type": "track_offset",
                     "track": "TE0",
                     "offset": 338804
                 }
@@ -28,6 +30,7 @@
             {
                 "duration": null,
                 "location": {
+                    "type": "track_offset",
                     "track": "TE3",
                     "offset": 1469324
                 }
@@ -35,6 +38,7 @@
             {
                 "duration": 1,
                 "location": {
+                    "type": "track_offset",
                     "track": "TD2",
                     "offset": 1694161
                 }
@@ -54,11 +58,11 @@
                     "comfort": "STANDARD",
                     "path": [
                         {
-                            "location": {"track": "TA5", "offset": 38835},
+                            "location": {"type": "track_offset", "track": "TA5", "offset": 38835},
                             "id": "0"
                         },
                         {
-                            "location": {"track": "TA5", "offset": 9672},
+                            "location": {"type": "track_offset", "track": "TA5", "offset": 9672},
                             "id": "1"
                         }
                     ],
@@ -88,23 +92,23 @@
                     "comfort": "STANDARD",
                     "path": [
                         {
-                            "location": {"track": "TE3", "offset": 1484967},
+                            "location": {"type": "track_offset", "track": "TE3", "offset": 1484967},
                             "id": "0"
                         },
                         {
-                            "location": {"track": "TE3", "offset": 1533327},
+                            "location": {"type": "track_offset", "track": "TE3", "offset": 1533327},
                             "id": "1"
                         },
                         {
-                            "location": {"track": "TE0", "offset": 941643},
+                            "location": {"type": "track_offset", "track": "TE0", "offset": 941643},
                             "id": "2"
                         },
                         {
-                            "location": {"track": "TF0", "offset": 1848},
+                            "location": {"type": "track_offset", "track": "TF0", "offset": 1848},
                             "id": "3"
                         },
                         {
-                            "location": {"track": "TF1", "offset": 6293168},
+                            "location": {"type": "track_offset", "track": "TF1", "offset": 6293168},
                             "id": "4"
                         }
                     ],
@@ -137,15 +141,15 @@
                     "comfort": "STANDARD",
                     "path": [
                         {
-                            "location": {"track": "TE1", "offset": 1334824},
+                            "location": {"type": "track_offset", "track": "TE1", "offset": 1334824},
                             "id": "0"
                         },
                         {
-                            "location": {"track": "TE1", "offset": 1170516},
+                            "location": {"type": "track_offset", "track": "TE1", "offset": 1170516},
                             "id": "1"
                         },
                         {
-                            "location": {"track": "TE3", "offset": 1883043},
+                            "location": {"type": "track_offset", "track": "TE3", "offset": 1883043},
                             "id": "2"
                         }
                     ],
@@ -175,23 +179,23 @@
                     "comfort": "STANDARD",
                     "path": [
                         {
-                            "location": {"track": "TC0", "offset": 637436},
+                            "location": {"type": "track_offset", "track": "TC0", "offset": 637436},
                             "id": "0"
                         },
                         {
-                            "location": {"track": "TC0", "offset": 699939},
+                            "location": {"type": "track_offset", "track": "TC0", "offset": 699939},
                             "id": "1"
                         },
                         {
-                            "location": {"track": "TD0", "offset": 17976394},
+                            "location": {"type": "track_offset", "track": "TD0", "offset": 17976394},
                             "id": "2"
                         },
                         {
-                            "location": {"track": "TD2", "offset": 351005},
+                            "location": {"type": "track_offset", "track": "TD2", "offset": 351005},
                             "id": "3"
                         },
                         {
-                            "location": {"track": "TH0", "offset": 390457},
+                            "location": {"type": "track_offset", "track": "TH0", "offset": 390457},
                             "id": "4"
                         }
                     ],

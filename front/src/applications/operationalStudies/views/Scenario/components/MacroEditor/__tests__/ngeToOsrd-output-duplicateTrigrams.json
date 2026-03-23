@@ -56,6 +56,7 @@
       "path": [
         {
           "location": {
+            "type": "operational_point_part_reference",
             "operational_point": { "trigram": "RTR", "type": "trigram" },
             "local_track_name": null
           },
@@ -63,6 +64,7 @@
         },
         {
           "location": {
+            "type": "operational_point_part_reference",
             "operational_point": { "trigram": "SS-2", "type": "trigram" },
             "local_track_name": null
           },
@@ -70,6 +72,7 @@
         },
         {
           "location": {
+            "type": "operational_point_part_reference",
             "operational_point": { "trigram": "SS-1", "type": "trigram" },
             "local_track_name": null
           },

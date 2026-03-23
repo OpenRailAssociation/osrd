@@ -22,7 +22,7 @@ describe('findTrackSectionOffset', () => {
       trackRanges
     );
 
-    expect(result).toEqual({ track: 'track_2', offset: 60 });
+    expect(result).toEqual({ type: 'track_offset', track: 'track_2', offset: 60 });
   });
 
   it('should correctly find the track offset if the track range does not cover the whole track section', () => {
@@ -42,7 +42,7 @@ describe('findTrackSectionOffset', () => {
       trackRanges
     );
 
-    expect(result).toEqual({ track: 'track_2', offset: 900 });
+    expect(result).toEqual({ type: 'track_offset', track: 'track_2', offset: 900 });
   });
 
   it('should correctly find the track offset if the track range direction is STOP_TO_START', () => {
@@ -62,7 +62,7 @@ describe('findTrackSectionOffset', () => {
       trackRanges
     );
 
-    expect(result).toEqual({ track: 'track_2', offset: 1050 });
+    expect(result).toEqual({ type: 'track_offset', track: 'track_2', offset: 1050 });
   });
 
   it('should throw an error if the given position on path is beyond the last position of the path', () => {
@@ -97,6 +97,6 @@ describe('findTrackSectionOffset', () => {
       trackRanges
     );
 
-    expect(result).toEqual({ track: 'track_0', offset: 1400 });
+    expect(result).toEqual({ type: 'track_offset', track: 'track_0', offset: 1400 });
   });
 });

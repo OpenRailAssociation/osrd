@@ -43,7 +43,7 @@ const useOutputTableData = (
   const trackIds = useMemo(() => {
     const path = selectedTrain?.path || [];
     const trackIdsInPathSteps = path.flatMap(({ location }) =>
-      'track' in location ? [location.track] : []
+      location.type === 'track_offset' ? [location.track] : []
     );
     const trackIdsOnPath = (operationalPointsOnPath || []).map((op) => op.part.track);
     return [...trackIdsInPathSteps, ...trackIdsOnPath];
@@ -83,7 +83,7 @@ const useOutputTableData = (
           t
         );
         const trackName =
-          'track' in pathStep.location
+          pathStep.location.type === 'track_offset'
             ? trackSections[pathStep.location.track]?.extensions?.sncf?.track_name
             : (pathStep.location.local_track_name ?? undefined);
 

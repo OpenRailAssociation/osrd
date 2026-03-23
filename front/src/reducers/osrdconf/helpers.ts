@@ -26,16 +26,7 @@ export const insertViaFromMap = (
   const newStep = {
     id: newVia.id,
     coordinates: newVia.coordinates,
-    location:
-      'track' in newLocation
-        ? {
-            track: newLocation.track,
-            offset: newLocation.offset,
-          }
-        : {
-            ...newLocation,
-            local_track_name: newLocation.local_track_name,
-          },
+    location: newLocation,
   };
 
   let newViaIndex = -1;
@@ -78,8 +69,12 @@ export function upsertPathStep(statePathSteps: (PathStep | null)[], op: Suggeste
     ]),
     id: uuidV4(),
     location: op.uic
-      ? { operational_point: { uic: op.uic, secondary_code: op.ch, type: 'uic' } }
+      ? {
+          type: 'operational_point_part_reference',
+          operational_point: { uic: op.uic, secondary_code: op.ch, type: 'uic' },
+        }
       : {
+          type: 'track_offset',
           track: op.track,
           offset: op.offsetOnTrack,
         },
@@ -89,16 +84,22 @@ export function upsertPathStep(statePathSteps: (PathStep | null)[], op: Suggeste
   if (stepIndex >= 0) {
     // Because of import issues, there can be multiple ops with same position on path
     // To avoid updating the wrong one, we need to find the one that matches the payload
+    const matchLocation = cleanPathSteps[stepIndex].location;
+    let { location } = newVia;
+    if (location.type === 'operational_point_part_reference') {
+      if (matchLocation.type !== 'operational_point_part_reference') {
+        throw new Error('Invalid location type');
+      }
+      location = {
+        ...location,
+        local_track_name: matchLocation.local_track_name,
+      };
+    }
+
     newVia = {
       ...newVia,
       id: cleanPathSteps[stepIndex].id,
-      location: {
-        ...newVia.location,
-        local_track_name:
-          'local_track_name' in cleanPathSteps[stepIndex].location
-            ? cleanPathSteps[stepIndex].location.local_track_name
-            : undefined,
-      },
+      location,
     }; // We don't need to change the id of the updated via
     statePathSteps[stepIndex] = newVia;
   } else {

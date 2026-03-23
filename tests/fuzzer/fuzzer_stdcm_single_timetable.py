@@ -237,10 +237,11 @@ def _make_steps(op_list: list[str], timetable_range: TimetableTimeRange) -> list
         steps.append(
             {
                 "location": {
+                    "type": "operational_point_part_reference",
                     "operational_point": {
                         "type": "id",
                         "operational_point": _random_set_element(op_list),
-                    }
+                    },
                 }
             }
         )

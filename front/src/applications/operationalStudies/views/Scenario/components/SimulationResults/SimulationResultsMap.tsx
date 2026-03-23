@@ -83,7 +83,7 @@ const SimulationResultMap = ({
       // 1. Get path steps track ids to fetch their track metadata
       const allTrackIds = steps.reduce<string[]>((acc, step) => {
         // Need only the requested point track ids from the path step input
-        if ('track' in step.location) {
+        if (step.location.type === 'track_offset') {
           acc.push(step.location.track);
         }
         // Get the track ids from the computed ops
@@ -102,7 +102,7 @@ const SimulationResultMap = ({
 
         const markerIndicator = (index + 1).toString();
 
-        if ('track' in location) {
+        if (location.type === 'track_offset') {
           const correspondingTrack = trackSectionsById[location.track];
           const coordinates = correspondingTrack
             ? getPointOnTrackCoordinates(

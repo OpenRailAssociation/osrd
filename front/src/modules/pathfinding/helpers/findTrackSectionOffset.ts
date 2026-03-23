@@ -26,7 +26,11 @@ const findTrackSectionOffset = (
       ? trackRange.begin + offsetOnTrackRange
       : trackRange.end - offsetOnTrackRange;
 
-  return { track: trackRange.track_section, offset: offsetOnTrackSection };
+  return {
+    track: trackRange.track_section,
+    offset: offsetOnTrackSection,
+    type: 'track_offset' as const,
+  };
 };
 
 export default findTrackSectionOffset;

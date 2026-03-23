@@ -8,6 +8,7 @@
         {
             "id": "idA",
             "location": {
+                "type": "operational_point_part_reference",
                 "operational_point": {
                     "uic": 87700000,
                     "secondary_code": "BV",
@@ -18,6 +19,7 @@
         {
             "id": "idB",
             "location": {
+                "type": "operational_point_part_reference",
                 "operational_point": {
                     "uic": 87700001,
                     "secondary_code": "BV",
@@ -28,6 +30,7 @@
         {
             "id": "idC",
             "location": {
+                "type": "operational_point_part_reference",
                 "operational_point": {
                     "uic": 87700002,
                     "secondary_code": "BV",

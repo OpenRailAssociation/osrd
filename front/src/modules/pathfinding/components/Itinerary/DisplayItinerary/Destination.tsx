@@ -21,7 +21,9 @@ const Destination = ({ zoomToFeaturePoint }: DestinationProps) => {
   const pathSteps = useSelector(getPathSteps);
   const location = destination?.location;
 
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
+  const { t } = useTranslation('operational-studies', {
+    keyPrefix: 'manageTimetableItem',
+  });
   if (!destination || pathSteps.length === 1)
     return (
       <>
@@ -34,7 +36,9 @@ const Destination = ({ zoomToFeaturePoint }: DestinationProps) => {
 
   return (
     <div
-      className={cx('place', { 'invalid-path-item': isPathStepInvalid(destination) })}
+      className={cx('place', {
+        'invalid-path-item': isPathStepInvalid(destination),
+      })}
       data-testid="itinerary-destination"
     >
       <div className="pl-1 hover w-100 d-flex align-items-center">
@@ -51,15 +55,14 @@ const Destination = ({ zoomToFeaturePoint }: DestinationProps) => {
             {/* If destination doesn't have name, we know that it has been added by click on map and has a track property */}
             {destination?.name ||
               (destination &&
-                'track' in destination.location &&
+                destination.location.type === 'track_offset' &&
                 destination.location.track.split('-')[0]) ||
-              (destination &&
-                'operational_point' in destination.location &&
+              (destination.location.type === 'operational_point_part_reference' &&
                 destination.location.operational_point.type === 'trigram' &&
                 destination.location.operational_point.trigram)}
           </strong>
           {location &&
-            'operational_point' in location &&
+            location.type === 'operational_point_part_reference' &&
             location.operational_point.type !== 'id' && (
               <>
                 {location.operational_point.secondary_code && (

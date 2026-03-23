@@ -26,8 +26,20 @@ const baseTimetableItemWithSummary: TimetableItemWithSummaries = {
   rollingStockName: 'rollingStock1',
   rollingStock: { id: 1, name: 'rollingStock1' } as LightRollingStockWithLiveries,
   path: [
-    { id: 'id1', location: { operational_point: { uic: 123, type: 'uic' } } },
-    { id: 'id2', location: { operational_point: { uic: 234, type: 'uic' } } },
+    {
+      id: 'id1',
+      location: {
+        type: 'operational_point_part_reference',
+        operational_point: { uic: 123, type: 'uic' },
+      },
+    },
+    {
+      id: 'id2',
+      location: {
+        type: 'operational_point_part_reference',
+        operational_point: { uic: 234, type: 'uic' },
+      },
+    },
   ],
   speedLimitTag: 'MA100',
   labels: ['label1'],
@@ -109,6 +121,7 @@ describe('simulationConfReducer', () => {
           {
             id: 'id1',
             location: {
+              type: 'operational_point_part_reference',
               operational_point: { uic: 123, type: 'uic' },
             },
             name: '123',
@@ -120,6 +133,7 @@ describe('simulationConfReducer', () => {
           {
             id: 'id2',
             location: {
+              type: 'operational_point_part_reference',
               operational_point: { uic: 234, type: 'uic' },
             },
             name: '234',
@@ -168,6 +182,7 @@ describe('simulationConfReducer', () => {
         id: 'id1',
         positionOnPath: 200,
         location: {
+          type: 'operational_point_part_reference',
           operational_point: { uic: 396002, type: 'uic' },
         },
         coordinates: [47.99542250806296, 0.1918181738752042],
@@ -203,6 +218,7 @@ describe('simulationConfReducer', () => {
         id: 'lemans',
         positionOnPath: 200,
         location: {
+          type: 'track_offset',
           track: '60ca8dda-6667-11e3-81ff-01f464e0362d',
           offset: 426.443,
         },

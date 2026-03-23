@@ -16,6 +16,7 @@ describe('reversePathSteps', () => {
       theoreticalMargin: '0%',
       id: 'id205',
       location: {
+        type: 'operational_point_part_reference',
         operational_point: {
           uic: 87447219,
           secondary_code: '00',
@@ -33,6 +34,7 @@ describe('reversePathSteps', () => {
       theoreticalMargin: '10%',
       id: 'id111',
       location: {
+        type: 'operational_point_part_reference',
         operational_point: {
           uic: 87447219,
           secondary_code: 'JS',
@@ -48,6 +50,7 @@ describe('reversePathSteps', () => {
       arrival: new Duration({ milliseconds: 1500000 }),
       id: 'id117',
       location: {
+        type: 'operational_point_part_reference',
         operational_point: {
           uic: 87447185,
           secondary_code: '00',
@@ -64,6 +67,7 @@ describe('reversePathSteps', () => {
       arrival: null,
       id: 'id132',
       location: {
+        type: 'operational_point_part_reference',
         operational_point: {
           uic: 87447003,
           secondary_code: '00',
@@ -79,6 +83,7 @@ describe('reversePathSteps', () => {
       theoreticalMargin: '2min/100km',
       id: 'id97',
       location: {
+        type: 'track_offset',
         track: '6146255e-6667-11e3-81ff-01f464e0362d',
         offset: 5715,
       },
@@ -86,6 +91,7 @@ describe('reversePathSteps', () => {
     {
       id: 'id206',
       location: {
+        type: 'operational_point_part_reference',
         operational_point: {
           uic: 87447144,
           secondary_code: '00',
@@ -107,6 +113,7 @@ describe('reversePathSteps', () => {
     {
       id: 'id206',
       location: {
+        type: 'operational_point_part_reference',
         operational_point: {
           uic: 87447144,
           secondary_code: '00',
@@ -131,6 +138,7 @@ describe('reversePathSteps', () => {
       theoreticalMargin: '10%',
       id: 'id97',
       location: {
+        type: 'track_offset',
         track: '6146255e-6667-11e3-81ff-01f464e0362d',
         offset: 5715,
       },
@@ -144,6 +152,7 @@ describe('reversePathSteps', () => {
       arrival: null,
       id: 'id132',
       location: {
+        type: 'operational_point_part_reference',
         operational_point: {
           uic: 87447003,
           secondary_code: '00',
@@ -159,6 +168,7 @@ describe('reversePathSteps', () => {
       arrival: null,
       id: 'id117',
       location: {
+        type: 'operational_point_part_reference',
         operational_point: {
           uic: 87447185,
           secondary_code: '00',
@@ -176,6 +186,7 @@ describe('reversePathSteps', () => {
       theoreticalMargin: '0%',
       id: 'id111',
       location: {
+        type: 'operational_point_part_reference',
         operational_point: {
           uic: 87447219,
           secondary_code: 'JS',
@@ -191,6 +202,7 @@ describe('reversePathSteps', () => {
       arrival: null,
       id: 'id205',
       location: {
+        type: 'operational_point_part_reference',
         operational_point: {
           uic: 87447219,
           secondary_code: '00',

@@ -92,6 +92,7 @@ export const buildSteps = (
       path.push({
         id,
         location: {
+          type: 'operational_point_part_reference',
           operational_point: { uic: step.uic, secondary_code: step.chCode, type: 'uic' },
         },
       });
@@ -99,6 +100,7 @@ export const buildSteps = (
       path.push({
         id,
         location: {
+          type: 'operational_point_part_reference',
           operational_point: { trigram: step.name, secondary_code: step.chCode, type: 'trigram' },
         },
       });

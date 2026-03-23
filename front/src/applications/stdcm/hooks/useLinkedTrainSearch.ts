@@ -55,7 +55,7 @@ const useLinkedTrainSearch = () => {
   const getExtremityDetails = useCallback(
     async (pathItem: PathItem) => {
       if (
-        !('operational_point' in pathItem.location) ||
+        pathItem.location.type === 'track_offset' ||
         (pathItem.location.operational_point.type !== 'id' &&
           pathItem.location.operational_point.type !== 'uic')
       )

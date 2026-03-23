@@ -10,9 +10,9 @@ from .infra import Infra
 from .scenario import Scenario
 from .services import EDITOAST_URL
 
-_START = {"track": "TA2", "offset": 0}
-_MIDDLE = {"track": "TA5", "offset": 0}
-_STOP = {"track": "TH1", "offset": 0}
+_START = {"type": "track_offset", "track": "TA2", "offset": 0}
+_MIDDLE = {"type": "track_offset", "track": "TA5", "offset": 0}
+_STOP = {"type": "track_offset", "track": "TH1", "offset": 0}
 
 
 def _add_train(
@@ -26,8 +26,22 @@ def _add_train(
         {
             "constraint_distribution": "STANDARD",
             "path": [
-                {"location": {"offset": 837034, "track": "TA2"}, "id": "a"},
-                {"location": {"offset": 4386000, "track": "TH1"}, "id": "b"},
+                {
+                    "location": {
+                        "type": "track_offset",
+                        "offset": 837034,
+                        "track": "TA2",
+                    },
+                    "id": "a",
+                },
+                {
+                    "location": {
+                        "type": "track_offset",
+                        "offset": 4386000,
+                        "track": "TH1",
+                    },
+                    "id": "b",
+                },
             ],
             "rolling_stock_name": rolling_stock_name,
             "train_name": "foo",
@@ -226,8 +240,11 @@ def test_mrsp_sources(
         "maximum_departure_delay": 86400000,
         "maximum_run_time": 86400000,
         "steps": [
-            {"location": {"track": "TH0", "offset": 820000}},
-            {"duration": 1, "location": {"track": "TH1", "offset": 5000000}},
+            {"location": {"type": "track_offset", "track": "TH0", "offset": 820000}},
+            {
+                "duration": 1,
+                "location": {"type": "track_offset", "track": "TH1", "offset": 5000000},
+            },
         ],
         "speed_limit_tags": "E32C",
         "time_gap_before": 3600000,

@@ -177,10 +177,20 @@ class PathItem(BaseModel):
     The unique identifier of the path item.
     This is used to reference path items in the train schedule.
     """
-    location: TrackOffset | OperationalPointPartReference
+    location: (
+        PathItemLocationTrackOffset | PathItemLocationOperationalPointPartReference
+    )
     """
     The location of a path waypoint
     """
+
+
+class PathItemLocationOperationalPointPartReference(OperationalPointPartReference):
+    """
+    The location of a path waypoint
+    """
+
+    type: Literal["operational_point_part_reference"]
 
 
 class PowerRestriction(BaseModel):
@@ -451,3 +461,11 @@ class TransformTimetableResponse(BaseModel):
 
 class Value(RootModel[str]):
     root: Annotated[str, Field(min_length=1)]
+
+
+class PathItemLocationTrackOffset(TrackOffset):
+    """
+    The location of a path waypoint
+    """
+
+    type: Literal["track_offset"]

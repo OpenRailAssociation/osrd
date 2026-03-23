@@ -499,7 +499,11 @@ def _convert_stop_stdcm(stop: tuple[str, float]) -> dict:
     duration = None if random.randint(0, 1) == 0 else _to_ms(random.random() * 1_000)
     return {
         "duration": duration,
-        "location": {"track": track_section, "offset": _to_mm(offset)},
+        "location": {
+            "type": "track_offset",
+            "track": track_section,
+            "offset": _to_mm(offset),
+        },
     }
 
 
@@ -511,7 +515,11 @@ def _convert_stop(stop: tuple[str, float], i: int) -> dict:
     """
     track_section, offset = stop
     return {
-        "location": {"track": track_section, "offset": _to_mm(offset)},
+        "location": {
+            "type": "track_offset",
+            "track": track_section,
+            "offset": _to_mm(offset),
+        },
         "id": str(i),
     }
 

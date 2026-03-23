@@ -47,7 +47,7 @@ export const matchPathStepAndOp = (
   step: PathItemLocation,
   op: Pick<SuggestedOP, 'opId' | 'uic' | 'ch' | 'trigram' | 'track' | 'offsetOnTrack'>
 ) => {
-  if ('track' in step) {
+  if (step.type === 'track_offset') {
     return step.track === op.track && step.offset === op.offsetOnTrack;
   }
   if (step.operational_point.type === 'id') {
@@ -118,7 +118,7 @@ export const upsertPathStepsInOPs = (
     if (isPathStepInvalid(step)) return;
     const { arrival, stopFor, receptionSignal, theoreticalMargin } = step;
     // We check only for pathSteps added by map click
-    if ('track' in step.location) {
+    if (step.location.type === 'track_offset') {
       let stepName = t('main.requestedPoint', { count: stepIndex });
       if (stepIndex === 0) {
         stepName = t('main.requestedOrigin');
@@ -185,7 +185,7 @@ export const pathStepMatchesOp = (
     return pathStep.id === op.pathStepId;
   }
   if (
-    'operational_point' in pathStep.location &&
+    pathStep.location.type === 'operational_point_part_reference' &&
     pathStep.location.operational_point.type === 'uic'
   ) {
     return withKP ? pathStep.kp === op.kp : pathStep.name === op.name;

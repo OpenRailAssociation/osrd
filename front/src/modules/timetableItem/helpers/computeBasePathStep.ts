@@ -32,7 +32,7 @@ const computeBasePathStep = (
   } = correspondingSchedule || {};
 
   let name;
-  if ('operational_point' in location) {
+  if (location.type === 'operational_point_part_reference') {
     if (location.operational_point.type === 'trigram') {
       name =
         location.operational_point.trigram +

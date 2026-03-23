@@ -3634,7 +3634,13 @@ export type OperationalPointPartReference = {
   local_track_name?: null | string;
   operational_point: OperationalPointReference;
 };
-export type PathItemLocation = TrackOffset | OperationalPointPartReference;
+export type PathItemLocation =
+  | (TrackOffset & {
+      type: 'track_offset';
+    })
+  | (OperationalPointPartReference & {
+      type: 'operational_point_part_reference';
+    });
 export type CorePathfindingInputError =
   | {
       error_type: 'invalid_path_items';

@@ -21,7 +21,7 @@ const usePathOps = (
       new Map(
         path
           ?.map((pathItem) => {
-            if ('operational_point' in pathItem.location) {
+            if (pathItem.location.type === 'operational_point_part_reference') {
               return [pathItem.id, pathItem.location.operational_point] as const;
             }
             return null;

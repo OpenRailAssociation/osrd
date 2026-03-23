@@ -9,6 +9,7 @@
             "path": [
                 {
                     "location": {
+                        "type": "track_offset",
                         "track": "TG3",
                         "offset": 40137
                     },
@@ -16,6 +17,7 @@
                 },
                 {
                     "location": {
+                        "type": "track_offset",
                         "track": "TG3",
                         "offset": 13164
                     },
@@ -23,6 +25,7 @@
                 },
                 {
                     "location": {
+                        "type": "track_offset",
                         "track": "TG0",
                         "offset": 179959
                     },

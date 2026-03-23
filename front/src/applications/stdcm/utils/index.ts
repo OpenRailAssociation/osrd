@@ -1,7 +1,4 @@
-import type {
-  OperationalPointPartReference,
-  PostSimilarTrainsApiResponse,
-} from 'common/api/osrdEditoastApi';
+import type { PathItemLocation, PostSimilarTrainsApiResponse } from 'common/api/osrdEditoastApi';
 import { type MarkerInformation, MARKER_TYPE } from 'common/Map/components/ItineraryMarkers';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 
@@ -37,6 +34,7 @@ export const extractMarkersInfo = (pathSteps: StdcmPathStep[]): ExtractedMarkerI
       id: step.id,
       pointType,
       location: {
+        type: 'operational_point_part_reference',
         operational_point: {
           trigram: step.operationalPoint.trigram,
           secondary_code: step.operationalPoint.secondaryCode,
@@ -106,11 +104,12 @@ export const mergeSimilarTrainSegments = (
 
 export const stdcmPathStepToPathItemLocation = (
   operationalPoint: StdcmPathStep['operationalPoint']
-): OperationalPointPartReference => {
+): PathItemLocation => {
   if (!operationalPoint) {
     throw new Error('Step has no operational point');
   }
   return {
+    type: 'operational_point_part_reference',
     operational_point: {
       uic: operationalPoint.uic,
       secondary_code: operationalPoint.secondaryCode,

@@ -385,7 +385,7 @@ export const getOperationalPointName = (
   if (op) return op.extensions?.identifier?.name;
 
   // TrackOffset
-  if (!('operational_point' in step)) {
+  if (step.type === 'track_offset') {
     if (stepIndex === 0) {
       return t('main.requestedOrigin');
     } else if (stepIndex === totalStepCount - 1) {

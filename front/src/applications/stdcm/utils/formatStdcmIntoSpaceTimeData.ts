@@ -19,6 +19,7 @@ const formatStdcmTrainIntoSpaceTimeData = (
     originPathItem: {
       id: origin.id,
       location: {
+        type: 'operational_point_part_reference',
         operational_point: {
           type: 'uic',
           uic: origin.operationalPoint.uic,
@@ -29,6 +30,7 @@ const formatStdcmTrainIntoSpaceTimeData = (
     destinationPathItem: {
       id: destination.id,
       location: {
+        type: 'operational_point_part_reference',
         operational_point: {
           type: 'uic',
           uic: destination.operationalPoint.uic,

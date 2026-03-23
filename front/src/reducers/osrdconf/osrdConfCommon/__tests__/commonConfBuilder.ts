@@ -5,12 +5,16 @@ export default function commonConfBuilder() {
   return {
     buildPathSteps: (): PathStep[] => [
       {
-        location: { operational_point: { uic: 474007, type: 'uic' } },
+        location: {
+          type: 'operational_point_part_reference',
+          operational_point: { uic: 474007, type: 'uic' },
+        },
         id: 'brest',
         coordinates: [48.38819835024553, -4.478289762812405],
       },
       {
         location: {
+          type: 'track_offset',
           track: '697841c6-6667-11e3-81ff-01f464e0362d',
           offset: 233404,
         },
@@ -20,6 +24,7 @@ export default function commonConfBuilder() {
       },
       {
         location: {
+          type: 'track_offset',
           track: '60ca8dda-6667-11e3-81ff-01f464e0362d',
           offset: 416345,
         },
@@ -29,6 +34,7 @@ export default function commonConfBuilder() {
       },
       {
         location: {
+          type: 'track_offset',
           track: '63c905ee-6667-11e3-81ff-01f464e0362d',
           offset: 719258,
         },
@@ -38,6 +44,7 @@ export default function commonConfBuilder() {
       },
       {
         location: {
+          type: 'operational_point_part_reference',
           operational_point: {
             operational_point: 'strasbourg',
             type: 'id',
