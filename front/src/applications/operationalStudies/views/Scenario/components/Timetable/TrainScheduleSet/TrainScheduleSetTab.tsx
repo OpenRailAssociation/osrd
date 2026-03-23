@@ -175,6 +175,7 @@ const TrainScheduleSetTab = ({
             labels={{
               title: t('publishDialogTitle'),
               submit: t('publishSubmit'),
+              submitWithChanges: t('editAndPublish'),
               cancel: t('cancel'),
             }}
             onCancel={() => setOpenedDialog(null)}

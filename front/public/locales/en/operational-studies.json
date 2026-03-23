@@ -312,7 +312,7 @@
         "package": "Series",
         "parentCatalogEntry": "Parent train set",
         "publishDialogTitle": "Publish local package",
-        "publishSubmit": "Edit package",
+        "publishSubmit": "Publish package",
         "publishToCatalog": "Publish to catalog",
         "removeDialogText": "You’re about to remove '{{name}}' from this scenario.",
         "removeDialogTitle": "Remove package",
