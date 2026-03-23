@@ -163,7 +163,7 @@ const usePathProjection = (
   const opRefs = useMemo(() => {
     const refs: OperationalPointReference[] = [];
     pathUsedForProjection?.forEach((step) => {
-      if ('operational_point' in step.location) {
+      if (step.location.type === 'operational_point_part_reference') {
         refs.push(step.location.operational_point);
       }
     });

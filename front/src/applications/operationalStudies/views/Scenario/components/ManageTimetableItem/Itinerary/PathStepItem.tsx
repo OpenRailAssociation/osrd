@@ -108,8 +108,8 @@ const PathStepItem = ({
 
     const { location } = pathStep;
 
-    if ('track' in location) {
-      return message + t('requestedPoint');
+    if (location.type === 'track_offset') {
+      return (message += t('requestedPoint'));
     }
 
     const trackInfo = location.local_track_name
@@ -225,8 +225,7 @@ const PathStepItem = ({
       return updatedSteps;
     });
   };
-
-  const isTrackOffset = !!(pathStep?.location && 'track' in pathStep.location);
+  const isTrackOffset = !!(pathStep?.location && pathStep.location.type === 'track_offset');
 
   const trackOffsetLabel = useMemo(() => {
     if (!isTrackOffset) return '';

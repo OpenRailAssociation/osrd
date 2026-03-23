@@ -302,7 +302,7 @@ export const loadAndIndexNge = async (
           ngeId: nbNodesIndexed,
           path_item_key: key,
           trigram:
-            'operational_point' in pathItem.location &&
+            pathItem.location.type === 'operational_point_part_reference' &&
             pathItem.location.operational_point.type === 'trigram'
               ? pathItem.location.operational_point.trigram
               : null,

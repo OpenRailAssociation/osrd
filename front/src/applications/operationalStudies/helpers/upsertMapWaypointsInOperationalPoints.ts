@@ -35,7 +35,7 @@ export function upsertMapWaypointsInOperationalPoints(
   return path.reduce(
     (operationalPointsWithAllWaypoints, step, stepIndex) => {
       const location = step.location;
-      if ('track' in location) {
+      if (location.type === 'track_offset') {
         const positionOnPath = pathItemsPositions[stepIndex];
         const indexToInsert = operationalPointsWithAllWaypoints.findIndex(
           (op) => op.position >= positionOnPath

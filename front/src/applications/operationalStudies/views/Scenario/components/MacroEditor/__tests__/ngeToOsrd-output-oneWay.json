@@ -45,6 +45,7 @@
       "path": [
         {
           "location": {
+            "type": "operational_point_part_reference",
             "operational_point": { "trigram": "RTR", "type": "trigram" },
             "local_track_name": null
           },
@@ -52,6 +53,7 @@
         },
         {
           "location": {
+            "type": "operational_point_part_reference",
             "operational_point": { "trigram": "LTH", "type": "trigram" },
             "local_track_name": null
           },
@@ -59,6 +61,7 @@
         },
         {
           "location": {
+            "type": "operational_point_part_reference",
             "operational_point": { "trigram": "SS", "type": "trigram" },
             "local_track_name": null
           },

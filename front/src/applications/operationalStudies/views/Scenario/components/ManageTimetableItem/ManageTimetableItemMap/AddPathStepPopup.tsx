@@ -134,7 +134,7 @@ const AddPathStepPopup = ({
       setClickedOp({
         id: uuidV4(),
         name: operationalPoint.extensions?.identifier?.name,
-        location: { operational_point: opRef },
+        location: { type: 'operational_point_part_reference', operational_point: opRef },
         tracks: trackPartCoordinates,
       });
       setSelectedTrack(trackPartCoordinates[0]);
@@ -156,6 +156,11 @@ const AddPathStepPopup = ({
     }
 
     const { tracks: _tracks, location: prevLocation, ...opWithoutTracks } = clickedOp;
+
+    if (prevLocation.type !== 'operational_point_part_reference') {
+      throw new Error('Invalid location type');
+    }
+
     setNewPathStep({
       ...opWithoutTracks,
       coordinates: selectedTrack.coordinates,

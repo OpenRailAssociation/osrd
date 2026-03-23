@@ -731,7 +731,7 @@ const useTrackOccupancy = ({
                 ...trainsStationLabels[timetableItem.id],
                 [side]: undefined,
               };
-            } else if ('track' in itemLocation) {
+            } else if (itemLocation.type === 'track_offset') {
               trainsStationLabels[timetableItem.id] = {
                 ...trainsStationLabels[timetableItem.id],
                 [side]: { type: 'requestedPoint' },

@@ -269,7 +269,7 @@ export const getUniqueOpRefsFromTimetableItems = (
   const uniqueSteps = new Map<string, OperationalPointReference>();
   for (const pathItem of pathItems) {
     const pathItemLocation = pathItem.location;
-    if (!('operational_point' in pathItemLocation)) continue;
+    if (pathItemLocation.type === 'track_offset') continue;
     uniqueSteps.set(
       JSON.stringify(pathItemLocation.operational_point),
       pathItemLocation.operational_point
@@ -306,7 +306,7 @@ export const addPathOpsToTimetableItems = (
     // 2. if key exists but no operational points were found, return an empty array
     // 3. if key does not exist in opsByKey (meaning it's a track offset), return an empty array
     const pathOps = timetableItem.path.map((pathItem) => {
-      if (!('operational_point' in pathItem.location)) return [];
+      if (pathItem.location.type === 'track_offset') return [];
       return opsByKey.get(JSON.stringify(pathItem.location.operational_point)) ?? [];
     });
     return { ...timetableItem, pathOps };
@@ -425,7 +425,7 @@ export const matchOpRefAndOp = (
   location: PathItemLocation,
   op: PathProperties['operational_points'][number] | OperationalPoint
 ) => {
-  if ('track' in location) return false;
+  if (location.type === 'track_offset') return false;
 
   if (location.operational_point.type === 'id') {
     return location.operational_point.operational_point === op.id;

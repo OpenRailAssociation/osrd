@@ -173,6 +173,7 @@ const TypeAndPath = ({
         .map(({ trigram, ch }) => ({
           id: uuidV4(),
           location: {
+            type: 'operational_point_part_reference',
             operational_point: {
               trigram,
               secondary_code: ch,

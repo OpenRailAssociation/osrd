@@ -150,6 +150,7 @@ const createPathItemFromNode = (
     const [trigram, secondary_code] = node.betriebspunktName.split('/');
     // TODO : handle this case in xml import refacto
     pathItemLocation = {
+      type: 'operational_point_part_reference',
       operational_point: { trigram, secondary_code, type: 'trigram' },
       local_track_name: null,
     };
@@ -346,7 +347,7 @@ const populateSecondaryCodesInPath = async (
 ) => {
   const promises = path.map(async (pathItem) => {
     if (
-      !('operational_point' in pathItem.location) ||
+      pathItem.location.type === 'track_offset' ||
       pathItem.location.operational_point.type !== 'trigram' ||
       pathItem.location.operational_point.secondary_code
     ) {

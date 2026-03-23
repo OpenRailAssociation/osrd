@@ -15,7 +15,9 @@ type OriginProps = {
 };
 
 const Origin = ({ zoomToFeaturePoint }: OriginProps) => {
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
+  const { t } = useTranslation('operational-studies', {
+    keyPrefix: 'manageTimetableItem',
+  });
   const { launchPathfinding } = useManageTimetableItemContext();
 
   const origin = useSelector(getOrigin);
@@ -33,26 +35,30 @@ const Origin = ({ zoomToFeaturePoint }: OriginProps) => {
       <strong data-testid="origin-op-info" className="mr-1 text-nowrap">
         {/* If origin doesn't have name, we know that it has been added by click on map and has a track property */}
         {origin?.name ||
-          (origin && 'track' in origin.location && origin.location.track.split('-')[0]) ||
           (origin &&
-            'operational_point' in origin.location &&
+            origin.location.type === 'track_offset' &&
+            origin.location.track.split('-')[0]) ||
+          (origin &&
+            origin.location.type === 'operational_point_part_reference' &&
             origin.location.operational_point.type === 'trigram' &&
             origin.location.operational_point.trigram)}
       </strong>
-      {location && 'operational_point' in location && location.operational_point.type !== 'id' && (
-        <>
-          {location.operational_point.secondary_code && (
-            <small data-testid="origin-ch" className="ml-1">
-              {location.operational_point.secondary_code}
-            </small>
-          )}
-          {location.operational_point.type === 'uic' && (
-            <small data-testid="origin-uic" className="text-muted ml-3">
-              {formatUicToCi(location.operational_point.uic)}
-            </small>
-          )}
-        </>
-      )}
+      {location &&
+        location.type === 'operational_point_part_reference' &&
+        location.operational_point.type !== 'id' && (
+          <>
+            {location.operational_point.secondary_code && (
+              <small data-testid="origin-ch" className="ml-1">
+                {location.operational_point.secondary_code}
+              </small>
+            )}
+            {location.operational_point.type === 'uic' && (
+              <small data-testid="origin-uic" className="text-muted ml-3">
+                {formatUicToCi(location.operational_point.uic)}
+              </small>
+            )}
+          </>
+        )}
     </div>
   );
 
@@ -68,7 +74,9 @@ const Origin = ({ zoomToFeaturePoint }: OriginProps) => {
 
   return (
     <div
-      className={cx('mb-2 place', { 'invalid-path-item': isPathStepInvalid(origin) })}
+      className={cx('mb-2 place', {
+        'invalid-path-item': isPathStepInvalid(origin),
+      })}
       data-testid="itinerary-origin"
     >
       <div className="pl-1 hover w-100 d-flex align-items-center">

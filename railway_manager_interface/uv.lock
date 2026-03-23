@@ -257,7 +257,7 @@ wheels = [
 
 [[package]]
 name = "osrd-railway-manager-interface"
-version = "0.2.5"
+version = "0.2.6"
 source = { editable = "." }
 dependencies = [
     { name = "datamodel-code-generator" },

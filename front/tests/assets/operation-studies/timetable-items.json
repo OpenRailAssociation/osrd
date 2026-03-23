@@ -9,6 +9,7 @@
         {
           "id": "id227",
           "location": {
+            "type": "operational_point_part_reference",
             "operational_point": { "uic": 8766, "secondary_code": "BV", "type": "uic" },
             "track_reference": null
           }
@@ -16,6 +17,7 @@
         {
           "id": "id228",
           "location": {
+            "type": "operational_point_part_reference",
             "operational_point": { "uic": 8755, "secondary_code": "BV", "type": "uic" },
             "track_reference": null
           }
@@ -55,17 +57,19 @@
         {
           "id": "id477",
           "location": {
+            "type": "operational_point_part_reference",
             "operational_point": { "uic": 8722, "secondary_code": "BV", "type": "uic" },
             "track_reference": null
           }
         },
         {
           "id": "id3522",
-          "location": { "track": "TA1", "offset": 1424000 }
+          "location": { "type": "track_offset", "track": "TA1", "offset": 1424000 }
         },
         {
           "id": "id498",
           "location": {
+            "type": "operational_point_part_reference",
             "operational_point": { "uic": 8744, "secondary_code": "BV", "type": "uic" },
             "track_reference": null
           }
@@ -73,6 +77,7 @@
         {
           "id": "id478",
           "location": {
+            "type": "operational_point_part_reference",
             "operational_point": { "uic": 8788, "secondary_code": "BV", "type": "uic" },
             "track_reference": null
           }
@@ -115,11 +120,12 @@
       "path": [
         {
           "id": "e04980e3-6c2b-47a2-8aa2-7afc4c405ef0",
-          "location": { "track": "TB0", "offset": 342000 }
+          "location": { "type": "track_offset", "track": "TB0", "offset": 342000 }
         },
         {
           "id": "id765",
           "location": {
+            "type": "operational_point_part_reference",
             "operational_point": { "uic": 8744, "secondary_code": "BV", "type": "uic" },
             "track_reference": null
           }
@@ -127,6 +133,7 @@
         {
           "id": "id745",
           "location": {
+            "type": "operational_point_part_reference",
             "operational_point": { "uic": 8777, "secondary_code": "BV", "type": "uic" },
             "track_reference": null
           }
@@ -172,6 +179,7 @@
         {
           "id": "id2854",
           "location": {
+            "type": "operational_point_part_reference",
             "operational_point": { "uic": 8733, "secondary_code": "BV", "type": "uic" },
             "track_reference": null
           }
@@ -179,6 +187,7 @@
         {
           "id": "id2855",
           "location": {
+            "type": "operational_point_part_reference",
             "operational_point": { "uic": 8777, "secondary_code": "BV", "type": "uic" },
             "track_reference": null
           }
@@ -218,19 +227,19 @@
       "path": [
         {
           "id": "id130",
-          "location": { "track": "TX1", "offset": 421000 }
+          "location": { "type": "track_offset", "track": "TX1", "offset": 421000 }
         },
         {
           "id": "id219",
-          "location": { "track": "TA6", "offset": 9199000 }
+          "location": { "type": "track_offset", "track": "TA6", "offset": 9199000 }
         },
         {
           "id": "id3822",
-          "location": { "track": "TD0", "offset": 10809000 }
+          "location": { "type": "track_offset", "track": "TD0", "offset": 10809000 }
         },
         {
           "id": "id188",
-          "location": { "track": "TF1", "offset": 2486000 }
+          "location": { "type": "track_offset", "track": "TF1", "offset": 2486000 }
         }
       ],
       "schedule": [
@@ -264,15 +273,15 @@
       "path": [
         {
           "id": "id1073",
-          "location": { "track": "TA6", "offset": 6609000 }
+          "location": { "type": "track_offset", "track": "TA6", "offset": 6609000 }
         },
         {
           "id": "id1136",
-          "location": { "track": "TE3", "offset": 1247000 }
+          "location": { "type": "track_offset", "track": "TE3", "offset": 1247000 }
         },
         {
           "id": "id1109",
-          "location": { "track": "TH1", "offset": 3761000 }
+          "location": { "type": "track_offset", "track": "TH1", "offset": 3761000 }
         }
       ],
       "schedule": [
@@ -305,6 +314,7 @@
         {
           "id": "b4df37d0-ffe2-4166-b7b6-8c0c5a47e9b0",
           "location": {
+            "type": "operational_point_part_reference",
             "operational_point": { "uic": 8777, "secondary_code": "BV", "type": "uic" },
             "track_reference": null
           }
@@ -312,17 +322,19 @@
         {
           "id": "id2659",
           "location": {
+            "type": "operational_point_part_reference",
             "operational_point": { "uic": 8744, "secondary_code": "BV", "type": "uic" },
             "track_reference": null
           }
         },
         {
           "id": "id2492",
-          "location": { "track": "TD0", "offset": 11080000 }
+          "location": { "type": "track_offset", "track": "TD0", "offset": 11080000 }
         },
         {
           "id": "id2570",
           "location": {
+            "type": "operational_point_part_reference",
             "operational_point": { "uic": 8733, "secondary_code": "BV", "type": "uic" },
             "track_reference": null
           }
@@ -330,6 +342,7 @@
         {
           "id": "dbc7c80b-aee0-4835-8857-63863dae2ff1",
           "location": {
+            "type": "operational_point_part_reference",
             "operational_point": { "uic": 8799, "secondary_code": "BC", "type": "uic" },
             "track_reference": null
           }
@@ -379,6 +392,7 @@
         {
           "id": "id744",
           "location": {
+            "type": "operational_point_part_reference",
             "operational_point": { "uic": 8733, "secondary_code": "BV", "type": "uic" },
             "track_reference": null
           }
@@ -386,6 +400,7 @@
         {
           "id": "id765",
           "location": {
+            "type": "operational_point_part_reference",
             "operational_point": { "uic": 8744, "secondary_code": "BV", "type": "uic" },
             "track_reference": null
           }
@@ -393,6 +408,7 @@
         {
           "id": "id745",
           "location": {
+            "type": "operational_point_part_reference",
             "operational_point": { "uic": 8777, "secondary_code": "BV", "type": "uic" },
             "track_reference": null
           }
@@ -452,15 +468,15 @@
       "path": [
         {
           "id": "id3807",
-          "location": { "track": "TA6", "offset": 8058000 }
+          "location": { "type": "track_offset", "track": "TA6", "offset": 8058000 }
         },
         {
           "id": "id3822",
-          "location": { "track": "TD0", "offset": 10809000 }
+          "location": { "type": "track_offset", "track": "TD0", "offset": 10809000 }
         },
         {
           "id": "id3855",
-          "location": { "track": "TG2", "offset": 1686000 }
+          "location": { "type": "track_offset", "track": "TG2", "offset": 1686000 }
         }
       ],
       "schedule": [
@@ -509,6 +525,7 @@
         {
           "id": "a414e7d1-32a5-4f41-94b1-feb7f8876d2d",
           "location": {
+            "type": "operational_point_part_reference",
             "operational_point": { "uic": 8711, "secondary_code": "BV", "type": "uic" },
             "track_reference": null
           }
@@ -516,6 +533,7 @@
         {
           "id": "4131eb71-da70-4f86-a713-78d812699558",
           "location": {
+            "type": "operational_point_part_reference",
             "operational_point": { "uic": 8777, "secondary_code": "BV", "type": "uic" },
             "track_reference": null
           }
@@ -577,17 +595,18 @@
         {
           "id": "8bf52569-50a5-46a5-8e62-b5626460cfba",
           "location": {
+            "type": "operational_point_part_reference",
             "operational_point": { "uic": 8777, "secondary_code": "BV", "type": "uic" },
             "track_reference": null
           }
         },
         {
           "id": "id2492",
-          "location": { "track": "TD0", "offset": 11080000 }
+          "location": { "type": "track_offset", "track": "TD0", "offset": 11080000 }
         },
         {
           "id": "3cbdab53-120e-460b-8f4b-e0ecc7cae836",
-          "location": { "track": "TI0", "offset": 246000 }
+          "location": { "type": "track_offset", "track": "TI0", "offset": 246000 }
         }
       ],
       "schedule": [
@@ -638,11 +657,12 @@
               "path": [
                 {
                   "id": "id2458",
-                  "location": { "track": "TG4", "offset": 1549000 }
+                  "location": { "type": "track_offset", "track": "TG4", "offset": 1549000 }
                 },
                 {
                   "id": "id2570",
                   "location": {
+                    "type": "operational_point_part_reference",
                     "operational_point": { "uic": 8733, "secondary_code": "BV", "type": "uic" },
                     "track_reference": null
                   }
@@ -650,6 +670,7 @@
                 {
                   "id": "8369cfc6-e667-4b6b-965a-79795c94dd18",
                   "location": {
+                    "type": "operational_point_part_reference",
                     "operational_point": { "uic": 8799, "secondary_code": "BV", "type": "uic" },
                     "track_reference": null
                   }
@@ -688,22 +709,24 @@
               "path": [
                 {
                   "id": "id2458",
-                  "location": { "track": "TG4", "offset": 1549000 }
+                  "location": { "type": "track_offset", "track": "TG4", "offset": 1549000 }
                 },
                 {
                   "id": "id2659",
                   "location": {
+                    "type": "operational_point_part_reference",
                     "operational_point": { "uic": 8744, "secondary_code": "BV", "type": "uic" },
                     "track_reference": null
                   }
                 },
                 {
                   "id": "id2492",
-                  "location": { "track": "TD0", "offset": 11080000 }
+                  "location": { "type": "track_offset", "track": "TD0", "offset": 11080000 }
                 },
                 {
                   "id": "id2570",
                   "location": {
+                    "type": "operational_point_part_reference",
                     "operational_point": { "uic": 8733, "secondary_code": "BV", "type": "uic" },
                     "track_reference": null
                   }
@@ -711,6 +734,7 @@
                 {
                   "id": "b174dfa7-f6e7-45d9-9545-469a64e675b9",
                   "location": {
+                    "type": "operational_point_part_reference",
                     "operational_point": { "uic": 8799, "secondary_code": "BC", "type": "uic" },
                     "track_reference": null
                   }

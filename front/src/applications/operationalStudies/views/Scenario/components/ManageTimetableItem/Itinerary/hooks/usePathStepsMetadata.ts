@@ -54,7 +54,10 @@ export const usePathStepsMetadata = (
 
       // Add requested points track ids
       pathSteps.forEach(
-        (step) => step.location && 'track' in step.location && allTrackIds.push(step.location.track)
+        (step) =>
+          step.location &&
+          step.location.type === 'track_offset' &&
+          allTrackIds.push(step.location.track)
       );
 
       const trackSectionsById = await getTrackSectionsByIds(allTrackIds);
@@ -70,7 +73,7 @@ export const usePathStepsMetadata = (
           return;
         }
 
-        if ('track' in location) {
+        if (location.type === 'track_offset') {
           // TODO : replace the name by the track offset label when provided by backend
           const correspondingTrack = trackSectionsById[location.track];
 

@@ -40,6 +40,7 @@ const useMapTrackSelection = (infraId: number | undefined) => {
         );
 
         return {
+          type: 'track_offset',
           track: objectId,
           offset: Math.round(offset),
         };

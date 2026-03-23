@@ -212,7 +212,7 @@ const useTimesStopsTableData = (
   const trackIds = useMemo(() => {
     const trackIdsInPathSteps: string[] = [];
     for (const { location } of selectedTrain.path) {
-      if ('track' in location) trackIdsInPathSteps.push(location.track);
+      if (location.type === 'track_offset') trackIdsInPathSteps.push(location.track);
     }
     const trackIdsOnPath = (operationalPointsOnPath || []).map((op) => op.part.track);
     return [...trackIdsInPathSteps, ...trackIdsOnPath];
@@ -256,19 +256,21 @@ const useTimesStopsTableData = (
         // pathStepOp?.parts is only valid for RelatedOperationalPoint (track-offset steps);
         // the stableOPs fallback never applies for those since it requires 'operational_point' in location.
         const trackName =
-          'track' in pathStepLocation
+          pathStepLocation.type === 'track_offset'
             ? pathStepOp?.parts.find((part) => part.track === pathStepLocation.track)
                 ?.local_track_name
             : (pathStepLocation.local_track_name ?? undefined);
 
         const hasRequestedTrack =
-          'track' in pathStepLocation || !!pathStepLocation.local_track_name;
+          pathStepLocation.type === 'track_offset' || !!pathStepLocation.local_track_name;
 
         const schedule = { ...scheduleByAt[pathStep.id] };
         if (stepIndex === 0) schedule.arrival = 'PT0S'; // The first step has no stored scheduled arrival as redundant with start date
         const computedArrival =
           stablePathItemTimes?.final[stepIndex] !== undefined
-            ? new Duration({ milliseconds: stablePathItemTimes.final[stepIndex] })
+            ? new Duration({
+                milliseconds: stablePathItemTimes.final[stepIndex],
+              })
             : undefined;
         const scheduleNotHonored = stableIsValid && !stablePathItemRespect?.times[stepIndex];
         // The back end returns the status at the end of the interval but we want to display the information at the beginning of the interval so we check the next path items status
@@ -370,6 +372,7 @@ const useTimesStopsTableData = (
               // Build location from OP data for creating a new PathItem if user edits this row
               // OPs on path always have a UIC identifier
               location: {
+                type: 'operational_point_part_reference',
                 operational_point: {
                   type: 'uic',
                   uic: op.extensions!.identifier!.uic,

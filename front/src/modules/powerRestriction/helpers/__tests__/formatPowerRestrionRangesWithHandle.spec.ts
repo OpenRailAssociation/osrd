@@ -26,19 +26,31 @@ describe('formatPowerRestrictionRanges', () => {
     ];
     const pathSteps: TrainSchedule['path'] = [
       {
-        location: { operational_point: { uic: 12345, type: 'uic', secondary_code: null } },
+        location: {
+          type: 'operational_point_part_reference',
+          operational_point: { uic: 12345, type: 'uic', secondary_code: null },
+        },
         id: 'step1',
       },
       {
-        location: { operational_point: { uic: 45686, type: 'uic' } },
+        location: {
+          type: 'operational_point_part_reference',
+          operational_point: { uic: 45686, type: 'uic' },
+        },
         id: 'step2',
       },
       {
-        location: { operational_point: { uic: 93405, type: 'uic' } },
+        location: {
+          type: 'operational_point_part_reference',
+          operational_point: { uic: 93405, type: 'uic' },
+        },
         id: 'step3',
       },
       {
-        location: { operational_point: { uic: 93405, type: 'uic' } },
+        location: {
+          type: 'operational_point_part_reference',
+          operational_point: { uic: 93405, type: 'uic' },
+        },
         id: 'step4',
       },
     ];

@@ -83,13 +83,15 @@ export type Items = {
   id: string;
   /** The location of a path waypoint */
   location:
-    | {
+    | ({
         /** Offset in mm */
         offset: number;
         /** Track section identifier */
         track: string;
-      }
-    | {
+      } & {
+        type: 'track_offset';
+      })
+    | ({
         local_track_name?: null | string;
         operational_point:
           | {
@@ -111,7 +113,9 @@ export type Items = {
               /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
               uic: number;
             };
-      };
+      } & {
+        type: 'operational_point_part_reference';
+      });
 };
 export type Items2 = {
   arrival?: null | Interval;
@@ -184,13 +188,15 @@ export type TransformTimetableResponse = {
       id: string;
       /** The location of a path waypoint */
       location:
-        | {
+        | ({
             /** Offset in mm */
             offset: number;
             /** Track section identifier */
             track: string;
-          }
-        | {
+          } & {
+            type: 'track_offset';
+          })
+        | ({
             local_track_name?: null | string;
             operational_point:
               | {
@@ -212,7 +218,9 @@ export type TransformTimetableResponse = {
                   /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
                   uic: number;
                 };
-          };
+          } & {
+            type: 'operational_point_part_reference';
+          });
     }[];
     power_restrictions?: {
       from: string;

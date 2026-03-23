@@ -22,6 +22,7 @@ describe('makeProjectedItems', () => {
           {
             id: 'a496f3a6-4eea-45f8-a83c-5472d9adcd6d',
             location: {
+              type: 'operational_point_part_reference',
               operational_point: {
                 uic: 11,
                 secondary_code: 'BV',
@@ -32,6 +33,7 @@ describe('makeProjectedItems', () => {
           {
             id: 'e18f50f3-2b40-451e-9726-e4dd29459bf0',
             location: {
+              type: 'operational_point_part_reference',
               operational_point: {
                 uic: 12,
                 secondary_code: 'BV',
@@ -81,11 +83,17 @@ describe('makeProjectedItems', () => {
         },
         originPathItem: {
           id: 'origin',
-          location: { operational_point: { type: 'id', operational_point: 'a' } },
+          location: {
+            type: 'operational_point_part_reference',
+            operational_point: { type: 'id', operational_point: 'a' },
+          },
         },
         destinationPathItem: {
           id: 'destination',
-          location: { operational_point: { type: 'id', operational_point: 'b' } },
+          location: {
+            type: 'operational_point_part_reference',
+            operational_point: { type: 'id', operational_point: 'b' },
+          },
         },
         spaceTimeCurves: [
           {
@@ -144,6 +152,7 @@ describe('makeProjectedItems', () => {
           {
             id: '3e6c78c6-89a9-462f-a0b3-1e4253cb6386',
             location: {
+              type: 'operational_point_part_reference',
               operational_point: {
                 uic: 11,
                 secondary_code: 'BV',
@@ -154,6 +163,7 @@ describe('makeProjectedItems', () => {
           {
             id: '00fd1b82-32ca-43fd-a46e-24b5bc6f0fd3',
             location: {
+              type: 'operational_point_part_reference',
               operational_point: {
                 uic: 14,
                 secondary_code: 'BV',
@@ -198,11 +208,17 @@ describe('makeProjectedItems', () => {
         departureTime: new Date('2025-07-09T05:30:00.000Z'),
         originPathItem: {
           id: 'origin',
-          location: { operational_point: { type: 'id', operational_point: 'a' } },
+          location: {
+            type: 'operational_point_part_reference',
+            operational_point: { type: 'id', operational_point: 'a' },
+          },
         },
         destinationPathItem: {
           id: 'destination',
-          location: { operational_point: { type: 'id', operational_point: 'b' } },
+          location: {
+            type: 'operational_point_part_reference',
+            operational_point: { type: 'id', operational_point: 'b' },
+          },
         },
         spaceTimeCurves: [
           {

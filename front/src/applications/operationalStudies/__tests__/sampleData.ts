@@ -361,6 +361,7 @@ export const uniqueTrainHonored: TimetableItem = {
     {
       id: 'id440',
       location: {
+        type: 'track_offset',
         track: 'TA0',
         offset: 1299000,
       },
@@ -368,6 +369,7 @@ export const uniqueTrainHonored: TimetableItem = {
     {
       id: 'id450',
       location: {
+        type: 'track_offset',
         track: 'TG1',
         offset: 644000,
       },
