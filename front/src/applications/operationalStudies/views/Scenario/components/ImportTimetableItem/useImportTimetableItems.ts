@@ -60,6 +60,7 @@ const useImportTimetableItems = ({ upsertTimetableItems }: ImportTimetableItemsP
 
       const importedTimetableItems = await postFullImportPayload(
         sandboxId,
+        scenario.timetable_id,
         scenario.id,
         timetableJsonPayload,
         subCategories,
