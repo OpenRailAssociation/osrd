@@ -159,9 +159,9 @@ export const insertScheduleItemInOrder = (
 };
 
 /**
- * Compute optimistic display values for all editable row fields when a cell is edited.
+ * Compute the optimistic display values for all row fields when a cell is edited.
  */
-export const computeOptimisticRowUpdate = (
+export const computeOptimisticRow = (
   row: TimesStopsRowNew,
   edit: OptimisticEdit
 ): Pick<
@@ -212,12 +212,17 @@ export const propagationToEdits = (
   });
 
 /** Build a TrainSchedule object from a Train with updated path and schedule. */
-export const buildUpdatedOccurrence = (
-  selectedTrain: Train,
-  updatedPath: PathItem[],
-  updatedSchedule: ScheduleItem[],
-  trainName: string
-): TrainSchedule => ({
+export const buildUpdatedOccurrence = ({
+  selectedTrain,
+  updatedPath,
+  updatedSchedule,
+  trainName,
+}: {
+  selectedTrain: Train;
+  updatedPath: PathItem[];
+  updatedSchedule: ScheduleItem[];
+  trainName: string;
+}): TrainSchedule => ({
   category: selectedTrain.category,
   comfort: selectedTrain.comfort,
   constraint_distribution: selectedTrain.constraint_distribution,

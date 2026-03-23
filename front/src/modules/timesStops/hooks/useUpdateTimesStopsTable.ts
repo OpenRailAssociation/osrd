@@ -96,6 +96,15 @@ const useUpdateTimesStopsTable = (
     [selectedTrain]
   );
 
+  const persistTrain = async (train: TimetableItem): Promise<'updated'> => {
+    await updateTrainSchedule({
+      id: train.id,
+      trainSchedule: train,
+    }).unwrap();
+    upsertTimetableItems([train]);
+    return 'updated';
+  };
+
   /**
    * Compute the updated path and schedule based on the cell update.
    */
@@ -216,7 +225,6 @@ const useUpdateTimesStopsTable = (
       // exception diff expects the occurrence's computed name.
       const occurrenceTrainName = getOccurrenceTrainName(originalPacedTrain, occurrenceId);
 
-      // Build updated occurrence based on update type
       const result = computeUpdatedPathAndSchedule(update);
       if (!result) return 'skipped';
 
@@ -225,12 +233,12 @@ const useUpdateTimesStopsTable = (
         margins: result.updatedMargins,
       };
       const updatedOccurrence: TrainSchedule = {
-        ...buildUpdatedOccurrence(
-          trainWithUpdatedMargins,
-          result.updatedPath,
-          result.updatedSchedule,
-          occurrenceTrainName
-        ),
+        ...buildUpdatedOccurrence({
+          selectedTrain: trainWithUpdatedMargins,
+          updatedPath: result.updatedPath,
+          updatedSchedule: result.updatedSchedule,
+          trainName: occurrenceTrainName,
+        }),
         start_time: result.updatedStartTime?.toISOString() ?? selectedTrain.start_time,
       };
 
@@ -240,12 +248,7 @@ const useUpdateTimesStopsTable = (
         occurrenceId
       );
 
-      await updateTrainSchedule({
-        id: pacedTrainId,
-        trainSchedule: updatedPacedTrain,
-      }).unwrap();
-      upsertTimetableItems([{ ...updatedPacedTrain, id: pacedTrainId }]);
-      return 'updated';
+      return persistTrain({ ...updatedPacedTrain, id: pacedTrainId });
     },
     [selectedTrain, timetableItemsWithDetails, computeUpdatedPathAndSchedule]
   );
@@ -260,22 +263,14 @@ const useUpdateTimesStopsTable = (
       const result = computeUpdatedPathAndSchedule(update);
       if (!result) return 'skipped';
 
-      const { updatedPath, updatedSchedule } = result;
-      const train: TimetableItem = {
+      return persistTrain({
         ...selectedTrain,
         id: editoastId,
-        path: updatedPath,
-        schedule: updatedSchedule,
+        path: result.updatedPath,
+        schedule: result.updatedSchedule,
         margins: result.updatedMargins,
         start_time: result.updatedStartTime?.toISOString() ?? selectedTrain.start_time,
-      };
-
-      await updateTrainSchedule({
-        id: editoastId,
-        trainSchedule: train,
-      }).unwrap();
-      upsertTimetableItems([train]);
-      return 'updated';
+      });
     },
     [selectedTrain, computeUpdatedPathAndSchedule]
   );
