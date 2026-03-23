@@ -25,6 +25,7 @@ import {
 import { mapBy } from 'utils/types';
 
 import type { BaseTrainProjection, PathOperationalPoint, TrainSpaceTimeData } from '../../types';
+import { NO_TRACK_SPECIFIED_SYMBOL, sortTracks } from './helpers/sortTracks';
 import { batchFetchTrackOccupancy } from './helpers/utils';
 import { getMovableOccupancyZone, type MovableOccupancyZone } from './helpers/zones';
 import { usePrevious } from '../../../../utils/hooks/state';
@@ -42,8 +43,6 @@ type DeployedWaypoint = {
   tracks?: Track[];
   loading?: boolean;
 };
-
-const NO_TRACK_SPECIFIED_SYMBOL = '[ ]';
 
 type StationLabel = { type?: 'label'; label: string } | { type: 'requestedPoint' };
 function extractStationLabel(
@@ -344,7 +343,7 @@ const useTrackOccupancy = ({
           operationalPointName: op.extensions?.identifier?.name || undefined,
           zones: resolvedZones,
           loading: opState.zones.type === 'loading',
-          tracks: [...infraTracks, ...virtualTracks],
+          tracks: sortTracks(infraTracks, virtualTracks),
         });
       }
     });
