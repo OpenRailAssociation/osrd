@@ -5,8 +5,17 @@ import type {
   RoundTripsFromJson,
   TimetableJsonPayload,
 } from 'applications/operationalStudies/types';
-import { osrdEditoastApi, type MacroNodeForm, type SubCategory } from 'common/api/osrdEditoastApi';
-import { createPacedTrains } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
+import {
+  osrdEditoastApi,
+  type MacroNodeForm,
+  type PacedTrainException,
+  type SubCategory,
+  type TrainSchedule,
+} from 'common/api/osrdEditoastApi';
+import {
+  createPacedTrains,
+  createExceptions,
+} from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import { setWarning, setFailure } from 'reducers/main';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
@@ -65,6 +74,7 @@ const postMacroNodesIfNew = async (
 
 export const postFullImportPayload = async (
   trainScheduleSetId: number,
+  timetableId: number,
   scenarioId: number,
   timetableJsonPayload: TimetableJsonPayload,
   subCategories: SubCategory[],
@@ -74,14 +84,27 @@ export const postFullImportPayload = async (
 ): Promise<TimetableItem[]> => {
   try {
     const { round_trips, macro_nodes, macro_notes } = timetableJsonPayload;
-    const pacedTrains = generateTrainPayloads(timetableJsonPayload.paced_trains, subCategories);
+    const {
+      trainSchedules,
+      exceptions,
+    }: { trainSchedules: TrainSchedule[]; exceptions: PacedTrainException[][] } =
+      generateTrainPayloads(timetableJsonPayload.paced_trains, subCategories);
 
     const timetableItems: TimetableItem[] = [];
 
     const BATCH_SIZE = 1000;
-    const trainChunks = chunk(pacedTrains, BATCH_SIZE);
+    const trainChunks = chunk(trainSchedules, BATCH_SIZE);
     for (const trainChunk of trainChunks) {
-      timetableItems.push(...(await createPacedTrains(dispatch, trainScheduleSetId, trainChunk)));
+      const createdTrains = await createPacedTrains(dispatch, trainScheduleSetId, trainChunk);
+      timetableItems.push(...createdTrains);
+    }
+
+    // TODO: when batch POST is available, replace this loop with a single batch call
+    const exceptionsWithTrainIds = exceptions
+      .map((trainExceptions, i) => ({ trainExceptions, pacedTrainId: timetableItems[i].id }))
+      .filter(({ trainExceptions }) => trainExceptions.length > 0);
+    for (const { trainExceptions, pacedTrainId } of exceptionsWithTrainIds) {
+      await createExceptions(dispatch, trainExceptions, pacedTrainId, timetableId);
     }
 
     if (round_trips) {
