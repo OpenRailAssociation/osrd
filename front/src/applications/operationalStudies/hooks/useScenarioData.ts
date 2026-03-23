@@ -273,14 +273,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
           break;
       }
 
-      dispatch(
-        osrdEditoastApi.util.invalidateTags([
-          'scenarios',
-          'timetable',
-          'train_schedule',
-          'paced_train',
-        ])
-      );
+      dispatch(osrdEditoastApi.util.invalidateTags(['scenarios', 'timetable', 'train_schedule']));
     });
 
     return () => {
