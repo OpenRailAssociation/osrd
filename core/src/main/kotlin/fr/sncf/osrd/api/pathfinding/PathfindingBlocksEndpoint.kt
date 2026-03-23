@@ -43,6 +43,9 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
+import kotlin.random.Random
+import kotlin.random.nextInt
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -54,6 +57,9 @@ import org.slf4j.LoggerFactory
 class NoPathFoundException(val response: PathfindingBlockResponse) : Exception()
 
 val pathfindingLogger: Logger = LoggerFactory.getLogger("Pathfinding")
+
+val usedIncreasing = ConcurrentHashMap<TrackChunkId, Int>()
+val usedDecreasing = ConcurrentHashMap<TrackChunkId, Int>()
 
 class PathfindingBlocksEndpoint(private val infraManager: InfraProvider) : Take {
     override fun act(req: Request): Response {
@@ -95,6 +101,23 @@ class PathfindingBlocksEndpoint(private val infraManager: InfraProvider) : Take 
             }
             return ExceptionHandler.handle(ex)
         }
+    }
+}
+
+fun writeLog(infra: RawInfra) {
+    val logger = CSVLogger("chunk_uses.csv", "geo", "increasing", "decreasing", "ratio", "total")
+    val usedChunks = usedIncreasing.keys.union(usedDecreasing.keys)
+    for (chunk in usedChunks) {
+        val increasing = usedIncreasing[chunk] ?: 0
+        val decreasing = usedDecreasing[chunk] ?: 0
+        val geo = infra.getTrackChunkGeom(chunk)
+        logger.log(
+            "geo" to geo,
+            "increasing" to increasing,
+            "decreasing" to decreasing,
+            "ratio" to increasing.toDouble() / (increasing + decreasing).toDouble(),
+            "total" to increasing + decreasing,
+        )
     }
 }
 
@@ -146,7 +169,8 @@ fun runPathfinding(infra: FullInfra, request: PathfindingBlockRequest): Pathfind
         makeHeuristicsForPathfindingEdges(infra, waypoints, request.rollingStockMaximumSpeed)
 
     // Compute the paths from the entry waypoint to the exit waypoint
-    val path = computePaths(infra, waypoints, constraints, heuristics, request, request.timeout)
+    val timeout = request.timeout ?: Pathfinding.TIMEOUT
+    val path = computePaths(infra, waypoints, constraints, heuristics, request, timeout)
 
     if (allNodeStats.isEmpty()) foo(infra.rawInfra, infra.blockInfra)
     for (zonePathRange in path.path.getZonePaths()) {
@@ -156,6 +180,18 @@ fun runPathfinding(infra: FullInfra, request: PathfindingBlockRequest): Pathfind
             allNodeStats[node]?.register(config)
         }
     }
+
+    for (dirChunk in path.path.getChunks()) {
+        val chunk = dirChunk.value.value
+        val dir = dirChunk.value.direction
+        if (dir == Direction.INCREASING) {
+            usedIncreasing.compute(chunk) { _, count -> (count ?: 0) + 1 }
+        } else {
+            usedDecreasing.compute(chunk) { _, count -> (count ?: 0) + 1 }
+        }
+    }
+
+    if (Random.nextInt(1_000) == 0) writeLog(infra.rawInfra)
 
     return runPathfindingPostProcessing(infra, request, path)
 }

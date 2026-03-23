@@ -9,6 +9,7 @@ import com.squareup.moshi.JsonReader
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.conflicts.TrainRequirementsById
+import fr.sncf.osrd.api.pathfinding.writeLog
 import fr.sncf.osrd.conflicts.SpacingRequirement
 import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.api.ZoneId
@@ -160,6 +161,8 @@ class TimetableDownloader(
                         )
                 }
             }
+
+            writeLog(infra)
             STDCMTimetableData(zoneUses, detailedRequirements)
         }
     }
