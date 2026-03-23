@@ -83,7 +83,7 @@ const useSimulationResults = (): {
         ? {
             id: selectedTrainId,
             infraId,
-            exceptionKey: exception?.key,
+            exceptionId: exception?.id ?? undefined,
           }
         : skipToken
     );
