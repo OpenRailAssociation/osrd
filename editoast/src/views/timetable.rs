@@ -70,7 +70,6 @@ use crate::models::train_schedule::OccurrenceId;
 use crate::models::train_schedule_set::TrainScheduleSet;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::timetable::paced_train::TrainScheduleResponse;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 
 #[derive(Debug, Error, EditoastError, derive_more::From)]
