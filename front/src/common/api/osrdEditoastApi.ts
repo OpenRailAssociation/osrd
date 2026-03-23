@@ -75,9 +75,9 @@ const osrdEditoastApi = generatedEditoastApi
       }),
       getTrainPath: builder.query<
         PathfindingResult,
-        { id: TrainId; infraId: number; exceptionKey?: string }
+        { id: TrainId; infraId: number; exceptionId?: number }
       >({
-        queryFn: async ({ id: trainId, infraId, exceptionKey }, { dispatch }) => {
+        queryFn: async ({ id: trainId, infraId, exceptionId }, { dispatch }) => {
           const pacedTrainId = isOccurrenceId(trainId)
             ? extractPacedTrainIdFromOccurrenceId(trainId)
             : trainId;
@@ -86,7 +86,7 @@ const osrdEditoastApi = generatedEditoastApi
               {
                 id: extractEditoastIdFromPacedTrainId(pacedTrainId),
                 infraId,
-                exceptionKey,
+                exceptionId,
               },
               { subscribe: false }
             )
