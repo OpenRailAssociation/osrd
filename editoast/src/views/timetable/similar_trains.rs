@@ -147,15 +147,15 @@ enum SimilarTrainsError {
     InvalidPath(#[from] new_train::InvalidTrain),
 
     #[error("Rolling stock '{rolling_stock_name}' does not exist")]
-    #[editoast_error(status = 404)]
+    #[editoast_error(status = 400)]
     RollingStockNotFound { rolling_stock_name: String },
 
     #[error("Speed limit tag '{speed_limit_tag}' does not exist")]
-    #[editoast_error(status = 404)]
+    #[editoast_error(status = 400)]
     SpeedLimitNotFound { speed_limit_tag: String },
 
     #[error("Trains traffic is empty")]
-    #[editoast_error(status = 404)]
+    #[editoast_error(status = 400)]
     EmptyTrainsTraffic,
 
     #[error("Database error")]
