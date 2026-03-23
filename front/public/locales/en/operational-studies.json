@@ -309,7 +309,7 @@
         "newCatalogEntry": "New set",
         "newLocalTrainScheduleSet": "New local package",
         "newTrainScheduleSet": "Create new package",
-        "package": "Series",
+        "package": "Series name",
         "parentCatalogEntry": "Parent train set",
         "publishDialogTitle": "Publish local package",
         "publishSubmit": "Publish package",
