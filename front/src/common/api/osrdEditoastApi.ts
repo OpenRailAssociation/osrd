@@ -71,7 +71,7 @@ const osrdEditoastApi = generatedEditoastApi
           const data: TimetableItem = { ...pacedTrain, id: timetableItemId };
           return { data };
         },
-        providesTags: ['timetable', 'paced_train'],
+        providesTags: ['timetable', 'train_schedule'],
       }),
       getTrainPath: builder.query<
         PathfindingResult,
@@ -93,7 +93,7 @@ const osrdEditoastApi = generatedEditoastApi
           ).unwrap();
           return { data: path };
         },
-        providesTags: ['pathfinding', 'paced_train'],
+        providesTags: ['pathfinding', 'train_schedule'],
       }),
       getTrainSimulation: builder.query<
         SimulationResponse,
@@ -119,7 +119,7 @@ const osrdEditoastApi = generatedEditoastApi
           ).unwrap();
           return { data: simulation };
         },
-        providesTags: ['paced_train'],
+        providesTags: ['train_schedule'],
       }),
       getEtcsBrakingCurves: builder.query<
         CoreEtcsBrakingCurvesResponse,
@@ -145,7 +145,7 @@ const osrdEditoastApi = generatedEditoastApi
           ).unwrap();
           return { data: etcsBrakingCurves };
         },
-        providesTags: ['paced_train'],
+        providesTags: ['train_schedule'],
       }),
       matchAllOperationalPoints: builder.query<
         RelatedOperationalPoint[][],
@@ -253,8 +253,8 @@ const osrdEditoastApi = generatedEditoastApi
       getSpritesSignalingSystems: {
         transformResponse: (response: GetSpritesSignalingSystemsApiResponse) => response.sort(),
       },
-      // As we always use all get pacedTrain endpoints after updating the timetable,
-      // we don't want to invalidate the paced_train tags here to prevent multiple calls
+      // As we always use all get train_schedule endpoints after updating the timetable,
+      // we don't want to invalidate the train_schedule tags here to prevent multiple calls
 
       deleteTrainSchedules: {
         invalidatesTags: ['timetable', 'scenarios'],

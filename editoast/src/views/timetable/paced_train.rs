@@ -130,7 +130,7 @@ pub(in crate::views) struct TrainScheduleIdParam {
 #[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
-    tags = ["timetable", "paced_train"],
+    tags = ["timetable", "train_schedule"],
     params(TrainScheduleIdParam),
     responses(
         (status = 200, body = TrainScheduleResponse, description = "The requested train schedule")
@@ -168,7 +168,7 @@ pub(in crate::views) async fn get_by_id(
 #[editoast_derive::route]
 #[utoipa::path(
     put, path = "",
-    tags = ["timetable", "paced_train"],
+    tags = ["timetable", "train_schedule"],
     params(TrainScheduleIdParam),
     request_body = TrainSchedule,
     responses(
@@ -211,7 +211,7 @@ pub(in crate::views) struct TrainScheduleIds {
 #[editoast_derive::route]
 #[utoipa::path(
     delete, path = "",
-    tags = ["timetable", "paced_train"],
+    tags = ["timetable", "train_schedule"],
     request_body = inline(TrainScheduleIds),
     responses(
         (status = 204, description = "All train schedules have been deleted")
@@ -269,7 +269,7 @@ struct SimulationContext {
 #[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
-    tag = "paced_train",
+    tag = "train_schedule",
     request_body = inline(SimulationBatchForm),
     responses(
         (status = 200, description = "Associate each train schedule id with its simulation summaries", body = HashMap<i64, TrainScheduleSummaryResponse>),
@@ -404,7 +404,7 @@ pub(in crate::views) struct ExceptionQueryParam {
 #[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
-    tags = ["paced_train", "pathfinding"],
+    tags = ["train_schedule", "pathfinding"],
     params(TrainScheduleIdParam, InfraIdQueryParam, ExceptionQueryParam),
     responses(
         (status = 200, description = "The path", body = PathfindingResult),
@@ -493,7 +493,7 @@ pub struct ElectricalProfileSetIdQueryParam {
 #[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
-    tag = "paced_train",
+    tag = "train_schedule",
     params(TrainScheduleIdParam, InfraIdQueryParam, ElectricalProfileSetIdQueryParam, ExceptionQueryParam),
     responses(
         (status = 200, description = "Simulation Output", body = simulation::Response),
@@ -582,7 +582,7 @@ pub(in crate::views) async fn simulation(
 #[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
-    tags = ["paced_train", "etcs_braking_curves"],
+    tags = ["train_schedule", "etcs_braking_curves"],
     params(TrainScheduleIdParam, InfraIdQueryParam, ElectricalProfileSetIdQueryParam, ExceptionQueryParam),
     responses(
         (status = 200, description = "ETCS Braking Curves Output", body = core_client::etcs_braking_curves::Response),
@@ -749,7 +749,7 @@ pub struct ProjectPathTrainScheduleResult {
 #[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
-    tag = "paced_train",
+    tag = "train_schedule",
     request_body = ProjectPathForm,
     responses(
         (status = 200, description = "Project Path Output", body = HashMap<i64, ProjectPathTrainScheduleResult>)),
@@ -1063,7 +1063,7 @@ pub struct OccupancyBlocksTrainScheduleResult {
 #[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
-    tag = "paced_train",
+    tag = "train_schedule",
     request_body = OccupancyBlockForm,
     responses(
         (status = 200, body = HashMap<i64, OccupancyBlocksTrainScheduleResult>),
@@ -1213,7 +1213,7 @@ pub(in crate::views) struct TrackSectionOccupancy {
 #[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
-    tag = "paced_train",
+    tag = "train_schedule",
     request_body = inline(TrackOccupancyForm),
     responses(
         (status = 200, description = "Track section occupancy periods for train schedules",
@@ -1518,7 +1518,7 @@ pub(in crate::views) struct MoveTrainSchedulesForm {
 #[editoast_derive::route]
 #[utoipa::path(
     patch, path = "",
-    tag = "paced_train",
+    tag = "train_schedule",
     request_body = inline(MoveTrainSchedulesForm),
     responses(
         (status = 204, description = "The train schedule set is updated with the train schedules"),

@@ -4083,7 +4083,7 @@ paths:
     get:
       tags:
       - train_schedule_set
-      - paced_train
+      - train_schedule
       summary: List train schedules for a train schedule set
       parameters:
       - name: id
@@ -4107,7 +4107,7 @@ paths:
     post:
       tags:
       - train_schedule_set
-      - paced_train
+      - train_schedule
       summary: Create train schedules by batch
       parameters:
       - name: id
@@ -4138,7 +4138,7 @@ paths:
     delete:
       tags:
       - timetable
-      - paced_train
+      - train_schedule
       summary: Delete a train schedule
       requestBody:
         content:
@@ -4161,7 +4161,7 @@ paths:
   /train_schedules/move:
     patch:
       tags:
-      - paced_train
+      - train_schedule
       requestBody:
         content:
           application/json:
@@ -4186,7 +4186,7 @@ paths:
   /train_schedules/occupancy_blocks:
     post:
       tags:
-      - paced_train
+      - train_schedule
       summary: |-
         ## Important:
         The following train schedules are **excluded** from the result:
@@ -4214,7 +4214,7 @@ paths:
   /train_schedules/project_path:
     post:
       tags:
-      - paced_train
+      - train_schedule
       summary: Projects the space-time curves and paths of a number of train schedules onto a given path.
       description: |-
         - Returns 404 if the infra or any of the train schedules are not found
@@ -4362,7 +4362,7 @@ paths:
   /train_schedules/simulation_summary:
     post:
       tags:
-      - paced_train
+      - train_schedule
       summary: |-
         Associate each train schedule id with its simulation summaries response
         If the simulation fails, it associates the reason: pathfinding failed or running time failed
@@ -4405,7 +4405,7 @@ paths:
   /train_schedules/track_occupancy:
     post:
       tags:
-      - paced_train
+      - train_schedule
       requestBody:
         content:
           application/json:
@@ -4524,7 +4524,7 @@ paths:
     get:
       tags:
       - timetable
-      - paced_train
+      - train_schedule
       summary: Get a train schedule by its ID
       parameters:
       - name: id
@@ -4543,7 +4543,7 @@ paths:
     put:
       tags:
       - timetable
-      - paced_train
+      - train_schedule
       summary: Update a paced train
       parameters:
       - name: id
@@ -4564,7 +4564,7 @@ paths:
   /train_schedules/{id}/etcs_braking_curves:
     get:
       tags:
-      - paced_train
+      - train_schedule
       - etcs_braking_curves
       summary: Retrieve the etcs braking curves of an etcs train on etcs portions of the path
       parameters:
@@ -4601,7 +4601,7 @@ paths:
   /train_schedules/{id}/path:
     get:
       tags:
-      - paced_train
+      - train_schedule
       - pathfinding
       summary: Get a path from a paced train given an infrastructure id and a paced train id
       parameters:
@@ -4634,7 +4634,7 @@ paths:
   /train_schedules/{id}/simulation:
     get:
       tags:
-      - paced_train
+      - train_schedule
       summary: Retrieve the space, speed and time curve of a given train
       parameters:
       - name: id

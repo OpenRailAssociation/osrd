@@ -28,7 +28,6 @@ export const addTagTypes = [
   'timetable',
   'train_schedule_exceptions',
   'train_schedule_set',
-  'paced_train',
   'train_schedule',
   'etcs_braking_curves',
   'work_schedules',
@@ -1214,7 +1213,7 @@ const injectedRtkApi = api
         GetTrainScheduleSetsByIdTrainSchedulesApiArg
       >({
         query: (queryArg) => ({ url: `/train_schedule_sets/${queryArg.id}/train_schedules` }),
-        providesTags: ['train_schedule_set', 'paced_train'],
+        providesTags: ['train_schedule_set', 'train_schedule'],
       }),
       postTrainScheduleSetsByIdTrainSchedules: build.mutation<
         PostTrainScheduleSetsByIdTrainSchedulesApiResponse,
@@ -1225,14 +1224,14 @@ const injectedRtkApi = api
           method: 'POST',
           body: queryArg.body,
         }),
-        invalidatesTags: ['train_schedule_set', 'paced_train'],
+        invalidatesTags: ['train_schedule_set', 'train_schedule'],
       }),
       deleteTrainSchedules: build.mutation<
         DeleteTrainSchedulesApiResponse,
         DeleteTrainSchedulesApiArg
       >({
         query: (queryArg) => ({ url: `/train_schedules`, method: 'DELETE', body: queryArg.body }),
-        invalidatesTags: ['timetable', 'paced_train'],
+        invalidatesTags: ['timetable', 'train_schedule'],
       }),
       patchTrainSchedulesMove: build.mutation<
         PatchTrainSchedulesMoveApiResponse,
@@ -1243,7 +1242,7 @@ const injectedRtkApi = api
           method: 'PATCH',
           body: queryArg.body,
         }),
-        invalidatesTags: ['paced_train'],
+        invalidatesTags: ['train_schedule'],
       }),
       postTrainSchedulesOccupancyBlocks: build.query<
         PostTrainSchedulesOccupancyBlocksApiResponse,
@@ -1254,7 +1253,7 @@ const injectedRtkApi = api
           method: 'POST',
           body: queryArg.occupancyBlockForm,
         }),
-        providesTags: ['paced_train'],
+        providesTags: ['train_schedule'],
       }),
       postTrainSchedulesProjectPath: build.query<
         PostTrainSchedulesProjectPathApiResponse,
@@ -1265,7 +1264,7 @@ const injectedRtkApi = api
           method: 'POST',
           body: queryArg.projectPathForm,
         }),
-        providesTags: ['paced_train'],
+        providesTags: ['train_schedule'],
       }),
       postTrainSchedulesProjectPathOp: build.query<
         PostTrainSchedulesProjectPathOpApiResponse,
@@ -1287,7 +1286,7 @@ const injectedRtkApi = api
           method: 'POST',
           body: queryArg.body,
         }),
-        providesTags: ['paced_train'],
+        providesTags: ['train_schedule'],
       }),
       postTrainSchedulesTrackOccupancy: build.mutation<
         PostTrainSchedulesTrackOccupancyApiResponse,
@@ -1298,14 +1297,14 @@ const injectedRtkApi = api
           method: 'POST',
           body: queryArg.body,
         }),
-        invalidatesTags: ['paced_train'],
+        invalidatesTags: ['train_schedule'],
       }),
       getTrainSchedulesById: build.query<
         GetTrainSchedulesByIdApiResponse,
         GetTrainSchedulesByIdApiArg
       >({
         query: (queryArg) => ({ url: `/train_schedules/${queryArg.id}` }),
-        providesTags: ['timetable', 'paced_train'],
+        providesTags: ['timetable', 'train_schedule'],
       }),
       putTrainSchedulesById: build.mutation<
         PutTrainSchedulesByIdApiResponse,
@@ -1316,7 +1315,7 @@ const injectedRtkApi = api
           method: 'PUT',
           body: queryArg.trainSchedule,
         }),
-        invalidatesTags: ['timetable', 'paced_train'],
+        invalidatesTags: ['timetable', 'train_schedule'],
       }),
       getTrainSchedulesByIdEtcsBrakingCurves: build.query<
         GetTrainSchedulesByIdEtcsBrakingCurvesApiResponse,
@@ -1330,7 +1329,7 @@ const injectedRtkApi = api
             exception_key: queryArg.exceptionKey,
           },
         }),
-        providesTags: ['paced_train', 'etcs_braking_curves'],
+        providesTags: ['train_schedule', 'etcs_braking_curves'],
       }),
       getTrainSchedulesByIdPath: build.query<
         GetTrainSchedulesByIdPathApiResponse,
@@ -1343,7 +1342,7 @@ const injectedRtkApi = api
             exception_key: queryArg.exceptionKey,
           },
         }),
-        providesTags: ['paced_train', 'pathfinding'],
+        providesTags: ['train_schedule', 'pathfinding'],
       }),
       getTrainSchedulesByIdSimulation: build.query<
         GetTrainSchedulesByIdSimulationApiResponse,
@@ -1357,7 +1356,7 @@ const injectedRtkApi = api
             exception_key: queryArg.exceptionKey,
           },
         }),
-        providesTags: ['paced_train'],
+        providesTags: ['train_schedule'],
       }),
       getVersion: build.query<GetVersionApiResponse, GetVersionApiArg>({
         query: () => ({ url: `/version` }),
