@@ -1451,6 +1451,11 @@ fn find_track_occupancy_unknown_operational_point(
 ) -> Vec<(Option<NonBlankString>, TrackOccupancy)> {
     izip!(train_ids, trains)
         .flat_map(|(train_id, train_schedule)| {
+            let schedule_per_path_item: HashMap<_, _> = train_schedule
+                .schedule
+                .iter()
+                .map(|schedule_item| (&schedule_item.at, schedule_item))
+                .collect();
             train_schedule
                 .path
                 .iter()
@@ -1463,18 +1468,31 @@ fn find_track_occupancy_unknown_operational_point(
                     if op_ref.operational_point != *operational_point_reference {
                         return None;
                     }
-                    let time_window = train_schedule
-                        .schedule
-                        .iter()
-                        .find(|schedule_item| schedule_item.at == path_item.id)
+                    let is_first_path_item = train_schedule
+                        .path
+                        .first()
+                        .is_some_and(|first| first.id == path_item.id);
+                    let time_window = schedule_per_path_item
+                        .get(&path_item.id)
                         .and_then(|schedule_item| {
                             let duration = schedule_item.stop_for.unwrap_or_default();
-                            let arrival_time = schedule_item.arrival?.num_milliseconds();
+                            let arrival_time = if is_first_path_item {
+                                0
+                            } else {
+                                schedule_item.arrival?.num_milliseconds()
+                            };
                             let time_begin =
                                 train_schedule.start_time + Duration::milliseconds(arrival_time);
                             Some(TimeWindow {
                                 time_begin,
                                 duration,
+                            })
+                        })
+                        // No schedule item for the first path item: use start_time directly.
+                        .or_else(|| {
+                            is_first_path_item.then_some(TimeWindow {
+                                time_begin: train_schedule.start_time,
+                                duration: Default::default(),
                             })
                         })?;
                     Some((
@@ -1591,6 +1609,7 @@ mod tests {
     use chrono::DateTime;
     use chrono::Duration;
     use chrono::TimeDelta;
+    use chrono::Utc;
     use core_client::mocking::MockingClient;
     use core_client::pathfinding::PathfindingInputError;
     use core_client::pathfinding::PathfindingResultSuccess;
@@ -2964,7 +2983,7 @@ mod tests {
     }
 
     #[test]
-    fn unknown_op_without_arrival_time_returns_none() {
+    fn unknown_op_non_first_item_without_arrival_returns_none() {
         let op_ref = OperationalPointReference::Trigram {
             trigram: "UNKNOWN".into(),
             secondary_code: None,
@@ -2979,7 +2998,10 @@ mod tests {
             ),
         };
         let train_schedule = schemas::TrainOccurrence {
-            path: vec![path_item.clone()],
+            path: vec![
+                PathItem::new_operational_point("Mid_West_station"),
+                path_item.clone(),
+            ],
             schedule: vec![ScheduleItem {
                 at: "item_1".into(),
                 arrival: None,
@@ -2997,6 +3019,46 @@ mod tests {
         );
 
         assert!(result.is_empty());
+    }
+
+    #[test]
+    fn unknown_op_first_path_item_no_arrival_uses_start_time() {
+        let op_ref = OperationalPointReference::Trigram {
+            trigram: "UNKNOWN".into(),
+            secondary_code: None,
+        };
+        let start_time: DateTime<Utc> = "2026-01-01T00:00:00Z".parse().unwrap();
+        let train_schedule = schemas::TrainOccurrence {
+            start_time,
+            path: vec![
+                PathItem {
+                    id: "item_1".into(),
+                    location: PathItemLocation::OperationalPointPartReference(
+                        OperationalPointPartReference {
+                            operational_point: op_ref.clone(),
+                            local_track_name: None,
+                        },
+                    ),
+                },
+                PathItem::new_operational_point("Mid_West_station"),
+            ],
+            schedule: vec![ScheduleItem {
+                at: "Mid_West_station".into(),
+                arrival: Some(PositiveDuration::try_from(Duration::seconds(100)).unwrap()),
+                stop_for: Some(PositiveDuration::try_from(Duration::seconds(60)).unwrap()),
+                reception_signal: ReceptionSignal::Open,
+            }],
+            ..Default::default()
+        };
+
+        let result = find_track_occupancy_unknown_operational_point(
+            vec![OccurrenceId::new_base(1, 0)],
+            vec![train_schedule],
+            &op_ref,
+        );
+
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0].1.time_window.time_begin, start_time);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
