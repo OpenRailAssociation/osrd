@@ -116,7 +116,7 @@ const TrainScheduleSetTab = ({
             },
       ],
     }),
-    [trainScheduleSet]
+    [trainScheduleSet, t]
   );
 
   const tabName = isSandbox(trainScheduleSet)
