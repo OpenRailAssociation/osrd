@@ -53,16 +53,17 @@ impl<'de> Deserialize<'de> for TrainSchedule {
     where
         D: Deserializer<'de>,
     {
-        let raw = TrainSchedule::deserialize(deserializer)?;
+        let train_schedule = TrainSchedule::deserialize(deserializer)?;
 
         // Schedule item, if on the first path item, shouldn’t have an arrival
         // time different of zero (the start time of the train occurrence)
-        let arrival_time_on_first_path_item = raw
+        let arrival_time_on_first_path_item = train_schedule
             .train_occurrence
             .schedule
             .iter()
             .find(|schedule_item| {
-                raw.train_occurrence
+                train_schedule
+                    .train_occurrence
                     .path
                     .first()
                     .is_some_and(|path_item| schedule_item.at == path_item.id)
@@ -77,7 +78,7 @@ impl<'de> Deserialize<'de> for TrainSchedule {
             )));
         }
         // Check integrity of the pace in the train schedule
-        if let Some(ref paced) = raw.paced {
+        if let Some(ref paced) = train_schedule.paced {
             let mut seen_keys = HashSet::with_capacity(paced.exceptions.len());
             for e in &paced.exceptions {
                 if !seen_keys.insert(&e.key) {
@@ -103,7 +104,7 @@ impl<'de> Deserialize<'de> for TrainSchedule {
                 }
             }
         }
-        Ok(raw)
+        Ok(train_schedule)
     }
 }
 
