@@ -10,7 +10,6 @@ export type MapSettings = {
   showOSM3dBuildings: boolean;
   showOSMtracksections: boolean;
   terrain3DExaggeration: number;
-  smoothTravel: boolean;
   layersSettings: LayersSettings;
   mapSearchMarker?: MapSearchMarker;
   lineSearchCode?: number;

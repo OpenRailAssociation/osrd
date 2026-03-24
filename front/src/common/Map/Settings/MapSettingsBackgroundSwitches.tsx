@@ -20,7 +20,6 @@ type MapBackgroundSettings = {
   showOSM: boolean;
   showOSM3dBuildings: boolean;
   showOSMtracksections: boolean;
-  smoothTravel: boolean;
 };
 
 type FormatSwitchProps = {
@@ -79,7 +78,6 @@ const MapSettingsBackgroundSwitches = () => {
     showOSM,
     showOSM3dBuildings,
     showOSMtracksections,
-    smoothTravel,
   } = backgroundSettings;
 
   return (
@@ -152,14 +150,6 @@ const MapSettingsBackgroundSwitches = () => {
           />
         </div>
       </div>
-
-      <FormatSwitch
-        name="smoothTravel-switch"
-        onChange={() => toggleLayer('smoothTravel')}
-        state={smoothTravel}
-        icon=""
-        label={t('mapSettings.layers.smoothTravel')}
-      />
     </>
   );
 };

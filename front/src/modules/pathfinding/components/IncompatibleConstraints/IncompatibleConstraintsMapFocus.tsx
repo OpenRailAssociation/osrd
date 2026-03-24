@@ -6,15 +6,12 @@ import type { FeatureCollection, LineString } from 'geojson';
 import { useTranslation } from 'react-i18next';
 import { useMap } from 'react-map-gl/maplibre';
 
-import { useMapSettings } from 'reducers/commonMap';
-
 type IncompatibleConstraintsMapFocusProps = HTMLAttributes<unknown> & {
   geojson?: FeatureCollection<LineString>;
 };
 
 const IncompatibleConstraintsMapFocus = (props: IncompatibleConstraintsMapFocusProps) => {
   const map = useMap();
-  const { smoothTravel } = useMapSettings();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
   const { geojson, ...attrs } = props;
 
@@ -22,12 +19,10 @@ const IncompatibleConstraintsMapFocus = (props: IncompatibleConstraintsMapFocusP
     (e: SyntheticEvent) => {
       e.stopPropagation();
       if (geojson) {
-        map.current?.fitBounds(bbox(geojson) as [number, number, number, number], {
-          animate: smoothTravel,
-        });
+        map.current?.fitBounds(bbox(geojson) as [number, number, number, number]);
       }
     },
-    [map, geojson, smoothTravel]
+    [map, geojson]
   );
 
   return (
