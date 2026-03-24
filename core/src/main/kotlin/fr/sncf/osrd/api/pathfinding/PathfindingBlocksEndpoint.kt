@@ -61,6 +61,18 @@ val pathfindingLogger: Logger = LoggerFactory.getLogger("Pathfinding")
 val usedIncreasing = ConcurrentHashMap<TrackChunkId, Int>()
 val usedDecreasing = ConcurrentHashMap<TrackChunkId, Int>()
 
+val knownDirections =
+    File("habillages_directions_voies.csv").bufferedReader().lineSequence().drop(1).associate {
+        val (tiv, rawDir) = it.split(",")
+        val dir =
+            when (rawDir) {
+                "NORMAL+" -> Direction.INCREASING
+                "NORMAL-" -> Direction.DECREASING
+                else -> throw RuntimeException("unknown: $rawDir")
+            }
+        Pair(tiv, dir)
+    }
+
 class PathfindingBlocksEndpoint(private val infraManager: InfraProvider) : Take {
     override fun act(req: Request): Response {
         val body = req.body()
@@ -117,6 +129,24 @@ fun writeLog(infra: RawInfra) {
             "decreasing" to decreasing,
             "ratio" to increasing.toDouble() / (increasing + decreasing).toDouble(),
             "total" to increasing + decreasing,
+        )
+    }
+
+    val logger2 = CSVLogger("known_chunk_uses.csv", "geo", "right", "wrong", "ratio", "total")
+    for (chunk in usedChunks) {
+        val track = infra.getTrackSectionName(infra.getTrackFromChunk(chunk))
+        val direction = knownDirections[track] ?: continue
+        val geo = infra.getTrackChunkGeom(chunk)
+        val increasing = usedIncreasing[chunk] ?: 0
+        val decreasing = usedDecreasing[chunk] ?: 0
+        val right = if (direction == Direction.INCREASING) increasing else decreasing
+        val wrong = if (direction == Direction.DECREASING) increasing else decreasing
+        logger2.log(
+            "geo" to geo,
+            "right" to right,
+            "wrong" to wrong,
+            "ratio" to right.toDouble() / (right + wrong).toDouble(),
+            "total" to right + wrong,
         )
     }
 }
