@@ -187,6 +187,34 @@ updates:
     labels:
       - "dependencies"
       - "area:ci"
+  - package-ecosystem: "docker"
+    directories:
+      - "core"
+      - "docker"
+      - "editoast"
+      - "front/docker"
+      - "gateway"
+      - "osrdyne"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 5
+    commit-message:
+      prefix: "docker:"
+    labels:
+      - "dependencies"
+  - package-ecosystem: "docker-compose"
+    directories:
+      - "/"
+      - "docker"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 5
+    commit-message:
+      prefix: "docker:"
+    labels:
+      - "dependencies"
   - package-ecosystem: "uv"
     directory: "/railway_manager_interface/"
     schedule:
