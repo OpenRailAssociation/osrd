@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 
 use chrono::DateTime;
+use chrono::Duration;
 use chrono::Utc;
 use serde::Deserialize;
 use serde::Deserializer;
@@ -59,6 +60,28 @@ impl<'de> Deserialize<'de> for TrainSchedule {
         }
         let raw = PacedTrainJson::deserialize(deserializer)?;
 
+        // Schedule item, if on the first path item, shouldn’t have an arrival
+        // time different of zero (the start time of the train occurrence)
+        let arrival_time_on_first_path_item = raw
+            .train_occurrence
+            .schedule
+            .iter()
+            .find(|schedule_item| {
+                raw.train_occurrence
+                    .path
+                    .first()
+                    .is_some_and(|path_item| schedule_item.at == path_item.id)
+            })
+            .and_then(|ScheduleItem { arrival, .. }| arrival.as_deref().copied());
+        if let Some(arrival) = arrival_time_on_first_path_item
+            && arrival != Duration::seconds(0)
+        {
+            return Err(serde::de::Error::custom(format!(
+                "Scheduled arrival time on the origin of the path is necessary 0 seconds, but is: '{}'",
+                arrival.num_seconds()
+            )));
+        }
+        // Check integrity of the pace in the train schedule
         if let Some(ref paced) = raw.paced {
             let mut seen_keys = HashSet::with_capacity(paced.exceptions.len());
             for e in &paced.exceptions {
