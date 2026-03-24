@@ -5,7 +5,7 @@
   "devDependencies": {
     "@chromatic-com/storybook": "^5.0.1",
     "@storybook/addon-docs": "^10.2.19",
-    "@storybook/addon-links": "^10.2.19",
+    "@storybook/addon-links": "^10.3.0",
     "@storybook/addon-onboarding": "^10.2.19",
     "@storybook/react-vite": "^10.2.19",
     "storybook": "^10.2.10",
