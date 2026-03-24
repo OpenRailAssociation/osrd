@@ -684,18 +684,21 @@ async fn authentication_validation_middleware(
     }
 
     let user_id = user.as_ref().map(|editoast_models::User { id, .. }| *id);
-    Ok(
-        tracing::info_span!("authentication validation", user_id, ?roles)
-            .in_scope(move || {
-                req.extensions_mut().insert(roles);
-                // for `fga` queries and `authz` interface
-                req.extensions_mut().insert(user_id.map(::authz::User));
-                // database model, also carries the user name
-                req.extensions_mut().insert(user);
-                next.run(req).in_current_span()
-            })
-            .await,
+    Ok(tracing::info_span!(
+        "authentication validation",
+        user_id,
+        ?roles,
+        is_admin = roles.contains(&Role::Admin) // easy way to filter real user requests in logs
     )
+    .in_scope(move || {
+        req.extensions_mut().insert(roles);
+        // for `fga` queries and `authz` interface
+        req.extensions_mut().insert(user_id.map(::authz::User));
+        // database model, also carries the user name
+        req.extensions_mut().insert(user);
+        next.run(req).in_current_span()
+    })
+    .await)
 }
 
 /// Represents the bundle of information about the issuer of a request
