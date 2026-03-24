@@ -1,5 +1,5 @@
 import { renderHook, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 
 import useScenario from '../useScenario';
 
@@ -56,7 +56,6 @@ const mockScenario = {
 
 describe('useScenario', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mocks.useParams.mockReturnValue({ scenarioId: '42' });
     mocks.useGetScenario.mockReturnValue({
       data: undefined,
@@ -72,7 +71,11 @@ describe('useScenario', () => {
     });
   });
 
-  it('returns the scenario and dispatches updateInfraID with the infra_id', async () => {
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should return the scenario and dispatch updateInfraID with the infra_id', () => {
     mocks.useGetScenario.mockReturnValue({
       data: mockScenario,
       isError: false,
@@ -83,10 +86,13 @@ describe('useScenario', () => {
     const { result } = renderHook(() => useScenario());
 
     expect(result.current.scenario).toEqual(mockScenario);
-    expect(mocks.dispatch).toHaveBeenCalledWith(mocks.updateInfraID(mockScenario.infra_id));
+    expect(mocks.dispatch).toHaveBeenCalledWith({
+      type: 'operationalStudiesConf/updateInfraID',
+      payload: mockScenario.infra_id,
+    });
   });
 
-  it('returns existing sandboxId when a nameless train schedule set exists', async () => {
+  it('should return existing sandboxId when a nameless train schedule set exists', () => {
     const sandbox = { id: 55, name: null };
     mocks.useGetScenario.mockReturnValue({
       data: mockScenario,
@@ -103,7 +109,7 @@ describe('useScenario', () => {
     expect(mocks.postTrainScheduleSets).not.toHaveBeenCalled();
   });
 
-  it('creates a new sandbox and links it to the timetable when none exists', async () => {
+  it('should create a new sandbox and link it to the timetable when none exists', async () => {
     const namedTss = { id: 10, name: 'Named set' };
     mocks.useGetScenario.mockReturnValue({
       data: mockScenario,
@@ -126,7 +132,7 @@ describe('useScenario', () => {
     });
   });
 
-  it('dispatches updateInfraID(undefined) and updateTrainIdUsedForProjection(undefined) when scenario is absent', async () => {
+  it('should reset infraID and trainIdUsedForProjection when no scenario is loaded', () => {
     mocks.useGetScenario.mockReturnValue({
       data: undefined,
       isError: false,
@@ -136,11 +142,17 @@ describe('useScenario', () => {
 
     renderHook(() => useScenario());
 
-    expect(mocks.dispatch).toHaveBeenCalledWith(mocks.updateInfraID(undefined));
-    expect(mocks.dispatch).toHaveBeenCalledWith(mocks.updateTrainIdUsedForProjection(undefined));
+    expect(mocks.dispatch).toHaveBeenCalledWith({
+      type: 'operationalStudiesConf/updateInfraID',
+      payload: undefined,
+    });
+    expect(mocks.dispatch).toHaveBeenCalledWith({
+      type: 'simulationResults/updateTrainIdUsedForProjection',
+      payload: undefined,
+    });
   });
 
-  it('throws when scenarioId is missing from route params', () => {
+  it('should throw when scenarioId is missing from route params', () => {
     mocks.useParams.mockReturnValue({ scenarioId: undefined });
     mocks.useGetScenario.mockReturnValue({
       data: undefined,
@@ -151,7 +163,7 @@ describe('useScenario', () => {
     expect(() => renderHook(() => useScenario())).toThrow('Missing scenarioId');
   });
 
-  it('throws when the scenario API call returns an error', () => {
+  it('should throw when the scenario API call returns an error', () => {
     const apiError = new Error('Network error');
     mocks.useGetScenario.mockReturnValue({
       data: undefined,
