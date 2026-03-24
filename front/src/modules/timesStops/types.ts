@@ -104,7 +104,7 @@ export type TheoreticalMarginsRecord = Record<
 >;
 
 export type PropagationMode =
-  | 'toAllWaypoints'
+  | 'shiftAllWaypoints'
   | 'fromDeparture'
   | 'atThisWaypoint'
   | 'toDestination';
@@ -113,7 +113,7 @@ export type ArrivalUpdate = {
   row: TimesStopsRowNew;
   field: 'requestedArrival';
   value: Date | null;
-  propagationMode?: PropagationMode;
+  propagationMode: PropagationMode;
 };
 
 export type StopDurationUpdate = {
@@ -126,7 +126,7 @@ export type DepartureUpdate = {
   row: TimesStopsRowNew;
   field: 'requestedDeparture';
   value: Date | null;
-  propagationMode?: PropagationMode;
+  propagationMode: PropagationMode;
 };
 
 export type ReceptionSignalUpdate = {

@@ -833,7 +833,7 @@
     "propagationMenu": {
       "atThisWaypoint": "appliquer à ce point",
       "fromDeparture": "propager vers le début",
-      "toAllWaypoints": "décaler tout le sillon",
+      "shiftAllWaypoints": "décaler tout le sillon",
       "toDestination": "propager vers la fin"
     },
     "realMargin": "marge réelle (s)",

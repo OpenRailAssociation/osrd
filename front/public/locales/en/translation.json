@@ -833,7 +833,7 @@
     "propagationMenu": {
       "atThisWaypoint": "at this waypoint",
       "fromDeparture": "from departure",
-      "toAllWaypoints": "to all waypoints",
+      "shiftAllWaypoints": "shift all waypoints",
       "toDestination": "to destination"
     },
     "realMargin": "real margin (s)",

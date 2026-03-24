@@ -1,9 +1,8 @@
 import type { PathItem, ScheduleItem } from 'common/api/osrdEditoastApi';
 import type { Train } from 'reducers/osrdconf/types';
-import { Duration } from 'utils/duration';
+import { addDurationToDate, Duration } from 'utils/duration';
 
-import { TIME_PROPAGATION_DEFAULT_DELTA } from '../consts';
-import type { ArrivalUpdate, CellUpdate, DepartureUpdate } from '../types';
+import type { ArrivalUpdate, CellUpdate, DepartureUpdate, PropagationMode } from '../types';
 
 type PropagationResult = {
   updatedPath: PathItem[];
@@ -11,33 +10,51 @@ type PropagationResult = {
   updatedStartTime: Date;
 };
 
-/**
- * Computes the delta in milliseconds between two times.
- */
-export const computeTimeDeltaMs = (oldValue: Date | null, newValue: Date | null): number | null => {
+const toHmsDuration = (date: Date) =>
+  new Duration({
+    hours: date.getHours(),
+    minutes: date.getMinutes(),
+    seconds: date.getSeconds(),
+  });
+
+// Delta based on HH:mm:ss only. Ignores the calendar day.
+const computeDelta = (oldValue: Date | null, newValue: Date | null): Duration | null => {
   if (!oldValue || !newValue) return null;
-  return Duration.subtractDate(newValue, oldValue).ms;
+  return toHmsDuration(newValue).sub(toHmsDuration(oldValue));
 };
 
-/**
- * Formats a delta between two times using +/-HH:MM:SS.
- */
-export const formatPropagationDeltaLabel = (
+const computeDeltaForPropagationMode = (
   oldValue: Date | null,
-  newValue: Date | null
+  newValue: Date | null,
+  mode: PropagationMode
+): Duration | null =>
+  mode === 'shiftAllWaypoints' || mode === 'fromDeparture'
+    ? computeDelta(oldValue, newValue)
+    : oldValue && newValue
+      ? Duration.subtractDate(newValue, oldValue)
+      : null;
+
+const formatSignedDelta = (delta: Duration) => {
+  const sign = delta.ms >= 0 ? '+' : '-';
+  const absoluteDelta = delta.abs().round('second');
+  const hours = Math.floor(absoluteDelta.total('hour'));
+  const minutes = Math.floor(absoluteDelta.total('minute')) % 60;
+  const seconds = Math.floor(absoluteDelta.total('second')) % 60;
+
+  const hoursLabel = hours.toString().padStart(2, '0');
+  const minutesLabel = minutes.toString().padStart(2, '0');
+  const secondsLabel = seconds.toString().padStart(2, '0');
+
+  return `${sign}${hoursLabel}:${minutesLabel}:${secondsLabel}`;
+};
+
+export const formatPropagationDeltaLabelByMode = (
+  oldValue: Date | null,
+  newValue: Date | null,
+  mode: PropagationMode
 ): string => {
-  const deltaMs = computeTimeDeltaMs(oldValue, newValue);
-  if (deltaMs === null) return TIME_PROPAGATION_DEFAULT_DELTA;
-
-  const sign = deltaMs >= 0 ? '+' : '-';
-  const totalSeconds = Math.round(new Duration({ milliseconds: deltaMs }).abs().total('second'));
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-
-  return `${sign}${hours.toString().padStart(2, '0')}:${minutes
-    .toString()
-    .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  const delta = computeDeltaForPropagationMode(oldValue, newValue, mode) ?? Duration.zero;
+  return formatSignedDelta(delta);
 };
 
 /**
@@ -53,8 +70,11 @@ const propagateFromEditedPoint = (
   selectedTrain: Train,
   direction: 'fromDeparture' | 'toDestination'
 ): PropagationResult | undefined => {
-  const deltaMs = computeTimeDeltaMs(oldValue, newValue);
-  if (deltaMs === null) return undefined;
+  // Delta strategy by direction:
+  // - fromDeparture: compare time-of-day only
+  // - toDestination: compare full date-time (can produce D+1)
+  const delta = computeDeltaForPropagationMode(oldValue, newValue, direction);
+  if (delta === null) return undefined;
 
   const editedPathIndex = selectedTrain.path.findIndex((step) => step.id === editedPathStepId);
   if (editedPathIndex < 0) return undefined;
@@ -70,21 +90,23 @@ const propagateFromEditedPoint = (
 
     if (!isAffectedByDelta) return item;
 
+    const oldArrival = Duration.parse(item.arrival);
+    const newArrival =
+      direction === 'fromDeparture' ? oldArrival.sub(delta) : oldArrival.add(delta);
+
     return {
       ...item,
-      arrival: new Duration({
-        milliseconds:
-          Duration.parse(item.arrival).ms + (direction === 'fromDeparture' ? -deltaMs : deltaMs),
-      }).toISOString(),
+      arrival: newArrival.toISOString(),
     };
   });
 
-  const startTimeMs = new Date(selectedTrain.start_time).getTime();
+  const currentStartTime = new Date(selectedTrain.start_time);
 
   return {
     updatedPath: selectedTrain.path,
     updatedSchedule,
-    updatedStartTime: new Date(direction === 'fromDeparture' ? startTimeMs + deltaMs : startTimeMs),
+    updatedStartTime:
+      direction === 'fromDeparture' ? addDurationToDate(currentStartTime, delta) : currentStartTime,
   };
 };
 
@@ -93,14 +115,14 @@ const propagateShiftAll = (
   newValue: Date | null,
   selectedTrain: Train
 ): PropagationResult | undefined => {
-  const deltaMs = computeTimeDeltaMs(oldValue, newValue);
-  if (deltaMs === null) return undefined;
+  const delta = computeDelta(oldValue, newValue);
+  if (delta === null) return undefined;
 
   const currentStartTime = new Date(selectedTrain.start_time);
   return {
     updatedPath: selectedTrain.path,
     updatedSchedule: selectedTrain.schedule ?? [],
-    updatedStartTime: new Date(currentStartTime.getTime() + deltaMs),
+    updatedStartTime: addDurationToDate(currentStartTime, delta),
   };
 };
 
@@ -110,7 +132,7 @@ const propagateByMode = (
   update: ArrivalUpdate | DepartureUpdate,
   selectedTrain: Train
 ): PropagationResult | undefined => {
-  if (update.propagationMode === 'toAllWaypoints') {
+  if (update.propagationMode === 'shiftAllWaypoints') {
     return propagateShiftAll(oldValue, newValue, selectedTrain);
   }
   if (

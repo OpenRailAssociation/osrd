@@ -283,7 +283,7 @@ const useUpdateTimesStopsTable = (
   // Functions are included in deps (exception to the project convention) to propagate
   // allRows updates through the entire callback chain.
   const updateArrival = useCallback(
-    (row: TimesStopsRowNew, arrival: Date | null, propagationMode?: PropagationMode) =>
+    (row: TimesStopsRowNew, arrival: Date | null, propagationMode: PropagationMode) =>
       updateCell({ row, field: 'requestedArrival', value: arrival, propagationMode }),
     [updateCell]
   );
@@ -295,7 +295,7 @@ const useUpdateTimesStopsTable = (
   );
 
   const updateDeparture = useCallback(
-    (row: TimesStopsRowNew, departure: Date | null, propagationMode?: PropagationMode) =>
+    (row: TimesStopsRowNew, departure: Date | null, propagationMode: PropagationMode) =>
       updateCell({ row, field: 'requestedDeparture', value: departure, propagationMode }),
     [updateCell]
   );
