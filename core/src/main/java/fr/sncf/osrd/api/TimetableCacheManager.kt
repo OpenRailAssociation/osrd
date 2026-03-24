@@ -46,7 +46,11 @@ data class STDCMTimetableData(
     val detailedRequirements: Map<ZoneId, List<DetailedRequirement>>,
 ) {
     @Serializable
-    data class DetailedRequirement(val from: Double, val to: Double, val trainName: String?)
+    data class DetailedRequirement(val from: Double, val to: Double, val trainName: String?) {
+        fun overlap(other: DetailedRequirement): Boolean {
+            return from < other.to && to > other.from
+        }
+    }
 
     fun toSerializable(): SerializableMap {
         return SerializableMap(detailedRequirements.mapKeys { it.key.index })
@@ -167,6 +171,7 @@ class TimetableCacheManager(
                     )
                 }
             }
+        logConflicts(infra.rawInfra, requirements.detailedRequirements)
 
         // Once the requirements are loaded, we save them to s3 as well for reproducibility
         saveToS3(cacheKey, requirements)

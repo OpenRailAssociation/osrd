@@ -9,11 +9,14 @@ import com.squareup.moshi.JsonReader
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.conflicts.TrainRequirementsById
+import fr.sncf.osrd.api.pathfinding.usedDecreasing
+import fr.sncf.osrd.api.pathfinding.usedIncreasing
 import fr.sncf.osrd.api.pathfinding.writeLog
 import fr.sncf.osrd.cli.logAllNodes
 import fr.sncf.osrd.conflicts.SpacingRequirement
 import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.api.ZoneId
+import fr.sncf.osrd.utils.CSVLogger
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import java.time.Duration
 import java.time.Instant
@@ -167,6 +170,46 @@ class TimetableDownloader(
             logAllNodes()
             STDCMTimetableData(zoneUses, detailedRequirements)
         }
+    }
+}
+
+fun logConflicts(
+    infra: RawInfra,
+    detailedRequirements:
+    Map<ZoneId, List<STDCMTimetableData.DetailedRequirement>>,
+) {
+    data class ZoneStats(var nTrains: Int, var nConflictingTrains: Int)
+    val stats = mutableMapOf<ZoneId, ZoneStats>()
+
+    for ((zoneId, requirements) in detailedRequirements) {
+        val stat = ZoneStats(0, 0)
+        val requirements = requirements.sortedBy { it.from }
+        val reqByTrain = requirements.groupBy { it.trainName }
+        val entries = reqByTrain.entries.toList()
+        stat.nTrains = reqByTrain.size
+        for ((i, reqByTrain) in entries.withIndex()) {
+            for (j in i + 1 until entries.size) {
+                val reqByOtherTrain = entries[j].value
+                val conflict =
+                    reqByTrain.value.any { req -> reqByOtherTrain.any { it.overlap(req) } }
+                if (conflict) stat.nConflictingTrains++
+            }
+        }
+        stats[zoneId] = stat
+    }
+
+    val logger =
+        CSVLogger("conflicts.csv", "geo", "n_trains", "n_conflicts", "average_conflicts")
+    val chunks = infra.trackSections.flatMap { infra.getTrackSectionChunks(it) }
+    for (chunk in chunks) {
+        val stat = stats[infra.getTrackChunkZone(chunk)] ?: continue
+        val geo = infra.getTrackChunkGeom(chunk)
+        logger.log(
+            "geo" to geo,
+            "n_trains" to stat.nTrains,
+            "n_conflicts" to stat.nConflictingTrains,
+            "average_conflicts" to stat.nConflictingTrains.toDouble() / stat.nTrains.toDouble(),
+        )
     }
 }
 
