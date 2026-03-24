@@ -508,27 +508,46 @@ impl crate::prelude::List for Document {
         conn: &mut database::DbConnection,
         settings: crate::prelude::SelectionSettings<Self>,
     ) -> std::result::Result<Vec<Self>, Self::Error> {
-        use diesel::QueryDsl;
-        use diesel_async::RunQueryDsl;
-        use futures_util::TryStreamExt;
+        use diesel::ExpressionMethods as _;
+        use diesel::NullableExpressionMethods as _;
+        use diesel::QueryDsl as _;
+        use diesel_async::RunQueryDsl as _;
+        use futures_util::TryStreamExt as _;
         use database::tables::osrd_infra_document::dsl;
         use std::ops::DerefMut;
         let mut query = database::tables::osrd_infra_document::table.into_boxed();
-        for filter_fun in settings.filters {
+        for filter_fun in &settings.filters {
             let crate::prelude::FilterSetting(filter) = (*filter_fun)();
             query = query.filter(filter);
         }
-        for sort_fun in settings.sorts {
+        for sort_fun in &settings.sorts {
             let crate::prelude::SortSetting(sort) = (*sort_fun)();
             query = query.order_by(sort);
+        }
+        if settings.sorts.is_empty() {
+            query = query.order_by(dsl::id.asc());
+        }
+        if let Some(offset) = settings.offset && offset > 0 {
+            tracing::Span::current().record("offset", offset);
+            let mut first_pk_query = database::tables::osrd_infra_document::table
+                .into_boxed();
+            for filter_fun in &settings.filters {
+                let crate::prelude::FilterSetting(filter) = (*filter_fun)();
+                first_pk_query = first_pk_query.filter(filter);
+            }
+            for sort_fun in &settings.sorts {
+                let crate::prelude::SortSetting(sort) = (*sort_fun)();
+                first_pk_query = first_pk_query.order_by(sort);
+            }
+            if settings.sorts.is_empty() {
+                first_pk_query = first_pk_query.order_by(dsl::id.asc());
+            }
+            let first_pk = first_pk_query.select(dsl::id).offset(offset).single_value();
+            query = query.filter(dsl::id.nullable().ge(first_pk));
         }
         if let Some(limit) = settings.limit {
             tracing::Span::current().record("limit", limit);
             query = query.limit(limit);
-        }
-        if let Some(offset) = settings.offset {
-            tracing::Span::current().record("offset", offset);
-            query = query.offset(offset);
         }
         let stream = query
             .select((dsl::id, dsl::content_type, dsl::data))
