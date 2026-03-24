@@ -101,7 +101,7 @@ const useSimulationResults = (): {
             id: selectedTrainId,
             infraId,
             electricalProfileSetId,
-            exceptionKey: exception?.key,
+            exceptionId: exception?.id ?? undefined,
           }
         : skipToken
     );
