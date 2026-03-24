@@ -391,11 +391,37 @@ pub(in crate::views) async fn conflicts(
     })
     .await?;
 
-    let trains = retrieve_trains(conn, timetable_id).await?;
+    let trains = retrieve_trains(conn.clone(), timetable_id).await?;
+    let train_schedules_ids = trains.iter().map(|t| t.id).collect::<Vec<_>>();
+
+    let mut exceptions =
+        editoast_models::TrainScheduleException::retrieve_exceptions_by_train_schedules(
+            &mut conn.clone(),
+            timetable_id,
+            train_schedules_ids,
+        )
+        .await?
+        .into_iter()
+        .map_into::<schemas::TrainScheduleException>()
+        .into_group_map_by(|e| e.train_schedule_id);
+
+    let train_schedules_with_exceptions: Vec<(
+        models::TrainSchedule,
+        Vec<schemas::TrainScheduleException>,
+    )> = trains
+        .into_iter()
+        .map(|ts| {
+            let ts_exceptions = exceptions.remove(&ts.id).unwrap_or_default();
+            (ts, ts_exceptions)
+        })
+        .collect();
 
     // Flatten paced trains occurrences
-    let (occurrence_ids, occurrence_trains): (Vec<_>, Vec<_>) =
-        trains.iter().flat_map(|pt| pt.iter_occurrences()).unzip();
+    let (occurrence_ids, occurrence_trains): (Vec<_>, Vec<_>) = train_schedules_with_exceptions
+        .iter()
+        .flat_map(|(ts, exceptions)| ts.iter_occurrences_v2(exceptions))
+        .unzip();
+
     let occurrence_simulations: Vec<_> = train_simulation_batch(
         &mut db_pool.get().await?,
         valkey_client.clone(),
