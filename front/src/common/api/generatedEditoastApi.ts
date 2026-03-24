@@ -1354,7 +1354,7 @@ const injectedRtkApi = api
           params: {
             infra_id: queryArg.infraId,
             electrical_profile_set_id: queryArg.electricalProfileSetId,
-            exception_key: queryArg.exceptionKey,
+            exception_id: queryArg.exceptionId,
           },
         }),
         providesTags: ['paced_train'],
@@ -2632,7 +2632,7 @@ export type GetTrainSchedulesByIdSimulationApiArg = {
   id: number;
   infraId: number;
   electricalProfileSetId?: number;
-  exceptionKey?: string;
+  exceptionId?: number;
 };
 export type GetVersionApiResponse = /** status 200 Return the service version */ Version;
 export type GetVersionApiArg = void;
