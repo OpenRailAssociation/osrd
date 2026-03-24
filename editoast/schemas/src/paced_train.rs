@@ -38,7 +38,8 @@ pub struct Paced {
     pub exceptions: Vec<PacedTrainException>,
 }
 
-#[derive(Debug, Clone, Serialize, PartialEq, ToSchema)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
+#[serde(remote = "Self")]
 pub struct TrainSchedule {
     #[serde(flatten)]
     #[schema(inline)]
@@ -52,13 +53,7 @@ impl<'de> Deserialize<'de> for TrainSchedule {
     where
         D: Deserializer<'de>,
     {
-        #[derive(Deserialize)]
-        struct PacedTrainJson {
-            #[serde(flatten)]
-            pub train_occurrence: TrainOccurrence,
-            pub paced: Option<Paced>,
-        }
-        let raw = PacedTrainJson::deserialize(deserializer)?;
+        let raw = TrainSchedule::deserialize(deserializer)?;
 
         // Schedule item, if on the first path item, shouldn’t have an arrival
         // time different of zero (the start time of the train occurrence)
@@ -108,10 +103,16 @@ impl<'de> Deserialize<'de> for TrainSchedule {
                 }
             }
         }
-        Ok(TrainSchedule {
-            train_occurrence: raw.train_occurrence,
-            paced: raw.paced,
-        })
+        Ok(raw)
+    }
+}
+
+impl Serialize for TrainSchedule {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        TrainSchedule::serialize(self, serializer)
     }
 }
 
