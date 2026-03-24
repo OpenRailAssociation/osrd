@@ -16,7 +16,6 @@ export const defaultMapSettings: MapSettings = {
   showOSM3dBuildings: false,
   showOSMtracksections: false,
   terrain3DExaggeration: 0,
-  smoothTravel: false,
   layersSettings: {
     buffer_stops: false,
     electrifications: false,

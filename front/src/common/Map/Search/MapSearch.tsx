@@ -20,25 +20,14 @@ type MapSearchProps = {
 };
 
 const MapSearch = ({ map, closeMapSearchPopUp, mapSettings }: MapSearchProps) => {
-  const { smoothTravel } = mapSettings;
   const { updateViewport } = useMapSettingsActions();
   const dispatch = useAppDispatch();
 
   const updateViewportChange = useCallback(
     (value: Partial<Viewport>) => {
-      if (map && smoothTravel) {
-        map.flyTo({
-          center: {
-            lng: value.longitude || map.getCenter().lng,
-            lat: value.latitude || map.getCenter().lat,
-          },
-          zoom: value.zoom || map.getZoom(),
-          essential: true,
-        });
-      }
       dispatch(updateViewport(value));
     },
-    [map, smoothTravel]
+    [map]
   );
 
   const { t } = useTranslation();

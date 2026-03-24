@@ -3,8 +3,6 @@ import { useMemo } from 'react';
 import { debounce, sortBy } from 'lodash';
 import { useMap } from 'react-map-gl/maplibre';
 
-import { useMapSettings } from 'reducers/commonMap';
-
 import IncompatibleConstraintItem from './IncompatibleConstraintsItem';
 import type { IncompatibleConstraintEnhanced } from './types';
 
@@ -23,7 +21,6 @@ const IncompatibleConstraintsList = ({
   onHover,
   onSelect,
 }: IncompatibleConstraintListProps) => {
-  const { smoothTravel } = useMapSettings();
   const map = useMap();
   const items = useMemo(() => sortBy(data, ['start', 'end']), [data]);
 
@@ -43,7 +40,7 @@ const IncompatibleConstraintsList = ({
             onClick={() => onSelect(item.id)}
             gotoMap={() => {
               if (!isSelected) onSelect(item.id);
-              map.current?.fitBounds(item.bbox, { animate: smoothTravel });
+              map.current?.fitBounds(item.bbox);
             }}
           />
         );
