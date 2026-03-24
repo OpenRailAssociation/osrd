@@ -82,7 +82,7 @@ fga = { path = "./fga", features = ["test_utilities"] }
 fga_migrations = { path = "./fga_migrations" }
 futures = "0.3.32"
 futures-util = "0.3.30"
-geojson = { version = "0.24", default-features = false }
+geojson = { version = "1.0", default-features = false }
 geos = { version = "11.1.1", features = ["json"] }
 hostname = "0.4.2"
 http = "1.4"
