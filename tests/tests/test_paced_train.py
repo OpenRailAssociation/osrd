@@ -165,7 +165,10 @@ def test_get_paced_train_with_exception_path(
 
 
 def test_get_paced_train_with_exception_simulation(
-    west_to_south_east_paced_train: Sequence[Any], small_infra: Infra, session: Session
+    west_to_south_east_paced_train: Sequence[Any],
+    small_infra: Infra,
+    timetable_id: int,
+    session: Session,
 ):
     paced_train = west_to_south_east_paced_train[0]
     paced_train_id = paced_train["id"]
@@ -176,8 +179,9 @@ def test_get_paced_train_with_exception_simulation(
     ).json()
 
     # Add exception to the paced train
-    exception = {
+    exception_payload = {
         "key": "exception_key",
+        "train_schedule_id": paced_train_id,
         "disabled": False,
         "path_and_schedule": {
             "path": [
@@ -204,16 +208,15 @@ def test_get_paced_train_with_exception_simulation(
             "margins": {"boundaries": [], "values": ["0%"]},
             "power_restrictions": [],
         },
-        "initial_speed": {"value": 20.0},
     }
-    paced_train["paced"]["exceptions"] = [exception]
-    update_response = session.put(
-        f"{EDITOAST_URL}train_schedules/{paced_train_id}", json=paced_train
-    )
-    assert update_response.status_code == 204
+    exception = session.post(
+        f"{EDITOAST_URL}timetable/{timetable_id}/train_schedule_exception",
+        json=exception_payload,
+    ).json()
+
     # Get exception path
     exception_simulation_result = session.get(
-        f"{EDITOAST_URL}train_schedules/{paced_train_id}/simulation?infra_id={small_infra.id}&exception_key=exception_key"
+        f"{EDITOAST_URL}train_schedules/{paced_train_id}/simulation?infra_id={small_infra.id}&exception_id={exception['id']}"
     ).json()
 
     # Check if the response is different from paced train
