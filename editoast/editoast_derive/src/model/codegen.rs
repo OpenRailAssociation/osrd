@@ -354,6 +354,7 @@ impl ModelConfig {
         ListImpl {
             model: self.model.clone(),
             table_mod: self.table.clone(),
+            primary_key: self.get_primary_field_column(),
             row: self.row.name.clone(),
             columns: self.columns().cloned().collect(),
             error: self.errors.list.clone(),
