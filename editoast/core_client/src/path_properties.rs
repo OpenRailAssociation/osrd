@@ -1,4 +1,4 @@
-use common::geometry::GeoJsonLineString;
+use geos::geojson::Geometry;
 use schemas::infra::OperationalPointExtensions;
 use schemas::infra::OperationalPointPart;
 use schemas::primitives::Identifier;
@@ -31,7 +31,7 @@ pub struct PathPropertiesResponse {
     /// Electrification modes and neutral section along the path
     pub electrifications: PropertyElectrificationValues,
     /// Geometry of the path
-    pub geometry: GeoJsonLineString,
+    pub geometry: Geometry,
     /// Operational points along the path
     pub operational_points: Vec<OperationalPointOnPath>,
     /// Zones along the path

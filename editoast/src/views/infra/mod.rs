@@ -19,14 +19,11 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use common::geometry::GeoJsonPoint;
-use common::geometry::GeoJsonPointValue;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
 use editoast_models::prelude::*;
-use geos::CoordSeq;
 use geos::Geom;
-use geos::Geometry;
 use itertools::Itertools;
 use schemas::infra::SwitchType;
 use schemas::primitives::Identifier;
@@ -777,7 +774,8 @@ pub(in crate::views) struct MatchOperationalPointsForm {
 struct RelatedOperationalPointPart {
     #[serde(flatten)]
     part: OperationalPointPart,
-    geo: Option<GeoJsonPoint>,
+    #[schema(value_type = Option<GeoJsonPoint>)]
+    geo: Option<geos::geojson::Geometry>,
 }
 
 #[derive(Serialize, ToSchema)]
@@ -791,7 +789,8 @@ struct RelatedOperationalPoint {
     extensions: OperationalPointExtensions,
     #[serde(default)]
     weight: Option<u8>,
-    geo: Option<GeoJsonPoint>,
+    #[schema(value_type = Option<GeoJsonPoint>)]
+    geo: Option<geos::geojson::Geometry>,
 }
 
 #[derive(Serialize, ToSchema)]
@@ -857,7 +856,9 @@ pub(in crate::views) async fn match_operational_points(
     }))
 }
 
-fn compute_operational_point_geo(points: &[GeoJsonPoint]) -> Option<GeoJsonPoint> {
+fn compute_operational_point_geo(
+    points: &[geos::geojson::Geometry],
+) -> Option<geos::geojson::Geometry> {
     if points.is_empty() {
         return None;
     } else if points.len() == 1 {
@@ -866,30 +867,23 @@ fn compute_operational_point_geo(points: &[GeoJsonPoint]) -> Option<GeoJsonPoint
     let geo_points = points
         .iter()
         .map(|geojson_point| {
-            let GeoJsonPoint::Point(GeoJsonPointValue(xy)) = geojson_point;
-            let coords = CoordSeq::new_from_vec(&[xy]).expect("invalid point coords");
-            Geometry::create_point(coords).expect("invalid point geometry")
+            geos::Geometry::try_from(geojson_point).expect("invalid point geometry")
         })
         .collect();
-    let center = Geometry::create_multipoint(geo_points)
+    let center = geos::Geometry::create_multipoint(geo_points)
         .expect("invalid multi-point geometry")
         .get_centroid()
-        .expect("failed to get centroid")
-        .get_coord_seq()
-        .expect("invalid centroid coords");
-    Some(GeoJsonPoint::Point(GeoJsonPointValue(vec![
+        .expect("failed to get centroid");
+    Some(
         center
-            .get_x(0)
-            .expect("failed to get centroid X coordinate"),
-        center
-            .get_y(0)
-            .expect("failed to get centroid Y coordinate"),
-    ])))
+            .try_into()
+            .expect("failed to convert centroid to geojson"),
+    )
 }
 
 fn build_related_operational_point(
     op: &OperationalPoint,
-    geo_points: Option<&Vec<GeoJsonPoint>>,
+    geo_points: Option<&Vec<geos::geojson::Geometry>>,
 ) -> RelatedOperationalPoint {
     RelatedOperationalPoint {
         id: op.id.clone(),
@@ -933,7 +927,6 @@ async fn populate_op_geo(
 #[cfg(test)]
 pub mod tests {
     use axum::http::StatusCode;
-    use common::geometry::GeoJsonPointValue;
     use core_client::CoreClient;
     use core_client::mocking::MockingClient;
     use diesel::sql_query;
@@ -1424,17 +1417,15 @@ pub mod tests {
         assert_eq!(response_op_identifiers, expected_identifiers);
         assert_eq!(
             response.related_operational_points[0][0].geo,
-            Some(GeoJsonPoint::Point(GeoJsonPointValue(vec!(
-                -0.3907884636666667,
-                49.4999,
-            ))))
+            Some(geos::geojson::Geometry::new(geos::geojson::Value::Point(
+                vec![-0.3907884636666667, 49.4999],
+            )))
         );
         assert_eq!(
             response.related_operational_points[0][0].parts[1].geo,
-            Some(GeoJsonPoint::Point(GeoJsonPointValue(vec!(
-                -0.392307692,
-                49.4999,
-            ))))
+            Some(geos::geojson::Geometry::new(geos::geojson::Value::Point(
+                vec![-0.392307692, 49.4999],
+            )))
         );
     }
 

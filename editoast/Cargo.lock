@@ -802,6 +802,7 @@ dependencies = [
  "educe",
  "futures 0.3.32",
  "futures-util",
+ "geos",
  "hostname",
  "http",
  "itertools",

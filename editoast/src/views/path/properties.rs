@@ -17,6 +17,7 @@ use core_client::path_properties::PropertyElectrificationValues;
 use core_client::path_properties::PropertyValuesF64;
 use core_client::path_properties::PropertyZoneValues;
 use core_client::pathfinding::TrackRange;
+use geos::geojson::Geometry;
 use serde::Deserialize;
 use serde::Serialize;
 use std::hash::Hash;
@@ -47,7 +48,8 @@ pub(in crate::views) struct PathProperties {
     #[schema(inline)]
     electrifications: PropertyElectrificationValues,
     /// Geometry of the path
-    geometry: GeoJsonLineString,
+    #[schema(value_type = GeoJsonLineString)]
+    geometry: Geometry,
     /// Operational points along the path
     #[schema(inline)]
     operational_points: Vec<OperationalPointOnPath>,
@@ -121,9 +123,6 @@ pub(in crate::views) async fn post(
 #[cfg(test)]
 mod tests {
     use axum::http::StatusCode;
-    use common::geometry::GeoJsonLineString;
-    use common::geometry::GeoJsonLineStringValue;
-    use common::geometry::GeoJsonPointValue;
     use core_client::mocking::MockingClient;
     use core_client::path_properties::OperationalPointOnPath;
     use core_client::path_properties::PropertyElectrificationValue;
@@ -147,9 +146,9 @@ mod tests {
                 vec![0, 1],
                 vec![PropertyElectrificationValue::NonElectrified],
             ),
-            geometry: GeoJsonLineString::LineString(GeoJsonLineStringValue(vec![
-                GeoJsonPointValue(vec![0.0, 0.0]),
-            ])),
+            geometry: geos::geojson::Geometry::new(geos::geojson::Value::LineString(vec![vec![
+                0.0, 0.0,
+            ]])),
             operational_points: vec![OperationalPointOnPath::new_test("1", 0, "1")],
             zones: PropertyZoneValues::new(vec![0, 1], vec!["Zone 1".into()]),
         }

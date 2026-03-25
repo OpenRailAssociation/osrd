@@ -13,6 +13,7 @@ editoast_derive.workspace = true
 educe.workspace = true
 futures.workspace = true
 futures-util.workspace = true
+geos.workspace = true
 hostname.workspace = true
 http = { workspace = true }
 itertools.workspace = true
