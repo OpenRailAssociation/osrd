@@ -835,7 +835,7 @@
     "receptionOnClosedSignalFull": "reception on closed signal",
     "requestedTheoreticalMargin": "requested theoretical margin",
     "shortSlipDistance": "short slip distance",
-    "stopTime": "stopping time (s)",
+    "stopTime": "stopping time",
     "theoreticalMargin": "theoretical margin",
     "theoreticalMarginPlaceholder": "% or min/100km",
     "theoreticalMarginSeconds": "theoretical margin (s)",
