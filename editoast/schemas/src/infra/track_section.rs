@@ -1,6 +1,6 @@
 use educe::Educe;
-use geojson::Geometry;
-use geojson::Value::LineString;
+use geos::geojson::Geometry;
+use geos::geojson::Value::LineString;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -61,7 +61,7 @@ impl TrackSection {
 
 #[cfg(test)]
 mod tests {
-    use geojson;
+    use geos::geojson;
     use serde_json::from_str;
 
     use super::TrackSectionExtensions;
