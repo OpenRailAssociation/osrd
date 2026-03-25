@@ -2,7 +2,7 @@ import along from '@turf/along';
 import distance from '@turf/distance';
 import type { LineString, FeatureCollection } from 'geojson';
 import { tail, last } from 'lodash';
-import { describe, it, expect, assert } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 import { getLineStringDistance, update, resizeSegment, splitAt, mergeIn } from './data';
 import type { LinearMetadataItem } from './types';
@@ -186,22 +186,18 @@ describe('Testing linear metadata functions', () => {
   });
 
   describe('resizing a segment', () => {
-    it('increase should fail on wrapper of size 1', () => {
+    it('increase on wrapper of size 1 should do nothing', () => {
       const wrapper: Array<LinearMetadataItem<Degree>> = [{ begin: 0, end: 10, degree: 0 }];
-      try {
-        resizeSegment(wrapper, 0, 10);
-      } catch (e) {
-        expect(e).toBeTruthy();
-      }
+      const result = resizeSegment(wrapper, 0, 10);
+      expect(result.result).toEqual(wrapper);
+      expect(result.newIndexMapping).toEqual({ 0: 0 });
     });
 
-    it('decrease should fail on wrapper of size 1', () => {
+    it('decrease on wrapper of size 1 should do nothing', () => {
       const wrapper: Array<LinearMetadataItem<Degree>> = [{ begin: 0, end: 10, degree: 0 }];
-      try {
-        resizeSegment(wrapper, 0, -5);
-      } catch (e) {
-        expect(e).toBeTruthy();
-      }
+      const result = resizeSegment(wrapper, 0, -5);
+      expect(result.result).toEqual(wrapper);
+      expect(result.newIndexMapping).toEqual({ 0: 0 });
     });
 
     it('increase on the last item should do nothing', () => {
@@ -260,34 +256,32 @@ describe('Testing linear metadata functions', () => {
       expect(result.result[3].end).toEqual(40);
     });
 
-    it('decrease more than the element size should fail', () => {
+    it('decrease more than the element size on last item should do nothing', () => {
       const wrapper: Array<LinearMetadataItem<Degree>> = [
         { begin: 0, end: 10, degree: 0 },
         { begin: 10, end: 20, degree: 0 },
         { begin: 20, end: 30, degree: 0 },
         { begin: 30, end: 40, degree: 0 },
       ];
-      try {
-        resizeSegment(wrapper, 3, -10);
-        assert.fail();
-      } catch (e) {
-        expect(e).toBeTruthy();
-      }
+      const result = resizeSegment(wrapper, 3, -10);
+      expect(result.result).toEqual(wrapper);
+      expect(result.newIndexMapping).toEqual({ 0: 0, 1: 1, 2: 2, 3: 3 });
     });
 
-    it('increase more than the sibling element size should fail', () => {
+    it('increase more than the sibling element size should merge overlapped segment', () => {
       const wrapper: Array<LinearMetadataItem<Degree>> = [
         { begin: 0, end: 10, degree: 0 },
         { begin: 10, end: 20, degree: 0 },
         { begin: 20, end: 30, degree: 0 },
         { begin: 30, end: 40, degree: 0 },
       ];
-      try {
-        resizeSegment(wrapper, 1, 10);
-        assert.fail();
-      } catch (e) {
-        expect(e).toBeTruthy();
-      }
+      const result = resizeSegment(wrapper, 1, 10);
+      expect(result.result).toEqual([
+        { begin: 0, end: 10, degree: 0 },
+        { begin: 10, end: 30, degree: 0 },
+        { begin: 30, end: 40, degree: 0 },
+      ]);
+      expect(result.newIndexMapping).toEqual({ 0: 0, 1: 1, 2: null, 3: 2 });
     });
 
     it('should throw an error on bad index', () => {
@@ -297,12 +291,7 @@ describe('Testing linear metadata functions', () => {
         { begin: 20, end: 30, degree: 0 },
         { begin: 30, end: 40, degree: 0 },
       ];
-      try {
-        resizeSegment(wrapper, 4, -5);
-        assert.fail();
-      } catch (e) {
-        expect(e).toBeTruthy();
-      }
+      expect(() => resizeSegment(wrapper, 4, -5)).toThrow();
     });
   });
 

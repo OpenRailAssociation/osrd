@@ -28,8 +28,16 @@ export default [
   importPlugin.flatConfigs.typescript,
   reactPlugin.configs.flat.recommended,
   reactHooksPlugin.configs.flat.recommended,
-  vitestPlugin.configs.recommended,
   jsxA11yPlugin.flatConfigs.recommended,
+  {
+    ...vitestPlugin.configs.recommended,
+    files: ['**/*.{test,spec}.{ts,tsx}', '**/__tests__/**/*.{ts,tsx}'],
+    rules: {
+      ...vitestPlugin.configs.recommended.rules,
+      // disable vitest/prefer-to-be because it does not authorize toEqual for the floats
+      'vitest/prefer-to-be': 'off',
+    },
+  },
   {
     languageOptions: {
       parserOptions: {
@@ -149,8 +157,6 @@ export default [
       'react/react-in-jsx-scope': 'off',
       'react/prefer-stateless-function': 'off',
       'react/static-property-placement': 0,
-      // disable vitest/prefer-to-be because it does not authorize toEqual for the floats
-      'vitest/prefer-to-be': 'off',
       'no-restricted-imports': [
         'error',
         {
