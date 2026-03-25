@@ -27,6 +27,7 @@ import {
   type PropagationMode,
   type TimesStopsRow,
   type TimesStopsRowNew,
+  type UpdateCellStatus,
 } from './types';
 
 type TimesStopsOutputProps = {
@@ -141,16 +142,24 @@ const TimesStopsOutput = ({
     }
   }, [isAwaitingSimulation]);
 
-  const commitEdit = (edit: PendingEdit, updateFn: () => Promise<void>) => {
+  const resetPendingState = () => {
+    setPinnedState(null);
+    preEditPathItemTimesRef.current = undefined;
+    isTrainSimulationPendingRef.current = false;
+  };
+
+  const commitEdit = (edit: PendingEdit, updateFn: () => Promise<UpdateCellStatus>) => {
     if (isAwaitingSimulation) return;
     setPinnedState({ edit, forSchedule: selectedTrain.schedule });
     preEditPathItemTimesRef.current = simulatedPathItemTimes;
     isTrainSimulationPendingRef.current = true;
-    updateFn().catch(() => {
-      setPinnedState(null);
-      preEditPathItemTimesRef.current = undefined;
-      isTrainSimulationPendingRef.current = false;
-    });
+    updateFn()
+      .then((status) => {
+        if (status === 'skipped') resetPendingState();
+      })
+      .catch(() => {
+        resetPendingState();
+      });
   };
 
   const handleArrivalChange = (

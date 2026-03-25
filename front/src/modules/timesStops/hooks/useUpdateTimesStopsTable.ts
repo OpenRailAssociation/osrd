@@ -33,7 +33,17 @@ import {
   insertScheduleItemInOrder,
 } from '../helpers/cellUpdate';
 import { propagateTime } from '../helpers/timePropagation';
-import type { CellUpdate, OptimisticEdit, PropagationMode, TimesStopsRowNew } from '../types';
+import type {
+  ArrivalUpdate,
+  CellUpdate,
+  OptimisticEdit,
+  PropagationMode,
+  TimesStopsRowNew,
+  UpdateCellStatus,
+} from '../types';
+
+const isOriginArrivalUpdate = (update: CellUpdate): update is ArrivalUpdate =>
+  update.field === 'requestedArrival' && update.row.opOnPathIndex === 0;
 
 /**
  * Hook that provides a callback to update times/stops cell values.
@@ -137,7 +147,7 @@ const useUpdateTimesStopsTable = (
    * Handle update when the selected train is an occurrence of a PacedTrain.
    */
   const updateOccurrence = useCallback(
-    async (occurrenceId: OccurrenceId, update: CellUpdate) => {
+    async (occurrenceId: OccurrenceId, update: CellUpdate): Promise<UpdateCellStatus> => {
       const pacedTrainId = extractEditoastIdFromPacedTrainId(
         extractPacedTrainIdFromOccurrenceId(occurrenceId)
       );
@@ -163,17 +173,15 @@ const useUpdateTimesStopsTable = (
       // exception diff expects the occurrence's computed name.
       const occurrenceTrainName = getOccurrenceTrainName(originalPacedTrain, occurrenceId);
 
+      const isOriginUpdate = isOriginArrivalUpdate(update);
+      if (isOriginUpdate && !update.value) return 'skipped';
+
       // Build updated occurrence based on update type
       let updatedOccurrence: TrainSchedule;
-      if (
-        update.field === 'requestedArrival' &&
-        update.row.opOnPathIndex === 0 &&
-        update.propagationMode === 'atThisWaypoint'
-      ) {
-        if (!update.value) {
-          console.error('Cannot clear start time on the origin');
-          return;
-        }
+      if (isOriginUpdate && update.propagationMode === 'atThisWaypoint') {
+        const startTime = update.value;
+        if (!startTime) return 'skipped';
+
         updatedOccurrence = {
           ...buildUpdatedOccurrence(
             selectedTrain,
@@ -181,11 +189,11 @@ const useUpdateTimesStopsTable = (
             selectedTrain.schedule ?? [],
             occurrenceTrainName
           ),
-          start_time: update.value.toISOString(),
+          start_time: startTime.toISOString(),
         };
       } else {
         const result = computeUpdatedPathAndSchedule(update);
-        if (!result) return;
+        if (!result) return 'skipped';
         updatedOccurrence = {
           ...buildUpdatedOccurrence(
             selectedTrain,
@@ -208,6 +216,7 @@ const useUpdateTimesStopsTable = (
         trainSchedule: updatedPacedTrain,
       }).unwrap();
       upsertTimetableItems([{ ...updatedPacedTrain, id: pacedTrainId }]);
+      return 'updated';
     },
     [selectedTrain, timetableItemsWithDetails, computeUpdatedPathAndSchedule]
   );
@@ -216,21 +225,20 @@ const useUpdateTimesStopsTable = (
    * Handle update when the selected train is a TimetableItem (not an occurrence).
    */
   const updateTimetableItem = useCallback(
-    async (trainId: PacedTrainId, update: CellUpdate) => {
+    async (trainId: PacedTrainId, update: CellUpdate): Promise<UpdateCellStatus> => {
       const editoastId = extractEditoastIdFromPacedTrainId(trainId);
+      const isOriginUpdate = isOriginArrivalUpdate(update);
+      if (isOriginUpdate && !update.value) return 'skipped';
 
-      // Handle first row
-      if (
-        update.field === 'requestedArrival' &&
-        update.row.opOnPathIndex === 0 &&
-        update.propagationMode === 'atThisWaypoint'
-      ) {
-        if (!update.value) return;
+      // Handle first row at this waypoint
+      if (isOriginUpdate && update.propagationMode === 'atThisWaypoint') {
+        const startTime = update.value;
+        if (!startTime) return 'skipped';
 
         const train: TimetableItem = {
           ...selectedTrain,
           id: editoastId,
-          start_time: update.value.toISOString(),
+          start_time: startTime.toISOString(),
         };
 
         await updateTrainSchedule({
@@ -238,16 +246,16 @@ const useUpdateTimesStopsTable = (
           trainSchedule: train,
         }).unwrap();
         upsertTimetableItems([train]);
-        return;
+        return 'updated';
       }
 
       const result = computeUpdatedPathAndSchedule(update);
-      if (!result) return;
+      if (!result) return 'skipped';
 
       const { updatedPath, updatedSchedule } = result;
       const train: TimetableItem = {
         ...selectedTrain,
-        id: extractEditoastIdFromPacedTrainId(trainId),
+        id: editoastId,
         path: updatedPath,
         schedule: updatedSchedule,
         start_time: result.updatedStartTime?.toISOString() ?? selectedTrain.start_time,
@@ -258,6 +266,7 @@ const useUpdateTimesStopsTable = (
         trainSchedule: train,
       }).unwrap();
       upsertTimetableItems([train]);
+      return 'updated';
     },
     [selectedTrain, computeUpdatedPathAndSchedule]
   );
@@ -266,13 +275,13 @@ const useUpdateTimesStopsTable = (
    * Main update function that routes to the appropriate handler.
    */
   const updateCell = useCallback(
-    async (update: CellUpdate) => {
+    async (update: CellUpdate): Promise<UpdateCellStatus> => {
       const { id: trainId } = selectedTrain;
 
       if (isOccurrenceId(trainId)) {
-        await updateOccurrence(trainId, update);
+        return updateOccurrence(trainId, update);
       } else if (isPacedTrainId(trainId)) {
-        await updateTimetableItem(trainId, update);
+        return updateTimetableItem(trainId, update);
       } else {
         throw new Error('TrainSchedules are not handled anymore.');
       }
