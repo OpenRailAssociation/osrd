@@ -19,6 +19,7 @@ import IncompatibleConstraints from 'modules/pathfinding/components/Incompatible
 import TypeAndPath from 'modules/pathfinding/components/Pathfinding/TypeAndPath';
 import reversePathSteps from 'modules/pathfinding/helpers/reversePathSteps';
 import usePathfindingV2 from 'modules/pathfinding/hooks/usePathfindingV2';
+import type { RootState } from 'reducers';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import { updatePathSteps } from 'reducers/osrdconf/operationalStudiesConf';
 import {
@@ -221,11 +222,13 @@ const ItineraryModal = ({
     }
   };
 
-  // RS name
-  const name = useSelector(getName);
+  // Use a boolean selector so typing doesn't re-render the whole modal on every keystroke.
+  // Re-renders only when the name transitions between empty and non-empty.
+  const isNameEmpty = useSelector((state: RootState) => {
+    const n = getName(state);
+    return !n || n.trim() === '';
+  });
   const [submitAttempted, setSubmitAttempted] = useState(false);
-
-  const isNameEmpty = !name || name.trim() === '';
 
   useEffect(() => {
     if (
@@ -408,7 +411,6 @@ const ItineraryModal = ({
             currentSubCategory={currentSubCategory}
             categoryColors={categoryColors}
             submitAttempted={submitAttempted}
-            name={name}
             isNameEmpty={isNameEmpty}
           />
         </div>
