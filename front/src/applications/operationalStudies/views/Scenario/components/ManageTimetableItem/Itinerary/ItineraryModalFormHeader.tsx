@@ -25,6 +25,7 @@ import useCategoryOptions from 'modules/rollingStock/hooks/useCategoryOptions';
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
 import { updateCategory, updateName } from 'reducers/osrdconf/operationalStudiesConf';
 import {
+  getName,
   getOperationalStudiesRollingStockID,
   getOperationalStudiesSpeedLimitByTag,
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
@@ -37,7 +38,6 @@ type ItineraryModalFormHeaderProps = {
   currentSubCategory?: SubCategory;
   categoryColors: CategoryColors;
   submitAttempted?: boolean;
-  name?: string;
   isNameEmpty?: boolean;
 };
 
@@ -47,9 +47,9 @@ const ItineraryModalFormHeader = ({
   currentSubCategory,
   categoryColors,
   submitAttempted,
-  name,
   isNameEmpty,
 }: ItineraryModalFormHeaderProps) => {
+  const name = useSelector(getName);
   const dispatch = useAppDispatch();
   const { updateSpeedLimitByTag, updateRollingStockID } = useOsrdConfActions();
 
