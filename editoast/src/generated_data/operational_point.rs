@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use std::ops::DerefMut;
 
-use common::geometry::GeoJsonPoint;
 use database::DbConnection;
 use database::tables::infra_layer_operational_point::dsl;
 use diesel::delete;
@@ -80,7 +79,7 @@ struct OperationalPoint {
     #[diesel(sql_type = Text)]
     obj_id: String,
     #[diesel(sql_type = Jsonb)]
-    geo: diesel_json::Json<GeoJsonPoint>,
+    geo: diesel_json::Json<geos::geojson::Geometry>,
 }
 
 impl OperationalPointLayer {
@@ -88,7 +87,7 @@ impl OperationalPointLayer {
         conn: &mut DbConnection,
         infra_id: i64,
         ids: &[&str],
-    ) -> Result<HashMap<String, Vec<GeoJsonPoint>>> {
+    ) -> Result<HashMap<String, Vec<geos::geojson::Geometry>>> {
         Ok(sql_query(
             "SELECT obj_id, ST_AsGeoJSON(ST_Transform(geographic, 4326))::jsonb AS geo
                 FROM infra_layer_operational_point

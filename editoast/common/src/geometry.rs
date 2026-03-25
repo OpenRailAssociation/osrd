@@ -52,13 +52,13 @@ pub enum GeoJsonMultiPolygon {
 }
 
 #[derive(Serialize, Deserialize, ToSchema, Debug, Clone, PartialEq)]
-pub struct GeoJsonPointValue(pub Vec<f64>);
+pub struct GeoJsonPointValue(Vec<f64>);
 
 #[derive(Serialize, ToSchema)]
 pub struct GeoJsonMultiPointValue(Vec<GeoJsonPointValue>);
 
 #[derive(Serialize, Deserialize, ToSchema, Debug, Clone, PartialEq)]
-pub struct GeoJsonLineStringValue(pub Vec<GeoJsonPointValue>);
+pub struct GeoJsonLineStringValue(Vec<GeoJsonPointValue>);
 
 #[derive(Serialize, ToSchema)]
 pub struct GeoJsonMultiLineStringValue(Vec<GeoJsonLineStringValue>);

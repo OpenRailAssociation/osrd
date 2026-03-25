@@ -218,6 +218,7 @@ use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
 use editoast_derive::Search;
 use editoast_derive::SearchConfigStore;
+use geos::geojson::Geometry;
 use schemas::train_schedule::Margins;
 use schemas::train_schedule::PathItem;
 use schemas::train_schedule::PowerRestrictionItem;
@@ -490,7 +491,8 @@ pub(super) struct SearchResultItemOperationalPoint {
     #[search(sql = "OP.data#>>'{extensions,sncf,ci}'")]
     ci: u64,
     #[search(sql = "ST_AsGeoJSON(ST_Transform(lay.geographic, 4326))::json")]
-    geographic: GeoJsonPoint,
+    #[schema(value_type = GeoJsonPoint)]
+    geographic: Geometry,
     #[search(sql = "OP.data->'parts'")]
     #[schema(inline)]
     track_sections: Vec<SearchResultItemOperationalPointTrackSections>,
@@ -572,7 +574,8 @@ pub(super) struct SearchResultItemSignal {
     #[search(sql = "track_section.data->'extensions'->'sncf'->>'line_name'")]
     line_name: String,
     #[search(sql = "ST_AsGeoJSON(ST_Transform(lay.geographic, 4326))::json")]
-    geographic: GeoJsonPoint,
+    #[schema(value_type = GeoJsonPoint)]
+    geographic: Geometry,
     #[search(sql = "lay.signaling_system")]
     sprite_signaling_system: Option<String>,
     #[search(sql = "lay.sprite")]
