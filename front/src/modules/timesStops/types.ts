@@ -109,6 +109,8 @@ export type PropagationMode =
   | 'atThisWaypoint'
   | 'toDestination';
 
+export type UpdateCellStatus = 'updated' | 'skipped';
+
 export type ArrivalUpdate = {
   row: TimesStopsRowNew;
   field: 'requestedArrival';
