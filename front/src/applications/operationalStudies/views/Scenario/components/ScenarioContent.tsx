@@ -223,7 +223,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
                 timetableItemsWithDetails={timetableItemsWithDetails}
                 activeBoards={activeBoards}
                 updateTrainDepartureTime={updateTrainDepartureTimeWithNge}
-                upsertTimetableItems={upsertTimetableItems}
+                upsertTimetableItems={upsertTimetableItemsWithNge}
               />
             )}
             {activeBoards.has('macro') && (
