@@ -411,7 +411,7 @@ const TimesStopsTable = ({
         },
       }),
     ],
-    [startTime, focusCellBelow, focusRequestedCellOnTab]
+    [startTime, focusCellBelow, focusRequestedCellOnTab, t]
   );
 
   // eslint-disable-next-line react-hooks/incompatible-library
