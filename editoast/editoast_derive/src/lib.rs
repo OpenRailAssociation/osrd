@@ -17,7 +17,7 @@ use syn::parse_macro_input;
 /// For a variant named `MyError`, this will generate error ids like `"editoast:myview:MyError"`.
 /// You can provide a `default_status` that will apply to all variants (400 by default).
 ///
-/// If your variant has nammed fields. They will be automatically added to the error context.
+/// If your variant has named fields. They will be automatically added to the error context.
 /// **Note:**
 ///
 /// - Each field must be serializable.
@@ -223,6 +223,7 @@ pub fn search_config_store(input: proc_macro::TokenStream) -> proc_macro::TokenS
 /// * `#[model(uom_unit = "path::to::unit")]`: the value is the path to an unit defined in common, e.g. `"common::units::meter"`
 /// * `#[model(geo)]` **TODO**: TBD
 /// * `#[model(non_null_array = "T")]`: wraps type `T` into an `Option<T>` when interfacing with diesel to satisfy the nullable property of postgres arrays
+/// * `#[model(flatten)]`: flatten all the fields of the sub-structure (which must implement `diesel::Selectable`) inside the current structure
 ///
 /// #### A note on identifiers
 ///

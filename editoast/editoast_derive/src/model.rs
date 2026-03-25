@@ -192,4 +192,21 @@ mod tests {
             }
         );
     }
+
+    #[test]
+    fn flatten() {
+        crate::assert_macro_expansion!(
+            model,
+            syn::parse_quote! {
+                #[derive(Clone, Model)]
+                #[model(table = database::tables::timetable)]
+                #[model(gen(ops = r))]
+                struct Timetable {
+                    id: i64,
+                    #[model(flatten)]
+                    point: Point,
+                }
+            }
+        );
+    }
 }

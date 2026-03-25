@@ -15,6 +15,7 @@ pub(crate) struct RowFieldDecl {
     pub(super) name: syn::Ident,
     pub(super) ty: syn::Type,
     pub(super) column_name: String,
+    pub(super) flatten: bool,
 }
 
 impl ToTokens for RowDecl {
@@ -26,7 +27,7 @@ impl ToTokens for RowDecl {
             additional_derives,
             fields,
         } = self;
-        let np!(field_column, field_vis, field_name, field_type): np!(vec4) = fields
+        let np!(field_column, field_vis, field_name, field_type, field_embed): np!(vec5) = fields
             .iter()
             .map(|field| {
                 let RowFieldDecl {
@@ -34,15 +35,21 @@ impl ToTokens for RowDecl {
                     name,
                     ty,
                     column_name,
+                    flatten,
                 } = field;
-                np!(column_name, vis, name, ty)
+                let embed = if *flatten {
+                    quote! {embed}
+                } else {
+                    quote! {}
+                };
+                np!(column_name, vis, name, ty, embed)
             })
             .unzip();
         tokens.extend(quote! {
             #[derive(diesel::Queryable, #(#additional_derives),*)]
             #[diesel(table_name = #table)]
             #vis struct #ident {
-                #(#[diesel(column_name = #field_column)] #field_vis #field_name: #field_type),*
+                #(#[diesel(column_name = #field_column, #field_embed)] #field_vis #field_name: #field_type),*
             }
         });
     }

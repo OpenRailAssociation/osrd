@@ -136,4 +136,6 @@ pub(super) struct ModelFieldArgs {
     pub(super) uom_unit: Option<syn::Path>,
     #[darling(default)]
     pub(super) non_null_array: Option<syn::Path>,
+    #[darling(default)]
+    pub(super) flatten: bool,
 }

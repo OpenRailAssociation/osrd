@@ -51,6 +51,7 @@ pub(crate) struct ModelField {
     pub(crate) preferred: bool,
     pub(crate) primary: bool,
     pub(crate) transform: Option<FieldTransformation>,
+    pub(crate) flatten: bool,
 }
 
 #[derive(Debug, PartialEq, Clone)]

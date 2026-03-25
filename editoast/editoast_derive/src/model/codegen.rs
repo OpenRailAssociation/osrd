@@ -192,6 +192,7 @@ impl ModelConfig {
                     name: field.ident.clone(),
                     ty: field.transform_type(),
                     column_name: field.column_ident().to_string(),
+                    flatten: field.flatten,
                 })
                 .collect(),
         }

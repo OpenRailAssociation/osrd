@@ -273,6 +273,7 @@ impl ModelField {
             preferred: value.preferred,
             primary: value.primary,
             transform,
+            flatten: value.flatten,
         })
     }
 }
