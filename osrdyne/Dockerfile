@@ -3,7 +3,7 @@
 ##############
 # Cargo chef #
 ##############
-FROM lukemathwalker/cargo-chef:0.1.72-rust-1.89-alpine3.22 AS chef
+FROM lukemathwalker/cargo-chef:0.1.77-rust-1.94-alpine3.23 AS chef
 WORKDIR /osrdyne
 ENV CARGO_HOME=/cargo_osrdyne
 ENV PATH="/cargo_editoast/bin:$PATH"
@@ -47,7 +47,7 @@ COPY . .
 #######################
 # Running env : build #
 #######################
-FROM alpine:3.22 AS running_env
+FROM alpine:3.23 AS running_env
 RUN apk add --no-cache curl ca-certificates bind-tools
 COPY --from=run_builder /cargo_osrdyne/bin/osrdyne /usr/local/bin/osrdyne
 
