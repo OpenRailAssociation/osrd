@@ -124,7 +124,7 @@ pub(in crate::views) async fn create_train_schedule_exception(
     )
     .await?;
 
-    if !train_schedule.is_paced() {
+    if train_schedule.pace().is_none() {
         return Err(TrainScheduleExceptionError::NotPacedTrain {
             train_schedule_id: train_schedule_exception_form.train_schedule_id,
         }
@@ -215,7 +215,7 @@ pub(in crate::views) async fn update(
     )
     .await?;
 
-    if !train_schedule.is_paced() {
+    if train_schedule.pace().is_none() {
         return Err(TrainScheduleExceptionError::NotPacedTrain { train_schedule_id }.into());
     }
 

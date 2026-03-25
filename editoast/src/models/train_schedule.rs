@@ -224,25 +224,19 @@ impl TrainSchedule {
             .sorted_by_key(|(_, ts)| ts.start_time)
     }
 
-    /// Returns whether this train has paced occurrences.
-    pub fn is_paced(&self) -> bool {
-        self.time_window.is_some() && self.interval.is_some()
+    /// Returns time window and interval when this train has paced occurrences.
+    pub fn pace(&self) -> Option<(ChronoDuration, ChronoDuration)> {
+        self.time_window.zip(self.interval)
     }
 
     /// Returns the number of base train occurrences within the pacing window.
     /// Returns 1 if it's not a paced train.
     fn num_base_occurrences(&self) -> usize {
-        if !self.is_paced() {
-            return 1;
+        if let Some((time_window, interval)) = self.pace() {
+            (time_window.num_seconds() / interval.num_seconds()) as usize
+        } else {
+            1
         }
-
-        let time_window = self
-            .time_window
-            .expect("time_window should be set for paced trains");
-        let interval = self
-            .interval
-            .expect("interval should be set for paced trains");
-        (time_window.num_seconds() / interval.num_seconds()) as usize
     }
 }
 
