@@ -5,18 +5,16 @@ import {
   useRef,
   useLayoutEffect,
   useEffect,
-  useState,
   useImperativeHandle,
   type Dispatch,
 } from 'react';
 
-import { Clear } from '@osrd-project/ui-icons';
 import type { CellContext } from '@tanstack/react-table';
-import { createPortal } from 'react-dom';
 
 import type { Duration } from 'utils/duration';
 
 import CellPlaceholder from './CellPlaceholder';
+import ClearButton from './ClearButton';
 import type { TimesStopsRowNew } from './types';
 
 type ActiveUnit = 'h' | 'm' | 's';
@@ -387,7 +385,6 @@ const DurationCell = ({
   const [state, dispatch] = useReducer(durationReducer, controlledValue, initialDurationState);
   const containerRef = useRef<HTMLDivElement>(null);
   const mouseDownRef = useRef(false);
-  const [btnPos, setBtnPos] = useState<{ top: number; left: number } | null>(null);
 
   useImperativeHandle(
     ref,
@@ -404,23 +401,7 @@ const DurationCell = ({
   }, [controlledValue]);
 
   useLayoutEffect(() => {
-    if (!state.isEditing) {
-      setBtnPos(null);
-      return undefined;
-    }
-    containerRef.current?.focus();
-    const updatePos = () => {
-      if (!containerRef.current) return;
-      const rect = containerRef.current.closest('td')!.getBoundingClientRect();
-      setBtnPos({ top: rect.top + rect.height / 2, left: rect.left });
-    };
-    updatePos();
-    window.addEventListener('scroll', updatePos, true);
-    window.addEventListener('resize', updatePos);
-    return () => {
-      window.removeEventListener('scroll', updatePos, true);
-      window.removeEventListener('resize', updatePos);
-    };
+    if (state.isEditing) containerRef.current?.focus();
   }, [state.isEditing]);
 
   const startEditing = (unit: ActiveUnit) => {
@@ -490,29 +471,6 @@ const DurationCell = ({
     mouseDownRef.current = false;
   };
 
-  const clearButton =
-    state.isEditing && btnPos
-      ? createPortal(
-          <button
-            type="button"
-            className="duration-cell-clear-btn"
-            tabIndex={-1}
-            style={{ top: btnPos.top, left: btnPos.left }}
-            onMouseDown={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleClear();
-            }}
-          >
-            <Clear size="sm" />
-          </button>,
-          document.body
-        )
-      : null;
-
   return (
     <>
       <div
@@ -548,7 +506,7 @@ const DurationCell = ({
           </>
         )}
       </div>
-      {clearButton}
+      <ClearButton isVisible={state.isEditing} containerRef={containerRef} onClear={handleClear} />
     </>
   );
 };
