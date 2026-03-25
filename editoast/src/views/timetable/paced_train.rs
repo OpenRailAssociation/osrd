@@ -398,12 +398,6 @@ pub(in crate::views) async fn simulation_summary(
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
 #[into_params(parameter_in = Query)]
 pub(in crate::views) struct ExceptionQueryParam {
-    exception_key: Option<String>,
-}
-
-#[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
-#[into_params(parameter_in = Query)]
-pub(in crate::views) struct TrainScheduleExceptionQueryParam {
     exception_id: Option<i64>,
 }
 
@@ -412,7 +406,7 @@ pub(in crate::views) struct TrainScheduleExceptionQueryParam {
 #[utoipa::path(
     get, path = "",
     tags = ["paced_train", "pathfinding"],
-    params(TrainScheduleIdParam, InfraIdQueryParam, TrainScheduleExceptionQueryParam),
+    params(TrainScheduleIdParam, InfraIdQueryParam, ExceptionQueryParam),
     responses(
         (status = 200, description = "The path", body = PathfindingResult),
         (status = 404, description = "Infrastructure or Train schedule not found")
@@ -431,9 +425,7 @@ pub(in crate::views) async fn get_path(
         id: train_schedule_id,
     }): Path<TrainScheduleIdParam>,
     Query(InfraIdQueryParam { infra_id }): Query<InfraIdQueryParam>,
-    Query(TrainScheduleExceptionQueryParam { exception_id }): Query<
-        TrainScheduleExceptionQueryParam,
-    >,
+    Query(ExceptionQueryParam { exception_id }): Query<ExceptionQueryParam>,
 ) -> Result<Json<PathfindingResult>> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
@@ -503,7 +495,7 @@ pub struct ElectricalProfileSetIdQueryParam {
 #[utoipa::path(
     get, path = "",
     tag = "paced_train",
-    params(TrainScheduleIdParam, InfraIdQueryParam, ElectricalProfileSetIdQueryParam, TrainScheduleExceptionQueryParam),
+    params(TrainScheduleIdParam, InfraIdQueryParam, ElectricalProfileSetIdQueryParam, ExceptionQueryParam),
     responses(
         (status = 200, description = "Simulation Output", body = simulation::Response),
     ),
@@ -524,9 +516,7 @@ pub(in crate::views) async fn simulation(
     Query(ElectricalProfileSetIdQueryParam {
         electrical_profile_set_id,
     }): Query<ElectricalProfileSetIdQueryParam>,
-    Query(TrainScheduleExceptionQueryParam { exception_id }): Query<
-        TrainScheduleExceptionQueryParam,
-    >,
+    Query(ExceptionQueryParam { exception_id }): Query<ExceptionQueryParam>,
 ) -> Result<Json<simulation::Response>> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())
@@ -597,7 +587,7 @@ pub(in crate::views) async fn simulation(
 #[utoipa::path(
     get, path = "",
     tags = ["paced_train", "etcs_braking_curves"],
-    params(TrainScheduleIdParam, InfraIdQueryParam, ElectricalProfileSetIdQueryParam, TrainScheduleExceptionQueryParam),
+    params(TrainScheduleIdParam, InfraIdQueryParam, ElectricalProfileSetIdQueryParam, ExceptionQueryParam),
     responses(
         (status = 200, description = "ETCS Braking Curves Output", body = core_client::etcs_braking_curves::Response),
     ),
@@ -618,9 +608,7 @@ pub(in crate::views) async fn etcs_braking_curves(
     Query(ElectricalProfileSetIdQueryParam {
         electrical_profile_set_id,
     }): Query<ElectricalProfileSetIdQueryParam>,
-    Query(TrainScheduleExceptionQueryParam { exception_id }): Query<
-        TrainScheduleExceptionQueryParam,
-    >,
+    Query(ExceptionQueryParam { exception_id }): Query<ExceptionQueryParam>,
 ) -> Result<Json<core_client::etcs_braking_curves::Response>> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
