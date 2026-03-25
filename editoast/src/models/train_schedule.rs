@@ -9,7 +9,6 @@ use itertools::Itertools;
 use schemas;
 use schemas::paced_train;
 use schemas::paced_train::ExceptionType;
-use schemas::paced_train::Paced;
 use schemas::paced_train::PacedTrainException;
 use schemas::rolling_stock::TrainCategory;
 use schemas::train_schedule::Comfort;
@@ -24,6 +23,15 @@ use serde::Deserialize;
 use serde::Serialize;
 use std::fmt::Display;
 use utoipa::ToSchema;
+
+#[derive(Debug, Clone, diesel::Selectable)]
+#[cfg_attr(test, derive(Default, PartialEq))]
+pub struct Paced {
+    /// Time window of the paced train
+    time_window: ChronoDuration,
+    /// Time between two occurrences
+    interval: ChronoDuration,
+}
 
 #[derive(Debug, Clone, Model)]
 #[cfg_attr(test, derive(Default, PartialEq))]
@@ -53,10 +61,8 @@ pub struct TrainSchedule {
     pub power_restrictions: Vec<PowerRestrictionItem>,
     #[model(json)]
     pub options: TrainScheduleOptions,
-    /// Time window of the paced train
-    pub time_window: Option<ChronoDuration>,
-    /// Time between two occurrences
-    pub interval: Option<ChronoDuration>,
+    #[model(flatten)]
+    pub paced: Option<Paced>,
     pub main_category: Option<TrainMainCategory>,
     /// Sub category code
     pub sub_category: Option<String>,
@@ -311,7 +317,7 @@ impl From<TrainSchedule> for paced_train::TrainSchedule {
                     .xor(train_schedule.sub_category.map(TrainCategory::sub)),
             },
             paced: train_schedule.time_window.and_then(|time_window| {
-                train_schedule.interval.map(|interval| Paced {
+                train_schedule.interval.map(|interval| paced_train::Paced {
                     time_window: time_window.try_into().unwrap(),
                     interval: interval.try_into().unwrap(),
                     exceptions: train_schedule.exceptions,
@@ -439,8 +445,10 @@ mod tests {
             speed_limit_tag: None,
             options: TrainScheduleOptions::default(),
             start_time: DateTime::<Utc>::from_str("2025-05-15T14:00:00+02:00").unwrap(),
-            time_window: chrono::Duration::try_hours(2),
-            interval: chrono::Duration::try_minutes(30),
+            paced: Paced {
+                time_window: chrono::Duration::hours(2),
+                interval: chrono::Duration::try_minutes(30),
+            },
             sub_category: None,
             exceptions,
         }
