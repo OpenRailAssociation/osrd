@@ -5,6 +5,7 @@ import type { CellContext } from '@tanstack/react-table';
 import { SECONDS_IN_A_DAY } from 'utils/timeManipulation';
 
 import CellPlaceholder from './CellPlaceholder';
+import ClearButton from './ClearButton';
 import type { TimesStopsRowNew } from './types';
 
 // Types
@@ -584,6 +585,11 @@ const TimeCell = ({
     dispatch({ type: 'SECTION_CLICKED', section });
   };
 
+  const handleClear = () => {
+    if (controlledValue !== null) onCommit?.(null);
+    dispatch({ type: 'ESCAPE_PRESSED', value: null });
+  };
+
   const handlePlaceholderClick = () => {
     shouldPrefillRef.current = true;
     inputRef.current?.focus();
@@ -660,37 +666,44 @@ const TimeCell = ({
   }, [state.hours, state.minutes, state.seconds, onChange]);
 
   return (
-    <div className={`time-cell ${state.empty ? 'time-cell--empty' : ''}`}>
-      <input
-        ref={inputRef}
-        value={state.empty ? 'hh:mm:ss' : formatDisplay(state)}
-        className="time-cell__input"
-        style={{ pointerEvents: state.empty ? 'none' : 'auto' }}
-        onChange={(e) => e.preventDefault()}
-        onKeyDown={handleKeyDown}
-        onClick={handleClick}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
-        {...userProps}
-      />
+    <>
+      <div className={`time-cell ${state.empty ? 'time-cell--empty' : ''}`}>
+        <input
+          ref={inputRef}
+          value={state.empty ? 'hh:mm:ss' : formatDisplay(state)}
+          className="time-cell__input"
+          style={{ pointerEvents: state.empty ? 'none' : 'auto' }}
+          onChange={(e) => e.preventDefault()}
+          onKeyDown={handleKeyDown}
+          onClick={handleClick}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          {...userProps}
+        />
 
-      {!state.empty ? (
-        <div
-          className={`time-cell__display ${
-            !state.focusedSection ? 'time-cell__display--saved' : ''
-          }`}
-          aria-hidden="true"
-        >
-          {renderTimeSection(state.hours, state.focusedSection === 'hours', state.hasTyped)}
-          <span className="separator">:</span>
-          {renderTimeSection(state.minutes, state.focusedSection === 'minutes', state.hasTyped)}
-          <span className="separator">:</span>
-          {renderTimeSection(state.seconds, state.focusedSection === 'seconds', state.hasTyped)}
-        </div>
-      ) : (
-        <CellPlaceholder onClick={handlePlaceholderClick} />
-      )}
-    </div>
+        {!state.empty ? (
+          <div
+            className={`time-cell__display ${
+              !state.focusedSection ? 'time-cell__display--saved' : ''
+            }`}
+            aria-hidden="true"
+          >
+            {renderTimeSection(state.hours, state.focusedSection === 'hours', state.hasTyped)}
+            <span className="separator">:</span>
+            {renderTimeSection(state.minutes, state.focusedSection === 'minutes', state.hasTyped)}
+            <span className="separator">:</span>
+            {renderTimeSection(state.seconds, state.focusedSection === 'seconds', state.hasTyped)}
+          </div>
+        ) : (
+          <CellPlaceholder onClick={handlePlaceholderClick} />
+        )}
+      </div>
+      <ClearButton
+        isVisible={state.focusedSection !== null && !state.empty}
+        containerRef={inputRef}
+        onClear={handleClear}
+      />
+    </>
   );
 };
 
