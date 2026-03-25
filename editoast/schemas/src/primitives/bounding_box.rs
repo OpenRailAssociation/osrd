@@ -1,6 +1,5 @@
-use geojson;
-use geojson::Geometry;
-use geojson::Value::LineString;
+use geos::geojson::Geometry;
+use geos::geojson::Value::LineString;
 use serde::Deserialize;
 use serde::Serialize;
 use std::iter::FromIterator;
@@ -53,7 +52,7 @@ impl BoundingBox {
         self.min_lon <= self.max_lon && self.min_lat <= self.max_lat
     }
 
-    pub fn from_geojson(value: geojson::Value) -> Result<Self, GeometryError> {
+    pub fn from_geojson(value: geos::geojson::Value) -> Result<Self, GeometryError> {
         match value {
             LineString(segments) => Ok(Self::from_iter(segments.into_iter().map(|points| {
                 (

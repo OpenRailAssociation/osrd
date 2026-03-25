@@ -4201,7 +4201,7 @@ dependencies = [
  "editoast_derive",
  "educe",
  "enum-map",
- "geojson",
+ "geos",
  "iso8601",
  "rand 0.10.0",
  "regex",
