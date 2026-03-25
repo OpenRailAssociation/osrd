@@ -233,6 +233,7 @@ const TimesStopsTable = ({
                 focusRequestedCellOnTab(info.row.index, 'requestedArrival', direction)
               }
               onCommit={(date) => onArrival(row, date)}
+              disableClear={info.row.index === 0}
             />
           );
         },

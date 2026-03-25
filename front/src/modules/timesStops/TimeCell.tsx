@@ -485,6 +485,7 @@ type TimeCellProps = CellContext<TimesStopsRowNew, Date | null> &
     /** Called on Tab key to move focus to the next/previous editable time cell. */
     onTabKeyDown?: (direction: 'forward' | 'backward') => boolean;
     onCommit?: (date: Date | null) => void;
+    disableClear?: boolean;
     ref?: React.Ref<TimeCellHandle>;
   };
 
@@ -495,6 +496,7 @@ const TimeCell = ({
   onEnterKeyDown,
   onTabKeyDown,
   onCommit,
+  disableClear,
   ref,
   ...props
 }: TimeCellProps) => {
@@ -699,7 +701,7 @@ const TimeCell = ({
         )}
       </div>
       <ClearButton
-        isVisible={state.focusedSection !== null && !state.empty}
+        isVisible={state.focusedSection !== null && !state.empty && !disableClear}
         containerRef={inputRef}
         onClear={handleClear}
       />
