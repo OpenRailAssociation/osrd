@@ -4381,6 +4381,7 @@ paths:
               type: object
               required:
               - infra_id
+              - timetable_id
               - ids
               properties:
                 electrical_profile_set_id:
@@ -4395,6 +4396,9 @@ paths:
                     format: int64
                   uniqueItems: true
                 infra_id:
+                  type: integer
+                  format: int64
+                timetable_id:
                   type: integer
                   format: int64
         required: true
