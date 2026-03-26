@@ -253,6 +253,7 @@ pub(in crate::views) async fn delete(
 #[derive(Debug, Clone, Deserialize, ToSchema)]
 pub(in crate::views) struct SimulationBatchForm {
     infra_id: i64,
+    timetable_id: i64,
     electrical_profile_set_id: Option<i64>,
     ids: HashSet<i64>,
 }
@@ -323,6 +324,7 @@ pub(in crate::views) async fn simulation_summary(
     Extension(auth): AuthenticationExt,
     Json(SimulationBatchForm {
         infra_id,
+        timetable_id,
         electrical_profile_set_id,
         ids: train_schedule_ids,
     }): Json<SimulationBatchForm>,
@@ -370,16 +372,31 @@ pub(in crate::views) async fn simulation_summary(
     /////
     // Generate the train simulation inputs
     let train_schedules: Vec<models::TrainSchedule> =
-        models::TrainSchedule::retrieve_batch_or_fail(conn, train_schedule_ids, |missing| {
-            TrainScheduleError::BatchNotFound {
+        models::TrainSchedule::retrieve_batch_or_fail(
+            conn,
+            train_schedule_ids.clone(),
+            |missing| TrainScheduleError::BatchNotFound {
                 count: missing.len(),
-            }
-        })
+            },
+        )
         .await?;
+
+    let mut exceptions = TrainScheduleException::retrieve_exceptions_by_train_schedules(
+        conn,
+        timetable_id,
+        train_schedule_ids.into_iter().collect(),
+    )
+    .await?
+    .into_iter()
+    .map_into::<schemas::TrainScheduleException>()
+    .into_group_map_by(|e| e.train_schedule_id);
 
     let train_occurrences = train_schedules
         .iter()
-        .flat_map(models::TrainSchedule::iter_occurrences)
+        .flat_map(|ts| {
+            let ts_exceptions = exceptions.remove(&ts.id).unwrap_or_default();
+            ts.iter_occurrences_v2(&ts_exceptions).collect_vec()
+        })
         .collect::<HashMap<_, _>>();
 
     // Get the physic consist parameters for the train schedules
@@ -470,11 +487,13 @@ pub(in crate::views) async fn simulation_summary(
                     | OccurrenceId::Modified {
                         train_schedule_id,
                         index: _,
+                        exception_id: _,
                         exception_key: _,
                     }
                     | OccurrenceId::Created {
                         train_schedule_id,
                         exception_key: _,
+                        exception_id: _,
                     } => *train_schedule_id,
                 })
                 .collect::<HashSet<_>>();
@@ -560,10 +579,12 @@ pub(in crate::views) async fn simulation_summary(
                     OccurrenceId::Modified {
                         train_schedule_id,
                         index: _,
+                        exception_id: _,
                         exception_key,
                     }
                     | OccurrenceId::Created {
                         train_schedule_id,
+                        exception_id: _,
                         exception_key,
                     } => {
                         let builder = simulation_summaries.entry(train_schedule_id).or_default();
@@ -592,12 +613,6 @@ pub(in crate::views) async fn simulation_summary(
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
 #[into_params(parameter_in = Query)]
 pub(in crate::views) struct ExceptionQueryParam {
-    exception_key: Option<String>,
-}
-
-#[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
-#[into_params(parameter_in = Query)]
-pub(in crate::views) struct TrainScheduleExceptionQueryParam {
     exception_id: Option<i64>,
 }
 
@@ -625,9 +640,7 @@ pub(in crate::views) async fn get_path(
         id: train_schedule_id,
     }): Path<TrainScheduleIdParam>,
     Query(InfraIdQueryParam { infra_id }): Query<InfraIdQueryParam>,
-    Query(TrainScheduleExceptionQueryParam { exception_id }): Query<
-        TrainScheduleExceptionQueryParam,
-    >,
+    Query(ExceptionQueryParam { exception_id }): Query<ExceptionQueryParam>,
 ) -> Result<Json<PathfindingResult>> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
@@ -718,9 +731,7 @@ pub(in crate::views) async fn simulation(
     Query(ElectricalProfileSetIdQueryParam {
         electrical_profile_set_id,
     }): Query<ElectricalProfileSetIdQueryParam>,
-    Query(TrainScheduleExceptionQueryParam { exception_id }): Query<
-        TrainScheduleExceptionQueryParam,
-    >,
+    Query(ExceptionQueryParam { exception_id }): Query<ExceptionQueryParam>,
 ) -> Result<Json<simulation::Response>> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())
@@ -814,9 +825,7 @@ pub(in crate::views) async fn etcs_braking_curves(
     Query(ElectricalProfileSetIdQueryParam {
         electrical_profile_set_id,
     }): Query<ElectricalProfileSetIdQueryParam>,
-    Query(TrainScheduleExceptionQueryParam { exception_id }): Query<
-        TrainScheduleExceptionQueryParam,
-    >,
+    Query(ExceptionQueryParam { exception_id }): Query<ExceptionQueryParam>,
 ) -> Result<Json<core_client::etcs_braking_curves::Response>> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
@@ -1891,6 +1900,7 @@ mod tests {
     use crate::models::fixtures::create_rolling_stock_with_energy_sources;
     use crate::models::fixtures::create_simple_paced_train;
     use crate::models::fixtures::create_small_infra;
+    use crate::models::fixtures::create_timetable;
     use crate::models::fixtures::create_timetable_with_train_schedule_set;
     use crate::models::fixtures::create_train_schedule_exception;
     use crate::models::fixtures::create_train_schedule_set;
@@ -2419,122 +2429,121 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn paced_train_simulation_summary() {
-        let (app, infra_id, paced_train_id, _exception) =
-            app_infra_id_paced_train_id_for_simulation_tests().await;
-        let request = app.get(format!("/train_schedules/{paced_train_id}").as_str());
-        let mut paced_train_response: TrainScheduleResponse = app
-            .fetch(request)
-            .await
-            .assert_status(StatusCode::OK)
-            .json_into();
-        // First remove all already generated exceptions
-        paced_train_response
-            .train_schedule
-            .paced
-            .as_mut()
-            .unwrap()
-            .exceptions
-            .clear();
-        // Add one exception which will not change the simulation from base
-        paced_train_response
-            .train_schedule
-            .paced
-            .as_mut()
-            .unwrap()
-            .exceptions
-            .push(PacedTrainException {
-                key: "change_train_name".to_string(),
-                change_groups: TrainScheduleExceptionChangeGroups {
-                    train_name: Some(TrainNameChangeGroup {
-                        value: "exception_name_but_same_simulation".into(),
-                    }),
-                    ..Default::default()
-                },
-                ..Default::default()
-            });
-        // Add one exception which will change the simulation from base
-        // and therefore add another entry in the response (field `exceptions`)
-        paced_train_response
-            .train_schedule
-            .paced
-            .as_mut()
-            .unwrap()
-            .exceptions
-            .push(PacedTrainException {
-                key: "change_initial_speed".to_string(),
-                change_groups: TrainScheduleExceptionChangeGroups {
-                    initial_speed: Some(InitialSpeedChangeGroup { value: 1.23 }),
-                    ..Default::default()
-                },
-                ..Default::default()
-            });
-        // Add one exception which will change the simulation from base with another rolling stock
-        // and therefore add another entry in the response (field `exceptions`)
+        // Setup tests tools
+        let core = mocked_core_pathfinding_sim_and_proj();
+        let app = TestAppBuilder::new()
+            .db_pool(DbConnectionPoolV2::for_tests())
+            .core_client(core.into())
+            .build();
+        let db_pool = app.db_pool();
+
+        // Setup tests data
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+
+        let (timetable, train_schedule_set) =
+            create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
+        create_fast_rolling_stock(&mut db_pool.get_ok(), "R2D2").await;
         create_rolling_stock_with_energy_sources(
             &mut app.db_pool().get_ok(),
             "exception_rolling_stock",
         )
         .await;
-        paced_train_response
-            .train_schedule
-            .paced
-            .as_mut()
-            .unwrap()
-            .exceptions
-            .push(PacedTrainException {
-                key: "change_rolling_stock".to_string(),
-                exception_type: ExceptionType::Modified {
-                    occurrence_index: 2,
-                },
-                change_groups: TrainScheduleExceptionChangeGroups {
-                    rolling_stock: Some(RollingStockChangeGroup {
-                        rolling_stock_name: "exception_rolling_stock".to_string(),
-                        // This property is what make the simulation request different
-                        // hence producing a different simulation
-                        comfort: Comfort::AirConditioning,
-                    }),
-                    ..Default::default()
-                },
-                ..Default::default()
-            });
-        // Add one exception with a different path whose path item don’t exists
-        // Should result in a pathfinding error
-        paced_train_response
-            .train_schedule
-            .paced
-            .as_mut()
-            .unwrap()
-            .exceptions
-            .push(PacedTrainException {
-                key: "unknown_path_item".to_string(),
-                change_groups: TrainScheduleExceptionChangeGroups {
-                    path_and_schedule: Some(PathAndScheduleChangeGroup {
-                        path: vec![
-                            PathItem::new_operational_point("unknown_origin"),
-                            PathItem::new_operational_point("unknown_destination"),
-                        ],
-                        schedule: vec![],
-                        margins: schemas::train_schedule::Margins {
-                            boundaries: vec![],
-                            values: vec![MarginValue::MinPer100Km(2.0_f64)],
-                        },
-                        power_restrictions: vec![],
-                    }),
-                    ..Default::default()
-                },
-                ..Default::default()
-            });
-        let request = app
-            .put(format!("/train_schedules/{paced_train_id}").as_str())
-            .json(&json!(paced_train_response.train_schedule));
-        app.fetch(request)
+
+        let train_schedule = TrainSchedule {
+            train_occurrence: schemas::TrainOccurrence::fake(),
+            paced: Some(Paced {
+                time_window: Duration::hours(1).try_into().unwrap(),
+                interval: Duration::minutes(15).try_into().unwrap(),
+                exceptions: vec![],
+            }),
+        };
+        let train_schedule: TrainScheduleChangeset = train_schedule.into();
+        let train_schedule = train_schedule
+            .train_schedule_set_id(train_schedule_set.id)
+            .create(&mut db_pool.get_ok())
             .await
-            .assert_status(StatusCode::NO_CONTENT);
+            .expect("Failed to create train schedule");
+
+        // Add one exception which will not change the simulation from base
+        let _exception_1 = create_train_schedule_exception(
+            &mut db_pool.get_ok(),
+            timetable.id,
+            train_schedule.id,
+            None,
+            Some("change_train_name".to_string()),
+            Some(TrainScheduleExceptionChangeGroups {
+                train_name: Some(TrainNameChangeGroup {
+                    value: "exception_name_but_same_simulation".into(),
+                }),
+                ..Default::default()
+            }),
+        )
+        .await;
+
+        // Add one exception which will change the simulation from base
+        let _exception_2 = create_train_schedule_exception(
+            &mut db_pool.get_ok(),
+            timetable.id,
+            train_schedule.id,
+            None,
+            Some("change_initial_speed".to_string()),
+            Some(TrainScheduleExceptionChangeGroups {
+                initial_speed: Some(InitialSpeedChangeGroup { value: 1.23 }),
+                ..Default::default()
+            }),
+        )
+        .await;
+
+        // Add one exception which will change the simulation from base with another rolling stock
+        let _exception_3 = create_train_schedule_exception(
+            &mut db_pool.get_ok(),
+            timetable.id,
+            train_schedule.id,
+            Some(2),
+            Some("change_rolling_stock".to_string()),
+            Some(TrainScheduleExceptionChangeGroups {
+                rolling_stock: Some(RollingStockChangeGroup {
+                    rolling_stock_name: "exception_rolling_stock".to_string(),
+                    // This property is what make the simulation request different
+                    // hence producing a different simulation
+                    comfort: Comfort::AirConditioning,
+                }),
+                ..Default::default()
+            }),
+        )
+        .await;
+
+        // Add one exception with a different path whose path item don’t exists
+        let _exception_3 = create_train_schedule_exception(
+            &mut db_pool.get_ok(),
+            timetable.id,
+            train_schedule.id,
+            None,
+            Some("unknown_path_item".to_string()),
+            Some(TrainScheduleExceptionChangeGroups {
+                path_and_schedule: Some(PathAndScheduleChangeGroup {
+                    path: vec![
+                        PathItem::new_operational_point("unknown_origin"),
+                        PathItem::new_operational_point("unknown_destination"),
+                    ],
+                    schedule: vec![],
+                    margins: schemas::train_schedule::Margins {
+                        boundaries: vec![],
+                        values: vec![MarginValue::MinPer100Km(2.0_f64)],
+                    },
+                    power_restrictions: vec![],
+                }),
+                ..Default::default()
+            }),
+        )
+        .await;
+
         let request = app
             .post("/train_schedules/simulation_summary")
             .json(&json!({
-                "infra_id": infra_id,
-                "ids": vec![paced_train_id],
+                "infra_id": small_infra.id,
+                "timetable_id": timetable.id,
+                "ids": vec![train_schedule.id],
             }));
 
         let mut response: HashMap<i64, TrainScheduleSummaryResponse> = app
@@ -2547,7 +2556,7 @@ mod tests {
         let TrainScheduleSummaryResponse {
             train_schedule,
             exceptions,
-        } = response.remove(&paced_train_id).unwrap();
+        } = response.remove(&train_schedule.id).unwrap();
         assert_eq!(
             train_schedule,
             SummaryResponse::Success {
@@ -2627,10 +2636,12 @@ mod tests {
     async fn paced_train_simulation_summary_not_found() {
         let (app, infra_id, _paced_train_id, _exception) =
             app_infra_id_paced_train_id_for_simulation_tests().await;
+        let timetable = create_timetable(&mut app.db_pool().get_ok()).await;
         let request = app
             .post("/train_schedules/simulation_summary")
             .json(&json!({
                 "infra_id": infra_id,
+                "timetable_id": timetable.id,
                 "ids": vec![0],
             }));
         let response: InternalError = app
