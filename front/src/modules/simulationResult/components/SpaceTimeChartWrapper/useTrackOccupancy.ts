@@ -95,10 +95,12 @@ function getOperationalPointReference(
  */
 const useTrackOccupancy = ({
   infraId,
+  timetableId,
   timetableItemProjections,
   pathOperationalPoints,
 }: {
   infraId: number;
+  timetableId: number;
   timetableItemProjections: TrainSpaceTimeData[];
   pathOperationalPoints: PathOperationalPoint[];
 }): {
@@ -194,6 +196,7 @@ const useTrackOccupancy = ({
           ? {
               operational_point_reference: opRef,
               infra_id: infraId,
+              timetable_id: timetableId,
               train_schedule_ids: pacedTrainIds.map(extractEditoastIdFromPacedTrainId),
               use_simulation: isSimulationEnabled,
             }
