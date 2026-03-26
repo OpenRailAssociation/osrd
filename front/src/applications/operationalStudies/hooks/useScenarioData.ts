@@ -21,7 +21,7 @@ type ScenarioBroadcastMessage =
   | { type: 'removeTimetableItems'; timetableItemIds: number[] }
   | { type: 'setTimetableItemDepartureTime'; timetableItemId: number; newDeparture: Date };
 
-const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
+const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetableId: number) => {
   const dispatch = useAppDispatch();
 
   const [timetableItems, setTimetableItems] = useState<TimetableItem[]>();
@@ -80,6 +80,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
     updateSimulatedTimetableItemDepartureTime,
   } = useLazySimulateTrains({
     infraId,
+    timetableId,
     electricalProfileSetId: scenario.electrical_profile_set_id,
     rollingStocks,
     onProgress: (summaries) => {
