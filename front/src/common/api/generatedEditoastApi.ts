@@ -2719,6 +2719,7 @@ export type PostTrainSchedulesTrackOccupancyApiArg = {
     electrical_profile_set_id?: number | null;
     infra_id: number;
     operational_point_reference: OperationalPointReference;
+    timetable_id: number;
     train_schedule_ids: number[];
     use_simulation: boolean;
   };
