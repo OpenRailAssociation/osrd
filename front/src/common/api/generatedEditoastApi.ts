@@ -2692,6 +2692,7 @@ export type PostTrainSchedulesSimulationSummaryApiArg = {
     electrical_profile_set_id?: number | null;
     ids: number[];
     infra_id: number;
+    timetable_id: number;
   };
 };
 export type PostTrainSchedulesTrackOccupancyApiResponse =

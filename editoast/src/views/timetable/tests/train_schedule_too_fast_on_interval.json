@@ -8,6 +8,7 @@
         {
             "id": "idA",
             "location": {
+                "type": "operational_point_part_reference",
                 "operational_point": {
                     "uic": 87700000,
                     "secondary_code": "BV",
