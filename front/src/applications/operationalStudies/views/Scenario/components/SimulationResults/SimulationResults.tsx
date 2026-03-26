@@ -114,6 +114,7 @@ const SimulationResults = ({
     updateTrackOccupanciesOnDrag: handleTrainDragInTrackOccupancy,
   } = useTrackOccupancy({
     infraId,
+    timetableId,
     pathfindingHasFailed: projectionData?.pathfindingStatus === 'failed',
     pathOperationalPoints: filteredOperationalPoints,
     timetableItemProjections,
