@@ -4399,6 +4399,7 @@ paths:
               - train_schedule_ids
               - operational_point_reference
               - infra_id
+              - timetable_id
               - use_simulation
               properties:
                 electrical_profile_set_id:
@@ -4411,6 +4412,9 @@ paths:
                   format: int64
                 operational_point_reference:
                   $ref: '#/components/schemas/OperationalPointReference'
+                timetable_id:
+                  type: integer
+                  format: int64
                 train_schedule_ids:
                   type: array
                   items:

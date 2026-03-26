@@ -1204,6 +1204,7 @@ pub(in crate::views) struct TrackOccupancyForm {
     train_schedule_ids: Vec<i64>,
     operational_point_reference: OperationalPointReference,
     infra_id: i64,
+    timetable_id: i64,
     electrical_profile_set_id: Option<i64>,
     use_simulation: bool,
 }
@@ -1252,6 +1253,7 @@ pub(in crate::views) async fn track_occupancy(
         train_schedule_ids,
         operational_point_reference,
         infra_id,
+        timetable_id,
         electrical_profile_set_id,
         use_simulation,
     }): Json<TrackOccupancyForm>,
@@ -1280,17 +1282,32 @@ pub(in crate::views) async fn track_occupancy(
     let conn = &mut db_pool.get().await?;
 
     let train_schedules: Vec<models::TrainSchedule> =
-        models::TrainSchedule::retrieve_batch_or_fail(conn, train_schedule_ids, |missing| {
-            TrainScheduleError::BatchNotFound {
+        models::TrainSchedule::retrieve_batch_or_fail(
+            conn,
+            train_schedule_ids.clone(),
+            |missing| TrainScheduleError::BatchNotFound {
                 count: missing.len(),
-            }
-        })
+            },
+        )
         .await?;
 
-    // Collect all occurrences from all paced trains using iter_occurrences()
+    let mut exceptions = TrainScheduleException::retrieve_exceptions_by_train_schedules(
+        conn,
+        timetable_id,
+        train_schedule_ids,
+    )
+    .await?
+    .into_iter()
+    .map_into::<schemas::TrainScheduleException>()
+    .into_group_map_by(|e| e.timetable_id);
+
     let (train_ids, trains): (Vec<_>, Vec<_>) = train_schedules
         .iter()
-        .flat_map(|train_schedule| train_schedule.iter_occurrences())
+        .flat_map(|train_schedule| {
+            train_schedule
+                .iter_occurrences_v2(&exceptions.remove(&train_schedule.id).unwrap_or_default())
+                .collect::<Vec<_>>()
+        })
         .unzip();
 
     let op_location =
@@ -1648,7 +1665,6 @@ mod tests {
     use schemas::fixtures::simple_created_exception_with_change_groups;
     use schemas::fixtures::simple_modified_exception_with_change_groups;
     use schemas::infra::Direction;
-    use schemas::paced_train::ExceptionType;
     use schemas::paced_train::InitialSpeedChangeGroup;
     use schemas::paced_train::Paced;
     use schemas::paced_train::PacedTrainException;
@@ -2743,7 +2759,7 @@ mod tests {
     }
 
     async fn init_paced_train_test(
-        exceptions: Vec<PacedTrainException>,
+        with_exception: bool,
         path: Vec<PathItem>,
         schedule: Vec<ScheduleItem>,
         operational_point_reference: OperationalPointReference,
@@ -2763,8 +2779,9 @@ mod tests {
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), "simulation_rolling_stock").await;
-        let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
-        let paced_train = models::TrainSchedule::default()
+        let (timetable, train_schedule_set) =
+            create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
+        let train_schedule = models::TrainSchedule::default()
             .into_changeset()
             .train_schedule_set_id(train_schedule_set.id)
             .rolling_stock_name(rolling_stock.name)
@@ -2772,17 +2789,27 @@ mod tests {
             .schedule(schedule)
             .interval(TimeDelta::try_minutes(15))
             .time_window(TimeDelta::try_hours(1))
-            .exceptions(exceptions)
             .create(&mut db_pool.get_ok())
             .await
             .expect("Failed to create paced train");
 
+        if with_exception {
+            TrainScheduleException::changeset()
+                .timetable_id(timetable.id)
+                .train_schedule_id(train_schedule.id)
+                .change_groups(TrainScheduleExceptionChangeGroups::default())
+                .create(&mut db_pool.get_ok())
+                .await
+                .expect("Failed to create exception");
+        }
+
         let request = app
             .post("/train_schedules/track_occupancy")
             .json(&TrackOccupancyForm {
-                train_schedule_ids: vec![paced_train.id],
+                train_schedule_ids: vec![train_schedule.id],
                 operational_point_reference,
                 infra_id: small_infra.id,
+                timetable_id: timetable.id,
                 electrical_profile_set_id: None,
                 use_simulation,
             });
@@ -2790,19 +2817,10 @@ mod tests {
         app.fetch(request).await
     }
 
-    #[rstest]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    #[case(vec![], 4)]
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    #[case(vec![
-        PacedTrainException { exception_type: ExceptionType::Created {}, ..Default::default()}], 5)
-    ]
-    async fn paced_train_track_occupancy(
-        #[case] exceptions: Vec<PacedTrainException>,
-        #[case] paced_trains: usize,
-    ) {
+    async fn paced_train_track_occupancy_without_exceptions() {
         let response = init_paced_train_test(
-            exceptions,
+            false,
             vec![
                 PathItem::new_operational_point("Mid_West_station"),
                 PathItem::new_operational_point("Mid_East_station"),
@@ -2825,13 +2843,42 @@ mod tests {
             item.local_track_name,
             Some(NonBlankString("V2".to_string()))
         );
-        assert_eq!(item.trains.len(), paced_trains);
+        assert_eq!(item.trains.len(), 4);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn paced_train_track_occupancy_with_exceptions() {
+        let response = init_paced_train_test(
+            true,
+            vec![
+                PathItem::new_operational_point("Mid_West_station"),
+                PathItem::new_operational_point("Mid_East_station"),
+            ],
+            vec![ScheduleItem::new_with_stop(
+                "Mid_East_station",
+                Duration::new(0, 0).expect("Failed to parse duration"),
+            )],
+            OperationalPointReference::Id {
+                operational_point: "Mid_West_station".into(),
+            },
+            true,
+        );
+        let track_occupancies: Vec<TrackSectionOccupancy> =
+            response.await.assert_status(StatusCode::OK).json_into();
+
+        assert_eq!(track_occupancies.len(), 1);
+        let item = &track_occupancies[0];
+        assert_eq!(
+            item.local_track_name,
+            Some(NonBlankString("V2".to_string()))
+        );
+        assert_eq!(item.trains.len(), 5);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn paced_train_returns_empty_track_occupancies() {
         let response = init_paced_train_test(
-            Vec::new(),
+            false,
             vec![
                 PathItem::new_operational_point("Mid_West_station"),
                 PathItem::new_operational_point("Mid_East_station"),
@@ -2889,7 +2936,7 @@ mod tests {
         #[case] use_simulation: bool,
     ) {
         let response = init_paced_train_test(
-            Vec::new(),
+            false,
             vec![
                 new_op_with_trigram_and_local_track_name("Mid_West_station", "MWS", None, None),
                 new_op_with_trigram_and_local_track_name(
@@ -2951,7 +2998,7 @@ mod tests {
             ),
         };
         let response = init_paced_train_test(
-            Vec::new(),
+            false,
             vec![
                 first_path_item,
                 PathItem::new_operational_point("Mid_East_station"),
@@ -2976,7 +3023,7 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn track_occupancy_no_sim_no_arrival_returns_empty() {
         let response = init_paced_train_test(
-            Vec::new(),
+            false,
             vec![
                 PathItem::new_operational_point("Mid_West_station"),
                 PathItem::new_operational_point("Mid_East_station"),
@@ -3123,7 +3170,7 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn track_occupancy_op_in_db_but_not_in_path_items() {
         let response = init_paced_train_test(
-            Vec::new(),
+            false,
             vec![
                 PathItem::new_operational_point("South_West_station"),
                 PathItem::new_operational_point("Mid_East_station"),
