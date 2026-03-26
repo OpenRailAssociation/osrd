@@ -93,6 +93,7 @@ const useLinkedTrainSearch = () => {
       const trainsSummaries = await postTrainSchedulesSimulationSummary({
         body: {
           infra_id: infraId,
+          timetable_id: timetableId,
           ids: trainsIds,
         },
       }).unwrap();
