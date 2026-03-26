@@ -12,6 +12,7 @@ const BATCH_SIZE = 20;
 type TrainSimulationLazyLoaderOptions = {
   dispatch: AppDispatch;
   infraId: number;
+  timetableId: number;
   electricalProfileSetId?: number;
   onProgress: (
     pacedTrainSummaries: Map<PacedTrainId, TrainScheduleSimulationSummaryResult>
@@ -81,6 +82,7 @@ export default class TrainSimulationLazyLoader {
             {
               body: {
                 infra_id: this.options.infraId,
+                timetable_id: this.options.timetableId,
                 ids: editoastIds,
                 electrical_profile_set_id: this.options.electricalProfileSetId,
               },

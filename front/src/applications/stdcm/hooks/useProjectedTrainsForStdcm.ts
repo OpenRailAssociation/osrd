@@ -97,6 +97,7 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
   // Progressive loading of the trains
   const { simulatedTrainsById, simulateTimetableItems } = useLazySimulateTrains({
     infraId,
+    timetableId,
     electricalProfileSetId,
     rollingStocks,
     onProgress: (results) => {

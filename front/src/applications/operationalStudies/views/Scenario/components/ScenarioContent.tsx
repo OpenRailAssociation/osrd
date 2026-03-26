@@ -46,7 +46,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
   const dispatch = useAppDispatch();
   const { scenario, sandboxId } = useScenarioContext();
 
-  const { infraId, isInfraLoaded } = useScenarioContext();
+  const { infraId, timetableId, isInfraLoaded } = useScenarioContext();
 
   const [displayTimetableItemManagement, setDisplayTimetableItemManagement] = useState<string>(
     MANAGE_TIMETABLE_ITEM_TYPES.none
@@ -67,7 +67,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
     updateTrainDepartureTime,
     selectedTimetableItemIds,
     setSelectedTimetableItemIds,
-  } = useScenarioData(scenario, infraId);
+  } = useScenarioData(scenario, infraId, timetableId);
 
   const {
     showOnlySelectedTrain,
