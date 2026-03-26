@@ -128,22 +128,22 @@ export type Items2 = {
 };
 export type Comfort = 'STANDARD' | 'AIR_CONDITIONING' | 'HEATING';
 export type ComponentsSchemasTransformTimetableResponsePropertiesPacedTrainsItemsAllOf0PropertiesCategoryOneOf1 =
-    | {
-        main_category:
-          | 'HIGH_SPEED_TRAIN'
-          | 'INTERCITY_TRAIN'
-          | 'REGIONAL_TRAIN'
-          | 'NIGHT_TRAIN'
-          | 'COMMUTER_TRAIN'
-          | 'FREIGHT_TRAIN'
-          | 'FAST_FREIGHT_TRAIN'
-          | 'TRAM_TRAIN'
-          | 'TOURISTIC_TRAIN'
-          | 'WORK_TRAIN';
-      }
-    | {
-        sub_category_code: string;
-      };
+  | {
+      main_category:
+        | 'HIGH_SPEED_TRAIN'
+        | 'INTERCITY_TRAIN'
+        | 'REGIONAL_TRAIN'
+        | 'NIGHT_TRAIN'
+        | 'COMMUTER_TRAIN'
+        | 'FREIGHT_TRAIN'
+        | 'FAST_FREIGHT_TRAIN'
+        | 'TRAM_TRAIN'
+        | 'TOURISTIC_TRAIN'
+        | 'WORK_TRAIN';
+    }
+  | {
+      sub_category_code: string;
+    };
 export type TransformTimetableResponse = {
   /** List of paced trains */
   paced_trains: ({

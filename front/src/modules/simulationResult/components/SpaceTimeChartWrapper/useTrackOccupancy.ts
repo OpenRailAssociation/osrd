@@ -94,10 +94,12 @@ function getOperationalPointReference(
  */
 const useTrackOccupancy = ({
   infraId,
+  timetableId,
   timetableItemProjections,
   pathOperationalPoints,
 }: {
   infraId: number;
+  timetableId: number;
   timetableItemProjections: TrainSpaceTimeData[];
   pathOperationalPoints: PathOperationalPoint[];
 }): {
@@ -190,6 +192,7 @@ const useTrackOccupancy = ({
           ? {
               operational_point_reference: opRef,
               infra_id: infraId,
+              timetable_id: timetableId,
               train_schedule_ids: trainScheduleIds,
               use_simulation: isSimulationEnabled,
             }
@@ -333,7 +336,10 @@ const useTrackOccupancy = ({
           return withLabels;
         });
 
-        const virtualTracks: Track[] = [...virtualTrackIds].map((id) => ({ id, name: id }));
+        const virtualTracks: Track[] = [...virtualTrackIds].map((id) => ({
+          id,
+          name: id,
+        }));
 
         res.push({
           waypointId,
@@ -530,14 +536,19 @@ const useTrackOccupancy = ({
       (op) => !(tracksState.data || {})[op.waypointId]
     );
     const loadAllTracks = async (
-      opsWithReferences: { waypointId: string; reference: OperationalPointReference }[]
+      opsWithReferences: {
+        waypointId: string;
+        reference: OperationalPointReference;
+      }[]
     ) => {
       setTracksState((state) => ({ type: 'loading', data: state.data || {} }));
 
       try {
         const data = await postInfraByInfraIdMatchOperationalPoints({
           infraId,
-          body: { operational_point_references: opsWithReferences.map((o) => o.reference) },
+          body: {
+            operational_point_references: opsWithReferences.map((o) => o.reference),
+          },
         }).unwrap();
 
         if (aborted) return;
@@ -748,7 +759,10 @@ const useTrackOccupancy = ({
             } else if (itemLocation.operational_point.type === 'trigram') {
               trainsStationLabels[timetableItem.id] = {
                 ...trainsStationLabels[timetableItem.id],
-                [side]: { type: 'label', label: itemLocation.operational_point.trigram },
+                [side]: {
+                  type: 'label',
+                  label: itemLocation.operational_point.trigram,
+                },
               };
             } else if (itemLocation.operational_point.type === 'uic') {
               requests.push({
