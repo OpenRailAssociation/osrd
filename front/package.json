@@ -61,7 +61,7 @@
     "geojson": "^0.5.0",
     "history": "^5.3.0",
     "html2canvas": "^1.4.1",
-    "i18next": "^25.8.19",
+    "i18next": "^25.10.4",
     "i18next-browser-languagedetector": "^8.2.1",
     "i18next-http-backend": "^3.0.2",
     "immer": "^11.1.4",
