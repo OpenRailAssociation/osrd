@@ -184,6 +184,7 @@ const TypeAndPath = ({
       setDisplayTypeAndPath?.(false);
       launchPathfinding(pathSteps);
       setInputText('');
+      setSearch('');
     }
   };
 
