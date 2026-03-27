@@ -128,7 +128,7 @@ impl _DocumentField<Document, Vec<u8>, database::tables::osrd_infra_document::da
         )
     }
 }
-#[derive(diesel::Queryable, Debug)]
+#[derive(diesel::Queryable, diesel::Selectable, Debug)]
 #[diesel(table_name = database::tables::osrd_infra_document)]
 struct DocumentRow {
     #[diesel(column_name = "id")]
@@ -284,6 +284,7 @@ impl crate::prelude::Retrieve<(String)> for Document {
         content_type: (String),
     ) -> std::result::Result<Option<Document>, Self::Error> {
         use diesel::prelude::*;
+        use diesel::SelectableHelper as _;
         use diesel_async::RunQueryDsl;
         use database::tables::osrd_infra_document::dsl;
         use std::ops::DerefMut;
@@ -291,7 +292,7 @@ impl crate::prelude::Retrieve<(String)> for Document {
             .record("query_id", tracing::field::debug(&content_type));
         dsl::osrd_infra_document
             .filter(dsl::content_type.eq(content_type))
-            .select((dsl::id, dsl::content_type, dsl::data))
+            .select(DocumentRow::as_select())
             .first::<DocumentRow>(conn.write().await.deref_mut())
             .await
             .map(Document::from)
@@ -313,13 +314,14 @@ impl crate::prelude::Retrieve<(i64)> for Document {
         id_: (i64),
     ) -> std::result::Result<Option<Document>, Self::Error> {
         use diesel::prelude::*;
+        use diesel::SelectableHelper as _;
         use diesel_async::RunQueryDsl;
         use database::tables::osrd_infra_document::dsl;
         use std::ops::DerefMut;
         tracing::Span::current().record("query_id", tracing::field::debug(&id_));
         dsl::osrd_infra_document
             .filter(dsl::id.eq(id_))
-            .select((dsl::id, dsl::content_type, dsl::data))
+            .select(DocumentRow::as_select())
             .first::<DocumentRow>(conn.write().await.deref_mut())
             .await
             .map(Document::from)
@@ -511,6 +513,7 @@ impl crate::prelude::List for Document {
         use diesel::ExpressionMethods as _;
         use diesel::NullableExpressionMethods as _;
         use diesel::QueryDsl as _;
+        use diesel::SelectableHelper as _;
         use diesel_async::RunQueryDsl as _;
         use futures_util::TryStreamExt as _;
         use database::tables::osrd_infra_document::dsl;
@@ -550,7 +553,7 @@ impl crate::prelude::List for Document {
             query = query.limit(limit);
         }
         let stream = query
-            .select((dsl::id, dsl::content_type, dsl::data))
+            .select(DocumentRow::as_select())
             .load_stream::<DocumentRow>(conn.write().await.deref_mut())
             .await
             .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?;
@@ -778,6 +781,7 @@ impl crate::prelude::RetrieveBatchUnchecked<(String)> for Document {
         use crate::prelude::Model;
         use database::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
+        use diesel::SelectableHelper as _;
         use diesel_async::RunQueryDsl;
         use futures_util::TryStreamExt;
         use std::ops::DerefMut;
@@ -796,7 +800,7 @@ impl crate::prelude::RetrieveBatchUnchecked<(String)> for Document {
                         query = query.or_filter(dsl::content_type.eq(content_type));
                     }
                     let stream = query
-                        .select((dsl::id, dsl::content_type, dsl::data))
+                        .select(DocumentRow::as_select())
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
                         .map_err(|e| Self::Error::from(
@@ -829,6 +833,7 @@ impl crate::prelude::RetrieveBatchUnchecked<(String)> for Document {
         use crate::prelude::Model;
         use database::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
+        use diesel::SelectableHelper as _;
         use diesel_async::RunQueryDsl;
         use futures_util::TryStreamExt;
         use std::ops::DerefMut;
@@ -847,7 +852,7 @@ impl crate::prelude::RetrieveBatchUnchecked<(String)> for Document {
                         query = query.or_filter(dsl::content_type.eq(content_type));
                     }
                     let stream = query
-                        .select((dsl::id, dsl::content_type, dsl::data))
+                        .select(DocumentRow::as_select())
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
                         .map_err(|e| Self::Error::from(
@@ -886,6 +891,7 @@ impl crate::prelude::RetrieveBatchUnchecked<(i64)> for Document {
         use crate::prelude::Model;
         use database::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
+        use diesel::SelectableHelper as _;
         use diesel_async::RunQueryDsl;
         use futures_util::TryStreamExt;
         use std::ops::DerefMut;
@@ -904,7 +910,7 @@ impl crate::prelude::RetrieveBatchUnchecked<(i64)> for Document {
                         query = query.or_filter(dsl::id.eq(id_));
                     }
                     let stream = query
-                        .select((dsl::id, dsl::content_type, dsl::data))
+                        .select(DocumentRow::as_select())
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
                         .map_err(|e| Self::Error::from(
@@ -937,6 +943,7 @@ impl crate::prelude::RetrieveBatchUnchecked<(i64)> for Document {
         use crate::prelude::Model;
         use database::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
+        use diesel::SelectableHelper as _;
         use diesel_async::RunQueryDsl;
         use futures_util::TryStreamExt;
         use std::ops::DerefMut;
@@ -955,7 +962,7 @@ impl crate::prelude::RetrieveBatchUnchecked<(i64)> for Document {
                         query = query.or_filter(dsl::id.eq(id_));
                     }
                     let stream = query
-                        .select((dsl::id, dsl::content_type, dsl::data))
+                        .select(DocumentRow::as_select())
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
                         .map_err(|e| Self::Error::from(

@@ -268,7 +268,6 @@ impl ModelConfig {
                     table_mod: self.table.clone(),
                     row: self.row.name.clone(),
                     identifier: identifier.clone(),
-                    columns: self.columns().cloned().collect(),
                     error: self.errors.retrieve.clone(),
                 }
                 .tokens_if(self.impl_plan.ops.read)
@@ -356,7 +355,6 @@ impl ModelConfig {
             table_mod: self.table.clone(),
             primary_key: self.get_primary_field_column(),
             row: self.row.name.clone(),
-            columns: self.columns().cloned().collect(),
             error: self.errors.list.clone(),
         }
         .tokens_if(self.impl_plan.list)
@@ -418,7 +416,6 @@ impl ModelConfig {
                     chunk_size_limit: self.batch_chunk_size_limit,
                     row: self.row.name.clone(),
                     identifier: identifier.clone(),
-                    columns: self.columns().cloned().collect(),
                     error: self.errors.retrieve.clone(),
                 }
                 .tokens_if(self.impl_plan.batch_ops.read)
