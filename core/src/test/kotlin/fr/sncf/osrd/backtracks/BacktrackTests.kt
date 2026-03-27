@@ -1,6 +1,8 @@
 package fr.sncf.osrd.backtracks
 
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.api.RJSRoutingRequirement
+import fr.sncf.osrd.api.RJSRoutingZoneRequirement
 import fr.sncf.osrd.api.RangeValues
 import fr.sncf.osrd.api.SignalCriticalPosition
 import fr.sncf.osrd.api.path_properties.makePathPropResponse
@@ -40,7 +42,6 @@ import fr.sncf.osrd.utils.units.seconds
 import fr.sncf.osrd.utils.units.sumDistances
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import org.junit.jupiter.api.Disabled
 
 /**
  * This class takes one fixed path that contains backtracks, and tests most parts of the codebase to
@@ -584,84 +585,361 @@ class BacktrackTests {
     }
 
     @Test
-    @Disabled("Not working yet")
     fun testSimulationBacktrackingOverNothing() {
         val path = buildPathBacktrackingOverNothing(infra, rollingStock.length.meters)
-        // Smoke test, we only test for uncaught exceptions and failed asserts
-        runStandaloneSimulation(
-            infra = infra,
-            trainPath = path,
-            rollingStock = REALISTIC_FAST_TRAIN,
-            comfort = Comfort.STANDARD,
-            constraintDistribution = RJSAllowanceDistribution.LINEAR,
-            speedLimitTag = null,
-            powerRestrictions = distanceRangeMapOf(),
-            useElectricalProfiles = false,
-            useSpeedLimits = true,
-            timeStep = 2.0,
-            schedule =
-                listOf(
-                    SimulationScheduleItem(Offset(9700.meters), null, 60.seconds, SHORT_SLIP_STOP),
-                    SimulationScheduleItem(Offset(18700.meters), null, 0.seconds, OPEN),
+        val resp =
+            runStandaloneSimulation(
+                infra = infra,
+                trainPath = path,
+                rollingStock = REALISTIC_FAST_TRAIN,
+                comfort = Comfort.STANDARD,
+                constraintDistribution = RJSAllowanceDistribution.LINEAR,
+                speedLimitTag = null,
+                powerRestrictions = distanceRangeMapOf(),
+                useElectricalProfiles = false,
+                useSpeedLimits = true,
+                timeStep = 2.0,
+                schedule =
+                    listOf(
+                        SimulationScheduleItem(
+                            Offset(9700.meters),
+                            null,
+                            60.seconds,
+                            SHORT_SLIP_STOP,
+                        ),
+                        SimulationScheduleItem(Offset(18700.meters), null, 0.seconds, OPEN),
+                    ),
+                initialSpeed = 0.0,
+                margins = RangeValues(),
+                pathItemPositions = listOf(Offset(9700.meters), Offset(18700.meters)),
+            )
+        assertEquals(Offset(18700.meters), resp.finalOutput.positions.last())
+
+        val backtrackingArrivalTime = 301.914.seconds
+        val backtrackingDepartureTime = backtrackingArrivalTime + 60.seconds
+        assertEquals(backtrackingArrivalTime, resp.finalOutput.pathItemTimes.first())
+        val finalTime = 731.665.seconds
+        assertEquals(finalTime, resp.finalOutput.pathItemTimes.last())
+        assertEquals(finalTime, resp.finalOutput.times.last())
+        assertEquals(
+            listOf(
+                RJSRoutingRequirement( // regular route at the start of the path
+                    "rt.bf.a->det.a3",
+                    0.seconds,
+                    listOf(
+                        RJSRoutingZoneRequirement(
+                            "zone.[det.a1:INCREASING, det.a2:DECREASING]",
+                            "INCREASING:det.a1",
+                            "INCREASING:det.a2",
+                            mapOf(),
+                            126.463.seconds, // end of zone occupation
+                        ),
+                        RJSRoutingZoneRequirement(
+                            "zone.[det.a2:INCREASING, det.a3:DECREASING]",
+                            "INCREASING:det.a2",
+                            "INCREASING:det.a3",
+                            mapOf(),
+                            182.153.seconds, // end of zone occupation
+                        ),
+                    ),
                 ),
-            initialSpeed = 0.0,
-            margins = RangeValues(),
-            pathItemPositions = listOf(Offset(9700.meters), Offset(18700.meters)),
+                RJSRoutingRequirement( // route occupied before backtracking
+                    "rt.det.a3->bf.c",
+                    108.618.seconds, // 1 signal upstream before entering route
+                    listOf(
+                        RJSRoutingZoneRequirement(
+                            "zone.[det.a3:INCREASING, det.b3:INCREASING, det.c1:DECREASING]",
+                            "INCREASING:det.a3",
+                            "INCREASING:det.c1",
+                            mapOf("switch" to "A_B1"),
+                            224.235.seconds, // end of zone occupation
+                        ),
+                        RJSRoutingZoneRequirement(
+                            "zone.[det.c1:INCREASING, det.c2:DECREASING]",
+                            "INCREASING:det.c1",
+                            "INCREASING:det.c2",
+                            mapOf(),
+                            backtrackingDepartureTime,
+                        ),
+                    ),
+                ),
+                RJSRoutingRequirement( // route occupied after backtracking
+                    "rt.bf.c->det.c1",
+                    backtrackingDepartureTime,
+                    listOf(
+                        RJSRoutingZoneRequirement(
+                            "zone.[det.c1:INCREASING, det.c2:DECREASING]",
+                            "DECREASING:det.c2",
+                            "DECREASING:det.c1",
+                            mapOf(),
+                            533.269.seconds, // end of zone occupation
+                        )
+                    ),
+                ),
+                RJSRoutingRequirement( // regular last route of a path
+                    "rt.det.c1->bf.b",
+                    // first seen signal is the entry (should have been 1 signal upstream if it had
+                    // been seen)
+                    506.655.seconds,
+                    listOf(
+                        RJSRoutingZoneRequirement(
+                            "zone.[det.a3:INCREASING, det.b3:INCREASING, det.c1:DECREASING]",
+                            "DECREASING:det.c1",
+                            "DECREASING:det.b3",
+                            mapOf("switch" to "A_B2"),
+                            580.905.seconds,
+                        ),
+                        RJSRoutingZoneRequirement(
+                            "zone.[det.b2:INCREASING, det.b3:DECREASING]",
+                            "DECREASING:det.b3",
+                            "DECREASING:det.b2",
+                            mapOf(),
+                            637.857.seconds,
+                        ),
+                        RJSRoutingZoneRequirement(
+                            "zone.[det.b1:INCREASING, det.b2:DECREASING]",
+                            "DECREASING:det.b2",
+                            "DECREASING:det.b1",
+                            mapOf(),
+                            finalTime,
+                        ),
+                    ),
+                ),
+            ),
+            resp.finalOutput.routingRequirements,
         )
     }
 
     @Test
-    @Disabled("Not working yet")
     fun testSimulationBacktrackingOverRouteDelimiter() {
         val path = buildPathBacktrackingOverRouteDelimiter(infra, rollingStock.length.meters)
-        // Smoke test, we only test for uncaught exceptions and failed asserts
-        runStandaloneSimulation(
-            infra = infra,
-            trainPath = path,
-            rollingStock = REALISTIC_FAST_TRAIN,
-            comfort = Comfort.STANDARD,
-            constraintDistribution = RJSAllowanceDistribution.LINEAR,
-            speedLimitTag = null,
-            powerRestrictions = distanceRangeMapOf(),
-            useElectricalProfiles = false,
-            useSpeedLimits = true,
-            timeStep = 2.0,
-            schedule =
-                listOf(
-                    SimulationScheduleItem(Offset(8000.meters), null, 60.seconds, SHORT_SLIP_STOP),
-                    SimulationScheduleItem(Offset(15300.meters), null, 0.seconds, OPEN),
+        val resp =
+            runStandaloneSimulation(
+                infra = infra,
+                trainPath = path,
+                rollingStock = REALISTIC_FAST_TRAIN,
+                comfort = Comfort.STANDARD,
+                constraintDistribution = RJSAllowanceDistribution.LINEAR,
+                speedLimitTag = null,
+                powerRestrictions = distanceRangeMapOf(),
+                useElectricalProfiles = false,
+                useSpeedLimits = true,
+                timeStep = 2.0,
+                schedule =
+                    listOf(
+                        SimulationScheduleItem(
+                            Offset(8000.meters),
+                            null,
+                            60.seconds,
+                            SHORT_SLIP_STOP,
+                        ),
+                        SimulationScheduleItem(Offset(15300.meters), null, 0.seconds, OPEN),
+                    ),
+                initialSpeed = 0.0,
+                margins = RangeValues(),
+                pathItemPositions = listOf(Offset(8000.meters), Offset(15300.meters)),
+            )
+        assertEquals(Offset(15300.meters), resp.finalOutput.positions.last())
+
+        val backtrackingArrivalTime = 269.094.seconds
+        val backtrackingDepartureTime = backtrackingArrivalTime + 60.seconds
+        assertEquals(backtrackingArrivalTime, resp.finalOutput.pathItemTimes.first())
+        val finalTime = 748.193.seconds
+        assertEquals(finalTime, resp.finalOutput.pathItemTimes.last())
+        assertEquals(finalTime, resp.finalOutput.times.last())
+        assertEquals(
+            listOf(
+                RJSRoutingRequirement( // regular route at the start of the path
+                    "rt.bf.a->det.a3",
+                    0.seconds,
+                    listOf(
+                        RJSRoutingZoneRequirement(
+                            "zone.[det.a1:INCREASING, det.a2:DECREASING]",
+                            "INCREASING:det.a1",
+                            "INCREASING:det.a2",
+                            mapOf(),
+                            126.463.seconds, // end of zone occupation
+                        ),
+                        RJSRoutingZoneRequirement(
+                            "zone.[det.a2:INCREASING, det.a3:DECREASING]",
+                            "INCREASING:det.a2",
+                            "INCREASING:det.a3",
+                            mapOf(),
+                            186.632.seconds, // end of zone occupation
+                        ),
+                    ),
                 ),
-            initialSpeed = 0.0,
-            margins = RangeValues(),
-            pathItemPositions = listOf(Offset(8000.meters), Offset(15300.meters)),
+                RJSRoutingRequirement( // route occupied before backtracking
+                    "rt.det.a3->bf.c",
+                    108.618.seconds, // 1 signal upstream before entering route
+                    listOf(
+                        RJSRoutingZoneRequirement(
+                            "zone.[det.a3:INCREASING, det.b3:INCREASING, det.c1:DECREASING]",
+                            "INCREASING:det.a3",
+                            "INCREASING:det.c1",
+                            mapOf("switch" to "A_B1"),
+                            backtrackingDepartureTime,
+                        ),
+                        RJSRoutingZoneRequirement(
+                            "zone.[det.c1:INCREASING, det.c2:DECREASING]",
+                            "INCREASING:det.c1",
+                            "INCREASING:det.c2",
+                            mapOf(),
+                            backtrackingDepartureTime,
+                        ),
+                    ),
+                ),
+                RJSRoutingRequirement( // route occupied after backtracking and last route of path
+                    "rt.det.c1->bf.b",
+                    backtrackingDepartureTime,
+                    listOf(
+                        RJSRoutingZoneRequirement(
+                            "zone.[det.a3:INCREASING, det.b3:INCREASING, det.c1:DECREASING]",
+                            "DECREASING:det.c1",
+                            "DECREASING:det.b3",
+                            mapOf("switch" to "A_B2"),
+                            556.635.seconds,
+                        ),
+                        RJSRoutingZoneRequirement(
+                            "zone.[det.b2:INCREASING, det.b3:DECREASING]",
+                            "DECREASING:det.b3",
+                            "DECREASING:det.b2",
+                            mapOf(),
+                            654.382.seconds, // impacted by short-slip stop slowdown
+                        ),
+                        RJSRoutingZoneRequirement(
+                            "zone.[det.b1:INCREASING, det.b2:DECREASING]",
+                            "DECREASING:det.b2",
+                            "DECREASING:det.b1",
+                            mapOf(),
+                            finalTime,
+                        ),
+                    ),
+                ),
+            ),
+            resp.finalOutput.routingRequirements,
         )
     }
 
     @Test
-    @Disabled("Not working yet")
     fun testSimulationBacktrackingShortlyAfterRouteDelimiter() {
         val path =
             buildPathBacktrackingShortlyAfterRouteDelimiter(infra, rollingStock.length.meters)
-        // Smoke test, we only test for uncaught exceptions and failed asserts
-        runStandaloneSimulation(
-            infra = infra,
-            trainPath = path,
-            rollingStock = REALISTIC_FAST_TRAIN,
-            comfort = Comfort.STANDARD,
-            constraintDistribution = RJSAllowanceDistribution.LINEAR,
-            speedLimitTag = null,
-            powerRestrictions = distanceRangeMapOf(),
-            useElectricalProfiles = false,
-            useSpeedLimits = true,
-            timeStep = 2.0,
-            schedule =
-                listOf(
-                    SimulationScheduleItem(Offset(8400.meters), null, 60.seconds, STOP),
-                    SimulationScheduleItem(Offset(16400.meters), null, 0.seconds, OPEN),
+        val resp =
+            runStandaloneSimulation(
+                infra = infra,
+                trainPath = path,
+                rollingStock = REALISTIC_FAST_TRAIN,
+                comfort = Comfort.STANDARD,
+                constraintDistribution = RJSAllowanceDistribution.LINEAR,
+                speedLimitTag = null,
+                powerRestrictions = distanceRangeMapOf(),
+                useElectricalProfiles = false,
+                useSpeedLimits = true,
+                timeStep = 2.0,
+                schedule =
+                    listOf(
+                        SimulationScheduleItem(Offset(8400.meters), null, 60.seconds, STOP),
+                        SimulationScheduleItem(Offset(16400.meters), null, 0.seconds, OPEN),
+                    ),
+                initialSpeed = 0.0,
+                margins = RangeValues(),
+                pathItemPositions = listOf(Offset(8400.meters), Offset(16400.meters)),
+            )
+        assertEquals(Offset(16400.meters), resp.finalOutput.positions.last())
+
+        val backtrackingArrivalTime = 276.282.seconds
+        val backtrackingDepartureTime = backtrackingArrivalTime + 60.seconds
+        assertEquals(backtrackingArrivalTime, resp.finalOutput.pathItemTimes.first())
+        val finalTime = 688.374.seconds
+        assertEquals(finalTime, resp.finalOutput.pathItemTimes.last())
+        assertEquals(finalTime, resp.finalOutput.times.last())
+        assertEquals(
+            listOf(
+                RJSRoutingRequirement( // regular route at the start of the path
+                    "rt.bf.a->det.a3",
+                    0.seconds,
+                    listOf(
+                        RJSRoutingZoneRequirement(
+                            "zone.[det.a1:INCREASING, det.a2:DECREASING]",
+                            "INCREASING:det.a1",
+                            "INCREASING:det.a2",
+                            mapOf(),
+                            126.463.seconds, // end of zone occupation
+                        ),
+                        RJSRoutingZoneRequirement(
+                            "zone.[det.a2:INCREASING, det.a3:DECREASING]",
+                            "INCREASING:det.a2",
+                            "INCREASING:det.a3",
+                            mapOf(),
+                            184.631.seconds, // end of zone occupation
+                        ),
+                    ),
                 ),
-            initialSpeed = 0.0,
-            margins = RangeValues(),
-            pathItemPositions = listOf(Offset(8400.meters), Offset(16400.meters)),
+                RJSRoutingRequirement( // route occupied before backtracking
+                    "rt.det.a3->bf.c",
+                    108.618.seconds, // 1 signal upstream before entering route
+                    listOf(
+                        RJSRoutingZoneRequirement(
+                            "zone.[det.a3:INCREASING, det.b3:INCREASING, det.c1:DECREASING]",
+                            "INCREASING:det.a3",
+                            "INCREASING:det.c1",
+                            mapOf("switch" to "A_B1"),
+                            256.282.seconds, // end of zone occupation
+                        ),
+                        RJSRoutingZoneRequirement(
+                            "zone.[det.c1:INCREASING, det.c2:DECREASING]",
+                            "INCREASING:det.c1",
+                            "INCREASING:det.c2",
+                            mapOf(),
+                            backtrackingDepartureTime,
+                        ),
+                    ),
+                ),
+                RJSRoutingRequirement( // route occupied after backtracking
+                    "rt.bf.c->det.c1",
+                    backtrackingDepartureTime,
+                    listOf(
+                        RJSRoutingZoneRequirement(
+                            "zone.[det.c1:INCREASING, det.c2:DECREASING]",
+                            "DECREASING:det.c2",
+                            "DECREASING:det.c1",
+                            mapOf(),
+                            382.677.seconds, // end of zone occupation
+                        )
+                    ),
+                ),
+                RJSRoutingRequirement( // regular last route of a path
+                    "rt.det.c1->bf.b",
+                    // first seen signal is the entry, in sight when restarting after backtracking
+                    // and required 20 s before restart on closed signal
+                    backtrackingDepartureTime - 20.seconds,
+                    listOf(
+                        RJSRoutingZoneRequirement(
+                            "zone.[det.a3:INCREASING, det.b3:INCREASING, det.c1:DECREASING]",
+                            "DECREASING:det.c1",
+                            "DECREASING:det.b3",
+                            mapOf("switch" to "A_B2"),
+                            514.590.seconds,
+                        ),
+                        RJSRoutingZoneRequirement(
+                            "zone.[det.b2:INCREASING, det.b3:DECREASING]",
+                            "DECREASING:det.b3",
+                            "DECREASING:det.b2",
+                            mapOf(),
+                            588.374.seconds,
+                        ),
+                        RJSRoutingZoneRequirement(
+                            "zone.[det.b1:INCREASING, det.b2:DECREASING]",
+                            "DECREASING:det.b2",
+                            "DECREASING:det.b1",
+                            mapOf(),
+                            finalTime,
+                        ),
+                    ),
+                ),
+            ),
+            resp.finalOutput.routingRequirements,
         )
     }
 }

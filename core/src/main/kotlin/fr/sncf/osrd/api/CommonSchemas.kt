@@ -69,13 +69,13 @@ data class SignalCriticalPosition(
     val state: String,
 )
 
-class RJSRoutingRequirement(
+data class RJSRoutingRequirement(
     val route: String,
     @Json(name = "begin_time") val beginTime: TimeDelta,
     val zones: List<RJSRoutingZoneRequirement>,
 )
 
-class RJSRoutingZoneRequirement(
+data class RJSRoutingZoneRequirement(
     val zone: String,
     @Json(name = "entry_detector") val entryDetector: String,
     @Json(name = "exit_detector") val exitDetector: String,
