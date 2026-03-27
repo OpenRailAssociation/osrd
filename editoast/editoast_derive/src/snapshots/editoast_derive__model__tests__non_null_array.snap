@@ -1,6 +1,5 @@
 ---
 source: editoast_derive/src/model.rs
-assertion_line: 181
 ---
 // Source
 // -----------------------------------------------------------------------------
@@ -35,7 +34,7 @@ impl Timetable {
         database::tables::timetable::data,
     > = _TimetableField(core::marker::PhantomData);
 }
-#[derive(diesel::Queryable)]
+#[derive(diesel::Queryable, diesel::Selectable)]
 #[diesel(table_name = database::tables::timetable)]
 struct TimetableRow {
     #[diesel(column_name = "id")]
@@ -116,13 +115,14 @@ impl crate::prelude::Retrieve<(i64)> for Timetable {
         id: (i64),
     ) -> std::result::Result<Option<Timetable>, Self::Error> {
         use diesel::prelude::*;
+        use diesel::SelectableHelper as _;
         use diesel_async::RunQueryDsl;
         use database::tables::timetable::dsl;
         use std::ops::DerefMut;
         tracing::Span::current().record("query_id", tracing::field::debug(&id));
         dsl::timetable
             .filter(dsl::id.eq(id))
-            .select((dsl::id, dsl::data))
+            .select(TimetableRow::as_select())
             .first::<TimetableRow>(conn.write().await.deref_mut())
             .await
             .map(Timetable::from)

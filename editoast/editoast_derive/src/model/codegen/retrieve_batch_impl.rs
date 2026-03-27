@@ -12,7 +12,6 @@ pub(crate) struct RetrieveBatchImpl {
     pub(super) chunk_size_limit: usize,
     pub(super) row: syn::Ident,
     pub(super) identifier: Identifier,
-    pub(super) columns: Vec<syn::Ident>,
     pub(super) error: syn::Path,
 }
 
@@ -25,7 +24,6 @@ impl ToTokens for RetrieveBatchImpl {
             chunk_size_limit,
             row,
             identifier,
-            columns,
             error,
         } = self;
         let ty = identifier.get_type();
@@ -52,7 +50,7 @@ impl ToTokens for RetrieveBatchImpl {
                     query = query.or_filter(#filters);
                 }
                 let stream = query
-                    .select((#(dsl::#columns,)*))
+                    .select(#row::as_select())
                     .load_stream::<#row>(conn.write().await.deref_mut())
                     .await
                     .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?;
@@ -69,7 +67,7 @@ impl ToTokens for RetrieveBatchImpl {
                 query = query.or_filter(#filters);
             }
             let stream = query
-                .select((#(dsl::#columns,)*))
+                .select(#row::as_select())
                 .load_stream::<#row>(conn.write().await.deref_mut())
                 .await
                 .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?;
@@ -98,6 +96,7 @@ impl ToTokens for RetrieveBatchImpl {
                     use crate::prelude::Model;
                     use #table_mod::dsl;
                     use diesel::prelude::*;
+                    use diesel::SelectableHelper as _;
                     use diesel_async::RunQueryDsl;
                     use futures_util::TryStreamExt;
                     use std::ops::DerefMut;
@@ -118,6 +117,7 @@ impl ToTokens for RetrieveBatchImpl {
                     use crate::prelude::Model;
                     use #table_mod::dsl;
                     use diesel::prelude::*;
+                    use diesel::SelectableHelper as _;
                     use diesel_async::RunQueryDsl;
                     use futures_util::TryStreamExt;
                     use std::ops::DerefMut;

@@ -6,7 +6,6 @@ pub(crate) struct ListImpl {
     pub(super) table_mod: syn::Path,
     pub(super) primary_key: syn::Ident,
     pub(super) row: syn::Ident,
-    pub(super) columns: Vec<syn::Ident>,
     pub(super) error: syn::Path,
 }
 
@@ -17,7 +16,6 @@ impl ToTokens for ListImpl {
             table_mod,
             primary_key,
             row,
-            columns,
             error,
         } = self;
         let span_name = format!("model:list<{model}>");
@@ -41,6 +39,7 @@ impl ToTokens for ListImpl {
                     use diesel::ExpressionMethods as _;
                     use diesel::NullableExpressionMethods as _;
                     use diesel::QueryDsl as _;
+                    use diesel::SelectableHelper as _;
                     use diesel_async::RunQueryDsl as _;
                     use futures_util::TryStreamExt as _;
                     use #table_mod::dsl;
@@ -113,7 +112,7 @@ impl ToTokens for ListImpl {
                     }
 
                     let stream = query
-                        .select((#(dsl::#columns,)*))
+                        .select(#row::as_select())
                         .load_stream::<#row>(conn.write().await.deref_mut())
                         .await
                         .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?;

@@ -47,7 +47,7 @@ impl _TimetableField<Timetable, i64, database::tables::timetable::id> {
         crate::prelude::SortSetting(Box::new(database::tables::timetable::id.desc()))
     }
 }
-#[derive(diesel::Queryable)]
+#[derive(diesel::Queryable, diesel::Selectable)]
 #[diesel(table_name = database::tables::timetable)]
 struct TimetableRow {
     #[diesel(column_name = "id")]
@@ -115,13 +115,14 @@ impl crate::prelude::Retrieve<(i64)> for Timetable {
         id: (i64),
     ) -> std::result::Result<Option<Timetable>, Self::Error> {
         use diesel::prelude::*;
+        use diesel::SelectableHelper as _;
         use diesel_async::RunQueryDsl;
         use database::tables::timetable::dsl;
         use std::ops::DerefMut;
         tracing::Span::current().record("query_id", tracing::field::debug(&id));
         dsl::timetable
             .filter(dsl::id.eq(id))
-            .select((dsl::id,))
+            .select(TimetableRow::as_select())
             .first::<TimetableRow>(conn.write().await.deref_mut())
             .await
             .map(Timetable::from)
@@ -223,6 +224,7 @@ impl crate::prelude::List for Timetable {
         use diesel::ExpressionMethods as _;
         use diesel::NullableExpressionMethods as _;
         use diesel::QueryDsl as _;
+        use diesel::SelectableHelper as _;
         use diesel_async::RunQueryDsl as _;
         use futures_util::TryStreamExt as _;
         use database::tables::timetable::dsl;
@@ -261,7 +263,7 @@ impl crate::prelude::List for Timetable {
             query = query.limit(limit);
         }
         let stream = query
-            .select((dsl::id,))
+            .select(TimetableRow::as_select())
             .load_stream::<TimetableRow>(conn.write().await.deref_mut())
             .await
             .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?;
@@ -337,6 +339,7 @@ impl crate::prelude::RetrieveBatchUnchecked<(i64)> for Timetable {
         use crate::prelude::Model;
         use database::tables::timetable::dsl;
         use diesel::prelude::*;
+        use diesel::SelectableHelper as _;
         use diesel_async::RunQueryDsl;
         use futures_util::TryStreamExt;
         use std::ops::DerefMut;
@@ -355,7 +358,7 @@ impl crate::prelude::RetrieveBatchUnchecked<(i64)> for Timetable {
                         query = query.or_filter(dsl::id.eq(id));
                     }
                     let stream = query
-                        .select((dsl::id,))
+                        .select(TimetableRow::as_select())
                         .load_stream::<TimetableRow>(conn.write().await.deref_mut())
                         .await
                         .map_err(|e| Self::Error::from(
@@ -388,6 +391,7 @@ impl crate::prelude::RetrieveBatchUnchecked<(i64)> for Timetable {
         use crate::prelude::Model;
         use database::tables::timetable::dsl;
         use diesel::prelude::*;
+        use diesel::SelectableHelper as _;
         use diesel_async::RunQueryDsl;
         use futures_util::TryStreamExt;
         use std::ops::DerefMut;
@@ -406,7 +410,7 @@ impl crate::prelude::RetrieveBatchUnchecked<(i64)> for Timetable {
                         query = query.or_filter(dsl::id.eq(id));
                     }
                     let stream = query
-                        .select((dsl::id,))
+                        .select(TimetableRow::as_select())
                         .load_stream::<TimetableRow>(conn.write().await.deref_mut())
                         .await
                         .map_err(|e| Self::Error::from(

@@ -9,7 +9,6 @@ pub(crate) struct RetrieveImpl {
     pub(super) table_mod: syn::Path,
     pub(super) row: syn::Ident,
     pub(super) identifier: Identifier,
-    pub(super) columns: Vec<syn::Ident>,
     pub(super) error: syn::Path,
 }
 
@@ -21,7 +20,6 @@ impl ToTokens for RetrieveImpl {
             table_mod,
             row,
             identifier,
-            columns,
             error,
         } = self;
         let ty = identifier.get_type();
@@ -41,13 +39,14 @@ impl ToTokens for RetrieveImpl {
                     #id_ident: #ty,
                 ) -> std::result::Result<Option<#model>, Self::Error> {
                     use diesel::prelude::*;
+                    use diesel::SelectableHelper as _;
                     use diesel_async::RunQueryDsl;
                     use #table_mod::dsl;
                     use std::ops::DerefMut;
                     tracing::Span::current().record("query_id", tracing::field::debug(#id_ref_ident));
                     dsl::#table_name
                         .#(filter(#eqs)).*
-                        .select((#(dsl::#columns,)*))
+                        .select(#row::as_select())
                         .first::<#row>(conn.write().await.deref_mut())
                         .await
                         .map(#model::from)
