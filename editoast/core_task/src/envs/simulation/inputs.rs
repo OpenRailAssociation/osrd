@@ -8,6 +8,7 @@ use schemas::train_schedule::ReceptionSignal;
 use schemas::train_schedule::TrainScheduleOptions;
 
 use std::borrow::Borrow;
+use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::hash::Hash;
 use std::sync::Arc;
@@ -250,10 +251,16 @@ impl SimulationTrain {
         if begin_index >= n || end_index >= n {
             panic!("path waypoint index out of bounds");
         }
-        debug_assert!(begin_index < end_index);
-        self.parameters
-            .power_restrictions
-            .insert(begin_index..end_index, restriction);
+        match begin_index.cmp(&end_index) {
+            Ordering::Less => self
+                .parameters
+                .power_restrictions
+                .insert(begin_index..end_index, restriction),
+            Ordering::Equal => tracing::warn!("ignoring a zero-length power restriction"),
+            Ordering::Greater => panic!(
+                "power restriction must be defined on strictly increasing offset along the path"
+            ),
+        }
     }
 
     /// Sets a margin for a range of waypoints.
@@ -282,10 +289,16 @@ impl SimulationTrain {
         if begin_index >= n || end_index >= n {
             panic!("path waypoint index out of bounds");
         }
-        debug_assert!(begin_index < end_index);
-        self.parameters
-            .margins
-            .insert(begin_index..end_index, margin);
+        match begin_index.cmp(&end_index) {
+            Ordering::Less => self
+                .parameters
+                .margins
+                .insert(begin_index..end_index, margin),
+            Ordering::Equal => tracing::warn!("ignoring a zero-length margin"),
+            Ordering::Greater => {
+                panic!("margin must be defined on strictly increasing offset along the path")
+            }
+        }
     }
 }
 
