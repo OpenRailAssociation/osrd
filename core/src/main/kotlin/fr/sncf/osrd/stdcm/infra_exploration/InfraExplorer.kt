@@ -419,52 +419,51 @@ private class InfraExplorerImpl(
 
         for (block in routeBlocks) {
             seenFirstBlock = seenFirstBlock || block == firstLocation?.edge
-            if (seenFirstBlock) {
-                val startsPath = !pathAlreadyStarted
-                blockRoutes[block] = route
 
-                // Simulation range start on the current block, 0m on any block that isn't the first
-                val blockStartOffset: Offset<Block> =
-                    if (startsPath) firstLocation!!.offset else Offset.zero()
+            if (!seenFirstBlock) continue
 
-                val blockLength = blockInfra.getBlockLength(block)
+            val startsPath = !pathAlreadyStarted
+            blockRoutes[block] = route
 
-                stepTracker.exploreBlockRange(block, blockStartOffset, blockLength)
+            // Simulation range start on the current block, 0m on any block that isn't the first
+            val blockStartOffset: Offset<Block> =
+                if (startsPath) firstLocation!!.offset else Offset.zero()
 
-                val lastSeenStepLocation = stepTracker.getSeenSteps().lastOrNull()?.location
-                isPathComplete =
-                    stepTracker.hasSeenDestination() && lastSeenStepLocation?.edge == block
-                val blockEndOffset =
-                    if (isPathComplete) lastSeenStepLocation!!.offset else blockLength
+            val blockLength = blockInfra.getBlockLength(block)
 
-                val stepIndex =
-                    max(0, stepTracker.iterateSeenStepsBackwards().count { it.isPlanned } - 1)
+            stepTracker.exploreBlockRange(block, blockStartOffset, blockLength)
 
-                // If a block cannot be explored, give up
-                val isRouteBlocked =
-                    constraints?.get(stepIndex)?.apply(block)?.any {
-                        blockStartOffset < it.end && blockEndOffset > it.start
-                    } ?: false
-                if (isRouteBlocked) return false
+            val lastSeenStepLocation = stepTracker.getSeenSteps().lastOrNull()?.location
+            isPathComplete = stepTracker.hasSeenDestination() && lastSeenStepLocation?.edge == block
+            val blockEndOffset = if (isPathComplete) lastSeenStepLocation!!.offset else blockLength
 
-                val rangePathBegin = getLookaheadEndOffset()
-                val rangePathEnd = rangePathBegin + (blockEndOffset - blockStartOffset)
+            val stepIndex =
+                max(0, stepTracker.iterateSeenStepsBackwards().count { it.isPlanned } - 1)
 
-                if (rangePathBegin > rangePathEnd) continue
+            // If a block cannot be explored, give up
+            val isRouteBlocked =
+                constraints?.get(stepIndex)?.apply(block)?.any {
+                    blockStartOffset < it.end && blockEndOffset > it.start
+                } ?: false
+            if (isRouteBlocked) return false
 
-                val blockRange =
-                    BlockRange(
-                        value = block,
-                        objectBegin = blockStartOffset,
-                        objectEnd = blockEndOffset,
-                        pathBegin = rangePathBegin,
-                        pathEnd = rangePathEnd,
-                        objectLength = blockLength,
-                    )
-                blockRanges.add(blockRange)
-                pathAlreadyStarted = true
-                if (isPathComplete) break // Can't extend any further
-            }
+            val rangePathBegin = getLookaheadEndOffset()
+            val rangePathEnd = rangePathBegin + (blockEndOffset - blockStartOffset)
+
+            if (rangePathBegin > rangePathEnd) continue
+
+            val blockRange =
+                BlockRange(
+                    value = block,
+                    objectBegin = blockStartOffset,
+                    objectEnd = blockEndOffset,
+                    pathBegin = rangePathBegin,
+                    pathEnd = rangePathEnd,
+                    objectLength = blockLength,
+                )
+            blockRanges.add(blockRange)
+            pathAlreadyStarted = true
+            if (isPathComplete) break // Can't extend any further
         }
         assert(seenFirstBlock)
         return true
