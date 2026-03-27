@@ -263,6 +263,10 @@ const osrdEditoastApi = generatedEditoastApi
         invalidatesTags: ['train_schedule_set', 'scenarios', 'timetable'],
       },
 
+      postLevelCrossingOccupancy: {
+        providesTags: ['level_crossing', 'train_schedule'],
+      },
+
       // Project handling
       getProjects: {
         providesTags: (result) => [
@@ -318,7 +322,7 @@ const osrdEditoastApi = generatedEditoastApi
         ],
       },
 
-      // Scenari handling
+      // Scenario handling
       getScenarios: {
         providesTags: (result) => [
           { type: 'scenarios', id: 'LIST' },
