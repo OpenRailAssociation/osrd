@@ -101,7 +101,7 @@ fun runScheduleMetadataExtractor(
             closedSignalStops,
             envelopeWithStops,
             context,
-            rollingStock,
+            zoneOccupationChangeEvents,
         )
     val reportTrain =
         makeSimpleReportTrain(envelope, trainPath, rollingStock, schedule, pathItemPositions)
@@ -142,6 +142,8 @@ fun getSignalCriticalPositions(
         }
 
         val physicalSignal = loadedSignalInfra.getPhysicalSignal(pathSignal.signal)
+        // This is OK to use signal offset as the signals strictly outside the path are removed at
+        // that point
         val straightSubPathRange =
             trainPath.getNonBacktrackingSubPathBoundariesContainingOffset(pathSignal.pathOffset)
         var signalCriticalOffset =
@@ -244,7 +246,7 @@ fun routingRequirements(
     envelope: EnvelopeInterpolate,
     // TODO: Required for ETCS (STDCM doesn't provide it currently, will have to eventually)
     context: EnvelopeSimContext?,
-    rollingStock: RollingStock,
+    zoneOccupationChangeEvents: List<ZoneOccupationChangeEvent>,
 ): List<RoutingRequirement> {
     val rawInfra = fullInfra.rawInfra
     val blockInfra = fullInfra.blockInfra
@@ -257,6 +259,8 @@ fun routingRequirements(
     val signalingTrainStates = mutableMapOf<LogicalSignalId, SignalingTrainState>()
     for (blockRange in blockRanges) {
         val block = blockRange.value
+        val straightSubPathRange =
+            trainPath.getNonBacktrackingSubPathBoundariesContainingOffset(blockRange.pathBegin)
         val signals = blockInfra.getBlockSignals(block)
         val signalPositions = blockInfra.getSignalsPositions(block)
         val consideredSignals =
@@ -266,7 +270,8 @@ fun routingRequirements(
             val signalOffset = signalPositions[signalIndex]
             val signalPathOffset = blockRange.offsetToTrainPath(signalOffset)
             val sightDistance = rawInfra.getSignalSightDistance(rawInfra.getPhysicalSignal(signal))
-            val sightOffset = Offset.max(Offset.zero(), signalPathOffset - sightDistance)
+            val sightOffset =
+                Offset.max(straightSubPathRange.start, signalPathOffset - sightDistance)
             if (sightOffset >= blockRange.pathEnd) {
                 val state = SignalingTrainStateImpl(speed = 0.0.metersPerSecond)
                 signalingTrainStates[signal] = state
@@ -282,12 +287,14 @@ fun routingRequirements(
     }
 
     fun findRouteSetDeadline(routeRange: RouteRange): TimeDelta? {
-        if (routeRange.pathBegin == Offset.zero<TrainPath>()) {
+        val straightSubPathRange =
+            trainPath.getNonBacktrackingSubPathBoundariesContainingOffset(routeRange.pathBegin)
+        if (routeRange.pathBegin == straightSubPathRange.start) {
             // TODO: this isn't quite true when the path starts with a stop
             //  Actually, there should be no routing requirement at all on the first route (when
             //  the train doesn't see any route entry signal). But the implications are weird and
             //  counterintuitive.
-            return TimeDelta.ZERO
+            return envelope.interpolateDepartureFromClamp(straightSubPathRange.start.meters).seconds
         }
 
         val firstBlockRange =
@@ -298,8 +305,9 @@ fun routingRequirements(
                 .value
 
         // find the entry signal for this route. if there is no entry signal,
-        // the set deadline is the start of the simulation
-        if (blockInfra.blockStartAtBufferStop(firstBlockRange.value)) return TimeDelta.ZERO
+        // the set deadline is the start after the last backtrack
+        if (blockInfra.blockStartAtBufferStop(firstBlockRange.value))
+            return envelope.interpolateDepartureFromClamp(straightSubPathRange.start.meters).seconds
         val etcsSimulator = context?.let { ETCSBrakingSimulatorImpl(it) }
 
         val singleEnvelope = envelope.rawEnvelopeIfSingle
@@ -325,8 +333,11 @@ fun routingRequirements(
         // the entry signal of the route (both position and time, as there is a time margin) in this
         // case, just move the route critical position to the stop
         val entrySignalOffset =
-            firstBlockRange.offsetToTrainPath(
-                blockInfra.getSignalsPositions(firstBlockRange.value).first()
+            Offset.max(
+                straightSubPathRange.start,
+                firstBlockRange.offsetToTrainPath(
+                    blockInfra.getSignalsPositions(firstBlockRange.value).first()
+                ),
             )
         for (stop in sortedClosedSignalStops.reversed()) {
             val stopTravelledOffset = stop.pathOffset
@@ -343,7 +354,10 @@ fun routingRequirements(
             }
         }
 
-        return maxOf(routeCriticalTime, TimeDelta.ZERO)
+        return maxOf(
+            routeCriticalTime,
+            envelope.interpolateArrivalAtClamp(straightSubPathRange.start.meters).seconds,
+        )
     }
 
     val res = mutableListOf<RoutingRequirement>()
@@ -360,17 +374,29 @@ fun routingRequirements(
         val zoneRequirements = mutableListOf<RoutingZoneRequirement>()
         for (zoneRange in zoneRanges) {
             val zonePath = zoneRange.value
-            // the distance to the end of the zone from the start of the train path
-            val zoneEndOffset = zoneRange.objectAbsolutePathEnd
-            // the point in the train path at which the zone is released
-            val exitCriticalPos = zoneEndOffset + rollingStock.length.meters
+
             // if the zones are never occupied by the train, no requirement is emitted
             // Note: the train is considered starting from a "portal", so "growing" from its start
             // offset
-            if (zoneEndOffset < Offset.zero()) {
+            if (zoneRange.objectAbsolutePathEnd < Offset.zero()) {
                 assert(routeRange.pathBegin == Offset.zero<TrainPath>())
                 continue
             }
+
+            // the point in the train path at which the zone is released
+            val zoneOccupationExit =
+                zoneOccupationChangeEvents
+                    .first {
+                        it.zone == rawInfra.getZonePathZone(zonePath) &&
+                            !it.isEntry &&
+                            it.offset > zoneRange.pathBegin
+                    }
+                    .offset
+            // release the "route zone" at the latest before the train restart after backtracking
+            val straightSubPathRange =
+                trainPath.getNonBacktrackingSubPathBoundariesContainingOffset(zoneRange.pathBegin)
+            val exitCriticalPos = Offset.min(zoneOccupationExit, straightSubPathRange.end)
+
             val exitCriticalTime =
                 envelope.interpolateDepartureFromClamp(exitCriticalPos.meters).seconds
             zoneRequirements.add(routingZoneRequirement(rawInfra, zonePath, exitCriticalTime))
@@ -402,6 +428,9 @@ private fun getRouteCriticalPos(
                 "Routing requirements for curve-based signals are only available for " +
                     "ETCS_LEVEL2 and through StandaloneSimulation"
             )
+        }
+        if (trainPath.getBacktrackLocations().isNotEmpty()) {
+            TODO("ETCS_LEVEL2 does not handle backtracking yet")
         }
         getEtcsRouteCriticalPos(blockInfra, firstBlockRange, envelope, etcsSimulator)
     } else {
@@ -459,7 +488,15 @@ private fun getSightRouteCriticalPos(
     // until the start of the route, which is INCOMPATIBLE
 
     // We only want the path up to the route offset of the given route
-    val subTrainPath = trainPath.subPath(Offset.zero(), firstBlockRange.objectAbsolutePathStart)
+    val straightSubPathRange =
+        trainPath.getNonBacktrackingSubPathBoundariesContainingOffset(firstBlockRange.pathBegin)
+    val subTrainPath =
+        trainPath.subPath(
+            straightSubPathRange.start,
+            firstBlockRange.objectAbsolutePathStart,
+            includeExactStart = straightSubPathRange.start == Offset.zero<TrainPath>(),
+            includeExactEnd = firstBlockRange.objectAbsolutePathStart == straightSubPathRange.end,
+        )
 
     // TODO: the complexity of finding route set deadlines is currently n^2 of the
     //   number of blocks in the path. it can be improved upon by only simulating blocks
@@ -494,7 +531,9 @@ private fun getSightRouteCriticalPos(
     val signalSightDistance = rawInfra.getSignalSightDistance(rawInfra.getPhysicalSignal(signal))
 
     // find the location at which establishing the route becomes necessary
-    return limitingBlockRange.offsetToTrainPath(limitingSignalOffsetInBlock - signalSightDistance)
+    val subTrainPathCriticalPos =
+        limitingBlockRange.offsetToTrainPath(limitingSignalOffsetInBlock - signalSightDistance)
+    return straightSubPathRange.start + Distance.max(subTrainPathCriticalPos.distance, 0.meters)
 }
 
 /** Create a zone requirement, which embeds all needed properties for conflict detection */
