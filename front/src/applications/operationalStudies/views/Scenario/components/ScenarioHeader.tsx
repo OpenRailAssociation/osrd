@@ -44,6 +44,7 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
   });
   const [areScenarioDetailsVisible, setAreScenarioDetailsVisible] = useState(false);
 
+  const headerRef = useRef<HTMLElement>(null);
   const scenarioNameRef = useRef<HTMLSpanElement>(null);
   const usernameRef = useRef<HTMLSpanElement>(null);
 
@@ -68,31 +69,33 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
   };
 
   useEffect(() => {
-    const checkTruncation = () => {
-      setIsTruncated((prev) => ({
-        scenarioName: scenarioNameRef.current
-          ? scenarioNameRef.current.scrollWidth > scenarioNameRef.current.clientWidth
-          : prev.scenarioName,
-        username: usernameRef.current
-          ? usernameRef.current.scrollWidth > usernameRef.current.clientWidth
-          : prev.username,
-      }));
-    };
-    checkTruncation();
-    window.addEventListener('resize', checkTruncation);
-    return () => {
-      window.removeEventListener('resize', checkTruncation);
-    };
+    if (!headerRef.current) return undefined;
+
+    const checkTruncation = (element: HTMLElement) => element.scrollWidth > element.clientWidth;
+
+    const observer = new ResizeObserver(() => {
+      setIsTruncated({
+        scenarioName: scenarioNameRef.current ? checkTruncation(scenarioNameRef.current) : false,
+        username: usernameRef.current ? checkTruncation(usernameRef.current) : false,
+      });
+    });
+
+    observer.observe(headerRef.current);
+    return () => observer.disconnect();
   }, []);
 
   const userDropdownTitle = (
-    <span ref={usernameRef} className={cx('user-name', { 'is-truncated': isTruncated.username })}>
+    <span
+      ref={usernameRef}
+      className={cx('user-name', { 'is-truncated': isTruncated.username })}
+      title={isTruncated.username ? username : undefined}
+    >
       {username}
     </span>
   );
 
   return (
-    <header className="scenario-header-container">
+    <header ref={headerRef} className="scenario-header-container">
       <div className={cx('scenario-header', { impersonated: impersonatedUser })}>
         {/* scenario info */}
         <div className="scenario-info">

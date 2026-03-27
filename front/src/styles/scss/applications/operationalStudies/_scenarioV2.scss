@@ -188,7 +188,19 @@
       margin-right: 8px;
       justify-content: end;
 
+      .btn-group {
+        min-width: 0;
+        width: 100%;
+      }
+
+      .dropdwon-position {
+        min-width: 0;
+        width: 100%;
+        overflow: hidden;
+      }
+
       .user-name {
+        display: block;
         color: var(--black100);
         font-size: 0.875rem;
         text-align: right;
@@ -196,7 +208,6 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        min-width: 0;
       }
     }
 
@@ -228,6 +239,7 @@
         flex: 2;
       }
     }
+
     // END HANDLE SCENARIO NAME AND USER NAME HOVER WHEN TRUNCATED
   }
 }
