@@ -18,7 +18,7 @@ export const isEmptyStep = (step: PathStepV2, input?: string) => {
 
 export const ensureTrailingEmptyStep = (steps: PathStepV2[]): PathStepV2[] => {
   const last = steps.at(-1);
-  if (last && !isEmptyStep(last, '')) return [...steps, createEmptyPathStep()];
+  if (!last || !isEmptyStep(last, '')) return [...steps, createEmptyPathStep()];
   return steps;
 };
 

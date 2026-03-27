@@ -313,17 +313,16 @@ const ItineraryModal = ({
       displayTimetableItemManagement === MANAGE_TIMETABLE_ITEM_TYPES.edit ||
       displayTimetableItemManagement === MANAGE_TIMETABLE_ITEM_TYPES.add
     ) {
-      const formattedPathSteps = storePathSteps.map<PathStepV2>((pathStep) => {
-        if (!pathStep) return createEmptyPathStep();
-        return {
+      const formattedPathSteps = storePathSteps
+        .filter((pathStep): pathStep is PathStep => pathStep !== null)
+        .map<PathStepV2>((pathStep) => ({
           id: pathStep.id,
           location: pathStep.location,
           arrival: pathStep.arrival ?? null,
           stopFor: pathStep.stopFor ?? null,
           theoreticalMargin: pathStep.theoreticalMargin ?? null,
           receptionSignal: pathStep.receptionSignal ?? null,
-        };
-      });
+        }));
 
       setPathSteps(ensureTrailingEmptyStep(formattedPathSteps));
     }
