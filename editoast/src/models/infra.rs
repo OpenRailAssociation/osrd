@@ -387,6 +387,8 @@ pub mod tests {
         let mut infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let old = infra.modified;
 
+        std::thread::sleep(std::time::Duration::from_millis(1));
+
         infra
             .bump_version(&mut db_pool.get_ok())
             .await
