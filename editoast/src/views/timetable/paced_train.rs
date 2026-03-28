@@ -903,17 +903,6 @@ pub(in crate::views) async fn project_path(
     Ok(Json(results))
 }
 
-/// Represents either a paced train or an exception of a paced train
-enum BaseOrExceptionId {
-    Exception {
-        paced_train_id: i64,
-        exception_key: String,
-    },
-    PacedTrain {
-        paced_train_id: i64,
-    },
-}
-
 #[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
@@ -935,6 +924,7 @@ pub(in crate::views) async fn project_path_op(
     Json(ProjectPathOperationalPointForm {
         infra_id,
         train_ids,
+        timetable_id,
         electrical_profile_set_id,
         operational_points_refs,
         operational_points_distances,
@@ -964,33 +954,31 @@ pub(in crate::views) async fn project_path_op(
     let conn = &mut db_pool.get().await?;
 
     let train_schedules: Vec<models::TrainSchedule> =
-        models::TrainSchedule::retrieve_batch_or_fail(conn, train_ids, |missing| {
+        models::TrainSchedule::retrieve_batch_or_fail(conn, train_ids.clone(), |missing| {
             TrainScheduleError::BatchNotFound {
                 count: missing.len(),
             }
         })
         .await?;
 
-    let (ids, train_schedules): (Vec<_>, Vec<_>) = train_schedules
+    let mut exceptions = TrainScheduleException::retrieve_exceptions_by_train_schedules(
+        conn,
+        timetable_id,
+        train_ids.into_iter().collect(),
+    )
+    .await?
+    .into_iter()
+    .map_into::<schemas::TrainScheduleException>()
+    .into_group_map_by(|e| e.train_schedule_id);
+
+    let (occurrences_ids, occurrences): (Vec<_>, Vec<_>) = train_schedules
         .iter()
         .flat_map(|train_schedule| {
-            std::iter::once((
-                BaseOrExceptionId::PacedTrain {
-                    paced_train_id: train_schedule.id,
-                },
-                train_schedule.clone().into_train_occurrence(),
-            ))
-            .chain(train_schedule.exceptions.iter().map(|exception| {
-                (
-                    BaseOrExceptionId::Exception {
-                        paced_train_id: train_schedule.id,
-                        exception_key: exception.key.clone(),
-                    },
-                    train_schedule.apply_exception(exception),
-                )
-            }))
+            train_schedule
+                .iter_occurrences_v2(&exceptions.remove(&train_schedule.id).unwrap_or_default())
+                .collect_vec()
         })
-        .collect();
+        .unzip();
 
     // Transform operational point references into a list of path item locations
     let path_item_locations_projection = operational_points_refs
@@ -1027,7 +1015,7 @@ pub(in crate::views) async fn project_path_op(
             conn,
             valkey_client,
             core_client,
-            &train_schedules,
+            &occurrences,
             &op_cache,
             operational_points_projection,
             infra,
@@ -1037,7 +1025,7 @@ pub(in crate::views) async fn project_path_op(
         .await?
     } else {
         compute_projected_train_path_op_without_simulation(
-            &train_schedules,
+            &occurrences,
             &op_cache,
             operational_points_projection,
         )
@@ -1045,25 +1033,33 @@ pub(in crate::views) async fn project_path_op(
 
     let mut base_project_path = Default::default();
 
-    let results = ids.into_iter().zip(projected_trains).fold(
+    let results = occurrences_ids.into_iter().zip(projected_trains).fold(
         HashMap::<i64, ProjectPathTrainScheduleResult>::new(),
         |mut results, (id, projected_train)| {
             match id {
-                BaseOrExceptionId::Exception {
-                    paced_train_id,
+                OccurrenceId::Modified {
+                    train_schedule_id,
                     exception_key,
+                    ..
+                }
+                | OccurrenceId::Created {
+                    train_schedule_id,
+                    exception_key,
+                    ..
                 } => {
                     if !Arc::ptr_eq(&base_project_path, &projected_train) {
                         results
-                            .get_mut(&paced_train_id)
-                            .expect("paced_train_id should exist")
+                            .get_mut(&train_schedule_id)
+                            .expect("train_schedule_id should exist")
                             .exceptions
                             .insert(exception_key, Arc::unwrap_or_clone(projected_train.clone()));
                     }
                 }
-                BaseOrExceptionId::PacedTrain { paced_train_id } => {
+                OccurrenceId::Base {
+                    train_schedule_id, ..
+                } => {
                     results.insert(
-                        paced_train_id,
+                        train_schedule_id,
                         ProjectPathTrainScheduleResult {
                             train_schedule: Arc::unwrap_or_clone(projected_train.clone()),
                             exceptions: HashMap::new(),
