@@ -53,6 +53,7 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
             {
               body: {
                 infra_id: infraId,
+                timetable_id: timetableId,
                 train_ids: ids,
                 operational_points_refs: this.opRefs,
                 operational_points_distances: this.opDistances,
