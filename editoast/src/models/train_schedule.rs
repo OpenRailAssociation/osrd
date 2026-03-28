@@ -823,7 +823,7 @@ mod tests {
 
         let paced_train = create_paced_train(vec![]);
         let occurrences: Vec<_> = paced_train
-            .iter_occurrences_v2(&vec![exception_1.clone()])
+            .iter_occurrences_v2(&[exception_1.clone()])
             .collect();
 
         assert_eq!(occurrences.len(), 4);
