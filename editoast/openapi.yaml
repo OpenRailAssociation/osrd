@@ -4249,6 +4249,7 @@ paths:
               type: object
               required:
               - infra_id
+              - timetable_id
               - train_ids
               - operational_points_refs
               - operational_points_distances
@@ -4329,6 +4330,9 @@ paths:
                           format: int32
                           description: The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
                           minimum: 0
+                timetable_id:
+                  type: integer
+                  format: int64
                 train_ids:
                   type: array
                   items:
