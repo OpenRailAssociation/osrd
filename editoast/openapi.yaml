@@ -10430,6 +10430,7 @@ components:
       type: object
       required:
       - infra_id
+      - timetable_id
       - ids
       - path
       properties:
@@ -10449,6 +10450,9 @@ components:
           format: int64
         path:
           $ref: '#/components/schemas/core.TrainPath'
+        timetable_id:
+          type: integer
+          format: int64
     OccupancyBlocksTrainScheduleResult:
       type: object
       description: Occupancy blocks output is described by blocks (signal updates)
