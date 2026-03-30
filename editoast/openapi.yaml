@@ -1806,6 +1806,7 @@ paths:
               - train_ids
               - level_crossing_ids
               - infra_id
+              - timetable_id
               properties:
                 electrical_profile_set_id:
                   type:
@@ -1819,6 +1820,9 @@ paths:
                   type: array
                   items:
                     $ref: '#/components/schemas/Identifier'
+                timetable_id:
+                  type: integer
+                  format: int64
                 train_ids:
                   type: array
                   items:

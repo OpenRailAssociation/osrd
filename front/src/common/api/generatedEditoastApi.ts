@@ -1931,6 +1931,7 @@ export type PostLevelCrossingOccupancyApiArg = {
     electrical_profile_set_id?: number | null;
     infra_id: number;
     level_crossing_ids: Identifier[];
+    timetable_id: number;
     train_ids: number[];
   };
 };
