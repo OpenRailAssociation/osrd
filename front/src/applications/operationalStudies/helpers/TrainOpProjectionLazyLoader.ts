@@ -34,7 +34,7 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
   }
 
   async processBatch(ids: number[]) {
-    const { infraId, path, electricalProfileSetId } = this.options;
+    const { infraId, timetableId, path, electricalProfileSetId } = this.options;
 
     if (this.opRefs.length < 2) {
       this.options.onProgress(new Map());
@@ -72,6 +72,7 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
               {
                 occupancyBlockForm: {
                   infra_id: infraId,
+                  timetable_id: timetableId,
                   path,
                   ids,
                   electrical_profile_set_id: electricalProfileSetId,
