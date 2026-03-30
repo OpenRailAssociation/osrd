@@ -7,6 +7,7 @@ import type { PathPropertiesFormatted } from 'applications/operationalStudies/ty
 import type {
   CorePathfindingResultSuccess,
   ReceptionSignal,
+  RollingStock,
   SimulationResponseSuccess,
 } from 'common/api/osrdEditoastApi';
 import type { SimulationSummary, TimetableItemWithDetails } from 'modules/timetableItem/types';
@@ -45,6 +46,7 @@ type TimesStopsOutputProps = {
   simulatedPathItemRespect?: Extract<SimulationSummary, { isValid: true }>['pathItemRespect'];
   operationalPointsOnPath?: PathPropertiesFormatted['operationalPoints'];
   isSimulationDataLoading?: boolean;
+  rollingStock?: RollingStock;
 };
 
 const TimesStopsOutput = ({
@@ -58,6 +60,7 @@ const TimesStopsOutput = ({
   simulatedPathItemRespect,
   operationalPointsOnPath,
   isSimulationDataLoading = false,
+  rollingStock,
 }: TimesStopsOutputProps) => {
   const useNewTimesStopsTable = useSelector(getUseNewTimesStopsTable);
 
@@ -117,12 +120,18 @@ const TimesStopsOutput = ({
 
   const startTime = useMemo(() => new Date(selectedTrain.start_time), [selectedTrain.start_time]);
 
+  const availablePowerRestrictions = useMemo(
+    () => Object.keys(rollingStock?.power_restrictions ?? {}),
+    [rollingStock]
+  );
+
   const {
     updateArrival,
     updateStopDuration,
     updateDeparture,
     updateReceptionSignal,
     updateRequestedMargin,
+    updatePowerRestrictions,
   } = useUpdateTimesStopsTable(
     selectedTrain,
     newRows,
@@ -276,6 +285,12 @@ const TimesStopsOutput = ({
     commitEdit(buildEditsForMarginUpdate(row, requestedMargin), () =>
       updateRequestedMargin(row, requestedMargin)
     );
+
+  const handlePowerRestrictionChange = (row: TimesStopsRowNew, value: string | null) =>
+    commitEdit([{ rowId: row.id, field: 'powerRestriction', value }], () =>
+      updatePowerRestrictions(row, value)
+    );
+
   if (useNewTimesStopsTable) {
     return (
       <TimesStopsTable
@@ -283,11 +298,13 @@ const TimesStopsOutput = ({
         startTime={startTime}
         isValid={stableIsValid}
         isComputedDataPending={isAwaitingSimulation}
+        availablePowerRestrictions={availablePowerRestrictions}
         onArrivalChange={handleArrivalChange}
         onStopDurationChange={handleStopDurationChange}
         onDepartureChange={handleDepartureChange}
         onReceptionSignalChange={handleReceptionSignalChange}
         onRequestedMarginChange={handleRequestedMarginChange}
+        onPowerRestrictionChange={handlePowerRestrictionChange}
       />
     );
   }

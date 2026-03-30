@@ -1,6 +1,11 @@
 import { v4 as uuidV4 } from 'uuid';
 
-import type { TrainSchedule, PathItem, ScheduleItem } from 'common/api/osrdEditoastApi';
+import type {
+  TrainSchedule,
+  PathItem,
+  PowerRestrictionItem,
+  ScheduleItem,
+} from 'common/api/osrdEditoastApi';
 import type { Train } from 'reducers/osrdconf/types';
 import { addElementAtIndex } from 'utils/array';
 import { Duration } from 'utils/duration';
@@ -69,7 +74,7 @@ export type ScheduleState = {
  */
 export const applyScheduleEdit = (
   current: ScheduleState,
-  edit: OptimisticEdit
+  edit: Exclude<OptimisticEdit, { field: 'powerRestriction' }>
 ): ScheduleState & { departure: Date | null } => {
   const { arrival, stop } = current;
 
@@ -172,7 +177,19 @@ export const computeOptimisticRow = (
   | 'closedSignal'
   | 'shortSlipDistance'
   | 'requestedTheoreticalMargin'
+  | 'powerRestriction'
 > => {
+  if (edit.field === 'powerRestriction') {
+    return {
+      requestedArrival: row.requestedArrival,
+      stopDuration: row.stopDuration,
+      requestedDeparture: row.requestedDeparture,
+      closedSignal: row.closedSignal,
+      shortSlipDistance: row.shortSlipDistance,
+      requestedTheoreticalMargin: row.requestedTheoreticalMargin,
+      powerRestriction: edit.value,
+    };
+  }
   const { arrival, stop, departure } = applyScheduleEdit(
     { arrival: row.requestedArrival, stop: row.stopDuration },
     edit
@@ -190,6 +207,7 @@ export const computeOptimisticRow = (
       edit.field === 'requestedTheoreticalMargin'
         ? (edit.value ?? undefined)
         : row.requestedTheoreticalMargin,
+    powerRestriction: row.powerRestriction,
   };
 };
 
@@ -211,17 +229,53 @@ export const propagationToEdits = (
     return [{ rowId: row.id, field: 'requestedArrival' as const, value: newArrival }];
   });
 
+/**
+ * Rebuilds the power_restrictions API array from path step rows.
+ * Each non-null powerRestriction on a path step row marks the start of a range.
+ * The range extends until the next path step with an explicit value (or the last path step).
+ *
+ * @example
+ * // rows: [{ id: 'A', powerRestriction: 'C1' }, { id: 'B', powerRestriction: null }, { id: 'C', powerRestriction: '∅' }, { id: 'D', powerRestriction: null }]
+ * // → [{ from: 'A', to: 'C', value: 'C1' }, { from: 'C', to: 'D', value: '∅' }]
+ *
+ * // rows: [{ id: 'A', powerRestriction: null }, { id: 'B', powerRestriction: 'C2' }, { id: 'C', powerRestriction: null }]
+ * // → [{ from: 'B', to: 'C', value: 'C2' }]
+ */
+export const buildPowerRestrictionsFromRows = (
+  rows: TimesStopsRowNew[]
+): PowerRestrictionItem[] => {
+  const pathStepRows = rows.filter((r) => r.isPathStep);
+  const result: PowerRestrictionItem[] = [];
+
+  for (let i = 0; i < pathStepRows.length - 1; i++) {
+    const code = pathStepRows[i].powerRestriction;
+    if (!code) continue;
+
+    const from = pathStepRows[i].id;
+    let j = i + 1;
+    while (j < pathStepRows.length - 1 && !pathStepRows[j].powerRestriction) {
+      j++;
+    }
+    const to = pathStepRows[j].id;
+    result.push({ from, to, value: code });
+  }
+
+  return result;
+};
+
 /** Build a TrainSchedule object from a Train with updated path and schedule. */
 export const buildUpdatedOccurrence = ({
   selectedTrain,
   updatedPath,
   updatedSchedule,
   trainName,
+  powerRestrictions,
 }: {
   selectedTrain: Train;
   updatedPath: PathItem[];
   updatedSchedule: ScheduleItem[];
   trainName: string;
+  powerRestrictions?: PowerRestrictionItem[];
 }): TrainSchedule => ({
   category: selectedTrain.category,
   comfort: selectedTrain.comfort,
@@ -231,7 +285,7 @@ export const buildUpdatedOccurrence = ({
   margins: selectedTrain.margins,
   options: selectedTrain.options,
   path: updatedPath,
-  power_restrictions: selectedTrain.power_restrictions,
+  power_restrictions: powerRestrictions ?? selectedTrain.power_restrictions,
   rolling_stock_name: selectedTrain.rolling_stock_name,
   schedule: updatedSchedule,
   speed_limit_tag: selectedTrain.speed_limit_tag,
