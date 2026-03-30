@@ -13,6 +13,7 @@ axum-tracing-opentelemetry = "0.33.1"
 bollard = "0.20"
 figment = { version = "0.10.19", features = ["env", "yaml"] }
 futures-lite = "2.6.1"
+hex = "0.4.3"
 http = "1.4.0"
 im = "15.1.0"
 k8s-openapi = { version = "0.27", features = ["v1_35"] }
@@ -37,7 +38,7 @@ reqwest = { version = "0.12.28", default-features = false, features = [
 schemars = "1.2.1"
 serde = { version = "1.0.228", features = ["derive", "rc"] }
 serde_json = "1.0.149"
-sha2 = "0.10.9"
+sha2 = "0.11.0"
 smol_str = { version = "0.3.6", features = ["serde"] }
 thiserror = "2.0.18"
 thunderdome = "0.6.1"

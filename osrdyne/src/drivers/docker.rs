@@ -69,7 +69,7 @@ impl DockerDriver {
         let version_identifier = std::env::var("OSRD_GIT_DESCRIBE")
             .unwrap_or_else(|_| format!("run-{}", Uuid::new_v4()));
 
-        let hashed = format!("{:x}", Sha256::digest(version_identifier))[..16].to_string();
+        let hashed = hex::encode(Sha256::digest(version_identifier))[..16].to_string();
 
         DockerDriver {
             client: Docker::connect_with_socket_defaults().expect("Failed to connect to Docker"),
