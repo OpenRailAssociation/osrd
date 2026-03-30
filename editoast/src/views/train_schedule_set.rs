@@ -459,10 +459,6 @@ mod tests {
             .expect("Failed to fetch train schedules");
 
         assert!(list_result.len() == 2);
-        assert_eq!(
-            list_result[0].exceptions,
-            train_schedule_2.paced.unwrap().exceptions
-        );
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

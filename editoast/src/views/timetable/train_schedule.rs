@@ -51,6 +51,7 @@ use crate::models;
 use crate::models::Infra;
 use crate::models::train_schedule::OccurrenceId;
 use crate::models::train_schedule::TrainScheduleChangeset;
+use crate::models::train_schedule::train_schedule_schema_from_model;
 use crate::models::train_schedule_set::TrainScheduleSet;
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraIdQueryParam;
@@ -126,7 +127,7 @@ impl From<models::TrainSchedule> for TrainScheduleResponse {
         Self {
             id: value.id,
             train_schedule_set_id: value.train_schedule_set_id,
-            train_schedule: value.into(),
+            train_schedule: train_schedule_schema_from_model(value, vec![]),
         }
     }
 }
@@ -1918,7 +1919,6 @@ mod tests {
     use crate::error::InternalError;
     use crate::models;
     use crate::models::fixtures::create_fast_rolling_stock;
-    use crate::models::fixtures::create_paced_train_with_exceptions;
     use crate::models::fixtures::create_rolling_stock_with_energy_sources;
     use crate::models::fixtures::create_simple_paced_train;
     use crate::models::fixtures::create_small_infra;
@@ -1931,6 +1931,7 @@ mod tests {
     use crate::models::fixtures::simple_sub_category;
     use crate::models::train_schedule::OccurrenceId;
     use crate::models::train_schedule::TrainScheduleChangeset;
+    use crate::models::train_schedule::train_schedule_schema_from_model;
     use crate::views::path::pathfinding::PathfindingFailure;
     use crate::views::path::pathfinding::PathfindingResult;
     use crate::views::test_app::TestApp;
@@ -2036,7 +2037,8 @@ mod tests {
             created_paced_train.sub_category,
             Some(created_sub_category.code.clone())
         );
-        let created_paced_train: schemas::paced_train::TrainSchedule = created_paced_train.into();
+        let created_paced_train: schemas::paced_train::TrainSchedule =
+            train_schedule_schema_from_model(created_paced_train, vec![]);
 
         assert_eq!(
             created_paced_train.train_occurrence.category,
@@ -2054,8 +2056,7 @@ mod tests {
         let (timetable, train_schedule_set) =
             create_timetable_with_train_schedule_set(&mut pool.get_ok()).await;
 
-        let simple_train_schedule =
-            simple_paced_train_changeset(train_schedule_set.id).exceptions(vec![]);
+        let simple_train_schedule = simple_paced_train_changeset(train_schedule_set.id);
         let train_schedule = simple_train_schedule
             .create(&mut pool.get_ok())
             .await
@@ -2155,7 +2156,10 @@ mod tests {
             .expect("Failed to retrieve updated paced train")
             .expect("Updated paced train not found");
 
-        assert_eq!(paced_train_base, updated_paced_train.into());
+        assert_eq!(
+            paced_train_base,
+            train_schedule_schema_from_model(updated_paced_train, vec![])
+        );
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -2214,7 +2218,10 @@ mod tests {
             .assert_status(StatusCode::OK)
             .json_into::<TrainScheduleResponse>();
 
-        assert_eq!(response.train_schedule, paced_train.into());
+        assert_eq!(
+            response.train_schedule,
+            train_schedule_schema_from_model(paced_train, vec![])
+        );
     }
 
     async fn app_infra_id_paced_train_id_for_simulation_tests() -> (
@@ -2803,12 +2810,8 @@ mod tests {
         let (timetable, train_schedule_set) =
             create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
 
-        let train_schedule = create_paced_train_with_exceptions(
-            &mut db_pool.get_ok(),
-            train_schedule_set.id,
-            vec![],
-        )
-        .await;
+        let train_schedule =
+            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.id).await;
 
         let change_rolling_stock_exception = create_train_schedule_exception(
             &mut db_pool.get_ok(),
@@ -2876,12 +2879,8 @@ mod tests {
 
         create_fast_rolling_stock(&mut db_pool.get_ok(), "R2D2").await;
 
-        let train_schedule = create_paced_train_with_exceptions(
-            &mut db_pool.get_ok(),
-            train_schedule_set.id,
-            vec![],
-        )
-        .await;
+        let train_schedule =
+            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.id).await;
 
         let change_train_name_exception = create_train_schedule_exception(
             &mut db_pool.get_ok(),

@@ -46,17 +46,7 @@ def test_put_paced_train(
     paced_train = west_to_south_east_paced_train[0]
     paced_train_id = paced_train["id"]
 
-    exception = {
-        "key": "exception_key",
-        "disabled": False,
-        "rolling_stock": {
-            "rolling_stock_name": "etcs_rolling_stock",
-            "comfort": "AIR_CONDITIONING",
-        },
-    }
-
     paced_train["train_name"] = "update_train_name"
-    paced_train["paced"]["exceptions"] = [exception]
 
     update_response = session.put(
         f"{EDITOAST_URL}train_schedules/{paced_train_id}", json=paced_train
@@ -68,7 +58,6 @@ def test_put_paced_train(
     ).json()
 
     assert updated_paced_train["train_name"] == "update_train_name"
-    assert updated_paced_train["paced"]["exceptions"] == [exception]
 
 
 def test_get_paced_train_with_exception_path(

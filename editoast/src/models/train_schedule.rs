@@ -60,8 +60,41 @@ pub struct TrainSchedule {
     pub main_category: Option<TrainMainCategory>,
     /// Sub category code
     pub sub_category: Option<String>,
-    #[model(json)]
-    pub exceptions: Vec<PacedTrainException>,
+}
+
+/// Transforms the TrainSchedule database type into a paced_train::TrainSchedule schema with exceptions.
+pub fn train_schedule_schema_from_model(
+    train_schedule: TrainSchedule,
+    exceptions: Vec<PacedTrainException>,
+) -> paced_train::TrainSchedule {
+    paced_train::TrainSchedule {
+        train_occurrence: TrainOccurrence {
+            train_name: train_schedule.train_name,
+            labels: train_schedule.labels.to_vec(),
+            rolling_stock_name: train_schedule.rolling_stock_name,
+            start_time: train_schedule.start_time,
+            schedule: train_schedule.schedule,
+            margins: train_schedule.margins,
+            initial_speed: train_schedule.initial_speed,
+            comfort: train_schedule.comfort,
+            path: train_schedule.path,
+            constraint_distribution: train_schedule.constraint_distribution,
+            speed_limit_tag: train_schedule.speed_limit_tag.map(Into::into),
+            power_restrictions: train_schedule.power_restrictions,
+            options: train_schedule.options,
+            category: train_schedule
+                .main_category
+                .map(|main_category| TrainCategory::main(main_category.0))
+                .xor(train_schedule.sub_category.map(TrainCategory::sub)),
+        },
+        paced: train_schedule.time_window.and_then(|time_window| {
+            train_schedule.interval.map(|interval| Paced {
+                time_window: time_window.try_into().unwrap(),
+                interval: interval.try_into().unwrap(),
+                exceptions,
+            })
+        }),
+    }
 }
 
 impl TrainSchedule {
@@ -295,8 +328,7 @@ impl From<paced_train::TrainSchedule> for TrainScheduleChangeset {
                     .map(|p| p.time_window)
                     .map(ChronoDuration::from),
             )
-            .interval(paced.as_ref().map(|p| p.interval).map(ChronoDuration::from))
-            .exceptions(paced.map(|p| p.exceptions).unwrap_or_default());
+            .interval(paced.as_ref().map(|p| p.interval).map(ChronoDuration::from));
 
         match train_occurrence.category {
             Some(TrainCategory::Main { main_category }) => changeset
@@ -306,39 +338,6 @@ impl From<paced_train::TrainSchedule> for TrainScheduleChangeset {
                 .sub_category(Some(sub_category_code))
                 .main_category(None),
             None => changeset.sub_category(None).main_category(None),
-        }
-    }
-}
-
-impl From<TrainSchedule> for paced_train::TrainSchedule {
-    fn from(train_schedule: TrainSchedule) -> Self {
-        Self {
-            train_occurrence: schemas::TrainOccurrence {
-                train_name: train_schedule.train_name,
-                labels: train_schedule.labels.to_vec(),
-                rolling_stock_name: train_schedule.rolling_stock_name,
-                start_time: train_schedule.start_time,
-                schedule: train_schedule.schedule,
-                margins: train_schedule.margins,
-                initial_speed: train_schedule.initial_speed,
-                comfort: train_schedule.comfort,
-                path: train_schedule.path,
-                constraint_distribution: train_schedule.constraint_distribution,
-                speed_limit_tag: train_schedule.speed_limit_tag.map(Into::into),
-                power_restrictions: train_schedule.power_restrictions,
-                options: train_schedule.options,
-                category: train_schedule
-                    .main_category
-                    .map(|main_category| TrainCategory::main(main_category.0))
-                    .xor(train_schedule.sub_category.map(TrainCategory::sub)),
-            },
-            paced: train_schedule.time_window.and_then(|time_window| {
-                train_schedule.interval.map(|interval| Paced {
-                    time_window: time_window.try_into().unwrap(),
-                    interval: interval.try_into().unwrap(),
-                    exceptions: train_schedule.exceptions,
-                })
-            }),
         }
     }
 }
@@ -419,6 +418,7 @@ mod tests {
     use crate::models::fixtures::simple_paced_train_changeset;
     use crate::models::fixtures::simple_sub_category;
     use crate::models::train_schedule::OccurrenceId;
+    use crate::models::train_schedule::train_schedule_schema_from_model;
     use chrono::DateTime;
     use chrono::Utc;
     use database::DbConnectionPoolV2;
@@ -462,7 +462,6 @@ mod tests {
             time_window: chrono::Duration::try_hours(2),
             interval: chrono::Duration::try_minutes(30),
             sub_category: None,
-            exceptions: vec![],
         }
     }
 
@@ -535,7 +534,7 @@ mod tests {
     fn has_same_pace_when_nothing_changed() {
         let train_schedule = create_paced_train();
         let train_schedule_update: schemas::paced_train::TrainSchedule =
-            create_paced_train().into();
+            train_schedule_schema_from_model(create_paced_train(), vec![]);
         assert!(train_schedule.has_same_pace(&train_schedule_update.paced));
     }
 
@@ -543,7 +542,7 @@ mod tests {
     fn has_not_same_pace_when_interval_changed() {
         let train_schedule = create_paced_train();
         let mut train_schedule_update: schemas::paced_train::TrainSchedule =
-            create_paced_train().into();
+            train_schedule_schema_from_model(create_paced_train(), vec![]);
         train_schedule_update.paced.as_mut().unwrap().interval =
             chrono::Duration::minutes(60).try_into().unwrap();
         assert!(!train_schedule.has_same_pace(&train_schedule_update.paced));
@@ -553,7 +552,7 @@ mod tests {
     fn has_not_same_pace_when_time_window_changed() {
         let train_schedule = create_paced_train();
         let mut train_schedule_update: schemas::paced_train::TrainSchedule =
-            create_paced_train().into();
+            train_schedule_schema_from_model(create_paced_train(), vec![]);
         train_schedule_update.paced.as_mut().unwrap().time_window =
             chrono::Duration::hours(4).try_into().unwrap();
         assert!(!train_schedule.has_same_pace(&train_schedule_update.paced));

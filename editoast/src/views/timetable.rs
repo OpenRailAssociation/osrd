@@ -41,8 +41,6 @@ use editoast_models::timetable::Timetable;
 use editoast_models::timetable::TimetableWithTrains;
 use itertools::Itertools;
 use itertools::izip;
-use schemas::paced_train::Paced;
-use schemas::paced_train::TrainSchedule;
 use schemas::rolling_stock::EtcsBrakeParams;
 use schemas::rolling_stock::RollingResistance;
 use schemas::rolling_stock::RollingStock;
@@ -67,6 +65,7 @@ use crate::error::Result;
 use crate::models;
 use crate::models::Infra;
 use crate::models::train_schedule::OccurrenceId;
+use crate::models::train_schedule::train_schedule_schema_from_model;
 use crate::models::train_schedule_set::TrainScheduleSet;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
@@ -246,29 +245,17 @@ pub(in crate::views) async fn get_train_schedules(
         .map(|ts| {
             let id = ts.id;
             let train_schedule_set_id = ts.train_schedule_set_id;
-
-            let paced = if let (Some(interval), Some(time_window)) = (ts.interval, ts.time_window) {
-                Some(Paced {
-                    interval: interval.try_into().unwrap(),
-                    time_window: time_window.try_into().unwrap(),
-                    exceptions: exceptions
-                        .remove(&id)
-                        .unwrap_or_default()
-                        .into_iter()
-                        .map_into()
-                        .collect(),
-                })
-            } else {
-                None
-            };
-
+            let exceptions = exceptions
+                .remove(&id)
+                .unwrap_or_default()
+                .into_iter()
+                .map_into()
+                .collect();
+            let train_schedule = train_schedule_schema_from_model(ts, exceptions);
             TrainScheduleResponse {
                 id,
                 train_schedule_set_id,
-                train_schedule: TrainSchedule {
-                    train_occurrence: ts.into_train_occurrence(),
-                    paced,
-                },
+                train_schedule,
             }
         })
         .collect();

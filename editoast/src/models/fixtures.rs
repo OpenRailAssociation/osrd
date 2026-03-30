@@ -21,7 +21,6 @@ use schemas::TrainScheduleExceptionChangeGroups;
 use schemas::infra::InfraObject;
 use schemas::infra::RailJson;
 use schemas::paced_train::Paced;
-use schemas::paced_train::PacedTrainException;
 use schemas::paced_train::TrainNameChangeGroup;
 use schemas::paced_train::TrainSchedule;
 use schemas::primitives::OSRDObject;
@@ -128,18 +127,6 @@ pub async fn create_simple_paced_train(
     train_schedule_set_id: i64,
 ) -> models::TrainSchedule {
     simple_paced_train_changeset(train_schedule_set_id)
-        .create(conn)
-        .await
-        .expect("Failed to create paced train")
-}
-
-pub async fn create_paced_train_with_exceptions(
-    conn: &mut DbConnection,
-    train_schedule_set_id: i64,
-    exceptions: Vec<PacedTrainException>,
-) -> models::TrainSchedule {
-    let paced_train = simple_paced_train_changeset(train_schedule_set_id).exceptions(exceptions);
-    paced_train
         .create(conn)
         .await
         .expect("Failed to create paced train")
