@@ -2803,7 +2803,7 @@ mod tests {
         let (timetable, train_schedule_set) =
             create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
 
-        let train_schedule = create_paced_train_with_exceptions(
+        let (train_schedule, _) = create_paced_train_with_exceptions(
             &mut db_pool.get_ok(),
             train_schedule_set.id,
             vec![],
@@ -2876,7 +2876,7 @@ mod tests {
 
         create_fast_rolling_stock(&mut db_pool.get_ok(), "R2D2").await;
 
-        let train_schedule = create_paced_train_with_exceptions(
+        let (train_schedule, _) = create_paced_train_with_exceptions(
             &mut db_pool.get_ok(),
             train_schedule_set.id,
             vec![],

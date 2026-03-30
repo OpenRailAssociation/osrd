@@ -10,7 +10,6 @@ use schemas;
 use schemas::TrainScheduleException;
 use schemas::paced_train;
 use schemas::paced_train::Paced;
-use schemas::paced_train::PacedTrainException;
 use schemas::rolling_stock::TrainCategory;
 use schemas::train_schedule::Comfort;
 use schemas::train_schedule::Distribution;
@@ -60,8 +59,6 @@ pub struct TrainSchedule {
     pub main_category: Option<TrainMainCategory>,
     /// Sub category code
     pub sub_category: Option<String>,
-    #[model(json)]
-    pub exceptions: Vec<PacedTrainException>,
 }
 
 impl TrainSchedule {
@@ -295,8 +292,7 @@ impl From<paced_train::TrainSchedule> for TrainScheduleChangeset {
                     .map(|p| p.time_window)
                     .map(ChronoDuration::from),
             )
-            .interval(paced.as_ref().map(|p| p.interval).map(ChronoDuration::from))
-            .exceptions(paced.map(|p| p.exceptions).unwrap_or_default());
+            .interval(paced.as_ref().map(|p| p.interval).map(ChronoDuration::from));
 
         match train_occurrence.category {
             Some(TrainCategory::Main { main_category }) => changeset
@@ -336,7 +332,7 @@ impl From<TrainSchedule> for paced_train::TrainSchedule {
                 train_schedule.interval.map(|interval| Paced {
                     time_window: time_window.try_into().unwrap(),
                     interval: interval.try_into().unwrap(),
-                    exceptions: train_schedule.exceptions,
+                    exceptions: vec![],
                 })
             }),
         }
@@ -462,7 +458,6 @@ mod tests {
             time_window: chrono::Duration::try_hours(2),
             interval: chrono::Duration::try_minutes(30),
             sub_category: None,
-            exceptions: vec![],
         }
     }
 

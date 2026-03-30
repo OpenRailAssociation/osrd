@@ -17,11 +17,11 @@ use editoast_models::tags::Tags;
 use editoast_models::timetable::Timetable;
 use editoast_models::timetable_train_schedule_set::TimetableTrainScheduleSet;
 use editoast_models::train_schedule_exception::TrainScheduleException;
+use itertools::Itertools;
 use schemas::TrainScheduleExceptionChangeGroups;
 use schemas::infra::InfraObject;
 use schemas::infra::RailJson;
 use schemas::paced_train::Paced;
-use schemas::paced_train::PacedTrainException;
 use schemas::paced_train::TrainNameChangeGroup;
 use schemas::paced_train::TrainSchedule;
 use schemas::primitives::OSRDObject;
@@ -136,13 +136,24 @@ pub async fn create_simple_paced_train(
 pub async fn create_paced_train_with_exceptions(
     conn: &mut DbConnection,
     train_schedule_set_id: i64,
-    exceptions: Vec<PacedTrainException>,
-) -> models::TrainSchedule {
-    let paced_train = simple_paced_train_changeset(train_schedule_set_id).exceptions(exceptions);
-    paced_train
+    exceptions: Vec<TrainScheduleException>,
+) -> (models::TrainSchedule, Vec<TrainScheduleException>) {
+    let train_schedule = simple_paced_train_changeset(train_schedule_set_id);
+    let train_schedule = train_schedule
         .create(conn)
         .await
-        .expect("Failed to create paced train")
+        .expect("Failed to create paced train");
+
+    let exceptions_changesets = exceptions
+        .into_iter()
+        .map(|e| e.into_changeset())
+        .collect_vec();
+    let exceptions: Vec<TrainScheduleException> =
+        TrainScheduleException::create_batch(conn, exceptions_changesets)
+            .await
+            .expect("Failed to create train schedule exceptions");
+
+    (train_schedule, exceptions)
 }
 
 pub async fn create_train_schedule_exception(
