@@ -11,6 +11,23 @@
     pointer-events: none;
   }
 
+  .power-restriction-warning {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 47px;
+    padding-inline: 16px;
+    background: var(--warning5);
+    color: var(--warning60);
+    font-size: 0.875rem;
+    border-bottom: 1px solid var(--black25);
+
+    svg {
+      flex-shrink: 0;
+      color: var(--warning30);
+    }
+  }
+
   .table-container {
     // Because of the virtualization, we have to "opt-out" of the border collapsing:
     // setting spacing to zero and only showing the right and bottom border on every cell
@@ -314,7 +331,7 @@
     }
 
     td.col-power-restriction {
-      min-width: 93px;
+      min-width: 94px;
       padding-inline: 0;
 
       .power-restriction-select-wrapper {
@@ -337,10 +354,6 @@
 
           option {
             color: initial;
-
-            &:checked {
-              color: var(--primary60);
-            }
           }
         }
 
@@ -351,6 +364,28 @@
           transform: translateY(-50%);
           pointer-events: none;
           color: var(--black25);
+        }
+      }
+
+      &.power-restriction-incompatible {
+        background: var(--warning5);
+        // Override the cell's `overflow: hidden` so the ::after border (which
+        // extends 1px outside the cell via `inset: -1px`) is not clipped.
+        overflow: visible;
+
+        // Pseudo-element to draw the warning border independently of the table's
+        // border-collapse algorithm, which produces inconsistent border widths at
+        // non-integer device pixel ratios.
+        &::after {
+          content: '';
+          position: absolute;
+          inset: -1px;
+          border: 1px solid var(--warning30);
+          pointer-events: none;
+        }
+
+        select {
+          color: var(--warning60);
         }
       }
     }
@@ -482,4 +517,3 @@
   height: 16px;
   border-radius: 8px;
 }
-

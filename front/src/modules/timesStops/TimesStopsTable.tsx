@@ -1,7 +1,7 @@
 import React, { useCallback, Fragment, useMemo, useRef } from 'react';
 
 import { Checkbox } from '@osrd-project/ui-core';
-import { Moon, TriangleDown } from '@osrd-project/ui-icons';
+import { Alert, Moon, TriangleDown } from '@osrd-project/ui-icons';
 import {
   createColumnHelper,
   flexRender,
@@ -38,6 +38,8 @@ declare module '@tanstack/react-table' {
     allRows: TimesStopsRowNew[];
     isComputedDataPending?: boolean;
     availablePowerRestrictions: string[];
+    powerRestrictionWarningCount: number;
+    incompatiblePowerRestrictionIds: Set<string>;
     onArrivalChange: (
       row: TimesStopsRowNew,
       arrival: Date | null,
@@ -96,6 +98,8 @@ type TimesStopsTableProps = {
   isValid: boolean;
   isComputedDataPending?: boolean;
   availablePowerRestrictions: string[];
+  powerRestrictionWarningCount?: number;
+  incompatiblePowerRestrictionIds?: Set<string>;
   onArrivalChange: (
     row: TimesStopsRowNew,
     arrival: Date | null,
@@ -131,6 +135,8 @@ const TimesStopsTable = ({
   isValid,
   isComputedDataPending,
   availablePowerRestrictions,
+  powerRestrictionWarningCount = 0,
+  incompatiblePowerRestrictionIds,
   onArrivalChange,
   onStopDurationChange,
   onDepartureChange,
@@ -549,6 +555,8 @@ const TimesStopsTable = ({
       allRows: rows,
       isComputedDataPending,
       availablePowerRestrictions,
+      powerRestrictionWarningCount,
+      incompatiblePowerRestrictionIds: incompatiblePowerRestrictionIds ?? new Set(),
       onArrivalChange,
       onStopDurationChange,
       onDepartureChange,
@@ -635,6 +643,14 @@ const TimesStopsTable = ({
       ref={virtualizedWrapperRef}
       style={{ height: `${virtualizer.getTotalSize() + HEADER_HEIGHT}px` }}
     >
+      {powerRestrictionWarningCount > 0 && (
+        <div className="power-restriction-warning">
+          <Alert variant="fill" />
+          <span>
+            {t('powerRestrictionIncompatibility', { count: powerRestrictionWarningCount })}
+          </span>
+        </div>
+      )}
       <table className="table-container">
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -709,7 +725,14 @@ const TimesStopsTable = ({
                   ref={!hasDayChanged ? virtualizer.measureElement : undefined}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className={cell.column.columnDef.meta?.className}>
+                    <td
+                      key={cell.id}
+                      className={cx(cell.column.columnDef.meta?.className, {
+                        'power-restriction-incompatible':
+                          cell.column.id === 'powerRestriction' &&
+                          table.options.meta!.incompatiblePowerRestrictionIds.has(row.original.id),
+                      })}
+                    >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
                   ))}

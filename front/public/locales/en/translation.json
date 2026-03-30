@@ -834,6 +834,8 @@
     "noPathLoaded": "No path loaded",
     "operational_point": "operational point",
     "powerRestriction": "power restriction",
+    "powerRestrictionIncompatibility_one": "{{count}} power restriction code isn't compatible with the electrification.",
+    "powerRestrictionIncompatibility_other": "{{count}} power restriction codes aren't compatible with the electrification.",
     "propagationMenu": {
       "atThisWaypoint": "at this waypoint",
       "fromDeparture": "from departure",

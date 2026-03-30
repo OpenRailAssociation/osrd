@@ -164,50 +164,42 @@ export const insertScheduleItemInOrder = (
 };
 
 /**
- * Compute the optimistic display values for all row fields when a cell is edited.
+ * Compute the optimistic display values for the fields affected by a cell edit.
+ * Returns only the fields that need to change — the caller is expected to merge
+ * the result with the row (e.g. `{ ...row, ...computeOptimisticRow(row, edit) }`).
  */
 export const computeOptimisticRow = (
   row: TimesStopsRowNew,
   edit: OptimisticEdit
-): Pick<
-  TimesStopsRowNew,
-  | 'requestedArrival'
-  | 'stopDuration'
-  | 'requestedDeparture'
-  | 'closedSignal'
-  | 'shortSlipDistance'
-  | 'requestedTheoreticalMargin'
-  | 'powerRestriction'
+): Partial<
+  Pick<
+    TimesStopsRowNew,
+    | 'requestedArrival'
+    | 'stopDuration'
+    | 'requestedDeparture'
+    | 'closedSignal'
+    | 'shortSlipDistance'
+    | 'requestedTheoreticalMargin'
+    | 'powerRestriction'
+  >
 > => {
   if (edit.field === 'powerRestriction') {
-    return {
-      requestedArrival: row.requestedArrival,
-      stopDuration: row.stopDuration,
-      requestedDeparture: row.requestedDeparture,
-      closedSignal: row.closedSignal,
-      shortSlipDistance: row.shortSlipDistance,
-      requestedTheoreticalMargin: row.requestedTheoreticalMargin,
-      powerRestriction: edit.value,
-    };
+    return { powerRestriction: edit.value };
+  }
+  if (edit.field === 'receptionSignal') {
+    return receptionSignalToSignalBooleans(edit.value);
+  }
+  if (edit.field === 'requestedTheoreticalMargin') {
+    return { requestedTheoreticalMargin: edit.value ?? undefined };
   }
   const { arrival, stop, departure } = applyScheduleEdit(
     { arrival: row.requestedArrival, stop: row.stopDuration },
     edit
   );
-  const checkboxes =
-    edit.field === 'receptionSignal'
-      ? receptionSignalToSignalBooleans(edit.value)
-      : { closedSignal: row.closedSignal, shortSlipDistance: row.shortSlipDistance };
   return {
     requestedArrival: arrival,
     stopDuration: stop,
     requestedDeparture: departure,
-    ...checkboxes,
-    requestedTheoreticalMargin:
-      edit.field === 'requestedTheoreticalMargin'
-        ? (edit.value ?? undefined)
-        : row.requestedTheoreticalMargin,
-    powerRestriction: row.powerRestriction,
   };
 };
 
