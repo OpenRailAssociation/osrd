@@ -300,10 +300,11 @@ const PathStepItem = ({
           }}
         >
           <span className="counter">{!isTrailingPlaceHolder && index}</span>
-
-          <span className="remove-path-step-icon">
-            <X />
-          </span>
+          {!isOnlyStep && (
+            <span className="remove-path-step-icon">
+              <X />
+            </span>
+          )}
         </button>
 
         {isMapSelectionMode ? (

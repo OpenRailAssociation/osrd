@@ -151,15 +151,13 @@ const ItineraryModal = ({
     commitSelectionForStep(stepId, formatChosenValue(suggestion, chosenCh));
     resetOpSuggestions();
   };
-
-  const isOnlyStep = pathSteps.filter((s) => !isEmptyStep(s, getInputForStep(s.id))).length <= 1;
+  const isOnlyStep = pathSteps.length === 1;
 
   const hasInvalidPathStep = pathSteps.some((step) => {
     if (isEmptyStep(step, getInputForStep(step.id))) return false;
     const meta = pathStepsMetadataById.get(step.id);
     return !meta || meta.isInvalid;
   });
-
   const handleDeletePathStep = (stepId: string) => {
     resetOpSuggestions();
 
@@ -561,7 +559,6 @@ const ItineraryModal = ({
                       (isInvalid || !!previousPathStepMetadata?.isInvalid)
                     }
                     onDelete={() => {
-                      if (isOnlyStep) return;
                       handleDeletePathStep(pathStep.id);
                     }}
                     onOpFocus={() => markEditing(pathStep.id)}
