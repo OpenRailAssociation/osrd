@@ -711,7 +711,7 @@ class EngineeringAllowanceTests {
                 .setEndLocations(setOf(BlockLocation(blocks.last(), Offset(1.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .setTimeStep(timeStep)
-                .setRollingStock(VERY_LONG_FAST_TRAIN)
+                .setRollingStocks(listOf(VERY_LONG_FAST_TRAIN))
                 .setStandardAllowance(AllowanceValue.Percentage(10.0))
                 .run()!!
         occupancyTest(res, occupancyGraph, 2 * timeStep)

@@ -11,10 +11,7 @@ import kotlin.math.*
  * This class contains all the methods used to handle allowances. This is how we add delays in
  * limited ranges of the path.
  */
-class EngineeringAllowanceManager(
-    private val constDeceleration: Double,
-    private val graph: STDCMGraph?,
-) {
+class EngineeringAllowanceManager(private val graph: STDCMGraph?) {
 
     // Account for the approximations made during const deceleration,
     // not to be too optimistic in allowance opportunities
@@ -38,8 +35,6 @@ class EngineeringAllowanceManager(
      * time.
      */
     fun checkEngineeringAllowance(prevNode: STDCMNode, expectedStartTime: Double): Distance? {
-        assert(constDeceleration > 0.0)
-
         val requiredAdditionalTime = expectedStartTime - prevNode.timeData.earliestReachableTime
 
         val opportunities = prevNode.allowanceOpportunities
@@ -111,7 +106,7 @@ class EngineeringAllowanceManager(
                 computeConstDeceleration(
                     cachedSegments.drop(i + 1),
                     newBeginSpeed,
-                    constDeceleration * constDecelerationScaling,
+                    segment.constDeceleration * constDecelerationScaling,
                 )
             val decelerationResults = checkDeceleration(decelerationSequence, newBeginSpeed)
             if (decelerationResults.hasConflict) break

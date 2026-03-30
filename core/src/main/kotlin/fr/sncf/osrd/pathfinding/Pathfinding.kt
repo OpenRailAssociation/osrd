@@ -76,7 +76,7 @@ private fun makeRemainingDistanceHeuristics(
 class Pathfinding(
     val fullInfra: FullInfra,
     val waypoints: List<Collection<BlockLocation>>,
-    val constraints: List<PathfindingConstraint>,
+    val constraints: List<PathfindingConstraint>?,
     val speedLimitTag: String?,
     val rollingStockMaxSpeed: Double,
     rollingStockLength: Double,
@@ -153,8 +153,9 @@ class Pathfinding(
 
     fun runPathfinding(timeout: Double = TIMEOUT): InfraExplorer? {
         val constraintCombiner =
-            CachedBlockConstraintCombiner.getCachedConstraintCombiner(fullInfra, constraints)
-
+            constraints?.let {
+                CachedBlockConstraintCombiner.getCachedConstraintCombiner(fullInfra, it)
+            }
         val startTime = Instant.now()
         val seenBlocks = HashMap<BlockId, Int>()
 
@@ -223,7 +224,7 @@ class Pathfinding(
         rawInfra: RawSignalingInfra,
         blockInfra: BlockInfra,
         waypoints: List<Collection<BlockLocation>>,
-        constraints: PathfindingConstraint,
+        constraints: PathfindingConstraint?,
     ): Collection<InfraExplorer> {
         val res = mutableListOf<InfraExplorer>()
         val firstStep = waypoints[0]
@@ -235,7 +236,7 @@ class Pathfinding(
                     blockInfra,
                     location,
                     steps = steps,
-                    constraints = constraints,
+                    constraints = constraints?.let { MutableList(waypoints.size) { _ -> it } },
                 )
             res.addAll(infraExplorers)
         }

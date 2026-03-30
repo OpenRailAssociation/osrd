@@ -1,15 +1,16 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
+import fr.sncf.osrd.api.ConsistSchedule
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.conflicts.SpacingRequirement
 import fr.sncf.osrd.conflicts.SpacingResourceGenerator
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
-import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.stdcm.graph.TimeData
 import fr.sncf.osrd.train.TrainStop
+import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.appendOnlyLinkedListOf
 import fr.sncf.osrd.utils.units.Duration
 import fr.sncf.osrd.utils.units.Length
@@ -63,6 +64,9 @@ interface InfraExplorerWithEnvelope : InfraExplorer {
     /** Returns the length of the simulated section of the path */
     fun getSimulatedLength(): Length<PhysicsPath>
 
+    /** Return the rolling stock that is applying to the current reached step */
+    fun getCurrentRollingStock(): PhysicsRollingStock
+
     /**
      * Generate a list of reached train stops, mostly for debugging purposes. Lookahead isn't
      * included.
@@ -79,6 +83,8 @@ interface InfraExplorerWithEnvelope : InfraExplorer {
     override fun moveForward(): InfraExplorerWithEnvelope
 
     fun endAtStop(): Boolean
+
+    fun getFullRollingStockRangeMap(): DistanceRangeMap<PhysicsRollingStock>
 }
 
 data class PlannedTimingData(
@@ -112,23 +118,22 @@ data class PlannedTimingData(
 fun initInfraExplorerWithEnvelope(
     fullInfra: FullInfra,
     location: BlockLocation,
-    rollingStock: PhysicsRollingStock,
+    consistSchedule: ConsistSchedule,
     steps: List<ExplorerStep> = listOf(),
-    constraints: PathfindingConstraint? = null,
 ): Collection<InfraExplorerWithEnvelope> {
     return initInfraExplorers(
             fullInfra.rawInfra,
             fullInfra.blockInfra,
             location,
             steps = steps,
-            constraints,
+            consistSchedule.constraints,
         )
         .map { explorer ->
             InfraExplorerWithEnvelopeImpl(
                 explorer,
                 appendOnlyLinkedListOf(),
                 SpacingResourceGenerator(fullInfra),
-                rollingStock,
+                consistSchedule,
             )
         }
 }

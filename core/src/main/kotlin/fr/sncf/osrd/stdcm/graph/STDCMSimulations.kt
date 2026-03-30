@@ -11,6 +11,7 @@ import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint
 import fr.sncf.osrd.envelope_sim.Comfort
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
+import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration
 import fr.sncf.osrd.envelope_sim.pipelines.SimStop
 import fr.sncf.osrd.envelope_sim.pipelines.maxEffortEnvelopeFrom
@@ -23,7 +24,6 @@ import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.stdcm.BacktrackingSelfTypeHolder
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
-import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.SelfTypeHolder
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
@@ -42,7 +42,7 @@ class STDCMSimulations {
      * simulatedEnvelopes, otherwise computes the matching envelope and adds it to the STDCMGraph.
      */
     fun simulateBlock(
-        rollingStock: RollingStock,
+        rollingStock: PhysicsRollingStock,
         comfort: Comfort?,
         timeStep: Double,
         trainTag: String?,
@@ -80,7 +80,7 @@ class STDCMSimulations {
         infraExplorer: InfraExplorer,
         initialSpeed: Double,
         start: Offset<Block>,
-        rollingStock: RollingStock,
+        rollingStock: PhysicsRollingStock,
         comfort: Comfort?,
         timeStep: Double,
         stopPosition: Offset<Block>?,

@@ -7,12 +7,14 @@ import fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType
 import fr.sncf.osrd.envelope.part.constraints.PositionConstraint
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
+import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.stdcm.graph.STDCMEdge
 import fr.sncf.osrd.stdcm.graph.STDCMGraph
+import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.meters
 
@@ -26,6 +28,8 @@ data class SimulationSegment(
     val beginSpeed: Double,
     val travelTime: Double,
     val maxAddedDelay: Double,
+    val constDeceleration: Double,
+
     // Function to compute an acceleration over this segment. Can be dummy values for tests,
     // wrap a full simulation pipeline in normal processing.
     val computeAccelSequenceFromEndSpeed: (Double) -> SummarizedSimulationResult?,
@@ -87,6 +91,9 @@ fun generatePreviousSimulationSegments(
                     beginSpeed = segmentStart.speed,
                     travelTime = travelTime,
                     maxAddedDelay = maxAddedDelay,
+                    constDeceleration =
+                        (currentEdgeSnapshot.infraExplorer.getCurrentRollingStock() as RollingStock)
+                            .constGamma,
                     computeAccelSequenceFromEndSpeed = { endSpeed ->
                         val pathProperties =
                             currentEdgeSnapshot.infraExplorer.getCurrentEdgePathProperties(
@@ -94,7 +101,12 @@ fun generatePreviousSimulationSegments(
                                     currentEdgeSnapshot.envelopeStartOffset + segmentStartOffset,
                                 length = segmentEndOffset - segmentStartOffset,
                             )
-                        computeAcceleration(pathProperties, endSpeed, graph!!)
+                        computeAcceleration(
+                            pathProperties,
+                            endSpeed,
+                            graph!!,
+                            currentEdgeSnapshot.infraExplorer.getCurrentRollingStock(),
+                        )
                     },
                 )
             )
@@ -111,6 +123,7 @@ private fun computeAcceleration(
     pathProperties: TrainPath,
     endSpeed: Double,
     graph: STDCMGraph,
+    rollingStock: PhysicsRollingStock,
 ): SummarizedSimulationResult? {
     // TODO: we could look into using const accelerations here as well instead of using
     // envelopes. We'd need to estimate the max slope for each segment.
@@ -119,12 +132,7 @@ private fun computeAcceleration(
     // TODO: building an EnvelopeTrainPath each time is very expensive, we should really cache them
     // over blocks and implement views for block segments.
     val context =
-        fr.sncf.osrd.stdcm.graph.build(
-            graph.rollingStock,
-            pathProperties,
-            graph.timeStep,
-            graph.comfort,
-        )
+        fr.sncf.osrd.stdcm.graph.build(rollingStock, pathProperties, graph.timeStep, graph.comfort)
 
     // Compute the speedup part to reach the end speed
     val speedupPartBuilder = EnvelopePartBuilder()

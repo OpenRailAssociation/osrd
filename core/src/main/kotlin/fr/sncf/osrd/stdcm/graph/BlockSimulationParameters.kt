@@ -11,6 +11,7 @@ import fr.sncf.osrd.utils.units.Offset
 data class BlockSimulationParameters(
     val block: BlockId,
     val initialSpeed: Double,
+    val currentStep: Int,
     val start: Offset<Block>,
     val stop: Offset<Block>?,
 )

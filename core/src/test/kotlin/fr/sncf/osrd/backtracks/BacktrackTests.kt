@@ -9,6 +9,7 @@ import fr.sncf.osrd.api.path_properties.makePathPropResponse
 import fr.sncf.osrd.api.standalone_sim.SimulationScheduleItem
 import fr.sncf.osrd.conflicts.PathStop
 import fr.sncf.osrd.envelope_sim.Comfort
+import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.path.implementations.PartialBlockRange
 import fr.sncf.osrd.path.implementations.buildRangeList
@@ -32,6 +33,7 @@ import fr.sncf.osrd.standalone_sim.zoneOccupationChangeEvents
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN
 import fr.sncf.osrd.train.TrainStop
+import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.Helpers.fullInfraFromFile
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.offsetRangeMapOf
@@ -383,9 +385,17 @@ class BacktrackTests {
     @Test
     fun testZoneOccupationBacktrackOverNothing() {
         val path = buildPathBacktrackingOverNothing(infra, rollingStock.length.meters)
+        val rollingStocks =
+            distanceRangeMapOf(
+                DistanceRangeMap.RangeMapEntry(
+                    0.meters,
+                    path.length.meters,
+                    rollingStock as PhysicsRollingStock,
+                )
+            )
         val stops = listOf(TrainStop(9700.0, 60.0, SHORT_SLIP_STOP), TrainStop(18700.0, 0.0, OPEN))
         val envelope = computeMrspWithStops(path, stops)
-        val zoneOccupationChangeEvents = zoneOccupationChangeEvents(path, envelope, 400.meters)
+        val zoneOccupationChangeEvents = zoneOccupationChangeEvents(path, envelope, rollingStocks)
 
         assertEquals(
             mapOf(
@@ -431,9 +441,17 @@ class BacktrackTests {
     @Test
     fun testZoneOccupationBacktrackingOverRouteDelimiter() {
         val path = buildPathBacktrackingOverRouteDelimiter(infra, rollingStock.length.meters)
+        val rollingStocks =
+            distanceRangeMapOf(
+                DistanceRangeMap.RangeMapEntry(
+                    0.meters,
+                    path.length.meters,
+                    rollingStock as PhysicsRollingStock,
+                )
+            )
         val stops = listOf(TrainStop(8000.0, 60.0, SHORT_SLIP_STOP), TrainStop(15300.0, 0.0, OPEN))
         val envelope = computeMrspWithStops(path, stops)
-        val zoneOccupationChangeEvents = zoneOccupationChangeEvents(path, envelope, 400.meters)
+        val zoneOccupationChangeEvents = zoneOccupationChangeEvents(path, envelope, rollingStocks)
 
         assertEquals(
             mapOf(
@@ -461,9 +479,17 @@ class BacktrackTests {
     fun testZoneOccupationBacktrackShortlyAfterRouteDelimiter() {
         val path =
             buildPathBacktrackingShortlyAfterRouteDelimiter(infra, rollingStock.length.meters)
+        val rollingStocks =
+            distanceRangeMapOf(
+                DistanceRangeMap.RangeMapEntry(
+                    0.meters,
+                    path.length.meters,
+                    rollingStock as PhysicsRollingStock,
+                )
+            )
         val stops = listOf(TrainStop(8400.0, 60.0, STOP), TrainStop(16400.0, 0.0, OPEN))
         val envelope = computeMrspWithStops(path, stops)
-        val zoneOccupationChangeEvents = zoneOccupationChangeEvents(path, envelope, 400.meters)
+        val zoneOccupationChangeEvents = zoneOccupationChangeEvents(path, envelope, rollingStocks)
 
         assertEquals(
             mapOf(

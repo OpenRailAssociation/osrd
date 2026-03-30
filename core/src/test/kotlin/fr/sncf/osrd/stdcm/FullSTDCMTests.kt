@@ -44,14 +44,15 @@ class FullSTDCMTests {
     @Throws(IOException::class, URISyntaxException::class)
     fun testTinyInfra() {
         val infra = Helpers.fullInfraFromFile("tiny_infra/infra.json")
+        val rollingStock =
+            parseRawRollingStock(
+                Helpers.getExampleRollingStock("fast_rolling_stock.json"),
+                rollingStockSupportedSignalingSystems = listOf("BAL"),
+            )
         STDCMPathfindingBuilder()
             .setInfra(infra)
-            .setRollingStock(
-                parseRawRollingStock(
-                    Helpers.getExampleRollingStock("fast_rolling_stock.json"),
-                    rollingStockSupportedSignalingSystems = listOf("BAL"),
-                )
-            )
+            .setRollingStocks(listOf(rollingStock))
+            .setBoundaries(listOf())
             .setStartLocations(
                 setOf(
                     convertRouteLocationToBlockLocation(

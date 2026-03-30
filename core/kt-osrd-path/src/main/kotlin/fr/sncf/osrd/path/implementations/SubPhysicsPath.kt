@@ -4,13 +4,14 @@ import fr.sncf.osrd.path.interfaces.Electrification
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.OffsetRangeMap
+import fr.sncf.osrd.utils.POSITION_EPSILON
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.offsetRangeMapOf
 import fr.sncf.osrd.utils.units.meters
 
 class SubPhysicsPath(val begin: Double, val end: Double, val path: PhysicsPath) : PhysicsPath {
     init {
-        require(begin in 0.0..<end && end <= path.length)
+        require(begin in 0.0..<end && end <= path.length + POSITION_EPSILON)
     }
 
     override val length: Double

@@ -1,12 +1,10 @@
 package fr.sncf.osrd.stdcm.graph
 
+import fr.sncf.osrd.api.ConsistSchedule
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.envelope_sim.Comfort
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
-import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.pathfinding.Pathfinding
-import fr.sncf.osrd.pathfinding.constraints.CachedBlockConstraintCombiner
-import fr.sncf.osrd.pathfinding.constraints.initConstraints
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.TrackSectionId
@@ -48,7 +46,7 @@ val logger: Logger = LoggerFactory.getLogger("STDCM")
  */
 fun findPath(
     fullInfra: FullInfra,
-    rollingStock: RollingStock,
+    consistSchedule: ConsistSchedule,
     comfort: Comfort?,
     startTime: Double,
     steps: List<ExplorerStep>,
@@ -66,7 +64,7 @@ fun findPath(
 ): STDCMResult? {
     return STDCMPathfinding(
             fullInfra,
-            rollingStock,
+            consistSchedule,
             comfort,
             startTime,
             steps,
@@ -87,7 +85,7 @@ fun findPath(
 
 class STDCMPathfinding(
     private val fullInfra: FullInfra,
-    private val rollingStock: RollingStock,
+    private val consistSchedule: ConsistSchedule,
     private val comfort: Comfort?,
     private val startTime: Double,
     private val steps: List<ExplorerStep>,
@@ -106,15 +104,10 @@ class STDCMPathfinding(
 
     private var starts: Set<STDCMNode> = HashSet()
 
-    val constraints =
-        CachedBlockConstraintCombiner(
-            initConstraints(fullInfra, rollingStock, allowedTrackSections).toMutableList()
-        )
-
     var graph: STDCMGraph =
         STDCMGraph(
             fullInfra,
-            rollingStock,
+            consistSchedule,
             comfort,
             timeStep,
             blockAvailability,
@@ -124,7 +117,6 @@ class STDCMPathfinding(
             tag,
             standardAllowance,
             temporarySpeedLimitManager,
-            constraints,
             searchMetadata,
             failureExplainer,
         )
@@ -134,7 +126,7 @@ class STDCMPathfinding(
         runInputSanityChecks()
 
         assert(steps.last().stop) { "The last stop is supposed to be an actual stop" }
-        starts = getStartNodes(graph, constraints)
+        starts = getStartNodes(graph, consistSchedule)
         val path = findPathImpl()
         graph.stdcmSimulations.logWarnings()
         if (path == null) {
@@ -149,7 +141,7 @@ class STDCMPathfinding(
                     fullInfra,
                     path,
                     graph.standardAllowance,
-                    rollingStock,
+                    consistSchedule.rollingStocks as List<RollingStock>,
                     timeStep,
                     comfort,
                     maxRunTime,
@@ -182,7 +174,11 @@ class STDCMPathfinding(
         if (steps.size < 2)
             throw OSRDError(ErrorType.InvalidSTDCMInputs)
                 .withContext("cause", "Not enough steps have been set to find a path")
-
+        // Check consist changes
+        if (consistSchedule.rollingStocks.size != steps.size) {
+            throw OSRDError(ErrorType.InvalidSTDCMInputs)
+                .withContext("cause", "Different number of rolling stocks and steps")
+        }
         // Check that the step timing makes sense: they can be reached in order and inside the
         // search time window
         val maxArrivalTime = startTime + maxDepartureDelay + maxRunTime
@@ -291,16 +287,13 @@ class STDCMPathfinding(
     }
 
     /** Converts start locations into starting nodes. */
-    private fun getStartNodes(
-        graph: STDCMGraph,
-        constraints: PathfindingConstraint,
-    ): Set<STDCMNode> {
+    private fun getStartNodes(graph: STDCMGraph, consistSchedule: ConsistSchedule): Set<STDCMNode> {
         val res = HashSet<STDCMNode>()
         val firstStep = steps[0]
         assert(!firstStep.stop)
         for (location in firstStep.locations) {
             val infraExplorers =
-                initInfraExplorerWithEnvelope(fullInfra, location, rollingStock, steps, constraints)
+                initInfraExplorerWithEnvelope(fullInfra, location, consistSchedule, steps)
             val extended = infraExplorers.flatMap { extendLookaheadUntil(it, 3) }
             for (explorer in extended) {
                 val node =

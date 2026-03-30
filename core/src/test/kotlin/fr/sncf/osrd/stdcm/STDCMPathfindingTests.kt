@@ -843,7 +843,7 @@ class STDCMPathfindingTests {
             )
             .setEndLocations(setOf(BlockLocation(blocks[2], Offset(1_000.meters))))
             .setUnavailableTimes(occupancyGraph)
-            .setRollingStock(TestTrains.VERY_LONG_FAST_TRAIN)
+            .setRollingStocks(listOf(TestTrains.VERY_LONG_FAST_TRAIN))
             .setMaxDepartureDelay(0.0)
             .run()!!
     }

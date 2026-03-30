@@ -9,9 +9,11 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.OPE
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.stdcm.STDCMResult
+import fr.sncf.osrd.stdcm.infra_exploration.StepTracker
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TrainStop
+import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.arePositionsEqual
 import fr.sncf.osrd.utils.isTimeStrictlyPositive
 import fr.sncf.osrd.utils.units.meters
@@ -34,7 +36,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         infra: FullInfra,
         path: Result,
         standardAllowance: AllowanceValue?,
-        rollingStock: RollingStock,
+        rollingStocks: List<RollingStock>,
         timeStep: Double,
         comfort: Comfort?,
         maxRunTime: Double,
@@ -56,13 +58,18 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
 
         val updatedTimeData = computeTimeData(edges)
         val stops = makeStops(edges, updatedTimeData)
+        val consistChanges =
+            makeConsistChanges(
+                rollingStocks,
+                edges.last().infraExplorerWithNewEnvelope.getStepTracker(),
+            )
         val withAllowance =
             buildFinalEnvelope(
                 graph,
                 edges,
                 standardAllowance,
                 trainPath,
-                rollingStock,
+                consistChanges,
                 timeStep,
                 comfort,
                 blockAvailability,
@@ -73,6 +80,8 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
             STDCMResult(
                 withAllowance.envelope,
                 trainPath,
+                path.edges.last().infraExplorerWithNewEnvelope.getFullRollingStockRangeMap()
+                    as DistanceRangeMap<RollingStock>,
                 routes,
                 updatedTimeData.departureTime,
 
@@ -224,4 +233,39 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         mutStops.addAll(makeOpStops(trainPath))
         return sortAndMergeStopsDuplicates(mutStops)
     }
+}
+
+/**
+ * Associate the rolling stocks used in the simulation to the offset on which they are used in the
+ * result envelope.
+ */
+private fun makeConsistChanges(
+    rollingStocksPerStep: List<RollingStock>,
+    finalPathSteps: StepTracker,
+): List<ConsistChange> {
+    // Inconsistent inputs
+    assert(rollingStocksPerStep.size == finalPathSteps.getSeenSteps().size)
+    assert(finalPathSteps.getSeenSteps()[0].travelledPathOffset.distance == 0.meters)
+    val consistsPerStep =
+        rollingStocksPerStep.slice(0..rollingStocksPerStep.size - 2).mapIndexed {
+            index,
+            rollingStock ->
+            ConsistChange(
+                rollingStock,
+                finalPathSteps
+                    .iterateSeenStepsBackwards()
+                    .toList()
+                    .reversed()
+                    .filter { it.travelledPathOffset.distance != 0.meters }
+                    .filter { it.isPlanned }
+                    .elementAt(index)
+                    .travelledPathOffset,
+            )
+        }
+    return consistsPerStep
+        .filterIndexed { index, consist ->
+            index == consistsPerStep.size - 1 ||
+                consist.rollingStock != consistsPerStep[index + 1].rollingStock
+        }
+        .toList()
 }

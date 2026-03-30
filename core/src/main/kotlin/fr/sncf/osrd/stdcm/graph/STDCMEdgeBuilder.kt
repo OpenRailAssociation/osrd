@@ -86,7 +86,7 @@ internal constructor(
         if (envelope == null)
             envelope =
                 graph.stdcmSimulations.simulateBlock(
-                    graph.rollingStock,
+                    infraExplorer.getCurrentRollingStock(),
                     graph.comfort,
                     graph.timeStep,
                     graph.tag,
@@ -95,6 +95,7 @@ internal constructor(
                     BlockSimulationParameters(
                         infraExplorer.getCurrentBlock(),
                         prevNode.speed,
+                        infraExplorer.getStepTracker().getCurrentReachedPlannedStepIndex(),
                         startOffset,
                         getNextStopOnCurrentBlock(infraExplorer),
                     ),
