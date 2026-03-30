@@ -492,11 +492,30 @@ const TimesStopsTable = ({
     ])
   );
 
-  const getRowDayOffset = (row: Row<TimesStopsRowNew>) =>
-    calculateTimeDifferenceInDays(
-      startTime,
-      row.original.computedArrival ?? row.original.requestedArrival ?? undefined
-    ) ?? 0;
+  const getRowDayOffset = (row: Row<TimesStopsRowNew>): number | null => {
+    if (!row.original.isPathStep) return null;
+    const date = row.original.computedArrival ?? row.original.requestedArrival;
+    if (!date) return null;
+    return calculateTimeDifferenceInDays(startTime, date);
+  };
+
+  const tableRows = table.getRowModel().rows;
+
+  /**
+   * For each row, compute the effective day offset relative to the train start time.
+   * Non-path-step rows (e.g. via points without times) inherit the previous row's offset
+   * so that day-change banners are only shown when the day actually changes.
+   */
+  const effectiveDayOffsets = tableRows.reduce<number[]>((acc, row, i) => {
+    const rawOffset = getRowDayOffset(row);
+    if (rawOffset !== null) {
+      acc.push(rawOffset);
+    } else {
+      const prevOffset = i > 0 ? acc[i - 1] : 0;
+      acc.push(prevOffset);
+    }
+    return acc;
+  }, []);
 
   if (rows.length === 0) {
     return (
@@ -533,11 +552,10 @@ const TimesStopsTable = ({
             invalid: !isValid || scheduleNotHonored,
           })}
         >
-          {table.getRowModel().rows.map((row, rowIndex) => {
-            const prevRow = rowIndex > 0 ? table.getRowModel().rows[rowIndex - 1] : null;
+          {tableRows.map((row, rowIndex) => {
             const rowArrivalDate = row.original.computedArrival ?? row.original.requestedArrival;
-            const dayOffset = getRowDayOffset(row);
-            const prevDayOffset = prevRow ? getRowDayOffset(prevRow) : 0;
+            const dayOffset = effectiveDayOffsets[rowIndex];
+            const prevDayOffset = rowIndex > 0 ? effectiveDayOffsets[rowIndex - 1] : 0;
 
             return (
               <Fragment key={row.id}>
