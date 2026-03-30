@@ -9,6 +9,7 @@
   "name": "short_fast_rolling_stock",
   "mass": 900000,
   "loading_gauge": "G1",
+  "power_restrictions": {},
   "const_gamma": 0.5,
   "rolling_resistance": {
     "type": "davis",
