@@ -1331,7 +1331,7 @@ class PathfindingTests {
         infra: DummyInfra,
         rollingStock: RollingStock = TestTrains.REALISTIC_FAST_TRAIN,
         speedLimitTag: String? = null,
-        constraints: List<PathfindingConstraint> = listOf(),
+        constraints: List<PathfindingConstraint>? = null,
         timeout: Double? = null,
     ): InfraExplorer? {
         if (timeout == null)

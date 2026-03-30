@@ -528,8 +528,8 @@ class EnvelopePart(
      */
     fun copyAndShift(
         positionDelta: Double,
-        minPosition: Double,
-        maxPosition: Double,
+        minPosition: Double? = null,
+        maxPosition: Double? = null,
     ): EnvelopePart {
         val newPositions = DoubleArrayList()
         val newSpeeds = DoubleArrayList()
@@ -537,7 +537,9 @@ class EnvelopePart(
         newPositions.add(positions[0] + positionDelta)
         newSpeeds.add(speeds[0])
         for (i in 1 until positions.size) {
-            val p = max(minPosition, min(maxPosition, positions[i] + positionDelta))
+            var p = positions[i] + positionDelta
+            if (minPosition != null) p = max(minPosition, p)
+            if (maxPosition != null) p = min(maxPosition, p)
             if (newPositions.last().value != p) {
                 // Positions that are an epsilon away may be overlapping after the shift, we only
                 // add the distinct ones

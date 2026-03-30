@@ -4,6 +4,7 @@ import com.squareup.moshi.Json
 import fr.sncf.osrd.api.stdcm.OutputSimDebugData
 import fr.sncf.osrd.api.stdcm.generatePartialDebugData
 import fr.sncf.osrd.envelope.Envelope
+import fr.sncf.osrd.envelope.concatenateAndShiftEnvelopes
 import fr.sncf.osrd.envelope_sim.Comfort
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceRange
@@ -14,6 +15,7 @@ import fr.sncf.osrd.envelope_sim.pipelines.SimStop
 import fr.sncf.osrd.envelope_sim.pipelines.maxEffortEnvelopeFrom
 import fr.sncf.osrd.envelope_sim.pipelines.maxSpeedEnvelopeFrom
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
+import fr.sncf.osrd.path.implementations.SubPhysicsPath
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
@@ -38,7 +40,7 @@ import org.slf4j.LoggerFactory
 
 val postProcessingLogger: Logger = LoggerFactory.getLogger("postprocessing-STDCM")
 
-private data class FixedTimePoint(
+data class FixedTimePoint(
     val time: Double,
     val offset: Offset<PhysicsPath>,
     val stopTime: Double?,
@@ -59,6 +61,8 @@ data class FinalEnvelopeResult(
     val engineeringAllowanceRanges: List<EngineeringAllowanceRange>,
 )
 
+data class ConsistChange(val rollingStock: RollingStock, val end: Offset<PhysicsPath>)
+
 /**
  * Build the final envelope, this time without any approximation. Apply the allowances properly. The
  * simulations can be approximations up to this point (when exploring the graph), this is where we
@@ -75,7 +79,7 @@ fun buildFinalEnvelope(
     edges: List<STDCMEdge>,
     standardAllowance: AllowanceValue?,
     envelopeSimPath: PhysicsPath,
-    rollingStock: RollingStock,
+    consistChanges: List<ConsistChange>,
     timeStep: Double,
     comfort: Comfort?,
     blockAvailability: BlockAvailabilityInterface,
@@ -84,13 +88,12 @@ fun buildFinalEnvelope(
     isMareco: Boolean = true,
     attempt: Int = 0,
 ): FinalEnvelopeResult {
-    val context = build(rollingStock, envelopeSimPath, timeStep, comfort)
     val fullInfraExplorer = edges.last().infraExplorerWithNewEnvelope
-    val maxSpeedEnvelope =
-        makeMaxSpeedEnvelope(
+    val maxSpeedEnvelopes =
+        makeMaxSpeedEnvelopes(
             fullInfraExplorer.buildFullPath(graph.rawInfra, graph.blockInfra),
             stops,
-            rollingStock,
+            consistChanges,
             timeStep,
             comfort,
             graph.tag,
@@ -108,17 +111,29 @@ fun buildFinalEnvelope(
             stops,
             pathLength,
             standardAllowance != null &&
-                standardAllowance.getAllowanceTime(maxSpeedEnvelope.totalTime, pathLength.meters) >
-                    0.0,
+                standardAllowance.getAllowanceTime(
+                    maxSpeedEnvelopes.sumOf { it.totalTime },
+                    pathLength.meters,
+                ) > 0.0,
             updatedTimeData,
             allowanceRanges,
         )
-
+    require(concatenateAndShiftEnvelopes(maxSpeedEnvelopes).continuous)
     val maxIterations = edges.size * 2 // just to avoid infinite loops on bugs or edge cases
     for (i in 0 until maxIterations) {
         try {
             val newEnvelope =
-                runSimulationWithFixedPoints(maxSpeedEnvelope, fixedPoints, context, isMareco)
+                concatenateAndShiftEnvelopes(
+                    runSimulationWithFixedPoints(
+                        maxSpeedEnvelopes,
+                        envelopeSimPath,
+                        consistChanges.map { it.rollingStock },
+                        fixedPoints,
+                        isMareco,
+                        timeStep,
+                        comfort,
+                    )
+                )
             val conflictOffset =
                 findConflictOffsets(newEnvelope, blockAvailability, edges, updatedTimeData)
                     ?: return FinalEnvelopeResult(newEnvelope, allowanceRanges)
@@ -127,13 +142,14 @@ fun buildFinalEnvelope(
                 // despite the exploration data identifying a valid opening.
                 // This is not supposed to happen, but we can still fallback
                 // linear allowance, and log as much info as we can
+                val maxSpeedEnvelope = concatenateAndShiftEnvelopes(maxSpeedEnvelopes)
                 return handlePostProcessingConflict(
                     graph,
                     maxSpeedEnvelope,
                     edges,
                     standardAllowance,
                     envelopeSimPath,
-                    rollingStock,
+                    consistChanges,
                     timeStep,
                     comfort,
                     blockAvailability,
@@ -197,7 +213,7 @@ fun buildFinalEnvelope(
             edges,
             standardAllowance,
             envelopeSimPath,
-            rollingStock,
+            consistChanges,
             timeStep,
             comfort,
             blockAvailability,
@@ -427,30 +443,59 @@ private fun getUpdatedExplorer(
  * Run a full simulation, with allowances configured to match the given fixed points. If isMareco is
  * set to true, the allowances follow the mareco distribution (more accurate but less reliable).
  */
-private fun runSimulationWithFixedPoints(
-    envelope: Envelope,
+fun runSimulationWithFixedPoints(
+    envelopes: List<Envelope>,
+    envelopeSimPath: PhysicsPath,
+    rollingStocks: List<RollingStock>,
     fixedPoints: TreeSet<FixedTimePoint>,
-    context: EnvelopeSimContext,
     isMareco: Boolean,
-): Envelope {
-    val ranges = makeAllowanceRanges(envelope, fixedPoints)
-    if (ranges.isEmpty()) return envelope
-    val allowance =
-        if (isMareco)
-            MarecoAllowance(
-                0.0,
-                envelope.endPos,
-                1.0, // Needs to be >0 to avoid problems when simulating low speeds
-                ranges,
+    timeStep: Double,
+    comfort: Comfort?,
+): List<Envelope> {
+    require(envelopes.size == rollingStocks.size)
+    require(envelopes.none { it.beginSpeed != 0.0 })
+    val finalEnvelopes = mutableListOf<Envelope>()
+    var currentOffset = 0.meters
+    var currentTime = 0.0
+    for ((envelope, rollingStock) in envelopes.zip(rollingStocks)) {
+        val subPhysicsPath =
+            SubPhysicsPath(
+                currentOffset.meters,
+                currentOffset.meters + envelope.endPos,
+                envelopeSimPath,
             )
-        else LinearAllowance(0.0, envelope.endPos, 0.0, ranges)
-    return allowance.apply(envelope, context)
+        val context: EnvelopeSimContext = build(rollingStock, subPhysicsPath, timeStep, comfort)
+        val shiftedFixedPoints =
+            fixedPoints
+                .map { it.copy(offset = it.offset - currentOffset, time = it.time - currentTime) }
+                .filter { it.offset.meters <= envelope.endPos && it.offset.meters > 0 }
+        val ranges = makeAllowanceRanges(envelope, shiftedFixedPoints)
+        require(ranges.isNotEmpty()) {
+            "There should be at least one allowance range, even if it's just a 0 allowance"
+        }
+        val allowance =
+            if (isMareco)
+                MarecoAllowance(
+                    0.0,
+                    envelope.endPos,
+                    1.0, // Needs to be >0 to avoid problems when simulating low speeds
+                    ranges,
+                )
+            else LinearAllowance(0.0, envelope.endPos, 0.0, ranges)
+        val newEnvelope = allowance.apply(envelope, context)
+        finalEnvelopes.add(newEnvelope)
+        currentOffset += newEnvelope.endPos.meters
+        currentTime +=
+            newEnvelope.interpolateArrivalAt(newEnvelope.endPos) +
+                shiftedFixedPoints.sumOf { it.stopTime ?: 0.0 }
+    }
+    return finalEnvelopes
 }
 
 /** Create the list of `AllowanceRange`, with the given fixed points */
 private fun makeAllowanceRanges(
     envelope: Envelope,
-    fixedPoints: TreeSet<FixedTimePoint>,
+    fixedPoints: Collection<FixedTimePoint>,
 ): List<AllowanceRange> {
     var transition = 0.0
     var transitionTime = 0.0
@@ -488,7 +533,7 @@ private fun handlePostProcessingConflict(
     edges: List<STDCMEdge>,
     standardAllowance: AllowanceValue?,
     envelopeSimPath: PhysicsPath,
-    rollingStock: RollingStock,
+    consistChanges: List<ConsistChange>,
     timeStep: Double,
     comfort: Comfort?,
     blockAvailability: BlockAvailabilityInterface,
@@ -568,7 +613,8 @@ private fun handlePostProcessingConflict(
         postProcessingLogger.info("(reset of fixed time points)")
         // First retry by removing mareco, then by increasing rolling stock traction
         val scaleFactor = if (isMareco) 1.0 else 1.2
-        val newRollingStock = rollingStock.scalePower(scaleFactor)
+        val newRollingStock =
+            consistChanges.map { it.copy(rollingStock = it.rollingStock.scalePower(scaleFactor)) }
         return buildFinalEnvelope(
             graph,
             edges,
@@ -591,21 +637,39 @@ private fun handlePostProcessingConflict(
     }
 }
 
-fun makeMaxSpeedEnvelope(
+fun makeMaxSpeedEnvelopes(
     trainPath: TrainPath,
     stops: List<TrainStop>,
-    rollingStock: RollingStock,
+    consistChanges: List<ConsistChange>,
     timeStep: Double,
     comfort: Comfort?,
     trainTag: String?,
     temporarySpeedLimitManager: TemporarySpeedLimitManager?,
     stopAtEnd: Boolean,
-): Envelope {
-    val context = build(rollingStock, trainPath, timeStep, comfort)
-    val mrsp = computeMRSP(trainPath, rollingStock, false, trainTag, temporarySpeedLimitManager)
-    val stopInfos =
-        stops.map { SimStop(Offset(it.position.meters), it.receptionSignal) }.toMutableList()
-    if (stopAtEnd) stopInfos.add(SimStop(trainPath.getLength(), SHORT_SLIP_STOP))
-    val maxSpeedEnvelope = maxSpeedEnvelopeFrom(context, stopInfos, mrsp)
-    return maxEffortEnvelopeFrom(context, 0.0, maxSpeedEnvelope)
+): List<Envelope> {
+    var begin = Offset<PhysicsPath>(0.meters)
+    val envelopes = mutableListOf<Envelope>()
+    var initialSpeed = 0.0
+    for ((index, consistChange) in consistChanges.withIndex()) {
+        val rollingStock = consistChange.rollingStock
+        val end = consistChange.end
+        val subPath = trainPath.subPath(begin, end)
+        val context = build(rollingStock, subPath, timeStep, comfort)
+        val mrsp = computeMRSP(subPath, rollingStock, false, trainTag, temporarySpeedLimitManager)
+        val stopInfos =
+            stops
+                .filter {
+                    it.position.meters > begin.distance && it.position.meters <= end.distance
+                }
+                .map { SimStop(Offset(it.position.meters - begin.distance), it.receptionSignal) }
+                .toMutableList()
+        if (stopAtEnd && index == consistChanges.size - 1)
+            stopInfos.add(SimStop(subPath.getLength(), SHORT_SLIP_STOP))
+        val maxSpeedEnvelope = maxSpeedEnvelopeFrom(context, stopInfos, mrsp)
+        val maxEffortEnvelope = maxEffortEnvelopeFrom(context, initialSpeed, maxSpeedEnvelope)
+        envelopes.add(maxEffortEnvelope)
+        initialSpeed = maxEffortEnvelope.endSpeed
+        begin = end
+    }
+    return envelopes
 }

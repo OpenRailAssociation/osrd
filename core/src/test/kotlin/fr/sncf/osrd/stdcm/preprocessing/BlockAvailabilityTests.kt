@@ -1,5 +1,6 @@
 package fr.sncf.osrd.stdcm.preprocessing
 
+import fr.sncf.osrd.api.ConsistSchedule
 import fr.sncf.osrd.conflicts.SpacingRequirement
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.part.EnvelopePart
@@ -121,11 +122,12 @@ class BlockAvailabilityTests {
                 .single()
         if (steps.none { it.locations == lastStep.locations }) steps.add(lastStep)
 
+        val totalSteps = steps.size
         var infraExplorer =
             initInfraExplorerWithEnvelope(
                     infra,
                     BlockLocation(blocks[0], startOffset),
-                    rollingStock,
+                    ConsistSchedule(listOf(rollingStock), listOf(), infra, null, totalSteps),
                     steps,
                 )
                 .find { filterExplorer(it) }!!
@@ -580,7 +582,7 @@ class BlockAvailabilityTests {
             initInfraExplorerWithEnvelope(
                     infra,
                     BlockLocation(blocks[2], Offset(50.meters)),
-                    REALISTIC_FAST_TRAIN,
+                    ConsistSchedule(listOf(REALISTIC_FAST_TRAIN), null),
                     stepsFromLocations(
                         BlockLocation(blocks.last(), infra.blockInfra.getBlockLength(blocks.last()))
                     ),

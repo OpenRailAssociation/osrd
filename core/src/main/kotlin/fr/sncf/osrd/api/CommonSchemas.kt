@@ -6,8 +6,10 @@ import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.sim_infra.api.TrackSection
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
+import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.TimeDelta
+import fr.sncf.osrd.utils.units.meters
 
 data class DirectionalTrackRange(
     @Json(name = "track_section") val trackSection: String,
@@ -50,6 +52,21 @@ data class RangeValues<valueT>(
             )
         }
         return distanceRangeMapOf(rangeMapEntries)
+    }
+
+    /**
+     * Return a copy of the RangeValues with all the internal boundaries shifted by `distance`. The
+     * input distance can be negative but should not lead to negative or null offsets. If it
+     * happens, the method will throw an exception.
+     */
+    fun shifted(distance: Distance): RangeValues<valueT> {
+        return this.copy(
+            internalBoundaries =
+                this.internalBoundaries.map {
+                    require(it + distance > Offset(0.meters))
+                    it + distance
+                }
+        )
     }
 }
 

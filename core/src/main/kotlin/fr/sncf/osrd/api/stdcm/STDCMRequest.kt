@@ -20,13 +20,15 @@ import fr.sncf.osrd.utils.units.TimeDelta
 import fr.sncf.osrd.utils.units.seconds
 import java.time.ZonedDateTime
 
+val DEFAULT_TIME_STEP: Duration = 2.seconds
+
 class STDCMRequest(
     var infra: String,
     @Json(name = "expected_version") var expectedVersion: Int,
     @Json(name = "timetable_id") var timetableId: TimetableId,
 
     // Rolling stocks
-    @Json(name = "consist_schedule") val consistSchedule: ConsistSchedule,
+    @Json(name = "consist_schedule") val consistSchedule: RequestConsistSchedule,
 
     // Pathfinding inputs
     /// List of waypoints. Each waypoint is a list of track offsets
@@ -39,7 +41,7 @@ class STDCMRequest(
 
     // STDCM search parameters
     /// Numerical integration time step. Defaults to 2s.
-    @Json(name = "time_step") val timeStep: Duration? = 2.seconds,
+    @Json(name = "time_step") val timeStep: Duration? = DEFAULT_TIME_STEP,
     @Json(name = "start_time") val startTime: ZonedDateTime,
     /// Maximum departure delay. Defaults to 2h.
     @Json(name = "maximum_departure_delay")
@@ -75,7 +77,7 @@ data class StepTimingData(
     @Json(name = "arrival_time_tolerance_after") val arrivalTimeToleranceAfter: Duration,
 )
 
-data class ConsistSchedule(
+data class RequestConsistSchedule(
     @Json(name = "boundaries") val boundaries: List<Int>,
     @Json(name = "values") val values: List<ConsistConfiguration>,
 )

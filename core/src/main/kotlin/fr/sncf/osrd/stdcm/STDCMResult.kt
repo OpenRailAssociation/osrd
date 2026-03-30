@@ -5,7 +5,9 @@ import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.sim_infra.api.RouteId
 import fr.sncf.osrd.stdcm.graph.EngineeringAllowanceRange
+import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TrainStop
+import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.units.Offset
 
 /**
@@ -15,6 +17,7 @@ import fr.sncf.osrd.utils.units.Offset
 data class STDCMResult(
     val envelope: Envelope,
     val trainPath: TrainPath,
+    val rollingStocks: DistanceRangeMap<RollingStock>,
     val routePath: List<RouteId>,
     val departureTime: Double,
     val stopResults: List<TrainStop>,

@@ -100,6 +100,9 @@ interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
     /** Returns true if there is no entry at all */
     fun isEmpty(): Boolean
 
+    /** Returns true if a value is defined on every interval */
+    fun isContinuous(): Boolean
+
     /** Clear the map */
     fun clear()
 

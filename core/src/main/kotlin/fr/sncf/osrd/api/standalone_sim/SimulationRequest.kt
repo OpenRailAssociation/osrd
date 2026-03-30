@@ -58,7 +58,7 @@ enum class AllowanceDistribution {
     }
 }
 
-class PhysicsConsistModel(
+data class PhysicsConsistModel(
     @Json(name = "effort_curves") val effortCurves: EffortCurve,
     @Json(name = "base_power_class") val basePowerClass: String?,
     val length: Length<RollingStock>,

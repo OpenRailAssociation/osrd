@@ -1,5 +1,6 @@
 package fr.sncf.osrd.stdcm
 
+import fr.sncf.osrd.api.ConsistSchedule
 import fr.sncf.osrd.envelope_sim.SimpleRollingStock.Companion.STANDARD_TRAIN
 import fr.sncf.osrd.stdcm.graph.StopTimeData
 import fr.sncf.osrd.stdcm.graph.TimeData
@@ -293,11 +294,12 @@ class VisitedNodesTests {
                 infra.addBlock("c", "d"),
                 infra.addBlock("d", "e"),
             )
+        val consistSchedule = ConsistSchedule(listOf(STANDARD_TRAIN), null)
         val visitedNodes =
             VisitedNodes(
                 0.0,
                 infra.fullInfra(),
-                CachedBlockMaxSpeedEnvBuilder(infra, infra, STANDARD_TRAIN, listOf(), 2.0),
+                CachedBlockMaxSpeedEnvBuilder(infra, infra, consistSchedule, listOf(), 2.0),
             )
 
         // d -> e

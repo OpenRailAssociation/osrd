@@ -12,6 +12,7 @@ import fr.sncf.osrd.envelope.EnvelopeInterpolate
 import fr.sncf.osrd.envelope.EnvelopePhysics
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
+import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.envelope_sim.etcs.BrakingType.IND
 import fr.sncf.osrd.envelope_sim.etcs.ETCSBrakingSimulator
 import fr.sncf.osrd.envelope_sim.etcs.ETCSBrakingSimulatorImpl
@@ -29,8 +30,9 @@ import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.standalone_sim.result.ResultPosition
 import fr.sncf.osrd.standalone_sim.result.ResultSpeed
-import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TrainStop
+import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.arePositionsEqual
 import fr.sncf.osrd.utils.simplifyEnvelopePoints
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Duration
@@ -40,6 +42,7 @@ import fr.sncf.osrd.utils.units.TimeDelta
 import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.metersPerSecond
 import fr.sncf.osrd.utils.units.seconds
+import kotlin.math.min
 
 // Reserve clear track with a margin for the reaction time of the driver
 const val CLOSED_SIGNAL_RESERVATION_MARGIN = 20.0
@@ -49,7 +52,7 @@ fun runScheduleMetadataExtractor(
     envelope: Envelope,
     trainPath: TrainPath,
     fullInfra: FullInfra,
-    rollingStock: RollingStock,
+    rollingStocks: DistanceRangeMap<PhysicsRollingStock>,
     schedule: List<SimulationScheduleItem>,
     pathItemPositions: List<Offset<PhysicsPath>>,
     context: EnvelopeSimContext? = null,
@@ -65,7 +68,6 @@ fun runScheduleMetadataExtractor(
 
     // Compute speeds, head and tail positions
     val envelopeWithStops = EnvelopeStopWrapper(envelope, legacyStops)
-    val trainLength = rollingStock.length.meters
     val speeds = ArrayList<ResultSpeed>()
     val headPositions = ArrayList<ResultPosition>()
     for (point in envelopeWithStops.iteratePoints()) {
@@ -74,7 +76,7 @@ fun runScheduleMetadataExtractor(
     }
 
     val zoneOccupationChangeEvents =
-        zoneOccupationChangeEvents(trainPath, envelopeWithStops, trainLength)
+        zoneOccupationChangeEvents(trainPath, envelopeWithStops, rollingStocks)
 
     val zoneUpdates =
         zoneOccupationChangeEvents.map {
@@ -89,7 +91,7 @@ fun runScheduleMetadataExtractor(
         getSignalCriticalPositions(fullInfra, envelopeWithStops, trainPath, closedSignalStops)
 
     val envelopeAdapter =
-        IncrementalRequirementEnvelopeAdapter(rollingStock, envelopeWithStops, true)
+        IncrementalRequirementEnvelopeAdapter(rollingStocks, envelopeWithStops, true)
     val spacingGenerator = SpacingResourceGenerator(fullInfra, context)
     spacingGenerator.extendPath(trainPath.getBlocks(), trainPath.getRoutes(), pathStops, true)
     // as the provided path is complete, the resource generator should never return NotEnoughPath
@@ -103,9 +105,10 @@ fun runScheduleMetadataExtractor(
             envelopeWithStops,
             context,
             zoneOccupationChangeEvents,
+            rollingStocks,
         )
     val reportTrain =
-        makeSimpleReportTrain(envelope, trainPath, rollingStock, schedule, pathItemPositions)
+        makeSimpleReportTrain(envelope, trainPath, rollingStocks, schedule, pathItemPositions)
     return CompleteReportTrain(
         reportTrain.positions,
         reportTrain.times,
@@ -205,13 +208,14 @@ fun getStopTravelledPathOffset(pathStops: List<PathStop>, indexStop: Int): Offse
 fun makeSimpleReportTrain(
     envelope: Envelope,
     trainPath: TrainPath,
-    rollingStock: RollingStock,
+    rollingStocks: DistanceRangeMap<PhysicsRollingStock>,
     schedule: List<SimulationScheduleItem>,
     pathItemPositions: List<Offset<PhysicsPath>>,
 ): ReportTrain {
     // Compute energy consumed
+    require(arePositionsEqual(rollingStocks.upperBound().meters, envelope.endPos))
     val mechanicalEnergyConsumed =
-        EnvelopePhysics.getMechanicalEnergyConsumed(envelope, trainPath, rollingStock)
+        EnvelopePhysics.getMechanicalEnergyConsumed(envelope, trainPath, rollingStocks)
 
     // Account for stop durations
     val stops =
@@ -259,6 +263,7 @@ fun routingRequirements(
     // TODO: Required for ETCS (STDCM doesn't provide it currently, will have to eventually)
     context: EnvelopeSimContext?,
     zoneOccupationChangeEvents: List<ZoneOccupationChangeEvent>,
+    rollingStocks: DistanceRangeMap<PhysicsRollingStock>,
 ): List<RoutingRequirement> {
     val rawInfra = fullInfra.rawInfra
     val blockInfra = fullInfra.blockInfra
@@ -709,7 +714,7 @@ private fun sortAndMergeSameZoneOverlappingOrContiguousOccupations(
 fun zoneOccupationChangeEvents(
     trainPath: TrainPath,
     envelope: EnvelopeTimeInterpolate,
-    trainLength: Distance,
+    rollingStocks: DistanceRangeMap<PhysicsRollingStock>,
 ): List<ZoneOccupationChangeEvent> {
     // Check that backtracks are sorted ascending and that there is no "backtrack-over-backtrack"
     // (in which case the following code wouldn't work properly)
@@ -717,19 +722,24 @@ fun zoneOccupationChangeEvents(
         trainPath
             .getBacktrackLocations()
             .asSequence()
-            .zipWithNext { current, next -> current < next - trainLength }
+            .zipWithNext { current, next ->
+                current < next - rollingStocks.get(next.distance)!!.length.meters
+            }
             .all { it }
     )
 
     val zoneOccupationChangeEvents = mutableListOf<ZoneOccupationChangeEvent>()
     for (zoneRange in trainPath.getZoneRanges()) {
+        // We ignore the case when the rolling stock length increases in the next zones and
+        // re-enters the current zone
+        val trainLengthAtExit = rollingStocks.get(zoneRange.pathEnd.distance)!!.length.meters
         // entry is always at the start of the zone (might lead to some adjacent identical zone
         // occupation for the same zone at backtrack)
         val entryOffset = zoneRange.pathBegin
         val entryTime = getArrivalAt(envelope, entryOffset)
 
         val exitOffset =
-            zoneRangeExitOffset(trainPath.getBacktrackLocations(), trainLength, zoneRange)
+            zoneRangeExitOffset(trainPath.getBacktrackLocations(), trainLengthAtExit, zoneRange)
         val exitTime = getDepartureFrom(envelope, exitOffset)
 
         // Avoid generating entry + exit at the same time

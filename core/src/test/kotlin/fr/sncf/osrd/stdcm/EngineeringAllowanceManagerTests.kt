@@ -22,6 +22,7 @@ class EngineeringAllowanceManagerTests {
             beginSpeed = constantSpeed,
             travelTime = length.meters / constantSpeed,
             maxAddedDelay = Double.POSITIVE_INFINITY,
+            deceleration,
             computeAccelSequenceFromEndSpeed = { constAcceleration(it, length) },
         )
 
@@ -32,7 +33,7 @@ class EngineeringAllowanceManagerTests {
             basicSegment.copy(beginSpeed = 0.0),
         )
 
-    private val engineeringAllowanceManager = EngineeringAllowanceManager(deceleration, null)
+    private val engineeringAllowanceManager = EngineeringAllowanceManager(null)
 
     private fun constAcceleration(endSpeed: Double, length: Distance): SummarizedSimulationResult {
         val sim = runSimplifiedSimulation(acceleration, endSpeed, length.meters)

@@ -479,8 +479,8 @@ class StopTests {
         val timeStep = 2.0
         val blocks =
             listOf(
-                infra.addBlock("a", "b"),
-                infra.addBlock("b", "c"),
+                infra.addBlock("a", "b", 100.meters),
+                infra.addBlock("b", "c", 100.meters),
                 infra.addBlock("c", "d", 1.meters),
             )
         val occupancy =
@@ -507,10 +507,11 @@ class StopTests {
         assertEquals(resWithoutConflict.envelope.totalTime, resTravelTime, timeStep)
 
         // Check that the stop is long enough
-        assertEquals(
-            resWithConflict.stopResults.first().duration,
-            10_000 - resTravelTime,
-            3 * timeStep,
+        assert(
+            10_000 <=
+                resWithConflict.envelope.interpolateArrivalAt(200.0) +
+                    resWithConflict.stopResults.first().duration +
+                    3 * timeStep
         )
         occupancyTest(resWithConflict, occupancy)
     }

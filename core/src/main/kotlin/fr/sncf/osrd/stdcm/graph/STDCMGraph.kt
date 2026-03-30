@@ -1,5 +1,6 @@
 package fr.sncf.osrd.stdcm.graph
 
+import fr.sncf.osrd.api.ConsistSchedule
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.S3Context
 import fr.sncf.osrd.api.STDCMTimetableData
@@ -8,7 +9,6 @@ import fr.sncf.osrd.envelope_sim.Comfort
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.FixedTime
 import fr.sncf.osrd.graph.Graph
-import fr.sncf.osrd.pathfinding.constraints.CachedBlockConstraintCombiner
 import fr.sncf.osrd.sim_infra.api.ZoneId
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.stdcm.CachedBlockMaxSpeedEnvBuilder
@@ -20,7 +20,6 @@ import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.stdcm.tracing.FailureExplainer
-import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.units.meters
 import java.lang.Double.isFinite
 import java.lang.Double.isNaN
@@ -37,7 +36,7 @@ import kotlin.math.min
  */
 class STDCMGraph(
     val fullInfra: FullInfra,
-    val rollingStock: RollingStock,
+    val consistSchedule: ConsistSchedule,
     val comfort: Comfort?,
     val timeStep: Double,
     blockAvailability: BlockAvailabilityInterface,
@@ -47,7 +46,6 @@ class STDCMGraph(
     val tag: String?,
     val standardAllowance: AllowanceValue?,
     val temporarySpeedLimitManager: TemporarySpeedLimitManager = TemporarySpeedLimitManager(),
-    constraints: CachedBlockConstraintCombiner,
     val searchMetadata: SearchMetadata?,
     failureExplainer: FailureExplainer?,
 ) : Graph<STDCMNode, STDCMEdge> {
@@ -63,13 +61,13 @@ class STDCMGraph(
             timeStep,
             failureExplainer,
         )
-    val allowanceManager = EngineeringAllowanceManager(rollingStock.constGamma, this)
+    val allowanceManager = EngineeringAllowanceManager(this)
     val backtrackingManager: BacktrackingManager = BacktrackingManager(this)
     val maxSpeedEnvBuilder =
         CachedBlockMaxSpeedEnvBuilder(
             rawInfra,
             blockInfra,
-            rollingStock,
+            consistSchedule,
             steps,
             timeStep,
             comfort,
@@ -101,7 +99,7 @@ class STDCMGraph(
                     maxRunTime,
                     maxSpeedEnvBuilder,
                     standardAllowance,
-                    constraints,
+                    consistSchedule,
                 )
                 .build()
         bestPossibleTime = remainingTimeEstimator.bestTravelTime
