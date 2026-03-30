@@ -7,15 +7,17 @@ import useLevelCrossingsWithChronogram from './useLevelCrossingsWithChronogram';
 const CHRONOGRAM_FOOTER_HEIGHT = 39;
 
 type ChronogramWrapperProps = {
+  timetableId: number;
   timetableItemsWithDetails: TimetableItemWithDetails[];
   chronogramHeight: number;
 };
 
 const ChronogramWrapper = ({
+  timetableId,
   timetableItemsWithDetails,
   chronogramHeight,
 }: ChronogramWrapperProps) => {
-  const { levelCrossingData, timeOrigin } = useLevelCrossingsWithChronogram({
+  const { levelCrossingData, timeOrigin } = useLevelCrossingsWithChronogram(timetableId, {
     trains: timetableItemsWithDetails,
   });
 
