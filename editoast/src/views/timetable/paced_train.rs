@@ -346,12 +346,10 @@ pub(in crate::views) async fn simulation_summary(
             .chain(
                 ts_exceptions
                     .into_iter()
-                    .map(|exception| {
-                        SimulationContext {
-                            paced_train_id: paced_train.id,
-                            exception_id: Some(exception.id),
-                            train_schedule: paced_train.apply_train_schedule_exception(&exception),
-                        }
+                    .map(|exception| SimulationContext {
+                        paced_train_id: paced_train.id,
+                        exception_id: Some(exception.id),
+                        train_schedule: paced_train.apply_train_schedule_exception(&exception),
                     })
                     .collect::<Vec<_>>(),
             )
@@ -846,12 +844,10 @@ pub(in crate::views) async fn project_path(
                 exception_id: None,
                 train_schedule: train_schedule.clone().into_train_occurrence(),
             })
-            .chain(ts_exceptions.iter().map(|exception| {
-                SimulationContext {
-                    paced_train_id: train_schedule.id,
-                    exception_id: Some(exception.id),
-                    train_schedule: train_schedule.apply_train_schedule_exception(exception),
-                }
+            .chain(ts_exceptions.iter().map(|exception| SimulationContext {
+                paced_train_id: train_schedule.id,
+                exception_id: Some(exception.id),
+                train_schedule: train_schedule.apply_train_schedule_exception(exception),
             }))
             .collect::<Vec<_>>()
         })
@@ -1178,13 +1174,10 @@ pub(in crate::views) async fn occupancy_blocks(
             .chain(
                 ts_exceptions
                     .iter()
-                    .map(|exception| {
-                        SimulationContext {
-                            paced_train_id: train_schedule.id,
-                            exception_id: Some(exception.id),
-                            train_schedule: train_schedule
-                                .apply_train_schedule_exception(exception),
-                        }
+                    .map(|exception| SimulationContext {
+                        paced_train_id: train_schedule.id,
+                        exception_id: Some(exception.id),
+                        train_schedule: train_schedule.apply_train_schedule_exception(exception),
                     })
                     .collect::<Vec<_>>(),
             )

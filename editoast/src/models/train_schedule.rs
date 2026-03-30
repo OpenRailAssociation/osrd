@@ -196,11 +196,7 @@ impl TrainSchedule {
             .filter(|exception| matches!(exception.exception_type, ExceptionType::Created { .. }))
             .map(|exception| {
                 (
-                    OccurrenceId::new_created(
-                        self.id,
-                        exception.id.unwrap_or_default(), // TODO use only id
-                        exception.key.clone(),
-                    ),
+                    OccurrenceId::new_created(self.id, exception.id.unwrap_or_default()),
                     self.apply_exception(exception),
                 )
             })
@@ -264,8 +260,7 @@ impl TrainSchedule {
                     let occurrence_id = OccurrenceId::new_modified(
                         self.id,
                         occurrence_index,
-                        exception.id.unwrap_or_default(), // TODO use only id
-                        exception.key.clone(),
+                        exception.id.unwrap_or_default(),
                     );
                     *occurrence = (occurrence_id, self.apply_exception(exception));
                 }
@@ -308,14 +303,7 @@ impl TrainSchedule {
             .filter(|exception| exception.occurrence_index.is_none())
             .map(|exception| {
                 (
-                    OccurrenceId::new_created(
-                        self.id,
-                        exception.id,
-                        exception
-                            .key
-                            .clone()
-                            .unwrap_or_else(|| exception.id.to_string()),
-                    ),
+                    OccurrenceId::new_created(self.id, exception.id),
                     self.apply_train_schedule_exception(exception),
                 )
             })
@@ -354,10 +342,6 @@ impl TrainSchedule {
                         self.id,
                         occurrence_index as usize,
                         exception.id,
-                        exception
-                            .key
-                            .clone()
-                            .unwrap_or_else(|| exception.id.to_string()),
                     );
                     *occurrence = (
                         occurrence_id,
@@ -471,12 +455,10 @@ pub enum OccurrenceId {
         train_schedule_id: i64,
         index: usize,
         exception_id: i64,
-        exception_key: String, // TODO remove it
     },
     Created {
         train_schedule_id: i64,
         exception_id: i64,
-        exception_key: String, // TODO remove it
     },
 }
 
@@ -490,21 +472,19 @@ impl OccurrenceId {
     }
 
     /// Create a new `Occurrence::Modified` without an exception key.
-    pub fn new_modified(id: i64, index: usize, exception_id: i64, exception_key: String) -> Self {
+    pub fn new_modified(id: i64, index: usize, exception_id: i64) -> Self {
         OccurrenceId::Modified {
             train_schedule_id: id,
             index,
             exception_id,
-            exception_key,
         }
     }
 
     /// Creates a new `Occurrence::Created`.
-    pub fn new_created(id: i64, exception_id: i64, exception_key: String) -> Self {
+    pub fn new_created(id: i64, exception_id: i64) -> Self {
         OccurrenceId::Created {
             train_schedule_id: id,
             exception_id,
-            exception_key,
         }
     }
 }
@@ -520,15 +500,11 @@ impl Display for OccurrenceId {
                 train_schedule_id: id,
                 index,
                 exception_id,
-                ..
             } => write!(f, "{}@{}#{}", id, exception_id, index),
             OccurrenceId::Created {
                 train_schedule_id: id,
                 exception_id,
-                ..
-            } => {
-                write!(f, "{}@{}", id, exception_id)
-            }
+            } => write!(f, "{}@{}", id, exception_id),
         }
     }
 }
@@ -796,9 +772,9 @@ mod tests {
         assert_eq!(
             types,
             vec![
-                OccurrenceId::new_modified(paced_train.id, 1, 1, "key_1".into()),
+                OccurrenceId::new_modified(paced_train.id, 1, 1),
                 OccurrenceId::new_base(paced_train.id, 2),
-                OccurrenceId::new_created(paced_train.id, 2, "key_2".into()),
+                OccurrenceId::new_created(paced_train.id, 2),
                 OccurrenceId::new_base(paced_train.id, 3),
             ]
         );
@@ -860,14 +836,7 @@ mod tests {
             types,
             vec![
                 OccurrenceId::new_base(paced_train.id, 0),
-                OccurrenceId::new_modified(
-                    paced_train.id,
-                    1,
-                    exception_1.id,
-                    exception_1
-                        .key
-                        .unwrap_or_else(|| exception_1.id.to_string())
-                ),
+                OccurrenceId::new_modified(paced_train.id, 1, exception_1.id),
                 OccurrenceId::new_base(paced_train.id, 2),
                 OccurrenceId::new_base(paced_train.id, 3),
             ]
