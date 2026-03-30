@@ -30,7 +30,7 @@ jobs:
           npm install
           npm run svgo
 
-      - uses: EndBug/add-and-commit@v9
+      - uses: EndBug/add-and-commit@v10
         with:
           add: "front/ui/ui-icons/icons"
           message: "Optimize SVGs"
