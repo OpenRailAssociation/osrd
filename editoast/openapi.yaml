@@ -9248,12 +9248,13 @@ components:
       additionalProperties: false
     GeoJson:
       oneOf:
-      - $ref: '#/components/schemas/GeoJsonPoint'
-      - $ref: '#/components/schemas/GeoJsonMultiPoint'
-      - $ref: '#/components/schemas/GeoJsonLineString'
-      - $ref: '#/components/schemas/GeoJsonMultiLineString'
-      - $ref: '#/components/schemas/GeoJsonPolygon'
-      - $ref: '#/components/schemas/GeoJsonMultiPolygon'
+      - oneOf:
+        - $ref: '#/components/schemas/GeoJsonPoint'
+        - $ref: '#/components/schemas/GeoJsonMultiPoint'
+        - $ref: '#/components/schemas/GeoJsonLineString'
+        - $ref: '#/components/schemas/GeoJsonMultiLineString'
+        - $ref: '#/components/schemas/GeoJsonPolygon'
+        - $ref: '#/components/schemas/GeoJsonMultiPolygon'
       description: A GeoJSON geometry item
     GeoJsonLineString:
       oneOf:
