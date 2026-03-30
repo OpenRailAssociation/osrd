@@ -21,7 +21,9 @@ import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.Direction.INCREASING
+import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.Helpers
+import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -302,7 +304,7 @@ private fun makeCallbacks(
         )
     val withStops = EnvelopeStopWrapper(envelope, stops)
     return IncrementalRequirementEnvelopeAdapter(
-        rollingStock,
+        distanceRangeMapOf(DistanceRangeMap.RangeMapEntry(0.meters, length.distance, rollingStock)),
         withStops,
         complete,
         infiniteLastStop,

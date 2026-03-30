@@ -1,5 +1,6 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
+import fr.sncf.osrd.api.ConsistSchedule
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.envelope.part.EnvelopePart
@@ -38,11 +39,19 @@ class InfraExplorerWithEnvelopeTests {
             )
 
         // a --> b
+        val nbSteps = 1 // Not used but needed when building the ConsistSchedule
         val firstExplorers =
             initInfraExplorerWithEnvelope(
                 fullInfra,
                 BlockLocation(blocks[0], Offset(0.meters)),
-                rollingStock = REALISTIC_FAST_TRAIN,
+                consistSchedule =
+                    ConsistSchedule(
+                        listOf(REALISTIC_FAST_TRAIN),
+                        listOf(),
+                        fullInfra,
+                        null,
+                        nbSteps,
+                    ),
             )
         assertEquals(1, firstExplorers.size)
         val firstExplorer = firstExplorers.first()
@@ -127,7 +136,7 @@ class InfraExplorerWithEnvelopeTests {
             initInfraExplorerWithEnvelope(
                 fullInfra,
                 BlockLocation(blocks[0], Offset(0.meters)),
-                rollingStock = REALISTIC_FAST_TRAIN,
+                consistSchedule = ConsistSchedule(listOf(REALISTIC_FAST_TRAIN), null),
             )
         assertEquals(1, firstExplorers.size)
         var explorer = firstExplorers.first()
@@ -207,7 +216,7 @@ class InfraExplorerWithEnvelopeTests {
             initInfraExplorerWithEnvelope(
                 fullInfra,
                 BlockLocation(blocks[0], Offset(30.meters)),
-                rollingStock = REALISTIC_FAST_TRAIN,
+                consistSchedule = ConsistSchedule(listOf(REALISTIC_FAST_TRAIN), null),
             )
         var explorer = firstExplorers.single()
         explorer = explorer.cloneAndExtendLookahead().single()

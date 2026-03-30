@@ -7,6 +7,7 @@ import fr.sncf.osrd.utils.AppendOnlyLinkedList
 import fr.sncf.osrd.utils.appendOnlyLinkedListOf
 import fr.sncf.osrd.utils.dropSeq
 import fr.sncf.osrd.utils.units.Offset
+import kotlin.math.max
 
 /**
  * Component of `InfraExplorer` in charge of keeping track of anything related to the input steps.
@@ -107,6 +108,11 @@ class StepTracker(
      */
     fun iterateSeenStepsBackwards(): Sequence<LocatedStep> {
         return seenSteps.iterateBackwards()
+    }
+
+    /** Get the index of the current reached step */
+    fun getCurrentReachedPlannedStepIndex(): Int {
+        return max(0, iterateReachedStepsBackwards().count { it.isPlanned } - 1)
     }
 
     fun clone(): StepTracker {

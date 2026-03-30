@@ -15,6 +15,10 @@ data class DistanceRangeMapImpl<T>(
         putMany(entries)
     }
 
+    override fun isContinuous(): Boolean {
+        return values.none { it == null }
+    }
+
     /** Sets the value between the lower and upper distances */
     override fun put(lower: Distance, upper: Distance, value: T) {
         putOptional(lower, upper, value)

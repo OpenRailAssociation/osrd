@@ -24,6 +24,7 @@ import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import java.util.*
+import kotlin.math.max
 import kotlin.to
 
 /**
@@ -174,8 +175,9 @@ fun initInfraExplorers(
     blockInfra: BlockInfra,
     location: BlockLocation,
     steps: List<ExplorerStep> = listOf(),
-    constraints: PathfindingConstraint? = null,
+    constraints: List<PathfindingConstraint>? = null,
 ): Collection<InfraExplorer> {
+    require(constraints == null || steps.isEmpty() || constraints.size == steps.size)
     val infraExplorers = mutableListOf<InfraExplorer>()
     val block = location.edge
     val pathProps = buildTrainPathFromBlock(rawInfra, blockInfra, block)
@@ -211,7 +213,7 @@ private class InfraExplorerImpl(
     private var trainPathCache: MutableMap<BlockId, TrainPath>,
     private var currentIndex: Int = 0,
     private var stepTracker: StepTracker,
-    private var constraints: PathfindingConstraint?,
+    private var constraints: List<PathfindingConstraint>?,
     override var isPathComplete: Boolean = false,
 ) : InfraExplorer {
     override fun getCurrentEdgePathProperties(offset: Offset<Block>, length: Distance?): TrainPath {
@@ -428,9 +430,12 @@ private class InfraExplorerImpl(
                 val blockEndOffset =
                     if (isPathComplete) lastSeenStepLocation!!.offset else blockLength
 
+                val stepIndex =
+                    max(0, stepTracker.iterateSeenStepsBackwards().count { it.isPlanned } - 1)
+
                 // If a block cannot be explored, give up
                 val isRouteBlocked =
-                    constraints?.apply(block)?.any {
+                    constraints?.get(stepIndex)?.apply(block)?.any {
                         blockStartOffset < it.end && blockEndOffset > it.start
                     } ?: false
                 if (isRouteBlocked) return false

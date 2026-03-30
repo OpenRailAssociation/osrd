@@ -2,6 +2,7 @@ package fr.sncf.osrd.stdcm
 
 import com.google.common.collect.ImmutableMultimap
 import com.google.common.collect.Multimap
+import fr.sncf.osrd.api.ConsistSchedule
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.envelope_sim.Comfort
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
@@ -33,7 +34,8 @@ data class STDCMPathfindingBuilder(
 
     // endregion NON-OPTIONAL
     // region OPTIONAL
-    var rollingStock: RollingStock = TestTrains.REALISTIC_FAST_TRAIN,
+    var rollingStocks: List<RollingStock> = listOf(TestTrains.REALISTIC_FAST_TRAIN),
+    var boundaries: List<Int> = emptyList(),
     var startTime: Double = 0.0,
     var comfort: Comfort = Comfort.STANDARD,
     var pathfindingTimeout: Double = Pathfinding.TIMEOUT,
@@ -54,9 +56,21 @@ data class STDCMPathfindingBuilder(
         return this
     }
 
-    /** Set the rolling stock to be used for the simulation. Defaults to REALISTIC_FAST_TRAIN */
-    fun setRollingStock(rollingStock: RollingStock): STDCMPathfindingBuilder {
-        this.rollingStock = rollingStock
+    /**
+     * Set the rolling stocks to be used for the simulation. Defaults to a single rolling stock
+     * REALISTIC_FAST_TRAIN.
+     */
+    fun setRollingStocks(rollingStocks: List<RollingStock>): STDCMPathfindingBuilder {
+        this.rollingStocks = rollingStocks
+        return this
+    }
+
+    /**
+     * Set the consist schedule boundaries to be used for the simulation. Defaults to an empty list
+     * (no consist change).
+     */
+    fun setBoundaries(boundaries: List<Int>): STDCMPathfindingBuilder {
+        this.boundaries = boundaries
         return this
     }
 
@@ -164,9 +178,10 @@ data class STDCMPathfindingBuilder(
         }
         val blockAvailabilityAdapter =
             blockAvailability ?: DummyBlockAvailability(infra!!.blockInfra, unavailableTimes)
+        val consistSchedule = ConsistSchedule(rollingStocks, boundaries, infra!!, null, steps.size)
         return findPath(
             infra!!,
-            rollingStock,
+            consistSchedule,
             comfort,
             startTime,
             steps,

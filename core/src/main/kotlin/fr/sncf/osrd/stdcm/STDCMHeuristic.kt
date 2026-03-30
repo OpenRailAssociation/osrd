@@ -1,7 +1,7 @@
 package fr.sncf.osrd.stdcm
 
+import fr.sncf.osrd.api.ConsistSchedule
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
-import fr.sncf.osrd.pathfinding.constraints.CachedBlockConstraintCombiner
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.BlockInfra
@@ -59,14 +59,22 @@ data class STDCMAStarHeuristic(
         // If we're at the destination, endSpeed should be 0.0 rather than null. However, if we are
         // at the destination, there'll be a stop which is taken into account in MaxSpeedEnvBuilder,
         // so it's fine as is.
-        var endSpeed = maxSpeedEnvBuilder.getMaxSpeedEnvelope(lastBlock, null).beginSpeed
+        var endSpeed =
+            maxSpeedEnvBuilder.getMaxSpeedEnvelope(lastBlock, expectedIndex, null).beginSpeed
         for (block in allBlocks.asReversed()) {
             timeUntilStartOfLastBlock +=
-                maxSpeedEnvBuilder.getBlockTime(block, null, endSpeed, allowanceValue)
-            endSpeed = maxSpeedEnvBuilder.getMaxSpeedEnvelope(block, endSpeed).beginSpeed
+                maxSpeedEnvBuilder.getBlockTime(
+                    block,
+                    expectedIndex,
+                    null,
+                    endSpeed,
+                    allowanceValue,
+                )
+            endSpeed =
+                maxSpeedEnvBuilder.getMaxSpeedEnvelope(block, expectedIndex, endSpeed).beginSpeed
         }
         val timeSinceFirstBlock =
-            maxSpeedEnvBuilder.getBlockTime(edge.block, offset, null, allowanceValue)
+            maxSpeedEnvBuilder.getBlockTime(edge.block, expectedIndex, offset, null, allowanceValue)
         timeUntilStartOfLastBlock -= timeSinceFirstBlock
 
         val remainingTime = timeUntilStartOfLastBlock + timeAfterStartOfLastBlock
@@ -88,9 +96,7 @@ data class STDCMAStarHeuristic(
         for (block in blocks) {
             stepTrackerCopy.moveForward(block, Offset.zero(), blockInfra.getBlockLength(block))
         }
-        val nPlannedSteps = stepTrackerCopy.iterateReachedStepsBackwards().count { it.isPlanned }
-        val res = max(0, nPlannedSteps - 1) // Accounts for the departure step
-        return res
+        return stepTrackerCopy.getCurrentReachedPlannedStepIndex()
     }
 }
 
@@ -111,7 +117,7 @@ class STDCMHeuristicBuilder(
     private val maxRunningTime: Double,
     private val maxSpeedEnvBuilder: CachedBlockMaxSpeedEnvBuilder,
     val allowance: AllowanceValue?,
-    private val constraints: CachedBlockConstraintCombiner? = null,
+    private val consistSchedule: ConsistSchedule? = null,
 ) {
     private val logger: Logger = LoggerFactory.getLogger("STDCMHeuristic")
 
@@ -153,7 +159,7 @@ class STDCMHeuristicBuilder(
                 val remainingTimeSinceBlockStart =
                     remainingTimeEstimations.first()[it.edge] ?: Double.POSITIVE_INFINITY
                 val timeSinceBlockStart =
-                    maxSpeedEnvBuilder.getBlockTime(it.edge, it.offset, null, allowance)
+                    maxSpeedEnvBuilder.getBlockTime(it.edge, 0, it.offset, null, allowance)
                 remainingTimeSinceBlockStart - timeSinceBlockStart
             } ?: Double.POSITIVE_INFINITY
         logger.info(
@@ -194,7 +200,11 @@ class STDCMHeuristicBuilder(
             if (maxSpeedEnvBuilder.isStopAtStartOfBlock(pendingBlock.block)) 0.0
             else
                 maxSpeedEnvBuilder
-                    .getMaxSpeedEnvelope(pendingBlock.block, pendingBlock.endSpeed)
+                    .getMaxSpeedEnvelope(
+                        pendingBlock.block,
+                        pendingBlock.stepIndex,
+                        pendingBlock.endSpeed,
+                    )
                     .beginSpeed
         val detector = blockInfra.getBlockEntry(rawInfra, pendingBlock.block)
         val blocks = blockInfra.getBlocksEndingAtDetector(detector)
@@ -240,16 +250,17 @@ class STDCMHeuristicBuilder(
             }
             newIndex--
         }
-        if (constraints != null && newIndex > 0 && remainingTime > 0.0) {
+        if (consistSchedule?.constraints != null && newIndex > 0 && remainingTime > 0.0) {
             // We stop if there's any blocking constraint on the block,
             // but only if not on the first or last block
             // (as the constrained range may not be part of the path)
-            if (constraints.apply(block).isNotEmpty()) return null
+            if (consistSchedule.constraints[newIndex].apply(block).isNotEmpty()) return null
         }
         return PendingBlock(
             block,
             newIndex,
-            remainingTime + maxSpeedEnvBuilder.getBlockTime(block, offset, endSpeed, allowance),
+            remainingTime +
+                maxSpeedEnvBuilder.getBlockTime(block, newIndex, offset, endSpeed, allowance),
             endSpeed,
         )
     }

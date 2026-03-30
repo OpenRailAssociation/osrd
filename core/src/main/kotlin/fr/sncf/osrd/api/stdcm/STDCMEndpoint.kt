@@ -18,7 +18,9 @@ import fr.sncf.osrd.cli.RsWithBody
 import fr.sncf.osrd.cli.RsWithStatus
 import fr.sncf.osrd.cli.Take
 import fr.sncf.osrd.conflicts.ParsedRequirements
+import fr.sncf.osrd.envelope.concatenateAndShiftEnvelopes
 import fr.sncf.osrd.envelope_sim.Comfort
+import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.Percentage
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.TimePerDistance
@@ -66,6 +68,7 @@ import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.TreeMap
+import kotlin.math.max
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 
@@ -110,20 +113,36 @@ class STDCMEndpoint(
         return try {
             // parse input data
             val infra = infraManager.getInfra(request.infra, request.expectedVersion)
+            val allowedTrackSections = parseTrackSectionIds(infra, request.allowedTrackSections)
             val temporarySpeedLimitManager =
                 buildTemporarySpeedLimitManager(infra, request.temporarySpeedLimits)
-            val rollingStock =
-                parseRawRollingStock(
-                    request.consistSchedule.values[0].physicsConsist,
-                    request.consistSchedule.values[0].loadingGaugeType,
-                    request.consistSchedule.values[0].supportedSignalingSystems.filter {
-                        // Ignoring ETCS as it is not (yet) supported for STDCM
-                        it != ETCS_LEVEL2.id
-                    },
+            val consistConfigurations =
+                request.consistSchedule.values.map { it ->
+                    it.copy(
+                        supportedSignalingSystems =
+                            it.supportedSignalingSystems.filter {
+                                // Ignoring ETCS as it is not (yet) supported for STDCM
+                                it != ETCS_LEVEL2.id
+                            }
+                    )
+                }
+            val requestConsistSchedule =
+                request.consistSchedule.copy(values = consistConfigurations)
+            val consistSchedules =
+                ConsistSchedule(
+                    requestConsistSchedule,
+                    infra,
+                    allowedTrackSections,
+                    request.pathItems.size,
                 )
-            val steps = parseSteps(infra, request.pathItems, request.startTime, rollingStock.length)
+            val steps =
+                parseSteps(
+                    infra,
+                    request.pathItems,
+                    request.startTime,
+                    consistSchedules.rollingStocks.map { it.length },
+                )
             val requirements = getRequirements(request, infra, timetableCacheManager)
-            val allowedTrackSections = parseTrackSectionIds(infra, request.allowedTrackSections)
             val failureExplainer =
                 FailureExplainer(request.startTime, infra.rawInfra, infra.blockInfra)
 
@@ -131,7 +150,7 @@ class STDCMEndpoint(
             val path =
                 findPath(
                     infra,
-                    rollingStock,
+                    consistSchedules,
                     request.comfort,
                     0.0,
                     steps,
@@ -165,7 +184,6 @@ class STDCMEndpoint(
                 buildSimResponse(
                     infra,
                     path,
-                    rollingStock,
                     request.consistSchedule.values[0].speedLimitTag,
                     temporarySpeedLimitManager,
                     request.comfort,
@@ -180,6 +198,7 @@ class STDCMEndpoint(
                 simulationResponse,
                 departureTime,
                 requirements.metadata,
+                s3Context,
             )
 
             val response = STDCMSuccess(simulationResponse, pathfindingResponse, departureTime)
@@ -189,87 +208,132 @@ class STDCMEndpoint(
         }
     }
 
-    /**
-     * If the env variable is set, dump a json file there with all data that may be relevant for
-     * debug. The feature and env variable isn't properly documented yet, it should soon be linked
-     * to an object storage.
-     */
-    private fun logDebugData(
-        infra: RawInfra,
-        path: STDCMResult,
-        simulationResponse: SimulationSuccess,
-        departureTime: ZonedDateTime,
-        requirements: Map<ZoneId, List<STDCMTimetableData.DetailedRequirement>>,
-    ) {
-        val stringDebugData by lazy {
-            OutputSimDebugData.adapter.toJson(
-                generateDebugData(infra, path, simulationResponse, departureTime, requirements)
+    companion object {
+        /**
+         * If the env variable is set, dump a json file there with all data that may be relevant for
+         * debug. The feature and env variable isn't properly documented yet, it should soon be
+         * linked to an object storage.
+         */
+        fun logDebugData(
+            infra: RawInfra,
+            path: STDCMResult,
+            simulationResponse: SimulationSuccess,
+            departureTime: ZonedDateTime,
+            requirements: Map<ZoneId, List<STDCMTimetableData.DetailedRequirement>>,
+            s3Context: S3Context? = null,
+        ) {
+            val stringDebugData by lazy {
+                OutputSimDebugData.adapter.toJson(
+                    generateDebugData(infra, path, simulationResponse, departureTime, requirements)
+                )
+            }
+
+            val filename = System.getenv("STDCM_DEBUG_DATA_FILENAME")
+            if (filename != null) {
+                File(filename).writeText(stringDebugData)
+            }
+
+            s3Context?.writeSTDCMFile("output_simulation_data.json") { stringDebugData }
+        }
+
+        /** Build the simulation part of the response */
+        fun buildSimResponse(
+            infra: FullInfra,
+            path: STDCMResult,
+            speedLimitTag: String?,
+            temporarySpeedLimitManager: TemporarySpeedLimitManager?,
+            comfort: Comfort,
+        ): SimulationSuccess {
+            val scheduleItems = parseSimulationScheduleItems(path.stopResults).toMutableList()
+            // Add a short stop at the end to avoid signal propagation
+            scheduleItems.add(
+                SimulationScheduleItem(
+                    path.trainPath.getLength(),
+                    null,
+                    0.1.seconds,
+                    RJSTrainStop.RJSReceptionSignal.STOP,
+                )
+            )
+            val reportTrain =
+                runScheduleMetadataExtractor(
+                    path.envelope,
+                    path.trainPath,
+                    infra,
+                    path.rollingStocks as DistanceRangeMap<PhysicsRollingStock>,
+                    scheduleItems,
+                    listOf(),
+                )
+
+            // Lighter description of the same simulation result
+            val simpleReportTrain =
+                ReportTrain(
+                    reportTrain.positions,
+                    reportTrain.times,
+                    reportTrain.speeds,
+                    reportTrain.energyConsumption,
+                    reportTrain.pathItemTimes,
+                )
+            val speedLimits =
+                concatenateAndShiftEnvelopes(
+                    path.rollingStocks.map {
+                        computeMRSP(
+                            path.trainPath.subPath(Offset(it.lower), Offset(it.upper)),
+                            it.value,
+                            false,
+                            speedLimitTag,
+                            temporarySpeedLimitManager,
+                        )
+                    }
+                )
+
+            // All simulations are the same for now
+            return SimulationSuccess(
+                base = simpleReportTrain,
+                provisional = simpleReportTrain,
+                finalOutput = reportTrain,
+                mrsp = makeMRSPResponse(speedLimits),
+                electricalProfiles =
+                    STDCMEndpoint.buildSTDCMElectricalProfiles(path, path.rollingStocks, comfort),
             )
         }
 
-        val filename = System.getenv("STDCM_DEBUG_DATA_FILENAME")
-        if (filename != null) {
-            File(filename).writeText(stringDebugData)
+        /** Build the electrical profiles from the path */
+        fun buildSTDCMElectricalProfiles(
+            path: STDCMResult,
+            rollingStocks: DistanceRangeMap<RollingStock>,
+            comfort: Comfort,
+        ): RangeValues<ElectricalProfileValue> {
+            var currentOffset = 0.0.meters
+            val electricalProfiles =
+                rollingStocks.map {
+                    val electrificationMap =
+                        path.trainPath
+                            .subPath(Offset(it.lower), Offset(it.upper))
+                            .getElectrificationMap(
+                                it.value.basePowerClass,
+                                offsetRangeMapOf(),
+                                it.value.powerRestrictions,
+                                false,
+                            )
+                    val curvesAndConditions =
+                        it.value.mapTractiveEffortCurves(electrificationMap, comfort)
+                    val electrificationRanges =
+                        ElectrificationRange.from(
+                            curvesAndConditions.conditions,
+                            electrificationMap,
+                        )
+                    val electricalProfiles =
+                        makeElectricalProfiles(electrificationRanges).shifted(currentOffset)
+                    currentOffset = it.upper
+                    electricalProfiles
+                }
+            return electricalProfiles.reduce { acc, newRange ->
+                RangeValues(
+                    internalBoundaries = acc.internalBoundaries + newRange.internalBoundaries,
+                    values = acc.values + newRange.values,
+                )
+            }
         }
-
-        s3Context?.writeSTDCMFile("output_simulation_data.json") { stringDebugData }
-    }
-
-    /** Build the simulation part of the response */
-    private fun buildSimResponse(
-        infra: FullInfra,
-        path: STDCMResult,
-        rollingStock: RollingStock,
-        speedLimitTag: String?,
-        temporarySpeedLimitManager: TemporarySpeedLimitManager?,
-        comfort: Comfort,
-    ): SimulationSuccess {
-        val scheduleItems = parseSimulationScheduleItems(path.stopResults).toMutableList()
-        // Add a short stop at the end to avoid signal propagation
-        scheduleItems.add(
-            SimulationScheduleItem(
-                path.trainPath.getLength(),
-                null,
-                0.1.seconds,
-                RJSTrainStop.RJSReceptionSignal.STOP,
-            )
-        )
-        val reportTrain =
-            runScheduleMetadataExtractor(
-                path.envelope,
-                path.trainPath,
-                infra,
-                rollingStock,
-                scheduleItems,
-                listOf(),
-            )
-
-        // Lighter description of the same simulation result
-        val simpleReportTrain =
-            ReportTrain(
-                reportTrain.positions,
-                reportTrain.times,
-                reportTrain.speeds,
-                reportTrain.energyConsumption,
-                reportTrain.pathItemTimes,
-            )
-        val speedLimits =
-            computeMRSP(
-                path.trainPath,
-                rollingStock,
-                false,
-                speedLimitTag,
-                temporarySpeedLimitManager,
-            )
-
-        // All simulations are the same for now
-        return SimulationSuccess(
-            base = simpleReportTrain,
-            provisional = simpleReportTrain,
-            finalOutput = reportTrain,
-            mrsp = makeMRSPResponse(speedLimits),
-            electricalProfiles = buildSTDCMElectricalProfiles(path, rollingStock, comfort),
-        )
     }
 
     /** Build the electrical profiles from the path */
@@ -354,8 +418,9 @@ fun parseSteps(
     infra: FullInfra,
     pathItems: List<STDCMPathItem>,
     startTime: ZonedDateTime,
-    rollingStockLength: Double,
+    rollingStockLengths: List<Double>,
 ): List<ExplorerStep> {
+    require(rollingStockLengths.size == pathItems.size)
     if (pathItems.last().stopDuration == null) {
         throw OSRDError(ErrorType.MissingLastSTDCMStop)
     }
@@ -375,6 +440,8 @@ fun parseSteps(
 
     return pathItems
         .mapIndexed { index, it ->
+            val rollingStockLength =
+                max(rollingStockLengths[index], rollingStockLengths.getOrElse(index - 1) { 0.0 })
             ExplorerStep(
                 if (index != 0 && index != pathItems.size - 1) {
                     val destinationBlock = findWaypointBlocks(infra, pathItems.last().locations)

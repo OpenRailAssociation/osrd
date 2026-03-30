@@ -13,6 +13,7 @@ import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.stdcm.infra_exploration.getRemainingBlocks
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.meters
+import kotlin.math.max
 import kotlin.math.min
 
 /**
@@ -109,9 +110,16 @@ data class VisitedNodes(
                 val mapAtStepIndex = visitedAtDetector[parameters.fingerprint!!.waypointIndex]
                 val mapAtDetector = mapAtStepIndex?.get(exitDet)
 
+                val stepIndex =
+                    max(
+                        parameters.explorer.getStepTracker().iterateSeenStepsBackwards().count {
+                            it.isPlanned
+                        } - 1,
+                        0,
+                    )
                 val minTravelTime =
                     parameters.explorer.getRemainingBlocks().sumOf {
-                        maxSpeedEnvBuilder!!.getBlockTime(it, null, null)
+                        maxSpeedEnvBuilder!!.getBlockTime(it, stepIndex, null, null)
                     }
 
                 // We compare it to a scenario with the minimum amount of added travel time, and

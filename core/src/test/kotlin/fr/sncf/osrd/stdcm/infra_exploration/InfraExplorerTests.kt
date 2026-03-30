@@ -212,7 +212,7 @@ class InfraExplorerTests {
                 infra,
                 infra,
                 BlockLocation(blocks[0], Offset(0.meters)),
-                constraints = electrificationConstraints,
+                constraints = listOf(electrificationConstraints),
             )
         assertEquals(1, firstExplorers.size)
         val firstExplorer = firstExplorers.first()

@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.ksp)
+    id 'java-test-fixtures'
     id 'jacoco'
 }
 
@@ -20,6 +21,7 @@ dependencies {
     api project(":osrd-reporting")
     implementation project(':osrd-geom')
     implementation project(':osrd-mp')
+    testFixturesApi project(":osrd-mp")
 
     implementation libs.guava
     implementation libs.kotlin.logging

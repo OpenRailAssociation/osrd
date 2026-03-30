@@ -47,3 +47,13 @@ class EnvelopeBuilder {
         }
     }
 }
+
+fun concatenateAndShiftEnvelopes(envelopes: List<Envelope>): Envelope {
+    var currentOffset = 0.0
+    val envelopeParts = mutableListOf<EnvelopePart>()
+    for (envelope in envelopes) {
+        envelopeParts.addAll(envelope.map { it.copyAndShift(currentOffset) })
+        currentOffset += envelope.endPos
+    }
+    return Envelope(envelopeParts.toTypedArray())
+}

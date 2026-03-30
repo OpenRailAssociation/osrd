@@ -175,24 +175,39 @@ class BenchSTDCM : CliCommand {
                 try {
                     val temporarySpeedLimitManager =
                         buildTemporarySpeedLimitManager(infra, request.temporarySpeedLimits)
-                    val rollingStock =
-                        parseRawRollingStock(
-                            request.consistSchedule.values[0].physicsConsist,
-                            request.consistSchedule.values[0].loadingGaugeType,
-                            request.consistSchedule.values[0].supportedSignalingSystems.filter {
-                                // Ignoring ETCS as it is not (yet) supported for STDCM
-                                it != ETCS_LEVEL2.id
-                            },
-                        )
-                    val steps =
-                        parseSteps(infra, request.pathItems, request.startTime, rollingStock.length)
-                    val requirements = getRequirements(request, infra, cacheManager)
+                    val consistConfigurations =
+                        request.consistSchedule.values.map { it ->
+                            it.copy(
+                                supportedSignalingSystems =
+                                    it.supportedSignalingSystems.filter {
+                                        // Ignoring ETCS as it is not (yet) supported for STDCM
+                                        it != ETCS_LEVEL2.id
+                                    }
+                            )
+                        }
+                    val requestConsistSchedule =
+                        request.consistSchedule.copy(values = consistConfigurations)
                     val allowedTrackSections =
                         parseTrackSectionIds(infra, request.allowedTrackSections)
+                    val consistSchedules =
+                        ConsistSchedule(
+                            requestConsistSchedule,
+                            infra,
+                            allowedTrackSections,
+                            request.pathItems.size,
+                        )
+                    val steps =
+                        parseSteps(
+                            infra,
+                            request.pathItems,
+                            request.startTime,
+                            consistSchedules.rollingStocks.map { it.length },
+                        )
+                    val requirements = getRequirements(request, infra, cacheManager)
                     path =
                         findPath(
                             infra,
-                            rollingStock,
+                            consistSchedules,
                             request.comfort,
                             0.0,
                             steps,
