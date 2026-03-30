@@ -325,6 +325,7 @@ const SimulationResults = ({
             >
               <div data-testid="chronogram" className="simulation-chronogram">
                 <ChronogramWrapper
+                  timetableId={timetableId}
                   timetableItemsWithDetails={timetableItemsWithDetails}
                   chronogramHeight={chronogramHeight}
                 />

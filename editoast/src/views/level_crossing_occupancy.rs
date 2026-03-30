@@ -24,6 +24,7 @@ use core_client::pathfinding::TrackRange;
 use core_client::simulation::ReportTrain;
 use database::DbConnection;
 use editoast_derive::EditoastError;
+use editoast_models::TrainScheduleException;
 use editoast_models::prelude::*;
 use editoast_models::rolling_stock::RollingStock;
 use itertools::Itertools;
@@ -61,6 +62,7 @@ pub(in crate::views) struct LevelCrossingOccupancyForm {
     train_ids: Vec<i64>,
     level_crossing_ids: Vec<Identifier>,
     infra_id: i64,
+    timetable_id: i64,
     electrical_profile_set_id: Option<i64>,
 }
 
@@ -98,6 +100,7 @@ pub(in crate::views) async fn occupancy(
         train_ids,
         level_crossing_ids,
         infra_id,
+        timetable_id,
         electrical_profile_set_id,
     }): Json<LevelCrossingOccupancyForm>,
 ) -> Result<Json<HashMap<Identifier, Vec<LevelCrossingOccupancy>>>> {
@@ -137,17 +140,31 @@ pub(in crate::views) async fn occupancy(
         .await?;
 
     let trains: Vec<TrainSchedule> =
-        TrainSchedule::retrieve_batch_or_fail(conn, train_ids, |missing| {
+        TrainSchedule::retrieve_batch_or_fail(conn, train_ids.clone(), |missing| {
             LevelCrossingError::TrainBatchNotFound {
                 count: missing.len(),
             }
         })
         .await?;
 
+    let mut exceptions = TrainScheduleException::retrieve_exceptions_by_train_schedules(
+        conn,
+        timetable_id,
+        train_ids,
+    )
+    .await?
+    .into_iter()
+    .map_into::<schemas::TrainScheduleException>()
+    .into_group_map_by(|e| e.timetable_id);
+
     // Collect all occurrences from all trains
     let train_occurrences = trains
         .iter()
-        .flat_map(|train| train.iter_occurrences())
+        .flat_map(|train| {
+            train
+                .iter_occurrences_v2(&exceptions.remove(&train.id).unwrap_or_default())
+                .collect::<Vec<_>>()
+        })
         .collect_vec();
 
     // Extract train schedules for simulation
@@ -351,7 +368,7 @@ mod tests {
     use super::*;
     use crate::models::fixtures::create_fast_rolling_stock;
     use crate::models::fixtures::create_small_infra;
-    use crate::models::fixtures::create_train_schedule_set;
+    use crate::models::fixtures::create_timetable_with_train_schedule_set;
     use crate::views::test_app::TestAppBuilder;
     use crate::views::test_app::TestResponse;
     use chrono::TimeDelta;
@@ -528,7 +545,8 @@ mod tests {
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), "simulation_rolling_stock").await;
-        let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
+        let (timetable, train_schedule_set) =
+            create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
 
         // Create level crossing
         let level_crossing = LevelCrossingModel::default()
@@ -570,6 +588,7 @@ mod tests {
                 train_ids: vec![train.id],
                 level_crossing_ids: vec![level_crossing.obj_id.clone().into()],
                 infra_id: small_infra.id,
+                timetable_id: timetable.id,
                 electrical_profile_set_id: None,
             });
 
