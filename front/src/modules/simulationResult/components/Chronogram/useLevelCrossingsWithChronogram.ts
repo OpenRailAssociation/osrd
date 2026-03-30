@@ -15,7 +15,10 @@ type UseLevelCrossingsWithChronogramProps = {
   trains: TimetableItemWithDetails[];
 };
 
-const useLevelCrossingsWithChronogram = ({ trains }: UseLevelCrossingsWithChronogramProps) => {
+const useLevelCrossingsWithChronogram = (
+  timetableId: number,
+  { trains }: UseLevelCrossingsWithChronogramProps
+) => {
   const infraId = useInfraID();
   const dispatch = useAppDispatch();
 
@@ -51,6 +54,7 @@ const useLevelCrossingsWithChronogram = ({ trains }: UseLevelCrossingsWithChrono
             body: {
               infra_id: infraId,
               train_ids: trainIds,
+              timetable_id: timetableId,
               level_crossing_ids: levelCrossingsIds.ids,
             },
           }
