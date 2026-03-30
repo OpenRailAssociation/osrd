@@ -299,7 +299,7 @@ impl TrainScheduleSummaryResponseBuilder {
 #[derive(Debug, Clone)]
 struct SimulationContext {
     train_schedule_id: i64,
-    exception_key: Option<String>,
+    exception_id: Option<i64>,
     train_schedule: schemas::TrainOccurrence,
 }
 
@@ -1041,15 +1041,13 @@ pub(in crate::views) async fn project_path(
             let ts_exceptions = exceptions.remove(&train_schedule.id).unwrap_or_default();
             std::iter::once(SimulationContext {
                 train_schedule_id: train_schedule.id,
-                exception_key: None,
+                exception_id: None,
                 train_schedule: train_schedule.clone().into_train_occurrence(),
             })
-            .chain(ts_exceptions.iter().map(|exception| {
-                SimulationContext {
-                    train_schedule_id: train_schedule.id,
-                    exception_key: exception.key.clone(), // TODO use exception.id instead of key
-                    train_schedule: train_schedule.apply_train_schedule_exception(exception),
-                }
+            .chain(ts_exceptions.iter().map(|exception| SimulationContext {
+                train_schedule_id: train_schedule.id,
+                exception_id: Some(exception.id),
+                train_schedule: train_schedule.apply_train_schedule_exception(exception),
             }))
             .collect::<Vec<_>>()
         })
@@ -1077,14 +1075,14 @@ pub(in crate::views) async fn project_path(
     let results = simulation_contexts.into_iter().enumerate().fold(
         HashMap::<i64, ProjectPathTrainScheduleResult>::new(),
         |mut results, (index, simulation_context)| {
-            if let Some(exception_key) = simulation_context.exception_key {
+            if let Some(exception_key) = simulation_context.exception_id {
                 if !Arc::ptr_eq(&base_project_path, &project_path_result[index]) {
                     results
                         .get_mut(&simulation_context.train_schedule_id)
                         .expect("train_schedule_id should exist")
                         .exceptions
                         .insert(
-                            exception_key,
+                            exception_key.to_string(),
                             Arc::unwrap_or_clone(project_path_result[index].clone()),
                         );
                 }
@@ -1370,19 +1368,16 @@ pub(in crate::views) async fn occupancy_blocks(
             let ts_exceptions = exceptions.remove(&train_schedule.id).unwrap_or_default();
             std::iter::once(SimulationContext {
                 train_schedule_id: train_schedule.id,
-                exception_key: None,
+                exception_id: None,
                 train_schedule: train_schedule.clone().into_train_occurrence(),
             })
             .chain(
                 ts_exceptions
                     .iter()
-                    .map(|exception| {
-                        SimulationContext {
-                            train_schedule_id: train_schedule.id,
-                            exception_key: exception.key.clone(), // TODO use exception.id
-                            train_schedule: train_schedule
-                                .apply_train_schedule_exception(exception),
-                        }
+                    .map(|exception| SimulationContext {
+                        train_schedule_id: train_schedule.id,
+                        exception_id: Some(exception.id),
+                        train_schedule: train_schedule.apply_train_schedule_exception(exception),
                     })
                     .collect::<Vec<_>>(),
             )
@@ -1410,14 +1405,14 @@ pub(in crate::views) async fn occupancy_blocks(
     let mut results = HashMap::<i64, OccupancyBlocksTrainScheduleResult>::new();
 
     for (index, simulation_context) in simulation_contexts.into_iter().enumerate() {
-        if let Some(exception_key) = simulation_context.exception_key {
+        if let Some(exception_key) = simulation_context.exception_id {
             if !Arc::ptr_eq(&base_occupancy_blocks, &occupancy_blocks_result[index]) {
                 results
                     .get_mut(&simulation_context.train_schedule_id)
                     .expect("train_schedule_id should exist")
                     .exceptions
                     .insert(
-                        exception_key,
+                        exception_key.to_string(),
                         Arc::unwrap_or_clone(occupancy_blocks_result[index].clone()),
                     );
             }
