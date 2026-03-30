@@ -5000,6 +5000,7 @@ export type OccupancyBlockForm = {
   ids: number[];
   infra_id: number;
   path: CoreTrainPath;
+  timetable_id: number;
 };
 export type SpaceTimeCurve = {
   /** List of positions of a train in mm
