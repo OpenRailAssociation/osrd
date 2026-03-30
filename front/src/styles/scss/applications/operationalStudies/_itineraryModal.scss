@@ -272,7 +272,7 @@
             }
           }
 
-          .path-step-counter:not(.is-only-step):not(.is-trailing-placeholder):hover {
+          .path-step-counter:not(.is-trailing-placeholder):not(.is-only-step):hover {
             opacity: 1;
             background-color: var(--error60) !important;
 
