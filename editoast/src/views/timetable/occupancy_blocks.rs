@@ -88,6 +88,7 @@ impl TrainBlockOccupancyDetails {
 #[derive(Debug, Deserialize, ToSchema)]
 pub(in crate::views) struct OccupancyBlockForm {
     pub(super) infra_id: i64,
+    pub(super) timetable_id: i64,
     pub(super) electrical_profile_set_id: Option<i64>,
     pub(super) ids: HashSet<i64>,
     pub(super) path: TrainPath,
