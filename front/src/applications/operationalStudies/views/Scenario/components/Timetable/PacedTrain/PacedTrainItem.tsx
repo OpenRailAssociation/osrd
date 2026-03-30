@@ -101,8 +101,7 @@ const PacedTrainItem = ({
   const { editedElementContainer } = useContext(EditedElementContainerContext);
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const dispatch = useAppDispatch();
-  const { openModal } = useContext(ModalContext);
-  const { closeModal } = useContext(ModalContext);
+  const { openModal, closeModal } = useContext(ModalContext);
 
   const { rollingStocks } = useRollingStockContext();
 
