@@ -834,6 +834,8 @@
     "noPathLoaded": "Aucun chemin chargé",
     "operational_point": "point remarquable",
     "powerRestriction": "restriction de puissance",
+    "powerRestrictionIncompatibility_one": "{{count}} code de restriction de puissance n'est pas compatible avec l'électrification.",
+    "powerRestrictionIncompatibility_other": "{{count}} codes de restriction de puissance ne sont pas compatibles avec l'électrification.",
     "propagationMenu": {
       "atThisWaypoint": "appliquer à ce point",
       "fromDeparture": "propager vers le début",
