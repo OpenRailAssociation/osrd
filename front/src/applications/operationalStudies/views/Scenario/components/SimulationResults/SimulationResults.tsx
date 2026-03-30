@@ -373,6 +373,7 @@ const SimulationResults = ({
                 upsertTimetableItems={upsertTimetableItems}
                 isSimulationDataLoading={isSimulationDataLoading}
                 operationalPointsOnPath={simulationResults.pathProperties?.operationalPoints}
+                rollingStock={simulationResults.rollingStock}
                 {...(simulationResults?.isValid &&
                   simulationSummary?.isValid && {
                     isValid: true,

@@ -9,6 +9,7 @@ import { useScenarioContext } from 'applications/operationalStudies/hooks/useSce
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import type {
   PathItemLocation,
+  PowerRestrictionItem,
   SimulationResponseSuccess,
   TrackSection,
   ScheduleItem,
@@ -29,6 +30,23 @@ import {
 } from '../helpers/utils';
 import { type Margins, type StepStatus, type TimesStopsRowNew } from '../types';
 
+/**
+ * Returns the power restriction code that explicitly STARTS at a given path step index,
+ * or null if no restriction starts here (even if one is active from a previous step).
+ */
+const getPowerRestrictionForPathStep = (
+  stepIndex: number,
+  pathIdToIndex: Map<string, number>,
+  powerRestrictions: PowerRestrictionItem[] | undefined
+): string | null => {
+  if (!powerRestrictions) return null;
+  for (const restriction of powerRestrictions) {
+    const fromIndex = pathIdToIndex.get(restriction.from);
+    if (fromIndex === stepIndex) return restriction.value;
+  }
+  return null;
+};
+
 type BuildTableRowParams = {
   id: string;
   opOnPathIndex: number;
@@ -42,6 +60,7 @@ type BuildTableRowParams = {
   invalidPathStep?: boolean;
   scheduleNotHonored?: boolean;
   marginNotHonored?: boolean;
+  powerRestriction?: string | null;
   location: PathItemLocation;
   isPathStep: boolean;
   shortSlipDistance?: boolean;
@@ -62,6 +81,7 @@ const buildTableRow = ({
   invalidPathStep,
   scheduleNotHonored,
   marginNotHonored,
+  powerRestriction = null,
   location,
   isPathStep,
   shortSlipDistance,
@@ -134,7 +154,7 @@ const buildTableRow = ({
     location,
     closedSignal,
     shortSlipDistance,
-    powerRestriction: null, // TODO : Implementation to be done with the integration of the new columns
+    powerRestriction,
     requestedTheoreticalMargin: theoreticalMargin,
     isTheoreticalMarginBoundary: isTheoreticalMarginBoundary,
     computedTheoreticalMarginSeconds: theoreticalMarginSeconds,
@@ -230,6 +250,7 @@ const useTimesStopsTableData = (
   const allRows = useMemo(() => {
     const startDate = new Date(selectedTrain.start_time);
     const scheduleByAt = keyBy(selectedTrain.schedule, 'at');
+    const pathIdToIndex = new Map(selectedTrain.path.map((step, idx) => [step.id, idx]));
 
     const pathStepRowsById = new Map(
       selectedTrain.path.map((pathStep, stepIndex) => {
@@ -286,6 +307,12 @@ const useTimesStopsTableData = (
           schedule?.reception_signal
         );
 
+        const powerRestriction = getPowerRestrictionForPathStep(
+          stepIndex,
+          pathIdToIndex,
+          selectedTrain.power_restrictions
+        );
+
         const row = buildTableRow({
           id: pathStep.id,
           // opOnPathIndex is a placeholder here (-1), it will be replaced by opIndex when matching with operationalPointsOnPath
@@ -300,6 +327,7 @@ const useTimesStopsTableData = (
           invalidPathStep: !matchingOp,
           scheduleNotHonored,
           marginNotHonored,
+          powerRestriction,
           location: pathStep.location,
           isPathStep: true,
           shortSlipDistance,

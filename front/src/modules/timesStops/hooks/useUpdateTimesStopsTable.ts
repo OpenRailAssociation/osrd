@@ -33,12 +33,14 @@ import {
   applyScheduleEdit,
   scheduleStateToApiFields,
   buildUpdatedOccurrence,
+  buildPowerRestrictionsFromRows,
   insertScheduleItemInOrder,
 } from '../helpers/cellUpdate';
 import { propagateTime } from '../helpers/timePropagation';
 import type {
   CellUpdate,
   OptimisticEdit,
+  PowerRestrictionUpdate,
   PropagationMode,
   MarginValue,
   TimesStopsRowNew,
@@ -110,7 +112,7 @@ const useUpdateTimesStopsTable = (
    */
   const computeUpdatedPathAndSchedule = useCallback(
     (
-      update: CellUpdate
+      update: Exclude<CellUpdate, PowerRestrictionUpdate>
     ):
       | {
           updatedPath: PathItem[];
@@ -147,7 +149,7 @@ const useUpdateTimesStopsTable = (
       }
 
       // Convert CellUpdate to OptimisticEdit (stopDuration: number → Duration)
-      let edit: OptimisticEdit;
+      let edit: Exclude<OptimisticEdit, { field: 'powerRestriction' }>;
       if (update.field === 'stopDuration') {
         edit = {
           field: 'stopDuration',
@@ -196,6 +198,24 @@ const useUpdateTimesStopsTable = (
   );
 
   /**
+   * Compute the updated path and rebuilt power_restrictions array when a power restriction
+   * cell is edited. The edited row is upserted as a path step (so a new restriction can
+   * be set on a non-path-step waypoint).
+   */
+  const computePowerRestrictionUpdate = (update: PowerRestrictionUpdate) => {
+    const { pathStepId, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
+    const modifiedRows = allRows.map((r) =>
+      r.id === update.row.id
+        ? { ...r, id: pathStepId, isPathStep: true, powerRestriction: update.value }
+        : r
+    );
+    return {
+      updatedPath,
+      powerRestrictions: buildPowerRestrictionsFromRows(modifiedRows),
+    };
+  };
+
+  /**
    * Handle update when the selected train is an occurrence of a PacedTrain.
    */
   const updateOccurrence = useCallback(
@@ -225,22 +245,34 @@ const useUpdateTimesStopsTable = (
       // exception diff expects the occurrence's computed name.
       const occurrenceTrainName = getOccurrenceTrainName(originalPacedTrain, occurrenceId);
 
-      const result = computeUpdatedPathAndSchedule(update);
-      if (!result) return 'skipped';
-
-      const trainWithUpdatedMargins = {
-        ...selectedTrain,
-        margins: result.updatedMargins,
-      };
-      const updatedOccurrence: TrainSchedule = {
-        ...buildUpdatedOccurrence({
-          selectedTrain: trainWithUpdatedMargins,
-          updatedPath: result.updatedPath,
-          updatedSchedule: result.updatedSchedule,
+      let updatedOccurrence: TrainSchedule;
+      if (update.field === 'powerRestriction') {
+        const { updatedPath, powerRestrictions } = computePowerRestrictionUpdate(update);
+        updatedOccurrence = buildUpdatedOccurrence({
+          selectedTrain,
+          updatedPath,
+          updatedSchedule: selectedTrain.schedule ?? [],
           trainName: occurrenceTrainName,
-        }),
-        start_time: result.updatedStartTime?.toISOString() ?? selectedTrain.start_time,
-      };
+          powerRestrictions,
+        });
+      } else {
+        const result = computeUpdatedPathAndSchedule(update);
+        if (!result) return 'skipped';
+
+        const trainWithUpdatedMargins = {
+          ...selectedTrain,
+          margins: result.updatedMargins,
+        };
+        updatedOccurrence = {
+          ...buildUpdatedOccurrence({
+            selectedTrain: trainWithUpdatedMargins,
+            updatedPath: result.updatedPath,
+            updatedSchedule: result.updatedSchedule,
+            trainName: occurrenceTrainName,
+          }),
+          start_time: result.updatedStartTime?.toISOString() ?? selectedTrain.start_time,
+        };
+      }
 
       const updatedPacedTrain = buildPacedTrainWithUpdatedException(
         originalPacedTrain,
@@ -259,6 +291,16 @@ const useUpdateTimesStopsTable = (
   const updateTimetableItem = useCallback(
     async (trainId: PacedTrainId, update: CellUpdate): Promise<UpdateCellStatus> => {
       const editoastId = extractEditoastIdFromPacedTrainId(trainId);
+
+      if (update.field === 'powerRestriction') {
+        const { updatedPath, powerRestrictions } = computePowerRestrictionUpdate(update);
+        return persistTrain({
+          ...selectedTrain,
+          id: editoastId,
+          path: updatedPath,
+          power_restrictions: powerRestrictions,
+        });
+      }
 
       const result = computeUpdatedPathAndSchedule(update);
       if (!result) return 'skipped';
@@ -325,12 +367,19 @@ const useUpdateTimesStopsTable = (
     [updateCell]
   );
 
+  const updatePowerRestrictions = useCallback(
+    (row: TimesStopsRowNew, powerRestriction: string | null) =>
+      updateCell({ row, field: 'powerRestriction', value: powerRestriction }),
+    [updateCell]
+  );
+
   return {
     updateArrival,
     updateStopDuration,
     updateDeparture,
     updateReceptionSignal,
     updateRequestedMargin,
+    updatePowerRestrictions,
   };
 };
 
