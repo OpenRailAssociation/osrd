@@ -34,6 +34,7 @@
   }
 
   .itinerary-modal-form {
+    position: relative;
     min-width: 628px;
     width: 50%;
     height: 100%;
@@ -112,6 +113,16 @@
       }
     }
 
+    &:active .path-step-wrapper.map-selection-active:not(:active) {
+      animation: tilt-shaking 0.25s 0s;
+    }
+
+    .map-selection-form-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 11;
+    }
+
     .itinerary-modal-form-body {
       flex: 1 1 auto;
       min-height: 0;
@@ -130,10 +141,12 @@
         margin-top: 12px;
         margin-inline: 8px;
         padding-top: 16px;
+        padding-bottom: 46px;
         .path-step-gap {
           position: relative;
           height: 28px;
           margin-top: -28px;
+          pointer-events: none;
         }
 
         .path-step-gap-hitbox {
@@ -142,6 +155,7 @@
           top: 12px;
           width: 56px;
           height: 100%;
+          pointer-events: auto;
         }
 
         .path-step-gap:has(.path-step-gap-hitbox:hover) {
@@ -168,6 +182,7 @@
           left: 13px;
           top: 13px;
           z-index: 2;
+          pointer-events: auto;
           padding: 0;
           margin: 0;
           border: 0;
@@ -239,10 +254,22 @@
           padding-inline: var(--path-step-wrapper-padding-left)
             var(--path-step-wrapper-padding-right);
           border-radius: 6px;
-          padding-bottom: 4px;
 
-          &:last-child {
-            padding-bottom: 14px;
+          &.map-selection-active {
+            position: relative;
+            z-index: 12;
+            background-color: var(--white100);
+            box-shadow:
+              0 3px 5px -2px rgba(0, 0, 0, 0.16),
+              0 16px 30px -5px rgba(0, 0, 0, 0.19),
+              0 6px 21px -5px rgba(255, 171, 88, 0.31);
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+
+            .path-step {
+              flex: 1;
+            }
           }
 
           .path-step-counter:not(.is-only-step):not(.is-trailing-placeholder):hover {
@@ -267,13 +294,40 @@
             gap: 8px;
             padding-block: 8px;
 
-            &.requested-point {
-              grid-template-columns:
-                24px minmax(184px, 1fr) calc(
-                  var(--path-step-secondary-code-width) + var(--path-step-track-name-width) +
-                    var(--path-step-row-gap)
-                )
-                auto;
+            &.map-selection-mode {
+              .segmented-control {
+                display: none;
+              }
+
+              .map-selection-message {
+                grid-column: 2 / -2;
+                display: flex;
+                width: 100%;
+                align-items: center;
+                padding-left: 4px;
+                min-width: 0;
+                margin-top: -1px;
+
+                .map-selection-text {
+                  font-size: 1rem;
+                  color: var(--grey50);
+                  flex: 1;
+                  white-space: nowrap;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                }
+
+                .cancel-map-selection-button {
+                  font-size: 0.875rem;
+                  color: var(--grey50);
+                  white-space: nowrap;
+                  flex-shrink: 0;
+
+                  &:hover {
+                    color: var(--grey80);
+                  }
+                }
+              }
             }
 
             .path-step-counter {
@@ -362,10 +416,31 @@
               margin-left: 5px;
               color: var(--primary60);
 
-              .added-location-icon svg {
-                fill: var(--grey60);
+              .select-location-button {
+                color: var(--primary60);
 
-                &:hover {
+                &.active {
+                  color: var(--primary80);
+                }
+
+                &:not([disabled]):hover {
+                  color: var(--primary80);
+                }
+
+                &[disabled] {
+                  color: var(--primary20);
+                  cursor: default;
+                }
+
+                .location-icon svg {
+                  fill: var(--grey60);
+                }
+
+                &.active .location-icon svg {
+                  fill: var(--primary60);
+                }
+
+                &:not([disabled]):hover .location-icon svg {
                   fill: var(--black100);
                 }
               }
@@ -409,6 +484,20 @@
     box-shadow: inset (var(--footer-box-shadow-height)) 0 0 0 var(--black25);
     padding-left: 1px;
 
+    &.map-selection-active {
+      position: relative;
+      overflow: hidden;
+
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 20px;
+        opacity: 0.33;
+        box-shadow: 0 0 0 9999px var(--primary20);
+        pointer-events: none;
+      }
+    }
+
     .layers-modal {
       position: fixed;
       top: 50%;
@@ -417,6 +506,14 @@
       background-color: var(--white100);
       border-radius: 7px;
       border: 1px solid var(--black25);
+    }
+
+    .path-step-marker {
+      .indicator {
+        &.active {
+          top: 4px;
+        }
+      }
     }
   }
 }

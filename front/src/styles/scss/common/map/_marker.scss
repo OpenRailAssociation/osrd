@@ -1,3 +1,12 @@
+@keyframes marker-bounce {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-6px);
+  }
+}
+
 .maplibregl-canvas-container {
   /* Style for itinerary markers */
   .path-step-marker {
@@ -7,6 +16,17 @@
     font-size: 0.75rem;
     font-weight: 600;
     color: var(--white100);
+
+    &.draggable {
+      cursor: grab;
+      animation: marker-bounce 0.5s infinite alternate;
+      animation-timing-function: cubic-bezier(0.471, 0.999, 0.749, 0.999);
+    }
+
+    &.dragging {
+      cursor: grabbing;
+      animation: none;
+    }
 
     .indicator {
       position: absolute;
