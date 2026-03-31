@@ -10,6 +10,7 @@ import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.utils.getNextTrackSections
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.*
+import fr.sncf.osrd.utils.OffsetRangeMap
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
@@ -19,7 +20,7 @@ fun makeETCSContext(
     rollingStock: RollingStock,
     infra: FullInfra,
     trainPath: TrainPath,
-    signalingRanges: DistanceRangeMap<String>,
+    signalingRanges: OffsetRangeMap<PhysicsPath, String>,
 ): EnvelopeSimContext.ETCSContext? {
     val etcsRanges = signalingRanges.mapToRangeSet { it == ETCS_LEVEL2.id }
 

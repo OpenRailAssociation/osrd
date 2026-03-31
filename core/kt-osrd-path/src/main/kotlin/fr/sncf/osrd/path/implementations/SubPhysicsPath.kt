@@ -1,10 +1,11 @@
 package fr.sncf.osrd.path.implementations
 
-import com.google.common.collect.ImmutableRangeMap
 import fr.sncf.osrd.path.interfaces.Electrification
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.OffsetRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
+import fr.sncf.osrd.utils.offsetRangeMapOf
 import fr.sncf.osrd.utils.units.meters
 
 class SubPhysicsPath(val begin: Double, val end: Double, val path: PhysicsPath) : PhysicsPath {
@@ -33,21 +34,20 @@ class SubPhysicsPath(val begin: Double, val end: Double, val path: PhysicsPath) 
 
     override fun getElectrificationMap(
         basePowerClass: String?,
-        powerRestrictionMap: DistanceRangeMap<String>?,
+        powerRestrictionMap: OffsetRangeMap<PhysicsPath, String>?,
         powerRestrictionToPowerClass: Map<String, String>?,
         ignoreElectricalProfiles: Boolean,
     ): DistanceRangeMap<Electrification> {
-        val powerRestrictionMapBuilder = ImmutableRangeMap.Builder<Double, String>()
         val newPowerRestrictionMap =
             powerRestrictionMap
                 ?.map {
-                    DistanceRangeMap.RangeMapEntry(
+                    OffsetRangeMap.RangeMapEntry(
                         it.lower + begin.meters,
                         it.upper + begin.meters,
                         it.value,
                     )
                 }
-                ?.let { distanceRangeMapOf(it) }
+                ?.let { offsetRangeMapOf(it) }
         val electrificationMap =
             path.getElectrificationMap(
                 basePowerClass,

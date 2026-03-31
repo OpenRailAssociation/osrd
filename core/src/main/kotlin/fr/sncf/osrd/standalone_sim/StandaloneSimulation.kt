@@ -34,9 +34,9 @@ import fr.sncf.osrd.standalone_sim.result.ElectrificationRange
 import fr.sncf.osrd.standalone_sim.result.ElectrificationRange.ElectrificationUsage
 import fr.sncf.osrd.standalone_sim.result.ElectrificationRange.ElectrificationUsage.ElectrifiedUsage
 import fr.sncf.osrd.train.RollingStock
-import fr.sncf.osrd.utils.DistanceRangeMap
-import fr.sncf.osrd.utils.distanceRangeMapOf
+import fr.sncf.osrd.utils.OffsetRangeMap
 import fr.sncf.osrd.utils.entries
+import fr.sncf.osrd.utils.offsetRangeMapOf
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -55,7 +55,7 @@ fun runStandaloneSimulation(
     comfort: Comfort,
     constraintDistribution: RJSAllowanceDistribution,
     speedLimitTag: String?,
-    powerRestrictions: DistanceRangeMap<String>,
+    powerRestrictions: OffsetRangeMap<PhysicsPath, String>,
     useElectricalProfiles: Boolean,
     useSpeedLimits: Boolean,
     timeStep: Double,
@@ -176,13 +176,16 @@ fun runStandaloneSimulation(
 }
 
 /** Returns the ranges where each signaling system is encountered. */
-fun buildSignalingRanges(infra: FullInfra, trainPath: TrainPath): DistanceRangeMap<String> {
+fun buildSignalingRanges(
+    infra: FullInfra,
+    trainPath: TrainPath,
+): OffsetRangeMap<PhysicsPath, String> {
     val blockInfra = infra.blockInfra
-    val res = distanceRangeMapOf<String>()
+    val res = offsetRangeMapOf<PhysicsPath, String>()
     for (blockRange in trainPath.getBlocks()) {
         val sigSystem = blockInfra.getBlockSignalingSystem(blockRange.value)
         val sigSystemName = infra.signalingSimulator.sigModuleManager.getName(sigSystem)
-        res.put(blockRange.pathBegin.distance, blockRange.pathEnd.distance, sigSystemName)
+        res.put(blockRange.pathBegin, blockRange.pathEnd, sigSystemName)
     }
     return res
 }
