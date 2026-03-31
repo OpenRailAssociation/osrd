@@ -8,6 +8,8 @@ import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.POSITION_EPSILON
 import fr.sncf.osrd.utils.SPEED_EPSILON
 import fr.sncf.osrd.utils.units.meters
+import kotlin.jvm.JvmOverloads
+import kotlin.jvm.JvmStatic
 import kotlin.math.*
 
 /**
@@ -82,7 +84,7 @@ private constructor(
     }
 
     private fun getDeceleration(speed: Double, position: Double): Double {
-        assert(action == Action.BRAKE)
+        require(action == Action.BRAKE)
         if (brakingType == BrakingType.CONSTANT) return rollingStock.deceleration
 
         val grade: Double = getMinGrade(rollingStock, path, position)
@@ -179,7 +181,7 @@ private constructor(
             tractionForce: Double,
             directionSign: Double,
         ): Double {
-            assert(tractionForce >= 0.0)
+            require(tractionForce >= 0.0)
 
             if (currentSpeed == 0.0 && directionSign > 0) {
                 // If we are stopped and if the forces are not enough to compensate the opposite

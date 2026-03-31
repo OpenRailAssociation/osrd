@@ -5,6 +5,8 @@ import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.DistanceRangeSet
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
+import kotlin.jvm.JvmField
+import kotlin.jvm.JvmOverloads
 
 class EnvelopeSimContext
 @JvmOverloads
