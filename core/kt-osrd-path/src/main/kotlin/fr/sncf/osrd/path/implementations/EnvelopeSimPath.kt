@@ -3,6 +3,7 @@ package fr.sncf.osrd.path.implementations
 import fr.sncf.osrd.path.interfaces.Electrification
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.OffsetRangeMap
 import fr.sncf.osrd.utils.arePositionsEqual
 import fr.sncf.osrd.utils.entries
 import fr.sncf.osrd.utils.units.Distance
@@ -149,7 +150,7 @@ class EnvelopeSimPath(
     /** Get the electrification related data for a given power class and power restriction map. */
     override fun getElectrificationMap(
         basePowerClass: String?,
-        powerRestrictionMap: DistanceRangeMap<String>?,
+        powerRestrictionMap: OffsetRangeMap<PhysicsPath, String>?,
         powerRestrictionToPowerClass: Map<String, String>?,
         ignoreElectricalProfiles: Boolean,
     ): DistanceRangeMap<Electrification> {
@@ -159,7 +160,12 @@ class EnvelopeSimPath(
         powerRestrictionMap?.forEach { lower, upper, restriction ->
             val powerClass = powerRestrictionToPowerClass?.getOrDefault(restriction, basePowerClass)
             val modeAndProfileMap =
-                getModeAndProfileMap(powerClass, lower, upper, ignoreElectricalProfiles)
+                getModeAndProfileMap(
+                    powerClass,
+                    lower.distance,
+                    upper.distance,
+                    ignoreElectricalProfiles,
+                )
             for (modeAndProfileEntry in modeAndProfileMap) {
                 val electrification = modeAndProfileEntry.value
                 res.put(

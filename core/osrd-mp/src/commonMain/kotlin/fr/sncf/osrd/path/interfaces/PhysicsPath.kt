@@ -1,6 +1,7 @@
 package fr.sncf.osrd.path.interfaces
 
 import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.OffsetRangeMap
 
 /**
  * A [PhysicsPath] describes the physics of a path taken by a train.
@@ -21,7 +22,7 @@ interface PhysicsPath {
     /** Get the electrification related data for a given power class and power restriction map. */
     fun getElectrificationMap(
         basePowerClass: String?,
-        powerRestrictionMap: DistanceRangeMap<String>?,
+        powerRestrictionMap: OffsetRangeMap<PhysicsPath, String>?,
         powerRestrictionToPowerClass: Map<String, String>?,
         ignoreElectricalProfiles: Boolean = false,
     ): DistanceRangeMap<Electrification>

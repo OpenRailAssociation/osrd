@@ -4,8 +4,9 @@ import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.MRSPEnvelopeBuilder
 import fr.sncf.osrd.envelope.part.EnvelopePart
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
-import fr.sncf.osrd.utils.DistanceRangeMap
-import fr.sncf.osrd.utils.distanceRangeMapOf
+import fr.sncf.osrd.path.interfaces.PhysicsPath
+import fr.sncf.osrd.utils.OffsetRangeMap
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import kotlin.math.max
 import kotlin.math.min
@@ -18,18 +19,26 @@ data class DriverBehaviour(
     /** Applies the driver behavior to the MRSP, adding reaction time for MRSP changes */
     fun applyToMRSP(
         mrsp: Envelope,
-        optSignalingSystemRanges: DistanceRangeMap<String>? = null,
+        optSignalingSystemRanges: OffsetRangeMap<PhysicsPath, String>? = null,
     ): Envelope {
-        val signalingSystemRanges = optSignalingSystemRanges ?: distanceRangeMapOf()
+        val signalingSystemRanges = optSignalingSystemRanges ?: OffsetRangeMap()
         val builder = MRSPEnvelopeBuilder()
         val totalLength = mrsp.totalDistance
         for (part in mrsp) {
             var begin = part.beginPos
             var end = part.endPos
             // compute driver behaviour offsets
-            if (signalingSystems.contains(signalingSystemRanges.get(begin.meters) ?: ""))
+            if (
+                signalingSystems.contains(
+                    signalingSystemRanges.get(Offset<PhysicsPath>(begin.meters)) ?: ""
+                )
+            )
                 begin -= this.brakingAnticipationOffset
-            if (signalingSystems.contains(signalingSystemRanges.get(end.meters) ?: ""))
+            if (
+                signalingSystems.contains(
+                    signalingSystemRanges.get(Offset<PhysicsPath>(end.meters)) ?: ""
+                )
+            )
                 end += this.acceleratingPostponementOffset
             begin = max(0.0, begin)
             end = min(totalLength, end)
