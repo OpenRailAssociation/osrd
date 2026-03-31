@@ -3,6 +3,7 @@ package fr.sncf.osrd.envelope_sim
 import fr.sncf.osrd.path.interfaces.Electrification
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.OffsetRangeMap
 
 class FlatPath(override val length: Double, private val slope: Double) : PhysicsPath {
     override fun getAverageGrade(begin: Double, end: Double): Double {
@@ -15,7 +16,7 @@ class FlatPath(override val length: Double, private val slope: Double) : Physics
 
     override fun getElectrificationMap(
         basePowerClass: String?,
-        powerRestrictionMap: DistanceRangeMap<String>?,
+        powerRestrictionMap: OffsetRangeMap<PhysicsPath, String>?,
         powerRestrictionToPowerClass: Map<String, String>?,
         ignoreElectricalProfiles: Boolean,
     ): DistanceRangeMap<Electrification> {

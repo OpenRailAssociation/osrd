@@ -1,10 +1,14 @@
 package fr.sncf.osrd.envelope_sim
 
 import fr.sncf.osrd.path.implementations.EnvelopeSimPath
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.legacy_objects.electrification.Electrified
 import fr.sncf.osrd.path.legacy_objects.electrification.NonElectrified
 import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.OffsetRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
+import fr.sncf.osrd.utils.offsetRangeMapOf
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -69,7 +73,11 @@ class EnvelopeSimPathTest {
         val path = EnvelopeSimPathBuilder.withElectricalProfiles1500()
         val modeAndProfileMap =
             if (withEmptyPowerRestrictionMap)
-                path.getElectrificationMap("2", distanceRangeMapOf(), mapOf("Restrict1" to "1"))
+                path.getElectrificationMap(
+                    "2",
+                    offsetRangeMapOf<PhysicsPath, String>(),
+                    mapOf("Restrict1" to "1"),
+                )
             else path.getElectrificationMap("2", null, mapOf("Restrict1" to "1"))
 
         Assertions.assertTrue(modeAndProfileMap.fullyCovers(path.length.meters))
@@ -87,7 +95,13 @@ class EnvelopeSimPathTest {
         val path = EnvelopeSimPathBuilder.withElectricalProfiles1500()
 
         val powerRestrictionMap =
-            distanceRangeMapOf(DistanceRangeMap.RangeMapEntry(2.5.meters, 6.5.meters, "Restrict2"))
+            offsetRangeMapOf(
+                OffsetRangeMap.RangeMapEntry(
+                    Offset<PhysicsPath>(2.5.meters),
+                    Offset(6.5.meters),
+                    "Restrict2",
+                )
+            )
 
         val modeAndProfileMap =
             path.getElectrificationMap("1", powerRestrictionMap, mapOf("Restrict2" to "2"))
@@ -125,7 +139,13 @@ class EnvelopeSimPathTest {
         val path = EnvelopeSimPathBuilder.withElectricalProfiles1500()
 
         val powerRestrictionMap =
-            distanceRangeMapOf(DistanceRangeMap.RangeMapEntry(2.5.meters, 6.5.meters, "Restrict2"))
+            offsetRangeMapOf(
+                OffsetRangeMap.RangeMapEntry(
+                    Offset<PhysicsPath>(2.5.meters),
+                    Offset(6.5.meters),
+                    "Restrict2",
+                )
+            )
 
         val modeAndProfileMap =
             path.getElectrificationMap("1", powerRestrictionMap, mapOf("Restrict2" to "2"), true)

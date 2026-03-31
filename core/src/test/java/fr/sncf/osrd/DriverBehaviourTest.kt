@@ -2,10 +2,12 @@ package fr.sncf.osrd
 
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlocks
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.train.TestTrains
-import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.DummyInfra
-import fr.sncf.osrd.utils.distanceRangeMapOf
+import fr.sncf.osrd.utils.OffsetRangeMap
+import fr.sncf.osrd.utils.offsetRangeMapOf
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -27,8 +29,12 @@ class DriverBehaviourTest {
         mrsp =
             driverBehaviour.applyToMRSP(
                 mrsp,
-                distanceRangeMapOf(
-                    DistanceRangeMap.RangeMapEntry(0.meters, path.getLength().distance, "BAL")
+                offsetRangeMapOf(
+                    OffsetRangeMap.RangeMapEntry(
+                        Offset<PhysicsPath>(0.meters),
+                        Offset(path.getLength().distance),
+                        "BAL",
+                    )
                 ),
             )
         Assertions.assertEquals(20.0, mrsp.interpolateSpeedRightDir(0.0, 1.0))

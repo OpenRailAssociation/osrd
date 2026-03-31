@@ -6,9 +6,11 @@ import fr.sncf.osrd.envelope_sim.EnvelopeSimPathBuilder
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.InfraConditions
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.TractiveEffortPoint
 import fr.sncf.osrd.path.interfaces.PhysicsPath
-import fr.sncf.osrd.utils.DistanceRangeMap
-import fr.sncf.osrd.utils.distanceRangeMapOf
+import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
+import fr.sncf.osrd.utils.OffsetRangeMap
+import fr.sncf.osrd.utils.offsetRangeMapOf
 import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -22,11 +24,15 @@ private fun maxSpeed(curve: Array<TractiveEffortPoint>): Double {
 
 private fun mapTractiveEffortCurveArgs(): Iterable<Arguments> {
     val powerRestrictionMap =
-        distanceRangeMapOf(
-            DistanceRangeMap.RangeMapEntry(0.0.meters, 10.0.meters, "Restrict1"),
-            DistanceRangeMap.RangeMapEntry(10.0.meters, 20.0.meters, "Restrict2"),
+        offsetRangeMapOf(
+            OffsetRangeMap.RangeMapEntry(
+                Offset<PhysicsPath>(0.0.meters),
+                Offset(10.0.meters),
+                "Restrict1",
+            ),
+            OffsetRangeMap.RangeMapEntry(Offset(10.0.meters), Offset(20.0.meters), "Restrict2"),
         )
-    val emptyPowerRestrictionMap = distanceRangeMapOf<String>()
+    val emptyPowerRestrictionMap = offsetRangeMapOf<PhysicsPath, String>()
     return Lists.cartesianProduct(
             listOf(
                 EnvelopeSimPathBuilder.withElectricalProfiles25000(40.0),
@@ -45,7 +51,7 @@ class TestRollingStock {
     fun testMapTractiveEffortCurveCoherent(
         path: PhysicsPath,
         comfort: Comfort,
-        powerRestrictionMap: DistanceRangeMap<String>,
+        powerRestrictionMap: OffsetRangeMap<PhysicsPath, String>,
     ) {
         val rollingStock = TestTrains.REALISTIC_FAST_TRAIN
 
@@ -64,10 +70,18 @@ class TestRollingStock {
     @Test
     fun testMapTractiveEffortCurveWithProfiles() {
         val powerRestrictionMap =
-            distanceRangeMapOf(
-                DistanceRangeMap.RangeMapEntry(5.0.meters, 11.0.meters, "Restrict2"),
-                DistanceRangeMap.RangeMapEntry(15.0.meters, 18.0.meters, "Restrict1"),
-                DistanceRangeMap.RangeMapEntry(18.0.meters, 20.0.meters, "UnknownRestrict"),
+            offsetRangeMapOf(
+                OffsetRangeMap.RangeMapEntry(
+                    Offset<PhysicsPath>(5.0.meters),
+                    Offset(11.0.meters),
+                    "Restrict2",
+                ),
+                OffsetRangeMap.RangeMapEntry(Offset(15.0.meters), Offset(18.0.meters), "Restrict1"),
+                OffsetRangeMap.RangeMapEntry(
+                    Offset(18.0.meters),
+                    Offset(20.0.meters),
+                    "UnknownRestrict",
+                ),
             )
         val path = EnvelopeSimPathBuilder.withElectricalProfiles25000(50.0)
 

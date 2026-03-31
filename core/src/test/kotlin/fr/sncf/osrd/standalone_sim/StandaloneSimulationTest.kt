@@ -59,7 +59,7 @@ class StandaloneSimulationTest {
     private val electrificationMap =
         trainPath.getElectrificationMap(
             rollingStock.basePowerClass,
-            distanceRangeMapOf(),
+            offsetRangeMapOf(),
             rollingStock.powerRestrictions,
             true,
         )

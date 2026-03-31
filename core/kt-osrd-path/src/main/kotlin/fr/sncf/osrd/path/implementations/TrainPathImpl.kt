@@ -8,6 +8,7 @@ import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.sim_infra.impl.makeDirChunk
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.OffsetRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
 import fr.sncf.osrd.utils.units.Distance
@@ -149,7 +150,7 @@ data class TrainPathImpl(
 
     override fun getElectrificationMap(
         basePowerClass: String?,
-        powerRestrictionMap: DistanceRangeMap<String>?,
+        powerRestrictionMap: OffsetRangeMap<PhysicsPath, String>?,
         powerRestrictionToPowerClass: Map<String, String>?,
         ignoreElectricalProfiles: Boolean,
     ): DistanceRangeMap<Electrification> {
