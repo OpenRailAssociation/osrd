@@ -401,26 +401,20 @@ private class InfraExplorerImpl(
      * updated to keep track of the route used for each block.
      */
     fun extend(route: RouteId, firstLocation: BlockLocation? = null): Boolean {
-        val lastRouteEndOffset = getLookaheadEndOffset()
-        val routeLength = rawInfra.getRouteLength(route)
-        routes.add(
-            RouteRange(
-                route,
-                Offset.zero(),
-                routeLength,
-                lastRouteEndOffset,
-                lastRouteEndOffset + routeLength.distance,
-                routeLength,
-            )
-        )
         val routeBlocks = blockInfra.getRouteBlocks(rawInfra, route)
         var seenFirstBlock = firstLocation == null
         var pathAlreadyStarted = blockRanges.isNotEmpty()
 
+        var routeBeginOffset = Offset<Route>(firstLocation?.offset?.distance ?: 0.meters)
         for (block in routeBlocks) {
+            val blockLength = blockInfra.getBlockLength(block)
+
             seenFirstBlock = seenFirstBlock || block == firstLocation?.edge
 
-            if (!seenFirstBlock) continue
+            if (!seenFirstBlock) {
+                routeBeginOffset += blockLength.distance
+                continue
+            }
 
             val startsPath = !pathAlreadyStarted
             blockRoutes[block] = route
@@ -428,8 +422,6 @@ private class InfraExplorerImpl(
             // Simulation range start on the current block, 0m on any block that isn't the first
             val blockStartOffset: Offset<Block> =
                 if (startsPath) firstLocation!!.offset else Offset.zero()
-
-            val blockLength = blockInfra.getBlockLength(block)
 
             stepTracker.exploreBlockRange(block, blockStartOffset, blockLength)
 
@@ -466,6 +458,23 @@ private class InfraExplorerImpl(
             if (isPathComplete) break // Can't extend any further
         }
         assert(seenFirstBlock)
+
+        val lastRouteEndOffset = routes.lastOrNull()?.pathEnd ?: Offset(0.meters)
+        val newRouteEndOffset = blockRanges.lastOrNull()?.pathEnd ?: Offset(0.meters)
+        val routeLengthAdded = newRouteEndOffset - lastRouteEndOffset
+        val routeLength = rawInfra.getRouteLength(route)
+
+        routes.add(
+            RouteRange(
+                route,
+                routeBeginOffset,
+                routeBeginOffset + routeLengthAdded,
+                lastRouteEndOffset,
+                newRouteEndOffset,
+                routeLength,
+            )
+        )
+
         return true
     }
 
