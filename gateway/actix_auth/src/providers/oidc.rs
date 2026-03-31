@@ -210,6 +210,7 @@ impl SessionProvider for OidcProvider {
             let id_token = token_response
                 .id_token()
                 .ok_or(CallbackError::MissingIDToken)?;
+            log::debug!("id_token: {}", id_token.to_string());
             let id_token_verifier = self.client.id_token_verifier();
             let claims = id_token.claims(&id_token_verifier, nonce).map_err(|err| {
                 error!("unable to verify ID token signature: {err:?}");
