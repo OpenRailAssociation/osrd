@@ -6,7 +6,6 @@ import com.google.common.collect.RangeSet
 import com.google.common.collect.TreeRangeSet
 import fr.sncf.osrd.sim_infra.api.ZoneId
 import fr.sncf.osrd.utils.compress
-import fr.sncf.osrd.utils.compressToZip
 import fr.sncf.osrd.utils.decompress
 import io.lettuce.core.api.StatefulRedisConnection
 import io.opentelemetry.api.trace.Span
@@ -290,14 +289,14 @@ class TimetableCacheManager(
     private fun saveToS3(timetableId: TimetableId, requirements: STDCMTimetableData) {
         if (s3Context == null) return
 
-        val objectPath = "stdcm/saved_timetables/$timetableId.cbor.zip"
+        val objectPath = "stdcm/saved_timetables/$timetableId.cbor.gz"
         s3Context.writeFileIfMissing(objectPath) {
             try {
                 val serializable = requirements.toSerializable()
                 val cbor = Cbor {}
                 val serializer = STDCMTimetableData.SerializableMap.serializer()
                 val bytes = cbor.encodeToByteArray(serializer, serializable)
-                bytes.compressToZip("$timetableId.cbor")
+                bytes.compress()
             } catch (e: Exception) {
                 logger.error("failed to save timetable to s3", e)
                 null

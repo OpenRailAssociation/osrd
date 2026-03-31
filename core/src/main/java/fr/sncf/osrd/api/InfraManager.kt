@@ -4,6 +4,7 @@ import fr.sncf.osrd.parseRJSInfra
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
+import fr.sncf.osrd.utils.compress
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -14,8 +15,12 @@ import okhttp3.OkHttpClient
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class InfraManager(baseUrl: String, authorizationToken: String?, httpClient: OkHttpClient) :
-    APIClient(baseUrl, authorizationToken, httpClient), InfraProvider {
+class InfraManager(
+    baseUrl: String,
+    authorizationToken: String?,
+    httpClient: OkHttpClient,
+    val s3Context: S3Context? = null,
+) : APIClient(baseUrl, authorizationToken, httpClient), InfraProvider {
     private val infraCache = ConcurrentHashMap<String, InfraCacheEntry>()
     private val signalingSimulator = makeSignalingSimulator()
 
@@ -118,6 +123,13 @@ class InfraManager(baseUrl: String, authorizationToken: String?, httpClient: OkH
                 cacheEntry.version = version
                 checkNotNull(response.body) { "missing body in railjson response" }
                 rjsInfra = RJSInfra.adapter.fromJson(response.body.source())!!
+
+                // Save railjson to s3 if available, for better reproducibility.
+                // This is done on a different thread while the infra is parsed (on a single
+                // thread), it should not take any extra time.
+                s3Context?.writeFileIfMissing("stdcm/infras/$infraId-$version.railjson.gz") {
+                    RJSInfra.adapter.compress(rjsInfra)
+                }
             }
 
             // Parse railjson into a proper infra

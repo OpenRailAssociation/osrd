@@ -122,7 +122,7 @@ class WorkerCommand : CliCommand {
 
         val infraId = WORKER_KEY.split("-").first()
         val timetableId = WORKER_KEY.split("-").getOrNull(1)?.toInt()
-        val infraManager = InfraManager(editoastUrl!!, editoastAuthorization, httpClient)
+        val infraManager = InfraManager(editoastUrl!!, editoastAuthorization, httpClient, s3Context)
         val timetableCache =
             TimetableCacheManager(
                 TimetableDownloader(
