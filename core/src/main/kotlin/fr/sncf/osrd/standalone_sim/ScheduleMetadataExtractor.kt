@@ -33,6 +33,7 @@ import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.simplifyEnvelopePoints
 import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.Duration
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Speed
 import fr.sncf.osrd.utils.units.TimeDelta
@@ -239,6 +240,17 @@ fun makeSimpleReportTrain(
     )
 }
 
+private fun getArrivalAt(envelope: EnvelopeTimeInterpolate, offset: Offset<PhysicsPath>): Duration {
+    return envelope.interpolateArrivalAtClamp(offset.meters).seconds
+}
+
+private fun getDepartureFrom(
+    envelope: EnvelopeTimeInterpolate,
+    offset: Offset<PhysicsPath>,
+): Duration {
+    return envelope.interpolateDepartureFromClamp(offset.meters).seconds
+}
+
 fun routingRequirements(
     fullInfra: FullInfra,
     trainPath: TrainPath,
@@ -294,7 +306,7 @@ fun routingRequirements(
             //  Actually, there should be no routing requirement at all on the first route (when
             //  the train doesn't see any route entry signal). But the implications are weird and
             //  counterintuitive.
-            return envelope.interpolateDepartureFromClamp(straightSubPathRange.start.meters).seconds
+            return getDepartureFrom(envelope, straightSubPathRange.start)
         }
 
         val firstBlockRange =
@@ -307,7 +319,7 @@ fun routingRequirements(
         // find the entry signal for this route. if there is no entry signal,
         // the set deadline is the start after the last backtrack
         if (blockInfra.blockStartAtBufferStop(firstBlockRange.value))
-            return envelope.interpolateDepartureFromClamp(straightSubPathRange.start.meters).seconds
+            return getDepartureFrom(envelope, straightSubPathRange.start)
         val etcsSimulator = context?.let { ETCSBrakingSimulatorImpl(it) }
 
         val singleEnvelope = envelope.rawEnvelopeIfSingle
@@ -327,7 +339,7 @@ fun routingRequirements(
 
         if (routeCriticalPos == null) return null
 
-        var routeCriticalTime = envelope.interpolateArrivalAtClamp(routeCriticalPos.meters).seconds
+        var routeCriticalTime = getArrivalAt(envelope, routeCriticalPos)
 
         // check if an arrival on stop signal is scheduled between the route critical position and
         // the entry signal of the route (both position and time, as there is a time margin) in this
@@ -342,9 +354,8 @@ fun routingRequirements(
         for (stop in sortedClosedSignalStops.reversed()) {
             val stopTravelledOffset = stop.pathOffset
             if (stopTravelledOffset <= entrySignalOffset) {
-                // stop duration is included in interpolateDepartureFromClamp()
-                val stopDepartureTime =
-                    envelope.interpolateDepartureFromClamp(stopTravelledOffset.meters).seconds
+                // stop duration is included
+                val stopDepartureTime = getDepartureFrom(envelope, stopTravelledOffset)
                 if (
                     routeCriticalTime < stopDepartureTime - CLOSED_SIGNAL_RESERVATION_MARGIN.seconds
                 ) {
@@ -354,10 +365,7 @@ fun routingRequirements(
             }
         }
 
-        return maxOf(
-            routeCriticalTime,
-            envelope.interpolateArrivalAtClamp(straightSubPathRange.start.meters).seconds,
-        )
+        return maxOf(routeCriticalTime, getArrivalAt(envelope, straightSubPathRange.start))
     }
 
     val res = mutableListOf<RoutingRequirement>()
@@ -397,8 +405,7 @@ fun routingRequirements(
                 trainPath.getNonBacktrackingSubPathBoundariesContainingOffset(zoneRange.pathBegin)
             val exitCriticalPos = Offset.min(zoneOccupationExit, straightSubPathRange.end)
 
-            val exitCriticalTime =
-                envelope.interpolateDepartureFromClamp(exitCriticalPos.meters).seconds
+            val exitCriticalTime = getDepartureFrom(envelope, exitCriticalPos)
             zoneRequirements.add(routingZoneRequirement(rawInfra, zonePath, exitCriticalTime))
         }
         res.add(RoutingRequirement(route, routeSetDeadline.seconds, zoneRequirements))
@@ -706,11 +713,11 @@ fun zoneOccupationChangeEvents(
         // entry is always at the start of the zone (might lead to some adjacent identical zone
         // occupation for the same zone at backtrack)
         val entryOffset = zoneRange.pathBegin
-        val entryTime = envelope.interpolateArrivalAtClamp(entryOffset.meters).seconds
+        val entryTime = getArrivalAt(envelope, entryOffset)
 
         val exitOffset =
             zoneRangeExitOffset(trainPath.getBacktrackLocations(), trainLength, zoneRange)
-        val exitTime = envelope.interpolateDepartureFromClamp(exitOffset.meters).seconds
+        val exitTime = getDepartureFrom(envelope, exitOffset)
 
         // Avoid generating entry + exit at the same time
         if (exitTime <= entryTime) continue
