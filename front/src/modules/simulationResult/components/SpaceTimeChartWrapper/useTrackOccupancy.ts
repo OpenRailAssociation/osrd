@@ -11,7 +11,7 @@ import { type OperationalPointReference, osrdEditoastApi } from 'common/api/osrd
 import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
 import { computeIndexedOccurrenceStartTime } from 'modules/timetableItem/helpers/pacedTrain';
 import type { SimulatedException } from 'modules/timetableItem/types';
-import type { PacedTrainId, TrainId } from 'reducers/osrdconf/types';
+import type { TrainId } from 'reducers/osrdconf/types';
 import { getIsSimulationEnabled } from 'reducers/simulationResults/selectors';
 import {
   extractEditoastIdFromPacedTrainId,
@@ -20,7 +20,6 @@ import {
   formatPacedTrainIdToExceptionId,
   formatPacedTrainIdToIndexedOccurrenceId,
   isOccurrenceId,
-  isPacedTrainId,
 } from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
@@ -184,17 +183,14 @@ const useTrackOccupancy = ({
     ): Promise<MovableOccupancyZone[]> => {
       if (!opRef) return [];
 
-      const pacedTrainIds: PacedTrainId[] = [];
-      for (const id of Object.keys(trainsCollection)) {
-        if (isPacedTrainId(id)) pacedTrainIds.push(id);
-      }
+      const trainScheduleIds = Object.values(trainsCollection).map((train) => train.id);
 
       const bodyForPaced =
-        pacedTrainIds.length > 0
+        trainScheduleIds.length > 0
           ? {
               operational_point_reference: opRef,
               infra_id: infraId,
-              train_schedule_ids: pacedTrainIds.map(extractEditoastIdFromPacedTrainId),
+              train_schedule_ids: trainScheduleIds,
               use_simulation: isSimulationEnabled,
             }
           : null;
