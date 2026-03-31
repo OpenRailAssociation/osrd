@@ -185,6 +185,12 @@ const PathStepItem = ({
     );
   }, [pathStepMetadata, trackNameSuggestions]);
 
+  const canFocusOnMap = useMemo(() => {
+    if (!pathStepMetadata) return false;
+    const coordinates = computePathStepCoordinates(pathStepMetadata);
+    return coordinates.length > 0;
+  }, [pathStepMetadata]);
+
   const handleFocusClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!pathStepMetadata) return;
@@ -477,8 +483,8 @@ const PathStepItem = ({
             )}
           </button>
           <button
-            className={cx('focus-map-icon', { empty: !pathStep.location })}
-            disabled={!pathStep.location}
+            className={cx('focus-map-icon', { empty: !canFocusOnMap })}
+            disabled={!canFocusOnMap}
             onClick={handleFocusClick}
           >
             <FocusLocation
