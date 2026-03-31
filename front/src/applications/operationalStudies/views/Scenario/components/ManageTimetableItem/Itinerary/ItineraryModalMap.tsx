@@ -1,6 +1,6 @@
-import { useCallback, useMemo, useRef, useState, type PropsWithChildren } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type PropsWithChildren } from 'react';
 
-import type { Position } from 'geojson';
+import type { Feature, Position } from 'geojson';
 import { useTranslation } from 'react-i18next';
 import type { MapLayerMouseEvent, MapRef } from 'react-map-gl/maplibre';
 
@@ -8,7 +8,8 @@ import { matchOpRefAndOp } from 'applications/operationalStudies/utils';
 import type { PathProperties } from 'common/api/osrdEditoastApi';
 import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
-import PathStepMarker from 'common/Map/components/PathStepMarker';
+import PathStepMarker, { PATH_STEP_MARKER_STATE } from 'common/Map/components/PathStepMarker';
+import { SnappedMarker } from 'common/Map/Layers';
 import { MapContextProvider } from 'common/Map/useMapContext';
 import { useInfraID } from 'common/osrdContext';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
@@ -17,32 +18,35 @@ import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 import type { PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
-import { getBarycenter } from 'utils/geometry';
+import { getBarycenter, nearestPointOnLine } from 'utils/geometry';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
 import type { FeatureInfoClick } from '../types';
-import { computePathStepCoordinates } from './utils';
+import { computeOpRefMarkerName, computePathStepCoordinates } from './utils';
 
 const OPERATIONAL_POINT_LAYERS = [
   'chartis/osrd_operational_point/geo',
   'chartis/osrd_operational_point_name/geo',
 ];
 
-const computeOpRefMarkerName = (
-  pathStepMetadata: Extract<PathStepMetadata, { isInvalid: false; type: 'opRef' }>
-) =>
-  `${pathStepMetadata.name}${pathStepMetadata.secondaryCode ? ` ${pathStepMetadata.secondaryCode}` : ''}${pathStepMetadata.trackName ? ` \u00B7 ${pathStepMetadata.trackName}` : ''}`;
-
 type ItineraryModalMapProps = {
   pathSteps?: PathStepV2[];
   pathStepsMetadata?: Map<string, PathStepMetadata>;
   pathProperties?: PathProperties;
+  selectedStepId?: string;
+  isMapSelectionMode?: boolean;
+  onMapSelectionClick?: (featureInfoClick: FeatureInfoClick) => void;
+  onPathStepDragEnd?: (stepId: string, featureInfoClick: FeatureInfoClick) => void;
 };
 
 const ItineraryModalMap = ({
   pathSteps,
   pathStepsMetadata,
   pathProperties,
+  selectedStepId,
+  isMapSelectionMode,
+  onMapSelectionClick,
+  onPathStepDragEnd,
   children,
 }: PropsWithChildren<ItineraryModalMapProps>) => {
   const { t } = useTranslation('operational-studies', {
@@ -62,6 +66,30 @@ const ItineraryModalMap = ({
   const mapRef = useRef<MapRef | null>(null);
 
   const [hoveredOperationalPointId, setHoveredOperationalPointId] = useState<string>();
+  const [isDraggingMarker, setIsDraggingMarker] = useState(false);
+  const [snapDragPosition, setSnapDragPosition] = useState<{
+    stepId: string;
+    coordinates: Position;
+    feature: Feature;
+  } | null>(null);
+  const [markerResetKeys, setMarkerResetKeys] = useState<Record<string, number>>({});
+  const [cursorMarker, setCursorMarker] = useState<{
+    coordinates: Position;
+    onTrack: boolean;
+  } | null>(null);
+
+  const lastStepHasLocation = !!pathSteps?.at(-1)?.location;
+  const lastRealStepIndex = pathSteps ? pathSteps.length - (lastStepHasLocation ? 1 : 2) : -1;
+
+  const selectedStep = pathSteps?.find((s) => s.id === selectedStepId);
+  const isNewPlacement = isMapSelectionMode && !selectedStep?.location;
+
+  useEffect(() => {
+    if (!isMapSelectionMode) {
+      setCursorMarker(null);
+      mapRef.current?.getMap().getCanvas().style.removeProperty('cursor');
+    }
+  }, [isMapSelectionMode]);
 
   const updateMapSettings = useCallback(
     (value: Partial<MapSettings>) => {
@@ -85,6 +113,66 @@ const ItineraryModalMap = ({
     }
   }, [featureInfoClick]);
 
+  const querySnapOnTrack = useCallback(
+    (lngLat: { lng: number; lat: number }): { feature: Feature; coordinates: Position } | null => {
+      const map = mapRef.current;
+      if (!map) return null;
+
+      const screenPoint = map.project([lngLat.lng, lngLat.lat]);
+      const features = map
+        .queryRenderedFeatures(
+          [
+            [screenPoint.x - 5, screenPoint.y - 5],
+            [screenPoint.x + 5, screenPoint.y + 5],
+          ],
+          { layers: ['chartis/tracks-geo/main'] }
+        )
+        .filter((f) => f.properties?.id);
+
+      if (!features.length) return null;
+
+      const feature = features[0] as Feature;
+      // Snap coordinates to the nearest point on the track geometry
+      if (feature.geometry.type === 'LineString') {
+        const snapped = nearestPointOnLine(feature.geometry, [lngLat.lng, lngLat.lat]);
+        return { feature, coordinates: snapped.geometry.coordinates };
+      }
+      return { feature, coordinates: [lngLat.lng, lngLat.lat] };
+    },
+    []
+  );
+
+  const handleMarkerDrag = useCallback(
+    (stepId: string, lngLat: { lng: number; lat: number }) => {
+      const result = querySnapOnTrack(lngLat);
+      setSnapDragPosition(result ? { stepId, ...result } : null);
+    },
+    [querySnapOnTrack]
+  );
+
+  const handleMarkerDragEnd = useCallback(
+    (stepId: string, lngLat: { lng: number; lat: number }) => {
+      setIsDraggingMarker(false);
+
+      // Use the last snapped position computed during drag, otherwise re-query at drop point
+      const snapped =
+        snapDragPosition?.stepId === stepId ? snapDragPosition : querySnapOnTrack(lngLat);
+      setSnapDragPosition(null);
+
+      if (!snapped) {
+        setMarkerResetKeys((prev) => ({ ...prev, [stepId]: (prev[stepId] ?? 0) + 1 }));
+        return;
+      }
+
+      onPathStepDragEnd?.(stepId, {
+        feature: snapped.feature,
+        coordinates: snapped.coordinates,
+        isOperationalPoint: false,
+      });
+    },
+    [onPathStepDragEnd, snapDragPosition, querySnapOnTrack]
+  );
+
   const resetPitchBearing = () => {
     updateViewportChange({
       ...viewport,
@@ -100,6 +188,19 @@ const ItineraryModalMap = ({
         ...(layersSettings.operational_points ? OPERATIONAL_POINT_LAYERS : []),
       ],
     });
+
+    if (isMapSelectionMode) {
+      if (result?.feature.properties?.id) {
+        onMapSelectionClick?.({
+          feature: result.feature,
+          coordinates: result.nearest,
+          // TODO: we can use isOperationalPoint for OP selection on map
+          isOperationalPoint: result.feature.sourceLayer === 'operational_points',
+        });
+      }
+      return;
+    }
+
     if (result && result.feature.properties && result.feature.properties.id) {
       setFeatureInfoClick({
         feature: result.feature,
@@ -119,17 +220,26 @@ const ItineraryModalMap = ({
         ...(layersSettings.operational_points ? OPERATIONAL_POINT_LAYERS : []),
       ],
     });
-    if (
-      result &&
-      result.feature.properties &&
-      result.feature.properties.id &&
-      (result.feature.geometry.type === 'LineString' || result.feature.geometry.type === 'Point')
-    ) {
-      if (result.feature.geometry.type === 'Point') {
+    if (isNewPlacement) {
+      if (
+        result &&
+        result.feature.properties &&
+        result.feature.properties.id &&
+        result.feature.geometry.type === 'Point'
+      ) {
         setHoveredOperationalPointId(result.feature.properties.id);
+      } else {
+        setHoveredOperationalPointId(undefined);
       }
-    } else {
-      setHoveredOperationalPointId(undefined);
+    }
+
+    if (isNewPlacement && !isDraggingMarker) {
+      if (result && result.feature.geometry.type === 'LineString') {
+        setCursorMarker({ coordinates: result.nearest, onTrack: true });
+      } else {
+        setCursorMarker({ coordinates: e.lngLat.toArray(), onTrack: false });
+      }
+      e.target.getCanvas().style.cursor = 'copy';
     }
   };
 
@@ -180,11 +290,11 @@ const ItineraryModalMap = ({
           />
         )}
         {pathSteps &&
-          pathStepsMetadata &&
           pathSteps.map((step, index) => {
-            const pathStepMetadata = pathStepsMetadata.get(step.id);
+            const pathStepMetadata = pathStepsMetadata?.get(step.id);
             const pathStepLocation = step.location;
-            if (!pathStepLocation || !pathStepMetadata || pathStepMetadata?.isInvalid) return null;
+
+            if (!pathStepMetadata || !pathStepLocation || pathStepMetadata.isInvalid) return null;
 
             let coordinates: Position | undefined;
             if (pathProperties?.operational_points) {
@@ -201,7 +311,6 @@ const ItineraryModalMap = ({
                 coordinates = trackMetadata?.coordinates;
               }
             } else {
-              // If not, we use the input information to compute them
               const allCoordinates = computePathStepCoordinates(pathStepMetadata);
 
               coordinates =
@@ -216,7 +325,7 @@ const ItineraryModalMap = ({
                 name = pathStepMetadata.label;
               } else if (index === 0) {
                 name = t('requestedOrigin');
-              } else if (index === pathSteps.length - 1) {
+              } else if (index === lastRealStepIndex) {
                 name = t('requestedDestination');
               } else {
                 name = t('requestedPoint', { count: index + 1 });
@@ -225,6 +334,8 @@ const ItineraryModalMap = ({
               name = computeOpRefMarkerName(pathStepMetadata);
             }
 
+            const isSelected = selectedStepId === step.id;
+
             return (
               <PathStepMarker
                 key={step.id}
@@ -232,9 +343,34 @@ const ItineraryModalMap = ({
                 markerIndicator={(index + 1).toString()}
                 name={name}
                 coordinates={coordinates}
+                markerState={isSelected ? PATH_STEP_MARKER_STATE.SELECTED : undefined}
+                isSelected={isSelected}
+                resetKey={markerResetKeys[step.id]}
+                draggable={!!onPathStepDragEnd && isSelected}
+                onDragStart={() => setIsDraggingMarker(true)}
+                onDrag={(lngLat) => handleMarkerDrag(step.id, lngLat)}
+                onDragEnd={(lngLat) => handleMarkerDragEnd(step.id, lngLat)}
               />
             );
           })}
+        {isMapSelectionMode && cursorMarker?.onTrack && (
+          <SnappedMarker
+            geojson={{
+              type: 'Feature',
+              geometry: { type: 'Point', coordinates: cursorMarker.coordinates },
+              properties: {},
+            }}
+          />
+        )}
+        {snapDragPosition && (
+          <SnappedMarker
+            geojson={{
+              type: 'Feature',
+              geometry: { type: 'Point', coordinates: snapDragPosition.coordinates },
+              properties: {},
+            }}
+          />
+        )}
         {children}
       </BaseMap>
     </MapContextProvider>

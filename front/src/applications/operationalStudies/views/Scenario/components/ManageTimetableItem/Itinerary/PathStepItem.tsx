@@ -17,7 +17,6 @@ import { useTranslation } from 'react-i18next';
 import type { CategoryColors } from 'applications/operationalStudies/types';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
-import type { Viewport } from 'reducers/commonMap/types';
 import type { PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { Duration } from 'utils/duration';
@@ -51,6 +50,10 @@ type PathStepProps = {
   onDelete: () => void;
   isTrailingPlaceHolder: boolean;
   isOnlyStep: boolean;
+  isMapSelectionMode?: boolean;
+  isDestination?: boolean;
+  onStartMapSelection?: () => void;
+  onCancelMapSelection?: () => void;
 };
 
 const PathStepItem = ({
@@ -74,10 +77,15 @@ const PathStepItem = ({
   onDelete,
   isTrailingPlaceHolder,
   isOnlyStep,
+  isMapSelectionMode,
+  isDestination,
+  onStartMapSelection,
+  onCancelMapSelection,
 }: PathStepProps) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTimetableItem.itineraryModal',
   });
+  const { t: tMain } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const dispatch = useAppDispatch();
   const mapSettings = useMapSettings();
   const { updateViewport } = useMapSettingsActions();
@@ -89,7 +97,7 @@ const PathStepItem = ({
   };
   const isIndexed = !isTrailingPlaceHolder;
 
-  const shouldShowInvalidMessage = !!isInvalidAndIsEditing;
+  const shouldShowInvalidMessage = !!isInvalidAndIsEditing && !isMapSelectionMode;
 
   const getInvalidMessage = () => {
     let message = t('invalidOP');
@@ -101,7 +109,7 @@ const PathStepItem = ({
     const { location } = pathStep;
 
     if ('track' in location) {
-      return (message += t('requestedPoint'));
+      return message + t('requestedPoint');
     }
 
     const trackInfo = location.local_track_name
@@ -109,7 +117,7 @@ const PathStepItem = ({
       : '';
 
     if (location.operational_point.type === 'id') {
-      return (message += t('opId') + trackInfo);
+      return message + t('opId') + trackInfo;
     }
 
     const secondaryCodeInfo = location.operational_point.secondary_code
@@ -124,7 +132,7 @@ const PathStepItem = ({
       message += t('uic') + ' ' + location.operational_point.uic;
     }
 
-    return (message += secondaryCodeInfo + trackInfo);
+    return message + secondaryCodeInfo + trackInfo;
   };
 
   const selectedSecondaryCodeOption = useMemo(() => {
@@ -161,7 +169,7 @@ const PathStepItem = ({
         }
       });
     return [{ label: '', id: '' }, ...sortedSuggestions];
-  }, [pathStepMetadata, selectedSecondaryCodeOption]);
+  }, [pathStepMetadata, selectedSecondaryCodeOption.id]);
 
   const selectedTrackNameOption = useMemo(() => {
     // No track should be selected if the path step is invalid or has no secondary code
@@ -177,25 +185,17 @@ const PathStepItem = ({
     );
   }, [pathStepMetadata, trackNameSuggestions]);
 
-  const handleFocusClick = () => {
+  const handleFocusClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (!pathStepMetadata) return;
 
     const coordinates = computePathStepCoordinates(pathStepMetadata);
-    let viewport: Partial<Viewport> = mapSettings.viewport;
-    if (coordinates.length === 1) {
-      viewport = {
-        longitude: coordinates[0][0],
-        latitude: coordinates[0][1],
-        zoom: 16,
-      };
-    } else {
-      const box = bbox({
-        type: 'MultiPoint',
-        coordinates,
-      });
-      viewport = computeBBoxViewport(box, mapSettings.viewport);
-    }
-    dispatch(updateViewport(viewport));
+    if (coordinates.length === 0) return;
+    const viewport =
+      coordinates.length === 1
+        ? { longitude: coordinates[0][0], latitude: coordinates[0][1], zoom: 16 }
+        : computeBBoxViewport(bbox({ type: 'MultiPoint', coordinates }), mapSettings.viewport);
+    if (viewport) dispatch(updateViewport(viewport));
   };
 
   type SegmentedControlOption = { value: string; label: string; icon: React.ReactNode };
@@ -220,7 +220,17 @@ const PathStepItem = ({
     });
   };
 
+  const isTrackOffset = !!(pathStep?.location && 'track' in pathStep.location);
+
+  const trackOffsetLabel = useMemo(() => {
+    if (!isTrackOffset) return '';
+    if (index === 1) return tMain('requestedOrigin');
+    if (isDestination) return tMain('requestedDestination');
+    return tMain('requestedPoint', { count: index });
+  }, [isTrackOffset, index, isDestination, tMain]);
+
   const comboBoxValue = useMemo(() => {
+    if (isTrackOffset) return trackOffsetLabel;
     // Don't show invalid points in the combobox - they'll be shown in the error message instead
     if (shouldShowInvalidMessage) {
       return '';
@@ -233,7 +243,7 @@ const PathStepItem = ({
     }
 
     return undefined;
-  }, [shouldShowInvalidMessage, inputValue, pathStepMetadata]);
+  }, [inputValue, pathStepMetadata, isTrackOffset, trackOffsetLabel, shouldShowInvalidMessage]);
 
   const maxVisibleSuggestions = 8;
   const visibleSuggestions = opSuggestions.slice(0, maxVisibleSuggestions);
@@ -243,10 +253,16 @@ const PathStepItem = ({
     : visibleSuggestions.length;
 
   return (
-    <div className={cx('path-step-wrapper', { 'is-placeholder': isTrailingPlaceHolder })}>
+    <div
+      className={cx('path-step-wrapper', {
+        'is-placeholder': isTrailingPlaceHolder,
+        'map-selection-active': isMapSelectionMode,
+      })}
+    >
       <div
         className={cx('path-step', {
-          'requested-point': pathStep.location && 'track' in pathStep.location,
+          'requested-point': isTrackOffset,
+          'map-selection-mode': isMapSelectionMode,
         })}
       >
         <button
@@ -284,118 +300,138 @@ const PathStepItem = ({
           </span>
         </button>
 
-        <div
-          role="button"
-          tabIndex={0}
-          className={cx('path-step-op-name', {
-            invalid: isInvalidAndIsEditing,
-          })}
-          onMouseDownCapture={(e) => {
-            const target = e.target as HTMLElement | null;
-            if (target?.closest('.chevron-icon')) {
-              onChevronClick(comboBoxValue ?? '');
-            }
-          }}
-        >
-          <ComboBox
-            id={`pathStep-name-${pathStep.id}`}
-            value={comboBoxValue}
-            numberOfSuggestionsToShow={numberOfSuggestionsToShow}
-            suggestions={visibleSuggestions}
-            getSuggestionLabel={(op) => {
-              if (!op) return '';
-              if (typeof op === 'string') return op;
-
-              const secondaryCode = op.secondaryCodeList[0]?.code;
-              return `${op.name} ${secondaryCode}`;
-            }}
-            onSelectSuggestion={(op) => {
-              if (!op) {
-                onOpInputChange('');
-                resetOpSuggestions();
-                return;
-              }
-
-              if (typeof op === 'string') {
-                onOpInputChange(op);
-                return;
-              }
-
-              onSelectOpSuggestion(op);
-              resetOpSuggestions();
-              blurActiveElement();
-            }}
-            resetSuggestions={resetOpSuggestions}
-            renderListElementComponent={({
-              suggestion,
-              index: suggestionIndex,
-              isActive,
-              isSelected,
-            }) => {
-              if (typeof suggestion === 'string') return suggestion;
-
-              return (
-                <ListElementComponent
-                  suggestion={suggestion}
-                  index={suggestionIndex}
-                  isActive={isActive}
-                  isSelected={isSelected}
-                  onSelect={(op, secondaryCode) => {
-                    onSelectOpSuggestion(op, secondaryCode);
-                    resetOpSuggestions();
-                    blurActiveElement();
-                  }}
-                />
-              );
-            }}
-            renderFooterItem={
-              hasMore
-                ? () => (
-                    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
-                    <li
-                      className="suggestion-item suggestion-item--more"
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                      }}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                      }}
-                    >
-                      <span className="op-suggestion-kebab">
-                        <KebabHorizontal size="sm" />
-                      </span>
-                    </li>
-                  )
-                : undefined
-            }
-            small
-            narrow
-            onFocus={onOpFocus}
-            onBlur={onOpBlur}
-            onChange={(e) => onOpInputChange(e.target.value)}
-          />
-        </div>
-        {pathStep.location && 'track' in pathStep.location ? (
-          <div className="requested-point-block" />
-        ) : (
-          <div
-            className={cx('track-name', {
-              invalid: isInvalidAndIsEditing,
-            })}
-          >
-            <Select
-              id={`pathStep-status-${pathStep.id}`}
-              value={selectedTrackNameOption}
-              options={trackNameSuggestions}
-              getOptionLabel={(option) => option.label}
-              getOptionValue={(option) => option.id}
-              onChange={(option) => onTrackNameChange(option?.label ?? '')}
-              small
-              narrow
-            />
+        {isMapSelectionMode ? (
+          <div className="map-selection-message">
+            <span className="map-selection-text">
+              {t(pathStep.location ? 'movePointOnMap' : 'addPointOnMap')}
+            </span>
+            <button
+              type="button"
+              className="cancel-map-selection-button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onCancelMapSelection?.();
+              }}
+            >
+              {t('cancelMapSelection')}
+            </button>
           </div>
+        ) : (
+          <>
+            <div
+              role="button"
+              tabIndex={0}
+              className={cx('path-step-op-name', {
+                invalid: shouldShowInvalidMessage,
+              })}
+              onMouseDownCapture={(e) => {
+                const target = e.target as HTMLElement | null;
+                if (target?.closest('.chevron-icon')) {
+                  onChevronClick(comboBoxValue ?? '');
+                }
+              }}
+            >
+              <ComboBox
+                id={`pathStep-name-${pathStep.id}`}
+                value={comboBoxValue}
+                numberOfSuggestionsToShow={numberOfSuggestionsToShow}
+                suggestions={visibleSuggestions}
+                getSuggestionLabel={(op) => {
+                  if (!op) return '';
+                  if (typeof op === 'string') return op;
+
+                  const secondaryCode = op.secondaryCodeList[0]?.code;
+                  return `${op.name} ${secondaryCode}`;
+                }}
+                onSelectSuggestion={(op) => {
+                  if (!op) {
+                    onOpInputChange('');
+                    resetOpSuggestions();
+                    return;
+                  }
+
+                  if (typeof op === 'string') {
+                    onOpInputChange(op);
+                    return;
+                  }
+
+                  onSelectOpSuggestion(op);
+                  resetOpSuggestions();
+                  blurActiveElement();
+                }}
+                resetSuggestions={resetOpSuggestions}
+                renderListElementComponent={({
+                  suggestion,
+                  index: suggestionIndex,
+                  isActive,
+                  isSelected,
+                }) => {
+                  if (typeof suggestion === 'string') return suggestion;
+
+                  return (
+                    <ListElementComponent
+                      suggestion={suggestion}
+                      index={suggestionIndex}
+                      isActive={isActive}
+                      isSelected={isSelected}
+                      onSelect={(op, secondaryCode) => {
+                        onSelectOpSuggestion(op, secondaryCode);
+                        resetOpSuggestions();
+                        blurActiveElement();
+                      }}
+                    />
+                  );
+                }}
+                renderFooterItem={
+                  hasMore
+                    ? () => (
+                        // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+                        <li
+                          className="suggestion-item suggestion-item--more"
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                        >
+                          <span className="op-suggestion-kebab">
+                            <KebabHorizontal size="sm" />
+                          </span>
+                        </li>
+                      )
+                    : undefined
+                }
+                small
+                narrow
+                onFocus={onOpFocus}
+                onBlur={onOpBlur}
+                onChange={(e) => onOpInputChange(e.target.value)}
+              />
+            </div>
+            {isTrackOffset ? (
+              <div className="requested-point-block" />
+            ) : (
+              <div
+                className={cx('track-name', {
+                  invalid: shouldShowInvalidMessage,
+                })}
+              >
+                <Select
+                  id={`pathStep-status-${pathStep.id}`}
+                  value={selectedTrackNameOption}
+                  options={trackNameSuggestions}
+                  getOptionLabel={(option) => option.label}
+                  getOptionValue={(option) => option.id}
+                  onChange={(option) => onTrackNameChange(option?.label ?? '')}
+                  small
+                  narrow
+                />
+              </div>
+            )}
+          </>
         )}
         <SegmentedControl
           options={segmentedControlOptions}
@@ -409,21 +445,37 @@ const PathStepItem = ({
           small
         />
         <div className="map-interactions">
-          {pathStep.location && 'track' in pathStep.location ? (
-            <AddedLocation
-              size="lg"
-              variant="fill"
-              className="added-location-icon"
-              title={t('moveLocationOnMap')}
-              aria-label={t('moveLocationOnMap')}
-            />
-          ) : (
-            <AddLocation
-              size="lg"
-              title={t('addLocationOnMap')}
-              aria-label={t('addLocationOnMap')}
-            />
-          )}
+          <button
+            type="button"
+            className={cx('select-location-button', { active: isMapSelectionMode })}
+            disabled={!pathStep}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (isMapSelectionMode) {
+                onCancelMapSelection?.();
+              } else {
+                onStartMapSelection?.();
+              }
+            }}
+          >
+            {isTrackOffset ? (
+              <AddedLocation
+                size="lg"
+                variant={isMapSelectionMode ? 'fill' : undefined}
+                className={isMapSelectionMode ? 'location-icon' : undefined}
+                title={t('moveLocationOnMap')}
+                aria-label={t('moveLocationOnMap')}
+              />
+            ) : (
+              <AddLocation
+                size="lg"
+                variant={isMapSelectionMode ? 'fill' : undefined}
+                className={isMapSelectionMode ? 'location-icon' : undefined}
+                title={t('addLocationOnMap')}
+                aria-label={t('addLocationOnMap')}
+              />
+            )}
+          </button>
           <button
             className={cx('focus-map-icon', { empty: !pathStep.location })}
             disabled={!pathStep.location}
