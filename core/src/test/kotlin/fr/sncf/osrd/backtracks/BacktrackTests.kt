@@ -34,6 +34,7 @@ import fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.Helpers.fullInfraFromFile
 import fr.sncf.osrd.utils.distanceRangeMapOf
+import fr.sncf.osrd.utils.offsetRangeMapOf
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
@@ -595,7 +596,7 @@ class BacktrackTests {
                 comfort = Comfort.STANDARD,
                 constraintDistribution = RJSAllowanceDistribution.LINEAR,
                 speedLimitTag = null,
-                powerRestrictions = distanceRangeMapOf(),
+                powerRestrictions = offsetRangeMapOf(),
                 useElectricalProfiles = false,
                 useSpeedLimits = true,
                 timeStep = 2.0,
@@ -721,7 +722,7 @@ class BacktrackTests {
                 comfort = Comfort.STANDARD,
                 constraintDistribution = RJSAllowanceDistribution.LINEAR,
                 speedLimitTag = null,
-                powerRestrictions = distanceRangeMapOf(),
+                powerRestrictions = offsetRangeMapOf(),
                 useElectricalProfiles = false,
                 useSpeedLimits = true,
                 timeStep = 2.0,
@@ -833,7 +834,7 @@ class BacktrackTests {
                 comfort = Comfort.STANDARD,
                 constraintDistribution = RJSAllowanceDistribution.LINEAR,
                 speedLimitTag = null,
-                powerRestrictions = distanceRangeMapOf(),
+                powerRestrictions = offsetRangeMapOf(),
                 useElectricalProfiles = false,
                 useSpeedLimits = true,
                 timeStep = 2.0,

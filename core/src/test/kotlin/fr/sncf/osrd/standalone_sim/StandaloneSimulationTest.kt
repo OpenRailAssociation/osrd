@@ -81,7 +81,7 @@ class StandaloneSimulationTest {
                 Comfort.STANDARD,
                 RJSAllowanceDistribution.LINEAR,
                 null,
-                distanceRangeMapOf(),
+                offsetRangeMapOf(),
                 false,
                 true,
                 2.0,
@@ -99,7 +99,7 @@ class StandaloneSimulationTest {
         val startSpeed: Double = 0.0,
         val margins: RangeValues<MarginValue> = RangeValues(),
         val pathLength: Distance,
-        val powerRestrictions: DistanceRangeMap<String> = distanceRangeMapOf(),
+        val powerRestrictions: OffsetRangeMap<PhysicsPath, String> = offsetRangeMapOf(),
     )
 
     /**
@@ -160,23 +160,23 @@ class StandaloneSimulationTest {
             )
 
         // Power restriction values
-        val powerRestrictionRangeMaps: List<DistanceRangeMap<String>> =
+        val powerRestrictionRangeMaps: List<OffsetRangeMap<PhysicsPath, String>> =
             listOf(
-                distanceRangeMapOf(),
-                distanceRangeMapOf(
-                    DistanceRangeMap.RangeMapEntry(
-                        0.meters,
-                        pathLength.distance / 3.0,
+                offsetRangeMapOf(),
+                offsetRangeMapOf(
+                    OffsetRangeMap.RangeMapEntry(
+                        Offset(0.meters),
+                        Offset(pathLength.distance / 3.0),
                         "Restrict1",
                     ),
-                    DistanceRangeMap.RangeMapEntry(
-                        pathLength.distance / 3.0,
-                        pathLength.distance * 2.0 / 3.0,
+                    OffsetRangeMap.RangeMapEntry(
+                        Offset(pathLength.distance / 3.0),
+                        Offset(pathLength.distance * 2.0 / 3.0),
                         "Restrict2",
                     ),
-                    DistanceRangeMap.RangeMapEntry(
-                        pathLength.distance * 2.0 / 3.0,
-                        pathLength.distance,
+                    OffsetRangeMap.RangeMapEntry(
+                        Offset(pathLength.distance * 2.0 / 3.0),
+                        Offset(pathLength.distance),
                         "Restrict1",
                     ),
                 ),
@@ -343,7 +343,7 @@ class StandaloneSimulationTest {
 
         // ETCS_LEVEL2 range covers the first stop only: getting safetySpeed for the other stops
         val signalingRangesEtcsHappyPath = signalingRangesBAL.clone()
-        signalingRangesEtcsHappyPath.put(10.meters, 1_000.meters, ETCS_LEVEL2.id)
+        signalingRangesEtcsHappyPath.put(Offset(10.meters), Offset(1_000.meters), ETCS_LEVEL2.id)
         val safetySpeedRangesEtcsHappyPath =
             makeSafetySpeedRanges(infra, trainPath, schedule, signalingRangesEtcsHappyPath)
         val expectedEtcsHappyPath =
@@ -358,7 +358,7 @@ class StandaloneSimulationTest {
         // ETCS_LEVEL2 range covers the last 2 stops only and their associated EoA: no safetySpeed
         // for those stops (only the first)
         val signalingRangesEndFullEtcs = signalingRangesBAL.clone()
-        signalingRangesEndFullEtcs.put(9_500.meters, 10_400.meters, ETCS_LEVEL2.id)
+        signalingRangesEndFullEtcs.put(Offset(9_500.meters), Offset(10_400.meters), ETCS_LEVEL2.id)
         val safetySpeedRangesEndFullEtcs =
             makeSafetySpeedRanges(infra, trainPath, schedule, signalingRangesEndFullEtcs)
         val expectedEndFullEtcs =
@@ -370,7 +370,11 @@ class StandaloneSimulationTest {
         // ETCS_LEVEL2 range covers the last 2 stops but not the final buffer-stop: no safetySpeed
         // for those stops (only the first)
         val signalingRangesEndEtcsExceptFinalBuffer = signalingRangesBAL.clone()
-        signalingRangesEndEtcsExceptFinalBuffer.put(9_500.meters, 10_350.meters, ETCS_LEVEL2.id)
+        signalingRangesEndEtcsExceptFinalBuffer.put(
+            Offset(9_500.meters),
+            Offset(10_350.meters),
+            ETCS_LEVEL2.id,
+        )
         val safetySpeedRangesEndFullEtcsExceptFinalBuffer =
             makeSafetySpeedRanges(
                 infra,
@@ -392,8 +396,8 @@ class StandaloneSimulationTest {
         val signalingRangesEtcsStartingBetweenPenultimateStopAndItsSignal =
             signalingRangesBAL.clone()
         signalingRangesEtcsStartingBetweenPenultimateStopAndItsSignal.put(
-            10_100.meters,
-            10_400.meters,
+            Offset(10_100.meters),
+            Offset(10_400.meters),
             ETCS_LEVEL2.id,
         )
         val safetySpeedRangesEtcsStartingBetweenPenultimateStopAndItsSignal =
@@ -418,8 +422,8 @@ class StandaloneSimulationTest {
         // safetySpeed expected for all (stops are in BAL range)
         val signalingRangesEtcsStartingBetweenLastStopAndBuffer = signalingRangesBAL.clone()
         signalingRangesEtcsStartingBetweenLastStopAndBuffer.put(
-            10_350.meters,
-            10_400.meters,
+            Offset(10_350.meters),
+            Offset(10_400.meters),
             ETCS_LEVEL2.id,
         )
         val safetySpeedRangesEtcsStartingBetweenLastStopAndBuffer =

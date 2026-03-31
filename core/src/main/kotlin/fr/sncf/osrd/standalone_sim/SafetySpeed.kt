@@ -8,6 +8,7 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.OffsetRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Speed
@@ -29,7 +30,7 @@ fun makeSafetySpeedRanges(
     infra: FullInfra,
     trainPath: TrainPath,
     schedule: List<SimulationScheduleItem>,
-    signalingRanges: DistanceRangeMap<String>,
+    signalingRanges: OffsetRangeMap<PhysicsPath, String>,
 ): DistanceRangeMap<Speed> {
     val rawInfra = infra.rawInfra
     val signalOffsets = getSignalOffsets(infra, trainPath)
@@ -88,10 +89,10 @@ fun makeSafetySpeedRanges(
 /** Check if a given stop is in a range of a given signaling system. */
 private fun isStopInSignalingSystemRange(
     stopOffset: Offset<PhysicsPath>,
-    signalingRanges: DistanceRangeMap<String>,
+    signalingRanges: OffsetRangeMap<PhysicsPath, String>,
     signalingSystem: String,
 ): Boolean {
-    return (signalingRanges.get(stopOffset.distance) == signalingSystem)
+    return (signalingRanges.get(stopOffset) == signalingSystem)
 }
 
 /**

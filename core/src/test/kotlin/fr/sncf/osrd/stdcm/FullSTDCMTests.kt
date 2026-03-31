@@ -464,7 +464,7 @@ fun makeRequirementsFromPath(
             Comfort.STANDARD,
             RJSAllowanceDistribution.LINEAR,
             null,
-            distanceRangeMapOf(),
+            offsetRangeMapOf(),
             useElectricalProfiles = false,
             useSpeedLimits = true,
             2.0,

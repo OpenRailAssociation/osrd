@@ -4,7 +4,10 @@ import fr.sncf.osrd.path.implementations.SubPhysicsPath
 import fr.sncf.osrd.path.interfaces.Electrification
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.OffsetRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
+import fr.sncf.osrd.utils.offsetRangeMapOf
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -27,7 +30,7 @@ class SubPhysicsPathTest {
         var lastAverageGradeCall: Pair<Double, Double>? = null
         var lastMinGradeCall: Pair<Double, Double>? = null
         var lastBasePowerClass: String? = null
-        var lastPowerRestrictionMap: DistanceRangeMap<String>? = null
+        var lastPowerRestrictionMap: OffsetRangeMap<PhysicsPath, String>? = null
         var lastPowerRestrictionToPowerClass: Map<String, String>? = null
         var lastIgnoreElectricalProfiles: Boolean? = null
 
@@ -43,7 +46,7 @@ class SubPhysicsPathTest {
 
         override fun getElectrificationMap(
             basePowerClass: String?,
-            powerRestrictionMap: DistanceRangeMap<String>?,
+            powerRestrictionMap: OffsetRangeMap<PhysicsPath, String>?,
             powerRestrictionToPowerClass: Map<String, String>?,
             ignoreElectricalProfiles: Boolean,
         ): DistanceRangeMap<Electrification> {
@@ -141,11 +144,15 @@ class SubPhysicsPathTest {
         val subPath = SubPhysicsPath(begin = 100.0, end = 300.0, path = path)
 
         val inputRestrictionMap =
-            distanceRangeMapOf(
-                DistanceRangeMap.RangeMapEntry(0.0.meters, 10.0.meters, "r1"),
-                DistanceRangeMap.RangeMapEntry(11.0.meters, 20.0.meters, "r2"),
-                DistanceRangeMap.RangeMapEntry(21.0.meters, 30.0.meters, "r3"),
-                DistanceRangeMap.RangeMapEntry(31.0.meters, 40.0.meters, "r4"),
+            offsetRangeMapOf(
+                OffsetRangeMap.RangeMapEntry(
+                    Offset<PhysicsPath>(0.0.meters),
+                    Offset(10.0.meters),
+                    "r1",
+                ),
+                OffsetRangeMap.RangeMapEntry(Offset(11.0.meters), Offset(20.0.meters), "r2"),
+                OffsetRangeMap.RangeMapEntry(Offset(21.0.meters), Offset(30.0.meters), "r3"),
+                OffsetRangeMap.RangeMapEntry(Offset(31.0.meters), Offset(40.0.meters), "r4"),
             )
         val powerClassMap = mapOf("r1" to "A", "r2" to "B")
 
@@ -165,10 +172,14 @@ class SubPhysicsPathTest {
         assertNotNull(forwardedRestrictions)
         assertEquals(
             listOf(
-                DistanceRangeMap.RangeMapEntry(100.0.meters, 110.0.meters, "r1"),
-                DistanceRangeMap.RangeMapEntry(111.0.meters, 120.0.meters, "r2"),
-                DistanceRangeMap.RangeMapEntry(121.0.meters, 130.0.meters, "r3"),
-                DistanceRangeMap.RangeMapEntry(131.0.meters, 140.0.meters, "r4"),
+                OffsetRangeMap.RangeMapEntry(
+                    Offset<PhysicsPath>(100.0.meters),
+                    Offset(110.0.meters),
+                    "r1",
+                ),
+                OffsetRangeMap.RangeMapEntry(Offset(111.0.meters), Offset(120.0.meters), "r2"),
+                OffsetRangeMap.RangeMapEntry(Offset(121.0.meters), Offset(130.0.meters), "r3"),
+                OffsetRangeMap.RangeMapEntry(Offset(131.0.meters), Offset(140.0.meters), "r4"),
             ),
             forwardedRestrictions.toList(),
         )

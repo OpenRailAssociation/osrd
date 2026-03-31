@@ -2,11 +2,12 @@ package fr.sncf.osrd.api
 
 import fr.sncf.osrd.api.standalone_sim.SimulationPowerRestrictionItem
 import fr.sncf.osrd.api.standalone_sim.SimulationScheduleItem
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.OPEN
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.STOP
-import fr.sncf.osrd.utils.DistanceRangeMap
-import fr.sncf.osrd.utils.distanceRangeMapOf
+import fr.sncf.osrd.utils.OffsetRangeMap
+import fr.sncf.osrd.utils.offsetRangeMapOf
 import fr.sncf.osrd.utils.units.TimeDelta
 import java.lang.Long.min
 import mu.KotlinLogging
@@ -70,10 +71,10 @@ fun parseRawSimulationScheduleItems(
 
 fun parsePowerRestrictions(
     powerRestrictions: List<SimulationPowerRestrictionItem>
-): DistanceRangeMap<String> {
-    val res = distanceRangeMapOf<String>()
+): OffsetRangeMap<PhysicsPath, String> {
+    val res = offsetRangeMapOf<PhysicsPath, String>()
     for (entry in powerRestrictions) {
-        res.put(entry.from.distance, entry.to.distance, entry.value)
+        res.put(entry.from, entry.to, entry.value)
     }
     return res
 }

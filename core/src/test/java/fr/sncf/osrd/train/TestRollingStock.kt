@@ -6,8 +6,9 @@ import fr.sncf.osrd.envelope_sim.EnvelopeSimPathBuilder
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.InfraConditions
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.TractiveEffortPoint
 import fr.sncf.osrd.path.interfaces.PhysicsPath
-import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
+import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.OffsetRangeMap
+import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.offsetRangeMapOf
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
@@ -24,15 +25,11 @@ private fun maxSpeed(curve: Array<TractiveEffortPoint>): Double {
 
 private fun mapTractiveEffortCurveArgs(): Iterable<Arguments> {
     val powerRestrictionMap =
-        offsetRangeMapOf(
-            OffsetRangeMap.RangeMapEntry(
-                Offset<PhysicsPath>(0.0.meters),
-                Offset(10.0.meters),
-                "Restrict1",
-            ),
-            OffsetRangeMap.RangeMapEntry(Offset(10.0.meters), Offset(20.0.meters), "Restrict2"),
+        distanceRangeMapOf(
+            DistanceRangeMap.RangeMapEntry(0.0.meters, 10.0.meters, "Restrict1"),
+            DistanceRangeMap.RangeMapEntry(10.0.meters, 20.0.meters, "Restrict2"),
         )
-    val emptyPowerRestrictionMap = offsetRangeMapOf<PhysicsPath, String>()
+    val emptyPowerRestrictionMap = distanceRangeMapOf<String>()
     return Lists.cartesianProduct(
             listOf(
                 EnvelopeSimPathBuilder.withElectricalProfiles25000(40.0),
@@ -51,14 +48,14 @@ class TestRollingStock {
     fun testMapTractiveEffortCurveCoherent(
         path: PhysicsPath,
         comfort: Comfort,
-        powerRestrictionMap: OffsetRangeMap<PhysicsPath, String>,
+        powerRestrictionMap: DistanceRangeMap<String>,
     ) {
         val rollingStock = TestTrains.REALISTIC_FAST_TRAIN
 
         val elecCondMap =
             path.getElectrificationMap(
                 rollingStock.basePowerClass,
-                powerRestrictionMap,
+                OffsetRangeMap<PhysicsPath, String>(powerRestrictionMap),
                 rollingStock.powerRestrictions,
                 false,
             )
