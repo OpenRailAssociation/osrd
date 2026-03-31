@@ -27,8 +27,6 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.cbor.Cbor
 import org.slf4j.LoggerFactory
-import software.amazon.awssdk.core.sync.RequestBody
-import software.amazon.awssdk.services.s3.model.PutObjectRequest
 
 typealias TimetableId = Int
 
@@ -292,22 +290,18 @@ class TimetableCacheManager(
     private fun saveToS3(timetableId: TimetableId, requirements: STDCMTimetableData) {
         if (s3Context == null) return
 
-        s3Context.runAsync {
-            val objectPath = "stdcm/saved_timetables/$timetableId.cbor"
-            if (s3Context.fileExists(objectPath)) return@runAsync
-
+        val objectPath = "stdcm/saved_timetables/$timetableId.cbor"
+        s3Context.writeFileIfMissing(objectPath) {
             try {
-                val putObjectRequest =
-                    PutObjectRequest.builder().bucket(s3Context.bucketName).key(objectPath).build()
-
                 val serializable = requirements.toSerializable()
                 val cbor = Cbor {}
                 val serializer = STDCMTimetableData.SerializableMap.serializer()
                 val bytes = cbor.encodeToByteArray(serializer, serializable)
 
-                s3Context.s3Client.putObject(putObjectRequest, RequestBody.fromBytes(bytes))
+                bytes
             } catch (e: Exception) {
                 logger.error("failed to save timetable to s3", e)
+                null
             }
         }
     }

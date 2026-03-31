@@ -24,6 +24,9 @@ val s3Logger = KotlinLogging.logger {}
  *
  * Note: as this S3 is only used to generate data that helps with viewing and debugging, errors are
  * never critical. All operations are wrapped into try/catch blocks with error logging.
+ *
+ * Some functions take either [ByteArray] or [String] as input, the versions that aren't used have
+ * been skipped but may be added later on.
  */
 data class S3Context(
     val s3Client: S3Client,
@@ -32,24 +35,26 @@ data class S3Context(
     val asyncDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) {
 
-    /** Write a new file for a given stdcm request. */
+    /** Write a new file. */
     @WithSpan(value = "Writing S3 file", kind = SpanKind.SERVER)
-    fun writeSTDCMFile(fileName: String, content: String) {
+    private fun writeFile(fileName: String, requestBody: RequestBody) {
         runAsync {
             try {
-                val traceId = Span.current().spanContext.traceId
-                s3Logger.info { "Request $traceId: writing $fileName" }
+                s3Logger.info { "Writing $fileName" }
                 val putObjectRequest =
-                    PutObjectRequest.builder()
-                        .bucket(bucketName)
-                        .key("stdcm/requests/$traceId/$fileName")
-                        .build()
-
-                s3Client.putObject(putObjectRequest, RequestBody.fromString(content))
+                    PutObjectRequest.builder().bucket(bucketName).key(fileName).build()
+                s3Client.putObject(putObjectRequest, requestBody)
             } catch (e: Exception) {
                 s3Logger.error { e }
             }
         }
+    }
+
+    /** Write a new file for a given stdcm request. */
+    private fun writeSTDCMFile(fileName: String, requestBody: RequestBody) {
+        val traceId = Span.current().spanContext.traceId
+        val path = "stdcm/requests/$traceId/$fileName"
+        writeFile(path, requestBody)
     }
 
     /**
@@ -58,8 +63,21 @@ data class S3Context(
      * null. The generating method is also delegated to a distinct thread, this entire method call
      * is non-blocking.
      */
-    fun writeSTDCMFile(fileName: String, generateContent: () -> String) {
-        runAsync { writeSTDCMFile(fileName, generateContent()) }
+    fun writeSTDCMFile(fileName: String, generateContent: () -> String?) {
+        runAsync { generateContent()?.let { writeSTDCMFile(fileName, RequestBody.fromString(it)) } }
+    }
+
+    /**
+     * Write a new file with a dedicated function to generate the content. Check first that the file
+     * isn't already on the s3, stop otherwise. The generating method may return null (e.g. when
+     * some error happened), in which case nothing is uploaded.
+     */
+    fun writeFileIfMissing(fileName: String, generateContent: () -> ByteArray?) {
+        runAsync {
+            if (!fileExists(fileName)) {
+                generateContent()?.let { writeFile(fileName, RequestBody.fromBytes(it)) }
+            }
+        }
     }
 
     /** Returns true if the file exists. */
