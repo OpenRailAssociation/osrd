@@ -7,7 +7,11 @@ group = 'fr.sncf.osrd'
 version = '1.0.0'
 
 kotlin {
-    jvm()
+    jvm {
+        compilerOptions {
+            jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
+        }
+    }
     linuxX64()
 
     sourceSets {
