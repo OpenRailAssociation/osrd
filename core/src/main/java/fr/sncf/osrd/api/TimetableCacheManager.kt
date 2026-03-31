@@ -5,15 +5,15 @@ import com.google.common.collect.Range
 import com.google.common.collect.RangeSet
 import com.google.common.collect.TreeRangeSet
 import fr.sncf.osrd.sim_infra.api.ZoneId
+import fr.sncf.osrd.utils.compress
+import fr.sncf.osrd.utils.compressToZip
+import fr.sncf.osrd.utils.decompress
 import io.lettuce.core.api.StatefulRedisConnection
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
-import java.io.ByteArrayOutputStream
 import java.nio.file.Files
 import java.util.concurrent.ConcurrentHashMap
-import java.util.zip.GZIPInputStream
-import java.util.zip.GZIPOutputStream
 import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.readBytes
@@ -290,29 +290,18 @@ class TimetableCacheManager(
     private fun saveToS3(timetableId: TimetableId, requirements: STDCMTimetableData) {
         if (s3Context == null) return
 
-        val objectPath = "stdcm/saved_timetables/$timetableId.cbor"
+        val objectPath = "stdcm/saved_timetables/$timetableId.cbor.zip"
         s3Context.writeFileIfMissing(objectPath) {
             try {
                 val serializable = requirements.toSerializable()
                 val cbor = Cbor {}
                 val serializer = STDCMTimetableData.SerializableMap.serializer()
                 val bytes = cbor.encodeToByteArray(serializer, serializable)
-
-                bytes
+                bytes.compressToZip("$timetableId.cbor")
             } catch (e: Exception) {
                 logger.error("failed to save timetable to s3", e)
                 null
             }
         }
     }
-}
-
-fun ByteArray.compress(): ByteArray {
-    val outputStream = ByteArrayOutputStream(this.size)
-    GZIPOutputStream(outputStream).use { it.write(this) }
-    return outputStream.toByteArray()
-}
-
-fun ByteArray.decompress(): ByteArray {
-    return GZIPInputStream(this.inputStream()).use { it.readBytes() }
 }
