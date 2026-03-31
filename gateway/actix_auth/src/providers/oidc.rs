@@ -4,10 +4,17 @@ use actix_web::http::header::{self, LanguageTag, Preference};
 use actix_web::{FromRequest, HttpRequest, HttpResponse, http::StatusCode, web};
 use futures_util::future::LocalBoxFuture;
 use log::error;
-use openidconnect::core::{CoreAuthenticationFlow, CoreClient, CoreProviderMetadata};
+use openidconnect::core::{
+    CoreAuthDisplay, CoreAuthPrompt, CoreAuthenticationFlow, CoreErrorResponseType,
+    CoreGenderClaim, CoreJsonWebKey, CoreJweContentEncryptionAlgorithm, CoreJwsSigningAlgorithm,
+    CoreProviderMetadata, CoreRevocableToken, CoreRevocationErrorResponse,
+    CoreTokenIntrospectionResponse, CoreTokenType,
+};
 use openidconnect::{
-    AccessTokenHash, AuthorizationCode, ClientId, ClientSecret, CsrfToken, DiscoveryError,
-    IssuerUrl, LocalizedClaim, Nonce, OAuth2TokenResponse, RedirectUrl, Scope, TokenResponse,
+    AccessTokenHash, AdditionalClaims, AuthorizationCode, Client, ClientId, ClientSecret,
+    CsrfToken, DiscoveryError, EmptyExtraTokenFields, IdTokenFields, IssuerUrl, LocalizedClaim,
+    Nonce, OAuth2TokenResponse, RedirectUrl, Scope, StandardErrorResponse, StandardTokenResponse,
+    TokenResponse,
 };
 use openidconnect::{EndpointMaybeSet, EndpointNotSet, EndpointSet, HttpClientError};
 use serde::{Deserialize, Serialize};
@@ -28,6 +35,51 @@ pub struct OidcConfig {
     pub profile_scope_override: Option<String>,
     pub username_whitelist: Option<HashSet<String>>,
 }
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct SncfAdditionalClaims {
+    uid: String,
+}
+
+impl AdditionalClaims for SncfAdditionalClaims {}
+
+type SncfTokenResponse = StandardTokenResponse<
+    IdTokenFields<
+        SncfAdditionalClaims,
+        EmptyExtraTokenFields,
+        CoreGenderClaim,
+        CoreJweContentEncryptionAlgorithm,
+        CoreJwsSigningAlgorithm,
+    >,
+    CoreTokenType,
+>;
+
+type SncfClient<
+    HasAuthUrl = EndpointNotSet,
+    HasDeviceAuthUrl = EndpointNotSet,
+    HasIntrospectionUrl = EndpointNotSet,
+    HasRevocationUrl = EndpointNotSet,
+    HasTokenUrl = EndpointNotSet,
+    HasUserInfoUrl = EndpointNotSet,
+> = Client<
+    SncfAdditionalClaims,
+    CoreAuthDisplay,
+    CoreGenderClaim,
+    CoreJweContentEncryptionAlgorithm,
+    CoreJsonWebKey,
+    CoreAuthPrompt,
+    StandardErrorResponse<CoreErrorResponseType>,
+    SncfTokenResponse,
+    CoreTokenIntrospectionResponse,
+    CoreRevocableToken,
+    CoreRevocationErrorResponse,
+    HasAuthUrl,
+    HasDeviceAuthUrl,
+    HasIntrospectionUrl,
+    HasRevocationUrl,
+    HasTokenUrl,
+    HasUserInfoUrl,
+>;
 
 impl OidcConfig {
     #[allow(clippy::too_many_arguments)]
@@ -61,7 +113,7 @@ pub struct OidcProvider {
     pub amr: Vec<String>,
     pub acr: Option<String>,
     pub client: Box<
-        CoreClient<
+        SncfClient<
             EndpointSet,
             EndpointNotSet,
             EndpointNotSet,
@@ -84,8 +136,8 @@ impl OidcProvider {
         let provider_metadata =
             CoreProviderMetadata::discover_async(*config.issuer_url.clone(), &client).await?;
 
-        let client = Box::new(
-            CoreClient::from_provider_metadata(
+        let client: Box<SncfClient<_, _, _, _, _, _>> = Box::new(
+            SncfClient::from_provider_metadata(
                 provider_metadata,
                 config.client_id.clone(),
                 config.client_secret.clone(),
@@ -210,6 +262,8 @@ impl SessionProvider for OidcProvider {
             let id_token = token_response
                 .id_token()
                 .ok_or(CallbackError::MissingIDToken)?;
+            log::debug!("id_token: {}", id_token.to_string());
+
             let id_token_verifier = self.client.id_token_verifier();
             let claims = id_token.claims(&id_token_verifier, nonce).map_err(|err| {
                 error!("unable to verify ID token signature: {err:?}");
@@ -245,7 +299,8 @@ impl SessionProvider for OidcProvider {
             let language_prefs = accept_language.ok().map(|langs| langs.ranked());
 
             // the subject is a unique user identifier
-            let subject = claims.subject().to_string();
+            // let subject = claims.subject().to_string();
+            let subject = claims.additional_claims().uid.clone();
 
             // the name is meant to be displayed
             let name = claims
