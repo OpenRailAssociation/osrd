@@ -3,10 +3,10 @@ package fr.sncf.osrd.train;
 import static fr.sncf.osrd.envelope_sim.SimpleRollingStock.createEffortSpeedCurve;
 
 import com.google.common.collect.Lists;
+import fr.sncf.osrd.envelope_sim.Comfort;
 import fr.sncf.osrd.envelope_sim.SimpleRollingStock.CurveShape;
 import fr.sncf.osrd.envelope_sim.etcs.EtcsBrakeParams;
 import fr.sncf.osrd.envelope_sim.etcs.EtcsBrakeParams.SpeedIntervalValueCurve;
-import fr.sncf.osrd.railjson.schema.rollingstock.Comfort;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 import java.util.*;
 

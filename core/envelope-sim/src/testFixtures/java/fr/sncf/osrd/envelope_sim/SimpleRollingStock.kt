@@ -4,7 +4,6 @@ import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.CurvesAndConditions
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.TractiveEffortPoint
 import fr.sncf.osrd.envelope_sim.etcs.EtcsBrakeParams
 import fr.sncf.osrd.path.interfaces.Electrification
-import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.units.Distance

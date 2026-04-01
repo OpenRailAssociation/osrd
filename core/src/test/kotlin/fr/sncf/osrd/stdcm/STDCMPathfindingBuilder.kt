@@ -3,9 +3,9 @@ package fr.sncf.osrd.stdcm
 import com.google.common.collect.ImmutableMultimap
 import com.google.common.collect.Multimap
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.envelope_sim.Comfort
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.pathfinding.Pathfinding
-import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.stdcm.graph.findPath

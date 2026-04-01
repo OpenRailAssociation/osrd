@@ -4,10 +4,15 @@ import fr.sncf.osrd.envelope_sim.etcs.EtcsBrakeParams
 import fr.sncf.osrd.envelope_sim.etcs.M_ROTATING_MAX
 import fr.sncf.osrd.envelope_sim.etcs.M_ROTATING_MIN
 import fr.sncf.osrd.path.interfaces.Electrification
-import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.utils.DistanceRangeMap
 import kotlin.jvm.JvmRecord
 import kotlin.math.abs
+
+enum class Comfort {
+    AIR_CONDITIONING,
+    HEATING,
+    STANDARD,
+}
 
 interface PhysicsRollingStock {
     /** The mass of the train, in kilograms */

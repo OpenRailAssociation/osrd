@@ -2,6 +2,7 @@ package fr.sncf.osrd.railjson.schema.rollingstock;
 
 import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.envelope_sim.Comfort;
 import java.util.List;
 import java.util.Map;
 

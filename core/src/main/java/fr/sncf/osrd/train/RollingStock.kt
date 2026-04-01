@@ -1,5 +1,6 @@
 package fr.sncf.osrd.train
 
+import fr.sncf.osrd.envelope_sim.Comfort
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.CurvesAndConditions
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.InfraConditions
@@ -9,7 +10,6 @@ import fr.sncf.osrd.path.interfaces.Electrification
 import fr.sncf.osrd.path.legacy_objects.electrification.Electrified
 import fr.sncf.osrd.path.legacy_objects.electrification.Neutral
 import fr.sncf.osrd.path.legacy_objects.electrification.NonElectrified
-import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.DistanceRangeMapImpl

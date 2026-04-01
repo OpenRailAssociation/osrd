@@ -1,8 +1,8 @@
 package fr.sncf.osrd.railjson.schema.schedule;
 
 import com.squareup.moshi.Json;
+import fr.sncf.osrd.envelope_sim.Comfort;
 import fr.sncf.osrd.railjson.schema.common.Identified;
-import fr.sncf.osrd.railjson.schema.rollingstock.Comfort;
 
 public class RJSStandaloneTrainSchedule implements Identified {
     /** The identifier of this train */
