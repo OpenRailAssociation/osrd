@@ -2291,20 +2291,12 @@ export type GetTimetableByIdRoundTripsTrainSchedulesApiArg = {
 };
 export type PostTimetableByIdStdcmApiResponse = /** status 200 The simulation result */
   | {
-      core_payload?: null | CoreStdcmRequest;
-      departure_time: string;
-      pathfinding_result: CorePathfindingResultSuccess;
-      simulation: SimulationResponseSuccess;
-      status: 'success';
+      data: StdcmProgressionEvent;
+      event: 'ongoing';
     }
   | {
-      core_payload?: null | CoreStdcmRequest;
-      status: 'path_not_found';
-    }
-  | {
-      core_payload?: null | CoreStdcmRequest;
-      error: SimulationResponse;
-      status: 'preprocessing_simulation_error';
+      data: StdcmResponse;
+      event: 'completed';
     };
 export type PostTimetableByIdStdcmApiArg = {
   /** timetable_id */
@@ -4407,6 +4399,10 @@ export type CoreTrainRequirementsById = {
   /** ID that can be used to find the train in tools other than OSRD. Used in debug traces. */
   train_name: string;
 };
+export type StdcmProgressionEvent = {
+  best_travel_time: number;
+  point: GeoJsonPoint;
+};
 export type ConsistConfiguration = {
   loading_gauge_type?: null | LoadingGaugeType;
   /** Velocity in m·s⁻¹ */
@@ -4598,6 +4594,28 @@ export type SimulationResponse =
   | {
       core_error: InternalError;
       status: 'simulation_failed';
+    };
+export type StdcmResponse =
+  | {
+      core_payload?: null | CoreStdcmRequest;
+      departure_time: string;
+      pathfinding_result: CorePathfindingResultSuccess;
+      simulation: SimulationResponseSuccess;
+      status: 'success';
+    }
+  | {
+      core_payload?: null | CoreStdcmRequest;
+      status: 'path_not_found';
+    }
+  | {
+      core_payload?: null | CoreStdcmRequest;
+      error: SimulationResponse;
+      status: 'preprocessing_simulation_error';
+    }
+  | {
+      core_payload?: null | CoreStdcmRequest;
+      error: InternalError;
+      status: 'internal_error';
     };
 export type PathfindingItem = {
   /** The stop duration in milliseconds, None if the train does not stop. */
