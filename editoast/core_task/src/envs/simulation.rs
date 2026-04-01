@@ -438,7 +438,7 @@ pub(crate) mod test_data {
             NonBlankString::from("a"),
             SimulationWaypoint::ScheduleItem {
                 arrival_at: Some(1200),
-                stop_for: 60,
+                stop_for: Some(60),
                 reception_signal: Default::default(),
             },
         );
@@ -450,7 +450,7 @@ pub(crate) mod test_data {
             NonBlankString::from("b"),
             SimulationWaypoint::ScheduleItem {
                 arrival_at: None,
-                stop_for: 120,
+                stop_for: Some(120),
                 reception_signal: Default::default(),
             },
         );
@@ -459,7 +459,7 @@ pub(crate) mod test_data {
             NonBlankString::from("finish"),
             SimulationWaypoint::ScheduleItem {
                 arrival_at: Some(2400),
-                stop_for: 0,
+                stop_for: Some(0),
                 reception_signal: Default::default(),
             },
         );

@@ -62,7 +62,7 @@ pub enum SimulationWaypoint {
     PathItem,
     /// The train must stop at this waypoint
     ScheduleItem {
-        stop_for: u64,
+        stop_for: Option<u64>,
         arrival_at: Option<u64>,
         reception_signal: ReceptionSignal,
     },
