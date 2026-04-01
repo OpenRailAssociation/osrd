@@ -257,4 +257,17 @@ export type StdcmSearchDatetimeWindow = {
   end: Date;
 };
 
-export type StdcmProgressPoints = Array<{ geoPoint: GeoJsonPoint; timestamp: number }>;
+export type StdcmProgressPoint = {
+  geoPoint: GeoJsonPoint;
+  /** When the animation for this point should start. When many points
+   *  arrive at the same time, each one is delayed by a few ms so they
+   *  don't all appear together (can be in the future).
+   */
+  animationStartTime: number;
+  /** If true, show the point directly in its final state and skip the
+   *  fade-in. Used when a new point replaces an old one whose animation
+   *  was already done.
+   */
+  skipFadeIn?: boolean;
+};
+export type StdcmProgressPoints = StdcmProgressPoint[];

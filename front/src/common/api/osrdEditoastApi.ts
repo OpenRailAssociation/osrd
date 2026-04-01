@@ -449,6 +449,14 @@ const osrdEditoastApi = generatedEditoastApi
 
 export * from './generatedEditoastApi';
 
+/**
+ * RTK Query's mutation hook can't expose intermediate streaming events to
+ * the component (it only returns a final result). So we replace the
+ * generated `postTimetableByIdStdcm` endpoint with a custom streaming
+ * function.
+ *
+ * The generated RTK types are still used to keep type safety on the payload
+ */
 const enhancedOsrdEditoastApi = {
   ...osrdEditoastApi,
   endpoints: {
