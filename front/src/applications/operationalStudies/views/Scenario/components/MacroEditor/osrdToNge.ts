@@ -554,6 +554,12 @@ const getNgeTrainrunSectionsWithNodes = (
           travelTime.consecutiveTime = travelTime.time;
         }
 
+        const backwardTravelTime = { ...DEFAULT_TIME_LOCK };
+        if (sourceArrival.consecutiveTime !== null && targetDeparture.consecutiveTime !== null) {
+          backwardTravelTime.time = sourceArrival.consecutiveTime - targetDeparture.consecutiveTime;
+          backwardTravelTime.consecutiveTime = backwardTravelTime.time;
+        }
+
         // Minute symmetry
         const sourceSymmetry = Boolean(
           sourceDeparture.time &&
@@ -573,6 +579,7 @@ const getNgeTrainrunSectionsWithNodes = (
           targetNodeId: targetNode.id,
           targetPortId: targetPort.id,
           travelTime,
+          backwardTravelTime,
           sourceDeparture,
           sourceArrival,
           targetDeparture,

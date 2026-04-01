@@ -81,6 +81,7 @@ export type TrainrunSectionDto = {
   targetDeparture: TimeLockDto;
   targetArrival: TimeLockDto;
   travelTime: TimeLockDto;
+  backwardTravelTime: TimeLockDto;
 
   numberOfStops: number;
 
