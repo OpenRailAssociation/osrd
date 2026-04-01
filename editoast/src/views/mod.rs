@@ -659,6 +659,12 @@ async fn authentication_validation_middleware(
         })
         .await?;
 
+    // Drop the connection to avoid keeping it open while calling next middlewares
+    // and the resuest handler itself. Keeping it open would cause deadlocks under
+    // heavy load as all connection would be held by this function and handlers will
+    // fail to acquire one from the pool.
+    std::mem::drop(conn);
+
     // A failed OpenFGA request does not invalidate the creation of a new user
     let bypass = special_authorizers::Authorize(openfga);
     let Ok::<_, Infallible>(access) = bypass.authorize(roles_prot).await;
