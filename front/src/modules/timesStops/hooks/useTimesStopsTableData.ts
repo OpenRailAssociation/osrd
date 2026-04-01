@@ -222,18 +222,18 @@ const useTimesStopsTableData = (
 
     const pathStepRowsById = new Map(
       selectedTrain.path.map((pathStep, stepIndex) => {
-        const matchingOp = pathStepOps.get(pathStep.id)?.at(0);
+        const pathStepOp = pathStepOps.get(pathStep.id)?.at(0);
 
-        const effectiveOp =
-          matchingOp ??
+        const matchingOp =
+          pathStepOp ??
           ('operational_point' in pathStep.location && stableOPs
             ? stableOPs.find((op) => matchPathStepAndOp(pathStep.location, buildOpMatchParams(op)))
             : undefined);
 
         const name =
-          effectiveOp?.extensions?.identifier?.name ??
+          matchingOp?.extensions?.identifier?.name ??
           getOperationalPointName(
-            matchingOp,
+            pathStepOp,
             pathStep.location,
             stepIndex,
             selectedTrain.path.length,
@@ -242,9 +242,11 @@ const useTimesStopsTableData = (
 
         const pathStepLocation = pathStep.location;
 
+        // pathStepOp?.parts is only valid for RelatedOperationalPoint (track-offset steps);
+        // the stableOPs fallback never applies for those since it requires 'operational_point' in location.
         const trackName =
           'track' in pathStepLocation
-            ? matchingOp?.parts.find((part) => part.track === pathStepLocation.track)
+            ? pathStepOp?.parts.find((part) => part.track === pathStepLocation.track)
                 ?.local_track_name
             : (pathStepLocation.local_track_name ?? undefined);
 
@@ -273,13 +275,13 @@ const useTimesStopsTableData = (
           // opOnPathIndex is a placeholder here (-1), it will be replaced by opIndex when matching with operationalPointsOnPath
           opOnPathIndex: -1,
           name,
-          secondaryCode: effectiveOp?.extensions?.sncf?.ch,
+          secondaryCode: matchingOp?.extensions?.sncf?.ch,
           trackName,
           hasRequestedTrack,
           startDate,
           schedule,
           computedArrival,
-          invalidPathStep: !effectiveOp,
+          invalidPathStep: !matchingOp,
           scheduleNotHonored,
           marginNotHonored,
           location: pathStep.location,
