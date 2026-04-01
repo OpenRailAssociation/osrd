@@ -11,6 +11,7 @@ import {
   STDCM_TRAIN_TIMETABLE_ID,
 } from 'applications/stdcm/consts';
 import type {
+  StdcmProgressPoints,
   StdcmRequestStatus,
   StdcmSimulation,
   StdcmSimulationInputs,
@@ -19,8 +20,8 @@ import type {
 import {
   osrdEditoastApi,
   type PostTimetableByIdStdcmApiArg,
-  type PostTimetableByIdStdcmApiResponseWithTraceId,
   type RollingStockWithLiveries,
+  type StdcmResponseWithTraceId,
 } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
 import { addStdcmSimulations } from 'reducers/osrdconf/stdcmConf';
@@ -52,12 +53,13 @@ const useStdcm = ({
   const dateTimeLocale = useDateTimeLocale();
   const osrdconf = useSelector(getStdcmConf);
   const infraId = useSelector(getStdcmInfraID);
-  const requestPromise = useRef<ReturnType<typeof postTimetableByIdStdcm>[]>(null);
+  const abortRequests = useRef<Array<() => void>>(null);
   const isCancelledRef = useRef(false);
+  const progressPoints = useRef<StdcmProgressPoints>([]);
 
   const currentSimulationInputs = useStdcmForm();
 
-  const [postTimetableByIdStdcm] = osrdEditoastApi.endpoints.postTimetableByIdStdcm.useMutation();
+  const postTimetableByIdStdcm = osrdEditoastApi.endpoints.postTimetableByIdStdcm;
 
   const { data: stdcmRollingStock } =
     osrdEditoastApi.endpoints.getLightRollingStockByRollingStockId.useQuery(
@@ -77,10 +79,7 @@ const useStdcm = ({
   const createSimulation = async (
     inputs: StdcmSimulationInputs,
     payload: PostTimetableByIdStdcmApiArg,
-    response: Extract<
-      PostTimetableByIdStdcmApiResponseWithTraceId,
-      { status: 'success' | 'path_not_found' }
-    >,
+    response: Extract<StdcmResponseWithTraceId, { status: 'success' | 'path_not_found' }>,
     alternativePath?: 'upstream' | 'downstream'
   ): Promise<Omit<StdcmSimulation, 'index'>> => {
     const creationDate = new Date();
@@ -143,19 +142,18 @@ const useStdcm = ({
   };
 
   const handleSuccess = async (
-    response: Extract<PostTimetableByIdStdcmApiResponseWithTraceId, { status: 'success' }>,
+    response: Extract<StdcmResponseWithTraceId, { status: 'success' }>,
     payload: PostTimetableByIdStdcmApiArg
   ) => {
     setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.success);
     dispatch(updateSelectedTrainId(STDCM_TRAIN_TIMETABLE_ID));
 
     const simulation = await createSimulation(currentSimulationInputs, payload, response);
-    if (isCancelledRef.current) return;
     dispatch(addStdcmSimulations([simulation]));
   };
 
   const handlePathNotFound = async (
-    response: Extract<PostTimetableByIdStdcmApiResponseWithTraceId, { status: 'path_not_found' }>,
+    response: Extract<StdcmResponseWithTraceId, { status: 'path_not_found' }>,
     payload: PostTimetableByIdStdcmApiArg
   ) => {
     const simulationsToAdd: Omit<StdcmSimulation, 'index'>[] = [];
@@ -168,22 +166,24 @@ const useStdcm = ({
       const payloadUpstream = adjustPayloadByDirection(payload, 'upstream');
       const payloadDownstream = adjustPayloadByDirection(payload, 'downstream');
 
-      const promiseUpstream = postTimetableByIdStdcm(payloadUpstream);
-      const promiseDownstream = postTimetableByIdStdcm(payloadDownstream);
-      requestPromise.current = [promiseUpstream, promiseDownstream];
+      const upstream = postTimetableByIdStdcm(payloadUpstream);
+      const downstream = postTimetableByIdStdcm(payloadDownstream);
+      abortRequests.current = [upstream.unsubscribe, downstream.unsubscribe];
+
+      const promiseUpstream = upstream.awaitResult();
+      const promiseDownstream = downstream.awaitResult();
 
       // Run two additional requests for alternative simulations
-      const [resUp, resDown] = await Promise.all([
-        promiseUpstream.unwrap(),
-        promiseDownstream.unwrap(),
-      ]);
+      const [resUp, resDown] = await Promise.all([promiseUpstream, promiseDownstream]);
 
+      // Handle error cases
+      if (resUp.status === 'internal_error') throw new Error(resUp.error.message);
+      if (resDown.status === 'internal_error') throw new Error(resDown.error.message);
       if (
         resUp.status === 'preprocessing_simulation_error' ||
         resDown.status === 'preprocessing_simulation_error'
-      ) {
+      )
         throw new Error('Error in response');
-      }
 
       dispatch(updateSelectedTrainId(STDCM_TRAIN_TIMETABLE_ID));
 
@@ -211,6 +211,7 @@ const useStdcm = ({
   const launchStdcmRequest = async () => {
     resetStdcmState();
     isCancelledRef.current = false;
+    progressPoints.current = [];
 
     const validConfig = checkStdcmConf(dispatch, t, dateTimeLocale, osrdconf);
     if (!validConfig) return;
@@ -219,33 +220,62 @@ const useStdcm = ({
     const payload = formatStdcmPayload(validConfig);
 
     try {
-      const promise = postTimetableByIdStdcm(payload);
-      requestPromise.current = [promise];
+      const { subscribe, unsubscribe } = postTimetableByIdStdcm(payload);
+      abortRequests.current = [unsubscribe];
+      // This Map acts as a spatial grid.
+      // The key is built from rounded coordinates (toFixed(1)),
+      // allowing nearby points to be grouped into the same grid cell
+      // and avoiding storing too many very close points
+      const pointsOnGrid = new Map<string, StdcmProgressPoints[0]>();
 
-      const response = await promise.unwrap();
-
-      if (response.status === 'success') {
-        await handleSuccess(response, payload);
-      } else if (response.status === 'path_not_found') {
-        await handlePathNotFound(response, payload);
-      } else {
-        handleRejection(new Error('Unexpected response status.'));
-      }
+      // Listen to events
+      await subscribe(async (event) => {
+        switch (event.event) {
+          case 'error': {
+            if (event.error.name !== 'AbortError') handleRejection(event.error);
+            break;
+          }
+          case 'ongoing': {
+            const newPoint = { geoPoint: event.data.point, timestamp: Date.now() };
+            const newPointKey = newPoint.geoPoint.coordinates.map((n) => n.toFixed(1)).join('/');
+            const pointOnGrid = pointsOnGrid.get(newPointKey);
+            // If a point is already present, we check that its animation is ended before to replace it to avoid blink effect
+            if (!pointOnGrid || newPoint.timestamp - pointOnGrid.timestamp > 2000) {
+              pointsOnGrid.set(newPointKey, newPoint);
+              progressPoints.current = [...pointsOnGrid.values()];
+            }
+            break;
+          }
+          case 'completed': {
+            const result = event.data;
+            switch (result.status) {
+              case 'path_not_found':
+                await handlePathNotFound(result, payload);
+                break;
+              case 'success':
+                await handleSuccess(result, payload);
+                break;
+              case 'preprocessing_simulation_error':
+                await handleRejection(result.error);
+                break;
+              case 'internal_error':
+                await handleRejection(result.error);
+            }
+            break;
+          }
+        }
+      });
     } catch (err) {
-      if ((err as Error).name !== 'AbortError') {
-        handleRejection(err);
-      }
+      handleRejection(err);
     }
   };
 
   const cancelStdcmRequest = () => {
     isCancelledRef.current = true;
-    requestPromise.current?.forEach((promise) => {
-      if (typeof promise.abort === 'function') {
-        promise.abort();
-      }
+    abortRequests.current?.forEach((abortFn) => {
+      abortFn();
     });
-    requestPromise.current = null;
+    abortRequests.current = null;
     setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.canceled);
   };
 
@@ -264,6 +294,7 @@ const useStdcm = ({
     isCanceled,
     isPendingAdditional,
     isCalculationCompleted,
+    progressPoints,
   };
 };
 
