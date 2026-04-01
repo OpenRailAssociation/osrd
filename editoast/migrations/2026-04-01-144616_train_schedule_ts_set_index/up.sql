@@ -1,0 +1,1 @@
+create index train_schedule_train_schedule_set_id_id_idx on train_schedule (train_schedule_set_id, id);
