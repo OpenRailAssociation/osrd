@@ -24,7 +24,9 @@ export default function postTimetableByIdStdcm(args: PostTimetableByIdStdcmApiAr
         }
       );
       if (!response.ok) {
-        throw new Error('Bad response from stdcm stream endpoint');
+        throw new Error(
+          `Bad response from stdcm stream endpoint: ${response.status} ${response.statusText}`
+        );
       }
       const traceparent = response.headers.get('traceparent');
       const traceId = traceparent?.split('-')[1];
@@ -60,7 +62,7 @@ export default function postTimetableByIdStdcm(args: PostTimetableByIdStdcmApiAr
     controller.abort();
   };
 
-  const awaitResult = () =>
+  const runAndAwaitResult = () =>
     new Promise<StdcmResponse>((resolve, reject) => {
       subscribe((event) => {
         if (event.event === 'error') reject(event.error);
@@ -73,6 +75,6 @@ export default function postTimetableByIdStdcm(args: PostTimetableByIdStdcmApiAr
   return {
     subscribe,
     unsubscribe,
-    awaitResult,
+    runAndAwaitResult,
   };
 }

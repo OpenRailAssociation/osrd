@@ -11,6 +11,7 @@ import {
   STDCM_TRAIN_TIMETABLE_ID,
 } from 'applications/stdcm/consts';
 import type {
+  StdcmProgressPoint,
   StdcmProgressPoints,
   StdcmRequestStatus,
   StdcmSimulation,
@@ -170,8 +171,8 @@ const useStdcm = ({
       const downstream = postTimetableByIdStdcm(payloadDownstream);
       abortRequests.current = [upstream.unsubscribe, downstream.unsubscribe];
 
-      const promiseUpstream = upstream.awaitResult();
-      const promiseDownstream = downstream.awaitResult();
+      const promiseUpstream = upstream.runAndAwaitResult();
+      const promiseDownstream = downstream.runAndAwaitResult();
 
       // Run two additional requests for alternative simulations
       const [resUp, resDown] = await Promise.all([promiseUpstream, promiseDownstream]);
@@ -226,8 +227,11 @@ const useStdcm = ({
       // The key is built from rounded coordinates (toFixed(1)),
       // allowing nearby points to be grouped into the same grid cell
       // and avoiding storing too many very close points
-      const pointsOnGrid = new Map<string, StdcmProgressPoints[0]>();
+      const pointsOnGrid = new Map<string, StdcmProgressPoint>();
 
+      // We can receive many points at the same timestamp. To avoid displaying them at once,
+      // we track the number of nodes received at the same timestamp to be able to add a delay
+      let lastPointReceivedAt = { timestamp: Date.now(), nb: 0 };
       // Listen to events
       await subscribe(async (event) => {
         switch (event.event) {
@@ -236,14 +240,27 @@ const useStdcm = ({
             break;
           }
           case 'ongoing': {
-            const newPoint = { geoPoint: event.data.point, timestamp: Date.now() };
+            const now = Date.now();
+            if (now > lastPointReceivedAt.timestamp) {
+              lastPointReceivedAt = { timestamp: Date.now(), nb: 0 };
+            } else {
+              lastPointReceivedAt.nb++;
+            }
+            const newPoint = {
+              geoPoint: event.data.point,
+              animationStartTime: lastPointReceivedAt.timestamp + 10 * lastPointReceivedAt.nb,
+            };
             const newPointKey = newPoint.geoPoint.coordinates.map((n) => n.toFixed(1)).join('/');
             const pointOnGrid = pointsOnGrid.get(newPointKey);
-            // If a point is already present, we check that its animation is ended before to replace it to avoid blink effect
-            if (!pointOnGrid || newPoint.timestamp - pointOnGrid.timestamp > 2000) {
+
+            if (!pointOnGrid) {
               pointsOnGrid.set(newPointKey, newPoint);
-              progressPoints.current = [...pointsOnGrid.values()];
+              // If a point is already present, we check that its animation is ended before to replace it to avoid blink effect
+              // and we set that if this new point override a previous one
+            } else if (now - pointOnGrid.animationStartTime > 2000) {
+              pointsOnGrid.set(newPointKey, { ...newPoint, skipFadeIn: true });
             }
+            progressPoints.current = [...pointsOnGrid.values()];
             break;
           }
           case 'completed': {
