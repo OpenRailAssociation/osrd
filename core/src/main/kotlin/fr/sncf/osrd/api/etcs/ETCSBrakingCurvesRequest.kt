@@ -6,8 +6,8 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.RangeValues
 import fr.sncf.osrd.api.standalone_sim.*
+import fr.sncf.osrd.envelope_sim.Comfort
 import fr.sncf.osrd.path.interfaces.JsonTrainPath
-import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance
 import fr.sncf.osrd.sim_infra.api.SpeedLimitProperty
 import fr.sncf.osrd.utils.json.UnitAdapterFactory

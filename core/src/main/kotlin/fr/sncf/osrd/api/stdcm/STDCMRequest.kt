@@ -11,7 +11,7 @@ import fr.sncf.osrd.api.WorkSchedule
 import fr.sncf.osrd.api.standalone_sim.MarginValue
 import fr.sncf.osrd.api.standalone_sim.MarginValueAdapter
 import fr.sncf.osrd.api.standalone_sim.PhysicsConsistModel
-import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
+import fr.sncf.osrd.envelope_sim.Comfort
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance
 import fr.sncf.osrd.utils.json.UnitAdapterFactory

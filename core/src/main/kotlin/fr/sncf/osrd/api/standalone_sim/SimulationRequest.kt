@@ -3,9 +3,9 @@ package fr.sncf.osrd.api.standalone_sim
 import com.squareup.moshi.*
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.RangeValues
+import fr.sncf.osrd.envelope_sim.Comfort
 import fr.sncf.osrd.path.interfaces.JsonTrainPath
 import fr.sncf.osrd.path.interfaces.PhysicsPath
-import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSEffortCurves.RJSModeEffortCurve
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSEtcsBrakeParams
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance
