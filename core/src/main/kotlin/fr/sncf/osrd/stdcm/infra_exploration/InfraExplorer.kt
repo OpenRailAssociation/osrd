@@ -403,7 +403,6 @@ private class InfraExplorerImpl(
     fun extend(route: RouteId, firstLocation: BlockLocation? = null): Boolean {
         val routeBlocks = blockInfra.getRouteBlocks(rawInfra, route)
         var seenFirstBlock = firstLocation == null
-        var pathAlreadyStarted = blockRanges.isNotEmpty()
 
         var routeBeginOffset = Offset<Route>(firstLocation?.offset?.distance ?: 0.meters)
         for (block in routeBlocks) {
@@ -416,12 +415,11 @@ private class InfraExplorerImpl(
                 continue
             }
 
-            val startsPath = !pathAlreadyStarted
             blockRoutes[block] = route
 
             // Simulation range start on the current block, 0m on any block that isn't the first
             val blockStartOffset: Offset<Block> =
-                if (startsPath) firstLocation!!.offset else Offset.zero()
+                if (block == firstLocation?.edge) firstLocation.offset else Offset(0.meters)
 
             stepTracker.exploreBlockRange(block, blockStartOffset, blockLength)
 
@@ -454,7 +452,6 @@ private class InfraExplorerImpl(
                     objectLength = blockLength,
                 )
             blockRanges.add(blockRange)
-            pathAlreadyStarted = true
             if (isPathComplete) break // Can't extend any further
         }
         assert(seenFirstBlock)
