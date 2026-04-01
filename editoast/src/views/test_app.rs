@@ -90,6 +90,7 @@ pub(crate) struct TestAppBuilder {
     db_pool: Option<DbConnectionPoolV2>,
     core_client: Option<CoreClient>,
     enable_authorization: bool,
+    openfga_store: bool,
     enable_telemetry: bool,
     root_url: Option<Url>,
     trains_traffic: TrainsTrafficPool,
@@ -102,6 +103,7 @@ impl TestAppBuilder {
             db_pool: None,
             core_client: None,
             enable_authorization: false,
+            openfga_store: false,
             enable_telemetry: true,
             root_url: None,
             trains_traffic: TrainsTrafficPool::new(),
@@ -126,8 +128,17 @@ impl TestAppBuilder {
         self
     }
 
+    /// Setting this to true implies [with_openfga_store]
     pub fn enable_authorization(mut self, enable_authorization: bool) -> Self {
         self.enable_authorization = enable_authorization;
+        if enable_authorization {
+            self.openfga_store = true;
+        }
+        self
+    }
+
+    pub fn with_openfga_store(mut self) -> Self {
+        self.openfga_store = true;
         self
     }
 
@@ -241,7 +252,7 @@ impl TestAppBuilder {
             fga_connection_settings.clone(),
         ))
         .expect("Failed creating OpenFGA authorization store");
-        if self.enable_authorization {
+        if self.openfga_store {
             let migrations_store_name = fga::test_utilities::sanitize_store_name_length(&format!(
                 "migrations@{}",
                 self.test_name

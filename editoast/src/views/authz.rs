@@ -1311,7 +1311,10 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn whoami_authorization_disabled() {
-        let app = test_app!().enable_authorization(false).build();
+        let app = test_app!()
+            .enable_authorization(false)
+            .with_openfga_store()
+            .build();
         let user = app.user("test", "test").create().await;
 
         let request = app.get("/authz/me").by_user(&user);
@@ -1376,7 +1379,10 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_groups_authorization_disabled() {
-        let app = test_app!().enable_authorization(false).build();
+        let app = test_app!()
+            .enable_authorization(false)
+            .with_openfga_store()
+            .build();
         let user = app.user("test", "test").create().await;
 
         let request = app.get("/authz/me/groups").by_user(&user);
