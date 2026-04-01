@@ -9,6 +9,7 @@ import {
 } from 'utils/trainId';
 
 import type { ApiError } from './baseGeneratedApis';
+import postTimetableByIdStdcm from './editoastStream/postTimetableByIdStdcm';
 import {
   generatedEditoastApi,
   type CatalogEntry,
@@ -24,10 +25,14 @@ import {
   type PostTimetableByIdStdcmApiResponse,
   type RelatedOperationalPoint,
   type SimulationResponse,
+  type StdcmResponse,
 } from './generatedEditoastApi';
 
 // Type extension for PostTimetableByIdStdcm to include traceId
 export type PostTimetableByIdStdcmApiResponseWithTraceId = PostTimetableByIdStdcmApiResponse & {
+  traceId?: string;
+};
+export type StdcmResponseWithTraceId = StdcmResponse & {
   traceId?: string;
 };
 
@@ -278,18 +283,6 @@ const osrdEditoastApi = generatedEditoastApi
   })
   .enhanceEndpoints({
     endpoints: {
-      postTimetableByIdStdcm: {
-        transformResponse: (
-          response: PostTimetableByIdStdcmApiResponse,
-          metadata: { response: Response }
-        ): PostTimetableByIdStdcmApiResponseWithTraceId => {
-          const headers = metadata.response.headers;
-          const traceparent = headers.get('traceparent');
-          const traceId = traceparent?.split('-')[1];
-
-          return { ...response, traceId };
-        },
-      },
       getLightRollingStock: {
         transformResponse: (response: GetLightRollingStockApiResponse) => ({
           ...response,
@@ -455,4 +448,13 @@ const osrdEditoastApi = generatedEditoastApi
   });
 
 export * from './generatedEditoastApi';
-export { osrdEditoastApi };
+
+const enhancedOsrdEditoastApi = {
+  ...osrdEditoastApi,
+  endpoints: {
+    ...osrdEditoastApi.endpoints,
+    postTimetableByIdStdcm,
+  },
+};
+
+export { enhancedOsrdEditoastApi as osrdEditoastApi };
