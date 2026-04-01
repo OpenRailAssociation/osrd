@@ -68,15 +68,41 @@ describe('isInvalidFloatNumber', () => {
 
 describe('linearScaleInterpolation', () => {
   it('should work with value in domain range', () => {
-    const value = linearScaleInterpolation({ min: 0, max: 100 }, { min: 2000, max: 2025 }, 2005);
+    const value = linearScaleInterpolation({ from: 0, to: 100 }, { min: 2000, max: 2025 }, 2005);
     expect(value).toBe(20);
+
+    const value2 = linearScaleInterpolation({ from: 100, to: 0 }, { min: 2000, max: 2025 }, 2005);
+    expect(value2).toBe(80);
   });
-  it('should return min scale with value inferior to domain range', () => {
-    const value = linearScaleInterpolation({ min: 0, max: 100 }, { min: 2000, max: 2025 }, 1998);
+  it('should return "from" scale with value inferior to domain range', () => {
+    const value = linearScaleInterpolation({ from: 0, to: 100 }, { min: 2000, max: 2025 }, 1998);
     expect(value).toBe(0);
+
+    const value2 = linearScaleInterpolation({ from: 100, to: 0 }, { min: 2000, max: 2025 }, 1998);
+    expect(value2).toBe(100);
   });
-  it('should return max scale with value superior to domain range', () => {
-    const value = linearScaleInterpolation({ min: 0, max: 100 }, { min: 2000, max: 2025 }, 2026);
+  it('should return "to" scale with value superior to domain range', () => {
+    const value = linearScaleInterpolation({ from: 0, to: 100 }, { min: 2000, max: 2025 }, 2026);
     expect(value).toBe(100);
+
+    const value2 = linearScaleInterpolation({ from: 100, to: 0 }, { min: 2000, max: 2025 }, 2026);
+    expect(value2).toBe(0);
+  });
+  it('should return "from" scale with value equal to min domain range', () => {
+    const value = linearScaleInterpolation({ from: 0, to: 100 }, { min: 2000, max: 2025 }, 2000);
+    expect(value).toBe(0);
+
+    const value2 = linearScaleInterpolation({ from: 100, to: 0 }, { min: 2000, max: 2025 }, 2000);
+    expect(value2).toBe(100);
+  });
+  it('should return "to" scale with value equal to max domain range', () => {
+    const value = linearScaleInterpolation({ from: 0, to: 100 }, { min: 2000, max: 2025 }, 2025);
+    expect(value).toBe(100);
+
+    const value2 = linearScaleInterpolation({ from: 100, to: 0 }, { min: 2000, max: 2025 }, 2025);
+    expect(value2).toBe(0);
+  });
+  it('should throw when domain min is greater than max', () => {
+    expect(() => linearScaleInterpolation({ from: 0, to: 10 }, { min: 100, max: 0 }, 50)).toThrow();
   });
 });

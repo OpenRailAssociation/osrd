@@ -9,7 +9,7 @@ import { LAYER_GROUPS, LAYER_GROUPS_ORDER } from 'config/layerOrder';
 import { linearColorScaleInterpolation } from 'utils/color';
 import { linearScaleInterpolation } from 'utils/numbers';
 
-import type { StdcmProgressPoints } from '../types';
+import type { StdcmProgressPoint, StdcmProgressPoints } from '../types';
 
 /**
  * Definition of the animation steps.
@@ -76,76 +76,67 @@ const ANIMATION_STEPS = [
  * For each range, we create a function that transform a point to a the geojson with the good style variables.
  * The last range is from the last step time to infinity and should return a static value (animation is finished).
  */
-const ANIMATIONS = ANIMATION_STEPS.reduce(
-  (acc, curr, index) => {
-    // Special case for the latest step,
-    if (index === ANIMATION_STEPS.length - 1) {
-      return [
-        ...acc,
-        {
-          timeRange: { min: curr.time, max: Infinity },
-          pointToGeojson: (point) => ({
-            type: 'Feature',
-            properties: ANIMATION_STEPS[ANIMATION_STEPS.length - 1],
-            geometry: point.geoPoint,
-          }),
-        },
-      ];
-    }
-
-    const next = ANIMATION_STEPS[index + 1];
-    const timeRange = {
-      min: curr.time,
-      max: next.time,
+const ANIMATIONS: Array<{
+  timeRange: { min: number; max: number };
+  pointToGeojson: (point: StdcmProgressPoint, elapsedTime: number) => Feature<Point>;
+}> = ANIMATION_STEPS.map((curr, index) => {
+  // Special case for the latest step,
+  if (index === ANIMATION_STEPS.length - 1) {
+    return {
+      timeRange: { min: curr.time, max: Infinity },
+      pointToGeojson: (point) => ({
+        type: 'Feature',
+        properties: ANIMATION_STEPS[ANIMATION_STEPS.length - 1],
+        geometry: point.geoPoint,
+      }),
     };
-    return [
-      ...acc,
-      {
-        timeRange,
-        pointToGeojson: (point, elapsedTime) => ({
-          type: 'Feature',
-          properties: {
-            innerCircleColor: linearColorScaleInterpolation(
-              { min: curr.innerCircleColor, max: next.innerCircleColor },
-              timeRange,
-              elapsedTime
-            ),
-            innerCircleSize: linearScaleInterpolation(
-              { min: curr.innerCircleSize, max: next.innerCircleSize },
-              timeRange,
-              elapsedTime
-            ),
-            innerCircleBorder: linearScaleInterpolation(
-              { min: curr.innerCircleBorder, max: next.innerCircleBorder },
-              timeRange,
-              elapsedTime
-            ),
-            outerCircleColor: linearColorScaleInterpolation(
-              { min: curr.outerCircleColor, max: next.outerCircleColor },
-              timeRange,
-              elapsedTime
-            ),
-            outerCircleSize: linearScaleInterpolation(
-              { min: curr.outerCircleSize, max: next.outerCircleSize },
-              timeRange,
-              elapsedTime
-            ),
-            outerCircleBorder: linearScaleInterpolation(
-              { min: curr.outerCircleBorder, max: next.outerCircleBorder },
-              timeRange,
-              elapsedTime
-            ),
-          },
-          geometry: point.geoPoint,
-        }),
+  }
+
+  const next = ANIMATION_STEPS[index + 1];
+  const timeRange = {
+    min: curr.time,
+    max: next.time,
+  };
+  return {
+    timeRange,
+    pointToGeojson: (point, elapsedTime) => ({
+      type: 'Feature',
+      properties: {
+        innerCircleColor: linearColorScaleInterpolation(
+          { from: curr.innerCircleColor, to: next.innerCircleColor },
+          timeRange,
+          elapsedTime
+        ),
+        innerCircleSize: linearScaleInterpolation(
+          { from: curr.innerCircleSize, to: next.innerCircleSize },
+          timeRange,
+          elapsedTime
+        ),
+        innerCircleBorder: linearScaleInterpolation(
+          { from: curr.innerCircleBorder, to: next.innerCircleBorder },
+          timeRange,
+          elapsedTime
+        ),
+        outerCircleColor: linearColorScaleInterpolation(
+          { from: curr.outerCircleColor, to: next.outerCircleColor },
+          timeRange,
+          elapsedTime
+        ),
+        outerCircleSize: linearScaleInterpolation(
+          { from: curr.outerCircleSize, to: next.outerCircleSize },
+          timeRange,
+          elapsedTime
+        ),
+        outerCircleBorder: linearScaleInterpolation(
+          { from: curr.outerCircleBorder, to: next.outerCircleBorder },
+          timeRange,
+          elapsedTime
+        ),
       },
-    ];
-  },
-  [] as Array<{
-    timeRange: { min: number; max: number };
-    pointToGeojson: (point: StdcmProgressPoints[0], elapsedTime: number) => Feature<Point>;
-  }>
-);
+      geometry: point.geoPoint,
+    }),
+  };
+});
 
 /**
  * React Map layer component that display the progress of the stdcm path finding algo.
@@ -169,7 +160,13 @@ const StdcmMapProgressLayer = ({
       const data: FeatureCollection = {
         type: 'FeatureCollection',
         features: progressPoints.current.map((point) => {
-          const elapsedTime = Date.now() - point.timestamp;
+          // Point timestamp can be in the futur. If so its delta time is O except if it override a previous point
+          // In this case it takes the max animation value
+          const deltaTime = Date.now() - point.animationStartTime;
+          let elapsedTime = deltaTime;
+          if (deltaTime < 0) {
+            elapsedTime = point.skipFadeIn ? ANIMATION_STEPS.at(-1)!.time : 0;
+          }
           const animation = ANIMATIONS.find(
             (a) => a.timeRange.min <= elapsedTime && elapsedTime < a.timeRange.max
           )!;
