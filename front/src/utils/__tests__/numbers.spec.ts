@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vitest';
 
-import { budgetFormat, isFloat, isInvalidFloatNumber } from 'utils/numbers';
+import {
+  budgetFormat,
+  isFloat,
+  isInvalidFloatNumber,
+  linearScaleInterpolation,
+} from 'utils/numbers';
 import { NARROW_NO_BREAK_SPACE, NO_BREAK_SPACE } from 'utils/strings';
 
 describe('budgetFormat', () => {
@@ -58,5 +63,20 @@ describe('isInvalidFloatNumber', () => {
 
   it('should return false if the number is NaN and decimal number is NaN', () => {
     expect(isInvalidFloatNumber(NaN, NaN)).toBe(false);
+  });
+});
+
+describe('linearScaleInterpolation', () => {
+  it('should work with value in domain range', () => {
+    const value = linearScaleInterpolation({ min: 0, max: 100 }, { min: 2000, max: 2025 }, 2005);
+    expect(value).toBe(20);
+  });
+  it('should return min scale with value inferior to domain range', () => {
+    const value = linearScaleInterpolation({ min: 0, max: 100 }, { min: 2000, max: 2025 }, 1998);
+    expect(value).toBe(0);
+  });
+  it('should return max scale with value superior to domain range', () => {
+    const value = linearScaleInterpolation({ min: 0, max: 100 }, { min: 2000, max: 2025 }, 2026);
+    expect(value).toBe(100);
   });
 });
