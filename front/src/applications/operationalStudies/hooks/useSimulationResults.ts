@@ -10,6 +10,7 @@ import {
   extractOccurrenceDetailsFromPacedTrain,
   findExceptionWithOccurrenceId,
   computeIndexedOccurrenceStartTime,
+  getOccurrenceTrainName,
 } from 'modules/timetableItem/helpers/pacedTrain';
 import useSelectedTimetableItem from 'modules/timetableItem/hooks/useSelectedTimetableItem';
 import type { Train } from 'reducers/osrdconf/types';
@@ -67,6 +68,11 @@ const useSimulationResults = (): {
       ...(exception ? extractOccurrenceDetailsFromPacedTrain(timetableItem, exception) : {}),
       // overwrite start_time from extractOccurrenceDetailsFromPacedTrain
       start_time: startTime,
+      // overwrite train_name to reflect the occurrence name
+      train_name: getOccurrenceTrainName(
+        { train_name: timetableItem.train_name, paced: timetableItem.paced },
+        selectedTrainId
+      ),
       id: selectedTrainId,
     };
   }, [selectedTrainId, timetableItem]);
