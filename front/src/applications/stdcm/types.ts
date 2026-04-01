@@ -3,11 +3,11 @@ import type {
   GeoJsonPoint,
   Conflict,
   LightRollingStock,
-  PostTimetableByIdStdcmApiResponseWithTraceId,
   LightRollingStockWithLiveries,
   TowedRollingStock,
   PathProperties,
   LoadingGaugeType,
+  StdcmResponseWithTraceId,
 } from 'common/api/osrdEditoastApi';
 import type {
   PathOperationalPoint,
@@ -21,10 +21,7 @@ import type { ValueOf } from 'utils/types';
 
 export type StdcmRequestStatus = ValueOf<typeof STDCM_REQUEST_STATUS>;
 
-export type StdcmSuccessResponse = Extract<
-  PostTimetableByIdStdcmApiResponseWithTraceId,
-  { status: 'success' }
-> & {
+export type StdcmSuccessResponse = Extract<StdcmResponseWithTraceId, { status: 'success' }> & {
   rollingStock: LightRollingStock;
   creationDate: Date;
   speedLimitByTag?: string;
@@ -32,10 +29,7 @@ export type StdcmSuccessResponse = Extract<
   alternativePath?: 'upstream' | 'downstream';
 };
 
-export type StdcmPathNotFound = Extract<
-  PostTimetableByIdStdcmApiResponseWithTraceId,
-  { status: 'path_not_found' }
->;
+export type StdcmPathNotFound = Extract<StdcmResponseWithTraceId, { status: 'path_not_found' }>;
 
 export type StdcmResponse = StdcmPathNotFound | StdcmSuccessResponse;
 
@@ -262,3 +256,5 @@ export type StdcmSearchDatetimeWindow = {
   begin: Date;
   end: Date;
 };
+
+export type StdcmProgressPoints = Array<{ geoPoint: GeoJsonPoint; timestamp: number }>;
