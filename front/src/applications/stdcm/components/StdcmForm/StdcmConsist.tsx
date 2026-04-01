@@ -190,10 +190,7 @@ const StdcmConsist = ({
         name={t('consist.consist')}
         title={
           isConsistChange ? (
-            <div
-              data-testid="stdcm-via-delete-consist-change"
-              className="stdcm-via-delete-consist-change"
-            >
+            <div data-testid="stdcm-via-delete-consist-change" className="stdcm-via-icons">
               <button
                 data-testid="delete-consist-change-button"
                 type="button"
