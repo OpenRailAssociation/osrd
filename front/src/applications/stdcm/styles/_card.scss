@@ -214,28 +214,3 @@
     padding: 8px;
   }
 }
-
-.stdcm-card:hover {
-  .stdcm-via-icons {
-    .icon-bundle {
-      display: none;
-    }
-    button {
-      display: contents;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      color: var(--primary60);
-    }
-  }
-}
-
-.stdcm-via-delete-consist-change {
-  button {
-    display: contents;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    color: var(--primary60);
-  }
-}
