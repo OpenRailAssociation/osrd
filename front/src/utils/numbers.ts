@@ -39,3 +39,25 @@ export const isInvalidFloatNumber = (value: number, numberOfDecimal: number): bo
   const stringifyValue = value.toString();
   return stringifyValue.split('.')[1].length > numberOfDecimal;
 };
+
+/**
+ * Linear interpolation for a value from the domain range into the scale range.
+ *
+ * @param scale The min & max value of the range you want (the target range)
+ * @param domain The min & max of the domain range of the data (the data range)
+ * @param value The value in domain range to interpolate into scale range
+ */
+export function linearScaleInterpolation(
+  scale: { min: number; max: number },
+  domain: { min: number; max: number },
+  value: number
+): number {
+  // Side effects
+  if (value >= domain.max) return scale.max;
+  if (value <= domain.min) return scale.min;
+
+  // Linear interpolation
+  const ratio = (scale.max - scale.min) / (domain.max - domain.min);
+  const result = scale.min + ratio * (value - domain.min);
+  return isNaN(result) ? scale.min : result;
+}

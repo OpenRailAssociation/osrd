@@ -1,4 +1,12 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type RefObject,
+} from 'react';
 
 import { Button } from '@osrd-project/ui-core';
 import cx from 'classnames';
@@ -47,7 +55,13 @@ import StdcmDestination from './StdcmDestination';
 import StdcmLinkedTrainSearch from './StdcmLinkedTrainSearch';
 import StdcmOrigin from './StdcmOrigin';
 import useStaticPathfinding from '../../hooks/useStaticPathfinding';
-import type { ConsistData, StdcmConfigErrors, ConsistErrors } from '../../types';
+import type {
+  ConsistData,
+  StdcmConfigErrors,
+  ConsistErrors,
+  StdcmProgressPoints,
+} from '../../types';
+import StdcmMapProgressLayer from '../StdcmMapProgressLayer';
 import StdcmSimulationParams from '../StdcmSimulationParams';
 import StdcmVias from './StdcmVias';
 import { ArrivalTimeTypes, StdcmConfigErrorTypes } from '../../types';
@@ -76,6 +90,7 @@ type StdcmConfigProps = {
   launchStdcmRequest: () => Promise<void>;
   cancelStdcmRequest: () => void;
   setSkipPathfindingStatusMessage: (value: boolean) => void;
+  progressPoints: RefObject<StdcmProgressPoints>;
 };
 
 const StdcmConfig = ({
@@ -88,6 +103,7 @@ const StdcmConfig = ({
   setSkipPathfindingStatusMessage,
   cancelStdcmRequest,
   launchStdcmRequest,
+  progressPoints,
 }: StdcmConfigProps) => {
   const { t } = useTranslation('stdcm');
   const dateTimeLocale = useDateTimeLocale();
@@ -432,7 +448,11 @@ const StdcmConfig = ({
             pathStepMarkers={markersInfo}
             updateMapSettings={updateMapSettings}
             updateViewport={updateViewport}
-          />
+          >
+            {(isPending || isPendingAdditional) && (
+              <StdcmMapProgressLayer progressPoints={progressPoints} />
+            )}
+          </DefaultBaseMap>
         </div>
       </div>
     </div>
