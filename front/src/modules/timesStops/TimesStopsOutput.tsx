@@ -95,10 +95,13 @@ const TimesStopsOutput = ({
   const [pinnedState, setPinnedState] = useState<{
     edits: PendingEdit[];
     forSchedule: Train['schedule'];
+    forTrainId: Train['id'];
   } | null>(null);
 
   const optimisticEdits =
-    pinnedState !== null && pinnedState.forSchedule === selectedTrain.schedule
+    pinnedState !== null &&
+    pinnedState.forSchedule === selectedTrain.schedule &&
+    pinnedState.forTrainId === selectedTrain.id
       ? pinnedState.edits
       : null;
 
@@ -149,7 +152,11 @@ const TimesStopsOutput = ({
 
   const commitEdit = (edits: PendingEdit[], updateFn: () => Promise<UpdateCellStatus>) => {
     if (isAwaitingSimulation) return;
-    setPinnedState({ edits, forSchedule: selectedTrain.schedule });
+    setPinnedState({
+      edits,
+      forSchedule: selectedTrain.schedule,
+      forTrainId: selectedTrain.id,
+    });
     preEditPathItemTimesRef.current = simulatedPathItemTimes;
     isTrainSimulationPendingRef.current = true;
     updateFn()
