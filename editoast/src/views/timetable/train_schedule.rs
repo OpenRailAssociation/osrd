@@ -1837,6 +1837,7 @@ mod tests {
     use crate::models::fixtures::create_created_exception_with_change_groups;
     use crate::models::fixtures::create_fast_rolling_stock;
     use crate::models::fixtures::create_paced_train_with_exceptions;
+    use crate::models::fixtures::create_rolling_stock_with_energy_sources;
     use crate::models::fixtures::create_simple_paced_train;
     use crate::models::fixtures::create_small_infra;
     use crate::models::fixtures::create_train_schedule_set;
@@ -2403,6 +2404,35 @@ mod tests {
                 },
                 ..Default::default()
             });
+        // Add one exception which will change the simulation from base with another rolling stock
+        // and therefore add another entry in the response (field `exceptions`)
+        create_rolling_stock_with_energy_sources(
+            &mut app.db_pool().get_ok(),
+            "exception_rolling_stock",
+        )
+        .await;
+        paced_train_response
+            .train_schedule
+            .paced
+            .as_mut()
+            .unwrap()
+            .exceptions
+            .push(PacedTrainException {
+                key: "change_rolling_stock".to_string(),
+                exception_type: ExceptionType::Modified {
+                    occurrence_index: 2,
+                },
+                change_groups: TrainScheduleExceptionChangeGroups {
+                    rolling_stock: Some(RollingStockChangeGroup {
+                        rolling_stock_name: "exception_rolling_stock".to_string(),
+                        // This property is what make the simulation request different
+                        // hence producing a different simulation
+                        comfort: Comfort::AirConditioning,
+                    }),
+                    ..Default::default()
+                },
+                ..Default::default()
+            });
         let request = app
             .put(format!("/train_schedules/{paced_train_id}").as_str())
             .json(&json!(paced_train_response.train_schedule));
@@ -2416,42 +2446,59 @@ mod tests {
                 "ids": vec![paced_train_id],
             }));
 
-        let response: HashMap<i64, TrainScheduleSummaryResponse> = app
+        let mut response: HashMap<i64, TrainScheduleSummaryResponse> = app
             .fetch(request)
             .await
             .assert_status(StatusCode::OK)
             .json_into();
         assert_eq!(response.len(), 1);
+
+        let TrainScheduleSummaryResponse {
+            train_schedule,
+            exceptions,
+        } = response.remove(&paced_train_id).unwrap();
         assert_eq!(
-            *response.get(&paced_train_id).unwrap(),
-            TrainScheduleSummaryResponse {
-                train_schedule: SummaryResponse::Success {
-                    length: 15_050_000,
-                    time: 3,
-                    energy_consumption: 0.0,
-                    path_item_times_final: vec![0, 1, 2, 3],
-                    path_item_times_provisional: vec![0, 1, 2, 3],
-                    path_item_times_base: vec![0, 1, 2, 3],
-                    path_item_respect_times: vec![true, false, true, false],
-                    path_item_respect_margins: vec![true, true, true, true],
-                },
-                exceptions: [(
-                    "change_initial_speed".to_string(),
-                    // Simulation of the exception is the same than base
-                    // because all simulation results from core are identical stubs
-                    SummaryResponse::Success {
-                        length: 15_050_000,
-                        time: 3,
-                        energy_consumption: 0.0,
-                        path_item_times_final: vec![0, 1, 2, 3],
-                        path_item_times_provisional: vec![0, 1, 2, 3],
-                        path_item_times_base: vec![0, 1, 2, 3],
-                        path_item_respect_times: vec![true, false, true, false],
-                        path_item_respect_margins: vec![true, true, true, true],
-                    }
-                )]
-                .into_iter()
-                .collect()
+            train_schedule,
+            SummaryResponse::Success {
+                length: 15_050_000,
+                time: 3,
+                energy_consumption: 0.0,
+                path_item_times_final: vec![0, 1, 2, 3],
+                path_item_times_provisional: vec![0, 1, 2, 3],
+                path_item_times_base: vec![0, 1, 2, 3],
+                path_item_respect_times: vec![true, false, true, false],
+                path_item_respect_margins: vec![true, true, true, true],
+            }
+        );
+
+        assert_eq!(
+            exceptions.get("change_rolling_stock").unwrap(),
+            // Simulation of the exception is the same than base
+            // because all simulation results from core are identical stubs
+            &SummaryResponse::Success {
+                length: 15_050_000,
+                time: 3,
+                energy_consumption: 0.0,
+                path_item_times_final: vec![0, 1, 2, 3],
+                path_item_times_provisional: vec![0, 1, 2, 3],
+                path_item_times_base: vec![0, 1, 2, 3],
+                path_item_respect_times: vec![true, false, true, false],
+                path_item_respect_margins: vec![true, true, true, true],
+            }
+        );
+        assert_eq!(
+            exceptions.get("change_initial_speed").unwrap(),
+            // Simulation of the exception is the same than base
+            // because all simulation results from core are identical stubs
+            &SummaryResponse::Success {
+                length: 15_050_000,
+                time: 3,
+                energy_consumption: 0.0,
+                path_item_times_final: vec![0, 1, 2, 3],
+                path_item_times_provisional: vec![0, 1, 2, 3],
+                path_item_times_base: vec![0, 1, 2, 3],
+                path_item_respect_times: vec![true, false, true, false],
+                path_item_respect_margins: vec![true, true, true, true],
             }
         );
     }

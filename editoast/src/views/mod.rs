@@ -1335,24 +1335,26 @@ mod tests {
     #[cfg(test)]
     pub fn mocked_core_pathfinding_sim_and_proj() -> MockingClient {
         let mut core = MockingClient::new();
-        core.stub("/pathfinding/blocks")
-            .response(StatusCode::OK)
-            .json(json!({
-                "path": {
-                    "blocks":[],
-                    "routes": [],
-                    "track_section_ranges": [{"track_section": "TA1", "begin":0, "end": 3, "direction": "START_TO_STOP"}],
-                },
-                "path_item_positions": [0,1,2,3],
-                "length": 3,
-                "status": "success"
-            }))
-            .finish();
-        core.stub("/standalone_simulation")
-            .response(StatusCode::OK)
-            .json(simulation_empty_response())
-            .json(simulation_empty_response())
-            .finish();
+        let mut pathfinding_stub = core.stub("/pathfinding/blocks").response(StatusCode::OK);
+        for _ in 0..10 {
+            pathfinding_stub = pathfinding_stub.json(
+                 json!({
+                    "path": {
+                        "blocks":[],
+                        "routes": [],
+                        "track_section_ranges": [{"track_section": "TA1", "begin":0, "end": 3, "direction": "START_TO_STOP"}],
+                    },
+                    "path_item_positions": [0,1,2,3],
+                    "length": 3,
+                    "status": "success"
+            }));
+        }
+        pathfinding_stub.finish();
+        let mut simulation_stub = core.stub("/standalone_simulation").response(StatusCode::OK);
+        for _ in 0..10 {
+            simulation_stub = simulation_stub.json(simulation_empty_response());
+        }
+        simulation_stub.finish();
         core.stub("/signal_projection")
             .response(StatusCode::OK)
             .json(json!({
