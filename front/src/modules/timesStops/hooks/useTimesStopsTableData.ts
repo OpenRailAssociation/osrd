@@ -216,7 +216,7 @@ const useTimesStopsTableData = (
     fetchTrackSections();
   }, [trackIds]);
 
-  const rows = useMemo(() => {
+  const allRows = useMemo(() => {
     const startDate = new Date(selectedTrain.start_time);
     const scheduleByAt = keyBy(selectedTrain.schedule, 'at');
 
@@ -306,7 +306,7 @@ const useTimesStopsTableData = (
             track: trackName,
             opOnPathIndex: opIndex,
           });
-        } else if (!displayOnlyPathSteps) {
+        } else {
           let computedArrival: Duration | undefined;
           if (stableTrain) {
             const matchingReportTrainIndex = stableTrain.positions.findIndex(
@@ -370,11 +370,15 @@ const useTimesStopsTableData = (
     stablePathItemRespect,
     trackSections,
     pathStepOps,
-    displayOnlyPathSteps,
     t,
   ]);
 
-  return { rows, stableIsValid };
+  const filteredRows = useMemo(
+    () => (displayOnlyPathSteps ? allRows.filter((row) => row.isPathStep) : allRows),
+    [allRows, displayOnlyPathSteps]
+  );
+
+  return { rows: filteredRows, stableIsValid };
 };
 
 export default useTimesStopsTableData;
