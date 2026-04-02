@@ -14,6 +14,7 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import type { ReceptionSignal } from 'common/api/osrdEditoastApi';
+import { SkeletonLoader } from 'common/Loaders';
 import { formatLocalTime, useDateTimeLocale } from 'utils/date';
 import { calculateTimeDifferenceInDays } from 'utils/timeManipulation';
 
@@ -271,7 +272,7 @@ const TimesStopsTable = ({
         header: () => t('calculatedArrivalTime'),
         cell: (info) => {
           if (info.table.options.meta!.isComputedDataPending) {
-            return <span className="cell-loading-placeholder" />;
+            return <SkeletonLoader className="cell-loading-placeholder" />;
           }
           const value = info.getValue();
           return <span>{value ? formatLocalTime(value) : ''}</span>;
@@ -328,7 +329,7 @@ const TimesStopsTable = ({
         header: () => t('calculatedDepartureTime'),
         cell: (info) => {
           if (info.table.options.meta!.isComputedDataPending) {
-            return <span className="cell-loading-placeholder" />;
+            return <SkeletonLoader className="cell-loading-placeholder" />;
           }
           const value = info.getValue();
           const isEmpty = !value;

@@ -21,6 +21,7 @@ import { useSelector } from 'react-redux';
 
 import AnchoredMenu from 'common/AnchoredMenu';
 import type { SubCategory } from 'common/api/osrdEditoastApi';
+import { SkeletonLoader } from 'common/Loaders';
 import OSRDMenu, { type OSRDMenuItem } from 'common/OSRDMenu';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import type { InvalidReason, Occurrence } from 'modules/timetableItem/types';
@@ -37,7 +38,6 @@ import {
 } from 'utils/trainId';
 
 import OccurrenceIndicator from './OccurrenceIndicator';
-import ArrivalTimeLoader from '../ArrivalTimeLoader';
 import { formatTrainDuration } from '../utils';
 import type useOccurrenceActions from './hooks/useOccurrenceActions';
 
@@ -269,7 +269,9 @@ const OccurrenceItem = ({
           </div>
           <div className="occurrence-item-time arrival-time" data-testid="arrival-time">
             {arrivalTime && timeToLocaleStringRounded(arrivalTime, dateTimeLocale)}
-            {!summary && <ArrivalTimeLoader />}
+            {!summary && (
+              <SkeletonLoader className="arrival-time-loader" data-testid="arrival-time-loader" />
+            )}
           </div>
         </div>
 
