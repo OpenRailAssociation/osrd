@@ -5,7 +5,7 @@ import type { Train } from 'reducers/osrdconf/types';
 import { addElementAtIndex } from 'utils/array';
 import { Duration } from 'utils/duration';
 
-import type { OptimisticEdit, TimesStopsRowNew } from '../types';
+import type { OptimisticEdit, PendingEdit, TimesStopsRowNew } from '../types';
 import { receptionSignalToSignalBooleans } from './utils';
 
 /** Compute the insertion index for a new PathStep using row opOnPathIndex values. */
@@ -189,6 +189,24 @@ export const computeOptimisticSchedule = (
     ...checkboxes,
   };
 };
+
+/**
+ * Converts a propagation result into PendingEdits for all affected rows.
+ * Each affected row gets a new requestedArrival computed from updatedSchedule + updatedStartTime.
+ */
+export const propagationToEdits = (
+  result: { updatedSchedule: ScheduleItem[]; updatedStartTime: Date },
+  rows: TimesStopsRowNew[]
+): PendingEdit[] =>
+  rows.flatMap((row) => {
+    const item = result.updatedSchedule.find((s) => s.at === row.id);
+    if (!item?.arrival) return [];
+    const newArrival = new Date(
+      result.updatedStartTime.getTime() + Duration.parse(item.arrival).ms
+    );
+    if (newArrival.getTime() === row.requestedArrival?.getTime()) return [];
+    return [{ rowId: row.id, field: 'requestedArrival' as const, value: newArrival }];
+  });
 
 /** Build a TrainSchedule object from a Train with updated path and schedule. */
 export const buildUpdatedOccurrence = (
