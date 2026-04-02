@@ -7,6 +7,7 @@ import fr.sncf.osrd.envelope.part.EnvelopePart.Companion.generateTimes
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_utils.ExcludeFromGeneratedCodeCoverage
 import fr.sncf.osrd.utils.SelfTypeHolder
+import fr.sncf.osrd.utils.TIME_EPSILON
 import fr.sncf.osrd.utils.arePositionsEqual
 import java.lang.Double.isNaN
 import java.util.*
@@ -507,7 +508,13 @@ class EnvelopePart(
                 newBeginSpeed = interpolateSpeed(newBeginStepIndex, newBeginPos)
             val interpolatedTimeDelta = interpolateTimeDelta(newBeginStepIndex, newBeginPos)
             sliced.positions[0] = newBeginPos
-            sliced.timeDeltas[0] -= interpolatedTimeDelta // notice the -= here
+            var firstTimeDelta = sliced.timeDeltas[0] - interpolatedTimeDelta
+            if (firstTimeDelta < 0) {
+                // This is unlikely but can happen on slices within epsilon of steps
+                require(-firstTimeDelta < TIME_EPSILON)
+                firstTimeDelta = 0.0
+            }
+            sliced.timeDeltas[0] = firstTimeDelta
         }
         if (!isNaN(newBeginSpeed)) sliced.speeds[0] = newBeginSpeed
         if (!isNaN(newEndSpeed)) sliced.speeds[sliced.pointCount() - 1] = newEndSpeed
