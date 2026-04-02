@@ -48,6 +48,7 @@ type PathStepProps = {
   isInvalidAndIsEditing: boolean;
   connectorLong: boolean;
   onDelete: () => void;
+  onOpClear: () => void;
   isTrailingPlaceHolder: boolean;
   isOnlyStep: boolean;
   isMapSelectionMode?: boolean;
@@ -75,6 +76,7 @@ const PathStepItem = ({
   isInvalidAndIsEditing,
   connectorLong,
   onDelete,
+  onOpClear,
   isTrailingPlaceHolder,
   isOnlyStep,
   isMapSelectionMode,
@@ -102,33 +104,29 @@ const PathStepItem = ({
   const getInvalidMessage = () => {
     let message = t('invalidOP');
 
-    if (!pathStepMetadata?.isInvalid || !pathStep.location || inputValue !== undefined)
-      return (message += `${inputValue}
-      `);
-
     const { location } = pathStep;
 
-    if ('track' in location) {
+    if (location && 'track' in location) {
       return message + t('requestedPoint');
     }
 
-    const trackInfo = location.local_track_name
-      ? `, ${t('track')} ${location.local_track_name}`
-      : '';
+    const trackInfo =
+      location && location.local_track_name ? `, ${t('track')} ${location.local_track_name}` : '';
 
-    if (location.operational_point.type === 'id') {
-      return message + t('opId') + trackInfo;
+    if (location?.operational_point.type === 'id') {
+      return (message += t('opId') + trackInfo);
     }
 
-    const secondaryCodeInfo = location.operational_point.secondary_code
-      ? `/${location.operational_point.secondary_code}`
-      : '';
+    const secondaryCodeInfo =
+      pathStepMetadata && isOpRefMetadata(pathStepMetadata) && pathStepMetadata.secondaryCode
+        ? `/${pathStepMetadata.secondaryCode}`
+        : '';
 
-    if (location.operational_point.type === 'trigram') {
+    if (location?.operational_point.type === 'trigram') {
       message += t('trigram') + ' ' + location.operational_point.trigram;
     }
 
-    if (location.operational_point.type === 'uic') {
+    if (location?.operational_point.type === 'uic') {
       message += t('uic') + ' ' + location.operational_point.uic;
     }
 
@@ -269,6 +267,13 @@ const PathStepItem = ({
 
     const firstSuggestion = visibleSuggestions[0];
 
+    if (!firstSuggestion) {
+      onOpInputChange('');
+      resetOpSuggestions();
+      blurActiveElement();
+      return;
+    }
+
     if (firstSuggestion && typeof firstSuggestion !== 'string') {
       const defaultSecondaryCode =
         firstSuggestion.secondaryCodeList.find((sc) => sc.isBestSuggestion)?.code ??
@@ -379,7 +384,7 @@ const PathStepItem = ({
                 }}
                 onSelectSuggestion={(op) => {
                   if (!op) {
-                    onOpInputChange('');
+                    onOpClear();
                     resetOpSuggestions();
                     return;
                   }
@@ -440,12 +445,12 @@ const PathStepItem = ({
                 }
                 small
                 narrow
-                onFocus={onOpFocus}
-                onBlur={onOpBlur}
+                onFocusCapture={onOpFocus}
+                onBlurCapture={onOpBlur}
                 onChange={(e) => onOpInputChange(e.target.value)}
               />
             </div>
-            {pathStep.location && 'track' in pathStep.location ? (
+            {isTrackOffset ? (
               <div className="requested-point-block" />
             ) : (
               <div
