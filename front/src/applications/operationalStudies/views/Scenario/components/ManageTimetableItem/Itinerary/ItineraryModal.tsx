@@ -95,6 +95,9 @@ const ItineraryModal = ({
   const modalRef = useRef<HTMLDialogElement>(null);
   const editingStepIdRef = useRef<string>('');
   const pendingStepIdRef = useRef<string>('');
+  const confirmedStepIdRef = useRef<string>('');
+  const focusValueRef = useRef<Record<string, string | undefined>>({});
+
   const [pathSteps, setPathSteps] = useState<PathStepV2[]>([]);
   const [categoryWarning, setCategoryWarning] = useState<string | undefined>(undefined);
 
@@ -147,6 +150,7 @@ const ItineraryModal = ({
     const chosenCh = chooseChForSuggestion(stepId, suggestion, forcedCh);
     if (!chosenCh) return;
     pendingStepIdRef.current = stepId;
+    confirmedStepIdRef.current = stepId;
     const newLocation: PathItemLocation = {
       type: 'operational_point_part_reference',
       operational_point: {
@@ -583,11 +587,30 @@ const ItineraryModal = ({
                     onDelete={() => {
                       handleDeletePathStep(pathStep.id);
                     }}
-                    onOpFocus={() => markEditing(pathStep.id)}
+                    onOpClear={() => {
+                      clearStep(pathStep.id);
+                      handleDeletePathStep(pathStep.id);
+                    }}
+                    onOpFocus={() => {
+                      markEditing(pathStep.id);
+                      if (!pathStep.location) {
+                        clearStep(pathStep.id);
+                      }
+                      focusValueRef.current[pathStep.id] =
+                        getInputForStep(pathStep.id) ??
+                        (pathStepMetadata &&
+                        !pathStepMetadata.isInvalid &&
+                        pathStepMetadata.type === 'opRef'
+                          ? `${pathStepMetadata.name} ${pathStepMetadata.secondaryCode}`
+                          : '');
+                    }}
                     onOpInputChange={(value) => {
                       markEditing(pathStep.id);
-                      if (value === '') {
-                        clearStep(pathStep.id);
+                      if (
+                        value === '' &&
+                        pathStep.location &&
+                        getInputForStep(pathStep.id) === undefined
+                      ) {
                         return;
                       }
                       setInputForStep(pathStep.id, value);
@@ -607,7 +630,37 @@ const ItineraryModal = ({
                         })
                       );
                     }}
-                    onOpBlur={() => unmarkEditing(pathStep.id)}
+                    onOpBlur={() => {
+                      // If the user focuses out on an input with a valid op, we display the last valid op of this input (or empty)
+                      const valueOnFocus = focusValueRef.current[pathStep.id];
+                      const valueOnBlur = getInputForStep(pathStep.id);
+
+                      if (
+                        pendingStepIdRef.current === pathStep.id ||
+                        confirmedStepIdRef.current === pathStep.id
+                      ) {
+                        pendingStepIdRef.current = '';
+                        confirmedStepIdRef.current = '';
+                        unmarkEditing(pathStep.id);
+                        return;
+                      }
+
+                      const normalizedOnFocus = valueOnFocus ?? '';
+                      const normalizedOnBlur = valueOnBlur ?? '';
+
+                      if (normalizedOnBlur === '' && normalizedOnFocus === '') {
+                        unmarkEditing(pathStep.id);
+                        return;
+                      }
+
+                      if (normalizedOnBlur === '') {
+                        clearStep(pathStep.id);
+                      } else if (normalizedOnBlur !== normalizedOnFocus) {
+                        setInputForStep(pathStep.id, normalizedOnFocus);
+                      }
+
+                      unmarkEditing(pathStep.id);
+                    }}
                     inputValue={getInputForStep(pathStep.id)}
                     opSuggestions={activeStepId === pathStep.id ? opSuggestions : []}
                     onSelectOpSuggestion={(suggestion, chCode) => {
