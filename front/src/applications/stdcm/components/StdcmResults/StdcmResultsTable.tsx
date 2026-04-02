@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
-import { CheckCircle } from '@osrd-project/ui-icons';
+import { ArrowRight, CheckCircle, Container } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
@@ -11,8 +11,10 @@ import type {
   StdcmSimulationInputs,
   StdcmSuccessResponse,
 } from 'applications/stdcm/types';
+import { getConsistChangesAroundStep } from 'applications/stdcm/utils/simulationOutputUtils';
 import { getStopDurationTime } from 'modules/SimulationReportSheet/utils/formatSimulationReportSheet';
 import { retainSimulation } from 'reducers/osrdconf/stdcmConf';
+import type { StdcmViaPathStep } from 'reducers/osrdconf/types';
 
 type SimulationTableProps = {
   stdcmData: StdcmSuccessResponse;
@@ -31,6 +33,10 @@ const StdcmResultsTable = ({
 }: SimulationTableProps) => {
   const { t } = useTranslation('stdcm');
   const dispatch = useDispatch();
+  const intermediatePathSteps = stdcmData.simulationPathSteps.slice(1, -1) as StdcmViaPathStep[];
+  const lastDefinedConsistChange = intermediatePathSteps
+    .toReversed()
+    .find((pathStep) => pathStep.consistChange)?.consistChange;
 
   const [showAllOP, setShowAllOP] = useState(false);
   const toggleShowAllOP = () => setShowAllOP((prevState) => !prevState);
@@ -64,50 +70,84 @@ const StdcmResultsTable = ({
             );
             const shouldRenderRow =
               isFirstStep || isRequestedPathStep || isLastStep || step.duration !== null;
-            const isPathStep =
-              isFirstStep || isLastStep || (isRequestedPathStep && step.duration === null);
+            const isPathStep = isFirstStep || isLastStep || isRequestedPathStep;
             const isNotExtremity = !isFirstStep && !isLastStep;
 
-            const mass = consist?.totalMass ?? stdcmData.rollingStock.mass / 1000;
+            const consistChanges = getConsistChangesAroundStep(
+              step.opId!,
+              intermediatePathSteps,
+              consist! // TODO: modify StdcmSimulationInputs to have consist as non-optional and remove this non-null assertion
+            );
+
+            const initialConsistMass = consist?.totalMass ?? stdcmData.rollingStock.mass / 1000;
+
+            const extremityStepMass = isLastStep
+              ? (lastDefinedConsistChange?.totalMass ?? initialConsistMass)
+              : initialConsistMass;
+
+            const displayedMass = isNotExtremity
+              ? consistChanges?.updatedConsist.totalMass
+              : extremityStepMass;
 
             if (showAllOP || shouldRenderRow) {
               return (
-                <tr key={index} className={cx({ isPathStep })}>
-                  <td className="index">{index + 1}</td>
-                  <td className="name">
-                    {isNotExtremity &&
-                    !isRequestedPathStep &&
-                    step.name === prevStep.name &&
-                    !isRequestedPathStep &&
-                    step.duration === null
-                      ? '='
-                      : step.name || t('reportSheet.unknown')}
-                  </td>
-                  <td className="ch">{step.ch}</td>
-                  <td className="stop">{isLastStep || step.duration !== null ? step.time : ''}</td>
-                  <td className="stop">
-                    <div
-                      className={
-                        step.duration !== null && !isLastStep ? 'stop-with-duration ml-n2' : 'stop'
-                      }
-                    >
-                      {isNotExtremity || !isRequestedPathStep
-                        ? step.duration !== null
-                          ? getStopDurationTime(step.duration)
-                          : step.time
-                        : ''}
-                    </div>
-                  </td>
-                  <td className="stop">
-                    {isFirstStep || step.duration !== null ? step.stopEndTime : ''}
-                  </td>
-                  <td className="weight" style={{ color: !isFirstStep ? '#797671' : '#312E2B' }}>
-                    {isNotExtremity ? '=' : `${Math.floor(mass)}t`}
-                  </td>
-                  <td className="ref" style={{ color: !isFirstStep ? '#797671' : '#312E2B' }}>
-                    {isNotExtremity ? '=' : stdcmData.rollingStock.metadata?.reference}
-                  </td>
-                </tr>
+                <Fragment key={`op-list-row-${index}`}>
+                  <tr className={cx({ isPathStep })}>
+                    <td className={cx('index', { 'muted-text': !isPathStep })}>{index + 1}</td>
+                    <td className="name">
+                      {isNotExtremity &&
+                      !isRequestedPathStep &&
+                      step.name === prevStep.name &&
+                      step.duration === null
+                        ? '='
+                        : step.name || t('reportSheet.unknown')}
+                    </td>
+                    <td className={cx('ch', { 'muted-text': !isPathStep })}>{step.ch}</td>
+                    <td className="stop">
+                      {isLastStep || step.duration !== null ? step.time : ''}
+                    </td>
+                    <td className="stop">
+                      <div
+                        className={
+                          step.duration !== null && !isLastStep
+                            ? 'stop-with-duration ml-n2'
+                            : 'stop'
+                        }
+                      >
+                        {isNotExtremity || !isRequestedPathStep
+                          ? step.duration !== null
+                            ? getStopDurationTime(step.duration)
+                            : step.time
+                          : ''}
+                      </div>
+                    </td>
+                    <td className="stop">
+                      {isFirstStep || step.duration !== null ? step.stopEndTime : ''}
+                    </td>
+                    <td className={cx('weight', { 'muted-text': !isFirstStep })}>
+                      {displayedMass ? `${Math.floor(displayedMass)}t` : '='}
+                    </td>
+                    <td className={cx('ref', { 'muted-text': !isFirstStep })}>
+                      {isNotExtremity ? '=' : stdcmData.rollingStock.metadata?.reference}
+                    </td>
+                  </tr>
+                  {consistChanges && (
+                    <tr>
+                      <td className="index">
+                        <Container />
+                      </td>
+                      <td colSpan={8}>
+                        <p className="consist-change-label">{t('consist.consistChange')}</p>
+                        <p>
+                          {t('consist.tonnage')} ({consistChanges.currentConsist.totalMass}t{' '}
+                          <ArrowRight /> {consistChanges.updatedConsist.totalMass}t),{' '}
+                          {t('consist.length')} ({consistChanges.currentConsist.totalLength}m{' '}
+                          <ArrowRight /> {consistChanges.updatedConsist.totalLength}m)
+                        </p>
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
               );
             }
             return null;

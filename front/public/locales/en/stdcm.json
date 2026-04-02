@@ -7,6 +7,7 @@
   "consist": {
     "compositionCode": "Composition code",
     "consist": "Consist",
+    "consistChange": "Consist change",
     "errors": {
       "maxSpeed": {
         "negative": "Must be positive.",

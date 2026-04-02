@@ -21,6 +21,7 @@ const Consist = ({
   speedLimitByTag,
   loadingGauge,
   towedRollingStockName,
+  consistChanges = [],
 }: ConsistProps) => {
   const { t } = useTranslation('stdcm');
 

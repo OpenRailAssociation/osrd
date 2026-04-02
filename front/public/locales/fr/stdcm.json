@@ -7,6 +7,7 @@
   "consist": {
     "compositionCode": "Code de composition",
     "consist": "Convoi",
+    "consistChange": "Changement de convoi",
     "errors": {
       "maxSpeed": {
         "negative": "Doit être positif.",

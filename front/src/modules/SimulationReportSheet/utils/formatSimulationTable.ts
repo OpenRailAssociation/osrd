@@ -2,17 +2,15 @@ import type { Style } from '@react-pdf/types';
 import type { TFunction } from 'i18next';
 
 import type { OperationalPointWithTimeAndSpeed } from 'applications/operationalStudies/types';
-import type { StdcmSuccessResponse, StdcmResultsOperationalPoint } from 'applications/stdcm/types';
 import type { CorePathfindingResultSuccess } from 'common/api/osrdEditoastApi';
 import { timeToLocaleStringRounded } from 'utils/date';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { kgToT } from 'utils/physics';
-import { capitalizeFirstLetter } from 'utils/strings';
 
 import { getStopDurationTime } from './formatSimulationReportSheet';
 import styles from '../styles/SimulationReportStyleSheet';
 
-const getRowStyle = (
+export const getRowStyle = (
   stepDuration: Duration | null | undefined,
   isPathStep: boolean,
   isFirst: boolean,
@@ -57,57 +55,6 @@ const getRowStyle = (
     },
   };
 };
-
-export const formatStdcmDataForSimulationTable = (
-  operationalPointsList: StdcmResultsOperationalPoint[],
-  stdcmPathSteps: StdcmSuccessResponse['simulationPathSteps'],
-  consist: { mass: number; length: number; rollingStockName: string },
-  t: TFunction<'stdcm'>
-) =>
-  operationalPointsList.map((step, index) => {
-    const isFirst = index === 0;
-    const isLast = index === operationalPointsList.length - 1;
-    const previousStep = operationalPointsList[index - 1];
-
-    const isStop = step.duration !== null && !isLast;
-    const isVia = stdcmPathSteps.slice(1, -1).some((s) => s.operationalPoint!.id === step.opId);
-    const isPathStep = isFirst || isVia || isLast;
-
-    const startTime = isFirst || isStop ? step.stopEndTime : '';
-    const endTime = isLast || isStop ? step.time : '';
-    const { stopType, trackName } = step;
-
-    const stopTypeLabel = stopType
-      ? capitalizeFirstLetter(t(`trainPath.stopType.${stopType}`))
-      : t('reportSheet.serviceStop');
-
-    let passageStop = '';
-    if (!isFirst && !isLast) {
-      passageStop = step.duration !== null ? getStopDurationTime(step.duration) : String(step.time);
-    }
-
-    return {
-      name:
-        !isPathStep && step.name === previousStep.name
-          ? '='
-          : step.name || t('reportSheet.unknown'),
-      ch: step.ch,
-      trackName,
-      endTime,
-      passageStop,
-      startTime,
-      ...(isFirst
-        ? {
-            weight: `${Math.floor(consist.mass)} t`,
-            length: `${consist.length} m`,
-            referenceEngine: consist.rollingStockName,
-          }
-        : { weight: '=', length: '=', referenceEngine: '=' }),
-      stopTypeLabel,
-      stopType,
-      ...getRowStyle(step.duration, isPathStep, isFirst, isLast),
-    };
-  });
 
 export const formatOperationalStudiesDataForSimulationTable = (
   operationalPointsList: OperationalPointWithTimeAndSpeed[],
