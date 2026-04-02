@@ -382,6 +382,14 @@ class Envelope(parts: Array<EnvelopePart>) :
         return Arrays.stream(parts)
     }
 
+    /**
+     * Compare all points with the other envelopes, return true if equal. Ignores part layouts and
+     * attributes.
+     */
+    fun equalPoints(other: EnvelopeTimeInterpolate): Boolean {
+        return iteratePoints() == other.iteratePoints()
+    }
+
     companion object {
         /** Create a new Envelope */
         @JvmStatic
