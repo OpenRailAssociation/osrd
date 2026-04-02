@@ -149,21 +149,7 @@
           pointer-events: none;
         }
 
-        .path-step-gap-hitbox {
-          position: absolute;
-          left: 0;
-          top: 12px;
-          width: 56px;
-          height: 100%;
-          pointer-events: auto;
-        }
-
-        .path-step-gap:has(.path-step-gap-hitbox:hover) {
-          height: 48px;
-        }
-
-        .path-step-gap:has(.path-step-gap-hitbox:hover)::after {
-          content: '';
+        .path-step-gap-line {
           position: absolute;
           left: 30px;
           right: calc(
@@ -175,6 +161,19 @@
           opacity: 0.5;
           background-color: var(--grey30);
           pointer-events: none;
+        }
+
+        .path-step-gap-hitbox {
+          position: absolute;
+          left: 0;
+          top: 12px;
+          width: 56px;
+          height: 100%;
+          pointer-events: auto;
+        }
+
+        .path-step-gap:has(.path-step-gap-hitbox:hover) {
+          height: 48px;
         }
 
         .path-step-gap .add-pathitem {
