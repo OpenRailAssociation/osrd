@@ -25,6 +25,33 @@ pub struct TrainScheduleException {
     pub change_groups: TrainScheduleExceptionChangeGroups,
 }
 
+#[cfg(any(test, feature = "testing"))]
+impl TrainScheduleException {
+    pub fn fixture_created(key: &str, occurrence_index: Option<i64>) -> Self {
+        Self {
+            id: 1,
+            disabled: false,
+            key: Some(key.into()),
+            occurrence_index,
+            timetable_id: 1,
+            train_schedule_id: 1,
+            change_groups: TrainScheduleExceptionChangeGroups::fixture_created(),
+        }
+    }
+
+    pub fn fixture_modified(key: &str, occurrence_index: i64) -> Self {
+        Self {
+            id: 1,
+            disabled: false,
+            key: Some(key.into()),
+            occurrence_index: Some(occurrence_index),
+            timetable_id: 1,
+            train_schedule_id: 1,
+            change_groups: TrainScheduleExceptionChangeGroups::fixture_modified(),
+        }
+    }
+}
+
 impl From<TrainScheduleException> for schemas::TrainScheduleException {
     fn from(train_schedule_exception: TrainScheduleException) -> Self {
         Self {
