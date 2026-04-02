@@ -58,7 +58,7 @@ pub struct TrainScheduleExceptionChangeGroups {
 
 #[cfg(any(test, feature = "testing"))]
 impl TrainScheduleExceptionChangeGroups {
-    pub fn fake_created() -> Self {
+    pub fn fixture_created() -> Self {
         use std::str::FromStr;
 
         use chrono::DateTime;
@@ -165,8 +165,8 @@ impl TrainScheduleExceptionChangeGroups {
         }
     }
 
-    pub fn fake_modified() -> Self {
-        let mut created = Self::fake_created();
+    pub fn fixture_modified() -> Self {
+        let mut created = Self::fixture_created();
         created.start_time = None;
         created.train_name = Some(TrainNameChangeGroup {
             value: "modified_exception_train_name".to_string(),
