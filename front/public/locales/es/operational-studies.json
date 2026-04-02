@@ -24,7 +24,9 @@
     "failure": "Operación fallida"
   },
   "main": {
-    "infrastructure": "Infraestructura",
+    "infrastructure": {
+      "label": "Infraestructura:"
+    },
     "macroEditor": {
       "trainCategory": {
         "NO_CATEGORY": {

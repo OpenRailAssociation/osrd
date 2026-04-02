@@ -75,8 +75,8 @@
       "title": "Timetables deletion"
     },
     "description": {
-      "electricalProfileWithId": "Electrical profiles : ID{{id}}",
-      "electricalProfileWithName": "Electrical profiles : {{name}} | ID{{id}}"
+      "electricalProfileWithId": "Electrical profiles: ID{{id}}",
+      "electricalProfileWithName": "Electrical profiles: {{name}} | ID{{id}}"
     },
     "editScenario": "Edit scenario",
     "electricalProfileSet": "Electrical profiles set",
@@ -85,7 +85,9 @@
       "unableToDeleteScenarioMessage": "Unable to delete a scenario"
     },
     "filterPlaceholder": "Filter, tags",
-    "infrastructure": "Infrastructure",
+    "infrastructure": {
+      "label": "Infrastructure:"
+    },
     "lessDetails": "Display less details",
     "linearMode": "Linear",
     "loadingConflicts": "Loading conflicts…",
@@ -306,7 +308,7 @@
         "moveToSelectPackage": "Move to selected package",
         "movingToAnotherPackage": "Moving to another package",
         "name": "Series",
-        "namePlaceholder": "Ex: {{series}}",
+        "namePlaceholder": "E.g., {{series}}",
         "newCatalogEntry": "New set",
         "newLocalTrainScheduleSet": "New local package",
         "newTrainScheduleSet": "Create new package",
@@ -404,7 +406,7 @@
     },
     "infraLoading": "Infrastructure is loading…",
     "inputOPTrigrams": "Enter the trigrams of operational points you want to the path to go through, separated by a space.",
-    "inputOPTrigramsExample": "Ex: LSN CIG CCS",
+    "inputOPTrigramsExample": "E.g., LSN CIG CCS",
     "invalidTimetableItemStep": "At least one of the waypoints could not be recognized",
     "inverseOD": "Reverse itinerary",
     "itineraryModal": {
@@ -415,7 +417,7 @@
       "cancelMapSelection": "Cancel",
       "focusLocationOnMap": "Focus the map on this operational point",
       "frameAll": "Center on all path steps on map",
-      "invalidOP": "Non recognized point : ",
+      "invalidOP": "Non recognized point: ",
       "moveLocationOnMap": "Move location on the map",
       "movePointOnMap": "Move this waypoint using the map",
       "next": "Next",
