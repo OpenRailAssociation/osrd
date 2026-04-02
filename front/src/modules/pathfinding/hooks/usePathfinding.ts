@@ -142,9 +142,13 @@ const usePathfinding = ({
       { error_type: 'invalid_path_items' }
     >['items']
   ) => {
+    // Only valid steps are sent to pathfinding, so item.index counts only those.
+    // validStepIndices[item.index] gives the matching index in the full `steps` array.
+    const validStepIndices = steps.flatMap((step, i) => (step.isInvalid ? [] : [i]));
+
     const updatedPathSteps = steps.map((step, index) => ({
       ...step,
-      isInvalid: invalidPathItems.some((item) => item.index === index),
+      isInvalid: invalidPathItems.some((item) => validStepIndices[item.index] === index),
     }));
 
     if (invalidPathItems.length > 0) {

@@ -21,7 +21,6 @@ import reversePathSteps from 'modules/pathfinding/helpers/reversePathSteps';
 import usePathfindingV2 from 'modules/pathfinding/hooks/usePathfindingV2';
 import type { RootState } from 'reducers';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
-import { updatePathSteps } from 'reducers/osrdconf/operationalStudiesConf';
 import {
   getCategory,
   getName,
@@ -319,7 +318,20 @@ const ItineraryModal = ({
       if (!step.location) return null;
 
       const metadata = metadataById.get(step.id);
-      if (!metadata || metadata.isInvalid) return null;
+
+      // Keep invalid steps in Redux state so they're preserved when re-editing.
+      // They won't be passed to pathfinding (see submitItinerary).
+      if (!metadata || metadata.isInvalid) {
+        return {
+          id: step.id,
+          location: step.location,
+          arrival: step.arrival,
+          stopFor: step.stopFor,
+          theoreticalMargin: step.theoreticalMargin ?? undefined,
+          receptionSignal: step.receptionSignal ?? undefined,
+          isInvalid: true,
+        };
+      }
 
       const coordinates =
         metadata.type === 'trackOffset' ? metadata.coordinates : metadata.parts[0]?.coordinates;
@@ -380,9 +392,10 @@ const ItineraryModal = ({
 
     const compacted = compact(updatedPathSteps);
 
-    if (compacted.length < 2) return;
+    // Need at least 2 valid steps to form a routable itinerary (invalid steps are preserved
+    // in Redux but skipped for pathfinding)
+    if (compacted.filter((step) => !step.isInvalid).length < 2) return;
 
-    dispatch(updatePathSteps(compacted));
     launchPathfinding(compacted, rollingStockId, { isInitialization: true });
     closeModal();
   };
