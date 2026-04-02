@@ -4,7 +4,7 @@ import { addDurationToDate, Duration } from 'utils/duration';
 
 import type { ArrivalUpdate, CellUpdate, DepartureUpdate, PropagationMode } from '../types';
 
-type PropagationResult = {
+export type PropagationResult = {
   updatedPath: PathItem[];
   updatedSchedule: ScheduleItem[];
   updatedStartTime: Date;

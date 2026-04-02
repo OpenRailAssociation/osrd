@@ -15,7 +15,8 @@ import { getUseNewTimesStopsTable } from 'reducers/user/userSelectors';
 import { formatLocalTime } from 'utils/date';
 import { Duration } from 'utils/duration';
 
-import { computeOptimisticSchedule } from './helpers/cellUpdate';
+import { computeOptimisticSchedule, propagationToEdits } from './helpers/cellUpdate';
+import { propagateTime } from './helpers/timePropagation';
 import useOutputTableData from './hooks/useOutputTableData';
 import useTimesStopsTableData from './hooks/useTimesStopsTableData';
 import useUpdateTimesStopsTable from './hooks/useUpdateTimesStopsTable';
@@ -23,6 +24,7 @@ import TimesStops from './TimesStops';
 import TimesStopsTable from './TimesStopsTable';
 import {
   TableType,
+  type CellUpdate,
   type PendingEdit,
   type PropagationMode,
   type TimesStopsRow,
@@ -91,26 +93,23 @@ const TimesStopsOutput = ({
   // as the async action resolves, but at that point selectedTrain.schedule hasn't been updated yet by
   // Redux — causing the same flash. pinnedState stays active until the data itself changes.
   const [pinnedState, setPinnedState] = useState<{
-    edit: PendingEdit;
+    edits: PendingEdit[];
     forSchedule: Train['schedule'];
   } | null>(null);
 
-  const optimisticEdit =
+  const optimisticEdits =
     pinnedState !== null && pinnedState.forSchedule === selectedTrain.schedule
-      ? pinnedState.edit
+      ? pinnedState.edits
       : null;
 
-  const optimisticRows = useMemo(
-    () =>
-      optimisticEdit
-        ? newRows.map((row) =>
-            row.id === optimisticEdit.rowId
-              ? { ...row, ...computeOptimisticSchedule(row, optimisticEdit) }
-              : row
-          )
-        : newRows,
-    [newRows, optimisticEdit]
-  );
+  const optimisticRows = useMemo(() => {
+    if (!optimisticEdits) return newRows;
+    const editMap = new Map(optimisticEdits.map((e) => [e.rowId, e]));
+    return newRows.map((row) => {
+      const edit = editMap.get(row.id);
+      return edit ? { ...row, ...computeOptimisticSchedule(row, edit) } : row;
+    });
+  }, [newRows, optimisticEdits]);
 
   const startTime = useMemo(() => new Date(selectedTrain.start_time), [selectedTrain.start_time]);
 
@@ -148,9 +147,9 @@ const TimesStopsOutput = ({
     isTrainSimulationPendingRef.current = false;
   };
 
-  const commitEdit = (edit: PendingEdit, updateFn: () => Promise<UpdateCellStatus>) => {
+  const commitEdit = (edits: PendingEdit[], updateFn: () => Promise<UpdateCellStatus>) => {
     if (isAwaitingSimulation) return;
-    setPinnedState({ edit, forSchedule: selectedTrain.schedule });
+    setPinnedState({ edits, forSchedule: selectedTrain.schedule });
     preEditPathItemTimesRef.current = simulatedPathItemTimes;
     isTrainSimulationPendingRef.current = true;
     updateFn()
@@ -162,42 +161,76 @@ const TimesStopsOutput = ({
       });
   };
 
+  const buildEditsForUpdate = (
+    singleEdit: PendingEdit,
+    update: CellUpdate & { propagationMode: PropagationMode }
+  ): PendingEdit[] => {
+    const propagationResult = propagateTime(update, selectedTrain);
+    return [
+      singleEdit,
+      ...(propagationResult
+        ? propagationToEdits(propagationResult, newRows).filter((e) => e.rowId !== singleEdit.rowId)
+        : []),
+    ];
+  };
+
   const handleArrivalChange = (
     row: TimesStopsRowNew,
     arrival: Date | null,
     propagationMode: PropagationMode
-  ) =>
-    commitEdit({ rowId: row.id, field: 'requestedArrival', value: arrival }, () =>
-      updateArrival(row, arrival, propagationMode)
+  ) => {
+    const singleEdit: PendingEdit = { rowId: row.id, field: 'requestedArrival', value: arrival };
+    commitEdit(
+      buildEditsForUpdate(singleEdit, {
+        row,
+        field: 'requestedArrival',
+        value: arrival,
+        propagationMode,
+      }),
+      () => updateArrival(row, arrival, propagationMode)
     );
+  };
 
   const handleDepartureChange = (
     row: TimesStopsRowNew,
     departure: Date | null,
     propagationMode: PropagationMode
-  ) =>
-    commitEdit({ rowId: row.id, field: 'requestedDeparture', value: departure }, () =>
-      updateDeparture(row, departure, propagationMode)
+  ) => {
+    const singleEdit: PendingEdit = {
+      rowId: row.id,
+      field: 'requestedDeparture',
+      value: departure,
+    };
+    commitEdit(
+      buildEditsForUpdate(singleEdit, {
+        row,
+        field: 'requestedDeparture',
+        value: departure,
+        propagationMode,
+      }),
+      () => updateDeparture(row, departure, propagationMode)
     );
+  };
 
   const handleStopDurationChange = (row: TimesStopsRowNew, durationSeconds: number | null) =>
     commitEdit(
-      {
-        rowId: row.id,
-        field: 'stopDuration',
-        value: durationSeconds !== null ? new Duration({ seconds: durationSeconds }) : null,
-      },
+      [
+        {
+          rowId: row.id,
+          field: 'stopDuration',
+          value: durationSeconds !== null ? new Duration({ seconds: durationSeconds }) : null,
+        },
+      ],
       () => updateStopDuration(row, durationSeconds)
     );
 
   const handleReceptionSignalChange = (
     row: TimesStopsRowNew,
     signal: ReceptionSignal | undefined
-  ) => {
-    commitEdit({ rowId: row.id, field: 'receptionSignal', value: signal }, () =>
+  ) =>
+    commitEdit([{ rowId: row.id, field: 'receptionSignal', value: signal }], () =>
       updateReceptionSignal(row, signal)
     );
-  };
 
   if (useNewTimesStopsTable) {
     return (
