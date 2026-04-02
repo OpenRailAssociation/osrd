@@ -67,6 +67,7 @@ class OverlayEnvelopeBuilder private constructor(val base: Envelope, val reverse
 
     /** Create the envelope */
     fun build(): Envelope {
+        if (overlayParts.isEmpty()) return base
         // build the final envelope
         val builder = EnvelopeBuilder()
 

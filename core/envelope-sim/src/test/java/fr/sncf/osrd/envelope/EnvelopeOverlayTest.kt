@@ -3,11 +3,14 @@ package fr.sncf.osrd.envelope
 import fr.sncf.osrd.envelope.Envelope.Companion.make
 import fr.sncf.osrd.envelope.EnvelopeTestUtils.TestAttr
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder
+import fr.sncf.osrd.envelope.part.EnvelopePart
 import fr.sncf.osrd.envelope.part.EnvelopePart.Companion.generateTimes
 import fr.sncf.osrd.envelope.part.EnvelopePartBuilder
 import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint
 import fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
+import fr.sncf.osrd.utils.SelfTypeHolder
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -384,5 +387,26 @@ class EnvelopeOverlayTest {
             Assertions.assertEquals(1, res.stepCount())
             Assertions.assertTrue(res.getPointPos(1) < 1)
         }
+    }
+
+    /** Regression test, reproduce a bug */
+    @Test
+    fun emptyOverlayWithSinglePoint() {
+        val envelope =
+            make(
+                EnvelopeTestUtils.generateTimes(doubleArrayOf(0.0, 1.0), doubleArrayOf(1.0, 1.0)),
+                EnvelopePart(
+                    mapOf<Class<out SelfTypeHolder>, SelfTypeHolder>(
+                        Pair(EnvelopeProfile::class.java, EnvelopeProfile.CONSTANT_SPEED)
+                    ),
+                    doubleArrayOf(1.0),
+                    doubleArrayOf(1.0),
+                    doubleArrayOf(),
+                ),
+            )
+        val builder = OverlayEnvelopeBuilder.forward(envelope)
+        // Not adding anything, we expect the result to be identical to the original envelope
+        val result = builder.build()
+        assertTrue { envelope.equalPoints(result) }
     }
 }
