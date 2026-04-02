@@ -43,7 +43,7 @@ use tracing::Instrument;
 
 use ::core::str;
 use std::collections::HashSet;
-use std::convert::Infallible;
+
 use std::env;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -563,8 +563,6 @@ async fn authentication_validation_middleware(
     mut req: Request,
     next: Next,
 ) -> Result<Response> {
-    use ::authz::v2::Authorizer as _;
-
     let openfga = regulator.openfga(); // to remove once OpenFGA is in the AppState directly
     let conn = db_pool.get().await?;
 
@@ -671,9 +669,10 @@ async fn authentication_validation_middleware(
     std::mem::drop(conn);
 
     // A failed OpenFGA request does not invalidate the creation of a new user
-    let bypass = special_authorizers::Authorize(openfga);
-    let Ok::<_, Infallible>(access) = bypass.authorize(roles_prot).await;
-    let Ok::<_, Infallible>(roles) = access.access().await.map_err(AuthorizationError::from)?;
+    let roles = special_authorizers::Authorize(openfga)
+        .access_value(roles_prot)
+        .await
+        .map_err(AuthorizationError::from)?;
 
     if is_impersonation {
         if !roles.contains(&Role::Admin) {

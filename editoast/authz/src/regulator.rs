@@ -1,5 +1,4 @@
 use std::collections::HashSet;
-use std::convert::Infallible;
 use std::future::Future;
 
 use fga::client::QueryError;
@@ -580,14 +579,12 @@ impl<S: StorageDriver> Regulator<S> {
         let is_admin = self.is_admin(issuer).await?;
         let issuer = Subject::User(User(issuer.0));
         let authorize = v2::special_authorizers::Authorize(&self.openfga);
-        let Ok::<_, Infallible>(access) = v2::infra_effective_grant(issuer, *infra)
-            .authorize(&authorize)
-            .await;
-        let Ok::<_, Infallible>(issuer_grant) = access.access().await?;
-        let Ok::<_, Infallible>(access) = v2::infra_effective_grant(*subject, *infra)
-            .authorize(&authorize)
-            .await;
-        let Ok::<_, Infallible>(subject_grant) = access.access().await?;
+        let issuer_grant = authorize
+            .access_value(v2::infra_effective_grant(issuer, *infra))
+            .await?;
+        let subject_grant = authorize
+            .access_value(v2::infra_effective_grant(*subject, *infra))
+            .await?;
 
         // Rule 2.1 and 3.1
         if let Some(subject_grant) = subject_grant

@@ -1,5 +1,4 @@
 use std::collections::HashSet;
-use std::convert::Infallible;
 
 use fga::client::QueryError;
 use fga::client::UserList;
@@ -423,6 +422,7 @@ pub mod special_authorizers {
     use std::convert::Infallible;
 
     use crate::v2::Access;
+    use crate::v2::OpenFgaError;
     use crate::v2::Protected;
 
     use super::Authorizer;
@@ -457,6 +457,14 @@ pub mod special_authorizers {
             })
         }
     }
+
+    impl Authorize<'_> {
+        pub async fn access_value<T>(&self, p: Protected<T>) -> Result<T, OpenFgaError> {
+            let Ok::<_, Infallible>(access) = self.authorize(p).await;
+            let Ok::<_, Infallible>(value) = access.access().await?;
+            Ok(value)
+        }
+    }
 }
 
 pub trait TestClientExt {
@@ -487,11 +495,10 @@ impl TestClientExt for fga::Client {
 
     async fn infra_effective_grant(&self, subject: Subject, infra: Infra) -> Option<InfraGrant> {
         let authorize = special_authorizers::Authorize(self);
-        let Ok::<_, Infallible>(access) = infra_effective_grant(subject, infra)
-            .authorize(&authorize)
-            .await;
-        let Ok::<_, Infallible>(grant) = access.access().await.unwrap();
-        grant
+        authorize
+            .access_value(infra_effective_grant(subject, infra))
+            .await
+            .unwrap()
     }
 }
 
