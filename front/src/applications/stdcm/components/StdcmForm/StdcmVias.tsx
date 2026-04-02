@@ -1,6 +1,6 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 
-import { Location } from '@osrd-project/ui-icons';
+import { Container, Location } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -251,7 +251,7 @@ const StdcmVias = ({
                   tooltip={
                     hasConsistsErrors() ? t('trainPath.consistChange.fixErrorsFirst') : undefined
                   }
-                  Icon={<Location size="lg" variant="base" />}
+                  Icon={<Container size="lg" variant="base" />}
                   onClick={() => addConsistChange(pathStep, index)}
                 />
               ) : (
