@@ -120,6 +120,7 @@ const useStdcmConsist = (
   };
 
   const prefillConsist = (
+    isConsistChange: boolean,
     rollingStock?: LightRollingStockWithLiveries,
     towed?: TowedRollingStock,
     maxSpeedTag?: string | null,
@@ -149,11 +150,14 @@ const useStdcmConsist = (
     }
     setTotalLengthChanged(false);
 
-    const newMaxSpeed = calculateConsistMaxSpeed(
-      rollingStock,
-      towed,
-      maxSpeedTag ? (speedLimitTags || {})[maxSpeedTag] : undefined
-    );
+    const newMaxSpeed = isConsistChange
+      ? undefined
+      : calculateConsistMaxSpeed(
+          rollingStock,
+          towed,
+          maxSpeedTag ? (speedLimitTags || {})[maxSpeedTag] : undefined
+        );
+
     if (maxSpeedChanged && consist.maxSpeed !== undefined) {
       newStatus.maxSpeed = {
         status: 'info',
