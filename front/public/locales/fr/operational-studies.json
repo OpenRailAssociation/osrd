@@ -85,7 +85,9 @@
       "unableToDeleteScenarioMessage": "Impossible de supprimer le scénario"
     },
     "filterPlaceholder": "Filtre, étiquettes",
-    "infrastructure": "Infrastructure",
+    "infrastructure": {
+      "label": "Infrastructure :"
+    },
     "lessDetails": "Afficher moins de détails",
     "linearMode": "Linéaire",
     "loadingConflicts": "Chargement des conflits…",
@@ -306,7 +308,7 @@
         "moveToSelectPackage": "Déplacer vers le paquet sélectionné",
         "movingToAnotherPackage": "Déplacement vers un autre paquet",
         "name": "Série",
-        "namePlaceholder": "Ex. {{series}}",
+        "namePlaceholder": "Ex : {{series}}",
         "newCatalogEntry": "Nouvel ensemble",
         "newLocalTrainScheduleSet": "Nouveau paquet local",
         "newTrainScheduleSet": "Créer un nouveau paquet",
@@ -404,7 +406,7 @@
     },
     "infraLoading": "Infra en cours de chargement…",
     "inputOPTrigrams": "Entrez la liste des trigrammes des points remarquables composant l'itinéraire souhaité.",
-    "inputOPTrigramsExample": "Ex : LSN CIG CCS",
+    "inputOPTrigramsExample": "Ex : LSN CIG CCS",
     "invalidTimetableItemStep": "Au moins un des points de passage n'a pas été reconnu",
     "inverseOD": "Inverser l'itinéraire",
     "itineraryModal": {

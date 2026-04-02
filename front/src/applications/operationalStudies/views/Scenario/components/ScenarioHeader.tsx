@@ -178,7 +178,7 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
           </span>
 
           <div className="scenario-details-infra-name">
-            {t('main.infrastructure')} :&nbsp;
+            {t('main.infrastructure.label')}&nbsp;
             <InfraLoadingState />
             &nbsp;
             <span className="scenario-infra-name" data-testid="scenario-infra-name">

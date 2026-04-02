@@ -672,7 +672,7 @@
       "version": "Version"
     },
     "languages": "Languages",
-    "safeWord": "Safety keyword",
+    "safeWord": "Security keyword",
     "safeWordHelp": "The \"security keyword\" allows you to transparently filter the list of projects with the word you enter, used as a label. Choose a complicated word so that no-one uses it inadvertently. Add it as a label to a project; it will be automatically added when the project is created if the word is entered here.",
     "useNewTimesStopsTable": "Use the new timetable",
     "userSettings": "User settings",

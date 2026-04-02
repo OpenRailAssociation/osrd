@@ -52,7 +52,9 @@
       "unableToDeleteScenarioMessage": "Szenario löschen nicht möglich"
     },
     "filterPlaceholder": "Filter, Tags",
-    "infrastructure": "Netz",
+    "infrastructure": {
+      "label": "Netz:"
+    },
     "lessDetails": "Weniger Details anzeigen",
     "linearMode": "Linear",
     "macroEditor": {
