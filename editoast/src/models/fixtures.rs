@@ -22,7 +22,6 @@ use schemas::fixtures::simple_created_exception_with_change_groups;
 use schemas::fixtures::simple_modified_exception_with_change_groups;
 use schemas::infra::InfraObject;
 use schemas::infra::RailJson;
-use schemas::paced_train::ExceptionType;
 use schemas::paced_train::Paced;
 use schemas::paced_train::PacedTrainException;
 use schemas::paced_train::TrainNameChangeGroup;
@@ -106,29 +105,6 @@ async fn link_train_schedule_set_to_timetable(
         .create(conn)
         .await
         .expect("Failed to link train schedule set to timetable")
-}
-
-pub fn create_created_exception_with_change_groups(key: &str) -> PacedTrainException {
-    PacedTrainException {
-        id: None,
-        key: key.into(),
-        exception_type: ExceptionType::Created {},
-        disabled: false,
-        change_groups: TrainScheduleExceptionChangeGroups::fake_created(),
-    }
-}
-
-pub fn create_modified_exception_with_change_groups(
-    key: &str,
-    occurrence_index: usize,
-) -> PacedTrainException {
-    let mut exception = create_created_exception_with_change_groups(key);
-    exception.exception_type = ExceptionType::Modified { occurrence_index };
-    exception.change_groups.start_time = None;
-    exception.change_groups.train_name = Some(TrainNameChangeGroup {
-        value: "modified_exception_train_name".to_string(),
-    });
-    exception
 }
 
 pub fn simple_paced_train_base() -> TrainSchedule {
