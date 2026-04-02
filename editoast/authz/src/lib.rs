@@ -148,6 +148,7 @@ mod mock_driver {
     use crate::identity::UserName;
     use crate::model;
     use crate::v2;
+    use crate::v2::TestClientExt as _;
 
     #[derive(Debug, Clone, Default)]
     pub struct MockAuthDriver {
@@ -182,9 +183,9 @@ mod mock_driver {
             user: model::User,
             infra: model::Infra,
         ) -> Option<InfraGrant> {
-            self.infra_direct_grant(&user.into(), &infra)
+            self.openfga()
+                .infra_effective_grant(user.into(), infra)
                 .await
-                .expect("infra grant get should succeed")
         }
 
         pub async fn set_infra_grant(

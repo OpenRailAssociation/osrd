@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::convert::Infallible;
 
 use fga::client::QueryError;
 use fga::client::UserList;
@@ -461,6 +462,7 @@ pub mod special_authorizers {
 pub trait TestClientExt {
     async fn subject_roles(&self, subject: &Subject) -> HashSet<Role>;
     async fn group_members(&self, group: &Group) -> HashSet<User>;
+    async fn infra_effective_grant(&self, subject: Subject, infra: Infra) -> Option<InfraGrant>;
 }
 
 impl TestClientExt for fga::Client {
@@ -481,6 +483,15 @@ impl TestClientExt for fga::Client {
             .users
             .into_iter()
             .collect()
+    }
+
+    async fn infra_effective_grant(&self, subject: Subject, infra: Infra) -> Option<InfraGrant> {
+        let authorize = special_authorizers::Authorize(self);
+        let Ok::<_, Infallible>(access) = infra_effective_grant(subject, infra)
+            .authorize(&authorize)
+            .await;
+        let Ok::<_, Infallible>(grant) = access.access().await.unwrap();
+        grant
     }
 }
 

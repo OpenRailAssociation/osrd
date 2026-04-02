@@ -73,12 +73,6 @@ impl<S: StorageDriver> Authorizer<S> {
             .await
     }
 
-    pub async fn infra_grant(&self, infra: &Infra) -> Result<Option<InfraGrant>, Error<S::Error>> {
-        self.regulator
-            .infra_grant(&Subject::User(User(self.user_id)), infra)
-            .await
-    }
-
     pub async fn authorize_infra(
         &self,
         infra: &Infra,
