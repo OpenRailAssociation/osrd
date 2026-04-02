@@ -3,6 +3,7 @@ import { compact } from 'lodash';
 import type { Dispatch } from 'redux';
 
 import type {
+  ConsistSchedule,
   LoadingGaugeType,
   PathfindingItem,
   PostTimetableByIdStdcmApiArg,
@@ -34,6 +35,7 @@ type ValidStdcmConfig = {
   temporarySpeedLimitGroupId?: number;
   electricalProfileSetId?: number;
   allowedTrackSections?: string[];
+  consistSchedule: ConsistSchedule;
 };
 
 export const checkStdcmConf = (
@@ -160,8 +162,6 @@ export const checkStdcmConf = (
     );
   }
 
-  if (error) return null;
-
   const path = compact(osrdconf.stdcmPathSteps).map((step) => {
     const formattedLocation = stdcmPathStepToPathItemLocation(step.operationalPoint);
 
@@ -194,15 +194,58 @@ export const checkStdcmConf = (
     };
   });
 
+  const initialConsist = {
+    rolling_stock_id: rollingStockID!,
+    towed_rolling_stock_id: towedRollingStockID,
+    total_mass: totalMass ? tToKg(totalMass) : undefined,
+    total_length: totalLength,
+    max_speed: maxSpeed ? kmhToMs(maxSpeed) : undefined,
+    loading_gauge_type: loadingGauge,
+    speed_limit_tag: speedLimitByTag,
+  };
+
+  const boundaries: number[] = [];
+  const consistValues = [initialConsist];
+
+  for (const [index, step] of pathSteps.entries()) {
+    if (!step.isVia || !step.consistChange) continue;
+    if (!step.consistChange.rollingStockID) {
+      error = true;
+      dispatch(
+        setFailure({
+          name: t('stdcm:form.incompleteForm'),
+          message: t('stdcm:form.viaRollingStockMissing'),
+        })
+      );
+
+      break;
+    }
+
+    boundaries.push(index);
+    consistValues.push({
+      rolling_stock_id: step.consistChange.rollingStockID,
+      towed_rolling_stock_id: step.consistChange.towedRollingStockID,
+      total_mass: step.consistChange.totalMass ? tToKg(step.consistChange.totalMass) : undefined,
+      total_length: step.consistChange.totalLength,
+      max_speed: step.consistChange.maxSpeed ? kmhToMs(step.consistChange.maxSpeed) : undefined,
+      speed_limit_tag: step.consistChange.speedLimitByTag,
+      loading_gauge_type: step.consistChange.loadingGauge,
+    });
+  }
+
+  if (error) return null;
+
+  const consistSchedule = { boundaries, values: consistValues };
+
   return {
     infraId: infraID!,
     rollingStockId: rollingStockID!,
     timetableId: timetableID!,
     path,
     speedLimitByTag,
-    totalMass,
+    totalMass: initialConsist.total_mass,
     totalLength,
-    maxSpeed,
+    maxSpeed: initialConsist.max_speed,
     loadingGauge,
     towedRollingStockID,
     margin: standardAllowance,
@@ -212,6 +255,7 @@ export const checkStdcmConf = (
     temporarySpeedLimitGroupId,
     electricalProfileSetId,
     allowedTrackSections,
+    consistSchedule,
   };
 };
 
@@ -227,8 +271,8 @@ export const formatStdcmPayload = (
     rolling_stock_id: validConfig.rollingStockId,
     towed_rolling_stock_id: validConfig.towedRollingStockID,
     speed_limit_tags: validConfig.speedLimitByTag,
-    total_mass: validConfig.totalMass ? tToKg(validConfig.totalMass) : undefined,
-    max_speed: validConfig.maxSpeed ? kmhToMs(validConfig.maxSpeed) : undefined,
+    total_mass: validConfig.totalMass,
+    max_speed: validConfig.maxSpeed,
     total_length: validConfig.totalLength,
     steps: validConfig.path,
     time_gap_after: validConfig.gridMarginBefore?.ms,
@@ -238,6 +282,6 @@ export const formatStdcmPayload = (
     electrical_profile_set_id: validConfig.electricalProfileSetId,
     loading_gauge_type: validConfig.loadingGauge,
     allowed_track_sections: validConfig.allowedTrackSections,
-    consist_schedule: { boundaries: [], values: [] },
+    consist_schedule: validConfig.consistSchedule,
   },
 });

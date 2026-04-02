@@ -46,7 +46,8 @@
       "invalidInput": "Saisissez une date au format dd/mm/yy"
     },
     "incompleteForm": "Formulaire incomplet",
-    "viaNotDefined": "Au moins une localisation n'est pas renseignée"
+    "viaNotDefined": "Au moins une localisation n'est pas renseignée",
+    "viaRollingStockMissing": "Au moins un engin de traction pour un changement de convoi n'est pas renseigné"
   },
   "infrastructure": "Infra",
   "leaveAt": "Partir à {{ time }}",

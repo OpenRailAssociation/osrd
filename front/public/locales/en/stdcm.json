@@ -46,7 +46,8 @@
       "invalidInput": "The date must be formatted as dd/mm/yy"
     },
     "incompleteForm": "Incomplete form",
-    "viaNotDefined": "Au moins une localisation n'est pas renseignée"
+    "viaNotDefined": "At least one missing operational point",
+    "viaRollingStockMissing": "At least one traction engine missing for consist change"
   },
   "infrastructure": "Infra",
   "leaveAt": "Leave at {{ time }}",
