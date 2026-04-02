@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::convert::Infallible;
 use std::future::Future;
 
 use fga::client::QueryError;
@@ -19,6 +20,7 @@ use crate::identity::UserInfo;
 use crate::identity::UserName;
 use crate::model;
 use crate::model::*;
+use crate::v2;
 
 /// Entry point for managing authorizations (roles and grants)
 ///
@@ -261,86 +263,6 @@ impl<S: StorageDriver> Regulator<S> {
         privileges.extend(can_delete.then_some(InfraPrivilege::CanDelete));
         privileges.extend(can_share_ownership.then_some(InfraPrivilege::CanShareOwnership));
         Ok(privileges)
-    }
-
-    /// Returns the maximum grant a subject has on an infra
-    ///
-    /// A given user may have multiple grants on the same resource. This can happen
-    /// if a user inherits a grant from one of its groups and also has a direct grant.
-    /// Inherited grants are not the same thing as privileges: they do not have the same semantic,
-    /// are not represented by the same enum, do no work on the same scale nor in the same way.
-    ///
-    /// Groups only have direct grants. If multiple direct grants are found, this function will panic.
-    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn infra_grant(
-        &self,
-        subject: &Subject,
-        infra: &Infra,
-    ) -> Result<Option<InfraGrant>, Error<S::Error>> {
-        // Check if the infra exists
-        if !self
-            .driver
-            .infra_exists(infra.0)
-            .await
-            .map_err(Error::Storage)?
-        {
-            return Err(Error::UnknownResource(infra.0));
-        }
-
-        // Check if subject exists
-        if !self.subject_exists(subject).await? {
-            return Err(Error::UnknownSubject(subject.id()));
-        }
-
-        // Calling openfga
-        let (is_reader, is_writer, is_owner) = match subject {
-            Subject::User(user) => {
-                self.openfga
-                    .checks((
-                        model::Infra::reader().check(user, infra),
-                        model::Infra::writer().check(user, infra),
-                        model::Infra::owner().check(user, infra),
-                    ))
-                    .await?
-            }
-            Subject::Group(group) => {
-                let (is_reader, is_writer, is_owner) = self
-                    .openfga
-                    .checks((
-                        model::Infra::reader().check(Group::member().userset(group), infra),
-                        model::Infra::writer().check(Group::member().userset(group), infra),
-                        model::Infra::owner().check(Group::member().userset(group), infra),
-                    ))
-                    .await?;
-                if !matches!(
-                    (is_reader, is_writer, is_owner),
-                    (true, false, false)
-                        | (false, true, false)
-                        | (false, false, true)
-                        | (false, false, false)
-                ) {
-                    tracing::error!(
-                        is_reader,
-                        is_writer,
-                        is_owner,
-                        ?subject,
-                        resource = ?infra,
-                        "Group has multiple direct grants on the same resource"
-                    );
-                    panic!(
-                        "Group {subject:?} has multiple direct grants on the same resource {infra:?}, which is not supposed to happen by design. \n\
-                        While a user may have inherited grants from one of their groups, groups do not have inherited grants. \n\
-                        Detected direct grants: reader: {is_reader}, writer: {is_writer}, owner: {is_owner}"
-                    );
-                }
-                (is_reader, is_writer, is_owner)
-            }
-        };
-
-        Ok(is_owner
-            .then_some(InfraGrant::Owner)
-            .or_else(|| is_writer.then_some(InfraGrant::Writer))
-            .or_else(|| is_reader.then_some(InfraGrant::Reader)))
     }
 
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
@@ -657,8 +579,15 @@ impl<S: StorageDriver> Regulator<S> {
 
         let is_admin = self.is_admin(issuer).await?;
         let issuer = Subject::User(User(issuer.0));
-        let issuer_grant = self.infra_grant(&issuer, infra).await?;
-        let subject_grant = self.infra_grant(subject, infra).await?;
+        let authorize = v2::special_authorizers::Authorize(&self.openfga);
+        let Ok::<_, Infallible>(access) = v2::infra_effective_grant(issuer, *infra)
+            .authorize(&authorize)
+            .await;
+        let Ok::<_, Infallible>(issuer_grant) = access.access().await?;
+        let Ok::<_, Infallible>(access) = v2::infra_effective_grant(*subject, *infra)
+            .authorize(&authorize)
+            .await;
+        let Ok::<_, Infallible>(subject_grant) = access.access().await?;
 
         // Rule 2.1 and 3.1
         if let Some(subject_grant) = subject_grant

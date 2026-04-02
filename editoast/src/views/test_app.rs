@@ -3,6 +3,7 @@
 //! components.
 
 use authz::v2;
+use authz::v2::TestClientExt;
 use authz::v2::special_authorizers;
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -436,8 +437,11 @@ impl TestApp {
     pub fn infra_grant(&self, infra_id: i64, subject_id: i64) -> Option<InfraGrant> {
         let regulator = &self.app_state.regulator;
         let subject = self.authz_subject(subject_id);
-        block_on(regulator.infra_grant(&subject, &authz::Infra(infra_id)))
-            .expect("Infra grant should be fetched successfully")
+        block_on(
+            regulator
+                .openfga()
+                .infra_effective_grant(subject, authz::Infra(infra_id)),
+        )
     }
 
     pub fn infra_direct_grant(&self, infra_id: i64, subject_id: i64) -> Option<InfraGrant> {
