@@ -27,6 +27,15 @@ export type RouteTableRow = {
   italic?: boolean;
 };
 
+export type ConsistChangeData = {
+  name: string;
+  ch: string;
+  totalMass: string;
+  totalLength: string;
+  rollingStockName: string;
+  towedRollingStockName?: string;
+};
+
 export type SimulationTableRow = {
   name: string;
   ch?: string | null;
@@ -40,6 +49,18 @@ export type SimulationTableRow = {
   stopTypeLabel?: string;
   stopType?: string;
   rowStyle: Style;
+  consistChanges?: {
+    currentConsist: {
+      totalMass: string;
+      totalLength: string;
+    };
+    updatedConsist: {
+      totalMass: string;
+      totalLength: string;
+      rollingStockName: string;
+      towedRollingStockName?: string;
+    };
+  };
   stylesByColumn: {
     index: Style;
     name: Style;

@@ -240,13 +240,17 @@
             }
             .muted-text {
               font-weight: normal;
-              color: rgb(121, 118, 113);
+              color: var(--grey50);
             }
             .name {
               width: 232px;
+              font-style: 'semibold';
+              font-weight: 600;
+              color: var(--grey80);
             }
             .consist-change-label {
               font-size: 1rem;
+              color: var(--black100);
               margin-bottom: 0;
               margin-top: 6px;
             }

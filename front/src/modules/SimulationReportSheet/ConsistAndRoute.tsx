@@ -6,27 +6,27 @@ import type { LinkedTrains } from 'applications/stdcm/types';
 import Consist from './Consist';
 import Route from './Route';
 import styles from './styles/SimulationReportStyleSheet';
-import type { RouteTableRow } from './types';
+import type { ConsistChangeData, RouteTableRow } from './types';
 
 type ConsistAndRouteProps = {
   isStdcm?: boolean;
   stdcmLinkedTrains?: LinkedTrains;
   routeTableRows: RouteTableRow[];
-  consist: {
+  initialConsist: {
     rollingStockName: string;
-    mass: number;
-    maxSpeed: number;
-    length: number;
+    mass: string;
+    maxSpeed: string;
+    length: string;
     speedLimitByTag?: string | null;
     loadingGauge?: string;
     towedRollingStockName?: string;
-    consistChanges?: ConsistChangeData[];
   };
+  consistChanges?: ConsistChangeData[];
 };
 
 const ConsistAndRoute = ({
   isStdcm = false,
-  consist,
+  initialConsist,
   stdcmLinkedTrains,
   routeTableRows,
   consistChanges = [],
@@ -35,7 +35,7 @@ const ConsistAndRoute = ({
 
   return (
     <View style={styles.consistAndRoute.consistAndRoute}>
-      <Consist {...consist} />
+      <Consist {...initialConsist} consistChanges={consistChanges} />
       <View style={styles.consistAndRoute.route}>
         <Text style={styles.consistAndRoute.routeTitle}>{t('reportSheet.requestedRoute')}</Text>
 

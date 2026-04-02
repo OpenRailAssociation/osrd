@@ -78,6 +78,7 @@
     "asap": "au plus tôt",
     "code": "CH",
     "consist": "convoi",
+    "consistChange": "changements",
     "conventionalSign": "signe conv.",
     "crossedATE": "ATE croisé",
     "endStop": "arrivée",
@@ -281,6 +282,7 @@
     "respectDestinationSchedule": "respecter l'horaire de la destination",
     "stopFor": "Temps d'arrêt minimum",
     "stopType": {
+      "consistChange": "ch. de convoi",
       "driverSwitch": "relève conducteur",
       "overtake": "dépassement",
       "passageTime": "passage",

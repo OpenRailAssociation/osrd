@@ -21,6 +21,7 @@ const STOP_TYPE_MAPPING: Record<StdcmStopTypes, StepType> = {
   [StdcmStopTypes.DRIVER_SWITCH]: 'DRIVER_SWITCH',
   [StdcmStopTypes.SERVICE_STOP]: 'STOP',
   [StdcmStopTypes.OVERTAKE]: 'VIA',
+  [StdcmStopTypes.CONSIST_CHANGE]: 'STOP',
 };
 
 function generateRandomString(length: number): string {
@@ -164,7 +165,13 @@ function formatOperationalPointWithTimesAndWeight(
   );
   let stopType;
   if (correspondingStep) {
-    stopType = correspondingStep.isVia ? correspondingStep.stopType : StdcmStopTypes.SERVICE_STOP;
+    if (correspondingStep.isVia) {
+      stopType = correspondingStep.consistChange
+        ? StdcmStopTypes.CONSIST_CHANGE
+        : correspondingStep.stopType;
+    } else {
+      stopType = StdcmStopTypes.SERVICE_STOP;
+    }
   }
   const stopRequested =
     correspondingStep !== undefined &&

@@ -195,6 +195,7 @@ const styles = {
       width: '197',
       marginLeft: '24',
       marginTop: '17',
+      marginRight: '10',
     },
     consistInfoBox2: {
       width: '147',
@@ -204,12 +205,14 @@ const styles = {
       color: '#797671',
       fontSize: '14',
     },
+    consistInfoSection: {
+      marginBottom: '15',
+    },
     consistInfoData: {
       color: '#000000',
       fontFamily: 'IBM Plex Mono',
       fontSize: '16',
       fontWeight: 'semibold',
-      marginBottom: '15',
     },
     route: {
       width: '960',
@@ -513,6 +516,9 @@ const styles = {
     indexWidth: {
       width: '56',
     },
+    indexWithConsistRow: {
+      width: '52',
+    },
     opWidth: {
       width: '272',
     },
@@ -630,7 +636,7 @@ const styles = {
     },
     tbody: {
       backgroundColor: '#FFFFFF',
-      height: '24',
+      minHeight: '24',
       borderRadius: '4',
       border: '0.5 solid #D3D1CF',
       marginLeft: '8',
@@ -640,12 +646,36 @@ const styles = {
     blueRow: {
       backgroundColor: '#E6F7FF',
       borderColor: '#216482',
-      height: '24',
+      minHeight: '24',
       borderRadius: '4',
       border: '0.5 solid #216482',
       marginLeft: '8',
       marginRight: '8',
       marginTop: '4',
+    },
+    consistChangeRow: {
+      borderTopWidth: 0,
+      borderTopLeftRadius: 0,
+      borderTopRightRadius: 0,
+      marginTop: 0,
+      paddingBottom: '4',
+    },
+    consistChangeLabel: {
+      fontFamily: 'IBM Plex Sans',
+      fontSize: '14',
+      fontWeight: 'semibold',
+      color: '#312E2B',
+      marginRight: '8',
+    },
+    consistChangeData: {
+      fontFamily: 'IBM Plex Sans',
+      fontSize: '14',
+      color: '#312E2B',
+    },
+    mainRowWithConsistChange: {
+      borderBottomWidth: 0,
+      borderBottomLeftRadius: 0,
+      borderBottomRightRadius: 0,
     },
     horizontalBar: {
       width: '36',
