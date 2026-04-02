@@ -1920,7 +1920,6 @@ mod tests {
     use super::*;
     use crate::error::InternalError;
     use crate::models;
-    use crate::models::fixtures::create_created_exception_with_change_groups;
     use crate::models::fixtures::create_fast_rolling_stock;
     use crate::models::fixtures::create_paced_train_with_exceptions;
     use crate::models::fixtures::create_rolling_stock_with_energy_sources;
@@ -2261,7 +2260,7 @@ mod tests {
             create_fast_rolling_stock(&mut db_pool.get_ok(), "simulation_rolling_stock").await;
         let (timetable, train_schedule_set) =
             create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
-        let exception = create_created_exception_with_change_groups("created_exception_key");
+        let exception = TrainScheduleException::fixture_created("created_exception_key", None);
 
         let train_schedule_base = TrainSchedule {
             train_occurrence: TrainOccurrence {

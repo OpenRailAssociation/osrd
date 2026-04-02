@@ -548,8 +548,6 @@ mod tests {
     use std::str::FromStr;
 
     use crate::models::TrainSchedule;
-    use crate::models::fixtures::create_created_exception_with_change_groups;
-    use crate::models::fixtures::create_modified_exception_with_change_groups;
     use crate::models::fixtures::create_timetable;
     use crate::models::fixtures::simple_paced_train_changeset;
     use crate::models::fixtures::simple_sub_category;
@@ -564,7 +562,6 @@ mod tests {
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use schemas::TrainScheduleExceptionChangeGroups;
-    use schemas::paced_train::PacedTrainException;
     use schemas::paced_train::RollingStockCategoryChangeGroup;
     use schemas::paced_train::StartTimeChangeGroup;
     use schemas::train_schedule::Comfort;
@@ -572,7 +569,7 @@ mod tests {
     use schemas::train_schedule::Margins;
     use schemas::train_schedule::TrainScheduleOptions;
 
-    pub fn create_paced_train(exceptions: Vec<PacedTrainException>) -> TrainSchedule {
+    pub fn create_paced_train() -> TrainSchedule {
         TrainSchedule {
             id: 1,
             train_schedule_set_id: 1,
@@ -598,23 +595,26 @@ mod tests {
             time_window: chrono::Duration::try_hours(2),
             interval: chrono::Duration::try_minutes(30),
             sub_category: None,
-            exceptions,
+            exceptions: vec![],
         }
     }
 
     #[tokio::test]
     async fn paced_train_main_category_apply_exception() {
-        let mut exception = create_created_exception_with_change_groups("key_1");
-
-        exception.change_groups.rolling_stock_category = Some(RollingStockCategoryChangeGroup {
-            value: Some(schemas::rolling_stock::TrainCategory::Main {
-                main_category: schemas::rolling_stock::TrainMainCategory::FastFreightTrain,
+        let mut exception = TrainScheduleException::fixture_created("key_1", None);
+        exception.change_groups = TrainScheduleExceptionChangeGroups {
+            rolling_stock_category: Some(RollingStockCategoryChangeGroup {
+                value: Some(schemas::rolling_stock::TrainCategory::Main {
+                    main_category: schemas::rolling_stock::TrainMainCategory::FastFreightTrain,
+                }),
             }),
-        });
+            ..Default::default()
+        };
 
         // The paced train has HighSpeedTrain
-        let paced_train = create_paced_train(vec![exception.clone()]);
-        let paced_train_exception = paced_train.apply_exception(&exception);
+        let paced_train = create_paced_train();
+
+        let paced_train_exception = paced_train.apply_train_schedule_exception(&exception.into());
 
         // Check if it get replaced by exception category
         assert_eq!(
@@ -627,12 +627,13 @@ mod tests {
 
     #[rstest]
     #[tokio::test]
-    #[case::created(create_created_exception_with_change_groups("key_1"))]
+    #[case::created(TrainScheduleException::fixture_created("key_1", None))]
     #[tokio::test]
-    #[case::modified(create_modified_exception_with_change_groups("key_2", 0))]
-    async fn paced_train_apply_exception(#[case] exception: PacedTrainException) {
-        let paced_train = create_paced_train(vec![exception.clone()]);
-        let paced_train_exception = paced_train.apply_exception(&exception);
+    #[case::modified(TrainScheduleException::fixture_created("key_2", Some(0)))]
+    async fn paced_train_apply_exception(#[case] exception: TrainScheduleException) {
+        let exception: schemas::TrainScheduleException = exception.into();
+        let paced_train = create_paced_train();
+        let paced_train_exception = paced_train.apply_train_schedule_exception(&exception);
 
         assert_eq!(
             paced_train_exception.train_name,
@@ -717,16 +718,13 @@ mod tests {
 
     #[tokio::test]
     async fn num_base_occurrences_without_exceptions() {
-        let paced_train = create_paced_train(vec![]);
+        let paced_train = create_paced_train();
         assert_eq!(paced_train.num_base_occurrences(), 4);
     }
 
     #[tokio::test]
     async fn num_base_occurrences_with_exceptions() {
-        let paced_train = create_paced_train(vec![
-            create_created_exception_with_change_groups("key_2"),
-            create_modified_exception_with_change_groups("key_1", 0),
-        ]);
+        let paced_train = create_paced_train();
         assert_eq!(paced_train.num_base_occurrences(), 4);
     }
 
@@ -739,7 +737,7 @@ mod tests {
             key: Some("key_1".into()),
             occurrence_index: Some(1),
             disabled: false,
-            change_groups: TrainScheduleExceptionChangeGroups::fake_modified(),
+            change_groups: TrainScheduleExceptionChangeGroups::fixture_modified(),
         }
         .into();
 
@@ -750,7 +748,7 @@ mod tests {
             key: Some("key_2".into()),
             occurrence_index: None,
             disabled: false,
-            change_groups: TrainScheduleExceptionChangeGroups::fake_created(),
+            change_groups: TrainScheduleExceptionChangeGroups::fixture_created(),
         }
         .into();
         let exception_3: schemas::TrainScheduleException = TrainScheduleException {
@@ -760,11 +758,11 @@ mod tests {
             key: Some("key_3".into()),
             occurrence_index: Some(0),
             disabled: true,
-            change_groups: TrainScheduleExceptionChangeGroups::fake_modified(),
+            change_groups: TrainScheduleExceptionChangeGroups::fixture_modified(),
         }
         .into();
 
-        let paced_train = create_paced_train(vec![]);
+        let paced_train = create_paced_train();
         let exceptions: Vec<schemas::TrainScheduleException> = vec![
             exception_1.clone(),
             exception_2.clone(),
@@ -816,7 +814,7 @@ mod tests {
 
     #[tokio::test]
     async fn iter_occurrences_with_modified_start_time_exception() {
-        let mut exception_1 = create_modified_exception_with_change_groups("key_1", 1);
+        let mut exception_1 = TrainScheduleException::fixture_modified("key_1", 1);
         exception_1.change_groups.start_time = Some(StartTimeChangeGroup {
             value: DateTime::<Utc>::from_str("2025-05-15T14:31:00+02:00").unwrap(),
         });
@@ -831,7 +829,7 @@ mod tests {
         }
         .into();
 
-        let paced_train = create_paced_train(vec![]);
+        let paced_train = create_paced_train();
         let occurrences: Vec<_> = paced_train
             .iter_occurrences_v2(std::slice::from_ref(&exception_1))
             .collect();
