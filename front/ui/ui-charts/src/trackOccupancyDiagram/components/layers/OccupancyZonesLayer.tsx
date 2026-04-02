@@ -148,7 +148,9 @@ const OccupancyZonesLayer = ({
             (filteredZone, i) => i > zoneIndex && filteredZone.startTime >= lastEndTime
           );
 
-          const remainingTrainsNb = nextIndex - zoneIndex;
+          // nextIndex === -1 means all remaining zones overlap — skip to the end
+          const endIndex = nextIndex === -1 ? filteredOccupancyZones.length : nextIndex;
+          const remainingTrainsNb = endIndex - zoneIndex;
 
           instructions.push({
             type: 'remainingTrains',
@@ -157,7 +159,7 @@ const OccupancyZonesLayer = ({
             offsetY: trackY,
           });
 
-          zoneIndex += remainingTrainsNb;
+          zoneIndex = endIndex;
         }
       }
     });
