@@ -124,4 +124,23 @@ class EnvelopePartSliceTest {
             )
         ep.slice(50.0, 100.0) // The relevant assertions are made in `EnvelopePart.runSanityChecks`
     }
+
+    /**
+     * Reproduces another bug where the sliced part would have negative time deltas. The values come
+     * directly from the identified bug case.
+     */
+    @Test
+    fun sliceWithinEpsilonOfPoint() {
+        val envelope =
+            Envelope.make(
+                EnvelopePart(
+                    listOf(TestAttr.A, EnvelopeProfile.BRAKING),
+                    doubleArrayOf(314.40000000000003, 351.00000000000006, 386.40000000000003),
+                    doubleArrayOf(18.6, 18.0, 17.4),
+                    doubleArrayOf(2.0, 2.0),
+                )
+            )
+        // The relevant assertions are made in `EnvelopePart.runSanityChecks`
+        envelope.slice(351.0, Double.NaN, Double.POSITIVE_INFINITY, Double.NaN)
+    }
 }
