@@ -529,23 +529,23 @@ const ItineraryModal = ({
 
               return (
                 <>
-                  <div>
-                    <div className="path-step-gap">
-                      <div
-                        className="path-step-gap-hitbox"
-                        onPointerEnter={() => setHoveredGapIndex(i)}
-                        onPointerLeave={() => setHoveredGapIndex(null)}
-                      >
-                        {hoveredGapIndex === i && (
-                          <button
-                            type="button"
-                            className="add-pathitem"
-                            onClick={() => handleAddIntermediateStep(i)}
-                          >
-                            <Plus iconColor="var(--white100)" />
-                          </button>
-                        )}
-                      </div>
+                  <div className="path-step-gap">
+                    {hoveredGapIndex === i && <div className="path-step-gap-line" />}
+
+                    <div
+                      className="path-step-gap-hitbox"
+                      onPointerEnter={() => setHoveredGapIndex(i)}
+                      onPointerLeave={() => setHoveredGapIndex(null)}
+                    >
+                      {hoveredGapIndex === i && (
+                        <button
+                          type="button"
+                          className="add-pathitem"
+                          onClick={() => handleAddIntermediateStep(i)}
+                        >
+                          <Plus iconColor="var(--white100)" />
+                        </button>
+                      )}
                     </div>
                   </div>
                   <PathStepItem
