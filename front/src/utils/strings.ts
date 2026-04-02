@@ -134,3 +134,11 @@ export function absoluteUrl(href: string): string {
 }
 
 export const toUpper = (s: string) => s.trim().toUpperCase();
+
+export function truncateText(text: string, size: number) {
+  if (text.length > size) {
+    return text.slice(0, size) + '…';
+  }
+
+  return text;
+}

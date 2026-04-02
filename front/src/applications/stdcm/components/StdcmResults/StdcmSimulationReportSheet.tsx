@@ -10,6 +10,7 @@ import type {
   StdcmSimulationInputs,
   StdcmSuccessResponse,
 } from 'applications/stdcm/types';
+import { formatStdcmDataForSimulationTable } from 'applications/stdcm/utils/simulationOutputUtils';
 import iconAlert from 'assets/simulationReportSheet/icon_alert_fill.png';
 import ConsistAndRoute from 'modules/SimulationReportSheet/ConsistAndRoute';
 import Header from 'modules/SimulationReportSheet/Header';
@@ -17,14 +18,13 @@ import RCInfo from 'modules/SimulationReportSheet/RCInfo';
 import SimilarTrainsToDuplicate from 'modules/SimulationReportSheet/SimilarTrainsToDuplicate';
 import SimulationTable from 'modules/SimulationReportSheet/SimulationTable';
 import styles from 'modules/SimulationReportSheet/styles/SimulationReportStyleSheet';
-import type { RouteTableRow } from 'modules/SimulationReportSheet/types';
+import type { ConsistChangeData, RouteTableRow } from 'modules/SimulationReportSheet/types';
 import {
   getArrivalTimes,
   getSecondaryCode,
 } from 'modules/SimulationReportSheet/utils/formatSimulationReportSheet';
-import { formatStdcmDataForSimulationTable } from 'modules/SimulationReportSheet/utils/formatSimulationTable';
 import { useDateTimeLocale } from 'utils/date';
-import { msToKmh, tToKg } from 'utils/physics';
+import { kgToT, msToKmh } from 'utils/physics';
 
 type StdcmSimulationReportSheetProps = {
   stdcmLinkedTrains: LinkedTrains;
@@ -52,9 +52,9 @@ const StdcmSimulationReportSheet = ({
 
   const consistData = {
     rollingStockName: rollingStock.name,
-    mass: consist?.totalMass ?? Math.floor(tToKg(rollingStock.mass)),
-    length: consist?.totalLength ?? Math.floor(rollingStock.length),
-    maxSpeed: consist?.maxSpeed ?? Math.floor(msToKmh(rollingStock.max_speed)),
+    mass: `${consist.totalMass ?? Math.floor(kgToT(rollingStock.mass))} t`,
+    length: `${consist.totalLength ?? Math.floor(rollingStock.length)} m`,
+    maxSpeed: `${consist.maxSpeed ?? Math.floor(msToKmh(rollingStock.max_speed))} km/h`,
     speedLimitByTag,
     loadingGauge: consist?.loadingGauge,
     towedRollingStockName: consist?.towedRollingStock?.name,
@@ -93,12 +93,30 @@ const StdcmSimulationReportSheet = ({
         stdcmData.simulationPathSteps,
         {
           rollingStockName: rollingStock.name,
-          mass: consistData.mass,
-          length: consistData.length,
+          mass: consist.totalMass ?? kgToT(rollingStock.mass),
+          length: rollingStock.length,
         },
         t
       ),
     [operationalPointsList, rollingStock, stdcmData, consistData]
+  );
+
+  const consistChangesData: ConsistChangeData[] = simulationTableRows.reduce<ConsistChangeData[]>(
+    (rowsAcc, currentRow) => {
+      if (currentRow.consistChanges) {
+        const updatedConsist = currentRow.consistChanges.updatedConsist;
+        rowsAcc.push({
+          name: currentRow.name,
+          ch: currentRow.ch ?? '',
+          totalLength: updatedConsist.totalLength,
+          totalMass: updatedConsist.totalMass,
+          rollingStockName: updatedConsist.rollingStockName,
+          towedRollingStockName: updatedConsist.towedRollingStockName,
+        });
+      }
+      return rowsAcc;
+    },
+    []
   );
 
   return (
@@ -117,9 +135,10 @@ const StdcmSimulationReportSheet = ({
         <RCInfo departureTime={departureTime} />
         <ConsistAndRoute
           isStdcm
-          consist={consistData}
+          initialConsist={consistData}
           stdcmLinkedTrains={stdcmLinkedTrains}
           routeTableRows={routeOperationalPoints}
+          consistChanges={consistChangesData}
         />
         <SimilarTrainsToDuplicate similarTrains={similarTrains} />
         <SimulationTable

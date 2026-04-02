@@ -121,7 +121,9 @@ export type StdcmSimulationInputs = {
 
 export type ConsistData = {
   rollingStockID?: number;
+  rollingStockName?: string;
   towedRollingStockID?: number;
+  towedRollingStockName?: string;
   /** In ton */
   totalMass?: number;
   /** In meters */
@@ -223,6 +225,7 @@ export enum StdcmStopTypes {
   DRIVER_SWITCH = 'driverSwitch',
   SERVICE_STOP = 'serviceStop',
   OVERTAKE = 'overtake',
+  CONSIST_CHANGE = 'consistChange',
 }
 
 export type StdcmLinkedTrainExtremity = {

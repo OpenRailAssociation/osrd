@@ -20,11 +20,24 @@ export const hasResults = (
   speedDistanceDiagramData: SpeedDistanceDiagramData;
 } => !!outputs && 'results' in outputs;
 
-type ConsistChangeParameters = { totalMass?: number; totalLength?: number };
+type ConsistChangeParameters = {
+  totalMass: number;
+  totalLength: number;
+  rollingStockName: string;
+  towedRollingStockName?: string;
+};
 
 type ConsistChangeContext = {
   currentConsist: ConsistChangeParameters;
   updatedConsist: ConsistChangeParameters;
+};
+
+type ConsistParameters = {
+  /** In ton */
+  mass: number;
+  /** In meters */
+  length: number;
+  rollingStockName: string;
 };
 
 export function getConsistChangesAroundStep(
@@ -43,7 +56,7 @@ export function getConsistChangesAroundStep(
   let currentConsist: ConsistChangeParameters = initialConsist;
   for (let i = stepIndex - 1; i >= 0; i--) {
     if (simulationPathSteps[i].consistChange) {
-      currentConsist = simulationPathSteps[i].consistChange!;
+      currentConsist = simulationPathSteps[i].consistChange! as ConsistChangeParameters;
       break;
     }
   }
@@ -63,7 +76,7 @@ export function getConsistChangesAroundStep(
 export const formatStdcmDataForSimulationTable = (
   operationalPointsList: StdcmResultsOperationalPoint[],
   stdcmPathSteps: StdcmSuccessResponse['simulationPathSteps'],
-  consist: { mass: number; length: number; rollingStockName: string },
+  consist: ConsistParameters,
   t: TFunction<'stdcm'>
 ) =>
   operationalPointsList.map((step, index) => {
@@ -88,12 +101,30 @@ export const formatStdcmDataForSimulationTable = (
       passageStop = step.duration !== null ? getStopDurationTime(step.duration) : String(step.time);
     }
 
-    const intermediatePathSteps = stdcmPathSteps.slice(1, -1) as StdcmViaPathStep[];
+    const intermediatePathSteps: StdcmViaPathStep[] = stdcmPathSteps.filter(
+      (pathStep) => pathStep.isVia
+    );
 
-    const consistChanges = getConsistChangesAroundStep(step.opId!, intermediatePathSteps, {
+    const consistChangesData = getConsistChangesAroundStep(step.opId!, intermediatePathSteps, {
       totalLength: consist.length,
       totalMass: consist.mass,
+      rollingStockName: consist.rollingStockName,
     });
+
+    const consistChanges = consistChangesData
+      ? {
+          currentConsist: {
+            totalLength: `${consistChangesData?.currentConsist.totalLength} m`,
+            totalMass: `${consistChangesData?.currentConsist.totalMass} t`,
+          },
+          updatedConsist: {
+            totalLength: `${consistChangesData.updatedConsist.totalLength} m`,
+            totalMass: `${consistChangesData.updatedConsist.totalMass} t`,
+            rollingStockName: consistChangesData.updatedConsist.rollingStockName,
+            towedRollingStockName: consistChangesData.updatedConsist.towedRollingStockName,
+          },
+        }
+      : undefined;
 
     return {
       name:

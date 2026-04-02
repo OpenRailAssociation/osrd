@@ -38,9 +38,9 @@ const SimulationReportSheet = ({
 
   const consistData = {
     rollingStockName: rollingStock.name,
-    mass: Math.floor(kgToT(rollingStock.mass)),
-    length: Math.floor(rollingStock.length),
-    maxSpeed: Math.floor(msToKmh(rollingStock.max_speed)),
+    mass: `${Math.floor(kgToT(rollingStock.mass))} t`,
+    length: `${Math.floor(rollingStock.length)} m`,
+    maxSpeed: `${Math.floor(msToKmh(rollingStock.max_speed))} km/h`,
     speedLimitByTag,
   };
 
@@ -79,7 +79,7 @@ const SimulationReportSheet = ({
     <Document>
       <Page wrap={false} style={styles.main.page} size={[1344]}>
         <Header trainName={trainName} scenarioData={scenarioData} />
-        <ConsistAndRoute consist={consistData} routeTableRows={routeOperationalPoints} />
+        <ConsistAndRoute initialConsist={consistData} routeTableRows={routeOperationalPoints} />
         <SimulationTable pathLength={path.length} rows={simulationTableRows} />
         {mapCanvas && (
           <View style={styles.map.map} id="simulationMap">

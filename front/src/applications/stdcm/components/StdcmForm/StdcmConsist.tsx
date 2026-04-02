@@ -159,6 +159,7 @@ const StdcmConsist = ({
   const handleRollingStockSelect = (option?: LightRollingStockWithLiveries) => {
     prefillConsist(isConsistChange, option, towedRollingStock, consist.speedLimitByTag, {
       rollingStockID: option?.id,
+      rollingStockName: option?.name,
     });
     setStatusMessagesVisible({
       mass: true,
@@ -235,6 +236,7 @@ const StdcmConsist = ({
             onSelectSuggestion={(towed) => {
               prefillConsist(isConsistChange, rollingStock, towed, consist.speedLimitByTag, {
                 towedRollingStockID: towed?.id,
+                towedRollingStockName: towed?.name,
               });
             }}
             {...towedRollingStockComboBoxDefaultProps}

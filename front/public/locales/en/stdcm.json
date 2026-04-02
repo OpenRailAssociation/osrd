@@ -78,6 +78,7 @@
     "asap": "as soon as possible",
     "code": "CH",
     "consist": "consist",
+    "consistChange": "changes",
     "conventionalSign": "conv. sign",
     "crossedATE": "crossed ATE",
     "endStop": "end",
@@ -281,6 +282,7 @@
     "respectDestinationSchedule": "respect the destination schedule",
     "stopFor": "Minimum stop time",
     "stopType": {
+      "consistChange": "consist change",
       "driverSwitch": "driver switch",
       "overtake": "overtake",
       "passageTime": "passage time",
