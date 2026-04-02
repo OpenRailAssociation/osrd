@@ -20,6 +20,7 @@ type ConsistAndRouteProps = {
     speedLimitByTag?: string | null;
     loadingGauge?: string;
     towedRollingStockName?: string;
+    consistChanges?: ConsistChangeData[];
   };
 };
 
@@ -28,6 +29,7 @@ const ConsistAndRoute = ({
   consist,
   stdcmLinkedTrains,
   routeTableRows,
+  consistChanges = [],
 }: ConsistAndRouteProps) => {
   const { t } = useTranslation('stdcm');
 

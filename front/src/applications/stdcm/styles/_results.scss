@@ -220,7 +220,7 @@
               td.index,
               td.name,
               td.ch {
-                color: var(--grey80);
+                color: var(--black100);
                 font-weight: 600;
               }
             }
@@ -238,8 +238,17 @@
               padding-right: 24px;
               color: var(--grey50);
             }
+            .muted-text {
+              font-weight: normal;
+              color: rgb(121, 118, 113);
+            }
             .name {
               width: 232px;
+            }
+            .consist-change-label {
+              font-size: 1rem;
+              margin-bottom: 0;
+              margin-top: 6px;
             }
             .ch {
               width: 48px;
