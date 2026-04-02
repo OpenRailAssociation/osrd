@@ -263,18 +263,6 @@
     }
   }
 
-  @keyframes timetable-arrival-time-loader {
-    0% {
-      opacity: 0.25;
-    }
-    50% {
-      opacity: 0.05;
-    }
-    100% {
-      opacity: 0.25;
-    }
-  }
-
   .timetable-collapse-button {
     position: absolute;
     left: 0;
@@ -714,14 +702,11 @@
         }
 
         .arrival-time-loader {
-          opacity: 0.25;
-          animation: timetable-arrival-time-loader 1s ease-in-out;
-          animation-iteration-count: infinite;
-          background-color: black;
           width: 42px;
           height: 12px;
           border-radius: 4px;
           margin: 0 2px;
+          background-color: var(--black100);
         }
 
         .filter-panel {

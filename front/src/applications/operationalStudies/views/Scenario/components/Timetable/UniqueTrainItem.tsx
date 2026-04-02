@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { SubCategory, TrainSchedule } from 'common/api/osrdEditoastApi';
+import { SkeletonLoader } from 'common/Loaders';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import {
@@ -30,7 +31,6 @@ import { addDurationToDate, Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
 import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
-import ArrivalTimeLoader from './ArrivalTimeLoader';
 import { TIMETABLE_ITEM_DELTA } from './consts';
 import TimetableItemActions from './TimetableItemActions';
 import { formatTrainDuration, getTrainCategoryClassName } from './utils';
@@ -250,7 +250,10 @@ const UniqueTrainItem = ({
                 {arrivalTime ? (
                   timeToLocaleStringRounded(arrivalTime, dateTimeLocale)
                 ) : (
-                  <ArrivalTimeLoader />
+                  <SkeletonLoader
+                    className="arrival-time-loader"
+                    data-testid="arrival-time-loader"
+                  />
                 )}
               </div>
               <div

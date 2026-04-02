@@ -1,0 +1,19 @@
+@keyframes skeleton-pulse {
+  0% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 0.05;
+  }
+  100% {
+    opacity: 0.25;
+  }
+}
+
+.skeleton-loader {
+  display: inline-block;
+  border-radius: 4px;
+  background-color: var(--black100);
+  opacity: 0.25;
+  animation: skeleton-pulse 1s ease-in-out infinite;
+}
