@@ -394,15 +394,15 @@ private class InfraExplorerImpl(
      * Otherwise, it returns false and the instance is supposed to be dropped. `blockRoutes` is
      * updated to keep track of the route used for each block.
      */
-    fun extend(route: RouteId, firstLocation: BlockLocation? = null): Boolean {
+    fun extend(route: RouteId, fromLocation: BlockLocation? = null): Boolean {
         val routeBlocks = blockInfra.getRouteBlocks(rawInfra, route)
-        var seenFirstBlock = firstLocation == null
+        var seenFirstBlock = fromLocation == null
 
-        var routeBeginOffset = Offset<Route>(firstLocation?.offset?.distance ?: 0.meters)
+        var routeBeginOffset = Offset<Route>(fromLocation?.offset?.distance ?: 0.meters)
         for (block in routeBlocks) {
             val blockLength = blockInfra.getBlockLength(block)
 
-            seenFirstBlock = seenFirstBlock || block == firstLocation?.edge
+            seenFirstBlock = seenFirstBlock || block == fromLocation?.edge
 
             if (!seenFirstBlock) {
                 routeBeginOffset += blockLength.distance
@@ -413,7 +413,7 @@ private class InfraExplorerImpl(
 
             // Simulation range start on the current block, 0m on any block that isn't the first
             val blockStartOffset: Offset<Block> =
-                if (block == firstLocation?.edge) firstLocation.offset else Offset(0.meters)
+                if (block == fromLocation?.edge) fromLocation.offset else Offset(0.meters)
 
             stepTracker.exploreBlockRange(block, blockStartOffset, blockLength)
 
