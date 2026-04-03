@@ -298,45 +298,6 @@
           }
         }
 
-        .upgrade {
-          display: flex;
-          flex-direction: column;
-          margin-right: 32px;
-          margin-top: 56px;
-          border-top: 5px solid rgb(211, 209, 207);
-          .text {
-            color: rgb(0, 0, 0);
-            margin-left: 8px;
-            .title {
-              font-weight: 600;
-              font-size: 1.125rem;
-              padding-top: 25px;
-              display: flex;
-              flex-direction: row;
-              .comment-icon {
-                color: #b6b2af;
-                margin-left: 10px;
-                display: flex;
-              }
-            }
-          }
-          .buttons-list {
-            display: flex;
-            flex-direction: row;
-            justify-content: flex-start;
-            flex-wrap: wrap;
-            margin-top: 22px;
-            button {
-              height: 32px;
-              font-size: 1rem;
-              padding-top: 5px;
-              padding-bottom: 7px;
-              margin-right: 23px;
-              margin-bottom: 23px;
-            }
-          }
-        }
-
         .get-simulation {
           display: flex;
           flex-direction: row;
