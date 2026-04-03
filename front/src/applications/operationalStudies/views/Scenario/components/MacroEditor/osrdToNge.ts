@@ -247,6 +247,7 @@ const castNodeToNge = (
   labelIds: (node.labels || []).map((l) =>
     labels.findIndex((e) => e.label === l && e.labelGroupId === NODE_LABEL_GROUP.id)
   ),
+  isCollapsed: node.is_collapsed,
 });
 
 export const getTrainrunCategories = (
