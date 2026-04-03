@@ -233,7 +233,7 @@ const StdcmVias = ({
                 <StdcmDefaultCard
                   testId="edit-consist"
                   className="edit-consist"
-                  disabled={hasConsistsErrors()}
+                  disabled={hasConsistsErrors() || disabled}
                   tip="right"
                   text={t('trainPath.consistChange.add')}
                   tooltip={
@@ -245,6 +245,7 @@ const StdcmVias = ({
               ) : (
                 <>
                   <StdcmConsist
+                    disabled={disabled}
                     isDebugMode={isDebugMode}
                     onConsistErrorsChange={(errors) => handleConsistErrors(pathStep.id, errors)}
                     consist={pathStep.consistChange ?? {}}
