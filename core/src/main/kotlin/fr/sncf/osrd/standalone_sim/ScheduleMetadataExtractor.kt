@@ -90,10 +90,10 @@ fun runScheduleMetadataExtractor(
 
     val envelopeAdapter =
         IncrementalRequirementEnvelopeAdapter(rollingStock, envelopeWithStops, true)
-    val spacingGenerator = SpacingResourceGenerator(fullInfra, context, envelopeAdapter)
+    val spacingGenerator = SpacingResourceGenerator(fullInfra, context)
     spacingGenerator.extendPath(trainPath.getBlocks(), trainPath.getRoutes(), pathStops, true)
     // as the provided path is complete, the resource generator should never return NotEnoughPath
-    val spacingRequirements = spacingGenerator.processUpdate()!!
+    val spacingRequirements = spacingGenerator.processUpdate(envelopeAdapter)!!
 
     val routingRequirements =
         routingRequirements(

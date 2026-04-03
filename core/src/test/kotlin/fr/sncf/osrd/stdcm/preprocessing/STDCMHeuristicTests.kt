@@ -1,6 +1,5 @@
 package fr.sncf.osrd.stdcm.preprocessing
 
-import fr.sncf.osrd.conflicts.IncrementalRequirementEnvelopeAdapter
 import fr.sncf.osrd.conflicts.SpacingResourceGenerator
 import fr.sncf.osrd.envelope.Envelope.Companion.make
 import fr.sncf.osrd.envelope.EnvelopeTestUtils
@@ -259,11 +258,7 @@ class STDCMHeuristicTests {
             InfraExplorerWithEnvelopeImpl(
                 infraExplorer,
                 appendOnlyLinkedListOf(),
-                SpacingResourceGenerator(
-                    infra.fullInfra(),
-                    null,
-                    IncrementalRequirementEnvelopeAdapter(STANDARD_TRAIN, null, false),
-                ),
+                SpacingResourceGenerator(infra.fullInfra(), null),
                 STANDARD_TRAIN,
             )
         val defaultNode =

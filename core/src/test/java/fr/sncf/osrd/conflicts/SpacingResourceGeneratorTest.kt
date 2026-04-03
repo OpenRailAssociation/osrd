@@ -107,18 +107,18 @@ class SpacingResourceGeneratorTest {
                 )
                 .map { it.mapValue(infra.rawInfra.getZonePathZone(it.value)) }
         val length = blockRanges.last().pathEnd
-        val spacingResourceGenerator =
-            SpacingResourceGenerator(infra, null, makeCallbacks(length, true))
+        val spacingResourceGenerator = SpacingResourceGenerator(infra, null)
         spacingResourceGenerator.extendPath(blockRanges, routeRanges, listOf(), true)
-        resourceUseOnSingleCall = spacingResourceGenerator.processUpdate()!!
+        resourceUseOnSingleCall =
+            spacingResourceGenerator.processUpdate(makeCallbacks(length, true))!!
     }
 
     @Test
     fun testDifferentPathLengths() {
         // Only the first block has a simulation (not marked as complete), the path moves forward
         // one block at a time.
-        val automaton =
-            SpacingResourceGenerator(infra, null, makeCallbacks(blockRanges[0].pathEnd, false))
+        val automaton = SpacingResourceGenerator(infra, null)
+        val callbacks = makeCallbacks(blockRanges[0].pathEnd, false)
         val res = mutableListOf<List<SpacingRequirement>?>()
         for (i in blockRanges.indices) {
             val blockRange = blockRanges[i]
@@ -129,7 +129,7 @@ class SpacingResourceGeneratorTest {
                 listOf(),
                 isPathComplete = i == blockRanges.lastIndex,
             )
-            val iterationResult = automaton.processUpdate()
+            val iterationResult = automaton.processUpdate(callbacks)
             res.add(iterationResult)
         }
         for (i in res.indices) {
@@ -145,14 +145,13 @@ class SpacingResourceGeneratorTest {
     fun testWithIncrementalSimulationUpdates() {
         // The path is complete right from the start, the simulation moves forward one block at a
         // time
-        val automaton =
-            SpacingResourceGenerator(infra, null, makeCallbacks(blockRanges[0].pathEnd, false))
+        val automaton = SpacingResourceGenerator(infra, null)
         automaton.extendPath(blockRanges, routeRanges, listOf(), isPathComplete = true)
         val res = mutableListOf<List<SpacingRequirement>>()
         for (i in blockRanges.indices) {
             val blockRange = blockRanges[i]
-            automaton.callbacks = makeCallbacks(blockRange.pathEnd, i == blockRanges.lastIndex)
-            val iterationResult = automaton.processUpdate()!!
+            val callbacks = makeCallbacks(blockRange.pathEnd, i == blockRanges.lastIndex)
+            val iterationResult = automaton.processUpdate(callbacks)!!
             res.add(iterationResult)
         }
 
@@ -171,13 +170,12 @@ class SpacingResourceGeneratorTest {
         // increments.
         // This isn't a realistic way to use the API, but it's an easy way to look for incomplete
         // resource use.
-        val automaton =
-            SpacingResourceGenerator(infra, null, makeCallbacks(blockRanges[0].pathEnd, false))
+        val automaton = SpacingResourceGenerator(infra, null)
         automaton.extendPath(blockRanges, routeRanges, listOf(), isPathComplete = true)
         val res = mutableListOf<List<SpacingRequirement>>()
         for (length in 2500..2510) { // Along the second block, no resource should be freed there
-            automaton.callbacks = makeCallbacks(Offset(length.meters), false)
-            res.add(automaton.processUpdate()!!)
+            val callbacks = makeCallbacks(Offset(length.meters), false)
+            res.add(automaton.processUpdate(callbacks)!!)
         }
         val partialResources = res[0].filter { !it.isComplete }
         assertTrue { partialResources.isNotEmpty() }
@@ -203,23 +201,23 @@ class SpacingResourceGeneratorTest {
         // The rolling stock is longer than the train path, every resource use should be incomplete
         val length = blockRanges.last().pathEnd - 1.meters
         val callbacks = makeCallbacks(length, false, rollingStock = TestTrains.VERY_LONG_FAST_TRAIN)
-        val automaton = SpacingResourceGenerator(infra, null, callbacks)
+        val automaton = SpacingResourceGenerator(infra, null)
         automaton.extendPath(blockRanges, routeRanges, listOf(), isPathComplete = true)
-        val res = automaton.processUpdate()!!
+        val res = automaton.processUpdate(callbacks)!!
         for (requirement in res) {
             assertFalse { requirement.isComplete }
-            assertEquals(automaton.callbacks!!.currentTime, requirement.endTime)
+            assertEquals(callbacks.currentTime, requirement.endTime)
         }
     }
 
     @Test
     fun testRequiredPathLength() {
-        val automaton =
-            SpacingResourceGenerator(infra, null, makeCallbacks(blockRanges[0].pathEnd, false))
+        val automaton = SpacingResourceGenerator(infra, null)
+        val callbacks = makeCallbacks(blockRanges[0].pathEnd, false)
         val blockRanges = blockRanges.subList(0, 3)
         val routeRanges = routeRanges.subRange(Offset.zero(), blockRanges.last().pathEnd)
         automaton.extendPath(blockRanges, routeRanges, listOf(), isPathComplete = false)
-        val iterationResult = automaton.processUpdate()
+        val iterationResult = automaton.processUpdate(callbacks)
 
         // We should have just enough data to generate resource use
         assertNotNull(iterationResult)
@@ -240,7 +238,7 @@ class SpacingResourceGeneratorTest {
         val stops = listOf(TrainStop(stopOffset.meters, stopDuration, SHORT_SLIP_STOP))
 
         // Build path
-        val automaton = SpacingResourceGenerator(infra, null, null)
+        val automaton = SpacingResourceGenerator(infra, null)
         automaton.extendPath(
             blockRanges,
             routeRanges,
@@ -255,15 +253,12 @@ class SpacingResourceGeneratorTest {
 
         // Automaton 1: two different calls, at the stop and at the end
         val automaton1 = automaton.clone()
-        automaton1.callbacks = callbacksAtStop
-        val incrementalResultAtStop = automaton1.processUpdate()!!
-        automaton1.callbacks = fullCallbacks
-        val incrementalResultAtArrival = automaton1.processUpdate()!!
+        val incrementalResultAtStop = automaton1.processUpdate(callbacksAtStop)!!
+        val incrementalResultAtArrival = automaton1.processUpdate(fullCallbacks)!!
 
         // For comparison, results with a single call
         val automaton2 = automaton.clone()
-        automaton2.callbacks = fullCallbacks
-        val oneShotResults = automaton2.processUpdate()!!
+        val oneShotResults = automaton2.processUpdate(fullCallbacks)!!
         val stopDepartureTime =
             callbacksAtStop.arrivalTimeInRange(stopOffset, stopOffset) + stopDuration
 

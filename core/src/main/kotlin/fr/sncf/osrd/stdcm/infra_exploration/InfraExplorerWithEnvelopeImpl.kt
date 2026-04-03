@@ -91,17 +91,7 @@ data class InfraExplorerWithEnvelopeImpl(
     }
 
     override fun withReplacedEnvelope(envelope: Envelope): InfraExplorerWithEnvelope {
-        val spacingRequirementAutomaton =
-            spacingRequirementAutomaton
-                .clone()
-                .updateCallbacks(
-                    IncrementalRequirementEnvelopeAdapter(
-                        rollingStock,
-                        EnvelopeConcat.from(listOf(envelope)),
-                        true,
-                        endAtStop(),
-                    )
-                )
+        val spacingRequirementAutomaton = spacingRequirementAutomaton.clone()
         return copy(
             envelopes = appendOnlyLinkedListOf(LocatedEnvelopeInterpolate(envelope, 0.0, 0.0)),
             spacingRequirementAutomaton = spacingRequirementAutomaton,
@@ -139,7 +129,7 @@ data class InfraExplorerWithEnvelopeImpl(
 
         // Path is complete and has been completely simulated
         val simulationComplete = isPathComplete && getLookahead().isEmpty()
-        spacingRequirementAutomaton.callbacks =
+        val spacingRequirementAutomatonCallbacks =
             IncrementalRequirementEnvelopeAdapter(
                 rollingStock,
                 getFullEnvelope(),
@@ -147,7 +137,7 @@ data class InfraExplorerWithEnvelopeImpl(
                 endAtStop(),
             )
         val updatedRequirements =
-            spacingRequirementAutomaton.processUpdate()
+            spacingRequirementAutomaton.processUpdate(spacingRequirementAutomatonCallbacks)
                 ?: throw BlockAvailabilityInterface.NotEnoughLookaheadError()
         spacingRequirementsCache = SoftReference(updatedRequirements)
         return updatedRequirements
@@ -164,12 +154,6 @@ data class InfraExplorerWithEnvelopeImpl(
                 spacingRequirementAutomaton.loadedSignalInfra,
                 spacingRequirementAutomaton.simulator,
                 spacingRequirementAutomaton.context,
-                IncrementalRequirementEnvelopeAdapter(
-                    rollingStock,
-                    getFullEnvelope(),
-                    simulationComplete,
-                    endAtStop(),
-                ),
             )
         newAutomaton.extendPath(
             infraExplorer.getBlocksInRange(),
@@ -178,8 +162,14 @@ data class InfraExplorerWithEnvelopeImpl(
             isPathComplete,
         )
         val res =
-            newAutomaton.processUpdate()
-                ?: throw BlockAvailabilityInterface.NotEnoughLookaheadError()
+            newAutomaton.processUpdate(
+                IncrementalRequirementEnvelopeAdapter(
+                    rollingStock,
+                    getFullEnvelope(),
+                    simulationComplete,
+                    endAtStop(),
+                )
+            ) ?: throw BlockAvailabilityInterface.NotEnoughLookaheadError()
         return res
     }
 
