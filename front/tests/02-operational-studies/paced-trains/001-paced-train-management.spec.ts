@@ -76,24 +76,24 @@ test.describe('@op @paced-trains', () => {
   let trainScheduleSet: TrainScheduleSet;
   let infra: Infra;
 
-  test.beforeAll('Fetch infrastructure and set up the scenario', async () => {
+  test.beforeAll('Fetch infrastructure', async () => {
     infra = await getInfra();
-    ({ project, study, scenario, trainScheduleSet } = await createScenario());
-  });
-
-  test.afterAll('Delete the created scenario', async () => {
-    await deleteScenario(study.id, scenario.name);
   });
 
   test.beforeEach(
     'Navigate to scenario page and wait for infrastructure to be loaded',
     async ({ page }) => {
+      ({ project, study, scenario, trainScheduleSet } = await createScenario());
       await page.goto(
         `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
       );
       await waitForInfraStateToBeCached(infra.id);
     }
   );
+
+  test.afterEach('Delete the created scenario', async () => {
+    await deleteScenario(study.id, scenario.name);
+  });
 
   /** *************** Test 1 **************** */
   test('Verify default behaviors with paced train mode', async ({ operationalStudiesPage }) => {
