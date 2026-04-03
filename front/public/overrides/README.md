@@ -1,6 +1,6 @@
 # Overrides
 
-In order to configure the app, you can provide a json `overrides.json` file located in [`front/public/locales/overrides/`](.).
+In order to configure the app, you can provide a json `overrides.json` file located in [`front/public/overrides/`](.).
 
 This contains both settings aimed at deployment in production, such as custom module names and logos, as well as generally useful settings even when developing locally, such as the railway manager interface url.
 
