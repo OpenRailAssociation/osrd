@@ -139,8 +139,8 @@ pub async fn run_migrations(
     // Check for an existing migration tuple
     let mut hasher = Sha1::new();
     hasher.update(migration_model_dsl);
-    let new_model_hash = hasher.finalize();
-    let new_model_hash = format!("{new_model_hash:x}");
+    let hash = hasher.finalize();
+    let new_model_hash: String = hash.iter().map(|b| format!("{:02x}", b)).collect();
     let migration = Migration(migration_number, new_model_hash.clone());
     match client_migrations
         .list_objects(Migration::apply().query_objects(&Editoast))
@@ -260,8 +260,8 @@ mod tests {
         let current_migration = tuple_migrations.first().unwrap();
         let mut hasher = Sha1::new();
         hasher.update(expected_model);
-        let expected_model_hash = hasher.finalize();
-        let expected_model_hash = format!("{expected_model_hash:x}");
+        let hash = hasher.finalize();
+        let expected_model_hash: String = hash.iter().map(|b| format!("{:02x}", b)).collect();
         let expected_migration = Migration(expected_migration, expected_model_hash);
         assert_eq!(current_migration, &expected_migration);
     }

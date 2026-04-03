@@ -118,7 +118,7 @@ impl From<InfraError> for ErrorWithHash {
         let mut hasher = Sha1::new();
         hasher.update(serde_json::to_vec(&error).unwrap());
         let hash = hasher.finalize();
-        let hash: ErrorHash = format!("{hash:x}");
+        let hash: ErrorHash = hash.iter().map(|b| format!("{:02x}", b)).collect();
         ErrorWithHash { error, hash }
     }
 }
