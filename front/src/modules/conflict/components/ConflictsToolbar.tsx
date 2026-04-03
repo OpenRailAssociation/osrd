@@ -43,8 +43,9 @@ const ConflictsToolbar = ({
           onChange={onToggleFilter}
           disabled={disabled || !selectedTrainName}
           small
-        />
-        <div className="filter-label">{getDisplayText()}</div>
+        >
+          <div className="filter-label">{getDisplayText()}</div>
+        </Checkbox>
       </div>
     </div>
   );
