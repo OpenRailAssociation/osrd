@@ -204,7 +204,8 @@
         "errorMessage": "Nous sommes désolés de ne pas avoir pu traiter votre demande. L’équipe LMR a été notifiée et prendra connaissance de la situation dès que possible.",
         "failed": "Un problème technique est survenu"
       },
-      "transferSheetToRailManager": "Transmettre à GESICO"
+      "transferSheetToRailManager": "Transmettre à GESICO",
+      "transferSheetToRailManagerDisabledForConsistChange": "L'envoi à GESICO avec des changements de convoi sera disponible dans une prochaine version !"
     },
     "stopCalculation": "Arrêter"
   },
