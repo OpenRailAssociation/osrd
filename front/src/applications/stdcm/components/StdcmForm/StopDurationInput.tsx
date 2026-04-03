@@ -31,22 +31,10 @@ const StopDurationInput = ({ pathStep }: StopDurationInputProps) => {
       pathStep.stopFor !== undefined &&
       pathStep.stopFor < new Duration({ minutes: 3 });
 
-    const isInvalidConsistChange =
-      pathStep.stopFor !== undefined &&
-      pathStep.consistChange &&
-      pathStep.stopFor < new Duration({ minutes: 30 });
-
     if (isInvalidDriverStop) {
       return {
         status: 'warning',
         message: t('stdcmErrors.routeErrors.viaStopDurationDriverSwitchTooShort'),
-      };
-    }
-
-    if (isInvalidConsistChange) {
-      return {
-        status: 'warning',
-        message: t('stdcmErrors.routeErrors.viaStopDurationConsistChangeTooShort'),
       };
     }
 
