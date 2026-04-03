@@ -408,6 +408,7 @@ mod tests {
     use schemas::paced_train::ExceptionType;
     use schemas::paced_train::PacedTrainException;
     use schemas::paced_train::PathAndScheduleChangeGroup;
+    use schemas::primitives::PositiveDuration;
     use schemas::train_schedule::MarginValue;
     use schemas::train_schedule::Margins;
 
@@ -537,6 +538,41 @@ mod tests {
 
         assert_eq!(&list_result[0].exceptions[0], &exception_1);
         assert_eq!(&list_result[0].exceptions[1], &exception_2);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn create_paced_train_with_out_of_bound_exceptions() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
+        let mut paced_train = simple_paced_train_base();
+        paced_train.paced.as_mut().unwrap().interval =
+            PositiveDuration::new(chrono::Duration::seconds(50));
+        paced_train.paced.as_mut().unwrap().time_window =
+            PositiveDuration::new(chrono::Duration::seconds(120));
+
+        let exception = simple_modified_exception_with_change_groups("modified_exception", 3);
+        paced_train.paced.as_mut().unwrap().exceptions = vec![exception];
+
+        let request = app
+            .post(
+                format!(
+                    "/train_schedule_sets/{}/train_schedules",
+                    train_schedule_set.id
+                )
+                .as_str(),
+            )
+            .json(&vec![paced_train.clone()]);
+
+        let response = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::UNPROCESSABLE_ENTITY)
+            .string();
+        assert!(response.contains(
+            "Modified exception 'modified_exception' references invalid occurrence index 3"
+        ))
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
