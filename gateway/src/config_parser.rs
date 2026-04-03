@@ -140,6 +140,7 @@ pub async fn parse_auth_config(config: AuthConfig) -> AuthContext {
                 username_whitelist,
                 amr,
                 acr,
+                identity_claim_field,
             } => {
                 let cfg = &OidcConfig::new(
                     issuer_url,
@@ -149,6 +150,7 @@ pub async fn parse_auth_config(config: AuthConfig) -> AuthContext {
                     client_secret,
                     acr,
                     amr,
+                    identity_claim_field,
                     profile_scope_override,
                     username_whitelist,
                 );

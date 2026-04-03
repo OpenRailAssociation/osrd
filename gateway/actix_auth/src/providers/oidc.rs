@@ -1,13 +1,20 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use actix_web::http::header::{self, LanguageTag, Preference};
 use actix_web::{FromRequest, HttpRequest, HttpResponse, http::StatusCode, web};
 use futures_util::future::LocalBoxFuture;
 use log::error;
-use openidconnect::core::{CoreAuthenticationFlow, CoreClient, CoreProviderMetadata};
+use openidconnect::core::{
+    CoreAuthDisplay, CoreAuthPrompt, CoreAuthenticationFlow, CoreErrorResponseType,
+    CoreGenderClaim, CoreJsonWebKey, CoreJweContentEncryptionAlgorithm, CoreJwsSigningAlgorithm,
+    CoreProviderMetadata, CoreRevocableToken, CoreRevocationErrorResponse,
+    CoreTokenIntrospectionResponse, CoreTokenType,
+};
 use openidconnect::{
-    AccessTokenHash, AuthorizationCode, ClientId, ClientSecret, CsrfToken, DiscoveryError,
-    IssuerUrl, LocalizedClaim, Nonce, OAuth2TokenResponse, RedirectUrl, Scope, TokenResponse,
+    AccessTokenHash, AdditionalClaims, AuthorizationCode, Client, ClientId, ClientSecret,
+    CsrfToken, DiscoveryError, EmptyExtraTokenFields, IdTokenFields, IssuerUrl, LocalizedClaim,
+    Nonce, OAuth2TokenResponse, RedirectUrl, Scope, StandardErrorResponse, StandardTokenResponse,
+    TokenResponse,
 };
 use openidconnect::{EndpointMaybeSet, EndpointNotSet, EndpointSet, HttpClientError};
 use serde::{Deserialize, Serialize};
@@ -25,10 +32,46 @@ pub struct OidcConfig {
     pub client_secret: Option<ClientSecret>,
     pub acr: Option<String>,
     pub amr: Vec<String>,
+    pub identity_claim_field: Option<String>,
     pub profile_scope_override: Option<String>,
     pub username_whitelist: Option<HashSet<String>>,
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct AllAdditionalClaims(HashMap<String, String>);
+
+impl AdditionalClaims for AllAdditionalClaims {}
+
+type FullTokenResponse = StandardTokenResponse<
+    IdTokenFields<
+        AllAdditionalClaims,
+        EmptyExtraTokenFields,
+        CoreGenderClaim,
+        CoreJweContentEncryptionAlgorithm,
+        CoreJwsSigningAlgorithm,
+    >,
+    CoreTokenType,
+>;
+
+type OIDCClient = Client<
+    AllAdditionalClaims,
+    CoreAuthDisplay,
+    CoreGenderClaim,
+    CoreJweContentEncryptionAlgorithm,
+    CoreJsonWebKey,
+    CoreAuthPrompt,
+    StandardErrorResponse<CoreErrorResponseType>,
+    FullTokenResponse,
+    CoreTokenIntrospectionResponse,
+    CoreRevocableToken,
+    CoreRevocationErrorResponse,
+    EndpointSet,
+    EndpointNotSet,
+    EndpointNotSet,
+    EndpointNotSet,
+    EndpointMaybeSet,
+    EndpointMaybeSet,
+>;
 impl OidcConfig {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
@@ -39,6 +82,7 @@ impl OidcConfig {
         client_secret: String,
         acr: Option<String>,
         amr: Vec<String>,
+        identity_claim_field: Option<String>,
         profile_scope_override: Option<String>,
         username_whitelist: Option<HashSet<String>>,
     ) -> Self {
@@ -50,6 +94,7 @@ impl OidcConfig {
             client_secret: Some(ClientSecret::new(client_secret)),
             acr,
             amr,
+            identity_claim_field,
             profile_scope_override,
             username_whitelist,
         }
@@ -60,16 +105,8 @@ impl OidcConfig {
 pub struct OidcProvider {
     pub amr: Vec<String>,
     pub acr: Option<String>,
-    pub client: Box<
-        CoreClient<
-            EndpointSet,
-            EndpointNotSet,
-            EndpointNotSet,
-            EndpointNotSet,
-            EndpointMaybeSet,
-            EndpointMaybeSet,
-        >,
-    >,
+    pub identity_claim_field: Option<String>,
+    pub client: Box<OIDCClient>,
     pub post_login_url: Box<url::Url>,
     pub profile_scope_override: Option<String>,
     pub username_whitelist: Option<HashSet<String>>,
@@ -85,7 +122,7 @@ impl OidcProvider {
             CoreProviderMetadata::discover_async(*config.issuer_url.clone(), &client).await?;
 
         let client = Box::new(
-            CoreClient::from_provider_metadata(
+            OIDCClient::from_provider_metadata(
                 provider_metadata,
                 config.client_id.clone(),
                 config.client_secret.clone(),
@@ -97,6 +134,7 @@ impl OidcProvider {
         Ok(Self {
             amr: config.amr.clone(),
             acr: config.acr.clone(),
+            identity_claim_field: config.identity_claim_field.clone(),
             client,
             post_login_url: config.post_login_url.clone(),
             profile_scope_override: config.profile_scope_override.clone(),
@@ -244,9 +282,19 @@ impl SessionProvider for OidcProvider {
 
             let accept_language = web::Header::<header::AcceptLanguage>::extract(&req).await;
             let language_prefs = accept_language.ok().map(|langs| langs.ranked());
-
             // the subject is a unique user identifier
-            let subject = claims.subject().to_string();
+            let subject = if let Some(identity_claim_field) = &self.identity_claim_field {
+                claims
+                    .additional_claims()
+                    .0
+                    .get(identity_claim_field)
+                    .cloned()
+                    .ok_or_else(|| {
+                        CallbackError::IdentityFieldNotFoundInClaims(identity_claim_field.clone())
+                    })?
+            } else {
+                claims.subject().to_string()
+            };
 
             // the name is meant to be displayed
             let name = claims
@@ -366,6 +414,8 @@ pub enum CallbackError {
     InvalidAcr,
     #[error("invalid amr")]
     InvalidAmr,
+    #[error("identity_claim_field not found: '{0}'")]
+    IdentityFieldNotFoundInClaims(String),
 }
 
 impl actix_web::ResponseError for CallbackError {
@@ -380,6 +430,7 @@ impl actix_web::ResponseError for CallbackError {
             CallbackError::UserNotAuthorized => StatusCode::FORBIDDEN,
             CallbackError::InvalidAcr => StatusCode::BAD_REQUEST,
             CallbackError::InvalidAmr => StatusCode::BAD_REQUEST,
+            CallbackError::IdentityFieldNotFoundInClaims(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 }

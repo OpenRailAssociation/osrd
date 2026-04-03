@@ -142,6 +142,11 @@ pub enum AuthProvider {
         acr: Option<String>,
         #[serde(default)]
         amr: Vec<String>,
+        /// Claim field to use as subject identity (default `sub`).
+        /// The default option should be preferred, as the “sub” field is designated for this purpose in the [OIDC specification](https://openid.net/specs/openid-connect-core-1_0.html#IDToken).
+        /// This field must be unique and never reassigned. It must not exceed 255 ASCII characters.
+        #[serde(default)]
+        identity_claim_field: Option<String>,
     },
 }
 
