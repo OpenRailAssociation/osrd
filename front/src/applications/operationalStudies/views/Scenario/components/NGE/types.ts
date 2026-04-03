@@ -25,6 +25,7 @@ export type NodeDto = {
   symmetryAxis: number;
   warnings: unknown[];
   labelIds: number[];
+  isCollapsed: boolean;
 };
 
 export type PortDto = {

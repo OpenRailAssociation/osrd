@@ -22,7 +22,8 @@
       },
       "symmetryAxis": null,
       "warnings": null,
-      "labelIds": []
+      "labelIds": [],
+      "isCollapsed": false
     },
     {
       "id": 7,
@@ -46,7 +47,8 @@
       },
       "symmetryAxis": null,
       "warnings": null,
-      "labelIds": []
+      "labelIds": [],
+      "isCollapsed": false
     },
     {
       "id": 8,
@@ -73,7 +75,8 @@
       },
       "symmetryAxis": null,
       "warnings": null,
-      "labelIds": []
+      "labelIds": [],
+      "isCollapsed": false
     },
     {
       "id": 10,
@@ -97,7 +100,8 @@
       },
       "symmetryAxis": null,
       "warnings": null,
-      "labelIds": []
+      "labelIds": [],
+      "isCollapsed": false
     },
     {
       "id": 11,
@@ -121,7 +125,8 @@
       },
       "symmetryAxis": null,
       "warnings": null,
-      "labelIds": []
+      "labelIds": [],
+      "isCollapsed": false
     }
   ],
   "trainrunSections": [
