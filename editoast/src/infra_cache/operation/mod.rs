@@ -69,6 +69,7 @@ impl utoipa::PartialSchema for Operation {
         #[derive(ToSchema, Serialize)]
         #[serde(untagged)]
         #[allow(unused)]
+        #[schema(title_variants)]
         enum Operation {
             Create {
                 #[schema(inline)]

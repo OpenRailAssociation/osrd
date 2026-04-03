@@ -1838,6 +1838,7 @@ paths:
                     allOf:
                     - oneOf:
                       - type: object
+                        title: OccurrenceIdBase
                         required:
                         - train_schedule_id
                         - index
@@ -1854,6 +1855,7 @@ paths:
                             enum:
                             - base
                       - type: object
+                        title: OccurrenceIdModified
                         required:
                         - train_schedule_id
                         - index
@@ -1873,6 +1875,7 @@ paths:
                             enum:
                             - modified
                       - type: object
+                        title: OccurrenceIdCreated
                         required:
                         - train_schedule_id
                         - exception_key
@@ -4435,6 +4438,7 @@ paths:
                         allOf:
                         - oneOf:
                           - type: object
+                            title: OccurrenceIdBase
                             required:
                             - train_schedule_id
                             - index
@@ -4451,6 +4455,7 @@ paths:
                                 enum:
                                 - base
                           - type: object
+                            title: OccurrenceIdModified
                             required:
                             - train_schedule_id
                             - index
@@ -4470,6 +4475,7 @@ paths:
                                 enum:
                                 - modified
                           - type: object
+                            title: OccurrenceIdCreated
                             required:
                             - train_schedule_id
                             - exception_key
@@ -5093,6 +5099,7 @@ components:
           items:
             oneOf:
             - type: object
+              title: OccurrenceIdBase
               required:
               - train_schedule_id
               - index
@@ -5109,6 +5116,7 @@ components:
                   enum:
                   - base
             - type: object
+              title: OccurrenceIdModified
               required:
               - train_schedule_id
               - index
@@ -5128,6 +5136,7 @@ components:
                   enum:
                   - modified
             - type: object
+              title: OccurrenceIdCreated
               required:
               - train_schedule_id
               - exception_key
@@ -9051,6 +9060,7 @@ components:
     EnergySource:
       oneOf:
       - type: object
+        title: EnergySourceElectrification
         description: energy source for a rolling stock representing a electrification
         required:
         - max_input_power
@@ -9072,6 +9082,7 @@ components:
           max_output_power:
             $ref: '#/components/schemas/SpeedDependantPower'
       - type: object
+        title: EnergySourcePowerPack
         required:
         - max_input_power
         - max_output_power
@@ -9095,6 +9106,7 @@ components:
           max_output_power:
             $ref: '#/components/schemas/SpeedDependantPower'
       - type: object
+        title: EnergySourceBattery
         description: energy source for a rolling stock representing a battery
         required:
         - max_input_power
@@ -9412,6 +9424,7 @@ components:
     InfraErrorType:
       oneOf:
       - type: object
+        title: InfraErrorTypeDuplicatedGroup
         required:
         - original_group_path
         - error_type
@@ -9423,6 +9436,7 @@ components:
           original_group_path:
             type: string
       - type: object
+        title: InfraErrorTypeEmptyObject
         required:
         - error_type
         properties:
@@ -9431,6 +9445,7 @@ components:
             enum:
             - empty_object
       - type: object
+        title: InfraErrorTypeInvalidGroup
         required:
         - group
         - switch_type
@@ -9445,6 +9460,7 @@ components:
           switch_type:
             type: string
       - type: object
+        title: InfraErrorTypeInvalidReference
         required:
         - reference
         - error_type
@@ -9456,6 +9472,7 @@ components:
           reference:
             $ref: '#/components/schemas/ObjectRef'
       - type: object
+        title: InfraErrorTypeInvalidRoute
         required:
         - error_type
         properties:
@@ -9464,6 +9481,7 @@ components:
             enum:
             - invalid_route
       - type: object
+        title: InfraErrorTypeInvalidSwitchPorts
         required:
         - error_type
         properties:
@@ -9472,6 +9490,7 @@ components:
             enum:
             - invalid_switch_ports
       - type: object
+        title: InfraErrorTypeMissingRoute
         required:
         - error_type
         properties:
@@ -9480,6 +9499,7 @@ components:
             enum:
             - missing_route
       - type: object
+        title: InfraErrorTypeMissingBufferStop
         required:
         - endpoint
         - error_type
@@ -9491,6 +9511,7 @@ components:
             enum:
             - missing_buffer_stop
       - type: object
+        title: InfraErrorTypeNodeEndpointsNotUnique
         required:
         - error_type
         properties:
@@ -9499,6 +9520,7 @@ components:
             enum:
             - node_endpoints_not_unique
       - type: object
+        title: InfraErrorTypeObjectOutOfPath
         required:
         - reference
         - error_type
@@ -9510,6 +9532,7 @@ components:
           reference:
             $ref: '#/components/schemas/ObjectRef'
       - type: object
+        title: InfraErrorTypeOddBufferStopLocation
         required:
         - error_type
         properties:
@@ -9518,6 +9541,7 @@ components:
             enum:
             - odd_buffer_stop_location
       - type: object
+        title: InfraErrorTypeOutOfRange
         required:
         - position
         - expected_range
@@ -9539,6 +9563,7 @@ components:
           reference:
             $ref: '#/components/schemas/ObjectRef'
       - type: object
+        title: InfraErrorTypeOverlappingElectrifications
         required:
         - reference
         - error_type
@@ -9550,6 +9575,7 @@ components:
           reference:
             $ref: '#/components/schemas/ObjectRef'
       - type: object
+        title: InfraErrorTypeOverlappingSpeedSections
         required:
         - reference
         - error_type
@@ -9561,6 +9587,7 @@ components:
           reference:
             $ref: '#/components/schemas/ObjectRef'
       - type: object
+        title: InfraErrorTypeOverlappingSwitches
         required:
         - reference
         - error_type
@@ -9572,6 +9599,7 @@ components:
           reference:
             $ref: '#/components/schemas/ObjectRef'
       - type: object
+        title: InfraErrorTypeUnknownPortName
         required:
         - port_name
         - error_type
@@ -9583,6 +9611,7 @@ components:
           port_name:
             type: string
       - type: object
+        title: InfraErrorTypeUnusedPort
         required:
         - port_name
         - error_type
@@ -9602,6 +9631,7 @@ components:
     InfraObject:
       oneOf:
       - type: object
+        title: InfraObjectTrackSection
         required:
         - railjson
         - obj_type
@@ -9613,6 +9643,7 @@ components:
           railjson:
             $ref: '#/components/schemas/TrackSection'
       - type: object
+        title: InfraObjectSignal
         required:
         - railjson
         - obj_type
@@ -9624,6 +9655,7 @@ components:
           railjson:
             $ref: '#/components/schemas/Signal'
       - type: object
+        title: InfraObjectNeutralSection
         required:
         - railjson
         - obj_type
@@ -9635,6 +9667,7 @@ components:
           railjson:
             $ref: '#/components/schemas/NeutralSection'
       - type: object
+        title: InfraObjectSpeedSection
         required:
         - railjson
         - obj_type
@@ -9646,6 +9679,7 @@ components:
           railjson:
             $ref: '#/components/schemas/SpeedSection'
       - type: object
+        title: InfraObjectSwitch
         required:
         - railjson
         - obj_type
@@ -9657,6 +9691,7 @@ components:
           railjson:
             $ref: '#/components/schemas/Switch'
       - type: object
+        title: InfraObjectSwitchType
         required:
         - railjson
         - obj_type
@@ -9668,6 +9703,7 @@ components:
           railjson:
             $ref: '#/components/schemas/SwitchType'
       - type: object
+        title: InfraObjectDetector
         required:
         - railjson
         - obj_type
@@ -9679,6 +9715,7 @@ components:
           railjson:
             $ref: '#/components/schemas/Detector'
       - type: object
+        title: InfraObjectBufferStop
         required:
         - railjson
         - obj_type
@@ -9690,6 +9727,7 @@ components:
           railjson:
             $ref: '#/components/schemas/BufferStop'
       - type: object
+        title: InfraObjectRoute
         required:
         - railjson
         - obj_type
@@ -9701,6 +9739,7 @@ components:
           railjson:
             $ref: '#/components/schemas/Route'
       - type: object
+        title: InfraObjectOperationalPoint
         required:
         - railjson
         - obj_type
@@ -9712,6 +9751,7 @@ components:
           railjson:
             $ref: '#/components/schemas/OperationalPoint'
       - type: object
+        title: InfraObjectElectrification
         required:
         - railjson
         - obj_type
@@ -9723,6 +9763,7 @@ components:
           railjson:
             $ref: '#/components/schemas/Electrification'
       - type: object
+        title: InfraObjectLevelCrossing
         required:
         - railjson
         - obj_type
@@ -10402,6 +10443,7 @@ components:
               type: string
               enum:
               - CREATE
+        title: OperationCreate
       - allOf:
         - type: object
           required:
@@ -10427,6 +10469,7 @@ components:
               type: string
               enum:
               - UPDATE
+        title: OperationUpdate
       - allOf:
         - type: object
           description: A delete operation. Contains same information as a object ref but has another serialization.
@@ -10447,6 +10490,7 @@ components:
               type: string
               enum:
               - DELETE
+        title: OperationDelete
     OperationalPoint:
       type: object
       required:
@@ -10796,6 +10840,7 @@ components:
               type: string
               enum:
               - add
+        title: PatchOperationAddOperation
         description: '''add'' operation'
       - allOf:
         - $ref: '#/components/schemas/RemoveOperation'
@@ -10808,6 +10853,7 @@ components:
               type: string
               enum:
               - remove
+        title: PatchOperationRemoveOperation
         description: '''remove'' operation'
       - allOf:
         - $ref: '#/components/schemas/ReplaceOperation'
@@ -10820,6 +10866,7 @@ components:
               type: string
               enum:
               - replace
+        title: PatchOperationReplaceOperation
         description: '''replace'' operation'
       - allOf:
         - $ref: '#/components/schemas/MoveOperation'
@@ -10832,6 +10879,7 @@ components:
               type: string
               enum:
               - move
+        title: PatchOperationMoveOperation
         description: '''move'' operation'
       - allOf:
         - $ref: '#/components/schemas/CopyOperation'
@@ -10844,6 +10892,7 @@ components:
               type: string
               enum:
               - copy
+        title: PatchOperationCopyOperation
         description: '''copy'' operation'
       - allOf:
         - $ref: '#/components/schemas/TestOperation'
@@ -10856,6 +10905,7 @@ components:
               type: string
               enum:
               - test
+        title: PatchOperationTestOperation
         description: '''test'' operation'
       description: JSON Patch single patch operation
     PathAndScheduleChangeGroup:
@@ -10978,6 +11028,7 @@ components:
                 items:
                   oneOf:
                   - type: object
+                    title: PropertyElectrificationValueElectrification
                     description: Electrified section with a given voltage
                     required:
                     - voltage
@@ -10990,6 +11041,7 @@ components:
                       voltage:
                         type: string
                   - type: object
+                    title: PropertyElectrificationValueNeutralSection
                     description: Neutral section with a lower pantograph instruction or just a dead section
                     required:
                     - lower_pantograph
@@ -11002,6 +11054,7 @@ components:
                         enum:
                         - neutral_section
                   - type: object
+                    title: PropertyElectrificationValueNonElectrified
                     description: Non electrified section
                     required:
                     - type
@@ -11121,6 +11174,7 @@ components:
               type: string
               enum:
               - pathfinding_input_error
+        title: PathfindingFailurePathfindingInputError
       - allOf:
         - $ref: '#/components/schemas/core.PathfindingNotFound'
         - type: object
@@ -11131,7 +11185,9 @@ components:
               type: string
               enum:
               - pathfinding_not_found
+        title: PathfindingFailurePathfindingNotFound
       - type: object
+        title: PathfindingFailureInternalError
         required:
         - core_error
         - failed_status
@@ -11279,6 +11335,7 @@ components:
               type: string
               enum:
               - success
+        title: PathfindingResultSuccess
       - allOf:
         - $ref: '#/components/schemas/PathfindingFailure'
         - type: object
@@ -11289,6 +11346,7 @@ components:
               type: string
               enum:
               - failure
+        title: PathfindingResultFailure
     PathfindingTrackLocationInput:
       type: object
       required:
@@ -12464,8 +12522,9 @@ components:
         object: operationalpoint
         query:
         - and
-        - - =
-          - - infra_id
+        - - like
+          - - to_string
+            - - infra_id
           - 2
         - - search
           - - name
@@ -12473,31 +12532,53 @@ components:
     SearchQuery:
       oneOf:
       - type: boolean
+        title: SearchQueryBoolean
       - type: number
+        title: SearchQueryNumber
         format: double
       - type: integer
+        title: SearchQueryInt
         format: int64
       - type: string
+        title: SearchQueryString
       - type: object
+        title: SearchQueryArray
       description: A search query
       example:
       - and
-      - - =
-        - - infra_id
+      - - like
+        - - to_string
+          - - infra_id
         - 2
       - - search
         - - name
         - plop
     SearchResultItem:
       oneOf:
-      - $ref: '#/components/schemas/SearchResultItemTrack'
-      - $ref: '#/components/schemas/SearchResultItemOperationalPoint'
-      - $ref: '#/components/schemas/SearchResultItemSignal'
-      - $ref: '#/components/schemas/SearchResultItemProject'
-      - $ref: '#/components/schemas/SearchResultItemStudy'
-      - $ref: '#/components/schemas/SearchResultItemScenario'
-      - $ref: '#/components/schemas/SearchResultItemTrainSchedule'
-      - $ref: '#/components/schemas/SearchResultItemUser'
+      - oneOf:
+        - $ref: '#/components/schemas/SearchResultItemTrack'
+        title: SearchResultItemSearchResultItemTrack
+      - oneOf:
+        - $ref: '#/components/schemas/SearchResultItemOperationalPoint'
+        title: SearchResultItemSearchResultItemOperationalPoint
+      - oneOf:
+        - $ref: '#/components/schemas/SearchResultItemSignal'
+        title: SearchResultItemSearchResultItemSignal
+      - oneOf:
+        - $ref: '#/components/schemas/SearchResultItemProject'
+        title: SearchResultItemSearchResultItemProject
+      - oneOf:
+        - $ref: '#/components/schemas/SearchResultItemStudy'
+        title: SearchResultItemSearchResultItemStudy
+      - oneOf:
+        - $ref: '#/components/schemas/SearchResultItemScenario'
+        title: SearchResultItemSearchResultItemScenario
+      - oneOf:
+        - $ref: '#/components/schemas/SearchResultItemTrainSchedule'
+        title: SearchResultItemSearchResultItemTrainSchedule
+      - oneOf:
+        - $ref: '#/components/schemas/SearchResultItemUser'
+        title: SearchResultItemSearchResultItemUser
       description: A search result item that depends on the query's `object`
     SearchResultItemOperationalPoint:
       type: object
@@ -12991,7 +13072,9 @@ components:
               type: string
               enum:
               - success
+        title: ResponseSuccess
       - type: object
+        title: ResponsePathfindingFailed
         required:
         - pathfinding_failed
         - status
@@ -13003,6 +13086,7 @@ components:
             enum:
             - pathfinding_failed
       - type: object
+        title: ResponseSimulationFailed
         required:
         - core_error
         - status
@@ -13045,6 +13129,7 @@ components:
               items:
                 oneOf:
                 - type: object
+                  title: ElectricalProfileValueNoProfile
                   required:
                   - electrical_profile_type
                   properties:
@@ -13053,6 +13138,7 @@ components:
                       enum:
                       - no_profile
                 - type: object
+                  title: ElectricalProfileValueProfile
                   required:
                   - handled
                   - electrical_profile_type
@@ -13124,6 +13210,7 @@ components:
                     - type: 'null'
                     - oneOf:
                       - type: object
+                        title: SpeedLimitSourceGivenTrainTag
                         required:
                         - tag
                         - speed_limit_source_type
@@ -13135,6 +13222,7 @@ components:
                           tag:
                             type: string
                       - type: object
+                        title: SpeedLimitSourceFallbackTag
                         required:
                         - tag
                         - speed_limit_source_type
@@ -13146,6 +13234,7 @@ components:
                           tag:
                             type: string
                       - type: object
+                        title: SpeedLimitSourceUnknownTag
                         required:
                         - speed_limit_source_type
                         properties:
@@ -13165,6 +13254,7 @@ components:
     SimulationSummaryResult:
       oneOf:
       - type: object
+        title: SummaryResponseSuccess
         description: Minimal information on a simulation's result
         required:
         - length
@@ -13252,8 +13342,10 @@ components:
               type: string
               enum:
               - pathfinding_not_found
+        title: SummaryResponsePathfindingNotFound
         description: Pathfinding not found
       - type: object
+        title: SummaryResponsePathfindingFailure
         description: An error has occurred during pathfinding
         required:
         - core_error
@@ -13266,6 +13358,7 @@ components:
             enum:
             - pathfinding_failure
       - type: object
+        title: SummaryResponseSimulationFailed
         description: An error has occurred during computing
         required:
         - error_type
@@ -13288,6 +13381,7 @@ components:
               type: string
               enum:
               - pathfinding_input_error
+        title: SummaryResponsePathfindingInputError
         description: InputError
     Slope:
       type: object
@@ -13488,6 +13582,7 @@ components:
     StdcmResponse:
       oneOf:
       - type: object
+        title: StdcmResponseSuccess
         required:
         - simulation
         - pathfinding_result
@@ -13510,6 +13605,7 @@ components:
             enum:
             - success
       - type: object
+        title: StdcmResponsePathNotFound
         required:
         - status
         properties:
@@ -13522,6 +13618,7 @@ components:
             enum:
             - path_not_found
       - type: object
+        title: StdcmResponsePreprocessingSimulationError
         required:
         - error
         - status
@@ -13537,6 +13634,7 @@ components:
             enum:
             - preprocessing_simulation_error
       - type: object
+        title: StdcmResponseInternalError
         required:
         - error
         - status
@@ -14026,6 +14124,7 @@ components:
     SupportedSignalingSystem:
       oneOf:
       - type: object
+        title: SupportedSignalingSystemBAL
         required:
         - type
         properties:
@@ -14034,6 +14133,7 @@ components:
             enum:
             - BAL
       - type: object
+        title: SupportedSignalingSystemBAPR
         required:
         - type
         properties:
@@ -14042,6 +14142,7 @@ components:
             enum:
             - BAPR
       - type: object
+        title: SupportedSignalingSystemTVM300
         required:
         - type
         properties:
@@ -14050,6 +14151,7 @@ components:
             enum:
             - TVM300
       - type: object
+        title: SupportedSignalingSystemTVM430
         required:
         - type
         properties:
@@ -14058,6 +14160,7 @@ components:
             enum:
             - TVM430
       - type: object
+        title: SupportedSignalingSystemEtcsLevel2
         required:
         - brake_params
         - type
@@ -14720,6 +14823,7 @@ components:
     Waypoint:
       oneOf:
       - type: object
+        title: WaypointBufferStop
         required:
         - id
         - type
@@ -14733,6 +14837,7 @@ components:
             enum:
             - BufferStop
       - type: object
+        title: WaypointDetector
         required:
         - id
         - type
@@ -15260,6 +15365,7 @@ components:
     core.PathfindingInputError:
       oneOf:
       - type: object
+        title: PathfindingInputErrorInvalidPathItems
         required:
         - items
         - error_type
@@ -15282,6 +15388,7 @@ components:
                 path_item:
                   $ref: '#/components/schemas/PathItemLocation'
       - type: object
+        title: PathfindingInputErrorNotEnoughPathItems
         required:
         - error_type
         properties:
@@ -15290,6 +15397,7 @@ components:
             enum:
             - not_enough_path_items
       - type: object
+        title: PathfindingInputErrorRollingStockNotFound
         required:
         - rolling_stock_name
         - error_type
@@ -15301,6 +15409,7 @@ components:
           rolling_stock_name:
             type: string
       - type: object
+        title: PathfindingInputErrorZeroLengthPath
         required:
         - error_type
         properties:
@@ -15311,6 +15420,7 @@ components:
     core.PathfindingNotFound:
       oneOf:
       - type: object
+        title: PathfindingNotFoundNotFoundInBlocks
         required:
         - track_section_ranges
         - length
@@ -15329,6 +15439,7 @@ components:
             items:
               $ref: '#/components/schemas/core.TrackRange'
       - type: object
+        title: PathfindingNotFoundNotFoundInRoutes
         required:
         - track_section_ranges
         - length
@@ -15347,6 +15458,7 @@ components:
             items:
               $ref: '#/components/schemas/core.TrackRange'
       - type: object
+        title: PathfindingNotFoundNotFoundInTracks
         required:
         - error_type
         properties:
@@ -15355,6 +15467,7 @@ components:
             enum:
             - not_found_in_tracks
       - type: object
+        title: PathfindingNotFoundIncompatibleConstraints
         required:
         - relaxed_constraints_path
         - incompatible_constraints
@@ -15616,6 +15729,7 @@ components:
           - type: 'null'
           - oneOf:
             - type: object
+              title: MarginValuePercentage
               required:
               - Percentage
               properties:
@@ -15623,6 +15737,7 @@ components:
                   type: number
                   format: double
             - type: object
+              title: MarginValueMinPer100Km
               required:
               - MinPer100Km
               properties:

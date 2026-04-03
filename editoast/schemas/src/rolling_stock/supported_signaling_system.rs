@@ -9,6 +9,7 @@ use crate::rolling_stock::EtcsBrakeParams;
 #[derive(Clone, Debug, Deserialize, Serialize, Display, Educe, ToSchema, strum::IntoStaticStr)]
 #[educe(Hash, Eq, PartialEq)]
 #[serde(tag = "type")]
+#[schema(title_variants)]
 #[allow(clippy::large_enum_variant)]
 pub enum SupportedSignalingSystem {
     BAL,

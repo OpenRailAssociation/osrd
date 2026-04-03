@@ -201,7 +201,7 @@ pub fn path_item_respect_margins<T: TrainScheduleLike>(
 // We accepted the difference of memory size taken by variants
 // Since there is only on success and others are error cases
 #[allow(clippy::large_enum_variant)]
-#[schema(as = SimulationResponse)]
+#[schema(as = SimulationResponse, title_variants)]
 pub enum Response {
     Success(SimulationResponseSuccess),
     PathfindingFailed {
@@ -257,7 +257,7 @@ impl From<core_client::simulation::Response> for Response {
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(PartialEq, serde::Deserialize))]
 #[serde(tag = "status", rename_all = "snake_case")]
-#[schema(as = SimulationSummaryResult)]
+#[schema(as = SimulationSummaryResult, title_variants)]
 pub enum SummaryResponse {
     /// Minimal information on a simulation's result
     Success {

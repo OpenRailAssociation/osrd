@@ -326,6 +326,7 @@ impl From<TrainSchedule> for paced_train::TrainSchedule {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema, Hash)]
 #[serde(tag = "type", rename_all = "snake_case")]
+#[schema(title_variants)]
 /// This ID is used to identify paced train occurrences and exceptions when sending them to the core API for conflict detection.
 pub enum OccurrenceId {
     Base {

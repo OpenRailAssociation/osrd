@@ -68,6 +68,7 @@ use editoast_models::timetable::Timetable;
 // We accepted the difference of memory size taken by variants
 // Since there is only on success and others are error cases
 #[allow(clippy::large_enum_variant)]
+#[schema(title_variants)]
 pub(in crate::views) enum StdcmResponse {
     Success {
         simulation: SimulationResponseSuccess,

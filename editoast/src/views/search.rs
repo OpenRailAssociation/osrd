@@ -250,7 +250,7 @@ enum SearchApiError {
 
 /// A search query
 #[derive(ToSchema, Serialize)]
-#[schema(example = json!(["and", ["=", ["infra_id"], 2], ["search", ["name"], "plop"]]))]
+#[schema(example = json!(["and", ["like", ["to_string", ["infra_id"]], 2], ["search", ["name"], "plop"]]), title_variants)]
 #[serde(untagged)]
 #[allow(unused)] // only used as an OpenAPI schema
 enum SearchQuery {
@@ -266,7 +266,7 @@ enum SearchQuery {
 #[derive(Debug, Clone, Deserialize, ToSchema)]
 #[schema(example = json!({
     "object": "operationalpoint",
-    "query": ["and", ["=", ["infra_id"], 2], ["search", ["name"], "plop"]]
+    "query": ["and", ["like", ["to_string", ["infra_id"]], 2], ["search", ["name"], "plop"]]
 }))]
 pub struct SearchPayload {
     /// The object kind to query - run `editoast search list` to get all possible values

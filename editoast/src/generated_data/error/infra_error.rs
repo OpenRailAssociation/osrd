@@ -28,6 +28,7 @@ pub struct InfraError {
 #[strum_discriminants(serde(rename_all = "snake_case", deny_unknown_fields))]
 #[strum_discriminants(strum(serialize_all = "snake_case"))]
 #[serde(tag = "error_type", rename_all = "snake_case", deny_unknown_fields)]
+#[schema(title_variants)]
 pub enum InfraErrorType {
     DuplicatedGroup {
         original_group_path: String,

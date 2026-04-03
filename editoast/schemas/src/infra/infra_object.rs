@@ -16,6 +16,7 @@ use crate::primitives::ObjectType;
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
 #[serde(tag = "obj_type", deny_unknown_fields)]
+#[schema(title_variants)]
 pub enum InfraObject {
     TrackSection { railjson: TrackSection },
     Signal { railjson: Signal },
