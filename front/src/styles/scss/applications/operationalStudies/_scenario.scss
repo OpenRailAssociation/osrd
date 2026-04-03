@@ -467,8 +467,7 @@
           line-height: 24px;
 
           .ui-checkbox.small {
-            padding-left: 21px;
-            margin-left: 2px;
+            margin-left: 6px;
           }
         }
 
@@ -481,6 +480,10 @@
           font-size: 1rem;
           font-weight: 600;
           max-width: 160px;
+
+          &.with-checkbox {
+            margin-left: 2px;
+          }
 
           .train-info {
             display: flex;
@@ -680,7 +683,8 @@
           border-bottom: solid 1px var(--black25);
 
           .select-button {
-            margin-left: 6px;
+            margin-left: 10px;
+            margin-right: 5px;
           }
 
           .export-selection-button {
@@ -856,6 +860,10 @@
             flex: 1;
             min-width: 0;
             cursor: pointer;
+
+            .ui-checkbox {
+              margin-inline: 4px;
+            }
 
             &.add-tab {
               gap: 12px;

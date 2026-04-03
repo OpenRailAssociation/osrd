@@ -198,7 +198,10 @@ const UniqueTrainItem = ({
                   />
                 )}
               </div>
-              <div title={train.name} className="checkbox-label">
+              <div
+                title={train.name}
+                className={cx('checkbox-label', { 'with-checkbox': isSelectMode })}
+              >
                 <div
                   className={cx('train-info', getTrainCategoryClassName(category, 'text'))}
                   style={{ color: currentSubCategory?.color }}
