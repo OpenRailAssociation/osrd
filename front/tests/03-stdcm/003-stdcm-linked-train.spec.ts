@@ -1,5 +1,6 @@
 import type { Infra, TowedRollingStock } from 'common/api/osrdEditoastApi';
 
+import type { ConsistFields } from '../utils/stdcm-types';
 import { fastRollingStockName } from './../assets/constants/project-const';
 import test, { createStdcmTab } from './../page-object-fixture';
 import { waitForInfraStateToBeCached } from './../utils';
@@ -22,7 +23,6 @@ import {
   VIA_STOP_TYPES,
   VIA_SUGGESTIONS,
 } from '../assets/constants/stdcm/stdcm-const';
-import type { ConsistFields } from '../utils/stdcm-types';
 
 test.describe('@stdcm @stdcm-linked-train', () => {
   let infra: Infra;
