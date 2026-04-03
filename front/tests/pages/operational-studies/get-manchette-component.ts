@@ -40,8 +40,9 @@ class GetManchetteComponent extends OpSimulationResultPage {
     this.spaceTimeChartMenuButton = this.spaceTimeChart.getByTestId('menu-button');
     this.spaceTimeChartCloseSettingsButton = page.getByTestId('settings-panel-close-button');
     this.spaceTimeChartSettingsPanel = page.getByTestId('settings-panel');
-    this.spaceTimeChartCheckboxItems =
-      this.spaceTimeChartSettingsPanel.locator('.ui-checkbox .checkmark');
+    this.spaceTimeChartCheckboxItems = this.spaceTimeChartSettingsPanel.locator(
+      '.ui-checkbox input[type=checkbox]'
+    );
     this.manchetteMenuButton = this.simulationResults.getByTestId('board-header-button').first();
     this.manchetteVisibilityButton = page.getByTestId('manchette-waypoints-visibility-button');
     this.waypointsList = page.getByTestId('waypoint-base-info');
