@@ -185,11 +185,12 @@
   grid: auto / minmax(calc(var(--ui-checkbox-size) + 6px), auto);
   align-items: center;
   width: fit-content;
-  margin-bottom: 0.3rem;
+  margin-bottom: unset;
 
   &.with-label,
   &.with-hint {
     grid-template-columns: auto auto;
+    margin-bottom: 0.3rem;
   }
   &.with-hint {
     grid-template-rows: minmax(calc(var(--ui-checkbox-size) + 6px), auto) auto;
