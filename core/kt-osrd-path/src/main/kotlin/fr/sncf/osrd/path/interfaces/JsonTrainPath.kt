@@ -85,7 +85,11 @@ fun TrainPath.toJsonTrainPath(rawInfra: RawInfra, blockInfra: BlockInfra): JsonT
                     EdgeDirection.STOP_TO_START,
                 )
         val lastAddedRange = tracks.lastOrNull()
-        if (lastAddedRange == null || lastAddedRange.trackSection != trackRange.trackSection) {
+        if (
+            lastAddedRange == null ||
+                lastAddedRange.trackSection != trackRange.trackSection ||
+                lastAddedRange.direction != trackRange.direction
+        ) {
             tracks.add(trackRange)
         } else {
             val newLastRange =
@@ -93,6 +97,7 @@ fun TrainPath.toJsonTrainPath(rawInfra: RawInfra, blockInfra: BlockInfra): JsonT
                     begin = min(lastAddedRange.begin, trackRange.begin),
                     end = max(lastAddedRange.end, trackRange.end),
                 )
+            require(lastAddedRange.direction == trackRange.direction)
             // Check that we only extend the range, and only on one end
             require(
                 lastAddedRange.begin == newLastRange.begin || lastAddedRange.end == newLastRange.end
