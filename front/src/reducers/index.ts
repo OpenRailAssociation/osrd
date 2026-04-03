@@ -1,6 +1,6 @@
 import type { Action, ReducersMapObject } from 'redux';
 import { createTransform, persistCombineReducers } from 'redux-persist';
-import storage from 'redux-persist/lib/storage'; // defaults to localStorage
+import storage from 'redux-persist/es/storage'; // defaults to localStorage
 import createCompressor from 'redux-persist-transform-compress';
 import { createFilter, createBlacklistFilter } from 'redux-persist-transform-filter';
 
