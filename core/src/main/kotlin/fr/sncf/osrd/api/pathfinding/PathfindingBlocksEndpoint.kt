@@ -259,20 +259,27 @@ fun findDirectedWaypointBlocks(
     val trackSectionId =
         infra.rawInfra.getTrackSectionFromName(waypoint.track)
             ?: throw OSRDError.newUnknownTrackSectionError(waypoint.track)
-    val trackChunkOnWaypoint =
-        getTrackSectionChunkOnWaypoint(trackSectionId, waypoint.offset, infra.rawInfra)
+
+    val chunkLocationOnWaypoint =
+        getChunkLocationOnWaypoint(trackSectionId, waypoint.offset, infra.rawInfra)
+    val directedChunkOffset =
+        Offset<DirTrackChunkId>(
+            if (direction == Direction.INCREASING) chunkLocationOnWaypoint.offset.distance
+            else
+                infra.rawInfra.getTrackChunkLength(chunkLocationOnWaypoint.chunk).distance -
+                    chunkLocationOnWaypoint.offset.distance
+        )
+    val waypointDirChunkLocation =
+        DirChunkLocation(
+            DirTrackChunkId(chunkLocationOnWaypoint.chunk, direction),
+            directedChunkOffset,
+        )
+
     val blocksOnWaypoint =
-        infra.blockInfra.getBlocksFromTrackChunk(trackChunkOnWaypoint, direction).toSet()
+        infra.blockInfra.getBlocksFromTrackChunk(chunkLocationOnWaypoint.chunk, direction).toSet()
     for (block in blocksOnWaypoint) {
         val offset =
-            getBlockOffset(
-                block,
-                trackChunkOnWaypoint,
-                trackSectionId,
-                waypoint.offset,
-                direction,
-                infra,
-            )
+            getBlockOffset(block, waypointDirChunkLocation, infra.rawInfra, infra.blockInfra)
         assert(offset <= infra.blockInfra.getBlockLength(block))
         res.add(BlockLocation(block, offset))
     }
@@ -289,53 +296,50 @@ fun findWaypointBlocks(infra: FullInfra, waypoints: Collection<TrackLocation>): 
     return waypointBlocks
 }
 
-private fun getTrackSectionChunkOnWaypoint(
+private data class DirChunkLocation(
+    val dirChunk: DirTrackChunkId,
+    val offset: Offset<DirTrackChunkId>,
+)
+
+private data class ChunkLocation(val chunk: TrackChunkId, val offset: Offset<TrackChunk>)
+
+private fun getChunkLocationOnWaypoint(
     trackSectionId: TrackSectionId,
     waypointOffset: Offset<TrackSection>,
     rawInfra: RawSignalingInfra,
-): TrackChunkId {
+): ChunkLocation {
     val trackSectionChunks = rawInfra.getTrackSectionChunks(trackSectionId)
-    return trackSectionChunks.firstOrNull { chunk: TrackChunkId ->
+    for (chunk in trackSectionChunks) {
         val startChunk = rawInfra.getTrackChunkOffset(chunk)
         val endChunk = startChunk + rawInfra.getTrackChunkLength(chunk).distance
-        waypointOffset in startChunk..endChunk
+        if (waypointOffset in startChunk..endChunk)
+            return ChunkLocation(chunk, Offset(waypointOffset - startChunk))
     }
-        ?: throw OSRDError(ErrorType.InvalidWaypointLocation)
-            .withContext("track", rawInfra.getTrackSectionName(trackSectionId))
-            .withContext("offset", waypointOffset)
+    throw OSRDError(ErrorType.InvalidWaypointLocation)
+        .withContext("track", rawInfra.getTrackSectionName(trackSectionId))
+        .withContext("offset", waypointOffset)
 }
 
 private fun getBlockOffset(
     blockId: BlockId,
-    trackChunkId: TrackChunkId,
-    trackSectionId: TrackSectionId,
-    waypointOffset: Offset<TrackSection>,
-    direction: Direction,
-    infra: FullInfra,
+    waypointDirChunkLocation: DirChunkLocation,
+    rawInfra: RawInfra,
+    blockInfra: BlockInfra,
 ): Offset<Block> {
-    val trackSectionLength = infra.rawInfra.getTrackSectionLength(trackSectionId)
-    val trackChunkOffset = infra.rawInfra.getTrackChunkOffset(trackChunkId)
-    val trackChunkLength = infra.rawInfra.getTrackChunkLength(trackChunkId)
-    val dirTrackChunkOffset =
-        if (direction == Direction.INCREASING) trackChunkOffset.distance
-        else trackSectionLength.distance - trackChunkOffset.distance - trackChunkLength.distance
-    val dirWaypointOffset =
-        if (direction == Direction.INCREASING) waypointOffset
-        else Offset(trackSectionLength - waypointOffset)
-    var startBlockToStartChunk = 0.meters
-    val blockTrackChunks = infra.blockInfra.getTrackChunksFromBlock(blockId)
+    var startBlockToStartChunk: Offset<Block> = Offset(0.meters)
+    val blockTrackChunks = blockInfra.getTrackChunksFromBlock(blockId)
     for (blockTrackChunkDirId in blockTrackChunks) {
-        val blockTrackChunkId = blockTrackChunkDirId.value
-        if (blockTrackChunkId == trackChunkId) {
-            return Offset(
-                (startBlockToStartChunk + dirWaypointOffset.distance - dirTrackChunkOffset)
-                    .absoluteValue
-            )
+        if (blockTrackChunkDirId == waypointDirChunkLocation.dirChunk) {
+            return startBlockToStartChunk + waypointDirChunkLocation.offset.distance
         }
-        startBlockToStartChunk += infra.rawInfra.getTrackChunkLength(blockTrackChunkId).distance
+        startBlockToStartChunk += rawInfra.getTrackChunkLength(blockTrackChunkDirId.value).distance
     }
     throw AssertionError(
-        String.format("getBlockOffset: Track chunk %s not in block %s", trackChunkId, blockId)
+        String.format(
+            "getBlockOffset: Directed track chunk %s not in block %s",
+            waypointDirChunkLocation.dirChunk,
+            blockId,
+        )
     )
 }
 
