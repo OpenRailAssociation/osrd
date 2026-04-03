@@ -26,9 +26,6 @@
         };
 
         fixedNode = pkgs.nodejs_24;
-        fixedNodePackages = pkgs.nodePackages.override {
-          nodejs = fixedNode;
-        };
 
         rustVer = fenix.packages.${system}.stable;
         rustChan = rustVer.withComponents [
