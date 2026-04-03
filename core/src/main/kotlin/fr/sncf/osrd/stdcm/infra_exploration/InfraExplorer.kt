@@ -13,6 +13,8 @@ import fr.sncf.osrd.path.interfaces.subRange
 import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop
 import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.sim_infra.impl.getBlockOffset
+import fr.sncf.osrd.sim_infra.impl.getDirChunkLocation
 import fr.sncf.osrd.sim_infra.utils.getRouteBlocks
 import fr.sncf.osrd.sim_infra.utils.routesOnBlock
 import fr.sncf.osrd.utils.AppendOnlyLinkedList
@@ -244,14 +246,65 @@ private class InfraExplorerImpl(
     override fun cloneAndExtendLookahead(): Collection<InfraExplorer> {
         if (isPathComplete) return listOf() // Can't extend beyond the destination
         val infraExplorers = mutableListOf<InfraExplorer>()
-        val lastRoute = routes.last().value
-        val lastRouteExit = rawInfra.getRouteExit(lastRoute)
-        val nextRoutes = rawInfra.getRoutesStartingAtDet(lastRouteExit)
-        nextRoutes.forEach {
+
+        val lastSeenStep = stepTracker.getSeenSteps().lastOrNull()
+        val nextRouteToBlockLocation: Map<RouteId, BlockLocation?> =
+            if (
+                lastSeenStep != null &&
+                    lastSeenStep.isBacktracking &&
+                    lastSeenStep.travelledPathOffset == blockRanges.lastOrNull()?.pathEnd
+            ) {
+                // TODO PEB: Output multiple consecutive routes to cover all the chunks under tail
+                //   after backtracking
+                val restartBlockLocations =
+                    getBlockLocationsFromBacktrackingLocation(
+                        lastSeenStep.location,
+                        blockInfra,
+                        rawInfra,
+                    )
+
+                val routeLocations = mutableMapOf<RouteId, BlockLocation?>()
+                for (restart in restartBlockLocations) {
+                    val routes = blockInfra.routesOnBlock(rawInfra, restart.edge)
+                    for (route in routes) {
+                        routeLocations[route] = restart
+                    }
+                }
+                routeLocations
+            } else {
+                // generate routes starting after the last one
+                val lastRoute = routes.last().value
+                val lastRouteExit = rawInfra.getRouteExit(lastRoute)
+                rawInfra.getRoutesStartingAtDet(lastRouteExit).associateWith { null }
+            }
+        nextRouteToBlockLocation.forEach { routeToBlockLocation ->
             val infraExplorer = this.clone() as InfraExplorerImpl
-            val infraExtended = infraExplorer.extend(it)
+            val infraExtended =
+                infraExplorer.extend(routeToBlockLocation.key, routeToBlockLocation.value)
             // Blocked explorers are dropped
             if (infraExtended) infraExplorers.add(infraExplorer)
+
+            // generate backtracking lookaheads
+            val nbAddedSteps =
+                infraExplorer.stepTracker.getSeenSteps().size - this.stepTracker.getSeenSteps().size
+            // TODO PEB: use real backtracking flag, not only "step.stop"
+            for (possibleBacktracking in
+                infraExplorer.stepTracker.iterateSeenStepsBackwards().take(nbAddedSteps).filter {
+                    step ->
+                    step.originalStep.stop
+                }) {
+                // clone and extend until backtracking
+                // TODO PEB: add stop-step at the tail, right after backtracking (to be cleaned
+                //   during postprocessing)
+                val explorerToBacktracking = this.clone() as InfraExplorerImpl
+                val extendedToBacktracking =
+                    explorerToBacktracking.extend(
+                        routeToBlockLocation.key,
+                        routeToBlockLocation.value,
+                        possibleBacktracking.location,
+                    )
+                if (extendedToBacktracking) infraExplorers.add(explorerToBacktracking)
+            }
         }
         return infraExplorers
     }
@@ -389,9 +442,14 @@ private class InfraExplorerImpl(
      * Otherwise, it returns false and the instance is supposed to be dropped. `blockRoutes` is
      * updated to keep track of the route used for each block.
      */
-    fun extend(route: RouteId, fromLocation: BlockLocation? = null): Boolean {
+    fun extend(
+        route: RouteId,
+        fromLocation: BlockLocation? = null,
+        untilBacktrackingLocation: BlockLocation? = null,
+    ): Boolean {
         val routeBlocks = blockInfra.getRouteBlocks(rawInfra, route)
         var seenFirstBlock = fromLocation == null
+        var isBacktrackingBlockReached = false
 
         var routeBeginOffset = Offset<Route>(fromLocation?.offset?.distance ?: 0.meters)
         for (block in routeBlocks) {
@@ -410,11 +468,20 @@ private class InfraExplorerImpl(
             val blockStartOffset: Offset<Block> =
                 if (block == fromLocation?.edge) fromLocation.offset else Offset(0.meters)
 
-            stepTracker.exploreBlockRange(block, blockStartOffset, blockLength)
+            isBacktrackingBlockReached = block == untilBacktrackingLocation?.edge
+            val untilOffset =
+                if (isBacktrackingBlockReached) untilBacktrackingLocation!!.offset else blockLength
+
+            stepTracker.exploreBlockRange(
+                block,
+                blockStartOffset,
+                untilOffset,
+                isBacktrackingBlockReached,
+            )
 
             val lastSeenStepLocation = stepTracker.getSeenSteps().lastOrNull()?.location
             isPathComplete = stepTracker.hasSeenDestination() && lastSeenStepLocation?.edge == block
-            val blockEndOffset = if (isPathComplete) lastSeenStepLocation!!.offset else blockLength
+            val blockEndOffset = if (isPathComplete) lastSeenStepLocation!!.offset else untilOffset
 
             // If a block cannot be explored, give up
             val isRouteBlocked =
@@ -438,9 +505,10 @@ private class InfraExplorerImpl(
                     objectLength = blockLength,
                 )
             blockRanges.add(blockRange)
-            if (isPathComplete) break // Can't extend any further
+            if (isPathComplete || isBacktrackingBlockReached) break // Can't extend any further
         }
         assert(seenFirstBlock)
+        assert(untilBacktrackingLocation == null || isBacktrackingBlockReached)
 
         val lastRouteEndOffset = routes.lastOrNull()?.pathEnd ?: Offset(0.meters)
         val newRouteEndOffset = blockRanges.lastOrNull()?.pathEnd ?: Offset(0.meters)
@@ -465,6 +533,36 @@ private class InfraExplorerImpl(
         // Not everything is printed, this is what feels the most comfortable in a debugging window
         return String.format("currentBlock=%s, lookahead=%s", getCurrentBlock(), getLookahead())
     }
+}
+
+private fun getBlockLocationsFromBacktrackingLocation(
+    backtrackingLocation: BlockLocation,
+    blockInfra: BlockInfra,
+    rawInfra: RawInfra,
+): List<BlockLocation> {
+    val dirChunkLocation = blockInfra.getDirChunkLocation(backtrackingLocation, rawInfra)
+    val dirChunkRestartLocation =
+        DirChunkLocation(
+            dirChunkLocation.dirChunk.opposite,
+            Offset(
+                rawInfra.getTrackChunkLength(dirChunkLocation.dirChunk.value).distance -
+                    dirChunkLocation.offset.distance
+            ),
+        )
+    val blocksOnWaypoint =
+        blockInfra
+            .getBlocksFromTrackChunk(
+                dirChunkRestartLocation.dirChunk.value,
+                dirChunkRestartLocation.dirChunk.direction,
+            )
+            .toSet()
+    val restartBlockLocations = mutableListOf<BlockLocation>()
+    for (block in blocksOnWaypoint) {
+        val offset = blockInfra.getBlockOffset(block, dirChunkRestartLocation, rawInfra)
+        assert(offset <= blockInfra.getBlockLength(block))
+        restartBlockLocations.add(BlockLocation(block, offset))
+    }
+    return restartBlockLocations
 }
 
 private class EdgeIdentifierImpl(private val blocks: List<BlockId>) : EdgeIdentifier {
