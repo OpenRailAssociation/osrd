@@ -2,12 +2,11 @@
 import { createRequire } from 'node:module';
 import * as path from 'node:path';
 
-import react from '@vitejs/plugin-react-swc';
+import react from '@vitejs/plugin-react';
 //import { deprecations } from 'sass';
 import { defineConfig, loadEnv } from 'vite';
 import checker from 'vite-plugin-checker';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
-import viteTsconfigPaths from 'vite-tsconfig-paths';
 
 const require = createRequire(import.meta.url);
 const ngeBase = path.dirname(
@@ -38,7 +37,6 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [
       react(),
-      viteTsconfigPaths(),
       checker({
         typescript: true,
         eslint: {
@@ -67,6 +65,9 @@ export default defineConfig(({ mode }) => {
       license: {
         fileName: 'licenses.json',
       },
+    },
+    resolve: {
+      tsconfigPaths: true,
     },
     server: {
       open: false,
