@@ -5,9 +5,9 @@ import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
+import fr.sncf.osrd.sim_infra.api.BlockLocation
 import fr.sncf.osrd.stdcm.StandardAllowanceTests.Companion.checkAllowanceResult
 import fr.sncf.osrd.stdcm.StandardAllowanceTests.Companion.runWithAndWithoutAllowance
-import fr.sncf.osrd.stdcm.infra_exploration.BlockLocation
 import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.PlannedTimingData
 import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment

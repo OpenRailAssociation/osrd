@@ -33,6 +33,8 @@ typealias SigState = SigData<SignalStateMarker>
 
 typealias SigStateSchema = SigSchema<SignalStateMarker>
 
+data class BlockLocation(val edge: BlockId, val offset: Offset<Block>)
+
 /** The signaling system manager is a repository for drivers and signaling systems */
 interface InfraSigSystemManager {
     val signalingSystems: StaticIdxSpace<SignalingSystem>

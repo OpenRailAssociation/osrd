@@ -5,8 +5,10 @@ import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.stdcm.STDCMTemporarySpeedLimit
 import fr.sncf.osrd.api.stdcm.buildTemporarySpeedLimitManager
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
-import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.stdcm.infra_exploration.BlockLocation
+import fr.sncf.osrd.sim_infra.api.BlockLocation
+import fr.sncf.osrd.sim_infra.api.DirDetectorId
+import fr.sncf.osrd.sim_infra.api.SpeedLimitProperty
+import fr.sncf.osrd.sim_infra.api.SpeedLimitSource
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DistanceRangeMap.RangeMapEntry
 import fr.sncf.osrd.utils.Helpers.smallInfra

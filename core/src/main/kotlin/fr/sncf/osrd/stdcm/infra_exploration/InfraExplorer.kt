@@ -155,8 +155,6 @@ interface EdgeIdentifier {
     override fun hashCode(): Int
 }
 
-data class BlockLocation(val edge: BlockId, val offset: Offset<Block>)
-
 data class ExplorerStep(
     val locations: Collection<BlockLocation>,
     val duration: Double? = null,
