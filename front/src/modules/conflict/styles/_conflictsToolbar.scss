@@ -3,27 +3,14 @@
   align-items: center;
   background-color: var(--ambientB5);
   border-bottom: 1px solid white;
-  position: relative;
-
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background-color: var(--black10);
-  }
+  box-shadow: inset 0 -1px 0 0 var(--black10);
 
   .filter-label {
     display: flex;
     align-items: center;
     white-space: nowrap;
-    margin-left: 6px;
     gap: 4px;
-    font-size: 0.875rem;
     color: var(--grey80);
-    line-height: 16px;
   }
 
   .filter-label .train-name {
@@ -38,6 +25,11 @@
     display: flex;
     align-items: center;
     width: 100%;
-    padding: 0 6px;
+    padding: 0 6px 3px 8px;
+
+    // Even if we use its label property, we still want to center the whole checkbox and label combo ourselves
+    .ui-checkbox {
+      margin-bottom: 0;
+    }
   }
 }
