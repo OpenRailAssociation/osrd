@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { Input, ComboBox, useDefaultComboBox, Select } from '@osrd-project/ui-core';
 import { skipToken } from '@reduxjs/toolkit/query';
+import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -30,13 +31,15 @@ import useStdcmConsist from '../../hooks/useStdcmConsist';
 
 const ConsistCardTitle = ({
   rollingStock,
+  disabled,
 }: {
   rollingStock?: LightRollingStockWithLiveries | null;
+  disabled: boolean;
 }) => {
   if (!rollingStock) return null;
 
   return (
-    <div className="stdcm-consist-img">
+    <div className={cx('stdcm-consist-img', { disabled })}>
       <RollingStock2Img rollingStock={rollingStock} />
     </div>
   );
@@ -185,7 +188,7 @@ const StdcmConsist = ({
 
   return (
     <>
-      <ConsistCardTitle rollingStock={rollingStock} />
+      <ConsistCardTitle rollingStock={rollingStock} disabled={disabled} />
       <StdcmCard
         name={t('consist.consist')}
         title={
