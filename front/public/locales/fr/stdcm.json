@@ -259,7 +259,6 @@
       "bothPointAreScheduled": "Le calcul ne peut pas prendre en compte à la fois un horaire d'origine et un horaire de destination. Il faut choisir l'un ou l'autre :",
       "global": "Veuillez vérifier les erreurs suivantes liées au trajet :",
       "noScheduledPoint": "Le calcul a besoin de l'horaire d'origine ou de celui de la destination.",
-      "viaStopDurationConsistChangeTooShort": "Un changement de convoi devrait nécessiter au moins 30 minutes.",
       "viaStopDurationDriverSwitchTooShort": "Le temps d'arrêt d'une relève conducteur est d'au moins 3 minutes.",
       "viaStopDurationMissing": "Le temps d'arrêt pour le PR intermédiaire.",
       "zeroLengthPath": "Origine et destination ne peuvent pas être identiques."

@@ -154,26 +154,14 @@ const StdcmVias = ({
 
   const addConsistChange = (viaPathStep: StdcmViaPathStep, index: number) => {
     const previousConsistChange = getPreviousConsistChange(index);
-    if (viaPathStep.stopFor && viaPathStep.stopFor < new Duration({ minutes: 30 })) {
-      dispatch(
-        updateStdcmPathStep({
-          id: viaPathStep.id,
-          updates: {
-            stopFor: new Duration({ minutes: 30 }),
-            consistChange: previousConsistChange,
-          },
-        })
-      );
-    } else {
-      dispatch(
-        updateStdcmPathStep({
-          id: viaPathStep.id,
-          updates: {
-            consistChange: previousConsistChange,
-          },
-        })
-      );
-    }
+    dispatch(
+      updateStdcmPathStep({
+        id: viaPathStep.id,
+        updates: {
+          consistChange: previousConsistChange,
+        },
+      })
+    );
   };
 
   const removeConsistChange = (viaPathStep: StdcmViaPathStep) => {
