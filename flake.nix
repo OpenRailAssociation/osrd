@@ -54,6 +54,8 @@
             openssl
             pkg-config
             postgresql
+            # libs for playwright (see https://wiki.nixos.org/wiki/Playwright)
+            playwright-driver.browsers
 
             # Tools & Libs
             diesel-cli
@@ -88,6 +90,12 @@
           ];
 
           RUSTFLAGS = if stdenv.isDarwin then "" else "-C link-arg=-fuse-ld=mold";
+
+          shellHook = ''
+            export PLAYWRIGHT_BROWSERS_PATH=${pkgs.playwright-driver.browsers}
+            export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
+          '';
+
         };
       }
     );

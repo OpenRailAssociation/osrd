@@ -43,6 +43,8 @@ npm install
 npx playwright install --with-deps
 ```
 
+ℹ️ If you use nix and the `flake.nix` of the current repository, you won’t need to `npm playwright install`.
+
 ## Run E2E tests
 
 ```bash
@@ -306,7 +308,7 @@ Run tests on a specific browser with custom worker and retry settings:
 npx playwright test --project=chromium --retries=1 --workers=2
 ```
 
-ℹ️ All commands above also work when running tests inside the Playwright container by replacing  
+ℹ️ All commands above also work when running tests inside the Playwright container by replacing
  `npx playwright test` with `./scripts/run-front-playwright-container.sh`.
 
 You may also want to explore [Playwright documentation](https://playwright.dev/docs/intro) for more
