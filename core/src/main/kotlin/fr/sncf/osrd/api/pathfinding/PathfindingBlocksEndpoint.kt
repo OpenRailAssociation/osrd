@@ -26,6 +26,7 @@ import fr.sncf.osrd.utils.*
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
+import fr.sncf.osrd.utils.units.toDirected
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -268,13 +269,8 @@ fun findDirectedWaypointBlocks(
 
     val chunkLocationOnWaypoint =
         getChunkLocationOnWaypoint(trackSectionId, waypoint.offset, infra.rawInfra)
-    val directedChunkOffset =
-        Offset<DirTrackChunkId>(
-            if (direction == Direction.INCREASING) chunkLocationOnWaypoint.offset.distance
-            else
-                infra.rawInfra.getTrackChunkLength(chunkLocationOnWaypoint.chunk).distance -
-                    chunkLocationOnWaypoint.offset.distance
-        )
+    val chunkLength = infra.rawInfra.getTrackChunkLength(chunkLocationOnWaypoint.chunk)
+    val directedChunkOffset = chunkLocationOnWaypoint.offset.toDirected(chunkLength, direction)
     val waypointDirChunkLocation =
         DirChunkLocation(
             DirTrackChunkId(chunkLocationOnWaypoint.chunk, direction),
@@ -285,7 +281,7 @@ fun findDirectedWaypointBlocks(
         infra.blockInfra.getBlocksFromTrackChunk(chunkLocationOnWaypoint.chunk, direction).toSet()
     for (block in blocksOnWaypoint) {
         val offset =
-            getBlockOffset(block, waypointDirChunkLocation, infra.rawInfra, infra.blockInfra)
+            infra.blockInfra.getBlockOffset(block, waypointDirChunkLocation, infra.rawInfra)
         assert(offset <= infra.blockInfra.getBlockLength(block))
         res.add(BlockLocation(block, offset))
     }
@@ -302,13 +298,6 @@ fun findWaypointBlocks(infra: FullInfra, waypoints: Collection<TrackLocation>): 
     return waypointBlocks
 }
 
-private data class DirChunkLocation(
-    val dirChunk: DirTrackChunkId,
-    val offset: Offset<DirTrackChunkId>,
-)
-
-private data class ChunkLocation(val chunk: TrackChunkId, val offset: Offset<TrackChunk>)
-
 private fun getChunkLocationOnWaypoint(
     trackSectionId: TrackSectionId,
     waypointOffset: Offset<TrackSection>,
@@ -324,29 +313,6 @@ private fun getChunkLocationOnWaypoint(
     throw OSRDError(ErrorType.InvalidWaypointLocation)
         .withContext("track", rawInfra.getTrackSectionName(trackSectionId))
         .withContext("offset", waypointOffset)
-}
-
-private fun getBlockOffset(
-    blockId: BlockId,
-    waypointDirChunkLocation: DirChunkLocation,
-    rawInfra: RawInfra,
-    blockInfra: BlockInfra,
-): Offset<Block> {
-    var startBlockToStartChunk: Offset<Block> = Offset(0.meters)
-    val blockTrackChunks = blockInfra.getTrackChunksFromBlock(blockId)
-    for (blockTrackChunkDirId in blockTrackChunks) {
-        if (blockTrackChunkDirId == waypointDirChunkLocation.dirChunk) {
-            return startBlockToStartChunk + waypointDirChunkLocation.offset.distance
-        }
-        startBlockToStartChunk += rawInfra.getTrackChunkLength(blockTrackChunkDirId.value).distance
-    }
-    throw AssertionError(
-        String.format(
-            "getBlockOffset: Directed track chunk %s not in block %s",
-            waypointDirChunkLocation.dirChunk,
-            blockId,
-        )
-    )
 }
 
 /**

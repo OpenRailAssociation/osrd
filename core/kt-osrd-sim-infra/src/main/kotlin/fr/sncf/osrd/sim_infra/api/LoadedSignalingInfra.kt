@@ -126,3 +126,25 @@ interface BlockInfra {
 fun InfraSigSystemManager.findSignalingSystemOrThrow(sigSystem: String): SignalingSystemId {
     return findSignalingSystem(sigSystem) ?: throw OSRDError.newSignalingError(sigSystem)
 }
+
+fun BlockInfra.getBlockOffset(
+    blockId: BlockId,
+    waypointDirChunkLocation: DirChunkLocation,
+    rawInfra: RawInfra,
+): Offset<Block> {
+    var startBlockToStartChunk: Offset<Block> = Offset(0.meters)
+    val blockTrackChunks = this.getTrackChunksFromBlock(blockId)
+    for (blockTrackChunkDirId in blockTrackChunks) {
+        if (blockTrackChunkDirId == waypointDirChunkLocation.dirChunk) {
+            return startBlockToStartChunk + waypointDirChunkLocation.offset.distance
+        }
+        startBlockToStartChunk += rawInfra.getTrackChunkLength(blockTrackChunkDirId.value).distance
+    }
+    throw AssertionError(
+        String.format(
+            "getBlockOffset: Directed track chunk %s not in block %s",
+            waypointDirChunkLocation.dirChunk,
+            blockId,
+        )
+    )
+}
