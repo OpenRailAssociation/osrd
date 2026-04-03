@@ -204,15 +204,7 @@
         "errorMessage": "We are sorry that we could not process your request. The LMR team has been notified and will be aware of the situation as soon as possible.",
         "failed": "A technical issue has occurred"
       },
-      "transferSheetToRailManager": "Send to GESICO",
-      "upgrade": {
-        "arrivalIncompatible": "Arrival time incompatible",
-        "helpUs": "Help us improve {{stdcmName}}",
-        "other": "Other",
-        "reason": "This simulation does not meet your needs because…",
-        "startIncompatible": "Departure time incompatible",
-        "unqualifiedDriver": "Unqualified driver"
-      }
+      "transferSheetToRailManager": "Send to GESICO"
     },
     "stopCalculation": "Stop"
   },
