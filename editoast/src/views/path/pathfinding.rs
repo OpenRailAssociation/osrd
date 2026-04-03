@@ -123,6 +123,7 @@ impl PathfindingInput {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
 #[serde(tag = "status", rename_all = "snake_case")]
+#[schema(title_variants)]
 pub enum PathfindingResult {
     Success(PathfindingResultSuccess),
     Failure(PathfindingFailure),
@@ -194,6 +195,7 @@ impl From<PathfindingCoreResult> for PathfindingResult {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema, Educe)]
 #[educe(Default)]
 #[serde(tag = "failed_status", rename_all = "snake_case")]
+#[schema(title_variants)]
 pub enum PathfindingFailure {
     PathfindingInputError(PathfindingInputError),
     #[educe(Default)]

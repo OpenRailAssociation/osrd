@@ -46,6 +46,7 @@ impl Serialize for Margins {
 
 #[derive(Debug, Copy, Clone, Educe, ToSchema)]
 #[educe(Hash, Default, PartialEq, Eq)]
+#[schema(title_variants)]
 pub enum MarginValue {
     #[educe(Default)]
     Percentage(

@@ -9,6 +9,7 @@ use utoipa::ToSchema;
 
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq, Eq, Hash, ToSchema)]
 #[serde(tag = "type", deny_unknown_fields)]
+#[schema(title_variants)]
 pub enum Waypoint {
     BufferStop {
         #[schema(inline)]

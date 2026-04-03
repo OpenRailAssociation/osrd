@@ -220,7 +220,7 @@ pub struct ElectricalProfiles {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
-#[schema(as = core::ElectricalProfileValue)]
+#[schema(as = core::ElectricalProfileValue, title_variants)]
 #[serde(tag = "electrical_profile_type", rename_all = "snake_case")]
 pub enum ElectricalProfileValue {
     NoProfile,
@@ -231,7 +231,7 @@ pub enum ElectricalProfileValue {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
-#[schema(as = core::SpeedLimitSource)]
+#[schema(as = core::SpeedLimitSource, title_variants)]
 #[serde(tag = "speed_limit_source_type", rename_all = "snake_case")]
 #[allow(clippy::enum_variant_names)]
 pub enum SpeedLimitSource {

@@ -78,7 +78,7 @@ impl PropertyElectrificationValues {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
-#[schema(as = core::PropertyElectrificationValue)]
+#[schema(as = core::PropertyElectrificationValue, title_variants)]
 #[derive(PartialEq)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum PropertyElectrificationValue {

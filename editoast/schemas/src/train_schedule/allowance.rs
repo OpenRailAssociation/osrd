@@ -4,6 +4,7 @@ use utoipa::ToSchema;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 #[serde(tag = "allowance_type", rename_all = "lowercase")]
+#[schema(title_variants)]
 pub enum Allowance {
     Engineering(EngineeringAllowance),
     Standard(StandardAllowance),
@@ -35,6 +36,7 @@ const fn default_capacity_speed_limit() -> f64 {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 #[serde(tag = "value_type")]
+#[schema(title_variants)]
 pub enum AllowanceValue {
     #[serde(rename = "time_per_distance")]
     TimePerDistance { minutes: f64 },
