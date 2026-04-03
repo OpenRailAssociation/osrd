@@ -2,7 +2,7 @@ import type { ComponentType } from 'react';
 
 import type { TFunction } from 'i18next';
 import type { Map, MapLayerMouseEvent } from 'maplibre-gl';
-import type { IconType } from 'react-icons/lib/iconBase';
+import type { IconType } from 'react-icons';
 import type { ViewState } from 'react-map-gl/maplibre';
 
 import type { SwitchType } from 'applications/editor/tools/switchEdition/types';
