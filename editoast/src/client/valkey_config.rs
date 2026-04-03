@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use clap::Args;
 use educe::Educe;
 use url::Url;
@@ -12,6 +14,10 @@ pub struct ValkeyConfig {
     #[arg(long, env, default_value_t = Url::parse("redis://localhost:6379").unwrap())]
     /// Valkey url like `redis://[:PASSWORD@]HOST[:PORT][/DATABASE]`
     pub valkey_url: Url,
+    #[educe(Default = 1000)]
+    #[arg(long, env, default_value_t = 1000)]
+    /// Response timeout for Valkey requests in ms
+    pub valkey_timeout: u64,
 }
 
 impl ValkeyConfig {
@@ -21,6 +27,7 @@ impl ValkeyConfig {
         } else {
             cache::Config::Valkey {
                 url: self.valkey_url,
+                response_timeout: Duration::from_millis(self.valkey_timeout),
             }
         }
     }

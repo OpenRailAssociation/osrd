@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use arcstr::ArcStr;
 use deadpool_redis::Pool;
 use deadpool_redis::PoolError;
@@ -13,7 +15,7 @@ pub struct Client {
 }
 
 pub enum ClientInner {
-    Tokio(Pool),
+    Tokio(Pool, Duration),
     /// This doesn't cache anything. It has no backend.
     NoCache,
     #[cfg(feature = "mock")]
@@ -26,6 +28,7 @@ pub enum Config {
     NoCache,
     Valkey {
         url: Url,
+        response_timeout: Duration,
     },
 }
 
@@ -35,10 +38,14 @@ impl Client {
             app_version: ArcStr::from(app_version),
             inner: match config {
                 Config::NoCache => ClientInner::NoCache,
-                Config::Valkey { url } => ClientInner::Tokio(
+                Config::Valkey {
+                    url,
+                    response_timeout,
+                } => ClientInner::Tokio(
                     deadpool_redis::Config::from_url(url)
                         .create_pool(Some(Runtime::Tokio1))
                         .unwrap(),
+                    response_timeout,
                 ),
             },
         }
@@ -54,10 +61,11 @@ impl Client {
 
     pub async fn get_connection(&self) -> Result<Connection, PoolError> {
         match &self.inner {
-            ClientInner::Tokio(pool) => Ok(Connection::new(
-                ConnectionInner::Tokio(pool.get().await?),
-                self.app_version.clone(),
-            )),
+            ClientInner::Tokio(pool, response_timeout) => Ok({
+                let mut connection = pool.get().await?;
+                connection.set_response_timeout(*response_timeout);
+                Connection::new(ConnectionInner::Tokio(connection), self.app_version.clone())
+            }),
             ClientInner::NoCache => Ok(Connection::new(
                 ConnectionInner::NoCache,
                 self.app_version.clone(),
