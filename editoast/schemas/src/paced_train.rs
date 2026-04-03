@@ -91,11 +91,18 @@ impl<'de> Deserialize<'de> for TrainSchedule {
 
             let time_window_secs = paced.time_window.num_seconds();
             let interval_secs = paced.interval.num_seconds();
-            let num_occurrences = (time_window_secs / interval_secs) as usize;
+            // Ideally, we’d use `div_ceil` which is nightly-only at the time of writing
+            // https://doc.rust-lang.org/std/primitive.i64.html#method.div_ceil
+            let num_occurrences = (time_window_secs / interval_secs) as usize
+                + if time_window_secs.rem_euclid(interval_secs) != 0 {
+                    1
+                } else {
+                    0
+                };
 
             for ex in &paced.exceptions {
                 if let ExceptionType::Modified { occurrence_index } = ex.exception_type
-                    && occurrence_index > num_occurrences
+                    && occurrence_index >= num_occurrences
                 {
                     return Err(serde::de::Error::custom(format!(
                         "Modified exception '{}' references invalid occurrence index {}",

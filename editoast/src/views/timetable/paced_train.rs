@@ -1901,7 +1901,7 @@ mod tests {
 
         let mut paced_train_base = simple_paced_train_base();
         paced_train_base.paced.as_mut().unwrap().time_window =
-            Duration::minutes(60).try_into().unwrap();
+            Duration::minutes(65).try_into().unwrap();
         paced_train_base.paced.as_mut().unwrap().interval =
             Duration::minutes(15).try_into().unwrap();
         paced_train_base.paced.as_mut().unwrap().exceptions =

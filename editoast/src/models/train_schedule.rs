@@ -233,7 +233,16 @@ impl TrainSchedule {
     /// Returns 1 if it's not a paced train.
     fn num_base_occurrences(&self) -> usize {
         if let Some((time_window, interval)) = self.pace() {
-            (time_window.num_seconds() / interval.num_seconds()) as usize
+            // Ideally, we’d use `div_ceil` which is nightly-only at the time of writing
+            // https://doc.rust-lang.org/std/primitive.i64.html#method.div_ceil
+            let time_window = time_window.num_seconds();
+            let interval = interval.num_seconds();
+            (time_window / interval) as usize
+                + if time_window.rem_euclid(interval) != 0 {
+                    1
+                } else {
+                    0
+                }
         } else {
             1
         }
