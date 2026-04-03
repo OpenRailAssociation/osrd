@@ -69,7 +69,7 @@ Start the Playwright container only:
 and E2E tests, but beware of timeouts):
 
 ```bash
-./osrd-compose playwright dev-front up playwright
+./osrd-compose playwright up playwright
 ```
 
 Run tests:
