@@ -69,6 +69,7 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.TreeMap
 import kotlin.math.max
+import kotlin.random.Random
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 
@@ -114,10 +115,12 @@ class STDCMEndpoint(
             // parse input data
             val infra = infraManager.getInfra(request.infra, request.expectedVersion)
             val allowedTrackSections = parseTrackSectionIds(infra, request.allowedTrackSections)
+            val randomizedRequest =
+                stdcmRequestFuzzer(request, infra, allowedTrackSections, request.pathItems.size)
             val temporarySpeedLimitManager =
-                buildTemporarySpeedLimitManager(infra, request.temporarySpeedLimits)
+                buildTemporarySpeedLimitManager(infra, randomizedRequest.temporarySpeedLimits)
             val consistConfigurations =
-                request.consistSchedule.values.map { it ->
+                randomizedRequest.consistSchedule.values.map { it ->
                     it.copy(
                         supportedSignalingSystems =
                             it.supportedSignalingSystems.filter {
@@ -127,49 +130,54 @@ class STDCMEndpoint(
                     )
                 }
             val requestConsistSchedule =
-                request.consistSchedule.copy(values = consistConfigurations)
+                randomizedRequest.consistSchedule.copy(values = consistConfigurations)
+
             val consistSchedules =
                 ConsistSchedule(
                     requestConsistSchedule,
                     infra,
                     allowedTrackSections,
-                    request.pathItems.size,
+                    randomizedRequest.pathItems.size,
                 )
             val steps =
                 parseSteps(
                     infra,
-                    request.pathItems,
-                    request.startTime,
+                    randomizedRequest.pathItems,
+                    randomizedRequest.startTime,
                     consistSchedules.rollingStocks.map { it.length },
                 )
-            val requirements = getRequirements(request, infra, timetableCacheManager)
+            val requirements = getRequirements(randomizedRequest, infra, timetableCacheManager)
             val failureExplainer =
-                FailureExplainer(request.startTime, infra.rawInfra, infra.blockInfra)
+                FailureExplainer(randomizedRequest.startTime, infra.rawInfra, infra.blockInfra)
 
             // Run the STDCM pathfinding
             val path =
                 findPath(
                     infra,
                     consistSchedules,
-                    request.comfort,
+                    randomizedRequest.comfort,
                     0.0,
                     steps,
                     makeBlockAvailability(
                         requirements.requirements,
-                        gridMarginBeforeTrain = request.timeGapBefore.seconds,
-                        gridMarginAfterTrain = request.timeGapAfter.seconds,
-                        timeStep = request.timeStep!!.seconds,
+                        gridMarginBeforeTrain = randomizedRequest.timeGapBefore.seconds,
+                        gridMarginAfterTrain = randomizedRequest.timeGapAfter.seconds,
+                        timeStep = randomizedRequest.timeStep!!.seconds,
                         requirementsWithMetadata = requirements,
                     ),
-                    request.timeStep.seconds,
-                    request.maximumDepartureDelay!!.seconds,
-                    request.maximumRunTime.seconds,
-                    request.consistSchedule.values[0].speedLimitTag,
-                    parseMarginValue(request.margin),
+                    randomizedRequest.timeStep.seconds,
+                    randomizedRequest.maximumDepartureDelay!!.seconds,
+                    randomizedRequest.maximumRunTime.seconds,
+                    randomizedRequest.consistSchedule.values[0].speedLimitTag,
+                    parseMarginValue(randomizedRequest.margin),
                     Pathfinding.TIMEOUT,
                     temporarySpeedLimitManager,
                     allowedTrackSections,
-                    STDCMGraph.SearchMetadata(request.startTime, requirements.metadata, s3Context),
+                    STDCMGraph.SearchMetadata(
+                        randomizedRequest.startTime,
+                        requirements.metadata,
+                        s3Context,
+                    ),
                     failureExplainer = failureExplainer,
                 )
             if (path == null || hasDuplicateTracks(infra, path.trainPath)) {
@@ -184,13 +192,13 @@ class STDCMEndpoint(
                 buildSimResponse(
                     infra,
                     path,
-                    request.consistSchedule.values[0].speedLimitTag,
+                    randomizedRequest.consistSchedule.values[0].speedLimitTag,
                     temporarySpeedLimitManager,
-                    request.comfort,
+                    randomizedRequest.comfort,
                 )
 
             val departureTime =
-                request.startTime.plus(ofMillis((path.departureTime * 1000).toLong()))
+                randomizedRequest.startTime.plus(ofMillis((path.departureTime * 1000).toLong()))
 
             logDebugData(
                 infra.rawInfra,
@@ -585,4 +593,71 @@ private fun parseSimulationScheduleItems(
 
 fun parseTrackSectionIds(infra: FullInfra, trackSectionName: Set<String>?): Set<TrackSectionId>? {
     return trackSectionName?.mapNotNull { infra.rawInfra.getTrackSectionFromName(it) }?.toSet()
+}
+
+fun stdcmRequestFuzzer(
+    stdcmRequest: STDCMRequest,
+    infra: FullInfra,
+    allowedTrackSections: Set<TrackSectionId>?,
+    nbSteps: Int,
+): STDCMRequest {
+    if (nbSteps < 3) {
+        return stdcmRequest
+    }
+    val requestConsistSchedule = stdcmRequest.consistSchedule
+
+    // Create random list of consist change boundaries
+    val nbConsistChanges = Random.nextInt(0, nbSteps - 2)
+    var consistChangeSteps: MutableSet<Int> = mutableSetOf()
+    (0..<nbConsistChanges).forEach {
+        var stepCandidate = Random.nextInt(1, nbSteps - 1)
+        while (consistChangeSteps.contains(stepCandidate)) {
+            stepCandidate = Random.nextInt(1, nbSteps - 1)
+        }
+        consistChangeSteps.add(stepCandidate)
+    }
+    val newConsistBoundaries = consistChangeSteps.toList().sorted()
+
+    // Ensure consist change steps are stops
+    val newStepsWithStops =
+        stdcmRequest.pathItems
+            .mapIndexed { index, item ->
+                if (newConsistBoundaries.contains(index)) {
+                    // Add stop duration to steps with consist changes
+                    item.copy(stopDuration = Duration(Random.nextLong(1000 * 60 * 5, 1000 * 60 * 60)))
+                } else {
+                    item
+                }
+            }
+            .toList()
+
+    // Create random list of consists
+    assert(requestConsistSchedule.values.size == 1)
+    val originalConsistConfiguration = requestConsistSchedule.values[0]
+    val originalPhysicsConsist = originalConsistConfiguration.physicsConsist
+    val newConsistConfigurations =
+        (0..nbConsistChanges)
+            .map {
+                val randomPhysicsConsist =
+                    originalPhysicsConsist.copy(
+                        maxSpeed = originalPhysicsConsist.maxSpeed * Random.nextDouble(0.25, 2.0),
+                        length = originalPhysicsConsist.length * Random.nextDouble(0.25, 2.0),
+                    )
+                originalConsistConfiguration.copy(physicsConsist = randomPhysicsConsist)
+            }
+            .toList()
+
+    val alteredRequestConsistSchedule =
+        requestConsistSchedule.copy(
+            boundaries = newConsistBoundaries,
+            values = newConsistConfigurations,
+        )
+
+    val requestCopy = stdcmRequest.copy(
+        consistSchedule = alteredRequestConsistSchedule,
+        pathItems = newStepsWithStops,
+    )
+    print("$stdcmRequest")
+    print("$requestCopy")
+    return requestCopy
 }

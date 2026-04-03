@@ -22,7 +22,7 @@ import java.time.ZonedDateTime
 
 val DEFAULT_TIME_STEP: Duration = 2.seconds
 
-class STDCMRequest(
+data class STDCMRequest(
     var infra: String,
     @Json(name = "expected_version") var expectedVersion: Int,
     @Json(name = "timetable_id") var timetableId: TimetableId,
@@ -65,7 +65,7 @@ data class STDCMTemporarySpeedLimit(
     @Json(name = "track_ranges") val trackRanges: List<DirectionalTrackRange>,
 )
 
-class STDCMPathItem(
+data class STDCMPathItem(
     val locations: List<TrackLocation>,
     @Json(name = "stop_duration") var stopDuration: Duration?,
     @Json(name = "step_timing_data") val stepTimingData: StepTimingData?,
