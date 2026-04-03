@@ -173,6 +173,52 @@
       ],
       "title": "The consist"
     },
+    "consistChange": {
+      "content": [
+        {
+          "type": "text",
+          "value": "The consist change feature allows the modification of the train composition associated with a train path at one or several intermediate reference points (PR), according to actual routing needs."
+        },
+        {
+          "type": "text",
+          "value": "It addresses operational requirements, where the train composition may evolve depending on planned operations or route constraints."
+        }
+      ],
+      "subSections": [
+        {
+          "content": [
+            {
+              "items": [
+                {
+                  "value": "Easily adapt the train during operations such as coupling/uncoupling, adding or removing wagons, or changing the locomotive."
+                },
+                {
+                  "value": "Anticipate load limits, performance constraints, or specific route characteristics."
+                },
+                {
+                  "value": "Provide greater flexibility to manage multiple routing variants on the same train path."
+                },
+                {
+                  "value": "Ensure the compliance and consistency of the train composition throughout the journey."
+                }
+              ],
+              "type": "list"
+            }
+          ],
+          "title": "This feature notably makes it possible to:"
+        },
+        {
+          "content": [
+            {
+              "type": "text",
+              "value": "By allowing the train composition to be adjusted at specific PRs, this feature helps build train paths that better reflect operational realities and optimizes operational management."
+            }
+          ],
+          "title": "Summary"
+        }
+      ],
+      "title": "The consist change"
+    },
     "faq": {
       "content": [
         {
