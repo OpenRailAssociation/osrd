@@ -55,10 +55,10 @@ const DropdownSNCF = ({
         className="over-modal dropdown"
         attachment="top right"
         targetAttachment="bottom right"
-        renderTarget={(ref) => (
+        renderTarget={(ref: LegacyRef<HTMLButtonElement>) => (
           <button
             data-testid="dropdown-sncf"
-            ref={ref as LegacyRef<HTMLButtonElement>}
+            ref={ref}
             className={className || `${type} btn dropdown-toggle toolbar-item-spacing`}
             type="button"
             onClick={() => !isDropdownShown && setIsDropdownShown(true)}
@@ -72,9 +72,9 @@ const DropdownSNCF = ({
             )}
           </button>
         )}
-        renderElement={(ref) =>
+        renderElement={(ref: LegacyRef<HTMLDivElement>) =>
           isDropdownShown && (
-            <div ref={ref as LegacyRef<HTMLDivElement>}>
+            <div ref={ref}>
               <div
                 ref={targetRef}
                 // eslint-disable-next-line react/no-unknown-property
