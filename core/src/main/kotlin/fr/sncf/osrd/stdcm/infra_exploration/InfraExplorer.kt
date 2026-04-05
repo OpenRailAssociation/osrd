@@ -6,6 +6,7 @@ import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlockRanges
 import fr.sncf.osrd.path.interfaces.BlockRange
 import fr.sncf.osrd.path.interfaces.GenericLinearRange
+import fr.sncf.osrd.path.interfaces.LinearObjectRange
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.RouteRange
 import fr.sncf.osrd.path.interfaces.TrainPath
@@ -95,6 +96,11 @@ interface InfraExplorer {
 
     /** Returns a copy of the current instance. */
     fun clone(): InfraExplorer
+
+    /**
+     * Returns a copy of the current instance, cleaning "teleport ranges" after backtracking steps.
+     */
+    fun cloneCleaningTeleportRanges(): InfraExplorer
 
     /** Returns the list of routes that the current exploration follows. */
     fun getExploredRoutes(): List<RouteId>
@@ -296,7 +302,35 @@ private class InfraExplorerImpl(
                 // clone and extend until backtracking
                 // TODO PEB: add stop-step at the tail, right after backtracking (to be cleaned
                 //   during postprocessing)
-                val explorerToBacktracking = this.clone() as InfraExplorerImpl
+                val tailOffset =
+                    possibleBacktracking.travelledPathOffset - 400.meters // TODO PEB: train length
+                val tailBlockRange =
+                    infraExplorer.blockRanges.iterateBackwards().firstOrNull {
+                        it.pathBegin <= tailOffset
+                    }
+                if (tailBlockRange == null) continue
+                val tailBlockLocation =
+                    BlockLocation(
+                        tailBlockRange.value,
+                        Offset(tailOffset - tailBlockRange.objectAbsolutePathStart),
+                    )
+                val actualRestartLocations =
+                    getBlockLocationsFromBacktrackingLocation(
+                        tailBlockLocation,
+                        blockInfra,
+                        rawInfra,
+                    )
+                val extraStep =
+                    ExplorerStep(
+                        actualRestartLocations,
+                        null,
+                        false,
+                        null,
+                    ) // TODO PEB: stop if canBacktrack == false
+
+                val explorerToBacktracking =
+                    this.cloneInsertingInputStep(extraStep, possibleBacktracking.originalStep)
+                        as InfraExplorerImpl
                 val extendedToBacktracking =
                     explorerToBacktracking.extend(
                         routeToBlockLocation.key,
@@ -364,6 +398,125 @@ private class InfraExplorerImpl(
             this.trainPathCache,
             this.currentIndex,
             this.stepTracker.clone(),
+            this.constraints,
+            this.isPathComplete,
+        )
+    }
+
+    fun cloneInsertingInputStep(
+        extraStep: ExplorerStep,
+        previousStep: ExplorerStep,
+    ): InfraExplorer {
+        return InfraExplorerImpl(
+            this.rawInfra,
+            this.blockInfra,
+            this.blockRanges.shallowCopy(),
+            this.routes.shallowCopy(),
+            this.blockRoutes.shallowCopy(),
+            this.lastTrack,
+            this.trainPathCache,
+            this.currentIndex,
+            this.stepTracker.cloneInsertingInputStep(extraStep, previousStep),
+            this.constraints,
+            this.isPathComplete,
+        )
+    }
+
+    private fun <T> cleanTeleportRangesFromSortedLinearRanges(
+        linearRanges: List<LinearObjectRange<T>>,
+        teleportRanges: List<Pair<Offset<PhysicsPath>, Offset<PhysicsPath>>>,
+    ): AppendOnlyLinkedList<LinearObjectRange<T>> {
+        val newLinearRanges = appendOnlyLinkedListOf<LinearObjectRange<T>>()
+
+        val teleportRangesIt = teleportRanges.iterator()
+        var teleportRange =
+            if (teleportRangesIt.hasNext()) {
+                teleportRangesIt.next()
+            } else {
+                Pair(
+                    Offset(Double.POSITIVE_INFINITY.meters),
+                    Offset(Double.POSITIVE_INFINITY.meters),
+                )
+            }
+        val linerRangesIt = linearRanges.iterator()
+        var linearRange = linerRangesIt.next()
+
+        while (true) {
+            if (linearRange.pathEnd <= teleportRange.first) {
+                newLinearRanges.add(
+                    LinearObjectRange(
+                        linearRange.value,
+                        linearRange.objectBegin,
+                        newLinearRanges.lastOrNull()?.pathEnd ?: Offset(0.meters),
+                        linearRange.length,
+                        linearRange.objectLength,
+                    )
+                )
+                if (!linerRangesIt.hasNext()) break
+                linearRange = linerRangesIt.next()
+                continue
+            }
+
+            if (teleportRange.second <= linearRange.pathBegin) {
+                teleportRange =
+                    if (teleportRangesIt.hasNext()) {
+                        teleportRangesIt.next()
+                    } else {
+                        Pair(
+                            Offset(Double.POSITIVE_INFINITY.meters),
+                            Offset(Double.POSITIVE_INFINITY.meters),
+                        )
+                    }
+                continue
+            }
+
+            val rangeBeforeTeleport =
+                linearRange.withTruncatedPathRange(linearRange.pathBegin, teleportRange.first)
+            if (rangeBeforeTeleport != null && rangeBeforeTeleport.length != 0.meters)
+                newLinearRanges.add(
+                    LinearObjectRange(
+                        rangeBeforeTeleport.value,
+                        rangeBeforeTeleport.objectBegin,
+                        newLinearRanges.lastOrNull()?.pathEnd ?: Offset(0.meters),
+                        rangeBeforeTeleport.length,
+                        rangeBeforeTeleport.objectLength,
+                    )
+                )
+
+            val rangeAfterTeleport =
+                linearRange.withTruncatedPathRange(teleportRange.second, linearRange.pathEnd)
+            if (rangeAfterTeleport != null && rangeAfterTeleport.length != 0.meters)
+                linearRange = rangeAfterTeleport
+            else {
+                if (!linerRangesIt.hasNext()) break
+                linearRange = linerRangesIt.next()
+            }
+        }
+        return newLinearRanges
+    }
+
+    override fun cloneCleaningTeleportRanges(): InfraExplorer {
+        val seenStepList = getStepTracker().getSeenSteps().toList()
+        val teleportRanges = mutableListOf<Pair<Offset<PhysicsPath>, Offset<PhysicsPath>>>()
+        for (stepIdx in 0..seenStepList.size - 2) {
+            if (seenStepList[stepIdx].isBacktracking) {
+                teleportRanges.add(
+                    seenStepList[stepIdx].travelledPathOffset to
+                        seenStepList[stepIdx + 1].travelledPathOffset
+                )
+            }
+        }
+
+        return InfraExplorerImpl(
+            this.rawInfra,
+            this.blockInfra,
+            cleanTeleportRangesFromSortedLinearRanges(this.blockRanges.toList(), teleportRanges),
+            cleanTeleportRangesFromSortedLinearRanges(this.routes.toList(), teleportRanges),
+            this.blockRoutes.shallowCopy(),
+            this.lastTrack, // TODO PEB: check the use of the following 3s
+            this.trainPathCache,
+            this.currentIndex,
+            this.stepTracker.cloneCleaningTeleportStep(),
             this.constraints,
             this.isPathComplete,
         )

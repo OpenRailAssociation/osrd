@@ -8,6 +8,7 @@ import fr.sncf.osrd.utils.AppendOnlyLinkedList
 import fr.sncf.osrd.utils.appendOnlyLinkedListOf
 import fr.sncf.osrd.utils.dropSeq
 import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.meters
 
 /**
  * Component of `InfraExplorer` in charge of keeping track of anything related to the input steps.
@@ -121,6 +122,56 @@ class StepTracker(
         val res = StepTracker(inputSteps, seenSteps.shallowCopy())
         res.currentPathOffset = currentPathOffset
         res.nStepsExcludingLookahead = nStepsExcludingLookahead
+        return res
+    }
+
+    fun cloneInsertingInputStep(extraStep: ExplorerStep, previousStep: ExplorerStep): StepTracker {
+        val prevIndex = inputSteps.indexOfFirst { it == previousStep }
+        assert(prevIndex >= 0)
+
+        val newInputSteps = inputSteps.toMutableList()
+        newInputSteps.add(prevIndex + 1, extraStep)
+
+        val res = StepTracker(newInputSteps, seenSteps.shallowCopy())
+        res.currentPathOffset = currentPathOffset
+        res.nStepsExcludingLookahead = nStepsExcludingLookahead
+        return res
+    }
+
+    fun cloneCleaningTeleportStep(): StepTracker {
+
+        val newInputSteps = mutableListOf<ExplorerStep>()
+        val newSeenSteps = appendOnlyLinkedListOf<LocatedStep>()
+
+        var nbTeleportsExcludingLookahead = 0
+        var cumulatedTeleportDistance = 0.meters
+        var offsetPrevBacktracking: Offset<PhysicsPath>? = null
+        val seenStepList = seenSteps.toList()
+        for ((seenStepIndex, seenStep) in seenStepList.withIndex()) {
+            if (offsetPrevBacktracking == null) {
+                newInputSteps.add(inputSteps[seenStepIndex])
+                newSeenSteps.add(
+                    LocatedStep(
+                        seenStep.travelledPathOffset - cumulatedTeleportDistance,
+                        seenStep.location,
+                        seenStep.originalStep,
+                        seenStep.isPlanned,
+                        seenStep.isBacktracking,
+                    )
+                )
+            } else {
+                cumulatedTeleportDistance +=
+                    seenStep.travelledPathOffset.distance - offsetPrevBacktracking.distance
+                if (seenStepIndex <= nStepsExcludingLookahead) nbTeleportsExcludingLookahead++
+            }
+            offsetPrevBacktracking =
+                if (seenStep.isBacktracking) seenStep.travelledPathOffset else null
+        }
+
+        val res = StepTracker(newInputSteps, newSeenSteps)
+        res.currentPathOffset = currentPathOffset - cumulatedTeleportDistance
+        res.nStepsExcludingLookahead = nStepsExcludingLookahead - nbTeleportsExcludingLookahead
+
         return res
     }
 }

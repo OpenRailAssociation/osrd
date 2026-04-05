@@ -142,9 +142,17 @@ class Pathfinding(
     private fun remainingCostEstimation(infraExplorer: InfraExplorer): Double {
         if (infraExplorer.getStepTracker().hasSeenDestination()) return 0.0
 
-        val nbSeenSteps = infraExplorer.getStepTracker().getSeenSteps().size
+        val seenSteps = infraExplorer.getStepTracker().getSeenSteps()
+        val nbSeenSteps = seenSteps.size
+        val nbBacktrackingSteps =
+            seenSteps.iterateBackwards().sumOf { if (it.isBacktracking) 1 else 0 }
+        // TODO PEB: move this to StepTracker
+        val nbRealSeenSteps =
+            nbSeenSteps - nbBacktrackingSteps +
+                if (seenSteps.lastOrNull()?.isBacktracking == true) 1 else 0
+
         val currentRange = infraExplorer.getCurrentBlockRange()
-        return remainingCostEstimators[nbSeenSteps - 1].apply(
+        return remainingCostEstimators[nbRealSeenSteps - 1].apply(
             BlockLocation(currentRange.value, currentRange.objectEnd)
         ) / rollingStockMaxSpeed
     }
@@ -180,8 +188,8 @@ class Pathfinding(
         var maxSeenTarget = 0
 
         while (true) {
-            if (Duration.between(startTime, Instant.now()).toSeconds() >= timeout)
-                throw OSRDError(ErrorType.PathfindingTimeoutError)
+            // if (Duration.between(startTime, Instant.now()).toSeconds() >= timeout)
+            //    throw OSRDError(ErrorType.PathfindingTimeoutError)
 
             val step = queue.poll()
 
@@ -205,7 +213,8 @@ class Pathfinding(
                         step.establishedLength.meters,
                     )
                 )
-                return step.infraExplorer
+
+                return step.infraExplorer.cloneCleaningTeleportRanges()
             }
 
             val nbSeenTargets = step.infraExplorer.getStepTracker().getSeenSteps().size

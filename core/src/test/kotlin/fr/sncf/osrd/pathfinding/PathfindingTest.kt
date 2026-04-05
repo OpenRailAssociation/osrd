@@ -922,7 +922,7 @@ class PathfindingStopsAtEndOfBlock : ApiTest() {
             )
         checkPathfindingSuccess(
             parsed,
-            19_100.meters, // must be 18_700 with "teleport"
+            18_700.meters,
             expectedBlocks =
                 listOf(
                     "[s.right.a1-BAL, s.right.a2-BAL];[det.a1, det.a2];[]",
@@ -951,7 +951,7 @@ class PathfindingStopsAtEndOfBlock : ApiTest() {
                     TrackSectionRange(
                         "t_center",
                         Offset(0.meters),
-                        Offset(2_800.meters), // must be 2_400 with "teleport"
+                        Offset(2_400.meters),
                         EdgeDirection.STOP_TO_START,
                     ),
                     TrackSectionRange(
