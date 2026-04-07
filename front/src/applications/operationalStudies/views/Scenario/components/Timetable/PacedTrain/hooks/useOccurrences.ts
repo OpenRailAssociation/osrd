@@ -69,10 +69,12 @@ const useOccurrences = (
           : pacedTrainCategory,
         occurrenceIndex: i,
         exception:
+          // TODO_EXCEPTION: remove the second check when use TrainScheduleException type
           correspondingException && correspondingException.id
             ? {
                 id: correspondingException.id,
                 exceptionChangeGroups: omit(correspondingException, [
+                  // TODO_EXCEPTION: remove 'key' when use TrainScheduleException type
                   'key',
                   'occurrence_index',
                   'disabled',
@@ -100,7 +102,8 @@ const useOccurrences = (
       const startTime = new Date(exception.start_time!.value);
 
       computedOccurrences.push({
-        id: formatPacedTrainIdToExceptionId(pacedTrainId, exception.key),
+        // TODO_EXCEPTION: remove `!` when use TrainScheduleException type
+        id: formatPacedTrainIdToExceptionId(pacedTrainId, Number(exception.id!)),
         trainName: exception.train_name?.value ?? `${name}/+`,
         rollingStock: occurrenceRollingStock,
         startTime,
@@ -112,23 +115,22 @@ const useOccurrences = (
           ? exception.rolling_stock_category.value
           : pacedTrainCategory,
 
-        exception: exception.id
-          ? {
-              id: exception.id,
-              exceptionChangeGroups: omit(exception, [
-                'key',
-                'disabled',
-                'occurrence_index',
-                'summary',
-                'id',
-              ]),
-            }
-          : undefined,
+        exception: {
+          // TODO_EXCEPTION: remove `!` when use TrainScheduleException type
+          id: exception.id!,
+          exceptionChangeGroups: omit(exception, [
+            // TODO_EXCEPTION: remove 'key' when use TrainScheduleException type
+            'key',
+            'disabled',
+            'occurrence_index',
+            'summary',
+            'id',
+          ]),
+        },
 
         summary: exception.summary ?? summary,
       });
     });
-
     return sortBy(computedOccurrences, 'startTime');
   }, [pacedTrain, rollingStockList]);
 

@@ -103,10 +103,10 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
 
       if (!isEmpty(result.exceptions)) {
         pacedTrainProjectionResult.exceptions = new Map();
-        for (const [exceptionKey, exception] of Object.entries(result.exceptions)) {
-          pacedTrainProjectionResult.exceptions.set(exceptionKey, {
+        for (const [exceptionId, exception] of Object.entries(result.exceptions)) {
+          pacedTrainProjectionResult.exceptions.set(exceptionId, {
             space_time_curves: exception,
-            signal_updates: rawPacedTrainOccupancyBlocks[id]?.exceptions?.[exceptionKey] ?? [],
+            signal_updates: rawPacedTrainOccupancyBlocks[id]?.exceptions?.[exceptionId] ?? [],
           });
         }
       }
