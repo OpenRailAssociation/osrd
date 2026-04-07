@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 
 import { buildPacedTrainWithUpdatedException } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/buildPacedTrainException';
+import formatMargin from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/formatMargin';
 import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/formatTimetableItemPayload';
 import {
   osrdEditoastApi,
@@ -9,6 +10,7 @@ import {
   type ReceptionSignal,
   type ScheduleItem,
 } from 'common/api/osrdEditoastApi';
+import computeBasePathStep from 'modules/timetableItem/helpers/computeBasePathStep';
 import {
   getOccurrenceTrainName,
   isPacedTrainBase,
@@ -25,6 +27,7 @@ import {
   isPacedTrainId,
 } from 'utils/trainId';
 
+import { MarginUnit } from '../consts';
 import {
   upsertPathStep,
   applyScheduleEdit,
@@ -38,12 +41,22 @@ import type {
   CellUpdate,
   OptimisticEdit,
   PropagationMode,
+  MarginValue,
   TimesStopsRowNew,
   UpdateCellStatus,
 } from '../types';
 
 const isOriginArrivalUpdate = (update: CellUpdate): update is ArrivalUpdate =>
   update.field === 'requestedArrival' && update.row.opOnPathIndex === 0;
+
+const formatRequestedMargin = (requestedMargin: MarginValue | null) => {
+  if (!requestedMargin) return null;
+
+  const { value, unit } = requestedMargin;
+  if (unit === MarginUnit.percent) return `${value}%`;
+  if (unit === MarginUnit.minPer100km) return `${value}min/100km`;
+  return null;
+};
 
 /**
  * Hook that provides a callback to update times/stops cell values.
@@ -66,6 +79,27 @@ const useUpdateTimesStopsTable = (
 ) => {
   const [updateTrainSchedule] = osrdEditoastApi.endpoints.putTrainSchedulesById.useMutation();
 
+  const computeUpdatedMargins = useCallback(
+    (updatedPath: PathItem[], requestedMargin: MarginValue | null, pathStepId: string) => {
+      const baseTrainInputs: Pick<TrainSchedule, 'path' | 'schedule' | 'margins'> = {
+        path: updatedPath,
+        schedule: selectedTrain.schedule,
+        margins: selectedTrain.margins,
+      };
+
+      const updatedPathSteps = updatedPath.map((_, index) =>
+        computeBasePathStep(baseTrainInputs, index)
+      );
+      const targetedStep = updatedPathSteps.find((step) => step.id === pathStepId);
+
+      if (!targetedStep) return selectedTrain.margins;
+
+      targetedStep.theoreticalMargin = formatRequestedMargin(requestedMargin) ?? undefined;
+      return formatMargin(updatedPathSteps);
+    },
+    [selectedTrain]
+  );
+
   /**
    * Compute the updated path and schedule based on the cell update.
    */
@@ -73,15 +107,28 @@ const useUpdateTimesStopsTable = (
     (
       update: CellUpdate
     ):
-      | { updatedPath: PathItem[]; updatedSchedule: ScheduleItem[]; updatedStartTime?: Date }
+      | {
+          updatedPath: PathItem[];
+          updatedSchedule: ScheduleItem[];
+          updatedMargins: TrainSchedule['margins'];
+          updatedStartTime?: Date;
+        }
       | undefined => {
       const propagatedResult = propagateTime(update, selectedTrain);
-      if (propagatedResult) return propagatedResult;
+      if (propagatedResult) return { ...propagatedResult, updatedMargins: selectedTrain.margins };
 
       const { pathStepId, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
       const currentSchedule = selectedTrain.schedule ?? [];
       const existingItemIndex = currentSchedule.findIndex((item) => item.at === pathStepId);
       const isOrigin = pathStepId === updatedPath[0].id;
+
+      if (update.field === 'requestedTheoreticalMargin') {
+        return {
+          updatedPath,
+          updatedSchedule: currentSchedule,
+          updatedMargins: computeUpdatedMargins(updatedPath, update.value, pathStepId),
+        };
+      }
 
       // receptionSignal: directly update the schedule item's reception_signal field.
       // A stop is always required to edit reception signal
@@ -91,7 +138,7 @@ const useUpdateTimesStopsTable = (
           ...currentSchedule[existingItemIndex],
           reception_signal: update.value,
         });
-        return { updatedPath, updatedSchedule };
+        return { updatedPath, updatedSchedule, updatedMargins: selectedTrain.margins };
       }
 
       // Convert CellUpdate to OptimisticEdit (stopDuration: number → Duration)
@@ -138,9 +185,9 @@ const useUpdateTimesStopsTable = (
         updatedSchedule = insertScheduleItemInOrder(currentSchedule, newItem, updatedPath);
       }
 
-      return { updatedPath, updatedSchedule };
+      return { updatedPath, updatedSchedule, updatedMargins: selectedTrain.margins };
     },
-    [selectedTrain, allRows]
+    [selectedTrain, allRows, computeUpdatedMargins]
   );
 
   /**
@@ -194,9 +241,13 @@ const useUpdateTimesStopsTable = (
       } else {
         const result = computeUpdatedPathAndSchedule(update);
         if (!result) return 'skipped';
+        const trainWithUpdatedMargins = {
+          ...selectedTrain,
+          margins: result.updatedMargins,
+        };
         updatedOccurrence = {
           ...buildUpdatedOccurrence(
-            selectedTrain,
+            trainWithUpdatedMargins,
             result.updatedPath,
             result.updatedSchedule,
             occurrenceTrainName
@@ -258,6 +309,7 @@ const useUpdateTimesStopsTable = (
         id: editoastId,
         path: updatedPath,
         schedule: updatedSchedule,
+        margins: result.updatedMargins,
         start_time: result.updatedStartTime?.toISOString() ?? selectedTrain.start_time,
       };
 
@@ -315,11 +367,18 @@ const useUpdateTimesStopsTable = (
     [updateCell]
   );
 
+  const updateRequestedMargin = useCallback(
+    (row: TimesStopsRowNew, requestedTheoreticalMargin: MarginValue | null) =>
+      updateCell({ row, field: 'requestedTheoreticalMargin', value: requestedTheoreticalMargin }),
+    [updateCell]
+  );
+
   return {
     updateArrival,
     updateStopDuration,
     updateDeparture,
     updateReceptionSignal,
+    updateRequestedMargin,
   };
 };
 

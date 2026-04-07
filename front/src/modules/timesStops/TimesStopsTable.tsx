@@ -410,13 +410,25 @@ const TimesStopsTable = ({
       columnHelper.accessor('requestedTheoreticalMargin', {
         header: () => t('requestedTheoreticalMargin'),
         cell: (info) => {
+          const { allRows } = info.table.options.meta!;
           const row = info.row.original;
+          const isLastRow = info.row.index === allRows.length - 1;
+
+          if (isLastRow) return null;
+
+          const isInherited = !row.isTheoreticalMarginBoundary || !row.requestedTheoreticalMargin;
+          const isScheduledOp = !!row.computedTheoreticalMarginSeconds;
+
           return (
-            <MarginCell
-              {...info}
-              editable
-              onCommit={(value) => info.table.options.meta!.onRequestedMarginChange(row, value)}
-            />
+            <div>
+              <MarginCell
+                {...info}
+                editable={!isLastRow}
+                isInherited={isInherited}
+                isScheduledOp={isScheduledOp}
+                onCommit={(value) => info.table.options.meta!.onRequestedMarginChange(row, value)}
+              />
+            </div>
           );
         },
         meta: {
@@ -426,7 +438,14 @@ const TimesStopsTable = ({
       }),
       columnHelper.accessor('computedTheoreticalMarginSeconds', {
         header: () => t('computedTheoreticalMargin'),
-        cell: (info) => <MarginCell {...info} editable={false} />,
+        cell: (info) => {
+          const { allRows } = info.table.options.meta!;
+          const isLastRow = info.row.index === allRows.length - 1;
+          if (info.table.options.meta!.isComputedDataPending && !isLastRow) {
+            return <SkeletonLoader className="cell-loading-placeholder" />;
+          }
+          return <MarginCell {...info} editable={false} />;
+        },
         meta: {
           className: 'col-computed-theoretical-margin computed computed-margin',
           title: t('computedTheoreticalMargin'),
@@ -434,7 +453,14 @@ const TimesStopsTable = ({
       }),
       columnHelper.accessor('realMargin', {
         header: () => t('realMargin'),
-        cell: (info) => <MarginCell {...info} editable={false} />,
+        cell: (info) => {
+          const { allRows } = info.table.options.meta!;
+          const isLastRow = info.row.index === allRows.length - 1;
+          if (info.table.options.meta!.isComputedDataPending && !isLastRow) {
+            return <SkeletonLoader className="cell-loading-placeholder" />;
+          }
+          return <MarginCell {...info} editable={false} />;
+        },
         meta: {
           className: 'col-real-margin computed computed-margin',
           title: t('realMargin'),
@@ -442,7 +468,14 @@ const TimesStopsTable = ({
       }),
       columnHelper.accessor('marginsDifference', {
         header: () => t('diffMargins'),
-        cell: (info) => <MarginCell showPolarity {...info} editable={false} />,
+        cell: (info) => {
+          const { allRows } = info.table.options.meta!;
+          const isLastRow = info.row.index === allRows.length - 1;
+          if (info.table.options.meta!.isComputedDataPending && !isLastRow) {
+            return <SkeletonLoader className="cell-loading-placeholder" />;
+          }
+          return <MarginCell {...info} editable={false} />;
+        },
         meta: {
           className: 'col-margins-difference computed computed-margin',
           title: t('diffMargins'),

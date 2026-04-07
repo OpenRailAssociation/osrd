@@ -5,49 +5,135 @@
   justify-content: center;
   font-size: 0.875rem;
 
-  .unit {
-    color: var(--grey30);
-    font-size: 0.625rem;
-    line-height: 9px;
-    text-align: right;
+  .unit-letter {
+    color: var(--grey50);
+  }
+
+  &.display {
     width: 100%;
+    min-height: 24px;
     cursor: pointer;
 
-    &:hover:not(&-active) {
-      color: var(--primary40);
+    .input-cell-placeholder {
+      cursor: pointer;
+
+      &:hover:not(:focus-within),
+      &:active {
+        background-color: transparent;
+        color: var(--primary40);
+      }
     }
 
-    &:hover {
-      color: var(--primary80);
+    .label {
+      color: var(--primary60);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+
+      &.compact {
+        gap: 4px;
+        align-items: flex-start;
+      }
+
+      .value {
+        font-size: inherit;
+        line-height: inherit;
+      }
+
+      .unit {
+        font-size: inherit;
+        line-height: inherit;
+      }
+
+      &.compact .unit {
+        display: inline-flex;
+        align-items: flex-end;
+        flex-direction: column;
+        font-size: 0.75rem;
+        line-height: 11px;
+        white-space: nowrap;
+      }
     }
 
-    &-selection {
-      position: absolute;
-      right: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      display: flex;
-      flex-direction: column;
-    }
+    &.inherited {
+      .display-label {
+        display: inline-flex;
+      }
 
-    &-active {
-      color: var(--grey90);
-    }
+      .hover-placeholder {
+        display: none;
+      }
 
-    &-letter {
-      color: var(--grey50);
+      &:hover {
+        .display-label {
+          display: none;
+        }
+
+        .hover-placeholder {
+          display: inline-flex;
+        }
+      }
+
+      .label,
+      .label .value,
+      .label .unit {
+        color: var(--grey30);
+      }
     }
   }
 
-  .input {
-    color: var(--primary60);
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    max-width: 32px;
-    text-align: center;
-    background: transparent;
-    outline: none;
+  &.edit {
+    width: 100%;
+    min-height: 24px;
+
+    .unit {
+      color: var(--grey30);
+      font-size: 0.625rem;
+      line-height: 9px;
+      text-align: right;
+      width: 100%;
+      cursor: pointer;
+
+      &:hover:not(&-active) {
+        color: var(--primary40);
+      }
+
+      &:hover {
+        color: var(--primary80);
+      }
+
+      &-selection {
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+      }
+
+      &-active {
+        color: var(--grey90);
+      }
+    }
+
+    .input {
+      color: var(--primary60);
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      max-width: 32px;
+      text-align: center;
+      background: transparent;
+      outline: none;
+    }
+
+    &.inherited {
+      .input {
+        color: var(--grey30);
+        z-index: 0;
+        pointer-events: none;
+      }
+    }
   }
 }

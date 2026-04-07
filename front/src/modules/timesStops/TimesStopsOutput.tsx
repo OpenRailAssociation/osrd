@@ -15,7 +15,7 @@ import { getUseNewTimesStopsTable } from 'reducers/user/userSelectors';
 import { formatLocalTime } from 'utils/date';
 import { Duration } from 'utils/duration';
 
-import { computeOptimisticSchedule, propagationToEdits } from './helpers/cellUpdate';
+import { computeOptimisticRowUpdate, propagationToEdits } from './helpers/cellUpdate';
 import { propagateTime } from './helpers/timePropagation';
 import useOutputTableData from './hooks/useOutputTableData';
 import useTimesStopsTableData from './hooks/useTimesStopsTableData';
@@ -27,6 +27,7 @@ import {
   type CellUpdate,
   type PendingEdit,
   type PropagationMode,
+  type MarginValue,
   type TimesStopsRow,
   type TimesStopsRowNew,
   type UpdateCellStatus,
@@ -110,19 +111,24 @@ const TimesStopsOutput = ({
     const editMap = new Map(optimisticEdits.map((e) => [e.rowId, e]));
     return newRows.map((row) => {
       const edit = editMap.get(row.id);
-      return edit ? { ...row, ...computeOptimisticSchedule(row, edit) } : row;
+      return edit ? { ...row, ...computeOptimisticRowUpdate(row, edit) } : row;
     });
   }, [newRows, optimisticEdits]);
 
   const startTime = useMemo(() => new Date(selectedTrain.start_time), [selectedTrain.start_time]);
 
-  const { updateArrival, updateStopDuration, updateDeparture, updateReceptionSignal } =
-    useUpdateTimesStopsTable(
-      selectedTrain,
-      newRows,
-      timetableItemsWithDetails,
-      upsertTimetableItems
-    );
+  const {
+    updateArrival,
+    updateStopDuration,
+    updateDeparture,
+    updateReceptionSignal,
+    updateRequestedMargin,
+  } = useUpdateTimesStopsTable(
+    selectedTrain,
+    newRows,
+    timetableItemsWithDetails,
+    upsertTimetableItems
+  );
 
   // True if we are still waiting for fresh simulation data after a user edit.
   // Both conditions must be false before we clear the loading state:
@@ -179,6 +185,30 @@ const TimesStopsOutput = ({
         ? propagationToEdits(propagationResult, newRows).filter((e) => e.rowId !== singleEdit.rowId)
         : []),
     ];
+  };
+
+  const buildEditsForMarginUpdate = (
+    editedRow: TimesStopsRowNew,
+    requestedMargin: MarginValue | null
+  ): PendingEdit[] => {
+    const edits: PendingEdit[] = [
+      { rowId: editedRow.id, field: 'requestedTheoreticalMargin', value: requestedMargin },
+    ];
+
+    const editedIndex = newRows.findIndex((r) => r.id === editedRow.id);
+    if (editedIndex === -1) return edits;
+
+    for (let i = editedIndex + 1; i < newRows.length; i++) {
+      const row = newRows[i];
+      if (row.isTheoreticalMarginBoundary) break;
+      edits.push({
+        rowId: row.id,
+        field: 'requestedTheoreticalMargin',
+        value: requestedMargin,
+      });
+    }
+
+    return edits;
   };
 
   const handleArrivalChange = (
@@ -239,8 +269,13 @@ const TimesStopsOutput = ({
       updateReceptionSignal(row, signal)
     );
 
-  const handleRequestedMarginChange = () => {}; // TODO: properly handle requested margin change
-
+  const handleRequestedMarginChange = (
+    row: TimesStopsRowNew,
+    requestedMargin: MarginValue | null
+  ) =>
+    commitEdit(buildEditsForMarginUpdate(row, requestedMargin), () =>
+      updateRequestedMargin(row, requestedMargin)
+    );
   if (useNewTimesStopsTable) {
     return (
       <TimesStopsTable

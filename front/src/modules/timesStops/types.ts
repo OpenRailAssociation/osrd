@@ -5,6 +5,13 @@ import type { Duration } from 'utils/duration';
 
 import type { MarginUnit } from './consts';
 
+export type MarginUnitType = (typeof MarginUnit)[keyof typeof MarginUnit];
+
+export type MarginValue = {
+  value: number;
+  unit: MarginUnitType;
+};
+
 export type TimeExtraDays = {
   time: TimeString;
   daySinceDeparture?: number;
@@ -149,24 +156,17 @@ export type CellUpdate =
   | ArrivalUpdate
   | StopDurationUpdate
   | DepartureUpdate
-  | ReceptionSignalUpdate;
-// | RequestedMarginUpdate; // TODO: properly implement the cell update for requestedTheoreticalMargin
+  | ReceptionSignalUpdate
+  | RequestedMarginUpdate;
 
 export type OptimisticEdit =
   | { field: 'requestedArrival'; value: Date | null }
   | { field: 'requestedDeparture'; value: Date | null }
   | { field: 'stopDuration'; value: Duration | null }
-  | { field: 'receptionSignal'; value: ReceptionSignal | undefined };
-// | { field: 'requestedTheoreticalMargin'; value: MarginValue | null }; // TODO: properly implement the optimistic edit for requestedTheoreticalMargin
+  | { field: 'receptionSignal'; value: ReceptionSignal | undefined }
+  | { field: 'requestedTheoreticalMargin'; value: MarginValue | null };
 
 export type PendingEdit = OptimisticEdit & { rowId: string };
-
-export type MarginUnitType = (typeof MarginUnit)[keyof typeof MarginUnit];
-
-export type MarginValue = {
-  value: number;
-  unit: MarginUnitType;
-};
 
 export type Margins<T = MarginValue> = {
   theoreticalMargin?: T;
