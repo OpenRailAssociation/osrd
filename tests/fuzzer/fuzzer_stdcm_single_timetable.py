@@ -20,8 +20,8 @@ _TIMEOUT = 300
 
 _EDITOAST_URL = "http://127.0.0.1:8090/"
 _INFRA_NAME = "France"
-_INFRA_ID = None
-_TIMETABLE_ID = 0
+_INFRA_ID = 2
+_TIMETABLE_ID = 1
 _TRAIN_SCHEDULE_SET_ID = 0
 
 """
@@ -277,6 +277,6 @@ if __name__ == "__main__":
         towed_rs=None,
         scenario=Scenario(-1, -1, -1, infra_id, _TIMETABLE_ID, _TRAIN_SCHEDULE_SET_ID),
         session=session,
-        n_test=10_000,
+        n_test=1000,
         log_folder=Path(__file__).parent / "errors",
     )

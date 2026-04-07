@@ -683,7 +683,7 @@ if __name__ == "__main__":
         new_scenario,
         main_session,
         scenario_ttl=20,
-        n_test=100,
+        n_test=30000,
         log_folder=Path(__file__).parent / "errors",
         rolling_stock_name=_ROLLING_STOCK_NAME,
     )
