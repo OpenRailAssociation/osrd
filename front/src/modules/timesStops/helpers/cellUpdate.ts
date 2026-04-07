@@ -114,18 +114,12 @@ export const applyScheduleEdit = (
       };
     }
 
-    case 'receptionSignal': {
-      // receptionSignal doesn't affect arrival/stop/departure values
+    default: {
       return {
         arrival,
         stop,
         departure: computeDeparture(arrival, stop),
       };
-    }
-
-    default: {
-      const exhaustiveCheck: never = edit;
-      throw new Error(`Unhandled schedule edit field: ${JSON.stringify(exhaustiveCheck)}`);
     }
   }
 };
@@ -165,14 +159,19 @@ export const insertScheduleItemInOrder = (
 };
 
 /**
- * Compute the optimistic display values for all schedule fields when a cell is edited.
+ * Compute optimistic display values for all editable row fields when a cell is edited.
  */
-export const computeOptimisticSchedule = (
+export const computeOptimisticRowUpdate = (
   row: TimesStopsRowNew,
   edit: OptimisticEdit
 ): Pick<
   TimesStopsRowNew,
-  'requestedArrival' | 'stopDuration' | 'requestedDeparture' | 'closedSignal' | 'shortSlipDistance'
+  | 'requestedArrival'
+  | 'stopDuration'
+  | 'requestedDeparture'
+  | 'closedSignal'
+  | 'shortSlipDistance'
+  | 'requestedTheoreticalMargin'
 > => {
   const { arrival, stop, departure } = applyScheduleEdit(
     { arrival: row.requestedArrival, stop: row.stopDuration },
@@ -187,6 +186,10 @@ export const computeOptimisticSchedule = (
     stopDuration: stop,
     requestedDeparture: departure,
     ...checkboxes,
+    requestedTheoreticalMargin:
+      edit.field === 'requestedTheoreticalMargin'
+        ? (edit.value ?? undefined)
+        : row.requestedTheoreticalMargin,
   };
 };
 
