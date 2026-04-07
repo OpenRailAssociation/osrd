@@ -1,7 +1,6 @@
 import type { Action, ReducersMapObject } from 'redux';
 import { createTransform, persistCombineReducers } from 'redux-persist';
 import storage from 'redux-persist/es/storage'; // defaults to localStorage
-import createCompressor from 'redux-persist-transform-compress';
 import { createFilter, createBlacklistFilter } from 'redux-persist-transform-filter';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -35,10 +34,6 @@ import type { UserState } from 'reducers/user';
 import { Duration } from 'utils/duration';
 
 import type { ConfSlice } from './osrdconf/osrdConfCommon';
-
-const compressor = createCompressor({
-  whitelist: ['rollingstock'],
-});
 
 const userWhiteList = ['account', 'userPreferences', 'impersonatedUser'];
 
@@ -93,7 +88,6 @@ export const persistConfig = {
   key: 'root',
   storage,
   transforms: [
-    compressor,
     saveUserFilter,
     saveMainFilter,
     operationalStudiesFilter,
