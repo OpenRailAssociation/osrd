@@ -234,6 +234,7 @@ const useUpdateTimesStopsTable = (
         start_time: result.updatedStartTime?.toISOString() ?? selectedTrain.start_time,
       };
 
+      // TODO_EXCEPTIONS: buildPacedTrainWithUpdatedException look like formatPacedTrainPayload
       const updatedPacedTrain = buildPacedTrainWithUpdatedException(
         originalPacedTrain,
         updatedOccurrence,

@@ -142,6 +142,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       );
 
       if (!withoutSimulation) {
+        removeSimulatedTimetableItems(timetableItemsToUpsert.map((item) => item.id));
         removeProjectedTimetableItems(timetableItemsToUpsert.map((item) => item.id));
         simulateTimetableItems(timetableItemsToUpsert);
       }
