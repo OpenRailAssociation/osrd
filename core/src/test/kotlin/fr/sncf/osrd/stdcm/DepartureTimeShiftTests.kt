@@ -2,6 +2,7 @@ package fr.sncf.osrd.stdcm
 
 import com.google.common.collect.ImmutableMultimap
 import fr.sncf.osrd.envelope_sim.Comfort
+import fr.sncf.osrd.stdcm.graph.BlockSimulationParameters
 import fr.sncf.osrd.stdcm.infra_exploration.BlockLocation
 import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment
 import fr.sncf.osrd.train.TestTrains
@@ -166,15 +167,13 @@ class DepartureTimeShiftTests {
         val secondBlock = infra.addBlock("b", "c")
         val firstBlockEnvelope =
             simulateBlock(
-                infraExplorerFromBlock(infra, infra, firstBlock),
-                0.0,
-                Offset(0.meters),
+                BlockSimulationParameters(firstBlock, 0.0, Offset(0.meters), null),
+                infra,
+                infra,
                 TestTrains.REALISTIC_FAST_TRAIN,
-                Comfort.STANDARD,
+                listOf(),
                 2.0,
-                null,
-                null,
-                null,
+                Comfort.STANDARD,
             )!!
         val occupancyGraph =
             ImmutableMultimap.of(

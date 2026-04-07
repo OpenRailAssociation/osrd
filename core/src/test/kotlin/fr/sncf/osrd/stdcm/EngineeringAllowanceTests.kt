@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMultimap
 import fr.sncf.osrd.envelope_sim.Comfort
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.sim_infra.api.BlockId
+import fr.sncf.osrd.stdcm.graph.BlockSimulationParameters
 import fr.sncf.osrd.stdcm.infra_exploration.BlockLocation
 import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment
 import fr.sncf.osrd.train.TestTrains
@@ -39,27 +40,28 @@ class EngineeringAllowanceTests {
         val thirdBlock = infra.addBlock("c", "d", 100.meters, 30.0)
         val firstBlockEnvelope =
             simulateBlock(
-                infraExplorerFromBlock(infra, infra, firstBlock),
-                0.0,
-                Offset(0.meters),
+                BlockSimulationParameters(firstBlock, 0.0, Offset(0.meters), null),
+                infra,
+                infra,
                 TestTrains.REALISTIC_FAST_TRAIN,
-                Comfort.STANDARD,
+                listOf(),
                 2.0,
-                null,
-                null,
-                null,
+                Comfort.STANDARD,
             )!!
         val secondBlockEnvelope =
             simulateBlock(
-                infraExplorerFromBlock(infra, infra, secondBlock),
-                firstBlockEnvelope.endSpeed,
-                Offset(0.meters),
+                BlockSimulationParameters(
+                    secondBlock,
+                    firstBlockEnvelope.endSpeed,
+                    Offset(0.meters),
+                    null,
+                ),
+                infra,
+                infra,
                 TestTrains.REALISTIC_FAST_TRAIN,
-                Comfort.STANDARD,
+                listOf(),
                 2.0,
-                null,
-                null,
-                null,
+                Comfort.STANDARD,
             )!!
         val timeThirdBlockFree = firstBlockEnvelope.totalTime + secondBlockEnvelope.totalTime
         val occupancyGraph =
@@ -119,27 +121,28 @@ class EngineeringAllowanceTests {
         val lastBlock = infra.addBlock("e", "f", 1000.meters, 20.0)
         val firstBlockEnvelope =
             simulateBlock(
-                infraExplorerFromBlock(infra, infra, firstBlock),
-                0.0,
-                Offset(0.meters),
+                BlockSimulationParameters(firstBlock, 0.0, Offset(0.meters), null),
+                infra,
+                infra,
                 TestTrains.REALISTIC_FAST_TRAIN,
-                Comfort.STANDARD,
+                listOf(),
                 2.0,
-                null,
-                null,
-                null,
+                Comfort.STANDARD,
             )!!
         val secondBlockEnvelope =
             simulateBlock(
-                infraExplorerFromBlock(infra, infra, secondBlock),
-                firstBlockEnvelope.endSpeed,
-                Offset(0.meters),
+                BlockSimulationParameters(
+                    secondBlock,
+                    firstBlockEnvelope.endSpeed,
+                    Offset(0.meters),
+                    null,
+                ),
+                infra,
+                infra,
                 TestTrains.REALISTIC_FAST_TRAIN,
-                Comfort.STANDARD,
+                listOf(),
                 2.0,
-                null,
-                null,
-                null,
+                Comfort.STANDARD,
             )!!
         val timeLastBlockFree =
             firstBlockEnvelope.totalTime + 120 + secondBlockEnvelope.totalTime * 3
@@ -202,27 +205,28 @@ class EngineeringAllowanceTests {
         val lastBlock = infra.addBlock("e", "f", 1000.meters, 20.0)
         val firstBlockEnvelope =
             simulateBlock(
-                infraExplorerFromBlock(infra, infra, firstBlock),
-                0.0,
-                Offset(0.meters),
+                BlockSimulationParameters(firstBlock, 0.0, Offset(0.meters), null),
+                infra,
+                infra,
                 TestTrains.REALISTIC_FAST_TRAIN,
-                Comfort.STANDARD,
+                listOf(),
                 2.0,
-                null,
-                null,
-                null,
+                Comfort.STANDARD,
             )!!
         val secondBlockEnvelope =
             simulateBlock(
-                infraExplorerFromBlock(infra, infra, secondBlock),
-                firstBlockEnvelope.endSpeed,
-                Offset(0.meters),
+                BlockSimulationParameters(
+                    secondBlock,
+                    firstBlockEnvelope.endSpeed,
+                    Offset(0.meters),
+                    null,
+                ),
+                infra,
+                infra,
                 TestTrains.REALISTIC_FAST_TRAIN,
-                Comfort.STANDARD,
+                listOf(),
                 2.0,
-                null,
-                null,
-                null,
+                Comfort.STANDARD,
             )!!
         val timeLastBlockFree =
             firstBlockEnvelope.totalTime + 120 + secondBlockEnvelope.totalTime * 3
@@ -630,27 +634,28 @@ class EngineeringAllowanceTests {
         val thirdBlock = infra.addBlock("c", "d", 100.meters, 0.5)
         val firstBlockEnvelope =
             simulateBlock(
-                infraExplorerFromBlock(infra, infra, firstBlock),
-                0.0,
-                Offset(0.meters),
+                BlockSimulationParameters(firstBlock, 0.0, Offset(0.meters), null),
+                infra,
+                infra,
                 TestTrains.REALISTIC_FAST_TRAIN,
-                Comfort.STANDARD,
+                listOf(),
                 2.0,
-                null,
-                null,
-                null,
+                Comfort.STANDARD,
             )!!
         val secondBlockEnvelope =
             simulateBlock(
-                infraExplorerFromBlock(infra, infra, secondBlock),
-                firstBlockEnvelope.endSpeed,
-                Offset(0.meters),
+                BlockSimulationParameters(
+                    secondBlock,
+                    firstBlockEnvelope.endSpeed,
+                    Offset(0.meters),
+                    null,
+                ),
+                infra,
+                infra,
                 TestTrains.REALISTIC_FAST_TRAIN,
-                Comfort.STANDARD,
+                listOf(),
                 2.0,
-                null,
-                null,
-                null,
+                Comfort.STANDARD,
             )!!
         val timeThirdBlockFree = firstBlockEnvelope.totalTime + secondBlockEnvelope.totalTime
         val occupancyGraph =
