@@ -1,6 +1,7 @@
+import gzip
 import json
 import os
-import sys
+import shutil
 from pathlib import Path
 
 import click
@@ -26,13 +27,6 @@ it's also included at the bottom of the simulation sheet.
 )
 @click.option("--bucket", "-b", default="osrd-dev", type=str)
 @click.option(
-    "--railjson-path",
-    "-r",
-    type=click.Path(dir_okay=False, path_type=Path),
-    help="Path to the railjson file. Not saved in the s3 as they're rarely updated (though it could be added). "
-    + "Can be downloaded from https://osrd_url/api/infra/infra_id/railjson/",
-)
-@click.option(
     "--core-path",
     "-c",
     type=click.Path(dir_okay=False, path_type=Path),
@@ -44,7 +38,6 @@ def main(
     s3_cache: Path | None,
     bucket: str,
     trace_id: str,
-    railjson_path: Path | None,
     core_path: Path | None,
 ):
     if s3_cache is None:
@@ -68,16 +61,23 @@ def main(
         s3_cache,
     )
 
-    if railjson_path is None or not railjson_path.is_file():
-        print(
-            f"Missing railjson file, can be downloaded from osrd-url/api/infra/{payload['infra']}/railjson/"
-        )
-        railjson_path = Path("infra.json")
+    gzipped_railjson_path = download_s3_file(
+        s3,
+        bucket,
+        f"stdcm/infras/{payload['infra']}-{payload['expected_version']}.railjson.gz",
+        s3_cache,
+    )
+    railjson_path = gzipped_railjson_path.parent / gzipped_railjson_path.name[:-3]
+    if not railjson_path.exists():
+        with gzip.open(gzipped_railjson_path, "rb") as f_in:
+            with open(railjson_path, "wb") as f_out:
+                shutil.copyfileobj(f_in, f_out)
 
     # Copying the files in a stable place makes it easier to keep a stable IDE "run" config,
     # as the end goal is generally to debug that process in an IDE.
     payload_copy = payload_path.copy("input-payload.json")
     timetable_copy = cbor_timetable.copy("timetable.cbor")
+    railjson_copy = cbor_timetable.copy("infra.railjson")
 
     command = [
         "java",
@@ -89,7 +89,7 @@ def main(
         "--stdcm-payload-path",
         str(payload_copy.resolve()),
         "--railjson",
-        str(railjson_path.resolve()),
+        str(railjson_copy.resolve()),
         "--cbor-timetable",
         str(timetable_copy.resolve()),
     ]

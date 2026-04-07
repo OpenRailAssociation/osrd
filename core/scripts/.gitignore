@@ -1,3 +1,7 @@
 .env
 debug-space-time-chart.html
 .s3_cache
+input-payload.json
+timetable.cbor
+infra.railjson
+debug_stdcm.json
