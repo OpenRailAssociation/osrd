@@ -29,10 +29,7 @@ export function durationInSeconds(start: number, end: number) {
   return end > start ? end - start : end + SECONDS_IN_A_DAY - start;
 }
 
-export function calculateTimeDifferenceInDays(datetime1?: Date, datetime2?: Date) {
-  if (!datetime1 || !datetime2) {
-    return undefined;
-  }
+export function calculateTimeDifferenceInDays(datetime1: Date, datetime2: Date) {
   const date1 = new Date(datetime1.getFullYear(), datetime1.getMonth(), datetime1.getDate());
   const date2 = new Date(datetime2.getFullYear(), datetime2.getMonth(), datetime2.getDate());
   return dayjs.duration(date2.getTime() - date1.getTime()).asDays();
