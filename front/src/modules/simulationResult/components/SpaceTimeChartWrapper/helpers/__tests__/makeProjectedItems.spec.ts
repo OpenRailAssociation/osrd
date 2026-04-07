@@ -9,9 +9,10 @@ import makeProjectedItems from '../makeProjectedItems';
 
 describe('makeProjectedItems', () => {
   describe('paced train with indexed 2 occurrences, 2nd’s is a path exception', () => {
-    const exceptionKey = '9f11f34a-8ece-42bc-ac3f-45a8ab19f5ec';
+    const exceptionId = 1;
     const exception: PacedTrainException = {
-      key: exceptionKey,
+      key: exceptionId.toString(),
+      id: exceptionId,
       occurrence_index: 1,
       disabled: false,
       train_name: {
@@ -77,7 +78,7 @@ describe('makeProjectedItems', () => {
           timeWindow: Duration.parse('PT2H'),
           interval: Duration.parse('PT1H'),
           exceptions: [exception],
-          exceptionProjections: new Map([[exceptionKey, exceptionProjection]]),
+          exceptionProjections: new Map([[exceptionId, exceptionProjection]]),
         },
         originPathItem: {
           id: 'origin',
@@ -132,9 +133,10 @@ describe('makeProjectedItems', () => {
   });
 
   describe('paced train with 1 ADDED path exception', () => {
-    const exceptionKey = 'a057a742-ec2f-401e-adb1-558017f20d74';
+    const exceptionId = 2;
     const exception: PacedTrainException = {
-      key: exceptionKey,
+      key: exceptionId.toString(),
+      id: exceptionId,
       path_and_schedule: {
         margins: {
           boundaries: [],
@@ -216,7 +218,7 @@ describe('makeProjectedItems', () => {
           timeWindow: Duration.parse('PT3H'),
           interval: Duration.parse('PT1H'),
           exceptions: [exception],
-          exceptionProjections: new Map([[exceptionKey, exceptionProjection]]),
+          exceptionProjections: new Map([[exceptionId, exceptionProjection]]),
         },
       },
     ];
@@ -249,7 +251,7 @@ describe('makeProjectedItems', () => {
         signalUpdates: pacedTrain.signalUpdates,
       });
       expect(result[3]).toEqual({
-        id: 'exception_2564_a057a742-ec2f-401e-adb1-558017f20d74',
+        id: 'exception_2564_2',
         name: exception.train_name!.value,
         departureTime: new Date(exception.start_time!.value),
         exception,

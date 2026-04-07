@@ -52,7 +52,7 @@ export type TrainSpaceTimeData = {
   originPathItem: PathItem;
   destinationPathItem: PathItem;
   paced?: PacedTrainWithDetails['paced'] & {
-    exceptionProjections: Map<string, BaseTrainProjection>;
+    exceptionProjections: Map<number, BaseTrainProjection>;
   };
 } & BaseTrainProjection;
 

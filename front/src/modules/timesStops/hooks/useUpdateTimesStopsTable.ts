@@ -205,6 +205,7 @@ const useUpdateTimesStopsTable = (
         };
       }
 
+      // TODO_EXCEPTIONS: buildPacedTrainWithUpdatedException look like formatPacedTrainPayload
       const updatedPacedTrain = buildPacedTrainWithUpdatedException(
         originalPacedTrain,
         updatedOccurrence,
