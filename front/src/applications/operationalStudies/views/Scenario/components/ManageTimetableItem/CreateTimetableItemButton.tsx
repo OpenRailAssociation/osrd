@@ -10,7 +10,10 @@ import {
 } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import { setFailure, setSuccess } from 'reducers/main';
 import { clearAddedExceptionsList } from 'reducers/osrdconf/operationalStudiesConf';
-import { getOperationalStudiesConf } from 'reducers/osrdconf/operationalStudiesConf/selectors';
+import {
+  getOperationalStudiesConf,
+  getAddedExceptions,
+} from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
@@ -43,6 +46,7 @@ const CreateTimetableItemButton = ({
   const { workerStatus, sandboxId, timetableId } = useScenarioContext();
 
   const simulationConf = useSelector(getOperationalStudiesConf);
+  const addedExceptions = useSelector(getAddedExceptions);
 
   // TODO TS2 : remove this when rollingStockName will replace rollingStockId in the store
   const { rollingStock } = useStoreDataForRollingStockSelector({
@@ -55,11 +59,9 @@ const CreateTimetableItemButton = ({
     setIsWorking(true);
 
     try {
-      const payload = isPacedTrainMode
+      const newTrainSchedulePayload = isPacedTrainMode
         ? formatPacedTrainPayload(simulationConf, rollingStock!.name)
         : formatTimetableItemPayload(simulationConf, rollingStock!.name);
-
-      const { newTrainSchedulePayload, updatedExceptions } = payload;
 
       const formattedNewTrainSchedule: TimetableItem = (
         await createPacedTrains(dispatch, sandboxId, [newTrainSchedulePayload])
@@ -68,10 +70,15 @@ const CreateTimetableItemButton = ({
 
       let timetableItemToUpsert = formattedNewTrainSchedule;
 
-      if (updatedExceptions.length > 0) {
+      const newAddedExceptions = addedExceptions.map(({ key, startTime: exStartTime }) => ({
+        key,
+        start_time: { value: exStartTime.toISOString() },
+      }));
+
+      if (newAddedExceptions.length > 0) {
         const newExceptions = await createExceptions(
           dispatch,
-          updatedExceptions,
+          newAddedExceptions,
           formattedNewTrainSchedule.id,
           timetableId
         );
@@ -87,8 +94,8 @@ const CreateTimetableItemButton = ({
           return {
             ...change_groups,
             ...restExceptions,
-            // TODO: drop this when drop key in the model
-            key: restExceptions.key ?? restExceptions.id.toString(),
+            // TODO_EXCEPTION: remove this when drop key in the model
+            key: restExceptions.id.toString(),
           };
         });
 

@@ -89,7 +89,7 @@ export const formatEditoastIdToExceptionId = ({
   exceptionId,
 }: {
   pacedTrainId: number;
-  exceptionId: string;
+  exceptionId: number;
 }): AddedExceptionId => `exception_${pacedTrainId}_${exceptionId}` as AddedExceptionId;
 
 /**
@@ -130,7 +130,7 @@ export const formatPacedTrainIdToIndexedOccurrenceId = (
  */
 export const formatPacedTrainIdToExceptionId = (
   pacedTrainId: PacedTrainId,
-  exceptionId: string
+  exceptionId: number
 ): AddedExceptionId => {
   const editoastTrainId = extractEditoastIdFromPacedTrainId(pacedTrainId);
   return formatEditoastIdToExceptionId({
@@ -149,7 +149,8 @@ export const formatPacedTrainIdToOccurrenceId = (
 ): OccurrenceId =>
   exception.occurrence_index
     ? formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, exception.occurrence_index)
-    : formatPacedTrainIdToExceptionId(pacedTrainId, exception.key);
+    : // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
+      formatPacedTrainIdToExceptionId(pacedTrainId, Number(exception.id!));
 
 /**
  * Given a occurrence id with an OccurrenceId format (used across the front),
@@ -194,7 +195,7 @@ export const extractOccurrenceIndexFromOccurrenceId = (occurrenceId: OccurrenceI
  * Given a occurrence id with an OccurrenceId format (used across the front),
  * returns the exception id.
  */
-export const extractExceptionIdFromOccurrenceId = (occurrenceId: OccurrenceId): string => {
+export const extractExceptionIdFromOccurrenceId = (occurrenceId: OccurrenceId): number => {
   if (!isAddedExceptionId(occurrenceId)) {
     throw new Error(
       'The occurrence id should match the format "exception_{pacedTrainId}_{exceptionId}"'
@@ -203,8 +204,13 @@ export const extractExceptionIdFromOccurrenceId = (occurrenceId: OccurrenceId): 
 
   const [_type, _pacedTrainId, ...exceptionId] = occurrenceId.split('_');
 
+  const result = Number(exceptionId.join('_'));
+  if (Number.isNaN(result)) {
+    throw new Error(`Exception ID should be a number: ${occurrenceId}`);
+  }
+
   // Handle the case where exceptionId contains "_" itself
-  return exceptionId.join('_');
+  return result;
 };
 
 export const isTrainIdInTimetable = (

@@ -551,7 +551,7 @@ export const handleUpdateTimetableItem = async ({
       newForwardTrainBase,
       paced,
       oldForwardTimetableItem.paced.exceptions
-    );
+    ).exceptions;
     newForwardTrainBase.paced = paced;
   }
 
@@ -608,7 +608,7 @@ export const handleUpdateTimetableItem = async ({
         newReturnTrainBase,
         returnPaced,
         oldReturnTimetableItem.paced.exceptions
-      );
+      ).exceptions;
       newReturnTrainBase.paced = returnPaced;
     }
 

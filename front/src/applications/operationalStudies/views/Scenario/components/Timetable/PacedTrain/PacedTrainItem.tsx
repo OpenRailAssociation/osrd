@@ -31,8 +31,8 @@ import { getOccurrencesWorstStatus } from "modules/timetableItem/helpers/pacedTr
 import {
   createExceptions,
   createPacedTrains,
+  deleteExceptions,
   deleteTrainSchedules,
-  storePacedTrain,
 } from "modules/timetableItem/helpers/updateTimetableItemHelpers";
 import type { PacedTrainWithPacedWithDetails } from "modules/timetableItem/types";
 import { setFailure, setSuccess } from "reducers/main";
@@ -172,6 +172,7 @@ const PacedTrainItem = ({
     occurrences,
     selectPacedTrainToEdit,
     upsertTimetableItems,
+    timetableId,
   });
 
   const [getTrainScheduleById] =
@@ -205,25 +206,33 @@ const PacedTrainItem = ({
     dispatch(updateSelectedTrainId(formattedPacedTrainId));
   };
 
-  async function deleteExceptions() {
+  const deleteAllExceptions = async () => {
+    // TODO_EXCEPTION: remove filter when using TrainScheduleException type
+    const allIds = pacedTrain.paced.exceptions
+      .filter((e) => e.id != null)
+      .map((e) => e.id!);
+
+    if (allIds.length > 0) {
+      await deleteExceptions(dispatch, allIds);
+    }
+
+    // Use pacedTrain as the source for train_schedule_set_id and id
     const updatedPacedTrainPayload =
       formatPacedTrainWithDetailsToPacedTrainPayload({
         ...pacedTrain,
         paced: { ...pacedTrain.paced, exceptions: [] },
       });
 
-    await storePacedTrain(
-      pacedTrain.id,
+    upsertTimetableItems([
       {
         ...updatedPacedTrainPayload,
         train_schedule_set_id: pacedTrain.train_schedule_set_id,
+        id: pacedTrain.id,
       },
-      dispatch,
-      upsertTimetableItems,
-    );
+    ]);
 
     closeModal();
-  }
+  };
 
   const duplicatePacedTrain = async () => {
     // Static for now, will be dynamic when UI will be ready
@@ -292,8 +301,8 @@ const PacedTrainItem = ({
       return {
         ...change_groups,
         ...restExceptions,
-        // TODO: drop this when drop key in the model
-        key: restExceptions.key ?? restExceptions.id.toString(),
+        // TODO_EXCEPTION: remove this when drop key in the model
+        key: restExceptions.id.toString(),
       };
     });
 
@@ -472,7 +481,7 @@ const PacedTrainItem = ({
           resetAllExceptions={() => {
             openModal(
               <ConfirmModal
-                onConfirm={() => deleteExceptions()}
+                onConfirm={() => deleteAllExceptions()}
                 title={t("timetable.resetAllExceptions")}
               />,
             );

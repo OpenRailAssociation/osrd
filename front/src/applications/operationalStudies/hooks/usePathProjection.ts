@@ -110,23 +110,22 @@ const usePathProjection = (
   const dispatch = useAppDispatch();
 
   let rawPacedTrainId: number | undefined;
-  let exceptionKey: string | undefined;
+  let exceptionId: number | undefined | null;
   if (trainIdUsedForProjection) {
     if (isPacedTrainId(trainIdUsedForProjection)) {
       rawPacedTrainId = extractEditoastIdFromPacedTrainId(trainIdUsedForProjection);
     } else {
       const pacedTrainId = extractPacedTrainIdFromOccurrenceId(trainIdUsedForProjection);
       rawPacedTrainId = extractEditoastIdFromPacedTrainId(pacedTrainId);
-
-      exceptionKey = getExceptionFromOccurrenceId(
-        timetableItemsById,
-        trainIdUsedForProjection
-      )?.key;
+      exceptionId = getExceptionFromOccurrenceId(timetableItemsById, trainIdUsedForProjection)?.id;
     }
   }
 
-  const pacedArg = rawPacedTrainId ? { id: rawPacedTrainId, infraId, exceptionKey } : skipToken;
-  const basePacedArg = exceptionKey ? { id: rawPacedTrainId!, infraId } : skipToken;
+  // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
+  const pacedArg = rawPacedTrainId
+    ? { id: rawPacedTrainId, infraId, exceptionId: exceptionId! }
+    : skipToken;
+  const basePacedArg = exceptionId ? { id: rawPacedTrainId!, infraId } : skipToken;
 
   const { data: pathfinding } =
     osrdEditoastApi.endpoints.getTrainSchedulesByIdPath.useQuery(pacedArg);
