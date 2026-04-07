@@ -112,7 +112,7 @@ pub enum Rejection {
     LackingInfraPrivilege(
         InfraPrivilege,
         #[expect(dead_code)] authz::Subject,
-        #[expect(dead_code)] authz::Infra,
+        authz::Infra,
     ),
 }
 

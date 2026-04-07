@@ -13,6 +13,7 @@ use ::authz::InfraGrant;
 use ::authz::InfraPrivilege;
 use ::authz::Role;
 use authz::Authorization;
+use authz::v2;
 use axum::Extension;
 use axum::extract::Path;
 use axum::extract::State;
@@ -297,72 +298,93 @@ pub(in crate::views) struct ResourcePrivileges {
     tag = "authz",
     request_body(
         content = inline(HashMap<ResourceType, Vec<i64>>),
-        description = "The resources of which to get the request sender's privileges. If a resource doesn't exist, it will be omitted.",
+        description = "The resources of which to get the request sender's privileges.",
     ),
     responses((
         status = 200,
-        description = "The privileges of the user sending the request over each requested resource.",
+        description = "The privileges of the user sending the request over each requested resource. \
+        The resource is omitted if it does not exist. \
+        An empty privileges list is returned if the user has no privileges over it.",
         body = inline(HashMap<ResourceType, Vec<ResourcePrivileges>>)
     )),
 )]
 pub(in crate::views) async fn user_privileges(
-    State(AppState { db_pool, .. }): State<AppState>,
-    Extension(auth): AuthenticationExt,
-    Json(body): Json<HashMap<ResourceType, Vec<i64>>>,
+    State(AppState {
+        db_pool, regulator, ..
+    }): State<AppState>,
+    Extension(user): Extension<Option<authz::User>>,
+    Extension(roles): Extension<Vec<Role>>,
+    Extension(authn): Extension<crate::authentication::Authentication>,
+    Json(mut resources_ids): Json<HashMap<ResourceType, Vec<i64>>>,
 ) -> Result<Json<HashMap<ResourceType, Vec<ResourcePrivileges>>>> {
-    let resources = body
-        .into_iter()
-        .flat_map(|(rtype, ids)| std::iter::repeat(rtype).zip(ids));
-
-    let mut result = HashMap::<_, Vec<_>>::new();
-
-    // Disabled authorization bypass — needs to be implemented more properly
-    if matches!(auth, Authentication::SkipAuthorization { .. }) {
-        for (resource_type, resource_id) in resources {
-            match resource_type {
-                ResourceType::Infra => {
-                    // If the infra exists, we return all privileges
-                    if Infra::exists(&mut db_pool.get().await?, resource_id).await? {
-                        result
-                            .entry(ResourceType::Infra)
-                            .or_default()
-                            .push(ResourcePrivileges {
-                                resource_id,
-                                privileges: HashSet::from([
-                                    InfraPrivilege::CanRead,
-                                    InfraPrivilege::CanShareRead,
-                                    InfraPrivilege::CanWrite,
-                                    InfraPrivilege::CanShareWrite,
-                                    InfraPrivilege::CanDelete,
-                                    InfraPrivilege::CanShareOwnership,
-                                ]),
-                            });
-                    }
-                }
-            }
-        }
-        return Ok(Json(result));
+    if matches!(
+        authn,
+        crate::authentication::Authentication::Unauthenticated
+    ) {
+        return Err(AuthorizationError::Unauthorized.into());
     }
 
-    let authorizer = auth.authorizer()?;
-    for (resource_type, resource_id) in resources {
-        match resource_type {
-            ResourceType::Infra => {
-                // check that the infra exists before to check the grants
-                if Infra::exists(&mut db_pool.get().await?, resource_id).await? {
-                    result
-                        .entry(ResourceType::Infra)
-                        .or_default()
-                        .push(ResourcePrivileges {
-                            resource_id,
-                            privileges: authorizer
-                                .infra_privileges(&authz::Infra(resource_id))
-                                .await
-                                .map_err(AuthzError::from)?,
-                        });
+    let mut result = HashMap::<_, Vec<_>>::new();
+    let result_infras = result.entry(ResourceType::Infra).or_default();
+
+    let mut conn = db_pool.get().await?;
+    let infra_ids = resources_ids
+        .remove(&ResourceType::Infra) // change when more resources are supported
+        .into_iter()
+        .flatten();
+    if let Some(user) = user {
+        let infras = infra_ids.map(authz::Infra);
+        let authorizer =
+            crate::authorizers::UserAuthorizer::new(user, roles, regulator.openfga(), conn);
+        for infra in infras {
+            match v2::infra_privileges(user, infra)
+                .authorize(&authorizer)
+                .await?
+                .access()
+                .await?
+            {
+                Ok(privileges) => {
+                    result_infras.push(ResourcePrivileges {
+                        resource_id: *infra,
+                        privileges,
+                    });
+                }
+                Err(Rejection::NoSuchInfra(_)) => {
+                    // not an error under the target API
+                    // (though maybe we should revisit it?)
+                }
+                Err(Rejection::LackingInfraPrivilege(InfraPrivilege::CanRead, _, infra)) => {
+                    result_infras.push(ResourcePrivileges {
+                        resource_id: *infra,
+                        privileges: HashSet::new(),
+                    });
+                }
+                Err(Rejection::NoSuchUser(_)) => {
+                    panic!("race condition: user deleted");
+                }
+                Err(rejection @ Rejection::LackingInfraPrivilege(_, _, _)) | Err(rejection) => {
+                    impossible!(rejection)
                 }
             }
         }
+    } else {
+        // Authorization is skipped (--enable-authorization or header), everyone has full access
+        debug_assert!(matches!(
+            authn,
+            crate::authentication::Authentication::Skip { .. }
+        ));
+        let infras: Vec<_> = Infra::retrieve_batch_unchecked(&mut conn, infra_ids).await?;
+        result_infras.extend(infras.into_iter().map(|infra| ResourcePrivileges {
+            resource_id: infra.id,
+            privileges: HashSet::from([
+                InfraPrivilege::CanRead,
+                InfraPrivilege::CanShareRead,
+                InfraPrivilege::CanWrite,
+                InfraPrivilege::CanShareWrite,
+                InfraPrivilege::CanDelete,
+                InfraPrivilege::CanShareOwnership,
+            ]),
+        }));
     }
 
     Ok(Json(result))

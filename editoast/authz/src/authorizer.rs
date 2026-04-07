@@ -64,15 +64,6 @@ impl<S: StorageDriver> Authorizer<S> {
         self.regulator.check_roles(&User(self.user_id), roles).await
     }
 
-    pub async fn infra_privileges(
-        &self,
-        infra: &Infra,
-    ) -> Result<HashSet<InfraPrivilege>, Error<S::Error>> {
-        self.regulator
-            .infra_privileges(&User(self.user_id), infra)
-            .await
-    }
-
     pub async fn authorize_infra(
         &self,
         infra: &Infra,

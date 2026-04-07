@@ -1593,14 +1593,14 @@ export type GetAuthzMeGroupsApiResponse =
   }[];
 export type GetAuthzMeGroupsApiArg = void;
 export type PostAuthzMePrivilegesApiResponse =
-  /** status 200 The privileges of the user sending the request over each requested resource. */ {
+  /** status 200 The privileges of the user sending the request over each requested resource. The resource is omitted if it does not exist. An empty privileges list is returned if the user has no privileges over it. */ {
     [key: string]: {
       privileges: InfraPrivilege[];
       resource_id: number;
     }[];
   };
 export type PostAuthzMePrivilegesApiArg = {
-  /** The resources of which to get the request sender's privileges. If a resource doesn't exist, it will be omitted. */
+  /** The resources of which to get the request sender's privileges. */
   body: {
     [key: string]: number[];
   };
