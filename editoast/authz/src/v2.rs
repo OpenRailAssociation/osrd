@@ -418,6 +418,49 @@ pub fn infra_effective_grant(subject: Subject, infra: Infra) -> Protected<Option
     .with_guardrail(Guardrail::IssuerHasInfraPrivilege(InfraPrivilege::CanRead, infra))
 }
 
+pub fn infra_privileges(user: User, infra: Infra) -> Protected<HashSet<InfraPrivilege>> {
+    Protected::new(move |openfga| {
+        async move {
+            let (
+                admin,
+                can_read,
+                can_share_read,
+                can_write,
+                can_share_write,
+                can_delete,
+                can_share_ownership,
+            ) = openfga
+                .checks((
+                    User::role().check(&Role::Admin, &user),
+                    Infra::can_read().check(&user, &infra),
+                    Infra::can_share_read().check(&user, &infra),
+                    Infra::can_write().check(&user, &infra),
+                    Infra::can_share_write().check(&user, &infra),
+                    Infra::can_delete().check(&user, &infra),
+                    Infra::can_share_ownership().check(&user, &infra),
+                ))
+                .await?;
+            let mut privileges = HashSet::new();
+            privileges.extend((admin || can_read).then_some(InfraPrivilege::CanRead));
+            privileges.extend((admin || can_share_read).then_some(InfraPrivilege::CanShareRead));
+            privileges.extend((admin || can_write).then_some(InfraPrivilege::CanWrite));
+            privileges.extend((admin || can_share_write).then_some(InfraPrivilege::CanShareWrite));
+            privileges.extend((admin || can_delete).then_some(InfraPrivilege::CanDelete));
+            privileges.extend(
+                (admin || can_share_ownership).then_some(InfraPrivilege::CanShareOwnership),
+            );
+            Ok(privileges)
+        }
+        .boxed()
+    })
+    .with_check(SanityCheck::InfraExists(infra))
+    .with_check(SanityCheck::SubjectExists(Subject::user(user)))
+    .with_guardrail(Guardrail::IssuerHasInfraPrivilege(
+        InfraPrivilege::CanRead,
+        infra,
+    ))
+}
+
 pub mod special_authorizers {
     use std::convert::Infallible;
 
@@ -471,6 +514,7 @@ pub trait TestClientExt {
     async fn subject_roles(&self, subject: &Subject) -> HashSet<Role>;
     async fn group_members(&self, group: &Group) -> HashSet<User>;
     async fn infra_effective_grant(&self, subject: Subject, infra: Infra) -> Option<InfraGrant>;
+    async fn infra_privileges(&self, user: User, infra: Infra) -> HashSet<InfraPrivilege>;
 }
 
 impl TestClientExt for fga::Client {
@@ -497,6 +541,14 @@ impl TestClientExt for fga::Client {
         let authorize = special_authorizers::Authorize(self);
         authorize
             .access_value(infra_effective_grant(subject, infra))
+            .await
+            .unwrap()
+    }
+
+    async fn infra_privileges(&self, user: User, infra: Infra) -> HashSet<InfraPrivilege> {
+        let authorize = special_authorizers::Authorize(self);
+        authorize
+            .access_value(infra_privileges(user, infra))
             .await
             .unwrap()
     }
@@ -839,5 +891,50 @@ mod tests {
             .unwrap_authorized()
             .await;
         assert_eq!(grant, Some(InfraGrant::Owner));
+    }
+
+    #[tokio::test]
+    async fn infra_privileges_non_admin() {
+        let openfga = crate::authz_client!();
+
+        openfga
+            .write_tuples(&[Infra::writer().tuple(&User(1), &Infra(1))])
+            .await
+            .unwrap();
+
+        assert_eq!(
+            openfga.infra_privileges(User(1), Infra(1)).await,
+            HashSet::from_iter([
+                InfraPrivilege::CanRead,
+                InfraPrivilege::CanShareRead,
+                InfraPrivilege::CanWrite,
+                InfraPrivilege::CanShareWrite,
+            ])
+        );
+    }
+
+    #[tokio::test]
+    async fn infra_privileges_admin() {
+        let openfga = crate::authz_client!();
+
+        openfga
+            .prepare_writes()
+            .write(&User::role().tuple(&Role::Admin, &User(1)))
+            .write(&Infra::reader().tuple(&User(2), &Infra(1)))
+            .execute()
+            .await
+            .unwrap();
+
+        assert_eq!(
+            openfga.infra_privileges(User(1), Infra(1)).await,
+            HashSet::from_iter([
+                InfraPrivilege::CanRead,
+                InfraPrivilege::CanShareRead,
+                InfraPrivilege::CanWrite,
+                InfraPrivilege::CanShareWrite,
+                InfraPrivilege::CanDelete,
+                InfraPrivilege::CanShareOwnership,
+            ])
+        );
     }
 }

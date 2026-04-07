@@ -158,7 +158,7 @@ paths:
       tags:
       - authz
       requestBody:
-        description: The resources of which to get the request sender's privileges. If a resource doesn't exist, it will be omitted.
+        description: The resources of which to get the request sender's privileges.
         content:
           application/json:
             schema:
@@ -175,7 +175,7 @@ paths:
         required: true
       responses:
         '200':
-          description: The privileges of the user sending the request over each requested resource.
+          description: The privileges of the user sending the request over each requested resource. The resource is omitted if it does not exist. An empty privileges list is returned if the user has no privileges over it.
           content:
             application/json:
               schema:

@@ -227,44 +227,6 @@ impl<S: StorageDriver> Regulator<S> {
     }
 
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn infra_privileges(
-        &self,
-        user: &User,
-        infra: &Infra,
-    ) -> Result<HashSet<InfraPrivilege>, Error<S::Error>> {
-        if self.is_admin(user).await? {
-            return Ok(HashSet::from([
-                InfraPrivilege::CanRead,
-                InfraPrivilege::CanShareRead,
-                InfraPrivilege::CanWrite,
-                InfraPrivilege::CanShareWrite,
-                InfraPrivilege::CanDelete,
-                InfraPrivilege::CanShareOwnership,
-            ]));
-        }
-
-        let (can_read, can_share_read, can_write, can_share_write, can_delete, can_share_ownership) =
-            self.openfga
-                .checks((
-                    Infra::can_read().check(user, infra),
-                    Infra::can_share_read().check(user, infra),
-                    Infra::can_write().check(user, infra),
-                    Infra::can_share_write().check(user, infra),
-                    Infra::can_delete().check(user, infra),
-                    Infra::can_share_ownership().check(user, infra),
-                ))
-                .await?;
-        let mut privileges = HashSet::new();
-        privileges.extend(can_read.then_some(InfraPrivilege::CanRead));
-        privileges.extend(can_share_read.then_some(InfraPrivilege::CanShareRead));
-        privileges.extend(can_write.then_some(InfraPrivilege::CanWrite));
-        privileges.extend(can_share_write.then_some(InfraPrivilege::CanShareWrite));
-        privileges.extend(can_delete.then_some(InfraPrivilege::CanDelete));
-        privileges.extend(can_share_ownership.then_some(InfraPrivilege::CanShareOwnership));
-        Ok(privileges)
-    }
-
-    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn infra_direct_grant(
         &self,
         subject: &Subject,

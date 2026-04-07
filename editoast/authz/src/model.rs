@@ -95,7 +95,17 @@ pub struct User(pub i64);
 pub struct Group(pub i64);
 
 #[derive(
-    fga::Type, fga::User, fga::Object, derive_more::FromStr, Debug, Clone, Copy, PartialEq, Eq, Hash,
+    fga::Type,
+    fga::User,
+    fga::Object,
+    derive_more::FromStr,
+    derive_more::Deref,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
 )]
 pub struct Infra(pub i64);
 
