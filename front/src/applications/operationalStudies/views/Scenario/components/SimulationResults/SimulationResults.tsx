@@ -52,6 +52,7 @@ type SimulationResultsProps = {
   scenarioData: { name: string; infraName: string };
   projectionData: ProjectionData | undefined;
   timetableItemsWithDetails: TimetableItemWithDetails[];
+  timetableItems: TimetableItem[];
   conflicts?: Conflict[];
   activeBoards: Set<Board>;
   updateTrainDepartureTime: (trainId: number, newDepartureTime: Date) => Promise<void>;
@@ -62,6 +63,7 @@ const SimulationResults = ({
   scenarioData,
   projectionData,
   timetableItemsWithDetails,
+  timetableItems,
   conflicts = [],
   activeBoards,
   updateTrainDepartureTime,
@@ -72,7 +74,8 @@ const SimulationResults = ({
   const { infraId, timetableId } = useScenarioContext();
   const useNewTimesStopsTable = useSelector(getUseNewTimesStopsTable);
 
-  const { results: simulationResults, isSimulationDataLoading } = useSimulationResults();
+  const { results: simulationResults, isSimulationDataLoading } =
+    useSimulationResults(timetableItems);
   const selectedTrainId = simulationResults?.train.id;
 
   const displayOnlyPathSteps = useSelector(getDisplayOnlyPathSteps);
@@ -171,7 +174,8 @@ const SimulationResults = ({
 
   const { etcsBrakingCurves, fetchEtcsBrakingCurves } = useEtcsBrakingCurves(
     isEtcs,
-    simulationResults?.isValid ? simulationResults.simulation : undefined
+    simulationResults?.isValid ? simulationResults.simulation : undefined,
+    timetableItems
   );
 
   if (!simulationResults && !projectionData) {
