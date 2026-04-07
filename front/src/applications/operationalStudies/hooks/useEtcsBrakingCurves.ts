@@ -20,6 +20,7 @@ import {
   isPacedTrain,
 } from 'modules/timetableItem/helpers/pacedTrain';
 import useSelectedTimetableItem from 'modules/timetableItem/hooks/useSelectedTimetableItem';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { isOccurrenceId, isPacedTrainId } from 'utils/trainId';
 
@@ -52,7 +53,8 @@ const formatEtcsCurves = (etcsBrakingCurves: CoreEtcsBrakingCurvesResponse): Etc
 
 const useEtcsBrakingCurves = (
   isEtcs: boolean,
-  simulation: SimulationResponseSuccess | undefined
+  simulation: SimulationResponseSuccess | undefined,
+  timetableItems: TimetableItem[] | undefined
 ): {
   etcsBrakingCurves: EtcsBrakingCurves | undefined;
   fetchEtcsBrakingCurves: (() => Promise<void>) | undefined;
@@ -62,7 +64,7 @@ const useEtcsBrakingCurves = (
 
   const { infraId, electricalProfileSetId } = useScenarioContext();
   const selectedTrainId = useSelector(getSelectedTrainId);
-  const timetableItem = useSelectedTimetableItem();
+  const timetableItem = useSelectedTimetableItem(timetableItems);
   const exception = useMemo(() => {
     if (
       !selectedTrainId ||

@@ -221,6 +221,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
                 projectionData={projectionData}
                 conflicts={conflicts}
                 timetableItemsWithDetails={timetableItemsWithDetails}
+                timetableItems={timetableItems ?? []}
                 activeBoards={activeBoards}
                 updateTrainDepartureTime={updateTrainDepartureTimeWithNge}
                 upsertTimetableItems={upsertTimetableItemsWithNge}
