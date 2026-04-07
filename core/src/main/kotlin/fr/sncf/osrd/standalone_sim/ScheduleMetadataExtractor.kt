@@ -382,6 +382,7 @@ fun routingRequirements(
         val zoneRequirements = mutableListOf<RoutingZoneRequirement>()
         for (zoneRange in zoneRanges) {
             val zonePath = zoneRange.value
+            val zone = rawInfra.getZonePathZone(zonePath)
 
             // if the zones are never occupied by the train, no requirement is emitted
             // Note: the train is considered starting from a "portal", so "growing" from its start
@@ -394,12 +395,24 @@ fun routingRequirements(
             // the point in the train path at which the zone is released
             val zoneOccupationExit =
                 zoneOccupationChangeEvents
-                    .first {
-                        it.zone == rawInfra.getZonePathZone(zonePath) &&
-                            !it.isEntry &&
-                            it.offset > zoneRange.pathBegin
+                    .firstOrNull {
+                        it.zone == zone && !it.isEntry && it.offset > zoneRange.pathBegin
                     }
-                    .offset
+                    ?.offset
+
+            if (zoneOccupationExit == null) {
+                // We never exit the zone, ignore this if we in fact never entered it.
+                require(
+                    zoneOccupationChangeEvents.none {
+                        it.isEntry &&
+                            it.zone == zone &&
+                            it.offset > zoneRange.pathBegin &&
+                            it.offset <= zoneRange.pathEnd
+                    }
+                )
+                continue
+            }
+
             // release the "route zone" at the latest before the train restart after backtracking
             val straightSubPathRange =
                 trainPath.getNonBacktrackingSubPathBoundariesContainingOffset(zoneRange.pathBegin)

@@ -1,0 +1,51 @@
+{
+    "error_type": "RESULT",
+    "code": 200,
+    "error": "{\"status\":\"simulation_failed\",\"core_error\":{\"status\":500,\"type\":\"editoast:coreclient:RawError\",\"context\":{},\"message\":\"An unknown exception was thrown\"}}",
+    "infra_name": "small_infra",
+    "schedule_payload": [
+        {
+            "comfort": "STANDARD",
+            "path": [
+                {
+                    "location": {
+                        "track": "TG3",
+                        "offset": 40137
+                    },
+                    "id": "0"
+                },
+                {
+                    "location": {
+                        "track": "TG3",
+                        "offset": 13164
+                    },
+                    "id": "1"
+                },
+                {
+                    "location": {
+                        "track": "TG0",
+                        "offset": 179959
+                    },
+                    "id": "2"
+                }
+            ],
+            "initial_speed": 0,
+            "labels": [],
+            "constraint_distribution": "STANDARD",
+            "margins": {
+                "boundaries": [],
+                "values": [
+                    "0min/100km"
+                ]
+            },
+            "options": {
+                "use_electrical_profiles": false
+            },
+            "rolling_stock_name": "fast_rolling_stock",
+            "schedule": [],
+            "speed_limit_tag": null,
+            "start_time": "2024-01-01T14:57:28+00:00",
+            "train_name": "fuzzer_train"
+        }
+    ]
+}
