@@ -5,12 +5,17 @@ import { v4 as uuidV4 } from 'uuid';
 
 import { updatePacedTrainExceptionsList } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/buildPacedTrainException';
 import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/formatTimetableItemPayload';
-import type { TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { PacedTrainException, TrainSchedule } from 'common/api/osrdEditoastApi';
 import {
   findExceptionWithOccurrenceId,
   extractOccurrenceDetailsFromPacedTrain,
+  hasChangeGroups,
 } from 'modules/timetableItem/helpers/pacedTrain';
-import { storePacedTrain } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
+import {
+  createExceptions,
+  deleteExceptions,
+  updateExceptions,
+} from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import type {
   Occurrence,
   PacedTrainWithPacedWithDetails,
@@ -31,6 +36,7 @@ type OccurrenceActionsParams = {
     occurrenceId?: OccurrenceId
   ) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
+  timetableId: number;
 };
 
 const useOccurrenceActions = ({
@@ -38,10 +44,29 @@ const useOccurrenceActions = ({
   occurrences,
   selectPacedTrainToEdit,
   upsertTimetableItems,
+  timetableId,
 }: OccurrenceActionsParams) => {
   const dispatch = useAppDispatch();
 
   const selectedTrainId = useSelector(getSelectedTrainId);
+
+  const upsertWithNewExceptions = useCallback(
+    (newExceptions: SimulatedException[]) => {
+      const formattedPacedTrain = formatPacedTrainWithDetailsToPacedTrainPayload(pacedTrain);
+
+      upsertTimetableItems([
+        {
+          ...formattedPacedTrain,
+          id: pacedTrain.id,
+          train_schedule_set_id: pacedTrain.train_schedule_set_id,
+          paced: formattedPacedTrain.paced
+            ? { ...formattedPacedTrain.paced, exceptions: newExceptions }
+            : undefined,
+        },
+      ]);
+    },
+    [pacedTrain, upsertTimetableItems]
+  );
 
   const selectOccurrence = useCallback((occurrenceId: OccurrenceId) => {
     dispatch(updateSelectedTrainId(occurrenceId));
@@ -93,45 +118,58 @@ const useOccurrenceActions = ({
   );
 
   const updateOccurrenceStatus = useCallback(
-    (occurrence: Occurrence, status: 'disabled' | 'enable') => {
+    async (occurrence: Occurrence, status: 'disabled' | 'enable') => {
       const occurrenceToUpdateException = findExceptionWithOccurrenceId(
         pacedTrain.paced.exceptions,
         occurrence.id
       );
 
-      // If we can enable an occurrence, it should be among the exceptions with disabled true
-      if (status === 'enable' && !occurrenceToUpdateException) {
-        throw new Error('Cannot enable an occurrence which was not disabled');
-      }
+      let exceptionsToUpdate: PacedTrainException;
 
-      const updatedException = occurrenceToUpdateException
-        ? {
-            ...occurrenceToUpdateException,
-            disabled: status === 'disabled' ? true : undefined,
-          }
-        : {
-            key: uuidV4(),
-            occurrence_index: occurrence.occurrenceIndex,
-            disabled: true,
-          };
+      if (occurrenceToUpdateException) {
+        const updatedException = {
+          ...occurrenceToUpdateException,
+          disabled: status === 'disabled',
+        };
+
+        if (hasChangeGroups(occurrenceToUpdateException)) {
+          // Exception still has other change groups: update it
+          await updateExceptions(dispatch, [updatedException], pacedTrain.id);
+        } else {
+          // Exception had only disabled: true and nothing else → delete it entirely
+          // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
+          await deleteExceptions(dispatch, [occurrenceToUpdateException.id!]);
+        }
+        exceptionsToUpdate = updatedException;
+      } else {
+        if (status === 'enable') {
+          throw new Error('Cannot enable an occurrence which was not disabled');
+        }
+
+        // TODO_EXCEPTION: remove key when using TrainSchedulingException type
+        const key = uuidV4();
+        // No exception yet: create one with disabled: true
+        const exceptionToCreate: PacedTrainException = {
+          occurrence_index: occurrence.occurrenceIndex,
+          key,
+          disabled: true,
+        };
+        const [createdException] = await createExceptions(
+          dispatch,
+          [exceptionToCreate],
+          pacedTrain.id,
+          timetableId
+        );
+        exceptionsToUpdate = { ...exceptionToCreate, id: createdException.id };
+      }
 
       const updatedExceptions = updatePacedTrainExceptionsList(
         pacedTrain.paced.exceptions,
-        updatedException,
+        exceptionsToUpdate,
         occurrence.id
       );
 
-      const formattedPacedTrain = formatPacedTrainWithDetailsToPacedTrainPayload({
-        ...pacedTrain,
-        paced: { ...pacedTrain.paced, exceptions: updatedExceptions },
-      });
-
-      storePacedTrain(
-        pacedTrain.id,
-        { ...formattedPacedTrain, train_schedule_set_id: pacedTrain.train_schedule_set_id },
-        dispatch,
-        upsertTimetableItems
-      );
+      upsertWithNewExceptions(updatedExceptions);
 
       // If we are disabling the selected occurrence, we want to put the selection
       // on the first enabled occurrence chronologically
@@ -141,10 +179,9 @@ const useOccurrenceActions = ({
         );
 
         dispatch(updateSelectedTrainId(firstEnabledOccurrence?.id));
-        // TODO exceptions : update projected occurrence id in issue https://github.com/OpenRailAssociation/osrd/issues/11476
       }
     },
-    [pacedTrain, occurrences, selectedTrainId]
+    [pacedTrain, occurrences, selectedTrainId, timetableId]
   );
 
   /**
@@ -153,7 +190,7 @@ const useOccurrenceActions = ({
    * If it is an added exception, every change groups are removed except the start time.
    */
   const resetOccurrenceExceptions = useCallback(
-    (occurrenceId: OccurrenceId) => {
+    async (occurrenceId: OccurrenceId) => {
       const exceptionToUpdate = findExceptionWithOccurrenceId(
         pacedTrain.paced.exceptions,
         occurrenceId
@@ -167,51 +204,45 @@ const useOccurrenceActions = ({
 
       if (isIndexedOccurrenceId(occurrenceId)) {
         updatedExceptions = pacedTrain.paced.exceptions.filter(
-          // If it is an indexed occurrence, the corresponding exception will always have an occurrence_index
           (exception) => exception.occurrence_index !== exceptionToUpdate.occurrence_index
         );
+
+        // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
+        await deleteExceptions(dispatch, [exceptionToUpdate.id!]);
       } else {
-        // update exceptionToUpdate by removing all its properties except key and start time
+        const updatedException = {
+          // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
+          id: exceptionToUpdate.id!,
+          // TODO_EXCEPTION: remove `key` when using TrainSchedulingException type
+          key: exceptionToUpdate.id!.toString(),
+          start_time: exceptionToUpdate.start_time,
+        };
+        // for an added exception, we want to reset all change groups except the start time
         updatedExceptions = pacedTrain.paced.exceptions.map((exception) =>
-          exception.key === exceptionToUpdate.key
-            ? {
-                key: exceptionToUpdate.key,
-                start_time: exceptionToUpdate.start_time,
-              }
-            : exception
+          exception.id === exceptionToUpdate.id ? updatedException : exception
         );
+
+        await updateExceptions(dispatch, [updatedException], pacedTrain.id);
       }
 
-      const formattedPacedTrain = formatPacedTrainWithDetailsToPacedTrainPayload({
-        ...pacedTrain,
-        paced: { ...pacedTrain.paced, exceptions: updatedExceptions },
-      });
-
-      storePacedTrain(
-        pacedTrain.id,
-        { ...formattedPacedTrain, train_schedule_set_id: pacedTrain.train_schedule_set_id },
-        dispatch,
-        upsertTimetableItems
-      );
+      upsertWithNewExceptions(updatedExceptions);
     },
     [pacedTrain]
   );
 
   const deleteAddedException = useCallback(
     async (occurrenceId: OccurrenceId) => {
-      const key = extractExceptionIdFromOccurrenceId(occurrenceId);
-      const newExceptions = pacedTrain.paced.exceptions.filter((ex) => ex.key !== key);
-      const updatedPacedTrainPayload = formatPacedTrainWithDetailsToPacedTrainPayload({
-        ...pacedTrain,
-        paced: { ...pacedTrain.paced, exceptions: newExceptions },
-      });
+      const id = extractExceptionIdFromOccurrenceId(occurrenceId);
 
-      storePacedTrain(
-        pacedTrain.id,
-        { ...updatedPacedTrainPayload, train_schedule_set_id: pacedTrain.train_schedule_set_id },
-        dispatch,
-        upsertTimetableItems
-      );
+      const newExceptions = pacedTrain.paced.exceptions.filter((ex) => ex.id !== id);
+      const exceptionToDelete = pacedTrain.paced.exceptions.find((ex) => ex.id === id);
+
+      if (!exceptionToDelete?.id) {
+        throw new Error('Cannot delete an exception which was not found');
+      }
+      await deleteExceptions(dispatch, [exceptionToDelete.id]);
+
+      upsertWithNewExceptions(newExceptions);
     },
     [pacedTrain.paced.exceptions]
   );

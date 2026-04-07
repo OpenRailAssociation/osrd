@@ -20,11 +20,28 @@ import type {
   ExceptionChangeGroups,
   PacedTrainWithDetails,
   PacedTrainWithPacedWithDetails,
+  SimulatedException,
   TimetableItemWithDetails,
 } from '../types';
 
 export const isPacedTrainBase = (pacedTrain: TrainSchedule): pacedTrain is PacedTrainWithPaced =>
   !!pacedTrain.paced;
+
+export const CHANGE_GROUP_KEYS: (keyof PacedTrainException)[] = [
+  'constraint_distribution',
+  'initial_speed',
+  'labels',
+  'options',
+  'path_and_schedule',
+  'rolling_stock',
+  'rolling_stock_category',
+  'speed_limit_tag',
+  'start_time',
+  'train_name',
+];
+
+export const hasNoChangeGroups = (exception: PacedTrainException) =>
+  CHANGE_GROUP_KEYS.every((key) => !(key in exception));
 
 export const isPacedTrain = (
   timetableItem: TimetableItem
@@ -64,7 +81,7 @@ export const findExceptionWithOccurrenceId = <T extends PacedTrainException>(
     return exceptions.find((exception) => exception.occurrence_index === occurrenceToUpdateIndex);
   }
   const addedExceptionId = extractExceptionIdFromOccurrenceId(occurrenceId);
-  return exceptions.find(({ key }) => addedExceptionId === key);
+  return exceptions.find(({ id }) => Number(addedExceptionId) === id);
 };
 
 export const extractOccurrenceDetailsFromPacedTrain = <
@@ -167,8 +184,8 @@ export const getExceptionFromOccurrenceId = (
     const index = extractOccurrenceIndexFromOccurrenceId(occurrenceId);
     exception = pacedTrain.paced.exceptions.find((e) => e.occurrence_index === index);
   } else {
-    const key = extractExceptionIdFromOccurrenceId(occurrenceId);
-    exception = pacedTrain.paced.exceptions.find((e) => e.key === key);
+    const id = extractExceptionIdFromOccurrenceId(occurrenceId);
+    exception = pacedTrain.paced.exceptions.find((e) => e.id === id);
   }
   return exception;
 };
@@ -202,10 +219,33 @@ export const getOccurrenceTrainName = (
   return `${pacedTrain.train_name}/+`;
 };
 
+/**
+ * Return true if the exception has at least one change group defined (excluding disabled).
+ */
+export const hasChangeGroups = (exception: SimulatedException): boolean =>
+  exception.constraint_distribution != null ||
+  exception.initial_speed != null ||
+  exception.labels != null ||
+  exception.options != null ||
+  exception.path_and_schedule != null ||
+  exception.rolling_stock != null ||
+  exception.rolling_stock_category != null ||
+  exception.speed_limit_tag != null ||
+  exception.start_time != null ||
+  exception.train_name != null;
+
+/**
+ * Return true if the exception has at least one change group defined OR is disabled.
+ * Use this to decide whether an exception should stay in the list at all.
+ */
+export const hasExceptions = (exception: SimulatedException): boolean =>
+  exception.disabled === true || hasChangeGroups(exception);
+
 export const getOcurrencesIds = (pacedTrain: PacedTrainWithPaced, pacedTrainId: PacedTrainId) => {
   const occurrencesIds: OccurrenceId[] = pacedTrain.paced.exceptions
     .filter((exception) => exception.occurrence_index === undefined) // Indexed exceptions follow the regular indexed occurrence id pattern
-    .map((exception) => formatPacedTrainIdToExceptionId(pacedTrainId, exception.key));
+    // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
+    .map((exception) => formatPacedTrainIdToExceptionId(pacedTrainId, exception.id!));
   const indexedOccurencesCount = getOccurrencesNb({
     timeWindow: Duration.parse(pacedTrain.paced.time_window),
     interval: Duration.parse(pacedTrain.paced.interval),

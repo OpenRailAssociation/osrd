@@ -58,7 +58,7 @@ const makeProjectedItems = (timetableItemProjections: TrainSpaceTimeData[]) =>
       }
 
       const exceptionProjection = projectedItem.paced.exceptionProjections.get(
-        correspondingException.key
+        correspondingException.id! // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
       );
 
       const departureTime = correspondingException.start_time
@@ -96,12 +96,12 @@ const makeProjectedItems = (timetableItemProjections: TrainSpaceTimeData[]) =>
 
       const id = formatEditoastIdToExceptionId({
         pacedTrainId: projectedItem.id,
-        exceptionId: exception.key,
+        exceptionId: exception.id!, // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
       });
       const name = exception.train_name ? exception.train_name.value : `${projectedItem.name}/+`;
 
       occurrences.push({
-        ...(projectedItem.paced.exceptionProjections.get(exception.key) ?? pacedTrainCurves),
+        ...(projectedItem.paced.exceptionProjections.get(exception.id!) ?? pacedTrainCurves), // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
         id,
         name,
         departureTime: new Date(exception.start_time.value),

@@ -171,7 +171,7 @@ const SpaceTimeChartWrapper = ({
       const exceptionUsedForProjection =
         timetableItemUsedForProjectionWithDetails.paced.exceptions.find((exception) =>
           isAddedExceptionId(selectedProjectionId)
-            ? exception.key === extractExceptionIdFromOccurrenceId(selectedProjectionId)
+            ? exception.id === extractExceptionIdFromOccurrenceId(selectedProjectionId)
             : exception.occurrence_index ===
               extractOccurrenceIndexFromOccurrenceId(selectedProjectionId)
         );
