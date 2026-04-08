@@ -166,7 +166,12 @@ class DepartureTimeShiftTests {
         val secondBlock = infra.addBlock("b", "c")
         val firstBlockEnvelope =
             simulateBlock(
-                infraExplorerFromBlock(infra, infra, firstBlock),
+                infraExplorerFromBlock(
+                    infra,
+                    infra,
+                    TestTrains.REALISTIC_FAST_TRAIN.length.meters,
+                    firstBlock,
+                ),
                 0.0,
                 Offset(0.meters),
                 TestTrains.REALISTIC_FAST_TRAIN,

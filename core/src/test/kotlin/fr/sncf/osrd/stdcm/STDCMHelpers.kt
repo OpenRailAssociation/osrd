@@ -16,6 +16,7 @@ import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorers
 import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TestTrains
+import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import org.junit.jupiter.api.Assertions
@@ -30,7 +31,12 @@ fun getBlocksRunTime(infra: FullInfra, blocks: List<BlockId>): Double {
     for (block in blocks) {
         val envelope =
             simulateBlock(
-                infraExplorerFromBlock(infra.rawInfra, infra.blockInfra, block),
+                infraExplorerFromBlock(
+                    infra.rawInfra,
+                    infra.blockInfra,
+                    TestTrains.REALISTIC_FAST_TRAIN.length.meters,
+                    block,
+                ),
                 speed,
                 Offset(0.meters),
                 TestTrains.REALISTIC_FAST_TRAIN,
@@ -111,9 +117,15 @@ fun occupancyTest(
 fun infraExplorerFromBlock(
     rawInfra: RawInfra,
     blockInfra: BlockInfra,
+    rollingStockLength: Distance,
     block: BlockId,
 ): InfraExplorer {
-    return initInfraExplorers(rawInfra, blockInfra, BlockLocation(block, Offset(0.meters)))
+    return initInfraExplorers(
+            rawInfra,
+            blockInfra,
+            rollingStockLength,
+            BlockLocation(block, Offset(0.meters)),
+        )
         .elementAt(0)
 }
 
