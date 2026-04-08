@@ -162,7 +162,7 @@ pub(in crate::views) async fn occupancy(
         .iter()
         .flat_map(|train| {
             train
-                .iter_occurrences_v2(&exceptions.remove(&train.id).unwrap_or_default())
+                .iter_occurrences(&exceptions.remove(&train.id).unwrap_or_default())
                 .collect::<Vec<_>>()
         })
         .collect_vec();

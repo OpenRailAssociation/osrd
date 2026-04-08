@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { PacedTrainWithPaced } from 'applications/operationalStudies/types';
-import type { TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { PathItem, TrainSchedule } from 'common/api/osrdEditoastApi';
 
 import { generatePacedTrainException } from '../buildPacedTrainException';
 
@@ -10,18 +10,20 @@ describe('generatePacedTrainException', () => {
   // Shared fixtures
   // ===========================================================================
 
-  const westStationPathStep = {
+  const westStationPathStep: PathItem = {
     id: '0-0',
     location: {
-      operational_point: { trigram: 'WS', secondary_code: 'BV', type: 'trigram' } as const,
+      type: 'operational_point_part_reference',
+      operational_point: { trigram: 'WS', secondary_code: 'BV', type: 'trigram' },
       local_track_name: null,
     },
   };
 
-  const southStationPathStep = {
+  const southStationPathStep: PathItem = {
     id: '1-1',
     location: {
-      operational_point: { trigram: 'SS', secondary_code: 'BV', type: 'trigram' } as const,
+      type: 'operational_point_part_reference',
+      operational_point: { trigram: 'SS', secondary_code: 'BV', type: 'trigram' },
       local_track_name: null,
     },
   };
@@ -187,9 +189,10 @@ describe('generatePacedTrainException', () => {
 
     describe('modifying path_and_schedule', () => {
       it('should detect path_and_schedule when path location and schedule change', () => {
-        const modifiedSouthPathStep = {
+        const modifiedSouthPathStep: PathItem = {
           id: '1-1',
           location: {
+            type: 'operational_point_part_reference',
             operational_point: {
               trigram: 'NS',
               secondary_code: 'BV',

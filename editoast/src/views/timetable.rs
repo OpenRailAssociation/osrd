@@ -70,7 +70,6 @@ use crate::models::train_schedule::OccurrenceId;
 use crate::models::train_schedule_set::TrainScheduleSet;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::timetable::paced_train::TrainScheduleResponse;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 
 #[derive(Debug, Error, EditoastError, derive_more::From)]
@@ -420,7 +419,7 @@ pub(in crate::views) async fn conflicts(
     // Flatten paced trains occurrences
     let (occurrence_ids, occurrence_trains): (Vec<_>, Vec<_>) = train_schedules_with_exceptions
         .iter()
-        .flat_map(|(ts, exceptions)| ts.iter_occurrences_v2(exceptions))
+        .flat_map(|(ts, exceptions)| ts.iter_occurrences(exceptions))
         .unzip();
 
     let occurrence_simulations: Vec<_> = train_simulation_batch(
@@ -606,9 +605,7 @@ pub(in crate::views) async fn requirements(
                 .into_iter()
                 .map_into()
                 .collect_vec();
-            train_schedule
-                .iter_occurrences_v2(&exceptions)
-                .collect_vec()
+            train_schedule.iter_occurrences(&exceptions).collect_vec()
         })
         .unzip();
 

@@ -975,7 +975,7 @@ pub(in crate::views) async fn project_path_op(
         .iter()
         .flat_map(|train_schedule| {
             train_schedule
-                .iter_occurrences_v2(&exceptions.remove(&train_schedule.id).unwrap_or_default())
+                .iter_occurrences(&exceptions.remove(&train_schedule.id).unwrap_or_default())
                 .collect_vec()
         })
         .unzip();
@@ -1333,7 +1333,7 @@ pub(in crate::views) async fn track_occupancy(
         .iter()
         .flat_map(|train_schedule| {
             train_schedule
-                .iter_occurrences_v2(&exceptions.remove(&train_schedule.id).unwrap_or_default())
+                .iter_occurrences(&exceptions.remove(&train_schedule.id).unwrap_or_default())
                 .collect::<Vec<_>>()
         })
         .unzip();
