@@ -339,10 +339,9 @@ pub(in crate::views) async fn user_privileges(
             infras.map(|infra| v2::infra_privileges(user, infra).zip(v2::Protected::value(infra)));
         let authorizer =
             crate::authorizers::UserAuthorizer::new(user, roles, regulator.openfga(), conn);
-        let futs = protected_privileges.map(|p| authorizer.authorize(p));
-        let privileges_accesses = futures::future::join_all(futs).await;
-        for access_res in privileges_accesses {
-            match access_res?.access().await? {
+        let accesses = authorizer.authorize_all(protected_privileges).await?;
+        for access in v2::Access::access_all(accesses).await? {
+            match access {
                 Ok((privileges, infra)) => {
                     result_infras.push(ResourcePrivileges {
                         resource_id: *infra,
