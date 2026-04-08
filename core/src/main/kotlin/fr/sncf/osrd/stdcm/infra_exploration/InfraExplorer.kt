@@ -172,6 +172,7 @@ data class ExplorerStep(
 fun initInfraExplorers(
     rawInfra: RawInfra,
     blockInfra: BlockInfra,
+    rollingStockLength: Distance,
     location: BlockLocation,
     targets: List<ExplorerStep> = listOf(),
     constraints: List<PathfindingConstraint>? = null,
@@ -188,6 +189,7 @@ fun initInfraExplorers(
             InfraExplorerImpl(
                 rawInfra,
                 blockInfra,
+                rollingStockLength,
                 appendOnlyLinkedListOf(),
                 appendOnlyLinkedListOf(),
                 appendOnlyMapOf(),
@@ -205,6 +207,7 @@ fun initInfraExplorers(
 private class InfraExplorerImpl(
     private val rawInfra: RawInfra,
     private val blockInfra: BlockInfra,
+    private val rollingStockLength: Distance,
     private var blockRanges: AppendOnlyLinkedList<BlockRange>,
     private var routes: AppendOnlyLinkedList<RouteRange>,
     private var blockRoutes: AppendOnlyMap<BlockId, RouteId>,
@@ -312,6 +315,7 @@ private class InfraExplorerImpl(
         return InfraExplorerImpl(
             this.rawInfra,
             this.blockInfra,
+            this.rollingStockLength,
             this.blockRanges.shallowCopy(),
             this.routes.shallowCopy(),
             this.blockRoutes.shallowCopy(),

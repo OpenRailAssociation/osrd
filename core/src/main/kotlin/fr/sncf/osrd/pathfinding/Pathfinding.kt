@@ -79,7 +79,7 @@ class Pathfinding(
     val constraints: List<PathfindingConstraint>?,
     val speedLimitTag: String?,
     val rollingStockMaxSpeed: Double,
-    rollingStockLength: Double,
+    val rollingStockLength: Distance,
 ) {
     private val targets =
         inputTargets.mapIndexed { index, it ->
@@ -100,7 +100,7 @@ class Pathfinding(
         CachedBlockMRSPBuilder.getCachedBlockMRSPBuilder(
             fullInfra,
             rollingStockMaxSpeed,
-            rollingStockLength,
+            rollingStockLength.meters,
             speedLimitTag,
         )
 
@@ -244,6 +244,7 @@ class Pathfinding(
                 initInfraExplorers(
                     rawInfra,
                     blockInfra,
+                    rollingStockLength,
                     location,
                     targets,
                     constraints?.let { MutableList(targets.size) { _ -> it } },

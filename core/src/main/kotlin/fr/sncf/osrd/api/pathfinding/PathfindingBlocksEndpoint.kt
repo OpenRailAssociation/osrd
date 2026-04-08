@@ -156,7 +156,7 @@ private fun computePaths(
                 constraints,
                 initialRequest.speedLimitTag,
                 initialRequest.rollingStockMaximumSpeed,
-                initialRequest.rollingStockLength,
+                initialRequest.rollingStockLength.meters,
             )
             .runPathfinding()
 
@@ -210,7 +210,7 @@ private fun throwNoPathFoundException(
                     listOf(),
                     initialRequest.speedLimitTag,
                     initialRequest.rollingStockMaximumSpeed,
-                    initialRequest.rollingStockLength,
+                    initialRequest.rollingStockLength.meters,
                 )
                 .runPathfinding(timeout)
         if (possiblePathWithoutErrorNoConstraints != null) {

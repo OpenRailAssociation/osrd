@@ -303,10 +303,12 @@ class VisitedNodesTests {
             )
 
         // d -> e
-        val lastExplorer = infraExplorerFromBlock(infra, infra, blocks.last())
+        val lastExplorer =
+            infraExplorerFromBlock(infra, infra, STANDARD_TRAIN.length.meters, blocks.last())
 
         // a -> b, lookahead: b -> c -> d
-        var explorerWithLookahead = infraExplorerFromBlock(infra, infra, blocks.first())
+        var explorerWithLookahead =
+            infraExplorerFromBlock(infra, infra, STANDARD_TRAIN.length.meters, blocks.first())
         for (i in 0..<2) explorerWithLookahead =
             explorerWithLookahead.cloneAndExtendLookahead().first()
 
