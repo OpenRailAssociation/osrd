@@ -71,4 +71,83 @@ fun RawSignalingInfra.getLogicalSignalName(signal: LogicalSignalId): String? {
     return getPhysicalSignalName(getPhysicalSignal(signal))
 }
 
+/**
+ * From a given sorted list of consecutive directed chunks
+ *
+ * Return all route-paths (consecutive routes) that cover all the chunks (without interruption and
+ * in order)
+ */
+fun RawSignalingInfra.chunksToRoutePaths(
+    consecutiveChunksToCover: List<DirTrackChunkId>
+): Set<List<RouteId>> {
+    val firstRoutes = getRoutesOnTrackChunk(consecutiveChunksToCover.first())
+    return firstRoutes
+        .flatMap { firstRoute ->
+            getRoutePathsCoveringAllChunks(consecutiveChunksToCover, firstRoute, false)
+        }
+        .toSet()
+}
+
+/**
+ * Recursive function
+ *
+ * From:
+ * - a given sorted list of consecutive directed chunks to be covered by a path (multiple routes)
+ * - a starting route for those paths (route covers at least the start of the chunk list)
+ * - a boolean allowing to skip first chunks of the route (the first route can start with extra
+ *   chunks, but not the next ones)
+ *
+ * Return each route-path that covers all the chunks (without interruption and in order):
+ * - a route-path is a sorted list of routes
+ * - wrap route-paths into a set
+ */
+private fun RawSignalingInfra.getRoutePathsCoveringAllChunks(
+    consecutiveChunksToCover: List<DirTrackChunkId>,
+    currentRoute: RouteId,
+    alreadyStartedToCover: Boolean,
+): Set<List<RouteId>> {
+    val chunksOnCurrentRoute = getChunksOnRoute(currentRoute)
+    var idxNextChunkToCover = 0
+    var startedToCover = alreadyStartedToCover
+    for (chunk in chunksOnCurrentRoute) {
+        // Different chunk on route than expected: no valid route-path will be found using current
+        // route
+        if (startedToCover && consecutiveChunksToCover[idxNextChunkToCover] != chunk) return setOf()
+
+        if (consecutiveChunksToCover[idxNextChunkToCover] == chunk) {
+            startedToCover = true
+            idxNextChunkToCover++
+
+            // Coverage finished: the current route covers all
+            if (idxNextChunkToCover == consecutiveChunksToCover.size)
+                return setOf(listOf(currentRoute))
+        }
+    }
+    require(startedToCover)
+    require(idxNextChunkToCover > 0)
+
+    // Ongoing coverage:
+    // - retrieve sub-route-paths that cover the end of the chunk list (if any)
+    // - for each sub-route-path:
+    //   - add [current-route + sub-route-path] to the result set
+    val currentRouteExit = getRouteExit(currentRoute)
+    val nextPossibleRoutes = getRoutesStartingAtDet(currentRouteExit)
+
+    val result = mutableSetOf<List<RouteId>>()
+    for (nextRoute in nextPossibleRoutes) {
+        val nextRoutePaths =
+            getRoutePathsCoveringAllChunks(
+                consecutiveChunksToCover.subList(
+                    idxNextChunkToCover,
+                    consecutiveChunksToCover.size,
+                ),
+                nextRoute,
+                true,
+            )
+        val completedRoutePaths = nextRoutePaths.map { listOf(currentRoute) + it }
+        result.addAll(completedRoutePaths)
+    }
+    return result
+}
+
 typealias RawInfra = RawSignalingInfra
