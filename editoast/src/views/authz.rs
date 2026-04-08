@@ -338,12 +338,13 @@ pub(in crate::views) async fn user_privileges(
             crate::authorizers::UserAuthorizer::new(user, roles, regulator.openfga(), conn);
         for infra in infras {
             match v2::infra_privileges(user, infra)
+                .zip(v2::Protected::value(infra))
                 .authorize(&authorizer)
                 .await?
                 .access()
                 .await?
             {
-                Ok(privileges) => {
+                Ok((privileges, infra)) => {
                     result_infras.push(ResourcePrivileges {
                         resource_id: *infra,
                         privileges,

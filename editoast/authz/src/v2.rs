@@ -143,6 +143,11 @@ impl<T> Protected<T> {
 }
 
 impl<T: Send + 'static> Protected<T> {
+    /// A [Protected] value that always succeeds with the provided value
+    pub fn value(t: T) -> Self {
+        Self::new(move |_| async move { Ok(t) }.boxed())
+    }
+
     pub fn map<U: Send + 'static>(
         self,
         f: impl for<'c> FnOnce(&'c fga::Client, T) -> BoxFuture<'c, Result<U, OpenFgaError>>
@@ -161,6 +166,30 @@ impl<T: Send + 'static> Protected<T> {
                     f(openfga, t).await
                 }
                 .boxed()
+            }),
+            guardrails,
+            sanity_checks,
+        }
+    }
+
+    pub fn zip<U: Send + 'static>(
+        self,
+        Protected {
+            op: other_op,
+            guardrails: other_guardrails,
+            sanity_checks: other_sanity_checks,
+        }: Protected<U>,
+    ) -> Protected<(T, U)> {
+        let Self {
+            op,
+            mut guardrails,
+            mut sanity_checks,
+        } = self;
+        guardrails.extend(other_guardrails);
+        sanity_checks.extend(other_sanity_checks);
+        Protected {
+            op: Box::new(move |openfga| {
+                async move { tokio::try_join!(op(openfga), other_op(openfga)) }.boxed()
             }),
             guardrails,
             sanity_checks,
