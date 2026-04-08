@@ -36,9 +36,11 @@ use schemas::train_schedule::TrainOccurrence;
 use serde::Deserialize;
 use serde::Serialize;
 use std::cmp::max;
+use std::collections::HashMap;
 use std::pin::pin;
 use std::slice;
 use std::sync::Arc;
+use std::time::Instant;
 use thiserror::Error;
 use tokio::spawn;
 use tokio::sync::mpsc;
@@ -362,6 +364,7 @@ pub(in crate::views) async fn stdcm_handler(
 
     let (tx, rx) = mpsc::unbounded_channel();
     let core_payload = returned_request.clone();
+    let mut points_on_grid: HashMap<String, Instant> = HashMap::new();
 
     spawn(async move {
         let stream_stdcm_response = stdcm_request
@@ -427,13 +430,35 @@ pub(in crate::views) async fn stdcm_handler(
 
         let mut result_stream = pin!(result_stream);
         while let Some(item) = result_stream.next().await {
-            if tx.send(item).is_err() {
+            if !should_skip_event(&item, &mut points_on_grid) && tx.send(item).is_err() {
                 break;
             }
         }
     });
     let stream = tokio_stream::wrappers::UnboundedReceiverStream::new(rx);
     Ok(StreamBodyAs::json_nl(stream))
+}
+
+fn should_skip_event(
+    event: &StdcmProgression,
+    points_on_grid: &mut HashMap<String, Instant>,
+) -> bool {
+    match event {
+        StdcmProgression::Ongoing(StdcmProgressionEvent { point, .. }) => {
+            if let Value::Point(coords) = &point.value {
+                let grid_key = format!("{:.2}/{:.2}", coords[0], coords[1]);
+                let now = Instant::now();
+                if let Some(&last_sent) = points_on_grid.get(&grid_key)
+                    && last_sent.elapsed() < std::time::Duration::from_millis(2000)
+                {
+                    return true;
+                }
+                points_on_grid.insert(grid_key, now);
+            }
+            false
+        }
+        _ => false,
+    }
 }
 
 struct VirtualTrainRun {
