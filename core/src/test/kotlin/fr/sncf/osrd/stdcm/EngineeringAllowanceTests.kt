@@ -39,7 +39,12 @@ class EngineeringAllowanceTests {
         val thirdBlock = infra.addBlock("c", "d", 100.meters, 30.0)
         val firstBlockEnvelope =
             simulateBlock(
-                infraExplorerFromBlock(infra, infra, firstBlock),
+                infraExplorerFromBlock(
+                    infra,
+                    infra,
+                    TestTrains.REALISTIC_FAST_TRAIN.length.meters,
+                    firstBlock,
+                ),
                 0.0,
                 Offset(0.meters),
                 TestTrains.REALISTIC_FAST_TRAIN,
@@ -51,7 +56,12 @@ class EngineeringAllowanceTests {
             )!!
         val secondBlockEnvelope =
             simulateBlock(
-                infraExplorerFromBlock(infra, infra, secondBlock),
+                infraExplorerFromBlock(
+                    infra,
+                    infra,
+                    TestTrains.REALISTIC_FAST_TRAIN.length.meters,
+                    secondBlock,
+                ),
                 firstBlockEnvelope.endSpeed,
                 Offset(0.meters),
                 TestTrains.REALISTIC_FAST_TRAIN,
@@ -119,7 +129,12 @@ class EngineeringAllowanceTests {
         val lastBlock = infra.addBlock("e", "f", 1000.meters, 20.0)
         val firstBlockEnvelope =
             simulateBlock(
-                infraExplorerFromBlock(infra, infra, firstBlock),
+                infraExplorerFromBlock(
+                    infra,
+                    infra,
+                    TestTrains.REALISTIC_FAST_TRAIN.length.meters,
+                    firstBlock,
+                ),
                 0.0,
                 Offset(0.meters),
                 TestTrains.REALISTIC_FAST_TRAIN,
@@ -131,7 +146,12 @@ class EngineeringAllowanceTests {
             )!!
         val secondBlockEnvelope =
             simulateBlock(
-                infraExplorerFromBlock(infra, infra, secondBlock),
+                infraExplorerFromBlock(
+                    infra,
+                    infra,
+                    TestTrains.REALISTIC_FAST_TRAIN.length.meters,
+                    secondBlock,
+                ),
                 firstBlockEnvelope.endSpeed,
                 Offset(0.meters),
                 TestTrains.REALISTIC_FAST_TRAIN,
@@ -202,7 +222,12 @@ class EngineeringAllowanceTests {
         val lastBlock = infra.addBlock("e", "f", 1000.meters, 20.0)
         val firstBlockEnvelope =
             simulateBlock(
-                infraExplorerFromBlock(infra, infra, firstBlock),
+                infraExplorerFromBlock(
+                    infra,
+                    infra,
+                    TestTrains.REALISTIC_FAST_TRAIN.length.meters,
+                    firstBlock,
+                ),
                 0.0,
                 Offset(0.meters),
                 TestTrains.REALISTIC_FAST_TRAIN,
@@ -214,7 +239,12 @@ class EngineeringAllowanceTests {
             )!!
         val secondBlockEnvelope =
             simulateBlock(
-                infraExplorerFromBlock(infra, infra, secondBlock),
+                infraExplorerFromBlock(
+                    infra,
+                    infra,
+                    TestTrains.REALISTIC_FAST_TRAIN.length.meters,
+                    secondBlock,
+                ),
                 firstBlockEnvelope.endSpeed,
                 Offset(0.meters),
                 TestTrains.REALISTIC_FAST_TRAIN,
@@ -630,7 +660,12 @@ class EngineeringAllowanceTests {
         val thirdBlock = infra.addBlock("c", "d", 100.meters, 0.5)
         val firstBlockEnvelope =
             simulateBlock(
-                infraExplorerFromBlock(infra, infra, firstBlock),
+                infraExplorerFromBlock(
+                    infra,
+                    infra,
+                    TestTrains.REALISTIC_FAST_TRAIN.length.meters,
+                    firstBlock,
+                ),
                 0.0,
                 Offset(0.meters),
                 TestTrains.REALISTIC_FAST_TRAIN,
@@ -642,7 +677,12 @@ class EngineeringAllowanceTests {
             )!!
         val secondBlockEnvelope =
             simulateBlock(
-                infraExplorerFromBlock(infra, infra, secondBlock),
+                infraExplorerFromBlock(
+                    infra,
+                    infra,
+                    TestTrains.REALISTIC_FAST_TRAIN.length.meters,
+                    secondBlock,
+                ),
                 firstBlockEnvelope.endSpeed,
                 Offset(0.meters),
                 TestTrains.REALISTIC_FAST_TRAIN,

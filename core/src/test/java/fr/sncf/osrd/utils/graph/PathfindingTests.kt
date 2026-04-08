@@ -1354,7 +1354,7 @@ class PathfindingTests {
                     constraints,
                     speedLimitTag,
                     rollingStock.maxSpeed,
-                    rollingStock.length,
+                    rollingStock.length.meters,
                 )
                 .runPathfinding()
         else
@@ -1364,7 +1364,7 @@ class PathfindingTests {
                     constraints,
                     speedLimitTag,
                     rollingStock.maxSpeed,
-                    rollingStock.length,
+                    rollingStock.length.meters,
                 )
                 .runPathfinding(timeout)
     }

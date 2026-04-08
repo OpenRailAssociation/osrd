@@ -68,7 +68,14 @@ class STDCMHeuristicTests {
 
         // Current block = 0
         var explorer =
-            initInfraExplorers(infra, infra, steps.first().locations.first(), steps).single()
+            initInfraExplorers(
+                    infra,
+                    infra,
+                    STANDARD_TRAIN.length.meters,
+                    steps.first().locations.first(),
+                    steps,
+                )
+                .single()
 
         // Heuristic takes into account decelerations: decelerations add 1s to remaining time,
         // because the train decelerates on 1m and takes 2s instead of 1s at constant speed.
@@ -152,7 +159,14 @@ class STDCMHeuristicTests {
                 .build()
 
         val explorer =
-            initInfraExplorers(infra, infra, steps.first().locations.first(), steps).single()
+            initInfraExplorers(
+                    infra,
+                    infra,
+                    STANDARD_TRAIN.length.meters,
+                    steps.first().locations.first(),
+                    steps,
+                )
+                .single()
 
         val resWithAllowance =
             getLocationRemainingTime(infra, explorer, 50.meters, heuristicWithAllowance)
@@ -205,7 +219,14 @@ class STDCMHeuristicTests {
                 .build()
 
         var explorer =
-            initInfraExplorers(infra, infra, steps.first().locations.first(), steps).single()
+            initInfraExplorers(
+                    infra,
+                    infra,
+                    STANDARD_TRAIN.length.meters,
+                    steps.first().locations.first(),
+                    steps,
+                )
+                .single()
 
         // Heuristic takes into account decelerations: decelerations add 1s to remaining time,
         // because the train decelerates on 1m and takes 2s instead of 1s at constant speed.
@@ -224,7 +245,14 @@ class STDCMHeuristicTests {
         }
 
         var wrongPathExplorer =
-            initInfraExplorers(infra, infra, steps.first().locations.first(), steps).single()
+            initInfraExplorers(
+                    infra,
+                    infra,
+                    STANDARD_TRAIN.length.meters,
+                    steps.first().locations.first(),
+                    steps,
+                )
+                .single()
         repeat(2) {
             wrongPathExplorer =
                 wrongPathExplorer.cloneAndExtendLookahead().single {

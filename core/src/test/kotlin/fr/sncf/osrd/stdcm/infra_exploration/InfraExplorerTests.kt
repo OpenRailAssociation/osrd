@@ -33,6 +33,7 @@ class InfraExplorerTests {
             initInfraExplorers(
                 infra,
                 infra,
+                TestTrains.REALISTIC_FAST_TRAIN.length.meters,
                 BlockLocation(block, Offset(0.meters)),
                 stepsFromLocations(BlockLocation(block, infra.getBlockLength(block))),
             )
@@ -60,6 +61,7 @@ class InfraExplorerTests {
             initInfraExplorers(
                 infra,
                 infra,
+                TestTrains.REALISTIC_FAST_TRAIN.length.meters,
                 BlockLocation(blocks[0], Offset(0.meters)),
                 stepsFromLocations(
                     BlockLocation(blocks.last(), infra.getBlockLength(blocks.last()))
@@ -120,7 +122,12 @@ class InfraExplorerTests {
 
         // a --> b
         val firstExplorers =
-            initInfraExplorers(infra, infra, BlockLocation(blocks[0], Offset(0.meters)))
+            initInfraExplorers(
+                infra,
+                infra,
+                TestTrains.REALISTIC_FAST_TRAIN.length.meters,
+                BlockLocation(blocks[0], Offset(0.meters)),
+            )
         assertEquals(1, firstExplorers.size)
         val firstExplorer = firstExplorers.first()
 
@@ -212,6 +219,7 @@ class InfraExplorerTests {
             initInfraExplorers(
                 infra,
                 infra,
+                TestTrains.FAST_ELECTRIC_TRAIN.length.meters,
                 BlockLocation(blocks[0], Offset(0.meters)),
                 constraints = listOf(electrificationConstraints),
             )
@@ -262,6 +270,7 @@ class InfraExplorerTests {
             initInfraExplorers(
                 infra.rawInfra,
                 infra.blockInfra,
+                TestTrains.REALISTIC_FAST_TRAIN.length.meters,
                 BlockLocation(firstBlock, Offset(0.meters)),
             )
         assertEquals(2, firstExplorers.size) // There should be one instance per route
@@ -301,6 +310,7 @@ class InfraExplorerTests {
             initInfraExplorers(
                 infra.rawInfra,
                 infra.blockInfra,
+                TestTrains.REALISTIC_FAST_TRAIN.length.meters,
                 BlockLocation(block, Offset(0.meters)),
             )
         assertEquals(4, explorers.size) // There should be one instance per route
@@ -339,6 +349,7 @@ class InfraExplorerTests {
             initInfraExplorers(
                     infra.rawInfra,
                     infra.blockInfra,
+                    TestTrains.REALISTIC_FAST_TRAIN.length.meters,
                     BlockLocation(block, Offset(0.meters)),
                 )
                 .toList()
@@ -367,6 +378,7 @@ class InfraExplorerTests {
             initInfraExplorers(
                     infra,
                     infra,
+                    TestTrains.REALISTIC_FAST_TRAIN.length.meters,
                     BlockLocation(blocks[0], Offset(50.meters)),
                     stepsFromLocations(
                         BlockLocation(blocks[0], Offset(50.meters)),
@@ -405,6 +417,7 @@ class InfraExplorerTests {
             initInfraExplorers(
                     infra.rawInfra,
                     infra.blockInfra,
+                    TestTrains.REALISTIC_FAST_TRAIN.length.meters,
                     BlockLocation(block, Offset(32.meters)),
                     stepsFromLocations(BlockLocation(block, Offset(42.meters)), stops = true),
                 )
