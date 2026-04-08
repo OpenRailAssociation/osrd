@@ -95,6 +95,27 @@ pub trait Authorizer {
         &'a self,
         data: Protected<T>,
     ) -> Result<Access<'a, T, Self::Rejection>, Self::Error>;
+
+    /// Authorizes multiple [Protected] operations concurrently
+    ///
+    /// Errors are coalesced into a single top-level `Err`. If they are
+    /// needed individually, call [Self::authorize] multiple times directly.
+    ///
+    /// Note that you'll need to `.await` each [Access] as well. Make sure to
+    /// do so concurrently as well. You can use [Access::access_all] for this.
+    ///
+    /// Also note that you'll have to then deal with each potential rejection
+    /// individually. If they're all the same, the upcoming transformation from
+    /// `Vec<Protected<T>>` to `Protected<Vec<T>>` will serve this purpose. Stay tuned!
+    async fn authorize_all<'a, T>(
+        &'a self,
+        data: impl IntoIterator<Item = Protected<T>>,
+    ) -> Result<Vec<Access<'a, T, Self::Rejection>>, Self::Error> {
+        futures::future::join_all(data.into_iter().map(|d| self.authorize(d)))
+            .await
+            .into_iter()
+            .collect::<Result<Vec<_>, _>>()
+    }
 }
 
 impl<T> Protected<T> {
@@ -218,6 +239,16 @@ impl<'a, T, R> Access<'a, T, R> {
                 Ok(Ok(value))
             }
         }
+    }
+
+    /// Concurrently awaits all accesses and factorizes OpenFGA errors
+    ///
+    /// If you don't need to handle individual rejections, stay tuned for the
+    /// upcoming `Protected<Vec<T>>` transformation.
+    pub async fn access_all(
+        accesses: impl IntoIterator<Item = Access<'_, T, R>>,
+    ) -> Result<Vec<Result<T, R>>, OpenFgaError> {
+        futures::future::try_join_all(accesses.into_iter().map(|access| access.access())).await
     }
 }
 
