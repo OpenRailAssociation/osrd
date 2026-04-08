@@ -246,8 +246,8 @@ const useTrackOccupancy = ({
             let exception: SimulatedException | undefined;
             let exceptionProjection: BaseTrainProjection | undefined;
             if (occupation.type !== 'base') {
-              exception = train.paced.exceptions.find((e) => e.key === occupation.exception_key);
-              exceptionProjection = train.paced.exceptionProjections.get(occupation.exception_key);
+              exception = train.paced.exceptions.find((e) => e.id === occupation.exception_id);
+              exceptionProjection = train.paced.exceptionProjections.get(occupation.exception_id);
               if (!exception) throw new Error(`Exception not found for train ${train.id}`);
             }
 
@@ -261,7 +261,7 @@ const useTrackOccupancy = ({
               if (!exception?.start_time?.value)
                 throw new Error(`Created exceptions should always be a start time exception`);
 
-              trainId = formatPacedTrainIdToExceptionId(pacedTrainId, occupation.exception_key);
+              trainId = formatPacedTrainIdToExceptionId(pacedTrainId, occupation.exception_id);
               trainName = exception.train_name?.value ?? `${train.name}/+`;
               startTime = new Date(exception.start_time.value);
             } else {

@@ -9,7 +9,6 @@ use itertools::Itertools;
 use schemas;
 use schemas::TrainScheduleException;
 use schemas::paced_train;
-use schemas::paced_train::ExceptionType;
 use schemas::paced_train::Paced;
 use schemas::paced_train::PacedTrainException;
 use schemas::rolling_stock::TrainCategory;
@@ -66,53 +65,6 @@ pub struct TrainSchedule {
 }
 
 impl TrainSchedule {
-    pub fn apply_exception(&self, exception: &PacedTrainException) -> TrainOccurrence {
-        let mut train_schedule = self.clone().into_train_occurrence();
-
-        if let Some(change_group) = &exception.change_groups.train_name {
-            train_schedule.train_name = change_group.value.clone();
-        }
-        if let Some(change_group) = &exception.change_groups.rolling_stock {
-            train_schedule.comfort = change_group.comfort;
-            train_schedule.rolling_stock_name = change_group.rolling_stock_name.clone();
-        }
-        if let Some(change_group) = &exception.change_groups.rolling_stock_category {
-            train_schedule.category = change_group.value.clone();
-        }
-        if let Some(change_group) = &exception.change_groups.labels {
-            train_schedule.labels = change_group.value.clone();
-        }
-        if let Some(change_group) = &exception.change_groups.speed_limit_tag {
-            train_schedule.speed_limit_tag = change_group.value.clone();
-        }
-        if let Some(change_group) = &exception.change_groups.start_time {
-            train_schedule.start_time = change_group.value
-        }
-        if let (ExceptionType::Modified { occurrence_index }, None) = (
-            &exception.exception_type,
-            &exception.change_groups.start_time,
-        ) {
-            train_schedule.start_time = self.get_occurrence_start_time(*occurrence_index);
-        }
-        if let Some(change_group) = &exception.change_groups.constraint_distribution {
-            train_schedule.constraint_distribution = change_group.value;
-        }
-        if let Some(change_group) = &exception.change_groups.initial_speed {
-            train_schedule.initial_speed = change_group.value;
-        }
-        if let Some(change_group) = &exception.change_groups.options {
-            train_schedule.options = change_group.value.clone();
-        }
-        if let Some(change_group) = &exception.change_groups.path_and_schedule {
-            train_schedule.margins = change_group.margins.clone();
-            train_schedule.path = change_group.path.clone();
-            train_schedule.power_restrictions = change_group.power_restrictions.clone();
-            train_schedule.schedule = change_group.schedule.clone();
-        }
-
-        train_schedule
-    }
-
     pub fn apply_train_schedule_exception(
         &self,
         exception: &TrainScheduleException,
@@ -186,26 +138,6 @@ impl TrainSchedule {
         }
     }
 
-    // TODO remove it
-    /// Returns an iterator over "created" train exceptions with their IDs and schedules.
-    fn get_created_occurrences_exceptions(
-        &self,
-    ) -> impl Iterator<Item = (OccurrenceId, TrainOccurrence)> {
-        self.exceptions
-            .iter()
-            .filter(|exception| matches!(exception.exception_type, ExceptionType::Created { .. }))
-            .map(|exception| {
-                (
-                    OccurrenceId::new_created(
-                        self.id,
-                        exception.id.unwrap_or_default(), // TODO use only id
-                        exception.key.clone(),
-                    ),
-                    self.apply_exception(exception),
-                )
-            })
-    }
-
     /// Returns the start time of the occurrence at the given index.
     fn get_occurrence_start_time(&self, occurrence_index: usize) -> DateTime<Utc> {
         if let Some(interval) = self.interval {
@@ -229,58 +161,6 @@ impl TrainSchedule {
                 (occurrence, train_schedule)
             })
             .collect()
-    }
-
-    // TODO remove it
-    /// Returns an iterator over all train occurrences, including:
-    /// - base occurrences, minus the ones disabled by a modified exception
-    /// - occurrences modified by exceptions (which replace a base one)
-    /// - occurrences created by exceptions (additional trains)
-    ///
-    /// If it's not a paced train (i.e., no time window), this will return the single train schedule.
-    ///
-    /// This function replaces any base occurrence that has a `Modified` exception,
-    /// and appends any `Created` exceptions as new trains.
-    ///
-    /// The result is sorted by `start_time` to reflect the chronological order of the trains.
-    pub fn iter_occurrences(&self) -> impl Iterator<Item = (OccurrenceId, TrainOccurrence)> {
-        let mut base_occurrences = self.get_base_occurrences();
-
-        let modified_exceptions = self
-            .exceptions
-            .iter()
-            .filter_map(|e| match e.exception_type {
-                ExceptionType::Modified { occurrence_index } => Some((occurrence_index, e)),
-                _ => None,
-            });
-
-        let mut to_remove = vec![false; base_occurrences.len()];
-        // Modify corresponding occurrences.
-        for (occurrence_index, exception) in modified_exceptions {
-            if let Some(occurrence) = base_occurrences.get_mut(occurrence_index) {
-                if exception.disabled {
-                    to_remove[occurrence_index] = true;
-                } else {
-                    let occurrence_id = OccurrenceId::new_modified(
-                        self.id,
-                        occurrence_index,
-                        exception.id.unwrap_or_default(), // TODO use only id
-                        exception.key.clone(),
-                    );
-                    *occurrence = (occurrence_id, self.apply_exception(exception));
-                }
-            }
-        }
-        // Remove disabled occurrences.
-        let occurrences = base_occurrences
-            .into_iter()
-            .zip(to_remove)
-            .filter_map(|(occ, disabled)| if disabled { None } else { Some(occ) });
-
-        occurrences
-            .into_iter()
-            .chain(self.get_created_occurrences_exceptions())
-            .sorted_by_key(|(_, ts)| ts.start_time)
     }
 
     /// Returns time window and interval when this train has paced occurrences.
@@ -308,7 +188,7 @@ impl TrainSchedule {
     }
 
     /// Returns an iterator over "created" train exceptions with their IDs and schedules.
-    fn get_created_occurrences_exceptions_v2(
+    fn get_created_occurrences_exceptions(
         &self,
         exceptions: &[TrainScheduleException],
     ) -> impl Iterator<Item = (OccurrenceId, TrainOccurrence)> {
@@ -341,7 +221,7 @@ impl TrainSchedule {
     /// and appends any `Created` exceptions as new trains.
     ///
     /// The result is sorted by `start_time` to reflect the chronological order of the trains.
-    pub fn iter_occurrences_v2(
+    pub fn iter_occurrences(
         &self,
         exceptions: &[TrainScheduleException],
     ) -> impl Iterator<Item = (OccurrenceId, TrainOccurrence)> {
@@ -381,14 +261,9 @@ impl TrainSchedule {
             .zip(to_remove)
             .filter_map(|(occ, disabled)| if disabled { None } else { Some(occ) });
 
-        let created_occurrences = self
-            .get_created_occurrences_exceptions_v2(exceptions)
-            .collect::<Vec<_>>();
-        dbg!(created_occurrences);
-
         occurrences
             .into_iter()
-            .chain(self.get_created_occurrences_exceptions_v2(exceptions))
+            .chain(self.get_created_occurrences_exceptions(exceptions))
             .sorted_by_key(|(_, ts)| ts.start_time)
     }
 }
@@ -769,7 +644,7 @@ mod tests {
             exception_3.clone(),
         ];
 
-        let occurrences: Vec<_> = paced_train.iter_occurrences_v2(&exceptions).collect();
+        let occurrences: Vec<_> = paced_train.iter_occurrences(&exceptions).collect();
 
         assert_eq!(occurrences.len(), 4);
 
@@ -831,7 +706,7 @@ mod tests {
 
         let paced_train = create_paced_train();
         let occurrences: Vec<_> = paced_train
-            .iter_occurrences_v2(std::slice::from_ref(&exception_1))
+            .iter_occurrences(std::slice::from_ref(&exception_1))
             .collect();
 
         assert_eq!(occurrences.len(), 4);
