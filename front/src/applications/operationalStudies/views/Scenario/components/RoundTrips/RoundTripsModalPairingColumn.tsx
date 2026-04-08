@@ -1,11 +1,10 @@
 import { useRef, useState } from 'react';
 
-import { Input } from '@osrd-project/ui-core';
+import { Input, useOutsideClick } from '@osrd-project/ui-core';
 import { Filter } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 import type { SubCategory } from 'common/api/osrdEditoastApi';
-import useOutsideClick from 'utils/hooks/useOutsideClick';
 
 import RoundTripsModalCard from './RoundTripsModalCard';
 import type { PairDataToolTip, PairingItem } from './types';
