@@ -14,6 +14,7 @@ use ::authz::InfraPrivilege;
 use ::authz::Role;
 use authz::Authorization;
 use authz::v2;
+use authz::v2::Authorizer;
 use axum::Extension;
 use axum::extract::Path;
 use axum::extract::State;
@@ -334,16 +335,14 @@ pub(in crate::views) async fn user_privileges(
         .flatten();
     if let Some(user) = user {
         let infras = infra_ids.map(authz::Infra);
+        let protected_privileges =
+            infras.map(|infra| v2::infra_privileges(user, infra).zip(v2::Protected::value(infra)));
         let authorizer =
             crate::authorizers::UserAuthorizer::new(user, roles, regulator.openfga(), conn);
-        for infra in infras {
-            match v2::infra_privileges(user, infra)
-                .zip(v2::Protected::value(infra))
-                .authorize(&authorizer)
-                .await?
-                .access()
-                .await?
-            {
+        let futs = protected_privileges.map(|p| authorizer.authorize(p));
+        let privileges_accesses = futures::future::join_all(futs).await;
+        for access_res in privileges_accesses {
+            match access_res?.access().await? {
                 Ok((privileges, infra)) => {
                     result_infras.push(ResourcePrivileges {
                         resource_id: *infra,
