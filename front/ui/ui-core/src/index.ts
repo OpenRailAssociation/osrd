@@ -36,3 +36,4 @@ export { default as TokenInput, TokenInputProps } from './components/TokenInput'
 export { default as Table } from './components/Table/Table';
 export { default as Dialog } from './components/Dialog';
 export { default as SegmentedControl, SegmentedControlProps } from './components/SegmentedControl';
+export { default as useOutsideClick } from './hooks/useOutsideClick';

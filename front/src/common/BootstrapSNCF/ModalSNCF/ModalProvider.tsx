@@ -9,11 +9,10 @@ import React, {
   useRef,
 } from 'react';
 
+import { useOutsideClick } from '@osrd-project/ui-core';
 import cx from 'classnames';
 import { noop } from 'lodash';
 import { Outlet, useLocation } from 'react-router-dom';
-
-import useOutsideClick from 'utils/hooks/useOutsideClick';
 
 /**
  * Type of the modal context
@@ -50,7 +49,10 @@ export const ModalSNCF = () => {
   const modalRef = useRef<HTMLDivElement>(null);
   const { isOpen, content, closeModal, size, className } = useContext(ModalContext);
 
-  useOutsideClick(modalRef, closeModal, isOpen);
+  useOutsideClick(modalRef, () => {
+    if (modalRef.current?.classList.contains('no-close-modal')) return;
+    closeModal();
+  });
 
   if (!content) {
     return null;

@@ -17,7 +17,7 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { ScenarioWithDetails, StudyCreateForm } from 'common/api/osrdEditoastApi';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { ConfirmModal, useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
@@ -31,7 +31,7 @@ import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import useInputChange from 'utils/hooks/useInputChange';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
-import useOutsideClick from 'utils/hooks/useOutsideClick';
+import useModalOutsideClick from 'utils/hooks/useModalOutsideClick';
 
 import { createSelectOptions, checkStudyFields } from './utils';
 
@@ -65,8 +65,8 @@ const emptyStudy: StudyForm = {
 
 const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyModalProps) => {
   const { t } = useTranslation(['operational-studies', 'translation']);
-  const { openModal } = useModal();
-  const { closeModal, isOpen } = useContext(ModalContext);
+
+  const { closeModal, openModal } = useContext(ModalContext);
   const { projectId } = useParams() as StudyParams;
   const [currentStudy, setCurrentStudy] = useState<StudyForm>(study || emptyStudy);
   const [displayErrors, setDisplayErrors] = useState(false);
@@ -86,11 +86,7 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
 
   const modalRef = useRef<HTMLDivElement | null>(null);
 
-  const { clickedOutside, setHasChanges, resetClickedOutside } = useOutsideClick(
-    modalRef,
-    closeModal,
-    isOpen
-  );
+  const { clickedOutside, setHasChanges, resetClickedOutside } = useModalOutsideClick(modalRef);
 
   const handleStudyInputChange = useInputChange(initialValuesRef, setCurrentStudy, setHasChanges);
 

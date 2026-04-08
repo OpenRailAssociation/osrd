@@ -1,5 +1,6 @@
 import { useRef, useState, useContext, useEffect, useCallback } from 'react';
 
+import { useOutsideClick } from '@osrd-project/ui-core';
 import {
   CompassCardinalV2,
   CompassNeedleV2,
@@ -32,7 +33,6 @@ import { useMapSettingsActions } from 'reducers/commonMap';
 import type { LayersSettings, Viewport } from 'reducers/commonMap/types';
 import { type EditorState } from 'reducers/editor';
 import { useAppDispatch } from 'store';
-import useOutsideClick from 'utils/hooks/useOutsideClick';
 
 import { MapContextProvider, useMapContext } from '../useMapContext';
 import ButtonMapInfraErrors from './ButtonMapInfraErrors';
