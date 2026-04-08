@@ -5,6 +5,7 @@ import fr.sncf.osrd.api.pathfinding.pathfindingLogger
 import fr.sncf.osrd.graph.AStarHeuristic
 import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.path.interfaces.BlockRange
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.pathfinding.constraints.CachedBlockConstraintCombiner
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
@@ -19,6 +20,7 @@ import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
 import fr.sncf.osrd.utils.arePositionsEqual
 import fr.sncf.osrd.utils.areTimesEqual
 import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.time.Duration
@@ -168,7 +170,13 @@ class Pathfinding(
                 CachedBlockConstraintCombiner.getCachedConstraintCombiner(fullInfra, it)
             }
         val startTime = Instant.now()
-        val seenBlocks = HashMap<BlockId, Int>()
+
+        // When exploring a block, the decision to try to backtrack (and where) later on the
+        // considered route is already made.
+        // So we have to discriminate blocks used to go to backtracking (and the different
+        // backtracking) and blocks used to go straight.
+        data class VisitedKey(val block: BlockId, val nextBacktracking: Offset<PhysicsPath>?)
+        val seenBlocks = HashMap<VisitedKey, Int>()
 
         val startInfraExplorers =
             getStartInfraExplorers(
@@ -217,13 +225,21 @@ class Pathfinding(
             maxSeenTarget = max(nbSeenTargets, maxSeenTarget)
 
             val currentBlock = step.infraExplorer.getCurrentBlock()
-            if (seenBlocks.getOrDefault(currentBlock, -1) >= nbSeenTargets) {
+            val lastLocatedStep =
+                step.infraExplorer.getStepTracker().iterateSeenStepsBackwards().firstOrNull()
+            val backtrackingOffset =
+                if (lastLocatedStep?.isBacktracking ?: false) lastLocatedStep.travelledPathOffset
+                else null
+            if (
+                seenBlocks.getOrDefault(VisitedKey(currentBlock, backtrackingOffset), -1) >=
+                    nbSeenTargets
+            ) {
                 pathfindingLogger.trace(
-                    "Dropping current search as a more promising search on the same block is already done"
+                    "Dropping current search as a more promising search on the same block and targeting the same backtracking is already done"
                 )
                 continue
             }
-            seenBlocks[currentBlock] = nbSeenTargets
+            seenBlocks[VisitedKey(currentBlock, backtrackingOffset)] = nbSeenTargets
 
             step.infraExplorer.cloneAndExtendLookahead().forEach {
                 registerStep(it, step.establishedCost, step.establishedLength)
@@ -239,6 +255,16 @@ class Pathfinding(
     ): Collection<InfraExplorer> {
         val res = mutableListOf<InfraExplorer>()
         val firstLocations = targets[0].locations
+        val steps =
+            targets.mapIndexed { index, it ->
+                ExplorerStep(
+                    it.locations,
+                    it.duration,
+                    stop = (index > 0 && index < targets.size - 1),
+                    it.canBacktrack,
+                    it.plannedTimingData,
+                )
+            } // TODO PEB: remove stop
         for (location in firstLocations) {
             val infraExplorers =
                 initInfraExplorers(
@@ -246,7 +272,7 @@ class Pathfinding(
                     blockInfra,
                     rollingStockLength,
                     location,
-                    targets,
+                    steps,
                     constraints?.let { MutableList(targets.size) { _ -> it } },
                 )
             res.addAll(infraExplorers)

@@ -923,4 +923,61 @@ class PathfindingStopsAtEndOfBlock : ApiTest() {
                 listOf(Offset(intermediateStopDistance), Offset(secondIntermediateStopDistance)),
         )
     }
+
+    @Test
+    fun simpleBacktrackingYInfraTest() {
+        val waypointsStart = listOf(TrackLocation("t_a", Offset(3100.meters)))
+        val waypointsBacktracking = listOf(TrackLocation("t_center", Offset(2800.meters)))
+        val waypointsEnd = listOf(TrackLocation("t_b", Offset(3400.meters)))
+        val parsed =
+            callPathfindingEndpoint(
+                TestTrains.REALISTIC_FAST_TRAIN,
+                listOf(waypointsStart, waypointsBacktracking, waypointsEnd),
+                "y_infra/infra.json",
+                false,
+            )
+        checkPathfindingSuccess(
+            parsed,
+            18_700.meters,
+            expectedBlocks =
+                listOf(
+                    "[s.right.a1-BAL, s.right.a2-BAL];[det.a1, det.a2];[]",
+                    "[s.right.a2-BAL, s.right.a3-BAL];[det.a2, det.a3];[]",
+                    "[s.right.a3-BAL, s.right.c2-BAL];[det.a3, det.c2];[switch-A_B1]",
+                    "[s.left.c3-BAL, s.left.c1-BAL];[det.c3, det.c1];[]",
+                    "[s.left.c1-BAL, s.left.b2-BAL];[det.c1, det.b2];[switch-A_B2]",
+                    "[s.left.b2-BAL, s.left.b1-BAL];[det.b2, det.b1];[]",
+                ),
+            expectedRoutes =
+                listOf("rt.bf.a->det.a3", "rt.det.a3->bf.c", "rt.bf.c->det.c1", "rt.det.c1->bf.b"),
+            expectedTrackSectionRanges =
+                listOf(
+                    TrackSectionRange(
+                        "t_a",
+                        Offset(3_100.meters),
+                        Offset(10_000.meters),
+                        EdgeDirection.START_TO_STOP,
+                    ),
+                    TrackSectionRange(
+                        "t_center",
+                        Offset(0.meters),
+                        Offset(2_800.meters),
+                        EdgeDirection.START_TO_STOP,
+                    ),
+                    TrackSectionRange(
+                        "t_center",
+                        Offset(0.meters),
+                        Offset(2_400.meters),
+                        EdgeDirection.STOP_TO_START,
+                    ),
+                    TrackSectionRange(
+                        "t_b",
+                        Offset(3_400.meters),
+                        Offset(10_000.meters),
+                        EdgeDirection.STOP_TO_START,
+                    ),
+                ),
+            expectedIntermediatePathItemPosition = listOf(Offset(9_700.meters)),
+        )
+    }
 }
