@@ -7,8 +7,8 @@ import fr.sncf.osrd.envelope.part.EnvelopePart
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
+import fr.sncf.osrd.sim_infra.api.BlockLocation
 import fr.sncf.osrd.sim_infra.api.DirDetectorId
-import fr.sncf.osrd.stdcm.infra_exploration.BlockLocation
 import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.infra_exploration.PlannedTimingData
