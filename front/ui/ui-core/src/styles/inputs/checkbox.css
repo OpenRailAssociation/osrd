@@ -55,6 +55,7 @@
       height: calc(var(--ui-checkbox-size) - 2px);
       pointer-events: none;
       background-position: center center;
+      background-size: contain;
     }
 
     &:checked,
