@@ -13,12 +13,12 @@ import fr.sncf.osrd.railjson.schema.infra.RJSInfra
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.BlockId
+import fr.sncf.osrd.sim_infra.api.BlockLocation
 import fr.sncf.osrd.sim_infra.api.Route
 import fr.sncf.osrd.sim_infra.api.SignalingSystem
 import fr.sncf.osrd.sim_infra.api.SignalingSystemId
 import fr.sncf.osrd.sim_infra.utils.recoverBlocks
 import fr.sncf.osrd.sim_infra.utils.toBlockList
-import fr.sncf.osrd.stdcm.infra_exploration.BlockLocation
 import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.json.UnitAdapterFactory

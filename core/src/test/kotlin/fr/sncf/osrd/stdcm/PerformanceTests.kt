@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMultimap
 import com.google.common.collect.Iterables
 import fr.sncf.osrd.geom.Point
 import fr.sncf.osrd.sim_infra.api.BlockId
-import fr.sncf.osrd.stdcm.infra_exploration.BlockLocation
+import fr.sncf.osrd.sim_infra.api.BlockLocation
 import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.units.Distance

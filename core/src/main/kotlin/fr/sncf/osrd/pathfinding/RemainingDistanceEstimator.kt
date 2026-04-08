@@ -5,9 +5,9 @@ import fr.sncf.osrd.graph.AStarHeuristic
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.BlockInfra
+import fr.sncf.osrd.sim_infra.api.BlockLocation
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
 import fr.sncf.osrd.sim_infra.api.TrackChunk
-import fr.sncf.osrd.stdcm.infra_exploration.BlockLocation
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
