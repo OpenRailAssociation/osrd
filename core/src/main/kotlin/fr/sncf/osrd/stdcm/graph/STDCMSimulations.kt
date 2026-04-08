@@ -8,29 +8,18 @@ import fr.sncf.osrd.envelope.part.EnvelopePartBuilder
 import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint
 import fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint
-import fr.sncf.osrd.envelope_sim.Comfort
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration
-import fr.sncf.osrd.envelope_sim.pipelines.SimStop
 import fr.sncf.osrd.envelope_sim.pipelines.maxEffortEnvelopeFrom
-import fr.sncf.osrd.envelope_sim.pipelines.maxSpeedEnvelopeFrom
-import fr.sncf.osrd.envelope_sim_infra.computeMRSP
-import fr.sncf.osrd.path.interfaces.PhysicsPath
-import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal
 import fr.sncf.osrd.reporting.exceptions.OSRDError
-import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.stdcm.BacktrackingSelfTypeHolder
-import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
-import fr.sncf.osrd.train.RollingStock
+import fr.sncf.osrd.stdcm.CachedBlockMaxSpeedEnvBuilder
 import fr.sncf.osrd.utils.SelfTypeHolder
-import fr.sncf.osrd.utils.units.Distance
-import fr.sncf.osrd.utils.units.Offset
 import java.lang.ref.SoftReference
 
 /** This class contains all the methods used to simulate the train behavior. */
-class STDCMSimulations {
+class STDCMSimulations(private val cachedBlockMaxSpeedEnvBuilder: CachedBlockMaxSpeedEnvBuilder) {
     private var simulatedEnvelopes: HashMap<BlockSimulationParameters, SoftReference<Envelope>?> =
         HashMap()
 
@@ -41,72 +30,35 @@ class STDCMSimulations {
      * Returns the corresponding envelope if the block's envelope has already been computed in
      * simulatedEnvelopes, otherwise computes the matching envelope and adds it to the STDCMGraph.
      */
-    fun simulateBlock(
-        rollingStock: RollingStock,
-        comfort: Comfort?,
-        timeStep: Double,
-        trainTag: String?,
-        temporarySpeedLimitManager: TemporarySpeedLimitManager?,
-        infraExplorer: InfraExplorer,
-        blockParams: BlockSimulationParameters,
-    ): Envelope? {
-        val cached = simulatedEnvelopes.getOrDefault(blockParams, null)?.get()
+    fun simulateBlock(blockParams: BlockSimulationParameters): Envelope? {
+        val roundedBlockParams = blockParams.round()
+        val cached = simulatedEnvelopes.getOrDefault(roundedBlockParams, null)?.get()
         if (cached != null) return cached
-        val simulatedEnvelope =
-            simulateBlock(
-                infraExplorer,
-                blockParams.initialSpeed,
-                blockParams.start,
-                rollingStock,
-                comfort,
-                timeStep,
-                blockParams.stop,
-                trainTag,
-                temporarySpeedLimitManager,
-            )
-        simulatedEnvelopes[blockParams] = SoftReference(simulatedEnvelope)
+        val simulatedEnvelope = simulateBlockNoCache(roundedBlockParams)
+        simulatedEnvelopes[roundedBlockParams] = SoftReference(simulatedEnvelope)
         return simulatedEnvelope
     }
 
     /**
-     * Returns an envelope matching the given block. The envelope time starts when the train enters
-     * the block. stopPosition specifies the position at which the train should stop, may be null
-     * (no stop).
+     * Computes the corresponding envelope.
      *
      * Note: there are some approximations made here as we only "see" the tracks on the given
      * blocks. We are missing slopes and speed limits from earlier in the path.
      */
-    fun simulateBlock(
-        infraExplorer: InfraExplorer,
-        initialSpeed: Double,
-        start: Offset<Block>,
-        rollingStock: RollingStock,
-        comfort: Comfort?,
-        timeStep: Double,
-        stopPosition: Offset<Block>?,
-        trainTag: String?,
-        temporarySpeedLimitManager: TemporarySpeedLimitManager?,
-    ): Envelope? {
+    private fun simulateBlockNoCache(blockParams: BlockSimulationParameters): Envelope? {
+        val (block, initialSpeed, start, stopPosition) = blockParams
         assert(stopPosition == null || stopPosition >= start)
         if (stopPosition != null && stopPosition == start) return makeSinglePointEnvelope(0.0)
-        val blockLength = infraExplorer.getCurrentBlockLength()
+        val blockLength = cachedBlockMaxSpeedEnvBuilder.blockInfra.getBlockLength(block)
         if (start >= blockLength) return makeSinglePointEnvelope(initialSpeed)
-        var stops = emptyList<SimStop>()
-        var simLength = blockLength.distance - start.distance
-        if (stopPosition != null) {
-            val stopOffset = Offset<PhysicsPath>(stopPosition - start)
-            // We presently consider all stdcm stops to be performed on closed signal by default
-            // This presently only affects ETCS computations, which are not yet supported in stdcm
-            // either
-            stops = listOf(SimStop(stopOffset, RJSReceptionSignal.SHORT_SLIP_STOP))
-            simLength = Distance.min(simLength, stopOffset.distance)
-        }
-        val path = infraExplorer.getCurrentEdgePathProperties(start, simLength)
-        val context = build(rollingStock, path, timeStep, comfort)
-        val mrsp = computeMRSP(path, rollingStock, false, trainTag, temporarySpeedLimitManager)
         return try {
-            val maxSpeedEnvelope = maxSpeedEnvelopeFrom(context, stops, mrsp)
-            maxEffortEnvelopeFrom(context, initialSpeed, maxSpeedEnvelope)
+            val context = cachedBlockMaxSpeedEnvBuilder.getMrspAndContext(block).context
+            val maxSpeedEnvelope = cachedBlockMaxSpeedEnvBuilder.getMaxSpeedEnvelope(block, null)
+            Envelope.make(
+                    *maxEffortEnvelopeFrom(context, initialSpeed, maxSpeedEnvelope)
+                        .slice(start.meters, (stopPosition ?: blockLength).meters)
+                )
+                .copyAndShift(-start.meters)
         } catch (e: OSRDError) {
             // The train can't reach its destination, for example because of high slopes
             if (nFailedSimulation == 0) {
@@ -134,7 +86,7 @@ class STDCMSimulations {
 }
 
 /** Make an envelope with a single point of the given speed */
-private fun makeSinglePointEnvelope(speed: Double): Envelope {
+fun makeSinglePointEnvelope(speed: Double): Envelope {
     return Envelope.make(
         EnvelopePart(
             mapOf<Class<out SelfTypeHolder>, SelfTypeHolder>(

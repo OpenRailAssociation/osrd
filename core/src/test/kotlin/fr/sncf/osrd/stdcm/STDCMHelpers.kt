@@ -5,16 +5,17 @@ import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.conflicts.SpacingRequirement
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.Comfort
+import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
+import fr.sncf.osrd.stdcm.graph.BlockSimulationParameters
 import fr.sncf.osrd.stdcm.graph.STDCMSimulations
 import fr.sncf.osrd.stdcm.infra_exploration.BlockLocation
 import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorers
 import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment
-import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -30,15 +31,13 @@ fun getBlocksRunTime(infra: FullInfra, blocks: List<BlockId>): Double {
     for (block in blocks) {
         val envelope =
             simulateBlock(
-                infraExplorerFromBlock(infra.rawInfra, infra.blockInfra, block),
-                speed,
-                Offset(0.meters),
+                BlockSimulationParameters(block, speed, Offset(0.meters), null),
+                infra.rawInfra,
+                infra.blockInfra,
                 TestTrains.REALISTIC_FAST_TRAIN,
-                Comfort.STANDARD,
+                listOf(),
                 2.0,
-                null,
-                null,
-                null,
+                Comfort.STANDARD,
             )!!
         time += envelope.totalTime
         speed = envelope.endSpeed
@@ -48,29 +47,32 @@ fun getBlocksRunTime(infra: FullInfra, blocks: List<BlockId>): Double {
 
 /** Helper function to call `simulateBlock` without instantiating an `STDCMSimulations` */
 fun simulateBlock(
-    infraExplorer: InfraExplorer,
-    initialSpeed: Double,
-    start: Offset<Block>,
-    rollingStock: RollingStock,
-    comfort: Comfort?,
+    block: BlockSimulationParameters,
+    rawInfra: RawInfra,
+    blockInfra: BlockInfra,
+    rollingStock: PhysicsRollingStock,
+    steps: List<ExplorerStep>,
     timeStep: Double,
-    stopPosition: Offset<Block>?,
-    trainTag: String?,
-    temporarySpeedLimitManager: TemporarySpeedLimitManager?,
+    comfort: Comfort? = null,
+    speedLimitTag: String? = null,
+    temporarySpeedLimitManager: TemporarySpeedLimitManager = TemporarySpeedLimitManager(),
+    addRollingStockLength: Boolean = true,
 ): Envelope? {
-    val sim = STDCMSimulations()
-    val res =
-        sim.simulateBlock(
-            infraExplorer,
-            initialSpeed,
-            start,
-            rollingStock,
-            comfort,
-            timeStep,
-            stopPosition,
-            trainTag,
-            temporarySpeedLimitManager,
+    val sim =
+        STDCMSimulations(
+            CachedBlockMaxSpeedEnvBuilder(
+                rawInfra,
+                blockInfra,
+                rollingStock,
+                steps,
+                timeStep,
+                comfort,
+                speedLimitTag,
+                temporarySpeedLimitManager,
+                addRollingStockLength,
+            )
         )
+    val res = sim.simulateBlock(block)
     sim.logWarnings()
     return res
 }

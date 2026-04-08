@@ -53,7 +53,6 @@ class STDCMGraph(
 ) : Graph<STDCMNode, STDCMEdge> {
     val rawInfra = fullInfra.rawInfra
     val blockInfra = fullInfra.blockInfra
-    var stdcmSimulations: STDCMSimulations = STDCMSimulations()
     val delayManager: DelayManager =
         DelayManager(
             minScheduleTimeStart,
@@ -77,6 +76,7 @@ class STDCMGraph(
             temporarySpeedLimitManager = temporarySpeedLimitManager,
             addRollingStockLength = false,
         )
+    var stdcmSimulations = STDCMSimulations(maxSpeedEnvBuilder)
 
     // min 30s between two edges, determined empirically
     // TODO: this value *should* reflect twice the min delay between two trains,
