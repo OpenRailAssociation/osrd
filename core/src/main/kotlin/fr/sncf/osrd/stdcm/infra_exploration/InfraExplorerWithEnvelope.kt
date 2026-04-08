@@ -17,6 +17,7 @@ import fr.sncf.osrd.utils.units.Duration
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.TimeDelta
+import fr.sncf.osrd.utils.units.meters
 import kotlin.math.abs
 
 /**
@@ -125,6 +126,7 @@ fun initInfraExplorerWithEnvelope(
     return initInfraExplorers(
             fullInfra.rawInfra,
             fullInfra.blockInfra,
+            rollingStock.length.meters,
             location,
             targets = targets,
             consistSchedule.constraints,
