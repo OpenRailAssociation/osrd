@@ -22,6 +22,7 @@ import {
 import { createDateInSpecialTimeZone } from './date-utils';
 import { readJsonFile } from './file-utils';
 import createScenario from './scenario';
+import { sendExceptions } from './send-exceptions';
 import sendTrains from './send-trains';
 import {
   dualModeRollingStockName,
@@ -187,7 +188,15 @@ export async function createDataForTests(): Promise<void> {
       studyWithTimetableItems.id,
       mediumInfra.id
     );
-    await sendTrains(trainScheduleSet.id, trains);
+
+    // TODO optimize by sending all trains without exceptions first in one call, then send trains with exceptions
+    for (const train of trains) {
+      const pt = await sendTrains(trainScheduleSet.id, [
+        { ...train, paced: train.paced ? { ...train.paced, exceptions: [] } : undefined },
+      ]);
+      const exceptions = train.paced?.exceptions ?? [];
+      await sendExceptions(scenario.timetable_id, pt[0].id, exceptions);
+    }
 
     // Step 7: Configure STDCM search environment for the tests
     const stdcmEnvironment = {
