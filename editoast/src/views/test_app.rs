@@ -297,7 +297,8 @@ impl TestAppBuilder {
                 app_state.clone(),
                 authentication_validation_middleware,
             ))
-            .route_layer(axum::middleware::from_fn(
+            .route_layer(axum::middleware::from_fn_with_state(
+                app_state.clone(),
                 authentication_extraction_middleware,
             ))
             .layer(OtelAxumLayer::default())

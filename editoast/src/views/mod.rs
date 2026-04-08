@@ -483,7 +483,11 @@ fn service_router() -> router::DocumentedRouter {
     })
 }
 
-async fn authentication_extraction_middleware(mut req: Request, next: Next) -> Result<Response> {
+async fn authentication_extraction_middleware(
+    State(AppState { config, .. }): State<AppState>,
+    mut req: Request,
+    next: Next,
+) -> Result<Response> {
     const IDENTITY: &str = "x-remote-user-identity";
     const NAME: &str = "x-remote-user-name";
     const SKIP_AUTHZ: &str = "x-osrd-skip-authz";
@@ -520,6 +524,7 @@ async fn authentication_extraction_middleware(mut req: Request, next: Next) -> R
             name,
             impersonate,
             skip: skip_authz,
+            authorization_enabled: config.enable_authorization,
         })
         .map_err(
             |AuthenticationParameters {
@@ -527,12 +532,14 @@ async fn authentication_extraction_middleware(mut req: Request, next: Next) -> R
                  name,
                  impersonate,
                  skip,
+                 authorization_enabled,
              }| {
                 tracing::error!(
                     identity,
                     name,
                     impersonate,
                     skip,
+                    authorization_enabled,
                     "invalid authentication parameters"
                 );
                 AuthorizationError::Unauthorized
@@ -1262,7 +1269,8 @@ impl Server {
                 app_state.clone(),
                 authentication_validation_middleware,
             ))
-            .route_layer(axum::middleware::from_fn(
+            .route_layer(axum::middleware::from_fn_with_state(
+                app_state.clone(),
                 authentication_extraction_middleware,
             ))
             .layer(OtelInResponseLayer)

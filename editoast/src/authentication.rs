@@ -6,7 +6,6 @@
 ///
 /// The values are **not validated by the builder**.
 #[derive(Debug, Clone)]
-#[expect(unused)]
 pub enum Authentication {
     Unauthenticated,
     Authenticated {
@@ -19,7 +18,9 @@ pub enum Authentication {
         impersonated_identity: String,
     },
     Skip {
+        #[expect(unused)]
         identity: Option<String>,
+        #[expect(unused)]
         name: Option<String>,
     },
 }
@@ -30,6 +31,7 @@ pub struct AuthenticationParameters {
     pub name: Option<String>,
     pub impersonate: Option<String>,
     pub skip: bool,
+    pub authorization_enabled: bool,
 }
 
 impl Authentication {
@@ -37,6 +39,12 @@ impl Authentication {
         let authn = match params {
             AuthenticationParameters {
                 skip: true,
+                identity,
+                name,
+                ..
+            }
+            | AuthenticationParameters {
+                authorization_enabled: false,
                 identity,
                 name,
                 ..
