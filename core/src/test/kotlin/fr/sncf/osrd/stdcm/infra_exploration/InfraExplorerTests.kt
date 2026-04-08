@@ -2,6 +2,7 @@ package fr.sncf.osrd.stdcm.infra_exploration
 
 import fr.sncf.osrd.pathfinding.constraints.ElectrificationConstraints
 import fr.sncf.osrd.sim_infra.api.BlockId
+import fr.sncf.osrd.sim_infra.api.BlockLocation
 import fr.sncf.osrd.sim_infra.api.DirDetectorId
 import fr.sncf.osrd.sim_infra.utils.routesOnBlock
 import fr.sncf.osrd.stdcm.stepsFromLocations
