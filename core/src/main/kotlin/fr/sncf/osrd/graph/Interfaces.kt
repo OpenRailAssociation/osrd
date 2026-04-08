@@ -2,7 +2,7 @@ package fr.sncf.osrd.graph
 
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
-import fr.sncf.osrd.stdcm.infra_exploration.BlockLocation
+import fr.sncf.osrd.sim_infra.api.BlockLocation
 import fr.sncf.osrd.utils.units.OffsetRange
 
 /**
