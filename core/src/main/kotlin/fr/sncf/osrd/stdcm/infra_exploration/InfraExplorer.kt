@@ -557,9 +557,10 @@ private class InfraExplorerImpl(
                 restartRoutes.forEach { restartRoute ->
                     val lastRouteBlocks = blockInfra.getRouteBlocks(rawInfra, restartRoute)
                     val restartBlockLocation =
-                        headRestartBlockLocations.first { it.edge in lastRouteBlocks }
+                        headRestartBlockLocations.firstOrNull { it.edge in lastRouteBlocks }
 
-                    routeLocations[restartRoute] = restartBlockLocation
+                    if (restartBlockLocation != null)
+                        routeLocations[restartRoute] = restartBlockLocation
                 }
             }
         }
@@ -687,7 +688,7 @@ private fun getLastRoutesOfPathsCoveringAllChunks(
     for (possibleRoute in nextPossibleRoutes) {
         val nextRoutesList =
             getLastRoutesOfPathsCoveringAllChunks(
-                chunksToCover.drop(nextIdxToCover - 1),
+                chunksToCover.drop(nextIdxToCover),
                 true,
                 possibleRoute,
                 rawInfra,
