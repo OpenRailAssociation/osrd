@@ -15,7 +15,7 @@ use crate::models::train_schedule::TrainScheduleChangeset;
 use crate::models::train_schedule_set::TrainScheduleSet;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::timetable::paced_train::TrainScheduleResponse;
+use crate::views::timetable::train_schedule::TrainScheduleResponse;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -394,7 +394,7 @@ mod tests {
     use crate::models::fixtures::simple_paced_train_base;
     use crate::models::train_schedule_set::TrainScheduleSet;
     use crate::views::test_app::TestAppBuilder;
-    use crate::views::timetable::paced_train::TrainScheduleResponse;
+    use crate::views::timetable::train_schedule::TrainScheduleResponse;
     use crate::views::train_schedule_set::TrainScheduleSetForm;
     use crate::views::train_schedule_set::TrainScheduleSetResponse;
     use chrono::Duration;

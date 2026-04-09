@@ -272,35 +272,35 @@ fn service_router() -> router::DocumentedRouter {
                 path.route(
                         "/move",
                         patch!(
-                            timetable::paced_train::move_train_schedules_to_another_train_schedule_set
+                            timetable::train_schedule::move_train_schedules_to_another_train_schedule_set
                         ))
                     .route(
                         "/simulation_summary",
-                        post!(timetable::paced_train::simulation_summary),
+                        post!(timetable::train_schedule::simulation_summary),
                     )
                     .route(
                         "/track_occupancy",
-                        post!(timetable::paced_train::track_occupancy),
+                        post!(timetable::train_schedule::track_occupancy),
                     )
                     .route(
                         "/occupancy_blocks",
-                        post!(timetable::paced_train::occupancy_blocks),
+                        post!(timetable::train_schedule::occupancy_blocks),
                     )
-                    .route("/", delete!(timetable::paced_train::delete))
-                    .route("/project_path", post!(timetable::paced_train::project_path))
+                    .route("/", delete!(timetable::train_schedule::delete))
+                    .route("/project_path", post!(timetable::train_schedule::project_path))
                     .route(
                         "/project_path_op",
-                        post!(timetable::paced_train::project_path_op),
+                        post!(timetable::train_schedule::project_path_op),
                     )
                 .nests("/{id}", |path| {
-                    path.route("/", get!(timetable::paced_train::get_by_id))
+                    path.route("/", get!(timetable::train_schedule::get_by_id))
                         .route(
                                 "/etcs_braking_curves",
-                                get!(timetable::paced_train::etcs_braking_curves),
+                                get!(timetable::train_schedule::etcs_braking_curves),
                             )
-                        .route("/", put!(timetable::paced_train::update_train_schedule))
-                        .route("/path", get!(timetable::paced_train::get_path))
-                        .route("/simulation", get!(timetable::paced_train::simulation))
+                        .route("/", put!(timetable::train_schedule::update_train_schedule))
+                        .route("/path", get!(timetable::train_schedule::get_path))
+                        .route("/simulation", get!(timetable::train_schedule::simulation))
                 })
             })
             .nests("/round_trips", |path| {
