@@ -932,7 +932,11 @@ class PathfindingStopsAtEndOfBlock : ApiTest() {
         val parsed =
             callPathfindingEndpoint(
                 TestTrains.REALISTIC_FAST_TRAIN,
-                listOf(waypointsStart, waypointsBacktracking, waypointsEnd),
+                listOf(
+                    PathItem(waypointsStart, false),
+                    PathItem(waypointsBacktracking, true),
+                    PathItem(waypointsEnd, false),
+                ),
                 "y_infra/infra.json",
                 false,
             )
@@ -989,7 +993,11 @@ class PathfindingStopsAtEndOfBlock : ApiTest() {
         val parsed =
             callPathfindingEndpoint(
                 TestTrains.REALISTIC_FAST_TRAIN,
-                listOf(waypointsStart, waypointsBacktracking, waypointsEnd),
+                listOf(
+                    PathItem(waypointsStart, false),
+                    PathItem(waypointsBacktracking, true),
+                    PathItem(waypointsEnd, false),
+                ),
                 "y_infra/infra.json",
                 false,
             )
@@ -1044,7 +1052,11 @@ class PathfindingStopsAtEndOfBlock : ApiTest() {
         val parsed =
             callPathfindingEndpoint(
                 TestTrains.REALISTIC_FAST_TRAIN,
-                listOf(waypointsStart, waypointsBacktracking, waypointsEnd),
+                listOf(
+                    PathItem(waypointsStart, false),
+                    PathItem(waypointsBacktracking, true),
+                    PathItem(waypointsEnd, false),
+                ),
                 "y_infra/infra.json",
                 false,
             )

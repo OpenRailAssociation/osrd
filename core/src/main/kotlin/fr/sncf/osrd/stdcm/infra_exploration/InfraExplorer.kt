@@ -278,14 +278,13 @@ private class InfraExplorerImpl(
             // handle the rest)
             val nbAddedSteps =
                 infraExplorer.stepTracker.getSeenSteps().size - this.stepTracker.getSeenSteps().size
-            // TODO PEB: use real backtracking flag, not only "step.stop"
             val isLastStepArrival = infraExplorer.isPathComplete
             val possibleBacktrackingSteps =
                 infraExplorer.stepTracker
                     .iterateSeenStepsBackwards()
                     .take(nbAddedSteps)
                     .drop(if (isLastStepArrival) 1 else 0) // ignore arrival even if canBacktrack
-                    .filter { step -> step.originalStep.stop }
+                    .filter { step -> step.originalStep.canBacktrack }
             for (possibleBacktracking in possibleBacktrackingSteps) {
                 val explorerToBacktracking = this.clone() as InfraExplorerImpl
                 val extendedToBacktracking =

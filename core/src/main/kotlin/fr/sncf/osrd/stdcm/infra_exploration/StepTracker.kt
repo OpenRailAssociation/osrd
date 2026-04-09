@@ -74,8 +74,8 @@ class StepTracker(
                     .minByOrNull { it.offset } ?: break
             currentPathOffset = currentBlockStart + location.offset.distance
 
-            // TODO PEB: use real backtracking flag, not only "step.stop"
-            val isBacktrackingStep = isBacktrackingAtEnd && location.offset == rangeEnd && step.stop
+            val isBacktrackingStep =
+                isBacktrackingAtEnd && location.offset == rangeEnd && step.canBacktrack
 
             val newStep = LocatedStep(currentPathOffset, location, step, true, isBacktrackingStep)
             res.add(newStep)

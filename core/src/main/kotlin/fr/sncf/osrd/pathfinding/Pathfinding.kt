@@ -90,6 +90,7 @@ class Pathfinding(
                 it.duration,
                 it.stop,
                 if (index > 0 && index < inputTargets.size) it.canBacktrack else false,
+                // if (index > 0 && index < inputTargets.size) true else false, // TODO: for demo
                 it.plannedTimingData,
             )
         }
@@ -255,16 +256,6 @@ class Pathfinding(
     ): Collection<InfraExplorer> {
         val res = mutableListOf<InfraExplorer>()
         val firstLocations = targets[0].locations
-        val steps =
-            targets.mapIndexed { index, it ->
-                ExplorerStep(
-                    it.locations,
-                    it.duration,
-                    stop = (index > 0 && index < targets.size - 1),
-                    it.canBacktrack,
-                    it.plannedTimingData,
-                )
-            } // TODO PEB: remove stop
         for (location in firstLocations) {
             val infraExplorers =
                 initInfraExplorers(
@@ -272,7 +263,7 @@ class Pathfinding(
                     blockInfra,
                     rollingStockLength,
                     location,
-                    steps,
+                    targets,
                     constraints?.let { MutableList(targets.size) { _ -> it } },
                 )
             res.addAll(infraExplorers)
