@@ -1,5 +1,5 @@
 .stdcm-results {
-  background-color: rgb(233, 239, 242);
+  background-color: var(--ambientA15);
   padding: 29px 32px 32px;
   position: relative;
 
@@ -15,7 +15,7 @@
 
   .simulation-navigator {
     position: relative;
-    color: rgb(0, 0, 0);
+    color: var(--black100);
     font-weight: 600;
     font-size: 1.125rem;
     line-height: 24px;
@@ -32,8 +32,8 @@
       .scroll-btn {
         position: absolute;
         border-radius: 6px;
-        box-shadow: 0 0 0 2px rgba(255, 255, 255, 1) inset;
-        background-color: rgba(246, 248, 249, 1);
+        box-shadow: 0 0 0 2px var(--white100) inset;
+        background-color: var(--color-ambientA-5);
         width: 48px;
         height: 48px;
         display: flex;
@@ -42,7 +42,7 @@
         z-index: 1;
 
         span {
-          color: rgb(24, 68, 239);
+          color: var(--primary60);
         }
 
         &.left {
@@ -67,7 +67,7 @@
           cursor: pointer;
 
           .simulation-metadata {
-            color: rgba(182, 178, 175, 1);
+            color: var(--grey30);
             font-weight: 400;
             font-size: 0.875rem;
             line-height: 20px;
@@ -89,7 +89,7 @@
 
           .simulation-name {
             display: flex;
-            color: rgba(121, 118, 113, 1);
+            color: var(--grey50);
             letter-spacing: 0;
             text-align: left;
             white-space: nowrap;
@@ -108,12 +108,12 @@
             }
 
             .simulation-name {
-              color: rgba(0, 0, 0, 1);
+              color: var(--black100);
             }
 
             .selected-simulation-indicator {
               width: 100%;
-              background-color: rgba(92, 89, 85, 1);
+              background-color: var(--grey60);
               height: 4px;
             }
           }
@@ -131,7 +131,7 @@
 
           &.selected.retained {
             .selected-simulation-indicator {
-              background-color: rgba(11, 114, 60, 1);
+              background-color: var(--success60);
             }
           }
         }
@@ -142,7 +142,7 @@
       width: 100%;
       position: absolute;
       bottom: 4px;
-      border-bottom: 1px solid rgb(182, 178, 175);
+      border-bottom: 1px solid var(--grey30);
     }
   }
 
@@ -199,7 +199,7 @@
               font-size: 0.875rem;
               font-weight: 400;
               text-transform: capitalize;
-              color: rgb(121, 118, 113);
+              color: var(--grey50);
               padding-top: 5px;
               padding-bottom: 5px;
               vertical-align: middle;
@@ -211,16 +211,24 @@
               text-transform: none;
             }
             tbody tr:nth-child(odd) {
-              background-color: rgb(239, 243, 245);
+              background-color: var(--ambientA10);
             }
             tbody tr:nth-child(even) {
-              background-color: rgb(246, 248, 249);
+              background-color: var(--color-ambientA-5);
+            }
+            tbody tr.isPathStep {
+              td.index,
+              td.name,
+              td.ch {
+                color: var(--grey80);
+                font-weight: 600;
+              }
             }
             td {
               height: 32px;
               font-size: 0.875rem;
               font-weight: 400;
-              color: rgb(49, 46, 43);
+              color: var(--grey80);
               line-height: 20px;
               vertical-align: middle;
             }
@@ -228,6 +236,7 @@
               width: 64px;
               text-align: end;
               padding-right: 24px;
+              color: var(--grey50);
             }
             .name {
               width: 232px;
@@ -242,15 +251,15 @@
             .stop {
               font-size: 0.875rem;
               font-weight: 600;
-              color: rgb(0, 0, 0);
+              color: var(--black100);
               line-height: 20px;
               width: 72px;
               text-align: center;
             }
             .stop-with-duration {
               font-size: 0.875rem;
-              color: rgb(255, 255, 255);
-              background-color: rgb(33, 100, 130);
+              color: var(--white100);
+              background-color: var(--info60);
               border-radius: 10px;
               text-align: center;
               padding: 1px 9px;
@@ -260,7 +269,7 @@
               padding-left: 40px;
 
               &.lastStep {
-                color: '#797671';
+                color: var(--grey50);
               }
             }
             .ref {
@@ -305,7 +314,7 @@
           padding: 0 32px;
           height: 104px;
           align-items: center;
-          background-color: rgb(255, 255, 255);
+          background-color: var(--white100);
           border-bottom-left-radius: 6px;
           border-bottom-right-radius: 6px;
         }

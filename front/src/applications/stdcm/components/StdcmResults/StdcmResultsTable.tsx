@@ -72,17 +72,9 @@ const StdcmResultsTable = ({
 
             if (showAllOP || shouldRenderRow) {
               return (
-                <tr key={index}>
-                  <td
-                    className="index"
-                    style={{
-                      fontWeight: isPathStep ? 600 : 'normal',
-                      color: isPathStep ? '' : 'rgb(121, 118, 113)',
-                    }}
-                  >
-                    {index + 1}
-                  </td>
-                  <td className="name" style={{ color: 'rgb(49, 46, 43)' }}>
+                <tr key={index} className={cx({ isPathStep })}>
+                  <td className="index">{index + 1}</td>
+                  <td className="name">
                     {isNotExtremity &&
                     !isRequestedPathStep &&
                     step.name === prevStep.name &&
