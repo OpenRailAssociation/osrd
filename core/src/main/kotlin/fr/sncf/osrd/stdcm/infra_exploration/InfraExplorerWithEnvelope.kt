@@ -126,7 +126,7 @@ fun initInfraExplorerWithEnvelope(
     return initInfraExplorers(
             fullInfra.rawInfra,
             fullInfra.blockInfra,
-            rollingStock.length.meters,
+            consistSchedule.rollingStocks.first().length.meters,
             location,
             targets = targets,
             consistSchedule.constraints,
