@@ -41,6 +41,7 @@
     tbody {
       tr {
         height: 40px;
+        opacity: 1;
 
         td {
           max-height: 40px;
@@ -414,6 +415,20 @@
       }
     }
   }
+
+  // Best-effort placeholder background while we wait for the virtualized rows to render
+  background-image: linear-gradient(
+    to bottom,
+    var(--ambientB10) 0,
+    var(--ambientB10) 39px,
+    var(--color-grey-30) 39px,
+    var(--ambientB15) 40px,
+    var(--ambientB15) 79px,
+    var(--color-grey-30) 80px
+  );
+  background-position: 0 40px;
+  background-size: 1px 80px;
+  background-repeat: repeat;
 }
 
 .cell-empty-dot {
