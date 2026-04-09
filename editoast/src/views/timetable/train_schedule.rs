@@ -2660,6 +2660,7 @@ mod tests {
                     "track_section_ranges": [],
                 },
                 "path_item_positions": [],
+                "backtrack_positions": [],
                 "length": 1,
                 "status": "success"
             }))
@@ -2693,6 +2694,7 @@ mod tests {
                     track_section_ranges: vec![],
                 },
                 path_item_positions: vec![],
+                backtrack_positions: Some(vec![]),
                 length: 1
             })
         )
@@ -2776,6 +2778,7 @@ mod tests {
                     "track_section_ranges": [],
                 },
                 "path_item_positions": [],
+                "backtrack_positions": [],
                 "length": 1,
                 "status": "success"
             }))
@@ -2828,6 +2831,7 @@ mod tests {
                     track_section_ranges: vec![],
                 },
                 path_item_positions: vec![],
+                backtrack_positions: Some(vec![]),
                 length: 1
             })
         )
@@ -2971,6 +2975,7 @@ mod tests {
             },
             length: 14450000,
             path_item_positions: vec![0, 14450000],
+            backtrack_positions: Some(vec![]),
         }
     }
 
