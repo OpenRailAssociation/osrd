@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useState, useCallback, type ReactElement } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 
 import { Button, Checkbox, DatePicker, Input, Select, TextArea } from '@osrd-project/ui-core';
 import { Download, CheckCircle } from '@osrd-project/ui-icons';
-import { pdf, type DocumentProps } from '@react-pdf/renderer';
 import { Trans, useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -46,8 +45,7 @@ type SendToRailwayManagerModalProps = {
   linkedTrains: StdcmSimulationInputs['linkedTrains'];
   simulationReportSheetNumber: string;
   similarTrains: SimilarTrainWithSecondaryCode[];
-  pdfBlob: Blob | null;
-  pdfDocument: ReactElement<DocumentProps>;
+  pdfBlob: Blob;
 };
 
 type Option = { value: string; label: string };
@@ -72,7 +70,6 @@ const SendToRailwayManagerModal = ({
   simulationReportSheetNumber,
   similarTrains,
   pdfBlob,
-  pdfDocument,
 }: SendToRailwayManagerModalProps) => {
   const { t } = useTranslation('stdcm', { keyPrefix: 'simulation.results' });
   const { t: mainT } = useTranslation('translation');
@@ -218,15 +215,6 @@ const SendToRailwayManagerModal = ({
       return;
     }
 
-    let blobToSend: Blob;
-
-    if (pdfBlob) {
-      blobToSend = pdfBlob;
-    } else {
-      const pdfInstance = pdf(pdfDocument);
-      blobToSend = await pdfInstance.toBlob();
-    }
-
     const filename = `Last Minute Request-${simulationReportSheetNumber}`;
 
     const formData = new FormData();
@@ -289,7 +277,7 @@ const SendToRailwayManagerModal = ({
     formData.append('simulation_report', JSON.stringify(simulationReport));
     formData.append(
       'simulation_report_sheet',
-      new File([blobToSend], filename, { type: 'application/pdf' })
+      new File([pdfBlob], filename, { type: 'application/pdf' })
     );
 
     try {
