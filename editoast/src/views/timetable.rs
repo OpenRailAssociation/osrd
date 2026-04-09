@@ -1,9 +1,9 @@
 mod occupancy_blocks;
-pub mod paced_train;
 pub mod similar_trains;
 pub mod simulation;
 pub mod stdcm;
 mod track_occupancy;
+pub mod train_schedule;
 pub mod train_schedule_exceptions;
 
 use std::collections::HashMap;
@@ -41,7 +41,6 @@ use editoast_models::timetable::Timetable;
 use editoast_models::timetable::TimetableWithTrains;
 use itertools::Itertools;
 use itertools::izip;
-use paced_train::TrainScheduleResponse;
 use schemas::rolling_stock::EtcsBrakeParams;
 use schemas::rolling_stock::RollingResistance;
 use schemas::rolling_stock::RollingStock;
@@ -51,6 +50,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use simulation::train_simulation_batch;
 use thiserror::Error;
+use train_schedule::TrainScheduleResponse;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 use uuid::Uuid;

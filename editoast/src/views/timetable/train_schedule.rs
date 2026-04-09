@@ -1648,6 +1648,7 @@ mod tests {
     use schemas::train_schedule::TrainOccurrence;
     use serde_json::json;
 
+    use super::*;
     use crate::error::InternalError;
     use crate::models;
     use crate::models::fixtures::create_created_exception_with_change_groups;
@@ -1667,14 +1668,6 @@ mod tests {
     use crate::views::test_app::TestAppBuilder;
     use crate::views::test_app::TestResponse;
     use crate::views::tests::mocked_core_pathfinding_sim_and_proj;
-    use crate::views::timetable::paced_train::MoveTrainSchedulesForm;
-    use crate::views::timetable::paced_train::OccupancyBlocksTrainScheduleResult;
-    use crate::views::timetable::paced_train::ProjectPathTrainScheduleResult;
-    use crate::views::timetable::paced_train::TrackOccupancyForm;
-    use crate::views::timetable::paced_train::TrackSectionOccupancy;
-    use crate::views::timetable::paced_train::TrainScheduleResponse;
-    use crate::views::timetable::paced_train::TrainScheduleSummaryResponse;
-    use crate::views::timetable::paced_train::find_track_occupancy_unknown_operational_point;
     use crate::views::timetable::simulation;
     use crate::views::timetable::simulation::SimulationResponseSuccess;
     use crate::views::timetable::simulation::SummaryResponse;
