@@ -4,12 +4,25 @@
 }
 
 .times-stops-table-new {
+  container-name: times-stops-table;
+  container-type: inline-size;
+
   &.computed-data-pending {
     pointer-events: none;
   }
 
   .table-container {
-    position: relative;
+    // Because of the virtualization, we have to "opt-out" of the border collapsing:
+    // setting spacing to zero and only showing the right and bottom border on every cell
+    border-collapse: separate;
+    border-spacing: 0;
+
+    th,
+    td {
+      border: 1px solid var(--color-grey-30);
+      border-width: 0 1px 1px 0;
+    }
+
     thead {
       th {
         background: color-mix(in srgb, var(--black100) 5%, var(--ambientB5) 100%);
@@ -28,17 +41,19 @@
     tbody {
       tr {
         height: 40px;
+
         td {
           max-height: 40px;
           white-space: nowrap;
           overflow: hidden;
         }
 
-        &:nth-child(odd) {
+        // We can’t use :nth-child(odd) and :nth-child(even) as rows are virtualized
+        &.odd-row td {
           background: var(--ambientB10);
         }
 
-        &:nth-child(even) {
+        &.even-row td {
           background: var(--ambientB15);
         }
 
@@ -87,28 +102,108 @@
         overflow: hidden;
         text-overflow: ellipsis;
       }
-      &.invalid::after {
-        position: absolute;
-        top: 40px; // Hardcoding this is awful, but setting position: relative in tbody instead of table-container bugs borders in firefox
-        left: 0;
-        box-shadow: 0 0 0 8px var(--black10) inset;
-        content: '';
-        height: calc(100% - 40px);
-        width: 100%;
-        pointer-events: none;
-        z-index: 1;
+    }
+
+    th,
+    td {
+      --col-width: 70px;
+      --col-confortable-width: 90px;
+      --col-padding-inline: 4px;
+      --col-confortable-padding-inline: 12px;
+
+      --col-used-width: var(--col-width);
+      --col-used-padding-inline: var(--col-padding-inline);
+    }
+
+    thead th,
+    tbody td {
+      min-width: calc(var(--col-used-width));
+      width: calc(var(--col-used-width));
+      max-width: calc(var(--col-used-width));
+    }
+
+    tbody td {
+      padding-inline: var(--col-used-padding-inline);
+    }
+
+    // Confortable mode (responsive: large viewport)
+    @container (width > 1280px) {
+      th,
+      td {
+        --col-used-width: var(--col-confortable-width, var(--col-width));
+        --col-used-padding-inline: var(--col-confortable-padding-inline, var(--col-padding-inline));
       }
     }
+
+    .col-index {
+      --col-width: 28px;
+      --col-confortable-width: 36px;
+      --col-padding-inline: 4px;
+      --col-confortable-padding-inline: 8px;
+    }
+
+    .col-step-status {
+      --col-width: 8px;
+      --col-confortable-width: 16px;
+      --col-padding-inline: 0;
+      --col-confortable-padding-inline: 0;
+    }
+
+    .col-name {
+      --col-width: unset;
+      --col-confortable-width: unset;
+    }
+
+    .col-track {
+      --col-width: 55px;
+      --col-confortable-width: 80px;
+      --col-confortable-padding-inline: 4px;
+    }
+
+    .col-with-clock-time {
+      --col-width: 68px;
+      --col-confortable-width: 85px;
+    }
+
+    .col-with-duration {
+      --col-width: 88px;
+      --col-confortable-width: 103px;
+    }
+
+    .col-with-checkbox {
+      --col-width: 35px;
+      --col-confortable-width: 41px;
+      --col-padding-inline: 9px;
+    }
+
+    .col-power-restriction {
+      --col-width: 89px;
+      --col-confortable-width: 93px;
+    }
+
+    .col-requested-theoretical-margin {
+      --col-width: 73px;
+      --col-confortable-width: 88px;
+    }
+
+    .col-computed-theoretical-margin,
+    .col-real-margin {
+      --col-width: 63px;
+      --col-confortable-width: 79px;
+    }
+
+    .col-margins-difference {
+      --col-width: 72px;
+      --col-confortable-width: 88px;
+    }
+
     td.col-index {
-      width: 28px;
       font-size: 0.625rem;
       line-height: 16px;
       color: var(--grey50);
     }
 
     td.col-step-status {
-      padding-inline: 0px;
-      width: 8px;
       span {
         display: block;
         width: 100%;
@@ -133,7 +228,6 @@
       }
     }
 
-    td.col-name,
     td.col-track {
       position: relative;
 
@@ -141,137 +235,81 @@
         position: absolute;
         left: 3px;
         top: 4px;
-        width: 3px;
-        height: 3px;
-        border-radius: 1px;
-        background-color: var(--info60);
+      }
+    }
+
+    .requested-point-dot {
+      width: 3px;
+      height: 3px;
+      border-radius: 1px;
+      background-color: var(--info60);
+    }
+
+    th.col-name,
+    td.col-name {
+      width: 100%;
+      min-width: 225px;
+      max-width: 100%;
+
+      @container times-stops-table (width > 1280px) {
+        min-width: 260px;
       }
     }
 
     td.col-name {
-      text-align: left;
+      container-name: col-name;
+      container-type: inline-size;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-areas: 'full-name secondary-code';
+      align-items: center;
+      column-gap: 8px;
+      padding-inline: 8px;
 
-      div {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+      .op-full-name {
+        grid-area: full-name;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-align: left;
+      }
+
+      .requested-point-dot {
+        grid-area: full-name;
+        place-self: start start;
+        margin: 4px 0 0 -4px;
       }
 
       .secondary-code {
+        grid-area: secondary-code;
         font-size: 0.875rem;
         color: var(--grey50);
-        padding-left: 8px;
+        width: 28px;
+        text-align: center;
       }
 
-      @media (min-width: 1240px) {
-        div {
-          justify-content: flex-end;
+      @container times-stops-table (width > 1280px) {
+        column-gap: 16px;
+        padding-left: 16px;
+
+        .requested-point-dot {
+          margin-left: -12px;
         }
-        .secondary-code {
-          padding-left: 16px;
+      }
+
+      @container col-name (width > 344px) {
+        .op-full-name {
+          text-align: right;
         }
       }
     }
 
     td.col-track {
-      width: 54px;
       font-size: 0.75rem;
     }
 
-    td.col-requested-arrival,
-    td.col-computed-arrival,
-    td.col-requested-departure,
-    td.col-computed-departure {
-      min-width: 68px;
-      max-width: 68px;
+    td.col-with-clock-time {
       font-size: 0.875rem;
-    }
-
-    td.col-stop-duration {
-      width: 87px;
-    }
-
-    th.col-closed-signal,
-    th.col-short-slip-distance {
-      max-width: 36px;
-    }
-
-    th.col-real-margin,
-    th.col-computed-theoretical-margin {
-      min-width: 62px;
-      max-width: 62px;
-      padding-inline: 4px;
-    }
-
-    th.col-margins-difference,
-    th.col-requested-theoretical-margin {
-      min-width: 72px;
-      max-width: 72px;
-      padding-inline: 4px;
-    }
-
-    /* comfortable padding */
-    @media (min-width: 784px) {
-      th[class^='col-'] {
-        padding-inline: 8px;
-      }
-
-      td.col-index {
-        padding-inline: 8px;
-        width: 36px;
-      }
-
-      td.col-step-status {
-        padding-inline: 0px;
-        width: 16px;
-      }
-
-      td.col-track {
-        width: 79px;
-        font-size: 0.875rem;
-      }
-
-      td.col-requested-arrival,
-      td.col-computed-arrival,
-      td.col-requested-departure,
-      td.col-computed-departure {
-        min-width: 84px;
-        max-width: 84px;
-      }
-
-      td.col-stop-duration {
-        width: 103px;
-      }
-
-      td.col-closed-signal,
-      td.col-short-slip-distance {
-        max-width: 44px;
-        padding-inline: 10px;
-      }
-
-      th.col-real-margin,
-      th.col-computed-theoretical-margin {
-        min-width: 78px;
-        max-width: 78px;
-        padding-inline: 12px;
-      }
-
-      td.col-margins-difference,
-      td.col-requested-theoretical-margin {
-        min-width: 88px;
-        max-width: 88px;
-        padding-inline: 12px;
-      }
-
-      td[class^='col-']:not(
-          .col-index,
-          .col-step-status,
-          .col-closed-signal,
-          .col-short-slip-distance,
-          .col-requested-theoretical-margin
-        ) {
-        padding-inline: 12px;
-      }
     }
 
     /* Computed / uncomputed cells */
@@ -314,15 +352,12 @@
     /* =========================
      * Removal of external borders
      * ========================= */
-    tr:first-child th {
+    tr.first-row td {
       border-top: none;
     }
 
-    tr:last-child {
-      th,
-      td {
-        border-bottom: none;
-      }
+    tr.last-row td {
+      border-bottom: none;
     }
 
     th:first-child,
@@ -333,6 +368,50 @@
     th:last-child,
     td:last-child {
       border-right: none;
+    }
+
+    /* Invalid rows */
+    tbody.invalid {
+      td {
+        --invalid-shadow-x: 0px;
+        --invalid-shadow-y: 0px;
+      }
+
+      tr.first-row td,
+      tr.last-row td,
+      tr td:first-child,
+      tr td:last-child {
+        &::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          z-index: 3;
+          box-shadow: inset var(--invalid-shadow-x) var(--invalid-shadow-y) 0 0 var(--black10);
+        }
+      }
+
+      tr.first-row td {
+        --invalid-shadow-y: 8px;
+      }
+
+      tr.last-row td {
+        --invalid-shadow-y: -8px;
+      }
+
+      tr td:first-child {
+        --invalid-shadow-x: 8px;
+      }
+
+      tr td:last-child {
+        --invalid-shadow-x: -8px;
+      }
+
+      tr.day-change-banner td::after {
+        box-shadow:
+          inset 8px 0 0 0 var(--black10),
+          inset -8px 0 0 0 var(--black10);
+      }
     }
   }
 }

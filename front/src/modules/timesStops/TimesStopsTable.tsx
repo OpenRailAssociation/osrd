@@ -1,4 +1,4 @@
-import { useCallback, Fragment, useMemo, useRef } from 'react';
+import React, { useCallback, Fragment, useMemo, useRef } from 'react';
 
 import { Checkbox } from '@osrd-project/ui-core';
 import { Moon } from '@osrd-project/ui-icons';
@@ -10,6 +10,7 @@ import {
   type Row,
   type RowData,
 } from '@tanstack/react-table';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
@@ -115,6 +116,10 @@ type TimeCellTabEntry = {
   prev: string | null;
 };
 
+const HEADER_HEIGHT = 40;
+const ROW_HEIGHT = 40;
+const DAY_CHANGE_BANNER_HEIGHT = 40;
+
 const TimesStopsTable = ({
   rows,
   startTime,
@@ -214,10 +219,13 @@ const TimesStopsTable = ({
           return (
             <>
               {isPathStep && <span className="requested-point-dot" />}
-              <div title={`${name}${secondaryCode ? ` ${secondaryCode}` : ''}`}>
-                <span>{name}</span>
-                {secondaryCode && <span className="secondary-code"> {secondaryCode}</span>}
-              </div>
+              <span
+                className="op-full-name"
+                title={`${name}${secondaryCode ? ` ${secondaryCode}` : ''}`}
+              >
+                {name}
+              </span>
+              {secondaryCode && <span className="secondary-code">{secondaryCode}</span>}
             </>
           );
         },
@@ -233,7 +241,7 @@ const TimesStopsTable = ({
           return (
             <>
               {isPathStep && hasRequestedTrack && <span className="requested-point-dot" />}
-              <span>{info.getValue() ?? ''}</span>
+              <span title={info.getValue()}>{info.getValue() ?? ''}</span>
             </>
           );
         },
@@ -263,7 +271,7 @@ const TimesStopsTable = ({
           );
         },
         meta: {
-          className: 'col-requested-arrival',
+          className: 'col-requested-arrival col-with-clock-time',
           tabbable: true,
           title: t('arrivalTime'),
         },
@@ -278,7 +286,7 @@ const TimesStopsTable = ({
           return <span>{value ? formatLocalTime(value) : ''}</span>;
         },
         meta: {
-          className: 'col-computed-arrival computed',
+          className: 'col-computed-arrival col-with-clock-time computed',
           title: t('calculatedArrivalTime'),
         },
       }),
@@ -294,7 +302,7 @@ const TimesStopsTable = ({
           />
         ),
         meta: {
-          className: 'col-stop-duration',
+          className: 'col-stop-duration col-with-duration',
           tabbable: true,
           title: t('stopTime'),
         },
@@ -320,7 +328,7 @@ const TimesStopsTable = ({
           );
         },
         meta: {
-          className: 'col-requested-departure',
+          className: 'col-requested-departure col-with-clock-time',
           tabbable: true,
           title: t('departureTime'),
         },
@@ -340,7 +348,7 @@ const TimesStopsTable = ({
           );
         },
         meta: {
-          className: 'col-computed-departure computed',
+          className: 'col-computed-departure col-with-clock-time computed',
           title: t('calculatedDepartureTime'),
         },
       }),
@@ -371,7 +379,7 @@ const TimesStopsTable = ({
           );
         },
         meta: {
-          className: 'col-closed-signal',
+          className: 'col-closed-signal col-with-checkbox',
           title: t('receptionOnClosedSignalFull'),
         },
       }),
@@ -397,7 +405,7 @@ const TimesStopsTable = ({
           );
         },
         meta: {
-          className: 'col-short-slip-distance',
+          className: 'col-short-slip-distance col-with-checkbox',
           title: t('shortSlipDistance'),
         },
       }),
@@ -484,13 +492,13 @@ const TimesStopsTable = ({
       columnHelper.accessor('timeFromPreviousOp', {
         header: () => t('timeFromPreviousOp'),
         meta: {
-          className: 'col-time-from-previous-op computed',
+          className: 'col-time-from-previous-op col-with-duration computed',
         },
       }),
       columnHelper.accessor('totalTravelTime', {
         header: () => t('totalTravelTime'),
         meta: {
-          className: 'col-total-travel-time computed',
+          className: 'col-total-travel-time col-with-duration computed',
         },
       }),
     ],
@@ -556,6 +564,25 @@ const TimesStopsTable = ({
     return acc;
   }, []);
 
+  const virtualizedWrapperRef = React.useRef<HTMLDivElement>(null);
+
+  const headerHeight = 40;
+  const rowHeight = 40;
+
+  // TODO: Replace this (punching-hole) query selector by a proper refactoring
+  //       of our outer layout so we only rely on the scroll offset of the viewport,
+  //       which would also allow us to use `useWindowVirtualizer`!
+  const centerColumn = document.querySelector('.center-column');
+
+  const virtualizer = useVirtualizer({
+    count: rows.length,
+    overscan: 10,
+    estimateSize: () => ROW_HEIGHT,
+    getScrollElement: () => centerColumn,
+    scrollMargin: virtualizedWrapperRef.current?.offsetTop,
+    useFlushSync: false,
+  });
+
   if (rows.length === 0) {
     return (
       <div className="d-flex justify-content-center align-items-center h-100">
@@ -567,6 +594,8 @@ const TimesStopsTable = ({
   return (
     <div
       className={cx('times-stops-table-new', { 'computed-data-pending': isComputedDataPending })}
+      ref={virtualizedWrapperRef}
+      style={{ height: `${virtualizer.getTotalSize() + HEADER_HEIGHT}px` }}
     >
       <table className="table-container">
         <thead>
@@ -591,15 +620,26 @@ const TimesStopsTable = ({
             invalid: !isValid || scheduleNotHonored,
           })}
         >
-          {tableRows.map((row, rowIndex) => {
+          {virtualizer.getVirtualItems().map((virtualRow, index) => {
+            const rowIndex = virtualRow.index;
+            const row = tableRows[rowIndex];
+
             const rowArrivalDate = row.original.computedArrival ?? row.original.requestedArrival;
             const dayOffset = effectiveDayOffsets[rowIndex];
             const prevDayOffset = rowIndex > 0 ? effectiveDayOffsets[rowIndex - 1] : 0;
 
+            const translateY =
+              virtualRow.start - index * virtualRow.size - virtualizer.options.scrollMargin;
+
             return (
               <Fragment key={row.id}>
                 {dayOffset > prevDayOffset && (
-                  <tr className="day-change-banner">
+                  <tr
+                    className="day-change-banner"
+                    style={{
+                      transform: `translateY(${translateY}px)`,
+                    }}
+                  >
                     <td colSpan={row.getVisibleCells().length}>
                       <div className="day-change-banner-content">
                         <Moon />
@@ -617,7 +657,14 @@ const TimesStopsTable = ({
                 <tr
                   className={cx({
                     'invalid-path-step': row.original.stepStatus === 'invalidPathStep',
+                    'odd-row': rowIndex % 2 === 0,
+                    'even-row': rowIndex % 2,
+                    'first-row': rowIndex === 0,
+                    'last-row': rowIndex === tableRows.length - 1,
                   })}
+                  style={{
+                    transform: `translateY(${translateY}px)`,
+                  }}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className={cell.column.columnDef.meta?.className}>
