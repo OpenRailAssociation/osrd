@@ -21,6 +21,7 @@ import { formatLocalTime, useDateTimeLocale } from 'utils/date';
 import { calculateTimeDifferenceInDays } from 'utils/timeManipulation';
 
 import DurationCell, { type DurationCellHandle } from './DurationCell';
+import type { PowerRestrictionBlockInfo } from './helpers/powerRestrictionIncompatibility';
 import { onStopSignalToReceptionSignal } from './helpers/utils';
 import MarginCell from './MarginCell';
 import TimeCell, { type TimeCellHandle } from './TimeCell';
@@ -39,7 +40,7 @@ declare module '@tanstack/react-table' {
     isComputedDataPending?: boolean;
     availablePowerRestrictions: string[];
     powerRestrictionWarningCount: number;
-    incompatiblePowerRestrictionIds: Set<string>;
+    powerRestrictionBlocks: Map<string, PowerRestrictionBlockInfo>;
     onArrivalChange: (
       row: TimesStopsRowNew,
       arrival: Date | null,
@@ -99,7 +100,7 @@ type TimesStopsTableProps = {
   isComputedDataPending?: boolean;
   availablePowerRestrictions: string[];
   powerRestrictionWarningCount?: number;
-  incompatiblePowerRestrictionIds?: Set<string>;
+  powerRestrictionBlocks?: Map<string, PowerRestrictionBlockInfo>;
   onArrivalChange: (
     row: TimesStopsRowNew,
     arrival: Date | null,
@@ -136,7 +137,7 @@ const TimesStopsTable = ({
   isComputedDataPending,
   availablePowerRestrictions,
   powerRestrictionWarningCount = 0,
-  incompatiblePowerRestrictionIds,
+  powerRestrictionBlocks,
   onArrivalChange,
   onStopDurationChange,
   onDepartureChange,
@@ -427,14 +428,28 @@ const TimesStopsTable = ({
         cell: (info) => {
           const {
             availablePowerRestrictions: codes,
+            powerRestrictionBlocks: blocks,
             onPowerRestrictionChange: onRestrictionChange,
           } = info.table.options.meta!;
           const value = info.getValue();
           const row = info.row.original;
+
+          // On the first row of an incompatible block, display the propagated restriction
+          // in a lighter style so the user can see which code is causing the warning and
+          // edit it directly at the boundary.
+          const blockInfo = blocks.get(row.id);
+          const showPropagated =
+            value === null && blockInfo?.isBlockStart && blockInfo.propagatedValue !== null;
+          const displayedValue = showPropagated ? blockInfo.propagatedValue : value;
+
           return (
-            <div className="power-restriction-select-wrapper">
+            <div
+              className={cx('power-restriction-select-wrapper', {
+                'power-restriction-propagated': showPropagated,
+              })}
+            >
               <select
-                value={value ?? ''}
+                value={displayedValue ?? ''}
                 onChange={(e) => {
                   const v = e.target.value;
                   onRestrictionChange(row, v === '' ? null : v);
@@ -556,7 +571,7 @@ const TimesStopsTable = ({
       isComputedDataPending,
       availablePowerRestrictions,
       powerRestrictionWarningCount,
-      incompatiblePowerRestrictionIds: incompatiblePowerRestrictionIds ?? new Set(),
+      powerRestrictionBlocks: powerRestrictionBlocks ?? new Map(),
       onArrivalChange,
       onStopDurationChange,
       onDepartureChange,
@@ -643,15 +658,17 @@ const TimesStopsTable = ({
       ref={virtualizedWrapperRef}
       style={{ height: `${virtualizer.getTotalSize() + HEADER_HEIGHT}px` }}
     >
-      {powerRestrictionWarningCount > 0 && (
-        <div className="power-restriction-warning">
-          <Alert variant="fill" />
-          <span>
-            {t('powerRestrictionIncompatibility', { count: powerRestrictionWarningCount })}
-          </span>
-        </div>
-      )}
       <table className="table-container">
+        {powerRestrictionWarningCount > 0 && (
+          <caption className="power-restriction-warning">
+            <div className="power-restriction-warning-content">
+              <Alert variant="fill" />
+              <span>
+                {t('powerRestrictionIncompatibility', { count: powerRestrictionWarningCount })}
+              </span>
+            </div>
+          </caption>
+        )}
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
@@ -730,7 +747,8 @@ const TimesStopsTable = ({
                       className={cx(cell.column.columnDef.meta?.className, {
                         'power-restriction-incompatible':
                           cell.column.id === 'powerRestriction' &&
-                          table.options.meta!.incompatiblePowerRestrictionIds.has(row.original.id),
+                          table.options.meta!.powerRestrictionBlocks.get(row.original.id)
+                            ?.hasWarning,
                       })}
                     >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
