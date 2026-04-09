@@ -189,7 +189,7 @@ fun hasDuplicateTracks(infra: FullInfra, path: TrainPath): Boolean {
         path
             .getChunks()
             .map { it.value }
-            .map { infra.rawInfra.getTrackFromChunk(it.value) }
+            .map { DirTrackSectionId(infra.rawInfra.getTrackFromChunk(it.value), it.direction) }
             .withoutConsecutiveDuplicates()
     return tracks.toSet().size < tracks.size
 }
