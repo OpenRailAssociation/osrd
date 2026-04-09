@@ -86,6 +86,28 @@
             }
           ],
           "title": "Design"
+        },
+        {
+          "content": [
+            {
+              "items": [
+                {
+                  "alt": "Ministère de l'Aménagement du Territoire et de la Décentralisation",
+                  "src": "/sponsors/logo-ministere-scaled.webp"
+                },
+                {
+                  "alt": "European Union",
+                  "src": "/sponsors/european-union.svg"
+                },
+                {
+                  "alt": "SNCF Réseau",
+                  "src": "/sponsors/sncf-reseau.svg"
+                }
+              ],
+              "type": "sponsors"
+            }
+          ],
+          "title": "Sponsors"
         }
       ],
       "title": "The application"
