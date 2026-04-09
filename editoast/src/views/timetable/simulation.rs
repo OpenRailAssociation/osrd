@@ -736,6 +736,7 @@ fn build_simulation_request<T: TrainScheduleLike>(
         physics_consist,
         electrical_profile_set_id,
         path_item_positions: path_item_positions.to_vec(),
+        backtrack_positions: Some(vec![]),
     }
 }
 

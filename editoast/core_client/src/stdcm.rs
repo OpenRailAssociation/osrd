@@ -2,7 +2,6 @@ use std::collections::HashSet;
 
 use chrono::DateTime;
 use chrono::Utc;
-use schemas::infra::TrackOffset;
 use schemas::rolling_stock::LoadingGaugeType;
 use schemas::train_schedule::Comfort;
 use schemas::train_schedule::MarginValue;
@@ -10,6 +9,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
+use super::pathfinding::PathItem;
 use super::pathfinding::PathfindingResultSuccess;
 use super::pathfinding::TrackRange;
 use super::simulation::PhysicsConsist;
@@ -30,7 +30,7 @@ pub struct Request {
 
     // Pathfinding inputs
     /// List of waypoints. Each waypoint is a list of track offset.
-    pub path_items: Vec<PathItem>,
+    pub path_items: Vec<STDCMPathItem>,
     /// Set of authorized track section ids for the current request
     pub allowed_track_sections: Option<HashSet<String>>,
 
@@ -62,10 +62,10 @@ pub struct Request {
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Deserialize, ToSchema)]
-#[schema(as = CorePathItem)]
-pub struct PathItem {
-    /// The track offsets of the path item
-    pub locations: Vec<TrackOffset>,
+#[schema(as = CoreSTDCMPathItem)]
+pub struct STDCMPathItem {
+    /// The path item containing its locations and backtrack information.
+    pub path_item: PathItem,
     /// Stop duration in milliseconds. None if the train does not stop at this path item.
     pub stop_duration: Option<u64>,
     /// If specified, describes when the train may arrive at the location

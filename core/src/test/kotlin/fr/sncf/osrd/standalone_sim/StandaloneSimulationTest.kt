@@ -247,7 +247,7 @@ class StandaloneSimulationTest {
                     true,
                 )
             if (scheduledPoint.arrival != null) {
-                assertEquals(scheduledPoint.arrival!!.seconds, arrival, 2.0)
+                assertEquals(scheduledPoint.arrival.seconds, arrival, 2.0)
             }
             assertEquals(scheduledPoint.stopFor?.seconds ?: 0.0, departure - arrival, 2.0)
         }
