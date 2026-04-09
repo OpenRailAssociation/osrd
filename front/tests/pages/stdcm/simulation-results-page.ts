@@ -20,7 +20,6 @@ class SimulationResultPage {
   private readonly allViasButton: Locator;
   private readonly retainSimulationButton: Locator;
   private readonly downloadSimulationButton: Locator;
-  private readonly downloadLink: Locator;
   private readonly startNewQueryButton: Locator;
   private readonly startNewQueryWithDataButton: Locator;
   private readonly feedbackCardContainer: Locator;
@@ -42,8 +41,7 @@ class SimulationResultPage {
     this.simulationTableRows = this.simulationResultTable.locator('tbody tr');
     this.allViasButton = page.getByTestId('all-vias-button');
     this.retainSimulationButton = page.getByTestId('retain-simulation-button');
-    this.downloadSimulationButton = page.getByTestId('download-simulation').locator('a[download]');
-    this.downloadLink = page.getByTestId('download-simulation').locator('a');
+    this.downloadSimulationButton = page.getByTestId('download-simulation');
     this.startNewQueryButton = page.getByTestId('start-new-query-button');
     this.startNewQueryWithDataButton = page.getByTestId('start-new-query-with-data-button');
     this.feedbackCardContainer = page.getByTestId('feedback-card');
@@ -134,9 +132,9 @@ class SimulationResultPage {
   }
 
   async downloadSimulation(downloadDir: string): Promise<void> {
-    await expect(this.downloadLink).toBeVisible();
+    await expect(this.downloadSimulationButton).toBeVisible();
 
-    const download = await triggerFileDownload(this.page, this.downloadLink);
+    const download = await triggerFileDownload(this.page, this.downloadSimulationButton);
 
     assertSuggestedFilename(download, /^Stdcm.*\.pdf$/);
 

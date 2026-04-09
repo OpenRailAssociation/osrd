@@ -2,8 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
 import { CheckCircle } from '@osrd-project/ui-icons';
-import { PDFDownloadLink } from '@react-pdf/renderer';
+import { usePDF } from '@react-pdf/renderer';
 import { skipToken } from '@reduxjs/toolkit/query';
+import fileDownload from 'js-file-download';
 import { head, last } from 'lodash';
 import { useTranslation, Trans } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -71,7 +72,7 @@ const StdcmResults = ({
   const [railwayDemandId, setRailwayDemandId] = useState<string>();
   const [railwayRequestUrl, setRailwayRequestUrl] = useState<string | null>();
 
-  const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
+  const [pdfInstance, updatePdfInstance] = usePDF({});
 
   const { t } = useTranslation('stdcm', { keyPrefix: 'simulation.results' });
   const deploymentSettings = useDeploymentSettings();
@@ -270,20 +271,21 @@ const StdcmResults = ({
     }
   }, [isSelectedSimulationRetained]);
 
-  const pdfDocument = useMemo(() => {
-    if (!hasSimulationResults || !isSelectedSimulationRetained || !outputs) return null;
-    return (
-      <StdcmSimulationReportSheet
-        stdcmLinkedTrains={selectedSimulation.inputs.linkedTrains}
-        stdcmData={outputs.results}
-        consist={selectedSimulation.inputs.consist}
-        simulationReportSheetNumber={simulationReportSheetNumber}
-        operationalPointsList={operationalPointsList}
-        simulationSheetLogo={deploymentSettings?.stdcmSimulationSheetLogo}
-        similarTrains={similarTrains}
-      />
-    );
+  useEffect(() => {
+    if (hasSimulationResults && isSelectedSimulationRetained && outputs)
+      updatePdfInstance(
+        <StdcmSimulationReportSheet
+          stdcmLinkedTrains={selectedSimulation.inputs.linkedTrains}
+          stdcmData={outputs.results}
+          consist={selectedSimulation.inputs.consist}
+          simulationReportSheetNumber={simulationReportSheetNumber}
+          operationalPointsList={operationalPointsList}
+          simulationSheetLogo={deploymentSettings?.stdcmSimulationSheetLogo}
+          similarTrains={similarTrains}
+        />
+      );
   }, [
+    updatePdfInstance,
     outputs,
     hasSimulationResults,
     isSelectedSimulationRetained,
@@ -293,6 +295,13 @@ const StdcmResults = ({
     deploymentSettings?.stdcmSimulationSheetLogo,
     similarTrains,
   ]);
+
+  const downloadPdf = useCallback(() => {
+    fileDownload(
+      pdfInstance.blob!,
+      `${deploymentSettings?.stdcmName || 'Stdcm'}-${simulationReportSheetNumber}.pdf`
+    );
+  }, [pdfInstance, deploymentSettings, simulationReportSheetNumber]);
 
   return (
     <>
@@ -327,26 +336,17 @@ const StdcmResults = ({
                     operationalPointsList={operationalPointsList}
                     simulationIndex={selectedSimulation.index}
                   />
-                  {isSelectedSimulationRetained && pdfDocument && (
+                  {isSelectedSimulationRetained && (
                     <div className="get-simulation">
                       <div className="download-simulation" data-testid="download-simulation">
-                        <PDFDownloadLink
-                          document={pdfDocument}
-                          fileName={`${deploymentSettings?.stdcmName || 'Stdcm'}-${simulationReportSheetNumber}.pdf`}
-                        >
-                          {({ blob }) => {
-                            if (blob && blob !== pdfBlob) setPdfBlob(blob);
-                            return (
-                              <Button
-                                data-testid="download-simulation-button"
-                                label={t('downloadSimulationSheet')}
-                                onClick={() => {}}
-                                isDisabled={areSegmentsLoading}
-                                variant="Normal"
-                              />
-                            );
-                          }}
-                        </PDFDownloadLink>
+                        <Button
+                          data-testid="download-simulation-button"
+                          label={t('downloadSimulationSheet')}
+                          onClick={downloadPdf}
+                          isDisabled={areSegmentsLoading || pdfInstance.loading}
+                          variant="Normal"
+                          isLoading={pdfInstance.loading}
+                        />
                       </div>
                       {railwayManagerUrl &&
                         sendLMRAuthorizedResponse?.authorized &&
@@ -358,8 +358,9 @@ const StdcmResults = ({
                                 ? t('transferSheetToRailManagerDisabledForConsistChange')
                                 : undefined
                             }
-                            isDisabled={hasConsistChange}
-                            onClick={() =>
+                            isDisabled={hasConsistChange || pdfInstance.loading}
+                            isLoading={pdfInstance.loading}
+                            onClick={() => {
                               openModal(
                                 <SendToRailwayManagerModal
                                   consist={selectedSimulation.inputs.consist}
@@ -367,15 +368,14 @@ const StdcmResults = ({
                                   linkedTrains={selectedSimulation.inputs.linkedTrains}
                                   simulationReportSheetNumber={simulationReportSheetNumber}
                                   similarTrains={similarTrains}
-                                  pdfBlob={pdfBlob}
-                                  pdfDocument={pdfDocument}
+                                  pdfBlob={pdfInstance.blob!}
                                   onClose={closeModal}
                                   onSuccess={handleSubmitSuccess}
                                 />,
                                 'xl',
                                 'no-close-modal'
-                              )
-                            }
+                              );
+                            }}
                           />
                         ) : (
                           <div className="success-message">
