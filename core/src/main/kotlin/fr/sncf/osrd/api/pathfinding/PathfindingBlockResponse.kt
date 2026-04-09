@@ -25,6 +25,7 @@ class PathfindingBlockSuccess(
 
     /** Offsets of the waypoints given as input */
     @Json(name = "path_item_positions") val pathItemPositions: List<Offset<PhysicsPath>>,
+    @Json(name = "backtrack_positions") val backtrackPositions: List<Offset<PhysicsPath>>,
 ) : PathfindingBlockResponse {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -33,12 +34,13 @@ class PathfindingBlockSuccess(
         if (path != other.path) return false
         if (length != other.length) return false
         if (pathItemPositions != other.pathItemPositions) return false
+        if (backtrackPositions != other.backtrackPositions) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        return Objects.hash(path, length, pathItemPositions)
+        return Objects.hash(path, length, pathItemPositions, backtrackPositions)
     }
 }
 

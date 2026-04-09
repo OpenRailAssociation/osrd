@@ -2,6 +2,7 @@ package fr.sncf.osrd.pathfinding
 
 import fr.sncf.osrd.api.ApiTest
 import fr.sncf.osrd.api.InfraMetadata
+import fr.sncf.osrd.api.PathItem
 import fr.sncf.osrd.api.TrackLocation
 import fr.sncf.osrd.api.pathfinding.*
 import fr.sncf.osrd.cli.RqFake
@@ -28,7 +29,7 @@ import org.junit.jupiter.api.TestInstance
 
 fun getPathfindingBlockRequest(
     rs: RollingStock,
-    pathItems: List<Collection<TrackLocation>>,
+    trackLocations: List<Collection<TrackLocation>>,
     infra: String = "unused_name",
     stopsAtEndOfBlock: Boolean? = false,
 ): PathfindingBlockRequest {
@@ -44,7 +45,7 @@ fun getPathfindingBlockRequest(
         null,
         infra,
         1,
-        pathItems,
+        trackLocations.map { PathItem(it, false) },
     )
 }
 
@@ -141,6 +142,7 @@ class PathfindingTest : ApiTest() {
         val waypointsStart = listOf(waypointStart)
         val waypointsEnd = listOf(waypointEnd)
         val waypoints = listOf(waypointsStart, waypointsEnd)
+        val pathItems = waypoints.map { PathItem(it, false) }
 
         val unconstrainedRequestBody =
             pathfindingRequestAdapter.toJson(
@@ -155,7 +157,7 @@ class PathfindingTest : ApiTest() {
                     timeout = null,
                     infra = "tiny_infra/infra.json",
                     expectedVersion = 1,
-                    pathItems = waypoints,
+                    pathItems = pathItems,
                 )
             )
         val unconstrainedResponse =
@@ -176,7 +178,7 @@ class PathfindingTest : ApiTest() {
                     rollingStockLength = 0.0,
                     infra = "tiny_infra/infra.json",
                     expectedVersion = 1,
-                    pathItems = waypoints,
+                    pathItems = pathItems,
                 )
             )
         val response = PathfindingBlocksEndpoint(infraManager).act(RqFake(requestBody))
@@ -207,6 +209,7 @@ class PathfindingTest : ApiTest() {
         val waypointsStart = listOf(waypointStart)
         val waypointsEnd = listOf(waypointEnd)
         val waypoints = listOf(waypointsStart, waypointsEnd)
+        val pathItems = waypoints.map { PathItem(it, false) }
 
         val unconstrainedRequestBody =
             pathfindingRequestAdapter.toJson(
@@ -221,7 +224,7 @@ class PathfindingTest : ApiTest() {
                     rollingStockLength = 0.0,
                     infra = "small_infra/infra.json",
                     expectedVersion = 1,
-                    pathItems = waypoints,
+                    pathItems = pathItems,
                 )
             )
         val unconstrainedResponse =
@@ -242,7 +245,7 @@ class PathfindingTest : ApiTest() {
                     timeout = null,
                     infra = "small_infra/infra.json",
                     expectedVersion = 1,
-                    pathItems = waypoints,
+                    pathItems = pathItems,
                 )
             )
         val response = PathfindingBlocksEndpoint(infraManager).act(RqFake(requestBody))

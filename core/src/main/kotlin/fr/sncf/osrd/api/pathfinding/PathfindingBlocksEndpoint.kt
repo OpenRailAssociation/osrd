@@ -95,11 +95,11 @@ fun runPathfinding(infra: FullInfra, request: PathfindingBlockRequest): Pathfind
     // Parse the waypoints
     val waypoints = ArrayList<Collection<BlockLocation>>()
     val destinationTrack = request.pathItems.last()
-    val destinationBlock = findWaypointBlocks(infra, destinationTrack)
+    val destinationBlock = findWaypointBlocks(infra, destinationTrack.locations)
     request.pathItems.forEachIndexed { stepIndex, step ->
         val allStarts = HashSet<BlockLocation>()
         for (direction in Direction.entries) {
-            for (waypoint in step) {
+            for (waypoint in step.locations) {
                 val waypointBlocks = findDirectedWaypointBlocks(infra, waypoint, direction)
                 if (
                     request.stopsAtEndOfBlock == true &&
