@@ -70,6 +70,11 @@ data class RangeValues<valueT>(
     }
 }
 
+data class PathItem(
+    val locations: Collection<TrackLocation>,
+    @Json(name = "can_backtrack") val canBacktrack: Boolean,
+)
+
 class TrackLocation(val track: String, val offset: Offset<TrackSection>)
 
 class ZoneUpdate(

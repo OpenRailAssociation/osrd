@@ -4,7 +4,7 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import fr.sncf.osrd.api.TrackLocation
+import fr.sncf.osrd.api.PathItem
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
 
@@ -24,7 +24,7 @@ class PathfindingBlockRequest(
     @Json(name = "expected_version") val expectedVersion: Int?,
 
     // One set of location by step, each step must be reached in order
-    @Json(name = "path_items") val pathItems: List<Collection<TrackLocation>>,
+    @Json(name = "path_items") val pathItems: List<PathItem>,
 )
 
 val pathfindingRequestAdapter: JsonAdapter<PathfindingBlockRequest> =
