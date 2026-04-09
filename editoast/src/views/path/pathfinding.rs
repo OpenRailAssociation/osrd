@@ -408,7 +408,13 @@ fn build_pathfinding_request(
     Ok(PathfindingRequest {
         infra: infra.id,
         expected_version: infra.version,
-        path_items: track_offsets,
+        path_items: track_offsets
+            .into_iter()
+            .map(|offsets| core_client::pathfinding::PathItem {
+                locations: offsets,
+                can_backtrack: false,
+            })
+            .collect(),
         rolling_stock_loading_gauge: pathfinding_input.rolling_stock_loading_gauge,
         rolling_stock_is_thermal: pathfinding_input.rolling_stock_is_thermal,
         rolling_stock_supported_electrifications: pathfinding_input
@@ -551,6 +557,7 @@ pub mod tests {
             },
             length,
             path_item_positions: vec![],
+            backtrack_positions: vec![],
         })
     }
 

@@ -262,7 +262,7 @@ impl Request {
         &self,
         conn: DbConnection,
         infra_id: i64,
-    ) -> Result<Vec<core_client::stdcm::PathItem>> {
+    ) -> Result<Vec<core_client::stdcm::STDCMPathItem>> {
         let locations: Vec<_> = self.steps.iter().map(|item| &item.location).collect();
 
         let op_cache = OperationalPointCache::load_path_items(conn, infra_id, &locations).await?;
@@ -278,17 +278,23 @@ impl Request {
         Ok(track_offsets
             .iter()
             .zip(&self.steps)
-            .map(|(track_offset, path_item)| core_client::stdcm::PathItem {
-                stop_duration: path_item.duration,
-                locations: track_offset.to_vec(),
-                step_timing_data: path_item.timing_data.as_ref().map(|timing_data| {
-                    core_client::stdcm::StepTimingData {
-                        arrival_time: timing_data.arrival_time,
-                        arrival_time_tolerance_before: timing_data.arrival_time_tolerance_before,
-                        arrival_time_tolerance_after: timing_data.arrival_time_tolerance_after,
-                    }
-                }),
-            })
+            .map(
+                |(track_offset, path_item)| core_client::stdcm::STDCMPathItem {
+                    stop_duration: path_item.duration,
+                    path_item: core_client::pathfinding::PathItem {
+                        locations: track_offset.to_vec(),
+                        can_backtrack: false,
+                    },
+                    step_timing_data: path_item.timing_data.as_ref().map(|timing_data| {
+                        core_client::stdcm::StepTimingData {
+                            arrival_time: timing_data.arrival_time,
+                            arrival_time_tolerance_before: timing_data
+                                .arrival_time_tolerance_before,
+                            arrival_time_tolerance_after: timing_data.arrival_time_tolerance_after,
+                        }
+                    }),
+                },
+            )
             .collect())
     }
 

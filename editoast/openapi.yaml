@@ -15170,24 +15170,16 @@ components:
       type: object
       required:
       - locations
+      - can_backtrack
       properties:
+        can_backtrack:
+          type: boolean
+          description: If true, the train can backtrack at these track offsets.
         locations:
           type: array
           items:
             $ref: '#/components/schemas/TrackOffset'
-          description: The track offsets of the path item
-        step_timing_data:
-          oneOf:
-          - type: 'null'
-          - $ref: '#/components/schemas/core.StepTimingData'
-            description: If specified, describes when the train may arrive at the location
-        stop_duration:
-          type:
-          - integer
-          - 'null'
-          format: int64
-          description: Stop duration in milliseconds. None if the train does not stop at this path item.
-          minimum: 0
+          description: The track offsets of the path item.
     core.PathfindingInputError:
       oneOf:
       - type: object
@@ -15306,7 +15298,15 @@ components:
       - path
       - length
       - path_item_positions
+      - backtrack_positions
       properties:
+        backtrack_positions:
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 0
+          description: The path offset in mm of each position where the train backtracks
         length:
           type: integer
           format: int64
@@ -15411,6 +15411,26 @@ components:
             type: string
         zone:
           type: string
+    core.STDCMPathItem:
+      type: object
+      required:
+      - path_item
+      properties:
+        path_item:
+          $ref: '#/components/schemas/core.PathItem'
+          description: The path item containing its locations anc backtrack information.
+        step_timing_data:
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/core.StepTimingData'
+            description: If specified, describes when the train may arrive at the location
+        stop_duration:
+          type:
+          - integer
+          - 'null'
+          format: int64
+          description: Stop duration in milliseconds. None if the train does not stop at this path item.
+          minimum: 0
     core.SignalCriticalPosition:
       type: object
       description: |-
@@ -15574,7 +15594,7 @@ components:
         path_items:
           type: array
           items:
-            $ref: '#/components/schemas/core.PathItem'
+            $ref: '#/components/schemas/core.STDCMPathItem'
           description: List of waypoints. Each waypoint is a list of track offset.
         start_time:
           type: string
