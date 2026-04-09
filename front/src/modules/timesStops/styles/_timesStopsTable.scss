@@ -11,23 +11,6 @@
     pointer-events: none;
   }
 
-  .power-restriction-warning {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    height: 47px;
-    padding-inline: 16px;
-    background: var(--warning5);
-    color: var(--warning60);
-    font-size: 0.875rem;
-    border-bottom: 1px solid var(--black25);
-
-    svg {
-      flex-shrink: 0;
-      color: var(--warning30);
-    }
-  }
-
   .table-container {
     // Because of the virtualization, we have to "opt-out" of the border collapsing:
     // setting spacing to zero and only showing the right and bottom border on every cell
@@ -38,6 +21,27 @@
     td {
       border: 1px solid var(--color-grey-30);
       border-width: 0 1px 1px 0;
+    }
+
+    .power-restriction-warning {
+      caption-side: top;
+      background: var(--warning5);
+      border-bottom: 1px solid var(--black25);
+
+      .power-restriction-warning-content {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        height: 47px;
+        padding-inline: 16px;
+        color: var(--warning60);
+        font-size: 0.875rem;
+
+        svg {
+          flex-shrink: 0;
+          color: var(--warning30);
+        }
+      }
     }
 
     thead {
@@ -355,6 +359,13 @@
           option {
             color: initial;
           }
+        }
+
+        // On the first row of an incompatible block, display the propagated
+        // restriction in a lighter color so it is clearly distinguished from
+        // a restriction explicitly set on this row by the user.
+        &.power-restriction-propagated select {
+          color: var(--grey60);
         }
 
         .power-restriction-arrow {
