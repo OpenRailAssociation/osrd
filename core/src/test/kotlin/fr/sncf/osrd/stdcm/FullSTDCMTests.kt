@@ -451,7 +451,7 @@ fun makeRequirementsFromPath(
                 null,
                 "",
                 null,
-                listOf(startLocations, endLocations).map { PathItem(it, false) },
+                listOf(PathItem(startLocations, false), PathItem(endLocations, false)),
             ),
         )
             as PathfindingBlockSuccess

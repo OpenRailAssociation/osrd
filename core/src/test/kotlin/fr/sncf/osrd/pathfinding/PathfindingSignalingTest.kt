@@ -1,5 +1,6 @@
 package fr.sncf.osrd.pathfinding
 
+import fr.sncf.osrd.api.PathItem
 import fr.sncf.osrd.api.TrackLocation
 import fr.sncf.osrd.api.pathfinding.IncompatibleConstraintsPathResponse
 import fr.sncf.osrd.api.pathfinding.NoPathFoundException
@@ -60,7 +61,7 @@ class PathfindingSignalingTest {
                     infra.fullInfra(),
                     getPathfindingBlockRequest(
                         TestTrains.TRAIN_WITHOUT_TVM,
-                        listOf(waypointsStart, waypointsEnd),
+                        listOf(PathItem(waypointsStart, false), PathItem(waypointsEnd, false)),
                     ),
                 )
             }
@@ -88,7 +89,7 @@ class PathfindingSignalingTest {
                 infra.fullInfra(),
                 getPathfindingBlockRequest(
                     TestTrains.TRAIN_WITHOUT_TVM,
-                    listOf(waypointsStart, waypointsEnd),
+                    listOf(PathItem(waypointsStart, false), PathItem(waypointsEnd, false)),
                 ),
             )
         checkPathfindingSuccess(
@@ -115,7 +116,7 @@ class PathfindingSignalingTest {
                 infra.fullInfra(),
                 getPathfindingBlockRequest(
                     TestTrains.TRAIN_WITHOUT_TVM,
-                    listOf(waypointsStart, waypointsEnd),
+                    listOf(PathItem(waypointsStart, false), PathItem(waypointsEnd, false)),
                 ),
             )
         checkPathfindingSuccess(
@@ -161,7 +162,11 @@ class PathfindingSignalingTest {
                 infra.fullInfra(),
                 getPathfindingBlockRequest(
                     TestTrains.REALISTIC_ETCS_FAST_TRAIN,
-                    listOf(waypointsStart, waypointsInter, waypointsEnd),
+                    listOf(
+                        PathItem(waypointsStart, false),
+                        PathItem(waypointsInter, false),
+                        PathItem(waypointsEnd, false),
+                    ),
                 ),
             )
         checkPathfindingSuccess(
