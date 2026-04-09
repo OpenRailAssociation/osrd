@@ -282,6 +282,8 @@ pub struct Request {
     pub electrical_profile_set_id: Option<i64>,
     /// The path offset in mm of each path item given as input of the pathfinding
     pub path_item_positions: Vec<u64>,
+    /// The path offset in mm of each position where the train backtracks
+    pub backtrack_positions: Vec<u64>,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]

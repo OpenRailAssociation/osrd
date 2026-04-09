@@ -2412,6 +2412,7 @@ mod tests {
                     track_section_ranges: vec![],
                 },
                 path_item_positions: vec![],
+                backtrack_positions: vec![],
                 length: 1
             })
         )
@@ -2522,6 +2523,7 @@ mod tests {
                     track_section_ranges: vec![],
                 },
                 path_item_positions: vec![],
+                backtrack_positions: vec![],
                 length: 1
             })
         )
@@ -2673,6 +2675,7 @@ mod tests {
             },
             length: 14450000,
             path_item_positions: vec![0, 14450000],
+            backtrack_positions: vec![],
         }
     }
 

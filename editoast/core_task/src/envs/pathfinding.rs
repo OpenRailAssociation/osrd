@@ -386,7 +386,10 @@ fn build_request(
             .path_items
             .iter()
             .map(|PathWaypointAlternatives(track_alternatives)| {
-                track_alternatives.clone().into_iter().collect()
+                core_client::pathfinding::PathItem {
+                    locations: track_alternatives.clone().into_iter().collect(),
+                    can_backtrack: false,
+                }
             })
             .collect(),
         rolling_stock_loading_gauge: consist.loading_gauge,
