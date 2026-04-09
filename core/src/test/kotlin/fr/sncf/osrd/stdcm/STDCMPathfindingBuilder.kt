@@ -82,7 +82,16 @@ data class STDCMPathfindingBuilder(
         startLocations: Set<BlockLocation>,
         plannedTimingData: PlannedTimingData? = null,
     ): STDCMPathfindingBuilder {
-        steps.add(0, ExplorerStep(startLocations, null, false, plannedTimingData))
+        steps.add(
+            0,
+            ExplorerStep(
+                startLocations,
+                duration = null,
+                stop = false,
+                canBacktrack = false,
+                plannedTimingData = plannedTimingData,
+            ),
+        )
         return this
     }
 
@@ -94,7 +103,15 @@ data class STDCMPathfindingBuilder(
         endLocations: Set<BlockLocation>,
         plannedTimingData: PlannedTimingData? = null,
     ): STDCMPathfindingBuilder {
-        steps.add(ExplorerStep(endLocations, 0.0, true, plannedTimingData))
+        steps.add(
+            ExplorerStep(
+                endLocations,
+                duration = 0.0,
+                stop = true,
+                canBacktrack = false,
+                plannedTimingData = plannedTimingData,
+            )
+        )
         return this
     }
 

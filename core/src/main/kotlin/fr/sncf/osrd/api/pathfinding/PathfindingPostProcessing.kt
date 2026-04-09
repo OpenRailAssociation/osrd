@@ -13,7 +13,13 @@ fun runPathfindingPostProcessing(
     initialRequest: PathfindingBlockRequest,
     rawPath: ProcessedPathfindingResponse,
 ): PathfindingBlockSuccess {
-    val res = runPathfindingBlockPostProcessing(infra, rawPath.path, rawPath.offsets)
+    val res =
+        runPathfindingBlockPostProcessing(
+            infra,
+            rawPath.path,
+            rawPath.targetOffsets,
+            rawPath.backtrackingOffsets,
+        )
     validatePathfindingResponse(infra, initialRequest, res)
     return res
 }
@@ -22,12 +28,13 @@ fun runPathfindingBlockPostProcessing(
     infra: FullInfra,
     trainPath: TrainPath,
     waypointOffsets: List<Offset<PhysicsPath>>,
+    backtrackingOffsets: List<Offset<PhysicsPath>>,
 ): PathfindingBlockSuccess {
     return PathfindingBlockSuccess(
         trainPath.toJsonTrainPath(infra.rawInfra, infra.blockInfra),
         trainPath.getLength(),
         waypointOffsets,
-        listOf(),
+        backtrackingOffsets,
     )
 }
 

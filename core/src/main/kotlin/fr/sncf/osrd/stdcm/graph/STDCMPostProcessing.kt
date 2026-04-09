@@ -76,6 +76,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
                 stops,
                 updatedTimeData,
             )
+        val seenSteps = lastExplorer.getStepTracker().getSeenSteps().toList()
         val res =
             STDCMResult(
                 withAllowance.envelope,
@@ -88,9 +89,8 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
                 // Allow us to display OP, a hack that will be fixed
                 // after the redesign of simulation data models
                 makePathStops(stops, trainPath),
-                lastExplorer.getStepTracker().getSeenSteps().toList().map {
-                    it.travelledPathOffset
-                },
+                seenSteps.map { it.travelledPathOffset },
+                seenSteps.filter { it.isBacktracking }.map { it.travelledPathOffset },
                 withAllowance.engineeringAllowanceRanges,
             )
         return if (res.envelope.totalTime > maxRunTime) {
