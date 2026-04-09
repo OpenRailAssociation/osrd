@@ -5,7 +5,7 @@ export type Section = {
   subSections?: Omit<Section, 'subSections'>[];
 };
 
-export type Content = ListContent | TextContent | FAQContent | GlossaryContent;
+export type Content = ListContent | TextContent | FAQContent | GlossaryContent | SponsorsContent;
 
 type ListContent = {
   type: 'list';
@@ -35,4 +35,14 @@ type GlossaryContent = {
 type GlossaryItem = {
   term: string;
   definition: string;
+};
+
+type SponsorItem = {
+  src: string;
+  alt: string;
+};
+
+type SponsorsContent = {
+  type: 'sponsors';
+  items: SponsorItem[];
 };
