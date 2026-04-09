@@ -318,8 +318,7 @@ class STDCMEndpoint(
                 provisional = simpleReportTrain,
                 finalOutput = reportTrain,
                 mrsp = makeMRSPResponse(speedLimits),
-                electricalProfiles =
-                    STDCMEndpoint.buildSTDCMElectricalProfiles(path, path.rollingStocks, comfort),
+                electricalProfiles = buildSTDCMElectricalProfiles(path, path.rollingStocks, comfort),
             )
         }
 
@@ -470,8 +469,9 @@ fun parseSteps(
                 max(rollingStockLengths[index], rollingStockLengths.getOrElse(index - 1) { 0.0 })
             ExplorerStep(
                 if (index != 0 && index != pathItems.size - 1) {
-                    val destinationBlock = findWaypointBlocks(infra, pathItems.last().locations)
-                    findWaypointBlocks(infra, it.locations).map { waypointBlock ->
+                    val destinationBlock =
+                        findWaypointBlocks(infra, pathItems.last().pathItem.locations)
+                    findWaypointBlocks(infra, it.pathItem.locations).map { waypointBlock ->
                         findStopPositionAtEndOfBlockConsideringRollingStock(
                             waypointBlock,
                             destinationBlock,
@@ -480,7 +480,7 @@ fun parseSteps(
                         )
                     }
                 } else {
-                    findWaypointBlocks(infra, it.locations)
+                    findWaypointBlocks(infra, it.pathItem.locations)
                 },
                 it.stopDuration?.seconds,
                 it.stopDuration != null,

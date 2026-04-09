@@ -247,7 +247,7 @@ pub(in crate::views) async fn post(
     let op_cache = OperationalPointCache::load_path_items(conn, infra.id, &path_items).await?;
     let request = match build_pathfinding_request(&path_input, &infra, &op_cache) {
         Ok(request) => request,
-        Err(result) => return Ok(Json(result)),
+        Err(result) => return Ok(Json(*result)),
     };
     Ok(Json(
         match request
@@ -339,7 +339,7 @@ async fn pathfinding_blocks_batch(
                 to_compute_hashes.push(hash);
             }
             Err(result) => {
-                let arc_result = Arc::new(result.clone());
+                let arc_result = Arc::new(*result.clone());
                 hash_to_path_indexes[hash]
                     .iter()
                     .for_each(|index| pathfinding_results[*index] = arc_result.clone());
@@ -364,7 +364,7 @@ async fn pathfinding_blocks_batch(
     for (path_result, hash) in computed_paths.into_iter().zip(to_compute_hashes) {
         let result = match path_result {
             Ok(path) => {
-                to_cache.push((hash, path.clone().into()));
+                to_cache.push((hash, Box::new(path.clone().into())));
                 Arc::new(path.into())
             }
             // TODO: only make HTTP status code errors non-fatal
@@ -389,12 +389,12 @@ fn build_pathfinding_request(
     pathfinding_input: &PathfindingInput,
     infra: &Infra,
     op_cache: &OperationalPointCache,
-) -> std::result::Result<PathfindingRequest, PathfindingResult> {
+) -> std::result::Result<PathfindingRequest, Box<PathfindingResult>> {
     let path_items: Vec<_> = pathfinding_input.path_items.iter().collect();
     if path_items.len() <= 1 {
-        return Err(PathfindingResult::Failure(
+        return Err(Box::from(PathfindingResult::Failure(
             PathfindingFailure::PathfindingInputError(PathfindingInputError::NotEnoughPathItems),
-        ));
+        )));
     }
     let track_offsets = op_cache
         .extract_location_from_path_items(&path_items)
@@ -404,7 +404,13 @@ fn build_pathfinding_request(
     Ok(PathfindingRequest {
         infra: infra.id,
         expected_version: infra.version,
-        path_items: track_offsets,
+        path_items: track_offsets
+            .into_iter()
+            .map(|offsets| core_client::pathfinding::PathItem {
+                locations: offsets,
+                can_backtrack: Some(false),
+            })
+            .collect(),
         rolling_stock_loading_gauge: pathfinding_input.rolling_stock_loading_gauge,
         rolling_stock_is_thermal: pathfinding_input.rolling_stock_is_thermal,
         rolling_stock_supported_electrifications: pathfinding_input
@@ -549,6 +555,7 @@ pub mod tests {
             },
             length,
             path_item_positions: vec![],
+            backtrack_positions: Some(vec![]),
         })
     }
 

@@ -5,8 +5,8 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.DirectionalTrackRange
+import fr.sncf.osrd.api.PathItem
 import fr.sncf.osrd.api.TimetableId
-import fr.sncf.osrd.api.TrackLocation
 import fr.sncf.osrd.api.WorkSchedule
 import fr.sncf.osrd.api.standalone_sim.MarginValue
 import fr.sncf.osrd.api.standalone_sim.MarginValueAdapter
@@ -66,7 +66,7 @@ data class STDCMTemporarySpeedLimit(
 )
 
 class STDCMPathItem(
-    val locations: List<TrackLocation>,
+    @Json(name = "path_item") val pathItem: PathItem,
     @Json(name = "stop_duration") var stopDuration: Duration?,
     @Json(name = "step_timing_data") val stepTimingData: StepTimingData?,
 )

@@ -33,6 +33,7 @@ class SimulationRequest(
     @Json(name = "physics_consist") val physicsConsist: PhysicsConsistModel,
     @Json(name = "electrical_profile_set_id") val electricalProfileSetId: String?,
     @Json(name = "path_item_positions") val pathItemPositions: List<Offset<PhysicsPath>>,
+    @Json(name = "backtrack_positions") val backtrackPositions: List<Offset<PhysicsPath>>,
 ) {
     companion object {
         val adapter: JsonAdapter<SimulationRequest> =

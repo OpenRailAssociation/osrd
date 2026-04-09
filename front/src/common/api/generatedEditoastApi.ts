@@ -3606,6 +3606,8 @@ export type CoreTrainPath = {
   track_section_ranges: CoreTrackRange[];
 };
 export type CorePathfindingResultSuccess = {
+  /** The path offset in mm of each position where the train backtracks */
+  backtrack_positions?: number[] | null;
   /** Length of the path in mm */
   length: number;
   /** Full description of the path data */
@@ -4548,6 +4550,12 @@ export type ConsistSchedule = {
     It should contain one more element than boundaries */
   values: ConsistConfiguration[];
 };
+export type CorePathItem = {
+  /** If true, the train can backtrack at these track offsets. */
+  can_backtrack?: boolean | null;
+  /** The track offsets of the path item. */
+  locations: TrackOffset[];
+};
 export type CoreStepTimingData = {
   /** Time the train should arrive at this point */
   arrival_time: string;
@@ -4556,9 +4564,9 @@ export type CoreStepTimingData = {
   /** Tolerance for the arrival time, when it arrives before the expected time, in ms */
   arrival_time_tolerance_before: number;
 };
-export type CorePathItem = {
-  /** The track offsets of the path item */
-  locations: TrackOffset[];
+export type CoreStdcmPathItem = {
+  /** The path item containing its locations and backtrack information. */
+  path_item: CorePathItem;
   step_timing_data?: null | CoreStepTimingData;
   /** Stop duration in milliseconds. None if the train does not stop at this path item. */
   stop_duration?: number | null;
@@ -4605,7 +4613,7 @@ export type CoreStdcmRequest = {
   /** Maximum run time of the simulation in milliseconds */
   maximum_run_time: number;
   /** List of waypoints. Each waypoint is a list of track offset. */
-  path_items: CorePathItem[];
+  path_items: CoreStdcmPathItem[];
   start_time: string;
   /** List of applicable temporary speed limits between the train departure and arrival */
   temporary_speed_limits: {

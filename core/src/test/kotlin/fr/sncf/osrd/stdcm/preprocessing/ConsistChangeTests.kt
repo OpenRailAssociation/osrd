@@ -1,6 +1,7 @@
 package fr.sncf.osrd.stdcm.preprocessing
 
 import fr.sncf.osrd.api.ConsistSchedule
+import fr.sncf.osrd.api.PathItem
 import fr.sncf.osrd.api.TrackLocation
 import fr.sncf.osrd.api.stdcm.ConsistConfiguration
 import fr.sncf.osrd.api.stdcm.RequestConsistSchedule
@@ -35,8 +36,8 @@ class ConsistChangeTests {
     fun explorationWithConsistChangeProducesExpectedOutput() {
         val infra = Helpers.fullInfraFromFile("small_infra/infra.json")
         val start = convertRouteLocation(infra, "rt.buffer_stop.1->DA0", Offset(100.meters))
-        val middle_1 = convertRouteLocation(infra, "rt.DC4->DD2", Offset(400.meters))
-        val middle_2 = convertRouteLocation(infra, "rt.DD2->DD6", Offset(200.meters))
+        val middle1 = convertRouteLocation(infra, "rt.DC4->DD2", Offset(400.meters))
+        val middle2 = convertRouteLocation(infra, "rt.DD2->DD6", Offset(200.meters))
         val end = convertRouteLocation(infra, "rt.DG4->buffer_stop.6", Offset(2000.meters))
         val requirements = emptyList<SpacingRequirement>()
         val slowTrain =
@@ -55,8 +56,8 @@ class ConsistChangeTests {
             STDCMPathfindingBuilder()
                 .setInfra(infra)
                 .setStartLocations(start.blockLocations)
-                .addStep(ExplorerStep(middle_1.blockLocations, duration = 2000.0, stop = true))
-                .addStep(ExplorerStep(middle_2.blockLocations, duration = 2000.0, stop = true))
+                .addStep(ExplorerStep(middle1.blockLocations, duration = 2000.0, stop = true))
+                .addStep(ExplorerStep(middle2.blockLocations, duration = 2000.0, stop = true))
                 .setEndLocations(end.blockLocations)
                 .setBlockAvailability(makeBlockAvailability(requirements))
                 .setStandardAllowance(AllowanceValue.Percentage(0.0))
@@ -90,8 +91,8 @@ class ConsistChangeTests {
     fun displayGraphicalResult() {
         val infra = Helpers.fullInfraFromFile("small_infra/infra.json")
         val start = convertRouteLocation(infra, "rt.buffer_stop.1->DA0", Offset(100.meters))
-        val middle_1 = convertRouteLocation(infra, "rt.DC4->DD2", Offset(400.meters))
-        val middle_2 = convertRouteLocation(infra, "rt.DD2->DD6", Offset(200.meters))
+        val middle1 = convertRouteLocation(infra, "rt.DC4->DD2", Offset(400.meters))
+        val middle2 = convertRouteLocation(infra, "rt.DD2->DD6", Offset(200.meters))
         val end = convertRouteLocation(infra, "rt.DG4->buffer_stop.6", Offset(2000.meters))
         val requirements = emptyList<SpacingRequirement>()
         val slowTrain =
@@ -110,8 +111,8 @@ class ConsistChangeTests {
             STDCMPathfindingBuilder()
                 .setInfra(infra)
                 .setStartLocations(start.blockLocations)
-                .addStep(ExplorerStep(middle_1.blockLocations, duration = 2000.0, stop = true))
-                .addStep(ExplorerStep(middle_2.blockLocations, duration = 2000.0, stop = true))
+                .addStep(ExplorerStep(middle1.blockLocations, duration = 2000.0, stop = true))
+                .addStep(ExplorerStep(middle2.blockLocations, duration = 2000.0, stop = true))
                 .setEndLocations(end.blockLocations)
                 .setBlockAvailability(makeBlockAvailability(requirements))
                 .setStandardAllowance(AllowanceValue.Percentage(0.0))
@@ -238,8 +239,8 @@ class ConsistChangeTests {
         // Mixing up stop steps with and without consist changes
         val infra = Helpers.fullInfraFromFile("small_infra/infra.json")
         val start = convertRouteLocation(infra, "rt.buffer_stop.1->DA0", Offset(100.meters))
-        val step_1 = convertRouteLocation(infra, "rt.DC4->DD2", Offset(400.meters))
-        val step_2 = convertRouteLocation(infra, "rt.DD2->DD6", Offset(200.meters))
+        val step1 = convertRouteLocation(infra, "rt.DC4->DD2", Offset(400.meters))
+        val step2 = convertRouteLocation(infra, "rt.DD2->DD6", Offset(200.meters))
         val end = convertRouteLocation(infra, "rt.DG4->buffer_stop.6", Offset(2000.meters))
         val requirements = emptyList<SpacingRequirement>()
         val slowTrain =
@@ -254,8 +255,8 @@ class ConsistChangeTests {
             STDCMPathfindingBuilder()
                 .setInfra(infra)
                 .setStartLocations(start.blockLocations)
-                .addStep(ExplorerStep(step_1.blockLocations, duration = 2000.0, stop = true))
-                .addStep(ExplorerStep(step_2.blockLocations, duration = 2000.0, stop = true))
+                .addStep(ExplorerStep(step1.blockLocations, duration = 2000.0, stop = true))
+                .addStep(ExplorerStep(step2.blockLocations, duration = 2000.0, stop = true))
                 .setEndLocations(end.blockLocations)
                 .setBlockAvailability(makeBlockAvailability(requirements))
                 .setStandardAllowance(AllowanceValue.Percentage(0.0))
@@ -361,19 +362,23 @@ class ConsistChangeTests {
         val consistShortLongShort = ConsistSchedule(requestShortLongShort, infra, null, nbSteps)
         val pathItems =
             listOf(
-                STDCMPathItem(listOf(TrackLocation("TB0", Offset(0.0.meters))), null, null),
                 STDCMPathItem(
-                    listOf(TrackLocation("TB0", Offset(500.0.meters))),
+                    PathItem(listOf(TrackLocation("TB0", Offset(0.0.meters))), false),
+                    null,
+                    null,
+                ),
+                STDCMPathItem(
+                    PathItem(listOf(TrackLocation("TB0", Offset(500.0.meters))), false),
                     Duration(100_000),
                     null,
                 ),
                 STDCMPathItem(
-                    listOf(TrackLocation("TB0", Offset(1000.0.meters))),
+                    PathItem(listOf(TrackLocation("TB0", Offset(1000.0.meters))), false),
                     Duration(100_000),
                     null,
                 ),
                 STDCMPathItem(
-                    listOf(TrackLocation("TB0", Offset(1500.meters))),
+                    PathItem(listOf(TrackLocation("TB0", Offset(1500.meters))), false),
                     Duration(100_000),
                     null,
                 ),

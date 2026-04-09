@@ -342,6 +342,7 @@ pub(crate) mod test_data {
                 },
                 length: id as u64,
                 path_item_positions: (1..=positions_count).collect(),
+                backtrack_positions: Some(vec![]),
             },
         );
         let mut path = serde_json::to_value(response).unwrap();
