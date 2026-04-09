@@ -29,7 +29,7 @@ import org.junit.jupiter.api.TestInstance
 
 fun getPathfindingBlockRequest(
     rs: RollingStock,
-    trackLocations: List<Collection<TrackLocation>>,
+    trackLocations: List<PathItem>,
     infra: String = "unused_name",
     stopsAtEndOfBlock: Boolean? = false,
 ): PathfindingBlockRequest {
@@ -45,7 +45,7 @@ fun getPathfindingBlockRequest(
         null,
         infra,
         1,
-        trackLocations.map { PathItem(it, false) },
+        trackLocations,
     )
 }
 
@@ -94,7 +94,7 @@ class PathfindingTest : ApiTest() {
         val parsed =
             callPathfindingEndpoint(
                 TestTrains.REALISTIC_FAST_TRAIN,
-                listOf(waypointsStart, waypointsEnd),
+                listOf(PathItem(waypointsStart, true), PathItem(waypointsEnd, true)),
                 "tiny_infra/infra.json",
             )
         checkPathfindingSuccess(
@@ -139,10 +139,9 @@ class PathfindingTest : ApiTest() {
     fun incompatibleElectrification() {
         val waypointStart = TrackLocation("ne.micro.foo_b", Offset(50.meters))
         val waypointEnd = TrackLocation("ne.micro.bar_a", Offset(100.meters))
-        val waypointsStart = listOf(waypointStart)
-        val waypointsEnd = listOf(waypointEnd)
+        val waypointsStart = PathItem(listOf(waypointStart), false)
+        val waypointsEnd = PathItem(listOf(waypointEnd), false)
         val waypoints = listOf(waypointsStart, waypointsEnd)
-        val pathItems = waypoints.map { PathItem(it, false) }
 
         val unconstrainedRequestBody =
             pathfindingRequestAdapter.toJson(
@@ -157,7 +156,7 @@ class PathfindingTest : ApiTest() {
                     timeout = null,
                     infra = "tiny_infra/infra.json",
                     expectedVersion = 1,
-                    pathItems = pathItems,
+                    pathItems = waypoints,
                 )
             )
         val unconstrainedResponse =
@@ -178,7 +177,7 @@ class PathfindingTest : ApiTest() {
                     rollingStockLength = 0.0,
                     infra = "tiny_infra/infra.json",
                     expectedVersion = 1,
-                    pathItems = pathItems,
+                    pathItems = waypoints,
                 )
             )
         val response = PathfindingBlocksEndpoint(infraManager).act(RqFake(requestBody))
@@ -206,10 +205,9 @@ class PathfindingTest : ApiTest() {
     fun incompatibleConstraints() {
         val waypointStart = TrackLocation("TA0", Offset(0.meters))
         val waypointEnd = TrackLocation("TA6", Offset(2000.meters))
-        val waypointsStart = listOf(waypointStart)
-        val waypointsEnd = listOf(waypointEnd)
+        val waypointsStart = PathItem(listOf(waypointStart), false)
+        val waypointsEnd = PathItem(listOf(waypointEnd), false)
         val waypoints = listOf(waypointsStart, waypointsEnd)
-        val pathItems = waypoints.map { PathItem(it, false) }
 
         val unconstrainedRequestBody =
             pathfindingRequestAdapter.toJson(
@@ -224,7 +222,7 @@ class PathfindingTest : ApiTest() {
                     rollingStockLength = 0.0,
                     infra = "small_infra/infra.json",
                     expectedVersion = 1,
-                    pathItems = pathItems,
+                    pathItems = waypoints,
                 )
             )
         val unconstrainedResponse =
@@ -245,7 +243,7 @@ class PathfindingTest : ApiTest() {
                     timeout = null,
                     infra = "small_infra/infra.json",
                     expectedVersion = 1,
-                    pathItems = pathItems,
+                    pathItems = waypoints,
                 )
             )
         val response = PathfindingBlocksEndpoint(infraManager).act(RqFake(requestBody))
@@ -288,7 +286,11 @@ class PathfindingTest : ApiTest() {
         val parsed =
             callPathfindingEndpoint(
                 TestTrains.REALISTIC_FAST_TRAIN,
-                listOf(waypointsStart, waypointsMid, waypointsEnd),
+                listOf(
+                    PathItem(waypointsStart, false),
+                    PathItem(waypointsMid, false),
+                    PathItem(waypointsEnd, false),
+                ),
                 "tiny_infra/infra.json",
             )
         checkPathfindingSuccess(
@@ -338,7 +340,7 @@ class PathfindingTest : ApiTest() {
             pathfindingRequestAdapter.toJson(
                 getPathfindingBlockRequest(
                     TestTrains.REALISTIC_FAST_TRAIN,
-                    listOf(waypointsStart, waypointsEnd),
+                    listOf(PathItem(waypointsStart, false), PathItem(waypointsEnd, false)),
                     "tiny_infra/infra.json",
                 )
             )
@@ -355,7 +357,7 @@ class PathfindingTest : ApiTest() {
             pathfindingRequestAdapter.toJson(
                 getPathfindingBlockRequest(
                     TestTrains.REALISTIC_FAST_TRAIN,
-                    listOf(waypointsStart),
+                    listOf(PathItem(waypointsStart, false)),
                     "tiny_infra/infra.json",
                 )
             )
@@ -383,7 +385,7 @@ class PathfindingTest : ApiTest() {
                 infra,
                 getPathfindingBlockRequest(
                     TestTrains.REALISTIC_FAST_TRAIN,
-                    listOf(waypointsStart, waypointsEnd),
+                    listOf(PathItem(waypointsStart, false), PathItem(waypointsEnd, false)),
                 ),
             )
         checkPathfindingSuccess(normalPathResp, 10200.meters)
@@ -394,7 +396,7 @@ class PathfindingTest : ApiTest() {
                     infra,
                     getPathfindingBlockRequest(
                         TestTrains.FAST_TRAIN_LARGE_GAUGE,
-                        listOf(waypointsStart, waypointsEnd),
+                        listOf(PathItem(waypointsStart, false), PathItem(waypointsEnd, false)),
                     ),
                 )
             }
@@ -420,7 +422,7 @@ class PathfindingTest : ApiTest() {
                 infra,
                 getPathfindingBlockRequest(
                     TestTrains.REALISTIC_FAST_TRAIN,
-                    listOf(waypointsStart, closerWaypointsEnd),
+                    listOf(PathItem(waypointsStart, false), PathItem(closerWaypointsEnd, false)),
                 ),
             )
         checkPathfindingSuccess(shorterPathResp, 1100.meters)
@@ -433,7 +435,7 @@ class PathfindingTest : ApiTest() {
         val parsed =
             callPathfindingEndpoint(
                 TestTrains.REALISTIC_FAST_TRAIN,
-                listOf(waypointsStart, waypointsEnd),
+                listOf(PathItem(waypointsStart, false), PathItem(waypointsEnd, false)),
                 "tiny_infra/infra.json",
             )
         checkPathfindingSuccess(
@@ -483,7 +485,7 @@ class PathfindingTest : ApiTest() {
         val parsed =
             callPathfindingEndpoint(
                 TestTrains.REALISTIC_FAST_TRAIN,
-                listOf(waypointsStart, waypointsEnd),
+                listOf(PathItem(waypointsStart, false), PathItem(waypointsEnd, false)),
                 "tiny_infra/infra.json",
             )
         checkPathfindingSuccess(
@@ -510,7 +512,7 @@ class PathfindingTest : ApiTest() {
         val parsed =
             callPathfindingEndpoint(
                 TestTrains.REALISTIC_FAST_TRAIN,
-                listOf(waypointsStart, waypointsEnd),
+                listOf(PathItem(waypointsStart, false), PathItem(waypointsEnd, false)),
                 "tiny_infra/infra.json",
             )
         checkPathfindingSuccess(
@@ -549,7 +551,7 @@ class PathfindingTest : ApiTest() {
                 infra,
                 getPathfindingBlockRequest(
                     TestTrains.REALISTIC_FAST_TRAIN,
-                    listOf(waypointsStart, waypointsEnd),
+                    listOf(PathItem(waypointsStart, false), PathItem(waypointsEnd, false)),
                 ),
             )
         checkPathfindingSuccess(
@@ -586,7 +588,7 @@ class PathfindingTest : ApiTest() {
 
     fun callPathfindingEndpoint(
         rs: RollingStock,
-        pathItems: List<Collection<TrackLocation>>,
+        pathItems: List<PathItem>,
         infra: String,
     ): PathfindingBlockResponse {
         val requestBody =
@@ -600,7 +602,7 @@ class PathfindingTest : ApiTest() {
 class PathfindingStopsAtEndOfBlock : ApiTest() {
     fun callPathfindingEndpoint(
         rs: RollingStock,
-        pathItems: List<Collection<TrackLocation>>,
+        pathItems: List<PathItem>,
         infra: String,
         stopsAtEndOfBlock: Boolean,
     ): PathfindingBlockResponse {
@@ -613,7 +615,7 @@ class PathfindingStopsAtEndOfBlock : ApiTest() {
         return parsed
     }
 
-    private lateinit var waypoints: List<List<TrackLocation>>
+    private lateinit var waypoints: List<PathItem>
     private val firstIntermediateStopDistance = 12050.meters
     private val secondIntermediateStopDistance = 26500.meters
     private val reversedFirstIntermediateStopDistance = 19400.meters
@@ -632,10 +634,10 @@ class PathfindingStopsAtEndOfBlock : ApiTest() {
         val endWaypoint = TrackLocation("TH1", Offset(4400.meters))
         waypoints =
             listOf(
-                listOf(startWaypoint),
-                listOf(firstIntermediateWaypoint),
-                listOf(secondIntermediateWaypoint),
-                listOf(endWaypoint),
+                PathItem(listOf(startWaypoint), false),
+                PathItem(listOf(firstIntermediateWaypoint), false),
+                PathItem(listOf(secondIntermediateWaypoint), false),
+                PathItem(listOf(endWaypoint), false),
             )
     }
 
@@ -796,11 +798,15 @@ class PathfindingStopsAtEndOfBlock : ApiTest() {
 
     @Test
     fun penultimateCorrectlyMovedJustBeforeDestination() {
-        var waypoints: List<List<TrackLocation>>
         val startWaypoint = TrackLocation("TC1", Offset(500.meters))
         val intermediateWaypoint = TrackLocation("TD0", Offset(12550.meters))
         val endWaypoint = TrackLocation("TD0", Offset(13000.meters))
-        waypoints = listOf(listOf(startWaypoint), listOf(intermediateWaypoint), listOf(endWaypoint))
+        val waypoints =
+            listOf(
+                PathItem(listOf(startWaypoint), false),
+                PathItem(listOf(intermediateWaypoint), false),
+                PathItem(listOf(endWaypoint), false),
+            )
 
         val intermediateStopDistance = 13450.meters
 
@@ -820,11 +826,15 @@ class PathfindingStopsAtEndOfBlock : ApiTest() {
 
     @Test
     fun penultimateStopNotMovedExactlyToDestination() {
-        var waypoints: List<List<TrackLocation>>
         val startWaypoint = TrackLocation("TC1", Offset(500.meters))
         val intermediateWaypoint = TrackLocation("TD0", Offset(12600.meters))
         val endWaypoint = TrackLocation("TD0", Offset(13000.meters))
-        waypoints = listOf(listOf(startWaypoint), listOf(intermediateWaypoint), listOf(endWaypoint))
+        val waypoints =
+            listOf(
+                PathItem(listOf(startWaypoint), false),
+                PathItem(listOf(intermediateWaypoint), false),
+                PathItem(listOf(endWaypoint), false),
+            )
 
         // The intermediate stop is moved to the next block-delimiting signal, but the
         // distance available is more than the length of the train, so it would be moved by the
@@ -848,11 +858,15 @@ class PathfindingStopsAtEndOfBlock : ApiTest() {
 
     @Test
     fun penultimateStopTooCloseToDestination() {
-        var waypoints: List<List<TrackLocation>>
         val startWaypoint = TrackLocation("TC1", Offset(500.meters))
         val intermediateWaypoint = TrackLocation("TD0", Offset(12990.meters))
         val endWaypoint = TrackLocation("TD0", Offset(13000.meters))
-        waypoints = listOf(listOf(startWaypoint), listOf(intermediateWaypoint), listOf(endWaypoint))
+        val waypoints =
+            listOf(
+                PathItem(listOf(startWaypoint), false),
+                PathItem(listOf(intermediateWaypoint), false),
+                PathItem(listOf(endWaypoint), false),
+            )
 
         // The intermediate stop is moved to the next block-delimiting signal, but the
         // distance available is more than the length of the train, so it would be moved by the
@@ -876,17 +890,16 @@ class PathfindingStopsAtEndOfBlock : ApiTest() {
 
     @Test
     fun twoPenultimatesStopTooCloseToDestination() {
-        var waypoints: List<List<TrackLocation>>
         val startWaypoint = TrackLocation("TC1", Offset(500.meters))
         val intermediateWaypoint = TrackLocation("TD0", Offset(12950.meters))
         val secondIntermediateWaypoint = TrackLocation("TD0", Offset(12990.meters))
         val endWaypoint = TrackLocation("TD0", Offset(13000.meters))
-        waypoints =
+        val waypoints =
             listOf(
-                listOf(startWaypoint),
-                listOf(intermediateWaypoint),
-                listOf(secondIntermediateWaypoint),
-                listOf(endWaypoint),
+                PathItem(listOf(startWaypoint), false),
+                PathItem(listOf(intermediateWaypoint), false),
+                PathItem(listOf(secondIntermediateWaypoint), false),
+                PathItem(listOf(endWaypoint), false),
             )
 
         // The intermediate stops are moved to the next block-delimiting signal, but the

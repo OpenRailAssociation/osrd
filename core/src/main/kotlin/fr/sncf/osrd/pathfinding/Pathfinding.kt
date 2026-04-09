@@ -36,17 +36,17 @@ const val SIGNALING_SYSTEM_COST_WEIGHTING = 1e-1
 @WithSpan(value = "Building heuristic")
 private fun makeRemainingDistanceHeuristics(
     infra: FullInfra,
-    waypoints: List<Collection<BlockLocation>>,
+    targets: List<ExplorerStep>,
 ): ArrayList<AStarHeuristic> {
     // Compute the minimum distance between steps
-    val stepMinDistance = Array(waypoints.size - 1) { 0.meters }
-    for (i in 0 until waypoints.size - 2) {
+    val stepMinDistance = Array(targets.size - 1) { 0.meters }
+    for (i in 0 until targets.size - 2) {
         stepMinDistance[i] =
             minDistanceBetweenSteps(
                 infra.blockInfra,
                 infra.rawInfra,
-                waypoints[i + 1],
-                waypoints[i + 2],
+                targets[i + 1].locations,
+                targets[i + 2].locations,
             )
     }
 
@@ -57,12 +57,12 @@ private fun makeRemainingDistanceHeuristics(
 
     // Setup estimators foreach intermediate steps
     val remainingCostEstimators = ArrayList<AStarHeuristic>()
-    for (i in 0 until waypoints.size - 1) {
+    for (i in 0 until targets.size - 1) {
         val remainingDistanceEstimator =
             RemainingDistanceEstimator(
                 infra.blockInfra,
                 infra.rawInfra,
-                waypoints[i + 1],
+                targets[i + 1].locations,
                 stepMinDistance[i],
             )
 
@@ -75,14 +75,25 @@ private fun makeRemainingDistanceHeuristics(
 
 class Pathfinding(
     val fullInfra: FullInfra,
-    val waypoints: List<Collection<BlockLocation>>,
+    val inputTargets: List<ExplorerStep>,
     val constraints: List<PathfindingConstraint>?,
     val speedLimitTag: String?,
     val rollingStockMaxSpeed: Double,
     rollingStockLength: Double,
 ) {
+    private val targets =
+        inputTargets.mapIndexed { index, it ->
+            ExplorerStep(
+                it.locations,
+                it.duration,
+                it.stop,
+                if (index > 0 && index < inputTargets.size) it.canBacktrack else false,
+                it.plannedTimingData,
+            )
+        }
+
     init {
-        checkParameters(waypoints)
+        checkParameters(inputTargets)
     }
 
     val mrspBuilder: CachedBlockMRSPBuilder =
@@ -93,7 +104,7 @@ class Pathfinding(
             speedLimitTag,
         )
 
-    val remainingCostEstimators = makeRemainingDistanceHeuristics(fullInfra, waypoints)
+    val remainingCostEstimators = makeRemainingDistanceHeuristics(fullInfra, targets)
 
     private data class Step( // Instance used to explore the infra
         val infraExplorer: InfraExplorer,
@@ -163,7 +174,7 @@ class Pathfinding(
             getStartInfraExplorers(
                 fullInfra.rawInfra,
                 fullInfra.blockInfra,
-                waypoints,
+                targets,
                 constraintCombiner,
             )
         for (infraExplorer in startInfraExplorers) {
@@ -182,7 +193,7 @@ class Pathfinding(
             if (step == null) {
                 // Fail :(
                 pathfindingLogger.info(
-                    "pathfinding failed, # reached waypoints = $maxSeenTarget/${waypoints.size}"
+                    "pathfinding failed, # reached waypoints = $maxSeenTarget/${targets.size}"
                 )
                 return null
             }
@@ -223,20 +234,19 @@ class Pathfinding(
     private fun getStartInfraExplorers(
         rawInfra: RawSignalingInfra,
         blockInfra: BlockInfra,
-        waypoints: List<Collection<BlockLocation>>,
+        targets: List<ExplorerStep>,
         constraints: PathfindingConstraint?,
     ): Collection<InfraExplorer> {
         val res = mutableListOf<InfraExplorer>()
-        val firstStep = waypoints[0]
-        val steps = waypoints.map { ExplorerStep(it) }
-        for (location in firstStep) {
+        val firstLocations = targets[0].locations
+        for (location in firstLocations) {
             val infraExplorers =
                 initInfraExplorers(
                     rawInfra,
                     blockInfra,
                     location,
-                    steps = steps,
-                    constraints = constraints?.let { MutableList(waypoints.size) { _ -> it } },
+                    targets,
+                    constraints?.let { MutableList(targets.size) { _ -> it } },
                 )
             res.addAll(infraExplorers)
         }
@@ -244,7 +254,7 @@ class Pathfinding(
     }
 
     /** Checks that required parameters are set, sets the optional ones to their default values */
-    private fun checkParameters(targets: List<Collection<BlockLocation>>) {
+    private fun checkParameters(targets: List<ExplorerStep>) {
         if (targets.size < 2)
             throw OSRDError(ErrorType.InvalidSTDCMInputs)
                 .withContext("cause", "Not enough steps have been set to find a path")

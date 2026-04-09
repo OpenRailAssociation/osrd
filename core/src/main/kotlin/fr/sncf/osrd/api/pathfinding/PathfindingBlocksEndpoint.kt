@@ -20,6 +20,7 @@ import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.stdcm.infra_exploration.BlockLocation
+import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.utils.*
 import fr.sncf.osrd.utils.units.Length
@@ -93,7 +94,7 @@ class PathfindingBlocksEndpoint(private val infraManager: InfraProvider) : Take 
 @Throws(OSRDError::class)
 fun runPathfinding(infra: FullInfra, request: PathfindingBlockRequest): PathfindingBlockResponse {
     // Parse the waypoints
-    val waypoints = ArrayList<Collection<BlockLocation>>()
+    val targets = ArrayList<ExplorerStep>()
     val destinationTrack = request.pathItems.last()
     val destinationBlock = findWaypointBlocks(infra, destinationTrack.locations)
     request.pathItems.forEachIndexed { stepIndex, step ->
@@ -121,9 +122,9 @@ fun runPathfinding(infra: FullInfra, request: PathfindingBlockRequest): Pathfind
                 }
             }
         }
-        waypoints.add(allStarts)
+        targets.add(ExplorerStep(allStarts, canBacktrack = step.canBacktrack))
     }
-    if (waypoints.size < 2) throw NoPathFoundException(NotEnoughPathItems())
+    if (targets.size < 2) throw NoPathFoundException(NotEnoughPathItems())
     val constraints =
         initConstraintsFromRSProps(
             infra,
@@ -135,14 +136,14 @@ fun runPathfinding(infra: FullInfra, request: PathfindingBlockRequest): Pathfind
 
     // Compute the paths from the entry waypoint to the exit waypoint
     val timeout = request.timeout ?: Pathfinding.TIMEOUT
-    val path = computePaths(infra, waypoints, constraints, request, timeout)
+    val path = computePaths(infra, targets, constraints, request, timeout)
     return runPathfindingPostProcessing(infra, request, path)
 }
 
 @Throws(OSRDError::class)
 private fun computePaths(
     infra: FullInfra,
-    waypoints: ArrayList<Collection<BlockLocation>>,
+    targets: ArrayList<ExplorerStep>,
     constraints: List<PathfindingConstraint>,
     initialRequest: PathfindingBlockRequest,
     timeout: Double,
@@ -151,7 +152,7 @@ private fun computePaths(
     val pathFound =
         Pathfinding(
                 infra,
-                waypoints,
+                targets,
                 constraints,
                 initialRequest.speedLimitTag,
                 initialRequest.rollingStockMaximumSpeed,
@@ -172,7 +173,7 @@ private fun computePaths(
     val elapsedSeconds = Duration.between(start, Instant.now()).toSeconds()
     throwNoPathFoundException(
         infra,
-        waypoints,
+        targets,
         constraints,
         initialRequest,
         timeout.minus(elapsedSeconds),
@@ -196,7 +197,7 @@ fun hasDuplicateTracks(infra: FullInfra, path: TrainPath): Boolean {
 @WithSpan(value = "Identifying why no path was found")
 private fun throwNoPathFoundException(
     infra: FullInfra,
-    waypoints: ArrayList<Collection<BlockLocation>>,
+    targets: ArrayList<ExplorerStep>,
     constraints: Collection<PathfindingConstraint>,
     initialRequest: PathfindingBlockRequest,
     timeout: Double,
@@ -205,7 +206,7 @@ private fun throwNoPathFoundException(
         val possiblePathWithoutErrorNoConstraints =
             Pathfinding(
                     infra,
-                    waypoints,
+                    targets,
                     listOf(),
                     initialRequest.speedLimitTag,
                     initialRequest.rollingStockMaximumSpeed,
@@ -231,16 +232,21 @@ private fun throwNoPathFoundException(
     throw NoPathFoundException(NotFoundInBlocks(listOf(), Length(0.meters)))
 }
 
-data class ProcessedPathfindingResponse(val path: TrainPath, val offsets: List<Offset<PhysicsPath>>)
+data class ProcessedPathfindingResponse(
+    val path: TrainPath,
+    val targetOffsets: List<Offset<PhysicsPath>>,
+    val backtrackingOffsets: List<Offset<PhysicsPath>>,
+)
 
 private fun processPathfindingResponse(
     infra: FullInfra,
     explorer: InfraExplorer,
 ): ProcessedPathfindingResponse {
     val trainPath = explorer.buildFullPath(infra.rawInfra, infra.blockInfra)
-    val stepOffsets =
-        explorer.getStepTracker().getSeenSteps().toList().map { it.travelledPathOffset }
-    return ProcessedPathfindingResponse(trainPath, stepOffsets)
+    val seenSteps = explorer.getStepTracker().getSeenSteps().toList()
+    val stepOffsets = seenSteps.map { it.travelledPathOffset }
+    val backtrackingOffsets = seenSteps.filter { it.isBacktracking }.map { it.travelledPathOffset }
+    return ProcessedPathfindingResponse(trainPath, stepOffsets, backtrackingOffsets)
 }
 
 /**

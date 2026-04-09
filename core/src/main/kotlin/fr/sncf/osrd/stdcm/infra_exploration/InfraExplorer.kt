@@ -162,6 +162,7 @@ data class ExplorerStep(
     val locations: Collection<BlockLocation>,
     val duration: Double? = null,
     val stop: Boolean = false,
+    val canBacktrack: Boolean = false,
     val plannedTimingData: PlannedTimingData? = null,
 )
 
@@ -174,10 +175,10 @@ fun initInfraExplorers(
     rawInfra: RawInfra,
     blockInfra: BlockInfra,
     location: BlockLocation,
-    steps: List<ExplorerStep> = listOf(),
+    targets: List<ExplorerStep> = listOf(),
     constraints: List<PathfindingConstraint>? = null,
 ): Collection<InfraExplorer> {
-    require(constraints == null || steps.isEmpty() || constraints.size == steps.size)
+    require(constraints == null || targets.isEmpty() || constraints.size == targets.size)
     val infraExplorers = mutableListOf<InfraExplorer>()
     val block = location.edge
     val pathProps = buildTrainPathFromBlock(rawInfra, blockInfra, block)
@@ -194,7 +195,7 @@ fun initInfraExplorers(
                 appendOnlyMapOf(),
                 null,
                 blockToPathProperties,
-                stepTracker = StepTracker(steps),
+                stepTracker = StepTracker(targets),
                 constraints = constraints,
             )
         val infraExtended = infraExplorer.extend(route, location)
