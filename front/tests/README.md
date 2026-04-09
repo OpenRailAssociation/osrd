@@ -266,6 +266,11 @@ Run only one file:
 ```bash
 npx playwright test tests/op/tabs/002-op-route-tab.spec.ts
 ```
+Run tests in headed mode:
+
+```bash
+npx playwright test --headed 002-op-route-tab.spec.ts
+```
 
 Run in interactive mode with UI:
 
@@ -287,8 +292,7 @@ npx playwright test --update-snapshots
 For example, if you generate snapshots on macOS, the files will end with `-darwin.png`.
 Since CI runs on Linux, you must rename the files to use `-linux.png` before committing them.
 
-Debug in UI mode:
-You can easily walk through each step of the test and visually see what was happening before, during, and after each step
+Run tests in debug mode with the Playwright Inspector:
 
 ```bash
 npx playwright test --debug
@@ -316,7 +320,7 @@ insights.
 
 ---
 
-# 🎥 6. Debugging Failures (Videos, Traces, Screenshots)
+# 🎥 6. Debugging Failures
 
 When a test fails, Playwright automatically generates:
 
@@ -328,15 +332,51 @@ They are available under:
 
     front/test-results/
 
-Open traces via: https://trace.playwright.dev/
+Open a trace locally with:
+
+```bash
+npx playwright show-trace path/to/trace.zip
+```
+You can also inspect traces in the browser by following [this url](https://trace.playwright.dev/)  
 
 In the CI those files are available as artifacts. You can view them in the Github summary.
 
+## UI Mode
+
+Use UI Mode when you want to explore, run, and debug tests visually.
+
+It is useful for:
+
+- replaying steps
+- checking what happened before and after a failure
+- filtering by file, project, tag, or status
+
+```bash
+npx playwright test --ui
+```
+## Playwright Inspector
+
+Use the Playwright Inspector for a focused debug session.
+
+It is useful when you want to:
+
+- pause execution
+- step through actions
+- inspect locators and runtime behavior
+
+```bash
+npx playwright test --debug
+```
+To debug one test file, run the Playwright test command with the test file name that you want to debug followed by the `--debug` flag
+
+```bash
+npx playwright test 001-stdcm.spec.ts --debug
+```
 ---
 
-# ⚙️ 7. Playwright Configuration Summary
+# ⚙️ 7. Current Playwright Configuration Summary
 
-One can list all the options available using:
+This section describes the current OSRD configuration, not Playwright defaults.
 
 ```bash
 npx playwright test --help
