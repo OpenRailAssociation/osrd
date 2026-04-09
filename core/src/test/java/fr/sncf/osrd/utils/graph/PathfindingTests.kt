@@ -9,6 +9,7 @@ import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.stdcm.infra_exploration.BlockLocation
+import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TestTrains
@@ -51,9 +52,9 @@ class PathfindingTests {
         infra.addBlock("1", "3", 21.meters)
         val block34 = infra.addBlock("3", "4", 0.meters)
         val waypoints =
-            arrayListOf<Collection<BlockLocation>>(
-                listOf(BlockLocation(block01, Offset(0.meters))),
-                listOf(BlockLocation(block34, Offset(0.meters))),
+            arrayListOf(
+                ExplorerStep(listOf(BlockLocation(block01, Offset(0.meters))), canBacktrack = true),
+                ExplorerStep(listOf(BlockLocation(block34, Offset(0.meters))), canBacktrack = true),
             )
         val res = runPathFinding(waypoints, infra)
         Assertions.assertEquals(
@@ -94,9 +95,9 @@ class PathfindingTests {
         val block13 = infra.addBlock("1", "3", 19.meters)
         val block34 = infra.addBlock("3", "4", 0.meters)
         val waypoints =
-            arrayListOf<Collection<BlockLocation>>(
-                listOf(BlockLocation(block01, Offset(0.meters))),
-                listOf(BlockLocation(block34, Offset(0.meters))),
+            arrayListOf(
+                ExplorerStep(listOf(BlockLocation(block01, Offset(0.meters)))),
+                ExplorerStep(listOf(BlockLocation(block34, Offset(0.meters)))),
             )
         val res = runPathFinding(waypoints, infra)
         Assertions.assertEquals(
@@ -136,13 +137,15 @@ class PathfindingTests {
         val block34 = infra.addBlock("3", "4", 1000.meters, 50.0)
         val block45 = infra.addBlock("4", "5", 2000.meters, 50.0)
         val waypoints =
-            arrayListOf<Collection<BlockLocation>>(
-                listOf(BlockLocation(block01, Offset.zero())),
-                listOf(
-                    BlockLocation(block12, Offset(1000.meters)),
-                    BlockLocation(block13, Offset(1250.meters)),
+            arrayListOf(
+                ExplorerStep(listOf(BlockLocation(block01, Offset.zero()))),
+                ExplorerStep(
+                    listOf(
+                        BlockLocation(block12, Offset(1000.meters)),
+                        BlockLocation(block13, Offset(1250.meters)),
+                    )
                 ),
-                listOf(BlockLocation(block45, Offset(2000.meters))),
+                ExplorerStep(listOf(BlockLocation(block45, Offset(2000.meters)))),
             )
 
         val res = runPathFinding(waypoints, infra)
@@ -188,11 +191,11 @@ class PathfindingTests {
         val block12 = infra.addBlock("1", "2", 10.meters)
         val block23 = infra.addBlock("2", "3", 10.meters)
         val waypoints =
-            arrayListOf<Collection<BlockLocation>>(
-                listOf(BlockLocation(block01, Offset(10.meters))),
-                listOf(BlockLocation(block12, Offset(10.meters))),
-                listOf(BlockLocation(block12, Offset(10.meters))),
-                listOf(BlockLocation(block23, Offset(1.meters))),
+            arrayListOf(
+                ExplorerStep(listOf(BlockLocation(block01, Offset(10.meters)))),
+                ExplorerStep(listOf(BlockLocation(block12, Offset(10.meters)))),
+                ExplorerStep(listOf(BlockLocation(block12, Offset(10.meters)))),
+                ExplorerStep(listOf(BlockLocation(block23, Offset(1.meters)))),
             )
         val res = runPathFinding(waypoints, infra)
         Assertions.assertEquals(
@@ -241,12 +244,14 @@ class PathfindingTests {
         val block45 = infra.addBlock("4", "5", 4.meters)
         val block56 = infra.addBlock("5", "6", 0.meters)
         val waypoints =
-            arrayListOf<Collection<BlockLocation>>(
-                listOf(
-                    BlockLocation(block01, Offset(0.meters)),
-                    BlockLocation(block23, Offset(0.meters)),
+            arrayListOf(
+                ExplorerStep(
+                    listOf(
+                        BlockLocation(block01, Offset(0.meters)),
+                        BlockLocation(block23, Offset(0.meters)),
+                    )
                 ),
-                listOf(BlockLocation(block56, Offset(0.meters))),
+                ExplorerStep(listOf(BlockLocation(block56, Offset(0.meters)))),
             )
         val res = runPathFinding(waypoints, infra)
         Assertions.assertEquals(
@@ -277,11 +282,13 @@ class PathfindingTests {
         val block45 = infra.addBlock("4", "5", 5.meters)
         val block56 = infra.addBlock("5", "6", 0.meters)
         val waypoints =
-            arrayListOf<Collection<BlockLocation>>(
-                listOf(BlockLocation(block01, Offset(0.meters))),
-                listOf(
-                    BlockLocation(block23, Offset(0.meters)),
-                    BlockLocation(block56, Offset(0.meters)),
+            arrayListOf(
+                ExplorerStep(listOf(BlockLocation(block01, Offset(0.meters)))),
+                ExplorerStep(
+                    listOf(
+                        BlockLocation(block23, Offset(0.meters)),
+                        BlockLocation(block56, Offset(0.meters)),
+                    )
                 ),
             )
         val res = runPathFinding(waypoints, infra)
@@ -311,9 +318,9 @@ class PathfindingTests {
         val block31 = infra.addBlock("3", "1", 0.meters)
         val block12 = infra.addBlock("1", "2", 100.meters)
         val waypoints =
-            arrayListOf<Collection<BlockLocation>>(
-                listOf(BlockLocation(block01, Offset(0.meters))),
-                listOf(BlockLocation(block12, Offset(50.meters))),
+            arrayListOf(
+                ExplorerStep(listOf(BlockLocation(block01, Offset(0.meters)))),
+                ExplorerStep(listOf(BlockLocation(block12, Offset(50.meters)))),
             )
         val res = runPathFinding(waypoints, infra)
         Assertions.assertEquals(
@@ -346,9 +353,9 @@ class PathfindingTests {
         infra.addBlock("1", "2", 100.meters)
         val block23 = infra.addBlock("2", "3", 100.meters)
         val waypoints =
-            arrayListOf<Collection<BlockLocation>>(
-                listOf(BlockLocation(block23, Offset(0.meters))),
-                listOf(BlockLocation(block01, Offset(0.meters))),
+            arrayListOf(
+                ExplorerStep(listOf(BlockLocation(block23, Offset(0.meters)))),
+                ExplorerStep(listOf(BlockLocation(block01, Offset(0.meters)))),
             )
         val res = runPathFinding(waypoints, infra)
         Assertions.assertNull(res)
@@ -365,10 +372,10 @@ class PathfindingTests {
         infra.addBlock("1", "2", 100.meters)
         val block23 = infra.addBlock("2", "3", 100.meters)
         val waypoints =
-            arrayListOf<Collection<BlockLocation>>(
-                listOf(BlockLocation(block01, Offset(0.meters))),
-                listOf(BlockLocation(block23, Offset(20.meters))),
-                listOf(BlockLocation(block23, Offset(10.meters))),
+            arrayListOf(
+                ExplorerStep(listOf(BlockLocation(block01, Offset(0.meters)))),
+                ExplorerStep(listOf(BlockLocation(block23, Offset(20.meters)))),
+                ExplorerStep(listOf(BlockLocation(block23, Offset(10.meters)))),
             )
         val res = runPathFinding(waypoints, infra)
         Assertions.assertNull(res)
@@ -383,9 +390,9 @@ class PathfindingTests {
         val infra = DummyInfra()
         val block01 = infra.addBlock("0", "1", 100.meters)
         val waypoints =
-            arrayListOf<Collection<BlockLocation>>(
-                listOf(BlockLocation(block01, Offset(60.meters))),
-                listOf(BlockLocation(block01, Offset(30.meters))),
+            arrayListOf(
+                ExplorerStep(listOf(BlockLocation(block01, Offset(60.meters)))),
+                ExplorerStep(listOf(BlockLocation(block01, Offset(30.meters)))),
             )
         val res = runPathFinding(waypoints, infra)
         Assertions.assertNull(res)
@@ -401,10 +408,10 @@ class PathfindingTests {
         val block01 = infra.addBlock("0", "1", 100.meters)
         infra.addBlock("1", "2", 100.meters)
         val waypoints =
-            arrayListOf<Collection<BlockLocation>>(
-                listOf(BlockLocation(block01, Offset(10.meters))),
-                listOf(BlockLocation(block01, Offset(40.meters))),
-                listOf(BlockLocation(block01, Offset(20.meters))),
+            arrayListOf(
+                ExplorerStep(listOf(BlockLocation(block01, Offset(10.meters)))),
+                ExplorerStep(listOf(BlockLocation(block01, Offset(40.meters)))),
+                ExplorerStep(listOf(BlockLocation(block01, Offset(20.meters)))),
             )
         val res = runPathFinding(waypoints, infra)
         Assertions.assertNull(res)
@@ -424,9 +431,9 @@ class PathfindingTests {
         val block12 = infra.addBlock("1", "2", 100.meters)
         val block20 = infra.addBlock("2", "0", 100.meters)
         val waypoints =
-            arrayListOf<Collection<BlockLocation>>(
-                listOf(BlockLocation(block01, Offset(60.meters))),
-                listOf(BlockLocation(block01, Offset(30.meters))),
+            arrayListOf(
+                ExplorerStep(listOf(BlockLocation(block01, Offset(60.meters)))),
+                ExplorerStep(listOf(BlockLocation(block01, Offset(30.meters)))),
             )
         val res = runPathFinding(waypoints, infra)
         Assertions.assertEquals(
@@ -480,11 +487,13 @@ class PathfindingTests {
         val block14 = infra.addBlock("1", "4", 100.meters)
         val block45 = infra.addBlock("4", "5", 1000.meters)
         val waypoints =
-            arrayListOf<Collection<BlockLocation>>(
-                listOf(BlockLocation(block01, Offset(0.meters))),
-                listOf(
-                    BlockLocation(block23, Offset(500.meters)),
-                    BlockLocation(block45, Offset(10.meters)),
+            arrayListOf(
+                ExplorerStep(listOf(BlockLocation(block01, Offset(0.meters)))),
+                ExplorerStep(
+                    listOf(
+                        BlockLocation(block23, Offset(500.meters)),
+                        BlockLocation(block45, Offset(10.meters)),
+                    )
                 ),
             )
         val res = runPathFinding(waypoints, infra)
@@ -527,10 +536,10 @@ class PathfindingTests {
         val block45 = infra.addBlock("4", "5", 10.meters)
         val block52 = infra.addBlock("5", "2", 1000.meters)
         val waypoints =
-            arrayListOf<Collection<BlockLocation>>(
-                listOf(BlockLocation(block01, Offset(5.meters))),
-                listOf(BlockLocation(block45, Offset(5.meters))),
-                listOf(BlockLocation(block23, Offset(5.meters))),
+            arrayListOf(
+                ExplorerStep(listOf(BlockLocation(block01, Offset(5.meters)))),
+                ExplorerStep(listOf(BlockLocation(block45, Offset(5.meters)))),
+                ExplorerStep(listOf(BlockLocation(block23, Offset(5.meters)))),
             )
         val res = runPathFinding(waypoints, infra)
         Assertions.assertEquals(
@@ -593,12 +602,14 @@ class PathfindingTests {
         val block34 = infra.addBlock("3", "4", 100000.meters)
         val block45 = infra.addBlock("4", "5", 0.meters)
         val waypoints =
-            arrayListOf<Collection<BlockLocation>>(
-                listOf(
-                    BlockLocation(block01, Offset(0.meters)),
-                    BlockLocation(block23, Offset(0.meters)),
+            arrayListOf(
+                ExplorerStep(
+                    listOf(
+                        BlockLocation(block01, Offset(0.meters)),
+                        BlockLocation(block23, Offset(0.meters)),
+                    )
                 ),
-                listOf(BlockLocation(block45, Offset(0.meters))),
+                ExplorerStep(listOf(BlockLocation(block45, Offset(0.meters)))),
             )
         val res =
             runPathFinding(
@@ -650,9 +661,9 @@ class PathfindingTests {
         val infra = DummyInfra()
         val block01 = infra.addBlock("0", "1", 100.meters)
         val waypoints =
-            arrayListOf<Collection<BlockLocation>>(
-                listOf(BlockLocation(block01, Offset(5.meters))),
-                listOf(BlockLocation(block01, Offset(7.meters))),
+            arrayListOf(
+                ExplorerStep(listOf(BlockLocation(block01, Offset(5.meters)))),
+                ExplorerStep(listOf(BlockLocation(block01, Offset(7.meters)))),
             )
         val res =
             runPathFinding(
@@ -679,9 +690,9 @@ class PathfindingTests {
         val infra = DummyInfra()
         val block01 = infra.addBlock("0", "1", 100.meters)
         val waypoints =
-            arrayListOf<Collection<BlockLocation>>(
-                listOf(BlockLocation(block01, Offset(40.meters))),
-                listOf(BlockLocation(block01, Offset(50.meters))),
+            arrayListOf(
+                ExplorerStep(listOf(BlockLocation(block01, Offset(40.meters)))),
+                ExplorerStep(listOf(BlockLocation(block01, Offset(50.meters)))),
             )
         val res =
             runPathFinding(
@@ -723,9 +734,9 @@ class PathfindingTests {
         val block01 = infra.addBlock("0", "1", 100.meters)
         val block12 = infra.addBlock("1", "2", 100.meters)
         val waypoints =
-            arrayListOf<Collection<BlockLocation>>(
-                listOf(BlockLocation(block01, Offset(0.meters))),
-                listOf(BlockLocation(block12, Offset(50.meters))),
+            arrayListOf(
+                ExplorerStep(listOf(BlockLocation(block01, Offset(0.meters)))),
+                ExplorerStep(listOf(BlockLocation(block12, Offset(50.meters)))),
             )
         val res =
             runPathFinding(
@@ -771,9 +782,9 @@ class PathfindingTests {
         val block01 = infra.addBlock("0", "1", 100.meters)
         val block12 = infra.addBlock("1", "2", 100.meters)
         val waypoints =
-            arrayListOf<Collection<BlockLocation>>(
-                listOf(BlockLocation(block01, Offset(0.meters))),
-                listOf(BlockLocation(block12, Offset(50.meters))),
+            arrayListOf(
+                ExplorerStep(listOf(BlockLocation(block01, Offset(0.meters)))),
+                ExplorerStep(listOf(BlockLocation(block12, Offset(50.meters)))),
             )
         val res =
             runPathFinding(
@@ -800,12 +811,14 @@ class PathfindingTests {
         val infra = DummyInfra()
         val block01 = infra.addBlock("0", "1", 100.meters)
         val waypoints =
-            arrayListOf<Collection<BlockLocation>>(
-                listOf(
-                    BlockLocation(block01, Offset(10.meters)),
-                    BlockLocation(block01, Offset(40.meters)),
+            arrayListOf(
+                ExplorerStep(
+                    listOf(
+                        BlockLocation(block01, Offset(10.meters)),
+                        BlockLocation(block01, Offset(40.meters)),
+                    )
                 ),
-                listOf(BlockLocation(block01, Offset(50.meters))),
+                ExplorerStep(listOf(BlockLocation(block01, Offset(50.meters)))),
             )
         val res =
             runPathFinding(
@@ -845,9 +858,9 @@ class PathfindingTests {
         val infra = DummyInfra()
         val block01 = infra.addBlock("0", "1", 100.meters)
         val waypoints =
-            arrayListOf<Collection<BlockLocation>>(
-                listOf(BlockLocation(block01, Offset(55.meters))),
-                listOf(BlockLocation(block01, Offset(60.meters))),
+            arrayListOf(
+                ExplorerStep(listOf(BlockLocation(block01, Offset(55.meters)))),
+                ExplorerStep(listOf(BlockLocation(block01, Offset(60.meters)))),
             )
         val res =
             runPathFinding(
@@ -881,14 +894,18 @@ class PathfindingTests {
         infra.addBlock("3", "4", 1000.meters)
         val block45 = infra.addBlock("4", "5", 1000.meters)
         val waypoints =
-            arrayListOf<Collection<BlockLocation>>(
-                listOf(
-                    BlockLocation(block01, Offset(5000.meters)),
-                    BlockLocation(block23, Offset(0.meters)),
+            arrayListOf(
+                ExplorerStep(
+                    listOf(
+                        BlockLocation(block01, Offset(5000.meters)),
+                        BlockLocation(block23, Offset(0.meters)),
+                    )
                 ),
-                listOf(
-                    BlockLocation(block01, Offset(6999.meters)),
-                    BlockLocation(block45, Offset(1000.meters)),
+                ExplorerStep(
+                    listOf(
+                        BlockLocation(block01, Offset(6999.meters)),
+                        BlockLocation(block45, Offset(1000.meters)),
+                    )
                 ),
             )
         val res = runPathFinding(waypoints, infra)
@@ -912,9 +929,9 @@ class PathfindingTests {
         val infra = DummyInfra()
         val block01 = infra.addBlock("0", "1", 100.meters)
         val waypoints =
-            arrayListOf<Collection<BlockLocation>>(
-                listOf(BlockLocation(block01, Offset(0.meters))),
-                listOf(BlockLocation(block01, Offset(10.meters))),
+            arrayListOf(
+                ExplorerStep(listOf(BlockLocation(block01, Offset(0.meters)))),
+                ExplorerStep(listOf(BlockLocation(block01, Offset(10.meters)))),
             )
 
         if (!timesOut) {
@@ -963,12 +980,14 @@ class PathfindingTests {
         val slow = infra.addBlock("x", "b", 100.meters, 1.0)
         val secondBlock = infra.addBlock("b", "c", 100.meters)
         val waypoints =
-            arrayListOf<Collection<BlockLocation>>(
-                listOf(
-                    BlockLocation(slow, Offset(0.meters)),
-                    BlockLocation(fast, Offset(0.meters)),
+            arrayListOf(
+                ExplorerStep(
+                    listOf(
+                        BlockLocation(slow, Offset(0.meters)),
+                        BlockLocation(fast, Offset(0.meters)),
+                    )
                 ),
-                listOf(BlockLocation(secondBlock, Offset(0.meters))),
+                ExplorerStep(listOf(BlockLocation(secondBlock, Offset(0.meters)))),
             )
         val res = runPathFinding(waypoints, infra)
         Assertions.assertEquals(
@@ -1062,10 +1081,9 @@ class PathfindingTests {
 
         // ---------- ----------- ----------
 
-        val aPlus20 = listOf(BlockLocation(aK0Blocks[0], Offset(20.meters)))
-        val d2Plus70 = listOf(BlockLocation(bF2Blocks[2], Offset(70.meters)))
-        val res2Routes =
-            runPathFinding(listOf<Collection<BlockLocation>>(aPlus20, d2Plus70), dummyInfra)
+        val aPlus20 = ExplorerStep(listOf(BlockLocation(aK0Blocks[0], Offset(20.meters))))
+        val d2Plus70 = ExplorerStep(listOf(BlockLocation(bF2Blocks[2], Offset(70.meters))))
+        val res2Routes = runPathFinding(listOf(aPlus20, d2Plus70), dummyInfra)
 
         fun getBlockLength(blockId: BlockId): Length<Block> {
             return dummyInfra.fullInfra().blockInfra.getBlockLength(blockId)
@@ -1114,9 +1132,8 @@ class PathfindingTests {
 
         // ---------- ----------- ----------
 
-        val h1Plus500 = listOf(BlockLocation(f2K1Blocks[2], Offset(500.meters)))
-        val res3routes =
-            runPathFinding(listOf<Collection<BlockLocation>>(aPlus20, h1Plus500), dummyInfra)
+        val h1Plus500 = ExplorerStep(listOf(BlockLocation(f2K1Blocks[2], Offset(500.meters))))
+        val res3routes = runPathFinding(listOf(aPlus20, h1Plus500), dummyInfra)
 
         Assertions.assertEquals(
             arrayListOf(
@@ -1215,20 +1232,16 @@ class PathfindingTests {
 
         // ---------- ----------- ----------
 
-        val c3Plus0 = listOf(BlockLocation(aF3Blocks[1], Offset(500.meters)))
-        val resNoPath =
-            runPathFinding(listOf<Collection<BlockLocation>>(c3Plus0, d2Plus70), dummyInfra)
+        val c3Plus0 = ExplorerStep(listOf(BlockLocation(aF3Blocks[1], Offset(500.meters))))
+        val resNoPath = runPathFinding(listOf(c3Plus0, d2Plus70), dummyInfra)
         Assertions.assertNull(resNoPath)
 
         // ---------- ----------- ----------
 
-        val c2Plus10 = listOf(BlockLocation(bF2Blocks[1], Offset(10.meters)))
-        val j1Plus400 = listOf(BlockLocation(f2K1Blocks[4], Offset(400.meters)))
+        val c2Plus10 = ExplorerStep(listOf(BlockLocation(bF2Blocks[1], Offset(10.meters))))
+        val j1Plus400 = ExplorerStep(listOf(BlockLocation(f2K1Blocks[4], Offset(400.meters))))
         val multipleStepInBlockGroups =
-            runPathFinding(
-                listOf<Collection<BlockLocation>>(c2Plus10, d2Plus70, h1Plus500, j1Plus400),
-                dummyInfra,
-            )
+            runPathFinding(listOf(c2Plus10, d2Plus70, h1Plus500, j1Plus400), dummyInfra)
 
         Assertions.assertEquals(
             arrayListOf(
@@ -1327,7 +1340,7 @@ class PathfindingTests {
     }
 
     private fun runPathFinding(
-        targets: List<Collection<BlockLocation>>,
+        targets: List<ExplorerStep>,
         infra: DummyInfra,
         rollingStock: RollingStock = TestTrains.REALISTIC_FAST_TRAIN,
         speedLimitTag: String? = null,

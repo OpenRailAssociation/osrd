@@ -203,7 +203,12 @@ class STDCMEndpoint(
                 return RsJson(RsWithBody(STDCMFinalResult.adapter.toJson(response)))
             }
             val pathfindingResponse =
-                runPathfindingBlockPostProcessing(infra, path.trainPath, path.waypointOffsets)
+                runPathfindingBlockPostProcessing(
+                    infra,
+                    path.trainPath,
+                    path.waypointOffsets,
+                    path.backtrackingOffsets,
+                )
 
             val simulationResponse =
                 buildSimResponse(
@@ -484,6 +489,7 @@ fun parseSteps(
                 },
                 it.stopDuration?.seconds,
                 it.stopDuration != null,
+                it.pathItem.canBacktrack,
                 if (it.stepTimingData != null)
                     PlannedTimingData(
                         TimeDelta(between(startTime, it.stepTimingData.arrivalTime).toMillis()),

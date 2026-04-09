@@ -22,5 +22,6 @@ data class STDCMResult(
     val departureTime: Double,
     val stopResults: List<TrainStop>,
     val waypointOffsets: List<Offset<PhysicsPath>>,
+    val backtrackingOffsets: List<Offset<PhysicsPath>>,
     val engineeringAllowanceRanges: List<EngineeringAllowanceRange>,
 )

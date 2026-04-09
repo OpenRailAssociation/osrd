@@ -128,6 +128,8 @@ data class LocatedStep(
     val location: BlockLocation,
     val originalStep: ExplorerStep,
     val isPlanned: Boolean = true, // Set to false for overtakes (when implemented)
+    // /!\ A step can allow backtracking but actually not backtrack /!\
+    val isBacktracking: Boolean = false,
 ) {
     init {
         assert(originalStep.locations.contains(location))

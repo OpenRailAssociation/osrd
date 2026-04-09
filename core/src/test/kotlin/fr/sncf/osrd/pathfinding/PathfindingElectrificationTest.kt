@@ -2,6 +2,7 @@ package fr.sncf.osrd.pathfinding
 
 import fr.sncf.osrd.api.ApiTest
 import fr.sncf.osrd.api.InfraMetadata
+import fr.sncf.osrd.api.PathItem
 import fr.sncf.osrd.api.TrackLocation
 import fr.sncf.osrd.api.pathfinding.IncompatibleConstraintsPathResponse
 import fr.sncf.osrd.api.pathfinding.NoPathFoundException
@@ -59,7 +60,7 @@ class PathfindingElectrificationTest : ApiTest() {
                 infra.fullInfra(),
                 getPathfindingBlockRequest(
                     TestTrains.FAST_ELECTRIC_TRAIN,
-                    listOf(waypointsStart, waypointsEnd),
+                    listOf(PathItem(waypointsStart, false), PathItem(waypointsEnd, false)),
                 ),
             )
         val normalPathSuccess = checkPathfindingSuccess(normalPathResp, 400.meters)
@@ -78,7 +79,7 @@ class PathfindingElectrificationTest : ApiTest() {
                 infra.fullInfra(),
                 getPathfindingBlockRequest(
                     TestTrains.FAST_ELECTRIC_TRAIN,
-                    listOf(waypointsStart, waypointsEnd),
+                    listOf(PathItem(waypointsStart, false), PathItem(waypointsEnd, false)),
                 ),
             )
         val electricPathSuccess = checkPathfindingSuccess(electricPathResp, 400.meters)
@@ -94,7 +95,7 @@ class PathfindingElectrificationTest : ApiTest() {
                     infra.fullInfra(),
                     getPathfindingBlockRequest(
                         TestTrains.FAST_ELECTRIC_TRAIN,
-                        listOf(waypointsStart, waypointsEnd),
+                        listOf(PathItem(waypointsStart, false), PathItem(waypointsEnd, false)),
                     ),
                 )
             }
@@ -149,7 +150,7 @@ class PathfindingElectrificationTest : ApiTest() {
                     infra.fullInfra(),
                     getPathfindingBlockRequest(
                         TestTrains.FAST_ELECTRIC_TRAIN,
-                        listOf(waypointsStart, waypointsEnd),
+                        listOf(PathItem(waypointsStart, false), PathItem(waypointsEnd, false)),
                     ),
                 )
             checkPathfindingSuccess(electricPathResp, 300.meters)
@@ -159,7 +160,7 @@ class PathfindingElectrificationTest : ApiTest() {
                         infra.fullInfra(),
                         getPathfindingBlockRequest(
                             TestTrains.FAST_ELECTRIC_TRAIN,
-                            listOf(waypointsStart, waypointsEnd),
+                            listOf(PathItem(waypointsStart, false), PathItem(waypointsEnd, false)),
                         ),
                     )
                 }
@@ -221,7 +222,7 @@ class PathfindingElectrificationTest : ApiTest() {
                 infraWithAllElectrifiedTrack,
                 getPathfindingBlockRequest(
                     TestTrains.FAST_ELECTRIC_TRAIN,
-                    listOf(waypointsStart, waypointsEnd),
+                    listOf(PathItem(waypointsStart, false), PathItem(waypointsEnd, false)),
                 ),
             )
         val normalPathSuccess = checkPathfindingSuccess(normalPathResp, 39_553.meters)
@@ -244,7 +245,7 @@ class PathfindingElectrificationTest : ApiTest() {
                 infraPartialElectrifiedTrack,
                 getPathfindingBlockRequest(
                     TestTrains.FAST_ELECTRIC_TRAIN,
-                    listOf(waypointsStart, waypointsEnd),
+                    listOf(PathItem(waypointsStart, false), PathItem(waypointsEnd, false)),
                 ),
             )
         val partialElectricPathSuccess =
@@ -269,7 +270,7 @@ class PathfindingElectrificationTest : ApiTest() {
                     Helpers.fullInfraFromRJS(rjsInfra, InfraMetadata("modified_small_infra")),
                     getPathfindingBlockRequest(
                         TestTrains.FAST_ELECTRIC_TRAIN,
-                        listOf(waypointsStart, waypointsEnd),
+                        listOf(PathItem(waypointsStart, false), PathItem(waypointsEnd, false)),
                     ),
                 )
             }
