@@ -217,8 +217,8 @@ export type OccurrenceId = IndexedOccurrenceId | AddedExceptionId;
 export type PacedTrainId = string & { readonly __type: unique symbol };
 
 export type TrainId = OccurrenceId | PacedTrainId;
-export type TimetableItemToEditData = {
-  timetableItemId: number;
+export type TrainScheduleToEditData = {
+  trainScheduleId: number;
   originalPacedTrain: PacedTrainWithDetails;
   occurrenceId?: OccurrenceId;
 };

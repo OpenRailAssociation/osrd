@@ -7,7 +7,7 @@ import useScenarioTrainScheduleSet from 'applications/operationalStudies/hooks/u
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import { setFailure } from 'reducers/main';
-import type { TimetableItem, TimetableItemToEditData } from 'reducers/osrdconf/types';
+import type { TimetableItem, TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
@@ -21,11 +21,11 @@ import useFilterTimetableItems from './useFilterTimetableItems';
 type TimetableProps = {
   setDisplayTimetableItemManagement: (mode: string) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
-  setTimetableItemToEditData: (timetableItemToEditData?: TimetableItemToEditData) => void;
+  setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
   setSelectedTimetableItemIds: React.Dispatch<React.SetStateAction<number[]>>;
   removeAndUnselectTrains: (trainIds: number[]) => void;
   handleDeleteTimetableItems: () => void;
-  timetableItemToEditData?: TimetableItemToEditData;
+  trainScheduleToEditData?: TrainScheduleToEditData;
   timetableItems?: TimetableItem[];
   timetableItemsWithDetails: TimetableItemWithDetails[];
   refreshNge: () => Promise<void>;
@@ -36,11 +36,11 @@ type TimetableProps = {
 const Timetable = ({
   setDisplayTimetableItemManagement,
   upsertTimetableItems,
-  setTimetableItemToEditData,
+  setTrainScheduleToEditData,
   setSelectedTimetableItemIds,
   removeAndUnselectTrains,
   handleDeleteTimetableItems,
-  timetableItemToEditData,
+  trainScheduleToEditData,
   timetableItems = [],
   timetableItemsWithDetails,
   refreshNge,
@@ -167,10 +167,10 @@ const Timetable = ({
         <TrainList
           setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
           upsertTimetableItems={upsertTimetableItems}
-          setTimetableItemToEditData={setTimetableItemToEditData}
+          setTrainScheduleToEditData={setTrainScheduleToEditData}
           setSelectedTimetableItemIds={setSelectedTimetableItemIds}
           removeAndUnselectTrains={removeAndUnselectTrains}
-          timetableItemToEditData={timetableItemToEditData}
+          trainScheduleToEditData={trainScheduleToEditData}
           timetableItemsWithDetails={filteredTimetableItems}
           selectedTimetableItemIds={selectedTimetableItemIds}
           projectingOnSimulatedPathException={projectingOnSimulatedPathException}

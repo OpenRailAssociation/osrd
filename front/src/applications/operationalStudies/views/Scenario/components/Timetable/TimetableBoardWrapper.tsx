@@ -11,7 +11,7 @@ import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { deleteTrainSchedules } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import { setFailure, setSuccess } from 'reducers/main';
-import type { TimetableItem, TimetableItemToEditData, TrainId } from 'reducers/osrdconf/types';
+import type { TimetableItem, TrainScheduleToEditData, TrainId } from 'reducers/osrdconf/types';
 import { updateSelectedTrain } from 'reducers/simulationResults';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
@@ -26,9 +26,9 @@ import { copyTimetableItemsToClipboard } from './utils';
 type TimetableBoardWrapperProps = {
   setDisplayTimetableItemManagement: (mode: string) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
-  setTimetableItemToEditData: (timetableItemToEditData?: TimetableItemToEditData) => void;
+  setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
   removeTimetableItems: (timetableItemsToRemove: number[]) => void;
-  timetableItemToEditData?: TimetableItemToEditData;
+  trainScheduleToEditData?: TrainScheduleToEditData;
   timetableItems?: TimetableItem[];
   timetableItemsWithDetails: TimetableItemWithDetails[];
   refreshNge: () => Promise<void>;
@@ -40,9 +40,9 @@ type TimetableBoardWrapperProps = {
 const TimetableBoardWrapper = ({
   setDisplayTimetableItemManagement,
   upsertTimetableItems,
-  setTimetableItemToEditData,
+  setTrainScheduleToEditData,
   removeTimetableItems,
-  timetableItemToEditData,
+  trainScheduleToEditData,
   timetableItems = [],
   timetableItemsWithDetails,
   refreshNge,
@@ -292,10 +292,10 @@ const TimetableBoardWrapper = ({
         setSelectedTimetableItemIds={setSelectedTimetableItemIds}
         setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
         upsertTimetableItems={upsertTimetableItems}
-        setTimetableItemToEditData={setTimetableItemToEditData}
+        setTrainScheduleToEditData={setTrainScheduleToEditData}
         removeAndUnselectTrains={removeTimetableItems}
         handleDeleteTimetableItems={handleDeleteTimetableItems}
-        timetableItemToEditData={timetableItemToEditData}
+        trainScheduleToEditData={trainScheduleToEditData}
         timetableItems={timetableItems}
         timetableItemsWithDetails={timetableItemsWithDetails}
         refreshNge={refreshNge}
