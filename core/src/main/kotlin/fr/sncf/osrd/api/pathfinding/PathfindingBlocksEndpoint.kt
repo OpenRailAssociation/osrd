@@ -25,6 +25,7 @@ import fr.sncf.osrd.utils.*
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
+import fr.sncf.osrd.utils.units.toDirected
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -267,13 +268,8 @@ fun findDirectedWaypointBlocks(
 
     val chunkLocationOnWaypoint =
         getChunkLocationOnWaypoint(trackSectionId, waypoint.offset, infra.rawInfra)
-    val directedChunkOffset =
-        Offset<DirTrackChunkId>(
-            if (direction == Direction.INCREASING) chunkLocationOnWaypoint.offset.distance
-            else
-                infra.rawInfra.getTrackChunkLength(chunkLocationOnWaypoint.chunk).distance -
-                    chunkLocationOnWaypoint.offset.distance
-        )
+    val chunkLength = infra.rawInfra.getTrackChunkLength(chunkLocationOnWaypoint.chunk)
+    val directedChunkOffset = chunkLocationOnWaypoint.offset.toDirected(chunkLength, direction)
     val waypointDirChunkLocation =
         DirChunkLocation(
             DirTrackChunkId(chunkLocationOnWaypoint.chunk, direction),

@@ -3,6 +3,7 @@ package fr.sncf.osrd.sim_infra.api
 import fr.sncf.osrd.reporting.exceptions.OSRDError.newUnknownTrackSectionError
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.indexing.*
+import fr.sncf.osrd.utils.units.DirOffset
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 
@@ -37,7 +38,7 @@ typealias DirTrackChunkId = DirStaticIdx<TrackChunk>
 
 typealias OptDirTrackChunkId = OptDirStaticIdx<TrackChunk>
 
-data class DirChunkLocation(val dirChunk: DirTrackChunkId, val offset: Offset<DirTrackChunkId>)
+data class DirChunkLocation(val dirChunk: DirTrackChunkId, val offset: DirOffset<TrackChunk>)
 
 data class ChunkLocation(val chunk: TrackChunkId, val offset: Offset<TrackChunk>)
 

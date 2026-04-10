@@ -147,6 +147,27 @@ fun BlockInfra.getBlockOffset(
     )
 }
 
+fun BlockInfra.getDirChunkLocation(
+    blockLocation: BlockLocation,
+    rawInfra: RawInfra,
+): DirChunkLocation {
+    val chunks = this.getTrackChunksFromBlock(blockLocation.edge)
+    var offsetToStep = blockLocation.offset.distance
+    chunks.forEach { chunk ->
+        val chunkLength = rawInfra.getTrackChunkLength(chunk.value).distance
+        if (offsetToStep > chunkLength) {
+            offsetToStep -= chunkLength
+            return@forEach
+        }
+        return DirChunkLocation(chunk, Offset(offsetToStep))
+    }
+    throw AssertionError(
+        String.format(
+            "getDirChunkLocation: Did not find chunk location for BlockLocation $blockLocation: wrong offset?"
+        )
+    )
+}
+
 fun InfraSigSystemManager.findSignalingSystemOrThrow(sigSystem: String): SignalingSystemId {
     return findSignalingSystem(sigSystem) ?: throw OSRDError.newSignalingError(sigSystem)
 }

@@ -90,7 +90,6 @@ class Pathfinding(
                 it.duration,
                 it.stop,
                 if (index > 0 && index < inputTargets.size) it.canBacktrack else false,
-                // if (index > 0 && index < inputTargets.size) true else false, // TODO: for demo
                 it.plannedTimingData,
             )
         }
@@ -172,10 +171,10 @@ class Pathfinding(
             }
         val startTime = Instant.now()
 
-        // When exploring a block, the decision to try to backtrack (and where) later on the
-        // considered route is already made.
+        // When exploring a block (last block range of the route here), the decision to try to
+        // backtrack (and where) later on the considered route is already made.
         // So we have to discriminate blocks used to go to backtracking (and the different
-        // backtracking) and blocks used to go straight.
+        // backtracking) and blocks used fully to go straight to the end of the route.
         data class VisitedKey(val block: BlockId, val nextBacktracking: Offset<PhysicsPath>?)
         val seenBlocks = HashMap<VisitedKey, Int>()
 
@@ -226,13 +225,15 @@ class Pathfinding(
             maxSeenTarget = max(nbSeenTargets, maxSeenTarget)
 
             val currentBlock = step.infraExplorer.getCurrentBlock()
-            val lastLocatedStep =
-                step.infraExplorer.getStepTracker().iterateSeenStepsBackwards().firstOrNull()
-            val backtrackingOffset =
-                if (lastLocatedStep?.isBacktracking ?: false) lastLocatedStep.travelledPathOffset
-                else null
+            val backtrackingOffsetOnBlock =
+                step.infraExplorer
+                    .getStepTracker()
+                    .iterateSeenStepsBackwards()
+                    .takeWhile { it.location.edge == currentBlock }
+                    .firstOrNull { it.isBacktracking }
+                    ?.travelledPathOffset
             if (
-                seenBlocks.getOrDefault(VisitedKey(currentBlock, backtrackingOffset), -1) >=
+                seenBlocks.getOrDefault(VisitedKey(currentBlock, backtrackingOffsetOnBlock), -1) >=
                     nbSeenTargets
             ) {
                 pathfindingLogger.trace(
@@ -240,7 +241,7 @@ class Pathfinding(
                 )
                 continue
             }
-            seenBlocks[VisitedKey(currentBlock, backtrackingOffset)] = nbSeenTargets
+            seenBlocks[VisitedKey(currentBlock, backtrackingOffsetOnBlock)] = nbSeenTargets
 
             step.infraExplorer.cloneAndExtendLookahead().forEach {
                 registerStep(it, step.establishedCost, step.establishedLength)
