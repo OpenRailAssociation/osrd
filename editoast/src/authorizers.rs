@@ -34,7 +34,7 @@ impl Authorizer for SystemAuthorizer<'_> {
                 return Ok(Access::Denied { rejection });
             }
         }
-        Ok(data.blindly_authorize(self.openfga))
+        Ok(data.access_authorized(self.openfga))
     }
 }
 
@@ -85,7 +85,7 @@ impl Authorizer for UserAuthorizer<'_> {
                 }
             }
         }
-        Ok(data.blindly_authorize(self.openfga))
+        Ok(data.access_authorized(self.openfga))
     }
 }
 
@@ -163,7 +163,7 @@ async fn guardrail(
 
         Guardrail::IssuerHasInfraPrivilege(privilege, infra) => {
             let Ok(privileges) = authz::v2::infra_privileges(*issuer, *infra)
-                .blindly_authorize::<Infallible>(openfga)
+                .access_authorized::<Infallible>(openfga)
                 .access()
                 .await?;
             (!privileges.contains(privilege)).then_some(Rejection::LackingInfraPrivilege(
