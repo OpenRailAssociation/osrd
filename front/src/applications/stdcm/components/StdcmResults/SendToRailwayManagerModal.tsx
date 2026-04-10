@@ -140,22 +140,22 @@ const SendToRailwayManagerModal = ({
 
   const convoyDetails = useMemo(
     () => [
-      { label: t('modal.compositionCode'), value: consist?.speedLimitByTag ?? '-' },
+      { label: t('modal.compositionCode'), value: consist.speedLimitByTag ?? '-' },
       {
         label: t('modal.totalTonnage'),
-        value: consist?.totalMass ? `${consist.totalMass} t` : '-',
+        value: consist.totalMass ? `${consist.totalMass} t` : '-',
       },
-      { label: t('modal.rollingStock'), value: consist?.towedRollingStock?.name },
+      { label: t('modal.rollingStock'), value: consist.towedRollingStock?.name },
       { label: t('modal.referenceEngine'), value: stdcmData.rollingStock.name ?? '-' },
       {
         label: t('modal.maxSpeed'),
-        value: consist?.maxSpeed != null ? `${consist.maxSpeed} km/h` : '-',
+        value: consist.maxSpeed != null ? `${consist.maxSpeed} km/h` : '-',
       },
       {
         label: t('modal.totalLength'),
-        value: consist?.totalLength != null ? `${consist.totalLength} m` : '-',
+        value: consist.totalLength != null ? `${consist.totalLength} m` : '-',
       },
-      { label: t('modal.gauge'), value: consist?.loadingGauge ?? '-' },
+      { label: t('modal.gauge'), value: consist.loadingGauge ?? '-' },
     ],
     [consist, stdcmData.rollingStock.name, t]
   );
@@ -241,9 +241,9 @@ const SendToRailwayManagerModal = ({
       : null;
 
     if (
-      !consist?.tractionEngine?.name ||
-      !consist?.loadingGauge ||
-      !consist?.speedLimitByTag ||
+      !consist.tractionEngine?.name ||
+      !consist.loadingGauge ||
+      !consist.speedLimitByTag ||
       consist.totalMass === undefined ||
       consist.maxSpeed === undefined ||
       consist.totalLength === undefined ||

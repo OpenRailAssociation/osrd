@@ -56,8 +56,8 @@ const StdcmSimulationReportSheet = ({
     length: `${consist.totalLength ?? Math.floor(rollingStock.length)} m`,
     maxSpeed: `${consist.maxSpeed ?? Math.floor(msToKmh(rollingStock.max_speed))} km/h`,
     speedLimitByTag,
-    loadingGauge: consist?.loadingGauge,
-    towedRollingStockName: consist?.towedRollingStock?.name,
+    loadingGauge: consist.loadingGauge,
+    towedRollingStockName: consist.towedRollingStock?.name,
   };
 
   const routeOperationalPoints = useMemo(() => {

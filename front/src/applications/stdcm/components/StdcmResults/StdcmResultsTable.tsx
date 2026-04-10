@@ -73,13 +73,13 @@ const StdcmResultsTable = ({
             const isPathStep = isFirstStep || isLastStep || isRequestedPathStep;
             const isNotExtremity = !isFirstStep && !isLastStep;
 
-            const consistChanges = getConsistChangesAroundStep(
-              step.opId!,
-              intermediatePathSteps,
-              consist! // TODO: modify StdcmSimulationInputs to have consist as non-optional and remove this non-null assertion
-            );
+            const consistChanges = getConsistChangesAroundStep(step.opId!, intermediatePathSteps, {
+              rollingStockName: consist.tractionEngine?.name ?? '',
+              totalMass: consist.totalMass ?? NaN,
+              totalLength: consist.totalLength ?? NaN,
+            });
 
-            const initialConsistMass = consist?.totalMass ?? stdcmData.rollingStock.mass / 1000;
+            const initialConsistMass = consist.totalMass ?? stdcmData.rollingStock.mass / 1000;
 
             const extremityStepMass = isLastStep
               ? (lastDefinedConsistChange?.totalMass ?? initialConsistMass)
