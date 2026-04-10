@@ -26,8 +26,8 @@ const ManageTimetableItemModal = ({
   displayTimetableItemManagement,
   setDisplayTimetableItemManagement,
   upsertTimetableItems,
-  timetableItemToEditData,
-  setTimetableItemToEditData,
+  trainScheduleToEditData,
+  setTrainScheduleToEditData,
   setCollapsedTimetableEdit,
   collapsedTimetableEdit,
   importTrainScheduleSets,
@@ -50,8 +50,8 @@ const ManageTimetableItemModal = ({
           displayTimetableItemManagement={displayTimetableItemManagement}
           setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
           upsertTimetableItems={upsertTimetableItems}
-          timetableItemToEditData={timetableItemToEditData}
-          setTimetableItemToEditData={setTimetableItemToEditData}
+          trainScheduleToEditData={trainScheduleToEditData}
+          setTrainScheduleToEditData={setTrainScheduleToEditData}
         />
 
         {(displayTimetableItemManagement === MANAGE_TIMETABLE_ITEM_TYPES.add ||

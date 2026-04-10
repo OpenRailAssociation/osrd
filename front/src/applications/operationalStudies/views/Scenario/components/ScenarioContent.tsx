@@ -13,7 +13,7 @@ import Conflicts from 'modules/conflict/components/Conflicts';
 import useConflictsFilter from 'modules/conflict/hooks/useConflictsFilter';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
 import { setFailure } from 'reducers/main';
-import type { TimetableItem, TimetableItemToEditData } from 'reducers/osrdconf/types';
+import type { TimetableItem, TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { usePrevious } from 'utils/hooks/state';
@@ -47,7 +47,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
     MANAGE_TIMETABLE_ITEM_TYPES.none
   );
   const [collapsedTimetableEdit, setCollapsedTimetableEdit] = useState(false);
-  const [timetableItemToEditData, setTimetableItemToEditData] = useState<TimetableItemToEditData>();
+  const [trainScheduleToEditData, setTrainScheduleToEditData] = useState<TrainScheduleToEditData>();
   const [macroBoardHeight, setMacroBoardHeight] = useState<number>(MACRO_EDITOR_HEIGHT);
 
   const {
@@ -166,8 +166,8 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
             displayTimetableItemManagement={displayTimetableItemManagement}
             setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
             upsertTimetableItems={upsertTimetableItemsWithNge}
-            timetableItemToEditData={timetableItemToEditData}
-            setTimetableItemToEditData={setTimetableItemToEditData}
+            trainScheduleToEditData={trainScheduleToEditData}
+            setTrainScheduleToEditData={setTrainScheduleToEditData}
             setCollapsedTimetableEdit={() => setCollapsedTimetableEdit(!collapsedTimetableEdit)}
             collapsedTimetableEdit={collapsedTimetableEdit}
             importTrainScheduleSets={importTrainScheduleSets}
@@ -185,8 +185,8 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
               removeTimetableItems={removeTimetableItemsWithNge}
               timetableItems={timetableItems}
               timetableItemsWithDetails={timetableItemsWithDetails}
-              setTimetableItemToEditData={setTimetableItemToEditData}
-              timetableItemToEditData={timetableItemToEditData}
+              setTrainScheduleToEditData={setTrainScheduleToEditData}
+              trainScheduleToEditData={trainScheduleToEditData}
               refreshNge={refreshNge}
               projectingOnSimulatedPathException={
                 projectionData?.projectingOnSimulatedPathException

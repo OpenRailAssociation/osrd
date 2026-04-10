@@ -100,7 +100,7 @@ test.describe('Paced train exceptions', { tag: ['@op', '@paced-trains', '@except
 
       await test.step('Edit the paced train', async () => {
         await pacedTrainSection.openPacedTrainEditor(5);
-        await scenarioTimetableSection.verifyEditTimetableItemButtonVisibility();
+        await scenarioTimetableSection.verifyEditTrainScheduleButtonVisibility();
       });
 
       await test.step('Update rolling stock', async () => {
@@ -216,7 +216,7 @@ test.describe('Paced train exceptions', { tag: ['@op', '@paced-trains', '@except
 
     await test.step('Edit paced train at index 1', async () => {
       await pacedTrainSection.openPacedTrainEditor(1);
-      await scenarioTimetableSection.verifyEditTimetableItemButtonVisibility();
+      await scenarioTimetableSection.verifyEditTrainScheduleButtonVisibility();
     });
 
     await test.step('Check inputs before editing paced train', async () => {

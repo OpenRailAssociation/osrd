@@ -5,7 +5,7 @@ import type { PacedTrainException, TrainSchedule } from 'common/api/osrdEditoast
 import getStepLocation from 'modules/pathfinding/helpers/getStepLocation';
 import { isPacedTrainBase } from 'modules/timetableItem/helpers/pacedTrain';
 import type { PacedTrainWithDetails } from 'modules/timetableItem/types';
-import type { TimetableItemToEditData, OperationalStudiesConfState } from 'reducers/osrdconf/types';
+import type { TrainScheduleToEditData, OperationalStudiesConfState } from 'reducers/osrdconf/types';
 import { kmhToMs } from 'utils/physics';
 import { extractOccurrenceIndexFromOccurrenceId, isIndexedOccurrenceId } from 'utils/trainId';
 import type { NonNullableObject } from 'utils/types';
@@ -86,7 +86,7 @@ export function formatPacedTrainWithDetailsToPacedTrainPayload(
 export function formatOccurrenceException(
   osrdconf: OperationalStudiesConfState,
   rollingStockName: string,
-  timetableItemToEditData: NonNullableObject<TimetableItemToEditData, 'occurrenceId'>
+  trainScheduleToEditData: NonNullableObject<TrainScheduleToEditData, 'occurrenceId'>
 ): {
   generatedException: Omit<PacedTrainException, 'key' | 'occurrence_index'>;
   occurrenceIndex: number | undefined;
@@ -103,15 +103,15 @@ export function formatOccurrenceException(
   };
 
   const originalPacedTrain = formatPacedTrainWithDetailsToPacedTrainPayload(
-    timetableItemToEditData.originalPacedTrain
+    trainScheduleToEditData.originalPacedTrain
   );
 
   if (!isPacedTrainBase(originalPacedTrain))
     throw new Error(
-      `PacedTrain payload (built from train ${timetableItemToEditData.originalPacedTrain.id}) should have a paced field.`
+      `PacedTrain payload (built from train ${trainScheduleToEditData.originalPacedTrain.id}) should have a paced field.`
     );
 
-  const { occurrenceId } = timetableItemToEditData;
+  const { occurrenceId } = trainScheduleToEditData;
 
   const occurrenceIndex = isIndexedOccurrenceId(occurrenceId)
     ? extractOccurrenceIndexFromOccurrenceId(occurrenceId)

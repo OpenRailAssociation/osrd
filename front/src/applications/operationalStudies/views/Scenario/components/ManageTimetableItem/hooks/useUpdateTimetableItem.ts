@@ -26,7 +26,7 @@ import {
   getOperationalStudiesConf,
   getAddedExceptions,
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import type { TimetableItem, TimetableItemToEditData } from 'reducers/osrdconf/types';
+import type { TimetableItem, TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import { updateSelectedTrain, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
@@ -43,8 +43,8 @@ const useUpdateTimetableItem = (
   setIsWorking: (isWorking: boolean) => void,
   setDisplayTimetableItemManagement: (type: string) => void,
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void,
-  setTimetableItemIdToEdit: (timetableItemToEditData?: TimetableItemToEditData) => void,
-  timetableItemToEditData?: TimetableItemToEditData
+  setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void,
+  trainScheduleToEditData?: TrainScheduleToEditData
 ) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTimetableItem',
@@ -63,9 +63,9 @@ const useUpdateTimetableItem = (
   });
 
   // Shared post-submit logic: dispatches success, updates selected train id, closes modal
-  const handleUpdateSuccess = (timetableItemId: number, editData: TimetableItemToEditData) => {
+  const handleUpdateSuccess = (trainScheduleId: number, editData: TrainScheduleToEditData) => {
     const editedTrainId =
-      editData.occurrenceId ?? formatEditoastIdToPacedTrainId(editData.timetableItemId);
+      editData.occurrenceId ?? formatEditoastIdToPacedTrainId(editData.trainScheduleId);
 
     dispatch(
       setSuccess({
@@ -83,35 +83,35 @@ const useUpdateTimetableItem = (
     if (
       trainIdUsedForProjection &&
       isOccurrenceId(trainIdUsedForProjection) &&
-      trainIdUsedForProjection.includes(`_${timetableItemId}_`) &&
+      trainIdUsedForProjection.includes(`_${trainScheduleId}_`) &&
       !editData.originalPacedTrain.paced
     ) {
-      dispatch(updateTrainIdUsedForProjection(formatEditoastIdToPacedTrainId(timetableItemId)));
+      dispatch(updateTrainIdUsedForProjection(formatEditoastIdToPacedTrainId(trainScheduleId)));
     }
 
     dispatch(clearAddedExceptionsList());
     setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.none);
-    setTimetableItemIdToEdit(undefined);
+    setTrainScheduleToEditData(undefined);
   };
 
   return async function submitConfUpdateTrainSchedules() {
     if (
-      !timetableItemToEditData ||
+      !trainScheduleToEditData ||
       !checkCurrentConfig(simulationConf, t, dispatch, rollingStock?.name)
     )
       return;
 
     setIsWorking(true);
 
-    const { timetableItemId, occurrenceId, originalPacedTrain } = timetableItemToEditData;
+    const { trainScheduleId, occurrenceId, originalPacedTrain } = trainScheduleToEditData;
 
     // ========== user is editing an occurrence ==========
     if (occurrenceId) {
       const { generatedException, occurrenceIndex } = formatOccurrenceException(
         simulationConf,
         rollingStock!.name,
-        timetableItemToEditData as TimetableItemToEditData & {
-          occurrenceId: NonNullable<TimetableItemToEditData['occurrenceId']>;
+        trainScheduleToEditData as TrainScheduleToEditData & {
+          occurrenceId: NonNullable<TrainScheduleToEditData['occurrenceId']>;
         }
       );
 
@@ -125,7 +125,7 @@ const useUpdateTimetableItem = (
         generatedException,
         existingException,
         occurrenceIndex,
-        timetableItemId,
+        trainScheduleId,
         timetableId
       );
 
@@ -140,7 +140,7 @@ const useUpdateTimetableItem = (
       upsertTimetableItems([
         {
           ...formattedPacedTrain,
-          id: timetableItemId,
+          id: trainScheduleId,
           train_schedule_set_id: originalPacedTrain.train_schedule_set_id,
           paced: formattedPacedTrain.paced
             ? { ...formattedPacedTrain.paced, exceptions: updatedExceptions }
@@ -148,7 +148,7 @@ const useUpdateTimetableItem = (
         },
       ]);
 
-      return handleUpdateSuccess(timetableItemId, timetableItemToEditData);
+      return handleUpdateSuccess(trainScheduleId, trainScheduleToEditData);
     }
 
     // ========== user is editing the whole paced train or transforming from an unique train ==========
@@ -168,7 +168,7 @@ const useUpdateTimetableItem = (
     // before we can create exceptions on it.
     if (!originalPacedTrain.paced) {
       await syncAndUpdatePacedTrain(
-        timetableItemId,
+        trainScheduleId,
         {
           ...trainSchedule,
           train_schedule_set_id: originalPacedTrain.train_schedule_set_id,
@@ -183,7 +183,7 @@ const useUpdateTimetableItem = (
       const created = await createExceptions(
         dispatch,
         newAddedExceptions,
-        timetableItemId,
+        trainScheduleId,
         timetableId
       );
 
@@ -203,7 +203,7 @@ const useUpdateTimetableItem = (
       upsertTimetableItems([
         {
           ...trainSchedule,
-          id: timetableItemId,
+          id: trainScheduleId,
           train_schedule_set_id: originalPacedTrain.train_schedule_set_id,
           ...(trainSchedule.paced && {
             paced: { ...trainSchedule.paced, exceptions: createdExceptions },
@@ -211,7 +211,7 @@ const useUpdateTimetableItem = (
         },
       ]);
 
-      return handleUpdateSuccess(timetableItemId, timetableItemToEditData);
+      return handleUpdateSuccess(trainScheduleId, trainScheduleToEditData);
     }
 
     // ========== user is converting a paced train to a unique train ==========
@@ -222,7 +222,7 @@ const useUpdateTimetableItem = (
         await deleteExceptions(dispatch, exceptionsToDelete);
       }
       await storePacedTrain(
-        timetableItemId,
+        trainScheduleId,
         {
           ...trainSchedule,
           train_schedule_set_id: originalPacedTrain.train_schedule_set_id,
@@ -231,7 +231,7 @@ const useUpdateTimetableItem = (
         upsertTimetableItems
       );
 
-      return handleUpdateSuccess(timetableItemId, timetableItemToEditData);
+      return handleUpdateSuccess(trainScheduleId, trainScheduleToEditData);
     }
 
     // ========== user is editing an existing paced train ==========
@@ -258,14 +258,14 @@ const useUpdateTimetableItem = (
     }
 
     if (exceptionsToUpdate.length > 0) {
-      await updateExceptions(dispatch, exceptionsToUpdate, timetableItemId);
+      await updateExceptions(dispatch, exceptionsToUpdate, trainScheduleId);
     }
 
     const finalExceptions = [...reconciledExceptions, ...createdExceptions];
 
     // Store the paced train with the final exceptions list
     await storePacedTrain(
-      timetableItemId,
+      trainScheduleId,
       {
         ...trainSchedule,
         train_schedule_set_id: originalPacedTrain.train_schedule_set_id,
@@ -277,7 +277,7 @@ const useUpdateTimetableItem = (
       upsertTimetableItems
     );
 
-    return handleUpdateSuccess(timetableItemId, timetableItemToEditData);
+    return handleUpdateSuccess(trainScheduleId, trainScheduleToEditData);
   };
 };
 

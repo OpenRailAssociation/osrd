@@ -14,7 +14,7 @@ import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { isPacedTrainWithDetails } from 'modules/timetableItem/helpers/pacedTrain';
 import type { PacedTrainWithDetails, TimetableItemWithDetails } from 'modules/timetableItem/types';
 import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
-import type { OccurrenceId, TimetableItem, TimetableItemToEditData } from 'reducers/osrdconf/types';
+import type { OccurrenceId, TimetableItem, TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import {
   getSelectedTrainId,
   getTrainIdUsedForProjection,
@@ -33,10 +33,10 @@ import UniqueTrainItem from './UniqueTrainItem';
 type TrainListProps = {
   setDisplayTimetableItemManagement: (mode: string) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
-  setTimetableItemToEditData: (timetableItemToEditData?: TimetableItemToEditData) => void;
+  setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
   setSelectedTimetableItemIds: React.Dispatch<React.SetStateAction<number[]>>;
   removeAndUnselectTrains: (trainIds: number[]) => void;
-  timetableItemToEditData?: TimetableItemToEditData;
+  trainScheduleToEditData?: TrainScheduleToEditData;
   timetableItemsWithDetails: TimetableItemWithDetails[];
   selectedTimetableItemIds: number[];
   projectingOnSimulatedPathException: boolean | undefined;
@@ -58,10 +58,10 @@ const formatDepartureDate = (d: Date, locale: Intl.Locale) =>
 const TrainList = ({
   setDisplayTimetableItemManagement,
   upsertTimetableItems,
-  setTimetableItemToEditData,
+  setTrainScheduleToEditData,
   setSelectedTimetableItemIds,
   removeAndUnselectTrains,
-  timetableItemToEditData,
+  trainScheduleToEditData,
   timetableItemsWithDetails,
   selectedTimetableItemIds,
   projectingOnSimulatedPathException,
@@ -141,13 +141,13 @@ const TrainList = ({
       occurrenceId?: OccurrenceId
     ) => {
       dispatch(selectTrainToEdit({ item: itemToEdit, isOccurrence: !!occurrenceId }));
-      const editData = {
-        timetableItemId: itemToEdit.id,
+      const editData: TrainScheduleToEditData = {
+        trainScheduleId: itemToEdit.id,
         // param originalPacedTrain is defined only when editing an occurrence
         originalPacedTrain: originalPacedTrain ?? itemToEdit,
         occurrenceId,
       };
-      setTimetableItemToEditData(editData);
+      setTrainScheduleToEditData(editData);
       setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.edit);
     },
     []
@@ -169,7 +169,7 @@ const TrainList = ({
                 workerStatus === 'READY' &&
                 selectedTrainId === formatEditoastIdToPacedTrainId(timetableItem.id)
               }
-              isModified={timetableItem.id === timetableItemToEditData?.timetableItemId}
+              isModified={timetableItem.id === trainScheduleToEditData?.trainScheduleId}
               upsertUniqueTrains={upsertTimetableItems}
               removeTrains={removeAndUnselectTrains}
               selectTrainToEdit={selectTimetableItemToEdit}
@@ -191,7 +191,7 @@ const TrainList = ({
               handleSelectPacedTrain={handleSelectTimetableItem}
               isOccurrencesListOpen={expandedTimetableItemIds.has(timetableItem.id)}
               handleOpenOccurrencesList={handleExpandTimetableItem}
-              isOnEdit={timetableItem.id === timetableItemToEditData?.timetableItemId}
+              isOnEdit={timetableItem.id === trainScheduleToEditData?.trainScheduleId}
               selectedTrainId={selectedTrainId}
               upsertTimetableItems={upsertTimetableItems}
               removePacedTrains={removeAndUnselectTrains}
@@ -222,7 +222,7 @@ const TrainList = ({
       selectedTrainId,
       setSelectedTimetableItemIds,
       subCategories,
-      timetableItemToEditData?.timetableItemId,
+      trainScheduleToEditData?.trainScheduleId,
       timetableMode,
       trainIdUsedForProjection,
       upsertTimetableItems,

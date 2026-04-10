@@ -14,7 +14,7 @@ import {
   getEditingItemType,
   getOperationalStudiesConf,
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import type { TimetableItem, TimetableItemToEditData } from 'reducers/osrdconf/types';
+import type { TimetableItem, TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 
 import CreateTimetableItemButton from './CreateTimetableItemButton';
@@ -24,10 +24,10 @@ import PacedTrainSettings from './PacedTrainSettings';
 
 export type ManageTimetableItemLeftPanelProps = {
   displayTimetableItemManagement: string;
-  timetableItemToEditData?: TimetableItemToEditData;
+  trainScheduleToEditData?: TrainScheduleToEditData;
   setDisplayTimetableItemManagement: (type: string) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
-  setTimetableItemToEditData: (timetableItemToEditData?: TimetableItemToEditData) => void;
+  setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
 };
 
 /**
@@ -37,8 +37,8 @@ const ManageTimetableItemLeftPanel = ({
   displayTimetableItemManagement,
   setDisplayTimetableItemManagement,
   upsertTimetableItems,
-  timetableItemToEditData,
-  setTimetableItemToEditData,
+  trainScheduleToEditData,
+  setTrainScheduleToEditData,
 }: ManageTimetableItemLeftPanelProps) => {
   const { setEditedElementContainer } = useContext(EditedElementContainerContext);
   const dispatch = useAppDispatch();
@@ -53,18 +53,18 @@ const ManageTimetableItemLeftPanel = ({
 
   const leaveManageTimetableItem = () => {
     setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.none);
-    setTimetableItemToEditData(undefined);
+    setTrainScheduleToEditData(undefined);
   };
 
   const updateTimetable = useUpdateTimetableItem(
     setIsWorking,
     setDisplayTimetableItemManagement,
     upsertTimetableItems,
-    setTimetableItemToEditData,
-    timetableItemToEditData
+    setTrainScheduleToEditData,
+    trainScheduleToEditData
   );
 
-  const getEditLabel = (_itemToEdit: TimetableItemToEditData) => {
+  const getEditLabel = (_itemToEdit: TrainScheduleToEditData) => {
     if (!_itemToEdit.originalPacedTrain.paced && editingItemType === 'uniqueTrain') {
       return t('updateUniqueTrain');
     }
@@ -80,19 +80,19 @@ const ManageTimetableItemLeftPanel = ({
     <div className="scenario-timetable-manage-timetable-item left-column">
       <div className="scenario-timetable-manage-timetable-item-header">
         {displayTimetableItemManagement === MANAGE_TIMETABLE_ITEM_TYPES.edit &&
-          timetableItemToEditData && (
+          trainScheduleToEditData && (
             <>
               <button
                 className="btn btn-warning mb-2"
                 type="button"
                 onClick={() => {
                   if (
-                    timetableItemToEditData.originalPacedTrain.paced &&
-                    timetableItemToEditData.originalPacedTrain.paced.exceptions.length > 0 &&
+                    trainScheduleToEditData.originalPacedTrain.paced &&
+                    trainScheduleToEditData.originalPacedTrain.paced.exceptions.length > 0 &&
                     (osrdConf.timeWindow.toISOString() !==
-                      timetableItemToEditData.originalPacedTrain.paced.timeWindow.toISOString() ||
+                      trainScheduleToEditData.originalPacedTrain.paced.timeWindow.toISOString() ||
                       osrdConf.interval.toISOString() !==
-                        timetableItemToEditData.originalPacedTrain.paced.interval.toISOString())
+                        trainScheduleToEditData.originalPacedTrain.paced.interval.toISOString())
                   ) {
                     openModal(
                       <ConfirmModal
@@ -110,12 +110,12 @@ const ManageTimetableItemLeftPanel = ({
                     updateTimetable();
                   }
                 }}
-                data-testid="submit-edit-timetable-item"
+                data-testid="submit-edit-train-schedule"
               >
                 <span className="mr-2">
                   <Pencil size="lg" />
                 </span>
-                {getEditLabel(timetableItemToEditData)}
+                {getEditLabel(trainScheduleToEditData)}
               </button>
               {editingItemType !== 'occurrence' && (
                 <div className="osrd-config-item-container paced-trains-container">
