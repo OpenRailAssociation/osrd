@@ -1,3 +1,5 @@
+use std::convert::Infallible;
+
 use authz::InfraPrivilege;
 use authz::v2::Access;
 use authz::v2::Authorizer;
@@ -5,7 +7,6 @@ use authz::v2::Guardrail;
 use authz::v2::Protected;
 use authz::v2::SanityCheck;
 use editoast_models::prelude::*;
-use fga::model::Relation as _;
 
 /// An authorizer that represents editoast's authorization decisions
 ///
@@ -161,39 +162,11 @@ async fn guardrail(
         Guardrail::IssuerHasRole(_) => None,
 
         Guardrail::IssuerHasInfraPrivilege(privilege, infra) => {
-            let has_privilege = match privilege {
-                InfraPrivilege::CanRead => {
-                    openfga
-                        .check(authz::Infra::can_read().check(issuer, infra))
-                        .await?
-                }
-                InfraPrivilege::CanWrite => {
-                    openfga
-                        .check(authz::Infra::can_write().check(issuer, infra))
-                        .await?
-                }
-                InfraPrivilege::CanDelete => {
-                    openfga
-                        .check(authz::Infra::can_delete().check(issuer, infra))
-                        .await?
-                }
-                InfraPrivilege::CanShareRead => {
-                    openfga
-                        .check(authz::Infra::can_share_read().check(issuer, infra))
-                        .await?
-                }
-                InfraPrivilege::CanShareWrite => {
-                    openfga
-                        .check(authz::Infra::can_share_write().check(issuer, infra))
-                        .await?
-                }
-                InfraPrivilege::CanShareOwnership => {
-                    openfga
-                        .check(authz::Infra::can_share_ownership().check(issuer, infra))
-                        .await?
-                }
-            };
-            (!has_privilege).then_some(Rejection::LackingInfraPrivilege(
+            let Ok(privileges) = authz::v2::infra_privileges(*issuer, *infra)
+                .blindly_authorize::<Infallible>(openfga)
+                .access()
+                .await?;
+            (!privileges.contains(privilege)).then_some(Rejection::LackingInfraPrivilege(
                 *privilege,
                 authz::Subject::user(*issuer),
                 *infra,
