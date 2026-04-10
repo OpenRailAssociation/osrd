@@ -67,7 +67,7 @@ const Timetable = ({
   const [pacedTrainIdsToMove, setPacedTrainIdsToMove] = useState<number[]>([]);
   const [trainScheduleSetIdSelected, setTrainScheduleSetIdSelected] = useState<number>();
 
-  const { timetableItemsByTrainScheduleSets, catalogEntries, manageTrainScheduleSet } =
+  const { trainSchedulesByTrainScheduleSets, catalogEntries, manageTrainScheduleSet } =
     useScenarioTrainScheduleSet(trainSchedulesWithDetails, timetableItems, upsertTimetableItems);
 
   const { filteredTrainSchedules, ...timetableFilters } =
@@ -176,7 +176,7 @@ const Timetable = ({
           projectingOnSimulatedPathException={projectingOnSimulatedPathException}
           isSelectMode={isSelectMode}
           timetableMode={timetableMode}
-          timetableItemsByTrainScheduleSets={timetableItemsByTrainScheduleSets}
+          trainSchedulesByTrainScheduleSets={trainSchedulesByTrainScheduleSets}
           handleClickTrainScheduleSet={handleClickTrainScheduleSet}
           handleSelectTrainScheduleSet={handleSelectTrainScheduleSet}
           catalogEntries={catalogEntries}
@@ -199,13 +199,13 @@ const Timetable = ({
         />
       )}
 
-      {showTrainScheduleMoveDialog && timetableItemsByTrainScheduleSets && (
+      {showTrainScheduleMoveDialog && trainSchedulesByTrainScheduleSets && (
         <TrainScheduleMoveDialog
-          trainScheduleSets={timetableItemsByTrainScheduleSets.map((tss) => tss.trainScheduleSet)}
+          trainScheduleSets={trainSchedulesByTrainScheduleSets.map((tss) => tss.trainScheduleSet)}
           setTrainScheduleSetIdSelected={setTrainScheduleSetIdSelected}
           trainScheduleSetIdSelected={trainScheduleSetIdSelected}
           catalogEntries={catalogEntries.filter((entry) =>
-            timetableItemsByTrainScheduleSets.some(
+            trainSchedulesByTrainScheduleSets.some(
               (tss) => tss.trainScheduleSet.catalog_entry_id === entry.id
             )
           )}

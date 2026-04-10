@@ -26,7 +26,7 @@ export type ImportTrainScheduleSetsPayload = Array<{
   trainScheduleSet: TrainScheduleSet;
 }>;
 
-export type TimetableItemsByTrainScheduleSet = {
+export type TrainSchedulesByTrainScheduleSet = {
   trainScheduleSet: TrainScheduleSet;
   trains: PacedTrainWithDetails[];
   catalog?: CatalogEntry;
@@ -332,7 +332,7 @@ export default function useScenarioTrainScheduleSet(
     ]
   );
 
-  const timetableItemsByTrainScheduleSets = useMemo(() => {
+  const trainSchedulesByTrainScheduleSets = useMemo(() => {
     if (!trainScheduleSets) return null;
 
     // We group trains by trainScheduleSet
@@ -366,7 +366,7 @@ export default function useScenarioTrainScheduleSet(
     return Array.from(trainScheduleSetsById.values())
       .sort((a, b) => sortTrainScheduleSets(a, b, catalogEntriesIndex))
       .map(
-        (trainScheduleSet): TimetableItemsByTrainScheduleSet => ({
+        (trainScheduleSet): TrainSchedulesByTrainScheduleSet => ({
           trainScheduleSet,
           trains: trainsByTrainScheduleSetId.get(trainScheduleSet.id) || [],
           catalog: trainScheduleSet.catalog_entry_id
@@ -397,12 +397,12 @@ export default function useScenarioTrainScheduleSet(
 
   return {
     catalogEntries: catalogEntries ?? [],
-    timetableItemsByTrainScheduleSets,
+    trainSchedulesByTrainScheduleSets,
     manageTrainScheduleSet,
     importTrainScheduleSets,
   } satisfies {
     catalogEntries?: CatalogEntry[];
-    timetableItemsByTrainScheduleSets: TimetableItemsByTrainScheduleSet[] | null;
+    trainSchedulesByTrainScheduleSets: TrainSchedulesByTrainScheduleSet[] | null;
     manageTrainScheduleSet: TrainScheduleSetManager;
     importTrainScheduleSets: (data: ImportTrainScheduleSetsPayload) => Promise<void>;
   };
