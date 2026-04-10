@@ -17,7 +17,6 @@ geos.workspace = true
 iso8601 = "0.6.3"
 rand.workspace = true
 regex.workspace = true
-rstest.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 serde_with.workspace = true
@@ -26,6 +25,9 @@ thiserror.workspace = true
 uom.workspace = true
 utoipa.workspace = true
 uuid.workspace = true
+
+[dev-dependencies]
+rstest.workspace = true
 
 [lints]
 workspace = true
