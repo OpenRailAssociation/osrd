@@ -268,9 +268,9 @@ dependencies = [
 
 [[package]]
 name = "async-rs"
-version = "0.8.1"
+version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8d47e5e0df9bce1f132f67a64409a973b031481366b858330013060ca76b3a80"
+checksum = "1e7d98bcae2752f5f3edb17288ff34b799760be54f63261073eed9f6982367b5"
 dependencies = [
  "async-compat",
  "async-global-executor",
@@ -2694,9 +2694,9 @@ dependencies = [
 
 [[package]]
 name = "lapin"
-version = "4.3.0"
+version = "4.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1586ef35d652d6c47ed7449277a4483805b73b84ab368c85af44205fe3457972"
+checksum = "39338badb3f992d800f6964501b056b575bdf142eb288202f973d218fe253b90"
 dependencies = [
  "amq-protocol",
  "async-rs",
