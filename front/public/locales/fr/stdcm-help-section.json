@@ -99,28 +99,6 @@
             }
           ],
           "title": "Conception"
-        },
-        {
-          "content": [
-            {
-              "items": [
-                {
-                  "alt": "Ministère de l’Aménagement du Territoire et de la Décentralisation",
-                  "src": "/sponsors/logo-ministere-scaled.webp"
-                },
-                {
-                  "alt": "Union Européenne",
-                  "src": "/sponsors/european-union.svg"
-                },
-                {
-                  "alt": "SNCF Réseau",
-                  "src": "/sponsors/sncf-reseau.svg"
-                }
-              ],
-              "type": "sponsors"
-            }
-          ],
-          "title": "Sponsors"
         }
       ],
       "title": "L'application"
@@ -471,5 +449,6 @@
       ],
       "title": "Le résultat du calcul"
     }
-  }
+  },
+  "sponsors": "Sponsors"
 }
