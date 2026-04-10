@@ -235,4 +235,4 @@ export type TrainBaseWithOccurrenceId = Omit<TrainScheduleResponse, 'id'> & {
 
 export type Train = TrainBaseWithPacedTrainId | TrainBaseWithOccurrenceId;
 
-export type TimetableItemWithPathOps = TimetableItem & { pathOps: RelatedOperationalPoint[][] };
+export type TrainScheduleWithPathOps = TimetableItem & { pathOps: RelatedOperationalPoint[][] };

@@ -22,7 +22,7 @@ import type {
 import type { RangedValue } from 'common/types';
 import type { PathOperationalPoint } from 'modules/simulationResult/types';
 import type { SuggestedOP } from 'modules/timetableItem/types';
-import type { Train, TimetableItemWithPathOps } from 'reducers/osrdconf/types';
+import type { Train, TrainScheduleWithPathOps } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
 import type { ArrayElement } from 'utils/types';
 
@@ -161,9 +161,9 @@ export type OperationalPointWithTimeAndSpeed = {
 };
 
 export type TimetableItemRoundTripGroups = {
-  oneWays: TimetableItemWithPathOps[];
-  roundTrips: (readonly [TimetableItemWithPathOps, TimetableItemWithPathOps])[];
-  others: TimetableItemWithPathOps[];
+  oneWays: TrainScheduleWithPathOps[];
+  roundTrips: (readonly [TrainScheduleWithPathOps, TrainScheduleWithPathOps])[];
+  others: TrainScheduleWithPathOps[];
 };
 
 export type StudyCardDetails = SearchResultItemStudy | StudyWithScenarios;

@@ -18,7 +18,7 @@ import type {
 import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
 import { isPacedTrain } from 'modules/timetableItem/helpers/pacedTrain';
 import type { SimulationSummary } from 'modules/timetableItem/types';
-import type { TimetableItem, TimetableItemWithPathOps } from 'reducers/osrdconf/types';
+import type { TimetableItem, TrainScheduleWithPathOps } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 import { mmToM } from 'utils/physics';
 import { SMALL_INPUT_MAX_LENGTH } from 'utils/strings';
@@ -254,12 +254,12 @@ export const getStationFromOps = (ops: OperationalPoint[]): OperationalPoint | u
   ops.find((op) => ['BV', '00'].includes(op.extensions?.sncf?.ch || '')) || ops.at(0);
 
 /**
- * Get a list of unique OP references from timetable items paths.
+ * Get a list of unique OP references from train schedules paths.
  */
-export const getUniqueOpRefsFromTimetableItems = (
-  timetableItems: TimetableItem[]
+export const getUniqueOpRefsFromTrainSchedules = (
+  trainSchedules: TimetableItem[]
 ): OperationalPointReference[] => {
-  const pathItems = timetableItems.flatMap((timetableItem) => timetableItem.path);
+  const pathItems = trainSchedules.flatMap((trainSchedule) => trainSchedule.path);
   const uniqueSteps = new Map<string, OperationalPointReference>();
   for (const pathItem of pathItems) {
     const pathItemLocation = pathItem.location;
@@ -273,14 +273,14 @@ export const getUniqueOpRefsFromTimetableItems = (
 };
 
 /**
- * Attach OPs to timetable items, given a list of OP references and their
+ * Attach OPs to train schedules, given a list of OP references and their
  * matchAllOperationalPoints response.
  */
-export const addPathOpsToTimetableItems = (
-  timetableItems: TimetableItem[],
+export const addPathOpsToTrainSchedules = (
+  trainSchedules: TimetableItem[],
   timetableOpRefs: OperationalPointReference[],
   timetableOperationalPoints: (RelatedOperationalPoint | null)[]
-): TimetableItemWithPathOps[] => {
+): TrainScheduleWithPathOps[] => {
   if (timetableOpRefs.length !== timetableOperationalPoints.length) {
     throw new Error('Expected as many OP match lists as OP refs');
   }
@@ -292,54 +292,54 @@ export const addPathOpsToTimetableItems = (
     opsByKey.set(key, op ? [op] : []);
   });
 
-  // For each timetable item, fill the pathOps property with
+  // For each train schedule, fill the pathOps property with
   // their corresponding operational points
-  return timetableItems.map((timetableItem) => {
+  return trainSchedules.map((trainSchedule) => {
     // For each pathStepKeys, find its corresponding operational points :
     // 1. if found, return the operational points
     // 2. if key exists but no operational points were found, return an empty array
     // 3. if key does not exist in opsByKey (meaning it's a track offset), return an empty array
-    const pathOps = timetableItem.path.map((pathItem) => {
+    const pathOps = trainSchedule.path.map((pathItem) => {
       if (pathItem.location.type === 'track_offset') return [];
       return opsByKey.get(JSON.stringify(pathItem.location.operational_point)) ?? [];
     });
-    return { ...timetableItem, pathOps };
+    return { ...trainSchedule, pathOps };
   });
 };
 
 /**
- * Check whether a timetable item can be seen as the return of another
- * timetable item. If this function returns true, we can draw a single line to
+ * Check whether a train schedule can be seen as the return of another
+ * train schedule. If this function returns true, we can draw a single line to
  * represent the round-trip in the macro editor.
  */
 export const checkRoundTripCompatible = (
-  timetableItemA: TimetableItemWithPathOps,
-  timetableItemB: TimetableItemWithPathOps
+  trainScheduleA: TrainScheduleWithPathOps,
+  trainScheduleB: TrainScheduleWithPathOps
 ): boolean => {
-  if (isPacedTrain(timetableItemA) !== isPacedTrain(timetableItemB)) {
+  if (isPacedTrain(trainScheduleA) !== isPacedTrain(trainScheduleB)) {
     return false;
   }
   if (
-    isPacedTrain(timetableItemA) &&
-    isPacedTrain(timetableItemB) &&
-    Duration.parse(timetableItemA.paced.interval).ms !==
-      Duration.parse(timetableItemB.paced.interval).ms
+    isPacedTrain(trainScheduleA) &&
+    isPacedTrain(trainScheduleB) &&
+    Duration.parse(trainScheduleA.paced.interval).ms !==
+      Duration.parse(trainScheduleB.paced.interval).ms
   ) {
     return false;
   }
-  if (!isEqual(timetableItemA.category, timetableItemB.category)) {
+  if (!isEqual(trainScheduleA.category, trainScheduleB.category)) {
     return false;
   }
-  if (timetableItemA.pathOps.length !== timetableItemB.pathOps.length) {
+  if (trainScheduleA.pathOps.length !== trainScheduleB.pathOps.length) {
     return false;
   }
 
-  for (const [indexA, opsA] of timetableItemA.pathOps.entries()) {
-    const indexB = timetableItemA.pathOps.length - indexA - 1;
-    const opsB = timetableItemB.pathOps[indexB];
+  for (const [indexA, opsA] of trainScheduleA.pathOps.entries()) {
+    const indexB = trainScheduleA.pathOps.length - indexA - 1;
+    const opsB = trainScheduleB.pathOps[indexB];
 
-    const pathItemA = timetableItemA.path[indexA];
-    const pathItemB = timetableItemB.path[indexB];
+    const pathItemA = trainScheduleA.path[indexA];
+    const pathItemB = trainScheduleB.path[indexB];
 
     const aExists = opsA.length > 0;
     const bExists = opsB.length > 0;
@@ -353,7 +353,7 @@ export const checkRoundTripCompatible = (
         return false;
       }
     } else {
-      // id is specific to each timetable item
+      // id is specific to each train schedule
       // local_track_name is ignored because we don't want to take tracks into account
       // Only take into account uic/trigram/opId of the path items
       const opRefA = {
@@ -372,8 +372,8 @@ export const checkRoundTripCompatible = (
       }
     }
 
-    const scheduleItemA = timetableItemA.schedule?.find(({ at }) => at === pathItemA.id);
-    const scheduleItemB = timetableItemB.schedule?.find(({ at }) => at === pathItemB.id);
+    const scheduleItemA = trainScheduleA.schedule?.find(({ at }) => at === pathItemA.id);
+    const scheduleItemB = trainScheduleB.schedule?.find(({ at }) => at === pathItemB.id);
 
     const isStopA = indexA === 0 || Boolean(scheduleItemA?.stop_for);
     const isStopB = indexB === 0 || Boolean(scheduleItemB?.stop_for);
@@ -386,24 +386,24 @@ export const checkRoundTripCompatible = (
 };
 
 /**
- * Group timetable items in three columns: one-ways, round-trips and others.
+ * Group train schedules in three columns: one-ways, round-trips and others.
  */
 export const groupRoundTrips = (
-  timetableItemsById: Map<number, TimetableItemWithPathOps>,
+  trainSchedulesById: Map<number, TrainScheduleWithPathOps>,
   rawRoundTrips?: RoundTrips
 ): TimetableItemRoundTripGroups => {
   const oneWayIds = rawRoundTrips?.one_ways ?? [];
   const roundTripIds = rawRoundTrips?.round_trips ?? [];
 
-  const oneWays = oneWayIds.map((id) => timetableItemsById.get(id)!);
+  const oneWays = oneWayIds.map((id) => trainSchedulesById.get(id)!);
   const roundTrips = roundTripIds.map(
     ([leftId, rightId]) =>
-      [timetableItemsById.get(leftId)!, timetableItemsById.get(rightId)!] as const
+      [trainSchedulesById.get(leftId)!, trainSchedulesById.get(rightId)!] as const
   );
 
   const oneWayOrRoundTripIds = new Set<number>([...oneWayIds, ...roundTripIds.flat()]);
-  const others = [...timetableItemsById.values()].filter(
-    (timetableItem) => !oneWayOrRoundTripIds.has(timetableItem.id)
+  const others = [...trainSchedulesById.values()].filter(
+    (trainSchedule) => !oneWayOrRoundTripIds.has(trainSchedule.id)
   );
 
   return { oneWays, roundTrips, others };

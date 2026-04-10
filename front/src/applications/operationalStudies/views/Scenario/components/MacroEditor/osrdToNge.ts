@@ -3,8 +3,8 @@ import { uniqBy } from 'lodash';
 
 import type { TimetableItemRoundTripGroups } from 'applications/operationalStudies/types';
 import {
-  getUniqueOpRefsFromTimetableItems,
-  addPathOpsToTimetableItems,
+  getUniqueOpRefsFromTrainSchedules,
+  addPathOpsToTrainSchedules,
   groupRoundTrips,
   checkRoundTripCompatible,
 } from 'applications/operationalStudies/utils';
@@ -15,7 +15,7 @@ import {
   type MacroNoteResponse,
 } from 'common/api/osrdEditoastApi';
 import { isPacedTrain } from 'modules/timetableItem/helpers/pacedTrain';
-import type { TimetableItem, TimetableItemWithPathOps } from 'reducers/osrdconf/types';
+import type { TimetableItem, TrainScheduleWithPathOps } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration, addDurationToDate } from 'utils/duration';
 
@@ -276,11 +276,11 @@ export const getTrainrunCategories = (
 };
 
 /**
- * Load & index the data of the timetableItem for the given scenario.
+ * Load & index the data of the trainSchedule for the given scenario.
  */
 export const loadAndIndexNge = async (
   state: MacroEditorState,
-  timetableItems: TimetableItemWithPathOps[],
+  trainSchedules: TrainScheduleWithPathOps[],
   dispatch: AppDispatch,
   t: TFunction<'operational-studies'>,
   subCategories: SubCategory[],
@@ -293,8 +293,8 @@ export const loadAndIndexNge = async (
 
   // Load path items
   let nbNodesIndexed = 0;
-  timetableItems
-    .flatMap((timetableItem) => timetableItem.path)
+  trainSchedules
+    .flatMap((trainSchedule) => trainSchedule.path)
     .forEach((pathItem) => {
       const key = MacroEditorState.getPathKey(pathItem.location);
       if (!state.getNodeByKey(key)) {
@@ -318,7 +318,7 @@ export const loadAndIndexNge = async (
       }
     });
 
-  const pathOps = timetableItems.flatMap((timetableItem) => timetableItem.pathOps).flat();
+  const pathOps = trainSchedules.flatMap((trainSchedule) => trainSchedule.pathOps).flat();
   for (const op of pathOps) {
     const { trigram, ch } = op.extensions?.sncf ?? {};
     for (const pathKey of MacroEditorState.getPathKeys(op)) {
@@ -331,8 +331,8 @@ export const loadAndIndexNge = async (
   }
 
   // Load saved nodes and update the indexed nodes
-  // If a saved node is not present in the timetableItems, we delete it.
-  // This can happen if we delete a timetableItem on which a node was saved.
+  // If a saved node is not present in the trainSchedules, we delete it.
+  // This can happen if we delete a trainSchedule on which a node was saved.
   const savedNodes = await dispatch(
     osrdEditoastApi.endpoints.getAllMacroNodes.initiate(
       { scenarioId: state.scenarioId },
@@ -353,21 +353,21 @@ export const loadAndIndexNge = async (
   // Dedup nodes
   state.dedupNodes();
 
-  // Index timetableItems labels
-  timetableItems.forEach((timetableItem) => {
-    timetableItem.labels?.forEach((l) => {
+  // Index trainSchedules labels
+  trainSchedules.forEach((trainSchedule) => {
+    trainSchedule.labels?.forEach((l) => {
       state.trainrunLabels.add(l);
     });
   });
 
   // Initialize TrainrunFrequencies
-  state.trainrunFrequencies = getNgeTrainrunFrequencies(timetableItems, t);
+  state.trainrunFrequencies = getNgeTrainrunFrequencies(trainSchedules, t);
 
   // Initialize TrainrunCategories
   state.trainrunCategories = getTrainrunCategories(t, subCategories);
 
   // Now that we have all nodes, we apply a layout
-  applyLayout(state, timetableItems);
+  applyLayout(state, trainSchedules);
 
   await storeTrainPathNodes(state, dispatch);
 };
@@ -678,12 +678,12 @@ export const getNgeDto = (
   };
 };
 
-const fetchTimetableItemPathOps = async (
+const fetchTrainSchedulePathOps = async (
   infraId: number,
-  timetableItems: TimetableItem[],
+  trainSchedules: TimetableItem[],
   dispatch: AppDispatch
-): Promise<TimetableItemWithPathOps[]> => {
-  const opRefs = getUniqueOpRefsFromTimetableItems(timetableItems);
+): Promise<TrainScheduleWithPathOps[]> => {
+  const opRefs = getUniqueOpRefsFromTrainSchedules(trainSchedules);
   const ops = await dispatch(
     osrdEditoastApi.endpoints.matchAllOperationalPoints.initiate(
       {
@@ -693,12 +693,12 @@ const fetchTimetableItemPathOps = async (
       { subscribe: false }
     )
   ).unwrap();
-  return addPathOpsToTimetableItems(timetableItems, opRefs, ops);
+  return addPathOpsToTrainSchedules(trainSchedules, opRefs, ops);
 };
 
 const groupCompatibleRoundTrips = (
   roundTripGroups: TimetableItemRoundTripGroups
-): (readonly [TimetableItemWithPathOps, TimetableItemWithPathOps | null])[] => {
+): (readonly [TrainScheduleWithPathOps, TrainScheduleWithPathOps | null])[] => {
   const incompatible = [];
   const compatible = [];
   for (const [a, b] of roundTripGroups.roundTrips) {
@@ -741,7 +741,7 @@ export const loadNgeDto = async (
     (pacedTrain) => pacedTrain.path.length >= 2
   );
 
-  const timetableItems = await fetchTimetableItemPathOps(state.infraId, pacedTrains, dispatch);
+  const timetableItems = await fetchTrainSchedulePathOps(state.infraId, pacedTrains, dispatch);
 
   const timetableItemsById = new Map(
     timetableItems.map((timetableItem) => [timetableItem.id, timetableItem])

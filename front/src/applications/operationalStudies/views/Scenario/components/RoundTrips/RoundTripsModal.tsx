@@ -5,7 +5,7 @@ import { Filter } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
-import useTimetableItemsWithPathOps from 'applications/operationalStudies/hooks/useTimetableItemsWithPathOps';
+import useTrainSchedulesWithPathOps from 'applications/operationalStudies/hooks/useTrainSchedulesWithPathOps';
 import { checkRoundTripCompatible, groupRoundTrips } from 'applications/operationalStudies/utils';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
@@ -25,7 +25,7 @@ type RoundTripsModalProps = {
   setRoundTripsModalIsOpen: (isOpen: boolean) => void;
   infraId: number;
   timetableId: number;
-  timetableItems: TimetableItem[];
+  trainSchedules: TimetableItem[];
   refreshNge: () => Promise<void>;
 };
 
@@ -34,7 +34,7 @@ const RoundTripsModal = ({
   setRoundTripsModalIsOpen,
   infraId,
   timetableId,
-  timetableItems,
+  trainSchedules,
   refreshNge,
 }: RoundTripsModalProps) => {
   const { t } = useTranslation('operational-studies', {
@@ -63,11 +63,11 @@ const RoundTripsModal = ({
   const [deleteRoundTripsTrainSchedules] =
     osrdEditoastApi.endpoints.postRoundTripsTrainSchedulesDelete.useMutation();
 
-  const timetableItemsWithOps = useTimetableItemsWithPathOps(infraId, timetableItems);
+  const trainSchedulesWithOps = useTrainSchedulesWithPathOps(infraId, trainSchedules);
 
-  const timetableItemsWithOpsById = useMemo(
-    () => mapBy(timetableItemsWithOps, 'id'),
-    [timetableItemsWithOps]
+  const trainSchedulesWithOpsById = useMemo(
+    () => mapBy(trainSchedulesWithOps, 'id'),
+    [trainSchedulesWithOps]
   );
 
   const pairingItemsById = useMemo(() => mapBy(pairingItems, 'id'), [pairingItems]);
@@ -100,10 +100,10 @@ const RoundTripsModal = ({
         continue;
       }
 
-      const timetableItemA = timetableItemsWithOpsById.get(item.id)!;
-      const timetableItemB = timetableItemsWithOpsById.get(item.pairedItemId)!;
+      const trainScheduleA = trainSchedulesWithOpsById.get(item.id)!;
+      const trainScheduleB = trainSchedulesWithOpsById.get(item.pairedItemId)!;
       const pairingItemB = pairingItemsById.get(item.pairedItemId)!;
-      const isValid = checkRoundTripCompatible(timetableItemA, timetableItemB);
+      const isValid = checkRoundTripCompatible(trainScheduleA, trainScheduleB);
 
       if (
         !item.name.toLowerCase().includes(debouncedFilter.toLowerCase()) &&
@@ -116,7 +116,7 @@ const RoundTripsModal = ({
     }
 
     return groupedPairingItems;
-  }, [pairingItemsById, timetableItemsWithOpsById, debouncedFilter]);
+  }, [pairingItemsById, trainSchedulesWithOpsById, debouncedFilter]);
 
   const openModal = () => {
     modalRef.current?.showModal();
@@ -156,12 +156,12 @@ const RoundTripsModal = ({
   useModalFocusTrap(modalRef, closeModal);
 
   useEffect(() => {
-    if (!pacedTrainRoundtrips || timetableItemsWithOpsById.size === 0) return;
+    if (!pacedTrainRoundtrips || trainSchedulesWithOpsById.size === 0) return;
 
-    const roundTripGroups = groupRoundTrips(timetableItemsWithOpsById, pacedTrainRoundtrips);
+    const roundTripGroups = groupRoundTrips(trainSchedulesWithOpsById, pacedTrainRoundtrips);
 
     setPairingItems(formatPairingItems(roundTripGroups, t));
-  }, [pacedTrainRoundtrips, timetableItemsWithOpsById]);
+  }, [pacedTrainRoundtrips, trainSchedulesWithOpsById]);
 
   useEffect(() => {
     if (roundTripsModalIsOpen) {
@@ -196,7 +196,7 @@ const RoundTripsModal = ({
           setPairingItems={setPairingItems}
           itemIdToPair={itemIdToPair}
           setItemIdToPair={setItemIdToPair}
-          timetableItemsWithOpsById={timetableItemsWithOpsById}
+          trainSchedulesWithOpsById={trainSchedulesWithOpsById}
           pairingItemsById={pairingItemsById}
           subCategories={subCategories}
         />
