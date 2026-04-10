@@ -128,6 +128,7 @@
   },
   "simulation": {
     "additionalResults": "Pas de résultat pour votre demande, d’autres possibilités sont en cours de calcul.",
+    "calculatingInitialization": "Préparation du calcul…",
     "calculatingSimulation": "Calcul en cours…",
     "getSimulation": "Obtenir la simulation",
     "infoMessage": "Cette simulation n'offre pas la garantie de disponibilité du sillon.",

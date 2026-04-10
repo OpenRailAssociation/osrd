@@ -84,6 +84,7 @@ type StdcmConfigProps = {
   isDebugMode: boolean;
   isPending: boolean;
   isPendingAdditional: boolean;
+  isInProgress: boolean;
   retainedSimulationIndex?: number;
   showBtnToLaunchSimulation: boolean;
   skipPathfindingStatusMessage: boolean;
@@ -97,6 +98,7 @@ const StdcmConfig = ({
   isDebugMode,
   isPending,
   isPendingAdditional,
+  isInProgress,
   retainedSimulationIndex,
   showBtnToLaunchSimulation,
   skipPathfindingStatusMessage,
@@ -427,6 +429,7 @@ const StdcmConfig = ({
           {(isPending || isPendingAdditional) && (
             <StdcmLoader
               isPendingAdditional={isPendingAdditional}
+              isInProgress={isInProgress}
               cancelStdcmRequest={cancelStdcmRequest}
               launchButtonRef={launchButtonRef}
               formRef={formRef}

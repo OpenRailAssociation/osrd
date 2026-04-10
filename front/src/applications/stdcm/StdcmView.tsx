@@ -65,6 +65,7 @@ const StdcmViewContent = ({
     cancelStdcmRequest,
     resetStdcmState,
     isPending,
+    isInProgress,
     isPendingAdditional,
     isRejected,
     isCanceled,
@@ -185,6 +186,7 @@ const StdcmViewContent = ({
       <StdcmConfig
         isPending={isPending}
         isPendingAdditional={isPendingAdditional}
+        isInProgress={isInProgress}
         isDebugMode={isDebugMode}
         showBtnToLaunchSimulation={showBtnToLaunchSimulation}
         retainedSimulationIndex={retainedSimulationIndex}
