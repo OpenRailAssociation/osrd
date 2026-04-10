@@ -142,13 +142,11 @@ pub fn path_item_respect_margins<T: TrainScheduleLike>(
             train_schedule
                 .schedule()
                 .iter()
-                .enumerate()
-                .filter(|(i, schedule_item)| {
-                    *i == 0
-                        || schedule_item.arrival.is_some()
+                .filter(|schedule_item| {
+                    schedule_item.arrival.is_some()
                         || margin_boundary_set.contains(&schedule_item.at)
                 })
-                .map(|(_, schedule_item)| &schedule_item.at),
+                .map(|schedule_item| &schedule_item.at),
         )
         .chain(
             train_schedule
