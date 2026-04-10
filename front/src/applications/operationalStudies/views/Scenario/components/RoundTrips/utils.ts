@@ -1,6 +1,6 @@
 import type { TFunction } from 'i18next';
 
-import type { TimetableItemRoundTripGroups } from 'applications/operationalStudies/types';
+import type { TrainScheduleRoundTripGroups } from 'applications/operationalStudies/types';
 import {
   getInvalidStepLabel,
   checkRoundTripCompatible,
@@ -94,7 +94,7 @@ const formatBasePairingItem = (
 };
 
 export const formatPairingItems = (
-  roundTripGroups: TimetableItemRoundTripGroups,
+  roundTripGroups: TrainScheduleRoundTripGroups,
   t: TFunction<'operational-studies', 'main'>
 ): PairingItem[] => {
   const todoItems = roundTripGroups.others.map((item) => formatBasePairingItem(item, 'todo', t));

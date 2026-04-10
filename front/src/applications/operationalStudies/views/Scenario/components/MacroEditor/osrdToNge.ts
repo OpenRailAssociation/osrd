@@ -1,7 +1,7 @@
 import type { TFunction } from 'i18next';
 import { uniqBy } from 'lodash';
 
-import type { TimetableItemRoundTripGroups } from 'applications/operationalStudies/types';
+import type { TrainScheduleRoundTripGroups } from 'applications/operationalStudies/types';
 import {
   getUniqueOpRefsFromTrainSchedules,
   addPathOpsToTrainSchedules,
@@ -697,7 +697,7 @@ const fetchTrainSchedulePathOps = async (
 };
 
 const groupCompatibleRoundTrips = (
-  roundTripGroups: TimetableItemRoundTripGroups
+  roundTripGroups: TrainScheduleRoundTripGroups
 ): (readonly [TrainScheduleWithPathOps, TrainScheduleWithPathOps | null])[] => {
   const incompatible = [];
   const compatible = [];
@@ -709,7 +709,7 @@ const groupCompatibleRoundTrips = (
     }
   }
   const oneWays = [...roundTripGroups.oneWays, ...roundTripGroups.others, ...incompatible].map(
-    (timetableItem) => [timetableItem, null] as const
+    (trainSchedule) => [trainSchedule, null] as const
   );
   return [...oneWays, ...compatible];
 };

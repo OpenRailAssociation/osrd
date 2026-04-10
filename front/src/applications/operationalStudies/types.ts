@@ -160,7 +160,7 @@ export type OperationalPointWithTimeAndSpeed = {
   ch?: string | null;
 };
 
-export type TimetableItemRoundTripGroups = {
+export type TrainScheduleRoundTripGroups = {
   oneWays: TrainScheduleWithPathOps[];
   roundTrips: (readonly [TrainScheduleWithPathOps, TrainScheduleWithPathOps])[];
   others: TrainScheduleWithPathOps[];
