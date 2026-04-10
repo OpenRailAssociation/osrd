@@ -1,6 +1,6 @@
 import { Chronogram } from '@osrd-project/ui-charts';
 
-import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
+import type { TrainScheduleWithDetails } from 'modules/timetableItem/types';
 
 import useLevelCrossingsWithChronogram from './useLevelCrossingsWithChronogram';
 
@@ -8,17 +8,17 @@ const CHRONOGRAM_FOOTER_HEIGHT = 39;
 
 type ChronogramWrapperProps = {
   timetableId: number;
-  timetableItemsWithDetails: TimetableItemWithDetails[];
+  trainSchedulesWithDetails: TrainScheduleWithDetails[];
   chronogramHeight: number;
 };
 
 const ChronogramWrapper = ({
   timetableId,
-  timetableItemsWithDetails,
+  trainSchedulesWithDetails,
   chronogramHeight,
 }: ChronogramWrapperProps) => {
   const { levelCrossingData, timeOrigin } = useLevelCrossingsWithChronogram(timetableId, {
-    trains: timetableItemsWithDetails,
+    trains: trainSchedulesWithDetails,
   });
 
   return (

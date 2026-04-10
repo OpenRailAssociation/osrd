@@ -2,7 +2,7 @@ import { createSlice, type Draft, type PayloadAction } from '@reduxjs/toolkit';
 
 import computeBasePathStep from 'modules/timetableItem/helpers/computeBasePathStep';
 import { isPacedTrainWithDetails } from 'modules/timetableItem/helpers/pacedTrain';
-import type { SuggestedOP, TimetableItemWithDetails } from 'modules/timetableItem/types';
+import type { SuggestedOP, TrainScheduleWithDetails } from 'modules/timetableItem/types';
 import { buildMapStateReducer } from 'reducers/commonMap';
 import { defaultCommonConf, buildCommonConfReducers } from 'reducers/osrdconf/osrdConfCommon';
 import type { OperationalStudiesConfState } from 'reducers/osrdconf/types';
@@ -49,7 +49,7 @@ export const operationalStudiesConfSlice = createSlice({
     selectTrainToEdit(
       state: Draft<OperationalStudiesConfState>,
       action: PayloadAction<{
-        item: TimetableItemWithDetails;
+        trainSchedule: TrainScheduleWithDetails;
         isOccurrence?: boolean;
       }>
     ) {
@@ -66,11 +66,13 @@ export const operationalStudiesConfSlice = createSlice({
         path,
         constraint_distribution,
         category,
-      } = action.payload.item;
+      } = action.payload.trainSchedule;
 
       state.rollingStockName = rollingStockName;
       state.rollingStockID = rollingStock?.id;
-      state.pathSteps = path.map((_, index) => computeBasePathStep(action.payload.item, index));
+      state.pathSteps = path.map((_, index) =>
+        computeBasePathStep(action.payload.trainSchedule, index)
+      );
       state.startTime = startTime;
 
       state.name = name;
@@ -85,10 +87,10 @@ export const operationalStudiesConfSlice = createSlice({
       state.powerRestriction = power_restrictions || [];
       state.constraintDistribution = constraint_distribution || 'STANDARD';
 
-      if (isPacedTrainWithDetails(action.payload.item)) {
+      if (isPacedTrainWithDetails(action.payload.trainSchedule)) {
         state.editingItemType = action.payload.isOccurrence ? 'occurrence' : 'pacedTrain';
-        state.timeWindow = action.payload.item.paced.timeWindow;
-        state.interval = action.payload.item.paced.interval;
+        state.timeWindow = action.payload.trainSchedule.paced.timeWindow;
+        state.interval = action.payload.trainSchedule.paced.interval;
       } else {
         state.editingItemType = 'uniqueTrain';
         state.timeWindow = new Duration({ minutes: 120 });

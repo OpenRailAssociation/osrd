@@ -11,7 +11,7 @@ import type {
 import type {
   SimulatedException,
   SimulationSummary,
-  TimetableItemWithDetails,
+  TrainScheduleWithDetails,
 } from 'modules/timetableItem/types';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
@@ -27,7 +27,7 @@ const formatSuccessfulSummary = (
   summary: Extract<SimulationSummaryResult, { status: 'success' }>
 ): SimulationSummary => {
   let notHonoredReason: Extract<
-    NonNullable<TimetableItemWithDetails['summary']>,
+    NonNullable<TrainScheduleWithDetails['summary']>,
     { isValid: true }
   >['notHonoredReason'];
   if (isTooFast(summary)) notHonoredReason = 'trainTooFast';
@@ -72,8 +72,8 @@ export const formatPacedTrainWithDetails = (
   pacedTrain: TimetableItem,
   rollingStock?: LightRollingStockWithLiveries,
   pacedTrainSummary?: TrainScheduleSimulationSummaryResult
-): TimetableItemWithDetails => {
-  // we omit the following props since they're not expected in TimetableItemWithDetails
+): TrainScheduleWithDetails => {
+  // we omit the following props since they're not expected in TrainScheduleWithDetails
   const {
     train_name: _,
     start_time: __,

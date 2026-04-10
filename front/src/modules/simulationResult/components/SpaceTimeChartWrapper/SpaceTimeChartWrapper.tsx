@@ -37,7 +37,7 @@ import type {
   DraggingState,
 } from 'modules/simulationResult/types';
 import { isPacedTrainWithDetails } from 'modules/timetableItem/helpers/pacedTrain';
-import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
+import type { TrainScheduleWithDetails } from 'modules/timetableItem/types';
 import type { TrainId } from 'reducers/osrdconf/types';
 import { getHoveredTrainId, getIsSimulationEnabled } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
@@ -100,7 +100,7 @@ type SpaceTimeChartWrapperBaseProps = {
   height?: number;
   onTrainClick?: (trainId: TrainId) => void;
   selectedProjectionId: TrainId;
-  timetableItemsWithDetails?: TimetableItemWithDetails[];
+  trainSchedulesWithDetails?: TrainScheduleWithDetails[];
   pathfindingHasFailed?: boolean;
 };
 
@@ -134,7 +134,7 @@ const SpaceTimeChartWrapper = ({
   onTrainClick,
   selectedProjectionId,
   selectedTrainId,
-  timetableItemsWithDetails,
+  trainSchedulesWithDetails,
   waypointsPanelIsOpen,
   setWaypointsPanelIsOpen,
   pathfindingHasFailed = false,
@@ -159,17 +159,17 @@ const SpaceTimeChartWrapper = ({
         : selectedProjectionId
     );
 
-    const timetableItemUsedForProjectionWithDetails = timetableItemsWithDetails?.find(
-      (item) => item.id === selectedItemId
+    const trainScheduleUsedForProjectionWithDetails = trainSchedulesWithDetails?.find(
+      (trainSchedule) => trainSchedule.id === selectedItemId
     );
 
     if (
-      timetableItemUsedForProjectionWithDetails &&
-      isPacedTrainWithDetails(timetableItemUsedForProjectionWithDetails) &&
+      trainScheduleUsedForProjectionWithDetails &&
+      isPacedTrainWithDetails(trainScheduleUsedForProjectionWithDetails) &&
       isOccurrenceId(selectedProjectionId)
     ) {
       const exceptionUsedForProjection =
-        timetableItemUsedForProjectionWithDetails.paced.exceptions.find((exception) =>
+        trainScheduleUsedForProjectionWithDetails.paced.exceptions.find((exception) =>
           isAddedExceptionId(selectedProjectionId)
             ? exception.id === extractExceptionIdFromOccurrenceId(selectedProjectionId)
             : exception.occurrence_index ===
@@ -178,8 +178,8 @@ const SpaceTimeChartWrapper = ({
       if (exceptionUsedForProjection?.summary) return exceptionUsedForProjection.summary.isValid;
     }
 
-    return timetableItemUsedForProjectionWithDetails?.summary?.isValid ?? false;
-  }, [timetableItemsWithDetails, selectedProjectionId]);
+    return trainScheduleUsedForProjectionWithDetails?.summary?.isValid ?? false;
+  }, [trainSchedulesWithDetails, selectedProjectionId]);
 
   const spaceTimeChartRef = useRef<HTMLDivElement>(null);
 
@@ -204,14 +204,14 @@ const SpaceTimeChartWrapper = ({
     [waypointsPanelData?.filteredWaypoints, projectedTrains, conflicts, operationalPoints]
   );
 
-  const timetableItemsWithDetailsById = useMemo(
-    () => mapBy(timetableItemsWithDetails, 'id'),
-    [timetableItemsWithDetails]
+  const trainSchedulesWithDetailsById = useMemo(
+    () => mapBy(trainSchedulesWithDetails, 'id'),
+    [trainSchedulesWithDetails]
   );
 
   const paths = useMemo(
-    () => formatSpaceTimeCurves(subCategories, cutProjectedTrains, timetableItemsWithDetailsById),
-    [subCategories, cutProjectedTrains, timetableItemsWithDetailsById]
+    () => formatSpaceTimeCurves(subCategories, cutProjectedTrains, trainSchedulesWithDetailsById),
+    [subCategories, cutProjectedTrains, trainSchedulesWithDetailsById]
   );
 
   const manchetteWaypoints = useMemo(() => {
@@ -257,7 +257,7 @@ const SpaceTimeChartWrapper = ({
       hoveredItem,
       draggingState,
       subCategories,
-      timetableItemsWithDetails,
+      trainSchedulesWithDetails,
       selectedTrainId,
       onCloseOccupancyLayer,
       handleWaypointClick,

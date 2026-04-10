@@ -103,7 +103,7 @@ export type PacedTrainWithPacedWithDetails = TrainScheduleWithSummaries & {
   };
 };
 
-export type TimetableItemWithDetails = PacedTrainWithDetails;
+export type TrainScheduleWithDetails = PacedTrainWithDetails;
 
 export type ExceptionChangeGroups = Omit<
   PacedTrainException,

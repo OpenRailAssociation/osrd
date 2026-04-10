@@ -10,7 +10,7 @@ import type {
   RollingStock,
   SimulationResponseSuccess,
 } from 'common/api/osrdEditoastApi';
-import type { SimulationSummary, TimetableItemWithDetails } from 'modules/timetableItem/types';
+import type { SimulationSummary, TrainScheduleWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItem, Train } from 'reducers/osrdconf/types';
 import { getUseNewTimesStopsTable } from 'reducers/user/userSelectors';
 import { formatLocalTime } from 'utils/date';
@@ -39,7 +39,7 @@ type TimesStopsOutputProps = {
   infraId: number;
   isValid?: boolean;
   selectedTrain: Train;
-  timetableItemsWithDetails: TimetableItemWithDetails[];
+  trainSchedulesWithDetails: TrainScheduleWithDetails[];
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   simulatedTrain?: SimulationResponseSuccess['final_output'];
   simulatedPath?: CorePathfindingResultSuccess;
@@ -78,7 +78,7 @@ const TimesStopsOutput = ({
   infraId,
   isValid = false,
   selectedTrain,
-  timetableItemsWithDetails,
+  trainSchedulesWithDetails,
   upsertTimetableItems,
   simulatedTrain,
   simulatedPathItemTimes,
@@ -180,7 +180,7 @@ const TimesStopsOutput = ({
   } = useUpdateTimesStopsTable(
     selectedTrain,
     newRows,
-    timetableItemsWithDetails,
+    trainSchedulesWithDetails,
     upsertTimetableItems
   );
 

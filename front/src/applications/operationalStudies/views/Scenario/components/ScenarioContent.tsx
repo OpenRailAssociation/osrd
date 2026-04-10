@@ -51,7 +51,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
   const [macroBoardHeight, setMacroBoardHeight] = useState<number>(MACRO_EDITOR_HEIGHT);
 
   const {
-    timetableItemsWithDetails,
+    trainSchedulesWithDetails,
     timetableItems,
     projectionData,
     conflicts,
@@ -100,7 +100,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
   );
 
   const { importTrainScheduleSets } = useScenarioTrainScheduleSet(
-    timetableItemsWithDetails,
+    trainSchedulesWithDetails,
     useMemo(() => timetableItems || [], [timetableItems]),
     upsertTimetableItemsWithNge
   );
@@ -184,7 +184,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
               upsertTimetableItems={upsertTimetableItemsWithNge}
               removeTimetableItems={removeTimetableItemsWithNge}
               timetableItems={timetableItems}
-              timetableItemsWithDetails={timetableItemsWithDetails}
+              trainSchedulesWithDetails={trainSchedulesWithDetails}
               setTrainScheduleToEditData={setTrainScheduleToEditData}
               trainScheduleToEditData={trainScheduleToEditData}
               refreshNge={refreshNge}
@@ -208,7 +208,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
                 scenarioData={{ name: scenario.name, infraName: scenario.infra_name }}
                 projectionData={projectionData}
                 conflicts={conflicts}
-                timetableItemsWithDetails={timetableItemsWithDetails}
+                trainSchedulesWithDetails={trainSchedulesWithDetails}
                 timetableItems={timetableItems ?? []}
                 activeBoards={activeBoards}
                 updateTrainDepartureTime={updateTrainDepartureTimeWithNge}

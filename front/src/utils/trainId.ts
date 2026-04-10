@@ -2,7 +2,7 @@ import { isEmpty } from 'lodash';
 
 import type { PacedTrainException } from 'common/api/osrdEditoastApi';
 import { isOccurrencePresentInPacedTrain } from 'modules/timetableItem/helpers/pacedTrain';
-import type { Occurrence, TimetableItemWithDetails } from 'modules/timetableItem/types';
+import type { Occurrence, TrainScheduleWithDetails } from 'modules/timetableItem/types';
 import type {
   AddedExceptionId,
   IndexedOccurrenceId,
@@ -215,18 +215,18 @@ export const extractExceptionIdFromOccurrenceId = (occurrenceId: OccurrenceId): 
 
 export const isTrainIdInTimetable = (
   trainId: TrainId | undefined,
-  timetableItems: Pick<TimetableItemWithDetails, 'id' | 'paced'>[]
+  trainSchedules: Pick<TrainScheduleWithDetails, 'id' | 'paced'>[]
 ): boolean => {
   if (!trainId) return false;
 
   const pacedTrainId = isOccurrenceId(trainId)
     ? extractPacedTrainIdFromOccurrenceId(trainId)
     : trainId;
-  const timetableItemId = extractEditoastIdFromPacedTrainId(pacedTrainId);
+  const trainScheduleId = extractEditoastIdFromPacedTrainId(pacedTrainId);
 
-  const timetableItem = timetableItems.find((item) => item.id === timetableItemId);
-  if (!timetableItem) return false;
+  const trainSchedule = trainSchedules.find((train) => train.id === trainScheduleId);
+  if (!trainSchedule) return false;
 
   if (!isOccurrenceId(trainId)) return true;
-  return isOccurrencePresentInPacedTrain(trainId, timetableItem);
+  return isOccurrencePresentInPacedTrain(trainId, trainSchedule);
 };

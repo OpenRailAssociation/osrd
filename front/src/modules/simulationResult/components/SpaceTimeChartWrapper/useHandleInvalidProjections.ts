@@ -3,13 +3,13 @@ import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
 import { isSimulated } from 'applications/operationalStudies/utils';
-import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
+import type { TrainScheduleWithDetails } from 'modules/timetableItem/types';
 import { getIsSimulationEnabled } from 'reducers/simulationResults/selectors';
 
 import type { TrainSpaceTimeData } from '../../types';
 
 type UseHandleInvalidProjectionsProps = {
-  timetableItemsWithDetails: TimetableItemWithDetails[];
+  trainSchedulesWithDetails: TrainScheduleWithDetails[];
   projections: TrainSpaceTimeData[];
 };
 
@@ -19,7 +19,7 @@ type UseHandleInvalidProjectionsProps = {
  * for proper styling in the UI.
  */
 const useHandleInvalidProjections = ({
-  timetableItemsWithDetails,
+  trainSchedulesWithDetails,
   projections,
 }: UseHandleInvalidProjectionsProps): TrainSpaceTimeData[] => {
   const isSimulationEnabled = useSelector(getIsSimulationEnabled);
@@ -27,19 +27,19 @@ const useHandleInvalidProjections = ({
   return useMemo(() => {
     if (!isSimulationEnabled) return projections;
 
-    // Create a map for quick lookup of timetable items by id
-    const timetableMap = new Map(timetableItemsWithDetails.map((train) => [train.id, train]));
+    // Create a map for quick lookup of train schedules by id
+    const timetableMap = new Map(trainSchedulesWithDetails.map((train) => [train.id, train]));
 
     return projections.map((projection) => {
-      const timetableItem = timetableMap.get(projection.id);
-      if (!timetableItem) return projection;
+      const trainSchedule = timetableMap.get(projection.id);
+      if (!trainSchedule) return projection;
 
-      const updatedProjection = { ...projection, isSimulated: isSimulated(timetableItem.summary) };
+      const updatedProjection = { ...projection, isSimulated: isSimulated(trainSchedule.summary) };
 
-      if (timetableItem.paced?.exceptions && projection.paced?.exceptionProjections) {
+      if (trainSchedule.paced?.exceptions && projection.paced?.exceptionProjections) {
         const updatedExceptions = new Map(projection.paced.exceptionProjections);
 
-        timetableItem.paced.exceptions.forEach((exception) => {
+        trainSchedule.paced.exceptions.forEach((exception) => {
           // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
           const existingException = updatedExceptions.get(exception.id!);
           if (existingException) {
@@ -59,7 +59,7 @@ const useHandleInvalidProjections = ({
 
       return updatedProjection;
     });
-  }, [isSimulationEnabled, timetableItemsWithDetails, projections]);
+  }, [isSimulationEnabled, trainSchedulesWithDetails, projections]);
 };
 
 export default useHandleInvalidProjections;

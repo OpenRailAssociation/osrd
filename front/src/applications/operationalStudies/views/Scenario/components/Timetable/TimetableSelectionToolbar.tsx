@@ -5,8 +5,8 @@ import { useTranslation } from 'react-i18next';
 
 type TimetableSelectionToolbarProps = {
   selectedTimetableItemIds: number[];
-  areAllItemsSelected: boolean;
-  areInvalidItems: boolean;
+  areAllTrainchedulesSelected: boolean;
+  areInvalidTrainSchedules: boolean;
   toggleAllTrainsSelection: () => void;
   handleExportTimetableItems: () => void;
   handleDeleteTimetableItems: () => void;
@@ -15,8 +15,8 @@ type TimetableSelectionToolbarProps = {
 
 const TimetableSelectionToolbar = ({
   selectedTimetableItemIds,
-  areAllItemsSelected,
-  areInvalidItems,
+  areAllTrainchedulesSelected,
+  areInvalidTrainSchedules,
   toggleAllTrainsSelection,
   handleExportTimetableItems,
   handleDeleteTimetableItems,
@@ -27,21 +27,23 @@ const TimetableSelectionToolbar = ({
   return (
     <div
       className={cx('timetable-selection-toolbar', {
-        'are-invalid-items': areInvalidItems,
+        'are-invalid-items': areInvalidTrainSchedules,
       })}
     >
       <button
         className="select-button"
         data-testid={
-          areAllItemsSelected ? 'scenarios-unselect-all-button' : 'scenarios-select-all-button'
+          areAllTrainchedulesSelected
+            ? 'scenarios-unselect-all-button'
+            : 'scenarios-select-all-button'
         }
-        title={areAllItemsSelected ? t('timetable.unselectAll') : t('timetable.selectAll')}
+        title={areAllTrainchedulesSelected ? t('timetable.unselectAll') : t('timetable.selectAll')}
         type="button"
       >
         <Checkbox
           small
-          isIndeterminate={!areAllItemsSelected && selectedTimetableItemIds.length > 0}
-          checked={areAllItemsSelected}
+          isIndeterminate={!areAllTrainchedulesSelected && selectedTimetableItemIds.length > 0}
+          checked={areAllTrainchedulesSelected}
           onChange={toggleAllTrainsSelection}
         />
       </button>

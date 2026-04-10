@@ -9,7 +9,7 @@ import {
   type TrainScheduleSet,
 } from 'common/api/osrdEditoastApi';
 import { createPacedTrains } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
-import type { PacedTrainWithDetails, TimetableItemWithDetails } from 'modules/timetableItem/types';
+import type { PacedTrainWithDetails, TrainScheduleWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 
@@ -42,7 +42,7 @@ export type TrainScheduleSetManager = {
 };
 
 export default function useScenarioTrainScheduleSet(
-  timetableItemsWithDetails: TimetableItemWithDetails[],
+  trainSchedulesWithDetails: TrainScheduleWithDetails[],
   timetableItems: TimetableItem[],
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void
 ) {
@@ -336,13 +336,18 @@ export default function useScenarioTrainScheduleSet(
     if (!trainScheduleSets) return null;
 
     // We group trains by trainScheduleSet
-    const trainsByTrainScheduleSetId = new Map<number, TimetableItemWithDetails[]>();
-    for (const item of timetableItemsWithDetails) {
-      const itemInIndex = trainsByTrainScheduleSetId.get(item.train_schedule_set_id);
-      if (!itemInIndex) {
-        trainsByTrainScheduleSetId.set(item.train_schedule_set_id, [item]);
+    const trainsByTrainScheduleSetId = new Map<number, TrainScheduleWithDetails[]>();
+    for (const trainSchedule of trainSchedulesWithDetails) {
+      const trainScheduleInIndex = trainsByTrainScheduleSetId.get(
+        trainSchedule.train_schedule_set_id
+      );
+      if (!trainScheduleInIndex) {
+        trainsByTrainScheduleSetId.set(trainSchedule.train_schedule_set_id, [trainSchedule]);
       } else {
-        trainsByTrainScheduleSetId.set(item.train_schedule_set_id, [...itemInIndex, item]);
+        trainsByTrainScheduleSetId.set(trainSchedule.train_schedule_set_id, [
+          ...trainScheduleInIndex,
+          trainSchedule,
+        ]);
       }
     }
 
@@ -369,7 +374,7 @@ export default function useScenarioTrainScheduleSet(
             : undefined, // can happen if it's the sandbox
         })
       );
-  }, [trainScheduleSets, catalogEntries, timetableItemsWithDetails]);
+  }, [trainScheduleSets, catalogEntries, trainSchedulesWithDetails]);
 
   const manageTrainScheduleSet = useMemo(
     (): TrainScheduleSetManager => ({

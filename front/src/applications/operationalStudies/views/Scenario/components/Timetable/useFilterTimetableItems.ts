@@ -5,7 +5,7 @@ import { uniq } from 'lodash';
 import { useRollingStockContext } from 'common/RollingStockContext';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import { isPacedTrainWithDetails } from 'modules/timetableItem/helpers/pacedTrain';
-import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
+import type { TrainScheduleWithDetails } from 'modules/timetableItem/types';
 import { useDebounce } from 'utils/hooks/useDebounce';
 
 import type {
@@ -18,13 +18,13 @@ import type {
 import { extractTagCode, keepItem } from './utils';
 
 /**
- * Hook filtering a timetable items array depending on some filters
- * @param timetableItems the timetable's items
- * @returns all filters, their setters, the unique speed limit tags among all items and the filtered timetable items
+ * Hook filtering a train schedules array depending on some filters
+ * @param trainSchedules the train schedules
+ * @returns all filters, their setters, the unique speed limit tags among all trains and the filtered train schedules
  */
-const useFilterTimetableItems = (
-  timetableItems: TimetableItemWithDetails[]
-): TimetableFilters & { filteredTimetableItems: TimetableItemWithDetails[] } => {
+const useFilterTrainSchedules = (
+  trainSchedules: TrainScheduleWithDetails[]
+): TimetableFilters & { filteredTrainSchedules: TrainScheduleWithDetails[] } => {
   const [nameLabelFilter, setNameLabelFilter] = useState('');
   const [rollingStockFilter, setRollingStockFilter] = useState('');
   const [validityFilter, setValidityFilter] = useState<ValidityFilter>('both');
@@ -42,22 +42,22 @@ const useFilterTimetableItems = (
   const uniqueTags = useMemo(
     () =>
       uniq(
-        timetableItems.reduce<string[]>((acc, timetableItem) => {
-          if (isPacedTrainWithDetails(timetableItem)) {
-            timetableItem.paced.exceptions.forEach((exception) => {
+        trainSchedules.reduce<string[]>((acc, trainSchedule) => {
+          if (isPacedTrainWithDetails(trainSchedule)) {
+            trainSchedule.paced.exceptions.forEach((exception) => {
               if (exception.speed_limit_tag) {
                 acc.push(extractTagCode(exception.speed_limit_tag.value));
               }
             });
           }
-          acc.push(extractTagCode(timetableItem.speedLimitTag));
+          acc.push(extractTagCode(trainSchedule.speedLimitTag));
           return acc;
         }, [])
       ),
-    [timetableItems]
+    [trainSchedules]
   );
 
-  const filterTimetableItem = useCallback(
+  const filterTrainSchedule = useCallback(
     ({
       summary,
       name,
@@ -66,7 +66,7 @@ const useFilterTimetableItems = (
       rollingStock,
       category,
     }: Pick<
-      TimetableItemWithDetails,
+      TrainScheduleWithDetails,
       'name' | 'labels' | 'summary' | 'speedLimitTag' | 'rollingStock' | 'category'
     >) => {
       if (!keepItem(name, labels, debouncedNameLabelFilter)) {
@@ -146,17 +146,17 @@ const useFilterTimetableItems = (
     ]
   );
 
-  const filteredTimetableItems: TimetableItemWithDetails[] = useMemo(
+  const filteredTrainSchedules: TrainScheduleWithDetails[] = useMemo(
     () =>
-      timetableItems.filter((timetableItem) => {
-        if (!isPacedTrainWithDetails(timetableItem)) {
+      trainSchedules.filter((trainSchedule) => {
+        if (!isPacedTrainWithDetails(trainSchedule)) {
           if (trainTypeFilter === 'pacedTrain') return false;
-          return filterTimetableItem(timetableItem);
+          return filterTrainSchedule(trainSchedule);
         }
 
         if (trainTypeFilter === 'uniqueTrain') return false;
 
-        const { paced, ...modelTrain } = timetableItem;
+        const { paced, ...modelTrain } = trainSchedule;
         const exceptionItems = paced.exceptions.map((exception) => {
           const rollingStock = exception.rolling_stock
             ? rollingStocks?.find((rs) => rs.name === exception.rolling_stock?.rolling_stock_name)
@@ -174,13 +174,13 @@ const useFilterTimetableItems = (
             summary: exception.summary,
           };
         });
-        return [modelTrain, ...exceptionItems].some((item) => filterTimetableItem(item));
+        return [modelTrain, ...exceptionItems].some((train) => filterTrainSchedule(train));
       }),
-    [timetableItems, filterTimetableItem]
+    [trainSchedules, filterTrainSchedule]
   );
 
   return {
-    filteredTimetableItems,
+    filteredTrainSchedules,
     uniqueTags,
     nameLabelFilter,
     setNameLabelFilter,
@@ -199,4 +199,4 @@ const useFilterTimetableItems = (
   };
 };
 
-export default useFilterTimetableItems;
+export default useFilterTrainSchedules;

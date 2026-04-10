@@ -21,7 +21,7 @@ import type {
   PacedTrainWithDetails,
   PacedTrainWithPacedWithDetails,
   SimulatedException,
-  TimetableItemWithDetails,
+  TrainScheduleWithDetails,
 } from '../types';
 import computeOccurrenceName from './computeOccurrenceName';
 
@@ -49,8 +49,8 @@ export const isPacedTrain = (
 ): timetableItem is PacedTrainResponseWithPaced => !!timetableItem.paced;
 
 export const isPacedTrainWithDetails = (
-  timetableItem: TimetableItemWithDetails
-): timetableItem is PacedTrainWithPacedWithDetails => !!timetableItem.paced;
+  trainSchedule: TrainScheduleWithDetails
+): trainSchedule is PacedTrainWithPacedWithDetails => !!trainSchedule.paced;
 
 export const getOccurrencesNb = ({
   timeWindow,
@@ -259,13 +259,13 @@ export const getOcurrencesIds = (pacedTrain: PacedTrainWithPaced, pacedTrainId: 
 
 export const isOccurrencePresentInPacedTrain = (
   occurrenceId: OccurrenceId,
-  timetableItem: Pick<TimetableItemWithDetails, 'paced' | 'id'>
+  trainSchedule: Pick<TrainScheduleWithDetails, 'paced' | 'id'>
 ): boolean => {
-  const paced = timetableItem.paced;
+  const paced = trainSchedule.paced;
   if (!paced) return false;
 
   const pacedTrainId = extractPacedTrainIdFromOccurrenceId(occurrenceId);
-  if (extractEditoastIdFromPacedTrainId(pacedTrainId) !== timetableItem.id) return false;
+  if (extractEditoastIdFromPacedTrainId(pacedTrainId) !== trainSchedule.id) return false;
 
   if (isAddedExceptionId(occurrenceId)) {
     const exceptionId = extractExceptionIdFromOccurrenceId(occurrenceId);

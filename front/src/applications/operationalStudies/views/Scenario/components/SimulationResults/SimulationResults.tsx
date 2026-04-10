@@ -23,7 +23,7 @@ import SpeedDistanceDiagramWrapper from 'modules/simulationResult/components/Spe
 import type { ProjectionData, TrainSpaceTimeData } from 'modules/simulationResult/types';
 import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
 import { findExceptionWithOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
-import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
+import type { TrainScheduleWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { toggleDisplayOnlyPathSteps, updateSelectedTrain } from 'reducers/simulationResults';
 import {
@@ -51,7 +51,7 @@ const CHRONOGRAM_MIN_HEIGHT = 398;
 type SimulationResultsProps = {
   scenarioData: { name: string; infraName: string };
   projectionData: ProjectionData | undefined;
-  timetableItemsWithDetails: TimetableItemWithDetails[];
+  trainSchedulesWithDetails: TrainScheduleWithDetails[];
   timetableItems: TimetableItem[];
   conflicts?: Conflict[];
   activeBoards: Set<Board>;
@@ -62,7 +62,7 @@ type SimulationResultsProps = {
 const SimulationResults = ({
   scenarioData,
   projectionData,
-  timetableItemsWithDetails,
+  trainSchedulesWithDetails,
   timetableItems,
   conflicts = [],
   activeBoards,
@@ -104,7 +104,7 @@ const SimulationResults = ({
   }, [projectionData]);
 
   const enrichedProjections = useHandleInvalidProjections({
-    timetableItemsWithDetails,
+    trainSchedulesWithDetails,
     projections: timetableItemProjections,
   });
 
@@ -138,16 +138,16 @@ const SimulationResults = ({
 
     if (!isOccurrenceId(selectedTrainId)) {
       const selectedTrainScheduleId = extractEditoastIdFromPacedTrainId(selectedTrainId);
-      return timetableItemsWithDetails.find(
-        (timetableItem) => timetableItem.id === selectedTrainScheduleId
+      return trainSchedulesWithDetails.find(
+        (trainSchedule) => trainSchedule.id === selectedTrainScheduleId
       )?.summary;
     }
 
     const selectedTrainScheduleId = extractEditoastIdFromPacedTrainId(
       extractPacedTrainIdFromOccurrenceId(selectedTrainId)
     );
-    const pacedTrain = timetableItemsWithDetails.find(
-      (timetableItem) => timetableItem.id === selectedTrainScheduleId
+    const pacedTrain = trainSchedulesWithDetails.find(
+      (trainSchedule) => trainSchedule.id === selectedTrainScheduleId
     );
     // WARNING TODO: race condition here, to fix
     // When turning a train into a service, then pacedTrain and selectedTrainId may be desynchronized.
@@ -155,7 +155,7 @@ const SimulationResults = ({
 
     const exception = findExceptionWithOccurrenceId(pacedTrain.paced.exceptions, selectedTrainId);
     return exception?.summary ?? pacedTrain.summary;
-  }, [timetableItemsWithDetails, selectedTrainId]);
+  }, [trainSchedulesWithDetails, selectedTrainId]);
 
   const handleTrainDrag = createHandleTrainDrag({
     timetableItemProjections,
@@ -239,7 +239,7 @@ const SimulationResults = ({
                   operationalPoints={projectedOperationalPoints}
                   timetableItemProjections={enrichedProjections}
                   selectedTrainId={selectedTrainId}
-                  timetableItemsWithDetails={timetableItemsWithDetails}
+                  trainSchedulesWithDetails={trainSchedulesWithDetails}
                   waypointsPanelData={{
                     filteredWaypoints: filteredOperationalPoints,
                     setFilteredWaypoints: setFilteredOperationalPoints,
@@ -316,7 +316,7 @@ const SimulationResults = ({
           </BoardWrapper>
 
           {/* CHRONOGRAMME */}
-          {timetableItemsWithDetails.length > 0 && (
+          {trainSchedulesWithDetails.length > 0 && (
             <BoardWrapper
               hidden={!activeBoards.has('chronogram')}
               name={t('boards.chronogram')}
@@ -330,7 +330,7 @@ const SimulationResults = ({
               <div data-testid="chronogram" className="simulation-chronogram">
                 <ChronogramWrapper
                   timetableId={timetableId}
-                  timetableItemsWithDetails={timetableItemsWithDetails}
+                  trainSchedulesWithDetails={trainSchedulesWithDetails}
                   chronogramHeight={chronogramHeight}
                 />
               </div>
@@ -375,7 +375,7 @@ const SimulationResults = ({
               <TimesStopsOutput
                 infraId={infraId}
                 selectedTrain={simulationResults?.train}
-                timetableItemsWithDetails={timetableItemsWithDetails}
+                trainSchedulesWithDetails={trainSchedulesWithDetails}
                 upsertTimetableItems={upsertTimetableItems}
                 isSimulationDataLoading={isSimulationDataLoading}
                 operationalPointsOnPath={simulationResults.pathProperties?.operationalPoints}

@@ -3,7 +3,7 @@ import type {
   TrainScheduleSimulationSummaryResult,
 } from 'common/api/osrdEditoastApi';
 import { formatPacedTrainWithDetails } from 'modules/timetableItem/helpers/formatTimetableItemWithDetails';
-import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
+import type { TrainScheduleWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { mapBy } from 'utils/types';
 
@@ -30,8 +30,8 @@ const formatTimetableItemSummaries = (
   rawPacedTrainSummaries: Map<number, TrainScheduleSimulationSummaryResult>,
   rawTimetableItems: Map<number, TimetableItem>,
   rollingStocks: LightRollingStockWithLiveries[]
-): Map<number, TimetableItemWithDetails> => {
-  const items: TimetableItemWithDetails[] = [...rawPacedTrainSummaries].map(
+): Map<number, TrainScheduleWithDetails> => {
+  const trainSchedules: TrainScheduleWithDetails[] = [...rawPacedTrainSummaries].map(
     ([id, pacedTrainSummary]) =>
       formatTimetableItemWithDetails(
         { timetableItemId: id, summary: pacedTrainSummary },
@@ -39,7 +39,7 @@ const formatTimetableItemSummaries = (
         rollingStocks
       )
   );
-  return mapBy(items, 'id');
+  return mapBy(trainSchedules, 'id');
 };
 
 export default formatTimetableItemSummaries;

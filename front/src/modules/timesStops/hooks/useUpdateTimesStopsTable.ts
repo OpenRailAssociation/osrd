@@ -22,7 +22,7 @@ import {
   isPacedTrainWithDetails,
 } from 'modules/timetableItem/helpers/pacedTrain';
 import { syncOccurrenceException } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
-import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
+import type { TrainScheduleWithDetails } from 'modules/timetableItem/types';
 import type { OccurrenceId, PacedTrainId, TimetableItem, Train } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { removeElementAtIndex, replaceElementAtIndex } from 'utils/array';
@@ -71,7 +71,7 @@ const formatRequestedMargin = (requestedMargin: MarginValue | null) => {
  * 3. Triggers simulation re-run via upsertTimetableItems
  *
  * When editing an occurrence:
- * - Finds the parent PacedTrain from timetableItemsWithDetails
+ * - Finds the parent PacedTrain from trainSchedulesWithDetails
  * - Generates or updates the exception for this occurrence
  * - Updates the PacedTrain with the new exception
  * - Calls upsertTimetableItems to trigger re-simulation
@@ -79,7 +79,7 @@ const formatRequestedMargin = (requestedMargin: MarginValue | null) => {
 const useUpdateTimesStopsTable = (
   selectedTrain: Train,
   allRows: TimesStopsRowNew[],
-  timetableItemsWithDetails: TimetableItemWithDetails[],
+  trainSchedulesWithDetails: TrainScheduleWithDetails[],
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void
 ) => {
   const dispatch = useAppDispatch();
@@ -256,8 +256,8 @@ const useUpdateTimesStopsTable = (
       const pacedTrainId = extractEditoastIdFromPacedTrainId(
         extractPacedTrainIdFromOccurrenceId(occurrenceId)
       );
-      const originalPacedTrainWithDetails = timetableItemsWithDetails.find(
-        (item) => item.id === pacedTrainId
+      const originalPacedTrainWithDetails = trainSchedulesWithDetails.find(
+        (trainSchedule) => trainSchedule.id === pacedTrainId
       );
 
       if (
@@ -342,7 +342,7 @@ const useUpdateTimesStopsTable = (
         paced: { ...originalPacedTrain.paced, exceptions: updatedExceptions },
       });
     },
-    [selectedTrain, timetableItemsWithDetails, computeUpdatedPathAndSchedule, timetableId, dispatch]
+    [selectedTrain, trainSchedulesWithDetails, computeUpdatedPathAndSchedule, timetableId, dispatch]
   );
 
   /**

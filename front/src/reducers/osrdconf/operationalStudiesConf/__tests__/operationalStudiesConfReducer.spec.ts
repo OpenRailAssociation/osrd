@@ -107,7 +107,9 @@ describe('simulationConfReducer', () => {
       };
 
       const store = createStore();
-      store.dispatch(operationalStudiesConfSlice.actions.selectTrainToEdit({ item: pacedTrain }));
+      store.dispatch(
+        operationalStudiesConfSlice.actions.selectTrainToEdit({ trainSchedule: pacedTrain })
+      );
 
       const state = store.getState()[operationalStudiesConfSlice.name];
       const expectedState: OperationalStudiesConfState = {

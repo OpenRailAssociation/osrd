@@ -21,7 +21,7 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import MenuTriggerButton from 'common/MenuTriggerButton';
 import UploadFileModal from 'common/uploadFileModal';
-import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
+import type { TrainScheduleWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 
 import { MANAGE_TIMETABLE_ITEM_TYPES } from '../../consts';
@@ -30,12 +30,12 @@ import RoundTripsModal from '../RoundTrips/RoundTripsModal';
 import FilterPanel from './FilterPanel';
 import SelectionToolBar from './TimetableSelectionToolbar';
 import type { TimetableFilters, TimetableMode } from './types';
-import { exportTimetableItems, timetableHasInvalidItem } from './utils';
+import { exportTimetableItems, timetableHasInvalidTrainSchedule } from './utils';
 
 type TimetableToolbarProps = {
   timetableFilters: TimetableFilters;
   timetableItems: TimetableItem[];
-  filteredTimetableItems: TimetableItemWithDetails[];
+  filteredTrainSchedules: TrainScheduleWithDetails[];
   selectedTimetableItemIds: number[];
   showTrainDetails: boolean;
   isSelectMode: boolean;
@@ -54,7 +54,7 @@ type TimetableToolbarProps = {
 const TimetableToolbar = ({
   timetableFilters,
   timetableItems,
-  filteredTimetableItems,
+  filteredTrainSchedules,
   selectedTimetableItemIds,
   showTrainDetails,
   isSelectMode,
@@ -103,14 +103,15 @@ const TimetableToolbar = ({
     );
   };
 
-  const areAllItemsSelected = selectedTimetableItemIds.length === filteredTimetableItems.length;
+  const areAllTrainchedulesSelected =
+    selectedTimetableItemIds.length === filteredTrainSchedules.length;
 
-  const areInvalidItems = timetableHasInvalidItem(filteredTimetableItems);
+  const areInvalidTrainSchedules = timetableHasInvalidTrainSchedule(filteredTrainSchedules);
 
   const toggleAllTrainsSelection = () => {
-    if (!areAllItemsSelected) {
-      const timetableItemsDisplayed = filteredTimetableItems.map(({ id }) => id);
-      setSelectedTimetableItemIds(timetableItemsDisplayed);
+    if (!areAllTrainchedulesSelected) {
+      const trainSchedulesDisplayed = filteredTrainSchedules.map(({ id }) => id);
+      setSelectedTimetableItemIds(trainSchedulesDisplayed);
     } else {
       setSelectedTimetableItemIds([]);
     }
@@ -128,7 +129,7 @@ const TimetableToolbar = ({
 
   return (
     <>
-      {areInvalidItems && (
+      {areInvalidTrainSchedules && (
         <div className="invalid-trains">
           <Alert size="sm" variant="fill" />
           <span data-testid="invalid-timetable-item-message" className="invalid-trains-message">
@@ -138,7 +139,7 @@ const TimetableToolbar = ({
       )}
       <div
         className={cx('timetable-toolbar', {
-          'are-invalid-items': areInvalidItems,
+          'are-invalid-items': areInvalidTrainSchedules,
         })}
       >
         <div className="left-group">
@@ -251,11 +252,11 @@ const TimetableToolbar = ({
           </div>
         </div>
       </div>
-      {isSelectMode && filteredTimetableItems.length > 0 && (
+      {isSelectMode && filteredTrainSchedules.length > 0 && (
         <SelectionToolBar
           selectedTimetableItemIds={selectedTimetableItemIds}
-          areAllItemsSelected={areAllItemsSelected}
-          areInvalidItems={areInvalidItems}
+          areAllTrainchedulesSelected={areAllTrainchedulesSelected}
+          areInvalidTrainSchedules={areInvalidTrainSchedules}
           toggleAllTrainsSelection={toggleAllTrainsSelection}
           handleExportTimetableItems={handleExportTimetableItems}
           handleDeleteTimetableItems={handleDeleteTimetableItems}
@@ -265,7 +266,7 @@ const TimetableToolbar = ({
       {isFilterPanelOpen && (
         <div
           className={cx('sticky-filter', {
-            'are-invalid-items': areInvalidItems,
+            'are-invalid-items': areInvalidTrainSchedules,
             'selection-mode-open': isSelectMode,
           })}
         >

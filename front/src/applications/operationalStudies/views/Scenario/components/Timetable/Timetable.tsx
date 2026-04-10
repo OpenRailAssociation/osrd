@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import useScenarioTrainScheduleSet from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
+import type { TrainScheduleWithDetails } from 'modules/timetableItem/types';
 import { setFailure } from 'reducers/main';
 import type { TimetableItem, TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
@@ -16,7 +16,7 @@ import TrainList from './TrainList';
 import TrainScheduleMoveDialog from './TrainScheduleSet/TrainScheduleMoveDialog';
 import TrainScheduleSetDialog from './TrainScheduleSet/TrainScheduleSetDialog';
 import type { TimetableMode } from './types';
-import useFilterTimetableItems from './useFilterTimetableItems';
+import useFilterTrainSchedules from './useFilterTimetableItems';
 
 type TimetableProps = {
   setDisplayTimetableItemManagement: (mode: string) => void;
@@ -27,7 +27,7 @@ type TimetableProps = {
   handleDeleteTimetableItems: () => void;
   trainScheduleToEditData?: TrainScheduleToEditData;
   timetableItems?: TimetableItem[];
-  timetableItemsWithDetails: TimetableItemWithDetails[];
+  trainSchedulesWithDetails: TrainScheduleWithDetails[];
   refreshNge: () => Promise<void>;
   selectedTimetableItemIds: number[];
   projectingOnSimulatedPathException: boolean | undefined;
@@ -42,7 +42,7 @@ const Timetable = ({
   handleDeleteTimetableItems,
   trainScheduleToEditData,
   timetableItems = [],
-  timetableItemsWithDetails,
+  trainSchedulesWithDetails,
   refreshNge,
   selectedTimetableItemIds,
   projectingOnSimulatedPathException,
@@ -68,10 +68,10 @@ const Timetable = ({
   const [trainScheduleSetIdSelected, setTrainScheduleSetIdSelected] = useState<number>();
 
   const { timetableItemsByTrainScheduleSets, catalogEntries, manageTrainScheduleSet } =
-    useScenarioTrainScheduleSet(timetableItemsWithDetails, timetableItems, upsertTimetableItems);
+    useScenarioTrainScheduleSet(trainSchedulesWithDetails, timetableItems, upsertTimetableItems);
 
-  const { filteredTimetableItems, ...timetableFilters } =
-    useFilterTimetableItems(timetableItemsWithDetails);
+  const { filteredTrainSchedules, ...timetableFilters } =
+    useFilterTrainSchedules(trainSchedulesWithDetails);
 
   const handleClickTrainScheduleSet = useCallback(
     (id: number) => {
@@ -147,7 +147,7 @@ const Timetable = ({
         })}
       >
         <TimetableToolbar
-          filteredTimetableItems={filteredTimetableItems}
+          filteredTrainSchedules={filteredTrainSchedules}
           timetableFilters={timetableFilters}
           timetableItems={timetableItems}
           selectedTimetableItemIds={selectedTimetableItemIds}
@@ -171,7 +171,7 @@ const Timetable = ({
           setSelectedTimetableItemIds={setSelectedTimetableItemIds}
           removeAndUnselectTrains={removeAndUnselectTrains}
           trainScheduleToEditData={trainScheduleToEditData}
-          timetableItemsWithDetails={filteredTimetableItems}
+          trainSchedulesWithDetails={filteredTrainSchedules}
           selectedTimetableItemIds={selectedTimetableItemIds}
           projectingOnSimulatedPathException={projectingOnSimulatedPathException}
           isSelectMode={isSelectMode}
