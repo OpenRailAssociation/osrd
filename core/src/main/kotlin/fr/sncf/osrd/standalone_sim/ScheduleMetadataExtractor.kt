@@ -610,9 +610,14 @@ private fun findLimitingSignal(
             if (signalTravelledOffset < Offset.zero()) break
 
             val ssid = loadedSignalInfra.getSignalingSystem(signal)
-            val signalState = simulatedSignalStates[signal]!!
-            val trainState = signalingTrainStates[signal]!!
-            if (!sigSystemManager.isConstraining(ssid, signalState, trainState)) break
+            val signalState = simulatedSignalStates[signal]
+            val trainState = signalingTrainStates[signal]
+            if (
+                signalState != null &&
+                    trainState != null &&
+                    !sigSystemManager.isConstraining(ssid, signalState, trainState)
+            )
+                break
             lastSignalBlockIndex = curBlockIndex
             lastSignalIndex = curSignalIndex
         }

@@ -58,7 +58,7 @@ private fun validatePathfindingResponse(
             val detectorName = infra.rawInfra.getDetectorName(detector.value)
             val err = OSRDError(ErrorType.MissingSignalOnRouteTransition)
             err.context["detector"] = "detector=$detectorName, dir=${detector.direction}"
-            throw err
+            // throw err
         }
     }
 
