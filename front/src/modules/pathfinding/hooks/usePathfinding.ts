@@ -113,6 +113,7 @@ const usePathfinding = ({
           ...(op.extensions?.identifier?.name && { name: op.extensions.identifier.name }),
           ...(op.extensions?.identifier?.uic && {
             location: {
+              local_track_name: step.location.local_track_name,
               type: 'operational_point_part_reference',
               operational_point: {
                 uic: op.extensions.identifier.uic,
