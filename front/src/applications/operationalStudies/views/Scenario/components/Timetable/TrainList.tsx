@@ -12,7 +12,7 @@ import type { CatalogEntry } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { isPacedTrainWithDetails } from 'modules/timetableItem/helpers/pacedTrain';
-import type { PacedTrainWithDetails, TimetableItemWithDetails } from 'modules/timetableItem/types';
+import type { PacedTrainWithDetails, TrainScheduleWithDetails } from 'modules/timetableItem/types';
 import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
 import type { OccurrenceId, TimetableItem, TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import {
@@ -37,7 +37,7 @@ type TrainListProps = {
   setSelectedTimetableItemIds: React.Dispatch<React.SetStateAction<number[]>>;
   removeAndUnselectTrains: (trainIds: number[]) => void;
   trainScheduleToEditData?: TrainScheduleToEditData;
-  timetableItemsWithDetails: TimetableItemWithDetails[];
+  trainSchedulesWithDetails: TrainScheduleWithDetails[];
   selectedTimetableItemIds: number[];
   projectingOnSimulatedPathException: boolean | undefined;
   isSelectMode: boolean;
@@ -62,7 +62,7 @@ const TrainList = ({
   setSelectedTimetableItemIds,
   removeAndUnselectTrains,
   trainScheduleToEditData,
-  timetableItemsWithDetails,
+  trainSchedulesWithDetails,
   selectedTimetableItemIds,
   projectingOnSimulatedPathException,
   isSelectMode,
@@ -117,10 +117,10 @@ const TrainList = ({
 
   const currentDepartureDates = useMemo(
     () =>
-      timetableItemsWithDetails.map((train) =>
+      trainSchedulesWithDetails.map((train) =>
         formatDepartureDate(train.startTime, dateTimeLocale)
       ),
-    [timetableItemsWithDetails, dateTimeLocale]
+    [trainSchedulesWithDetails, dateTimeLocale]
   );
 
   const showDepartureDates = useMemo(() => {
@@ -134,17 +134,19 @@ const TrainList = ({
     });
   }, [currentDepartureDates]);
 
-  const selectTimetableItemToEdit = useCallback(
+  const selectTrainScheduleToEdit = useCallback(
     (
-      itemToEdit: TimetableItemWithDetails,
+      trainScheduleToEdit: TrainScheduleWithDetails,
       originalPacedTrain?: PacedTrainWithDetails,
       occurrenceId?: OccurrenceId
     ) => {
-      dispatch(selectTrainToEdit({ item: itemToEdit, isOccurrence: !!occurrenceId }));
+      dispatch(
+        selectTrainToEdit({ trainSchedule: trainScheduleToEdit, isOccurrence: !!occurrenceId })
+      );
       const editData: TrainScheduleToEditData = {
-        trainScheduleId: itemToEdit.id,
+        trainScheduleId: trainScheduleToEdit.id,
         // param originalPacedTrain is defined only when editing an occurrence
-        originalPacedTrain: originalPacedTrain ?? itemToEdit,
+        originalPacedTrain: originalPacedTrain ?? trainScheduleToEdit,
         occurrenceId,
       };
       setTrainScheduleToEditData(editData);
@@ -154,44 +156,44 @@ const TrainList = ({
   );
 
   const trainsToItems = useMemo(
-    () => (timetableItems: PacedTrainWithDetails[]) =>
-      timetableItems.map((timetableItem, index) => (
-        <div key={`timetable-train-card-${timetableItem.id}`} data-train-id={timetableItem.id}>
+    () => (trainSchedules: PacedTrainWithDetails[]) =>
+      trainSchedules.map((trainSchedule, index) => (
+        <div key={`timetable-train-card-${trainSchedule.id}`} data-train-id={trainSchedule.id}>
           {timetableMode === 'calendar' && showDepartureDates[index] && (
             <div className="scenario-timetable-departure-date">{currentDepartureDates[index]}</div>
           )}
-          {!isPacedTrainWithDetails(timetableItem) ? (
+          {!isPacedTrainWithDetails(trainSchedule) ? (
             <UniqueTrainItem
-              isInSelection={selectedTimetableItemIds.includes(timetableItem.id)}
+              isInSelection={selectedTimetableItemIds.includes(trainSchedule.id)}
               handleSelectTrain={handleSelectTimetableItem}
-              train={timetableItem}
+              train={trainSchedule}
               isSelected={
                 workerStatus === 'READY' &&
-                selectedTrainId === formatEditoastIdToPacedTrainId(timetableItem.id)
+                selectedTrainId === formatEditoastIdToPacedTrainId(trainSchedule.id)
               }
-              isModified={timetableItem.id === trainScheduleToEditData?.trainScheduleId}
+              isModified={trainSchedule.id === trainScheduleToEditData?.trainScheduleId}
               upsertUniqueTrains={upsertTimetableItems}
               removeTrains={removeAndUnselectTrains}
-              selectTrainToEdit={selectTimetableItemToEdit}
+              selectTrainToEdit={selectTrainScheduleToEdit}
               setSelectedTimetableItemIds={setSelectedTimetableItemIds}
               projectionPathIsUsed={
                 workerStatus === 'READY' &&
-                trainIdUsedForProjection === formatEditoastIdToPacedTrainId(timetableItem.id)
+                trainIdUsedForProjection === formatEditoastIdToPacedTrainId(trainSchedule.id)
               }
               subCategories={subCategories}
               isSelectMode={isSelectMode}
-              moveTimetableItem={() => moveTimetableItem?.([timetableItem.id])}
+              moveTimetableItem={() => moveTimetableItem?.([trainSchedule.id])}
               showMovebutton={timetableMode === 'trainScheduleSet'}
             />
           ) : (
             <PacedTrainItem
-              pacedTrain={timetableItem}
-              isInSelection={selectedTimetableItemIds.includes(timetableItem.id)}
-              selectPacedTrainToEdit={selectTimetableItemToEdit}
+              pacedTrain={trainSchedule}
+              isInSelection={selectedTimetableItemIds.includes(trainSchedule.id)}
+              selectPacedTrainToEdit={selectTrainScheduleToEdit}
               handleSelectPacedTrain={handleSelectTimetableItem}
-              isOccurrencesListOpen={expandedTimetableItemIds.has(timetableItem.id)}
+              isOccurrencesListOpen={expandedTimetableItemIds.has(trainSchedule.id)}
               handleOpenOccurrencesList={handleExpandTimetableItem}
-              isOnEdit={timetableItem.id === trainScheduleToEditData?.trainScheduleId}
+              isOnEdit={trainSchedule.id === trainScheduleToEditData?.trainScheduleId}
               selectedTrainId={selectedTrainId}
               upsertTimetableItems={upsertTimetableItems}
               removePacedTrains={removeAndUnselectTrains}
@@ -200,7 +202,7 @@ const TrainList = ({
               subCategories={subCategories}
               projectingOnSimulatedPathException={projectingOnSimulatedPathException}
               isSelectMode={isSelectMode}
-              moveTimetableItem={() => moveTimetableItem?.([timetableItem.id])}
+              moveTimetableItem={() => moveTimetableItem?.([trainSchedule.id])}
               showMovebutton={timetableMode === 'trainScheduleSet'}
               timetableId={timetableId}
             />
@@ -217,7 +219,7 @@ const TrainList = ({
       moveTimetableItem,
       projectingOnSimulatedPathException,
       removeAndUnselectTrains,
-      selectTimetableItemToEdit,
+      selectTrainScheduleToEdit,
       selectedTimetableItemIds,
       selectedTrainId,
       setSelectedTimetableItemIds,
@@ -232,7 +234,7 @@ const TrainList = ({
 
   return (
     <Virtualizer>
-      {timetableMode === 'calendar' && trainsToItems(timetableItemsWithDetails)}
+      {timetableMode === 'calendar' && trainsToItems(trainSchedulesWithDetails)}
       {timetableMode === 'trainScheduleSet' &&
         (timetableItemsByTrainScheduleSets ? (
           timetableItemsByTrainScheduleSets

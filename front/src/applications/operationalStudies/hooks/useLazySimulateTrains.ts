@@ -5,7 +5,7 @@ import type {
   TrainScheduleSimulationSummaryResult,
 } from 'common/api/osrdEditoastApi';
 import formatTimetableItemSummaries from 'modules/simulationResult/helpers/formatTimetableItemSummaries';
-import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
+import type { TrainScheduleWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 
@@ -16,7 +16,7 @@ type UseLazySimulateTrainsOptions = {
   timetableId: number;
   electricalProfileSetId: number | undefined;
   rollingStocks: LightRollingStockWithLiveries[] | null;
-  onProgress?: (results: Map<number, TimetableItemWithDetails>) => void;
+  onProgress?: (results: Map<number, TrainScheduleWithDetails>) => void;
 };
 
 /**
@@ -45,7 +45,7 @@ export default function useLazySimulateTrains({
   const loaderRef = useRef<TrainSimulationLazyLoader>(null);
   const timetableItemsByIdRef = useRef<Map<number, TimetableItem>>(new Map());
   const [simulatedTrainsById, setSimulatedTrainsById] = useState<
-    Map<number, TimetableItemWithDetails>
+    Map<number, TrainScheduleWithDetails>
   >(new Map());
 
   const onProgressRef = useRef<UseLazySimulateTrainsOptions['onProgress']>(null);

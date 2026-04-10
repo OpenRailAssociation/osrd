@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { isValidPathfinding } from 'applications/operationalStudies/views/Scenario/components/Timetable/utils';
-import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
+import type { TrainScheduleWithDetails } from 'modules/timetableItem/types';
 import { updateSelectedTrain, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import {
   getSelectedTrainId,
@@ -34,7 +34,7 @@ type SimulationParams = {
  * currentTrainIdForProjection will still be undefined and must be updated)
  */
 const useAutoSelectTrainIds = (
-  timetableItemsWithDetails: TimetableItemWithDetails[] | undefined
+  trainSchedulesWithDetails: TrainScheduleWithDetails[] | undefined
 ) => {
   const dispatch = useAppDispatch();
   const currentTrainIdForProjection = useSelector(getTrainIdUsedForProjection);
@@ -109,11 +109,11 @@ const useAutoSelectTrainIds = (
   }, [parametersLoaded, selectedTrainId, currentTrainIdForProjection, setParamsInUrlAndStorage]);
 
   useEffect(() => {
-    if (timetableItemsWithDetails === undefined) {
+    if (trainSchedulesWithDetails === undefined) {
       return;
     }
 
-    if (timetableItemsWithDetails.length === 0) {
+    if (trainSchedulesWithDetails.length === 0) {
       if (selectedTrainId) dispatch(updateSelectedTrain(undefined));
       if (currentTrainIdForProjection) dispatch(updateTrainIdUsedForProjection(undefined));
       setParametersLoaded(true);
@@ -126,13 +126,13 @@ const useAutoSelectTrainIds = (
       return;
     }
 
-    const isSelectedTrainIdValid = isTrainIdInTimetable(selectedTrainId, timetableItemsWithDetails);
+    const isSelectedTrainIdValid = isTrainIdInTimetable(selectedTrainId, trainSchedulesWithDetails);
     const isProjectedTrainIdValid = isTrainIdInTimetable(
       currentTrainIdForProjection,
-      timetableItemsWithDetails
+      trainSchedulesWithDetails
     );
 
-    // if a selected timetable item is given and is still in the timetable, don't change the selected train
+    // if a selected train schedule is given and is still in the timetable, don't change the selected train
     if (isSelectedTrainIdValid) {
       // if no train is used for the projection or the id is invalid, use the selected train
       if (!isProjectedTrainIdValid) {
@@ -142,18 +142,20 @@ const useAutoSelectTrainIds = (
     }
 
     // at this point, the selected train is not in the timetable anymore or is undefined
-    // by default, select the first valid item for the projection
-    // if no valid item is found, select item with valid pathfinding
+    // by default, select the first valid train schedule for the projection
+    // if no valid train schedule is found, select train schedule with valid pathfinding
     const firstTrainCanBeUsedForProjection =
-      timetableItemsWithDetails.find((item) => item.summary?.isValid) ??
-      timetableItemsWithDetails.find((item) => item.summary && isValidPathfinding(item.summary));
+      trainSchedulesWithDetails.find((trainSchedule) => trainSchedule.summary?.isValid) ??
+      trainSchedulesWithDetails.find(
+        (trainSchedule) => trainSchedule.summary && isValidPathfinding(trainSchedule.summary)
+      );
 
     if (firstTrainCanBeUsedForProjection) {
       const pacedTrainId = formatEditoastIdToPacedTrainId(firstTrainCanBeUsedForProjection.id);
       dispatch(updateSelectedTrain({ id: pacedTrainId, by: 'timetable' }));
       if (!isProjectedTrainIdValid) dispatch(updateTrainIdUsedForProjection(pacedTrainId));
     }
-  }, [timetableItemsWithDetails, setIdsFromUrlOrStorage, parametersLoaded]);
+  }, [trainSchedulesWithDetails, setIdsFromUrlOrStorage, parametersLoaded]);
 };
 
 export default useAutoSelectTrainIds;

@@ -11,7 +11,7 @@ import type {
   CatalogEntry,
 } from 'common/api/osrdEditoastApi';
 import isMainCategory from 'modules/rollingStock/helpers/category';
-import type { SimulationSummary, TimetableItemWithDetails } from 'modules/timetableItem/types';
+import type { SimulationSummary, TrainScheduleWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
 
@@ -38,8 +38,8 @@ export const extractTagCode = (tag?: string | null) => {
   return matches ? matches[0] : tag;
 };
 
-export const timetableHasInvalidItem = (timetableItems: TimetableItemWithDetails[]) =>
-  timetableItems.some((timetableItem) => timetableItem.summary && !timetableItem.summary.isValid);
+export const timetableHasInvalidTrainSchedule = (trainSchedules: TrainScheduleWithDetails[]) =>
+  trainSchedules.some((trainSchedule) => trainSchedule.summary && !trainSchedule.summary.isValid);
 
 export const formatTrainDuration = (duration: Duration) =>
   dayjs.duration(duration.ms).format('HH[h]mm');

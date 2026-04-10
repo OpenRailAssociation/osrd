@@ -16,7 +16,7 @@ import {
   createPacedTrains,
   deleteTrainSchedules,
 } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
-import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
+import type { TrainScheduleWithDetails } from 'modules/timetableItem/types';
 import { setFailure, setSuccess } from 'reducers/main';
 import type { TimetableItem, TrainId } from 'reducers/osrdconf/types';
 import {
@@ -37,14 +37,14 @@ import { formatTrainDuration, getTrainCategoryClassName } from './utils';
 
 type UniqueTrainItemProps = {
   isInSelection: boolean;
-  train: TimetableItemWithDetails;
+  train: TrainScheduleWithDetails;
   isSelected: boolean;
   isModified?: boolean;
   handleSelectTrain: (trainId: number) => void;
   upsertUniqueTrains: (uniqueTrains: TimetableItem[]) => void;
   removeTrains: (trainIds: number[]) => void;
   projectionPathIsUsed: boolean;
-  selectTrainToEdit: (train: TimetableItemWithDetails) => void;
+  selectTrainToEdit: (train: TrainScheduleWithDetails) => void;
   setSelectedTimetableItemIds: React.Dispatch<React.SetStateAction<number[]>>;
   subCategories: SubCategory[];
   isSelectMode: boolean;

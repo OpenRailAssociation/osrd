@@ -12,7 +12,7 @@ import {
   findExceptionWithOccurrenceId,
   isPacedTrainWithDetails,
 } from 'modules/timetableItem/helpers/pacedTrain';
-import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
+import type { TrainScheduleWithDetails } from 'modules/timetableItem/types';
 import type { TrainId } from 'reducers/osrdconf/types';
 import {
   isOccurrenceId,
@@ -26,28 +26,29 @@ export type PathDataWithSimulated = PathData & {
 };
 
 const getTrainCategory = (
-  timetableItemsWithDetailsById: Map<number, TimetableItemWithDetails>,
+  trainSchedulesWithDetailsById: Map<number, TrainScheduleWithDetails>,
   trainId: TrainId
 ) => {
   const timetableItemId = extractEditoastIdFromPacedTrainId(
     isOccurrenceId(trainId) ? extractPacedTrainIdFromOccurrenceId(trainId) : trainId
   );
 
-  const item = timetableItemsWithDetailsById.get(timetableItemId);
+  const trainSchedule = trainSchedulesWithDetailsById.get(timetableItemId);
 
-  if (!item || !isPacedTrainWithDetails(item) || !isOccurrenceId(trainId)) return item?.category;
+  if (!trainSchedule || !isPacedTrainWithDetails(trainSchedule) || !isOccurrenceId(trainId))
+    return trainSchedule?.category;
 
-  const exception = findExceptionWithOccurrenceId(item.paced.exceptions, trainId);
-  return exception?.rolling_stock_category?.value ?? item.category;
+  const exception = findExceptionWithOccurrenceId(trainSchedule.paced.exceptions, trainId);
+  return exception?.rolling_stock_category?.value ?? trainSchedule.category;
 };
 
 const formatSpaceTimeCurves = (
   subCategories: SubCategory[],
   individualTrainProjections: IndividualTrainProjection[],
-  timetableItemsWithDetailsById: Map<number, TimetableItemWithDetails>
+  trainSchedulesWithDetailsById: Map<number, TrainScheduleWithDetails>
 ): PathDataWithSimulated[] =>
   individualTrainProjections.flatMap((train) => {
-    const category = getTrainCategory(timetableItemsWithDetailsById, train.id);
+    const category = getTrainCategory(trainSchedulesWithDetailsById, train.id);
 
     let colors = DEFAULT_TRAIN_PATH_COLORS;
     if (category) {

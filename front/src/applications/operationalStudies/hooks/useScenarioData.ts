@@ -102,7 +102,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
 
   const isConflictsLoading = isUninitialized || isFetching;
 
-  const timetableItemsWithDetails = useMemo(() => {
+  const trainSchedulesWithDetails = useMemo(() => {
     const items = (timetableItems || []).map((timetableItem) => {
       const simulatedTrain = simulatedTrainsById.get(timetableItem.id);
       if (simulatedTrain) return simulatedTrain;
@@ -117,7 +117,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     [projectedTrainsById]
   );
 
-  useAutoSelectTrainIds(timetableItems ? timetableItemsWithDetails : undefined);
+  useAutoSelectTrainIds(timetableItems ? trainSchedulesWithDetails : undefined);
 
   // first load of the summaries
   useEffect(() => {
@@ -274,7 +274,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
 
   const results = useMemo(
     () => ({
-      timetableItemsWithDetails,
+      trainSchedulesWithDetails,
       timetableItems,
       projectionData: projectionPath
         ? {
@@ -295,7 +295,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       setSelectedTimetableItemIds,
     }),
     [
-      timetableItemsWithDetails,
+      trainSchedulesWithDetails,
       timetableItems,
       projectionPath,
       projectedTrains,

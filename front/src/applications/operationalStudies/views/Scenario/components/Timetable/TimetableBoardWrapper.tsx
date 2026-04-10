@@ -9,7 +9,7 @@ import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { deleteTrainSchedules } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
-import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
+import type { TrainScheduleWithDetails } from 'modules/timetableItem/types';
 import { setFailure, setSuccess } from 'reducers/main';
 import type { TimetableItem, TrainScheduleToEditData, TrainId } from 'reducers/osrdconf/types';
 import { updateSelectedTrain } from 'reducers/simulationResults';
@@ -30,7 +30,7 @@ type TimetableBoardWrapperProps = {
   removeTimetableItems: (timetableItemsToRemove: number[]) => void;
   trainScheduleToEditData?: TrainScheduleToEditData;
   timetableItems?: TimetableItem[];
-  timetableItemsWithDetails: TimetableItemWithDetails[];
+  trainSchedulesWithDetails: TrainScheduleWithDetails[];
   refreshNge: () => Promise<void>;
   projectingOnSimulatedPathException: boolean | undefined;
   selectedTimetableItemIds: number[];
@@ -44,7 +44,7 @@ const TimetableBoardWrapper = ({
   removeTimetableItems,
   trainScheduleToEditData,
   timetableItems = [],
-  timetableItemsWithDetails,
+  trainSchedulesWithDetails,
   refreshNge,
   projectingOnSimulatedPathException,
   selectedTimetableItemIds,
@@ -79,10 +79,10 @@ const TimetableBoardWrapper = ({
   );
 
   const { selectedUniqueTrainIds, selectedPacedTrainIds } = useMemo(() => {
-    const timetableItemsById = mapBy(timetableItemsWithDetails, 'id');
+    const trainSchedulesById = mapBy(trainSchedulesWithDetails, 'id');
     return selectedTimetableItemIds.reduce(
       (acc, timetableItemId) => {
-        const pacedTrain = timetableItemsById.get(timetableItemId);
+        const pacedTrain = trainSchedulesById.get(timetableItemId);
         if (!pacedTrain) throw new Error(`No timetableItem found for id ${timetableItemId}`);
         if (!pacedTrain.paced) acc.selectedUniqueTrainIds.push(timetableItemId);
         else acc.selectedPacedTrainIds.push(timetableItemId);
@@ -297,7 +297,7 @@ const TimetableBoardWrapper = ({
         handleDeleteTimetableItems={handleDeleteTimetableItems}
         trainScheduleToEditData={trainScheduleToEditData}
         timetableItems={timetableItems}
-        timetableItemsWithDetails={timetableItemsWithDetails}
+        trainSchedulesWithDetails={trainSchedulesWithDetails}
         refreshNge={refreshNge}
         projectingOnSimulatedPathException={projectingOnSimulatedPathException}
       />
