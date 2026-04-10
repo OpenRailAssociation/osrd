@@ -30,6 +30,7 @@ import StdcmHeader from './components/StdcmHeader';
 import StdcmHelpModule from './components/StdcmHelpModule';
 import StdcmResults from './components/StdcmResults';
 import StdcmStatusBanner from './components/StdcmStatusBanner';
+import { STDCM_REQUEST_STATUS } from './consts';
 import useStdcm from './hooks/useStdcm';
 import useStdcmEnvironment, { NO_CONFIG_FOUND_MSG } from './hooks/useStdcmEnv';
 import useStdcmForm from './hooks/useStdcmForm';
@@ -60,18 +61,8 @@ const StdcmViewContent = ({
   const resultSectionRef = useRef<HTMLDivElement | null>(null);
   const previousResultSectionOffsetRef = useRef<number | null>(null);
 
-  const {
-    launchStdcmRequest,
-    cancelStdcmRequest,
-    resetStdcmState,
-    isPending,
-    isInProgress,
-    isPendingAdditional,
-    isRejected,
-    isCanceled,
-    isCalculationCompleted,
-    progressPoints,
-  } = useStdcm({ showFailureNotification: false });
+  const { launchStdcmRequest, cancelStdcmRequest, resetStdcmState, requestStatus, progressPoints } =
+    useStdcm({ showFailureNotification: false });
 
   const dispatch = useAppDispatch();
 
@@ -124,30 +115,29 @@ const StdcmViewContent = ({
   }, [currentSimulationInputs, selectedSimulationIndex]);
 
   useEffect(() => {
-    if (isPending || isPendingAdditional) {
-      setShowBtnToLaunchSimulation(false);
+    switch (requestStatus) {
+      case STDCM_REQUEST_STATUS.in_progress:
+      case STDCM_REQUEST_STATUS.pending:
+      case STDCM_REQUEST_STATUS.pending_additional: {
+        setShowBtnToLaunchSimulation(false);
+        break;
+      }
+      case STDCM_REQUEST_STATUS.success: {
+        setShowStatusBanner(true);
+        setDisplayInfoMessage(false);
+        break;
+      }
+      case STDCM_REQUEST_STATUS.canceled: {
+        setShowBtnToLaunchSimulation(true);
+        setDisplayInfoMessage(true);
+        break;
+      }
+      case STDCM_REQUEST_STATUS.rejected: {
+        if (!isReloading) setShowStatusBanner(true);
+        break;
+      }
     }
-  }, [isPending, isPendingAdditional]);
-
-  useEffect(() => {
-    if (isCanceled) {
-      setShowBtnToLaunchSimulation(true);
-      setDisplayInfoMessage(true);
-    }
-  }, [isCanceled]);
-
-  useEffect(() => {
-    if (isCalculationCompleted) {
-      setShowStatusBanner(true);
-      setDisplayInfoMessage(false);
-    }
-  }, [isCalculationCompleted]);
-
-  useEffect(() => {
-    if (isRejected && !isReloading) {
-      setShowStatusBanner(true);
-    }
-  }, [isRejected, isReloading]);
+  }, [requestStatus, isReloading]);
 
   useEffect(() => {
     const handleBeforeUnload = () => {
@@ -184,9 +174,7 @@ const StdcmViewContent = ({
   return (
     <div>
       <StdcmConfig
-        isPending={isPending}
-        isPendingAdditional={isPendingAdditional}
-        isInProgress={isInProgress}
+        requestStatus={requestStatus}
         isDebugMode={isDebugMode}
         showBtnToLaunchSimulation={showBtnToLaunchSimulation}
         retainedSimulationIndex={retainedSimulationIndex}
@@ -197,12 +185,14 @@ const StdcmViewContent = ({
         progressPoints={progressPoints}
       />
 
-      {showStatusBanner && <StdcmStatusBanner isFailed={isRejected} />}
+      {showStatusBanner && (
+        <StdcmStatusBanner isFailed={requestStatus === STDCM_REQUEST_STATUS.rejected} />
+      )}
 
       {completedSimulations.length > 0 && (
         <div ref={resultSectionRef} className="stdcm-results">
           <StdcmResults
-            isCalculationFailed={isRejected}
+            isCalculationFailed={requestStatus === STDCM_REQUEST_STATUS.rejected}
             isDebugMode={isDebugMode}
             onSelectSimulation={handleSelectSimulation}
             displayInfoMessage={displayInfoMessage}

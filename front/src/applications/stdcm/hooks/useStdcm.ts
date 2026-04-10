@@ -103,7 +103,10 @@ const useStdcm = ({
         id: STDCM_TRAIN_ID,
         comfort: payload.body.comfort,
         constraint_distribution: 'MARECO',
-        path: payload.body.steps.map((step) => ({ location: step.location, id: uuidV4() })),
+        path: payload.body.steps.map((step) => ({
+          location: step.location,
+          id: uuidV4(),
+        })),
         rolling_stock_name: stdcmRollingStock!.name,
         start_time: formattedResponse.departure_time,
         train_name: 'stdcm',
@@ -297,26 +300,12 @@ const useStdcm = ({
     setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.canceled);
   };
 
-  const isPending =
-    currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending ||
-    currentStdcmRequestStatus === STDCM_REQUEST_STATUS.in_progress;
-  const isInProgress = currentStdcmRequestStatus === STDCM_REQUEST_STATUS.in_progress;
-  const isPendingAdditional = currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending_additional;
-  const isRejected = currentStdcmRequestStatus === STDCM_REQUEST_STATUS.rejected;
-  const isCanceled = currentStdcmRequestStatus === STDCM_REQUEST_STATUS.canceled;
-  const isCalculationCompleted = currentStdcmRequestStatus === STDCM_REQUEST_STATUS.success;
-
   return {
     launchStdcmRequest,
     cancelStdcmRequest,
     resetStdcmState,
-    isPending,
-    isInProgress,
-    isRejected,
-    isCanceled,
-    isPendingAdditional,
-    isCalculationCompleted,
     progressPoints,
+    requestStatus: currentStdcmRequestStatus,
   };
 };
 
