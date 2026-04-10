@@ -5,10 +5,12 @@ import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlockRanges
 import fr.sncf.osrd.path.interfaces.BlockRange
+import fr.sncf.osrd.path.interfaces.DirChunkRange
 import fr.sncf.osrd.path.interfaces.GenericLinearRange
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.RouteRange
 import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.interfaces.mapSubObjects
 import fr.sncf.osrd.path.interfaces.subRange
 import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop
@@ -597,32 +599,21 @@ private class InfraExplorerImpl(
 
     private fun getChunksUnderTrainWhenBacktracking(
         headStepBeforeBacktracking: LocatedStep
-    ): MutableList<TrackChunkId> {
-        val blocksUnderTrainWhenBacktracking =
-            blockRanges.iterateBackwards().filter {
-                it.pathEnd >= headStepBeforeBacktracking.travelledPathOffset - rollingStockLength &&
-                    it.pathBegin <= headStepBeforeBacktracking.travelledPathOffset
+    ): List<TrackChunkId> {
+        val blockRangesUnderTrainWhenBacktracking =
+            blockRanges
+                .toList()
+                .subRange(
+                    headStepBeforeBacktracking.travelledPathOffset - rollingStockLength,
+                    headStepBeforeBacktracking.travelledPathOffset,
+                )
+        val chunkRangesUnderTrainWhenBacktracking: List<DirChunkRange> =
+            blockRangesUnderTrainWhenBacktracking.mapSubObjects(
+                blockInfra::getTrackChunksFromBlock
+            ) {
+                Length(rawInfra.getTrackChunkLength(it.value).distance)
             }
-        val chunksFromBlocksUnderTrainWhenBacktracking =
-            blocksUnderTrainWhenBacktracking.flatMap {
-                blockInfra.getTrackChunksFromBlock(it.value).asReversed()
-            }
-        val headDirChunkLocationBeforeBacktracking =
-            blockInfra.getDirChunkLocation(headStepBeforeBacktracking.location, rawInfra)
-        val chunksUnderTrainWhenBacktracking = mutableListOf<TrackChunkId>()
-        var trainLengthToConsume = rollingStockLength
-        for (chunk in chunksFromBlocksUnderTrainWhenBacktracking) {
-            if (chunksUnderTrainWhenBacktracking.isNotEmpty()) {
-                chunksUnderTrainWhenBacktracking.add(chunk.value)
-                trainLengthToConsume -= rawInfra.getTrackChunkLength(chunk.value).distance
-            }
-            if (chunk.value == headDirChunkLocationBeforeBacktracking.dirChunk.value) {
-                trainLengthToConsume -= headDirChunkLocationBeforeBacktracking.offset.distance
-                chunksUnderTrainWhenBacktracking.add(chunk.value)
-            }
-            if (trainLengthToConsume <= 0.meters) break
-        }
-        return chunksUnderTrainWhenBacktracking
+        return chunkRangesUnderTrainWhenBacktracking.map { it.value.value }
     }
 }
 
@@ -670,17 +661,18 @@ private fun getLastRoutesOfPathsCoveringAllChunks(
     firstRoute: RouteId,
     rawInfra: RawInfra,
 ): List<RouteId> {
+    val reversedChunksToCover = chunksToCover.asReversed()
     val chunksOnFirstRoute = rawInfra.getChunksOnRoute(firstRoute)
     var nextIdxToCover = 0
     var startedToCover = alreadyStartedToCover
     for (chunk in chunksOnFirstRoute) {
         // Coverage interrupted means no route-list will be found
-        if (startedToCover && chunksToCover[nextIdxToCover] != chunk.value) return listOf()
-        if (chunksToCover[nextIdxToCover] == chunk.value) {
+        if (startedToCover && reversedChunksToCover[nextIdxToCover] != chunk.value) return listOf()
+        if (reversedChunksToCover[nextIdxToCover] == chunk.value) {
             startedToCover = true
             nextIdxToCover++
             // Coverage finished: the single first route is enough
-            if (nextIdxToCover == chunksToCover.size) return listOf(firstRoute)
+            if (nextIdxToCover == reversedChunksToCover.size) return listOf(firstRoute)
         }
     }
     require(startedToCover)
@@ -693,7 +685,7 @@ private fun getLastRoutesOfPathsCoveringAllChunks(
     for (possibleRoute in nextPossibleRoutes) {
         val nextRoutesList =
             getLastRoutesOfPathsCoveringAllChunks(
-                chunksToCover.drop(nextIdxToCover),
+                reversedChunksToCover.drop(nextIdxToCover),
                 true,
                 possibleRoute,
                 rawInfra,
