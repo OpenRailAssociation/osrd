@@ -3756,11 +3756,12 @@ checksum = "973443cf09a9c8656b574a866ab68dfa19f0867d0340648c7d2f6a71b8a8ea68"
 
 [[package]]
 name = "redis"
-version = "1.0.5"
+version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b36964393906eb775b89b25b05b7b95685b8dd14062f1663a31ff93e75c452e5"
+checksum = "f44e94c96d8870a387d88ce3de3fdd608cbfc0705f03cb343cdde91509d3e49a"
 dependencies = [
  "arcstr",
+ "async-lock",
  "bytes",
  "cfg-if",
  "combine",
@@ -3780,9 +3781,9 @@ dependencies = [
 
 [[package]]
 name = "redis-test"
-version = "1.0.2"
+version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "15ece2007599fd467331e42b5666e548f6aa727a738cb3582c39e573c0b2aab6"
+checksum = "6c44e98700033fcce3c3774ab8e4f31b9cebb2761df3298600f4be30a95d2f2a"
 dependencies = [
  "rand 0.9.2",
  "redis",
