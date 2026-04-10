@@ -4,7 +4,7 @@ import type { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import type {
   PacedTrainWithDetails,
   SuggestedOP,
-  TimetableItemWithSummaries,
+  TrainScheduleWithSummaries,
 } from 'modules/timetableItem/types';
 import {
   operationalStudiesConfSlice,
@@ -18,7 +18,7 @@ import { Duration } from 'utils/duration';
 
 import testTrainSettingsReducer from './trainSettingsReducer';
 
-const baseTimetableItemWithSummary: TimetableItemWithSummaries = {
+const baseTrainScheduleWithSummary: TrainScheduleWithSummaries = {
   id: 1,
   name: 'train1',
   train_schedule_set_id: 1000,
@@ -98,7 +98,7 @@ describe('simulationConfReducer', () => {
   describe('selectTrainToEdit', () => {
     it('paced train case', () => {
       const pacedTrain: PacedTrainWithDetails = {
-        ...baseTimetableItemWithSummary,
+        ...baseTrainScheduleWithSummary,
         paced: {
           timeWindow: new Duration({ minutes: 60 }),
           interval: new Duration({ minutes: 30 }),
