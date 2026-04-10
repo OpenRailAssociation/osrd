@@ -240,6 +240,7 @@ const useStdcm = ({
             break;
           }
           case 'ongoing': {
+            setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.in_progress);
             const now = Date.now();
             if (now > lastPointReceivedAt.timestamp) {
               lastPointReceivedAt = { timestamp: Date.now(), nb: 0 };
@@ -296,7 +297,10 @@ const useStdcm = ({
     setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.canceled);
   };
 
-  const isPending = currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending;
+  const isPending =
+    currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending ||
+    currentStdcmRequestStatus === STDCM_REQUEST_STATUS.in_progress;
+  const isInProgress = currentStdcmRequestStatus === STDCM_REQUEST_STATUS.in_progress;
   const isPendingAdditional = currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending_additional;
   const isRejected = currentStdcmRequestStatus === STDCM_REQUEST_STATUS.rejected;
   const isCanceled = currentStdcmRequestStatus === STDCM_REQUEST_STATUS.canceled;
@@ -307,6 +311,7 @@ const useStdcm = ({
     cancelStdcmRequest,
     resetStdcmState,
     isPending,
+    isInProgress,
     isRejected,
     isCanceled,
     isPendingAdditional,

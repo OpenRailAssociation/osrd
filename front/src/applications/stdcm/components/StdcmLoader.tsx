@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type RefObject } from 'react';
+import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
 import cx from 'classnames';
@@ -11,6 +11,7 @@ const LOADER_OFFSET = 32;
 
 type StdcmLoaderProps = {
   isPendingAdditional: boolean;
+  isInProgress: boolean;
   cancelStdcmRequest: () => void;
   launchButtonRef: RefObject<HTMLDivElement | null>;
   formRef: RefObject<HTMLDivElement | null>;
@@ -20,6 +21,7 @@ const StdcmLoader = ({
   cancelStdcmRequest,
   launchButtonRef,
   formRef,
+  isInProgress,
   isPendingAdditional,
 }: StdcmLoaderProps) => {
   const { t } = useTranslation('stdcm');
@@ -81,6 +83,12 @@ const StdcmLoader = ({
     };
   }, []);
 
+  const loadingStatusLabelKey = useMemo(() => {
+    if (isPendingAdditional) return 'simulation.additionalResults';
+    if (isInProgress) return 'simulation.calculatingSimulation';
+    return 'simulation.calculatingInitialization';
+  }, [isInProgress, isPendingAdditional]);
+
   return (
     <div
       ref={loaderRef}
@@ -92,13 +100,7 @@ const StdcmLoader = ({
       })}
     >
       <div className="stdcm-loader__wrapper">
-        <h2>
-          {t(
-            isPendingAdditional
-              ? 'simulation.additionalResults'
-              : 'simulation.calculatingSimulation'
-          )}
-        </h2>
+        <h2>{t(loadingStatusLabelKey)}</h2>
         <div className="stdcm-loader__cancel-btn">
           <Button
             data-testid="cancel-simulation-button"

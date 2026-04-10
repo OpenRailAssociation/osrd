@@ -5,6 +5,7 @@ import type { ConsistErrors } from './types';
 export const STDCM_REQUEST_STATUS = Object.freeze({
   idle: 'IDLE',
   pending: 'PENDING',
+  in_progress: 'IN_PROGRESS',
   success: 'SUCCESS',
   rejected: 'REJECTED',
   canceled: 'CANCELED',

@@ -131,6 +131,7 @@
   },
   "simulation": {
     "additionalResults": "No results were found for your request; alternative options are being computed.",
+    "calculatingInitialization": "Setting up calculation…",
     "calculatingSimulation": "Calculation in progress…",
     "getSimulation": "Get the simulation",
     "infoMessage": "This simulation doesn't ensure the availability of the path.",
