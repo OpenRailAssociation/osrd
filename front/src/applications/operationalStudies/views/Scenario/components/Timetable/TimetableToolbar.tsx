@@ -278,7 +278,7 @@ const TimetableToolbar = ({
           setRoundTripsModalIsOpen={setRoundTripsModalIsOpen}
           infraId={infraId}
           timetableId={timetableId}
-          timetableItems={timetableItems}
+          trainSchedules={timetableItems}
           refreshNge={refreshNge}
         />
       )}

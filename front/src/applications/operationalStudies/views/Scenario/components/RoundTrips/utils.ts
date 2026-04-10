@@ -8,7 +8,7 @@ import {
 } from 'applications/operationalStudies/utils';
 import type { OperationalPoint, TrainSchedule, RoundTrips } from 'common/api/osrdEditoastApi';
 import { isPacedTrain } from 'modules/timetableItem/helpers/pacedTrain';
-import type { TimetableItemWithPathOps } from 'reducers/osrdconf/types';
+import type { TrainScheduleWithPathOps } from 'reducers/osrdconf/types';
 import { addDurationToDate, Duration } from 'utils/duration';
 
 import type { PairingItem } from './types';
@@ -51,34 +51,42 @@ const getStepLabels = (
   }, []);
 
 const formatBasePairingItem = (
-  item: TimetableItemWithPathOps,
+  trainSchedule: TrainScheduleWithPathOps,
   status: 'todo' | 'oneWays' | 'roundTrips',
   t: TFunction<'operational-studies', 'main'>
 ): PairingItem => {
-  const stepLabels = getStepLabels(item.pathOps, item.path, item.schedule, t);
+  const stepLabels = getStepLabels(
+    trainSchedule.pathOps,
+    trainSchedule.path,
+    trainSchedule.schedule,
+    t
+  );
 
-  const arrivalStepId = item.path.at(-1)?.id;
-  const destinationSchedule = item.schedule?.find(
+  const arrivalStepId = trainSchedule.path.at(-1)?.id;
+  const destinationSchedule = trainSchedule.schedule?.find(
     (scheduleStep) => scheduleStep.at === arrivalStepId
   );
   const requestedArrivalTime = destinationSchedule?.arrival
-    ? addDurationToDate(new Date(item.start_time), Duration.parse(destinationSchedule.arrival))
+    ? addDurationToDate(
+        new Date(trainSchedule.start_time),
+        Duration.parse(destinationSchedule.arrival)
+      )
     : null;
 
   return {
-    id: item.id,
-    name: item.train_name,
-    category: item.category,
-    interval: isPacedTrain(item) ? Duration.parse(item.paced.interval) : null,
+    id: trainSchedule.id,
+    name: trainSchedule.train_name,
+    category: trainSchedule.category,
+    interval: isPacedTrain(trainSchedule) ? Duration.parse(trainSchedule.paced.interval) : null,
     origin: stepLabels.at(0)!,
     stops: stepLabels.slice(1, -1),
     destination: stepLabels.at(-1)!,
-    startTime: new Date(item.start_time),
+    startTime: new Date(trainSchedule.start_time),
     requestedArrivalTime,
     ...(status === 'roundTrips'
       ? {
           status: 'roundTrips',
-          pairedItemId: item.id,
+          pairedItemId: trainSchedule.id,
           isValidPair: false,
         }
       : { status }),

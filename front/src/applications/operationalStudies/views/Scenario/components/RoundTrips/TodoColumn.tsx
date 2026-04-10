@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { checkRoundTripCompatible } from 'applications/operationalStudies/utils';
 import type { SubCategory } from 'common/api/osrdEditoastApi';
 import { isPacedTrainBase } from 'modules/timetableItem/helpers/pacedTrain';
-import type { TimetableItemWithPathOps } from 'reducers/osrdconf/types';
+import type { TrainScheduleWithPathOps } from 'reducers/osrdconf/types';
 
 import RoundTripsModalCard from './RoundTripsModalCard';
 import RoundTripsModalPairingColumn from './RoundTripsModalPairingColumn';
@@ -17,7 +17,7 @@ type TodoColumnProps = {
   pairingItems: PairingItem[];
   itemIdToPair?: number;
   setItemIdToPair: (itemToPair?: number) => void;
-  timetableItemsWithOpsById: Map<number, TimetableItemWithPathOps>;
+  trainSchedulesWithOpsById: Map<number, TrainScheduleWithPathOps>;
   pairingItemsById: Map<number, PairingItem>;
   subCategories: SubCategory[];
 };
@@ -30,7 +30,7 @@ const TodoColumn = ({
   pairingItems,
   itemIdToPair,
   setItemIdToPair,
-  timetableItemsWithOpsById,
+  trainSchedulesWithOpsById,
   pairingItemsById,
   subCategories,
 }: TodoColumnProps) => {
@@ -44,18 +44,18 @@ const TodoColumn = ({
 
     const suggestions: PairingItem[] = [];
     const others: PairingItem[] = [];
-    const timetableItemToPair = timetableItemsWithOpsById.get(itemIdToPair)!;
+    const trainScheduleToPair = trainSchedulesWithOpsById.get(itemIdToPair)!;
 
-    for (const candidate of timetableItemsWithOpsById.values()) {
+    for (const candidate of trainSchedulesWithOpsById.values()) {
       if (
         candidate.id === itemIdToPair ||
-        isPacedTrainBase(timetableItemToPair) !== isPacedTrainBase(candidate)
+        isPacedTrainBase(trainScheduleToPair) !== isPacedTrainBase(candidate)
       )
         continue;
 
       const matchingPairingItem = pairingItemsById.get(candidate.id)!;
 
-      if (checkRoundTripCompatible(timetableItemToPair, candidate)) {
+      if (checkRoundTripCompatible(trainScheduleToPair, candidate)) {
         suggestions.push(matchingPairingItem);
       } else {
         others.push(matchingPairingItem);
@@ -68,7 +68,7 @@ const TodoColumn = ({
       ),
       others: others.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase())),
     };
-  }, [timetableItemsWithOpsById, pairingItemsById, itemIdToPair]);
+  }, [trainSchedulesWithOpsById, pairingItemsById, itemIdToPair]);
 
   const moveItemToOneWays = (itemToMove: PairingItem) => {
     setPairingItems((prevData) => [
@@ -85,14 +85,14 @@ const TodoColumn = ({
     if (!itemIdToPair) return;
     // This item is always in todo
     const itemA = pairingItemsById.get(itemIdToPair);
-    const timetableItemA = timetableItemsWithOpsById.get(itemIdToPair);
-    const timetableItemB = timetableItemsWithOpsById.get(itemB.id);
+    const trainScheduleA = trainSchedulesWithOpsById.get(itemIdToPair);
+    const trainScheduleB = trainSchedulesWithOpsById.get(itemB.id);
 
-    if (!itemA || !timetableItemA || !timetableItemB) {
+    if (!itemA || !trainScheduleA || !trainScheduleB) {
       throw new Error('Item to pair not found in todo column');
     }
 
-    const isValidPair = checkRoundTripCompatible(timetableItemA, timetableItemB);
+    const isValidPair = checkRoundTripCompatible(trainScheduleA, trainScheduleB);
 
     setPairingItems((prevData) => {
       // If the candidate item is already paired, we need to move its old pair to todo column
