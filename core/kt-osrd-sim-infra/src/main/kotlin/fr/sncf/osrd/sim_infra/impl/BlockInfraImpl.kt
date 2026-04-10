@@ -5,9 +5,7 @@ import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.md5
 import fr.sncf.osrd.utils.units.Length
-import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.OffsetList
-import fr.sncf.osrd.utils.units.meters
 
 class BlockDescriptor(
     val length: Length<Block>,
@@ -224,28 +222,6 @@ private fun buildBlockName(
 
     // We need to hash the result, these strings are way too long for identifiers
     return "block.${md5(rawStringId)}"
-}
-
-fun BlockInfra.getBlockOffset(
-    blockId: BlockId,
-    waypointDirChunkLocation: DirChunkLocation,
-    rawInfra: RawInfra,
-): Offset<Block> {
-    var startBlockToStartChunk: Offset<Block> = Offset(0.meters)
-    val blockTrackChunks = this.getTrackChunksFromBlock(blockId)
-    for (blockTrackChunkDirId in blockTrackChunks) {
-        if (blockTrackChunkDirId == waypointDirChunkLocation.dirChunk) {
-            return startBlockToStartChunk + waypointDirChunkLocation.offset.distance
-        }
-        startBlockToStartChunk += rawInfra.getTrackChunkLength(blockTrackChunkDirId.value).distance
-    }
-    throw AssertionError(
-        String.format(
-            "getBlockOffset: Directed track chunk %s not in block %s",
-            waypointDirChunkLocation.dirChunk,
-            blockId,
-        )
-    )
 }
 
 fun BlockInfra.getDirChunkLocation(

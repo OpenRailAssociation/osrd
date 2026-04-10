@@ -13,7 +13,6 @@ import fr.sncf.osrd.path.interfaces.subRange
 import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra.impl.getBlockOffset
 import fr.sncf.osrd.sim_infra.impl.getDirChunkLocation
 import fr.sncf.osrd.sim_infra.utils.getRouteBlocks
 import fr.sncf.osrd.sim_infra.utils.routesOnBlock
