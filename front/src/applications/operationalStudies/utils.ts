@@ -33,7 +33,7 @@ import type {
   ElectrificationValue,
   PathPropertiesFormatted,
   PositionData,
-  TimetableItemRoundTripGroups,
+  TrainScheduleRoundTripGroups,
 } from './types';
 
 /**
@@ -391,7 +391,7 @@ export const checkRoundTripCompatible = (
 export const groupRoundTrips = (
   trainSchedulesById: Map<number, TrainScheduleWithPathOps>,
   rawRoundTrips?: RoundTrips
-): TimetableItemRoundTripGroups => {
+): TrainScheduleRoundTripGroups => {
   const oneWayIds = rawRoundTrips?.one_ways ?? [];
   const roundTripIds = rawRoundTrips?.round_trips ?? [];
 
