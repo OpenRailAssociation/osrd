@@ -104,7 +104,7 @@ export type StdcmSimulationInputs = {
   departureDate?: string;
   departureTime?: string;
   pathSteps: StdcmPathStep[];
-  consist?: {
+  consist: {
     tractionEngine?: LightRollingStockWithLiveries;
     towedRollingStock?: TowedRollingStock;
     /** In ton */
