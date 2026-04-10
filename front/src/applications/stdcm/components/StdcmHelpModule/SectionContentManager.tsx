@@ -46,14 +46,6 @@ const SectionContentManager = ({ content }: SectionContentManagerProps) => (
               </tbody>
             </table>
           );
-        case 'sponsors':
-          return (
-            <div className="section__sponsors">
-              {content.items.map((item) => (
-                <img key={item.src} src={item.src} alt={item.alt} />
-              ))}
-            </div>
-          );
         default:
           return null;
       }

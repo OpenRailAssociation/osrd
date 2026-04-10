@@ -51,6 +51,19 @@ const HelpSection = ({ section, isActive, closeHelpSection }: HelpSectionProps) 
             ))}
           </div>
         ))}
+        {section === 'application' && (
+          <div>
+            <h2 className="stdcm__help-section__subtitle">{t('sponsors')}</h2>
+            <div className="section__sponsors">
+              <img
+                src="/sponsors/logo-ministere-scaled.webp"
+                alt="Ministère de l'Aménagement du Territoire et de la Décentralisation"
+              />
+              <img src="/sponsors/european-union.svg" alt="European Union" />
+              <img src="/sponsors/sncf-reseau.svg" alt="SNCF Réseau" />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
