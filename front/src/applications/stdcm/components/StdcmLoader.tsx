@@ -4,14 +4,14 @@ import { Button } from '@osrd-project/ui-core';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
-import type { LoaderStatus } from '../types';
+import { STDCM_REQUEST_STATUS } from '../consts';
+import type { LoaderStatus, StdcmRequestStatus } from '../types';
 
 const LOADER_HEIGHT = 176;
 const LOADER_OFFSET = 32;
 
 type StdcmLoaderProps = {
-  isPendingAdditional: boolean;
-  isInProgress: boolean;
+  requestStatus: StdcmRequestStatus;
   cancelStdcmRequest: () => void;
   launchButtonRef: RefObject<HTMLDivElement | null>;
   formRef: RefObject<HTMLDivElement | null>;
@@ -21,8 +21,7 @@ const StdcmLoader = ({
   cancelStdcmRequest,
   launchButtonRef,
   formRef,
-  isInProgress,
-  isPendingAdditional,
+  requestStatus,
 }: StdcmLoaderProps) => {
   const { t } = useTranslation('stdcm');
   const loaderRef = useRef<HTMLDivElement>(null);
@@ -84,10 +83,12 @@ const StdcmLoader = ({
   }, []);
 
   const loadingStatusLabelKey = useMemo(() => {
-    if (isPendingAdditional) return 'simulation.additionalResults';
-    if (isInProgress) return 'simulation.calculatingSimulation';
+    if (requestStatus === STDCM_REQUEST_STATUS.in_progress)
+      return 'simulation.calculatingSimulation';
+    if (requestStatus === STDCM_REQUEST_STATUS.pending_additional)
+      return 'simulation.additionalResults';
     return 'simulation.calculatingInitialization';
-  }, [isInProgress, isPendingAdditional]);
+  }, [requestStatus]);
 
   return (
     <div

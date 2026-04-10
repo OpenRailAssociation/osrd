@@ -14,6 +14,7 @@ import { isEqual } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import { STDCM_REQUEST_STATUS } from 'applications/stdcm/consts';
 import { extractMarkersInfo } from 'applications/stdcm/utils';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import DefaultBaseMap from 'common/Map/DefaultBaseMap';
@@ -60,6 +61,7 @@ import type {
   StdcmConfigErrors,
   ConsistErrors,
   StdcmProgressPoints,
+  StdcmRequestStatus,
 } from '../../types';
 import StdcmMapProgressLayer from '../StdcmMapProgressLayer';
 import StdcmSimulationParams from '../StdcmSimulationParams';
@@ -82,9 +84,7 @@ declare global {
  */
 type StdcmConfigProps = {
   isDebugMode: boolean;
-  isPending: boolean;
-  isPendingAdditional: boolean;
-  isInProgress: boolean;
+  requestStatus: StdcmRequestStatus;
   retainedSimulationIndex?: number;
   showBtnToLaunchSimulation: boolean;
   skipPathfindingStatusMessage: boolean;
@@ -96,9 +96,7 @@ type StdcmConfigProps = {
 
 const StdcmConfig = ({
   isDebugMode,
-  isPending,
-  isPendingAdditional,
-  isInProgress,
+  requestStatus,
   retainedSimulationIndex,
   showBtnToLaunchSimulation,
   skipPathfindingStatusMessage,
@@ -202,7 +200,10 @@ const StdcmConfig = ({
     [initialConsistErrors, viaConsistErrors]
   );
 
-  const disabled = isPending || retainedSimulationIndex !== undefined;
+  const disabled =
+    requestStatus === STDCM_REQUEST_STATUS.in_progress ||
+    requestStatus === STDCM_REQUEST_STATUS.pending ||
+    retainedSimulationIndex !== undefined;
 
   const markersInfo = useMemo(() => extractMarkersInfo(pathSteps), [pathSteps]);
 
@@ -335,6 +336,14 @@ const StdcmConfig = ({
     }
   }, [t, formErrors, consistErrors, rollingStockID, stdcmConf]);
 
+  const isLoading = useMemo(
+    () =>
+      requestStatus === STDCM_REQUEST_STATUS.in_progress ||
+      requestStatus === STDCM_REQUEST_STATUS.pending ||
+      requestStatus === STDCM_REQUEST_STATUS.pending_additional,
+    [requestStatus]
+  );
+
   return (
     <div className="stdcm__body">
       {isDebugMode && (
@@ -426,10 +435,9 @@ const StdcmConfig = ({
               </div>
             </div>
           )}
-          {(isPending || isPendingAdditional) && (
+          {isLoading && (
             <StdcmLoader
-              isPendingAdditional={isPendingAdditional}
-              isInProgress={isInProgress}
+              requestStatus={requestStatus}
               cancelStdcmRequest={cancelStdcmRequest}
               launchButtonRef={launchButtonRef}
               formRef={formRef}
@@ -452,9 +460,7 @@ const StdcmConfig = ({
             updateMapSettings={updateMapSettings}
             updateViewport={updateViewport}
           >
-            {(isPending || isPendingAdditional) && (
-              <StdcmMapProgressLayer progressPoints={progressPoints} />
-            )}
+            {isLoading && <StdcmMapProgressLayer progressPoints={progressPoints} />}
           </DefaultBaseMap>
         </div>
       </div>
