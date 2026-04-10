@@ -5,7 +5,7 @@ import { Virtualizer } from 'virtua';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type {
-  TimetableItemsByTrainScheduleSet,
+  TrainSchedulesByTrainScheduleSet,
   TrainScheduleSetManager,
 } from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
 import type { CatalogEntry } from 'common/api/osrdEditoastApi';
@@ -43,7 +43,7 @@ type TrainListProps = {
   isSelectMode: boolean;
   timetableMode: TimetableMode;
   moveTimetableItem?: (pacedTrainIds: number[]) => void;
-  timetableItemsByTrainScheduleSets: TimetableItemsByTrainScheduleSet[] | null;
+  trainSchedulesByTrainScheduleSets: TrainSchedulesByTrainScheduleSet[] | null;
   handleClickTrainScheduleSet: (id: number) => void;
   handleSelectTrainScheduleSet: (trainIds: number[]) => void;
   catalogEntries: CatalogEntry[];
@@ -68,7 +68,7 @@ const TrainList = ({
   isSelectMode,
   timetableMode,
   moveTimetableItem,
-  timetableItemsByTrainScheduleSets = null,
+  trainSchedulesByTrainScheduleSets = null,
   handleClickTrainScheduleSet,
   handleSelectTrainScheduleSet,
   catalogEntries,
@@ -236,8 +236,8 @@ const TrainList = ({
     <Virtualizer>
       {timetableMode === 'calendar' && trainsToItems(trainSchedulesWithDetails)}
       {timetableMode === 'trainScheduleSet' &&
-        (timetableItemsByTrainScheduleSets ? (
-          timetableItemsByTrainScheduleSets
+        (trainSchedulesByTrainScheduleSets ? (
+          trainSchedulesByTrainScheduleSets
             .flatMap(({ trainScheduleSet, catalog, trains }) => {
               const trainScheduleSetTrainsIds = trains.map((train) => train.id);
               const isSelected =
