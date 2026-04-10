@@ -227,9 +227,9 @@ tokio.workspace = true
 tokio-stream = "0.1.18"
 tower = "0.5.2"
 tower-http = { version = "0.6.6", features = [
-  "compression-full",
+  "compression-gzip",
   "cors",
-  "decompression-full",
+  "decompression-gzip",
   "fs",
   "limit",
   "normalize-path",
