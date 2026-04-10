@@ -3467,9 +3467,9 @@ dependencies = [
 
 [[package]]
 name = "postgres-openssl"
-version = "0.5.2"
+version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8f86f073ad570f76e9e278ce6f05775fc723eed7daa6b4f9c2aa078080a564a0"
+checksum = "06743eefaa1a5c0ef2ccb6d9abf6528790a229eabd62ddcabf9b2a3aeff09fa4"
 dependencies = [
  "openssl",
  "tokio",
