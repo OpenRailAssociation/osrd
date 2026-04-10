@@ -140,7 +140,7 @@ impl<T> Protected<T> {
     /// Consumes the protection and produces an [Access::Authorized] without performing any check
     ///
     /// Only use this in trusted context or in an [Authorizer] implementation after performing the necessary checks.
-    pub fn blindly_authorize<'a, R>(self, openfga: &'a fga::Client) -> Access<'a, T, R> {
+    pub fn access_authorized<'a, R>(self, openfga: &'a fga::Client) -> Access<'a, T, R> {
         Access::Authorized((self.op)(openfga))
     }
 
@@ -543,7 +543,7 @@ pub mod special_authorizers {
             &'a self,
             data: Protected<T>,
         ) -> Result<Access<'a, T, Self::Rejection>, Self::Error> {
-            Ok(data.blindly_authorize(self.0))
+            Ok(data.access_authorized(self.0))
         }
     }
 
