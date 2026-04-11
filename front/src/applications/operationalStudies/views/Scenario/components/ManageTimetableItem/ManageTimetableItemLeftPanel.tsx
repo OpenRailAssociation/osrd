@@ -15,7 +15,6 @@ import {
   getOperationalStudiesConf,
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { TimetableItem, TimetableItemToEditData } from 'reducers/osrdconf/types';
-import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 
 import CreateTimetableItemButton from './CreateTimetableItemButton';
@@ -45,7 +44,6 @@ const ManageTimetableItemLeftPanel = ({
   const dispatch = useAppDispatch();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
   const editingItemType = useSelector(getEditingItemType);
-  const selectedTrainId = useSelector(getSelectedTrainId);
   const osrdConf = useSelector(getOperationalStudiesConf);
 
   const { openModal, closeModal } = useModal();
@@ -63,8 +61,7 @@ const ManageTimetableItemLeftPanel = ({
     setDisplayTimetableItemManagement,
     upsertTimetableItems,
     setTimetableItemToEditData,
-    timetableItemToEditData,
-    selectedTrainId
+    timetableItemToEditData
   );
 
   const getEditLabel = (_itemToEdit: TimetableItemToEditData) => {
