@@ -180,7 +180,7 @@ pub fn path_item_respect_margins<T: TrainScheduleLike>(
                 path_item_time_provisional - prev_path_item_time_provisional;
             let margin_diff = interval_duration_final - interval_duration_provisional;
 
-            res[path_item_index] = margin_diff >= -TIME_APPROX_ERROR.num_milliseconds();
+            res[prev_path_item_index] = margin_diff >= -TIME_APPROX_ERROR.num_milliseconds();
         });
 
     res
@@ -727,18 +727,20 @@ mod tests {
     }
 
     fn shallow_sim_too_fast_on_interval() -> SimulationResponseSuccess {
+        // Too fast from A to B and from D to E
+        // Respects margins from A to C as B to C compensates A to B, too fast on C to E as not compensated
         SimulationResponseSuccess {
             base: ReportTrain {
-                path_item_times: vec![0, 4_730_243, 13_828_795],
+                path_item_times: vec![0, 100_000, 200_000, 300_000, 400_000],
                 ..Default::default()
             },
             provisional: ReportTrain {
-                path_item_times: vec![0, 5_222_392, 15_267_584],
+                path_item_times: vec![0, 100_000, 200_000, 300_000, 400_000],
                 ..Default::default()
             },
             final_output: CompleteReportTrain {
                 report_train: ReportTrain {
-                    path_item_times: vec![0, 5_280_030, 15_300_915],
+                    path_item_times: vec![0, 95_000, 201_000, 301_000, 396_000],
                     ..Default::default()
                 },
                 ..Default::default()
@@ -801,7 +803,7 @@ mod tests {
             &sim.provisional.path_item_times,
             &schedule,
         );
-        assert_eq!(*respect, [true, false, true]);
+        assert_eq!(*respect, [false, true, true]);
     }
 
     #[test]
@@ -813,7 +815,7 @@ mod tests {
             &sim.provisional.path_item_times,
             &schedule,
         );
-        assert_eq!(*respect, [true, true, false]);
+        assert_eq!(*respect, [true, true, false, true, true]);
     }
 
     #[test]

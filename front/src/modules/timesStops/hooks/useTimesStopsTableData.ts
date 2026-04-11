@@ -273,11 +273,7 @@ const useTimesStopsTableData = (
               })
             : undefined;
         const scheduleNotHonored = stableIsValid && !stablePathItemRespect?.times[stepIndex];
-        // The back end returns the status at the end of the interval but we want to display the information at the beginning of the interval so we check the next path items status
-        const marginNotHonored =
-          stableIsValid &&
-          stepIndex < selectedTrain.path.length - 1 &&
-          !stablePathItemRespect?.margins[stepIndex + 1];
+        const marginNotHonored = stableIsValid && !stablePathItemRespect?.margins[stepIndex];
         const margins = computeMargins(
           getTheoreticalMargins(selectedTrain),
           selectedTrain,
