@@ -449,13 +449,16 @@ pub fn electrifications(edge: &Edge) -> Option<Electrification> {
     })
 }
 
-fn map_node_id_to_node(
+fn map_node_id_to_trigram(
     pbf: &mut OsmPbfReader<std::fs::File>,
-) -> HashMap<osm4routing::osmpbfreader::NodeId, osm4routing::osmpbfreader::Node> {
+) -> HashMap<osm4routing::osmpbfreader::NodeId, String> {
     pbf.iter()
         .flatten()
         .filter_map(|obj| match obj {
-            osm4routing::osmpbfreader::OsmObj::Node(node) => Some((node.id, node)),
+            osm4routing::osmpbfreader::OsmObj::Node(node) => node
+                .tags
+                .get("railway:ref")
+                .map(|tag| (node.id, tag.to_string())),
             _ => None,
         })
         .collect()
@@ -467,7 +470,7 @@ pub fn operational_points(
 ) -> Vec<OperationalPoint> {
     let file = std::fs::File::open(osm_pbf_in).unwrap();
     let mut pbf: OsmPbfReader<std::fs::File> = osm4routing::osmpbfreader::OsmPbfReader::new(file);
-    let node_id_to_node = map_node_id_to_node(&mut pbf);
+    let node_id_to_trigram = map_node_id_to_trigram(&mut pbf);
     pbf.rewind().expect("Could not rewind file.");
     pbf.iter()
         .flatten()
@@ -504,11 +507,8 @@ pub fn operational_points(
                     _ => None,
                 })
                 .find_map(|node_id| {
-                    node_id_to_node.get(&node_id).and_then(|node| {
-                        node.tags
-                            .get("railway:ref")
-                            .map(ToString::to_string)
-                    })
+                    node_id_to_trigram.get(&node_id)
+                        .cloned()
                 })
                 .unwrap_or_default();
             // Parts can be empty when the stop_area references stops that are not railway (e.g. bus station)
