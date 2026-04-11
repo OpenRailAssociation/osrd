@@ -71,7 +71,11 @@ pub fn parse_osm(
     }
 
     let nodes_tracks = NodeToTrack::from_edges(&edges);
-    let signals = signals(&osm_pbf_in, &nodes_tracks, &adjacencies);
+    let signals = if generate_signals {
+        vec![]
+    } else {
+        signals(&osm_pbf_in, &nodes_tracks, &adjacencies)
+    };
     let mut railjson = RailJson {
         extended_switch_types: vec![],
         detectors: signals.iter().map(detector).collect(),
