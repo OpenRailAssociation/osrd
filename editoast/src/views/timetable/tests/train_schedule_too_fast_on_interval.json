@@ -34,24 +34,52 @@
                     "type": "uic"
                 }
             }
+        },
+        {
+            "id": "idD",
+            "location": {
+                "type": "operational_point_part_reference",
+                "operational_point": {
+                    "uic": 87700003,
+                    "secondary_code": "BV",
+                    "type": "uic"
+                }
+            }
+        },
+        {
+            "id": "idE",
+            "location": {
+                "type": "operational_point_part_reference",
+                "operational_point": {
+                    "uic": 87700004,
+                    "secondary_code": "BV",
+                    "type": "uic"
+                }
+            }
         }
     ],
     "schedule": [
         {
             "at": "idB",
-            "arrival": "PT5280S",
-            "stop_for": null,
+            "arrival": null,
+            "stop_for": "PT1S",
             "reception_signal": "OPEN"
         },
         {
             "at": "idC",
-            "arrival": "PT15300S",
+            "arrival": "PT201S",
+            "stop_for": null,
+            "reception_signal": "OPEN"
+        },
+        {
+            "at": "idE",
+            "arrival": "PT396S",
             "stop_for": "P0D",
             "reception_signal": "OPEN"
         }
     ],
     "margins": {
-        "boundaries": ["idC"],
+        "boundaries": ["idE"],
         "values": [
             "6.5min/100km",
             "0%"
