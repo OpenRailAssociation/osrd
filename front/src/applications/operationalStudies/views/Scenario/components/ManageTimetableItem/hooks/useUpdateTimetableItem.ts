@@ -11,17 +11,11 @@ import {
   getStartTime,
   getOperationalStudiesConf,
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import type { TimetableItem, TrainId, TimetableItemToEditData } from 'reducers/osrdconf/types';
+import type { TimetableItem, TimetableItemToEditData } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
-import {
-  extractEditoastIdFromPacedTrainId,
-  extractPacedTrainIdFromOccurrenceId,
-  formatEditoastIdToIndexedOccurrenceId,
-  formatEditoastIdToPacedTrainId,
-  isOccurrenceId,
-} from 'utils/trainId';
+import { formatEditoastIdToPacedTrainId, isOccurrenceId } from 'utils/trainId';
 
 import checkCurrentConfig from '../helpers/checkCurrentConfig';
 import { formatPacedTrainPayload } from '../helpers/formatTimetableItemPayload';
@@ -31,8 +25,7 @@ const useUpdateTimetableItem = (
   setDisplayTimetableItemManagement: (type: string) => void,
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void,
   setTimetableItemIdToEdit: (timetableItemToEditData?: TimetableItemToEditData) => void,
-  timetableItemToEditData?: TimetableItemToEditData,
-  selectedTrainId?: TrainId
+  timetableItemToEditData?: TimetableItemToEditData
 ) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
   const dispatch = useAppDispatch();
@@ -71,19 +64,9 @@ const useUpdateTimetableItem = (
       upsertTimetableItems
     );
 
-    // if the selected TimetableItem is an Occurrence of the edited PacedTrain, keep it selected
-    // else select the first Occurrence by default
-    const trainIdToSelect =
-      (selectedTrainId &&
-        isOccurrenceId(selectedTrainId) &&
-        extractEditoastIdFromPacedTrainId(extractPacedTrainIdFromOccurrenceId(selectedTrainId)) ===
-          timetableItemId) ||
-      !updatedItem.paced
-        ? selectedTrainId
-        : formatEditoastIdToIndexedOccurrenceId({
-            pacedTrainId: updatedItem.id,
-            occurrenceIndex: 0,
-          });
+    const editedTrainId =
+      timetableItemToEditData.occurrenceId ??
+      formatEditoastIdToPacedTrainId(timetableItemToEditData.timetableItemId);
 
     // dispatch success and update the selected train id
     dispatch(
@@ -95,7 +78,7 @@ const useUpdateTimetableItem = (
         text: `${confName}: ${startTime.toLocaleString()}`,
       })
     );
-    dispatch(updateSelectedTrainId(trainIdToSelect));
+    dispatch(updateSelectedTrainId(editedTrainId));
 
     // if the updated train was just transformed from pacedTrain to uniqueTrain
     // and one of the occurrences was used for the projection, update the projectedTrainId
