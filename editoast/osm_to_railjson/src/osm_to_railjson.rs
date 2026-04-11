@@ -47,6 +47,8 @@ pub fn parse_osm(
         .reject("gauge", "600")
         .reject("roller_coaster", "*")
         .reject("construction", "*")
+        .reject("usage", "science")
+        .reject("usage", "tourism")
         .read_tag("maxspeed")
         .read_tag("maxspeed:forward")
         .read_tag("maxspeed:backward")
