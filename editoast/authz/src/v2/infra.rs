@@ -1,7 +1,10 @@
 use std::collections::HashSet;
 
+use fga::client::QueryError;
+use fga::client::UserList;
 use fga::model::Relation as _;
 use futures::FutureExt as _;
+use itertools::Itertools as _;
 
 use crate::Group;
 use crate::Infra;
@@ -175,6 +178,76 @@ pub fn infra_privileges(user: User, infra: Infra) -> Protected<HashSet<InfraPriv
         InfraPrivilege::CanRead,
         infra,
     ))
+}
+
+/// Return an operation that checks the list of subjects which have the given grant on an infra.
+pub fn infra_granted_subjects(infra: Infra, grant: InfraGrant) -> Protected<Vec<Subject>> {
+    fn get_granted_users(infra: Infra, grant: InfraGrant) -> Protected<Vec<User>> {
+        Protected::new(move |openfga| {
+            async move {
+                match grant {
+                    InfraGrant::Reader => {
+                        openfga
+                            .list_users(Infra::reader().query_users(&infra))
+                            .await
+                    }
+                    InfraGrant::Writer => {
+                        openfga
+                            .list_users(Infra::writer().query_users(&infra))
+                            .await
+                    }
+                    InfraGrant::Owner => {
+                        openfga.list_users(Infra::owner().query_users(&infra)).await
+                    }
+                }
+                .map(|UserList { users, .. }| users)
+                .map_err(QueryError::parsing_ok)
+            }
+            .boxed()
+        })
+    }
+    fn get_granted_groups(infra: Infra, grant: InfraGrant) -> Protected<Vec<Group>> {
+        Protected::new(move |openfga| {
+            async move {
+                match grant {
+                    InfraGrant::Reader => {
+                        openfga
+                            .list_usersets(Infra::reader().query_usersets(Group::member(), &infra))
+                            .await
+                    }
+                    InfraGrant::Writer => {
+                        openfga
+                            .list_usersets(Infra::writer().query_usersets(Group::member(), &infra))
+                            .await
+                    }
+                    InfraGrant::Owner => {
+                        openfga
+                            .list_usersets(Infra::owner().query_usersets(Group::member(), &infra))
+                            .await
+                    }
+                }
+                .map_err(QueryError::parsing_ok)
+            }
+            .boxed()
+        })
+    }
+    get_granted_users(infra, grant)
+        .zip(get_granted_groups(infra, grant))
+        .map(move |_, (users, groups)| {
+            async move {
+                Ok(users
+                    .into_iter()
+                    .map(Subject::User)
+                    .chain(groups.into_iter().map(Subject::Group))
+                    .collect_vec())
+            }
+            .boxed()
+        })
+        .with_guardrail(Guardrail::IssuerHasInfraPrivilege(
+            InfraPrivilege::CanRead,
+            infra,
+        ))
+        .with_check(SanityCheck::InfraExists(infra))
 }
 
 #[cfg(test)]
@@ -405,5 +478,36 @@ mod tests {
             openfga.infra_privileges(User(1), Infra(1)).await,
             HashSet::new(),
         );
+    }
+
+    #[tokio::test]
+    async fn infra_granted_subjects() {
+        let openfga = crate::authz_client!();
+        openfga
+            .prepare_writes()
+            .write(&Infra::reader().tuple(&User(1), &Infra(1)))
+            .write(&Infra::writer().tuple(&User(2), &Infra(1)))
+            .write(&Group::member().tuple(&User(3), &Group(1)))
+            .write(&Infra::writer().tuple(Group::member().userset(&Group(1)), &Infra(1)))
+            .execute()
+            .await
+            .unwrap();
+        assert_eq!(
+            openfga
+                .infra_granted_subjects(Infra(1), InfraGrant::Reader)
+                .await,
+            vec![Subject::User(User(1))]
+        );
+        let mut response = openfga
+            .infra_granted_subjects(Infra(1), InfraGrant::Writer)
+            .await;
+        let mut expected = vec![
+            Subject::user(2),  // Direct relationship
+            Subject::user(3),  // Indirect relationship
+            Subject::group(1), // Direct relationship
+        ];
+        expected.sort();
+        response.sort();
+        assert_eq!(response, expected);
     }
 }
