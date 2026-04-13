@@ -66,14 +66,10 @@
       .conflicts-wrapper {
         display: block;
         position: relative;
+        height: 100%;
         width: 100%;
         transition: 0.2s;
-        max-height: 90vh;
         overflow-y: auto;
-
-        .scenario-loader {
-          top: 10vw;
-        }
       }
     }
   }

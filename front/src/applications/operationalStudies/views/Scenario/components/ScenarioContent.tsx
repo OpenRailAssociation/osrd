@@ -269,21 +269,20 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
             withFooter
           >
             <div className="conflicts-wrapper">
-              {isConflictsLoading ? (
+              {isConflictsLoading && (
                 <Loader
                   msg={t('main.loadingConflicts')}
                   className="scenario-loader"
                   childClass="scenario-loader-msg"
                 />
-              ) : (
-                <Conflicts
-                  showOnlySelectedTrain={showOnlySelectedTrain}
-                  onToggleFilter={handleToggleConflictsFilter}
-                  selectedTrainName={selectedTrainName}
-                  conflictsCount={selectedTrainConflictsCount}
-                  displayedConflicts={displayedConflicts}
-                />
               )}
+              <Conflicts
+                showOnlySelectedTrain={showOnlySelectedTrain}
+                onToggleFilter={handleToggleConflictsFilter}
+                selectedTrainName={selectedTrainName}
+                conflictsCount={selectedTrainConflictsCount}
+                displayedConflicts={displayedConflicts}
+              />
             </div>
           </BoardWrapper>
         </div>
