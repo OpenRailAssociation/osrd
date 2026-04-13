@@ -74,7 +74,8 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
     displayedConflicts,
   } = useConflictsFilter(
     useMemo(() => timetableItems || [], [timetableItems]),
-    conflicts
+    conflicts,
+    isConflictsLoading
   );
 
   const macroEditorState = useRef<MacroEditorState>(null);
