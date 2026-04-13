@@ -303,17 +303,11 @@ where
         use crate::TaskStreamExt as _;
 
         let requests = self
-            .pathfinding_inputs
-            .iter()
-            .map(
-                |Correlated {
-                     correlation_key: _,
-                     data: input,
-                 }| {
-                    let request = build_request(&self.core_env, &input);
-                    Correlated::new(input, request)
-                },
-            )
+            .iter_inputs()
+            .map(|input| {
+                let request = build_request(&self.core_env, &input);
+                Correlated::new(input, request)
+            })
             .collect_vec();
 
         stream::iter(requests).run(vkconn, self.core_env.client.clone())
@@ -546,5 +540,49 @@ mod tests {
             Some(Poll::Ready(Ok(serde_json::from_value(path(2)).unwrap())))
         );
         assert_eq!(pfrun.get_path(&3), None);
+    }
+
+    // PathfindingEnv::run applies another deduplication to the results, this test
+    // ensures into_stream deduplicates correctly as well.
+    #[tokio::test]
+    async fn pathfinding_env_into_stream() {
+        common::setup_tracing_for_test();
+
+        // A unique train seed to generate twice the same inputs
+        const TRAIN: usize = 123456789;
+
+        let mut mock = MockingClient::new();
+        mock.stub("/pathfinding/blocks")
+            .response(StatusCode::OK)
+            .json(path(TRAIN))
+            .finish();
+        mock.stub("/pathfinding/blocks")
+            .response(StatusCode::OK)
+            .json(path(TRAIN))
+            .finish();
+
+        let mut pfenv = PathfindingEnv::<usize>::new(CoreEnv::new_mock(mock));
+        pfenv.extend([(1, train(TRAIN)), (2, train(TRAIN))]);
+
+        let vk = cache::Client::new(cache::Config::NoCache, "");
+
+        use futures::StreamExt as _;
+        let results = tokio::time::timeout(Duration::from_secs(1), async move {
+            pfenv
+                .into_stream(Arc::new(Mutex::new(vk.get_connection().await.unwrap())))
+                .collect::<Vec<_>>()
+                .await
+        })
+        .await
+        .unwrap();
+
+        assert_eq!(results.len(), 1);
+        assert_eq!(
+            results,
+            vec![Correlated::new(
+                TrainSet::from([1, 2]),
+                Ok(serde_json::from_value(path(TRAIN)).unwrap()),
+            )]
+        );
     }
 }
