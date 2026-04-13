@@ -25,6 +25,7 @@ use schemas::infra::Speed;
 use schemas::infra::SpeedSection;
 use schemas::infra::Switch;
 use schemas::infra::TrackEndpoint;
+use schemas::infra::TrackSection;
 use schemas::primitives::Identifier;
 use schemas::primitives::NonBlankString;
 use std::collections::HashMap;
@@ -33,6 +34,7 @@ use std::sync::atomic::AtomicU32;
 use std::sync::atomic::Ordering;
 use tracing::error;
 use tracing::warn;
+use uuid::Uuid;
 
 // Given an edge and a coordinate, returns the coordinates used to compute the angle
 // It uses the nearest OpenStreetMap node, and the other as the rails might do a loop
@@ -228,7 +230,10 @@ impl<'a> NodeToTrack<'a> {
     /// Given an OSM node, returns the track, the position it is on and the local ref if its available
     /// If there is an ambiguity (the node is at intersection), we just pick one
     /// We log weird situations (the are 3 edges for that node)
-    pub fn track_and_position(&self, id: NodeId) -> Option<(Identifier, f64, NonBlankString)> {
+    pub fn track_and_position(
+        &self,
+        id: NodeId,
+    ) -> Option<(Identifier, f64, Option<NonBlankString>)> {
         self.nodes_edges.get(&id).and_then(|edges| {
             if edges.is_empty() {
                 error!("Missing edge for node {}", id.0);
@@ -236,11 +241,7 @@ impl<'a> NodeToTrack<'a> {
             } else if edges.len() >= 3 {
                 warn!("Too many edges for node {}", id.0);
             }
-            let local_ref = edges[0]
-                .tags
-                .get("local_ref")
-                .map(NonBlankString::from)
-                .unwrap_or(NonBlankString::from("unknown"));
+            let local_ref = edges[0].tags.get("local_ref").map(NonBlankString::from);
             Some((
                 edges[0].id.clone().into(),
                 edges[0].length_until(&id),
@@ -464,9 +465,31 @@ fn map_node_id_to_trigram(
         .collect()
 }
 
+/// If the local_track_name is None, we try to find if the track_section associated to this operational_point_part has a track_name.
+/// If no track_name is found, we generate a random one.
+fn local_track_name_fallback(
+    track: &Identifier,
+    track_sections: &[TrackSection],
+) -> NonBlankString {
+    track_sections
+        .iter()
+        .find(|track_section| track_section.id == *track)
+        .and_then(|track_section| {
+            if let Some(sncf) = &track_section.extensions.sncf
+                && sncf.track_name != "??".into()
+            {
+                Some(sncf.track_name.clone())
+            } else {
+                None
+            }
+        })
+        .unwrap_or(NonBlankString::from(Uuid::new_v4().to_string()))
+}
+
 pub fn operational_points(
     osm_pbf_in: &std::path::PathBuf,
     nodes_to_tracks: &NodeToTrack,
+    track_sections: &[TrackSection],
 ) -> Vec<OperationalPoint> {
     let file = std::fs::File::open(osm_pbf_in).unwrap();
     let mut pbf: OsmPbfReader<std::fs::File> = osm4routing::osmpbfreader::OsmPbfReader::new(file);
@@ -494,7 +517,12 @@ pub fn operational_points(
                 .flat_map(|node| {
                     nodes_to_tracks
                         .track_and_position(node)
-                        .map(|(track, position, local_track_name)| OperationalPointPart { track, position, local_track_name, extensions: Default::default() })
+                        .map(|(track, position, local_track_name)| OperationalPointPart {
+                            track: track.clone(),
+                            position,
+                            local_track_name: local_track_name.unwrap_or_else(|| local_track_name_fallback(&track, track_sections)),
+                            extensions: Default::default()
+                        })
                 })
                 .collect();
             // Get operational point trigram
