@@ -131,12 +131,16 @@ export const propagateTime = (
   const delta = computeDelta(update.row[update.field], update.value);
   if (delta === null) return undefined;
 
-  if (isOriginArrivalUpdate(update) && update.propagationMode === 'atThisWaypoint') {
-    return propagateShiftAll(delta, selectedTrain);
+  if (isOriginArrivalUpdate(update)) {
+    if (update.propagationMode === 'toDestination') return propagateShiftAll(delta, selectedTrain);
+    if (update.propagationMode === 'atThisWaypoint')
+      return propagateFromEditedPoint(delta, update.row.id, selectedTrain, 'fromDeparture');
   }
 
   if (update.propagationMode === 'shiftAllWaypoints')
     return propagateShiftAll(delta, selectedTrain);
+
   if (update.propagationMode === 'atThisWaypoint' || !update.row.isPathStep) return undefined;
+
   return propagateFromEditedPoint(delta, update.row.id, selectedTrain, update.propagationMode);
 };
