@@ -6,7 +6,6 @@
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
     "alwaysStrict": true,
-    "baseUrl": ".",
     "declaration": true,
     "declarationDir": "./dist",
     "diagnostics": false,
@@ -37,9 +36,6 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "outDir": "./dist",
-    "paths": {
-      "*": ["@types/*"]
-    },
     "preserveConstEnums": true,
     "pretty": true,
     "removeComments": false,
@@ -56,6 +52,7 @@
     "stripInternal": true,
     "suppressExcessPropertyErrors": false,
     "suppressImplicitAnyIndexErrors": false,
+    "noUncheckedSideEffectImports": false,
     "target": "esnext"
   }
 }
