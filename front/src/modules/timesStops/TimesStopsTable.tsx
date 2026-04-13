@@ -566,9 +566,6 @@ const TimesStopsTable = ({
 
   const virtualizedWrapperRef = React.useRef<HTMLDivElement>(null);
 
-  const headerHeight = 40;
-  const rowHeight = 40;
-
   // TODO: Replace this (punching-hole) query selector by a proper refactoring
   //       of our outer layout so we only rely on the scroll offset of the viewport,
   //       which would also allow us to use `useWindowVirtualizer`!
@@ -581,6 +578,8 @@ const TimesStopsTable = ({
     getScrollElement: () => centerColumn,
     scrollMargin: virtualizedWrapperRef.current?.offsetTop,
     useFlushSync: false,
+    measureElement: (element) =>
+      (element.classList.contains('day-change-banner') ? DAY_CHANGE_BANNER_HEIGHT : 0) + ROW_HEIGHT,
   });
 
   if (rows.length === 0) {
@@ -590,6 +589,8 @@ const TimesStopsTable = ({
       </div>
     );
   }
+
+  const virtualItems = virtualizer.getVirtualItems();
 
   return (
     <div
@@ -620,25 +621,27 @@ const TimesStopsTable = ({
             invalid: !isValid || scheduleNotHonored,
           })}
         >
-          {virtualizer.getVirtualItems().map((virtualRow, index) => {
+          {virtualItems.map((virtualRow) => {
             const rowIndex = virtualRow.index;
             const row = tableRows[rowIndex];
 
             const rowArrivalDate = row.original.computedArrival ?? row.original.requestedArrival;
             const dayOffset = effectiveDayOffsets[rowIndex];
             const prevDayOffset = rowIndex > 0 ? effectiveDayOffsets[rowIndex - 1] : 0;
+            const hasDayChanged = dayOffset > prevDayOffset;
 
-            const translateY =
-              virtualRow.start - index * virtualRow.size - virtualizer.options.scrollMargin;
+            const translateY = (virtualItems.at(0)?.start ?? 0) - virtualizer.options.scrollMargin;
 
             return (
               <Fragment key={row.id}>
-                {dayOffset > prevDayOffset && (
+                {hasDayChanged && (
                   <tr
                     className="day-change-banner"
                     style={{
                       transform: `translateY(${translateY}px)`,
                     }}
+                    data-index={rowIndex}
+                    ref={virtualizer.measureElement}
                   >
                     <td colSpan={row.getVisibleCells().length}>
                       <div className="day-change-banner-content">
@@ -665,6 +668,8 @@ const TimesStopsTable = ({
                   style={{
                     transform: `translateY(${translateY}px)`,
                   }}
+                  data-index={rowIndex}
+                  ref={!hasDayChanged ? virtualizer.measureElement : undefined}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className={cell.column.columnDef.meta?.className}>
