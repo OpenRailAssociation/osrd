@@ -15,6 +15,9 @@ use crate::generate_routes;
 use crate::generate_signals;
 use schemas::infra::RailJson;
 use schemas::infra::TrackSection;
+
+use itertools::Itertools as _;
+
 /// Run the osm-to-railjson subcommand
 /// Converts OpenStreetMap pbf file to railjson
 pub fn osm_to_railjson(
@@ -62,7 +65,8 @@ pub fn parse_osm(
     let rail_edges = edges
         .iter()
         .filter(|e| e.properties.train == osm4routing::TrainAccessibility::Allowed)
-        .filter(|e| e.source != e.target);
+        .filter(|e| e.source != e.target)
+        .collect_vec();
 
     let mut adjacencies = HashMap::<osm4routing::NodeId, NodeAdjacencies>::new();
     for edge in rail_edges.clone() {
@@ -70,23 +74,8 @@ pub fn parse_osm(
         adjacencies.entry(edge.target).or_default().edges.push(edge);
     }
 
-    let nodes_tracks = NodeToTrack::from_edges(&edges);
-    let signals = if generate_signals {
-        vec![]
-    } else {
-        signals(&osm_pbf_in, &nodes_tracks, &adjacencies)
-    };
-    let mut railjson = RailJson {
-        extended_switch_types: vec![],
-        detectors: signals.iter().map(detector).collect(),
-        signals,
-        speed_sections: rail_edges.clone().flat_map(speed_sections).collect(),
-        electrifications: rail_edges.clone().flat_map(electrifications).collect(),
-        operational_points: operational_points(&osm_pbf_in, &nodes_tracks),
-        ..Default::default()
-    };
-
-    railjson.track_sections = rail_edges
+    let track_sections: Vec<TrackSection> = rail_edges
+        .iter()
         .map(|e| {
             let geo = geos::geojson::Geometry::new(geos::geojson::Value::LineString(
                 e.geometry.iter().map(|c| vec![c.x, c.y]).collect(),
@@ -119,6 +108,31 @@ pub fn parse_osm(
             }
         })
         .collect();
+
+    let nodes_tracks = NodeToTrack::from_edges(&edges);
+    let signals = if generate_signals {
+        vec![]
+    } else {
+        signals(&osm_pbf_in, &nodes_tracks, &adjacencies)
+    };
+    let mut railjson = RailJson {
+        extended_switch_types: vec![],
+        detectors: signals.iter().map(detector).collect(),
+        signals,
+        speed_sections: rail_edges
+            .iter()
+            .copied()
+            .flat_map(speed_sections)
+            .collect(),
+        electrifications: rail_edges
+            .iter()
+            .copied()
+            .flat_map(electrifications)
+            .collect(),
+        operational_points: operational_points(&osm_pbf_in, &nodes_tracks, &track_sections),
+        track_sections,
+        ..Default::default()
+    };
 
     for (node, mut adj) in adjacencies {
         for e1 in &adj.edges {
