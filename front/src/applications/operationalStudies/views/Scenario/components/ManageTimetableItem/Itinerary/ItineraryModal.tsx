@@ -516,7 +516,7 @@ const ItineraryModal = ({
           {!hasInvalidPathStepDisplay && pathfindingError && (
             <AlertBox type="error" message={pathfindingError} />
           )}
-          <TypeAndPath rollingStockId={modalFormState.rollingStockId} isInNewModal />
+          <TypeAndPath isInNewModal />
           <div className="path-step-list">
             <button
               data-testid="reverse-itinerary-button"
