@@ -80,7 +80,7 @@ export default function ScenarioCard({
           <span className="mr-1">
             <MdTrain />
           </span>
-          {scenario.paced_trains_count}
+          {scenario.train_schedules_count}
         </div>
         <div className="scenario-card-date">
           <span className="mr-1">

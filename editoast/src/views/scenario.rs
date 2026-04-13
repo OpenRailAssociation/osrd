@@ -126,7 +126,7 @@ pub struct ScenarioWithDetails {
     #[serde(flatten)]
     pub scenario: Scenario,
     pub infra_name: String,
-    pub paced_trains_count: i64,
+    pub train_schedules_count: i64,
 }
 
 impl ScenarioWithDetails {
@@ -136,7 +136,7 @@ impl ScenarioWithDetails {
     ) -> Result<Self, database::DatabaseError> {
         Ok(Self {
             infra_name: scenario.infra_name(conn).await?,
-            paced_trains_count: scenario.paced_trains_count(conn).await?,
+            train_schedules_count: scenario.train_schedules_count(conn).await?,
             scenario,
         })
     }
@@ -147,7 +147,7 @@ pub struct ScenarioResponse {
     #[serde(flatten)]
     pub scenario: Scenario,
     pub infra_name: String,
-    pub paced_trains_count: i64,
+    pub train_schedules_count: i64,
     pub project: Project,
     pub study: Study,
 }
@@ -161,7 +161,7 @@ impl ScenarioResponse {
         Self {
             scenario: scenarios_with_details.scenario,
             infra_name: scenarios_with_details.infra_name,
-            paced_trains_count: scenarios_with_details.paced_trains_count,
+            train_schedules_count: scenarios_with_details.train_schedules_count,
             project,
             study,
         }

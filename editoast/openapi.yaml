@@ -12384,30 +12384,30 @@ components:
       - type: object
         required:
         - infra_name
-        - paced_trains_count
+        - train_schedules_count
         - project
         - study
         properties:
           infra_name:
             type: string
-          paced_trains_count:
-            type: integer
-            format: int64
           project:
             $ref: '#/components/schemas/Project'
           study:
             $ref: '#/components/schemas/Study'
+          train_schedules_count:
+            type: integer
+            format: int64
     ScenarioWithDetails:
       allOf:
       - $ref: '#/components/schemas/Scenario'
       - type: object
         required:
         - infra_name
-        - paced_trains_count
+        - train_schedules_count
         properties:
           infra_name:
             type: string
-          paced_trains_count:
+          train_schedules_count:
             type: integer
             format: int64
     ScheduleItem:
@@ -12592,7 +12592,7 @@ components:
       - electrical_profile_set_id
       - infra_id
       - infra_name
-      - paced_trains_count
+      - train_schedules_count
       - description
       - last_modification
       - tags
@@ -12620,10 +12620,6 @@ components:
           format: date-time
         name:
           type: string
-        paced_trains_count:
-          type: integer
-          format: int64
-          minimum: 0
         study_id:
           type: integer
           format: int64
@@ -12632,6 +12628,10 @@ components:
           type: array
           items:
             type: string
+        train_schedules_count:
+          type: integer
+          format: int64
+          minimum: 0
     SearchResultItemSignal:
       type: object
       description: |
