@@ -10,6 +10,9 @@ export type PropagationResult = {
   updatedStartTime: Date;
 };
 
+const isOriginArrivalUpdate = (update: CellUpdate): update is ArrivalUpdate =>
+  update.field === 'requestedArrival' && update.row.opOnPathIndex === 0;
+
 const toHmsDuration = (date: Date) =>
   new Duration({
     hours: date.getHours(),
@@ -127,6 +130,10 @@ export const propagateTime = (
 
   const delta = computeDelta(update.row[update.field], update.value);
   if (delta === null) return undefined;
+
+  if (isOriginArrivalUpdate(update) && update.propagationMode === 'atThisWaypoint') {
+    return propagateShiftAll(delta, selectedTrain);
+  }
 
   if (update.propagationMode === 'shiftAllWaypoints')
     return propagateShiftAll(delta, selectedTrain);
