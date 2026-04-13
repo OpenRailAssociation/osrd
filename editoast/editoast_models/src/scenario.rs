@@ -63,11 +63,11 @@ impl Scenario {
         Ok(infra_name)
     }
 
-    pub async fn paced_trains_count(
+    pub async fn train_schedules_count(
         &self,
         conn: &mut DbConnection,
     ) -> Result<i64, database::DatabaseError> {
-        Timetable::paced_trains_count(self.timetable_id, conn).await
+        Timetable::train_schedules_count(self.timetable_id, conn).await
     }
 
     pub async fn update_last_modified(

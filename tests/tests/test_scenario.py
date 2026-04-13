@@ -48,7 +48,7 @@ class _ScenarioResponse:
     timetable_id: int
     infra_id: int
     electrical_profile_set_id: int | None
-    paced_trains_count: int
+    train_schedules_count: int
     creation_date: str
     last_modification: str
     tags: list[str]

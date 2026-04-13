@@ -4153,7 +4153,7 @@ export type Scenario = {
 };
 export type ScenarioWithDetails = Scenario & {
   infra_name: string;
-  paced_trains_count: number;
+  train_schedules_count: number;
 };
 export type ScenarioCreateForm = {
   description?: string;
@@ -4183,9 +4183,9 @@ export type Study = {
 };
 export type ScenarioResponse = Scenario & {
   infra_name: string;
-  paced_trains_count: number;
   project: Project;
   study: Study;
+  train_schedules_count: number;
 };
 export type ScenarioPatchForm = {
   description?: string | null;
@@ -4255,9 +4255,9 @@ export type SearchResultItemScenario = {
   infra_name: string;
   last_modification: string;
   name: string;
-  paced_trains_count: number;
   study_id: number;
   tags: string[];
+  train_schedules_count: number;
 };
 export type Margins = {
   boundaries: string[];

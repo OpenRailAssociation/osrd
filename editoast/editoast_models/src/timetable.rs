@@ -31,7 +31,7 @@ impl From<Timetable> for Option<i64> {
 }
 
 impl Timetable {
-    pub async fn paced_trains_count(
+    pub async fn train_schedules_count(
         timetable_id: i64,
         conn: &mut DbConnection,
     ) -> Result<i64, database::DatabaseError> {
