@@ -109,10 +109,7 @@ const Itinerary = ({ rollingStockId }: { rollingStockId: number | undefined }) =
       </div>
       {displayTypeAndPath && (
         <div className="mb-2">
-          <TypeAndPath
-            setDisplayTypeAndPath={setDisplayTypeAndPath}
-            rollingStockId={rollingStockId}
-          />
+          <TypeAndPath setDisplayTypeAndPath={setDisplayTypeAndPath} />
         </div>
       )}
       {origin && destination && (
