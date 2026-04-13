@@ -436,7 +436,9 @@ impl<S: StorageDriver> Regulator<S> {
             && subject_grant == InfraGrant::Owner
             && new_grant < subject_grant
         {
-            let current_owners = self.get_infra_owners(infra).await?;
+            let current_owners = authorize
+                .access_value(crate::v2::infra_granted_subjects(*infra, InfraGrant::Owner))
+                .await?;
             if current_owners.len() == 1 && current_owners.contains(subject) {
                 return Ok(Authorization::Denied {
                     reason: "cannot demote the last owner",
@@ -493,7 +495,10 @@ impl<S: StorageDriver> Regulator<S> {
         };
 
         if is_subject_owner {
-            let current_owners = self.get_infra_owners(infra).await?;
+            let authorize = crate::v2::special_authorizers::Authorize(&self.openfga);
+            let current_owners = authorize
+                .access_value(crate::v2::infra_granted_subjects(*infra, InfraGrant::Owner))
+                .await?;
             if current_owners.len() == 1 && current_owners.contains(subject) {
                 return Ok(Authorization::Denied {
                     reason: "cannot remove the last owner from infrastructure",
