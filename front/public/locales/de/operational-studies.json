@@ -181,7 +181,6 @@
       "update": "Ändern",
       "validityFilter": "Gültigkeit der Züge"
     },
-    "toggleTimetable": "Fahrplan umschalten",
     "trainCount_one": "1/$t(main.main.train, { 'count': {{totalCount}} }) ausgewählt.",
     "trainCount_other": "{{count}}/$t(main.main.train, { 'count': {{totalCount}} }) ausgewählt.",
     "trainCount_zero": "$t(main.main.train, { 'count': {{totalCount}} })",

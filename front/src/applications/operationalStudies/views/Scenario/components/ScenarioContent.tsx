@@ -1,6 +1,5 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 
-import { ChevronRight } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
@@ -47,7 +46,6 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
   const [displayTimetableItemManagement, setDisplayTimetableItemManagement] = useState<string>(
     MANAGE_TIMETABLE_ITEM_TYPES.none
   );
-  const [collapsedTimetable, setCollapsedTimetable] = useState(false);
   const [collapsedTimetableEdit, setCollapsedTimetableEdit] = useState(false);
   const [timetableItemToEditData, setTimetableItemToEditData] = useState<TimetableItemToEditData>();
   const [macroBoardHeight, setMacroBoardHeight] = useState<number>(MACRO_EDITOR_HEIGHT);
@@ -198,17 +196,6 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
           </div>
         </div>
         <div className="center-column">
-          {collapsedTimetable && (
-            <button
-              data-testid="timetable-collapse-button"
-              className="timetable-collapse-button"
-              type="button"
-              aria-label={t('main.toggleTimetable')}
-              onClick={() => setCollapsedTimetable(false)}
-            >
-              <ChevronRight />
-            </button>
-          )}
           {!isInfraLoaded &&
             displayTimetableItemManagement !== MANAGE_TIMETABLE_ITEM_TYPES.add &&
             displayTimetableItemManagement !== MANAGE_TIMETABLE_ITEM_TYPES.edit && (
