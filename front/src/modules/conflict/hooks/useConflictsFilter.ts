@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 
 import { useSelector } from 'react-redux';
 
@@ -18,14 +18,20 @@ import {
   extractEditoastIdFromPacedTrainId,
 } from 'utils/trainId';
 
+import type { ConflictWithTrainNames } from '../types';
 import addTrainNamesToConflicts, {
   filterAndReorderConflict,
   reorderConflictTrains,
 } from '../utils';
 
-const useConflictsFilter = (timetableItems: TimetableItem[], conflicts: Conflict[] | undefined) => {
+const useConflictsFilter = (
+  timetableItems: TimetableItem[],
+  conflicts: Conflict[] | undefined,
+  isConflictsLoading: boolean
+) => {
   const selectedTrainId = useSelector(getSelectedTrainId);
   const [showOnlySelectedTrain, setShowOnlySelectedTrain] = useState(false);
+  const [enrichedConflicts, setEnrichedConflicts] = useState<ConflictWithTrainNames[]>([]);
 
   const handleToggleConflictsFilter = useCallback(() => {
     setShowOnlySelectedTrain(!showOnlySelectedTrain);
@@ -68,13 +74,13 @@ const useConflictsFilter = (timetableItems: TimetableItem[], conflicts: Conflict
 
   const totalConflictsCount = useMemo(() => conflicts?.length ?? 0, [conflicts]);
 
-  const enrichedConflicts = useMemo(() => {
-    if (!conflicts) return [];
-    const sortedByStartTime = [...conflicts].sort(
+  useEffect(() => {
+    if (isConflictsLoading) return;
+    const sortedByStartTime = [...(conflicts ?? [])].sort(
       (a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
     );
-    return addTrainNamesToConflicts(sortedByStartTime, timetableItems);
-  }, [conflicts, timetableItems]);
+    setEnrichedConflicts(addTrainNamesToConflicts(sortedByStartTime, timetableItems));
+  }, [conflicts, isConflictsLoading, timetableItems]);
 
   const selectedEnrichedConflicts = useMemo(() => {
     if (!selectedTrainName || !selectedTrainId) return [];
