@@ -487,32 +487,47 @@ pub(in crate::views) struct SubjectGrant {
     ),
 )]
 pub(in crate::views) async fn subjects_with_grant_on_resource(
-    Extension(authn): AuthenticationExt,
+    Extension(user): Extension<Option<authz::User>>,
+    Extension(roles): Extension<Vec<authz::Role>>,
     State(AppState {
         db_pool, regulator, ..
     }): State<AppState>,
     Path(ResourceTypeParam { resource_type }): Path<ResourceTypeParam>,
     Path(ResourceIdParam { resource_id }): Path<ResourceIdParam>,
 ) -> Result<Json<Vec<SubjectGrant>>> {
+    let Some(user) = user else {
+        return Err(AuthorizationError::Unauthorized.into());
+    };
     // Ask OpenFGA about grants on the resource
-    let (readers, writers, owners) = match resource_type {
+    let ((readers, writers), owners) = match resource_type {
         ResourceType::Infra => {
             let infra = authz::Infra(resource_id);
-            // One must be able to interact with the resource in order to
-            // consult who has access to it.
-            authn
-                .check_authorization(async |authorizer| {
-                    authorizer
-                        .authorize_infra(&infra, authz::InfraPrivilege::CanRead)
-                        .await
-                })
-                .await?;
-            tokio::try_join!(
-                regulator.get_infra_readers(&infra),
-                regulator.get_infra_writers(&infra),
-                regulator.get_infra_owners(&infra)
-            )
-            .map_err(AuthzError::from)?
+            let conn = db_pool.get().await?;
+            let openfga = regulator.openfga();
+            let authorizer = UserAuthorizer {
+                user,
+                roles,
+                openfga,
+                conn,
+            };
+            authorizer
+                .authorize(
+                    authz::v2::infra_granted_subjects(infra, InfraGrant::Reader)
+                        .zip(authz::v2::infra_granted_subjects(infra, InfraGrant::Writer))
+                        .zip(authz::v2::infra_granted_subjects(infra, InfraGrant::Owner)),
+                )
+                .await?
+                .access()
+                .await?
+                .map_err(|err| match err {
+                    Rejection::LackingInfraPrivilege(InfraPrivilege::CanRead, ..) => {
+                        AuthzError::Authz(AuthorizationError::Forbidden)
+                    }
+                    Rejection::NoSuchInfra(_) => AuthzError::UnknownResource {
+                        resource_id: infra.0,
+                    },
+                    rejection => impossible!(rejection),
+                })?
         }
     };
 
