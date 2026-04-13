@@ -1083,14 +1083,14 @@ pub(in crate::views) async fn project_path(
                         .exceptions
                         .insert(
                             exception_key.to_string(),
-                            Arc::unwrap_or_clone(project_path_result[index].clone()),
+                            (*project_path_result[index]).clone(),
                         );
                 }
             } else {
                 results.insert(
                     simulation_context.train_schedule_id,
                     ProjectPathTrainScheduleResult {
-                        train_schedule: Arc::unwrap_or_clone(project_path_result[index].clone()),
+                        train_schedule: (*project_path_result[index]).clone(),
                         exceptions: HashMap::new(),
                     },
                 );
@@ -1249,22 +1249,25 @@ pub(in crate::views) async fn project_path_op(
                 } => {
                     if !Arc::ptr_eq(&base_project_path, &projected_train) {
                         results
-                            .get_mut(&train_schedule_id)
-                            .expect("train_schedule_id should exist")
+                            .entry(train_schedule_id)
+                            .or_insert_with(|| ProjectPathTrainScheduleResult {
+                                train_schedule: (*projected_train).clone(),
+                                exceptions: HashMap::new(),
+                            })
                             .exceptions
-                            .insert(exception_key, Arc::unwrap_or_clone(projected_train.clone()));
+                            .insert(exception_key, (*projected_train).clone());
                     }
                 }
                 OccurrenceId::Base {
                     train_schedule_id, ..
                 } => {
-                    results.insert(
-                        train_schedule_id,
-                        ProjectPathTrainScheduleResult {
+                    results
+                        .entry(train_schedule_id)
+                        .or_insert_with(|| ProjectPathTrainScheduleResult {
                             train_schedule: Arc::unwrap_or_clone(projected_train.clone()),
                             exceptions: HashMap::new(),
-                        },
-                    );
+                        })
+                        .train_schedule = (*projected_train).clone();
                     base_project_path = projected_train;
                 }
             };

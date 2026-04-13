@@ -197,7 +197,7 @@ describe('generatePacedTrainException', () => {
               trigram: 'NS',
               secondary_code: 'BV',
               type: 'trigram',
-            } as const,
+            },
             local_track_name: null,
           },
         };
