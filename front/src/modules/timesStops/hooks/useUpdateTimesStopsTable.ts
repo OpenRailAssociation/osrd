@@ -37,7 +37,6 @@ import {
 } from '../helpers/cellUpdate';
 import { propagateTime } from '../helpers/timePropagation';
 import type {
-  ArrivalUpdate,
   CellUpdate,
   OptimisticEdit,
   PropagationMode,
@@ -45,9 +44,6 @@ import type {
   TimesStopsRowNew,
   UpdateCellStatus,
 } from '../types';
-
-const isOriginArrivalUpdate = (update: CellUpdate): update is ArrivalUpdate =>
-  update.field === 'requestedArrival' && update.row.opOnPathIndex === 0;
 
 const formatRequestedMargin = (requestedMargin: MarginValue | null) => {
   if (!requestedMargin) return null;
@@ -220,41 +216,23 @@ const useUpdateTimesStopsTable = (
       // exception diff expects the occurrence's computed name.
       const occurrenceTrainName = getOccurrenceTrainName(originalPacedTrain, occurrenceId);
 
-      const isOriginUpdate = isOriginArrivalUpdate(update);
-      if (isOriginUpdate && !update.value) return 'skipped';
-
       // Build updated occurrence based on update type
-      let updatedOccurrence: TrainSchedule;
-      if (isOriginUpdate && update.propagationMode === 'atThisWaypoint') {
-        const startTime = update.value;
-        if (!startTime) return 'skipped';
+      const result = computeUpdatedPathAndSchedule(update);
+      if (!result) return 'skipped';
 
-        updatedOccurrence = {
-          ...buildUpdatedOccurrence(
-            selectedTrain,
-            selectedTrain.path,
-            selectedTrain.schedule ?? [],
-            occurrenceTrainName
-          ),
-          start_time: startTime.toISOString(),
-        };
-      } else {
-        const result = computeUpdatedPathAndSchedule(update);
-        if (!result) return 'skipped';
-        const trainWithUpdatedMargins = {
-          ...selectedTrain,
-          margins: result.updatedMargins,
-        };
-        updatedOccurrence = {
-          ...buildUpdatedOccurrence(
-            trainWithUpdatedMargins,
-            result.updatedPath,
-            result.updatedSchedule,
-            occurrenceTrainName
-          ),
-          start_time: result.updatedStartTime?.toISOString() ?? selectedTrain.start_time,
-        };
-      }
+      const trainWithUpdatedMargins = {
+        ...selectedTrain,
+        margins: result.updatedMargins,
+      };
+      const updatedOccurrence: TrainSchedule = {
+        ...buildUpdatedOccurrence(
+          trainWithUpdatedMargins,
+          result.updatedPath,
+          result.updatedSchedule,
+          occurrenceTrainName
+        ),
+        start_time: result.updatedStartTime?.toISOString() ?? selectedTrain.start_time,
+      };
 
       const updatedPacedTrain = buildPacedTrainWithUpdatedException(
         originalPacedTrain,
@@ -278,27 +256,6 @@ const useUpdateTimesStopsTable = (
   const updateTimetableItem = useCallback(
     async (trainId: PacedTrainId, update: CellUpdate): Promise<UpdateCellStatus> => {
       const editoastId = extractEditoastIdFromPacedTrainId(trainId);
-      const isOriginUpdate = isOriginArrivalUpdate(update);
-      if (isOriginUpdate && !update.value) return 'skipped';
-
-      // Handle first row at this waypoint
-      if (isOriginUpdate && update.propagationMode === 'atThisWaypoint') {
-        const startTime = update.value;
-        if (!startTime) return 'skipped';
-
-        const train: TimetableItem = {
-          ...selectedTrain,
-          id: editoastId,
-          start_time: startTime.toISOString(),
-        };
-
-        await updateTrainSchedule({
-          id: editoastId,
-          trainSchedule: train,
-        }).unwrap();
-        upsertTimetableItems([train]);
-        return 'updated';
-      }
 
       const result = computeUpdatedPathAndSchedule(update);
       if (!result) return 'skipped';
