@@ -2,22 +2,22 @@
   "Editor": {
     "directions": {
       "BOTH": "Beide",
-      "START_TO_STOP": "Abfahrt bis Ankunft",
-      "STOP_TO_START": "Ankunft bis Abfahrt"
+      "START_TO_STOP": "Anfang nach Ende",
+      "STOP_TO_START": "Ende nach Anfang"
     },
     "entities": {
-      "errors-linked": "Verknüpfte Fehler"
+      "errors-linked": "Zugehörige Probleme"
     },
     "infra-errors": {
       "corrector-modal": {
-        "create-actions": "{{creation_count}} erstellte Objekte",
-        "delete-actions": "{{deletion_count}} gelöschte Objekte",
-        "loading-loader": "Berechne mögliche Lösungen",
-        "no-fixes-found": "Keine Korrektur gefunden.",
-        "saving-loader": "Anpassung der Infrastruktur",
-        "text": "Die folgenden Maßnahmen werden angewendet, um einige der Fehler der Infrastruktur zu korrigieren:",
-        "title": "Automatische Fehlerkorrektur",
-        "update-actions": "{{update_count} bestehende Objekt-Updates"
+        "create-actions": "{{creation_count}} Objekterstellungen",
+        "delete-actions": "{{deletion_count}} Objektlöschungen",
+        "loading-loader": "Mögliche Korrekturen werden berechnet",
+        "no-fixes-found": "Keine Korrekturen gefunden.",
+        "saving-loader": "Korrekturen werden auf die Infrastruktur angewendet",
+        "text": "Die folgenden Aktionen werden ausgeführt, um einige Infrastrukturprobleme zu beheben:",
+        "title": "Automatische Problembehebung",
+        "update-actions": "{{update_count}} Änderungen bestehender Objekte"
       },
       "error-level": {
         "all": "Alle",
@@ -27,63 +27,509 @@
       "error-type": {
         "all": "Alle",
         "duplicated_group": {
-          "description": "Schaltertyp « {{obj_id} » enthält eine doppelte Konfiguration « {{original_group_path} »",
-          "name": "Dupliziertes Schaltmuster"
+          "description": "Der Weichentyp '{{obj_id}}' enthält eine doppelte Konfiguration '{{original_group_path}}'",
+          "name": "Doppelte Weichenkonfiguration"
         },
         "empty_object": {
-          "description": "Objekt « {{obj_id} » hat das leere Feld « {{field} »",
+          "description": "Das Objekt '{{obj_id}}' hat das Feld '{{field}}' leer",
           "name": "Leeres Objekt"
         },
         "invalid_group": {
-          "description": "Der Schalter « {{obj_id} » der Route « {{group} » befindet sich in der Konfiguration « {{switch_type}», die nicht existiert",
-          "name": "Ungültige Nadelposition"
+          "description": "Die Weiche '{{obj_id}}' der Fahrstraße '{{group}}' hat die Konfiguration '{{switch_type}}', die nicht existiert",
+          "name": "Ungültige Weichenstellung"
         },
         "invalid_reference": {
-          "description": "Das Objekt « {{obj_id} » verweist auf das Objekt « {{reference.obj_id}», das nicht existiert",
-          "name": "Ungültige Referenz"
+          "description": "Das Objekt '{{obj_id}}' verweist auf das Objekt '{{reference.obj_id}}', das nicht existiert",
+          "name": "Ungültiger Verweis"
         },
         "invalid_route": {
-          "description": "Route « {{obj_id} » ist ungültig, angeforderter Pfad ist nicht konsistent",
-          "name": "Invalide Route"
+          "description": "Die Fahrstraße '{{obj_id}}' ist ungültig, der angeforderte Pfad ist nicht konsistent",
+          "name": "Ungültige Fahrstraße"
         },
         "invalid_switch_ports": {
-          "description": "Schalter « {{obj_id} » hat einen Zweig, der nicht mit seinem Typ kompatibel ist",
-          "name": "Invalides Schaltmuster"
+          "description": "Die Weiche '{{obj_id}}' hat einen Anschluss, der nicht mit ihrem Weichentyp kompatibel ist",
+          "name": "Ungültiger Weichenanschluss"
         },
         "missing_buffer_stop": {
-          "description": "Endpunkt « {{endpoint} » der Strecke « {{obj_id}} » hat keinen Prellbock",
+          "description": "Das Ende '{{endpoint}}' des Gleisabschnitts '{{obj_id}}' hat keinen Prellbock",
           "name": "Fehlender Prellbock"
         },
         "missing_route": {
-          "name": "Fehlende Route"
+          "description": "Der Gleisabschnitt '{{obj_id}}' hat keine zugeordnete Fahrstraße",
+          "name": "Fehlende Fahrstraße"
+        },
+        "node_endpoints_not_unique": {
+          "description": "Ein Gleisende wird von mehreren Anschlüssen der Weiche '{{obj_id}}' verwendet.",
+          "name": "Gleisende der Weiche nicht eindeutig"
+        },
+        "object_out_of_path": {
+          "description": "Das Objekt '{{obj_id}}' der Fahrstraße '{{reference.obj_id}}' befindet sich nicht im zugehörigen Pfad",
+          "name": "Objekt außerhalb des Pfads"
+        },
+        "odd_buffer_stop_location": {
+          "description": "Der Prellbock '{{obj_id}}' befindet sich an einer ungewöhnlichen Position",
+          "name": "Ungewöhnliche Prellbockposition"
+        },
+        "out_of_range": {
+          "description": "Das Objekt '{{obj_id}}' hat im Feld '{{field}}' einen ungültigen Wert. Der Wert muss im Bereich [{{expected_range}}] liegen.",
+          "name": "Ungültiger Wert"
+        },
+        "overlapping_electrifications": {
+          "description": "Die Oberleitung '{{obj_id}}' überlappt sich mit der Oberleitung '{{reference.obj_id}}' auf demselben Gleisabschnitt und mit derselben Spannung",
+          "name": "Überlappung von Oberleitungszonen"
+        },
+        "overlapping_speed_sections": {
+          "description": "Die Geschwindigkeitsbegrenzung '{{obj_id}}' überlappt sich mit '{{reference.obj_id}}'",
+          "name": "Überlappung von Geschwindigkeitsbegrenzungen"
+        },
+        "overlapping_switches": {
+          "description": "Die Weichen '{{obj_id}}' und '{{reference.obj_id}}' verbinden dieselben Gleisenden",
+          "name": "Überlappung von Weichen"
+        },
+        "unknown_port_name": {
+          "description": "Die Weiche '{{obj_id}}' hat den Anschluss '{{port_name}}', der nicht existiert",
+          "name": "Unbekannter Anschlussname"
+        },
+        "unused_port": {
+          "description": "Der Anschluss '{{port_name}}' des Weichentyps '{{obj_id}}' wird in keiner Konfiguration verwendet",
+          "name": "Ungenutzter Anschluss"
         }
+      },
+      "infra-locked": "Achtung: Sie können keine Änderungen speichern.",
+      "infra-readonly": "Achtung: Sie befinden sich im Lesemodus für diese Infrastruktur",
+      "label": {
+        "title-with-filter_one": "{{count}} Probleme von {{total}}",
+        "title-with-filter_other": "{{count}} Probleme von {{total}}",
+        "title-with-filter_zero": "keine Problem von {{total}}",
+        "title_one": "{{count}} Problem",
+        "title_other": "{{count}} Probleme",
+        "title_zero": "Keine Probleme"
+      },
+      "list": {
+        "filter-type": "Problemtyp",
+        "goto-error": "Auf der Karte auswählen und anzeigen",
+        "total-all_one": "Ein Fehler oder eine Warnung gefunden",
+        "total-all_other": "{{count}} Fehler und Warnungen gefunden",
+        "total-all_zero": "Keine Fehler oder Warnungen gefunden",
+        "total-errors_one": "Ein Fehler gefunden",
+        "total-errors_other": "{{count}} Fehler gefunden",
+        "total-errors_zero": "Keine Fehler gefunden",
+        "total-warnings_one": "Eine Warnung gefunden",
+        "total-warnings_other": "{{count}} Warnungen gefunden",
+        "total-warnings_zero": "Keine Warnungen gefunden"
+      },
+      "modal": {
+        "title": "Probleme der Infrastruktur {{id}}"
+      }
+    },
+    "item-statuses": {
+      "edited": "wird bearbeitet",
+      "selected": "ausgewählt"
+    },
+    "layers": {
+      "buffer_stops": "Prellböcke",
+      "detectors": "Gleisfreimeldepunkt",
+      "electrifications": "Oberleitung",
+      "errors": "Fehler",
+      "level_crossings": "Bahnübergänge",
+      "neutral_sections": "Neutrale Abschnitte",
+      "operational_points": "Betriebsstellen",
+      "platforms": "Bahnsteige",
+      "routes": "Fahrstraßen",
+      "signals": "Signale",
+      "sncf_psl": "Dauerhafte Geschwindigkeitsbegrenzungen",
+      "speed_limits": "Geschwindigkeitsbegrenzungen",
+      "speed_sections": "Geschwindigkeitsbegrenzungen",
+      "speedlimittag": "Zusammensetzungscodes",
+      "switches": "Weichen",
+      "track_sections": "Gleisabschnitte"
+    },
+    "linear-metadata": {
+      "help": "Mit dieser Komponente können Sie eine lineare Darstellung anzeigen und bearbeiten. Sie können mit den vorgesehenen Schaltflächen oder dem Mausrad zoomen und per Drag-and-Drop navigieren. Um die Größe eines Segments zu ändern, klicken Sie darauf; das Bearbeitungsformular erscheint darunter. Sie können auch auf den Rand eines Segments klicken und ihn bei gedrückter Maustaste verschieben.",
+      "merge-with-left": "Mit dem vorherigen Element zusammenführen",
+      "merge-with-right": "Mit dem nächsten Element zusammenführen",
+      "split": "Element teilen"
+    },
+    "nav": {
+      "choose-infra": "Infrastruktur auswählen",
+      "infra-error-corrector": "Automatische Problembehebung",
+      "infra-errors-list": "Verwaltung und Anzeige der Probleme"
+    },
+    "obj-types": {
+      "BufferStop": "Prellbock",
+      "Detector": "Gleisfreimeldepunkt",
+      "Electrification": "Oberleitung",
+      "LevelCrossing": "Bahnübergang",
+      "Route": "Fahrstraße",
+      "Signal": "Signal",
+      "SpeedSection": "Geschwindigkeitsbegrenzung",
+      "Switch": "Weiche",
+      "TrackSection": "Gleisabschnitt"
+    },
+    "tools": {
+      "buffer-stop-edition": {
+        "actions": {
+          "confirm-delete-entity": "Möchten Sie den Prellbock wirklich löschen?",
+          "delete-entity": "Prellbock löschen",
+          "new-entity": "Neuen Prellbock erstellen",
+          "reset-entity": "Daten zurücksetzen",
+          "save-entity": "Prellbock speichern"
+        },
+        "label": "Werkzeug Prellbock"
+      },
+      "detector-edition": {
+        "actions": {
+          "confirm-delete-entity": "Möchten Sie den Gleisfreimeldepunkt wirklich löschen?",
+          "delete-entity": "Gleisfreimeldepunkt löschen",
+          "new-entity": "Neuen Gleisfreimeldepunkt erstellen",
+          "reset-entity": "Daten zurücksetzen",
+          "save-entity": "Gleisfreimeldepunkt speichern"
+        },
+        "label": "Werkzeug Gleisfreimeldepunkt"
+      },
+      "electrification-edition": {
+        "actions": {
+          "confirm-delete-electrification": "Möchten Sie die Oberleitung wirklich löschen?",
+          "delete-electrification": "Oberleitung löschen",
+          "new-electrification": "Neue Oberleitung erstellen",
+          "reset-electrification": "Änderungen verwerfen",
+          "save-electrification": "Oberleitung speichern"
+        },
+        "add-new-electrification": "Neue Oberleitung hinzufügen",
+        "electrification-default": "Standard-Oberleitung",
+        "electrifications": "Oberleitung",
+        "help": {
+          "add-track": "Gleisabschnitt '{{track.id}}' zur Oberleitung {{voltage}} hinzufügen",
+          "init": "Klicken Sie auf einen Gleisabschnitt, um ihn der Oberleitung zuzuordnen",
+          "remove-range": "Abschnitt von der Oberleitung {{voltage}} entfernen"
+        },
+        "label": "Werkzeug Oberleitung"
+      },
+      "point-edition": {
+        "default-routes-error": "Beim Laden der zugehörigen Fahrstraßen ist ein Fehler aufgetreten.",
+        "help": {
+          "start-dragging": "Klicken Sie auf das Element, um es zu verschieben.",
+          "stop-dragging-no-line": "Das Element muss auf einem Gleisabschnitt platziert werden.",
+          "stop-dragging-on-line": "Klicken Sie, um die Verschiebung zu bestätigen."
+        },
+        "linked-routes": "Zugehörige Fahrstraßen",
+        "no-linked-route": "Keine zugehörige Fahrstraße",
+        "routes-ending-at": "Ankommend bei…",
+        "routes-starting-from": "Abgehend von…"
+      },
+      "range-edition": {
+        "edit-track-range-end": "Endpunkt bearbeiten",
+        "edit-track-range-start": "Startpunkt bearbeiten",
+        "empty-linked-track-section": "Klicken Sie auf einen Gleisabschnitt, um ihn zuzuordnen",
+        "linked-track-sections": "Zugeordnete Gleisabschnitte",
+        "only-show-n": "Nur die ersten {{count}} Gleisabschnitte anzeigen",
+        "show-more-ranges_one": "Einen weiteren Gleisabschnitt anzeigen",
+        "show-more-ranges_other": "{{count}} weitere Gleisabschnitte anzeigen"
+      },
+      "routes-edition": {
+        "actions": {
+          "delete-route": "Fahrstraße löschen",
+          "new-route": "Neue Fahrstraße erstellen",
+          "pick-entry_point": "Startpunkt-Auswahl",
+          "pick-entry_point-cancel": "Startpunkt-Auswahl abbrechen",
+          "pick-entry_point-update": "Ausgewählten Startpunkt ändern",
+          "pick-exit_point": "Zielpunkt-Auswahl",
+          "pick-exit_point-cancel": "Zielpunkt-Auswahl abbrechen",
+          "pick-exit_point-update": "Ausgewählten Zielpunkt ändern",
+          "reset-route": "Fahrstraße zurücksetzen",
+          "save-route": "Fahrstraße speichern"
+        },
+        "alternative-routes": "Ähnliche Fahrstraße erstellen",
+        "confirm-delete-route": "Möchten Sie diese Fahrstraße wirklich löschen?",
+        "create-route": "Neue Fahrstraße erstellen",
+        "crossed-detectors_one": "Ein Gleisfreimeldepunkt",
+        "crossed-detectors_other": "{{count}} Gleisfreimeldepunkte",
+        "crossed-detectors_zero": "Kein Gleisfreimeldepunkt angetroffen",
+        "crossed-track-ranges_one": "Ein Abschnitt",
+        "crossed-track-ranges_other": "{{count}} Abschnitte",
+        "crossed-track-ranges_zero": "Kein Abschnitt",
+        "delete-route": "Fahrstraße löschen",
+        "delete-route-success": "Die Fahrstraße wurde erfolgreich gelöscht.",
+        "directions": {
+          "START_TO_STOP": "Regelrichtung",
+          "STOP_TO_START": "Gegenrichtung"
+        },
+        "edit-route": "Bestehende Fahrstraße bearbeiten",
+        "end": "Ziel",
+        "endpoint": "Endpunkt:",
+        "from": "von",
+        "geometry-error": "Beim Berechnen des genauen Pfads dieser Fahrstraße ist ein Fehler aufgetreten",
+        "help": {
+          "actions-on-edit-route": "Sie können die Fahrstraße löschen, bearbeiten oder eine neue erstellen.",
+          "select-endpoints": "Die Fahrstraße muss einen Start- und einen Zielpunkt haben.",
+          "select-route": "Wählen Sie eine Fahrstraße aus.",
+          "select-waypoint": "Wählen Sie einen Gleisfreimeldepunkt oder einen Prellbock aus.",
+          "validate-route": "Sie können diese Fahrstraße bestätigen oder eine andere auswählen."
+        },
+        "include-release-detectors": "Starrer Durchrutschweg",
+        "label": "Werkzeug Fahrstraße",
+        "locked-release-detectors": "Sobald diese Eigenschaft aktiviert und gespeichert ist, kann sie nicht mehr deaktiviert werden",
+        "no-route-found": "Keine kompatible Fahrstraße gefunden",
+        "no-waypoint-picked-yet": "Klicken Sie auf die Schaltfläche, um einen Gleisfreimeldepunkt oder Prellbock auf der Karte auszuwählen",
+        "preview-candidate": "Auswählen",
+        "search-routes": "Kompatible Fahrstraßen suchen",
+        "search-routes-alt": "Alternative Fahrstraßen suchen",
+        "start": "Start",
+        "start_direction": "Richtung am Startpunkt:",
+        "swap-endpoints": "Endpunkte tauschen",
+        "to": "nach",
+        "untitled-track": "Unbenannte Strecke"
+      },
+      "select-items": {
+        "actions": {
+          "confirm-delete-selection": "Möchten Sie die Auswahl wirklich löschen?",
+          "delete-selection": "Auswahl löschen",
+          "edit-info": "Auswahl bearbeiten",
+          "polygon": "Polygon-Auswahl",
+          "rectangle": "Rechteck-Auswahl",
+          "single": "Einzelauswahl",
+          "split-track-section": "Gleisabschnitt teilen",
+          "unselect-all": "Alles abwählen"
+        },
+        "errors": {
+          "invalid-url": "Ungültige URL",
+          "no-heterogenous-edition": "Es ist nicht möglich, mehrere Elemente verschiedener Typen gleichzeitig zu bearbeiten.",
+          "no-multi-edition": "Die gleichzeitige Bearbeitung mehrerer Elemente ist noch nicht möglich.",
+          "unable-to-select": "Auswahl nicht möglich"
+        },
+        "focus": "Fokus",
+        "help": {
+          "polygon-selection": "Klicken Sie, um ein Polygon zu zeichnen. Doppelklicken Sie, um es zu schließen und alle Elemente darin auszuwählen.",
+          "rectangle-selection": "Klicken Sie zweimal, um ein Rechteck zu zeichnen. Alle Elemente darin werden ausgewählt.",
+          "single-selection": "Klicken Sie auf ein Element, um es aus- oder abzuwählen. Mit gedrückter Strg-Taste können Sie mehrere Elemente auswählen."
+        },
+        "item": "Element",
+        "label": "Werkzeug Auswahl",
+        "linked-to-line_one": "zugeordnet zum Gleisabschnitt",
+        "linked-to-line_other": "zugeordnet zu den Gleisabschnitten",
+        "linked-to-n-lines_one": "bezogen auf einen Gleisabschnitt",
+        "linked-to-n-lines_other": "bezogen auf {{count}} Gleisabschnitte",
+        "linked-to-n-lines_zero": "auf keinen Gleisabschnitt bezogen",
+        "no-selection": "Kein Element ausgewählt",
+        "of-type": "vom Typ",
+        "selection": "{{count}} Element ausgewählt",
+        "selection_plural": "{{count}} Elemente ausgewählt",
+        "sources": "Quellen",
+        "title": "Auswahl",
+        "unselect": "Abwählen"
+      },
+      "signal-edition": {
+        "actions": {
+          "confirm-delete-entity": "Möchten Sie das Signal wirklich löschen?",
+          "delete-entity": "Signal löschen",
+          "new-entity": "Neues Signal erstellen",
+          "reset-entity": "Daten zurücksetzen",
+          "save-entity": "Signal speichern"
+        },
+        "label": "Werkzeug Signal"
+      },
+      "speed-edition": {
+        "actions": {
+          "confirm-delete-speed-section": "Möchten Sie die Geschwindigkeitsbegrenzung wirklich löschen?",
+          "delete-speed-section": "Geschwindigkeitsbegrenzung löschen",
+          "new-speed-section": "Neue Geschwindigkeitsbegrenzung erstellen",
+          "reset-speed-section": "Änderungen verwerfen",
+          "save-speed-section": "Geschwindigkeitsbegrenzung speichern"
+        },
+        "add-new-speed-limit": "Neue Geschwindigkeitsbegrenzung hinzufügen",
+        "add-new-tag": "Neuen Zusammensetzungscode hinzufügen",
+        "add-sign": "Schild vom Typ {{signType}} hinzufügen",
+        "add-track-range": "Klicken, um zuzuordnen:",
+        "additional-speed-limit": "Geschwindigkeitsbegrenzungen nach Zusammensetzungscode",
+        "any-position": "Alle",
+        "hovered-sign": "Schild {{signType}}",
+        "incompatible-switch": "Diese Weichenstellung ist nicht mit der Stellung der anderen Weichen kompatibel",
+        "label": "Werkzeug Geschwindigkeitsbegrenzung",
+        "main-speed-limit": "Streckengeschwindigkeit",
+        "move-range-extremity": "Klicken, um das Ende zu verschieben:",
+        "new-tag": "Zusammensetzungscode",
+        "ralen-30-60": "Geschwindigkeitsbegrenzungen nach Fahrstraße",
+        "remove-track-range": "Klicken, um Zuordnung zu lösen:",
+        "search-routes": "Kompatible Fahrstraßen suchen",
+        "select-route": "Fahrstraße auswählen",
+        "select-switches-to-get-route": "Weichen und ihre Stellungen auswählen, um Fahrstraßen zu suchen",
+        "sign-category": "Schild(er) {{signType}}",
+        "sign-direction": "Richtung",
+        "sign-kp": "Kilometerpunkt",
+        "sign-position": "Position",
+        "sign-remove": "Schild entfernen",
+        "sign-select": "Auswählen",
+        "sign-side": "Seite",
+        "sign-track-id": "Gleisabschnitt-ID",
+        "sign-type": "Typ",
+        "sign-value": "Geschwindigkeit",
+        "signs-section-list": "Schilder des Abschnitts",
+        "speed-limits": "Geschwindigkeitsbegrenzungen",
+        "toggle-psl": "Dauerhafte Geschwindigkeitsbegrenzungen",
+        "toggle-psl-help": "Klicken Sie zunächst auf einen Gleisabschnitt, um diese Option zu aktivieren"
+      },
+      "switch-edition": {
+        "actions": {
+          "confirm-delete-switch": "Möchten Sie die Weiche wirklich löschen?",
+          "delete-switch": "Weiche löschen",
+          "new-switch": "Neue Weiche erstellen",
+          "pick-track": "Gleis auf der Karte auswählen",
+          "pick-track-cancel": "Gleisauswahl abbrechen",
+          "save-switch": "Weiche speichern"
+        },
+        "crossing": "Einfache Kreuzung",
+        "double_slip_switch": "Doppelte Kreuzungsweiche",
+        "duplicate-errors": "Das Gleis {{track}} wird bereits vom Anschluss {{port}} verwendet",
+        "endpoint": "Endpunkt:",
+        "help": {
+          "no-move": "Weichen können nicht verschoben werden und werden automatisch auf ihrem ersten Anschluss platziert.",
+          "select-track": "Wählen Sie ein Gleis auf der Karte aus"
+        },
+        "label": "Werkzeug Weiche",
+        "link": "Verbindung",
+        "no-track-picked-yet": "Noch kein Gleis ausgewählt",
+        "point_switch": "Einfache Weiche",
+        "single_slip_switch": "Einfache Kreuzungsweiche",
+        "switch-type": "Weichentyp",
+        "switch_type_w_port_count_one": "{{type}} ({{count}} Anschluss)",
+        "switch_type_w_port_count_other": "{{type}} ({{count}} Anschlüsse)",
+        "untitled-track": "Unbenanntes Gleis"
+      },
+      "track-edition": {
+        "actions": {
+          "add-at-end": "Neue Punkte am Ende hinzufügen",
+          "add-at-start": "Neue Punkte am Anfang hinzufügen",
+          "cancel-line": "Ausgewählten Verlauf entfernen",
+          "confirm-delete-line": "Möchten Sie den Gleisabschnitt wirklich löschen?",
+          "delete-line": "Gleisabschnitt löschen",
+          "mode-add-point": "Punkt hinzufügen",
+          "mode-delete-point": "Punkte löschen",
+          "mode-move-point": "Punkte verschieben",
+          "reset-line": "Daten zurücksetzen",
+          "save-line": "Gleisabschnitt speichern",
+          "toggle-anchoring": "Automatische Einrastung ein-/ausschalten"
+        },
+        "attached-electrifications": "Oberleitung",
+        "attached-speed-sections": "Geschwindigkeitsbegrenzungen",
+        "default-electrifications-error": "Beim Laden der mit diesem Gleisabschnitt verbundenen Oberleitungen ist ein Fehler aufgetreten.",
+        "default-speed-sections-error": "Beim Laden der mit diesem Gleisabschnitt verbundenen Geschwindigkeitsbegrenzungen ist ein Fehler aufgetreten.",
+        "help": {
+          "add-anchor-point": "Klicken Sie, um einen Punkt am Ende des Gleisabschnitts hinzuzufügen. Klicken Sie auf das Gleis, um einen Zwischenpunkt hinzuzufügen.",
+          "add-point": "Klicken Sie, um einen Punkt am Ende des Gleisabschnitts hinzuzufügen.",
+          "delete-point": "Klicken Sie auf einen Punkt, um ihn aus dem Gleisabschnitt zu entfernen.",
+          "move-point": "Klicken Sie auf einen Punkt, um ihn zu verschieben.",
+          "move-point-end": "Klicken Sie, um die Verschiebung zu bestätigen."
+        },
+        "label": "Werkzeug Gleisabschnitt",
+        "no-linked-electrification": "Keine Oberleitung zugeordnet",
+        "no-linked-speed-section": "Keine Geschwindigkeitsbegrenzung zugeordnet",
+        "only-show-n": "Nur die ersten {{count}} Ergebnisse anzeigen",
+        "show-more-ranges_one": "Ein weiteres Ergebnis anzeigen",
+        "show-more-ranges_other": "{{count}} weitere Ergebnisse anzeigen"
+      },
+      "track-split": {
+        "actions": {
+          "save": "Teilung speichern"
+        },
+        "help": {
+          "default": "Klicken Sie auf den Teilungspunkt auf der Karte oder geben Sie seine Position relativ zum Anfang des Gleisabschnitts im Formular ein",
+          "hover": "Klicken Sie auf den Punkt, um ihn zu verschieben",
+          "move": "Klicken Sie, um die Verschiebung zu bestätigen, oder drücken Sie Esc zum Abbrechen",
+          "split": "Klicken Sie auf den Gleisabschnitt, um ihn an dieser Stelle zu teilen"
+        },
+        "label": "Werkzeug Gleisabschnitt-Teilung",
+        "offset": {
+          "description": "Abstand zwischen dem Punkt und dem Anfang des Gleisabschnitts (in Metern)",
+          "error": "Die Position muss eine Zahl zwischen 1 und {{max}} sein",
+          "label": "Position"
+        },
+        "title": "Teilung"
       }
     }
   },
   "applications": {
-    "infrastructures-editor": "Betriebsnetz-Editor",
+    "infrastructures-editor": "Infrastruktur-Editor",
     "operational-studies": "Betriebsstudien",
     "reference-map": "Karte",
     "rolling-stocks-editor": "Schienenfahrzeug-Editor",
     "stdcm": "Schnellauftrag"
   },
-  "common": {
-    "collapse": "Einklappen",
-    "delete": "Löschen",
-    "expand": "Ausklappen",
-    "navigation": {
-      "goBack": "Zur letzten Seite",
-      "goHome": "Zur Startseite"
+  "authorization": {
+    "addGrantToUser": "Benutzerrechte hinzufügen",
+    "grants": {
+      "edit": "Schreibzugriff",
+      "full": "Vollzugriff",
+      "none": "Kein Zugriff",
+      "read": "Lesezugriff"
     },
+    "permission": "Berechtigung",
+    "permissionDenied": "Sie haben nicht die Berechtigung, diese Aktion auszuführen",
+    "searchUser": "Benutzer nach Name suchen",
+    "yourGrant": "Ihr Zugriff: {{grant}}"
+  },
+  "common": {
+    "add": "Hinzufügen",
+    "and": "und",
+    "cancel": "Abbrechen",
+    "close": "Schließen",
+    "collapse": "Einklappen",
+    "confirm": "Bestätigen",
+    "delete": "Löschen",
+    "details": "Details",
+    "duplicate": "Duplizieren",
+    "edit": "Bearbeiten",
+    "error": "Ein Fehler ist aufgetreten",
+    "expand": "Aufklappen",
+    "failure": {
+      "save": {
+        "text": "Ihre Änderungen wurden nicht veröffentlicht",
+        "title": "Speichern fehlgeschlagen"
+      }
+    },
+    "help": "Hilfe",
+    "help-display": "Hilfe anzeigen",
+    "leaveEditionMode": "Sie verlassen den Bearbeitungsmodus. Alle nicht gespeicherten Änderungen gehen verloren.",
+    "map-actions": {
+      "help-legend": "Legende anzeigen",
+      "reset-north": "Sicht zurücksetzen"
+    },
+    "navigation": {
+      "goBack": "Zur vorherigen Seite zurückkehren",
+      "goHome": "Zur Startseite zurückkehren"
+    },
+    "next": "Weiter",
+    "no": "Nein",
+    "open": "Öffnen",
+    "previous": "Zurück",
     "reset": "Zurücksetzen",
-    "zoom-in": "Reinzoomen",
-    "zoom-out": "Rauszoomen"
+    "save": "Speichern",
+    "saveEdits": "Änderungen speichern",
+    "search": "Suchen",
+    "selected": "bereits ausgewählt",
+    "success": {
+      "save": {
+        "text": "Ihre Änderungen wurden veröffentlicht",
+        "title": "Änderungen gespeichert"
+      }
+    },
+    "toggleInfraErrors": "Anzeige der Infrastrukturprobleme umschalten",
+    "units": {
+      "day": "T",
+      "hour": "h",
+      "km": "km",
+      "minute": "min"
+    },
+    "validate": "Bestätigen",
+    "yes": "Ja",
+    "zoom-in": "Vergrößern",
+    "zoom-out": "Verkleinern",
+    "zoom-reset": "Zoom zurücksetzen"
   },
   "infraManagement": {
     "actions": {
       "cancel": "Abbrechen",
-      "check": "Prüfen",
-      "copy": "Kopieren",
+      "check": "Bestätigen",
+      "copy": "Duplizieren",
       "delete": "Löschen",
       "export": "Als RailJSON exportieren",
       "lock": "Sperren",
@@ -91,54 +537,312 @@
       "unlock": "Entsperren",
       "waiting": "Bitte warten"
     },
-    "addInfra": "Betriebsnetz erstellen",
-    "addInfraJSON": "Ein Betriebsnetz aus einer RailJSON-Datei erstellen",
+    "addInfra": "Infrastruktur erstellen",
+    "addInfraJSON": "Infrastruktur aus RailJSON-Datei erstellen",
     "addInfraJSONFile": "RailJSON-Datei hinzufügen",
     "addInfraJSONFileRemove": "RailJSON-Import abbrechen",
-    "createInfra": "Erstellen",
-    "deleteConfirm": "Wollen Sie das Betriebsnetz löschen?",
+    "createInfra": "Erstellung",
+    "deleteConfirm": "Möchten Sie die Infrastruktur löschen?",
     "errorMessages": {
       "noEmptyName": "Bitte geben Sie einen Namen ein",
-      "unableToRetrieveInfraList": "Betriebsnetzliste kann nicht geladen werden"
+      "unableToRetrieveInfraList": "Infrastrukturliste konnte nicht abgerufen werden"
     },
     "goToEditionMode": "Bearbeiten",
     "goToStandardMode": "Zurück zur Auswahl",
-    "infraChoice": "Betriebsnetze",
-    "infraDeleted": "Das Betriebsnetz „{{name}}“ wurde gelöscht.",
-    "infraManagement": "Betriebsnetzverwalter",
-    "infraName": "Betriebsnetzname",
-    "infrasFound_one": "Ein Betriebsnetz gefunden",
-    "infrasFound_other": "{{count}} Betriebsnetze gefunden",
-    "infrasFound_zero": "Kein Betriebsnetz gefunden",
+    "infraChoice": "Infrastrukturen",
+    "infraDeleted": "Die Infrastruktur {{name}} wurde gelöscht.",
+    "infraManagement": "Infrastruktur-Verwaltung",
+    "infraName": "Name der Infrastruktur",
+    "infrasFound_one": "{{count}} Infrastruktur gefunden",
+    "infrasFound_other": "{{count}} Infrastrukturen gefunden",
+    "infrasFound_zero": "Keine Infrastruktur gefunden",
     "locked": "Gesperrt",
     "no": "Nein",
+    "noInfraSelected": "Keine Infrastruktur ausgewählt",
     "yes": "Ja"
   },
+  "infrastructure": "Infrastruktur",
   "interval-editor": {
     "add": "Hinzufügen",
-    "begin": "Start",
+    "begin": "Anfang",
     "delete": "Löschen",
     "end": "Ende",
-    "merge": "Mit nächstem Abschnitt vereinigen",
-    "split": "Trennen",
-    "translate": "Übersetzen",
+    "merge": "Mit dem nächsten Segment zusammenführen",
+    "split": "Teilen",
+    "translate": "Verschieben",
     "value": "Wert"
   },
+  "jsonUpload": {
+    "badJSON": "Ungültiger Inhalt. Es werden nur RailJSON-Dateien unterstützt (üblicherweise .json oder .railjson)",
+    "emptyFile": "Die Datei ist leer",
+    "uploadError": "Fehler beim Laden der Datei"
+  },
+  "map": {
+    "layers-modal": {
+      "data-layers": "Datenschichten",
+      "disabled-layer": "erforderlich für das aktive Werkzeug",
+      "layer-selected-items_one": "Ein Element ausgewählt",
+      "layer-selected-items_other": "{{count}} Elemente ausgewählt",
+      "selection-warning_one": "Ein Element wurde abgewählt.",
+      "selection-warning_other": "{{count}} Elemente wurden abgewählt.",
+      "speed-limits": "Geschwindigkeitsbegrenzungen nach Zusammensetzungscode",
+      "toggle-layers": "Anzuzeigende Elementtypen auswählen"
+    }
+  },
+  "mapKey": {
+    "alternatingCurrent": "Wechselstrom",
+    "directCurrent": "Gleichstrom",
+    "electrifications": "Oberleitung",
+    "keyTitle": "Legende",
+    "lower_pantograph": "Stromabnehmer-Senkbereich",
+    "neutral_sections": "Neutrale Abschnitte",
+    "speedlimit": "Geschwindigkeit",
+    "switch_off": "Strom abschalten"
+  },
+  "mapSearch": {
+    "all": "Alle",
+    "aspects": "Signalbegriffe",
+    "line": "Strecke",
+    "line-code": "Streckennummer",
+    "main-operational-points-only": "Nur Hauptbetriebsstellen",
+    "name": "Name",
+    "no-aspect-selected": "Kein Signalbegriff ausgewählt",
+    "operational-point": "Betriebsstelle",
+    "placeholder-ch-code": "CH",
+    "placeholder-line": "Streckenname oder -nummer",
+    "placeholder-name": "Name, Bezeichnung, CI-Code",
+    "placeholder-signal": "Signalname",
+    "results-count_one": "1 Ergebnis",
+    "results-count_other": "{{ count }} Ergebnisse",
+    "results-count_zero": "Kein Ergebnis",
+    "signal": "Signal",
+    "signal-settings": {
+      "Nf": "Nicht überfahrbar",
+      "distant": "Vorsignal",
+      "is_430": "430"
+    },
+    "signal-system": "Zugsicherungssystem",
+    "too-many-results": "Mehr als 100 Ergebnisse vorhanden, bitte verfeinern Sie Ihre Suche.",
+    "type": "Typ",
+    "unable-to-search-signal": "Signalsuche nicht möglich"
+  },
+  "mapSettings": {
+    "layers": {
+      "buffer_stops": "Prellböcke",
+      "detectors": "Gleisfreimeldepunkt",
+      "electrifications": "Oberleitung",
+      "errors": "Fehler",
+      "level_crossings": "Bahnübergänge",
+      "neutral_sections": "Neutrale Abschnitte",
+      "operational_points": "Betriebsstellen",
+      "platforms": "Bahnsteige",
+      "routes": "Fahrstraßen",
+      "showIGNBDORTHO": "BD Ortho Foto ©IGN",
+      "showIGNCadastre": "Kataster ©IGN",
+      "showIGNSCAN25": "SCAN PLAN/25/100 ©IGN",
+      "showOSM": "OSM-Hintergrundkarte",
+      "showOSM3dBuildings": "3D-Gebäude",
+      "showOSMtracksections": "OSM-Gleise",
+      "signals": "Signale",
+      "smoothTravel": "Sanfter Übergang",
+      "sncf_psl": "Dauerhafte Geschwindigkeitsbegrenzungen",
+      "speed_limits": "Streckengeschwindigkeiten",
+      "speedlimittag": "Zusammensetzungscodes",
+      "switches": "Weichen",
+      "track_sections": "Gleisabschnitte"
+    },
+    "mapstyles": {
+      "darkmode": "Dunkel",
+      "minimal": "Minimal",
+      "normal": "Normal"
+    },
+    "noSpeedLimitByTag": "Kein Zusammensetzungscode",
+    "terrain3DExaggeration": "3D-Relief-Überhöhung",
+    "zone": "Zone"
+  },
   "nav-bar": {
-    "about": "Über OSRD",
+    "about": "Über",
     "disconnect": "Abmelden",
     "help": "Hilfe",
+    "impersonation": "Als Benutzer ausgeben",
     "information": {
       "application": "Anwendung",
       "collaborations": "Kooperationen",
       "dataSources": "Datenquellen",
-      "libraries": "Versionsinformationen",
+      "libraries": "Bibliotheken und Lizenzen",
       "version": "Version"
     },
-    "languages": "Spraches",
-    "safeWord": "Stichwort",
-    "safeWordHelp": "Durch das „Stichwort“ können Projekte in der Liste gefiltert werden, wenn es eingegeben wird. Es sollte einzigartig sein und kein Risiko für eine Doppelung bergen, um eine versehentliche Nutzung zu meiden. Fügen Sie es einem Projekt als Label hinzu – es wird bei Erstellung automatisch hinzugefügt, sofern das Stichwort hier eingetragen wird.",
+    "languages": "Sprachen",
+    "safeWord": "Sicherheitskennwort",
+    "safeWordHelp": "Das Sicherheitskennwort ermöglicht es, die Projektliste transparent mit dem eingegebenen Wort zu filtern, das als Tag verwendet wird. Wählen Sie ein kompliziertes Wort, das niemand versehentlich verwendet. Fügen Sie es als Tag zu einem Projekt hinzu; es wird bei der Projekterstellung automatisch hinzugefügt, wenn das Wort hier eingetragen ist.",
+    "useNewTimesStopsTable": "Neue Fahrplantabelle verwenden",
     "userSettings": "Benutzereinstellungen",
-    "yourSafeWord": "Stichwort eingeben"
+    "yourSafeWord": "Geben Sie Ihr Kennwort ein"
+  },
+  "rollingStock": {
+    "add": "Hinzufügen",
+    "addNewRollingStock": "Neues Schienenfahrzeug",
+    "addNewTractionMode": "Neuen Traktionsmodus hinzufügen",
+    "basePowerClass": "Leistungsklasse",
+    "cancelUpdateRollingStock": "Änderungen am Schienenfahrzeug wirklich verwerfen?",
+    "categoriesOptions": {
+      "COMMUTER_TRAIN": "S-Bahn",
+      "FAST_FREIGHT_TRAIN": "Güterexpresszug",
+      "FREIGHT_TRAIN": "Güterzug",
+      "HIGH_SPEED_TRAIN": "Hochgeschwindigkeitszug",
+      "INTERCITY_TRAIN": "Intercity-Zug",
+      "NIGHT_TRAIN": "Nachtzug",
+      "REGIONAL_TRAIN": "Regionalzug",
+      "TOURISTIC_TRAIN": "Touristenzug",
+      "TRAM_TRAIN": "Tram-Train",
+      "WORK_TRAIN": "Bauzug",
+      "choose": "Kategorie auswählen",
+      "noCategory": "Keine Kategorie"
+    },
+    "chooseRollingStock": "Wählen Sie ein Schienenfahrzeug aus, um dessen Informationen anzuzeigen",
+    "comfort": "Komfort",
+    "comfortAcceleration": "Komfortbeschleunigung",
+    "comfortLevels": "Komfortstufen",
+    "comfortTypes": {
+      "AIR_CONDITIONING": "Klimaanlage",
+      "HEATING": "Heizung",
+      "STANDARD": "Standard"
+    },
+    "confirmAddRollingStock": "Möchten Sie dieses Schienenfahrzeug wirklich hinzufügen?",
+    "confirmUpdateRollingStock": "Änderungen am Schienenfahrzeug bestätigen",
+    "constGamma": "Fahrplanverzögerung",
+    "curves": {
+      "all": "Alle Kurven",
+      "default": "Standardkurve"
+    },
+    "delete": {
+      "comfort": "Möchten Sie diese Komfortstufe wirklich löschen? Alle zugehörigen Kurven gehen verloren.",
+      "electrical_profile_level": "Möchten Sie dieses Bahnstromprofil wirklich löschen? Alle zugehörigen Kurven gehen verloren.",
+      "power_restriction_code": "Möchten Sie die Kurve für diesen Leistungsbeschränkungscode wirklich löschen?",
+      "tractionMode": "Möchten Sie diesen Traktionsmodus wirklich löschen? Alle zugehörigen Kurven gehen verloren."
+    },
+    "deleteRollingStock": "Möchten Sie dieses Schienenfahrzeug löschen?",
+    "effort": "Zugkraft (kN)",
+    "electric": "Elektrisch",
+    "electricalPowerStartupTime": "Stromwiederaufnahmezeit",
+    "electricalProfiles": "Bahnstromprofile",
+    "errorMessages": {
+      "invalidConversion": "Ungültige Umrechnung",
+      "minMaxRangeError": "Der Wert muss zwischen {{min}} und {{max}} liegen",
+      "minRangeError": "Der Wert muss größer oder gleich {{min}} sein",
+      "missingConversion": "Diese Umrechnung existiert nicht im Schema. Der Wert wurde nicht geändert.",
+      "missingInformation": "Fehlende Angaben",
+      "resourcesNotFound": "Ressourcen nicht gefunden",
+      "rollingStockUsed": "Das Schienenfahrzeug wird in folgenden Szenarien verwendet:",
+      "unableToRetrieveRollingStock": "Schienenfahrzeug konnte nicht abgerufen werden",
+      "unableToRetrieveRollingStockMessage": "Ein Fehler ist aufgetreten"
+    },
+    "export": "Exportieren",
+    "exportRollingStock": "Schienenfahrzeug exportieren",
+    "importRollingStock": "Schienenfahrzeug importieren",
+    "inertiaCoefficient": "Trägheitskoeffizient",
+    "length": "Länge",
+    "listDisabled": "Bitte verlassen Sie den Bearbeitungsmodus, um die Liste zu ändern",
+    "loadingGauge": "Lichtraumprofil",
+    "locked": "Gesperrt",
+    "mass": "Masse",
+    "maxSpeed": "Höchstgeschwindigkeit",
+    "messages": {
+      "failure": "Vorgang fehlgeschlagen",
+      "invalidEffortCurves": "Ungültige Kurven: {{invalidEffortCurves}}. Jede Kurve muss mindestens 2 Geschwindigkeits-/Zugkraft-Wertepaare enthalten (ohne doppelte Geschwindigkeitswerte). Paare mit mindestens einem leeren Feld werden ignoriert. Die Geschwindigkeit darf 600 km/h und die Zugkraft 1000 kN nicht überschreiten.",
+      "invalidForm": "Unvollständiges Formular",
+      "missingEffortCurves": "Bitte geben Sie eine Geschwindigkeits-Zugkraft-Kurve ein",
+      "missingInformationAutomaticallyFilled_one": "Das folgende Feld wurde mit Standardwerten initialisiert: {{invalidFields}}.",
+      "missingInformationAutomaticallyFilled_other": "Die folgenden Felder wurden mit Standardwerten initialisiert: {{invalidFields}}.",
+      "missingName": "Bitte geben Sie einen Namen ein",
+      "missingPrimaryCategory": "Bitte geben Sie eine Hauptkategorie an",
+      "rollingStockAdded": "Schienenfahrzeug hinzugefügt",
+      "rollingStockDeleted": "Schienenfahrzeug gelöscht",
+      "rollingStockDuplicateName": "Ein Schienenfahrzeug mit demselben Namen existiert bereits.",
+      "rollingStockNotAdded": "Schienenfahrzeug wurde nicht hinzugefügt",
+      "rollingStockNotDeleted": "Schienenfahrzeug wurde nicht gelöscht",
+      "rollingStockNotUpdated": "Schienenfahrzeug wurde nicht aktualisiert",
+      "rollingStockUpdated": "Schienenfahrzeug aktualisiert",
+      "success": "Vorgang erfolgreich"
+    },
+    "metadata": {
+      "detail": "Detail",
+      "family": "Familie",
+      "grouping": "Zusammenfassung",
+      "name": "Name",
+      "number": "Nummer",
+      "reference": "Referenz",
+      "series": "Baureihe",
+      "subseries": "Unterbaureihe",
+      "type": "Typ",
+      "unit": "Einheit"
+    },
+    "missingPowerClass_one": "Fehlende Leistungsklasse",
+    "missingPowerClass_other": "Fehlende Leistungsklassen",
+    "notLocked": "Nicht gesperrt",
+    "otherCategories": "Weitere Kategorien",
+    "powerRestrictions": "Leistungsbeschränkungen und Leistungsklassen",
+    "powerRestrictionsInfos": "Leistungsbeschränkungen",
+    "primaryCategory": "Hauptkategorie",
+    "project": "Projekt {{projectName}}:",
+    "raisePantographTime": "Stromabnehmer-Hebezeit",
+    "resultFound_one": "1 Ergebnis gefunden",
+    "resultFound_other": "{{count}} Ergebnisse gefunden",
+    "resultFound_zero": "Kein Ergebnis",
+    "rollingResistance": "Fahrwiderstand",
+    "rollingResistanceA": "Grundwiderstand (a)",
+    "rollingResistanceB": "Geschwindigkeitsabhängiger Widerstand (b)",
+    "rollingResistanceC": "Luftwiderstand (c)",
+    "rollingResistanceFormula": "R(v) = a + bv + cv²",
+    "rollingstockChoice": "Schienenfahrzeug auswählen",
+    "selectRollingStock": "Auswählen",
+    "speed": "Geschwindigkeit (km/h)",
+    "startupAcceleration": "Anfahrbeschleunigung",
+    "startupTime": "Anfahrdauer",
+    "supportedSignalingSystems": "Unterstützte Zugsicherungssysteme",
+    "tabs": {
+      "rollingStockCurves": "Geschwindigkeits-Zugkraft-Kurven",
+      "rollingStockDetails": "Allgemeine Eigenschaften"
+    },
+    "thermal": "Verbrennungsmotor",
+    "tractionModes": "Traktionsmodi",
+    "unspecified": "Nicht angegeben",
+    "waitingLoader": "Bitte warten, Schienenfahrzeug-Datenbank wird geladen…"
+  },
+  "subCategory": {
+    "errorMessages": {
+      "unableToRetrieveSubCategory": "Unterkategorien konnten nicht abgerufen werden",
+      "unableToRetrieveSubCategoryMessage": "Ein Fehler ist aufgetreten"
+    }
+  },
+  "timeStopTable": {
+    "arrivalTime": "angeforderte Ankunft",
+    "calculatedArrivalTime": "berechnete Ankunft",
+    "calculatedDepartureTime": "berechnete Abfahrt",
+    "calculatedDepartureTimeFull": "berechnete Abfahrtszeit",
+    "ch": "CH",
+    "computedTheoreticalMargin": "berechnete theoretische Marge",
+    "dayCounter": "T+{{count}}",
+    "departureTime": "angeforderte Abfahrt",
+    "departureTimeFull": "angeforderte Abfahrtszeit",
+    "diffMargins": "Margen-Diff. (s)",
+    "diffMarginsFull": "Margendifferenz (s)",
+    "name": "CI",
+    "noPathLoaded": "Kein Pfad geladen",
+    "operational_point": "Betriebsstelle",
+    "powerRestriction": "Leistungsbeschränkung",
+    "realMargin": "tatsächliche Marge (s)",
+    "receptionOnClosedSignal": "Haltesignal",
+    "receptionOnClosedSignalFull": "Einfahrt auf Halt zeigendes Signal",
+    "requestedTheoreticalMargin": "angeforderte theoretische Marge",
+    "shortSlipDistance": "Kurzer Durchrutschweg",
+    "stopTime": "Haltezeit",
+    "theoreticalMargin": "theoretische Marge",
+    "theoreticalMarginPlaceholder": "% oder min/100km",
+    "theoreticalMarginSeconds": "theoretische Marge (s)",
+    "timeFromPreviousOp": "Zeit seit dem vorherigen Punkt",
+    "totalTravelTime": "Gesamtfahrzeit",
+    "trackName": "Gleis",
+    "waypoint": "Wegepunkt {{id}}"
   }
 }
