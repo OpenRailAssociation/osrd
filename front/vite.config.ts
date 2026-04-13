@@ -55,6 +55,7 @@ export default defineConfig(({ mode }) => {
               path.join(ngeBase, 'src_assets_i18n_*_json.js'),
             ],
             dest: 'netzgrafik-frontend/',
+            rename: { stripBase: true },
           },
         ],
       }),
