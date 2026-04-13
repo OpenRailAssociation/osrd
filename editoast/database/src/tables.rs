@@ -596,7 +596,7 @@ diesel::table! {
         obj_id -> Nullable<Varchar>,
         infra_id -> Nullable<Int4>,
         uic -> Nullable<Int4>,
-        #[max_length = 3]
+        #[max_length = 255]
         trigram -> Nullable<Varchar>,
         ci -> Nullable<Int4>,
         ch -> Nullable<Text>,
