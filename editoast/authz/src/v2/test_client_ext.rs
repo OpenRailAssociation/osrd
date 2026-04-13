@@ -11,6 +11,7 @@ use crate::Subject;
 use crate::User;
 use crate::v2::infra_direct_grant;
 use crate::v2::infra_effective_grant;
+use crate::v2::infra_granted_subjects;
 use crate::v2::infra_privileges;
 use crate::v2::special_authorizers;
 
@@ -24,6 +25,7 @@ pub trait TestClientExt {
         infra: Infra,
     ) -> Option<InfraGrant>;
     async fn infra_privileges(&self, user: User, infra: Infra) -> HashSet<InfraPrivilege>;
+    async fn infra_granted_subjects(&self, infra: Infra, grant: InfraGrant) -> Vec<Subject>;
 }
 
 impl TestClientExt for fga::Client {
@@ -70,6 +72,14 @@ impl TestClientExt for fga::Client {
         let authorize = special_authorizers::Authorize(self);
         authorize
             .access_value(infra_privileges(user, infra))
+            .await
+            .unwrap()
+    }
+
+    async fn infra_granted_subjects(&self, infra: Infra, grant: InfraGrant) -> Vec<Subject> {
+        let authorize = special_authorizers::Authorize(self);
+        authorize
+            .access_value(infra_granted_subjects(infra, grant))
             .await
             .unwrap()
     }
