@@ -332,7 +332,6 @@
       "update": "Edit",
       "validityFilter": "Trains validity"
     },
-    "toggleTimetable": "Toggle the timetable",
     "trainCountSelected_one": "1/{{totalCount}} train selected",
     "trainCountSelected_other": "{{count}}/{{totalCount}} trains selected",
     "trainCount_one": "1/{{totalCount}} train",
