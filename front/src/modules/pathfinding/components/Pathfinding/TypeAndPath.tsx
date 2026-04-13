@@ -57,16 +57,11 @@ function OpTooltips({ opList }: { opList: SearchResultItemOperationalPoint[] }) 
   );
 }
 type TypeAndPathProps = {
-  rollingStockId: number | undefined;
   setDisplayTypeAndPath?: React.Dispatch<React.SetStateAction<boolean>>;
   isInNewModal?: boolean;
 };
 
-const TypeAndPath = ({
-  setDisplayTypeAndPath,
-  rollingStockId,
-  isInNewModal = false,
-}: TypeAndPathProps) => {
+const TypeAndPath = ({ setDisplayTypeAndPath, isInNewModal = false }: TypeAndPathProps) => {
   const { launchPathfinding } = useManageTimetableItemContext();
 
   const [inputText, setInputText] = useState('');
@@ -167,7 +162,7 @@ const TypeAndPath = ({
   const isInvalid = useMemo(() => opList.some((op) => !op.name && op.trigram !== ''), [opList]);
 
   const handleSubmit = async () => {
-    if (infraId && rollingStockId && opList.length > 0) {
+    if (infraId && opList.length > 0) {
       const pathSteps: PathItem[] = opList
         .filter((op) => op.trigram !== '')
         .map(({ trigram, ch }) => ({
