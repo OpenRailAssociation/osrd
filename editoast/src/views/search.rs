@@ -724,10 +724,6 @@ pub(super) struct SearchResultItemScenario {
         sql = "(SELECT COUNT(trains.id) FROM train_schedule AS trains INNER JOIN timetable_train_schedule_set AS ttss ON trains.train_schedule_set_id = ttss.train_schedule_set_id WHERE ttss.timetable_id = scenario.timetable_id)"
     )]
     paced_trains_count: u64,
-    #[search(
-        sql = "(SELECT COUNT(trains.id) FROM train_schedule AS trains INNER JOIN timetable_train_schedule_set AS ttss ON trains.train_schedule_set_id = ttss.train_schedule_set_id WHERE ttss.timetable_id = scenario.timetable_id)"
-    )]
-    trains_count: u64,
     #[search(sql = "scenario.description")]
     description: String,
     #[search(sql = "scenario.last_modification")]

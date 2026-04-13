@@ -12593,7 +12593,6 @@ components:
       - infra_id
       - infra_name
       - paced_trains_count
-      - trains_count
       - description
       - last_modification
       - tags
@@ -12633,10 +12632,6 @@ components:
           type: array
           items:
             type: string
-        trains_count:
-          type: integer
-          format: int64
-          minimum: 0
     SearchResultItemSignal:
       type: object
       description: |

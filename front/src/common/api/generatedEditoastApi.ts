@@ -4258,7 +4258,6 @@ export type SearchResultItemScenario = {
   paced_trains_count: number;
   study_id: number;
   tags: string[];
-  trains_count: number;
 };
 export type Margins = {
   boundaries: string[];
