@@ -156,14 +156,16 @@ approx.workspace = true
 arcstr.workspace = true
 authz.workspace = true
 axum = { version = "0.8.7", default-features = false, features = [
+  "http1",
+  "json",
   "multipart",
+  "query",
   "tracing",
 ] }
 axum-extra = { version = "0.12.2", default-features = false, features = [
   "typed-header",
 ] }
 axum-streams = { version = "0.25.0", features = ["json"] }
-axum-test = { version = "20.0", default-features = false }
 axum-tracing-opentelemetry = { version = "0.33.0", default-features = false, features = [
   "tracing_level_info",
 ] }
@@ -249,6 +251,7 @@ axum = { version = "0.8.4", default-features = false, features = [
   "multipart",
   "tracing",
 ] }
+axum-test = { version = "20.0", default-features = false }
 core_client = { workspace = true }
 database = { workspace = true, features = ["testing"] }
 editoast_models = { workspace = true, features = ["testing"] }
