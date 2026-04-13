@@ -1,9 +1,334 @@
 {
   "401": "Unauthentifizierter Benutzer",
   "403": "Zugriff verweigert",
-  "404": "Quelle nicht gefunden",
+  "404": "Ressource nicht gefunden",
   "500": "Serverfehler",
   "502": "Serverfehler",
   "503": "Serverfehler",
-  "504": "Der Server hat nicht geantwortet."
+  "504": "Der Server hat nicht geantwortet.",
+  "core": {
+    "assert_error": "Fehlermeldung unter {{file_location}}: {{assert_message}}",
+    "missing_last_stdcm_stop": "STDCM-Anfragen, die nicht mit einem Halt enden, werden derzeit nicht unterstützt"
+  },
+  "default": "Es ist ein Fehler aufgetreten.",
+  "editoast": {
+    "DatabaseAccessError": "Fehler beim Datenbankzugriff",
+    "app_health": {
+      "Core": "Core ist fehlerhaft",
+      "Database": "Datenbankfehler",
+      "Openfga": "OpenFGA-Fehler",
+      "Timeout": "Der Dienst hat nicht rechtzeitig geantwortet",
+      "Valkey": "Valkey-Fehler"
+    },
+    "attached": {
+      "TrackNotFound": "Gleisabschnitt {{track_id}} nicht gefunden"
+    },
+    "authz": {
+      "AuthError": "Interner Authentifizierungs-/Autorisierungsfehler, bitte erneut versuchen oder den Support kontaktieren",
+      "Authorizer": "Interner Fehler",
+      "Authz": "Interner Authentifizierungs-/Autorisierungsfehler, bitte erneut versuchen oder den Support kontaktieren",
+      "Database": "Interner Datenbankfehler",
+      "DbError": "Interner Datenbankfehler, bitte erneut versuchen oder den Support kontaktieren",
+      "Driver": "Interner Authentifizierungs-/Autorisierungsfehler, bitte erneut versuchen oder den Support kontaktieren",
+      "Forbidden": "Zugriff verweigert",
+      "ForbiddenImpersonation": "Identitätswechsel verweigert",
+      "GrantsApiMisuse": "Fehlerhafte Nutzung der Autorisierungs-API",
+      "ImpersonatedUserNotFound": "Imitierter Benutzer unbekannt",
+      "NoSuchUser": "Unbekannter Benutzer",
+      "Unauthorized": "Unauthentifizierter Benutzer",
+      "UnknownIdentity": "Unbekannte Identität '{{identity}}'",
+      "UnknownResource": "Unbekannte Ressource",
+      "UnknownResourceType": "Unbekannter Ressourcentyp",
+      "UnknownSubject": "Unbekanntes Subjekt",
+      "UnknownUser": "Unbekannter Benutzer '{{id}}'"
+    },
+    "auto_fixes": {
+      "ConflictingFixesOnSameObject": "Widersprüchliche Korrekturen für dasselbe Objekt in derselben Korrektur-Iteration",
+      "FixTrialFailure": "Anwenden der Korrekturen fehlgeschlagen",
+      "MaximumIterationReached": "Maximale Anzahl an Iterationen erreicht, um die Infrastruktur zu korrigieren, ohne alle möglichen Korrekturen bereitzustellen",
+      "MissingErrorObject": "Das Fehlerobjekt konnte nicht gefunden werden"
+    },
+    "cache_operation": {
+      "DuplicateIdsProvided": "{{obj_type}} {{obj_id}}: ein Duplikat existiert bereits",
+      "ObjectNotFound": "{{obj_type}} {{obj_id}} konnte nirgends im Infrastruktur-Cache gefunden werden"
+    },
+    "catalog_entry": {
+      "Database": "Interner Fehler (Datenbank)",
+      "NotFound": "Katalogeintrag '{{catalog_entry_id}}' nicht gefunden"
+    },
+    "core": {
+      "pathfinding": {
+        "ZeroLengthPath": "Die Länge eines Pfads darf nicht null sein."
+      }
+    },
+    "coreclient": {
+      "BrokenPipe": "Core: Verbindung unterbrochen. Erneuter Versuch.",
+      "CannotExtractResponseBody": "Core: Antwortinhalt konnte nicht extrahiert werden: {{msg}}",
+      "CoreResponseFormatError": "Core: Antwort konnte nicht analysiert werden: '{{msg}}'",
+      "MqClientError": "Core: MQ-Client-Fehler",
+      "UnparsableErrorOutput": "Core hat einen Fehler in unbekanntem Format zurückgegeben"
+    },
+    "delimited_area": {
+      "InvalidLocations": "Einige Standorte sind ungültig"
+    },
+    "document": {
+      "Database": "Interner Fehler (Datenbank)",
+      "NotFound": "Dokument '{{document_key}}' nicht gefunden"
+    },
+    "electrical_profiles": {
+      "Database": "Interner Fehler (Datenbank)",
+      "NotFound": "Bahnstromprofil '{{electrical_profile_set_id}}' nicht gefunden"
+    },
+    "fonts": {
+      "FileNotFound": "Datei für die angeforderte Schriftart nicht gefunden"
+    },
+    "geometry": {
+      "UnexpectedGeometry": "Geometrie {{expected}} erwartet, aber {{actual}} erhalten"
+    },
+    "infra": {
+      "Database": "Interner Fehler",
+      "NotFound": "Infrastruktur '{{infra_id}}' existiert nicht",
+      "edition": {
+        "InfraIsLocked": "Infrastruktur ist schreibgeschützt",
+        "SplitTrackSectionBadOffset": "Der Abstand zum Teilen des Gleisabschnitts '{{tracksection_id}}' in Infrastruktur '{{infra_id}}' ist ungültig. Der Wert muss zwischen 0 und {{tracksection_length}} Metern liegen."
+      },
+      "errors": {
+        "WrongErrorTypeProvided": "Falscher Fehlertyp angegeben"
+      },
+      "lines": {
+        "LineNotFound": "Keine Strecke mit Code {{line_code}} gefunden"
+      },
+      "objects": {
+        "DuplicateIdsProvided": "Doppelte Objekt-IDs angegeben",
+        "ObjectIdNotFound": "Objekt '{{object_id}}' nicht gefunden"
+      },
+      "pathfinding": {
+        "EndingTrackLocationNotFound": "Position des Gleisabschnitt-Ende nicht gefunden",
+        "InvalidNumberOfPaths": "Die Wegefindung kann nicht mehr als 5 Pfade zurückgeben",
+        "StartingTrackLocationNotFound": "Position des Gleisabschnitt-Anfangs nicht gefunden"
+      }
+    },
+    "infra_cache": {
+      "ObjectNotFound": "{{obj_type}} '{{obj_id}}' konnte im Infrastruktur-Cache nicht gefunden werden"
+    },
+    "infra_state": {
+      "FetchError": "Fehler beim Abrufen des Infrastruktur-Ladezustands"
+    },
+    "layers": {
+      "LayerNotFound": "Datenschicht {{layer_name}} nicht gefunden.",
+      "ViewNotFound": "Ansicht {{view_name}} nicht gefunden."
+    },
+    "level_crossing": {
+      "Database": "Interner Fehler (Datenbank)",
+      "InfraNotFound": "Infrastruktur '{{infra_id}}' nicht gefunden.",
+      "LevelCrossingBatchNotFound": "'{{count}}' Bahnübergang(e) nicht gefunden.",
+      "TrainBatchNotFound": "'{{count}}' Dienstleistung(en) nicht gefunden."
+    },
+    "macro_node": {
+      "Database": "Interner Fehler",
+      "NotFound": "Knoten {{node_id}} nicht gefunden.",
+      "ScenarioNotFound": "Szenario '{{scenario_id}}' nicht gefunden"
+    },
+    "macro_note": {
+      "Database": "Interner Fehler (Datenbank)",
+      "NotFound": "Notiz '{{note_id}}' nicht gefunden.",
+      "ScenarioNotFound": "Szenario '{{scenario_id}}' nicht gefunden",
+      "WrongScenario": "Die Notiz '{note_id}' gehört nicht zum Szenario '{scenario_id}'"
+    },
+    "model": {
+      "ModelError": "Interner Fehler (Datenbankabfrage)"
+    },
+    "operation": {
+      "EmptyId": "Eine leere Zeichenkette ist als Kennung nicht erlaubt",
+      "InvalidPatch": "Ein JSON-Patch-Fehler ist aufgetreten",
+      "ModifyId": "Die Aktualisierungsoperation versucht, die Objekt-ID zu ändern, was nicht erlaubt ist",
+      "ObjectNotFound": "Objekt '{{obj_id}}' konnte in der Infrastruktur '{{infra_id}}' nicht gefunden werden"
+    },
+    "operationalPointProjection": {
+      "InvalidNumberOfDistances": "{{expected}} Abstände erwartet, aber {{found}} erhalten",
+      "InvalidNumberOfRefs": "Mindestens zwei Betriebsstellenreferenzen erwartet"
+    },
+    "paced_train": {
+      "BatchNotFound": "'{{count}}' Zugfahrplan(e) nicht gefunden",
+      "Database": "Interner Fehler (Datenbank)",
+      "ExceptionNotFound": "Ausnahme '{{exception_key}}' nicht gefunden",
+      "InfraNotFound": "Infrastruktur '{{infra_id}}' nicht gefunden",
+      "NotFound": "Zugfahrplan '{{train_schedule_id}}' nicht gefunden",
+      "OperationalPointNotFound": "Betriebsstelle '{{reference}}' nicht gefunden",
+      "PathfindingFailed": "Wegefindung für Zugfahrplan '{{train_schedule_id}}' fehlgeschlagen",
+      "RollingStockNotFound": "Schienenfahrzeug '{{rolling_stock_name}}' nicht gefunden",
+      "SimulationFailed": "Simulation für Zugfahrplan '{{train_schedule_id}}' fehlgeschlagen",
+      "TrainScheduleSetNotFound": "Zugpaket '{{train_schedule_set_id}}' nicht gefunden"
+    },
+    "pathfinding": {
+      "Database": "Interner Fehler (Datenbank)",
+      "ElectricalProfilesOverlap": "Bahnstromprofile überlappen sich",
+      "ElectrificationOverlap": "Elektrifizierung '{{electrification_id}}' überlappt sich mit anderen",
+      "InfraNotFound": "Infrastruktur '{{infra_id}}' nicht gefunden",
+      "NotFound": "Wegefindung '{{pathfinding_id}}' existiert nicht",
+      "OperationalPointsNotFound": "Betriebsstellen {{operational_points}} nicht gefunden",
+      "RollingStockNotFound": "Schienenfahrzeug '{{rolling_stock_id}}' existiert nicht",
+      "TrackSectionsNotFound": "Gleisabschnitt {{track_sections}} nicht gefunden"
+    },
+    "postgres": {
+      "Host": "Ungültige Datenbank-URL '{{hostname}}'",
+      "Password": "Ungültiges Passwort",
+      "Port": "Ungültiger Port '{{port}}'",
+      "Username": "Ungültiger Benutzername"
+    },
+    "project": {
+      "Database": "Interner Fehler",
+      "ImageError": "Das bereitgestellte Bild ist ungültig",
+      "ImageNotFound": "Bild '{{document_key}}' nicht gefunden",
+      "NotFound": "Projekt '{{project_id}}' nicht gefunden"
+    },
+    "railjson": {
+      "UnsupportedVersion": "Nicht unterstützte RailJSON-Version"
+    },
+    "rollingstocks": {
+      "BasePowerClassEmpty": "Die Standard-Leistungsklasse darf nicht leer sein",
+      "CannotCreateCompoundImage": "Zusammengesetztes Image konnte nicht erstellt werden",
+      "CannotReadImage": "Image konnte nicht gelesen werden",
+      "Database": "Interner Fehler (Datenbank)",
+      "IsLocked": "Schienenfahrzeug '{{rolling_stock_id}}' ist schreibgeschützt",
+      "IsUsed": "Schienenfahrzeug '{{rolling_stock_id}}' wird verwendet",
+      "KeyNotFound": "Schienenfahrzeug '{{rolling_stock_key.key}}' nicht gefunden",
+      "LiveryMultipartError": "Ungültige Multipart-Anfrage beim Hochladen der Lackierung",
+      "NameAlreadyUsed": "Ein Schienenfahrzeug mit dem Namen '{{name}}' existiert bereits"
+    },
+    "round_trips": {
+      "Database": "Interner Fehler (Datenbank)",
+      "DuplicateTrainIds": "Die übermittelten Daten enthalten doppelte Zug-IDs, was nicht erlaubt ist",
+      "TimetableNotFound": "Fahrplan '{{timetable_id}}' nicht gefunden"
+    },
+    "scenario": {
+      "Database": "Interner Fehler (Datenbank)",
+      "InfraNotFound": "Infrastruktur '{{infra_id}}' nicht gefunden",
+      "NotFound": "Szenario nicht gefunden",
+      "StudyNotFound": "Studie '{{study_id}}' nicht gefunden",
+      "TimetableNotFound": "Fahrplan '{{timetable_id}}' nicht gefunden"
+    },
+    "search": {
+      "ArgMissing": "Erwartetes Argument vom Typ {{expected}} an Position {{arg_pos}} fehlt",
+      "ArgTypeMismatch": "Erwartetes Argument vom Typ {{expected}} an Position {{arg_pos}}, aber {{actual}} erhalten",
+      "EmptyArray": "Leere Arrays sind nicht erlaubt",
+      "IntegerConversion": "Konvertierung in 'i64' nicht möglich",
+      "InvalidColumnName": "Ungültiger Spaltenname",
+      "InvalidFunctionIdentifier": "Der Funktionsbezeichner muss eine Zeichenkette sein",
+      "InvalidSyntax": "Ungültige Syntax",
+      "ObjectType": "Ungültiger Objekttyp",
+      "QueryAst": "Ein boolescher Abfragetyp wird erwartet",
+      "RuntimeTypeCheckFail": "Erwarteter Typ {{expected}}, aber Wert '{{value}}' vom Typ {{actual}} erhalten",
+      "SearchEngineError": "Interner Suchmaschinen-Fehler",
+      "UndefinedFunction": "Undefinierte Funktion",
+      "UndefinedOverload": "Keine passende Überladung",
+      "UnexpectedArg": "Unerwartetes Argument gefunden",
+      "UnexpectedColumn": "Unerwartete Spalte",
+      "UnexpectedErsatz": "Erwarteter Wert vom Typ {{expected}}, aber '{{value}}' erhalten",
+      "VariadicArgTypeMismatch": "Erwartetes variadisches Argument vom Typ {{expected}}, aber {{actual}} erhalten"
+    },
+    "single_simulation": {
+      "ElectricalProfileSetNotFound": "Bahnstromprofil '{{electrical_profile_set_id}}' nicht gefunden",
+      "PathNotFound": "Pfad '{{path_id}}' nicht gefunden",
+      "RollingStockNotFound": "Schienenfahrzeug '{{rolling_stock_id}}' nicht gefunden",
+      "WrongCoreResponseFormat": "Falsches Antwortformat von Core erhalten"
+    },
+    "sprites": {
+      "FileNotFound": "Datei nicht gefunden",
+      "UnknownSignalingSystem": "Unbekanntes Zugsicherungssystem"
+    },
+    "stdcm": {
+      "Database": "Interner Fehler (Datenbank)",
+      "InfraNotFound": "Infrastruktur '{{infra_id}}' nicht gefunden",
+      "InvalidConsistLength": "Ungültige Zuglänge {{provided_consist_length}}: muss größer als '{{expected_min}}' sein",
+      "InvalidConsistMass": "Ungültige Zugmasse {{provided_consist_mass}}: muss größer als '{{expected_min}}' sein",
+      "InvalidPathItems": "Ungültige(r) Wegepunkt(e) {{items}}",
+      "RollingStockNotFound": "Schienenfahrzeug '{{rolling_stock_id}}' existiert nicht",
+      "TimetableNotFound": "Fahrplan '{{timetable_id}}' existiert nicht",
+      "TowedRollingStockNotFound": "Wagen {towed_rolling_stock_id} existiert nicht",
+      "TrainSimulationFail": "Zugsimulation fehlgeschlagen"
+    },
+    "stdcm_search_env": {
+      "Database": "Interner Fehler (Datenbank)",
+      "NotFound": "STDCM-Suchumgebung '{{env_id}}' nicht gefunden"
+    },
+    "study": {
+      "Database": "Interner Fehler (Datenbank)",
+      "NotFound": "Studie '{{study_id}}' nicht gefunden",
+      "ProjectNotFound": "Projekt '{{project_id}}' nicht gefunden",
+      "StartDateAfterEndDate": "Das Startdatum der Studie muss vor dem Enddatum liegen"
+    },
+    "sub_categories": {
+      "CodeAlreadyUsed": "Der Code der Unterkategorie '{{code}}' wird bereits verwendet",
+      "Database": "Interner Fehler (Datenbank)",
+      "NotFound": "Unterkategorie '{{code}}' nicht gefunden"
+    },
+    "temporary_speed_limit": {
+      "Database": "Interner Fehler (Datenbank)",
+      "NameAlreadyUsed": "Eine Gruppe temporärer Geschwindigkeitsbegrenzungen mit dem Namen '{{name}}' existiert bereits"
+    },
+    "timetable": {
+      "BatchTrainScheduleSetNotFound": "'{{count}}' Zugpaket(e) nicht gefunden",
+      "Database": "Interner Fehler (Datenbank)",
+      "InfraNotFound": "Infrastruktur '{{infra_id}}' existiert nicht",
+      "InfraNotLoaded": "Infrastruktur '{{infra_id}}' ist nicht geladen",
+      "NotFound": "Fahrplan '{{timetable_id}}' nicht gefunden",
+      "ParseError": "train_id konnte nicht analysiert werden: '{{train_id}}'",
+      "TrainScheduleSetsNotFound": "'{{ids}}' Zugpakete nicht gefunden",
+      "similar_trains": {
+        "Database": "Interner Fehler (Datenbank)",
+        "EmptyTrainsTraffic": "Die Verkehrsdaten sind leer",
+        "InvalidPath": "Ungültiger Pfad im Fahrplan",
+        "RollingStockNotFound": "Schienenfahrzeug '{{rolling_stock_name}}' existiert nicht",
+        "SpeedLimitNotFound": "Geschwindigkeitsbegrenzung '{{speed_limit_tag}}' existiert nicht"
+      }
+    },
+    "towedrollingstocks": {
+      "Database": "Interner Fehler",
+      "IdNotFound": "Wagen '{{towed_rolling_stock_id}}' nicht gefunden",
+      "IsLocked": "Wagen '{{towed_rolling_stock_id}}' ist schreibgeschützt"
+    },
+    "train_schedule": {
+      "BatchNotFound": "'{{count}}' Zugfahrplan(e) wurden nicht gefunden",
+      "Database": "Interner Datenbankfehler",
+      "ExceptionNotFound": "Ausnahme '{{exception_key}}' nicht gefunden",
+      "InfraNotFound": "Infrastruktur '{{infra_id}}' nicht gefunden",
+      "NotFound": "Zugfahrplan '{{train_schedule_id}}' nicht gefunden",
+      "PathfindingFailed": "Wegefindung für Zugfahrplan '{{train_schedule_id}}' fehlgeschlagen",
+      "RollingStockNotFound": "Schienenfahrzeug '{{rolling_stock_name}}' nicht gefunden",
+      "SimulationFailed": "Simulation für Zugfahrplan '{{train_schedule_id}}' fehlgeschlagen",
+      "TrainScheduleSetNotFound": "Zugpaket '{{train_schedule_set_id}}' nicht gefunden"
+    },
+    "train_schedule_exception": {
+      "BatchNotFound": "'{{count}}' Zugfahrplan-Ausnahme(n) nicht gefunden",
+      "Database": "Interner Fehler (Datenbank)",
+      "NotFound": "Zugfahrplan-Ausnahme '{{exception_id}}' nicht gefunden",
+      "NotPacedTrain": "Zugfahrplan '{{train_schedule_id}}' ist keine Taktleistung",
+      "TimetableNotFound": "Fahrplan '{{timetable_id}}' nicht gefunden",
+      "TrainScheduleNotFound": "Zugfahrplan '{{train_schedule_id}}' nicht gefunden"
+    },
+    "train_schedule_set": {
+      "CatalogEntryNotFound": "Katalogeintrag '{{catalog_entry_id}}' nicht gefunden",
+      "Database": "Interner Fehler (Datenbank)",
+      "NotFound": "Zugpaket '{{train_schedule_set_id}}' nicht gefunden"
+    },
+    "url": {
+      "InvalidUrl": "Ungültige URL '{{url}}'"
+    },
+    "valkey": {
+      "Url": "Ungültige URL '{{url}}'"
+    },
+    "work_schedule": {
+      "Database": "Interner Fehler (Datenbank)",
+      "NameAlreadyUsed": "Eine Gruppe von Bauarbeiten mit dem Namen '{{name}}' existiert bereits",
+      "WorkScheduleGroupNotFound": "Bauarbeiten-Gruppe mit ID '{{id}}' existiert nicht"
+    },
+    "worker_load": {
+      "Database": "Interner Fehler (Datenbank)",
+      "FetchStatusError": "Interner Fehler (osrdyne)",
+      "InfraNotFound": "Infrastruktur '{{infra_id}}' existiert nicht",
+      "TimetableNotFound": "Fahrplan '{{timetable_id}}' nicht gefunden"
+    }
+  },
+  "pageNotFound": "Die gesuchte Seite existiert nicht."
 }

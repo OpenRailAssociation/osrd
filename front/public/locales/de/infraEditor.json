@@ -1,21 +1,1041 @@
 {
   "ApplicableDirections": {
-    "description": "Wird verwendet, um die Anwendungsrichtung bestimmter Objekte zu kennen",
-    "title": "Verwendbare Ausrichtung"
+    "description": "Gibt an, in welcher Fahrtrichtung ein Objekt gültig ist",
+    "title": "Gültigkeitsrichtung"
   },
   "ApplicableDirectionsTrackRange": {
-    "description": "Ein Gleisbereich mit anwendbaren Richtungen ist ein Gleisbereich mit zugehörigen Richtungen.",
+    "description": "Ein Gleisbereich mit zugeordneter Gültigkeitsrichtung.",
     "properties": {
       "applicable_directions": {
-        "description": "Richtung, in der das entsprechende Objekt angewendet wird"
+        "description": "Fahrtrichtung, in der das Objekt gilt"
       },
       "begin": {
-        "description": "Anfangsversatz (Kilometersprung?) in Metern des entsprechenden Gleisabschnitts",
+        "description": "Abstand vom Anfang des Gleisabschnitts (in Metern)",
         "title": "Anfang"
       },
       "end": {
+        "description": "Abstand vom Anfang des Gleisabschnitts (in Metern)",
+        "title": "Ende"
+      },
+      "track": {
+        "description": "Bezeichnung des Gleisabschnitts",
+        "title": "Gleis"
+      }
+    },
+    "title": "Gleisbereich mit Gültigkeitsrichtung"
+  },
+  "BalSystem": {
+    "properties": {
+      "conditional_parameters": {
+        "description": "BAL-Signalparameter für die gewählte Strecke",
+        "title": "Bedingte Parameter"
+      },
+      "default_parameters": {
+        "description": "BAL-Signalparameter"
+      },
+      "next_signaling_systems": {
+        "description": "Liste der zulässigen Zugsicherungssysteme",
+        "title": "Nachfolgende Zugsicherungssysteme"
+      },
+      "settings": {
+        "description": "BAL-Signaleinstellungen"
+      },
+      "signaling_system": {
+        "title": "Zugsicherungssystem"
+      }
+    },
+    "title": "BAL-System"
+  },
+  "BaprSystem": {
+    "properties": {
+      "conditional_parameters": {
+        "description": "BAPR-Signalparameter für bestimmte Fahrstraßen",
+        "title": "Bedingte Parameter"
+      },
+      "next_signaling_systems": {
+        "description": "Liste der zulässigen Zugsicherungssysteme",
+        "title": "Nachfolgende Zugsicherungssysteme"
+      },
+      "parameters": {
+        "description": "BAPR-Signalparameter"
+      },
+      "settings": {
+        "description": "BAPR-Signaleinstellungen"
+      },
+      "signaling_system": {
+        "title": "Zugsicherungssystem"
+      }
+    },
+    "title": "BAPR-System"
+  },
+  "BufferStop": {
+    "description": "Ein Prellbock ist eine Vorrichtung am Ende eines Stumpfgleises, die das Weiterfahren von Zügen verhindert.\nEr wird durch seine Kennung und den zugehörigen Gleisabschnitt charakterisiert.",
+    "properties": {
+      "id": {
+        "description": "Eindeutige Kennung des Objekts",
+        "title": "Kennung"
+      },
+      "position": {
+        "description": "Abstand in Metern vom Anfang des Gleisabschnitts",
+        "title": "Position"
+      },
+      "track": {
+        "description": "Verweis auf den Gleisabschnitt, auf dem sich das Objekt befindet",
+        "title": "Gleis"
+      }
+    },
+    "title": "Prellbock"
+  },
+  "BufferStopExtensions": {
+    "title": "Prellbock-Erweiterungen"
+  },
+  "BufferStopReference": {
+    "properties": {
+      "id": {
+        "description": "Kennung des Prellbocks",
+        "title": "Kennung"
+      },
+      "type": {
+        "title": "Typ"
+      }
+    },
+    "title": "Prellbock-Referenz"
+  },
+  "BufferStopSncfExtension": {
+    "properties": {
+      "kp": {
+        "description": "Kilometerpunkt des Prellbocks",
+        "title": "KP"
+      }
+    },
+    "title": "SNCF-Erweiterung des Prellbocks"
+  },
+  "ConditionalParameter": {
+    "properties": {
+      "on_route": {
+        "description": "Fahrstraße, auf die die Parameter angewendet werden",
+        "title": "Fahrstraße"
+      },
+      "parameters": {
+        "description": "Liste der Schlüssel-Wert-Parameter, die pro Zugsicherungssystem definiert werden",
+        "title": "Parameter"
+      }
+    },
+    "title": "Bedingter Parameter"
+  },
+  "Curve": {
+    "description": "Diese Klasse wird verwendet, um einen Bogen zu definieren.\nEin Bogen setzt sich aus dem Radius und dem Beginn und Ende zusammen.",
+    "properties": {
+      "begin": {
+        "description": "Abstand in Metern vom Anfang des Gleisabschnitts bis zum Beginn des Bogens. ",
+        "title": "Anfang"
+      },
+      "end": {
+        "description": "Abstand in Metern vom Anfang des Gleisabschnitts bis zum Ende des Bogens.",
+        "title": "Ende"
+      },
+      "radius": {
+        "description": "Radius (in Metern)",
+        "title": "Radius"
+      }
+    },
+    "title": "Bogen"
+  },
+  "Detector": {
+    "description": "Ein Gleisfreimeldepunkt wird durch seine Kennung und den zugehörigen Gleisabschnitt charakterisiert. Er dient zur Ortung eines Zuges, um festzustellen, ob der entsprechende Abschnitt belegt ist.",
+    "properties": {
+      "id": {
+        "description": "Eindeutige Kennung des Gleisfreimeldepunkts",
+        "title": "Kennung"
+      },
+      "position": {
+        "description": "Abstand in Metern vom Anfang des Gleisabschnitts",
+        "title": "Position"
+      },
+      "track": {
+        "description": "Verweis auf den Gleisabschnitt, auf dem sich das Objekt befindet",
+        "title": "Gleis"
+      }
+    },
+    "title": "Gleisfreimeldepunkt"
+  },
+  "DetectorExtensions": {
+    "title": "Gleisfreimeldepunkt-Erweiterungen"
+  },
+  "DetectorReference": {
+    "properties": {
+      "id": {
+        "description": "Kennung des Gleisfreimeldepunkts",
+        "title": "Kennung"
+      },
+      "type": {
+        "title": "Typ"
+      }
+    },
+    "title": "Gleisfreimeldepunkt-Referenz"
+  },
+  "DetectorSncfExtension": {
+    "properties": {
+      "kp": {
+        "description": "Kilometerpunkt des Gleisfreimeldepunkts",
+        "title": "KP"
+      }
+    },
+    "title": "SNCF-Erweiterung des Gleisfreimeldepunkts"
+  },
+  "Direction": {
+    "description": "Richtung (steigende oder fallende Kilometrierung).",
+    "title": "Richtung"
+  },
+  "DirectionalTrackRange": {
+    "description": "Ein gerichteter Gleisbereich ist ein Gleisbereich mit einer zugehörigen Richtung.",
+    "properties": {
+      "begin": {
+        "description": "Anfangsversatz in Metern vom Beginn des Gleisabschnitts",
+        "title": "Anfang"
+      },
+      "direction": {
+        "description": "Beschreibung der Richtung"
+      },
+      "end": {
+        "description": "Endversatz in Metern vom Beginn des Gleisabschnitts",
+        "title": "Ende"
+      },
+      "track": {
+        "description": "Bezeichnung des Gleisabschnitts",
+        "title": "Gleis"
+      }
+    },
+    "title": "Gerichteter Gleisbereich"
+  },
+  "Electrification": {
+    "description": "Eine Oberleitung ist ein System, über das Züge mithilfe eines Stromabnehmers mit Strom versorgt werden.\nDie Oberleitung ist an ihrer Kennzeichnung zu erkennen.",
+    "properties": {
+      "id": {
+        "description": "Eindeutige Kennung des Objekts",
+        "title": "Kennung"
+      },
+      "track_ranges": {
+        "description": "Liste der Gleisbereiche, auf denen die folgende Spannung anliegt",
+        "title": "Gleisbereiche"
+      },
+      "voltage": {
+        "description": "Elektrische Spannung (in Volt)",
+        "title": "Spannung"
+      }
+    },
+    "title": "Oberleitung"
+  },
+  "Endpoint": {
+    "title": "Endpunkt"
+  },
+  "EtcsLevel2System": {
+    "properties": {
+      "conditional_parameters": {
+        "description": "ETCS-Level-2-Signalparameter für bestimmte Fahrstraßen",
+        "title": "Bedingte Parameter"
+      },
+      "default_parameters": {
+        "description": "ETCS-Level-2-Signalparameter"
+      },
+      "next_signaling_systems": {
+        "description": "Liste der zulässigen Zugsicherungssysteme",
+        "title": "Nachfolgende Zugsicherungssysteme"
+      },
+      "settings": {
+        "description": "ETCS-Level-2-Signaleinstellungen"
+      },
+      "signaling_system": {
+        "title": "Zugsicherungssystem"
+      }
+    },
+    "title": "ETCS-Level-2-System"
+  },
+  "FlagSignalParameter": {
+    "title": "Signalparameter"
+  },
+  "LevelCrossing": {
+    "description": "Diese Klasse beschreibt die Bahnübergänge der zugehörigen Infrastruktur.",
+    "properties": {
+      "id": {
+        "description": "Eindeutige Kennung des Bahnübergangs",
+        "title": "Kennung"
+      },
+      "name": {
+        "description": "Name des Bahnübergangs",
+        "title": "Name"
+      },
+      "parts": {
+        "title": "Bahnübergangsteile"
+      },
+      "short_zone_length": {
+        "description": "Länge der Kurzzone in mm",
+        "title": "Kurzzonenlänge"
+      }
+    },
+    "title": "Bahnübergang"
+  },
+  "LevelCrossingPart": {
+    "description": "Ein Bahnübergangsteil ist ein einzelner Punkt auf der Infrastruktur. Er enthält Informationen über die Schienenkontaktabstände relativ zu diesem Punkt und ist mit einem Bahnübergang verknüpft.",
+    "properties": {
+      "pedal_downstream": {
+        "description": "Abstand in mm des Ausschaltkontakts von der Hauptposition",
+        "title": "Ausschaltkontakt"
+      },
+      "pedal_upstream": {
+        "description": "Abstand in mm des Einschaltkontakts von der Hauptposition",
+        "title": "Einschaltkontakt"
+      },
+      "position": {
+        "description": "Abstand in Metern vom Anfang des Gleisabschnitts",
+        "title": "Position"
+      },
+      "track": {
+        "description": "Verweis auf den Gleisabschnitt, auf dem sich der Bahnübergang befindet",
+        "title": "Gleis"
+      }
+    },
+    "title": "Bahnübergangsteil"
+  },
+  "LimitedLogicalSignal": {
+    "description": "Definierte Liste logischer Signale. Wird verwendet, um ein nutzbares Schema für den Editor zu erzeugen",
+    "title": "Definierte logische Signale"
+  },
+  "LineString": {
+    "description": "LineString-Modell",
+    "properties": {
+      "bbox": {
+        "title": "Bbox"
+      },
+      "coordinates": {
+        "title": "Koordinaten"
+      },
+      "type": {
+        "title": "Typ"
+      }
+    },
+    "title": "Linienzug"
+  },
+  "LoadingGaugeLimit": {
+    "description": "Diese Klasse wird verwendet, um die Begrenzung des Lichtraumprofils zu definieren.\nSie stellt eine Einschränkung für Züge entsprechend ihrer Lichtraumprofilkategorien und dem Typ des entsprechenden Schienenfahrzeugs dar.",
+    "properties": {
+      "begin": {
+        "description": "Versatz in Metern, der dem Anfang der Lichtraumprofil-Begrenzung entspricht",
+        "title": "Anfang"
+      },
+      "category": {
+        "description": "Lichtraumprofilkategorie für das entsprechende Schienenfahrzeug"
+      },
+      "end": {
+        "description": "Versatz in Metern, der dem Ende der Lichtraumprofil-Begrenzung entspricht",
         "title": "Ende"
       }
+    },
+    "title": "Lichtraumprofil-Begrenzung"
+  },
+  "LoadingGaugeType": {
+    "description": "Kategorie des Lichtraumprofils.",
+    "title": "Lichtraumprofiltyp"
+  },
+  "LogicalSignal": {
+    "description": "Ein logisches Signal zeigt einen Signalbegriff an. Ein physisches Signal umfasst eine Gruppe logischer Signale.",
+    "properties": {
+      "conditional_parameters": {
+        "description": "Liste bedingter Parameter, die pro Zugsicherungssystem definiert werden",
+        "title": "Bedingte Parameter"
+      },
+      "default_parameters": {
+        "description": "Liste der Standardparameter (in Bezug auf Fahrstraßen), die pro Zugsicherungssystem definiert werden",
+        "title": "Standardparameter"
+      },
+      "next_signaling_systems": {
+        "description": "Liste der zulässigen Zugsicherungssysteme",
+        "title": "Nachfolgende Zugsicherungssysteme"
+      },
+      "settings": {
+        "description": "Liste der Schlüssel-Wert-Parameter, die pro Zugsicherungssystem definiert werden",
+        "title": "Einstellungen"
+      },
+      "signaling_system": {
+        "description": "Das Zugsicherungssystem des Signals",
+        "title": "Zugsicherungssystem"
+      }
+    },
+    "title": "Logisches Signal"
+  },
+  "NeutralSection": {
+    "description": "Neutrale Abschnitte sind Gleisbereiche, in denen Züge keinen Strom aus der Oberleitung beziehen dürfen. Sie müssen diese Abschnitte durch Trägheit überqueren.\nIn der Praxis werden neutrale Abschnitte durch Schilder begrenzt. In OSRD sind neutrale Abschnitte richtungsabhängig, um unterschiedliche Schilderplatzierungen je nach Fahrtrichtung zu berücksichtigen.\nWeitere Informationen finden Sie in [der Dokumentation](https://osrd.fr/en/docs/explanation/neutral_sections/).",
+    "properties": {
+      "announcement_track_ranges": {
+        "description": "Liste der Gleisbereiche, in denen der bevorstehende neutrale Abschnitt angekündigt wird",
+        "title": "Ankündigungs-Gleisbereiche"
+      },
+      "id": {
+        "description": "Eindeutige Kennung des Objekts",
+        "title": "Kennung"
+      },
+      "lower_pantograph": {
+        "description": "Angabe, ob Züge in diesem Abschnitt ihren Stromabnehmer senken müssen",
+        "title": "Stromabnehmer senken"
+      },
+      "track_ranges": {
+        "description": "Liste der Gleisbereiche, in denen der Zug keinen Strom aus der Oberleitung beziehen darf",
+        "title": "Gleisbereiche"
+      }
+    },
+    "title": "Neutraler Abschnitt"
+  },
+  "NeutralSectionExtensions": {
+    "title": "Erweiterungen des neutralen Abschnitts"
+  },
+  "NeutralSectionNeutralSncfExtension": {
+    "properties": {
+      "announcement": {
+        "description": "Angabe, ob ein bp/cc neutraler Abschnitt vorhanden ist",
+        "title": "Ankündigung"
+      },
+      "end": {
+        "description": "Ende des bp/cc neutralen Abschnitts",
+        "title": "Ende"
+      },
+      "exe": {
+        "description": "Anfang des bp/cc neutralen Abschnitts"
+      },
+      "rev": {
+        "description": "REV des bp/cc neutralen Abschnitts",
+        "title": "Rev"
+      }
+    },
+    "title": "SNCF-Erweiterung des neutralen Abschnitts"
+  },
+  "OperationalPoint": {
+    "description": "Beschreibt die Betriebsstellen der zugehörigen Infrastruktur.",
+    "properties": {
+      "id": {
+        "description": "Eindeutige Kennung der Betriebsstelle",
+        "title": "Kennung"
+      },
+      "parts": {
+        "title": "Teile der Betriebsstelle"
+      },
+      "weight": {
+        "description": "Stellt die Bedeutung der Betriebsstelle dar",
+        "title": "Bedeutung"
+      }
+    },
+    "title": "Betriebsstelle"
+  },
+  "OperationalPointExtensions": {
+    "title": "Erweiterungen der Betriebsstelle"
+  },
+  "OperationalPointIdentifierExtension": {
+    "properties": {
+      "name": {
+        "description": "Name der Betriebsstelle",
+        "title": "Name"
+      },
+      "uic": {
+        "description": "UIC-Code der Betriebsstelle",
+        "title": "UIC-Code"
+      }
+    },
+    "title": "Kennungs-Erweiterung der Betriebsstelle"
+  },
+  "OperationalPointPart": {
+    "description": "Ein Betriebsstellenteil ist ein einzelner Punkt auf der Infrastruktur, der zu einer Betriebsstelle gehört.",
+    "properties": {
+      "local_track_name": {
+        "description": "Lokaler Gleisname für diesen Betriebsstellenteil",
+        "title": "Lokaler Gleisname"
+      },
+      "position": {
+        "description": "Abstand in Metern vom Anfang des Gleisabschnitts",
+        "title": "Position"
+      },
+      "track": {
+        "description": "Verweis auf den Gleisabschnitt, auf dem sich das Objekt befindet",
+        "title": "Gleis"
+      }
+    },
+    "title": "Betriebsstellenteil"
+  },
+  "OperationalPointPartExtensions": {
+    "title": "Erweiterungen des Betriebsstellenteils"
+  },
+  "OperationalPointPartSncfExtension": {
+    "properties": {
+      "kp": {
+        "description": "Kilometerpunkt des Betriebsstellenteils",
+        "title": "KP"
+      }
+    },
+    "title": "SNCF-Erweiterung des Betriebsstellenteils"
+  },
+  "OperationalPointSncfExtension": {
+    "properties": {
+      "ch": {
+        "description": "THOR-Standortcode der Betriebsstelle",
+        "title": "Ch"
+      },
+      "ch_long_label": {
+        "description": "THOR-Standortcode Langbezeichnung der Betriebsstelle",
+        "title": "CH Langbezeichnung"
+      },
+      "ch_short_label": {
+        "description": "THOR-Standortcode Kurzbezeichnung der Betriebsstelle",
+        "title": "CH Kurzbezeichnung"
+      },
+      "ci": {
+        "description": "Unveränderlicher THOR-Code der Betriebsstelle",
+        "title": "Ci"
+      },
+      "trigram": {
+        "description": "Eindeutiges SNCF-Trigramm der Betriebsstelle",
+        "title": "Trigramm"
+      }
+    },
+    "title": "SNCF-Erweiterung der Betriebsstelle"
+  },
+  "Route": {
+    "description": "Beschreibt Fahrstraßen auf der Infrastruktur.",
+    "properties": {
+      "entry_point": {
+        "title": "Einfahrtspunkt"
+      },
+      "entry_point_direction": {
+        "description": "Richtung der Fahrstraße am Einfahrtspunkt"
+      },
+      "exit_point": {
+        "title": "Ausfahrtspunkt"
+      },
+      "id": {
+        "description": "Eindeutige Kennung der Fahrstraße",
+        "title": "Kennung"
+      },
+      "release_detectors": {
+        "description": "Gleisfreimeldepunkt, der die Fahrstraße bis zum gewählten Punkt wieder freigibt",
+        "title": "Freigabepunkt"
+      },
+      "switches_directions": {
+        "description": "Weichenstellungen auf der Fahrstraße",
+        "title": "Weichenrichtungen"
+      }
+    },
+    "title": "Fahrstraße"
+  },
+  "Side": {
+    "description": "Beschreibt die Gleisseite, auf der sich das Signal befindet.",
+    "title": "Seite"
+  },
+  "Sign": {
+    "description": "Ein Schild ist ein physisches, punktuelles Objekt.",
+    "properties": {
+      "direction": {
+        "description": "Ausrichtung des Schildes"
+      },
+      "kp": {
+        "description": "Kilometerpunkt des Schildes",
+        "title": "KP"
+      },
+      "position": {
+        "description": "Abstand in Metern vom Anfang des Gleisabschnitts",
+        "title": "Position"
+      },
+      "side": {
+        "description": "Gleisseite, auf der sich das Schild befindet"
+      },
+      "track": {
+        "description": "Verweis auf den Gleisabschnitt, auf dem sich das Objekt befindet",
+        "title": "Gleis"
+      },
+      "type": {
+        "description": "Gibt den Typ des Schildes an",
+        "title": "Typ"
+      },
+      "value": {
+        "description": "Wenn das Schild eine Ankündigung ist, gibt den Wert an",
+        "title": "Wert"
+      }
+    },
+    "title": "Schild"
+  },
+  "Signal": {
+    "description": "Ein Signal wird durch seine Kennung und den zugehörigen Gleisabschnitt charakterisiert. Standardmäßig befindet sich das Signal in der Mitte des Gleises.",
+    "properties": {
+      "direction": {
+        "description": "Nutzungsrichtung des Signals"
+      },
+      "id": {
+        "description": "Eindeutige Kennung des Signals",
+        "title": "Kennung"
+      },
+      "logical_signals": {
+        "description": "In diesem physischen Signal enthaltene logische Signale",
+        "title": "Logische Signale"
+      },
+      "position": {
+        "description": "Abstand in Metern vom Anfang des Gleisabschnitts",
+        "title": "Position"
+      },
+      "sight_distance": {
+        "description": "Sichtweite des Signals (in Metern)",
+        "title": "Sichtweite"
+      },
+      "track": {
+        "description": "Verweis auf den Gleisabschnitt, in dem sich das Signal befindet",
+        "title": "Gleis"
+      }
+    },
+    "title": "Signal"
+  },
+  "SignalExtensions": {
+    "title": "Signal-Erweiterungen"
+  },
+  "SignalSncfExtension": {
+    "properties": {
+      "kp": {
+        "description": "Kilometerpunkt des Signals",
+        "title": "KP"
+      },
+      "label": {
+        "title": "Bezeichnung"
+      },
+      "side": {
+        "description": "Gleisseite, auf der sich das Signal befindet"
+      }
+    },
+    "title": "SNCF-Erweiterung des Signals"
+  },
+  "SignalingSystem": {
+    "title": "Zugsicherungssystem"
+  },
+  "Slope": {
+    "description": "Gibt die Längsneigung eines Gleisabschnitts an. Die Längsneigung kann positiv (Steigung) oder negativ (Gefälle) sein.",
+    "properties": {
+      "begin": {
+        "description": "Versatz in Metern vom Anfang des Gleisabschnitts bis zum Beginn der Längsneigung",
+        "title": "Anfang"
+      },
+      "end": {
+        "description": "Versatz in Metern vom Anfang des Gleisabschnitts bis zum Ende der Längsneigung",
+        "title": "Ende"
+      },
+      "gradient": {
+        "description": "Längsneigung (in Promille)",
+        "title": "Längsneigung"
+      }
+    },
+    "title": "Längsneigung"
+  },
+  "SpeedSection": {
+    "description": "Geschwindigkeitsbegrenzungen werden durch ihre Kennungen identifiziert (in Metern pro Sekunde).",
+    "properties": {
+      "id": {
+        "description": "Eindeutige Kennung der Geschwindigkeitsbegrenzung",
+        "title": "Kennung"
+      },
+      "on_routes": {
+        "description": "Liste der Fahrstraßen, auf denen die Geschwindigkeitsbegrenzung gilt.\nWenn leer oder nicht gesetzt, gilt die Geschwindigkeitsbegrenzung unabhängig von der Fahrstraße.",
+        "title": "Auf Fahrstraßen"
+      },
+      "speed_limit": {
+        "description": "Standardmäßige Höchstgeschwindigkeit für Züge, die keiner bestimmten Kategorie angehören (in m/s)",
+        "title": "Geschwindigkeitsbegrenzung"
+      },
+      "speed_limit_by_tag": {
+        "description": "Höchstgeschwindigkeit für Züge mit einem bestimmten Label (in m/s)",
+        "title": "Geschwindigkeitsbegrenzung nach Label"
+      },
+      "track_ranges": {
+        "description": "Liste der Bereiche, in denen die Geschwindigkeitsbegrenzung gilt",
+        "title": "Gleisbereiche"
+      }
+    },
+    "title": "Geschwindigkeitsbegrenzung"
+  },
+  "SpeedSectionExtensions": {
+    "title": "Erweiterungen der Geschwindigkeitsbegrenzung"
+  },
+  "SpeedSectionPslSncfExtension": {
+    "properties": {
+      "announcement": {
+        "description": "Wert(e) der permanenten Geschwindigkeitsbegrenzung",
+        "title": "Geschwindigkeitsvoranzeiger"
+      },
+      "r": {
+        "description": "Ende der permanenten Geschwindigkeitsbegrenzung",
+        "title": "Schild R"
+      },
+      "z": {
+        "description": "Anfang der permanenten Geschwindigkeitsbegrenzung"
+      }
+    },
+    "title": "SNCF-spezifische Erweiterungen"
+  },
+  "Switch": {
+    "description": "Weichen sind Vorrichtungen zum Gleiswechsel.",
+    "properties": {
+      "group_change_delay": {
+        "description": "Zeit, die zum Umstellen der Weichen benötigt wird",
+        "title": "Umstellzeit der Weichengruppe"
+      },
+      "id": {
+        "description": "Eindeutige Kennung der Weiche",
+        "title": "Kennung"
+      },
+      "ports": {
+        "description": "Lage der verschiedenen Anschlüsse gemäß Gleisabschnitten",
+        "title": "Weichenanschlüsse"
+      },
+      "switch_type": {
+        "description": "Kennung und Typ der Weiche",
+        "title": "Weichentyp"
+      }
+    },
+    "title": "Weiche"
+  },
+  "SwitchExtensions": {
+    "title": "Weichen-Erweiterungen"
+  },
+  "SwitchPortConnection": {
+    "description": "Verbindung zwischen den Anschlüssen eines Weichentyps. Die Verbindung gilt immer in beiden Richtungen.",
+    "properties": {
+      "dst": {
+        "description": "Name des Zielanschlusses der Verbindung",
+        "title": "Ziel"
+      },
+      "src": {
+        "description": "Name des Quellanschlusses der Verbindung",
+        "title": "Quelle"
+      }
+    },
+    "title": "Weichenanschluss-Verbindung"
+  },
+  "SwitchSncfExtension": {
+    "properties": {
+      "label": {
+        "description": "Kennung der Weiche",
+        "title": "Bezeichnung"
+      }
+    },
+    "title": "SNCF-spezifische Erweiterung"
+  },
+  "SwitchType": {
+    "description": "Liste von Anschlüssen und Gruppen, die zur Konfiguration einer Weiche dienen.",
+    "properties": {
+      "groups": {
+        "description": "Anschlussverbindungsgruppen",
+        "title": "Gruppen"
+      },
+      "id": {
+        "description": "Eindeutige Kennung der Weiche",
+        "title": "Kennung"
+      },
+      "ports": {
+        "description": "Liste der Anschlüsse einer Weiche. Anschlüsse entsprechen den Enden der Weichen",
+        "title": "Weichenanschlüsse"
+      }
+    },
+    "title": "Weichentyp"
+  },
+  "TrackEndpoint": {
+    "description": "Gibt an, an welchem Ende des Gleisabschnitts die Weiche anschließt (Anfang oder Ende).",
+    "properties": {
+      "endpoint": {
+        "description": "Relative Position des betrachteten Gleisendpunkts"
+      },
+      "track": {
+        "description": "Kennung und Typ des Gleises",
+        "title": "Gleis"
+      }
+    },
+    "title": "Gleisendpunkt"
+  },
+  "TrackSection": {
+    "description": "Ein Gleisabschnitt ist ein lineares Objekt, das durch die Koordinaten seiner Punkte (Endpunkte und Zwischenpunkte) definiert ist.\nDie Gesamtheit aller Gleisabschnitte bildet das Schienennetz.",
+    "properties": {
+      "curves": {
+        "description": "Liste der Bögen des Gleisabschnitts",
+        "title": "Bögen"
+      },
+      "geo": {
+        "description": "Geografische Koordinaten des entsprechenden Objekts"
+      },
+      "id": {
+        "description": "Eindeutige Kennung des Objekts",
+        "title": "Kennung"
+      },
+      "length": {
+        "description": "Länge des Gleisabschnitts (in Metern)",
+        "title": "Länge"
+      },
+      "loading_gauge_limits": {
+        "description": "Liste der Lichtraumprofil-Begrenzungen",
+        "title": "Lichtraumprofil-Begrenzungen"
+      },
+      "slopes": {
+        "description": "Liste der Längsneigungen des Gleisabschnitts",
+        "title": "Längsneigungen"
+      }
+    },
+    "title": "Gleisabschnitt"
+  },
+  "TrackSectionExtensions": {
+    "title": "Erweiterungen des Gleisabschnitts"
+  },
+  "TrackSectionSncfExtension": {
+    "properties": {
+      "line_code": {
+        "description": "Streckennummer des zugehörigen Gleisabschnitts",
+        "title": "Streckennummer"
+      },
+      "line_name": {
+        "description": "Streckenbezeichnung des zugehörigen Gleisabschnitts",
+        "title": "Streckenbezeichnung"
+      },
+      "track_name": {
+        "description": "Bezeichnung des verwendeten Gleises",
+        "title": "Gleisname"
+      },
+      "track_number": {
+        "description": "Nummer des verwendeten Gleisabschnitts",
+        "title": "Gleisabschnittsnummer"
+      }
+    },
+    "title": "SNCF-Erweiterung des Gleisabschnitts"
+  },
+  "TrackSectionSourceExtension": {
+    "properties": {
+      "id": {
+        "description": "Kennung des Elements in der Quelle",
+        "title": "Kennung"
+      },
+      "name": {
+        "description": "Name der Quelle",
+        "title": "Name"
+      }
+    },
+    "title": "Quellerweiterung des Gleisabschnitts"
+  },
+  "Tvm300System": {
+    "properties": {
+      "conditional_parameters": {
+        "description": "TVM-Signalparameter für bestimmte Fahrstraßen",
+        "title": "Bedingte Parameter"
+      },
+      "default_parameters": {
+        "description": "TVM-Signalparameter"
+      },
+      "next_signaling_systems": {
+        "description": "Liste der zulässigen Zugsicherungssysteme",
+        "title": "Nachfolgende Zugsicherungssysteme"
+      },
+      "settings": {
+        "description": "TVM-Signaleinstellungen"
+      },
+      "signaling_system": {
+        "title": "Zugsicherungssystem"
+      }
+    },
+    "title": "TVM300-System"
+  },
+  "Tvm430System": {
+    "properties": {
+      "conditional_parameters": {
+        "description": "TVM-Signalparameter für bestimmte Fahrstraßen",
+        "title": "Bedingte Parameter"
+      },
+      "default_parameters": {
+        "description": "TVM-Signalparameter"
+      },
+      "next_signaling_systems": {
+        "description": "Liste der zulässigen Zugsicherungssysteme",
+        "title": "Nachfolgende Zugsicherungssysteme"
+      },
+      "settings": {
+        "description": "TVM-Signaleinstellungen"
+      },
+      "signaling_system": {
+        "title": "Zugsicherungssystem"
+      }
+    },
+    "title": "TVM430-System"
+  },
+  "__main____BalSystem__ConditionalParameters": {
+    "properties": {
+      "on_route": {
+        "description": "Fahrstraße, für die diese Parameter aktiv sind",
+        "title": "Fahrstraße"
+      },
+      "parameters": {
+        "description": "BAL-Signalparameter"
+      }
+    },
+    "title": "Bedingte Parameter"
+  },
+  "__main____BalSystem__Parameters": {
+    "properties": {
+      "jaune_cli": {
+        "description": "Gelb blinkendes Signal"
+      }
+    },
+    "title": "Parameter"
+  },
+  "__main____BalSystem__Settings": {
+    "properties": {
+      "Nf": {
+        "description": "Nicht überfahrbares Signal"
+      }
+    },
+    "title": "BAL-Einstellungen"
+  },
+  "__main____BaprSystem__ConditionalParameters": {
+    "properties": {
+      "on_route": {
+        "description": "Fahrstraße, für die diese Parameter aktiv sind",
+        "title": "Fahrstraße"
+      },
+      "parameters": {
+        "description": "BAPR-Signalparameter"
+      }
+    },
+    "title": "Bedingte Parameter"
+  },
+  "__main____BaprSystem__Parameters": {
+    "title": "Parameter"
+  },
+  "__main____BaprSystem__Settings": {
+    "properties": {
+      "Nf": {
+        "description": "Nicht überfahrbares Signal"
+      },
+      "distant": {
+        "description": "Vorsignal"
+      }
+    },
+    "title": "BAPR-Einstellungen"
+  },
+  "__main____EtcsLevel2System__ConditionalParameters": {
+    "properties": {
+      "on_route": {
+        "description": "Fahrstraße, für die diese Parameter aktiv sind",
+        "title": "Fahrstraße"
+      },
+      "parameters": {
+        "description": "ETCS-Level-2-Signalparameter"
+      }
+    },
+    "title": "Bedingte Parameter"
+  },
+  "__main____EtcsLevel2System__Parameters": {
+    "title": "Parameter"
+  },
+  "__main____EtcsLevel2System__Settings": {
+    "properties": {
+      "Nf": {
+        "description": "Nicht überfahrbares Signal"
+      }
+    },
+    "title": "Einstellungen"
+  },
+  "__main____Tvm300System__ConditionalParameters": {
+    "properties": {
+      "on_route": {
+        "description": "Fahrstraße, für die diese Parameter aktiv sind",
+        "title": "Fahrstraße"
+      },
+      "parameters": {
+        "description": "TVM300-Signalparameter"
+      }
+    },
+    "title": "Bedingte Parameter"
+  },
+  "__main____Tvm300System__Parameters": {
+    "title": "Parameter"
+  },
+  "__main____Tvm300System__Settings": {
+    "properties": {
+      "Nf": {
+        "description": "Nicht überfahrbares Signal"
+      }
+    },
+    "title": "Einstellungen"
+  },
+  "__main____Tvm430System__ConditionalParameters": {
+    "properties": {
+      "on_route": {
+        "description": "Fahrstraße, für die diese Parameter aktiv sind",
+        "title": "Fahrstraße"
+      },
+      "parameters": {
+        "description": "TVM430-Signalparameter"
+      }
+    },
+    "title": "Bedingte Parameter"
+  },
+  "__main____Tvm430System__Parameters": {
+    "title": "Standardparameter"
+  },
+  "__main____Tvm430System__Settings": {
+    "properties": {
+      "Nf": {
+        "description": "Nicht überfahrbares Signal"
+      }
+    },
+    "title": "Einstellungen"
+  },
+  "properties": {
+    "buffer_stops": {
+      "description": "Prellböcke der Infrastruktur",
+      "title": "Prellböcke"
+    },
+    "detectors": {
+      "description": "Gleisfreimeldepunkte der Infrastruktur",
+      "title": "Gleisfreimeldepunkte"
+    },
+    "electrifications": {
+      "description": "Oberleitungen der Infrastruktur",
+      "title": "Oberleitungen"
+    },
+    "extended_switch_types": {
+      "description": "Vom Benutzer hinzufügbare Weichentypen",
+      "title": "Erweiterte Weichentypen"
+    },
+    "level_crossings": {
+      "description": "Liste der Bahnübergänge der Infrastruktur",
+      "title": "Bahnübergänge"
+    },
+    "neutral_sections": {
+      "description": "Neutrale Abschnitte der Infrastruktur",
+      "title": "Neutrale Abschnitte"
+    },
+    "operational_points": {
+      "description": "Liste der Betriebsstellen der Infrastruktur",
+      "title": "Betriebsstellen"
+    },
+    "routes": {
+      "description": "Fahrstraßen der Infrastruktur",
+      "title": "Fahrstraßen"
+    },
+    "signals": {
+      "description": "Signale der Infrastruktur",
+      "title": "Signale"
+    },
+    "speed_sections": {
+      "description": "Geschwindigkeitsbegrenzungen der Infrastruktur",
+      "title": "Geschwindigkeitsbegrenzungen"
+    },
+    "switches": {
+      "description": "Weichen der Infrastruktur",
+      "title": "Weichen"
+    },
+    "track_sections": {
+      "description": "Gleisabschnitte der Infrastruktur",
+      "title": "Gleisabschnitte"
+    },
+    "version": {
+      "description": "Version des Schemas",
+      "title": "Version"
     }
   }
 }
