@@ -12,8 +12,10 @@ import {
   storePacedTrain,
 } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import type { TimetableItem } from 'reducers/osrdconf/types';
+import { updateSelectedTrainId } from 'reducers/simulationResults';
 import type { AppDispatch } from 'store';
 import { Duration } from 'utils/duration';
+import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
 import { checkChangeGroups } from '../../ManageTimetableItem/helpers/buildPacedTrainException';
 import type {
@@ -447,6 +449,7 @@ const handleCreateTimetableItem = async (
     throw new Error('Failed to create timetable item(s)');
   }
   addUpsertedTimetableItems(newTimetableItems);
+  dispatch(updateSelectedTrainId(formatEditoastIdToPacedTrainId(newTimetableItems[0].id)));
 
   const newTrainIds: [number, number | null] = [
     newTimetableItems[0].id,
