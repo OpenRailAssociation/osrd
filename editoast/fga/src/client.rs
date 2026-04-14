@@ -1,6 +1,5 @@
 mod api;
 mod authorization_models;
-mod healthz;
 mod queries;
 mod stores;
 mod tuples;
@@ -31,6 +30,7 @@ use futures::TryStreamExt as _;
 use futures::stream;
 use itertools::Itertools as _;
 
+use crate::client::api::healthz::Health;
 use crate::model::AsUser;
 use crate::model::Check;
 use crate::model::Object;
@@ -172,74 +172,8 @@ impl From<reqwest::Error> for RequestFailure {
 // -------------------------
 
 impl Client {
-    #[tracing::instrument(err)]
-    pub async fn try_with_store(
-        store_name: &str,
-        settings: ConnectionSettings,
-    ) -> Result<Self, InitializationError> {
-        let mut client = Self {
-            store: Store::default(),
-            authorization_model_id: None,
-            settings,
-            inner: reqwest::Client::new(),
-        };
-
-        client.store = client
-            .find_store(store_name)
-            .await?
-            .ok_or_else(|| InitializationError::NotFound(store_name.to_string()))?;
-        client.actualize_authorization_model().await?;
-
-        Ok(client)
-    }
-
-    #[tracing::instrument(err)]
-    pub async fn try_new_store(
-        store_name: &str,
-        settings: ConnectionSettings,
-    ) -> Result<Client, InitializationError> {
-        let mut client = Self {
-            store: Store::default(),
-            authorization_model_id: None,
-            settings,
-            inner: reqwest::Client::new(),
-        };
-        if client.settings.reset_store
-            && let Some(store) = client.find_store(store_name).await?
-        {
-            tracing::debug!(old = ?store, "removing old store for reset");
-            client.delete_stores(&store.id).await?;
-        }
-        client.store = client.post_stores(store_name).await?;
-        Ok(client)
-    }
-
     pub async fn is_healthy(&self) -> Result<bool, RequestFailure> {
-        Ok(matches!(
-            self.get_healthz().await?,
-            healthz::Health::Serving
-        ))
-    }
-
-    pub fn stores(&self) -> impl stream::TryStream<Ok = Store, Error = RequestFailure> + '_ {
-        Continuation::stream(move |continuation| {
-            async move {
-                let (stores, continuation_str) =
-                    self.get_stores(None, continuation.as_option()).await?;
-                Ok((stores, Continuation::from(continuation_str)))
-            }
-            .in_current_span()
-        })
-    }
-
-    #[tracing::instrument(skip(self), err)]
-    pub async fn find_store(&self, store_name: &str) -> Result<Option<Store>, RequestFailure> {
-        let stream = self
-            .stores()
-            .try_filter(|Store { name, .. }| future::ready(name == store_name));
-        futures::pin_mut!(stream);
-        let store = stream.try_next().await?.into_iter().next_back();
-        Ok(store)
+        Ok(matches!(self.get_healthz().await?, Health::Serving))
     }
 
     pub fn authorization_models(
@@ -265,10 +199,6 @@ impl Client {
             .0;
         debug_assert!(models.len() <= 1);
         Ok(models.pop())
-    }
-
-    pub fn store(&self) -> &Store {
-        &self.store
     }
 
     /// Fetches the latest authorization model ID and instructs the [Client] to use it for future API calls
@@ -1118,13 +1048,23 @@ impl Continuation {
 }
 
 #[cfg(test)]
+fn setup_tracing() {
+    tracing_subscriber::fmt()
+        .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+        .without_time()
+        .pretty()
+        .try_init()
+        .ok();
+}
+
+#[cfg(test)]
 mod tests {
+    use super::setup_tracing;
     use reqwest::StatusCode;
 
     use crate::client::Client;
     use crate::client::DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK;
     use crate::client::DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE;
-    use crate::client::InitializationError;
     use crate::client::Request as _;
     use crate::compile_model;
     use crate::defs::*;
@@ -1133,40 +1073,6 @@ mod tests {
     use crate::model::Check;
     use crate::model::Relation;
     use crate::test_client;
-    use crate::test_utilities::connection_settings;
-
-    fn setup_tracing() {
-        tracing_subscriber::fmt()
-            .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
-            .without_time()
-            .pretty()
-            .try_init()
-            .ok();
-    }
-
-    #[tokio::test]
-    async fn test_try_init_not_found() {
-        setup_tracing();
-        let result = Client::try_with_store("nonexistent_store", connection_settings()).await;
-
-        match result {
-            Err(InitializationError::NotFound(store_name)) => {
-                assert_eq!(store_name, "nonexistent_store");
-            }
-            _ => panic!("Expected InitializationError::NotFound"),
-        }
-    }
-
-    #[tokio::test]
-    async fn create_store_with_reset() {
-        setup_tracing();
-        let client = test_client!();
-        assert_eq!(
-            client.store.name,
-            "fga-client-tests-create_store_with_reset"
-        );
-    }
-
     #[tokio::test]
     async fn is_healthy() {
         setup_tracing();
