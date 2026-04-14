@@ -159,8 +159,8 @@ export const getExceptionFromOccurrenceId = (
     extractPacedTrainIdFromOccurrenceId(occurrenceId)
   );
   const pacedTrain = timetableItemsById.get(pacedTrainId);
-  if (!pacedTrain || !isPacedTrain(pacedTrain))
-    throw new Error(`No paced train found for id ${pacedTrainId}`);
+  if (!pacedTrain) return undefined;
+  if (!isPacedTrain(pacedTrain)) throw new Error(`No paced train found for id ${pacedTrainId}`);
 
   let exception: PacedTrainException | undefined;
   if (isIndexedOccurrenceId(occurrenceId)) {
