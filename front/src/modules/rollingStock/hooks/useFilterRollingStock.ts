@@ -156,7 +156,13 @@ function computeCategoryFilter(filters: RollingStockFilters, category?: Category
   return { ...filters, category: category?.id };
 }
 
-const useFilterRollingStock = ({ isStdcm } = { isStdcm: false }) => {
+const useFilterRollingStock = ({
+  isStdcm = false,
+  isDebugMode = false,
+}: {
+  isStdcm?: boolean;
+  isDebugMode?: boolean;
+} = {}) => {
   const dispatch = useAppDispatch();
 
   const [filters, setFilters] = useState<RollingStockFilters>(initialFilters);
@@ -172,10 +178,10 @@ const useFilterRollingStock = ({ isStdcm } = { isStdcm: false }) => {
 
   const usefulRollingStocks = useMemo(
     () =>
-      isStdcm
+      isStdcm && !isDebugMode
         ? allRollingStocks.filter((rs) => STDCM_ROLLING_STOCKS.includes(rs.name))
         : allRollingStocks,
-    [isStdcm, allRollingStocks]
+    [isStdcm, isDebugMode, allRollingStocks]
   );
 
   const [searchIsLoading, setSearchIsLoading] = useState(true);
