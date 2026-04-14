@@ -1,3 +1,4 @@
+mod api;
 mod authorization_models;
 mod healthz;
 mod queries;
