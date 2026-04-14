@@ -184,22 +184,39 @@ export const computeOptimisticRow = (
   >
 > => {
   if (edit.field === 'powerRestriction') {
-    return { powerRestriction: edit.value };
+    return {
+      requestedArrival: row.requestedArrival,
+      stopDuration: row.stopDuration,
+      requestedDeparture: row.requestedDeparture,
+      closedSignal: row.closedSignal,
+      shortSlipDistance: row.shortSlipDistance,
+      requestedTheoreticalMargin: row.requestedTheoreticalMargin,
+      powerRestriction: edit.value,
+    };
   }
-  if (edit.field === 'receptionSignal') {
-    return receptionSignalToSignalBooleans(edit.value);
-  }
-  if (edit.field === 'requestedTheoreticalMargin') {
-    return { requestedTheoreticalMargin: edit.value ?? undefined };
-  }
+
   const { arrival, stop, departure } = applyScheduleEdit(
     { arrival: row.requestedArrival, stop: row.stopDuration },
     edit
   );
+
+  const checkboxes =
+    edit.field === 'receptionSignal'
+      ? receptionSignalToSignalBooleans(edit.value)
+      : { closedSignal: row.closedSignal, shortSlipDistance: row.shortSlipDistance };
+
+  const requestedTheoreticalMargin =
+    edit.field === 'requestedTheoreticalMargin' && row.isTheoreticalMarginBoundary
+      ? (edit.value ?? undefined)
+      : row.requestedTheoreticalMargin;
+
   return {
     requestedArrival: arrival,
     stopDuration: stop,
     requestedDeparture: departure,
+    ...checkboxes,
+    requestedTheoreticalMargin,
+    powerRestriction: row.powerRestriction,
   };
 };
 

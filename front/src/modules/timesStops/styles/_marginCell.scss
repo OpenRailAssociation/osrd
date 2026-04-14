@@ -1,7 +1,5 @@
 .margin-cell {
-  position: relative;
   display: flex;
-  align-items: center;
   justify-content: center;
   font-size: 0.875rem;
 
@@ -10,40 +8,11 @@
   }
 
   &.display {
-    width: 100%;
-    min-height: 24px;
-    cursor: pointer;
-
-    .input-cell-placeholder {
-      cursor: pointer;
-
-      &:hover:not(:focus-within),
-      &:active {
-        background-color: transparent;
-        color: var(--primary40);
-      }
-    }
-
     .label {
       color: var(--primary60);
       display: inline-flex;
       align-items: center;
       gap: 6px;
-
-      &.compact {
-        gap: 4px;
-        align-items: flex-start;
-      }
-
-      .value {
-        font-size: inherit;
-        line-height: inherit;
-      }
-
-      .unit {
-        font-size: inherit;
-        line-height: inherit;
-      }
 
       &.compact .unit {
         display: inline-flex;
@@ -51,70 +20,42 @@
         flex-direction: column;
         font-size: 0.75rem;
         line-height: 11px;
-        white-space: nowrap;
       }
     }
 
+    &:not(.inherited) {
+      cursor: pointer;
+    }
+
     &.inherited {
-      .display-label {
+      .label {
+        color: var(--grey30);
+      }
+    }
+
+    &.hover-switch {
+      .label {
         display: inline-flex;
       }
 
-      .hover-placeholder {
+      .input-cell-placeholder {
         display: none;
       }
 
       &:hover {
-        .display-label {
+        .label {
           display: none;
         }
 
-        .hover-placeholder {
+        .input-cell-placeholder {
           display: inline-flex;
         }
-      }
-
-      .label,
-      .label .value,
-      .label .unit {
-        color: var(--grey30);
       }
     }
   }
 
   &.edit {
-    width: 100%;
-    min-height: 24px;
-
-    .unit {
-      color: var(--grey30);
-      font-size: 0.625rem;
-      line-height: 9px;
-      text-align: right;
-      width: 100%;
-      cursor: pointer;
-
-      &:hover:not(&-active) {
-        color: var(--primary40);
-      }
-
-      &:hover {
-        color: var(--primary80);
-      }
-
-      &-selection {
-        position: absolute;
-        right: 0;
-        top: 50%;
-        transform: translateY(-50%);
-        display: flex;
-        flex-direction: column;
-      }
-
-      &-active {
-        color: var(--grey90);
-      }
-    }
+    background-color: red;
 
     .input {
       color: var(--primary60);
@@ -128,11 +69,32 @@
       outline: none;
     }
 
-    &.inherited {
-      .input {
-        color: var(--grey30);
-        z-index: 0;
-        pointer-events: none;
+    .unit {
+      color: var(--grey30);
+      font-size: 0.625rem;
+      line-height: 9px;
+      text-align: right;
+      cursor: pointer;
+
+      &-selection {
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+      }
+
+      &-active {
+        color: var(--grey90);
+      }
+
+      &:hover:not(&-active) {
+        color: var(--primary40);
+      }
+
+      &:hover {
+        color: var(--primary80);
       }
     }
   }

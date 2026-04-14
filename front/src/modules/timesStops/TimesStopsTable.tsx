@@ -93,6 +93,13 @@ const getArrivalReferenceDate = (
 const getDepartureReferenceDate = (row: TimesStopsRowNew, startTime: Date): Date =>
   row.computedArrival ?? row.requestedArrival ?? startTime;
 
+/**
+ * Check if the OP is a scheduled OP.
+ * Uses the requested departure, arrival time or stop time to determine scheduling.
+ */
+const isScheduledOP = (row: TimesStopsRowNew): boolean =>
+  !!row.requestedDeparture || !!row.requestedArrival || !!row.stopDuration;
+
 type TimesStopsTableProps = {
   rows: TimesStopsRowNew[];
   startTime: Date;
@@ -476,20 +483,24 @@ const TimesStopsTable = ({
         cell: (info) => {
           const { allRows } = info.table.options.meta!;
           const row = info.row.original;
+          const isFirstRow = info.row.index === 0;
           const isLastRow = info.row.index === allRows.length - 1;
 
           if (isLastRow) return null;
 
+          const marginValue =
+            isScheduledOP(row) || !!row.requestedTheoreticalMargin
+              ? row.requestedTheoreticalMargin
+              : null;
           const isInherited = !row.isTheoreticalMarginBoundary || !row.requestedTheoreticalMargin;
-          const isScheduledOp = !!row.computedTheoreticalMarginSeconds;
 
           return (
             <div>
               <MarginCell
-                {...info}
+                marginValue={marginValue ?? null}
                 editable={!isLastRow}
-                isInherited={isInherited}
-                isScheduledOp={isScheduledOp}
+                isInherited={isFirstRow ? false : isInherited}
+                isFirstRow={isFirstRow}
                 onCommit={(value) => info.table.options.meta!.onRequestedMarginChange(row, value)}
               />
             </div>
@@ -508,7 +519,8 @@ const TimesStopsTable = ({
           if (info.table.options.meta!.isComputedDataPending && !isLastRow) {
             return <SkeletonLoader className="cell-loading-placeholder" />;
           }
-          return <MarginCell {...info} editable={false} />;
+          const marginValue = info.getValue() ?? null;
+          return <MarginCell marginValue={marginValue} editable={false} />;
         },
         meta: {
           className: 'col-computed-theoretical-margin computed computed-margin',
@@ -523,7 +535,8 @@ const TimesStopsTable = ({
           if (info.table.options.meta!.isComputedDataPending && !isLastRow) {
             return <SkeletonLoader className="cell-loading-placeholder" />;
           }
-          return <MarginCell {...info} editable={false} />;
+          const marginValue = info.getValue() ?? null;
+          return <MarginCell marginValue={marginValue} editable={false} />;
         },
         meta: {
           className: 'col-real-margin computed computed-margin',
@@ -538,7 +551,8 @@ const TimesStopsTable = ({
           if (info.table.options.meta!.isComputedDataPending && !isLastRow) {
             return <SkeletonLoader className="cell-loading-placeholder" />;
           }
-          return <MarginCell {...info} showPolarity editable={false} />;
+          const marginValue = info.getValue() ?? null;
+          return <MarginCell marginValue={marginValue} showPolarity editable={false} />;
         },
         meta: {
           className: 'col-margins-difference computed computed-margin',
