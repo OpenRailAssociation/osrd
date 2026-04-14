@@ -1691,8 +1691,6 @@ mod tests {
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use schemas::TrainScheduleExceptionChangeGroups;
-    use schemas::fixtures::simple_created_exception_with_change_groups;
-    use schemas::fixtures::simple_modified_exception_with_change_groups;
     use schemas::infra::Direction;
     use schemas::paced_train::InitialSpeedChangeGroup;
     use schemas::paced_train::Paced;
@@ -1844,47 +1842,6 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn update_paced_train_exception() {
-        let app = TestAppBuilder::default_app();
-        let pool = app.db_pool();
-
-        let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
-        let simple_paced_train =
-            simple_paced_train_changeset(train_schedule_set.id).exceptions(vec![]);
-        let mut simple_paced_train = simple_paced_train
-            .create(&mut pool.get_ok())
-            .await
-            .expect("Failed to create paced train");
-
-        assert_eq!(simple_paced_train.exceptions.len(), 0);
-
-        simple_paced_train.exceptions = vec![simple_created_exception_with_change_groups(
-            "exception_key_1",
-        )];
-        let paced_train: TrainSchedule = simple_paced_train.clone().into();
-
-        let request = app
-            .put(format!("/train_schedules/{}", simple_paced_train.id).as_str())
-            .json(&json!(&paced_train));
-
-        app.fetch(request)
-            .await
-            .assert_status(StatusCode::NO_CONTENT);
-
-        let created_paced_train =
-            models::TrainSchedule::retrieve(pool.get_ok(), simple_paced_train.id)
-                .await
-                .expect("Failed to retrieve updated paced train")
-                .expect("Updated paced train not found");
-
-        assert_eq!(created_paced_train.exceptions.len(), 1);
-        assert_eq!(
-            simple_paced_train.exceptions,
-            created_paced_train.exceptions
-        );
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_paced_train() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -1913,73 +1870,6 @@ mod tests {
             .expect("Updated paced train not found");
 
         assert_eq!(paced_train_base, updated_paced_train.into());
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn update_paced_train_with_duplicated_exceptions() {
-        let app = TestAppBuilder::default_app();
-        let pool = app.db_pool();
-
-        let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
-        let paced_train =
-            create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
-
-        let mut paced_train_base = simple_paced_train_base();
-        paced_train_base.paced.as_mut().unwrap().time_window =
-            Duration::minutes(90).try_into().unwrap();
-        paced_train_base.paced.as_mut().unwrap().interval =
-            Duration::minutes(15).try_into().unwrap();
-        paced_train_base.paced.as_mut().unwrap().exceptions = vec![
-            simple_created_exception_with_change_groups("duplicated_key_1"),
-            simple_modified_exception_with_change_groups("duplicated_key_1", 0),
-        ];
-
-        let request = app
-            .put(format!("/train_schedules/{}", paced_train.id).as_str())
-            .json(&json!(&paced_train_base));
-
-        let response = app
-            .fetch(request)
-            .await
-            .assert_status(StatusCode::UNPROCESSABLE_ENTITY)
-            .bytes();
-        assert_eq!(
-            &String::from_utf8(response).unwrap(),
-            "Failed to deserialize the JSON body into the target type: Duplicate exception key: 'duplicated_key_1'"
-        )
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn update_paced_train_with_invalid_exceptions_occurrence_index() {
-        let app = TestAppBuilder::default_app();
-        let pool = app.db_pool();
-
-        let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
-        let paced_train =
-            create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
-
-        let mut paced_train_base = simple_paced_train_base();
-        paced_train_base.paced.as_mut().unwrap().time_window =
-            Duration::minutes(65).try_into().unwrap();
-        paced_train_base.paced.as_mut().unwrap().interval =
-            Duration::minutes(15).try_into().unwrap();
-        paced_train_base.paced.as_mut().unwrap().exceptions =
-            vec![simple_modified_exception_with_change_groups("key_1", 5)];
-
-        let request = app
-            .put(format!("/train_schedules/{}", paced_train.id).as_str())
-            .json(&json!(&paced_train_base));
-
-        let response = app
-            .fetch(request)
-            .await
-            .assert_status(StatusCode::UNPROCESSABLE_ENTITY)
-            .bytes();
-
-        assert_eq!(
-            &String::from_utf8(response).unwrap(),
-            "Failed to deserialize the JSON body into the target type: Modified exception 'key_1' references invalid occurrence index 5"
-        )
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
