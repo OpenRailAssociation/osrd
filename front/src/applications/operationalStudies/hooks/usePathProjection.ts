@@ -118,6 +118,7 @@ const usePathProjection = (
     } else {
       const pacedTrainId = extractPacedTrainIdFromOccurrenceId(trainIdUsedForProjection);
       rawPacedTrainId = extractEditoastIdFromPacedTrainId(pacedTrainId);
+
       exceptionKey = getExceptionFromOccurrenceId(
         timetableItemsById,
         trainIdUsedForProjection
@@ -157,7 +158,7 @@ const usePathProjection = (
       )
     );
     const exception = getExceptionFromOccurrenceId(timetableItemsById, trainIdUsedForProjection);
-    return exception?.path_and_schedule?.path ?? pacedTrain!.path;
+    return exception?.path_and_schedule?.path ?? pacedTrain?.path;
   }, [trainIdUsedForProjection, timetableItemsById]);
 
   const opRefs = useMemo(() => {
