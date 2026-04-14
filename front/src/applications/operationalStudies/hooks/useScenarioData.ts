@@ -113,9 +113,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
     [projectedTrainsById]
   );
 
-  const timetableItemIds = useMemo(() => timetableItems?.map((item) => item.id), [timetableItems]);
-
-  useAutoSelectTrainIds(timetableItemIds, timetableItemsWithDetails);
+  useAutoSelectTrainIds(timetableItems ? timetableItemsWithDetails : undefined);
 
   // first load of the summaries
   useEffect(() => {
