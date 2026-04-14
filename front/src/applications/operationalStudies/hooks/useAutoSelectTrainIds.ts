@@ -5,7 +5,6 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { isValidPathfinding } from 'applications/operationalStudies/views/Scenario/components/Timetable/utils';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
-import type { TrainId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import {
   getSelectedTrainId,
@@ -13,32 +12,16 @@ import {
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import {
-  extractEditoastIdFromPacedTrainId,
-  extractPacedTrainIdFromOccurrenceId,
   formatEditoastIdToPacedTrainId,
   isOccurrenceId,
   isPacedTrainId,
+  isTrainIdInTimetable,
 } from 'utils/trainId';
 
 type SimulationParams = {
   projectId: string;
   studyId: string;
   scenarioId: string;
-};
-
-const isTrainIdInTimetable = (
-  trainId: TrainId | undefined,
-  timetableItemsWithDetails: TimetableItemWithDetails[]
-): boolean => {
-  if (!trainId) return false;
-
-  const pacedTrainId = isOccurrenceId(trainId)
-    ? extractPacedTrainIdFromOccurrenceId(trainId)
-    : trainId;
-  const timetableItemId = extractEditoastIdFromPacedTrainId(pacedTrainId);
-
-  const timetableItem = timetableItemsWithDetails.find((item) => item.id === timetableItemId);
-  return !!timetableItem;
 };
 
 /**
