@@ -444,9 +444,9 @@ dependencies = [
 
 [[package]]
 name = "axum-test"
-version = "20.0.0"
+version = "19.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3a86bfe2ef15bee102ac34912f7f4542b0bb37dc464fa55461763999c4d625e7"
+checksum = "6a28640adad0e99978d38bc455b323c62a5cddc4e22f83eacde93f8c395ae7e3"
 dependencies = [
  "anyhow",
  "axum",
@@ -605,7 +605,7 @@ dependencies = [
  "deadpool-redis",
  "futures 0.3.32",
  "lz4_flex",
- "rand 0.10.0",
+ "rand 0.10.1",
  "redis-test",
  "serde",
  "serde_json",
@@ -1365,7 +1365,7 @@ dependencies = [
  "petgraph",
  "postgis_diesel",
  "pretty_assertions",
- "rand 0.10.0",
+ "rand 0.10.1",
  "rangemap",
  "reqwest",
  "rstest",
@@ -3705,9 +3705,9 @@ dependencies = [
 
 [[package]]
 name = "rand"
-version = "0.10.0"
+version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc266eb313df6c5c09c1c7b1fbe2510961e5bcd3add930c1e31f7ed9da0feff8"
+checksum = "d2e8e8bcc7961af1fdac401278c6a831614941f6164ee3bf4ce61b7edb162207"
 dependencies = [
  "chacha20",
  "getrandom 0.4.2",
@@ -3993,7 +3993,7 @@ dependencies = [
  "futures-util",
  "http",
  "mime",
- "rand 0.10.0",
+ "rand 0.10.1",
  "thiserror 2.0.18",
 ]
 
@@ -4070,7 +4070,7 @@ dependencies = [
  "enum-map",
  "geos",
  "iso8601",
- "rand 0.10.0",
+ "rand 0.10.1",
  "regex",
  "rstest",
  "serde",
@@ -4682,7 +4682,7 @@ dependencies = [
  "pin-project-lite",
  "postgres-protocol",
  "postgres-types",
- "rand 0.10.0",
+ "rand 0.10.1",
  "socket2 0.6.3",
  "tokio",
  "tokio-util",
