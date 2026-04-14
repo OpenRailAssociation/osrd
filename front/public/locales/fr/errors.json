@@ -279,7 +279,7 @@
     "train_schedule": {
       "BatchNotFound": "'{{count}}' circulation(s) sont introuvable(s)",
       "Database": "Erreur interne (base de données)",
-      "ExceptionNotFound": "Exception '{{exception_key}}' non trouvée",
+      "ExceptionNotFound": "Exception '{{exception_id}}' non trouvée",
       "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
       "NotFound": "Circulation '{{train_schedule_id}}' non trouvée",
       "PathfindingFailed": "La recherche de chemin n'a pas abouti pour la circulation '{{train_schedule_id}}'",

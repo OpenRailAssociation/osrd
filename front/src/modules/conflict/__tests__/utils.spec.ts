@@ -26,7 +26,7 @@ describe('addTrainNamesToConflicts', () => {
       train_ids: [
         { train_schedule_id: 10, type: 'base', index: 0 },
         { train_schedule_id: 20, type: 'base', index: 8 },
-        { train_schedule_id: 20, type: 'created', exception_key: '1', exception_id: 1 },
+        { train_schedule_id: 20, type: 'created', exception_id: 1 },
       ],
     });
 
