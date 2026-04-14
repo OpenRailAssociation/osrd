@@ -121,12 +121,13 @@ const UniqueTrainItem = ({
         train_name: trainName,
       };
 
-      const newUniqueTrain: TimetableItem[] = await createPacedTrains(
-        dispatch,
-        trainDetail.train_schedule_set_id,
-        [newUniqueTrainPayload]
-      );
-      upsertUniqueTrains(newUniqueTrain);
+      const newUniqueTrain: TimetableItem = (
+        await createPacedTrains(dispatch, trainDetail.train_schedule_set_id, [
+          newUniqueTrainPayload,
+        ])
+      )[0];
+      dispatch(updateSelectedTrainId(formatEditoastIdToPacedTrainId(newUniqueTrain.id)));
+      upsertUniqueTrains([newUniqueTrain]);
       dispatch(
         setSuccess({
           title: t('timetable.trainAdded'),
