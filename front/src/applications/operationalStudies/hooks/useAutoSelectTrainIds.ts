@@ -5,7 +5,6 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { isValidPathfinding } from 'applications/operationalStudies/views/Scenario/components/Timetable/utils';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
-import type { TrainId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import {
   getSelectedTrainId,
@@ -16,7 +15,6 @@ import {
   extractEditoastIdFromPacedTrainId,
   extractPacedTrainIdFromOccurrenceId,
   formatEditoastIdToPacedTrainId,
-  formatPacedTrainIdToIndexedOccurrenceId,
   isOccurrenceId,
   isPacedTrainId,
 } from 'utils/trainId';
@@ -161,13 +159,7 @@ const useAutoSelectTrainIds = (
     if (firstTrainCanBeUsedForProjection) {
       const pacedTrainId = formatEditoastIdToPacedTrainId(firstTrainCanBeUsedForProjection.id);
       dispatch(updateTrainIdUsedForProjection(pacedTrainId));
-      let newTrainIdToSelect: TrainId;
-      if (!firstTrainCanBeUsedForProjection.paced) {
-        newTrainIdToSelect = pacedTrainId;
-      } else {
-        newTrainIdToSelect = formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, 0);
-      }
-      dispatch(updateSelectedTrainId(newTrainIdToSelect));
+      dispatch(updateSelectedTrainId(pacedTrainId));
     }
   }, [timetableItemIds, timetableItemsWithDetails, setIdsFromUrlOrStorage, parametersLoaded]);
 };
