@@ -1,40 +1,25 @@
 import { useEffect, useRef, useState } from 'react';
 
-import type { CellContext } from '@tanstack/react-table';
 import cx from 'classnames';
 
 import CellPlaceholder from './CellPlaceholder';
 import { MarginUnit } from './consts';
-import type { MarginUnitType, MarginValue, TimesStopsRowNew } from './types';
+import type { MarginUnitType, MarginValue } from './types';
 
 const PARTIAL_DECIMAL_REGEX = /^-?\d*[.,]?\d*$/;
 
-const isSameMarginValue = (current: MarginValue | undefined, next: MarginValue | null): boolean => {
+const isSameMarginValue = (current: MarginValue | null, next: MarginValue | null): boolean => {
   if (!current && !next) return true;
   if (!current || !next) return false;
   return current.value === next.value && current.unit === next.unit;
 };
 
-const getMarginValueFromRaw = (
-  raw: string | null,
-  unit: MarginUnitType
-): MarginValue | undefined => {
-  if (raw == null || raw === '') return undefined;
+const getMarginValueFromRaw = (raw: string | null, unit: MarginUnitType): MarginValue | null => {
+  if (!raw) return null;
   const normalized = raw.replace(',', '.').replace(/\.$/, '');
   const parsed = parseFloat(normalized);
-  if (isNaN(parsed) || normalized === '' || normalized === '-') return undefined;
+  if (isNaN(parsed) || normalized === '' || normalized === '-') return null;
   return { value: parsed, unit };
-};
-
-const getInheritedRequestedMargin = (allRows: TimesStopsRowNew[], rowIndex: number) => {
-  for (let index = rowIndex - 1; index >= 0; index -= 1) {
-    const candidate = allRows[index];
-    if (candidate?.isTheoreticalMarginBoundary && candidate.requestedTheoreticalMargin) {
-      return candidate.requestedTheoreticalMargin;
-    }
-  }
-
-  return undefined;
 };
 
 const MarginDisplayLabel = ({ margin }: { margin: MarginValue }) => {
@@ -90,109 +75,67 @@ const UnitToggle = ({
 );
 
 const MarginCellEditable = ({
-  getValue,
-  row,
-  table,
+  initialValue,
   isInherited = false,
-  isScheduledOp = true,
+  isFirstRow = false,
   onCommit,
-}: CellContext<TimesStopsRowNew, MarginValue | undefined> & {
-  isInherited?: boolean;
-  isScheduledOp?: boolean;
+}: {
+  initialValue: MarginValue | null;
+  isInherited: boolean;
+  isFirstRow: boolean;
   onCommit?: (value: MarginValue | null) => void;
 }) => {
-  const ownValue = getValue();
-  const resolvedValue =
-    isInherited && isScheduledOp
-      ? getInheritedRequestedMargin(table.options.meta?.allRows ?? [], row.index)
-      : ownValue;
-  const initial = isScheduledOp ? resolvedValue : undefined;
-  const [unit, setUnit] = useState<MarginUnitType>(initial?.unit ?? MarginUnit.percent);
-  const [raw, setRaw] = useState<string | null>(initial?.value?.toString() ?? null);
+  const [unit, setUnit] = useState<MarginUnitType>(initialValue?.unit ?? MarginUnit.percent);
+  const [raw, setRaw] = useState<string | null>(initialValue?.value?.toString() ?? null);
   const [isEditing, setIsEditing] = useState(false);
+  const displayValue = getMarginValueFromRaw(raw, unit);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const skipCommitOnBlurRef = useRef(false);
   const isEmpty: boolean = raw == null;
-  const displayMargin = initial ?? getMarginValueFromRaw(raw, unit);
 
   useEffect(() => {
-    setUnit(initial?.unit ?? MarginUnit.percent);
-    setRaw(initial?.value?.toString() ?? null);
+    setUnit(initialValue?.unit ?? MarginUnit.percent);
+    setRaw(initialValue?.value?.toString() ?? null);
     setIsEditing(false);
-  }, [initial?.value, initial?.unit, ownValue]); // TODO : Remove this when depreciating input table
+  }, [initialValue?.value, initialValue?.unit, isInherited]); // TODO : Remove this when depreciating input table
 
   const commit = () => {
-    if (!raw) {
-      if (isSameMarginValue(ownValue, null) && !isInherited) {
-        setRaw(ownValue?.value?.toString() ?? null);
-        return;
-      }
-      onCommit?.(null);
-      setRaw(null);
-    } else {
-      const normalized = raw.replace(',', '.').replace(/\.$/, '');
-      const parsed = parseFloat(normalized);
-      if (isNaN(parsed) || normalized === '' || normalized === '-') {
-        onCommit?.(null);
-        setRaw('');
-      } else {
-        const nextValue = { value: parsed, unit };
-        if (isSameMarginValue(ownValue, nextValue) && !isInherited) {
-          setRaw(String(parsed));
-          return;
-        }
-        onCommit?.(nextValue);
-        setRaw(String(parsed));
-      }
+    if (isInherited && !displayValue) {
+      setRaw(String(initialValue?.value ?? ''));
+      return;
     }
+    if (isFirstRow && !displayValue) {
+      onCommit?.({ value: 0, unit: MarginUnit.percent });
+      setRaw('0');
+      return;
+    }
+    if (isSameMarginValue(displayValue, initialValue) && !isInherited) return;
+
+    onCommit?.(displayValue ?? null);
+    setRaw(String(displayValue?.value ?? ''));
   };
 
   const startEditing = () => {
-    if (raw == null) {
+    if (!raw) {
       setRaw('');
     }
     setIsEditing(true);
     setTimeout(() => inputRef.current?.focus(), 0);
   };
 
-  const commitAndClose = () => {
-    commit();
-    setIsEditing(false);
-  };
-
   if (!isEditing) {
-    if (!displayMargin)
-      return (
-        <button
-          type="button"
-          className={cx('margin-cell display', 'inherited', 'only-placeholder')}
-          onClick={startEditing}
-          aria-label="Edit margin"
-        >
-          <CellPlaceholder onClick={startEditing} />
-        </button>
-      );
     return (
-      <button
-        type="button"
-        className={cx('margin-cell display', { inherited: isInherited })}
-        onClick={startEditing}
-        aria-label="Edit margin"
+      <span
+        className={cx('margin-cell display', {
+          'hover-switch': !!raw && isInherited,
+          inherited: isInherited,
+        })}
+        onClick={!isInherited ? () => startEditing() : undefined}
       >
-        {isInherited ? (
-          <>
-            <span className="display-label">
-              <MarginDisplayLabel margin={displayMargin} />
-            </span>
-            <span className="hover-placeholder">
-              <CellPlaceholder onClick={startEditing} />
-            </span>
-          </>
-        ) : (
-          <MarginDisplayLabel margin={displayMargin} />
-        )}
-      </button>
+        {displayValue && <MarginDisplayLabel margin={displayValue} />}
+        {isInherited && <CellPlaceholder onClick={startEditing} />}
+      </span>
     );
   }
 
@@ -214,12 +157,13 @@ const MarginCellEditable = ({
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
             e.preventDefault();
-            commitAndClose();
+            commit();
+            setIsEditing(false);
           }
           if (e.key === 'Escape') {
             skipCommitOnBlurRef.current = true;
-            setUnit(initial?.unit ?? MarginUnit.percent);
-            setRaw(initial?.value?.toString() ?? null);
+            setUnit(initialValue?.unit ?? MarginUnit.percent);
+            setRaw(initialValue?.value?.toString() ?? null);
             setIsEditing(false);
             e.currentTarget.blur();
           }
@@ -231,32 +175,31 @@ const MarginCellEditable = ({
             return;
           }
           if (!e.relatedTarget?.classList.contains('unit')) {
-            commitAndClose();
+            commit();
+            setIsEditing(false);
           }
         }}
       />
-      {isEditing && !isEmpty && (
-        <UnitToggle
-          value={unit}
-          onChange={(u) => {
-            setUnit(u);
-            inputRef.current?.focus();
-          }}
-        />
-      )}
+      <UnitToggle
+        value={unit}
+        onChange={(u) => {
+          setUnit(u);
+          inputRef.current?.focus();
+        }}
+      />
     </div>
   );
 };
 
 const MarginCellReadOnly = ({
   showPolarity = false,
-  ...props
-}: CellContext<TimesStopsRowNew, MarginValue | undefined> & {
+  marginValue,
+}: {
   showPolarity?: boolean;
+  marginValue: MarginValue | null;
 }) => {
-  const margin = props.getValue();
-  if (!margin) return;
-  const marginInSeconds = margin.value ?? 0;
+  if (!marginValue) return;
+  const marginInSeconds = marginValue.value ?? 0;
   const isZero = marginInSeconds === 0;
   const polarity = marginInSeconds >= 0 ? '+' : '-';
   const abs = Math.abs(marginInSeconds);
@@ -264,38 +207,39 @@ const MarginCellReadOnly = ({
   const seconds = String(Math.floor(abs % 60)).padStart(2, '0');
 
   return (
-    <div className="margin-cell">
+    <div className="mono margin-cell">
       {showPolarity && <span>{!isZero && polarity}</span>}
-      <span className="mono">{minutes}</span>
+      <span>{minutes}</span>
       <span className="unit-letter">m</span>
-      <span className="mono">{seconds}</span>
+      <span>{seconds}</span>
       <span className="unit-letter">s</span>
     </div>
   );
 };
 
 const MarginCell = ({
+  marginValue,
   editable = false,
   showPolarity = false,
   isInherited = false,
-  isScheduledOp = true,
+  isFirstRow = false,
   onCommit,
-  ...props
-}: CellContext<TimesStopsRowNew, MarginValue | undefined> & {
+}: {
+  marginValue: MarginValue | null;
   editable?: boolean;
   showPolarity?: boolean;
   isInherited?: boolean;
-  isScheduledOp?: boolean;
+  isFirstRow?: boolean;
   onCommit?: (value: MarginValue | null) => void;
 }) =>
   editable ? (
     <MarginCellEditable
-      {...props}
+      initialValue={marginValue}
       isInherited={isInherited}
-      isScheduledOp={isScheduledOp}
+      isFirstRow={isFirstRow}
       onCommit={onCommit}
     />
   ) : (
-    <MarginCellReadOnly showPolarity={showPolarity} {...props} />
+    <MarginCellReadOnly showPolarity={showPolarity} marginValue={marginValue} />
   );
 export default MarginCell;
