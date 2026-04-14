@@ -223,6 +223,7 @@ const PacedTrainItem = ({
     const formattedPacedTrainResponse: TimetableItem = (
       await createPacedTrains(dispatch, pacedTrainDetail.train_schedule_set_id, [newPacedTrain])
     )[0];
+    dispatch(updateSelectedTrainId(formatEditoastIdToPacedTrainId(formattedPacedTrainResponse.id)));
     upsertTimetableItems([formattedPacedTrainResponse]);
     dispatch(
       setSuccess({
