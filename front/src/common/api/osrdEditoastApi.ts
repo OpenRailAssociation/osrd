@@ -1,7 +1,7 @@
 import type { BaseQueryFn } from '@reduxjs/toolkit/query';
 import { isNil, sortBy } from 'lodash';
 
-import type { TimetableItem, TrainId } from 'reducers/osrdconf/types';
+import type { TrainId } from 'reducers/osrdconf/types';
 import {
   extractEditoastIdFromPacedTrainId,
   extractPacedTrainIdFromOccurrenceId,
@@ -94,20 +94,6 @@ const osrdEditoastApi = generatedEditoastApi
           return { data: result };
         },
         providesTags: ['timetable'],
-      }),
-      getTimetableItemById: builder.query<TimetableItem, { id: number }>({
-        queryFn: async ({ id }, { dispatch }) => {
-          const pacedTrain = await dispatch(
-            generatedEditoastApi.endpoints.getTrainSchedulesById.initiate(
-              {
-                id,
-              },
-              { subscribe: false }
-            )
-          ).unwrap();
-          return { data: pacedTrain };
-        },
-        providesTags: ['timetable', 'train_schedule'],
       }),
       getTrainPath: builder.query<
         PathfindingResult,
