@@ -5,6 +5,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { isValidPathfinding } from 'applications/operationalStudies/views/Scenario/components/Timetable/utils';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
+import type { TrainId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import {
   getSelectedTrainId,
@@ -25,6 +26,21 @@ type SimulationParams = {
   scenarioId: string;
 };
 
+const isTrainIdInTimetable = (
+  trainId: TrainId | undefined,
+  timetableItemsWithDetails: TimetableItemWithDetails[]
+): boolean => {
+  if (!trainId) return false;
+
+  const pacedTrainId = isOccurrenceId(trainId)
+    ? extractPacedTrainIdFromOccurrenceId(trainId)
+    : trainId;
+  const timetableItemId = extractEditoastIdFromPacedTrainId(pacedTrainId);
+
+  const timetableItem = timetableItemsWithDetails.find((item) => item.id === timetableItemId);
+  return !!timetableItem;
+};
+
 /**
  * Automatically select the train to be used for the simulation results display and for the projection.
  *
@@ -35,8 +51,7 @@ type SimulationParams = {
  * currentTrainIdForProjection will still be undefined and must be updated)
  */
 const useAutoSelectTrainIds = (
-  timetableItemIds: number[] | undefined,
-  timetableItemsWithDetails: TimetableItemWithDetails[]
+  timetableItemsWithDetails: TimetableItemWithDetails[] | undefined
 ) => {
   const dispatch = useAppDispatch();
   const currentTrainIdForProjection = useSelector(getTrainIdUsedForProjection);
@@ -111,11 +126,11 @@ const useAutoSelectTrainIds = (
   }, [parametersLoaded, selectedTrainId, currentTrainIdForProjection, setParamsInUrlAndStorage]);
 
   useEffect(() => {
-    if (timetableItemIds === undefined) {
+    if (timetableItemsWithDetails === undefined) {
       return;
     }
 
-    if (timetableItemIds.length === 0) {
+    if (timetableItemsWithDetails.length === 0) {
       if (selectedTrainId) dispatch(updateSelectedTrainId(undefined));
       if (currentTrainIdForProjection) dispatch(updateTrainIdUsedForProjection(undefined));
       setParametersLoaded(true);
@@ -128,23 +143,13 @@ const useAutoSelectTrainIds = (
       return;
     }
 
-    let timetableItemId: number | undefined;
-    if (selectedTrainId) {
-      timetableItemId = extractEditoastIdFromPacedTrainId(
-        !isOccurrenceId(selectedTrainId)
-          ? selectedTrainId
-          : extractPacedTrainIdFromOccurrenceId(selectedTrainId)
-      );
-    }
-
-    const isSelectedTimetableItemIncluded =
-      !!timetableItemId && timetableItemIds.some((id) => id === timetableItemId);
+    const isSelectedTrainIdValid = isTrainIdInTimetable(selectedTrainId, timetableItemsWithDetails);
 
     // if a selected timetable item is given and is still in the timetable, don't change the selected train
-    if (timetableItemId && isSelectedTimetableItemIncluded) {
+    if (isSelectedTrainIdValid) {
       // if no train is used for the projection, use the selected train
       if (!currentTrainIdForProjection) {
-        dispatch(updateTrainIdUsedForProjection(formatEditoastIdToPacedTrainId(timetableItemId)));
+        dispatch(updateTrainIdUsedForProjection(selectedTrainId));
       }
       return;
     }
@@ -161,7 +166,7 @@ const useAutoSelectTrainIds = (
       dispatch(updateTrainIdUsedForProjection(pacedTrainId));
       dispatch(updateSelectedTrainId(pacedTrainId));
     }
-  }, [timetableItemIds, timetableItemsWithDetails, setIdsFromUrlOrStorage, parametersLoaded]);
+  }, [timetableItemsWithDetails, setIdsFromUrlOrStorage, parametersLoaded]);
 };
 
 export default useAutoSelectTrainIds;
