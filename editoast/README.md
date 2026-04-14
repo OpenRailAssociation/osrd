@@ -98,7 +98,7 @@ Useful extensions:
 - `CodeLLDB` (did not try `LLDB DAP`)
 - `Rust Syntax`
 - `Even Better TOML`
-- `crates`
+- `Dependi`
 - (`Rust Macro Expand`: not tested, but promising)
 
 For step-by-step debugging under VS Code, you need to change the debug level
