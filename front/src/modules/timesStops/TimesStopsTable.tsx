@@ -474,7 +474,7 @@ const TimesStopsTable = ({
           if (info.table.options.meta!.isComputedDataPending && !isLastRow) {
             return <SkeletonLoader className="cell-loading-placeholder" />;
           }
-          return <MarginCell {...info} editable={false} />;
+          return <MarginCell {...info} showPolarity editable={false} />;
         },
         meta: {
           className: 'col-margins-difference computed computed-margin',
