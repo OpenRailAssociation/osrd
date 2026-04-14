@@ -136,7 +136,10 @@ const StdcmConsist = ({
   const lengthFieldStatus = useFieldStatus('totalLength');
   const speedFieldStatus = useFieldStatus('maxSpeed');
 
-  const { filteredRollingStockList: rollingStocks } = useFilterRollingStock({ isStdcm: true });
+  const { filteredRollingStockList: rollingStocks } = useFilterRollingStock({
+    isStdcm: true,
+    isDebugMode,
+  });
 
   const { filteredTowedRollingStockList: towedRollingStocks } = useFilterTowedRollingStock({
     isDebugMode,
