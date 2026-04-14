@@ -37,9 +37,9 @@ import {
   isIndexedOccurrenceId,
 } from 'utils/trainId';
 
-import OccurrenceIndicator from './OccurrenceIndicator';
 import { formatTrainDuration } from '../utils';
 import type useOccurrenceActions from './hooks/useOccurrenceActions';
+import OccurrenceIndicator from './OccurrenceIndicator';
 
 const ConsecutiveDayDateDisplay = ({
   departureTime,

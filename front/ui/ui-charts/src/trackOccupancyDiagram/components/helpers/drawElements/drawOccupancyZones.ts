@@ -1,9 +1,9 @@
-import { drawOccupancyZonesTexts } from './drawOccupancyZonesTexts';
 import { getCrispLineCoordinate } from '../../../../common/helpers/time';
 import { PATH_COLOR_DEFAULT } from '../../../../manchette/consts';
 import type { SpaceTimeChartContextType } from '../../../../spaceTimeChart';
 import { OCCUPANCY_ZONE_Y_START, OCCUPANCY_ZONE_HEIGHT, FONTS, COLORS } from '../../../lib/consts';
 import type { OccupancyZone } from '../../../lib/types';
+import { drawOccupancyZonesTexts } from './drawOccupancyZonesTexts';
 
 const { SANS } = FONTS;
 const { REMAINING_TRAINS_BACKGROUND, WHITE_100, SELECTION_20 } = COLORS;

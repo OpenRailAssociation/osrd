@@ -7,8 +7,8 @@ import { timeToLocaleStringRounded } from 'utils/date';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { kgToT } from 'utils/physics';
 
-import { getStopDurationTime } from './formatSimulationReportSheet';
 import styles from '../styles/SimulationReportStyleSheet';
+import { getStopDurationTime } from './formatSimulationReportSheet';
 
 export const getRowStyle = (
   stepDuration: Duration | null | undefined,

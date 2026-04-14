@@ -3,9 +3,10 @@ import React from 'react';
 import { Chronogram, type LevelCrossingData } from '@osrd-project/ui-charts';
 import type { Meta } from '@storybook/react-vite';
 
-import { levelCrossingData, START_DATE } from './level-crossing-data';
 import '@osrd-project/ui-charts/dist/theme.css';
 import '@osrd-project/ui-core/dist/theme.css';
+
+import { levelCrossingData, START_DATE } from './level-crossing-data';
 
 type WrapperProps = {
   levelCrossingsData: LevelCrossingData[];

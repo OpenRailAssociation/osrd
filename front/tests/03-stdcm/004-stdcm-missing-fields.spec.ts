@@ -6,10 +6,6 @@ import {
   PARTIAL_MISSING_FIELDS_KEYS,
   REMOVED_MISSING_FIELDS_KEYS,
 } from '../assets/constants/stdcm/missing-fields';
-import { electricRollingStockName } from './../assets/constants/project-const';
-import test from './../page-object-fixture';
-import { waitForInfraStateToBeCached } from './../utils';
-import { getInfra } from './../utils/api-utils';
 import {
   CI_SUGGESTIONS,
   DEFAULT_DETAILS,
@@ -23,6 +19,10 @@ import {
   TRACTION_ENGINE_PREFILLED_VALUES,
   VALID_CONSIST_DATA,
 } from '../assets/constants/stdcm/stdcm-const';
+import { electricRollingStockName } from './../assets/constants/project-const';
+import test from './../page-object-fixture';
+import { waitForInfraStateToBeCached } from './../utils';
+import { getInfra } from './../utils/api-utils';
 
 test.describe('@stdcm @stdcm-missing-fields', () => {
   let infra: Infra;

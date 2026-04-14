@@ -13,6 +13,10 @@ import type { Meta } from '@storybook/react-vite';
 import cx from 'classnames';
 import { clamp, inRange } from 'lodash';
 
+import '@osrd-project/ui-charts/dist/theme.css';
+import '@osrd-project/ui-core/dist/theme.css';
+
+import { MINUTE, HOUR } from '../common/const';
 import { MouseTracker } from './helpers/components';
 import { AMBIANT_A10, ERROR_30, ERROR_60, KILOMETER } from './helpers/consts';
 import { OPERATIONAL_POINTS, PATHS, START_DATE } from './helpers/paths';
@@ -25,9 +29,6 @@ import {
   Y_ZOOM_LEVEL,
   getDiff,
 } from './helpers/utils';
-import '@osrd-project/ui-charts/dist/theme.css';
-import '@osrd-project/ui-core/dist/theme.css';
-import { MINUTE, HOUR } from '../common/const';
 
 const MONO_TRACK_SPACES = [
   { from: 6 * KILOMETER, to: 24 * KILOMETER },

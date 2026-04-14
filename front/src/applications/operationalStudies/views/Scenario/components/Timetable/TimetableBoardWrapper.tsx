@@ -18,10 +18,10 @@ import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { mapBy } from 'utils/types';
 
-import Timetable from './Timetable';
-import { copyTimetableItemsToClipboard } from './utils';
 import { validateTimetableJsonPayload } from '../ImportTimetableItem/helpers/parseJson';
 import { postFullImportPayload } from '../ImportTimetableItem/helpers/postPayloads';
+import Timetable from './Timetable';
+import { copyTimetableItemsToClipboard } from './utils';
 
 type TimetableBoardWrapperProps = {
   setDisplayTimetableItemManagement: (mode: string) => void;

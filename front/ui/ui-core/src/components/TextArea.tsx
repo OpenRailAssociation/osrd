@@ -2,8 +2,8 @@ import React from 'react';
 
 import cx from 'classnames';
 
-import FieldWrapper, { type FieldWrapperProps } from './FieldWrapper';
 import useFocusByTab from '../hooks/useFocusByTab';
+import FieldWrapper, { type FieldWrapperProps } from './FieldWrapper';
 
 export type TextAreaProps = React.InputHTMLAttributes<HTMLTextAreaElement> &
   Omit<FieldWrapperProps, 'children'>;

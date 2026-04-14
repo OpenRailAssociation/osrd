@@ -4,7 +4,7 @@
   "arrowParens": "always",
   "proseWrap": "always",
   "trailingComma": "es5",
-  "experimentalSortPackageJson": false,
+  "sortPackageJson": false,
   "ignorePatterns": [
     "*.md",
     "public/locales/en/infraEditor.json",
@@ -15,5 +15,48 @@
     "src/utils/__tests__/assets/*.json",
     "/ui",
     "node_modules"
-  ]
+  ],
+  "sortImports": {
+    "groups": [
+      "react",
+      "builtin",
+      ["external", "nge"],
+      "external_styles",
+      ["internal", "bare_internal"],
+      ["index", "sibling", "parent"],
+      ["style", "side_effect_style"]
+    ],
+    "customGroups": [
+      {
+        "groupName": "react",
+        "elementNamePattern": ["react"]
+      },
+      {
+        "groupName": "bare_internal",
+        "elementNamePattern": ["reducers", "store", "types"]
+      },
+      {
+        "groupName": "nge",
+        "elementNamePattern": ["@osrd-project/netzgrafik-frontend/dist/**/*"]
+      },
+      {
+        "groupName": "external_styles",
+        "elementNamePattern": ["**/dist/**/*.{css,scss}", "**/vendor/**/*.{css,scss}"]
+      }
+    ],
+    "internalPattern": [
+      "applications/",
+      "assets/",
+      "common/",
+      "config/",
+      "main/",
+      "modules/",
+      "reducers/",
+      "styles/",
+      "test-data/",
+      "utils/"
+    ],
+    "newlinesBetween": true,
+    "ignoreCase": true
+  }
 }

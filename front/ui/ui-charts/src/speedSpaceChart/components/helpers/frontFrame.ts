@@ -1,9 +1,9 @@
 import * as d3selection from 'd3-selection';
 
-import { zoom } from './layersManager';
 import type { DrawFunctionParams } from '../../types';
 import { FRONT_INTERACTIVITY_LAYER_ID } from '../const';
 import { clearCanvas } from '../utils';
+import { zoom } from './layersManager';
 
 export const drawFrame = ({ ctx, width, height, store, setStore }: DrawFunctionParams) => {
   clearCanvas(ctx, width, height);

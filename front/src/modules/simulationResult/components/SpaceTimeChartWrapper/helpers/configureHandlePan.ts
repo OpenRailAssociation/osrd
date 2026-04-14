@@ -16,8 +16,8 @@ import {
   isTrainId,
 } from 'utils/trainId';
 
-import { isIndividualOccurrenceProjection } from './utils';
 import type { IndividualTrainProjection, TrainSpaceTimeData } from '../../../types';
+import { isIndividualOccurrenceProjection } from './utils';
 
 type DraggingState =
   | {

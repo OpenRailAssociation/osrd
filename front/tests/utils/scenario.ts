@@ -9,8 +9,8 @@ import type {
   TrainScheduleSet,
 } from 'common/api/osrdEditoastApi';
 
-import { postApiRequest, getInfra, getProject, getStudy } from './api-utils';
 import { SCENARIO_DATA } from '../assets/operation-studies/scenario-const';
+import { postApiRequest, getInfra, getProject, getStudy } from './api-utils';
 
 // Define the SetupResult type to structure the returned setup data.
 type SetupResult = {

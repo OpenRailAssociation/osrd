@@ -51,10 +51,6 @@ import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { useDateTimeLocale } from 'utils/date';
 
-import StdcmConsist from './StdcmConsist';
-import StdcmDestination from './StdcmDestination';
-import StdcmLinkedTrainSearch from './StdcmLinkedTrainSearch';
-import StdcmOrigin from './StdcmOrigin';
 import useStaticPathfinding from '../../hooks/useStaticPathfinding';
 import type {
   ConsistData,
@@ -63,13 +59,17 @@ import type {
   StdcmProgressPoints,
   StdcmRequestStatus,
 } from '../../types';
-import StdcmMapProgressLayer from '../StdcmMapProgressLayer';
-import StdcmSimulationParams from '../StdcmSimulationParams';
-import StdcmVias from './StdcmVias';
 import { ArrivalTimeTypes, StdcmConfigErrorTypes } from '../../types';
 import checkStdcmConfigErrors from '../../utils/checkStdcmConfigErrors';
 import StdcmLoader from '../StdcmLoader';
+import StdcmMapProgressLayer from '../StdcmMapProgressLayer';
+import StdcmSimulationParams from '../StdcmSimulationParams';
 import StdcmWarningBox from '../StdcmWarningBox';
+import StdcmConsist from './StdcmConsist';
+import StdcmDestination from './StdcmDestination';
+import StdcmLinkedTrainSearch from './StdcmLinkedTrainSearch';
+import StdcmOrigin from './StdcmOrigin';
+import StdcmVias from './StdcmVias';
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/consistent-type-definitions

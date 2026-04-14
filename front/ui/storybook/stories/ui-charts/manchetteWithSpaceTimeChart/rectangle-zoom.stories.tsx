@@ -14,11 +14,12 @@ import { ZoomIn } from '@osrd-project/ui-icons';
 import type { Meta } from '@storybook/react-vite';
 import cx from 'classnames';
 
-import { SAMPLE_WAYPOINTS, SAMPLE_CHART_PATHS } from './assets/sampleData';
-import { MouseTracker } from '../spaceTimeChart/helpers/components';
-
 import '@osrd-project/ui-core/dist/theme.css';
 import '@osrd-project/ui-charts/dist/theme.css';
+
+import { MouseTracker } from '../spaceTimeChart/helpers/components';
+import { SAMPLE_WAYPOINTS, SAMPLE_CHART_PATHS } from './assets/sampleData';
+
 import './styles/rectangle-zoom.css';
 
 type ManchetteWithSpaceTimeWrapperProps = {

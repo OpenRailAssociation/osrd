@@ -6,8 +6,8 @@ import { MAP_URL } from 'common/Map/const';
 import type { Theme } from 'common/Map/theme';
 import { useMapContext } from 'common/Map/useMapContext';
 
-import NeutralSectionSigns from './NeutralSectionSigns';
 import OrderedLayer from '../../../OrderedLayer';
+import NeutralSectionSigns from './NeutralSectionSigns';
 
 type NeutralSectionsProps = {
   colors: Theme;

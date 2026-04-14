@@ -1,12 +1,12 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import STDCMPage from './stdcm-page';
 import type {
   DefaultOriginFields,
   ExpectedOriginDetails,
   LightOriginDetailsData,
   OriginDetailsData,
 } from '../../utils/stdcm-types';
+import STDCMPage from './stdcm-page';
 
 class OriginSection extends STDCMPage {
   readonly originChField: Locator;

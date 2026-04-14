@@ -11,6 +11,7 @@ import {
 } from '@osrd-project/ui-charts';
 import { EyeClosed, Telescope } from '@osrd-project/ui-icons';
 import type { Meta } from '@storybook/react-vite';
+
 import '@osrd-project/ui-core/dist/theme.css';
 import '@osrd-project/ui-charts/dist/theme.css';
 

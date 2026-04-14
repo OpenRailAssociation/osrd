@@ -1,5 +1,5 @@
-import { type TICKS_PATTERN } from './consts';
 import type { PickingElement } from '../../common/types';
+import { type TICKS_PATTERN } from './consts';
 
 export type Track = {
   id: string;

@@ -10,12 +10,13 @@ import { type Meta } from '@storybook/react-vite';
 import cx from 'classnames';
 import { random, range } from 'lodash';
 
+import '@osrd-project/ui-core/dist/theme.css';
+import '@osrd-project/ui-charts/dist/theme.css';
+
+import { MINUTE } from '../common/const';
 import { KILOMETER } from './helpers/consts';
 import { getPaths, type PATHS } from './helpers/paths';
 import { X_ZOOM_LEVEL, Y_ZOOM_LEVEL, zoom, getDiff } from './helpers/utils';
-import '@osrd-project/ui-core/dist/theme.css';
-import '@osrd-project/ui-charts/dist/theme.css';
-import { MINUTE } from '../common/const';
 
 const DATE_OFFSET = +new Date('2024/01/01');
 const COLORS = [

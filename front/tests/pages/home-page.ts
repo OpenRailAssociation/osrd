@@ -1,8 +1,8 @@
 import { type BrowserContext, type Locator, type Page } from '@playwright/test';
 import { expect } from '@playwright/test';
 
-import CommonPage from './common-page';
 import { HOME_URLS } from '../assets/constants/homepage-const';
+import CommonPage from './common-page';
 
 class HomePage extends CommonPage {
   private readonly operationalStudiesLink: Locator;

@@ -7,14 +7,15 @@ import {
   intColumn,
   floatColumn,
 } from '@sdziadkowiec/react-datasheet-grid';
-import '@sdziadkowiec/react-datasheet-grid/dist/style.css';
 import { useTranslation } from 'react-i18next';
+
+import '@sdziadkowiec/react-datasheet-grid/dist/style.css';
 
 import { replaceElementAtIndex } from 'utils/array';
 import { msToKmh } from 'utils/physics';
 
-import formatCurve from './formatSpreadSheetCurve';
 import type { ConditionalEffortCurveForm, DataSheetCurve, EffortCurveForms } from '../types';
+import formatCurve from './formatSpreadSheetCurve';
 
 type CurveSpreadsheetProps = {
   selectedCurve: ConditionalEffortCurveForm;

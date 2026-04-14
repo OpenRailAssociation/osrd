@@ -1,7 +1,8 @@
 import React from 'react';
-import './ListElementComponent.scss';
 
 import cx from 'classnames';
+
+import './ListElementComponent.scss';
 
 export type secondaryCodeSuggestion = {
   code: string;

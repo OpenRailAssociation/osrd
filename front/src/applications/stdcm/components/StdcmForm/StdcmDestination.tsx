@@ -3,11 +3,11 @@ import { useSelector } from 'react-redux';
 
 import { getStdcmDestination, getStdcmPathSteps } from 'reducers/osrdconf/stdcmConf/selectors';
 
+import type { StdcmItineraryProps } from '../../types';
+import StdcmCardMarkerIcon from '../StdcmCardMarkerIcon';
 import StdcmCard from './StdcmCard';
 import StdcmOperationalPoint from './StdcmOperationalPoint';
 import StdcmOpSchedule from './StdcmOpSchedule';
-import type { StdcmItineraryProps } from '../../types';
-import StdcmCardMarkerIcon from '../StdcmCardMarkerIcon';
 
 const StdcmDestination = ({ disabled = false, onItineraryChange }: StdcmItineraryProps) => {
   const { t } = useTranslation('stdcm');

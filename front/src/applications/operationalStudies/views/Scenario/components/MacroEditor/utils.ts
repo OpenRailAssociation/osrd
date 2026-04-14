@@ -14,6 +14,7 @@ import type { TimetableItem } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 
+import type { TrainrunCategory, TrainrunFrequency, TrainrunTimeCategory } from '../NGE/types';
 import {
   CUSTOM_TRAINRUN_TIME_CATEGORY,
   DEFAULT_PACED_TRAIN_FREQUENCY_IDS,
@@ -28,7 +29,6 @@ import {
 } from './consts';
 import type MacroEditorState from './MacroEditorState';
 import type { NodeIndexed } from './MacroEditorState';
-import type { TrainrunCategory, TrainrunFrequency, TrainrunTimeCategory } from '../NGE/types';
 
 export const createMacroNode = async (
   state: MacroEditorState,

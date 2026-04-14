@@ -17,11 +17,6 @@ import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { usePrevious } from 'utils/hooks/state';
 
-import CategoryForm from './CategoryForm';
-import MetadataForm from './MetadataForm';
-import OnboardSystemEquipmentForm from './OnboardSystemEquipmentForm';
-import ParametersForm from './ParametersForm';
-import RollingStockEditorCurves from './RollingStockEditorCurves';
 import {
   getDefaultRollingStockMode,
   getRollingStockEditorDefaultValues,
@@ -30,6 +25,11 @@ import { modifyRollingStockElectricalValues } from '../helpers/electricalValues'
 import isRollingStockFormValid from '../helpers/isRollingStockFormValid';
 import { rollingStockEditorQueryArg } from '../helpers/utils';
 import type { EffortCurveForms, RollingStockParametersValues } from '../types';
+import CategoryForm from './CategoryForm';
+import MetadataForm from './MetadataForm';
+import OnboardSystemEquipmentForm from './OnboardSystemEquipmentForm';
+import ParametersForm from './ParametersForm';
+import RollingStockEditorCurves from './RollingStockEditorCurves';
 import RollingStockEditorFormModal from './RollingStockEditorFormModal';
 
 type RollingStockParametersProps = {

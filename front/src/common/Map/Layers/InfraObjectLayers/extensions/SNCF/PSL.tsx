@@ -16,9 +16,9 @@ import { useMapContext } from 'common/Map/useMapContext';
 import type { LayersSettings } from 'reducers/commonMap/types';
 import type { OmitLayer } from 'types';
 
-import SNCF_PSL_Signs from './PSLSigns';
 import OrderedLayer from '../../../OrderedLayer';
 import { getSpeedSectionsName, getFilterBySpeedSectionsTag } from '../../SpeedLimits';
+import SNCF_PSL_Signs from './PSLSigns';
 
 export function getPSLSpeedValueLayerProps({
   colors,

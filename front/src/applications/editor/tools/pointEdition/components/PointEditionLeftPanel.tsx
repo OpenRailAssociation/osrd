@@ -25,10 +25,10 @@ import { useInfraID } from 'common/osrdContext';
 import { save } from 'reducers/editor/thunkActions';
 import { useAppDispatch } from 'store';
 
+import type { TrackSectionEntity } from '../../trackEdition/types';
 import CustomFlagSignalCheckbox from './CustomFlagSignalCheckbox';
 import CustomPosition from './CustomPosition';
 import RoutesList from './RoutesList';
-import type { TrackSectionEntity } from '../../trackEdition/types';
 
 type EditorPoint = BufferStopEntity | DetectorEntity | SignalEntity;
 

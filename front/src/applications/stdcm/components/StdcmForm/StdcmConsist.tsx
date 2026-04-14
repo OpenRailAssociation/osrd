@@ -26,8 +26,8 @@ import {
 import { removeDuplicates } from 'utils/array';
 import { createStandardSelectOptions } from 'utils/uiCoreHelpers';
 
-import StdcmCard from './StdcmCard';
 import useStdcmConsist from '../../hooks/useStdcmConsist';
+import StdcmCard from './StdcmCard';
 
 const ConsistCardTitle = ({
   rollingStock,

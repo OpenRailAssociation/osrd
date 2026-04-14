@@ -33,11 +33,11 @@ import { useAppDispatch } from 'store';
 import { useDateTimeLocale } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
 
-import useStdcmForm from './useStdcmForm';
 import { adjustInputByDirection, adjustPayloadByDirection } from '../utils/adjustSimulationInputs';
 import fetchPathProperties from '../utils/fetchPathProperties';
 import { checkStdcmConf, formatStdcmPayload } from '../utils/formatStdcmConf';
 import computeChartData from '../utils/stdcmComputeChartData';
+import useStdcmForm from './useStdcmForm';
 
 /**
  * Hook to manage the stdcm request with integrated results and chart data handling.

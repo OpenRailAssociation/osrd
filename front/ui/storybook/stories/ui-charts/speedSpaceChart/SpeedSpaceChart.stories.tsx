@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 
-import '@osrd-project/ui-core/dist/theme.css';
-import '@osrd-project/ui-charts/dist/theme.css';
 import { SpeedSpaceChart, type SpeedSpaceChartProps } from '@osrd-project/ui-charts';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+
+import '@osrd-project/ui-core/dist/theme.css';
+import '@osrd-project/ui-charts/dist/theme.css';
 
 import { pathPropertiesPmpLm } from './assets/path_properties_PMP_LM';
 import { powerRestrictionsPmpLm } from './assets/power_restrictions_PMP_LM';

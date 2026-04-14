@@ -2,8 +2,6 @@ import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'r
 
 import { isEqual } from 'lodash';
 
-import { useDevicePixelRatio } from './useDevicePixelRatio';
-import { useSize } from './useSize';
 import { PICKING_LAYERS, LAYERS } from '../consts';
 import { rgbToHex, colorToIndex } from '../helpers/colors';
 import getPNGBlob from '../helpers/png';
@@ -19,6 +17,8 @@ import type {
   PickingLayerType,
   Point,
 } from '../types';
+import { useDevicePixelRatio } from './useDevicePixelRatio';
+import { useSize } from './useSize';
 
 const PICKING = 'picking';
 const RENDERING = 'rendering';

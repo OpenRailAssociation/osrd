@@ -5,8 +5,8 @@ import { ASPECT_LABELS_COLORS } from 'modules/simulationResult/consts';
 import type { OccurrenceId, TimetableItem } from 'reducers/osrdconf/types';
 import { isOccurrenceId } from 'utils/trainId';
 
-import type { MovableOccupancyZone } from './zones';
 import type { AspectLabel, IndividualTrainProjection } from '../../../types';
+import type { MovableOccupancyZone } from './zones';
 
 export const getWaypointsLocalStorageKey = (
   timetableId: number | undefined,

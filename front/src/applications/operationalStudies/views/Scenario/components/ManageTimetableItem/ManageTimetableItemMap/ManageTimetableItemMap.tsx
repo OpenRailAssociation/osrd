@@ -22,8 +22,8 @@ import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 import { useAppDispatch } from 'store';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
-import AddPathStepPopup from './AddPathStepPopup';
 import type { FeatureInfoClick } from '../types';
+import AddPathStepPopup from './AddPathStepPopup';
 
 const OPERATIONAL_POINT_LAYERS = [
   'chartis/osrd_operational_point/geo',

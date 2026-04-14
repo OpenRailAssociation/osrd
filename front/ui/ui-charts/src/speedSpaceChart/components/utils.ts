@@ -1,3 +1,4 @@
+import type { EtcsLayersDisplay, LayerData, OperationalPoints, Store } from '../types';
 import {
   CURSOR_SNAP_DISTANCE,
   LINEAR_LAYER_SEPARATOR_HEIGHT,
@@ -7,7 +8,6 @@ import {
   ETCS_BRAKING_SELECTION,
   ETCS_CURVE_SELECTION,
 } from './const';
-import type { EtcsLayersDisplay, LayerData, OperationalPoints, Store } from '../types';
 
 type SlopesValues = {
   minGradient: number;

@@ -1,4 +1,3 @@
-import { drawTrack } from './drawTrack';
 import { HOUR, MINUTE } from '../../../../common/consts';
 import type { SpaceTimeChartContextType } from '../../../../spaceTimeChart';
 import { GREY_50 } from '../../../../spaceTimeChart/lib/consts';
@@ -10,6 +9,7 @@ import {
 } from '../../../lib/consts';
 import { type Track } from '../../../lib/types';
 import { getLabelLevels, getLabelMarks } from '../../utils';
+import { drawTrack } from './drawTrack';
 
 const { HOUR_BACKGROUND_1, HOUR_BACKGROUND_2 } = COLORS;
 

@@ -1,7 +1,7 @@
 import { createContext } from 'react';
 
-import type { MouseContextType, SpaceTimeChartContextType } from './types';
 import type { CanvasContextType } from '../../common/types';
+import type { MouseContextType, SpaceTimeChartContextType } from './types';
 
 // There are three different contexts because they have very different lifecycles:
 // - MouseContext

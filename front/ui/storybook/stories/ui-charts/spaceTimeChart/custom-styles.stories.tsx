@@ -4,6 +4,9 @@ import { PathLayer, SpaceTimeChart, type Point } from '@osrd-project/ui-charts';
 import type { Meta } from '@storybook/react-vite';
 import cx from 'classnames';
 
+import '@osrd-project/ui-charts/dist/theme.css';
+import '@osrd-project/ui-core/dist/theme.css';
+
 import { OPERATIONAL_POINTS, PATHS } from './helpers/paths';
 import {
   MAX_X_ZOOM,
@@ -14,9 +17,6 @@ import {
   Y_ZOOM_LEVEL,
   getDiff,
 } from './helpers/utils';
-
-import '@osrd-project/ui-charts/dist/theme.css';
-import '@osrd-project/ui-core/dist/theme.css';
 
 const DEFAULT_COLOR_1 = '#FF511A';
 const DEFAULT_COLOR_2 = '#FF8B61';

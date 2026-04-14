@@ -1,9 +1,9 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import OpSimulationResultPage from './simulation-results-page';
 import { getCleanText, isGreyed, isOverflowing } from '../../utils';
 import type { Waypoint } from '../../utils/manchette';
 import type { SimulationResultsTranslations } from '../../utils/types';
+import OpSimulationResultPage from './simulation-results-page';
 
 class GetManchetteComponent extends OpSimulationResultPage {
   private readonly spaceTimeChartMenuButton: Locator;

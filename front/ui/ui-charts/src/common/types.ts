@@ -1,8 +1,8 @@
 import { type HTMLProps } from 'react';
 
 import { type SpaceTimeChartTheme } from '../spaceTimeChart';
-import type { LAYERS, PICKING_LAYERS } from './consts';
 import type { DataPoint, Handler, PointToData, DataToPoint } from '../spaceTimeChart/lib/types';
+import type { LAYERS, PICKING_LAYERS } from './consts';
 
 export type BaseChartContextType = {
   fingerprint: string;

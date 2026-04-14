@@ -12,8 +12,8 @@ import type {
 import type { ExtendedEditorContextType } from 'applications/editor/types';
 import { partialIsEqual } from 'utils/object';
 
-import TrackRange from './TrackRange';
 import { trackRangeKey } from '../utils';
+import TrackRange from './TrackRange';
 
 type GroupedTrackRangeListProps = {
   displayedRanges: ApplicableTrackRange[];

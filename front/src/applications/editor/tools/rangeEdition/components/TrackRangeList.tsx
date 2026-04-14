@@ -11,9 +11,9 @@ import type {
 } from 'applications/editor/tools/rangeEdition/types';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
 
+import { trackRangeKey } from '../utils';
 import GroupedTrackRangeList from './GroupedTrackRangeList';
 import TrackRange from './TrackRange';
-import { trackRangeKey } from '../utils';
 
 const DEFAULT_DISPLAYED_RANGES_COUNT = 5;
 

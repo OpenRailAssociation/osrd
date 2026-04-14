@@ -11,13 +11,13 @@ import {
 } from '@osrd-project/ui-charts';
 import type { Meta } from '@storybook/react-vite';
 
+import '@osrd-project/ui-core/dist/theme.css';
+import '@osrd-project/ui-charts/dist/theme.css';
+
 import { HOUR } from '../common/const';
 import { KILOMETER } from './helpers/consts';
 import { OPERATIONAL_POINTS, PATHS, START_DATE } from './helpers/paths';
 import { X_ZOOM_LEVEL, Y_ZOOM_LEVEL } from './helpers/utils';
-
-import '@osrd-project/ui-core/dist/theme.css';
-import '@osrd-project/ui-charts/dist/theme.css';
 
 type WrapperProps = {
   xZoomLevel: number;

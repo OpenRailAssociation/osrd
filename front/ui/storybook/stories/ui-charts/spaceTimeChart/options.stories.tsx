@@ -10,6 +10,9 @@ import type { Meta } from '@storybook/react-vite';
 import cx from 'classnames';
 import FileSaver from 'file-saver';
 
+import '@osrd-project/ui-core/dist/theme.css';
+import '@osrd-project/ui-charts/dist/theme.css';
+
 import { MouseTracker } from './helpers/components';
 import { OPERATIONAL_POINTS, PATHS } from './helpers/paths';
 import {
@@ -21,9 +24,6 @@ import {
   Y_ZOOM_LEVEL,
   getDiff,
 } from './helpers/utils';
-
-import '@osrd-project/ui-core/dist/theme.css';
-import '@osrd-project/ui-charts/dist/theme.css';
 
 const ScreenshotButton = () => {
   const { captureCanvases } = useContext(SpaceTimeChartCanvasContext);

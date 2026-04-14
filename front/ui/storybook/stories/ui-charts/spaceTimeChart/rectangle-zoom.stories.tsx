@@ -17,12 +17,13 @@ import { clamp } from 'lodash';
 
 import '@osrd-project/ui-core/dist/theme.css';
 import '@osrd-project/ui-charts/dist/theme.css';
-import './styles/rectangle-zoom.css';
 
 import { MouseTracker } from './helpers/components';
 import { KILOMETER } from './helpers/consts';
 import { OPERATIONAL_POINTS, PATHS } from './helpers/paths';
 import { getDiff } from './helpers/utils';
+
+import './styles/rectangle-zoom.css';
 
 const DEFAULT_WIDTH = 1000;
 const DEFAULT_HEIGHT = 500;

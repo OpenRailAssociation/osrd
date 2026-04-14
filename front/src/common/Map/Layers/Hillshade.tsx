@@ -1,7 +1,7 @@
 import { type LayerProps } from 'react-map-gl/maplibre';
 
-import OrderedLayer from './OrderedLayer';
 import { useMapContext } from '../useMapContext';
+import OrderedLayer from './OrderedLayer';
 
 type HillshadeProps = {
   layerOrder?: number;

@@ -9,8 +9,8 @@ import type {
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 import type { LinearMetadataItem } from 'common/IntervalsDataViz/types';
 
-import type { TrackEditionState } from './types';
 import { getNewLine } from '../utils';
+import type { TrackEditionState } from './types';
 
 export function getInitialState(): TrackEditionState {
   const track = getNewLine([]);

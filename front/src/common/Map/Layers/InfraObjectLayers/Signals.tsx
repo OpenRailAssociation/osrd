@@ -6,11 +6,11 @@ import { MAP_URL } from 'common/Map/const';
 import type { Theme } from 'common/Map/theme';
 import { useMapContext } from 'common/Map/useMapContext';
 
+import OrderedLayer from '../OrderedLayer';
+import type { SignalContext } from '../types';
 import { getPointLayerProps, getSignalLayerProps } from './geoSignalsLayers';
 import getKPLabelLayerProps from './getKPLabelLayerProps';
 import getMastLayerProps from './getMastLayerProps';
-import OrderedLayer from '../OrderedLayer';
-import type { SignalContext } from '../types';
 
 type PlatformProps = {
   colors: Theme;

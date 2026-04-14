@@ -5,8 +5,8 @@ import cx from 'classnames';
 
 import { INITIAL_OP_LIST_HEIGHT, MAX_ZOOM_Y, MIN_ZOOM_Y } from '../consts';
 import type { InteractiveWaypoint } from '../types';
-import Waypoint from './Waypoint';
 import { isInteractiveWaypoint } from '../utils/helpers';
+import Waypoint from './Waypoint';
 
 export type ManchetteProps = {
   contents: (InteractiveWaypoint | React.ReactNode)[];

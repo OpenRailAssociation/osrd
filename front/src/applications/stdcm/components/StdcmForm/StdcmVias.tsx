@@ -13,15 +13,15 @@ import type { StdcmViaPathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 
+import { StdcmStopTypes } from '../../types';
+import type { ConsistData, ConsistErrors, StdcmItineraryProps } from '../../types';
+import StdcmCardMarkerIcon from '../StdcmCardMarkerIcon';
 import StdcmCard from './StdcmCard';
 import StdcmConsist from './StdcmConsist';
 import StdcmDefaultCard from './StdcmDefaultCard';
 import StdcmOperationalPoint from './StdcmOperationalPoint';
 import StdcmStopType from './StdcmStopType';
 import StopDurationInput from './StopDurationInput';
-import { StdcmStopTypes } from '../../types';
-import type { ConsistData, ConsistErrors, StdcmItineraryProps } from '../../types';
-import StdcmCardMarkerIcon from '../StdcmCardMarkerIcon';
 
 type StdcmViasProps = StdcmItineraryProps & {
   skipAnimation: boolean;

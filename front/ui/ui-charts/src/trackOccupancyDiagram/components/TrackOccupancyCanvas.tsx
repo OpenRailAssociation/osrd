@@ -2,10 +2,10 @@ import React, { useContext } from 'react';
 
 import { X } from '@osrd-project/ui-icons';
 
-import OccupancyZonesLayer from './layers/OccupancyZonesLayer';
-import TracksLayer from './layers/TracksLayer';
 import { SpaceTimeChartContext } from '../../spaceTimeChart';
 import type { OccupancyZone, Track } from '../lib/types';
+import OccupancyZonesLayer from './layers/OccupancyZonesLayer';
+import TracksLayer from './layers/TracksLayer';
 
 const CloseButton = ({ position, onClose }: { position: number; onClose: () => void }) => {
   const { getSpacePixel } = useContext(SpaceTimeChartContext);

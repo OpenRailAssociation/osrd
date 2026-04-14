@@ -16,8 +16,6 @@ import {
 } from 'modules/rollingStock/consts';
 
 import { EP_BY_MODE } from '../consts';
-import PowerRestrictionGridModal from './PowerRestrictionGridModal';
-import RollingStockEditorFormModal from './RollingStockEditorFormModal';
 import { sortSelectedModeCurves } from '../helpers/curves';
 import { createEmptyCurve, createEmptyCurves } from '../helpers/defaultValues';
 import { translateItemsList } from '../helpers/utils';
@@ -27,6 +25,8 @@ import type {
   ElectricalProfileByMode,
   RollingStockSelectorParams,
 } from '../types';
+import PowerRestrictionGridModal from './PowerRestrictionGridModal';
+import RollingStockEditorFormModal from './RollingStockEditorFormModal';
 
 const addNewCurveToMode = (
   effortCurves: EffortCurveForms,

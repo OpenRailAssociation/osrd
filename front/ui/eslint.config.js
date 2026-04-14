@@ -1,11 +1,11 @@
 import { join } from 'node:path';
 
 import js from '@eslint/js';
-import { defineConfig, globalIgnores } from 'eslint/config';
 import importPlugin from 'eslint-plugin-import';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import { configs as storybookPluginConfigs } from 'eslint-plugin-storybook';
+import { defineConfig, globalIgnores } from 'eslint/config';
 import { configs as tsEslintConfigs } from 'typescript-eslint';
 
 export default defineConfig([
@@ -36,29 +36,6 @@ export default defineConfig([
       },
     },
     rules: {
-      'import/order': [
-        'error',
-        {
-          groups: ['builtin', 'external', 'internal'],
-
-          pathGroups: [
-            {
-              pattern: 'react',
-              group: 'builtin',
-              position: 'before',
-            },
-          ],
-
-          pathGroupsExcludedImportTypes: ['react'],
-          'newlines-between': 'always',
-
-          alphabetize: {
-            order: 'asc',
-            caseInsensitive: true,
-          },
-        },
-      ],
-
       'no-shadow': 'off',
 
       '@typescript-eslint/consistent-type-imports': [

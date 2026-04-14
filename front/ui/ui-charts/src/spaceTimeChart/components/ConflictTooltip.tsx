@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { Tooltip } from './Tooltip';
 import type { Point } from '../../common/types';
+import { Tooltip } from './Tooltip';
 
 export type ConflictTooltipProps = {
   position: Point;

@@ -17,6 +17,7 @@ import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { save } from 'reducers/editor/thunkActions';
 import { getNearestPoint } from 'utils/mapHelper';
 
+import type { OptionsStateType } from '../routeEdition/types';
 import type {
   HoveredExtremityState,
   HoveredSignState,
@@ -38,7 +39,6 @@ import {
   selectPslSign,
   isNew,
 } from './utils';
-import type { OptionsStateType } from '../routeEdition/types';
 
 export type EditorRange = SpeedSectionEntity | ElectrificationEntity;
 type RangeEditionToolParams<T extends EditorRange> = {

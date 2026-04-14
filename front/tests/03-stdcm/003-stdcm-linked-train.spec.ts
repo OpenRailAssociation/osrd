@@ -1,10 +1,5 @@
 import type { Infra, TowedRollingStock } from 'common/api/osrdEditoastApi';
 
-import type { ConsistFields } from '../utils/stdcm-types';
-import { fastRollingStockName } from './../assets/constants/project-const';
-import test, { createStdcmTab } from './../page-object-fixture';
-import { waitForInfraStateToBeCached } from './../utils';
-import { getInfra, setTowedRollingStock } from './../utils/api-utils';
 import LINKED_TRAIN_DETAILS from '../assets/constants/stdcm/linked-train-const';
 import {
   ANTERIOR_LINKED_TRAIN_TABLE_DATA_PATH,
@@ -23,6 +18,11 @@ import {
   VIA_STOP_TYPES,
   VIA_SUGGESTIONS,
 } from '../assets/constants/stdcm/stdcm-const';
+import type { ConsistFields } from '../utils/stdcm-types';
+import { fastRollingStockName } from './../assets/constants/project-const';
+import test, { createStdcmTab } from './../page-object-fixture';
+import { waitForInfraStateToBeCached } from './../utils';
+import { getInfra, setTowedRollingStock } from './../utils/api-utils';
 
 test.describe('@stdcm @stdcm-linked-train', () => {
   let infra: Infra;

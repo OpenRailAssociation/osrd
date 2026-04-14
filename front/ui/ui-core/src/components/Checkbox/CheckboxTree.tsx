@@ -1,9 +1,9 @@
 import React from 'react';
 
+import FieldWrapper, { type FieldWrapperProps } from '../FieldWrapper';
 import CheckboxList from './CheckboxList';
 import { type CheckboxTreeItem } from './type';
 import { computeNewItemsTree as defaultComputeNewItemsTree } from './utils';
-import FieldWrapper, { type FieldWrapperProps } from '../FieldWrapper';
 
 export type CheckboxesTreeProps = Omit<FieldWrapperProps, 'children'> & {
   readOnly?: boolean;

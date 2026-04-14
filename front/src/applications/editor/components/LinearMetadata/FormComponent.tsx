@@ -33,6 +33,7 @@ import { tooltipPosition, notEmpty } from 'common/IntervalsDataViz/utils';
 import { FormBeginEndWidget } from './FormBeginEndWidget';
 import HelpModal from './HelpModal';
 import { LinearMetadataTooltip } from './tooltip';
+
 import 'common/IntervalsDataViz/style.scss';
 
 export type FormContext = {

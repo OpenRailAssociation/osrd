@@ -1,7 +1,5 @@
 import React, { useRef } from 'react';
 
-import '@osrd-project/ui-core/dist/theme.css';
-import '@osrd-project/ui-charts/dist/theme.css';
 import {
   SpaceTimeChart,
   Manchette,
@@ -11,6 +9,9 @@ import {
   type ChartPath,
 } from '@osrd-project/ui-charts';
 import type { Meta } from '@storybook/react-vite';
+
+import '@osrd-project/ui-core/dist/theme.css';
+import '@osrd-project/ui-charts/dist/theme.css';
 
 import { SAMPLE_WAYPOINTS, SAMPLE_CHART_PATHS } from './assets/sampleData';
 

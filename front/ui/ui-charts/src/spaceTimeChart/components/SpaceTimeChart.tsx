@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 
 import cx from 'classnames';
 
-import SpaceGraduations from './SpaceGraduations';
 import { TimeChartCanvasContext } from '../../common/context';
 import { getTimeToPixel, getPixelToTime } from '../../common/helpers/time';
 import { useCanvas } from '../../common/hooks/useCanvas';
@@ -29,6 +28,7 @@ import {
   spaceScalesToBinaryTree,
 } from '../utils/scales';
 import { snapPosition } from '../utils/snapping';
+import SpaceGraduations from './SpaceGraduations';
 
 export const SpaceTimeChart = (props: SpaceTimeChartProps) => {
   const {

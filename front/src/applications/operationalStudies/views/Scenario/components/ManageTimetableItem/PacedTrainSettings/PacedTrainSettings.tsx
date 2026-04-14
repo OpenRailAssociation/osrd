@@ -8,8 +8,8 @@ import { getTimeWindow, getInterval } from 'reducers/osrdconf/operationalStudies
 import { useAppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 
-import AddedOccurrences from './AddedOccurrences';
 import { MAX_TIMEWINDOW_MINUTES } from '../consts';
+import AddedOccurrences from './AddedOccurrences';
 
 const PacedTrainSettings = () => {
   const timeWindow = useSelector(getTimeWindow).total('minute');

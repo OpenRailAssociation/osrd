@@ -4,6 +4,28 @@
   "arrowParens": "always",
   "proseWrap": "always",
   "trailingComma": "es5",
-  "experimentalSortPackageJson": false,
-  "ignorePatterns": ["*.md", "dist", "node_modules", "storybook-static", "ui-icons"]
+  "sortPackageJson": false,
+  "ignorePatterns": ["*.md", "dist", "node_modules", "storybook-static", "ui-icons"],
+  "sortImports": {
+    "groups": [
+      "react",
+      "builtin",
+      "external",
+      "external_styles",
+      ["internal", "index", "sibling", "parent"],
+      ["style", "side_effect_style"]
+    ],
+    "customGroups": [
+      {
+        "groupName": "react",
+        "elementNamePattern": ["react"]
+      },
+      {
+        "groupName": "external_styles",
+        "elementNamePattern": ["**/dist/**/*.{css,scss}", "**/vendor/**/*.{css,scss}"]
+      }
+    ],
+    "newlinesBetween": true,
+    "ignoreCase": true
+  }
 }

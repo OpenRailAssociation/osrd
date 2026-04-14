@@ -13,17 +13,6 @@ import type {
 } from 'common/api/osrdEditoastApi';
 
 import {
-  getApiRequest,
-  getInfra,
-  retrieveLatestStdcmEnvironment,
-  postApiRequest,
-  createStdcmEnvironment,
-} from './api-utils';
-import { createDateInSpecialTimeZone } from './date-utils';
-import { readJsonFile } from './file-utils';
-import createScenario from './scenario';
-import sendTrains from './send-trains';
-import {
   dualModeRollingStockName,
   electricRollingStockName,
   fastRollingStockName,
@@ -38,6 +27,17 @@ import {
 } from '../assets/constants/project-const';
 import { PROJECT_DATA } from '../assets/operation-studies/project-const';
 import { STUDY_DATA } from '../assets/operation-studies/study-const';
+import {
+  getApiRequest,
+  getInfra,
+  retrieveLatestStdcmEnvironment,
+  postApiRequest,
+  createStdcmEnvironment,
+} from './api-utils';
+import { createDateInSpecialTimeZone } from './date-utils';
+import { readJsonFile } from './file-utils';
+import createScenario from './scenario';
+import sendTrains from './send-trains';
 
 /**
  * Helper function to create infrastructure using RailJson.

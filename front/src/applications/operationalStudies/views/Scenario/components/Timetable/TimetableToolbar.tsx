@@ -24,13 +24,13 @@ import UploadFileModal from 'common/uploadFileModal';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 
+import { MANAGE_TIMETABLE_ITEM_TYPES } from '../../consts';
+import useImportTimetableItems from '../ImportTimetableItem';
+import RoundTripsModal from '../RoundTrips/RoundTripsModal';
 import FilterPanel from './FilterPanel';
 import SelectionToolBar from './TimetableSelectionToolbar';
 import type { TimetableFilters, TimetableMode } from './types';
 import { exportTimetableItems, timetableHasInvalidItem } from './utils';
-import { MANAGE_TIMETABLE_ITEM_TYPES } from '../../consts';
-import useImportTimetableItems from '../ImportTimetableItem';
-import RoundTripsModal from '../RoundTrips/RoundTripsModal';
 
 type TimetableToolbarProps = {
   timetableFilters: TimetableFilters;
