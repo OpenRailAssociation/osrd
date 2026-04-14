@@ -90,34 +90,36 @@ def test_get_paced_train_with_exception_path(
         "key": "exception_key",
         "train_schedule_id": paced_train_id,
         "disabled": False,
-        "path_and_schedule": {
-            "power_restrictions": [],
-            "schedule": [],
-            "path": [
-                {
-                    "id": "id1",
-                    "deleted": False,
-                    "location": {
-                        "type": "track_offset",
-                        "track": "TA0",
-                        "offset": 470000,
+        "change_groups": {
+            "path_and_schedule": {
+                "power_restrictions": [],
+                "schedule": [],
+                "path": [
+                    {
+                        "id": "id1",
+                        "deleted": False,
+                        "location": {
+                            "type": "track_offset",
+                            "track": "TA0",
+                            "offset": 470000,
+                        },
                     },
-                },
-                {
-                    "id": "id2",
-                    "deleted": False,
-                    "location": {
-                        "type": "track_offset",
-                        "track": "TG4",
-                        "offset": 1993000,
+                    {
+                        "id": "id2",
+                        "deleted": False,
+                        "location": {
+                            "type": "track_offset",
+                            "track": "TG4",
+                            "offset": 1993000,
+                        },
                     },
+                ],
+                "margins": {
+                    "boundaries": [],
+                    "values": ["5%"],
                 },
-            ],
-            "margins": {
-                "boundaries": [],
-                "values": ["5%"],
-            },
-            "initial_speed": {"value": 20.0},
+                "initial_speed": {"value": 20.0},
+            }
         },
     }
     exception = session.post(
@@ -183,30 +185,32 @@ def test_get_paced_train_with_exception_simulation(
         "key": "exception_key",
         "train_schedule_id": paced_train_id,
         "disabled": False,
-        "path_and_schedule": {
-            "path": [
-                {
-                    "id": "id1",
-                    "deleted": False,
-                    "location": {
-                        "type": "track_offset",
-                        "track": "TA0",
-                        "offset": 470000,
+        "change_groups": {
+            "path_and_schedule": {
+                "path": [
+                    {
+                        "id": "id1",
+                        "deleted": False,
+                        "location": {
+                            "type": "track_offset",
+                            "track": "TA0",
+                            "offset": 470000,
+                        },
                     },
-                },
-                {
-                    "id": "id2",
-                    "deleted": False,
-                    "location": {
-                        "type": "track_offset",
-                        "track": "TG4",
-                        "offset": 1993000,
+                    {
+                        "id": "id2",
+                        "deleted": False,
+                        "location": {
+                            "type": "track_offset",
+                            "track": "TG4",
+                            "offset": 1993000,
+                        },
                     },
-                },
-            ],
-            "schedule": [],
-            "margins": {"boundaries": [], "values": ["0%"]},
-            "power_restrictions": [],
+                ],
+                "schedule": [],
+                "margins": {"boundaries": [], "values": ["0%"]},
+                "power_restrictions": [],
+            }
         },
     }
     exception = session.post(
