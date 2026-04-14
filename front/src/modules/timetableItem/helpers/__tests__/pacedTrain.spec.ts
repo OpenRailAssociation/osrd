@@ -3,11 +3,17 @@ import { describe, it, expect } from 'vitest';
 import type { TrainSchedule, PacedTrainException } from 'common/api/osrdEditoastApi';
 import type { SimulatedException, SimulationSummary } from 'modules/timetableItem/types';
 import { Duration } from 'utils/duration';
+import {
+  formatEditoastIdToPacedTrainId,
+  formatPacedTrainIdToExceptionId,
+  formatPacedTrainIdToIndexedOccurrenceId,
+} from 'utils/trainId';
 
 import {
   extractOccurrenceDetailsFromPacedTrain,
   getOccurrencesNb,
   getOccurrencesWorstStatus,
+  isOccurrencePresentInPacedTrain,
 } from '../pacedTrain';
 
 describe('getOccurrencesNb', () => {
@@ -317,5 +323,96 @@ describe('getOccurrencesWorstStatus', () => {
         ])
       ).toEqual('');
     });
+  });
+});
+
+describe('isOccurrencePresentInPacedTrain', () => {
+  const timetableItemId = 123;
+  const pacedTrainId = formatEditoastIdToPacedTrainId(timetableItemId);
+
+  const paced = {
+    timeWindow: Duration.parse('PT2H'),
+    interval: Duration.parse('PT30M'),
+    exceptions: [
+      { key: 'added-exception' },
+      { key: 'disabled-exception', occurrence_index: 1, disabled: true },
+      { key: 'modified-exception', occurrence_index: 2, disabled: false },
+    ],
+  };
+  const timetableItem = { paced, id: timetableItemId };
+
+  it('should return false if the timetable item is not paced', () => {
+    expect(
+      isOccurrencePresentInPacedTrain(formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, 0), {
+        paced: undefined,
+        id: timetableItemId,
+      })
+    ).toEqual(false);
+  });
+
+  it('should return false if the occurrence does not belong to the paced train id', () => {
+    expect(
+      isOccurrencePresentInPacedTrain(
+        formatPacedTrainIdToIndexedOccurrenceId(formatEditoastIdToPacedTrainId(999), 0),
+        timetableItem
+      )
+    ).toEqual(false);
+  });
+
+  it('should return true if the indexed occurrence is in range and not disabled', () => {
+    expect(
+      isOccurrencePresentInPacedTrain(
+        formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, 0), // regular occurrence
+        timetableItem
+      )
+    ).toEqual(true);
+    expect(
+      isOccurrencePresentInPacedTrain(
+        formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, 2), // modified exception
+        timetableItem
+      )
+    ).toEqual(true);
+  });
+
+  it('should return false if the indexed occurrence is out of range', () => {
+    expect(
+      isOccurrencePresentInPacedTrain(
+        formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, -1),
+        timetableItem
+      )
+    ).toEqual(false);
+    expect(
+      isOccurrencePresentInPacedTrain(
+        formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, 4),
+        timetableItem
+      )
+    ).toEqual(false);
+  });
+
+  it('should return false if the indexed occurrence is a disabled exception', () => {
+    expect(
+      isOccurrencePresentInPacedTrain(
+        formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, 1),
+        timetableItem
+      )
+    ).toEqual(false);
+  });
+
+  it('should return true if the occurrence is an added exception present in the paced train', () => {
+    expect(
+      isOccurrencePresentInPacedTrain(
+        formatPacedTrainIdToExceptionId(pacedTrainId, 'added-exception'),
+        timetableItem
+      )
+    ).toEqual(true);
+  });
+
+  it('should return false if the occurrence is an added exception not present in the paced train', () => {
+    expect(
+      isOccurrencePresentInPacedTrain(
+        formatPacedTrainIdToExceptionId(pacedTrainId, 'unknown-exception'),
+        timetableItem
+      )
+    ).toEqual(false);
   });
 });

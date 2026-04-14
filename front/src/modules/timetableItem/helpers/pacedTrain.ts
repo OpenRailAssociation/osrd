@@ -12,6 +12,7 @@ import {
   extractPacedTrainIdFromOccurrenceId,
   formatPacedTrainIdToExceptionId,
   formatPacedTrainIdToIndexedOccurrenceId,
+  isAddedExceptionId,
   isIndexedOccurrenceId,
 } from 'utils/trainId';
 
@@ -214,4 +215,28 @@ export const getOcurrencesIds = (pacedTrain: PacedTrainWithPaced, pacedTrainId: 
     occurrencesIds.push(formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, i));
   }
   return occurrencesIds;
+};
+
+export const isOccurrencePresentInPacedTrain = (
+  occurrenceId: OccurrenceId,
+  timetableItem: Pick<TimetableItemWithDetails, 'paced' | 'id'>
+): boolean => {
+  const paced = timetableItem.paced;
+  if (!paced) return false;
+
+  const pacedTrainId = extractPacedTrainIdFromOccurrenceId(occurrenceId);
+  if (extractEditoastIdFromPacedTrainId(pacedTrainId) !== timetableItem.id) return false;
+
+  if (isAddedExceptionId(occurrenceId)) {
+    const exceptionId = extractExceptionIdFromOccurrenceId(occurrenceId);
+    return paced.exceptions.some((exception) => exception.key === exceptionId);
+  }
+
+  const occurrenceIndex = extractOccurrenceIndexFromOccurrenceId(occurrenceId);
+  const isDisabledException = paced.exceptions.find(
+    (exception) => exception.occurrence_index === occurrenceIndex
+  )?.disabled;
+  if (isDisabledException) return false;
+
+  return occurrenceIndex >= 0 && occurrenceIndex < getOccurrencesNb(paced);
 };
