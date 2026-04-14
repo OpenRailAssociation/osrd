@@ -127,11 +127,15 @@ const useAutoSelectTrainIds = (
     }
 
     const isSelectedTrainIdValid = isTrainIdInTimetable(selectedTrainId, timetableItemsWithDetails);
+    const isProjectedTrainIdValid = isTrainIdInTimetable(
+      currentTrainIdForProjection,
+      timetableItemsWithDetails
+    );
 
     // if a selected timetable item is given and is still in the timetable, don't change the selected train
     if (isSelectedTrainIdValid) {
-      // if no train is used for the projection, use the selected train
-      if (!currentTrainIdForProjection) {
+      // if no train is used for the projection or the id is invalid, use the selected train
+      if (!isProjectedTrainIdValid) {
         dispatch(updateTrainIdUsedForProjection(selectedTrainId));
       }
       return;
@@ -146,8 +150,8 @@ const useAutoSelectTrainIds = (
 
     if (firstTrainCanBeUsedForProjection) {
       const pacedTrainId = formatEditoastIdToPacedTrainId(firstTrainCanBeUsedForProjection.id);
-      dispatch(updateTrainIdUsedForProjection(pacedTrainId));
       dispatch(updateSelectedTrainId(pacedTrainId));
+      if (!isProjectedTrainIdValid) dispatch(updateTrainIdUsedForProjection(pacedTrainId));
     }
   }, [timetableItemsWithDetails, setIdsFromUrlOrStorage, parametersLoaded]);
 };
