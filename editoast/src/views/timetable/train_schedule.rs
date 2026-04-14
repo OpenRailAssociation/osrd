@@ -91,9 +91,9 @@ enum TrainScheduleError {
     #[error("Infra '{infra_id}', could not be found")]
     #[editoast_error(status = 404)]
     InfraNotFound { infra_id: i64 },
-    #[error("Exception '{exception_key}', could not be found")]
+    #[error("Exception '{exception_id}', could not be found")]
     #[editoast_error(status = 404)]
-    ExceptionNotFound { exception_key: String },
+    ExceptionNotFound { exception_id: i64 },
     #[error("Rolling stock '{rolling_stock_name}', could not be found")]
     #[editoast_error(status = 404)]
     RollingStockNotFound { rolling_stock_name: String },
@@ -284,14 +284,14 @@ pub(in crate::views) struct SimulationBatchForm {
 #[schema(as = TrainScheduleSimulationSummaryResult)]
 pub(in crate::views) struct TrainScheduleSummaryResponse {
     pub train_schedule: SummaryResponse,
-    /// The key is the `exception_key`
-    pub exceptions: HashMap<String, SummaryResponse>,
+    /// The key is the `exception_id`
+    pub exceptions: HashMap<i64, SummaryResponse>,
 }
 
 #[derive(Default)]
 struct TrainScheduleSummaryResponseBuilder {
     train_schedule: Option<SummaryResponse>,
-    exceptions: HashMap<String, SummaryResponse>,
+    exceptions: HashMap<i64, SummaryResponse>,
 }
 
 impl TrainScheduleSummaryResponseBuilder {
@@ -300,12 +300,8 @@ impl TrainScheduleSummaryResponseBuilder {
         self
     }
     // Can be called multiple times for each exception to add
-    fn add_exception(
-        &mut self,
-        exception_key: String,
-        summary_response: SummaryResponse,
-    ) -> &mut Self {
-        self.exceptions.insert(exception_key, summary_response);
+    fn add_exception(&mut self, exception_id: i64, summary_response: SummaryResponse) -> &mut Self {
+        self.exceptions.insert(exception_id, summary_response);
         self
     }
     /// Only returns None if no summary response is available for the base occurrence
@@ -509,11 +505,9 @@ pub(in crate::views) async fn simulation_summary(
                         train_schedule_id,
                         index: _,
                         exception_id: _,
-                        exception_key: _,
                     }
                     | OccurrenceId::Created {
                         train_schedule_id,
-                        exception_key: _,
                         exception_id: _,
                     } => *train_schedule_id,
                 })
@@ -600,16 +594,14 @@ pub(in crate::views) async fn simulation_summary(
                     OccurrenceId::Modified {
                         train_schedule_id,
                         index: _,
-                        exception_id: _,
-                        exception_key,
+                        exception_id,
                     }
                     | OccurrenceId::Created {
                         train_schedule_id,
-                        exception_id: _,
-                        exception_key,
+                        exception_id,
                     } => {
                         let builder = simulation_summaries.entry(train_schedule_id).or_default();
-                        builder.add_exception(exception_key, summary_response);
+                        builder.add_exception(exception_id, summary_response);
                     }
                 }
                 simulation_summaries
@@ -696,10 +688,7 @@ pub(in crate::views) async fn get_path(
         Some(exception_id) => {
             let exception =
                 TrainScheduleException::retrieve_or_fail(conn.clone(), exception_id, || {
-                    TrainScheduleError::ExceptionNotFound {
-                        // TODO rename to exception_id
-                        exception_key: exception_id.to_string(),
-                    }
+                    TrainScheduleError::ExceptionNotFound { exception_id }
                 })
                 .await?;
             train_schedule.apply_train_schedule_exception(&exception.into())
@@ -788,12 +777,7 @@ pub(in crate::views) async fn simulation(
             let exception = TrainScheduleException::retrieve_or_fail(
                 db_pool.get().await?,
                 exception_id,
-                || {
-                    TrainScheduleError::ExceptionNotFound {
-                        // TODO rename to exception_id
-                        exception_key: exception_id.to_string(),
-                    }
-                },
+                || TrainScheduleError::ExceptionNotFound { exception_id },
             )
             .await?;
             train_schedule.apply_train_schedule_exception(&exception.into())
@@ -883,9 +867,7 @@ pub(in crate::views) async fn etcs_braking_curves(
                 TrainScheduleException::retrieve_or_fail(
                     db_pool.get().await?,
                     exception_id,
-                    || TrainScheduleError::ExceptionNotFound {
-                        exception_key: exception_id.to_string(),
-                    },
+                    || TrainScheduleError::ExceptionNotFound { exception_id },
                 )
                 .await?
                 .into();
@@ -973,7 +955,7 @@ pub struct ProjectPathTrainScheduleResult {
     /// Train schedule
     pub train_schedule: Vec<SpaceTimeCurve>,
     /// Exceptions whose projection is different from the train schedule when it has a paced
-    pub exceptions: HashMap<String, Vec<SpaceTimeCurve>>,
+    pub exceptions: HashMap<i64, Vec<SpaceTimeCurve>>,
 }
 
 /// Projects the space-time curves and paths of a number of train schedules onto a given path.
@@ -1096,16 +1078,13 @@ pub(in crate::views) async fn project_path(
     let results = simulation_contexts.into_iter().enumerate().fold(
         HashMap::<i64, ProjectPathTrainScheduleResult>::new(),
         |mut results, (index, simulation_context)| {
-            if let Some(exception_key) = simulation_context.exception_id {
+            if let Some(exception_id) = simulation_context.exception_id {
                 if !Arc::ptr_eq(&base_project_path, &project_path_result[index]) {
                     results
                         .get_mut(&simulation_context.train_schedule_id)
                         .expect("train_schedule_id should exist")
                         .exceptions
-                        .insert(
-                            exception_key.to_string(),
-                            (*project_path_result[index]).clone(),
-                        );
+                        .insert(exception_id, (*project_path_result[index]).clone());
                 }
             } else {
                 results.insert(
@@ -1260,12 +1239,12 @@ pub(in crate::views) async fn project_path_op(
             match id {
                 OccurrenceId::Modified {
                     train_schedule_id,
-                    exception_key,
+                    exception_id,
                     ..
                 }
                 | OccurrenceId::Created {
                     train_schedule_id,
-                    exception_key,
+                    exception_id,
                     ..
                 } => {
                     if !Arc::ptr_eq(&base_project_path, &projected_train) {
@@ -1276,7 +1255,7 @@ pub(in crate::views) async fn project_path_op(
                                 exceptions: HashMap::new(),
                             })
                             .exceptions
-                            .insert(exception_key, (*projected_train).clone());
+                            .insert(exception_id, (*projected_train).clone());
                     }
                 }
                 OccurrenceId::Base {
@@ -1306,8 +1285,8 @@ pub struct OccupancyBlocksTrainScheduleResult {
     #[schema(value_type = Vec<SignalUpdate>)]
     pub train_schedule: OccupancyBlocks,
     /// Exceptions whose blocks are different from the paced train
-    #[schema(value_type = HashMap<String, Vec<SignalUpdate>>)]
-    pub exceptions: HashMap<String, OccupancyBlocks>,
+    #[schema(value_type = HashMap<i64, Vec<SignalUpdate>>)]
+    pub exceptions: HashMap<i64, OccupancyBlocks>,
 }
 
 /// ## Important:
@@ -1425,14 +1404,14 @@ pub(in crate::views) async fn occupancy_blocks(
     let mut results = HashMap::<i64, OccupancyBlocksTrainScheduleResult>::new();
 
     for (index, simulation_context) in simulation_contexts.into_iter().enumerate() {
-        if let Some(exception_key) = simulation_context.exception_id {
+        if let Some(exception_id) = simulation_context.exception_id {
             if !Arc::ptr_eq(&base_occupancy_blocks, &occupancy_blocks_result[index]) {
                 results
                     .get_mut(&simulation_context.train_schedule_id)
                     .expect("train_schedule_id should exist")
                     .exceptions
                     .insert(
-                        exception_key.to_string(),
+                        exception_id,
                         Arc::unwrap_or_clone(occupancy_blocks_result[index].clone()),
                     );
             }
@@ -2508,7 +2487,7 @@ mod tests {
         .await;
 
         // Add one exception which will change the simulation from base
-        let _exception_2 = create_train_schedule_exception(
+        let exception_2 = create_train_schedule_exception(
             &mut db_pool.get_ok(),
             timetable.id,
             train_schedule.id,
@@ -2522,7 +2501,7 @@ mod tests {
         .await;
 
         // Add one exception which will change the simulation from base with another rolling stock
-        let _exception_3 = create_train_schedule_exception(
+        let exception_3 = create_train_schedule_exception(
             &mut db_pool.get_ok(),
             timetable.id,
             train_schedule.id,
@@ -2541,7 +2520,7 @@ mod tests {
         .await;
 
         // Add one exception with a different path whose path item don’t exists
-        let _exception_3 = create_train_schedule_exception(
+        let exception_4 = create_train_schedule_exception(
             &mut db_pool.get_ok(),
             timetable.id,
             train_schedule.id,
@@ -2599,7 +2578,7 @@ mod tests {
         );
 
         assert_eq!(
-            exceptions.get("change_rolling_stock").unwrap(),
+            exceptions.get(&exception_3.id).unwrap(),
             // Simulation of the exception is the same than base
             // because all simulation results from core are identical stubs
             &SummaryResponse::Success {
@@ -2614,7 +2593,7 @@ mod tests {
             }
         );
         assert_eq!(
-            exceptions.get("change_initial_speed").unwrap(),
+            exceptions.get(&exception_2.id).unwrap(),
             // Simulation of the exception is the same than base
             // because all simulation results from core are identical stubs
             &SummaryResponse::Success {
@@ -2629,7 +2608,7 @@ mod tests {
             }
         );
         assert_eq!(
-            exceptions.get("unknown_path_item").unwrap(),
+            exceptions.get(&exception_4.id).unwrap(),
             &SummaryResponse::PathfindingInputError(PathfindingInputError::InvalidPathItems {
                 items: vec![
                     InvalidPathItem {

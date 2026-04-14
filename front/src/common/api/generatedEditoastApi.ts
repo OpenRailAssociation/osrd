@@ -2030,14 +2030,12 @@ export type PostLevelCrossingOccupancyApiResponse =
         }
       | {
           exception_id: number;
-          exception_key: string;
           index: number;
           train_schedule_id: number;
           type: 'modified';
         }
       | {
           exception_id: number;
-          exception_key: string;
           train_schedule_id: number;
           type: 'created';
         }
@@ -2701,14 +2699,12 @@ export type PostTrainSchedulesTrackOccupancyApiResponse =
         }
       | {
           exception_id: number;
-          exception_key: string;
           index: number;
           train_schedule_id: number;
           type: 'modified';
         }
       | {
           exception_id: number;
-          exception_key: string;
           train_schedule_id: number;
           type: 'created';
         }
@@ -4499,14 +4495,12 @@ export type Conflict = {
       }
     | {
         exception_id: number;
-        exception_key: string;
         index: number;
         train_schedule_id: number;
         type: 'modified';
       }
     | {
         exception_id: number;
-        exception_key: string;
         train_schedule_id: number;
         type: 'created';
       }
@@ -5079,7 +5073,7 @@ export type SimulationSummaryResult =
       status: 'pathfinding_input_error';
     });
 export type TrainScheduleSimulationSummaryResult = {
-  /** The key is the `exception_key` */
+  /** The key is the `exception_id` */
   exceptions: {
     [key: string]: SimulationSummaryResult;
   };

@@ -1862,14 +1862,11 @@ paths:
                         - train_schedule_id
                         - index
                         - exception_id
-                        - exception_key
                         - type
                         properties:
                           exception_id:
                             type: integer
                             format: int64
-                          exception_key:
-                            type: string
                           index:
                             type: integer
                             minimum: 0
@@ -1884,14 +1881,11 @@ paths:
                         required:
                         - train_schedule_id
                         - exception_id
-                        - exception_key
                         - type
                         properties:
                           exception_id:
                             type: integer
                             format: int64
-                          exception_key:
-                            type: string
                           train_schedule_id:
                             type: integer
                             format: int64
@@ -4479,14 +4473,11 @@ paths:
                             - train_schedule_id
                             - index
                             - exception_id
-                            - exception_key
                             - type
                             properties:
                               exception_id:
                                 type: integer
                                 format: int64
-                              exception_key:
-                                type: string
                               index:
                                 type: integer
                                 minimum: 0
@@ -4501,14 +4492,11 @@ paths:
                             required:
                             - train_schedule_id
                             - exception_id
-                            - exception_key
                             - type
                             properties:
                               exception_id:
                                 type: integer
                                 format: int64
-                              exception_key:
-                                type: string
                               train_schedule_id:
                                 type: integer
                                 format: int64
@@ -5148,14 +5136,11 @@ components:
               - train_schedule_id
               - index
               - exception_id
-              - exception_key
               - type
               properties:
                 exception_id:
                   type: integer
                   format: int64
-                exception_key:
-                  type: string
                 index:
                   type: integer
                   minimum: 0
@@ -5170,14 +5155,11 @@ components:
               required:
               - train_schedule_id
               - exception_id
-              - exception_key
               - type
               properties:
                 exception_id:
                   type: integer
                   format: int64
-                exception_key:
-                  type: string
                 train_schedule_id:
                   type: integer
                   format: int64
@@ -8465,10 +8447,10 @@ components:
         context:
           type: object
           required:
-          - exception_key
+          - exception_id
           properties:
-            exception_key:
-              type: string
+            exception_id:
+              type: integer
         message:
           type: string
         status:
@@ -10490,7 +10472,8 @@ components:
             items:
               $ref: '#/components/schemas/core.SignalUpdate'
           propertyNames:
-            type: string
+            type: integer
+            format: int64
         train_schedule:
           type: array
           items:
@@ -11629,7 +11612,8 @@ components:
             items:
               $ref: '#/components/schemas/SpaceTimeCurve'
           propertyNames:
-            type: string
+            type: integer
+            format: int64
         train_schedule:
           type: array
           items:
@@ -14817,11 +14801,12 @@ components:
       properties:
         exceptions:
           type: object
-          description: The key is the `exception_key`
+          description: The key is the `exception_id`
           additionalProperties:
             $ref: '#/components/schemas/SimulationSummaryResult'
           propertyNames:
-            type: string
+            type: integer
+            format: int64
         train_schedule:
           $ref: '#/components/schemas/SimulationSummaryResult'
     Version:
