@@ -37,7 +37,7 @@ import type {
 } from './types';
 
 /**
- * The number of stops in the schedule, not counting the one at the destination.
+ * The number of stops in the schedule, not counting the one at the origin or destination.
  */
 export const intermediateStopsCount = ({
   schedule,
@@ -46,20 +46,14 @@ export const intermediateStopsCount = ({
   schedule?: ScheduleItem[];
   path: PathItem[];
 }) => {
-  if (!schedule) {
-    return 0;
-  }
-  const lastPathItem = path.at(-1);
-  if (!lastPathItem) {
-    return 0;
-  }
-  const lastScheduleItem = schedule.find((step) => step.at === lastPathItem.id);
-  const stopsCount = schedule.filter((step) => step.stop_for).length;
-  if (lastScheduleItem?.stop_for) {
-    return stopsCount - 1;
-  } else {
-    return stopsCount;
-  }
+  if (!schedule) return 0;
+
+  const originId = path.at(0)?.id;
+  const destinationId = path.at(-1)?.id;
+  const intermediateStops = schedule.filter(
+    (step) => step.stop_for && step.at !== originId && step.at !== destinationId
+  );
+  return intermediateStops.length;
 };
 
 /**
