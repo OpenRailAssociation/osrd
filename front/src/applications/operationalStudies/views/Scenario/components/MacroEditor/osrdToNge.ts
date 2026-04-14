@@ -20,6 +20,18 @@ import type { AppDispatch } from 'store';
 import { Duration, addDurationToDate } from 'utils/duration';
 
 import {
+  type PortDto,
+  type TimeLockDto,
+  type TrainrunDto,
+  type TrainrunSectionDto,
+  type TrainrunFrequency,
+  type NetzgrafikDto,
+  PortAlignment,
+  type LabelDto,
+  type TrainrunCategory,
+  type FreeFloatingTextDto,
+} from '../NGE/types';
+import {
   TRAINRUN_CATEGORY_HALTEZEITEN,
   NODE_LABEL_GROUP,
   TRAINRUN_LABEL_GROUP,
@@ -37,18 +49,6 @@ import {
   getTrainrunTimeCategoryFromFrequency,
   storeTrainPathNodes,
 } from './utils';
-import {
-  type PortDto,
-  type TimeLockDto,
-  type TrainrunDto,
-  type TrainrunSectionDto,
-  type TrainrunFrequency,
-  type NetzgrafikDto,
-  PortAlignment,
-  type LabelDto,
-  type TrainrunCategory,
-  type FreeFloatingTextDto,
-} from '../NGE/types';
 
 /**
  * Get the TrainrunFrequencies from the TimetableItems.

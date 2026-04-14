@@ -2,13 +2,13 @@ import { expect, type Locator, type Page } from '@playwright/test';
 
 import { Duration } from 'utils/duration';
 
-import ScenarioTimetableSection from './scenario-timetable-section';
 import {
   DEFAULT_PACED_TRAIN_SETTINGS,
   PACED_TRAIN_SETTINGS_TEST,
 } from '../../assets/constants/operational-studies-const';
 import { createDateInSpecialTimeZone } from '../../utils/date-utils';
 import type { ManageTimetableItemTranslations, PacedTrainDetails } from '../../utils/types';
+import ScenarioTimetableSection from './scenario-timetable-section';
 
 class OperationalStudiesPage extends ScenarioTimetableSection {
   private readonly addTimetableItemButton: Locator;

@@ -14,8 +14,8 @@ import type { Duration } from 'utils/duration';
 import { kmhToMs, tToKg } from 'utils/physics';
 
 import { stdcmPathStepToPathItemLocation } from '.';
-import createMargin from './createMargin';
 import { StdcmStopTypes } from '../types';
+import createMargin from './createMargin';
 
 type ValidStdcmConfig = {
   rollingStockId: number;

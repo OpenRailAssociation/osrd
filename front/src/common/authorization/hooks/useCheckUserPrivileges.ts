@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
-import useAuthz from './useAuthz';
 import type { Privilege, ResourceType } from '../types';
+import useAuthz from './useAuthz';
 
 type UseCheckUserPrivilegesParams = {
   resourceType: ResourceType;

@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Input, type StatusWithMessage } from '@osrd-project/ui-core';
 import { ChevronDown, X } from '@osrd-project/ui-icons';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+
 import '@osrd-project/ui-core/dist/theme.css';
 
 const meta: Meta<typeof Input> = {

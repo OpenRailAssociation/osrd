@@ -11,9 +11,9 @@ import type {
 import type { ExtendedEditorContextType } from 'applications/editor/types';
 import { LoaderFill } from 'common/Loaders';
 
+import { trackRangeKey } from '../utils';
 import TrackRangeApplicableDirections from './TrackRangeApplicableDirections';
 import TrackRangeButtons from './TrackRangeButtons';
-import { trackRangeKey } from '../utils';
 
 type TrackRangeProps = {
   index: number;

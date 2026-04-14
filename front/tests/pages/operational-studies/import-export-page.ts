@@ -1,12 +1,12 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import ScenarioTimetableSection from './scenario-timetable-section';
 import { logger } from '../../logging-fixture';
 import {
   assertSuggestedFilename,
   saveDownloadToDir,
   triggerFileDownload,
 } from '../../utils/file-utils';
+import ScenarioTimetableSection from './scenario-timetable-section';
 
 class ImportExportPage extends ScenarioTimetableSection {
   private readonly importTimetableMenuButton: Locator;

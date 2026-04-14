@@ -1,7 +1,7 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import ScenarioPage from './scenario-page';
 import { toggleByState } from '../../utils';
+import ScenarioPage from './scenario-page';
 
 class OpSimulationResultPage extends ScenarioPage {
   readonly simulationResults: Locator;

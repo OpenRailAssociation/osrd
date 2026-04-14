@@ -1,8 +1,5 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import DestinationSection from './destination-section';
-import OriginSection from './origin-section';
-import STDCMPage from './stdcm-page';
 import { expectFieldsToHaveValues } from '../../utils';
 import type {
   AnteriorLinkedPathDetails,
@@ -10,6 +7,9 @@ import type {
   LinkedTrainInfo,
   PosteriorLinkedPathDetails,
 } from '../../utils/stdcm-types';
+import DestinationSection from './destination-section';
+import OriginSection from './origin-section';
+import STDCMPage from './stdcm-page';
 
 class LinkedTrainSection extends STDCMPage {
   readonly originPage: OriginSection;

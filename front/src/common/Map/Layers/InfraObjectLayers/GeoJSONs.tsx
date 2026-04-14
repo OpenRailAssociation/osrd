@@ -14,6 +14,16 @@ import { LAYER_ENTITIES_ORDERS, LAYER_GROUPS_ORDER, LAYERS } from 'config/layerO
 import type { MapSettings } from 'reducers/commonMap/types';
 import type { EditorState } from 'reducers/editor';
 
+import { lineNameLayer, lineNumberLayer, trackNameLayer } from '../commonLayers';
+import {
+  getLineErrorsLayerProps,
+  getLineTextErrorsLayerProps,
+  getPointErrorsLayerProps,
+  getPointTextErrorsLayerProps,
+} from '../Errors';
+import OrderedLayer from '../OrderedLayer';
+import { Platforms } from '../OSMLayers/Platforms';
+import type { LayerContext, LayerProps } from '../types';
 import { getBufferStopsLayerProps } from './BufferStops';
 import {
   DETECTOR_CIRCLES_DEF,
@@ -37,17 +47,7 @@ import {
   getSpeedSectionsPointLayerProps,
   getSpeedSectionsTextLayerProps,
 } from './SpeedLimits';
-import {
-  getLineErrorsLayerProps,
-  getLineTextErrorsLayerProps,
-  getPointErrorsLayerProps,
-  getPointTextErrorsLayerProps,
-} from '../Errors';
 import { getSwitchesLayerProps, getSwitchesNameLayerProps } from './Switches';
-import { lineNameLayer, lineNumberLayer, trackNameLayer } from '../commonLayers';
-import OrderedLayer from '../OrderedLayer';
-import { Platforms } from '../OSMLayers/Platforms';
-import type { LayerContext, LayerProps } from '../types';
 
 const POINT_ENTITIES_MIN_ZOOM = 12;
 

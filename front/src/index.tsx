@@ -3,13 +3,13 @@ import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 
 import 'maplibre-gl/dist/maplibre-gl.css';
-import 'styles/styles.scss';
-
 import 'styles/scss/vendor/bootstrap-sncf/site-intern.scss';
 
 import { Loader } from 'common/Loaders';
 import App from 'main/app';
 import { persistor, store } from 'store';
+
+import 'styles/styles.scss';
 
 export default function Container() {
   return (

@@ -6,10 +6,10 @@ import { useTranslation } from 'react-i18next';
 
 import useLinkedTrainSearch from 'applications/stdcm/hooks/useLinkedTrainSearch';
 
+import type { LinkedTrainType } from '../../types';
 import StdcmCard from './StdcmCard';
 import StdcmDefaultCard from './StdcmDefaultCard';
 import StdcmLinkedTrainResults from './StdcmLinkedTrainResults';
-import type { LinkedTrainType } from '../../types';
 
 type StdcmLinkedTrainSearchProps = {
   disabled: boolean;

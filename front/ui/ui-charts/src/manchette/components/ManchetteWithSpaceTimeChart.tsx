@@ -1,12 +1,12 @@
 import React, { useRef } from 'react';
 
-import Manchette, { type ManchetteProps } from './Manchette';
 import { PathLayer, SpaceTimeChart, type SpaceTimeChartProps } from '../../spaceTimeChart';
 import { INITIAL_SPACE_TIME_CHART_HEIGHT } from '../consts';
 import useManchetteWithSpaceTimeChart, {
   type SplitPoint,
 } from '../hooks/useManchetteWithSpaceTimeChart';
 import type { ChartPath, Waypoint } from '../types';
+import Manchette, { type ManchetteProps } from './Manchette';
 
 export type ManchetteWithSpaceTimeChartProps = {
   waypoints: Waypoint[];

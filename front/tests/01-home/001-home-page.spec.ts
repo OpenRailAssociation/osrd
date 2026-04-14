@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test';
 
-import test from './../page-object-fixture';
 import { EXPECTED_HOME_LINKS } from '../assets/constants/homepage-const';
+import test from './../page-object-fixture';
 
 test.describe('@home @navigation', () => {
   test.beforeEach('Navigate to the home page', async ({ homePage }) => {

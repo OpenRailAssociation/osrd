@@ -2,15 +2,7 @@ import fs from 'fs';
 
 import type { Infra } from 'common/api/osrdEditoastApi';
 
-import test from './../page-object-fixture';
 import simulationSheetDetails from '../assets/constants/stdcm/simulation-sheet-const';
-import ConsistSection from './../pages/stdcm/consist-section';
-import DestinationSection from './../pages/stdcm/destination-section';
-import OriginSection from './../pages/stdcm/origin-section';
-import { waitForInfraStateToBeCached } from './../utils';
-import { getInfra } from './../utils/api-utils';
-import { findFirstPdf, parsePdfText, verifySimulationContent } from './../utils/pdf-parser';
-import type { PdfSimulationContent } from './../utils/types';
 import {
   CI_SUGGESTIONS,
   CONSIST_DETAILS,
@@ -28,6 +20,14 @@ import {
   VIA_STOP_TYPES,
   VIA_SUGGESTIONS,
 } from '../assets/constants/stdcm/stdcm-const';
+import test from './../page-object-fixture';
+import ConsistSection from './../pages/stdcm/consist-section';
+import DestinationSection from './../pages/stdcm/destination-section';
+import OriginSection from './../pages/stdcm/origin-section';
+import { waitForInfraStateToBeCached } from './../utils';
+import { getInfra } from './../utils/api-utils';
+import { findFirstPdf, parsePdfText, verifySimulationContent } from './../utils/pdf-parser';
+import type { PdfSimulationContent } from './../utils/types';
 
 test.describe('@stdcm @stdcm-sheet', () => {
   test.describe.configure({ mode: 'serial' });

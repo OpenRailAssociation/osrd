@@ -35,13 +35,6 @@ import { addElementAtIndex } from 'utils/array';
 import { Duration } from 'utils/duration';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 
-import { type OperationalPointSuggestion } from './ComboBoxCustomList/ListElementComponent';
-import useMapTrackSelection from '../hooks/useMapTrackSelection';
-import { usePathStepsMetadata } from './hooks/usePathStepsMetadata';
-import ItineraryModalFormHeader from './ItineraryModalFormHeader';
-import ItineraryModalMap from './ItineraryModalMap';
-import PathStepItem from './PathStepItem';
-import { computePathStepCoordinates } from './utils';
 import { MANAGE_TIMETABLE_ITEM_TYPES } from '../../../consts';
 import {
   createEmptyPathStep,
@@ -49,7 +42,14 @@ import {
   isEmptyStep,
   deletePathStep,
 } from '../helpers/pathStepsActions';
+import useMapTrackSelection from '../hooks/useMapTrackSelection';
 import type { FeatureInfoClick } from '../types';
+import { type OperationalPointSuggestion } from './ComboBoxCustomList/ListElementComponent';
+import { usePathStepsMetadata } from './hooks/usePathStepsMetadata';
+import ItineraryModalFormHeader from './ItineraryModalFormHeader';
+import ItineraryModalMap from './ItineraryModalMap';
+import PathStepItem from './PathStepItem';
+import { computePathStepCoordinates } from './utils';
 
 type ItineraryModalProps = {
   itineraryModalIsOpen: boolean;

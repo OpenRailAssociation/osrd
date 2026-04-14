@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 
 import cx from 'classnames';
 
-import { OccupancyBlocksLayer } from './OccupancyBlocksLayer';
 import { TimeChartCanvasContext } from '../../common/context';
 import { getTimeToPixel, getPixelToTime } from '../../common/helpers/time';
 import { useCanvas } from '../../common/hooks/useCanvas';
@@ -18,6 +17,7 @@ import { validateTheme } from '../../spaceTimeChart/lib/theme';
 import type { DataPoint, MouseContextType } from '../../spaceTimeChart/lib/types';
 import { ChronogramContext } from '../lib/context';
 import type { ChronogramContextType, ChronogramCanvasProps } from '../lib/types';
+import { OccupancyBlocksLayer } from './OccupancyBlocksLayer';
 
 export const ChronogramCanvas = (props: ChronogramCanvasProps) => {
   const {

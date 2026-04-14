@@ -21,9 +21,9 @@ import { save } from 'reducers/editor/thunkActions';
 import { selectInZone } from 'utils/mapHelper';
 
 import TOOL_NAMES from '../constsToolNames';
+import type { TrackSectionEntity } from '../trackEdition/types';
 import { SelectionLayers, SelectionLeftPanel, SelectionMessages } from './components';
 import type { SelectionState } from './types';
-import type { TrackSectionEntity } from '../trackEdition/types';
 
 const SelectionTool: Tool<SelectionState> = {
   id: 'select-items',

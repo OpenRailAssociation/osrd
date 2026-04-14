@@ -1,9 +1,5 @@
 import type { Infra, TowedRollingStock } from 'common/api/osrdEditoastApi';
 
-import { fastRollingStockName } from './../assets/constants/project-const';
-import test, { createStdcmTab } from './../page-object-fixture';
-import { waitForInfraStateToBeCached } from './../utils';
-import { getInfra, setTowedRollingStock } from './../utils/api-utils';
 import {
   ALL_STOPS_TABLE_DATA_PATH,
   ALTERNATIVE_SIMULATION_RESULTS_DETAILS,
@@ -28,6 +24,10 @@ import {
   VIA_SUGGESTIONS,
 } from '../assets/constants/stdcm/stdcm-const';
 import type { ConsistFields } from '../utils/stdcm-types';
+import { fastRollingStockName } from './../assets/constants/project-const';
+import test, { createStdcmTab } from './../page-object-fixture';
+import { waitForInfraStateToBeCached } from './../utils';
+import { getInfra, setTowedRollingStock } from './../utils/api-utils';
 
 test.describe('@stdcm', () => {
   let infra: Infra;

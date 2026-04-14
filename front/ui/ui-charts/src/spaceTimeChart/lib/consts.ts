@@ -1,5 +1,5 @@
-import { type SpaceTimeChartTheme } from './types';
 import { SECOND, MINUTE, HOUR } from '../../common/consts';
+import { type SpaceTimeChartTheme } from './types';
 
 export const BLACK = '#000000';
 export const BLUE = '#2170B9';

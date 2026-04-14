@@ -20,10 +20,10 @@ import { getOrigin, getDestination } from 'reducers/osrdconf/operationalStudiesC
 import type { PathStep } from 'reducers/osrdconf/types';
 import { getPointOnTrackCoordinates } from 'utils/geometry';
 
+import useMapTrackSelection from '../hooks/useMapTrackSelection';
 import type { FeatureInfoClick } from '../types';
 import OperationalPointPopupDetails from './OperationalPointPopupDetails';
 import { setPointIti } from './setPointIti';
-import useMapTrackSelection from '../hooks/useMapTrackSelection';
 
 type AddPathStepPopupProps = {
   infraId: number | undefined;

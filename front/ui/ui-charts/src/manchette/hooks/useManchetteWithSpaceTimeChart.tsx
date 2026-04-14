@@ -21,7 +21,6 @@ import {
 } from '../consts';
 import type { InteractiveWaypoint, Waypoint } from '../types';
 import { calcTotalDistance } from '../utils';
-import useSyncManchette, { type SyncManchetteState } from './useSyncManchette';
 import {
   selectWaypointsToDisplay,
   getScales,
@@ -31,6 +30,7 @@ import {
   zoomValueToSpaceScale,
   zoomValueToTimeScale,
 } from '../utils/helpers';
+import useSyncManchette, { type SyncManchetteState } from './useSyncManchette';
 
 export type SplitPoint = {
   /** helper identify nodes for this split point in the React tree */

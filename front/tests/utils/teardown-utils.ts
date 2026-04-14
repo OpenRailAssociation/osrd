@@ -1,7 +1,7 @@
 import type { LightRollingStock, LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 
-import { deleteApiRequest, getStudy, getScenario, getProject, listApiRequest } from './api-utils';
 import { logger } from '../logging-fixture';
+import { deleteApiRequest, getStudy, getScenario, getProject, listApiRequest } from './api-utils';
 
 /**
  * Delete a project by name if it exists.

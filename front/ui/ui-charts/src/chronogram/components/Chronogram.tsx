@@ -2,12 +2,12 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import { Slider } from '@osrd-project/ui-core';
 
-import { ChronogramCanvas } from './ChronogramCanvas';
-import ChronogramManchette from './ChronogramManchette';
 import { zoomValueToTimeScale } from '../../manchette/utils/helpers';
 import useChronogram from '../hooks/useChronogram';
 import { CHRONOGRAM_SLIDER_WIDTH, INITIAL_CHRONOGRAM_HEIGHT } from '../lib/const';
 import type { ChronogramProps } from '../lib/types';
+import { ChronogramCanvas } from './ChronogramCanvas';
+import ChronogramManchette from './ChronogramManchette';
 
 export const Chronogram = ({
   levelCrossingData,

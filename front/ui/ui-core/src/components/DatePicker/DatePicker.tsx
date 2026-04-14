@@ -4,10 +4,10 @@ import { Calendar as CalendarIcon } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 
 import { type CalendarSlot } from '.';
-import CalendarPicker, { type CalendarPickerPublicProps } from './CalendarPicker';
-import useDatePicker from './useDatePicker';
 import Input, { type InputProps } from '../Input';
 import InputModal from '../InputModal';
+import CalendarPicker, { type CalendarPickerPublicProps } from './CalendarPicker';
+import useDatePicker from './useDatePicker';
 
 type BaseDatePickerProps = {
   selectableSlot?: CalendarSlot;

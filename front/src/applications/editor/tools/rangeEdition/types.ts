@@ -4,9 +4,9 @@ import type { TrackRange, TrackSectionEntity } from 'applications/editor/tools/t
 import type { CommonToolState } from 'applications/editor/tools/types';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 
+import type { OptionsStateType } from '../routeEdition/types';
 import type { APPLICABLE_DIRECTIONS } from './consts';
 import type { EditorRange } from './tool-factory';
-import type { OptionsStateType } from '../routeEdition/types';
 
 export type ApplicableDirection = (typeof APPLICABLE_DIRECTIONS)[number];
 export type PSLSign = {

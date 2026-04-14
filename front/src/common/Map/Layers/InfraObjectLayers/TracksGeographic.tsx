@@ -7,8 +7,8 @@ import { lineNameLayer, lineNumberLayer, trackNameLayer } from 'common/Map/Layer
 import type { Theme } from 'common/Map/theme';
 import { useMapContext } from 'common/Map/useMapContext';
 
-import geoMainLayer from './getGeographicLayerProps';
 import OrderedLayer from '../OrderedLayer';
+import geoMainLayer from './getGeographicLayerProps';
 
 type TracksGeographicProps = {
   colors: Theme;

@@ -1,8 +1,5 @@
 import type { Infra } from 'common/api/osrdEditoastApi';
 
-import test from './../page-object-fixture';
-import { waitForInfraStateToBeCached } from './../utils';
-import { getInfra } from './../utils/api-utils';
 import getMailFeedbackData from '../assets/constants/stdcm/mail-feedback-const';
 import {
   CI_SUGGESTIONS,
@@ -15,6 +12,9 @@ import {
   STDCM_URL,
   TRACTION_ENGINE_PREFILLED_VALUES,
 } from '../assets/constants/stdcm/stdcm-const';
+import test from './../page-object-fixture';
+import { waitForInfraStateToBeCached } from './../utils';
+import { getInfra } from './../utils/api-utils';
 
 test.describe('@stdcm @stdcm-feedback', () => {
   let infra: Infra;

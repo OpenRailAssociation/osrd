@@ -13,9 +13,9 @@ import type { PacedTrainWithDetails, TimetableItemWithDetails } from 'modules/ti
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 
-import { useScenarioContext } from './useScenarioContext';
 import type { TrainScheduleSetImportType } from '../views/Scenario/components/ImportTrainScheduleSets/types';
 import { sortTrainScheduleSets } from '../views/Scenario/components/Timetable/utils';
+import { useScenarioContext } from './useScenarioContext';
 
 export type TrainScheduleSetFormData = Omit<TrainScheduleSet, 'catalog_entry_id' | 'id'> & {
   catalog?: { id: number; type: 'selected' } | { name: string; type: 'create' };

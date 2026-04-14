@@ -10,10 +10,10 @@ import type { OperationalStudiesConfState } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 import { msToKmh } from 'utils/physics';
 
+import { upsertPathStep } from '../helpers';
 import itineraryReducer from './itineraryReducer';
 import powerRestrictionReducer from './powerRestrictionReducer';
 import trainSettingsReducer from './trainSettingsReducer';
-import { upsertPathStep } from '../helpers';
 
 export const operationalStudiesInitialConf: OperationalStudiesConfState = {
   ...defaultCommonConf,

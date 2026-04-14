@@ -13,11 +13,11 @@ import type { Meta } from '@storybook/react-vite';
 import cx from 'classnames';
 import { keyBy } from 'lodash';
 
-import { OPERATIONAL_POINTS, PATHS } from './helpers/paths';
-import { X_ZOOM_LEVEL, Y_ZOOM_LEVEL, zoom, getDiff } from './helpers/utils';
-
 import '@osrd-project/ui-core/dist/theme.css';
 import '@osrd-project/ui-charts/dist/theme.css';
+
+import { OPERATIONAL_POINTS, PATHS } from './helpers/paths';
+import { X_ZOOM_LEVEL, Y_ZOOM_LEVEL, zoom, getDiff } from './helpers/utils';
 
 const PATHS_DICT = keyBy(PATHS, 'id');
 

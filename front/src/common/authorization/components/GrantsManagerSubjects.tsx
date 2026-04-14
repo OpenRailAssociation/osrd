@@ -5,11 +5,11 @@ import { useTranslation } from 'react-i18next';
 import generateGrantSelectProps from 'common/authorization/utils/generateGrantSelectProps';
 import { LoaderFill } from 'common/Loaders';
 
-import GrantManagerAddSubjectForm from './GrantManagerAddSubjectForm';
-import GrantsManagerSubject from './GrantsManagerSubject';
 import useAuthz from '../hooks/useAuthz';
 import useResourceListSubjects from '../hooks/useResourceListUser';
 import type { Grant, Privilege, ResourceType } from '../types';
+import GrantManagerAddSubjectForm from './GrantManagerAddSubjectForm';
+import GrantsManagerSubject from './GrantsManagerSubject';
 
 type GrantsManagerSubjectsProps = {
   resourceId: number;

@@ -12,8 +12,8 @@ import OSRDMenu from 'common/OSRDMenu';
 import OSRDTooltip from 'common/OSRDTooltip';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 
-import type { PairDataToolTip, PairingItem } from './types';
 import { getTrainCategoryClassName } from '../Timetable/utils';
+import type { PairDataToolTip, PairingItem } from './types';
 
 type RoundTripsModalCardProps = {
   pairingItem: PairingItem;

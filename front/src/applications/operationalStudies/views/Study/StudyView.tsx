@@ -25,11 +25,11 @@ import AddOrEditScenarioModal from 'modules/scenario/components/AddOrEditScenari
 import { cleanScenarioLocalStorage } from 'modules/scenario/helpers/utils';
 import { budgetFormat } from 'utils/numbers';
 
+import useMultiSelection from '../../hooks/useMultiSelection';
 import DateBox from './components/DateBox';
 import ScenarioCard from './components/ScenarioCard';
 import StateStep from './components/StateStep';
 import { type StudyState, studyStates } from './consts';
-import useMultiSelection from '../../hooks/useMultiSelection';
 
 type SortOptions =
   | 'NameAsc'

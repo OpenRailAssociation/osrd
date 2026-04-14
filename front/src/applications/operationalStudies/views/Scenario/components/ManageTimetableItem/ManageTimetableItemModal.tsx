@@ -7,12 +7,12 @@ import type { ImportTrainScheduleSetsPayload } from 'applications/operationalStu
 import { setFailure } from 'reducers/main';
 import { castErrorToFailure } from 'utils/error';
 
+import { MANAGE_TIMETABLE_ITEM_TYPES } from '../../consts';
+import { TrainScheduleSetCatalogDialog } from '../ImportTrainScheduleSets';
 import ManageTimetableItem from './ManageTimetableItem';
 import ManageTimetableItemLeftPanel, {
   type ManageTimetableItemLeftPanelProps,
 } from './ManageTimetableItemLeftPanel';
-import { MANAGE_TIMETABLE_ITEM_TYPES } from '../../consts';
-import { TrainScheduleSetCatalogDialog } from '../ImportTrainScheduleSets';
 
 type ManageTimetableItemModalProps = ManageTimetableItemLeftPanelProps & {
   setCollapsedTimetableEdit: () => void;

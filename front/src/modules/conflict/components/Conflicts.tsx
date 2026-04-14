@@ -1,6 +1,6 @@
+import type { ConflictWithTrainNames } from '../types';
 import ConflictCard from './ConflictCard';
 import ConflictsToolbar from './ConflictsToolbar';
-import type { ConflictWithTrainNames } from '../types';
 
 type ConflictsProps = {
   showOnlySelectedTrain: boolean;

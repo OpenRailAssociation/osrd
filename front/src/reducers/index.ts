@@ -1,7 +1,7 @@
 import type { Action, ReducersMapObject } from 'redux';
 import { createTransform, persistCombineReducers } from 'redux-persist';
-import storage from 'redux-persist/es/storage'; // defaults to localStorage
 import { createFilter, createBlacklistFilter } from 'redux-persist-transform-filter';
+import storage from 'redux-persist/es/storage'; // defaults to localStorage
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { osrdGatewayApi } from 'common/api/osrdGatewayApi';

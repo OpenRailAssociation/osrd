@@ -5,6 +5,7 @@ import { KebabHorizontal } from '@osrd-project/ui-icons';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import '@osrd-project/ui-core/dist/theme.css';
+
 import { ListElementComponent } from './ComboBoxCustomList/ListElementComponent';
 
 type OpCh = {

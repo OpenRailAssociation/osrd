@@ -28,9 +28,9 @@ import { useInfraID } from 'common/osrdContext';
 import useSpeedLimitTags from 'common/SpeedLimitTagSelector/useSpeedLimitTags';
 import { isEmptyArray, toggleElement } from 'utils/array';
 
-import SwitchList from './SwitchList';
 import RouteList from '../components/RouteList';
 import TrackRangesList from '../components/TrackRangeList';
+import SwitchList from './SwitchList';
 
 const SpeedSectionEditionLeftPanel = () => {
   const { t } = useTranslation();

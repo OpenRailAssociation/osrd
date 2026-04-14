@@ -4,8 +4,8 @@ import path from 'path';
 import { expect } from '@playwright/test';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 
-import type { PdfSimulationContent } from './types';
 import { logger } from '../logging-fixture';
+import type { PdfSimulationContent } from './types';
 
 /**
  * Find the first PDF file in a directory.

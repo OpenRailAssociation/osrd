@@ -14,9 +14,9 @@ import {
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import { mmToM } from 'utils/physics';
 
-import usePowerRestrictionsSelectorBehaviours from './usePowerRestrictionsSelectorBehaviours';
 import formatPowerRestrictions from '../helpers/formatPowerRestrictions';
 import getPowerRestrictionsWarningsData from '../helpers/powerRestrictionWarnings';
+import usePowerRestrictionsSelectorBehaviours from './usePowerRestrictionsSelectorBehaviours';
 
 const usePowerRestrictionsSelector = (
   voltageRanges: RangedValue[],

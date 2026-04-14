@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from '@osrd-project/ui-core';
 import { Archive, Bookmark, Cloud, Clock } from '@osrd-project/ui-icons';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+
 import '@osrd-project/ui-core/dist/theme.css';
 
 const icons = { archive: <Archive />, bookmark: <Bookmark />, cloud: <Cloud />, clock: <Clock /> };

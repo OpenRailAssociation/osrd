@@ -5,12 +5,12 @@ import type { Feature, FeatureCollection, LineString } from 'geojson';
 import { isNil, mapValues, omitBy } from 'lodash';
 import { type LineLayerSpecification, type StyleSpecification } from 'react-map-gl/maplibre';
 
-import DataLoader from './DataLoader';
-import Loader from './Loader';
-import TransformedDataMap from './TransformedDataMap';
 import getWarping, { type WarpingFunction, type WarpingOptions } from '../core/getWarping';
 import { bboxAs2D } from '../core/helpers';
 import type { BBox2D, SourceDefinition } from '../core/types';
+import DataLoader from './DataLoader';
+import Loader from './Loader';
+import TransformedDataMap from './TransformedDataMap';
 
 const TIME_LABEL = 'Warping data';
 

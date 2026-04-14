@@ -1,8 +1,8 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import STDCMPage from './stdcm-page';
 import { expectFieldsToHaveValues } from '../../utils';
 import type { DestinationDetailsData, LightDestinationDetailsData } from '../../utils/stdcm-types';
+import STDCMPage from './stdcm-page';
 
 class DestinationSection extends STDCMPage {
   readonly destinationCiField: Locator;

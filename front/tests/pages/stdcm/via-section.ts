@@ -1,12 +1,12 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import STDCMPage from './stdcm-page';
 import { expectFieldsToHaveValues } from '../../utils';
 import type {
   ViaSearchText,
   FillAndVerifyViaDetailsParams,
   VerifyViaDetailsParams,
 } from '../../utils/stdcm-types';
+import STDCMPage from './stdcm-page';
 
 class ViaSection extends STDCMPage {
   private readonly viaIcon: Locator;

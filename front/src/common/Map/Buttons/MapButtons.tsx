@@ -34,9 +34,9 @@ import { type EditorState } from 'reducers/editor';
 import { useAppDispatch } from 'store';
 import useOutsideClick from 'utils/hooks/useOutsideClick';
 
+import { MapContextProvider, useMapContext } from '../useMapContext';
 import ButtonMapInfraErrors from './ButtonMapInfraErrors';
 import MapButton from './MapButton';
-import { MapContextProvider, useMapContext } from '../useMapContext';
 
 type MapButtonsProps = {
   map?: MapRef;

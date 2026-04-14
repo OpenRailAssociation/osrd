@@ -2,6 +2,7 @@ import { uniqBy } from 'lodash';
 
 import { normalizeName, splitTokens, toUpper } from 'utils/strings';
 
+import type { OperationalPointSuggestion } from '../views/Scenario/components/ManageTimetableItem/Itinerary/ComboBoxCustomList/ListElementComponent';
 import {
   secondaryCodeStarts,
   secondaryCodeIncludes,
@@ -11,7 +12,6 @@ import {
   tokenMatchesIncludesNoCh,
   lastTokenMatchesStarts,
 } from './suggestionMatchers';
-import type { OperationalPointSuggestion } from '../views/Scenario/components/ManageTimetableItem/Itinerary/ComboBoxCustomList/ListElementComponent';
 
 /**
  * ranks and filters suggestions based on a single search token.

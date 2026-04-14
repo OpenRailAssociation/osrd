@@ -6,10 +6,10 @@ import { THERMAL_TRACTION_IDENTIFIER } from 'modules/rollingStock/consts';
 import { isElectric } from 'modules/rollingStock/helpers/electric';
 import { getTranslationKey } from 'utils/strings';
 
-import { handleUnitValue } from './units';
 import { RS_SCHEMA_PROPERTIES } from '../consts';
-import { filterNullValueInCurve } from './curves';
 import type { RollingStockParametersValidValues, EffortCurveForms, SchemaProperty } from '../types';
+import { filterNullValueInCurve } from './curves';
+import { handleUnitValue } from './units';
 
 export const rollingStockEditorQueryArg = (
   data: RollingStockParametersValidValues,

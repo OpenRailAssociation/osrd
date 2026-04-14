@@ -1,8 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
 
-import '@osrd-project/ui-core/dist/theme.css';
-import '@osrd-project/ui-charts/dist/theme.css';
-
 import {
   PathLayer,
   SpaceTimeChart,
@@ -14,6 +11,9 @@ import {
 } from '@osrd-project/ui-charts';
 import type { Meta } from '@storybook/react-vite';
 import { clamp, keyBy } from 'lodash';
+
+import '@osrd-project/ui-core/dist/theme.css';
+import '@osrd-project/ui-charts/dist/theme.css';
 
 import { AMBIANT_A10 } from './helpers/consts';
 import { OPERATIONAL_POINTS, PATHS } from './helpers/paths';

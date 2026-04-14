@@ -11,13 +11,13 @@ import {
 } from '@playwright/test/reporter';
 
 import { formatAnsiMessageToHtml } from '.';
+import { logger } from '../logging-fixture';
 import type {
   PersonalizedReport,
   PersonalizedTest,
   PersonalizedTestState,
   ReporterOptions,
 } from './playwright-report-types';
-import { logger } from '../logging-fixture';
 
 // This class generates a personalized JSON report from Playwright test execution.
 class GenerateReport implements Reporter {

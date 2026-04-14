@@ -1,9 +1,9 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import RollingStockSelector from './rolling-stock-selector';
 import { fillAndCheckInputById } from '../../utils';
 import { readJsonFile } from '../../utils/file-utils';
 import type { FlatTranslations } from '../../utils/types';
+import RollingStockSelector from './rolling-stock-selector';
 
 type RollingStockTranslations = FlatTranslations & { categoriesOptions: FlatTranslations };
 

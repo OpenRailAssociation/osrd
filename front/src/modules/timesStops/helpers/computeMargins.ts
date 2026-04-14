@@ -3,7 +3,6 @@ import type { SimulationSummary } from 'modules/timetableItem/types';
 import type { Train } from 'reducers/osrdconf/types';
 import { ms2sec } from 'utils/timeManipulation';
 
-import { formatDigitsAndUnit } from './utils';
 import { marginsUndefined, MarginUnit } from '../consts';
 import type {
   Margins,
@@ -13,6 +12,7 @@ import type {
   MarginValue,
   TheoreticalMarginsRecord,
 } from '../types';
+import { formatDigitsAndUnit } from './utils';
 
 type PathItemTimes = Extract<SimulationSummary, { isValid: true }>['pathItemTimes'];
 

@@ -15,13 +15,13 @@ import {
   isIndexedOccurrenceId,
 } from 'utils/trainId';
 
-import computeOccurrenceName from './computeOccurrenceName';
 import type {
   ExceptionChangeGroups,
   PacedTrainWithDetails,
   PacedTrainWithPacedWithDetails,
   TimetableItemWithDetails,
 } from '../types';
+import computeOccurrenceName from './computeOccurrenceName';
 
 export const isPacedTrainBase = (pacedTrain: TrainSchedule): pacedTrain is PacedTrainWithPaced =>
   !!pacedTrain.paced;

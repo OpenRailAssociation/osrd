@@ -1,8 +1,8 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
 
-import { getWorkerStatus } from './api-utils';
 import { logger } from '../logging-fixture';
+import { getWorkerStatus } from './api-utils';
 
 /**
  * Fill the input field identified by ID or TestID with the specified value and verifies it.
