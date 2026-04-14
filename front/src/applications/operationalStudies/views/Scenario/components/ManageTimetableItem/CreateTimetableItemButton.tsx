@@ -9,8 +9,10 @@ import { setFailure, setSuccess } from 'reducers/main';
 import { clearAddedExceptionsList } from 'reducers/osrdconf/operationalStudiesConf';
 import { getOperationalStudiesConf } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { TimetableItem } from 'reducers/osrdconf/types';
+import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
+import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
 import checkCurrentConfig from './helpers/checkCurrentConfig';
 import {
@@ -57,6 +59,7 @@ const CreateTimetableItemButton = ({
       const formattedNewPacedTrain: TimetableItem = (
         await createPacedTrains(dispatch, sandboxId, [payload])
       )[0];
+      dispatch(updateSelectedTrainId(formatEditoastIdToPacedTrainId(formattedNewPacedTrain.id)));
 
       dispatch(
         setSuccess({
