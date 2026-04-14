@@ -84,7 +84,7 @@ pub trait Type: FromStr + Sized {
 ///     }
 /// }
 ///
-/// // can be used with the trait methods default implementations or have them overriden
+/// // can be used with the trait methods default implementations or have them overridden
 /// impl fga::model::User for Person {}
 /// ```
 ///
@@ -294,7 +294,7 @@ pub trait Relation: fmt::Debug + Sized {
 ///     }
 /// }
 ///
-/// // can be used with the trait methods default implementations or have them overriden
+/// // can be used with the trait methods default implementations or have them overridden
 /// impl fga::model::Object for Document {}
 /// ```
 ///
