@@ -1858,10 +1858,10 @@ export type PostInfraByInfraIdLockApiArg = {
 };
 export type PostInfraByInfraIdMatchOperationalPointsApiResponse =
   /** status 200
-Take a list of operational point references and return for each of them the list
-of operational points that they match on a given infrastructure.
+Take a list of operational point references and return for each of them the
+operational point that it matches on a given infrastructure.
  */ {
-    related_operational_points: RelatedOperationalPoint[][];
+    related_operational_points: (null | RelatedOperationalPoint)[];
   };
 export type PostInfraByInfraIdMatchOperationalPointsApiArg = {
   /** An existing infra ID */

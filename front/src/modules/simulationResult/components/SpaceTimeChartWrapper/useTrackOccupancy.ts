@@ -542,8 +542,8 @@ const useTrackOccupancy = ({
 
         if (aborted) return;
 
-        const allTrackIds = data.related_operational_points.flatMap(([points]) =>
-          points ? points.parts.map((part) => part.track) : []
+        const allTrackIds = data.related_operational_points.flatMap((point) =>
+          point ? point.parts.map((part) => part.track) : []
         );
         const fetchedTrackSections = await getTrackSectionsByIds(allTrackIds);
 
@@ -553,7 +553,7 @@ const useTrackOccupancy = ({
         }
 
         opsWithReferences.forEach(({ waypointId: wId }, i) => {
-          const [operationalPoint] = data.related_operational_points[i];
+          const operationalPoint = data.related_operational_points[i];
           if (!operationalPoint) return;
           const mapping = new Map<string, string>();
           for (const part of operationalPoint.parts) {
@@ -566,7 +566,7 @@ const useTrackOccupancy = ({
           opsWithReferences.map(({ waypointId: wId }, i) => [
             wId,
             uniqBy(
-              (data.related_operational_points[i][0]?.parts ?? []).map((part) => {
+              (data.related_operational_points[i]?.parts ?? []).map((part) => {
                 const trackPart = trackSectionByTrackId.get(part.track);
                 return {
                   id: part.track,
@@ -774,7 +774,7 @@ const useTrackOccupancy = ({
         }).unwrap();
 
         requests.forEach(({ side, timetableItemId }, i) => {
-          const op = data.related_operational_points[i].at(0);
+          const op = data.related_operational_points[i];
           trainsStationLabels[timetableItemId] = {
             ...trainsStationLabels[timetableItemId],
             [side]: {

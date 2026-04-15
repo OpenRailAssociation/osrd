@@ -184,12 +184,12 @@ const osrdEditoastApi = generatedEditoastApi
         providesTags: ['train_schedule'],
       }),
       matchAllOperationalPoints: builder.query<
-        RelatedOperationalPoint[][],
+        (RelatedOperationalPoint | null)[],
         { infraId: number; opRefs: OperationalPointReference[] }
       >({
         queryFn: async ({ infraId, opRefs }, { dispatch }) => {
           const batchSize = 200;
-          const result: RelatedOperationalPoint[][] = [];
+          const result: (RelatedOperationalPoint | null)[] = [];
 
           // Split opRefs into batches of 200
           for (let i = 0; i < opRefs.length; i += batchSize) {

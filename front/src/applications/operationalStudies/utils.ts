@@ -279,17 +279,17 @@ export const getUniqueOpRefsFromTimetableItems = (
 export const addPathOpsToTimetableItems = (
   timetableItems: TimetableItem[],
   timetableOpRefs: OperationalPointReference[],
-  timetableOperationalPoints: RelatedOperationalPoint[][]
+  timetableOperationalPoints: (RelatedOperationalPoint | null)[]
 ): TimetableItemWithPathOps[] => {
   if (timetableOpRefs.length !== timetableOperationalPoints.length) {
     throw new Error('Expected as many OP match lists as OP refs');
   }
 
-  // Map each operational point reference (path step) to its corresponding operational points
+  // Map each operational point reference (path step) to its corresponding operational point
   const opsByKey = new Map<string, RelatedOperationalPoint[]>();
-  timetableOperationalPoints.forEach((ops, i) => {
+  timetableOperationalPoints.forEach((op, i) => {
     const key = JSON.stringify(timetableOpRefs[i]);
-    opsByKey.set(key, ops);
+    opsByKey.set(key, op ? [op] : []);
   });
 
   // For each timetable item, fill the pathOps property with
