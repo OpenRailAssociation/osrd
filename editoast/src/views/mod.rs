@@ -19,6 +19,7 @@ mod router;
 pub mod scenario;
 pub mod search;
 pub mod sprites;
+pub mod stdcm_debug;
 pub mod stdcm_search_environment;
 pub mod study;
 pub mod sub_categories;
@@ -75,6 +76,8 @@ use core_client::mq_client;
 use database::DbConnectionPoolV2;
 use database::db_connection_pool::ping_database;
 use editoast_derive::EditoastError;
+use object_store::aws::AmazonS3;
+use object_store::aws::AmazonS3Builder;
 use thiserror::Error;
 use tokio::time::timeout;
 use tower::Layer as _;
@@ -167,6 +170,10 @@ fn service_router() -> router::DocumentedRouter {
                     .route("/{signaling_system}/{file_name}", get!(sprites::sprites))
             })
             .route("/search", post!(search::search))
+            .route(
+                "/stdcm/debug_data/{trace_id}",
+                get!(stdcm_debug::get_debug_data),
+            )
             .nests("/infra", |path| {
                 path.route("/", get!(infra::list))
                     .route("/", post!(infra::create))
@@ -1053,6 +1060,13 @@ pub struct PostgresConfig {
     pub pool_size: usize,
 }
 
+pub struct S3Config {
+    pub endpoint: Url,
+    pub bucket_name: String,
+    pub access_key_id: String,
+    pub secret_access_key: String,
+}
+
 pub struct ServerConfig {
     pub port: u16,
     pub address: String,
@@ -1066,6 +1080,7 @@ pub struct ServerConfig {
     pub root_url: Url,
     pub dynamic_assets_path: PathBuf,
     pub app_version: Option<String>,
+    pub s3_config: Option<S3Config>,
     pub trains_traffic: Arc<RwLock<timetable::similar_trains::trains_traffic::TrainsTrafficPool>>,
 }
 
@@ -1091,6 +1106,7 @@ pub struct AppState {
     pub health_check_timeout: Duration,
     pub regulator: Regulator,
     pub trains_traffic: Arc<RwLock<timetable::similar_trains::trains_traffic::TrainsTrafficPool>>,
+    pub s3_client: Option<Arc<AmazonS3>>,
 }
 
 impl FromRef<AppState> for Arc<DbConnectionPoolV2> {
@@ -1186,6 +1202,8 @@ impl AppState {
             config.app_version.as_deref().unwrap_or("NO_APP_VERSION"),
         ));
 
+        let s3_client = build_s3_client(&config.s3_config);
+
         let (db_pool, core_client, openfga) = tokio::try_join!(
             async { db_pool_fut.await? },
             async { core_client_fut.await? },
@@ -1202,8 +1220,29 @@ impl AppState {
             speed_limit_tag_ids,
             health_check_timeout: config.health_check_timeout,
             trains_traffic: config.trains_traffic.clone(),
+            s3_client,
             config: Arc::new(config),
         })
+    }
+}
+
+fn build_s3_client(optional_config: &Option<S3Config>) -> Option<Arc<AmazonS3>> {
+    let config = optional_config.as_ref()?;
+    let bucket = config.bucket_name.clone();
+    let builder = AmazonS3Builder::new()
+        .with_bucket_name(bucket)
+        .with_region("us-east-1")
+        .with_virtual_hosted_style_request(false)
+        .with_allow_http(true)
+        .with_endpoint(config.endpoint.as_str())
+        .with_access_key_id(config.access_key_id.clone())
+        .with_secret_access_key(config.secret_access_key.clone());
+    match builder.build() {
+        Ok(client) => Some(Arc::new(client)),
+        Err(e) => {
+            warn!("Failed to build S3 client: {e}");
+            None
+        }
     }
 }
 
