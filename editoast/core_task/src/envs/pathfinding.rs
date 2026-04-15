@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::hash::DefaultHasher;
 use std::hash::Hash;
 use std::hash::Hasher as _;
@@ -151,16 +152,19 @@ where
     }
 }
 
-#[derive(Debug, Hash, PartialEq, Eq)]
+#[derive(Debug, educe::Educe, PartialEq, Eq)]
+#[educe(Hash)]
 #[cfg_attr(test, derive(Clone))]
 pub struct PathfindingConsist {
     pub loading_gauge: LoadingGaugeType,
     /// Can the consist run on non-electrified tracks
     pub thermal: bool,
     /// Supported electrification modes (leave empty for unelectrified consists)
-    pub supported_electrifications: Vec<String>,
+    #[educe(Hash(method(common::hashing_hash_set_string)))]
+    pub supported_electrifications: HashSet<String>,
     /// A list of supported signaling systems
-    pub supported_signaling_systems: Vec<String>,
+    #[educe(Hash(method(common::hashing_hash_set_string)))]
+    pub supported_signaling_systems: HashSet<String>,
     pub maximum_speed: OrderedFloat<f64>,
     /// Consist length in meters
     pub length: OrderedFloat<f64>,
@@ -387,6 +391,7 @@ fn build_request(
         rolling_stock_is_thermal: consist.thermal,
         rolling_stock_supported_electrifications: consist.supported_electrifications.clone(),
         rolling_stock_supported_signaling_systems: consist.supported_signaling_systems.clone(),
+
         rolling_stock_maximum_speed: consist.maximum_speed,
         rolling_stock_length: consist.length,
         speed_limit_tag: consist.speed_limit_tag.clone(),
@@ -451,8 +456,8 @@ pub(crate) mod test_data {
         PathfindingConsist {
             loading_gauge: LoadingGaugeType::GB,
             thermal: true,
-            supported_electrifications: vec![],
-            supported_signaling_systems: vec!["BAPR".to_owned()],
+            supported_electrifications: HashSet::new(),
+            supported_signaling_systems: HashSet::from(["BAPR".to_owned()]),
             maximum_speed: OrderedFloat::from(100.0),
             length: OrderedFloat::from(id as f64),
             speed_limit_tag: Some("MA100".to_owned()),

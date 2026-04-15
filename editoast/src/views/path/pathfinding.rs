@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::Hash;
 use std::hash::Hasher;
@@ -44,7 +45,8 @@ use editoast_models::rolling_stock::RollingStock;
 
 /// Path input is described by some rolling stock information
 /// and a list of path waypoints
-#[derive(Deserialize, Clone, Debug, Hash, ToSchema)]
+#[derive(Deserialize, Clone, Debug, educe::Educe, ToSchema)]
+#[educe(Hash)]
 #[cfg_attr(test, derive(Serialize))]
 pub(in crate::views) struct PathfindingInput {
     /// The loading gauge of the rolling stock
@@ -53,9 +55,11 @@ pub(in crate::views) struct PathfindingInput {
     rolling_stock_is_thermal: bool,
     /// List of supported electrification modes.
     /// Empty if does not support any electrification
-    rolling_stock_supported_electrifications: Vec<String>,
+    #[educe(Hash(method(common::hashing_hash_set_string)))]
+    rolling_stock_supported_electrifications: HashSet<String>,
     /// List of supported signaling systems
-    rolling_stock_supported_signaling_systems: Vec<String>,
+    #[educe(Hash(method(common::hashing_hash_set_string)))]
+    rolling_stock_supported_signaling_systems: HashSet<String>,
     /// List of waypoints given to the pathfinding
     path_items: Vec<PathItemLocation>,
     /// Rolling stock maximum speed
@@ -510,6 +514,8 @@ pub async fn pathfinding_from_train_batch<T: TrainScheduleLike>(
 
 #[cfg(test)]
 pub mod tests {
+    use std::collections::HashSet;
+
     use axum::http::StatusCode;
     use core_client::mocking::MockingClient;
     use core_client::pathfinding::InvalidPathItem;
@@ -532,8 +538,8 @@ pub mod tests {
         PathfindingInput {
             rolling_stock_loading_gauge: LoadingGaugeType::G1,
             rolling_stock_is_thermal: true,
-            rolling_stock_supported_electrifications: Vec::new(),
-            rolling_stock_supported_signaling_systems: vec!["BAL".into(), "BAPR".into()],
+            rolling_stock_supported_electrifications: HashSet::new(),
+            rolling_stock_supported_signaling_systems: HashSet::from(["BAL".into(), "BAPR".into()]),
             rolling_stock_maximum_speed: 22.0.into(),
             rolling_stock_length: 26.0.into(),
             speed_limit_tag: None,

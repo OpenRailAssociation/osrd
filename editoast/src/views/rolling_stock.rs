@@ -820,7 +820,7 @@ pub mod tests {
         assert_eq!(
             rolling_stock
                 .supported_signaling_systems()
-                .contains(&"ETCS_LEVEL2".to_string()),
+                .contains("ETCS_LEVEL2"),
             false
         );
     }
@@ -1086,7 +1086,7 @@ pub mod tests {
         assert_eq!(
             rolling_stock
                 .supported_signaling_systems()
-                .contains(&"ETCS_LEVEL2".to_string()),
+                .contains("ETCS_LEVEL2"),
             true
         );
 

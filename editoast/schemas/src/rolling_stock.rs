@@ -120,7 +120,7 @@ pub struct RollingStock {
 }
 
 impl RollingStock {
-    pub fn supported_signaling_systems(&self) -> Vec<String> {
+    pub fn supported_signaling_systems(&self) -> HashSet<String> {
         self.supported_signaling_systems
             .iter()
             .map(|s| s.to_string())

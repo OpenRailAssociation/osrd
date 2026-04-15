@@ -4,9 +4,14 @@ pub mod rangemap_utils;
 pub mod tracing;
 pub mod units;
 
+use std::collections::HashSet;
+use std::hash::Hash;
+use std::hash::Hasher;
+
 pub use hash_rounded_float::hash_float;
 pub use hash_rounded_float::hash_float_slice;
 
+use itertools::Itertools as _;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -31,4 +36,13 @@ pub struct Version {
 /// Tip: provide this to Educe.
 pub fn float_eq(a: &f64, b: &f64) -> bool {
     (a.is_nan() && b.is_nan()) || (a == b)
+}
+
+pub fn hashing_hash_set_string<H>(set: &HashSet<String>, state: &mut H)
+where
+    H: Hasher,
+{
+    let mut vec = set.iter().collect_vec();
+    vec.sort();
+    Hash::hash(&vec, state)
 }

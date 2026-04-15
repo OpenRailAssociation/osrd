@@ -120,11 +120,13 @@ pub struct UndirectedTrackRange {
 }
 
 /// Represents a physics consist.
-#[derive(Serialize, Deserialize, Clone, Debug, ToSchema, Hash, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, ToSchema, educe::Educe, PartialEq, Eq)]
 #[schema(as = core::ConsistConfiguration)]
+#[educe(Hash)]
 pub struct ConsistConfiguration {
     /// List of supported signaling systems
-    pub supported_signaling_systems: Vec<String>,
+    #[educe(Hash(method(common::hashing_hash_set_string)))]
+    pub supported_signaling_systems: HashSet<String>,
     pub speed_limit_tag: Option<String>,
     /// The loading gauge of the rolling stock
     pub loading_gauge_type: LoadingGaugeType,

@@ -11182,11 +11182,13 @@ components:
           description: |-
             List of supported electrification modes.
             Empty if does not support any electrification
+          uniqueItems: true
         rolling_stock_supported_signaling_systems:
           type: array
           items:
             type: string
           description: List of supported signaling systems
+          uniqueItems: true
         speed_limit_tag:
           type:
           - string
@@ -14937,6 +14939,7 @@ components:
           items:
             type: string
           description: List of supported signaling systems
+          uniqueItems: true
     core.ETCSBrakingCurvesResponse:
       type: object
       required:
