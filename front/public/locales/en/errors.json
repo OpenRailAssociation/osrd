@@ -237,6 +237,11 @@
       "TowedRollingStockNotFound": "Towed rolling stock {towed_rolling_stock_id} does not exist",
       "TrainSimulationFail": "Train simulation failed"
     },
+    "stdcm_debug": {
+      "JsonParseError": "Error parsing json file",
+      "S3Error": "Error getting s3 data",
+      "S3NotConfigured": "Editoast isn't configured to access s3"
+    },
     "stdcm_search_env": {
       "Database": "Internal error (database)",
       "NotFound": "Stdcm search environment '{{env_id}}' could not be found"

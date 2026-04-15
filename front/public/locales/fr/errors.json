@@ -237,6 +237,11 @@
       "TowedRollingStockNotFound": "Matériel roulant remorqué {towed_rolling_stock_id} non trouvé",
       "TrainSimulationFail": "Échec de la simulation du train"
     },
+    "stdcm_debug": {
+      "JsonParseError": "Erreur de lecture du fichier json",
+      "S3Error": "Erreur d'accès au s3",
+      "S3NotConfigured": "Editoast n'est pas configuré pour accéder au s3"
+    },
     "stdcm_search_env": {
       "Database": "Erreur interne (base de données)",
       "NotFound": "Environnement de recherche stdcm '{{env_id}}' non trouvé"

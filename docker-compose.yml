@@ -166,6 +166,7 @@ services:
       valkey: { condition: service_healthy }
       rabbitmq: { condition: service_healthy }
       openfga: { condition: service_started }
+      s3_init: { condition: service_completed_successfully }
     build:
       context: editoast
       dockerfile: Dockerfile
@@ -189,6 +190,10 @@ services:
       FGA_API_URL: "http://openfga:8091"
       EDITOAST_ENABLE_AUTHORIZATION: ${EDITOAST_ENABLE_AUTHORIZATION:-true}
       EDITOAST_NO_CACHE: ${EDITOAST_NO_CACHE:-false}
+      S3_ACCESS_KEY_ID: access_key
+      S3_SECRET_ACCESS_KEY: secret_key
+      S3_ENDPOINT_URL: http://s3:9900
+      S3_BUCKET_NAME: osrd
     command: >
       /bin/sh -c "
         fga_migrations apply &&
