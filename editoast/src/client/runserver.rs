@@ -36,6 +36,18 @@ pub struct CoreArgs {
 }
 
 #[derive(Args, Debug)]
+pub struct S3Args {
+    #[clap(long, env = "AWS_ENDPOINT_URL_S3")]
+    pub endpoint: Option<Url>,
+    #[clap(long, env = "AWS_BUCKET_NAME")]
+    pub bucket_name: Option<String>,
+    #[clap(long, env = "AWS_ACCESS_KEY_ID")]
+    pub access_key_id: Option<String>,
+    #[clap(long, env = "AWS_SECRET_ACCESS_KEY")]
+    pub secret_access_key: Option<String>,
+}
+
+#[derive(Args, Debug)]
 #[command(about, long_about = "Launch the server")]
 pub struct RunserverArgs {
     #[clap(long, env = "ROOT_URL", default_value_t = Url::parse("http://localhost:8090").unwrap())]
@@ -59,6 +71,8 @@ pub struct RunserverArgs {
     health_check_timeout_ms: u64,
     #[clap(long, env = "EDITOAST_TRAINS_TRAFFIC_PATH")]
     trains_traffic_path: Option<PathBuf>,
+    #[command(flatten)]
+    s3: S3Args,
 }
 
 /// Create and run the server
@@ -80,6 +94,7 @@ pub async fn runserver(
         root_url,
         dynamic_assets_path,
         trains_traffic_path,
+        s3,
     }: RunserverArgs,
     postgres: PostgresConfig,
     valkey_config: ValkeyConfig,
@@ -115,8 +130,18 @@ pub async fn runserver(
         dynamic_assets_path,
         app_version,
         trains_traffic,
+        s3_config: build_s3_config(s3),
     };
 
     let server = views::Server::new(config).await?;
     Ok(server.start().await?)
+}
+
+fn build_s3_config(s3: S3Args) -> Option<views::S3Config> {
+    Some(views::S3Config {
+        endpoint: s3.endpoint?,
+        bucket_name: s3.bucket_name?,
+        access_key_id: s3.access_key_id?,
+        secret_access_key: s3.secret_access_key?,
+    })
 }
