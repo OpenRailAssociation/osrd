@@ -145,17 +145,20 @@
     .itinerary-modal-form-body {
       flex: 1 1 auto;
       min-height: 0;
-      overflow-y: auto;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
       background-color: var(--ambientB10);
       box-shadow: 0 calc(-1 * var(--footer-box-shadow-height)) 0 0 var(--black10);
 
       .alert-box {
-        margin-top: -1px;
+        margin-block: -1px 0;
         animation: wiggle 0.4s ease-in;
       }
 
       .path-step-list {
         position: relative;
+        overflow-y: auto;
         background-color: var(--ambientB15);
         border-radius: 8px;
         margin-top: 12px;
