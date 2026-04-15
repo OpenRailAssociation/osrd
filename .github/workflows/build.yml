@@ -490,13 +490,13 @@ jobs:
         if: needs.build-editoast.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
-          name: editoast
+          name: images-editoast
           path: .
       - name: Download built front-tests image
         if: needs.build-front.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
-          name: front-tests
+          name: images-front
           path: .
 
       - name: Load built images
@@ -702,19 +702,19 @@ jobs:
         if: needs.build-editoast.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
-          name: editoast
+          name: images-editoast
           path: .
       - name: Download built core image
         if: needs.build-core.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
-          name: core
+          name: images-core
           path: .
       - name: Download built osrdyne image
         if: needs.build-osrdyne.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
-          name: osrdyne
+          name: images-osrdyne
           path: .
       - name: Load built images
         if: needs.build-core.outputs.output_method == 'artifact' || needs.build-editoast.outputs.output_method == 'artifact' || needs.build-osrdyne.outputs.output_method == 'artifact'
@@ -779,19 +779,19 @@ jobs:
         if: needs.build-editoast.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
-          name: editoast
+          name: images-editoast
           path: .
       - name: Download built core image
         if: needs.build-core.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
-          name: core
+          name: images-core
           path: .
       - name: Download built osrdyne image
         if: needs.build-osrdyne.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
-          name: osrdyne
+          name: images-osrdyne
           path: .
       - name: Load built images
         if: needs.build-core.outputs.output_method == 'artifact' || needs.build-editoast.outputs.output_method == 'artifact' || needs.build-osrdyne.outputs.output_method == 'artifact'
@@ -829,31 +829,31 @@ jobs:
         if: needs.build-front.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
-          name: front-tests
+          name: images-front
           path: .
       - name: Download built editoast image
         if: needs.build-editoast.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
-          name: editoast
+          name: images-editoast
           path: .
       - name: Download built core image
         if: needs.build-core.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
-          name: core
+          name: images-core
           path: .
       - name: Download built gateway-front image
         if: needs.build-gateway.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
-          name: gateway-front
+          name: images-gateway
           path: .
       - name: Download built osrdyne image
         if: needs.build-osrdyne.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8
         with:
-          name: osrdyne
+          name: images-osrdyne
           path: .
       - name: Load built images
         if: needs.build-front.outputs.output_method == 'artifact' || needs.build-editoast.outputs.output_method == 'artifact' || needs.build-core.outputs.output_method == 'artifact' || needs.build-gateway.outputs.output_method == 'artifact' || needs.build-osrdyne.outputs.output_method == 'artifact'
