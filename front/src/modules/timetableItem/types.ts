@@ -3,7 +3,7 @@ import type { Position } from 'geojson';
 import type {
   TrainCategory,
   LightRollingStockWithLiveries,
-  PacedTrainException,
+  TrainScheduleException,
   CorePathfindingInputError,
   CorePathfindingNotFound,
   ReceptionSignal,
@@ -84,7 +84,7 @@ export type InvalidReason =
   | CorePathfindingNotFound['error_type']
   | CorePathfindingInputError['error_type'];
 
-export type SimulatedException = PacedTrainException & { summary?: SimulationSummary };
+export type SimulatedException = TrainScheduleException & { summary?: SimulationSummary };
 
 export type PacedTrainWithDetails = TimetableItemWithSummaries & {
   paced?: {
@@ -106,7 +106,7 @@ export type PacedTrainWithPacedWithDetails = TimetableItemWithSummaries & {
 export type TimetableItemWithDetails = PacedTrainWithDetails;
 
 export type ExceptionChangeGroups = Omit<
-  PacedTrainException,
+  TrainScheduleException,
   'key' | 'occurrence_index' | 'disabled' | 'id'
 >;
 

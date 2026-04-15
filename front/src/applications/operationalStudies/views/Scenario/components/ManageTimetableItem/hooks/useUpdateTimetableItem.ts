@@ -7,7 +7,7 @@ import {
   updatePacedTrainExceptionsList,
 } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/buildPacedTrainException';
 import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/views/Scenario/consts';
-import type { PacedTrainException } from 'common/api/osrdEditoastApi';
+import type { TrainScheduleException } from 'common/api/generatedEditoastApi';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import { findExceptionWithOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
 import {
@@ -156,12 +156,14 @@ const useUpdateTimetableItem = (
 
     const originalPacedExceptions = originalPacedTrain.paced?.exceptions ?? [];
 
-    const newAddedExceptions: PacedTrainException[] = addedExceptions.map(
-      ({ startTime: exStartTime }) => ({
-        key: '', // TODO : remove this when the key will be removed from the model
+    const newAddedExceptions: Omit<
+      TrainScheduleException,
+      'id' | 'train_schedule_id' | 'timetable_id' | 'disabled'
+    >[] = addedExceptions.map(({ startTime: exStartTime }) => ({
+      change_groups: {
         start_time: { value: exStartTime.toISOString() },
-      })
-    );
+      },
+    }));
 
     // Converting a unique train into a paced train:
     // syncAndUpdatePacedTrain must be called first to make the train a paced train on the backend
@@ -178,23 +180,13 @@ const useUpdateTimetableItem = (
     }
 
     // Create new added exceptions (shared for both unique→paced conversion and paced train update)
-    let createdExceptions: PacedTrainException[] = [];
+    let createdExceptions: TrainScheduleException[] = [];
     if (newAddedExceptions.length > 0) {
-      const created = await createExceptions(
+      createdExceptions = await createExceptions(
         dispatch,
         newAddedExceptions,
         timetableItemId,
         timetableId
-      );
-
-      // TODO: remove this part when the back will be done inserting the new exception format in TrainSchedule
-      createdExceptions = created.map(
-        ({ change_groups, train_schedule_id: _, timetable_id: __, ...rest }) => ({
-          ...change_groups,
-          ...rest,
-          // TODO_EXCEPTION: remove this when drop key in the model
-          key: '',
-        })
       );
     }
 

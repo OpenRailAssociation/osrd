@@ -1,7 +1,7 @@
 import { compact } from 'lodash';
 
 import type { PacedTrainWithPaced } from 'applications/operationalStudies/types';
-import type { PacedTrainException, TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { TrainScheduleException, TrainSchedule } from 'common/api/osrdEditoastApi';
 import getStepLocation from 'modules/pathfinding/helpers/getStepLocation';
 import { isPacedTrainBase } from 'modules/timetableItem/helpers/pacedTrain';
 import type { PacedTrainWithDetails } from 'modules/timetableItem/types';
@@ -88,7 +88,7 @@ export function formatOccurrenceException(
   rollingStockName: string,
   timetableItemToEditData: NonNullableObject<TimetableItemToEditData, 'occurrenceId'>
 ): {
-  generatedException: Omit<PacedTrainException, 'key' | 'occurrence_index'>;
+  generatedException: Omit<TrainScheduleException, 'key' | 'occurrence_index'>;
   occurrenceIndex: number | undefined;
 } {
   const baseTrain = formatTimetableItemPayload(osrdconf, rollingStockName);

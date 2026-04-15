@@ -60,8 +60,8 @@ const useConflictsFilter = (
       selectedTrain.paced.exceptions,
       selectedTrainId
     );
-    if (exception?.train_name?.value) {
-      return exception.train_name.value;
+    if (exception?.change_groups.train_name?.value) {
+      return exception.change_groups.train_name.value;
     }
     // Occcurrence without a name change group
     if (isIndexedOccurrenceId(selectedTrainId)) {

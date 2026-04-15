@@ -75,7 +75,7 @@ const OccurrenceIndicator = ({ occurrence, subCategories }: OccurrenceIndicatorP
           });
         }
 
-        return changeGroup !== 'rolling_stock_category'
+        return changeGroup !== 'change_groups.rolling_stock_category'
           ? t(`occurrenceChangeGroup.${changeGroup}`)
           : occurrenceCategory;
       });

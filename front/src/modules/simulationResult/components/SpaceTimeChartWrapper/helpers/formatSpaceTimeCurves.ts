@@ -38,7 +38,7 @@ const getTrainCategory = (
   if (!item || !isPacedTrainWithDetails(item) || !isOccurrenceId(trainId)) return item?.category;
 
   const exception = findExceptionWithOccurrenceId(item.paced.exceptions, trainId);
-  return exception?.rolling_stock_category?.value ?? item.category;
+  return exception?.change_groups.rolling_stock_category?.value ?? item.category;
 };
 
 const formatSpaceTimeCurves = (

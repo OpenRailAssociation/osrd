@@ -258,19 +258,20 @@ const useTrackOccupancy = ({
             let startTime: Date;
 
             if (occupation.type === 'created') {
-              if (!exception?.start_time?.value)
+              if (!exception?.change_groups.start_time?.value)
                 throw new Error(`Created exceptions should always be a start time exception`);
 
               trainId = formatPacedTrainIdToExceptionId(pacedTrainId, occupation.exception_id);
-              trainName = exception.train_name?.value ?? `${train.name}/+`;
-              startTime = new Date(exception.start_time.value);
+              trainName = exception.change_groups.train_name?.value ?? `${train.name}/+`;
+              startTime = new Date(exception.change_groups.start_time.value);
             } else {
               trainId = formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, occupation.index);
               trainName =
-                exception?.train_name?.value ?? computeOccurrenceName(train.name, occupation.index);
+                exception?.change_groups.train_name?.value ??
+                computeOccurrenceName(train.name, occupation.index);
 
-              startTime = exception?.start_time?.value
-                ? new Date(exception.start_time.value)
+              startTime = exception?.change_groups.start_time?.value
+                ? new Date(exception.change_groups.start_time.value)
                 : computeIndexedOccurrenceStartTime(
                     new Date(train.departureTime),
                     train.paced.interval,

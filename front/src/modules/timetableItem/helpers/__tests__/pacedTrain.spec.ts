@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import type { TrainSchedule, PacedTrainException } from 'common/api/osrdEditoastApi';
+import type { TrainSchedule, TrainScheduleException } from 'common/api/osrdEditoastApi';
 import type { SimulatedException, SimulationSummary } from 'modules/timetableItem/types';
 import { Duration } from 'utils/duration';
 import {
@@ -88,9 +88,10 @@ describe('extractOccurrenceDetailsFromPacedTrain', () => {
   };
 
   it('should properly update a standard property', () => {
-    const exception: PacedTrainException = {
-      key: '123123',
-      train_name: { value: '8608 updated' },
+    const exception: TrainScheduleException = {
+      change_groups: {
+        train_name: { value: '8608 updated' },
+      },
     };
     const updatedPacedTrain = extractOccurrenceDetailsFromPacedTrain(pacedTrain, exception);
     expect(updatedPacedTrain).toEqual({
@@ -100,9 +101,10 @@ describe('extractOccurrenceDetailsFromPacedTrain', () => {
   });
 
   it('should properly update speed limit tag with a null value', () => {
-    const exception: PacedTrainException = {
-      key: '123123',
-      speed_limit_tag: { value: null },
+    const exception: TrainScheduleException = {
+      change_groups: {
+        speed_limit_tag: { value: null },
+      },
     };
     const updatedPacedTrain = extractOccurrenceDetailsFromPacedTrain(pacedTrain, exception);
     expect(updatedPacedTrain).toEqual({
@@ -112,9 +114,10 @@ describe('extractOccurrenceDetailsFromPacedTrain', () => {
   });
 
   it('should properly update a property containing multiple ones', () => {
-    const exception: PacedTrainException = {
-      key: '123123',
-      options: { value: { use_electrical_profiles: true } },
+    const exception: TrainScheduleException = {
+      change_groups: {
+        options: { value: { use_electrical_profiles: true } },
+      },
     };
     const updatedPacedTrain = extractOccurrenceDetailsFromPacedTrain(pacedTrain, exception);
     expect(updatedPacedTrain).toEqual({
@@ -126,44 +129,45 @@ describe('extractOccurrenceDetailsFromPacedTrain', () => {
   });
 
   it('should properly update path and schedule change group', () => {
-    const exception: PacedTrainException = {
-      key: '123123',
-      path_and_schedule: {
-        path: [
-          {
-            id: 'id225',
-            location: {
-              type: 'operational_point_part_reference',
-              operational_point: { uic: 6, secondary_code: 'BV', type: 'uic' },
+    const exception: TrainScheduleException = {
+      change_groups: {
+        path_and_schedule: {
+          path: [
+            {
+              id: 'id225',
+              location: {
+                type: 'operational_point_part_reference',
+                operational_point: { uic: 6, secondary_code: 'BV', type: 'uic' },
+              },
             },
-          },
-          {
-            id: 'id228',
-            location: {
-              type: 'operational_point_part_reference',
-              operational_point: { uic: 5, secondary_code: 'BV', type: 'uic' },
+            {
+              id: 'id228',
+              location: {
+                type: 'operational_point_part_reference',
+                operational_point: { uic: 5, secondary_code: 'BV', type: 'uic' },
+              },
             },
-          },
-        ],
-        schedule: [
-          {
-            at: 'id228',
-            arrival: null,
-            stop_for: 'P0D',
-            reception_signal: 'OPEN',
-          },
-        ],
-        margins: { boundaries: [], values: ['0%'] },
-        power_restrictions: [],
+          ],
+          schedule: [
+            {
+              at: 'id228',
+              arrival: null,
+              stop_for: 'P0D',
+              reception_signal: 'OPEN',
+            },
+          ],
+          margins: { boundaries: [], values: ['0%'] },
+          power_restrictions: [],
+        },
       },
     };
     const updatedPacedTrain = extractOccurrenceDetailsFromPacedTrain(pacedTrain, exception);
     expect(updatedPacedTrain).toEqual({
       ...pacedTrain,
-      path: exception.path_and_schedule!.path,
-      margins: exception.path_and_schedule!.margins,
-      power_restrictions: exception.path_and_schedule!.power_restrictions,
-      schedule: exception.path_and_schedule!.schedule,
+      path: exception.change_groups.path_and_schedule!.path,
+      margins: exception.change_groups.path_and_schedule!.margins,
+      power_restrictions: exception.change_groups.path_and_schedule!.power_restrictions,
+      schedule: exception.change_groups.path_and_schedule!.schedule,
     });
   });
 });
@@ -334,10 +338,9 @@ describe('isOccurrencePresentInPacedTrain', () => {
     timeWindow: Duration.parse('PT2H'),
     interval: Duration.parse('PT30M'),
     exceptions: [
-      // TODO_EXCEPTION: delete `key`
-      { id: 0, key: '0' },
-      { id: 1, key: '1', occurrence_index: 1, disabled: true },
-      { id: 2, key: '2', occurrence_index: 2, disabled: false },
+      { id: 0 },
+      { id: 1, occurrence_index: 1, disabled: true },
+      { id: 2, occurrence_index: 2, disabled: false },
     ],
   };
   const timetableItem = { paced, id: timetableItemId };

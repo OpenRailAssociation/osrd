@@ -181,10 +181,9 @@ describe('isTrainIdInTimetable', () => {
         timeWindow: Duration.parse('PT2H'),
         interval: Duration.parse('PT30M'),
         exceptions: [
-          // TODO_EXCEPTION: delete `key`
-          { key: '0', id: 0 },
-          { key: '1', id: 1, occurrence_index: 1, disabled: true },
-          { key: '2', id: 2, occurrence_index: 2, disabled: false },
+          { id: 0 },
+          { id: 1, occurrence_index: 1, disabled: true },
+          { id: 2, occurrence_index: 2, disabled: false },
         ],
       },
     },

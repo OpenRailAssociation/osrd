@@ -8,7 +8,7 @@ import type {
 import {
   osrdEditoastApi,
   type MacroNodeForm,
-  type PacedTrainException,
+  type TrainScheduleException,
   type SubCategory,
   type TrainSchedule,
 } from 'common/api/osrdEditoastApi';
@@ -87,7 +87,7 @@ export const postFullImportPayload = async (
     const {
       trainSchedules,
       exceptions,
-    }: { trainSchedules: TrainSchedule[]; exceptions: PacedTrainException[][] } =
+    }: { trainSchedules: TrainSchedule[]; exceptions: TrainScheduleException[][] } =
       generateTrainPayloads(timetableJsonPayload.paced_trains, subCategories);
 
     const timetableItems: TimetableItem[] = [];

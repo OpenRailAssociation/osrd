@@ -32,11 +32,12 @@ function getConflictTrainNames(conflict: Conflict, trainMap: Map<number, Timetab
       // Check if the exception has a name change group
       // Otherwise, compute the occurrence name
       const namedException = pacedTrain.paced.exceptions.find(
-        (exception) => exception.occurrence_index === train.index && exception.train_name
+        (exception) =>
+          exception.occurrence_index === train.index && exception.change_groups.train_name
       );
       trainNames.push(
         namedException
-          ? namedException.train_name!.value
+          ? namedException.change_groups.train_name!.value
           : computeOccurrenceName(pacedTrain.train_name, train.index)
       );
     } else {
@@ -44,11 +45,12 @@ function getConflictTrainNames(conflict: Conflict, trainMap: Map<number, Timetab
       // Check if the exception has a name change group
       // Otherwise, the name is `${pacedTrainName}/+`
       const namedException = pacedTrain.paced.exceptions.find(
-        // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
-        (exception) => exception.id! === train.exception_id && exception.train_name
+        (exception) => exception.id === train.exception_id && exception.change_groups.train_name
       );
       trainNames.push(
-        namedException ? namedException.train_name!.value : `${pacedTrain.train_name}/+`
+        namedException
+          ? namedException.change_groups.train_name!.value
+          : `${pacedTrain.train_name}/+`
       );
     }
   });

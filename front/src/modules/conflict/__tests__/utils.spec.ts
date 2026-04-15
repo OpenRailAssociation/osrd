@@ -18,7 +18,7 @@ describe('addTrainNamesToConflicts', () => {
         id: 20,
         train_name: 'PT 4567',
         category: null,
-        paced: { exceptions: [{ key: '1', id: 1, train_name: { value: 'ABC' } }] },
+        paced: { exceptions: [{ id: 1, change_groups: { train_name: { value: 'ABC' } } }] },
       } as TimetableItem,
     ];
 

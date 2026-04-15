@@ -1,7 +1,7 @@
 import type { OccupancyZone } from '@osrd-project/ui-charts';
 
 import {
-  type PacedTrainException,
+  type TrainScheduleException,
   type PostTrainSchedulesTrackOccupancyApiResponse,
 } from 'common/api/osrdEditoastApi';
 import type { TrainId } from 'reducers/osrdconf/types';
@@ -58,7 +58,7 @@ export function getMovableOccupancyZone(
   spaceTimeCurves: BaseTrainProjection['spaceTimeCurves'],
   trainName: string,
   departureTime: Date,
-  exception?: PacedTrainException
+  exception?: TrainScheduleException
 ): MovableOccupancyZone {
   const trainStartTime = departureTime.getTime();
   const occupationStartTime = +new Date(occupation.time_begin);
@@ -99,6 +99,6 @@ export function getMovableOccupancyZone(
     trainName,
     dbStartTime: occupationStartTime,
     dbEndTime: occupationEndTime,
-    isStartTimeException: exception?.start_time !== undefined,
+    isStartTimeException: exception?.change_groups.start_time !== undefined,
   };
 }

@@ -1,8 +1,4 @@
-import type {
-  PacedTrainException,
-  Tags,
-  TrainScheduleExceptionChangeGroups,
-} from 'common/api/osrdEditoastApi';
+import type { Tags } from 'common/api/osrdEditoastApi';
 
 type StationRequest = {
   name: string;
@@ -308,11 +304,3 @@ export type PacedTrainOptions = {
   pacedTrainCardAlreadyOpen?: boolean;
   occurrenceColor?: string;
 };
-
-export type ExceptionFormat =
-  | PacedTrainException
-  | {
-      change_groups: TrainScheduleExceptionChangeGroups;
-      disabled?: boolean;
-      occurrence_index?: number;
-    };

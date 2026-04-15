@@ -54,8 +54,8 @@ const useSimulationResults = (
     );
 
     let startTime: string;
-    if (exception?.start_time) {
-      startTime = exception.start_time.value;
+    if (exception?.change_groups.start_time) {
+      startTime = exception.change_groups.start_time.value;
     } else {
       const selectedOccurrenceIndex = extractOccurrenceIndexFromOccurrenceId(selectedTrainId);
       startTime = computeIndexedOccurrenceStartTime(

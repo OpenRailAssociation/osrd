@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 
 import { updatePacedTrainExceptionsList } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/buildPacedTrainException';
 import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/formatTimetableItemPayload';
-import type { PacedTrainException, TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { TrainScheduleException, TrainSchedule } from 'common/api/osrdEditoastApi';
 import {
   findExceptionWithOccurrenceId,
   extractOccurrenceDetailsFromPacedTrain,
@@ -123,7 +123,7 @@ const useOccurrenceActions = ({
         occurrence.id
       );
 
-      let exceptionsToUpdate: PacedTrainException;
+      let exceptionsToUpdate: TrainScheduleException;
 
       if (occurrenceToUpdateException) {
         const updatedException = {
@@ -137,7 +137,7 @@ const useOccurrenceActions = ({
         } else {
           // Exception had only disabled: true and nothing else → delete it entirely
           // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
-          await deleteExceptions(dispatch, [occurrenceToUpdateException.id!]);
+          await deleteExceptions(dispatch, [occurrenceToUpdateException.id]);
         }
         exceptionsToUpdate = updatedException;
       } else {
@@ -145,13 +145,13 @@ const useOccurrenceActions = ({
           throw new Error('Cannot enable an occurrence which was not disabled');
         }
 
-        // TODO_EXCEPTION: remove key when using TrainSchedulingException type
-        const key = '';
         // No exception yet: create one with disabled: true
-        const exceptionToCreate: PacedTrainException = {
+        const exceptionToCreate: Omit<TrainScheduleException, 'id'> = {
+          train_schedule_id: pacedTrain.id,
+          timetable_id: timetableId,
           occurrence_index: occurrence.occurrenceIndex,
-          key,
           disabled: true,
+          change_groups: {},
         };
         const [createdException] = await createExceptions(
           dispatch,
@@ -206,15 +206,12 @@ const useOccurrenceActions = ({
           (exception) => exception.occurrence_index !== exceptionToUpdate.occurrence_index
         );
 
-        // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
-        await deleteExceptions(dispatch, [exceptionToUpdate.id!]);
+        await deleteExceptions(dispatch, [exceptionToUpdate.id]);
       } else {
+        const { change_groups, ...restOfException } = exceptionToUpdate;
         const updatedException = {
-          // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
-          id: exceptionToUpdate.id!,
-          // TODO_EXCEPTION: remove `key` when using TrainSchedulingException type
-          key: '',
-          start_time: exceptionToUpdate.start_time,
+          ...restOfException,
+          change_groups: { start_time: change_groups.start_time },
         };
         // for an added exception, we want to reset all change groups except the start time
         updatedExceptions = pacedTrain.paced.exceptions.map((exception) =>

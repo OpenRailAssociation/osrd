@@ -2,7 +2,7 @@ import type {
   PacedTrainResponseWithPaced,
   PacedTrainWithPaced,
 } from 'applications/operationalStudies/types';
-import type { TrainSchedule, PacedTrainException } from 'common/api/osrdEditoastApi';
+import type { TrainSchedule, TrainScheduleException } from 'common/api/osrdEditoastApi';
 import type { OccurrenceId, PacedTrainId, TimetableItem } from 'reducers/osrdconf/types';
 import { Duration, addDurationToDate } from 'utils/duration';
 import {
@@ -27,22 +27,6 @@ import computeOccurrenceName from './computeOccurrenceName';
 
 export const isPacedTrainBase = (pacedTrain: TrainSchedule): pacedTrain is PacedTrainWithPaced =>
   !!pacedTrain.paced;
-
-export const CHANGE_GROUP_KEYS: (keyof PacedTrainException)[] = [
-  'constraint_distribution',
-  'initial_speed',
-  'labels',
-  'options',
-  'path_and_schedule',
-  'rolling_stock',
-  'rolling_stock_category',
-  'speed_limit_tag',
-  'start_time',
-  'train_name',
-];
-
-export const hasNoChangeGroups = (exception: PacedTrainException) =>
-  CHANGE_GROUP_KEYS.every((key) => !(key in exception));
 
 export const isPacedTrain = (
   timetableItem: TimetableItem
@@ -72,7 +56,7 @@ export const computeIndexedOccurrenceStartTime = (
 /**
  * Based on an exception list and an occurrence id, find the corresponding exception
  */
-export const findExceptionWithOccurrenceId = <T extends PacedTrainException>(
+export const findExceptionWithOccurrenceId = <T extends TrainScheduleException>(
   exceptions: T[],
   occurrenceId: OccurrenceId
 ) => {
@@ -97,47 +81,50 @@ export const extractOccurrenceDetailsFromPacedTrain = <
     return occurrence;
   }
 
-  if (exceptionChangeGroups.train_name) {
-    occurrence.train_name = exceptionChangeGroups.train_name.value;
+  if (exceptionChangeGroups.change_groups.train_name) {
+    occurrence.train_name = exceptionChangeGroups.change_groups.train_name.value;
   }
-  if (exceptionChangeGroups.start_time) {
-    occurrence.start_time = exceptionChangeGroups.start_time.value;
+  if (exceptionChangeGroups.change_groups.start_time) {
+    occurrence.start_time = exceptionChangeGroups.change_groups.start_time.value;
   }
-  if (exceptionChangeGroups.speed_limit_tag) {
+  if (exceptionChangeGroups.change_groups.speed_limit_tag) {
     // speed limit tag will always be a string or null
-    occurrence.speed_limit_tag = exceptionChangeGroups.speed_limit_tag.value!;
+    occurrence.speed_limit_tag = exceptionChangeGroups.change_groups.speed_limit_tag.value!;
   }
-  if (exceptionChangeGroups.labels) {
-    occurrence.labels = exceptionChangeGroups.labels.value;
+  if (exceptionChangeGroups.change_groups.labels) {
+    occurrence.labels = exceptionChangeGroups.change_groups.labels.value;
   }
-  if (exceptionChangeGroups.initial_speed) {
-    occurrence.initial_speed = exceptionChangeGroups.initial_speed.value;
+  if (exceptionChangeGroups.change_groups.initial_speed) {
+    occurrence.initial_speed = exceptionChangeGroups.change_groups.initial_speed.value;
   }
-  if (exceptionChangeGroups.constraint_distribution) {
-    occurrence.constraint_distribution = exceptionChangeGroups.constraint_distribution.value;
+  if (exceptionChangeGroups.change_groups.constraint_distribution) {
+    occurrence.constraint_distribution =
+      exceptionChangeGroups.change_groups.constraint_distribution.value;
   }
-  if (exceptionChangeGroups.rolling_stock_category) {
-    occurrence.category = exceptionChangeGroups.rolling_stock_category.value;
+  if (exceptionChangeGroups.change_groups.rolling_stock_category) {
+    occurrence.category = exceptionChangeGroups.change_groups.rolling_stock_category.value;
   }
-  if (exceptionChangeGroups.rolling_stock) {
-    occurrence.rolling_stock_name = exceptionChangeGroups.rolling_stock.rolling_stock_name;
-    occurrence.comfort = exceptionChangeGroups.rolling_stock.comfort;
+  if (exceptionChangeGroups.change_groups.rolling_stock) {
+    occurrence.rolling_stock_name =
+      exceptionChangeGroups.change_groups.rolling_stock.rolling_stock_name;
+    occurrence.comfort = exceptionChangeGroups.change_groups.rolling_stock.comfort;
   }
-  if (exceptionChangeGroups.path_and_schedule) {
-    occurrence.margins = exceptionChangeGroups.path_and_schedule.margins;
-    occurrence.path = exceptionChangeGroups.path_and_schedule.path;
-    occurrence.power_restrictions = exceptionChangeGroups.path_and_schedule.power_restrictions;
-    occurrence.schedule = exceptionChangeGroups.path_and_schedule.schedule;
+  if (exceptionChangeGroups.change_groups.path_and_schedule) {
+    occurrence.margins = exceptionChangeGroups.change_groups.path_and_schedule.margins;
+    occurrence.path = exceptionChangeGroups.change_groups.path_and_schedule.path;
+    occurrence.power_restrictions =
+      exceptionChangeGroups.change_groups.path_and_schedule.power_restrictions;
+    occurrence.schedule = exceptionChangeGroups.change_groups.path_and_schedule.schedule;
   }
-  if (exceptionChangeGroups.options) {
+  if (exceptionChangeGroups.change_groups.options) {
     // options is optional when creating a timetable item but
     // is always present when editing an existing one
     occurrence.options!.use_electrical_profiles =
-      exceptionChangeGroups.options.value?.use_electrical_profiles;
+      exceptionChangeGroups.change_groups.options.value?.use_electrical_profiles;
     occurrence.options!.use_speed_limits_for_simulation =
-      exceptionChangeGroups.options.value?.use_speed_limits_for_simulation;
+      exceptionChangeGroups.change_groups.options.value?.use_speed_limits_for_simulation;
     occurrence.options!.stops_at_end_of_block =
-      exceptionChangeGroups.options.value?.stops_at_end_of_block;
+      exceptionChangeGroups.change_groups.options.value?.stops_at_end_of_block;
   }
   return occurrence;
 };
@@ -180,7 +167,7 @@ export const getExceptionFromOccurrenceId = (
   if (!pacedTrain) return undefined;
   if (!isPacedTrain(pacedTrain)) throw new Error(`No paced train found for id ${pacedTrainId}`);
 
-  let exception: PacedTrainException | undefined;
+  let exception: TrainScheduleException | undefined;
   if (isIndexedOccurrenceId(occurrenceId)) {
     const index = extractOccurrenceIndexFromOccurrenceId(occurrenceId);
     exception = pacedTrain.paced.exceptions.find((e) => e.occurrence_index === index);
@@ -206,8 +193,8 @@ export const getOccurrenceTrainName = (
     occurrenceId
   );
 
-  if (existingException?.train_name?.value) {
-    return existingException.train_name.value;
+  if (existingException?.change_groups.train_name?.value) {
+    return existingException.change_groups.train_name.value;
   }
 
   if (isIndexedOccurrenceId(occurrenceId)) {
@@ -224,16 +211,16 @@ export const getOccurrenceTrainName = (
  * Return true if the exception has at least one change group defined (excluding disabled).
  */
 export const hasChangeGroups = (exception: SimulatedException): boolean =>
-  exception.constraint_distribution != null ||
-  exception.initial_speed != null ||
-  exception.labels != null ||
-  exception.options != null ||
-  exception.path_and_schedule != null ||
-  exception.rolling_stock != null ||
-  exception.rolling_stock_category != null ||
-  exception.speed_limit_tag != null ||
-  exception.start_time != null ||
-  exception.train_name != null;
+  exception.change_groups.constraint_distribution != null ||
+  exception.change_groups.initial_speed != null ||
+  exception.change_groups.labels != null ||
+  exception.change_groups.options != null ||
+  exception.change_groups.path_and_schedule != null ||
+  exception.change_groups.rolling_stock != null ||
+  exception.change_groups.rolling_stock_category != null ||
+  exception.change_groups.speed_limit_tag != null ||
+  exception.change_groups.start_time != null ||
+  exception.change_groups.train_name != null;
 
 /**
  * Return true if the exception has at least one change group defined OR is disabled.
@@ -245,8 +232,7 @@ export const hasExceptions = (exception: SimulatedException): boolean =>
 export const getOcurrencesIds = (pacedTrain: PacedTrainWithPaced, pacedTrainId: PacedTrainId) => {
   const occurrencesIds: OccurrenceId[] = pacedTrain.paced.exceptions
     .filter((exception) => exception.occurrence_index === undefined) // Indexed exceptions follow the regular indexed occurrence id pattern
-    // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
-    .map((exception) => formatPacedTrainIdToExceptionId(pacedTrainId, exception.id!));
+    .map((exception) => formatPacedTrainIdToExceptionId(pacedTrainId, exception.id));
   const indexedOccurrencesCount = getOccurrencesNb({
     timeWindow: Duration.parse(pacedTrain.paced.time_window),
     interval: Duration.parse(pacedTrain.paced.interval),

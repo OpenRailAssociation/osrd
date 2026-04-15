@@ -58,19 +58,19 @@ const makeProjectedItems = (timetableItemProjections: TrainSpaceTimeData[]) =>
       }
 
       const exceptionProjection = projectedItem.paced.exceptionProjections.get(
-        correspondingException.id! // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
+        correspondingException.id
       );
 
-      const departureTime = correspondingException.start_time
-        ? new Date(correspondingException.start_time.value)
+      const departureTime = correspondingException.change_groups.start_time
+        ? new Date(correspondingException.change_groups.start_time.value)
         : computeIndexedOccurrenceStartTime(
             projectedItem.departureTime,
             projectedItem.paced.interval,
             i
           );
 
-      const name = correspondingException?.train_name
-        ? correspondingException.train_name.value
+      const name = correspondingException?.change_groups.train_name?.value
+        ? correspondingException.change_groups.train_name.value
         : computeOccurrenceName(projectedItem.name, i);
 
       occurrences.push({
@@ -92,19 +92,20 @@ const makeProjectedItems = (timetableItemProjections: TrainSpaceTimeData[]) =>
       // Disabled occurrences should not be displayed
       if (exception.disabled) continue;
 
-      if (!exception.start_time) throw new Error('added exception should have a start time');
+      if (!exception.change_groups.start_time)
+        throw new Error('added exception should have a start time');
 
       const id = formatEditoastIdToExceptionId({
         pacedTrainId: projectedItem.id,
-        exceptionId: exception.id!, // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
+        exceptionId: exception.id,
       });
-      const name = exception.train_name ? exception.train_name.value : `${projectedItem.name}/+`;
+      const name = exception.change_groups.train_name?.value ?? `${projectedItem.name}/+`;
 
       occurrences.push({
-        ...(projectedItem.paced.exceptionProjections.get(exception.id!) ?? pacedTrainCurves), // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
+        ...(projectedItem.paced.exceptionProjections.get(exception.id) ?? pacedTrainCurves),
         id,
         name,
-        departureTime: new Date(exception.start_time.value),
+        departureTime: new Date(exception.change_groups.start_time.value),
         exception,
       });
     }

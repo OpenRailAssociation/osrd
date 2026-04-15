@@ -156,7 +156,7 @@ const usePathProjection = (
       )
     );
     const exception = getExceptionFromOccurrenceId(timetableItemsById, trainIdUsedForProjection);
-    return exception?.path_and_schedule?.path ?? pacedTrain?.path;
+    return exception?.change_groups.path_and_schedule?.path ?? pacedTrain?.path;
   }, [trainIdUsedForProjection, timetableItemsById]);
 
   const opRefs = useMemo(() => {

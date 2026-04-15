@@ -45,44 +45,42 @@ const useOccurrences = (
       const correspondingException = findExceptionWithOccurrenceId(exceptions, occurrenceId);
 
       let occurrenceRollingStock = rollingStock;
-      if (correspondingException?.rolling_stock && rollingStockList) {
-        const rollingStockName = correspondingException.rolling_stock.rolling_stock_name;
+      if (correspondingException?.change_groups.rolling_stock && rollingStockList) {
+        const rollingStockName =
+          correspondingException.change_groups.rolling_stock.rolling_stock_name;
         occurrenceRollingStock = rollingStockList.find((rs) => rs.name === rollingStockName);
       }
 
-      const startTime = correspondingException?.start_time?.value
-        ? new Date(correspondingException.start_time.value)
+      const startTime = correspondingException?.change_groups.start_time?.value
+        ? new Date(correspondingException.change_groups.start_time.value)
         : computeIndexedOccurrenceStartTime(pacedTrain.startTime, paced.interval, i);
 
       computedOccurrences.push({
         id: occurrenceId,
-        trainName: correspondingException?.train_name?.value ?? computeOccurrenceName(name, i),
+        trainName:
+          correspondingException?.change_groups.train_name?.value ?? computeOccurrenceName(name, i),
         rollingStock: occurrenceRollingStock,
         startTime,
-        stopsCount: correspondingException?.path_and_schedule
-          ? intermediateStopsCount(correspondingException.path_and_schedule)
+        stopsCount: correspondingException?.change_groups.path_and_schedule
+          ? intermediateStopsCount(correspondingException.change_groups.path_and_schedule)
           : stopsCount,
         disabled: correspondingException?.disabled,
         // In the model, we can currently have a null category value so we need to handle this case
-        category: correspondingException?.rolling_stock_category
-          ? correspondingException.rolling_stock_category.value
+        category: correspondingException?.change_groups.rolling_stock_category
+          ? correspondingException.change_groups.rolling_stock_category.value
           : pacedTrainCategory,
         occurrenceIndex: i,
-        exception:
-          // TODO_EXCEPTION: remove the second check when use TrainScheduleException type
-          correspondingException && correspondingException.id
-            ? {
-                id: correspondingException.id,
-                exceptionChangeGroups: omit(correspondingException, [
-                  // TODO_EXCEPTION: remove 'key' when use TrainScheduleException type
-                  'key',
-                  'occurrence_index',
-                  'disabled',
-                  'summary',
-                  'id',
-                ]),
-              }
-            : undefined,
+        exception: correspondingException
+          ? {
+              id: correspondingException.id,
+              exceptionChangeGroups: omit(correspondingException, [
+                'occurrence_index',
+                'disabled',
+                'summary',
+                'id',
+              ]),
+            }
+          : undefined,
 
         summary: correspondingException?.summary ?? summary,
       });
@@ -90,41 +88,33 @@ const useOccurrences = (
 
     // Handle added exceptions
     exceptions.forEach((exception) => {
-      if (exception.occurrence_index !== undefined || !exception.start_time) return;
+      if (exception.occurrence_index !== undefined || !exception.change_groups.start_time) return;
 
       let occurrenceRollingStock = rollingStock;
-      if (exception.rolling_stock && rollingStockList) {
-        const rollingStockName = exception.rolling_stock.rolling_stock_name;
+      if (exception.change_groups.rolling_stock && rollingStockList) {
+        const rollingStockName = exception.change_groups.rolling_stock.rolling_stock_name;
         occurrenceRollingStock = rollingStockList.find((rs) => rs.name === rollingStockName);
       }
 
-      const startTime = new Date(exception.start_time.value);
+      const startTime = new Date(exception.change_groups.start_time.value);
 
       computedOccurrences.push({
         // TODO_EXCEPTION: remove `!` when use TrainScheduleException type
-        id: formatPacedTrainIdToExceptionId(pacedTrainId, Number(exception.id!)),
-        trainName: exception.train_name?.value ?? `${name}/+`,
+        id: formatPacedTrainIdToExceptionId(pacedTrainId, exception.id),
+        trainName: exception.change_groups.train_name?.value ?? `${name}/+`,
         rollingStock: occurrenceRollingStock,
         startTime,
-        stopsCount: exception.path_and_schedule
-          ? intermediateStopsCount(exception.path_and_schedule)
+        stopsCount: exception.change_groups.path_and_schedule
+          ? intermediateStopsCount(exception.change_groups.path_and_schedule)
           : stopsCount,
         // In the model, we can currently have a null category value so we need to handle this case
-        category: exception.rolling_stock_category
-          ? exception.rolling_stock_category.value
+        category: exception.change_groups.rolling_stock_category
+          ? exception.change_groups.rolling_stock_category.value
           : pacedTrainCategory,
 
         exception: {
-          // TODO_EXCEPTION: remove `!` when use TrainScheduleException type
-          id: exception.id!,
-          exceptionChangeGroups: omit(exception, [
-            // TODO_EXCEPTION: remove 'key' when use TrainScheduleException type
-            'key',
-            'disabled',
-            'occurrence_index',
-            'summary',
-            'id',
-          ]),
+          id: exception.id,
+          exceptionChangeGroups: omit(exception, ['disabled', 'occurrence_index', 'summary', 'id']),
         },
 
         summary: exception.summary ?? summary,

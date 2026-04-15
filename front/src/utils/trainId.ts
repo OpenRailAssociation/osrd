@@ -1,6 +1,6 @@
 import { isEmpty } from 'lodash';
 
-import type { PacedTrainException } from 'common/api/osrdEditoastApi';
+import type { TrainScheduleException } from 'common/api/osrdEditoastApi';
 import { isOccurrencePresentInPacedTrain } from 'modules/timetableItem/helpers/pacedTrain';
 import type { Occurrence, TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type {
@@ -51,12 +51,12 @@ export const isExceptionFromPathOrSimulation = ({ exception }: Occurrence) => {
   const exceptionChangeGroups = exception?.exceptionChangeGroups;
   return (
     exceptionChangeGroups &&
-    (exceptionChangeGroups.path_and_schedule ||
-      exceptionChangeGroups.options ||
-      exceptionChangeGroups.constraint_distribution ||
-      exceptionChangeGroups.speed_limit_tag ||
-      exceptionChangeGroups.initial_speed ||
-      exceptionChangeGroups.rolling_stock)
+    (exceptionChangeGroups.change_groups.path_and_schedule ||
+      exceptionChangeGroups.change_groups.options ||
+      exceptionChangeGroups.change_groups.constraint_distribution ||
+      exceptionChangeGroups.change_groups.speed_limit_tag ||
+      exceptionChangeGroups.change_groups.initial_speed ||
+      exceptionChangeGroups.change_groups.rolling_stock)
   );
 };
 
@@ -145,12 +145,12 @@ export const formatPacedTrainIdToExceptionId = (
  */
 export const formatPacedTrainIdToOccurrenceId = (
   pacedTrainId: PacedTrainId,
-  exception: PacedTrainException
+  exception: TrainScheduleException
 ): OccurrenceId =>
   exception.occurrence_index
     ? formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, exception.occurrence_index)
     : // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
-      formatPacedTrainIdToExceptionId(pacedTrainId, Number(exception.id!));
+      formatPacedTrainIdToExceptionId(pacedTrainId, Number(exception.id));
 
 /**
  * Given a occurrence id with an OccurrenceId format (used across the front),

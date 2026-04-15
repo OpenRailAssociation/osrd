@@ -131,7 +131,7 @@ const PacedTrainItem = ({
     const pacedTrainTrackOffsets = pacedTrain.path.filter(
       (step) => step.location.type === 'track_offset'
     );
-    const exceptionTrackOffsets = exception?.path_and_schedule?.path?.filter(
+    const exceptionTrackOffsets = exception?.change_groups.path_and_schedule?.path?.filter(
       (step) => step.location.type === 'track_offset'
     );
     const isTrackOffsetsException = // This will affect the manchette even if the computed projection path is not affected
@@ -187,7 +187,7 @@ const PacedTrainItem = ({
 
   const deleteAllExceptions = async () => {
     // TODO_EXCEPTION: remove filter when using TrainScheduleException type
-    const allIds = pacedTrain.paced.exceptions.filter((e) => e.id != null).map((e) => e.id!);
+    const allIds = pacedTrain.paced.exceptions.filter((e) => e.id != null).map((e) => e.id);
 
     if (allIds.length > 0) {
       await deleteExceptions(dispatch, allIds);

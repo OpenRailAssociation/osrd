@@ -71,8 +71,10 @@ const CreateTimetableItemButton = ({
       let timetableItemToUpsert = formattedNewTrainSchedule;
 
       const newAddedExceptions = addedExceptions.map(({ startTime: exStartTime }) => ({
-        key: '', // TODO : remove this when the key will be removed from the model
-        start_time: { value: exStartTime.toISOString() },
+        change_groups: {
+          start_time: { value: exStartTime.toISOString() },
+        },
+        disabled: false,
       }));
 
       if (newAddedExceptions.length > 0) {
@@ -94,8 +96,6 @@ const CreateTimetableItemButton = ({
           return {
             ...change_groups,
             ...restExceptions,
-            // TODO_EXCEPTION: remove this when drop key in the model
-            key: '',
           };
         });
 

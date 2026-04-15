@@ -7,7 +7,7 @@ import type {
   PathPropertiesFormatted,
 } from 'applications/operationalStudies/types';
 import type {
-  PacedTrainException,
+  TrainScheduleException,
   CoreSignalUpdate,
   PathProperties,
   RollingStockWithLiveries,
@@ -65,7 +65,7 @@ export type IndividualTrainProjection = {
     | { id: PacedTrainId }
     | {
         id: OccurrenceId;
-        exception?: PacedTrainException;
+        exception?: TrainScheduleException;
       }
   );
 
