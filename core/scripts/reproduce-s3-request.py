@@ -54,10 +54,10 @@ def main(
         s3_cache,
     )
     payload = json.load(payload_path.open())
-    cbor_timetable = download_s3_file(
+    gzipped_cbor_timetable = download_s3_file(
         s3,
         bucket,
-        f"stdcm/saved_timetables/{payload['timetable_id']}.cbor",
+        f"stdcm/saved_timetables/{payload['timetable_id']}.cbor.gz",
         s3_cache,
     )
 
@@ -67,17 +67,14 @@ def main(
         f"stdcm/infras/{payload['infra']}-{payload['expected_version']}.railjson.gz",
         s3_cache,
     )
-    railjson_path = gzipped_railjson_path.parent / gzipped_railjson_path.name[:-3]
-    if not railjson_path.exists():
-        with gzip.open(gzipped_railjson_path, "rb") as f_in:
-            with open(railjson_path, "wb") as f_out:
-                shutil.copyfileobj(f_in, f_out)
+    railjson_path = uncompress_gzip(gzipped_railjson_path)
+    cbor_timetable = uncompress_gzip(gzipped_cbor_timetable)
 
     # Copying the files in a stable place makes it easier to keep a stable IDE "run" config,
     # as the end goal is generally to debug that process in an IDE.
     payload_copy = payload_path.copy("input-payload.json")
     timetable_copy = cbor_timetable.copy("timetable.cbor")
-    railjson_copy = cbor_timetable.copy("infra.railjson")
+    railjson_copy = railjson_path.copy("infra.railjson")
 
     command = [
         "java",
@@ -109,6 +106,14 @@ def main(
         print("\nTo reproduce the request, run:\n")
         print(f"{env_vars_str} {' '.join(command)}")
         print()
+
+
+def uncompress_gzip(gzipped_path: Path) -> Path:
+    path_out = gzipped_path.parent / gzipped_path.name[:-3]
+    with gzip.open(gzipped_path, "rb") as f_in:
+        with open(path_out, "wb") as f_out:
+            shutil.copyfileobj(f_in, f_out)
+    return path_out
 
 
 if __name__ == "__main__":
