@@ -1171,8 +1171,7 @@ mod tests {
                 .exceptions
                 .first()
                 .unwrap()
-                .id
-                .unwrap(),
+                .id,
             train_schedule_exception_t1_1.id
         )
     }

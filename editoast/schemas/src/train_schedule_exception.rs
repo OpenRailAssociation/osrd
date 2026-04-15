@@ -19,7 +19,6 @@ use crate::paced_train::TrainNameChangeGroup;
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct TrainScheduleException {
     pub id: i64,
-    pub key: Option<String>,
     pub timetable_id: i64,
     pub train_schedule_id: i64,
     /// If None the exception is created, otherwise it is a modified exception

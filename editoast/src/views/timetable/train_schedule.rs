@@ -2054,8 +2054,7 @@ mod tests {
         let (timetable, train_schedule_set) =
             create_timetable_with_train_schedule_set(&mut pool.get_ok()).await;
 
-        let simple_train_schedule =
-            simple_paced_train_changeset(train_schedule_set.id).exceptions(vec![]);
+        let simple_train_schedule = simple_paced_train_changeset(train_schedule_set.id);
         let train_schedule = simple_train_schedule
             .create(&mut pool.get_ok())
             .await
