@@ -21,12 +21,15 @@ type UseLazyProjectTrainsOptions = {
   operationalPointReferences?: OperationalPointReference[];
 };
 
+const DEFAULT_OP_DISTANCES: number[] = [];
+const DEFAULT_OP_REFERENCES: OperationalPointReference[] = [];
+
 const useLazyProjectTrains = ({
   infraId,
   electricalProfileSetId,
   path,
-  operationalPointDistances = [],
-  operationalPointReferences = [],
+  operationalPointDistances = DEFAULT_OP_DISTANCES,
+  operationalPointReferences = DEFAULT_OP_REFERENCES,
 }: UseLazyProjectTrainsOptions) => {
   const dispatch = useAppDispatch();
   const loaderRef = useRef<TrainProjectionLazyLoaderAbstract>(null);
