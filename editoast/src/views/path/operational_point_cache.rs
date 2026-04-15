@@ -362,25 +362,22 @@ impl OperationalPointCache {
     pub fn get_reference(
         &self,
         op_ref: OperationalPointReference,
-    ) -> Result<Vec<&OperationalPoint>> {
-        let related_operational_points = match op_ref {
+    ) -> Result<Option<&OperationalPoint>> {
+        let related_operational_point = match op_ref {
             OperationalPointReference::Id {
                 ref operational_point,
             } => self
                 .get_from_id(&operational_point.0)
-                .into_iter()
-                .map(|op_model| &op_model.schema)
-                .collect::<Vec<_>>(),
+                .map(|op_model| &op_model.schema),
             OperationalPointReference::Trigram {
                 ref trigram,
                 secondary_code,
             } => {
                 if let Some(op_models) = self.get_from_trigram(&trigram.0) {
                     find_op_by_secondary_code(secondary_code.as_ref(), op_models.collect())
-                        .map(|op| vec![&op.schema])
-                        .unwrap_or_default()
+                        .map(|op| &op.schema)
                 } else {
-                    vec![]
+                    None
                 }
             }
             OperationalPointReference::Uic {
@@ -389,14 +386,13 @@ impl OperationalPointCache {
             } => {
                 if let Some(op_models) = self.get_from_uic(uic) {
                     find_op_by_secondary_code(secondary_code.as_ref(), op_models.collect())
-                        .map(|op| vec![&op.schema])
-                        .unwrap_or_default()
+                        .map(|op| &op.schema)
                 } else {
-                    vec![]
+                    None
                 }
             }
         };
-        Ok(related_operational_points)
+        Ok(related_operational_point)
     }
 }
 

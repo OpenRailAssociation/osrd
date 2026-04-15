@@ -796,7 +796,7 @@ struct RelatedOperationalPoint {
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
 pub(in crate::views) struct MatchOperationalPointsResponse {
-    related_operational_points: Vec<Vec<RelatedOperationalPoint>>,
+    related_operational_points: Vec<Option<RelatedOperationalPoint>>,
 }
 
 #[editoast_derive::route]
@@ -807,8 +807,8 @@ pub(in crate::views) struct MatchOperationalPointsResponse {
     request_body = inline(MatchOperationalPointsForm),
     responses(
         (status = 200, description = "
-Take a list of operational point references and return for each of them the list
-of operational points that they match on a given infrastructure.
+Take a list of operational point references and return for each of them the
+operational point that it matches on a given infrastructure.
 ", body = inline(MatchOperationalPointsResponse))
     ),
 )]
@@ -833,19 +833,19 @@ pub(in crate::views) async fn match_operational_points(
             .await
     })
     .await?;
-    let mut operational_points: Vec<Vec<&OperationalPoint>> = vec![];
+    let mut operational_points: Vec<Option<&OperationalPoint>> = vec![];
     let mut conn = db_pool.get().await?;
     let op_refs: Vec<&OperationalPointReference> = operational_point_references.iter().collect();
     let op_cache =
         OperationalPointCache::load_from_operational_points(conn.clone(), infra_id, &op_refs)
             .await?;
     for operational_point_reference in operational_point_references {
-        // Retrieve related OPs based on the input operational point identifier:
+        // Retrieve related OP based on the input operational point identifier:
         let related_operational_points = op_cache
             .get_reference(operational_point_reference)
             .expect("should get the provided reference");
 
-        // Add the operational point reference related operational points to the response:
+        // Add the operational point reference related operational point to the response:
         operational_points.push(related_operational_points);
     }
     let related_operational_points =
@@ -905,21 +905,18 @@ fn build_related_operational_point(
 async fn populate_op_geo(
     conn: &mut DbConnection,
     infra_id: i64,
-    operational_points: &[Vec<&OperationalPoint>],
-) -> Result<Vec<Vec<RelatedOperationalPoint>>> {
+    operational_points: &[Option<&OperationalPoint>],
+) -> Result<Vec<Option<RelatedOperationalPoint>>> {
     let op_ids = operational_points
         .iter()
-        .flatten()
-        .map(|op| op.id.as_str())
+        .filter_map(|opt_op| opt_op.map(|op| op.id.as_str()))
         .collect_vec();
     let geo_points = OperationalPointLayer::get(conn, infra_id, &op_ids).await?;
 
     Ok(operational_points
         .iter()
-        .map(|ops| {
-            ops.iter()
-                .map(|op| build_related_operational_point(op, geo_points.get(op.id.as_str())))
-                .collect_vec()
+        .map(|opt_op| {
+            opt_op.map(|op| build_related_operational_point(op, geo_points.get(op.id.as_str())))
         })
         .collect_vec())
 }
@@ -1411,18 +1408,23 @@ pub mod tests {
         let response_op_identifiers = response
             .related_operational_points
             .iter()
-            .map(|op_ref| op_ref.iter().map(|op| op.id.as_str()).collect::<Vec<_>>())
+            .map(|opt_op| opt_op.as_ref().map(|op| op.id.as_str()))
             .collect_vec();
-        let expected_identifiers = [vec!["West_station"], vec!["Mid_East_station"], vec![]];
+        let expected_identifiers: [Option<&str>; 3] =
+            [Some("West_station"), Some("Mid_East_station"), None];
         assert_eq!(response_op_identifiers, expected_identifiers);
         assert_eq!(
-            response.related_operational_points[0][0].geo,
+            response.related_operational_points[0].as_ref().unwrap().geo,
             Some(geos::geojson::Geometry::new(geos::geojson::Value::Point(
                 vec![-0.3907884636666667, 49.4999],
             )))
         );
         assert_eq!(
-            response.related_operational_points[0][0].parts[1].geo,
+            response.related_operational_points[0]
+                .as_ref()
+                .unwrap()
+                .parts[1]
+                .geo,
             Some(geos::geojson::Geometry::new(geos::geojson::Value::Point(
                 vec![-0.392307692, 49.4999],
             )))
@@ -1457,9 +1459,9 @@ pub mod tests {
         let response_op_identifiers = response
             .related_operational_points
             .iter()
-            .map(|op_ref| op_ref.iter().map(|op| op.id.as_str()).collect::<Vec<_>>())
-            .collect::<Vec<_>>();
-        let expected_identifiers: [Vec<&str>; 2] = [vec![], vec![]];
+            .map(|opt_op| opt_op.as_ref().map(|op| op.id.as_str()))
+            .collect_vec();
+        let expected_identifiers: [Option<&str>; 2] = [None, None];
         assert_eq!(response_op_identifiers, expected_identifiers);
     }
 

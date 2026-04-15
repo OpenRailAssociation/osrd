@@ -1188,8 +1188,8 @@ paths:
         '200':
           description: |2
 
-            Take a list of operational point references and return for each of them the list
-            of operational points that they match on a given infrastructure.
+            Take a list of operational point references and return for each of them the
+            operational point that it matches on a given infrastructure.
           content:
             application/json:
               schema:
@@ -1200,9 +1200,9 @@ paths:
                   related_operational_points:
                     type: array
                     items:
-                      type: array
-                      items:
-                        $ref: '#/components/schemas/RelatedOperationalPoint'
+                      oneOf:
+                      - type: 'null'
+                      - $ref: '#/components/schemas/RelatedOperationalPoint'
   /infra/{infra_id}/objects/{object_type}:
     post:
       tags:

@@ -29,7 +29,6 @@ import {
 } from 'utils/trainId';
 
 import type { PathProjectionResult } from '../types';
-import { getStationFromOps } from '../utils';
 
 /**
  * Generates a display name for a virtual operational point based on available reference data.
@@ -234,8 +233,7 @@ const usePathProjection = (
     const normalizedOps: PathProperties['operational_points'] = [];
 
     opRefs.forEach((opRef, index) => {
-      const matchedOps = matchedOperationalPoints?.related_operational_points[index] || [];
-      const matchedOp = getStationFromOps(matchedOps);
+      const matchedOp = matchedOperationalPoints?.related_operational_points[index];
       const weight = 0; // Uniform weight for consistent manchette spacing
       const position = index * FALLBACK_DISTANCE_MM; // Sequential positioning in manchette
       if (index > 0) {

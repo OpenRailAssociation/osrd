@@ -89,7 +89,7 @@ const usePathfinding = ({
         return [pathItemLocation.operational_point];
       });
 
-      let ops: RelatedOperationalPoint[][];
+      let ops: (RelatedOperationalPoint | null)[];
       try {
         ops = await matchAllOperationalPoints({
           infraId,
@@ -104,7 +104,7 @@ const usePathfinding = ({
       const updatedSteps = steps.map((step): PathStep => {
         if (step.location.type === 'track_offset') return step;
 
-        const op = ops[opIndex].at(0);
+        const op = ops[opIndex];
         opIndex++;
         if (!op) return step;
 
