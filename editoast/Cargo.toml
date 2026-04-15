@@ -160,7 +160,7 @@ axum-extra = { version = "0.12.2", default-features = false, features = [
   "typed-header",
 ] }
 axum-streams = { version = "0.25.0", features = ["json"] }
-axum-test = { version = "19.0", default-features = false }
+axum-test = { version = "20.0.0", default-features = false }
 axum-tracing-opentelemetry = { version = "0.33.0", default-features = false, features = [
   "tracing_level_info",
 ] }
