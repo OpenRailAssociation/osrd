@@ -28,7 +28,7 @@ class OpSimulationResultPage extends ScenarioPage {
     this.simulationMap = page.getByTestId('simulation-map');
     this.speedSpaceChartSettingsButton = page.getByTestId('interaction-settings');
     this.speedSpaceChartCloseSettingsButton = page.getByTestId('settings-panel-close');
-    this.speedSpaceChartCheckboxItems = page.locator('#settings-panel input[type=checkbox]');
+    this.speedSpaceChartCheckboxItems = page.getByTestId('settings-panel').getByRole('checkbox');
     this.conflictsList = page.getByTestId('conflicts-list');
     this.trainList = page.getByTestId('scenario-left-column');
     this.simulationMap = page.getByTestId('simulation-map');
