@@ -25,7 +25,7 @@ import type { OccurrenceId, TimetableItem } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
-import { isIndexedOccurrenceId, extractExceptionIdFromOccurrenceId } from 'utils/trainId';
+import { extractExceptionIdFromOccurrenceId, isIndexedOccurrenceId } from 'utils/trainId';
 
 type OccurrenceActionsParams = {
   pacedTrain: PacedTrainWithPacedWithDetails;

@@ -94,7 +94,7 @@ export default class TrainSimulationLazyLoader {
     }
 
     const pacedTrainSummaries = new Map();
-    for (const [id, rawSummary] of Object.entries(rawPacedTrainSummaries)) {
+    for (const [id, rawSummary] of Object.entries(rawPacedTrainSummaries ?? {})) {
       pacedTrainSummaries.set(Number(id), rawSummary);
     }
 

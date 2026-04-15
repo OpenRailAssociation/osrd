@@ -215,10 +215,11 @@ describe('generatePacedTrainException', () => {
         expect(exception.path_and_schedule).toMatchObject({
           path: expect.arrayContaining([
             expect.objectContaining({
-              location: {
+              location: expect.objectContaining({
+                type: 'operational_point_part_reference',
                 operational_point: { trigram: 'NS', secondary_code: 'BV', type: 'trigram' },
                 local_track_name: null,
-              },
+              }),
             }),
           ]),
           schedule: [{ at: '1-1', stop_for: 'PT30S' }],
