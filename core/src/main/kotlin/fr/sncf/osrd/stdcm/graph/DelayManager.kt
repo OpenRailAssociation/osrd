@@ -53,13 +53,13 @@ internal constructor(
                     is BlockAvailabilityInterface.Available -> {
                         if (availability.maximumDelay >= internalMargin) {
                             res.add(time - startTime)
-                            if (prevConflict != null && prevConflict.causedBy != null)
+                            prevConflict?.causes?.forEach { cause ->
                                 failureExplainer?.conflictCallback(
                                     prevNode,
-                                    prevConflict.duration,
-                                    false,
-                                    prevConflict.causedBy,
+                                    cause.duration,
+                                    cause.cause,
                                 )
+                            }
                         }
                         availability.maximumDelay + internalMargin
                     }
@@ -69,13 +69,9 @@ internal constructor(
                     }
                 }
         }
-        if (prevConflict != null && prevConflict.causedBy != null)
-            failureExplainer?.conflictCallback(
-                prevNode,
-                prevConflict.duration,
-                res.isEmpty(),
-                prevConflict.causedBy,
-            )
+        prevConflict?.causes?.forEach { cause ->
+            failureExplainer?.conflictCallback(prevNode, cause.duration, cause.cause)
+        }
         return res
     }
 

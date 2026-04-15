@@ -72,8 +72,23 @@ interface BlockAvailabilityInterface {
          * offset where the train would have released a resource it has kept for too long.
          */
         val firstConflictOffset: Offset<PhysicsPath>,
-        val causedBy: String?,
+        /**
+         * Describes the causes for this conflict. [Unavailable] describes how much delay we need to
+         * add to reach a conflict-free opening: there may be more than one other train or work
+         * schedule per instance.
+         */
+        val causes: List<ConflictCause>,
     ) : Availability()
+
+    data class ConflictCause(
+        /**
+         * Describes the actual conflicting object: either "work schedule" for work schedules, or
+         * train names for other trains. TODO: import work schedule IDs as well.
+         */
+        val cause: String,
+        /** How much delay we needed to add to avoid this specific conflict. */
+        val duration: Double,
+    )
 
     /**
      * This is thrown when the availability of the requested section can't be determined, the path
