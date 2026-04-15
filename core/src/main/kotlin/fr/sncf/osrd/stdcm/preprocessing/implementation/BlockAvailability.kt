@@ -34,7 +34,7 @@ class BlockAvailability(
         startTime: Double,
     ): BlockAvailabilityInterface.Availability {
         var timeShift = 0.0
-        var conflictCause: String? = null
+        val conflictCauses = mutableListOf<BlockAvailabilityInterface.ConflictCause>()
         var firstConflictOffset: Offset<PhysicsPath>? = null
         while (timeShift.isFinite()) {
             val shiftedStartTime = startTime + timeShift
@@ -63,7 +63,7 @@ class BlockAvailability(
                         return BlockAvailabilityInterface.Unavailable(
                             timeShift,
                             firstConflictOffset ?: startOffset,
-                            conflictCause,
+                            conflictCauses,
                         )
                     }
                     // Availability is directly available without adding any delay
@@ -71,7 +71,7 @@ class BlockAvailability(
                 }
                 is BlockAvailabilityInterface.Unavailable -> {
                     timeShift += availability.duration
-                    availability.causedBy?.let { conflictCause = it }
+                    conflictCauses.addAll(availability.causes)
 
                     // Only update the conflict offset if it hasn't been set
                     firstConflictOffset = firstConflictOffset ?: availability.firstConflictOffset
@@ -82,7 +82,7 @@ class BlockAvailability(
         return BlockAvailabilityInterface.Unavailable(
             Double.POSITIVE_INFINITY,
             firstConflictOffset ?: startOffset,
-            conflictCause,
+            conflictCauses,
         )
     }
 
@@ -122,7 +122,7 @@ class BlockAvailability(
                 return BlockAvailabilityInterface.Unavailable(
                     Double.POSITIVE_INFINITY,
                     availabilityProperties.firstUnavailabilityOffset,
-                    null,
+                    listOf(),
                 )
             } else if (
                 availabilityProperties.minimumDelayToBecomeAvailable > minimumDelayToBecomeAvailable
@@ -143,14 +143,14 @@ class BlockAvailability(
                 return BlockAvailabilityInterface.Unavailable(
                     Double.POSITIVE_INFINITY,
                     firstUnavailabilityOffset,
-                    null,
+                    listOf(),
                 )
             }
             // Adding minimumDelayToBecomeAvailable solves every planned step problem
             return BlockAvailabilityInterface.Unavailable(
                 minimumDelayToBecomeAvailable,
                 firstUnavailabilityOffset,
-                null,
+                listOf(),
             )
         }
         // Every planned step was respected
@@ -271,6 +271,14 @@ class BlockAvailability(
                         ?.metadata[conflictProperties.conflictingZone]
                         ?.firstOrNull { it.from <= endTime && it.to >= startTime }
                         ?.trainName
+                        ?.let {
+                            listOf(
+                                BlockAvailabilityInterface.ConflictCause(
+                                    it,
+                                    conflictProperties.minDelayWithoutConflicts,
+                                )
+                            )
+                        } ?: listOf()
                 return BlockAvailabilityInterface.Unavailable(
                     conflictProperties.minDelayWithoutConflicts,
                     firstConflictOffset,

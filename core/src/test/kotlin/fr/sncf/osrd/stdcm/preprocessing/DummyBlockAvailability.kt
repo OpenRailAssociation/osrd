@@ -174,7 +174,7 @@ class DummyBlockAvailability(
         return BlockAvailabilityInterface.Unavailable(
             minimumDelay,
             conflictTravelledOffset.cast(),
-            null,
+            listOf(),
         )
     }
 

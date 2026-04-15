@@ -38,7 +38,6 @@ class FailureExplainer(
     data class PendingConflict(
         val parentNode: STDCMNode,
         val timeLost: Double,
-        val orphaned: Boolean,
         val cause: String,
         val bestRemainingTime: Double,
     ) {
@@ -67,7 +66,6 @@ class FailureExplainer(
                 wrapDoubleForJson(remainingTime),
                 travelTime,
                 cause,
-                orphaned,
                 geoPoint.lat,
                 geoPoint.lon,
                 lastOPName,
@@ -78,15 +76,11 @@ class FailureExplainer(
             if (this === other) return true
             if (javaClass != other?.javaClass) return false
             val other = other as PendingConflict
-            return other.timeLost == timeLost &&
-                other.orphaned == orphaned &&
-                other.nodeStr == nodeStr &&
-                other.cause == cause
+            return other.timeLost == timeLost && other.nodeStr == nodeStr && other.cause == cause
         }
 
         override fun hashCode(): Int {
             var result = timeLost.hashCode()
-            result = 31 * result + orphaned.hashCode()
             result = 31 * result + nodeStr.hashCode()
             result = 31 * result + cause.hashCode()
             return result
@@ -114,28 +108,15 @@ class FailureExplainer(
         @Json(name = "best_remaining_time") val bestRemainingTime: Double,
         @Json(name = "current_travel_time") val currentTravelTime: Double,
         @Json(name = "caused_by") val causedBy: String,
-        /** True if this node can't lead anywhere else because of conflicts. */
-        @Json(name = "is_blocking") val isBlocking: Boolean,
         val lat: Double,
         val lon: Double,
         val lastOPName: String?,
     )
 
     /** Register a new conflict. */
-    fun conflictCallback(
-        parentNode: STDCMNode,
-        timeLost: Double,
-        orphaned: Boolean,
-        cause: String,
-    ) {
+    fun conflictCallback(parentNode: STDCMNode, timeLost: Double, cause: String) {
         val pendingConflict =
-            PendingConflict(
-                parentNode,
-                timeLost,
-                orphaned,
-                cause,
-                parentNode.remainingTimeEstimation,
-            )
+            PendingConflict(parentNode, timeLost, cause, parentNode.remainingTimeEstimation)
         largestConflicts.register(pendingConflict)
         closestConflicts.register(pendingConflict)
     }
