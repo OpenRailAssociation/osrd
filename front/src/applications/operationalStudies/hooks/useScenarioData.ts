@@ -79,7 +79,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
   const {
     simulatedTrainsById,
     simulateTrainSchedules,
-    allTrainsSimulated,
+    isTrainSimulationLoading,
     removeSimulatedTrainSchedules,
     updateSimulatedTrainScheduleDepartureTime,
   } = useLazySimulateTrains({
@@ -92,6 +92,11 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     },
   });
 
+  const isReadyToFetchConflicts =
+    trainSchedules &&
+    simulatedTrainsById.size === trainSchedules.length &&
+    !isTrainSimulationLoading;
+
   // TODO Paced trains : adapt this to handle paced trains in the conflicts issue
   // TODO: investigate why RTK Query returns undefined here despite isFetching and isUninitialized being false and the API always returning a list
   const {
@@ -99,7 +104,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     isUninitialized,
     isFetching,
   } = osrdEditoastApi.endpoints.getTimetableByIdConflicts.useQuery(
-    allTrainsSimulated ? { id: scenario.timetable_id, infraId: scenario.infra_id } : skipToken
+    isReadyToFetchConflicts ? { id: scenario.timetable_id, infraId: scenario.infra_id } : skipToken
   );
   const conflicts = useMemo(() => conflictsData ?? [], [conflictsData]);
 
