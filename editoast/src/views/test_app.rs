@@ -198,6 +198,7 @@ impl TestAppBuilder {
                 max_tuples_per_write: DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE,
             },
             trains_traffic: Arc::new(RwLock::new(self.trains_traffic)),
+            s3_config: None,
         };
 
         // Setup tracing
@@ -283,6 +284,7 @@ impl TestAppBuilder {
             health_check_timeout: config.health_check_timeout,
             trains_traffic: config.trains_traffic.clone(),
             config: Arc::new(config),
+            s3_client: None,
         };
 
         // Configure the axum router

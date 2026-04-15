@@ -2891,6 +2891,27 @@ paths:
           description: Atlas image of config
         '404':
           description: Signaling system not found
+  /stdcm/debug_data/{trace_id}:
+    get:
+      tags:
+      - stdcm
+      parameters:
+      - name: trace_id
+        in: path
+        description: OpenTelemetry trace ID of the STDCM request
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  failure: {}
+                  simulation_data: {}
   /stdcm/search_environment:
     get:
       tags:
@@ -7218,6 +7239,9 @@ components:
       - $ref: '#/components/schemas/EditoastSimilarTrainsErrorSpeedLimitNotFound'
       - $ref: '#/components/schemas/EditoastSpriteErrorsFileNotFound'
       - $ref: '#/components/schemas/EditoastSpriteErrorsUnknownSignalingSystem'
+      - $ref: '#/components/schemas/EditoastStdcmDebugErrorJsonParseError'
+      - $ref: '#/components/schemas/EditoastStdcmDebugErrorS3Error'
+      - $ref: '#/components/schemas/EditoastStdcmDebugErrorS3NotConfigured'
       - $ref: '#/components/schemas/EditoastStdcmErrorBatchRollingStockNotFound'
       - $ref: '#/components/schemas/EditoastStdcmErrorDatabase'
       - $ref: '#/components/schemas/EditoastStdcmErrorInfraNotFound'
@@ -8744,6 +8768,82 @@ components:
           type: string
           enum:
           - editoast:sprites:UnknownSignalingSystem
+    EditoastStdcmDebugErrorJsonParseError:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastStdcmDebugErrorJsonParseErrorContext
+          required:
+          - message
+          - path
+          properties:
+            message:
+              type: string
+            path:
+              type: string
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:stdcm_debug:JsonParseError
+    EditoastStdcmDebugErrorS3Error:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastStdcmDebugErrorS3ErrorContext
+          required:
+          - message
+          - path
+          properties:
+            message:
+              type: string
+            path:
+              type: string
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:stdcm_debug:S3Error
+    EditoastStdcmDebugErrorS3NotConfigured:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastStdcmDebugErrorS3NotConfiguredContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 503
+        type:
+          type: string
+          enum:
+          - editoast:stdcm_debug:S3NotConfigured
     EditoastStdcmErrorBatchRollingStockNotFound:
       type: object
       required:

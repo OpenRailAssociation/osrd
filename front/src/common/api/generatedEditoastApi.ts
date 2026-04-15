@@ -934,6 +934,13 @@ const injectedRtkApi = api
         }),
         providesTags: ['sprites'],
       }),
+      getStdcmDebugDataByTraceId: build.query<
+        GetStdcmDebugDataByTraceIdApiResponse,
+        GetStdcmDebugDataByTraceIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/stdcm/debug_data/${queryArg.traceId}` }),
+        providesTags: ['stdcm'],
+      }),
       getStdcmSearchEnvironment: build.query<
         GetStdcmSearchEnvironmentApiResponse,
         GetStdcmSearchEnvironmentApiArg
@@ -2292,6 +2299,15 @@ export type GetSpritesBySignalingSystemAndFileNameApiArg = {
   signalingSystem: string;
   /** File name (json, png or svg) */
   fileName: string;
+};
+export type GetStdcmDebugDataByTraceIdApiResponse =
+  /** status 200  */ {
+    failure?: unknown;
+    simulation_data?: unknown;
+  };
+export type GetStdcmDebugDataByTraceIdApiArg = {
+  /** OpenTelemetry trace ID of the STDCM request */
+  traceId: string;
 };
 export type GetStdcmSearchEnvironmentApiResponse =
   /** status 200  */ StdcmSearchEnvironmentResponse;
