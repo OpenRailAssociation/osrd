@@ -153,6 +153,7 @@ const WaypointsPanel = ({
           <div className="waypoint-item" key={waypoint.waypointId} data-testid="waypoint-item">
             <Checkbox
               small
+              data-testid="waypoint-checkbox"
               checked={selectedWaypoints.has(index)}
               // onChange needs to be there to avoid a warning in console but the event doesn't provide
               // an event listening for shift click so we have to use onClick anyway

@@ -71,6 +71,7 @@ const SettingsPanel = ({
   return (
     <div
       id="settings-panel"
+      data-testid={testIdPrefix}
       style={{
         background: `rgba(${color.substring(4, color.length - 1)}, 0.4)`,
         height: `${SETTINGS_PANEL_BASE_HEIGHT}px`,
