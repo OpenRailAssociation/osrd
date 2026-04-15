@@ -24,7 +24,7 @@ type Params = {
 };
 
 export const useOperationalPointSearch = ({
-  pageSize = 101,
+  pageSize = 1000,
   minChars = 2,
   debounceMs = 300,
 }: Params) => {
@@ -130,7 +130,6 @@ export const useOperationalPointSearch = ({
           searchPayload: largePayload(infraId, debouncedTrimmedInput),
           pageSize,
         }).unwrap()) as SearchResultItemOperationalPoint[];
-
         if (cancelled) return;
 
         const suggestionsLarge = buildOpSuggestion(largeRes);
