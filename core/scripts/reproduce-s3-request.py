@@ -43,7 +43,7 @@ def main(
     if s3_cache is None:
         s3_cache = Path(__file__).resolve().parent / ".s3_cache"
     if profile is None:
-        profile = os.environ.get("AWS_PROFILE", default="default-ops-912306251540")
+        profile = os.environ.get("AWS_PROFILE", default="dev")
 
     session = create_aws_session(profile)
     s3 = session.client("s3")

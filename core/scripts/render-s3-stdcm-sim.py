@@ -23,7 +23,7 @@ https://gitlab-repo-res.apps.eul.sncf.fr/dsir/groupedxs-dsir/04735/osrd
     "-p",
     type=str,
     help="""
-AWS profile name. Defaults to the content of AWS_PROFILE, then to 'default-ops-912306251540'
+AWS profile name. Defaults to the content of AWS_PROFILE, then to 'dev'
 if not set. This profile comes from the internal AWS setup.""",
 )
 @click.option(
@@ -38,7 +38,7 @@ def main(profile: str | None, s3_cache: Path | None, bucket: str, trace_id: str)
     if s3_cache is None:
         s3_cache = Path(__file__).resolve().parent / ".s3_cache"
     if profile is None:
-        profile = os.environ.get("AWS_PROFILE", default="default-ops-912306251540")
+        profile = os.environ.get("AWS_PROFILE", default="dev")
 
     session = create_aws_session(profile)
     s3 = session.client("s3")
