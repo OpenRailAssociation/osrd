@@ -90,7 +90,7 @@ const useOccurrences = (
 
     // Handle added exceptions
     exceptions.forEach((exception) => {
-      if (exception.occurrence_index !== undefined) return;
+      if (exception.occurrence_index !== undefined || !exception.start_time) return;
 
       let occurrenceRollingStock = rollingStock;
       if (exception.rolling_stock && rollingStockList) {
@@ -98,8 +98,7 @@ const useOccurrences = (
         occurrenceRollingStock = rollingStockList.find((rs) => rs.name === rollingStockName);
       }
 
-      // An added exception will always have a least a start time in its exceptions
-      const startTime = new Date(exception.start_time!.value);
+      const startTime = new Date(exception.start_time.value);
 
       computedOccurrences.push({
         // TODO_EXCEPTION: remove `!` when use TrainScheduleException type
