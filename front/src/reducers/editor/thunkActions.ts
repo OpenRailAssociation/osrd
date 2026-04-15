@@ -1,3 +1,4 @@
+import i18n from 'i18next';
 import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import { omit, clone, isNil, isUndefined } from 'lodash';
 
@@ -13,7 +14,6 @@ import {
 import type { EditorEntity, EditorSchema } from 'applications/editor/typesEditorEntity';
 import type { Operation } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import i18n from 'i18n';
 import { setLoading, setSuccess, setFailure, setSuccessWithoutMessage } from 'reducers/main';
 import infra_schema from 'reducers/osrdconf/infra_schema.json';
 import type { AppDispatch, GetState } from 'store';
