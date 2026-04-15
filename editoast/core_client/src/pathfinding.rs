@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use ordered_float::OrderedFloat;
 use schemas::infra::Direction;
 use schemas::infra::TrackOffset;
@@ -13,7 +15,8 @@ use crate::Json;
 use crate::RawError;
 use crate::WorkerKey;
 
-#[derive(Debug, Hash, Serialize)]
+#[derive(Debug, educe::Educe, Serialize)]
+#[educe(Hash)]
 pub struct PathfindingRequest {
     /// Infrastructure id
     pub infra: i64,
@@ -27,9 +30,11 @@ pub struct PathfindingRequest {
     pub rolling_stock_is_thermal: bool,
     /// List of supported electrification modes.
     /// Empty if does not support any electrification
-    pub rolling_stock_supported_electrifications: Vec<String>,
+    #[educe(Hash(method(common::hashing_hash_set_string)))]
+    pub rolling_stock_supported_electrifications: HashSet<String>,
     /// List of supported signaling systems
-    pub rolling_stock_supported_signaling_systems: Vec<String>,
+    #[educe(Hash(method(common::hashing_hash_set_string)))]
+    pub rolling_stock_supported_signaling_systems: HashSet<String>,
     /// Maximum speed of the rolling stock
     pub rolling_stock_maximum_speed: OrderedFloat<f64>,
     /// Rolling stock length in meters:

@@ -3,6 +3,7 @@ use serde::Deserialize;
 use serde::Deserializer;
 use serde::Serialize;
 use std::collections::BTreeMap;
+use std::collections::HashSet;
 use utoipa::ToSchema;
 
 use crate::train_schedule::Comfort;
@@ -27,7 +28,7 @@ impl EffortCurves {
         self.has_electric_curves()
     }
 
-    pub fn supported_electrification(&self) -> Vec<String> {
+    pub fn supported_electrification(&self) -> HashSet<String> {
         self.modes
             .iter()
             .filter(|(_, mode)| mode.is_electric)
