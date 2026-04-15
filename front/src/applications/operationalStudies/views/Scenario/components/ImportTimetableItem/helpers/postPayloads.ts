@@ -103,8 +103,33 @@ export const postFullImportPayload = async (
     const exceptionsWithTrainIds = exceptions
       .map((trainExceptions, i) => ({ trainExceptions, pacedTrainId: timetableItems[i].id }))
       .filter(({ trainExceptions }) => trainExceptions.length > 0);
+
     for (const { trainExceptions, pacedTrainId } of exceptionsWithTrainIds) {
-      await createExceptions(dispatch, trainExceptions, pacedTrainId, timetableId);
+      const created = await createExceptions(dispatch, trainExceptions, pacedTrainId, timetableId);
+
+      // TODO: remove this part when the back will be done inserting the new exception format in TrainSchedule
+      const createdExceptions = created.map(
+        ({ change_groups, train_schedule_id: _, timetable_id: __, ...rest }) => ({
+          ...change_groups,
+          ...rest,
+          // TODO_EXCEPTION: remove this when drop key in the model
+          key: rest.id.toString(),
+        })
+      );
+
+      // Update the timetableItem with its exceptions
+      const trainIndex = timetableItems.findIndex((item) => item.id === pacedTrainId);
+      if (trainIndex === -1) continue;
+      const currentTrain = timetableItems[trainIndex];
+      if (currentTrain.paced) {
+        timetableItems[trainIndex] = {
+          ...currentTrain,
+          paced: {
+            ...currentTrain.paced,
+            exceptions: createdExceptions,
+          },
+        };
+      }
     }
 
     if (round_trips) {
