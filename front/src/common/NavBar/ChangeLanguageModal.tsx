@@ -7,7 +7,8 @@ import { useTranslation } from 'react-i18next';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
-import { supportedLngs } from 'i18n';
+
+import { supportedLngs } from '../../i18n';
 
 // We don't use `t` cause language names are fixed
 export const languageName = (lng: string) => {

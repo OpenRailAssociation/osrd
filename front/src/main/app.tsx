@@ -1,8 +1,8 @@
 import { Suspense, useEffect, useCallback } from 'react';
 
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import 'i18n';
 
+import '../i18n';
 import HomeEditor from 'applications/editor/Home';
 import Project from 'applications/operationalStudies/views/Project';
 import ProjectList from 'applications/operationalStudies/views/ProjectList';
