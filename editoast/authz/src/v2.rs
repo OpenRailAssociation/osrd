@@ -937,4 +937,19 @@ mod tests {
             ])
         );
     }
+
+    #[tokio::test]
+    async fn no_infra_privileges() {
+        let openfga = crate::authz_client!();
+
+        openfga
+            .write_tuples(&[Infra::reader().tuple(&User(2), &Infra(1))])
+            .await
+            .unwrap();
+
+        assert_eq!(
+            openfga.infra_privileges(User(1), Infra(1)).await,
+            HashSet::new(),
+        );
+    }
 }
