@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import type { TrackSection } from 'common/api/osrdEditoastApi';
+import type { InfraObjectWithGeometry, TrackSection } from 'common/api/osrdEditoastApi';
 
 import useCachedTrackSections from '../useCachedTrackSections';
 
@@ -16,6 +16,14 @@ function createTrackSection(overrides: Partial<TrackSection> = {}): TrackSection
       coordinates: [],
     },
     ...overrides,
+  };
+}
+
+function createTrackSectionInfraObject(trackSection: TrackSection): InfraObjectWithGeometry {
+  return {
+    obj_id: trackSection.id,
+    geographic: trackSection.geo,
+    railjson: trackSection,
   };
 }
 
@@ -39,6 +47,8 @@ const infraId = 3000;
 
 const trackVA = createTrackSection({ id: 'VA', length: 4815 });
 const trackVB = createTrackSection({ id: 'VB', length: 1623 });
+const trackVAInfraObject = createTrackSectionInfraObject(trackVA);
+const trackVBInfraObject = createTrackSectionInfraObject(trackVB);
 
 describe('useCachedTrackSections', () => {
   beforeEach(() => {
@@ -47,7 +57,7 @@ describe('useCachedTrackSections', () => {
   });
 
   it('should return some track sections', async () => {
-    apiResult.mockResolvedValue([{ railjson: trackVA }, { railjson: trackVB }]);
+    apiResult.mockResolvedValue([trackVAInfraObject, trackVBInfraObject]);
 
     const { result } = renderHook(() => useCachedTrackSections(infraId));
 
@@ -66,7 +76,7 @@ describe('useCachedTrackSections', () => {
   });
 
   it('should always return the full cache even if we only request a subset later', async () => {
-    apiResult.mockResolvedValue([{ railjson: trackVA }, { railjson: trackVB }]);
+    apiResult.mockResolvedValue([trackVAInfraObject, trackVBInfraObject]);
 
     const { result } = renderHook(() => useCachedTrackSections(infraId));
 
@@ -84,7 +94,7 @@ describe('useCachedTrackSections', () => {
   });
 
   it('should deduplicate track IDs to only fetch those that are not in cache', async () => {
-    apiResult.mockResolvedValue([{ railjson: trackVA }]);
+    apiResult.mockResolvedValue([trackVAInfraObject]);
 
     const { result } = renderHook(() => useCachedTrackSections(infraId));
 
@@ -100,7 +110,7 @@ describe('useCachedTrackSections', () => {
       VA: trackVA,
     });
 
-    apiResult.mockResolvedValue([{ railjson: trackVA }, { railjson: trackVB }]);
+    apiResult.mockResolvedValue([trackVAInfraObject, trackVBInfraObject]);
 
     const trackSections2 = await result.current.getTrackSectionsByIds(['VA', 'VB']);
 
@@ -114,7 +124,7 @@ describe('useCachedTrackSections', () => {
   });
 
   it('should not call the API at all once the result is cached', async () => {
-    apiResult.mockResolvedValue([{ railjson: trackVA }, { railjson: trackVB }]);
+    apiResult.mockResolvedValue([trackVAInfraObject, trackVBInfraObject]);
 
     const { result } = renderHook(() => useCachedTrackSections(infraId));
 
@@ -145,7 +155,7 @@ describe('useCachedTrackSections', () => {
   });
 
   it('should change infraId parameter in queries if changed', async () => {
-    apiResult.mockResolvedValue([{ railjson: trackVA }]);
+    apiResult.mockResolvedValue([trackVAInfraObject]);
 
     const { result, rerender } = renderHook(
       (hookInfraId: number) => useCachedTrackSections(hookInfraId),
@@ -163,7 +173,7 @@ describe('useCachedTrackSections', () => {
 
     rerender(5678);
 
-    apiResult.mockResolvedValue([{ railjson: trackVB }]);
+    apiResult.mockResolvedValue([trackVBInfraObject]);
     await result.current.getTrackSectionsByIds(['VB']);
     expect(apiQuery).toHaveBeenCalledWith({
       infraId: 5678,
