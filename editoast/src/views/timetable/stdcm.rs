@@ -6,7 +6,9 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
+use axum::http::header;
 use axum::response::IntoResponse;
+use axum::response::Response;
 use axum_streams::StreamBodyAs;
 use chrono::DateTime;
 use chrono::Duration;
@@ -237,7 +239,7 @@ pub(in crate::views) async fn stdcm_handler(
     Query(query): Query<StdcmQueryParams>,
     Json(request): Json<Request>,
     returned_request: &mut Option<core_client::stdcm::Request>,
-) -> Result<impl IntoResponse + use<>> {
+) -> Result<Response> {
     let authorized = auth
         .check_roles([authz::Role::Stdcm].into())
         .await
@@ -357,7 +359,7 @@ pub(in crate::views) async fn stdcm_handler(
             error: failure.simulation,
             core_payload: None,
         };
-        return Ok(StreamBodyAs::json_nl(stream::once(async { payload })));
+        return Ok(StreamBodyAs::json_nl(stream::once(async { payload })).into_response());
     }
 
     let total_simulation_run_time = runs
@@ -491,7 +493,15 @@ pub(in crate::views) async fn stdcm_handler(
     };
     spawn(stream_result_lambda.in_current_span());
     let stream = tokio_stream::wrappers::UnboundedReceiverStream::new(rx);
-    Ok(StreamBodyAs::json_nl(stream))
+    // Set `Content-Encoding` header to `identity` to not compress the payloads
+    // This made the lmr live search progress display very laggy because the compression
+    // layer compresses 8KB at a time which we do not wish to wait for (8KB of core intermediate
+    // payloads is about 50 of them which is a lot to wait for)
+    Ok((
+        [(header::CONTENT_ENCODING, "identity")],
+        StreamBodyAs::json_nl(stream),
+    )
+        .into_response())
 }
 
 struct VirtualTrainRun {
