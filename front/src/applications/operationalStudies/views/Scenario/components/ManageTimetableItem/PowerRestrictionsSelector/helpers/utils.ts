@@ -1,4 +1,4 @@
-import type { ManageTimetableItemPathProperties } from 'applications/operationalStudies/types';
+import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import type { TrackSection } from 'common/api/osrdEditoastApi';
 import type { IntervalItem } from 'common/IntervalsEditor/types';
 import type { PathStep } from 'reducers/osrdconf/types';
@@ -14,7 +14,7 @@ export const getOrCreatePathStepAtPosition = (
   positionOnPathInM: number,
   pathSteps: PathStep[],
   tracksLengthCumulativeSums: number[],
-  pathProperties: ManageTimetableItemPathProperties,
+  pathProperties: ManageTrainSchedulePathProperties,
   tracksById: Record<string, TrackSection>
 ) => {
   const pathStep = getPathStep(pathSteps, positionOnPathInM);
@@ -34,7 +34,7 @@ export const extractPathStepsFromRange = (
   range: IntervalItem,
   pathSteps: PathStep[],
   tracksLengthCumulativeSums: number[],
-  pathProperties: ManageTimetableItemPathProperties,
+  pathProperties: ManageTrainSchedulePathProperties,
   tracksById: Record<string, TrackSection>
 ) => {
   const from = getOrCreatePathStepAtPosition(
