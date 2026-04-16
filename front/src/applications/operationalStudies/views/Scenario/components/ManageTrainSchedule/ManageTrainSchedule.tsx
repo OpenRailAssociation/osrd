@@ -121,7 +121,7 @@ const ManageTrainSchedule = () => {
   const tabRollingStock = {
     id: 'rollingstock',
     title: rollingStock ? (
-      <div className="manage-timetable-item-tab">
+      <div className="manage-train-schedule-tab">
         <span className="rolling-stock-img">
           <RollingStock2Img rollingStock={rollingStock} />
         </span>
@@ -130,7 +130,7 @@ const ManageTrainSchedule = () => {
         </span>
       </div>
     ) : (
-      <div className="manage-timetable-item-tab">
+      <div className="manage-train-schedule-tab">
         <img src={rollingStockPic} alt="rolling stock" />
         <span className="rolling-stock-name">{t('tabs.rollingStock')}</span>
       </div>
@@ -159,7 +159,7 @@ const ManageTrainSchedule = () => {
   const tabPathFinding = {
     id: 'pathfinding',
     title: (
-      <div className="manage-timetable-item-tab">
+      <div className="manage-train-schedule-tab">
         <img src={pahtFindingPic} alt="path finding" />
         <span className="ml-2 d-flex align-items-center flex-grow-1 w-100">
           {t('tabs.pathFinding')}
@@ -196,7 +196,7 @@ const ManageTrainSchedule = () => {
   const tabTimesStops = {
     id: 'timesStops',
     title: (
-      <div className="manage-timetable-item-tab" data-testid="timesStops">
+      <div className="manage-train-schedule-tab" data-testid="timesStops">
         <img src={allowancesPic} alt="times" />
         <span className="ml-2">{t('tabs.timesStops')}</span>
       </div>
@@ -216,7 +216,7 @@ const ManageTrainSchedule = () => {
   const tabSimulationSettings = {
     id: 'simulation-settings',
     title: (
-      <div className="manage-timetable-item-tab">
+      <div className="manage-train-schedule-tab">
         <img src={simulationSettings} alt="simulation settings" />
         <span className="ml-2">{t('tabs.simulationSettings')}</span>
       </div>

@@ -244,7 +244,7 @@
   }
 }
 
-.scenario-manage-timetable-item-modal {
+.scenario-manage-train-schedule-modal {
   position: absolute;
   left: 0;
   display: flex;
@@ -253,14 +253,14 @@
   height: calc(100vh - 32px);
   z-index: 4;
 
-  .scenario-timetable-manage-timetable-item {
+  .scenario-timetable-manage-train-schedule {
     overflow: hidden;
     background-color: #d7d7d7aa;
     border-radius: 4px;
     animation: fadein 1s;
     backdrop-filter: blur(4px);
 
-    .scenario-timetable-manage-timetable-item-header {
+    .scenario-timetable-manage-train-schedule-header {
       display: flex;
       flex-direction: column;
       padding: 8px 8px 0;
@@ -274,7 +274,7 @@
       }
     }
 
-    .scenario-timetable-manage-timetable-item-body {
+    .scenario-timetable-manage-train-schedule-body {
       padding: 8px;
     }
 
@@ -288,7 +288,7 @@
     }
   }
 
-  .scenario-manage-timetable-item {
+  .scenario-manage-train-schedule {
     position: relative;
     display: flex;
     flex-direction: column;
@@ -310,7 +310,7 @@
       font-size: 0.7rem;
     }
 
-    .scenario-manage-timetable-item-content {
+    .scenario-manage-train-schedule-content {
       display: flex;
       flex-direction: column;
       flex-grow: 1;
