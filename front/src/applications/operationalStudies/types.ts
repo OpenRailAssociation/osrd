@@ -63,7 +63,7 @@ export type CichDictValue = {
 };
 
 // Extraction of some required and non nullable properties from osrdEditoastApi's PathProperties type
-export type ManageTimetableItemPathProperties = {
+export type ManageTrainSchedulePathProperties = {
   manchetteOperationalPoints?: PathOperationalPoint[];
   electrifications: NonNullable<PathProperties['electrifications']>;
   geometry: NonNullable<PathProperties['geometry']>;
@@ -73,7 +73,7 @@ export type ManageTimetableItemPathProperties = {
   incompatibleConstraints?: CoreIncompatibleConstraints;
 };
 
-export type MapPathProperties = Pick<ManageTimetableItemPathProperties, 'length' | 'geometry'>;
+export type MapPathProperties = Pick<ManageTrainSchedulePathProperties, 'length' | 'geometry'>;
 
 export type PositionData<T extends 'gradient' | 'radius'> = {
   [key in T]: number;

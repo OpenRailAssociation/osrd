@@ -17,11 +17,11 @@ import {
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { PathStep } from 'reducers/osrdconf/types';
 
-import type { ManageTimetableItemPathProperties } from '../types';
+import type { ManageTrainSchedulePathProperties } from '../types';
 import { useScenarioContext } from './useScenarioContext';
 
 type ManageTimetableItemContext = {
-  pathProperties?: ManageTimetableItemPathProperties;
+  pathProperties?: ManageTrainSchedulePathProperties;
   voltageRanges: RangedValue[];
   launchPathfinding: (
     steps: (PathStep | null)[],

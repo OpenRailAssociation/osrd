@@ -4,7 +4,7 @@ import { sortBy } from 'lodash';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type {
-  ManageTimetableItemPathProperties,
+  ManageTrainSchedulePathProperties,
   PowerRestriction,
 } from 'applications/operationalStudies/types';
 import type { TrackSection } from 'common/api/osrdEditoastApi';
@@ -38,7 +38,7 @@ import {
 type UsePowerRestrictionsSelectorBehavioursArgs = {
   ranges: IntervalItem[];
   customRanges: IntervalItem[];
-  pathProperties: ManageTimetableItemPathProperties;
+  pathProperties: ManageTrainSchedulePathProperties;
   pathSteps: PathStep[];
   powerRestrictionRanges: PowerRestriction[];
   setCustomRanges: Dispatch<SetStateAction<IntervalItem[]>>;

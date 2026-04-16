@@ -2,7 +2,7 @@ import { Alert } from '@osrd-project/ui-icons';
 import { isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
-import type { ManageTimetableItemPathProperties } from 'applications/operationalStudies/types';
+import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import icon from 'assets/pictures/components/power_restrictions.svg';
 import type { RollingStock } from 'common/api/osrdEditoastApi';
 import IntervalsEditor from 'common/IntervalsEditor';
@@ -17,7 +17,7 @@ type PowerRestrictionsSelectorProps = {
   voltageRanges: RangedValue[];
   rollingStockModes: RollingStock['effort_curves']['modes'];
   rollingStockPowerRestrictions: RollingStock['power_restrictions'];
-  pathProperties: ManageTimetableItemPathProperties;
+  pathProperties: ManageTrainSchedulePathProperties;
 };
 
 const PowerRestrictionsSelector = ({
