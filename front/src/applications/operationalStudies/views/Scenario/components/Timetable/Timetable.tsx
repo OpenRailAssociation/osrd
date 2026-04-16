@@ -19,7 +19,7 @@ import type { TimetableMode } from './types';
 import useFilterTrainSchedules from './useFilterTimetableItems';
 
 type TimetableProps = {
-  setDisplayTimetableItemManagement: (mode: string) => void;
+  setDisplayTrainScheduleManagement: (mode: string) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
   setSelectedTimetableItemIds: React.Dispatch<React.SetStateAction<number[]>>;
@@ -34,7 +34,7 @@ type TimetableProps = {
 };
 
 const Timetable = ({
-  setDisplayTimetableItemManagement,
+  setDisplayTrainScheduleManagement,
   upsertTimetableItems,
   setTrainScheduleToEditData,
   setSelectedTimetableItemIds,
@@ -156,7 +156,7 @@ const Timetable = ({
           setSelectedTimetableItemIds={setSelectedTimetableItemIds}
           setShowTrainDetails={setShowTrainDetails}
           setIsSelectMode={setIsSelectMode}
-          setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
+          setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
           refreshNge={refreshNge}
           handleDeleteTimetableItems={handleDeleteTimetableItems}
           handleMoveTimetableItems={() => openMoveDialog(selectedTimetableItemIds)}
@@ -165,7 +165,7 @@ const Timetable = ({
           upsertTimetableItems={upsertTimetableItems}
         />
         <TrainList
-          setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
+          setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
           upsertTimetableItems={upsertTimetableItems}
           setTrainScheduleToEditData={setTrainScheduleToEditData}
           setSelectedTimetableItemIds={setSelectedTimetableItemIds}

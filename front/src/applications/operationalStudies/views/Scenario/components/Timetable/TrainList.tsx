@@ -23,7 +23,7 @@ import { useAppDispatch } from 'store';
 import { useDateTimeLocale } from 'utils/date';
 import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
-import { MANAGE_TIMETABLE_ITEM_TYPES } from '../../consts';
+import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../../consts';
 import PacedTrainItem from './PacedTrain/PacedTrainItem';
 import AddNewTrainScheduleSetTab from './TrainScheduleSet/AddNewTrainScheduleSetTab';
 import TrainScheduleSetTab from './TrainScheduleSet/TrainScheduleSetTab';
@@ -31,7 +31,7 @@ import type { TimetableMode } from './types';
 import UniqueTrainItem from './UniqueTrainItem';
 
 type TrainListProps = {
-  setDisplayTimetableItemManagement: (mode: string) => void;
+  setDisplayTrainScheduleManagement: (mode: string) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
   setSelectedTimetableItemIds: React.Dispatch<React.SetStateAction<number[]>>;
@@ -56,7 +56,7 @@ const formatDepartureDate = (d: Date, locale: Intl.Locale) =>
   d.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
 const TrainList = ({
-  setDisplayTimetableItemManagement,
+  setDisplayTrainScheduleManagement,
   upsertTimetableItems,
   setTrainScheduleToEditData,
   setSelectedTimetableItemIds,
@@ -150,7 +150,7 @@ const TrainList = ({
         occurrenceId,
       };
       setTrainScheduleToEditData(editData);
-      setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.edit);
+      setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.edit);
     },
     []
   );

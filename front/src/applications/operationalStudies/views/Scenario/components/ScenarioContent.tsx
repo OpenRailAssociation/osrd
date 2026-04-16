@@ -18,7 +18,7 @@ import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { usePrevious } from 'utils/hooks/state';
 
-import { MANAGE_TIMETABLE_ITEM_TYPES } from '../consts';
+import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../consts';
 import BoardWrapper from './BoardWrapper';
 import { EditedElementContainerProvider } from './EditedElementContainerContext';
 import MacroEditorState from './MacroEditor/MacroEditorState';
@@ -43,8 +43,8 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
 
   const { infraId, timetableId, isInfraLoaded } = useScenarioContext();
 
-  const [displayTimetableItemManagement, setDisplayTimetableItemManagement] = useState<string>(
-    MANAGE_TIMETABLE_ITEM_TYPES.none
+  const [displayTrainScheduleManagement, setDisplayTrainScheduleManagement] = useState<string>(
+    MANAGE_TRAIN_SCHEDULE_TYPES.none
   );
   const [collapsedTimetableEdit, setCollapsedTimetableEdit] = useState(false);
   const [trainScheduleToEditData, setTrainScheduleToEditData] = useState<TrainScheduleToEditData>();
@@ -161,10 +161,10 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
   return (
     <EditedElementContainerProvider>
       <main className="mastcontainer mastcontainer-no-mastnav scenario scenario-content-v2">
-        {displayTimetableItemManagement !== MANAGE_TIMETABLE_ITEM_TYPES.none && (
+        {displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.none && (
           <ManageTrainScheduleModal
-            displayTimetableItemManagement={displayTimetableItemManagement}
-            setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
+            displayTrainScheduleManagement={displayTrainScheduleManagement}
+            setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
             upsertTimetableItems={upsertTimetableItemsWithNge}
             trainScheduleToEditData={trainScheduleToEditData}
             setTrainScheduleToEditData={setTrainScheduleToEditData}
@@ -180,7 +180,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
         >
           <div className="scenario-sidemenu">
             <TimetableBoardWrapper
-              setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
+              setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
               upsertTimetableItems={upsertTimetableItemsWithNge}
               removeTimetableItems={removeTimetableItemsWithNge}
               timetableItems={timetableItems}
@@ -198,8 +198,8 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
         </div>
         <div className="center-column">
           {!isInfraLoaded &&
-            displayTimetableItemManagement !== MANAGE_TIMETABLE_ITEM_TYPES.add &&
-            displayTimetableItemManagement !== MANAGE_TIMETABLE_ITEM_TYPES.edit && (
+            displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.add &&
+            displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.edit && (
               <ScenarioLoaderMessage />
             )}
           <div className="scenario-results">

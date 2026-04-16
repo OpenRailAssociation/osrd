@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { EditedElementContainerContext } from 'applications/operationalStudies/views/Scenario/components/EditedElementContainerContext';
-import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/views/Scenario/consts';
+import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/views/Scenario/consts';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import { ConfirmModal, useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import DotsLoader from 'common/DotsLoader';
@@ -23,9 +23,9 @@ import ItineraryModal from './Itinerary/ItineraryModal';
 import PacedTrainSettings from './PacedTrainSettings';
 
 export type ManageTrainScheduleLeftPanelProps = {
-  displayTimetableItemManagement: string;
+  displayTrainScheduleManagement: string;
   trainScheduleToEditData?: TrainScheduleToEditData;
-  setDisplayTimetableItemManagement: (type: string) => void;
+  setDisplayTrainScheduleManagement: (type: string) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
 };
@@ -34,8 +34,8 @@ export type ManageTrainScheduleLeftPanelProps = {
  * Create/edit unique trains and paced trains
  */
 const ManageTrainScheduleLeftPanel = ({
-  displayTimetableItemManagement,
-  setDisplayTimetableItemManagement,
+  displayTrainScheduleManagement,
+  setDisplayTrainScheduleManagement,
   upsertTimetableItems,
   trainScheduleToEditData,
   setTrainScheduleToEditData,
@@ -52,13 +52,13 @@ const ManageTrainScheduleLeftPanel = ({
   const [itineraryModalIsOpen, setItineraryModalIsOpen] = useState(false);
 
   const leaveManageTimetableItem = () => {
-    setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.none);
+    setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
     setTrainScheduleToEditData(undefined);
   };
 
   const updateTimetable = useUpdateTimetableItem(
     setIsWorking,
-    setDisplayTimetableItemManagement,
+    setDisplayTrainScheduleManagement,
     upsertTimetableItems,
     setTrainScheduleToEditData,
     trainScheduleToEditData
@@ -79,7 +79,7 @@ const ManageTrainScheduleLeftPanel = ({
   return (
     <div className="scenario-timetable-manage-timetable-item left-column">
       <div className="scenario-timetable-manage-timetable-item-header">
-        {displayTimetableItemManagement === MANAGE_TIMETABLE_ITEM_TYPES.edit &&
+        {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit &&
           trainScheduleToEditData && (
             <>
               <button
@@ -134,7 +134,7 @@ const ManageTrainScheduleLeftPanel = ({
             </>
           )}
 
-        {displayTimetableItemManagement === MANAGE_TIMETABLE_ITEM_TYPES.add && (
+        {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add && (
           <>
             {isWorking ? (
               <button
@@ -167,8 +167,8 @@ const ManageTrainScheduleLeftPanel = ({
           </>
         )}
       </div>
-      {(displayTimetableItemManagement === MANAGE_TIMETABLE_ITEM_TYPES.add ||
-        displayTimetableItemManagement === MANAGE_TIMETABLE_ITEM_TYPES.edit) && (
+      {(displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ||
+        displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit) && (
         <div
           className="scenario-timetable-manage-timetable-item-body"
           role="button"
@@ -191,7 +191,7 @@ const ManageTrainScheduleLeftPanel = ({
         <ItineraryModal
           itineraryModalIsOpen={itineraryModalIsOpen}
           setItineraryModalIsOpen={setItineraryModalIsOpen}
-          displayTimetableItemManagement={displayTimetableItemManagement}
+          displayTrainScheduleManagement={displayTrainScheduleManagement}
         />
       )}
       <div
