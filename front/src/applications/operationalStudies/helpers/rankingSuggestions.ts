@@ -2,7 +2,7 @@ import { uniqBy } from 'lodash';
 
 import { normalizeName, splitTokens, toUpper } from 'utils/strings';
 
-import type { OperationalPointSuggestion } from '../views/Scenario/components/ManageTimetableItem/Itinerary/ComboBoxCustomList/ListElementComponent';
+import type { OperationalPointSuggestion } from '../views/Scenario/components/ManageTrainSchedule/Itinerary/ComboBoxCustomList/ListElementComponent';
 import {
   secondaryCodeStarts,
   secondaryCodeIncludes,

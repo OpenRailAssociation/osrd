@@ -17,7 +17,7 @@ import type { AppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
-import { checkChangeGroups } from '../../ManageTimetableItem/helpers/buildPacedTrainException';
+import { checkChangeGroups } from '../../ManageTrainSchedule/helpers/buildPacedTrainException';
 import type {
   NetzgrafikDto,
   NGEEvent,

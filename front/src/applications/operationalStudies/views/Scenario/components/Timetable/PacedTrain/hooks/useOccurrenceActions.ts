@@ -2,8 +2,8 @@ import { useCallback } from 'react';
 
 import { useSelector } from 'react-redux';
 
-import { updatePacedTrainExceptionsList } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/buildPacedTrainException';
-import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/formatTimetableItemPayload';
+import { updatePacedTrainExceptionsList } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/buildPacedTrainException';
+import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/formatTimetableItemPayload';
 import type { PacedTrainException, TrainSchedule } from 'common/api/osrdEditoastApi';
 import {
   findExceptionWithOccurrenceId,

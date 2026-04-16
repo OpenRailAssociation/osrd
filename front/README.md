@@ -177,7 +177,7 @@ infrastructure.
 
 - **components/**
   - **Helpers/**
-  - **ManageTimetableItem/**
+  - **ManageTrainSchedule/**
   - **Project/**
   - **Scenario/**
   - **SimulationResults/**
@@ -185,7 +185,7 @@ infrastructure.
 - consts.ts
 - Home.tsx
 - **views/**
-  - ManageTimetableItem.jsx
+  - ManageTrainSchedule.tsx
   - Project.js
   - Scenario.js
   - SimulationResults.tsx
@@ -199,7 +199,7 @@ The functional workflow works as follows:
   `applications/operationalStudies/views/Study.js`
 
 Once in a scenario `applications/operationalStudies/views/Scenario.js` you have to add trains in the
-timetable `applications/operationalStudies/views/ManageTimetableItem.jsx`. To do so:
+timetable `applications/operationalStudies/views/ManageTrainSchedule.tsx`. To do so:
 
 - choose an infrastructure & timetable _DEPRECATED: will be removed soon_
 - choose a rolling stock `common/rollingStockSelector` and a composition code

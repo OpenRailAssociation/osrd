@@ -51,7 +51,7 @@ const ManageTrainScheduleLeftPanel = ({
   const [isWorking, setIsWorking] = useState(false);
   const [itineraryModalIsOpen, setItineraryModalIsOpen] = useState(false);
 
-  const leaveManageTimetableItem = () => {
+  const leaveManageTrainSchedule = () => {
     setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
     setTrainScheduleToEditData(undefined);
   };
@@ -198,7 +198,7 @@ const ManageTrainScheduleLeftPanel = ({
         className="scenario-timetable-manage-timetable-item-body"
         role="button"
         tabIndex={0}
-        onClick={leaveManageTimetableItem}
+        onClick={leaveManageTrainSchedule}
       >
         <button
           className="btn btn-secondary btn-block"
