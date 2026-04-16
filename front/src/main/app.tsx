@@ -10,6 +10,7 @@ import Scenario from 'applications/operationalStudies/views/Scenario';
 import Study from 'applications/operationalStudies/views/Study';
 import HomeMap from 'applications/referenceMap/Home';
 import RollingStockEditor from 'applications/rollingStockEditor/RollingStockEditorView';
+import StdcmDebugView from 'applications/stdcm/StdcmDebugView';
 import Stdcm from 'applications/stdcm/StdcmView';
 import Error403 from 'common/authorization/components/Error403';
 import InitialRedirect from 'common/authorization/components/InitialRedirect';
@@ -66,6 +67,10 @@ const router = createBrowserRouter([
       <OsrdContextLayout slice={stdcmConfSlice} selectors={stdcmConfSelectors} mode={MODES.stdcm} />
     ),
     children: [
+      {
+        path: 'debug',
+        element: <StdcmDebugView />,
+      },
       {
         path: '*',
         element: <Stdcm />,
