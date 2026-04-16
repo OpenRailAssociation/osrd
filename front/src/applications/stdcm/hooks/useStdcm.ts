@@ -268,7 +268,7 @@ const useStdcm = ({
             break;
           }
           case 'completed': {
-            const result = event.data;
+            const result: StdcmResponseWithTraceId = { ...event.data, traceId: event.traceId };
             switch (result.status) {
               case 'path_not_found':
                 await handlePathNotFound(result, payload);
