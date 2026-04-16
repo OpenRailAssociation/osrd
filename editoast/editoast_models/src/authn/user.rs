@@ -237,6 +237,51 @@ impl UserWithIdentities {
             .map_ok(Self::from)
             .map_err(database::DatabaseError::from))
     }
+
+    /// Streams users whose one of their identities match the provided list
+    pub async fn stream_by_identity(
+        conn: database::DbConnection,
+        identities: &[impl AsRef<str> + Send],
+    ) -> Result<
+        impl futures::stream::TryStream<Ok = Self, Error = database::DatabaseError>,
+        database::DatabaseError,
+    > {
+        use futures::TryStreamExt as _;
+
+        let query = diesel::sql_query(
+            r#"
+            SELECT u.id, u.name, ARRAY_AGG(i.identity) as identities
+            FROM authn_user u
+            LEFT JOIN authn_user_identity i ON i.user_id = u.id
+            WHERE u.id IN (
+              SELECT ui.user_id
+              FROM authn_user_identity ui
+              WHERE ui.identity = ANY($1)
+            )
+            GROUP BY u.id
+            "#,
+        )
+        .bind::<diesel::sql_types::Array<diesel::sql_types::Text>, _>(
+            identities.iter().map(AsRef::as_ref).collect_vec(),
+        );
+
+        Ok(query
+            .load_stream::<UserWithIdentitiesRow>(&mut conn.write().await)
+            .await?
+            .map_ok(Self::from)
+            .map_err(database::DatabaseError::from))
+    }
+
+    /// Retrieves a user along with their identities using one of their identities
+    pub async fn retrieve_by_identity(
+        conn: database::DbConnection,
+        identity: impl AsRef<str> + Send,
+    ) -> Result<Option<Self>, database::DatabaseError> {
+        use futures::stream::TryStreamExt as _;
+        let identities = [identity];
+        let mut stream = Self::stream_by_identity(conn, &identities).await?;
+        stream.try_next().await
+    }
 }
 
 #[cfg(test)]
@@ -345,6 +390,59 @@ mod tests {
                 .sorted()
                 .collect_vec(),
             vec!["grosminet", "titi", "toto"]
+        );
+    }
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn stream_by_identity() {
+        let pool = database::DbConnectionPoolV2::for_tests();
+        let conn = pool.get_ok();
+
+        let alice = User::register(
+            conn.clone(),
+            vec!["alice".to_owned(), "alice.alt".to_owned()],
+            "Alice".to_owned(),
+        )
+        .await
+        .expect("Alice should be created");
+        let bob = User::register(conn.clone(), vec!["bob".to_owned()], "Bob".to_string())
+            .await
+            .expect("Bob should be created");
+
+        let users = UserWithIdentities::stream_by_identity(conn.clone(), &["alice", "bob"])
+            .await
+            .expect("stream should be created")
+            .try_collect::<Vec<_>>()
+            .await
+            .expect("stream should succeed");
+
+        assert_eq!(
+            users,
+            vec![
+                UserWithIdentities {
+                    user: alice.clone(),
+                    identities: vec!["alice".to_owned(), "alice.alt".to_owned()],
+                },
+                UserWithIdentities {
+                    user: bob,
+                    identities: vec!["bob".to_owned()],
+                }
+            ]
+        );
+
+        assert_eq!(
+            UserWithIdentities::retrieve_by_identity(conn.clone(), "alice.alt")
+                .await
+                .unwrap(),
+            Some(UserWithIdentities {
+                user: alice,
+                identities: vec!["alice".to_owned(), "alice.alt".to_owned()],
+            })
+        );
+        assert_eq!(
+            UserWithIdentities::retrieve_by_identity(conn.clone(), "charlie")
+                .await
+                .unwrap(),
+            None
         );
     }
 }
