@@ -9,7 +9,7 @@ import type {
 import type { TrainSchedule, PacedTrainException } from 'common/api/osrdEditoastApi';
 import { addDurationToDate, Duration } from 'utils/duration';
 
-import { generatePacedTrainException } from '../../ManageTimetableItem/helpers/buildPacedTrainException';
+import { generatePacedTrainException } from '../../ManageTrainSchedule/helpers/buildPacedTrainException';
 import { buildSteps, cleanTimeFormat } from './buildStepsFromOcp';
 import findMostFrequentScheduleInPacedTrain from './findMostFrequentXmlSchedule';
 

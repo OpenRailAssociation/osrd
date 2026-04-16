@@ -14,8 +14,8 @@ import {
   multiPayloadFromTokens,
 } from '../helpers/searchPayload';
 import { selectSecondaryCode, shouldKeepTrigramLock } from '../helpers/suggestionMatchers';
-import { buildOpSuggestion } from '../views/Scenario/components/ManageTimetableItem/helpers/buildOpSuggestion';
-import type { OperationalPointSuggestion } from '../views/Scenario/components/ManageTimetableItem/Itinerary/ComboBoxCustomList/ListElementComponent';
+import { buildOpSuggestion } from '../views/Scenario/components/ManageTrainSchedule/helpers/buildOpSuggestion';
+import type { OperationalPointSuggestion } from '../views/Scenario/components/ManageTrainSchedule/Itinerary/ComboBoxCustomList/ListElementComponent';
 
 type Params = {
   pageSize?: number;

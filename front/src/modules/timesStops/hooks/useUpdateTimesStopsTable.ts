@@ -5,9 +5,9 @@ import type { PacedTrainWithPaced } from 'applications/operationalStudies/types'
 import {
   buildOccurrenceExceptionData,
   updatePacedTrainExceptionsList,
-} from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/buildPacedTrainException';
-import formatMargin from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/formatMargin';
-import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/formatTimetableItemPayload';
+} from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/buildPacedTrainException';
+import formatMargin from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/formatMargin';
+import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/formatTimetableItemPayload';
 import {
   osrdEditoastApi,
   type TrainSchedule,

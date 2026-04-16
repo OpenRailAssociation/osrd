@@ -1,6 +1,6 @@
 import { normalizeName, splitTokens, toUpper } from 'utils/strings';
 
-import type { OperationalPointSuggestion } from '../views/Scenario/components/ManageTimetableItem/Itinerary/ComboBoxCustomList/ListElementComponent';
+import type { OperationalPointSuggestion } from '../views/Scenario/components/ManageTrainSchedule/Itinerary/ComboBoxCustomList/ListElementComponent';
 
 export const secondaryCodeStarts = (s: OperationalPointSuggestion, tokenUpper: string) =>
   s.secondaryCodeList.some((secondaryCode) => toUpper(secondaryCode.code).startsWith(tokenUpper));

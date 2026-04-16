@@ -6,7 +6,7 @@ import { useScenarioContext } from 'applications/operationalStudies/hooks/useSce
 import useScenarioData from 'applications/operationalStudies/hooks/useScenarioData';
 import useScenarioTrainScheduleSet from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
 import type { Board } from 'applications/operationalStudies/types';
-import ManageTrainScheduleModal from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem';
+import ManageTrainScheduleModal from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule';
 import SimulationResults from 'applications/operationalStudies/views/Scenario/components/SimulationResults';
 import { Loader } from 'common/Loaders';
 import Conflicts from 'modules/conflict/components/Conflicts';
