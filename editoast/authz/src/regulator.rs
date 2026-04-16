@@ -98,8 +98,6 @@ pub trait StorageDriver: Clone {
         >,
     > + Send;
 
-    fn delete_user(&self, user_id: i64) -> impl Future<Output = Result<bool, Self::Error>> + Send;
-
     fn add_user_identities(
         &self,
         user_identity: Either<i64, String>,

@@ -377,21 +377,6 @@ mod mock_driver {
             Ok(true)
         }
 
-        async fn delete_user(&self, user_id: i64) -> Result<bool, Self::Error> {
-            let map = self.users.lock().unwrap();
-            let user_identity = map
-                .iter()
-                .find_map(|(k, &v)| if v == user_id { Some(k) } else { None });
-
-            let mut map = self.users.lock().unwrap();
-            if let Some(identity) = user_identity {
-                map.remove(identity);
-                Ok(true)
-            } else {
-                Ok(false)
-            }
-        }
-
         async fn delete_group(&self, group_id: i64) -> Result<bool, Self::Error> {
             let groups = self.groups.lock().unwrap();
 

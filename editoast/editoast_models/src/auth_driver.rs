@@ -265,15 +265,6 @@ impl StorageDriver for PgAuthDriver {
         Ok(groups)
     }
 
-    #[tracing::instrument(skip_all, fields(%user_id), ret(level = Level::DEBUG), err)]
-    async fn delete_user(&self, user_id: i64) -> Result<bool, Self::Error> {
-        let conn = self.pool.get().await?;
-        let s = dsl::delete(authn_user::table.filter(authn_user::id.eq(user_id)))
-            .execute(&mut conn.write().await)
-            .await?;
-        Ok(s > 0)
-    }
-
     #[tracing::instrument(skip_all, fields(identities, user = %user_identity), ret(level = Level::DEBUG), err)]
     async fn add_user_identities(
         &self,

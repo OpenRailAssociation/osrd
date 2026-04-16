@@ -6,6 +6,7 @@ use authz::identity::UserInfo;
 use clap::Args;
 use clap::Subcommand;
 use database::DbConnectionPoolV2;
+use editoast_models::prelude::*;
 use futures::TryStreamExt;
 use futures::future::try_join_all;
 use itertools::Either;
@@ -171,7 +172,7 @@ pub async fn delete_user(
     DeleteArgs { user }: DeleteArgs,
     pool: Arc<DbConnectionPoolV2>,
 ) -> anyhow::Result<()> {
-    let driver = PgAuthDriver::new(pool);
+    let driver = PgAuthDriver::new(pool.clone());
 
     let uid = if let Ok(id) = user.parse::<i64>() {
         id
@@ -180,7 +181,8 @@ pub async fn delete_user(
         uid.ok_or_else(|| anyhow!("No user with identity '{user}' found"))?
     };
 
-    let deleted = driver.delete_user(uid).await?;
+    let conn = &mut pool.get().await?;
+    let deleted = editoast_models::User::delete_static(conn, uid).await?;
 
     if deleted {
         tracing::info!("user '{user}' deleted");

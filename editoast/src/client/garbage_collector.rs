@@ -372,10 +372,12 @@ mod tests {
             .unwrap();
 
         // Delete orphan entities from DB
-        driver.delete_user(orphan_user.0).await.unwrap();
         driver.delete_group(orphan_group.0).await.unwrap();
         {
             let conn = &mut db_pool.get_ok();
+            editoast_models::authn::user::User::delete_static(conn, orphan_user.0)
+                .await
+                .unwrap();
             Infra::delete_static(conn, orphan_infra.0).await.unwrap();
         }
 
