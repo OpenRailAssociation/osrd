@@ -32,7 +32,7 @@
     "rollup": "^4.60.1",
     "rollup-plugin-livereload": "^2.0.5",
     "rollup-plugin-postcss": "^4.0.2",
-    "typescript": "^5.9.3",
+    "typescript": "^6.0.2",
     "typescript-eslint": "^8.58.0",
     "vitest": "^4.1.2"
   }
