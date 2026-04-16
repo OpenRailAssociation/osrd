@@ -1,6 +1,8 @@
-import { renderHook } from '@testing-library/react';
+import { renderHookWithStore } from 'store/__tests__';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+import { mockOsrdEditoastEndpoints } from 'common/api/__mocks__/osrdEditoastApi';
+import type { ApiError } from 'common/api/baseGeneratedApis';
 import type { InfraObjectWithGeometry, TrackSection } from 'common/api/osrdEditoastApi';
 
 import useCachedTrackSections from '../useCachedTrackSections';
@@ -27,21 +29,7 @@ function createTrackSectionInfraObject(trackSection: TrackSection): InfraObjectW
   };
 }
 
-const { apiResult, apiQuery, mockUseLazyQuery } = vi.hoisted(() => ({
-  apiResult: vi.fn(),
-  apiQuery: vi.fn(() => ({ unwrap: apiResult })),
-  mockUseLazyQuery: vi.fn(),
-}));
-
-vi.mock('common/api/osrdEditoastApi', () => ({
-  osrdEditoastApi: {
-    endpoints: {
-      postInfraByInfraIdObjectsAndObjectType: {
-        useLazyQuery: mockUseLazyQuery,
-      },
-    },
-  },
-}));
+const { postInfraByInfraIdObjectsAndObjectType } = mockOsrdEditoastEndpoints;
 
 const infraId = 3000;
 
@@ -53,17 +41,18 @@ const trackVBInfraObject = createTrackSectionInfraObject(trackVB);
 describe('useCachedTrackSections', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockUseLazyQuery.mockReturnValue([apiQuery, { isLoading: false }]);
   });
 
   it('should return some track sections', async () => {
-    apiResult.mockResolvedValue([trackVAInfraObject, trackVBInfraObject]);
+    postInfraByInfraIdObjectsAndObjectType.mockResolvedValue({
+      data: [trackVAInfraObject, trackVBInfraObject],
+    });
 
-    const { result } = renderHook(() => useCachedTrackSections(infraId));
+    const { result } = renderHookWithStore(() => useCachedTrackSections(infraId));
 
     const trackSections = await result.current.getTrackSectionsByIds(['VA', 'VB']);
 
-    expect(apiQuery).toHaveBeenCalledWith({
+    expect(postInfraByInfraIdObjectsAndObjectType).toHaveBeenCalledWith({
       infraId: 3000,
       objectType: 'TrackSection',
       body: ['VA', 'VB'],
@@ -76,9 +65,11 @@ describe('useCachedTrackSections', () => {
   });
 
   it('should always return the full cache even if we only request a subset later', async () => {
-    apiResult.mockResolvedValue([trackVAInfraObject, trackVBInfraObject]);
+    postInfraByInfraIdObjectsAndObjectType.mockResolvedValue({
+      data: [trackVAInfraObject, trackVBInfraObject],
+    });
 
-    const { result } = renderHook(() => useCachedTrackSections(infraId));
+    const { result } = renderHookWithStore(() => useCachedTrackSections(infraId));
 
     const twoTracksRequested = await result.current.getTrackSectionsByIds(['VA', 'VB']);
     expect(twoTracksRequested).toEqual({
@@ -94,13 +85,13 @@ describe('useCachedTrackSections', () => {
   });
 
   it('should deduplicate track IDs to only fetch those that are not in cache', async () => {
-    apiResult.mockResolvedValue([trackVAInfraObject]);
+    postInfraByInfraIdObjectsAndObjectType.mockResolvedValue({ data: [trackVAInfraObject] });
 
-    const { result } = renderHook(() => useCachedTrackSections(infraId));
+    const { result } = renderHookWithStore(() => useCachedTrackSections(infraId));
 
     const trackSections1 = await result.current.getTrackSectionsByIds(['VA', 'VA']);
 
-    expect(apiQuery).toHaveBeenCalledWith({
+    expect(postInfraByInfraIdObjectsAndObjectType).toHaveBeenCalledWith({
       infraId: 3000,
       objectType: 'TrackSection',
       body: ['VA'],
@@ -110,11 +101,13 @@ describe('useCachedTrackSections', () => {
       VA: trackVA,
     });
 
-    apiResult.mockResolvedValue([trackVAInfraObject, trackVBInfraObject]);
+    postInfraByInfraIdObjectsAndObjectType.mockResolvedValue({
+      data: [trackVAInfraObject, trackVBInfraObject],
+    });
 
     const trackSections2 = await result.current.getTrackSectionsByIds(['VA', 'VB']);
 
-    expect(apiQuery).toHaveBeenCalledWith({
+    expect(postInfraByInfraIdObjectsAndObjectType).toHaveBeenCalledWith({
       infraId: 3000,
       objectType: 'TrackSection',
       body: ['VB'],
@@ -124,28 +117,37 @@ describe('useCachedTrackSections', () => {
   });
 
   it('should not call the API at all once the result is cached', async () => {
-    apiResult.mockResolvedValue([trackVAInfraObject, trackVBInfraObject]);
+    postInfraByInfraIdObjectsAndObjectType.mockResolvedValue({
+      data: [trackVAInfraObject, trackVBInfraObject],
+    });
 
-    const { result } = renderHook(() => useCachedTrackSections(infraId));
+    const { result } = renderHookWithStore(() => useCachedTrackSections(infraId));
 
     await result.current.getTrackSectionsByIds(['VA', 'VB']);
     await result.current.getTrackSectionsByIds(['VB']);
     await result.current.getTrackSectionsByIds(['VB', 'VA']);
     await result.current.getTrackSectionsByIds(['VA']);
 
-    expect(apiQuery).toHaveBeenCalledTimes(1);
+    expect(postInfraByInfraIdObjectsAndObjectType).toHaveBeenCalledTimes(1);
 
     await result.current.getTrackSectionsByIds(['VC']);
 
-    expect(apiQuery).toHaveBeenCalledTimes(2);
+    expect(postInfraByInfraIdObjectsAndObjectType).toHaveBeenCalledTimes(2);
   });
 
   it('should emit errors in the console if the call fails', async () => {
-    const someApiError = new Error('Oops! Something crashed.');
-    apiResult.mockRejectedValue(someApiError);
+    const someApiError: ApiError = {
+      data: {
+        type: 'InternalError',
+        message: 'Oops! Something crashed.',
+        context: {},
+      },
+      status: 500,
+    };
+    postInfraByInfraIdObjectsAndObjectType.mockResolvedValue({ error: someApiError });
 
     const mockedConsoleError = vi.spyOn(console, 'error');
-    const { result } = renderHook(() => useCachedTrackSections(infraId));
+    const { result } = renderHookWithStore(() => useCachedTrackSections(infraId));
 
     await result.current.getTrackSectionsByIds(['VA']);
     expect(mockedConsoleError).toHaveBeenCalledWith(
@@ -155,9 +157,9 @@ describe('useCachedTrackSections', () => {
   });
 
   it('should change infraId parameter in queries if changed', async () => {
-    apiResult.mockResolvedValue([trackVAInfraObject]);
+    postInfraByInfraIdObjectsAndObjectType.mockResolvedValue({ data: [trackVAInfraObject] });
 
-    const { result, rerender } = renderHook(
+    const { result, rerender } = renderHookWithStore(
       (hookInfraId: number) => useCachedTrackSections(hookInfraId),
       {
         initialProps: 1234,
@@ -165,7 +167,7 @@ describe('useCachedTrackSections', () => {
     );
 
     await result.current.getTrackSectionsByIds(['VA']);
-    expect(apiQuery).toHaveBeenCalledWith({
+    expect(postInfraByInfraIdObjectsAndObjectType).toHaveBeenCalledWith({
       infraId: 1234,
       objectType: 'TrackSection',
       body: ['VA'],
@@ -173,9 +175,9 @@ describe('useCachedTrackSections', () => {
 
     rerender(5678);
 
-    apiResult.mockResolvedValue([trackVBInfraObject]);
+    postInfraByInfraIdObjectsAndObjectType.mockResolvedValue({ data: [trackVBInfraObject] });
     await result.current.getTrackSectionsByIds(['VB']);
-    expect(apiQuery).toHaveBeenCalledWith({
+    expect(postInfraByInfraIdObjectsAndObjectType).toHaveBeenCalledWith({
       infraId: 5678,
       objectType: 'TrackSection',
       body: ['VB'],
