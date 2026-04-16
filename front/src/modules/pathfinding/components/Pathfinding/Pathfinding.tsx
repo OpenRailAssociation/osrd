@@ -4,7 +4,7 @@ import { isEqual } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { useManageTimetableItemContext } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
+import { useManageTrainScheduleContext } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
 import InfraLoadingState from 'applications/operationalStudies/views/Scenario/components/InfraLoadingState';
 import infraLogo from 'assets/pictures/components/tracks.svg';
 import { Spinner } from 'common/Loaders';
@@ -26,7 +26,7 @@ const Pathfinding = ({ rollingStockId }: { rollingStockId: number | undefined })
   const origin = useSelector(getOrigin, isEqual);
   const destination = useSelector(getDestination, isEqual);
 
-  const { pathProperties, pathfindingState, workerStatus } = useManageTimetableItemContext();
+  const { pathProperties, pathfindingState, workerStatus } = useManageTrainScheduleContext();
 
   const missingElements = conditionalStringConcat([
     [!origin, t('origin')],

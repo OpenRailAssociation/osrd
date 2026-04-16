@@ -5,7 +5,7 @@ import { compact, pick } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { useManageTimetableItemContext } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
+import { useManageTrainScheduleContext } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
 import allowancesPic from 'assets/pictures/components/allowances.svg';
 import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
 import simulationSettings from 'assets/pictures/components/simulationSettings.svg';
@@ -57,7 +57,7 @@ const ManageTimetableItem = () => {
     pathStepsAndSuggestedOPs,
     launchPathfinding,
     pathfindingState,
-  } = useManageTimetableItemContext();
+  } = useManageTrainScheduleContext();
   const { updateRollingStockID, updateSpeedLimitByTag } = useOsrdConfActions();
 
   const origin = useSelector(getOrigin);

@@ -179,9 +179,7 @@ export const DeploymentContextProvider = ({ children }: DeploymentContextProvide
 const useDeploymentSettings = () => {
   const context = useContext(deploymentSettingsContext);
   if (!context) {
-    throw new Error(
-      'useManageTimetableItemContext must be used within a ManageTimetableItemContext'
-    );
+    throw new Error('useDeploymentSettings must be used within a DeploymentSettingsContext');
   }
   return context.deploymentSettings;
 };

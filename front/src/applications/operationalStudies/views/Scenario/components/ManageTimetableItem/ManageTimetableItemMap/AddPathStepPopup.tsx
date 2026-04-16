@@ -8,7 +8,7 @@ import { Popup } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 import { v4 as uuidV4 } from 'uuid';
 
-import { useManageTimetableItemContext } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
+import { useManageTrainScheduleContext } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { MapPathProperties } from 'applications/operationalStudies/types';
 import {
@@ -38,7 +38,7 @@ const AddPathStepPopup = ({
   featureInfoClick,
   resetFeatureInfoClick,
 }: AddPathStepPopupProps) => {
-  const { launchPathfinding } = useManageTimetableItemContext();
+  const { launchPathfinding } = useManageTrainScheduleContext();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
   const origin = useSelector(getOrigin);
   const destination = useSelector(getDestination);
