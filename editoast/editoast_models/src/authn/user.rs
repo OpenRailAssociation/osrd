@@ -6,8 +6,6 @@ use authz::identity::UserInfo;
 use database::DbConnection;
 use database::tables::authn_user;
 use database::tables::authn_user_identity;
-use diesel::ExpressionMethods;
-use diesel::QueryDsl;
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
@@ -133,9 +131,68 @@ impl User {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct UserWithIdentities {
+    pub user: User,
+    pub identities: Vec<String>,
+}
+
+#[derive(diesel::QueryableByName)]
+struct UserWithIdentitiesRow {
+    #[diesel(sql_type = diesel::sql_types::BigInt)]
+    id: i64,
+    #[diesel(sql_type = diesel::sql_types::Text)]
+    name: String,
+    // authn_user_identities has a non-null constraint on identities so array items cannot be null
+    // and a trigger ensures a user has at least one identity, so the array itself cannot be null
+    // or empty
+    #[diesel(sql_type = diesel::sql_types::Array<diesel::sql_types::Text>)]
+    identities: Vec<String>,
+}
+
+impl From<UserWithIdentitiesRow> for UserWithIdentities {
+    fn from(row: UserWithIdentitiesRow) -> Self {
+        Self {
+            user: User {
+                id: row.id,
+                name: row.name,
+            },
+            identities: row.identities,
+        }
+    }
+}
+
+impl UserWithIdentities {
+    pub async fn stream(
+        conn: database::DbConnection,
+    ) -> Result<
+        impl futures::stream::TryStream<Ok = Self, Error = database::DatabaseError>,
+        database::DatabaseError,
+    > {
+        use futures::TryStreamExt as _;
+
+        let query = diesel::sql_query(
+            r#"
+            SELECT u.id, u.name, ARRAY_AGG(i.identity) as identities
+            FROM authn_user u
+            LEFT JOIN authn_user_identity i ON i.user_id = u.id
+            GROUP BY u.id
+            "#,
+        );
+
+        Ok(query
+            .load_stream::<UserWithIdentitiesRow>(&mut conn.write().await)
+            .await?
+            .map_ok(Self::from)
+            .map_err(database::DatabaseError::from))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use futures::stream::TryStreamExt as _;
+    use pretty_assertions::assert_eq;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn register_twice_fails() {
@@ -169,6 +226,44 @@ mod tests {
         assert!(
             result.is_err(),
             "Second registration with same identity should fail"
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn stream() {
+        let pool = database::DbConnectionPoolV2::for_tests();
+        let conn = pool.get_ok();
+
+        let alice = User::register(
+            conn.clone(),
+            vec!["alice".to_owned(), "alice.alt".to_owned()],
+            "Alice".to_owned(),
+        )
+        .await
+        .unwrap();
+        let bob = User::register(conn.clone(), vec!["bob".to_owned()], "Bob".to_string())
+            .await
+            .unwrap();
+
+        let users = UserWithIdentities::stream(conn)
+            .await
+            .unwrap()
+            .try_collect::<Vec<_>>()
+            .await
+            .unwrap();
+
+        assert_eq!(
+            users,
+            vec![
+                UserWithIdentities {
+                    user: alice,
+                    identities: vec!["alice".to_owned(), "alice.alt".to_owned()],
+                },
+                UserWithIdentities {
+                    user: bob,
+                    identities: vec!["bob".to_owned()],
+                },
+            ]
         );
     }
 }

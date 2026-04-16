@@ -15,7 +15,6 @@ use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 
 use database::tables::*;
-use futures::StreamExt;
 use itertools::Either;
 use itertools::Itertools;
 use tracing::Level;
@@ -209,42 +208,6 @@ impl StorageDriver for PgAuthDriver {
             }
         })
         .await
-    }
-
-    async fn list_users(
-        &self,
-    ) -> Result<
-        impl futures::stream::TryStream<Ok = (i64, UserInfo), Error = Self::Error>,
-        Self::Error,
-    > {
-        let conn = self.pool.get().await?;
-        let users = authn_user::table
-            .left_join(authn_user_identity::table)
-            .group_by(authn_user::id)
-            .select((
-                authn_user::id,
-                authn_user::name,
-                diesel::dsl::sql::<
-                    diesel::sql_types::Array<
-                        diesel::sql_types::Nullable<diesel::sql_types::Varchar>,
-                    >,
-                >("array_agg(")
-                .bind(authn_user_identity::identity)
-                .sql(")"),
-            ))
-            .load_stream::<(i64, String, Vec<Option<String>>)>(&mut conn.write().await)
-            .await?
-            .map(|res| match res {
-                Ok((id, name, identities)) => Ok((
-                    id,
-                    UserInfo {
-                        identities: identities.into_iter().flatten().collect_vec(),
-                        name,
-                    },
-                )),
-                Err(e) => Err(e.into()),
-            });
-        Ok(users)
     }
 
     #[tracing::instrument(skip_all, fields(identities, user = %user_identity), ret(level = Level::DEBUG), err)]

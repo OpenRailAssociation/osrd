@@ -6,14 +6,16 @@ use authz::identity::UserInfo;
 use clap::Args;
 use clap::Subcommand;
 use database::DbConnectionPoolV2;
+use editoast_models::PgAuthDriver;
+use editoast_models::User;
+use editoast_models::authn::user::UserWithIdentities;
 use editoast_models::prelude::*;
-use futures::TryStreamExt;
+use futures::TryStreamExt as _;
 use futures::future::try_join_all;
 use itertools::Either;
+
 use std::collections::HashSet;
 use std::sync::Arc;
-
-use editoast_models::PgAuthDriver;
 
 use super::openfga_config::OpenfgaConfig;
 
@@ -78,10 +80,16 @@ pub async fn list_user(
     pool: Arc<DbConnectionPoolV2>,
 ) -> anyhow::Result<()> {
     let regulator = openfga_config.into_regulator(pool.clone()).await?;
-    let driver = regulator.driver();
 
     let (users, groups) = tokio::join!(
-        async { driver.list_users().await?.try_collect::<Vec<_>>().await },
+        async {
+            let conn = pool.get().await?;
+            let users = UserWithIdentities::stream(conn)
+                .await?
+                .try_collect::<Vec<_>>()
+                .await?;
+            anyhow::Ok(users)
+        },
         async {
             let conn = &mut pool.get().await?;
             let groups = editoast_models::Group::list(conn, Default::default()).await?;
@@ -101,13 +109,17 @@ pub async fn list_user(
             .collect::<HashSet<_>>();
         users?
             .into_iter()
-            .filter(|(user_id, _)| !group_members.contains(&authz::User(*user_id)))
+            .filter(|user| !group_members.contains(&authz::User(user.user.id)))
             .collect::<Vec<_>>()
     } else {
         users?
     };
 
-    for (id, UserInfo { identities, name }) in &users {
+    for UserWithIdentities {
+        user: User { id, name },
+        identities,
+    } in &users
+    {
         println!("[{id}]: {name} ({})", identities.join(", "));
     }
     if users.is_empty() {

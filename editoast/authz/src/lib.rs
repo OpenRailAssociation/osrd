@@ -133,7 +133,6 @@ mod mock_driver {
     use std::sync::Mutex;
     use std::sync::RwLock;
 
-    use futures::stream;
     use itertools::Either;
 
     use crate::InfraGrant;
@@ -307,30 +306,6 @@ mod mock_driver {
                 .find(|(_, id)| **id == group_id)
                 .map(|(name, _)| GroupInfo { name: name.clone() });
             Ok(group_info)
-        }
-
-        async fn list_users(
-            &self,
-        ) -> Result<impl stream::TryStream<Ok = (i64, UserInfo), Error = Self::Error>, Self::Error>
-        {
-            let mut user_identities: HashMap<i64, Vec<String>> = HashMap::new();
-            for (identity, &id) in self.users.lock().unwrap().iter() {
-                user_identities
-                    .entry(id)
-                    .or_default()
-                    .push(identity.clone());
-            }
-            Ok(stream::iter(user_identities.into_iter().map(
-                |(id, identities)| {
-                    Ok((
-                        id,
-                        UserInfo {
-                            name: format!("Mocked user ({})", identities.join(", ")),
-                            identities,
-                        },
-                    ))
-                },
-            )))
         }
 
         async fn infra_exists(&self, _infra_id: i64) -> Result<bool, Self::Error> {
