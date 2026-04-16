@@ -32,6 +32,14 @@ jobs:
           go install github.com/norwoodj/helm-docs/cmd/helm-docs@latest
           .github/scripts/check-chart-diff.sh
 
+      - name: Generate values schema json
+        run: |
+          curl -sSL https://raw.githubusercontent.com/dadav/helm-schema/refs/heads/main/signing-key.asc | gpg --import
+          gpg --export F58707969D0FBFA5 > ~/.gnupg/pubring.gpg
+          helm plugin install https://github.com/dadav/helm-schema/releases/download/0.23.2/helm-schema_0.23.2_Linux_x86_64.tar.gz --verify
+          cd chart
+          helm schema -a -p --dry-run | diff values.schema.json - || (echo "Schema must be re-generated! Run 'helm schema -a -p' in the chart directory" && exit 1)
+          echo "Schema validation successful"
 
       - name: Set Name and Version
         run: |

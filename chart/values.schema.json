@@ -1,0 +1,1504 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "affinity": {
+      "additionalProperties": false,
+      "required": [],
+      "title": "affinity",
+      "type": "object"
+    },
+    "annotations": {
+      "additionalProperties": false,
+      "description": " overriden within the \"services\" section.",
+      "required": [],
+      "title": "annotations"
+    },
+    "endpoints": {
+      "additionalProperties": false,
+      "description": " The variables can be either a string or directly an object that would be used in the env variable that uses it (merged directly).",
+      "properties": {
+        "amqp": {
+          "additionalProperties": false,
+          "properties": {
+            "management": {
+              "default": "http://osrd:password@rabbitmq:15672",
+              "title": "management",
+              "type": "string"
+            },
+            "managementWithVhost": {
+              "default": "http://osrd:password@rabbitmq:15672/%2f",
+              "title": "managementWithVhost",
+              "type": "string"
+            },
+            "url": {
+              "default": "amqp://osrd:password@rabbitmq:5672/%2f",
+              "title": "url",
+              "type": "string"
+            }
+          },
+          "required": [
+            "url",
+            "management",
+            "managementWithVhost"
+          ],
+          "title": "amqp",
+          "type": "object"
+        },
+        "postgresql": {
+          "default": "postgres://osrd:password@postgres:5432/osrd",
+          "title": "postgresql",
+          "type": "string"
+        },
+        "postgresqlOpenFGA": {
+          "default": "postgres://osrd:password@postgres:5432/osrd?search_path=openfga",
+          "title": "postgresqlOpenFGA",
+          "type": "string"
+        },
+        "public": {
+          "default": "https://my-osrd-instance.org",
+          "title": "public",
+          "type": "string"
+        },
+        "redis": {
+          "default": "redis://username:pwd@redis:6379/0",
+          "title": "redis",
+          "type": "string"
+        }
+      },
+      "required": [
+        "public",
+        "amqp",
+        "postgresql",
+        "postgresqlOpenFGA",
+        "redis"
+      ],
+      "title": "endpoints"
+    },
+    "fullnameOverride": {
+      "default": "",
+      "title": "fullnameOverride",
+      "type": "string"
+    },
+    "global": {
+      "description": "Global values are values that can be accessed from any chart or subchart by exactly the same name.",
+      "required": [],
+      "title": "global",
+      "type": "object"
+    },
+    "imagePullSecrets": {
+      "description": "Container images related settings",
+      "items": {
+        "required": []
+      },
+      "title": "imagePullSecrets",
+      "type": "array"
+    },
+    "images": {
+      "additionalProperties": false,
+      "properties": {
+        "core": {
+          "default": "ghcr.io/openrailassociation/osrd-REPOSITORY_VERSION_REPLACE_ME/osrd-core:IMAGES_VERSION_REPLACE_ME",
+          "title": "core",
+          "type": "string"
+        },
+        "editoast": {
+          "default": "ghcr.io/openrailassociation/osrd-REPOSITORY_VERSION_REPLACE_ME/osrd-editoast:IMAGES_VERSION_REPLACE_ME",
+          "title": "editoast",
+          "type": "string"
+        },
+        "gateway": {
+          "default": "ghcr.io/openrailassociation/osrd-REPOSITORY_VERSION_REPLACE_ME/osrd-gateway:IMAGES_VERSION_REPLACE_ME-front",
+          "title": "gateway",
+          "type": "string"
+        },
+        "openfga": {
+          "default": "openfga/openfga:v1.8.6",
+          "title": "openfga",
+          "type": "string"
+        },
+        "osrdyne": {
+          "default": "ghcr.io/openrailassociation/osrd-REPOSITORY_VERSION_REPLACE_ME/osrd-osrdyne:IMAGES_VERSION_REPLACE_ME",
+          "title": "osrdyne",
+          "type": "string"
+        }
+      },
+      "required": [
+        "editoast",
+        "gateway",
+        "core",
+        "osrdyne",
+        "openfga"
+      ],
+      "title": "images",
+      "type": "object"
+    },
+    "labels": {
+      "additionalProperties": false,
+      "required": [],
+      "title": "labels",
+      "type": "object"
+    },
+    "nameOverride": {
+      "default": "",
+      "description": "Helm overrides",
+      "title": "nameOverride",
+      "type": "string"
+    },
+    "nodeSelector": {
+      "additionalProperties": false,
+      "required": [],
+      "title": "nodeSelector",
+      "type": "object"
+    },
+    "pullPolicy": {
+      "default": "IfNotPresent",
+      "title": "pullPolicy",
+      "type": "string"
+    },
+    "services": {
+      "additionalProperties": false,
+      "description": "Services direct settings and overides",
+      "properties": {
+        "core": {
+          "additionalProperties": false,
+          "properties": {
+            "affinity": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "affinity",
+              "type": "object"
+            },
+            "annotations": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "annotations",
+              "type": "object"
+            },
+            "autoscaling": {
+              "additionalProperties": false,
+              "properties": {
+                "type": {
+                  "default": "NoScaling",
+                  "title": "type",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "title": "autoscaling",
+              "type": "object"
+            },
+            "config": {
+              "additionalProperties": false,
+              "properties": {
+                "telemetry": {
+                  "default": "null",
+                  "title": "telemetry",
+                  "type": "null"
+                }
+              },
+              "required": [
+                "telemetry"
+              ],
+              "title": "config",
+              "type": "object"
+            },
+            "env": {
+              "items": {
+                "required": []
+              },
+              "title": "env",
+              "type": "array"
+            },
+            "labels": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "labels",
+              "type": "object"
+            },
+            "nodeSelector": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "nodeSelector",
+              "type": "object"
+            },
+            "resources": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "resources",
+              "type": "object"
+            },
+            "service_account_name": {
+              "default": "null",
+              "description": "Service account name to mount in case of kubernetes deployment",
+              "required": [],
+              "title": "service_account_name"
+            },
+            "tolerations": {
+              "items": {
+                "required": []
+              },
+              "title": "tolerations",
+              "type": "array"
+            }
+          },
+          "required": [
+            "annotations",
+            "labels",
+            "nodeSelector",
+            "tolerations",
+            "affinity",
+            "resources",
+            "env",
+            "config",
+            "autoscaling"
+          ],
+          "title": "core",
+          "type": "object"
+        },
+        "editoast": {
+          "additionalProperties": false,
+          "properties": {
+            "affinity": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "affinity",
+              "type": "object"
+            },
+            "annotations": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "annotations",
+              "type": "object"
+            },
+            "cronjob": {
+              "additionalProperties": false,
+              "properties": {
+                "env": {
+                  "items": {
+                    "required": []
+                  },
+                  "title": "env",
+                  "type": "array"
+                },
+                "extend": {
+                  "default": "",
+                  "description": "command to be executed before editoast gc",
+                  "title": "extend",
+                  "type": "string"
+                },
+                "schedule": {
+                  "default": "3 1 * * mon-fri",
+                  "description": "set to null to disable cronjob",
+                  "title": "schedule",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "schedule",
+                "extend",
+                "env"
+              ],
+              "title": "cronjob",
+              "type": "object"
+            },
+            "enabled": {
+              "default": true,
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "env": {
+              "items": {
+                "required": []
+              },
+              "title": "env",
+              "type": "array"
+            },
+            "hpa": {
+              "additionalProperties": false,
+              "properties": {
+                "annotations": {
+                  "additionalProperties": false,
+                  "required": [],
+                  "title": "annotations",
+                  "type": "object"
+                },
+                "enabled": {
+                  "default": true,
+                  "title": "enabled",
+                  "type": "boolean"
+                },
+                "labels": {
+                  "additionalProperties": false,
+                  "required": [],
+                  "title": "labels",
+                  "type": "object"
+                },
+                "maxReplicas": {
+                  "default": 10,
+                  "title": "maxReplicas",
+                  "type": "integer"
+                },
+                "minReplicas": {
+                  "default": 2,
+                  "title": "minReplicas",
+                  "type": "integer"
+                },
+                "targetCPUUtilizationPercentage": {
+                  "default": 80,
+                  "title": "targetCPUUtilizationPercentage",
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "enabled",
+                "minReplicas",
+                "maxReplicas",
+                "targetCPUUtilizationPercentage",
+                "annotations",
+                "labels"
+              ],
+              "title": "hpa",
+              "type": "object"
+            },
+            "init": {
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "default": true,
+                  "title": "enabled",
+                  "type": "boolean"
+                },
+                "extend": {
+                  "default": "",
+                  "title": "extend",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "enabled",
+                "extend"
+              ],
+              "title": "init",
+              "type": "object"
+            },
+            "labels": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "labels",
+              "type": "object"
+            },
+            "livenessProbe": {
+              "additionalProperties": false,
+              "properties": {
+                "disabled": {
+                  "default": false,
+                  "title": "disabled",
+                  "type": "boolean"
+                },
+                "initialDelaySeconds": {
+                  "default": 0,
+                  "title": "initialDelaySeconds",
+                  "type": "integer"
+                },
+                "periodSeconds": {
+                  "default": 10,
+                  "title": "periodSeconds",
+                  "type": "integer"
+                },
+                "timeoutSeconds": {
+                  "default": 3,
+                  "title": "timeoutSeconds",
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "disabled",
+                "initialDelaySeconds",
+                "periodSeconds",
+                "timeoutSeconds"
+              ],
+              "title": "livenessProbe",
+              "type": "object"
+            },
+            "nodeSelector": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "nodeSelector",
+              "type": "object"
+            },
+            "permanent_storage_class": {
+              "default": "null",
+              "title": "permanent_storage_class",
+              "type": "null"
+            },
+            "permanent_storage_size": {
+              "default": "null",
+              "title": "permanent_storage_size",
+              "type": "null"
+            },
+            "readinessProbe": {
+              "additionalProperties": false,
+              "properties": {
+                "disabled": {
+                  "default": false,
+                  "title": "disabled",
+                  "type": "boolean"
+                },
+                "initialDelaySeconds": {
+                  "default": 5,
+                  "title": "initialDelaySeconds",
+                  "type": "integer"
+                },
+                "periodSeconds": {
+                  "default": 10,
+                  "title": "periodSeconds",
+                  "type": "integer"
+                },
+                "timeoutSeconds": {
+                  "default": 3,
+                  "title": "timeoutSeconds",
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "disabled",
+                "initialDelaySeconds",
+                "periodSeconds",
+                "timeoutSeconds"
+              ],
+              "title": "readinessProbe",
+              "type": "object"
+            },
+            "replicaCount": {
+              "default": 2,
+              "title": "replicaCount",
+              "type": "integer"
+            },
+            "resources": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "resources",
+              "type": "object"
+            },
+            "service": {
+              "additionalProperties": false,
+              "properties": {
+                "port": {
+                  "default": 80,
+                  "title": "port",
+                  "type": "integer"
+                },
+                "targetPort": {
+                  "default": 80,
+                  "title": "targetPort",
+                  "type": "integer"
+                },
+                "type": {
+                  "default": "ClusterIP",
+                  "title": "type",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "port",
+                "targetPort"
+              ],
+              "title": "service",
+              "type": "object"
+            },
+            "tolerations": {
+              "items": {
+                "required": []
+              },
+              "title": "tolerations",
+              "type": "array"
+            }
+          },
+          "required": [
+            "enabled",
+            "replicaCount",
+            "service",
+            "livenessProbe",
+            "readinessProbe",
+            "hpa",
+            "annotations",
+            "init",
+            "cronjob",
+            "permanent_storage_size",
+            "permanent_storage_class",
+            "labels",
+            "nodeSelector",
+            "tolerations",
+            "affinity",
+            "resources",
+            "env"
+          ],
+          "title": "editoast",
+          "type": "object"
+        },
+        "gateway": {
+          "additionalProperties": false,
+          "properties": {
+            "affinity": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "affinity",
+              "type": "object"
+            },
+            "annotations": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "annotations",
+              "type": "object"
+            },
+            "config": {
+              "additionalProperties": false,
+              "properties": {
+                "auth": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "providers": {
+                      "items": {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "provider_id": {
+                                "default": "mocked",
+                                "title": "provider_id",
+                                "type": "string"
+                              },
+                              "type": {
+                                "default": "Mocked",
+                                "title": "type",
+                                "type": "string"
+                              },
+                              "username": {
+                                "default": "osrd-admin",
+                                "title": "username",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "provider_id",
+                              "username"
+                            ],
+                            "type": "object"
+                          }
+                        ],
+                        "required": []
+                      },
+                      "title": "providers",
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "providers"
+                  ],
+                  "title": "auth",
+                  "type": "object"
+                },
+                "railway_manager_interface": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "enabled": {
+                      "default": false,
+                      "title": "enabled",
+                      "type": "boolean"
+                    },
+                    "prefix": {
+                      "default": "/railway-manager",
+                      "title": "prefix",
+                      "type": "string"
+                    },
+                    "upstream": {
+                      "default": "",
+                      "title": "upstream",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "enabled",
+                    "prefix",
+                    "upstream"
+                  ],
+                  "title": "railway_manager_interface",
+                  "type": "object"
+                },
+                "tracing": {
+                  "additionalProperties": false,
+                  "description": " See https://github.com/OpenRailAssociation/osrd/blob/dev/gateway/README.md#config",
+                  "properties": {
+                    "config": {
+                      "additionalProperties": false,
+                      "required": [],
+                      "title": "config",
+                      "type": "object"
+                    },
+                    "enabled": {
+                      "default": false,
+                      "title": "enabled",
+                      "type": "boolean"
+                    },
+                    "type": {
+                      "default": "",
+                      "title": "type",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "enabled",
+                    "type",
+                    "config"
+                  ],
+                  "title": "tracing"
+                },
+                "trusted_proxies": {
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "string"
+                      }
+                    ],
+                    "required": []
+                  },
+                  "title": "trusted_proxies",
+                  "type": "array"
+                }
+              },
+              "required": [
+                "auth",
+                "railway_manager_interface",
+                "trusted_proxies"
+              ],
+              "title": "config",
+              "type": "object"
+            },
+            "enabled": {
+              "default": true,
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "env": {
+              "items": {
+                "required": []
+              },
+              "title": "env",
+              "type": "array"
+            },
+            "ingress": {
+              "additionalProperties": false,
+              "properties": {
+                "annotations": {
+                  "additionalProperties": false,
+                  "required": [],
+                  "title": "annotations",
+                  "type": "object"
+                },
+                "className": {
+                  "default": "",
+                  "title": "className",
+                  "type": "string"
+                },
+                "domains": {
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      }
+                    ],
+                    "required": []
+                  },
+                  "title": "domains",
+                  "type": "array"
+                },
+                "enabled": {
+                  "default": false,
+                  "title": "enabled",
+                  "type": "boolean"
+                },
+                "secretName": {
+                  "default": "osrd-gateway-tls",
+                  "title": "secretName",
+                  "type": "string"
+                },
+                "tls": {
+                  "items": {
+                    "required": []
+                  },
+                  "title": "tls",
+                  "type": "array"
+                }
+              },
+              "required": [
+                "enabled",
+                "className",
+                "domains",
+                "secretName",
+                "annotations",
+                "tls"
+              ],
+              "title": "ingress",
+              "type": "object"
+            },
+            "labels": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "labels",
+              "type": "object"
+            },
+            "livenessProbe": {
+              "additionalProperties": false,
+              "properties": {
+                "disabled": {
+                  "default": false,
+                  "title": "disabled",
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "disabled"
+              ],
+              "title": "livenessProbe",
+              "type": "object"
+            },
+            "nodeSelector": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "nodeSelector",
+              "type": "object"
+            },
+            "readinessProbe": {
+              "additionalProperties": false,
+              "properties": {
+                "disabled": {
+                  "default": false,
+                  "title": "disabled",
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "disabled"
+              ],
+              "title": "readinessProbe",
+              "type": "object"
+            },
+            "replicaCount": {
+              "default": 1,
+              "title": "replicaCount",
+              "type": "integer"
+            },
+            "resources": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "resources",
+              "type": "object"
+            },
+            "service": {
+              "additionalProperties": false,
+              "properties": {
+                "port": {
+                  "default": 80,
+                  "title": "port",
+                  "type": "integer"
+                },
+                "targetPort": {
+                  "default": 80,
+                  "title": "targetPort",
+                  "type": "integer"
+                },
+                "type": {
+                  "default": "ClusterIP",
+                  "title": "type",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "port",
+                "targetPort"
+              ],
+              "title": "service",
+              "type": "object"
+            },
+            "tolerations": {
+              "items": {
+                "required": []
+              },
+              "title": "tolerations",
+              "type": "array"
+            },
+            "volumeMounts": {
+              "items": {
+                "required": []
+              },
+              "title": "volumeMounts",
+              "type": "array"
+            },
+            "volumes": {
+              "items": {
+                "required": []
+              },
+              "title": "volumes",
+              "type": "array"
+            }
+          },
+          "required": [
+            "enabled",
+            "replicaCount",
+            "service",
+            "ingress",
+            "config",
+            "livenessProbe",
+            "readinessProbe",
+            "annotations",
+            "labels",
+            "nodeSelector",
+            "tolerations",
+            "affinity",
+            "resources",
+            "env",
+            "volumes",
+            "volumeMounts"
+          ],
+          "title": "gateway",
+          "type": "object"
+        },
+        "images": {
+          "additionalProperties": false,
+          "properties": {
+            "affinity": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "affinity",
+              "type": "object"
+            },
+            "annotations": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "annotations",
+              "type": "object"
+            },
+            "enabled": {
+              "default": true,
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "env": {
+              "items": {
+                "required": []
+              },
+              "title": "env",
+              "type": "array"
+            },
+            "labels": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "labels",
+              "type": "object"
+            },
+            "nodeSelector": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "nodeSelector",
+              "type": "object"
+            },
+            "replicaCount": {
+              "default": 1,
+              "title": "replicaCount",
+              "type": "integer"
+            },
+            "resources": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "resources",
+              "type": "object"
+            },
+            "service": {
+              "additionalProperties": false,
+              "properties": {
+                "port": {
+                  "default": 80,
+                  "title": "port",
+                  "type": "integer"
+                },
+                "targetPort": {
+                  "default": 80,
+                  "title": "targetPort",
+                  "type": "integer"
+                },
+                "type": {
+                  "default": "ClusterIP",
+                  "title": "type",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "port",
+                "targetPort"
+              ],
+              "title": "service",
+              "type": "object"
+            },
+            "tolerations": {
+              "items": {
+                "required": []
+              },
+              "title": "tolerations",
+              "type": "array"
+            }
+          },
+          "required": [
+            "replicaCount",
+            "enabled",
+            "service",
+            "annotations",
+            "labels",
+            "nodeSelector",
+            "tolerations",
+            "affinity",
+            "resources",
+            "env"
+          ],
+          "title": "images",
+          "type": "object"
+        },
+        "openfga": {
+          "additionalProperties": false,
+          "properties": {
+            "affinity": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "affinity",
+              "type": "object"
+            },
+            "annotations": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "annotations",
+              "type": "object"
+            },
+            "enabled": {
+              "default": false,
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "env": {
+              "items": {
+                "required": []
+              },
+              "title": "env",
+              "type": "array"
+            },
+            "labels": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "labels",
+              "type": "object"
+            },
+            "nodeSelector": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "nodeSelector",
+              "type": "object"
+            },
+            "readinessProbe": {
+              "additionalProperties": false,
+              "properties": {
+                "disabled": {
+                  "default": false,
+                  "title": "disabled",
+                  "type": "boolean"
+                },
+                "initialDelaySeconds": {
+                  "default": 5,
+                  "title": "initialDelaySeconds",
+                  "type": "integer"
+                },
+                "periodSeconds": {
+                  "default": 10,
+                  "title": "periodSeconds",
+                  "type": "integer"
+                },
+                "timeoutSeconds": {
+                  "default": 3,
+                  "title": "timeoutSeconds",
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "disabled",
+                "initialDelaySeconds",
+                "periodSeconds",
+                "timeoutSeconds"
+              ],
+              "title": "readinessProbe",
+              "type": "object"
+            },
+            "replicaCount": {
+              "default": 2,
+              "title": "replicaCount",
+              "type": "integer"
+            },
+            "resources": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "resources",
+              "type": "object"
+            },
+            "service": {
+              "additionalProperties": false,
+              "properties": {
+                "port": {
+                  "default": 80,
+                  "title": "port",
+                  "type": "integer"
+                },
+                "targetPort": {
+                  "default": 8080,
+                  "title": "targetPort",
+                  "type": "integer"
+                },
+                "type": {
+                  "default": "ClusterIP",
+                  "title": "type",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "port",
+                "targetPort"
+              ],
+              "title": "service",
+              "type": "object"
+            },
+            "tolerations": {
+              "items": {
+                "required": []
+              },
+              "title": "tolerations",
+              "type": "array"
+            }
+          },
+          "required": [
+            "enabled",
+            "replicaCount",
+            "service",
+            "readinessProbe",
+            "annotations",
+            "labels",
+            "nodeSelector",
+            "tolerations",
+            "affinity",
+            "resources",
+            "env"
+          ],
+          "title": "openfga",
+          "type": "object"
+        },
+        "osrdyne": {
+          "additionalProperties": false,
+          "properties": {
+            "affinity": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "affinity",
+              "type": "object"
+            },
+            "annotations": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "annotations",
+              "type": "object"
+            },
+            "config": {
+              "additionalProperties": false,
+              "properties": {
+                "api_address": {
+                  "default": "0.0.0.0:80",
+                  "title": "api_address",
+                  "type": "string"
+                },
+                "default_message_ttl": {
+                  "default": "",
+                  "title": "default_message_ttl",
+                  "type": "null"
+                },
+                "max_length": {
+                  "default": "",
+                  "title": "max_length",
+                  "type": "null"
+                },
+                "max_length_bytes": {
+                  "default": "",
+                  "title": "max_length_bytes",
+                  "type": "null"
+                },
+                "pool_id": {
+                  "default": "core",
+                  "title": "pool_id",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "pool_id",
+                "api_address",
+                "default_message_ttl",
+                "max_length",
+                "max_length_bytes"
+              ],
+              "title": "config",
+              "type": "object"
+            },
+            "enabled": {
+              "default": true,
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "env": {
+              "items": {
+                "required": []
+              },
+              "title": "env",
+              "type": "array"
+            },
+            "labels": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "labels",
+              "type": "object"
+            },
+            "livenessProbe": {
+              "additionalProperties": false,
+              "properties": {
+                "disabled": {
+                  "default": false,
+                  "title": "disabled",
+                  "type": "boolean"
+                },
+                "initialDelaySeconds": {
+                  "default": 5,
+                  "title": "initialDelaySeconds",
+                  "type": "integer"
+                },
+                "periodSeconds": {
+                  "default": 10,
+                  "title": "periodSeconds",
+                  "type": "integer"
+                },
+                "timeoutSeconds": {
+                  "default": 3,
+                  "title": "timeoutSeconds",
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "disabled",
+                "initialDelaySeconds",
+                "periodSeconds",
+                "timeoutSeconds"
+              ],
+              "title": "livenessProbe",
+              "type": "object"
+            },
+            "nodeSelector": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "nodeSelector",
+              "type": "object"
+            },
+            "readinessProbe": {
+              "additionalProperties": false,
+              "properties": {
+                "disabled": {
+                  "default": false,
+                  "title": "disabled",
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "disabled"
+              ],
+              "title": "readinessProbe",
+              "type": "object"
+            },
+            "replicaCount": {
+              "default": 1,
+              "title": "replicaCount",
+              "type": "integer"
+            },
+            "resources": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "resources",
+              "type": "object"
+            },
+            "service": {
+              "additionalProperties": false,
+              "properties": {
+                "port": {
+                  "default": 80,
+                  "title": "port",
+                  "type": "integer"
+                },
+                "targetPort": {
+                  "default": 80,
+                  "title": "targetPort",
+                  "type": "integer"
+                },
+                "type": {
+                  "default": "ClusterIP",
+                  "title": "type",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "port",
+                "targetPort"
+              ],
+              "title": "service",
+              "type": "object"
+            },
+            "tolerations": {
+              "items": {
+                "required": []
+              },
+              "title": "tolerations",
+              "type": "array"
+            }
+          },
+          "required": [
+            "enabled",
+            "replicaCount",
+            "service",
+            "livenessProbe",
+            "readinessProbe",
+            "config",
+            "annotations",
+            "labels",
+            "nodeSelector",
+            "tolerations",
+            "affinity",
+            "resources",
+            "env"
+          ],
+          "title": "osrdyne",
+          "type": "object"
+        },
+        "statefulEditoast": {
+          "additionalProperties": false,
+          "properties": {
+            "affinity": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "affinity",
+              "type": "object"
+            },
+            "annotations": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "annotations",
+              "type": "object"
+            },
+            "enabled": {
+              "default": true,
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "env": {
+              "items": {
+                "required": []
+              },
+              "title": "env",
+              "type": "array"
+            },
+            "labels": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "labels",
+              "type": "object"
+            },
+            "livenessProbe": {
+              "additionalProperties": false,
+              "properties": {
+                "disabled": {
+                  "default": false,
+                  "title": "disabled",
+                  "type": "boolean"
+                },
+                "initialDelaySeconds": {
+                  "default": 0,
+                  "title": "initialDelaySeconds",
+                  "type": "integer"
+                },
+                "periodSeconds": {
+                  "default": 10,
+                  "title": "periodSeconds",
+                  "type": "integer"
+                },
+                "timeoutSeconds": {
+                  "default": 3,
+                  "title": "timeoutSeconds",
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "disabled",
+                "initialDelaySeconds",
+                "periodSeconds",
+                "timeoutSeconds"
+              ],
+              "title": "livenessProbe",
+              "type": "object"
+            },
+            "nodeSelector": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "nodeSelector",
+              "type": "object"
+            },
+            "readinessProbe": {
+              "additionalProperties": false,
+              "properties": {
+                "disabled": {
+                  "default": false,
+                  "title": "disabled",
+                  "type": "boolean"
+                },
+                "initialDelaySeconds": {
+                  "default": 5,
+                  "title": "initialDelaySeconds",
+                  "type": "integer"
+                },
+                "periodSeconds": {
+                  "default": 10,
+                  "title": "periodSeconds",
+                  "type": "integer"
+                },
+                "timeoutSeconds": {
+                  "default": 3,
+                  "title": "timeoutSeconds",
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "disabled",
+                "initialDelaySeconds",
+                "periodSeconds",
+                "timeoutSeconds"
+              ],
+              "title": "readinessProbe",
+              "type": "object"
+            },
+            "replicaCount": {
+              "default": 1,
+              "title": "replicaCount",
+              "type": "integer"
+            },
+            "resources": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "resources",
+              "type": "object"
+            },
+            "service": {
+              "additionalProperties": false,
+              "properties": {
+                "port": {
+                  "default": 80,
+                  "title": "port",
+                  "type": "integer"
+                },
+                "targetPort": {
+                  "default": 80,
+                  "title": "targetPort",
+                  "type": "integer"
+                },
+                "type": {
+                  "default": "ClusterIP",
+                  "title": "type",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "port",
+                "targetPort"
+              ],
+              "title": "service",
+              "type": "object"
+            },
+            "tolerations": {
+              "items": {
+                "required": []
+              },
+              "title": "tolerations",
+              "type": "array"
+            }
+          },
+          "required": [
+            "enabled",
+            "replicaCount",
+            "service",
+            "livenessProbe",
+            "readinessProbe",
+            "annotations",
+            "labels",
+            "nodeSelector",
+            "tolerations",
+            "affinity",
+            "resources",
+            "env"
+          ],
+          "title": "statefulEditoast",
+          "type": "object"
+        }
+      },
+      "required": [
+        "openfga",
+        "osrdyne",
+        "images",
+        "core",
+        "gateway",
+        "editoast",
+        "statefulEditoast"
+      ],
+      "title": "services",
+      "type": "object"
+    },
+    "tolerations": {
+      "items": {
+        "required": []
+      },
+      "title": "tolerations",
+      "type": "array"
+    }
+  },
+  "required": [
+    "nameOverride",
+    "fullnameOverride",
+    "labels",
+    "nodeSelector",
+    "tolerations",
+    "affinity",
+    "imagePullSecrets",
+    "pullPolicy",
+    "images",
+    "services"
+  ],
+  "type": "object"
+}

@@ -27,6 +27,18 @@ helm install osrd oci://ghcr.io/openrailassociation/osrd-charts/osrd-dev --versi
 
 Check the `values.yaml` file.
 
+## Schema generation
+
+The `values.schema.json` is generated using the [helm-schema plugin](https://github.com/dadav/helm-schema).
+
+From the `chart/` directory, run:
+
+```bash
+helm schema -a -p
+```
+
+The CI will fail if the committed schema doesn't match the generated output.
+
 {{ template "chart.valuesSection" . }}
 
 
