@@ -1,4 +1,4 @@
-export const MANAGE_TIMETABLE_ITEM_TYPES = Object.freeze({
+export const MANAGE_TRAIN_SCHEDULE_TYPES = Object.freeze({
   none: 'NONE',
   add: 'ADD',
   edit: 'EDIT',

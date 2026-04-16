@@ -24,7 +24,7 @@ import UploadFileModal from 'common/uploadFileModal';
 import type { TrainScheduleWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 
-import { MANAGE_TIMETABLE_ITEM_TYPES } from '../../consts';
+import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../../consts';
 import useImportTimetableItems from '../ImportTimetableItem';
 import RoundTripsModal from '../RoundTrips/RoundTripsModal';
 import FilterPanel from './FilterPanel';
@@ -42,7 +42,7 @@ type TimetableToolbarProps = {
   setSelectedTimetableItemIds: (selectedTimetableItemIds: number[]) => void;
   setShowTrainDetails: (show: boolean) => void;
   setIsSelectMode: (show: boolean) => void;
-  setDisplayTimetableItemManagement: (mode: string) => void;
+  setDisplayTrainScheduleManagement: (mode: string) => void;
   refreshNge: () => Promise<void>;
   handleDeleteTimetableItems: () => void;
   handleMoveTimetableItems: () => void;
@@ -61,7 +61,7 @@ const TimetableToolbar = ({
   setShowTrainDetails,
   setIsSelectMode,
   setSelectedTimetableItemIds,
-  setDisplayTimetableItemManagement,
+  setDisplayTrainScheduleManagement,
   refreshNge,
   handleDeleteTimetableItems,
   handleMoveTimetableItems,
@@ -197,7 +197,7 @@ const TimetableToolbar = ({
                   title: t('timetable.importTimetableNetworkGraphFromCatalog'),
                   dataTestID: 'scenarios-import-timetable-by-catalog',
                   onClick: () =>
-                    setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.catalog),
+                    setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.catalog),
                 },
               ],
             }}
@@ -206,7 +206,7 @@ const TimetableToolbar = ({
             className="add-button"
             data-testid="scenarios-add-timetable-item-button"
             title={t('timetable.addTimetableItem')}
-            onClick={() => setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.add)}
+            onClick={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.add)}
             type="button"
           >
             <Plus />

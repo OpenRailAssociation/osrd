@@ -6,7 +6,7 @@ import {
   checkChangeGroups,
   updatePacedTrainExceptionsList,
 } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/buildPacedTrainException';
-import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/views/Scenario/consts';
+import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/views/Scenario/consts';
 import type { PacedTrainException } from 'common/api/osrdEditoastApi';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import { findExceptionWithOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
@@ -41,7 +41,7 @@ import {
 
 const useUpdateTimetableItem = (
   setIsWorking: (isWorking: boolean) => void,
-  setDisplayTimetableItemManagement: (type: string) => void,
+  setDisplayTrainScheduleManagement: (type: string) => void,
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void,
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void,
   trainScheduleToEditData?: TrainScheduleToEditData
@@ -90,7 +90,7 @@ const useUpdateTimetableItem = (
     }
 
     dispatch(clearAddedExceptionsList());
-    setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.none);
+    setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
     setTrainScheduleToEditData(undefined);
   };
 

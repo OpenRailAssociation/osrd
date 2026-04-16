@@ -24,7 +24,7 @@ import Timetable from './Timetable';
 import { copyTimetableItemsToClipboard } from './utils';
 
 type TimetableBoardWrapperProps = {
-  setDisplayTimetableItemManagement: (mode: string) => void;
+  setDisplayTrainScheduleManagement: (mode: string) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
   removeTimetableItems: (timetableItemsToRemove: number[]) => void;
@@ -38,7 +38,7 @@ type TimetableBoardWrapperProps = {
 };
 
 const TimetableBoardWrapper = ({
-  setDisplayTimetableItemManagement,
+  setDisplayTrainScheduleManagement,
   upsertTimetableItems,
   setTrainScheduleToEditData,
   removeTimetableItems,
@@ -290,7 +290,7 @@ const TimetableBoardWrapper = ({
       <Timetable
         selectedTimetableItemIds={selectedTimetableItemIds}
         setSelectedTimetableItemIds={setSelectedTimetableItemIds}
-        setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
+        setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
         upsertTimetableItems={upsertTimetableItems}
         setTrainScheduleToEditData={setTrainScheduleToEditData}
         removeAndUnselectTrains={removeTimetableItems}

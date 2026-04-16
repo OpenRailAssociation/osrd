@@ -7,7 +7,7 @@ import type { ImportTrainScheduleSetsPayload } from 'applications/operationalStu
 import { setFailure } from 'reducers/main';
 import { castErrorToFailure } from 'utils/error';
 
-import { MANAGE_TIMETABLE_ITEM_TYPES } from '../../consts';
+import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../../consts';
 import { TrainScheduleSetCatalogDialog } from '../ImportTrainScheduleSets';
 import ManageTrainSchedule from './ManageTrainSchedule';
 import ManageTrainScheduleLeftPanel, {
@@ -23,8 +23,8 @@ type ManageTrainScheduleModalProps = ManageTrainScheduleLeftPanelProps & {
 };
 
 const ManageTrainScheduleModal = ({
-  displayTimetableItemManagement,
-  setDisplayTimetableItemManagement,
+  displayTrainScheduleManagement,
+  setDisplayTrainScheduleManagement,
   upsertTimetableItems,
   trainScheduleToEditData,
   setTrainScheduleToEditData,
@@ -37,7 +37,7 @@ const ManageTrainScheduleModal = ({
   const handleImportTrainScheduleSets = async (data: ImportTrainScheduleSetsPayload) => {
     try {
       await importTrainScheduleSets(data);
-      setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.none);
+      setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
     } catch (error) {
       dispatch(setFailure(castErrorToFailure(error)));
     }
@@ -47,15 +47,15 @@ const ManageTrainScheduleModal = ({
     <div className="scenario-manage-timetable-item-modal">
       <ManageTrainScheduleContextProvider>
         <ManageTrainScheduleLeftPanel
-          displayTimetableItemManagement={displayTimetableItemManagement}
-          setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
+          displayTrainScheduleManagement={displayTrainScheduleManagement}
+          setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
           upsertTimetableItems={upsertTimetableItems}
           trainScheduleToEditData={trainScheduleToEditData}
           setTrainScheduleToEditData={setTrainScheduleToEditData}
         />
 
-        {(displayTimetableItemManagement === MANAGE_TIMETABLE_ITEM_TYPES.add ||
-          displayTimetableItemManagement === MANAGE_TIMETABLE_ITEM_TYPES.edit) && (
+        {(displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ||
+          displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit) && (
           <div
             className={`scenario-manage-timetable-item${collapsedTimetableEdit ? ' collapsed' : ''}`}
             data-testid="manage-timetable-item"
@@ -73,10 +73,10 @@ const ManageTrainScheduleModal = ({
           </div>
         )}
 
-        {displayTimetableItemManagement === MANAGE_TIMETABLE_ITEM_TYPES.catalog && (
+        {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.catalog && (
           <TrainScheduleSetCatalogDialog
             onSubmit={handleImportTrainScheduleSets}
-            onCancel={() => setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.none)}
+            onCancel={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none)}
           />
         )}
       </ManageTrainScheduleContextProvider>

@@ -41,7 +41,7 @@ import { addElementAtIndex } from 'utils/array';
 import { Duration } from 'utils/duration';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 
-import { MANAGE_TIMETABLE_ITEM_TYPES } from '../../../consts';
+import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../../../consts';
 import {
   createEmptyPathStep,
   ensureTrailingEmptyStep,
@@ -60,7 +60,7 @@ import { computePathStepCoordinates } from './utils';
 type ItineraryModalProps = {
   itineraryModalIsOpen: boolean;
   setItineraryModalIsOpen: (isOpen: boolean) => void;
-  displayTimetableItemManagement: string;
+  displayTrainScheduleManagement: string;
 };
 
 export type ItineraryModalFormState = {
@@ -74,7 +74,7 @@ export type ItineraryModalFormState = {
 const ItineraryModal = ({
   itineraryModalIsOpen,
   setItineraryModalIsOpen,
-  displayTimetableItemManagement,
+  displayTrainScheduleManagement,
 }: ItineraryModalProps) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTimetableItem.itineraryModal',
@@ -342,8 +342,8 @@ const ItineraryModal = ({
 
   useEffect(() => {
     if (
-      displayTimetableItemManagement === MANAGE_TIMETABLE_ITEM_TYPES.edit ||
-      displayTimetableItemManagement === MANAGE_TIMETABLE_ITEM_TYPES.add
+      displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit ||
+      displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add
     ) {
       const formattedPathSteps = storePathSteps
         .filter((pathStep): pathStep is PathStep => pathStep !== null)
@@ -358,7 +358,7 @@ const ItineraryModal = ({
 
       setPathSteps(ensureTrailingEmptyStep(formattedPathSteps));
     }
-  }, [storePathSteps, displayTimetableItemManagement]);
+  }, [storePathSteps, displayTrainScheduleManagement]);
 
   const pathfindingStepsWithLocations = useMemo(
     () =>
