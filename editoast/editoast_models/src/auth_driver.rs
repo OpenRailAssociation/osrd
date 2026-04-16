@@ -15,7 +15,6 @@ use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 
 use database::tables::*;
-use itertools::Either;
 use itertools::Itertools;
 use tracing::Level;
 
@@ -177,76 +176,6 @@ impl StorageDriver for PgAuthDriver {
             }
         })
         .await
-    }
-
-    #[tracing::instrument(skip_all, fields(identities, user = %user_identity), ret(level = Level::DEBUG), err)]
-    async fn add_user_identities(
-        &self,
-        user_identity: Either<i64, String>,
-        new_identities: &[String],
-    ) -> Result<bool, Self::Error> {
-        let conn = self.pool.get().await?;
-        conn.transaction(async move |conn| {
-            let existing_user = match user_identity {
-                Either::Left(user_id) => authn_user::table
-                    .left_join(authn_user_identity::table)
-                    .select(authn_user::id)
-                    .filter(authn_user::id.eq(user_id))
-                    .first::<i64>(conn.write().await.deref_mut())
-                    .await
-                    .optional()?,
-                Either::Right(identity) => authn_user::table
-                    .left_join(authn_user_identity::table)
-                    .select(authn_user::id)
-                    .filter(authn_user_identity::identity.eq(identity))
-                    .first::<i64>(conn.write().await.deref_mut())
-                    .await
-                    .optional()?,
-            };
-            match existing_user {
-                None => Ok(false),
-                Some(user_id) => {
-                    for new_identity in new_identities {
-                        let identity_owner = authn_user_identity::table
-                            .select(authn_user_identity::user_id)
-                            .filter(authn_user_identity::identity.eq(&new_identity))
-                            .first::<i64>(conn.write().await.deref_mut())
-                            .await
-                            .optional()?;
-                        match identity_owner {
-                            Some(same_owner_id) if same_owner_id == user_id => {
-                                tracing::warn!(
-                                    "The identity `{}` is already associated with the target user (user_id: {})",
-                                    new_identity,
-                                    user_id
-                                );
-                                continue;
-                            }
-                            Some(different_owner_id) => {
-                                tracing::warn!(
-                                    "Could not add to user `{}` the identity `{}` as it is already associated with another user (user_id: {})",
-                                    user_id,
-                                    new_identity,
-                                    different_owner_id
-                                );
-                                continue;
-                            }
-                            None => {
-                                dsl::insert_into(authn_user_identity::table)
-                                    .values(&vec![(
-                                        authn_user_identity::identity.eq(&new_identity),
-                                        authn_user_identity::user_id.eq(user_id),)])
-
-                                    .execute(&mut conn.write().await)
-                                .await
-                                .map_err(AuthDriverError::from)?;
-                        }
-                    }
-                }
-                Ok(true)
-            }
-        }
-        }).await
     }
 
     async fn infra_exists(&self, infra_id: i64) -> Result<bool, Self::Error> {

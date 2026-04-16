@@ -4,7 +4,6 @@ use std::future::Future;
 use fga::client::QueryError;
 use fga::client::UserList;
 use fga::model::Relation;
-use itertools::Either;
 use tracing::Level;
 
 use crate::Authorization;
@@ -73,12 +72,6 @@ pub trait StorageDriver: Clone {
         user_name: &UserName,
         user: &UserIdentity,
     ) -> impl Future<Output = Result<UserSubject, Self::Error>> + Send;
-
-    fn add_user_identities(
-        &self,
-        user_identity: Either<i64, String>,
-        new_identities: &[String],
-    ) -> impl Future<Output = Result<bool, Self::Error>> + Send;
 
     fn infra_exists(&self, infra_id: i64)
     -> impl Future<Output = Result<bool, Self::Error>> + Send;
