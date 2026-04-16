@@ -11,7 +11,6 @@ import {
   STDCM_TRAIN_TIMETABLE_ID,
 } from 'applications/stdcm/consts';
 import type {
-  StdcmProgressPoint,
   StdcmProgressPoints,
   StdcmRequestStatus,
   StdcmSimulation,
@@ -226,11 +225,6 @@ const useStdcm = ({
     try {
       const { subscribe, unsubscribe } = postTimetableByIdStdcm(payload);
       abortRequests.current = [unsubscribe];
-      // This Map acts as a spatial grid.
-      // The key is built from rounded coordinates (toFixed(1)),
-      // allowing nearby points to be grouped into the same grid cell
-      // and avoiding storing too many very close points
-      const pointsOnGrid = new Map<string, StdcmProgressPoint>();
 
       // We can receive many points at the same timestamp. To avoid displaying them at once,
       // we track the number of nodes received at the same timestamp to be able to add a delay
@@ -254,17 +248,7 @@ const useStdcm = ({
               geoPoint: event.data.point,
               animationStartTime: lastPointReceivedAt.timestamp + 10 * lastPointReceivedAt.nb,
             };
-            const newPointKey = newPoint.geoPoint.coordinates.map((n) => n.toFixed(1)).join('/');
-            const pointOnGrid = pointsOnGrid.get(newPointKey);
-
-            if (!pointOnGrid) {
-              pointsOnGrid.set(newPointKey, newPoint);
-              // If a point is already present, we check that its animation is ended before to replace it to avoid blink effect
-              // and we set that if this new point override a previous one
-            } else if (now - pointOnGrid.animationStartTime > 2000) {
-              pointsOnGrid.set(newPointKey, { ...newPoint, skipFadeIn: true });
-            }
-            progressPoints.current = [...pointsOnGrid.values()];
+            progressPoints.current = [...progressPoints.current, newPoint];
             break;
           }
           case 'completed': {
