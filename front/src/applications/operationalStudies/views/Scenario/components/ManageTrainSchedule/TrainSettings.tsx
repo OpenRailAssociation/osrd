@@ -31,7 +31,7 @@ import { isInvalidFloatNumber } from 'utils/numbers';
 import { SMALL_INPUT_MAX_LENGTH } from 'utils/strings';
 
 const TrainSettings = () => {
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
 
   const dispatch = useAppDispatch();
   const categoryOptions = useCategoryOptions();
@@ -69,7 +69,7 @@ const TrainSettings = () => {
           label={
             <>
               <MdOutlineDriveFileRenameOutline />
-              <span className="text-nowrap">{t('timetableItemName')}</span>
+              <span className="text-nowrap">{t('trainScheduleName')}</span>
             </>
           }
           id="timetable-item-name"
@@ -89,8 +89,8 @@ const TrainSettings = () => {
           label={
             <>
               <MdOutlineAccessTime />
-              {/* TODO TS2 : rename timetableItemDepartureTime key to timetableItemStartTime everywhere */}
-              <small className="text-nowrap">{t('timetableItemDepartureTime')}</small>
+              {/* TODO TS2 : rename trainScheduleDepartureTime key to trainScheduleStartTime everywhere */}
+              <small className="text-nowrap">{t('trainScheduleDepartureTime')}</small>
             </>
           }
           id="start-time"
@@ -128,7 +128,7 @@ const TrainSettings = () => {
           label={
             <>
               <SlSpeedometer />
-              <small className="text-nowrap">{t('timetableItemInitialSpeed')}</small>
+              <small className="text-nowrap">{t('trainScheduleInitialSpeed')}</small>
             </>
           }
           id="initial-speed"

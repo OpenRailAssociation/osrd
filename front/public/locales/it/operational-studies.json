@@ -21,7 +21,7 @@
     "train_other": "{{count}} treni",
     "train_zero": "0 treni"
   },
-  "manageTimetableItem": {
+  "manageTrainSchedule": {
     "itineraryModal": {
       "opType": "Tipo",
       "track": "Binario"

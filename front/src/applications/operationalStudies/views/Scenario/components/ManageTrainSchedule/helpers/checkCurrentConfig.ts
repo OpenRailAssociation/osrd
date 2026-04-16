@@ -9,7 +9,7 @@ import { MAX_TIMEWINDOW_MINUTES } from '../consts';
 
 const checkCurrentConfig = (
   osrdconf: OperationalStudiesConfState,
-  t: TFunction<'operational-studies', 'manageTimetableItem'>,
+  t: TFunction<'operational-studies', 'manageTrainSchedule'>,
   dispatch: Dispatch,
   // TODO TS2 : remove this when rollingStockName will replace rollingStockId in the store
   rollingStockName?: string
@@ -28,7 +28,7 @@ const checkCurrentConfig = (
     error = true;
     dispatch(
       setFailure({
-        name: t('errorMessages.timetableItemTitle'),
+        name: t('errorMessages.trainScheduleTitle'),
         message: t('errorMessages.noOrigin'),
       })
     );
@@ -37,7 +37,7 @@ const checkCurrentConfig = (
     error = true;
     dispatch(
       setFailure({
-        name: t('errorMessages.timetableItemTitle'),
+        name: t('errorMessages.trainScheduleTitle'),
         message: t('errorMessages.noDepartureTime'),
       })
     );
@@ -46,7 +46,7 @@ const checkCurrentConfig = (
     error = true;
     dispatch(
       setFailure({
-        name: t('errorMessages.timetableItemTitle'),
+        name: t('errorMessages.trainScheduleTitle'),
         message: t('errorMessages.noDestination'),
       })
     );
@@ -55,7 +55,7 @@ const checkCurrentConfig = (
     error = true;
     dispatch(
       setFailure({
-        name: t('errorMessages.timetableItemTitle'),
+        name: t('errorMessages.trainScheduleTitle'),
         message: t('errorMessages.noRollingStock'),
       })
     );
@@ -64,7 +64,7 @@ const checkCurrentConfig = (
     error = true;
     dispatch(
       setFailure({
-        name: t('errorMessages.timetableItemTitle'),
+        name: t('errorMessages.trainScheduleTitle'),
         message: t('errorMessages.noName'),
       })
     );
@@ -74,7 +74,7 @@ const checkCurrentConfig = (
     error = true;
     dispatch(
       setFailure({
-        name: t('errorMessages.timetableItemTitle'),
+        name: t('errorMessages.trainScheduleTitle'),
         message: t('errorMessages.invalidInitialSpeed'),
       })
     );
@@ -86,7 +86,7 @@ const checkCurrentConfig = (
       error = true;
       dispatch(
         setFailure({
-          name: t('errorMessages.timetableItemTitle'),
+          name: t('errorMessages.trainScheduleTitle'),
           message: t('errorMessages.tooLowValue', {
             value: t('pacedTrains.interval').toLowerCase(),
           }),
@@ -97,7 +97,7 @@ const checkCurrentConfig = (
       error = true;
       dispatch(
         setFailure({
-          name: t('errorMessages.timetableItemTitle'),
+          name: t('errorMessages.trainScheduleTitle'),
           message: t('errorMessages.tooLowValue', {
             value: t('pacedTrains.timeWindow').toLowerCase(),
           }),
@@ -108,7 +108,7 @@ const checkCurrentConfig = (
       error = true;
       dispatch(
         setFailure({
-          name: t('errorMessages.timetableItemTitle'),
+          name: t('errorMessages.trainScheduleTitle'),
           message: t('errorMessages.tooHighValue', {
             value: t('pacedTrains.timeWindow').toLowerCase(),
           }),

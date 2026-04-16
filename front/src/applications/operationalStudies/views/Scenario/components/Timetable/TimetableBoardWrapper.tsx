@@ -98,7 +98,7 @@ const TimetableBoardWrapper = ({
   // --- BOARD WRAPPER TITLE MANAGEMENT -------------------------
   const computedItemLabel = useCallback(() => {
     if (totalUniqueTrainCount === 0 && totalPacedTrainCount === 0)
-      return t('main.timetable.noItem');
+      return t('main.timetable.noTrainSchedule');
 
     const pacedTrainLabel =
       selectedPacedTrainIds.length > 0
@@ -148,7 +148,7 @@ const TimetableBoardWrapper = ({
     currentSelectedTrainId?: TrainId,
     hideToast: boolean = false
   ) => {
-    const itemsCount = selectedTimetableItemIds.length;
+    const trainSchedulesCount = selectedTimetableItemIds.length;
 
     const isSelectedTimetableItemInSelection =
       currentSelectedTrainId !== undefined &&
@@ -172,7 +172,9 @@ const TimetableBoardWrapper = ({
       if (!hideToast) {
         dispatch(
           setSuccess({
-            title: t('main.timetable.itemsSelectionDeletedCount', { count: itemsCount }),
+            title: t('main.timetable.trainSchedulesSelectionDeletedCount', {
+              count: trainSchedulesCount,
+            }),
             text: '',
           })
         );

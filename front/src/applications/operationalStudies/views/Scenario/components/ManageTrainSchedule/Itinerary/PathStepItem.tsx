@@ -85,7 +85,7 @@ const PathStepItem = ({
   onCancelMapSelection,
 }: PathStepProps) => {
   const { t } = useTranslation('operational-studies', {
-    keyPrefix: 'manageTimetableItem.itineraryModal',
+    keyPrefix: 'manageTrainSchedule.itineraryModal',
   });
   const { t: tMain } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const dispatch = useAppDispatch();

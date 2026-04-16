@@ -50,7 +50,7 @@ import TrainSettings from './TrainSettings';
 const ManageTrainSchedule = () => {
   const [showTrainSettings, setShowTrainSettings] = useState(true);
   const dispatch = useAppDispatch();
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   const {
     pathProperties,
     voltageRanges,

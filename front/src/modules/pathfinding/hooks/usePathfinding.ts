@@ -49,7 +49,7 @@ const usePathfinding = ({
 }: {
   rollingStockId: number | undefined;
 }) => {
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   const dispatch = useAppDispatch();
   const pathSteps = useSelector(getPathSteps);
   const speedLimitByTag = useSelector(getOperationalStudiesSpeedLimitByTag);

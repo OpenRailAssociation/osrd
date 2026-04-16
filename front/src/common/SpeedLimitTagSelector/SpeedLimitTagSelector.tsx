@@ -25,7 +25,7 @@ const SpeedLimitTagSelector = ({
   showPlaceHolder = false,
   narrow = false,
 }: SpeedLimitTagSelectorProps) => {
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
 
   if (!speedLimitTags.length) return null;
   return (

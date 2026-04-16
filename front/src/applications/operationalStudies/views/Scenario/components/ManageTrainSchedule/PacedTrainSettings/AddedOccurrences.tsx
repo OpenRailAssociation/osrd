@@ -14,7 +14,7 @@ const AddedOccurrences = () => {
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const addedExceptions = useSelector(getAddedExceptions);
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   const dispatch = useAppDispatch();
 
   useEffect(() => {

@@ -5,7 +5,7 @@ import { useScenarioContext } from 'applications/operationalStudies/hooks/useSce
 import {
   checkChangeGroups,
   updatePacedTrainExceptionsList,
-} from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/buildPacedTrainException';
+} from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/buildPacedTrainException';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/views/Scenario/consts';
 import type { PacedTrainException } from 'common/api/osrdEditoastApi';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
@@ -47,7 +47,7 @@ const useUpdateTimetableItem = (
   trainScheduleToEditData?: TrainScheduleToEditData
 ) => {
   const { t } = useTranslation('operational-studies', {
-    keyPrefix: 'manageTimetableItem',
+    keyPrefix: 'manageTrainSchedule',
   });
   const dispatch = useAppDispatch();
 

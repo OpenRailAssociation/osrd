@@ -77,7 +77,7 @@ const ItineraryModal = ({
   displayTrainScheduleManagement,
 }: ItineraryModalProps) => {
   const { t } = useTranslation('operational-studies', {
-    keyPrefix: 'manageTimetableItem.itineraryModal',
+    keyPrefix: 'manageTrainSchedule.itineraryModal',
   });
   const storePathSteps = useSelector(getPathSteps);
   const category = useSelector(getCategory);

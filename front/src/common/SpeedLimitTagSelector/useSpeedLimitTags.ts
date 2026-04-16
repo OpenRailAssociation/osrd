@@ -19,7 +19,7 @@ import { castErrorToFailure } from 'utils/error';
  */
 const useSpeedLimitTags = () => {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
 
   const infraID = useInfraID();
 

@@ -13,7 +13,7 @@ type Props = {
 const ConstraintDistributionSwitch = ({ constraintDistribution }: Props) => {
   const dispatch = useAppDispatch();
   const [constraint, setConstraint] = useState(constraintDistribution);
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
 
   useEffect(() => {
     dispatch(updateConstraintDistribution(constraint));

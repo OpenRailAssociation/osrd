@@ -14,7 +14,7 @@ import AddedOccurrences from './AddedOccurrences';
 const PacedTrainSettings = () => {
   const timeWindow = useSelector(getTimeWindow).total('minute');
   const interval = useSelector(getInterval).total('minute');
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   const dispatch = useAppDispatch();
 
   return (

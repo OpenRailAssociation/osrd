@@ -39,7 +39,7 @@ const AddPathStepPopup = ({
   resetFeatureInfoClick,
 }: AddPathStepPopupProps) => {
   const { launchPathfinding } = useManageTrainScheduleContext();
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   const origin = useSelector(getOrigin);
   const destination = useSelector(getDestination);
 

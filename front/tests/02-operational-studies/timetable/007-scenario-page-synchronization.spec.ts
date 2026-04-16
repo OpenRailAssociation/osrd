@@ -13,13 +13,13 @@ import sendTrains from '../../utils/send-trains';
 import { deleteScenario } from '../../utils/teardown-utils';
 import type {
   CommonTranslations,
-  ManageTimetableItemTranslations,
+  ManageTrainScheduleTranslations,
   TimetableFilterTranslations,
 } from '../../utils/types';
 
-const frManageTimetableItemTranslations: ManageTimetableItemTranslations = readJsonFile<{
-  manageTimetableItem: ManageTimetableItemTranslations;
-}>('public/locales/fr/operational-studies.json').manageTimetableItem;
+const frManageTrainScheduleTranslations: ManageTrainScheduleTranslations = readJsonFile<{
+  manageTrainSchedule: ManageTrainScheduleTranslations;
+}>('public/locales/fr/operational-studies.json').manageTrainSchedule;
 
 const frScenarioTranslations: TimetableFilterTranslations = readJsonFile<{
   main: TimetableFilterTranslations;
@@ -28,7 +28,7 @@ const frScenarioTranslations: TimetableFilterTranslations = readJsonFile<{
 const frCommonTranslations: CommonTranslations = readJsonFile('public/locales/fr/translation.json');
 
 const frTranslations = {
-  ...frManageTimetableItemTranslations,
+  ...frManageTrainScheduleTranslations,
   ...frScenarioTranslations,
   ...frCommonTranslations,
 };

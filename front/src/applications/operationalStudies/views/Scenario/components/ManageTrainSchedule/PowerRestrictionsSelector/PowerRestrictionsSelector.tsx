@@ -26,7 +26,7 @@ const PowerRestrictionsSelector = ({
   rollingStockPowerRestrictions,
   pathProperties,
 }: PowerRestrictionsSelectorProps) => {
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
 
   const {
     ranges,

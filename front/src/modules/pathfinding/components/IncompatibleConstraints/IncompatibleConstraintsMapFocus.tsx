@@ -12,7 +12,7 @@ type IncompatibleConstraintsMapFocusProps = HTMLAttributes<unknown> & {
 
 const IncompatibleConstraintsMapFocus = (props: IncompatibleConstraintsMapFocusProps) => {
   const map = useMap();
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   const { geojson, ...attrs } = props;
 
   const mapFocusOnPath = useCallback(

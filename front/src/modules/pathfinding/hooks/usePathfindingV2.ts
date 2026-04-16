@@ -13,7 +13,7 @@ import { useRollingStockContext } from 'common/RollingStockContext';
 import type { PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
 
 const usePathfindingV2 = () => {
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
 
   const { infraId } = useScenarioContext();
   const { rollingStocks } = useRollingStockContext();

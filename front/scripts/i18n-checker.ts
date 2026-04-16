@@ -22,9 +22,9 @@ const IGNORE_UNUSED: RegExp[] = [
   /Editor\.item-statuses\..*/,
   /translation:Editor\.infra-errors\.error-type\..*/, // Infra error types are generated
 
-  // Manage timetable item
-  /operational-studies:manageTimetableItem.errorMessages\..*/,
-  /operational-studies:manageTimetableItem.pathfindingErrors\.pathfinding_failure/,
+  // Manage train schedule
+  /operational-studies:manageTrainSchedule.errorMessages\..*/,
+  /operational-studies:manageTrainSchedule.pathfindingErrors\.pathfinding_failure/,
 
   // Project
   /operational-studies:main\.pacedTrain/,
