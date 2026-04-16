@@ -1,5 +1,5 @@
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
-import { getPowerRestrictionsWarnings } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/PowerRestrictionsSelector/helpers/powerRestrictionWarnings';
+import { getPowerRestrictionsWarnings } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/PowerRestrictionsSelector/helpers/powerRestrictionWarnings';
 import type { PowerRestrictionItem, RollingStock } from 'common/api/osrdEditoastApi';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
