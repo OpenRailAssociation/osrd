@@ -102,6 +102,7 @@ export default [
           devDependencies: [
             '**/*.spec.ts',
             '**/__tests__/**',
+            '**/__mocks__/**',
             'tests/**',
             'scripts/**',
             'eslint.config.js',
