@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { RiMapPin2Fill } from 'react-icons/ri';
 import { useSelector } from 'react-redux';
 
-import { useManageTimetableItemContext } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
+import { useManageTrainScheduleContext } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
 import { isPathStepInvalid } from 'modules/pathfinding/utils';
 import { getOrigin, getPathSteps } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import { formatUicToCi } from 'utils/strings';
@@ -18,7 +18,7 @@ const Origin = ({ zoomToFeaturePoint }: OriginProps) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTimetableItem',
   });
-  const { launchPathfinding } = useManageTimetableItemContext();
+  const { launchPathfinding } = useManageTrainScheduleContext();
 
   const origin = useSelector(getOrigin);
   const pathSteps = useSelector(getPathSteps);

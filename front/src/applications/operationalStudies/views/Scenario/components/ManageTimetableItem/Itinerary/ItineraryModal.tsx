@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import useCategoryColors from 'applications/operationalStudies/hooks/useCategoryColors';
-import { useManageTimetableItemContext } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
+import { useManageTrainScheduleContext } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
 import { useOperationalPointSearch } from 'applications/operationalStudies/hooks/useOperationalPointSearch';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type {
@@ -147,7 +147,7 @@ const ItineraryModal = ({
     reopenSuggestionsForStep,
   } = useOperationalPointSearch({});
 
-  const { launchPathfinding } = useManageTimetableItemContext();
+  const { launchPathfinding } = useManageTrainScheduleContext();
 
   const { pathStepsMetadataById } = usePathStepsMetadata(pathSteps, pendingStepIdRef);
   const { launchPathfindingV2, pathProperties, pathfindingError } = usePathfindingV2();

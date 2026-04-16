@@ -1,7 +1,7 @@
 import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
 import { useDispatch } from 'react-redux';
 
-import { ManageTimetableItemContextProvider } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
+import { ManageTrainScheduleContextProvider } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
 import type useScenarioTrainScheduleSet from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
 import type { ImportTrainScheduleSetsPayload } from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
 import { setFailure } from 'reducers/main';
@@ -45,7 +45,7 @@ const ManageTimetableItemModal = ({
 
   return (
     <div className="scenario-manage-timetable-item-modal">
-      <ManageTimetableItemContextProvider>
+      <ManageTrainScheduleContextProvider>
         <ManageTimetableItemLeftPanel
           displayTimetableItemManagement={displayTimetableItemManagement}
           setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
@@ -79,7 +79,7 @@ const ManageTimetableItemModal = ({
             onCancel={() => setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.none)}
           />
         )}
-      </ManageTimetableItemContextProvider>
+      </ManageTrainScheduleContextProvider>
     </div>
   );
 };

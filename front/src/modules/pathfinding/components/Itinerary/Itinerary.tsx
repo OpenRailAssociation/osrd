@@ -7,7 +7,7 @@ import { compact, isNil } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { useManageTimetableItemContext } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
+import { useManageTrainScheduleContext } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import Pathfinding from 'modules/pathfinding/components/Pathfinding';
@@ -41,7 +41,7 @@ const Itinerary = ({ rollingStockId }: { rollingStockId: number | undefined }) =
   const { openModal } = useModal();
 
   const { pathProperties, launchPathfinding, pathStepsAndSuggestedOPs } =
-    useManageTimetableItemContext();
+    useManageTrainScheduleContext();
 
   const mapSettings = useMapSettings();
   const { updateViewport } = useMapSettingsActions();

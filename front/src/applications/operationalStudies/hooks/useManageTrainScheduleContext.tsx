@@ -20,7 +20,7 @@ import type { PathStep } from 'reducers/osrdconf/types';
 import type { ManageTrainSchedulePathProperties } from '../types';
 import { useScenarioContext } from './useScenarioContext';
 
-type ManageTimetableItemContext = {
+type ManageTrainScheduleContext = {
   pathProperties?: ManageTrainSchedulePathProperties;
   voltageRanges: RangedValue[];
   launchPathfinding: (
@@ -34,13 +34,13 @@ type ManageTimetableItemContext = {
   pathStepsAndSuggestedOPs?: SuggestedOP[];
 } | null;
 
-const ManageTimetableItemContext = createContext<ManageTimetableItemContext>(null);
+const ManageTrainScheduleContext = createContext<ManageTrainScheduleContext>(null);
 
-type ManageTimetableItemContextProviderProps = { children: ReactNode };
+type ManageTrainScheduleContextProviderProps = { children: ReactNode };
 
-export const ManageTimetableItemContextProvider = ({
+export const ManageTrainScheduleContextProvider = ({
   children,
-}: ManageTimetableItemContextProviderProps) => {
+}: ManageTrainScheduleContextProviderProps) => {
   const pathSteps = useSelector(getPathSteps);
   const { t, i18n } = useTranslation('operational-studies');
 
@@ -80,17 +80,17 @@ export const ManageTimetableItemContextProvider = ({
   );
 
   return (
-    <ManageTimetableItemContext.Provider value={providedContext}>
+    <ManageTrainScheduleContext.Provider value={providedContext}>
       {children}
-    </ManageTimetableItemContext.Provider>
+    </ManageTrainScheduleContext.Provider>
   );
 };
 
-export const useManageTimetableItemContext = () => {
-  const context = useContext(ManageTimetableItemContext);
+export const useManageTrainScheduleContext = () => {
+  const context = useContext(ManageTrainScheduleContext);
   if (!context) {
     throw new Error(
-      'useManageTimetableItemContext must be used within a ManageTimetableItemContext'
+      'useManageTrainScheduleContext must be used within a ManageTrainScheduleContext'
     );
   }
   return context;
