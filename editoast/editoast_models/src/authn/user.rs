@@ -19,6 +19,15 @@ pub struct User {
     pub name: String,
 }
 
+#[derive(Debug, thiserror::Error, derive_more::From)]
+pub enum AddIdentitiesError {
+    #[error("duplicate identity \"{0}\"")]
+    DuplicateIdentity(String),
+    #[error(transparent)]
+    #[from(forward)]
+    Error(crate::Error),
+}
+
 impl User {
     /// Inserts a new [User], fails if the identity is already associated with another user
     #[tracing::instrument(skip(conn), ret(level = "debug"), err)]
@@ -26,30 +35,73 @@ impl User {
         conn: DbConnection,
         identities: Vec<String>,
         name: String,
-    ) -> Result<User, database::DatabaseError> {
+    ) -> Result<User, AddIdentitiesError> {
         conn.transaction(async move |conn| {
             let id = diesel::dsl::insert_into(authn_user::table)
                 .values(authn_user::name.eq(&name))
                 .returning(authn_user::id)
                 .get_result::<i64>(&mut conn.write().await)
                 .await?;
-            diesel::dsl::insert_into(authn_user_identity::table)
-                .values(
-                    identities
-                        .iter()
-                        .map(|identity| {
-                            (
-                                authn_user_identity::identity.eq(identity),
-                                authn_user_identity::user_id.eq(id),
-                            )
-                        })
-                        .collect_vec(),
-                )
-                .execute(&mut conn.write().await)
-                .await?;
-            Ok(Self { id, name })
+            let user = Self { id, name };
+            user.add_identities(conn, identities).await?;
+            Ok(user)
         })
         .await
+    }
+
+    /// Add one or more identity to this user
+    ///
+    /// Remember a model is valid in the scope of its transaction. So better run
+    /// this method in a transaction to avoid races.
+    #[tracing::instrument(skip_all, err)]
+    pub async fn add_identities(
+        &self,
+        conn: DbConnection,
+        identities: impl IntoIterator<Item = String>,
+    ) -> Result<(), AddIdentitiesError> {
+        let mut conn = conn.write().await;
+        match diesel::dsl::insert_into(authn_user_identity::table)
+            .values(
+                identities
+                    .into_iter()
+                    .map(|identity| {
+                        (
+                            authn_user_identity::user_id.eq(self.id),
+                            authn_user_identity::identity.eq(identity),
+                        )
+                    })
+                    .collect_vec(),
+            )
+            .execute(&mut conn)
+            .await
+            .map_err(crate::Error::from)
+        {
+            Ok(_) => Ok(()),
+            Err(crate::Error::UniqueViolation {
+                constraint,
+                column: _,
+                value,
+            }) if &constraint == "authn_user_identity_identity_key" => {
+                Err(AddIdentitiesError::DuplicateIdentity(value))
+            }
+            Err(err) => Err(AddIdentitiesError::from(err)),
+        }
+    }
+
+    /// Return the identities for this user
+    ///
+    /// Remember a model is valid in the scope of its transaction. So better run
+    /// this method in a transaction to avoid races.
+    #[tracing::instrument(skip_all, err)]
+    pub async fn get_identities(
+        &self,
+        conn: DbConnection,
+    ) -> Result<Vec<UserIdentity>, database::DatabaseError> {
+        Ok(authn_user_identity::table
+            .select(authn_user_identity::identity)
+            .filter(authn_user_identity::user_id.eq(self.id))
+            .load::<String>(conn.write().await.deref_mut())
+            .await?)
     }
 
     /// Return the [User] with the provided identity, if any
@@ -262,6 +314,36 @@ mod tests {
                     identities: vec!["bob".to_owned()],
                 },
             ]
+        );
+    }
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn add_duplicate_identity_fails() {
+        let pool = database::DbConnectionPoolV2::for_tests();
+        let conn = pool.get_ok();
+
+        let user = User::register(conn.clone(), vec!["toto".to_owned()], "Toto".to_owned())
+            .await
+            .unwrap();
+
+        user.add_identities(
+            conn.clone(),
+            vec!["titi".to_owned(), "grosminet".to_owned()],
+        )
+        .await
+        .expect("adding new identities should succeed");
+
+        user.add_identities(conn.clone(), vec!["toto".to_owned()])
+            .await
+            .expect_err("adding duplicate identity should fail");
+
+        assert_eq!(
+            user.get_identities(conn)
+                .await
+                .unwrap()
+                .iter()
+                .sorted()
+                .collect_vec(),
+            vec!["grosminet", "titi", "toto"]
         );
     }
 }

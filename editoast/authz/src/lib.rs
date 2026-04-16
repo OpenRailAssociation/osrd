@@ -133,8 +133,6 @@ mod mock_driver {
     use std::sync::Mutex;
     use std::sync::RwLock;
 
-    use itertools::Either;
-
     use crate::InfraGrant;
     use crate::Regulator;
     use crate::Role;
@@ -300,31 +298,6 @@ mod mock_driver {
 
         async fn infra_exists(&self, _infra_id: i64) -> Result<bool, Self::Error> {
             // Mock implementation, always return true
-            Ok(true)
-        }
-
-        async fn add_user_identities(
-            &self,
-            user_identity: Either<i64, String>,
-            new_identities: &[String],
-        ) -> Result<bool, Self::Error> {
-            let mut map = self.users.lock().unwrap();
-            let user_id = match user_identity {
-                Either::Left(user_id) => map
-                    .iter()
-                    .find(|(_, id)| **id == user_id)
-                    .map(|(_, id)| *id),
-                Either::Right(identity) => map.get(&identity).copied(),
-            };
-            match user_id {
-                Some(user_id) => map.extend(
-                    new_identities
-                        .iter()
-                        .map(ToString::to_string)
-                        .zip(std::iter::repeat(user_id)),
-                ),
-                None => return Ok(false),
-            };
             Ok(true)
         }
     }

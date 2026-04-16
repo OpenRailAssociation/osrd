@@ -1,4 +1,5 @@
 use anyhow::anyhow;
+use anyhow::bail;
 use authz;
 use authz::StorageDriver;
 use authz::identity::GroupInfo;
@@ -8,12 +9,11 @@ use clap::Subcommand;
 use database::DbConnectionPoolV2;
 use editoast_models::PgAuthDriver;
 use editoast_models::User;
+use editoast_models::authn::user::AddIdentitiesError;
 use editoast_models::authn::user::UserWithIdentities;
 use editoast_models::prelude::*;
 use futures::TryStreamExt as _;
 use futures::future::try_join_all;
-use itertools::Either;
-
 use std::collections::HashSet;
 use std::sync::Arc;
 
@@ -29,7 +29,7 @@ pub enum UserCommand {
     Info(InfoArgs),
     /// Delete a user
     Delete(DeleteArgs),
-    /// Add identities to a new or an already existing user
+    /// Add identities to an existing user
     AddIdentities(AddIdentitiesArg),
 }
 
@@ -129,18 +129,17 @@ pub async fn list_user(
 }
 
 /// Add a user
-pub async fn add_user(args: AddArgs, pool: Arc<DbConnectionPoolV2>) -> anyhow::Result<()> {
-    let driver = PgAuthDriver::new(pool);
-    if args.identities.is_empty() {
+pub async fn add_user(
+    AddArgs { name, identities }: AddArgs,
+    pool: Arc<DbConnectionPoolV2>,
+) -> anyhow::Result<()> {
+    if identities.is_empty() {
         println!("No identities provided.");
         return Ok(());
     }
-    let created_user = driver
-        .ensure_user(&args.name.unwrap_or_default(), &args.identities[0])
-        .await?;
-    driver
-        .add_user_identities(Either::Left(created_user.id), &args.identities[1..])
-        .await?;
+    let conn = pool.get().await?;
+    let created_user =
+        editoast_models::User::register(conn, identities, name.unwrap_or_default()).await?;
     println!("User added with id: {}", created_user.id);
     Ok(())
 }
@@ -218,14 +217,111 @@ pub async fn add_identities(
     }: AddIdentitiesArg,
     pool: Arc<DbConnectionPoolV2>,
 ) -> anyhow::Result<()> {
-    let driver = PgAuthDriver::new(pool);
-    let user_identity = match (user_id, user_identity) {
-        (Some(user_id), _) => Either::Left(user_id),
-        (_, Some(identity)) => Either::Right(identity.clone()),
-        _ => unreachable!("ensured by clap"),
+    let conn = pool.get().await?;
+    let user = match (user_id, user_identity) {
+        (Some(user_id), None) => editoast_models::User::retrieve(conn.clone(), user_id).await?,
+        (None, Some(identity)) => {
+            editoast_models::User::retrieve_by_identity(&identity, conn.clone()).await?
+        }
+        (Some(_), Some(_)) => unreachable!("ensured by clap"),
+        (None, None) => bail!("either a user ID or a user identity must be provided"),
     };
-    driver
-        .add_user_identities(user_identity.clone(), &new_identities)
-        .await?;
+    let Some(user) = user else {
+        bail!("no such user");
+    };
+    let mut identities = HashSet::<_>::from_iter(new_identities);
+    while !identities.is_empty() {
+        match user.add_identities(conn.clone(), identities.clone()).await {
+            Ok(()) => return Ok(()),
+            Err(AddIdentitiesError::DuplicateIdentity(identity)) => {
+                tracing::warn!(identity, "duplicate identity");
+                identities.remove(&identity);
+            }
+            Err(AddIdentitiesError::Error(err)) => return Err(err.into()),
+        }
+    }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use editoast_models::authn::user::User;
+    use itertools::Itertools as _;
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn add_identities_multiple_times() {
+        let pool = Arc::new(database::DbConnectionPoolV2::for_tests());
+
+        let conn = pool.get_ok();
+        let user = User::register(conn.clone(), vec!["toto".to_owned()], "Toto".to_owned())
+            .await
+            .expect("user should be created");
+
+        add_identities(
+            AddIdentitiesArg {
+                user_id: Some(user.id),
+                user_identity: None,
+                new_identities: vec!["titi".to_owned(), "grosminet".to_owned()],
+            },
+            pool.clone(),
+        )
+        .await
+        .expect("new identities should succeed");
+
+        add_identities(
+            AddIdentitiesArg {
+                user_id: Some(user.id),
+                user_identity: None,
+                new_identities: vec![
+                    "mémé".to_owned(),
+                    "grosminet".to_owned(),
+                    "hector".to_owned(),
+                ],
+            },
+            pool.clone(),
+        )
+        .await
+        .expect("partially new identities should succeed");
+
+        assert_eq!(
+            user.get_identities(conn)
+                .await
+                .unwrap()
+                .iter()
+                .sorted()
+                .collect_vec(),
+            vec!["grosminet", "hector", "mémé", "titi", "toto"]
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn add_identities_wrong_user_id() {
+        let pool = Arc::new(database::DbConnectionPoolV2::for_tests());
+        add_identities(
+            AddIdentitiesArg {
+                user_id: Some(i64::MAX),
+                user_identity: None,
+                new_identities: vec!["won't_be_added".to_owned()],
+            },
+            pool,
+        )
+        .await
+        .expect_err("should fail for unknown user id");
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn add_identities_wrong_identity() {
+        let pool = Arc::new(database::DbConnectionPoolV2::for_tests());
+        add_identities(
+            AddIdentitiesArg {
+                user_id: None,
+                user_identity: Some("tom".to_owned()),
+                new_identities: vec!["rejected_anyway".to_owned()],
+            },
+            pool,
+        )
+        .await
+        .expect_err("should fail for unknown user identity");
+    }
 }

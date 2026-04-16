@@ -36,6 +36,7 @@ use ::authz::StorageDriver;
 use ::authz::v2::special_authorizers;
 use axum::Extension;
 use common::Version;
+use editoast_models::authn::user::AddIdentitiesError;
 use fga::client::Limits;
 #[cfg(test)]
 use test_app::test_app;
@@ -596,9 +597,22 @@ async fn authentication_validation_middleware(
         ::authz::v2::Protected<Vec<Role>>,
     )> {
         tracing::info!(identity, name, "registering new user");
-        let user =
-            editoast_models::User::register(conn, vec![identity.to_owned()], name.to_owned())
-                .await?;
+        let user = match editoast_models::User::register(
+            conn,
+            vec![identity.to_owned()],
+            name.to_owned(),
+        )
+        .await
+        {
+            Ok(user) => user,
+            Err(AddIdentitiesError::DuplicateIdentity(_)) => {
+                unreachable!(
+                    "the current function is only called when the user don't exists, and the `.register()`\n\
+                    operation above only creates the user with one unique identity"
+                );
+            }
+            Err(AddIdentitiesError::Error(err)) => return Err(err.into()),
+        };
         let authz_user = ::authz::Subject::user(user.id);
         Ok((Some(user), ::authz::v2::subject_roles(authz_user)))
     }
