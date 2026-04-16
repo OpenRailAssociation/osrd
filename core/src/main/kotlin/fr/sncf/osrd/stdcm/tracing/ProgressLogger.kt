@@ -13,6 +13,7 @@ import fr.sncf.osrd.utils.units.seconds
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Span
 import java.time.Instant
+import kotlin.math.absoluteValue
 import kotlin.math.pow
 
 /**
@@ -30,6 +31,14 @@ data class ProgressLogger(
     private var seenSteps = 0
     private var nextMemoryReport =
         Instant.now() + java.time.Duration.ofMillis(memoryReportTimeInterval.milliseconds)
+
+    // A mapping between a geographical location (lat, lon with 1/10th precision) and the time
+    // of when it was last added.
+    // Used to filter points to send to the queue for the live search progression display
+    private val geopointFilteringCache = HashMap<Int, Long>()
+    // The time for which an entry is considered valid in the cache.
+    // 2 seconds
+    private val geopointEvictionTime = (2 * 10e9).toLong()
 
     /** Process one node, logging it if it reaches a new threshold */
     fun processNode(node: STDCMNode) {
@@ -100,7 +109,20 @@ data class ProgressLogger(
                 bestTravelTime = bestTravelTime,
             )
 
-        callback?.let { it(data) }
+        val latKey = kotlin.math.round(geo.lat * 10).toInt() + 900
+        val lonKey = kotlin.math.round(geo.lon * 10).toInt() + 1800
+        val cacheKey = latKey * 3601 + lonKey
+
+        val cacheEntry = geopointFilteringCache.get(cacheKey)
+
+        if (
+            cacheEntry == null ||
+                (cacheEntry - System.nanoTime()).absoluteValue > geopointEvictionTime
+        ) {
+            geopointFilteringCache[cacheKey] = System.nanoTime()
+            callback?.let { it(data) }
+        }
+
         return data
     }
 }
