@@ -9,10 +9,10 @@ import { castErrorToFailure } from 'utils/error';
 
 import { MANAGE_TIMETABLE_ITEM_TYPES } from '../../consts';
 import { TrainScheduleSetCatalogDialog } from '../ImportTrainScheduleSets';
-import ManageTimetableItem from './ManageTimetableItem';
 import ManageTimetableItemLeftPanel, {
   type ManageTimetableItemLeftPanelProps,
 } from './ManageTimetableItemLeftPanel';
+import ManageTrainSchedule from './ManageTrainSchedule';
 
 type ManageTimetableItemModalProps = ManageTimetableItemLeftPanelProps & {
   setCollapsedTimetableEdit: () => void;
@@ -61,7 +61,7 @@ const ManageTimetableItemModal = ({
             data-testid="manage-timetable-item"
           >
             <div className="scenario-manage-timetable-item-content">
-              <ManageTimetableItem />
+              <ManageTrainSchedule />
             </div>
             <button
               className="timetable-edit-collapse-button"
