@@ -6,7 +6,7 @@ import { useScenarioContext } from 'applications/operationalStudies/hooks/useSce
 import useScenarioData from 'applications/operationalStudies/hooks/useScenarioData';
 import useScenarioTrainScheduleSet from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
 import type { Board } from 'applications/operationalStudies/types';
-import ManageTimetableItemModal from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem';
+import ManageTrainScheduleModal from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem';
 import SimulationResults from 'applications/operationalStudies/views/Scenario/components/SimulationResults';
 import { Loader } from 'common/Loaders';
 import Conflicts from 'modules/conflict/components/Conflicts';
@@ -162,7 +162,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
     <EditedElementContainerProvider>
       <main className="mastcontainer mastcontainer-no-mastnav scenario scenario-content-v2">
         {displayTimetableItemManagement !== MANAGE_TIMETABLE_ITEM_TYPES.none && (
-          <ManageTimetableItemModal
+          <ManageTrainScheduleModal
             displayTimetableItemManagement={displayTimetableItemManagement}
             setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
             upsertTimetableItems={upsertTimetableItemsWithNge}

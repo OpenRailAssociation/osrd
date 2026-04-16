@@ -14,7 +14,7 @@ import ManageTrainScheduleLeftPanel, {
   type ManageTrainScheduleLeftPanelProps,
 } from './ManageTrainScheduleLeftPanel';
 
-type ManageTimetableItemModalProps = ManageTrainScheduleLeftPanelProps & {
+type ManageTrainScheduleModalProps = ManageTrainScheduleLeftPanelProps & {
   setCollapsedTimetableEdit: () => void;
   collapsedTimetableEdit: boolean;
   importTrainScheduleSets: ReturnType<
@@ -22,7 +22,7 @@ type ManageTimetableItemModalProps = ManageTrainScheduleLeftPanelProps & {
   >['importTrainScheduleSets'];
 };
 
-const ManageTimetableItemModal = ({
+const ManageTrainScheduleModal = ({
   displayTimetableItemManagement,
   setDisplayTimetableItemManagement,
   upsertTimetableItems,
@@ -31,7 +31,7 @@ const ManageTimetableItemModal = ({
   setCollapsedTimetableEdit,
   collapsedTimetableEdit,
   importTrainScheduleSets,
-}: ManageTimetableItemModalProps) => {
+}: ManageTrainScheduleModalProps) => {
   const dispatch = useDispatch();
 
   const handleImportTrainScheduleSets = async (data: ImportTrainScheduleSetsPayload) => {
@@ -84,4 +84,4 @@ const ManageTimetableItemModal = ({
   );
 };
 
-export default ManageTimetableItemModal;
+export default ManageTrainScheduleModal;
