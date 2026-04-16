@@ -4,7 +4,6 @@ use std::future::Future;
 use fga::client::QueryError;
 use fga::client::UserList;
 use fga::model::Relation;
-use futures::stream;
 use itertools::Either;
 use tracing::Level;
 
@@ -79,15 +78,6 @@ pub trait StorageDriver: Clone {
         &self,
         group: &GroupInfo,
     ) -> impl Future<Output = Result<i64, Self::Error>> + Send;
-
-    fn list_users(
-        &self,
-    ) -> impl Future<
-        Output = Result<
-            impl stream::TryStream<Ok = (i64, UserInfo), Error = Self::Error>,
-            Self::Error,
-        >,
-    > + Send;
 
     fn add_user_identities(
         &self,
