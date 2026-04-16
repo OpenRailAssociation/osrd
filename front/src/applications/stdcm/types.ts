@@ -264,10 +264,5 @@ export type StdcmProgressPoint = {
    *  don't all appear together (can be in the future).
    */
   animationStartTime: number;
-  /** If true, show the point directly in its final state and skip the
-   *  fade-in. Used when a new point replaces an old one whose animation
-   *  was already done.
-   */
-  skipFadeIn?: boolean;
 };
 export type StdcmProgressPoints = StdcmProgressPoint[];

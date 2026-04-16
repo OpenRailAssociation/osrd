@@ -163,10 +163,7 @@ const StdcmMapProgressLayer = ({
           // Point timestamp can be in the futur. If so its delta time is O except if it override a previous point
           // In this case it takes the max animation value
           const deltaTime = Date.now() - point.animationStartTime;
-          let elapsedTime = deltaTime;
-          if (deltaTime < 0) {
-            elapsedTime = point.skipFadeIn ? ANIMATION_STEPS.at(-1)!.time : 0;
-          }
+          const elapsedTime = Math.max(0, deltaTime);
           const animation = ANIMATIONS.find(
             (a) => a.timeRange.min <= elapsedTime && elapsedTime < a.timeRange.max
           )!;
