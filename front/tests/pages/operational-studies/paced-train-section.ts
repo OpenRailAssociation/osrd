@@ -23,7 +23,7 @@ class PacedTrainSection extends CommonPage {
   private readonly testedOccurrenceStartTime: Locator;
   private readonly testedOccurrenceArrivalTime: Locator;
   private readonly occurrencesCount: Locator;
-  private readonly manageTimetableItemPage: Locator;
+  private readonly manageTrainSchedulePage: Locator;
   private readonly confirmationModalDeleteButton: Locator;
   private readonly confirmationModalButton: Locator;
   private readonly portalOccurrenceMenu: {
@@ -50,7 +50,7 @@ class PacedTrainSection extends CommonPage {
     this.testedOccurrenceStartTime = this.testedPacedTrain.getByTestId('departure-time');
     this.testedOccurrenceArrivalTime = this.testedPacedTrain.getByTestId('arrival-time');
     this.occurrencesCount = page.getByTestId('occurrences-count');
-    this.manageTimetableItemPage = page.getByTestId('manage-timetable-item');
+    this.manageTrainSchedulePage = page.getByTestId('manage-train-schedule');
     this.confirmationModalDeleteButton = page.getByTestId('confirmation-modal-delete-button');
     this.confirmationModalButton = page.getByTestId('confirmation-modal-button');
     this.portalOccurrenceMenu = {
@@ -296,7 +296,7 @@ class PacedTrainSection extends CommonPage {
     });
     await expect(actionButtons.editItem).toBeVisible();
     await actionButtons.editItem.click();
-    await expect(this.manageTimetableItemPage).toBeVisible();
+    await expect(this.manageTrainSchedulePage).toBeVisible();
   }
 
   async projectPacedTrain(index = 0) {

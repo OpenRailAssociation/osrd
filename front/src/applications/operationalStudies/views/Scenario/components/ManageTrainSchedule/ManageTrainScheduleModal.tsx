@@ -58,7 +58,7 @@ const ManageTrainScheduleModal = ({
           displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit) && (
           <div
             className={`scenario-manage-train-schedule${collapsedTimetableEdit ? ' collapsed' : ''}`}
-            data-testid="manage-timetable-item"
+            data-testid="manage-train-schedule"
           >
             <div className="scenario-manage-train-schedule-content">
               <ManageTrainSchedule />

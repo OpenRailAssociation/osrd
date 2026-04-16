@@ -12,7 +12,7 @@ import ScenarioTimetableSection from './scenario-timetable-section';
 
 class OperationalStudiesPage extends ScenarioTimetableSection {
   private readonly addTimetableItemButton: Locator;
-  private readonly manageTimetableItemPage: Locator;
+  private readonly manageTrainSchedulePage: Locator;
   private readonly rollingStockTab: Locator;
   private readonly routeTab: Locator;
   private readonly startTimeField: Locator;
@@ -59,7 +59,7 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
       list: page.getByTestId('added-occurrences-list'),
     };
     this.createTimetableItemButton = page.getByTestId('create-timetable-item-button');
-    this.manageTimetableItemPage = page.getByTestId('manage-timetable-item');
+    this.manageTrainSchedulePage = page.getByTestId('manage-train-schedule');
     this.timetableItemNameInput = page.getByTestId('timetable-item-name-input');
     this.initialSpeedInput = page.getByTestId('initial-speed-input');
     this.timetableItemTagsInput = page.getByTestId('chips-input');
@@ -69,7 +69,7 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
   // Click on the button to add a scenario timetable item.
   async openTimetableItemForm() {
     await this.addTimetableItemButton.click();
-    await expect(this.manageTimetableItemPage).toBeVisible();
+    await expect(this.manageTrainSchedulePage).toBeVisible();
   }
 
   async openRouteTab() {
