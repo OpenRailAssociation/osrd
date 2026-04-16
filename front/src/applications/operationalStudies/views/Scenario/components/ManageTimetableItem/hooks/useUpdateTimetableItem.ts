@@ -1,7 +1,5 @@
-import { isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import { v4 as uuidV4 } from 'uuid';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import {
@@ -17,6 +15,7 @@ import {
   deleteExceptions,
   storePacedTrain,
   syncAndUpdatePacedTrain,
+  syncOccurrenceException,
   updateExceptions,
 } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import { setSuccess } from 'reducers/main';
@@ -137,45 +136,14 @@ const useUpdateTimetableItem = (
         occurrenceId
       );
 
-      let finalException: PacedTrainException = {
-        ...generatedException,
-        key: existingException?.key ?? uuidV4(),
-        occurrence_index: occurrenceIndex,
-      };
-      if (existingException) {
-        // disabled is not included in changeGroups, so we need to check separately
-        if (isEmpty(generatedException) && !existingException.disabled) {
-          // Exception should be deleted as there is no change compared to the paced train anymore
-          // TODO_EXCEPTION: remove `!` when using TrainScheduleException type
-          await deleteExceptions(dispatch, [existingException.id!]);
-        } else {
-          // Exception already exists -> update it with the existing id
-          const toUpdate: PacedTrainException = {
-            ...generatedException,
-            id: existingException.id,
-            // TODO_EXCEPTION: remove this when drop key in the model
-            key: existingException.key,
-            occurrence_index: occurrenceIndex,
-          };
-          await updateExceptions(dispatch, [toUpdate], timetableItemId);
-          finalException = toUpdate;
-        }
-      } else {
-        // No existing exception -> create it
-        const exceptionToCreate: PacedTrainException = {
-          ...generatedException,
-          // TODO_EXCEPTION: remove this when drop key in the model
-          key: uuidV4(),
-          occurrence_index: occurrenceIndex,
-        };
-        const [created] = await createExceptions(
-          dispatch,
-          [exceptionToCreate],
-          timetableItemId,
-          timetableId
-        );
-        finalException = { ...exceptionToCreate, id: created.id };
-      }
+      const finalException = await syncOccurrenceException(
+        dispatch,
+        generatedException,
+        existingException,
+        occurrenceIndex,
+        timetableItemId,
+        timetableId
+      );
 
       const updatedExceptions = updatePacedTrainExceptionsList(
         originalPacedTrain.paced?.exceptions ?? [],
