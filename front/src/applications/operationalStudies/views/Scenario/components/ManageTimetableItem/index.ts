@@ -1,3 +1,3 @@
-import ManageTimetableItemModal from './ManageTimetableItemModal';
+import ManageTrainScheduleModal from './ManageTrainScheduleModal';
 
-export default ManageTimetableItemModal;
+export default ManageTrainScheduleModal;
