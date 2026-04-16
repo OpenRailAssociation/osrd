@@ -34,7 +34,7 @@ export type SuggestedOP = {
   calculatedMargin?: string;
   diffMargins?: string;
   receptionSignal?: ReceptionSignal;
-  // Metadatas given by ManageTimetableItemMap click event to add origin/destination/via
+  // Metadatas given by ManageTrainScheduleMap click event to add origin/destination/via
   metadata?: {
     lineCode: number;
     lineName: string;

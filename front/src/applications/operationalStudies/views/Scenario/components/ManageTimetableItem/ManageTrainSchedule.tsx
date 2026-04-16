@@ -42,7 +42,7 @@ import {
 import { useAppDispatch } from 'store';
 import { formatKmValue } from 'utils/strings';
 
-import ManageTimetableItemMap from './ManageTimetableItemMap';
+import ManageTrainScheduleMap from './ManageTrainScheduleMap';
 import PowerRestrictionsSelector from './PowerRestrictionsSelector/PowerRestrictionsSelector';
 import SimulationSettings from './SimulationSettings';
 import TrainSettings from './TrainSettings';
@@ -178,7 +178,7 @@ const ManageTrainSchedule = () => {
         <div className="floating-itinerary">
           <Itinerary rollingStockId={rollingStockId} />
         </div>
-        <ManageTimetableItemMap
+        <ManageTrainScheduleMap
           pathProperties={pathProperties ? pick(pathProperties, ['length', 'geometry']) : undefined}
           simulationPathSteps={markersInformation}
           pathStepsAndSuggestedOPs={pathStepsAndSuggestedOPs}
@@ -188,7 +188,7 @@ const ManageTrainSchedule = () => {
             pathLength={pathProperties?.length}
             incompatibleConstraints={pathProperties?.incompatibleConstraints}
           />
-        </ManageTimetableItemMap>
+        </ManageTrainScheduleMap>
       </div>
     ),
   };
