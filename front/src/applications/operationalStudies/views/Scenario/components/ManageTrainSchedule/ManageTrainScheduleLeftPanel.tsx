@@ -77,8 +77,8 @@ const ManageTrainScheduleLeftPanel = ({
   };
 
   return (
-    <div className="scenario-timetable-manage-timetable-item left-column">
-      <div className="scenario-timetable-manage-timetable-item-header">
+    <div className="scenario-timetable-manage-train-schedule left-column">
+      <div className="scenario-timetable-manage-train-schedule-header">
         {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit &&
           trainScheduleToEditData && (
             <>
@@ -170,7 +170,7 @@ const ManageTrainScheduleLeftPanel = ({
       {(displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ||
         displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit) && (
         <div
-          className="scenario-timetable-manage-timetable-item-body"
+          className="scenario-timetable-manage-train-schedule-body"
           role="button"
           tabIndex={0}
           onClick={() => setItineraryModalIsOpen(true)}
@@ -195,7 +195,7 @@ const ManageTrainScheduleLeftPanel = ({
         />
       )}
       <div
-        className="scenario-timetable-manage-timetable-item-body"
+        className="scenario-timetable-manage-train-schedule-body"
         role="button"
         tabIndex={0}
         onClick={leaveManageTrainSchedule}

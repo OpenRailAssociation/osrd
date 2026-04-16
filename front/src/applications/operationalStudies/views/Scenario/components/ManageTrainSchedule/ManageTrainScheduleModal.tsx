@@ -44,7 +44,7 @@ const ManageTrainScheduleModal = ({
   };
 
   return (
-    <div className="scenario-manage-timetable-item-modal">
+    <div className="scenario-manage-train-schedule-modal">
       <ManageTrainScheduleContextProvider>
         <ManageTrainScheduleLeftPanel
           displayTrainScheduleManagement={displayTrainScheduleManagement}
@@ -57,10 +57,10 @@ const ManageTrainScheduleModal = ({
         {(displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ||
           displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit) && (
           <div
-            className={`scenario-manage-timetable-item${collapsedTimetableEdit ? ' collapsed' : ''}`}
+            className={`scenario-manage-train-schedule${collapsedTimetableEdit ? ' collapsed' : ''}`}
             data-testid="manage-timetable-item"
           >
-            <div className="scenario-manage-timetable-item-content">
+            <div className="scenario-manage-train-schedule-content">
               <ManageTrainSchedule />
             </div>
             <button
