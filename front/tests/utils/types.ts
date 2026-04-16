@@ -276,7 +276,7 @@ export type StudyFrTranslations = {
   };
 };
 
-export type ManageTimetableItemTranslations = FlatTranslations & {
+export type ManageTrainScheduleTranslations = FlatTranslations & {
   pacedTrains: FlatTranslations;
 };
 

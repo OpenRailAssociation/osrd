@@ -398,13 +398,13 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   }
 
   async verifyAllTimetableItemsHaveBeenDeleted(
-    itemsCount: number,
+    trainSchedulesCount: number,
     translations: TimetableFilterTranslations
   ) {
-    // translation has format "The {{count}} items have been deleted.";
+    // translation has format "The {{count}} train schedules have been deleted.";
     const [firstPart, secondPart] =
-      translations.timetable.itemsSelectionDeletedCount_other.split('{{count}}');
-    const expectedDeleteToast = `${firstPart}${itemsCount}${secondPart}`;
+      translations.timetable.trainSchedulesSelectionDeletedCount_other.split('{{count}}');
+    const expectedDeleteToast = `${firstPart}${trainSchedulesCount}${secondPart}`;
     await this.checkToastTitle(expectedDeleteToast);
 
     await this.closeToastNotification();

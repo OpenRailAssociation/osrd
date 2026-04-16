@@ -116,7 +116,9 @@ test.describe('Netzgrafik Editor', { tag: ['@op', '@nge'] }, () => {
     });
 
     await test.step('Verify timetable is empty (UI message)', async () => {
-      await scenarioTimetableSection.verifyTimetableIsEmpty(frTranslations.timetable.noItem);
+      await scenarioTimetableSection.verifyTimetableIsEmpty(
+        frTranslations.timetable.noTrainSchedule
+      );
     });
 
     await test.step('Enable macro view while keeping the default train list visible', async () => {
@@ -143,12 +145,16 @@ test.describe('Netzgrafik Editor', { tag: ['@op', '@nge'] }, () => {
     });
 
     await test.step('Verify timetable is empty (UI)', async () => {
-      await scenarioTimetableSection.verifyTimetableIsEmpty(frTranslations.timetable.noItem);
+      await scenarioTimetableSection.verifyTimetableIsEmpty(
+        frTranslations.timetable.noTrainSchedule
+      );
     });
 
     await test.step('Reload and re-assert timetable is empty', async () => {
       await page.reload();
-      await scenarioTimetableSection.verifyTimetableIsEmpty(frTranslations.timetable.noItem);
+      await scenarioTimetableSection.verifyTimetableIsEmpty(
+        frTranslations.timetable.noTrainSchedule
+      );
     });
 
     await test.step('Re-toggle macro layout and re-assert graph is empty (expect 0 nodes, 0 lines)', async () => {

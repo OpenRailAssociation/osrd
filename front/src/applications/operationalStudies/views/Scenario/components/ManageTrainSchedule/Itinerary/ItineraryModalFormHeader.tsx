@@ -43,7 +43,7 @@ const ItineraryModalFormHeader = ({
   isNameEmpty,
 }: ItineraryModalFormHeaderProps) => {
   const { t } = useTranslation('operational-studies', {
-    keyPrefix: 'manageTimetableItem',
+    keyPrefix: 'manageTrainSchedule',
   });
 
   // Category

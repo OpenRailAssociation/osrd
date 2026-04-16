@@ -7,7 +7,7 @@ import {
   PACED_TRAIN_SETTINGS_TEST,
 } from '../../assets/constants/operational-studies-const';
 import { createDateInSpecialTimeZone } from '../../utils/date-utils';
-import type { ManageTimetableItemTranslations, PacedTrainDetails } from '../../utils/types';
+import type { ManageTrainScheduleTranslations, PacedTrainDetails } from '../../utils/types';
 import ScenarioTimetableSection from './scenario-timetable-section';
 
 class OperationalStudiesPage extends ScenarioTimetableSection {
@@ -131,7 +131,7 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
     await expect(this.resultPathfindingDistance).toHaveText(distance);
   }
 
-  async checkInputsAndButtons(translations: ManageTimetableItemTranslations, date: string) {
+  async checkInputsAndButtons(translations: ManageTrainScheduleTranslations, date: string) {
     await expect(this.createTimetableItemButton).toBeVisible();
     await expect(this.createTimetableItemButton).toHaveText(translations.addUniqueTrain);
     await expect(this.definePacedTrainCheckboxLabel).toBeVisible();
@@ -166,7 +166,7 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
     await this.submitTimetableItemEdit();
   }
 
-  async turnUniqueTrainIntoPacedTrain(translations: ManageTimetableItemTranslations) {
+  async turnUniqueTrainIntoPacedTrain(translations: ManageTrainScheduleTranslations) {
     await expect(this.definePacedTrainCheckbox).not.toBeChecked();
     await expect(this.editTimetableItemButton).toBeVisible();
     await expect(this.editTimetableItemButton).toHaveText(translations.updateUniqueTrain);
@@ -180,7 +180,7 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
     await this.submitTimetableItemEdit();
   }
 
-  async turnPacedTrainIntoUniqueTrain(translations: ManageTimetableItemTranslations) {
+  async turnPacedTrainIntoUniqueTrain(translations: ManageTrainScheduleTranslations) {
     await expect(this.definePacedTrainCheckbox).toBeChecked();
     await expect(this.editTimetableItemButton).toBeVisible();
     await expect(this.editTimetableItemButton).toHaveText(translations.updatePacedTrain);
@@ -204,7 +204,7 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
     await this.verifyTabWarningPresence();
   }
 
-  async checkPacedTrainModeAndVerifyInputs(translations: ManageTimetableItemTranslations) {
+  async checkPacedTrainModeAndVerifyInputs(translations: ManageTrainScheduleTranslations) {
     await this.definePacedTrainCheckboxLabel.click();
     await expect(this.createTimetableItemButton).toHaveText(translations.addPacedTrain);
 
@@ -222,7 +222,7 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
     await expect(this.pacedTrainIntervalInput).toHaveValue(value);
   }
 
-  async testPacedTrainMode(translations: ManageTimetableItemTranslations) {
+  async testPacedTrainMode(translations: ManageTrainScheduleTranslations) {
     await this.setTimeWindow(PACED_TRAIN_SETTINGS_TEST.timeWindow);
     await this.setInterval(PACED_TRAIN_SETTINGS_TEST.interval);
     await this.definePacedTrainCheckboxLabel.click();
@@ -268,7 +268,7 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
   }
 
   async checkInputsBeforeEditingAPacedTrain(
-    translations: ManageTimetableItemTranslations,
+    translations: ManageTrainScheduleTranslations,
     editedPacedTrainTimeWindow: string,
     editedPacedTrainInterval: string
   ) {

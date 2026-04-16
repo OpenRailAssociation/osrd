@@ -10,7 +10,7 @@ import { useAppDispatch } from 'store';
 export default function ElectricalProfiles() {
   const dispatch = useAppDispatch();
   const usingElectricalProfiles = useSelector(getUsingElectricalProfiles);
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
 
   return (
     <div className="toggle-container">

@@ -22,7 +22,7 @@ const Destination = ({ zoomToFeaturePoint }: DestinationProps) => {
   const location = destination?.location;
 
   const { t } = useTranslation('operational-studies', {
-    keyPrefix: 'manageTimetableItem',
+    keyPrefix: 'manageTrainSchedule',
   });
   if (!destination || pathSteps.length === 1)
     return (

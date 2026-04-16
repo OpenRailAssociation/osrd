@@ -68,7 +68,7 @@ test.describe(
         await waitForInfraStateToBeCached(infra.id);
       });
       await test.step('Verify timetable is empty', async () => {
-        await importExportPage.verifyTimetableIsEmpty(frTranslations.timetable.noItem);
+        await importExportPage.verifyTimetableIsEmpty(frTranslations.timetable.noTrainSchedule);
       });
     });
 

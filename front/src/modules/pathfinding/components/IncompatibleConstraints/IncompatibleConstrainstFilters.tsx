@@ -13,7 +13,7 @@ type IncompatibleConstraintsFiltersProps = HTMLAttributes<unknown> & {
 };
 
 const IncompatibleConstraintsFilters = (props: IncompatibleConstraintsFiltersProps) => {
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   const { data, toggleFilter, ...htmlAttrs } = props;
 
   const getTitle = useCallback(

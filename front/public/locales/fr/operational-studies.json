@@ -40,10 +40,10 @@
     "failure": "L'opération a échoué",
     "selectedFile": "Fichier sélectionné : {{fileName}}",
     "status": {
-      "invalidTimetableItems_one": "La circulation à importer n'est pas au bon format.",
-      "invalidTimetableItems_other": "Les circulations à importer ne sont pas au bon format.",
-      "successfulImport": "Tous les items ont été importés.",
-      "successfulImport_one": "L'item a été importé."
+      "invalidTrainSchedules_one": "La circulation à importer n'est pas au bon format.",
+      "invalidTrainSchedules_other": "Les circulations à importer ne sont pas au bon format.",
+      "successfulImport": "Toutes les circulations ont été importées.",
+      "successfulImport_one": "La circulation a été importée."
     },
     "success": "Opération réussie",
     "warningMessages": {
@@ -205,7 +205,7 @@
     "scenarioUpdated": "Mise à jour réussie !",
     "scenarioUpdatedDetails": "Le scénario {{ name }} a bien été mis à jour.",
     "timetable": {
-      "addTimetableItem": "Ajouter un train / une mission",
+      "addTrainSchedule": "Ajouter un train unique / une mission",
       "advancedFilterLabel": "Engin moteur",
       "choosePath": "Utiliser ce chemin",
       "closeFilter": "Fermer le filtre",
@@ -235,12 +235,10 @@
         "zero_length_path": "L'origine et la destination sont identiques"
       },
       "invalidTrains": "Certains trains sont invalides",
-      "itemsSelectionDeletedCount_one": "L'item a bien été supprimé.",
-      "itemsSelectionDeletedCount_other": "Les {{count}} items ont bien été supprimés.",
       "modeCalendar": "Trier chronologiquement",
       "modeTrainScheduleSet": "Trier par paquet",
-      "noItem": "Aucun item",
       "noSpeedLimitTagsShort": "Aucun",
+      "noTrainSchedule": "Aucune circulation",
       "occurrenceChangeGroup": {
         "constraint_distribution": "Marge de régularité",
         "initial_speed": "Vitesse initiale",
@@ -329,6 +327,8 @@
         "transformToLocalCopyDialogTitle": "Transformer en une copie locale",
         "transformToLocalCopySubmit": "Copier le paquet localement"
       },
+      "trainSchedulesSelectionDeletedCount_one": "La circulation a bien été supprimée.",
+      "trainSchedulesSelectionDeletedCount_other": "Les {{count}} circulations ont bien été supprimées.",
       "trainType": "Missions, trains",
       "uniqueTrain": "Train unique",
       "unselectAll": "Tout désélectionner",
@@ -344,7 +344,7 @@
     "train_other": "{{count}} trains",
     "train_zero": "0 train"
   },
-  "manageTimetableItem": {
+  "manageTrainSchedule": {
     "addPacedTrain": "Ajouter une mission",
     "addUniqueTrain": "Ajouter un train",
     "addVia": "Ajouter ce point de passage",
@@ -380,11 +380,11 @@
       "noTrainStep": "Le pas d'incrément du nom du train doit être supérieur à zéro",
       "originTimeOutsideWindow": "La date de départ doit être comprise entre le {{low}} et le {{high}}",
       "requiredField": "Champ obligatoire.",
-      "timetableItemTitle": "Une erreur est survenue",
       "tooHighInput": "Doit être < 43800",
       "tooHighValue": "La {{value}} doit être inférieure à 43800 (un mois)",
       "tooLowInput": "Doit être > 0",
       "tooLowValue": "La {{value}} doit être supérieure à 0",
+      "trainScheduleTitle": "Une erreur est survenue",
       "unableToRetrieveTags": "Impossible de récupérer les étiquettes"
     },
     "hideTrainSettings": "Masquer",
@@ -409,7 +409,7 @@
     "infraLoading": "Infra en cours de chargement…",
     "inputOPTrigrams": "Entrez la liste des trigrammes des points remarquables composant l'itinéraire souhaité.",
     "inputOPTrigramsExample": "Ex : LSN CIG CCS",
-    "invalidTimetableItemStep": "Au moins un des points de passage n'a pas été reconnu",
+    "invalidTrainScheduleStep": "Au moins un des points de passage n'a pas été reconnu",
     "inverseOD": "Inverser l'itinéraire",
     "itineraryModal": {
       "addLocationOnMap": "Ajouter un point remarquable sur la carte",
@@ -494,12 +494,12 @@
       "unrecognizedRollingStock": "Matériel non reconnu : {{rollingStockName}}",
       "unspecifiedRollingStock": "Matériel roulant non renseigné"
     },
-    "timetableItemDepartureTime": "Heure de départ",
-    "timetableItemInitialSpeed": "Vitesse initiale",
-    "timetableItemName": "Numéro, nom",
     "toggleTrigramSearch": "Basculer l'affichage de la recherche par trigramme",
     "trainAdded": "Train ajouté",
     "trainLabels": "Étiquettes",
+    "trainScheduleDepartureTime": "Heure de départ",
+    "trainScheduleInitialSpeed": "Vitesse initiale",
+    "trainScheduleName": "Numéro, nom",
     "turnPacedTrainIntoUniqueTrain": "Transformer cette mission en train",
     "turnUniqueTrainIntoPacedTrain": "Transformer ce train en mission",
     "unavailableDistance": "Distance indisponible",

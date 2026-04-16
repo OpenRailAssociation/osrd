@@ -39,7 +39,7 @@ const IncompatibleConstraints = ({
   pathLength,
   incompatibleConstraints,
 }: IncompatibleConstraintsProps) => {
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   const map = useMap();
 
   const [filtersConstraintState, setFiltersConstraintState] = useState<FiltersConstrainstState>({});

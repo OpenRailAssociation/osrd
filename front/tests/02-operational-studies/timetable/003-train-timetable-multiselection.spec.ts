@@ -93,7 +93,9 @@ test.describe('Timetable items multiselection', { tag: ['@op', '@timetable-items
     });
 
     await test.step('Verify timetable is empty', async () => {
-      await scenarioTimetableSection.verifyTimetableIsEmpty(frTranslations.timetable.noItem);
+      await scenarioTimetableSection.verifyTimetableIsEmpty(
+        frTranslations.timetable.noTrainSchedule
+      );
     });
   });
 });

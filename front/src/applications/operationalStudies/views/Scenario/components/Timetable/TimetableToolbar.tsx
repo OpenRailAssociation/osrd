@@ -205,7 +205,7 @@ const TimetableToolbar = ({
           <button
             className="add-button"
             data-testid="scenarios-add-timetable-item-button"
-            title={t('timetable.addTimetableItem')}
+            title={t('timetable.addTrainSchedule')}
             onClick={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.add)}
             type="button"
           >

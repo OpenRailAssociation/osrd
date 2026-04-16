@@ -42,7 +42,7 @@ const ManageTrainScheduleLeftPanel = ({
 }: ManageTrainScheduleLeftPanelProps) => {
   const { setEditedElementContainer } = useContext(EditedElementContainerContext);
   const dispatch = useAppDispatch();
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   const editingItemType = useSelector(getEditingItemType);
   const osrdConf = useSelector(getOperationalStudiesConf);
 

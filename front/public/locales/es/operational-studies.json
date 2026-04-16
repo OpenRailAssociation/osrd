@@ -39,8 +39,8 @@
     "failure": "Operación fallida",
     "selectedFile": "Archivo seleccionado: {{fileName}}",
     "status": {
-      "invalidTimetableItems_one": "Registro de horario no válido.",
-      "invalidTimetableItems_other": "Registros de horarios no válidos.",
+      "invalidTrainSchedules_one": "Registro de horario no válido.",
+      "invalidTrainSchedules_other": "Registros de horarios no válidos.",
       "successfulImport": "Todos los elementos se importaron correctamente.",
       "successfulImport_one": "Un elemento se importo correctamente."
     },
@@ -94,7 +94,7 @@
       "speedLimitTags": "Códigos de composición"
     }
   },
-  "manageTimetableItem": {
+  "manageTrainSchedule": {
     "deleteRoute": "Elimina la ruta",
     "errorMessages": {
       "error": "Ha ocurrido un error"

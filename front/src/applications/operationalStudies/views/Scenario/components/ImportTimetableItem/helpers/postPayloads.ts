@@ -158,7 +158,7 @@ export const postFullImportPayload = async (
     dispatch(
       setFailure({
         name: t('failure'),
-        message: t('status.invalidTimetableItems', {
+        message: t('status.invalidTrainSchedules', {
           count: timetableJsonPayload.paced_trains.length,
         }),
       })

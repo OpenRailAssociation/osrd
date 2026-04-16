@@ -35,10 +35,10 @@
     "failure": "A operação falhou",
     "selectedFile": "Ficheiro selecionado: {{fileName}}",
     "status": {
-      "invalidTimetableItems_one": "A circulação a importar não está no formato correto.",
-      "invalidTimetableItems_other": "As circulações a importar não estão no formato correto.",
-      "successfulImport": "Todos os itens foram importados.",
-      "successfulImport_one": "O item foi importado."
+      "invalidTrainSchedules_one": "A circulação a importar não está no formato correto.",
+      "invalidTrainSchedules_other": "As circulações a importar não estão no formato correto.",
+      "successfulImport": "Todas as circulações foram importadas.",
+      "successfulImport_one": "A circulação foi importada."
     },
     "success": "Operação bem-sucedida",
     "warningMessages": {

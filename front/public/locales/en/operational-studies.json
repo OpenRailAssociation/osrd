@@ -40,10 +40,10 @@
     "failure": "Operation failed",
     "selectedFile": "Selected file: {{fileName}}",
     "status": {
-      "invalidTimetableItems_one": "Invalid timetable item.",
-      "invalidTimetableItems_other": "Invalid timetable items.",
-      "successfulImport": "All items are imported.",
-      "successfulImport_one": "An item is imported."
+      "invalidTrainSchedules_one": "Invalid train schedule.",
+      "invalidTrainSchedules_other": "Invalid train schedules.",
+      "successfulImport": "All train schedules are imported.",
+      "successfulImport_one": "A train schedule is imported."
     },
     "success": "Operation successful",
     "warningMessages": {
@@ -205,7 +205,7 @@
     "scenarioUpdated": "Successful update!",
     "scenarioUpdatedDetails": "Scenario {{ name }} has been updated.",
     "timetable": {
-      "addTimetableItem": "Add a train / service",
+      "addTrainSchedule": "Add a unique train / service",
       "advancedFilterLabel": "Rolling stock",
       "choosePath": "Use this path",
       "closeFilter": "Close filter",
@@ -235,12 +235,10 @@
         "zero_length_path": "Departure and arrival are identical"
       },
       "invalidTrains": "Some trains are invalid",
-      "itemsSelectionDeletedCount_one": "The item has been deleted.",
-      "itemsSelectionDeletedCount_other": "The {{count}} items have been deleted.",
       "modeCalendar": "Sort chronologically",
       "modeTrainScheduleSet": "Sort by train schedule set",
-      "noItem": "No item",
       "noSpeedLimitTagsShort": "None",
+      "noTrainSchedule": "No train schedule",
       "occurrenceChangeGroup": {
         "constraint_distribution": "Recovery margin",
         "initial_speed": "Initial velocity",
@@ -329,6 +327,8 @@
         "transformToLocalCopyDialogTitle": "Transform to a local copy",
         "transformToLocalCopySubmit": "Make a local copy"
       },
+      "trainSchedulesSelectionDeletedCount_one": "The train schedule has been deleted.",
+      "trainSchedulesSelectionDeletedCount_other": "The {{count}} train schedules have been deleted.",
       "trainType": "Services, trains",
       "uniqueTrain": "Unique train",
       "unselectAll": "Unselect all",
@@ -344,7 +344,7 @@
     "train_other": "{{count}} trains",
     "train_zero": "0 trains"
   },
-  "manageTimetableItem": {
+  "manageTrainSchedule": {
     "addPacedTrain": "Add a service",
     "addUniqueTrain": "Add a train",
     "addVia": "Add this waypoint",
@@ -380,11 +380,11 @@
       "noTrainStep": "The increment step of the train must be greater than zero",
       "originTimeOutsideWindow": "Departure date must be between {{low}} and {{high}}",
       "requiredField": "Required field.",
-      "timetableItemTitle": "An error has occurred",
       "tooHighInput": "Must be < 43800",
       "tooHighValue": "The {{value}} must be less than 43800 (one month)",
       "tooLowInput": "Must be > 0",
       "tooLowValue": "The {{value}} must be greater than 0",
+      "trainScheduleTitle": "An error has occurred",
       "unableToRetrieveTags": "Impossible to get tags"
     },
     "hideTrainSettings": "Hide",
@@ -409,7 +409,7 @@
     "infraLoading": "Infrastructure is loading…",
     "inputOPTrigrams": "Enter the trigrams of operational points you want to the path to go through, separated by a space.",
     "inputOPTrigramsExample": "E.g., LSN CIG CCS",
-    "invalidTimetableItemStep": "At least one of the waypoints could not be recognized",
+    "invalidTrainScheduleStep": "At least one of the waypoints could not be recognized",
     "inverseOD": "Reverse itinerary",
     "itineraryModal": {
       "addLocationOnMap": "Add a location on the map",
@@ -494,12 +494,12 @@
       "unrecognizedRollingStock": "Unrecognized rolling stock : {{rollingStockName}}",
       "unspecifiedRollingStock": "Rolling stock not specified"
     },
-    "timetableItemDepartureTime": "Departure time",
-    "timetableItemInitialSpeed": "Initial velocity",
-    "timetableItemName": "Number, name",
     "toggleTrigramSearch": "Toggle trigram search",
     "trainAdded": "Train added",
     "trainLabels": "Tags",
+    "trainScheduleDepartureTime": "Departure time",
+    "trainScheduleInitialSpeed": "Initial velocity",
+    "trainScheduleName": "Number, name",
     "turnPacedTrainIntoUniqueTrain": "Turn this service into a unique train",
     "turnUniqueTrainIntoPacedTrain": "Turn this unique train into a service",
     "unavailableDistance": "Unavailable distance",

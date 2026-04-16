@@ -41,9 +41,9 @@
     "failure": "Operation fehlgeschlagen",
     "selectedFile": "Ausgewählte Datei: {{fileName}}",
     "status": {
-      "invalidTimetableItems": "Ungültige Zugfahrpläne.",
-      "invalidTimetableItems_one": "Der zu importierende Fahrplan hat ein ungültiges Format.",
-      "invalidTimetableItems_other": "Die zu importierenden Fahrpläne haben ein ungültiges Format.",
+      "invalidTrainSchedules": "Ungültige Zugfahrpläne.",
+      "invalidTrainSchedules_one": "Der zu importierende Fahrplan hat ein ungültiges Format.",
+      "invalidTrainSchedules_other": "Die zu importierenden Fahrpläne haben ein ungültiges Format.",
       "successfulImport": "Alle Einträge wurden importiert.",
       "successfulImport_one": "Ein Eintrag wurde importiert."
     },
@@ -209,7 +209,7 @@
     "scenarioUpdated": "Änderung erfolgreich!",
     "scenarioUpdatedDetails": "Szenario {{ name }} wurde geändert.",
     "timetable": {
-      "addTimetableItem": "Zug / Leistung hinzufügen",
+      "addTrainSchedule": "Zug / Leistung hinzufügen",
       "advancedFilterLabel": "Schienenfahrzeug",
       "choosePath": "Diesen Pfad wählen",
       "closeFilter": "Filter schließen",
@@ -240,12 +240,10 @@
         "zero_length_path": "Abfahrt und Ankunft sind identisch"
       },
       "invalidTrains": "Einige Züge sind ungültig",
-      "itemsSelectionDeletedCount_one": "Der Eintrag wurde gelöscht.",
-      "itemsSelectionDeletedCount_other": "Die {{count}} Einträge wurden gelöscht.",
       "modeCalendar": "Chronologisch sortieren",
       "modeTrainScheduleSet": "Nach Paket sortieren",
-      "noItem": "Kein Eintrag",
       "noSpeedLimitTagsShort": "Keiner",
+      "noTrainSchedule": "Kein Eintrag",
       "occurrenceChangeGroup": {
         "constraint_distribution": "Zeitpuffer",
         "initial_speed": "Anfangsgeschwindigkeit",
@@ -334,6 +332,8 @@
         "transformToLocalCopyDialogTitle": "In eine lokale Kopie umwandeln",
         "transformToLocalCopySubmit": "Paket lokal kopieren"
       },
+      "trainSchedulesSelectionDeletedCount_one": "Der Eintrag wurde gelöscht.",
+      "trainSchedulesSelectionDeletedCount_other": "Die {{count}} Einträge wurden gelöscht.",
       "trainType": "Leistungen, Züge",
       "uniqueTrain": "Einzelner Zug",
       "unselectAll": "Alles abwählen",
@@ -350,7 +350,7 @@
     "train_other": "{{count}} Züge",
     "train_zero": "0 Zug"
   },
-  "manageTimetableItem": {
+  "manageTrainSchedule": {
     "addPacedTrain": "Leistung hinzufügen",
     "addUniqueTrain": "Zug hinzufügen",
     "addVia": "Diesen Wegepunkt hinzufügen",
@@ -386,11 +386,11 @@
       "noTrainStep": "Die Schrittweite der Zugnamen muss größer als 0 sein.",
       "originTimeOutsideWindow": "Die Abfahrtszeit muss zwischen {{low}} und {{high}} liegen.",
       "requiredField": "Erforderliches Feld.",
-      "timetableItemTitle": "Ein Fehler ist aufgetreten",
       "tooHighInput": "Muss < 43800 sein",
       "tooHighValue": "{{value}} muss kleiner als 43800 sein (ein Monat)",
       "tooLowInput": "Muss > 0 sein",
       "tooLowValue": "{{value}} muss größer als 0 sein",
+      "trainScheduleTitle": "Ein Fehler ist aufgetreten",
       "unableToRetrieveTags": "Tags konnten nicht abgerufen werden"
     },
     "hideTrainSettings": "Ausblenden",
@@ -415,7 +415,7 @@
     "infraLoading": "Infrastruktur wird geladen…",
     "inputOPTrigrams": "Geben Sie die Kürzel der zu durchfahrenden Betriebsstellen ein, getrennt durch Leerzeichen.",
     "inputOPTrigramsExample": "Bsp.: HHA HGÖ FKS",
-    "invalidTimetableItemStep": "Mindestens ein Wegepunkt konnte nicht erkannt werden.",
+    "invalidTrainScheduleStep": "Mindestens ein Wegepunkt konnte nicht erkannt werden.",
     "inverseOD": "Route umkehren",
     "itineraryModal": {
       "addLocationOnMap": "Betriebsstelle auf der Karte hinzufügen",
@@ -496,12 +496,12 @@
       "unrecognizedRollingStock": "Unbekanntes Schienenfahrzeug: {{rollingStockName}}",
       "unspecifiedRollingStock": "Schienenfahrzeug nicht angegeben"
     },
-    "timetableItemDepartureTime": "Abfahrtszeit",
-    "timetableItemInitialSpeed": "Anfangsgeschwindigkeit",
-    "timetableItemName": "Nummer, Name",
     "toggleTrigramSearch": "Betriebsstellenkürzelsuche umschalten",
     "trainAdded": "Zug hinzugefügt",
     "trainLabels": "Tags",
+    "trainScheduleDepartureTime": "Abfahrtszeit",
+    "trainScheduleInitialSpeed": "Anfangsgeschwindigkeit",
+    "trainScheduleName": "Nummer, Name",
     "turnPacedTrainIntoUniqueTrain": "Diese Leistung in einen einzelnen Zug umwandeln",
     "turnUniqueTrainIntoPacedTrain": "Diesen einzelnen Zug in eine Leistung umwandeln",
     "unavailableDistance": "Abstand nicht verfügbar",
