@@ -1,3 +1,6 @@
+import { isEmpty } from 'lodash';
+import { v4 as uuidV4 } from 'uuid';
+
 import {
   osrdEditoastApi,
   type TrainSchedule,
@@ -126,6 +129,56 @@ export async function deleteExceptions(dispatch: AppDispatch, ids: number[]) {
       body: { ids },
     })
   ).unwrap();
+}
+
+/**
+ * Creates, updates, or deletes a single occurrence exception based on the generated diff.
+ * Returns the final exception for local state update via updatePacedTrainExceptionsList.
+ */
+export async function syncOccurrenceException(
+  dispatch: AppDispatch,
+  generatedException: Omit<PacedTrainException, 'key' | 'occurrence_index'>,
+  existingException: PacedTrainException | undefined,
+  occurrenceIndex: number | undefined,
+  pacedTrainId: number,
+  timetableId: number
+): Promise<PacedTrainException> {
+  if (existingException) {
+    if (isEmpty(generatedException) && !existingException.disabled) {
+      // No changes vs paced train anymore — delete the exception
+      // TODO_EXCEPTION: remove `!` when using TrainScheduleException type
+      await deleteExceptions(dispatch, [existingException.id!]);
+      // Return the empty exception so updatePacedTrainExceptionsList removes it from local state
+      return {
+        ...generatedException,
+        key: existingException.key,
+        occurrence_index: occurrenceIndex,
+      };
+    }
+    const toUpdate: PacedTrainException = {
+      ...generatedException,
+      id: existingException.id,
+      // TODO_EXCEPTION: remove this when key is dropped from the model
+      key: existingException.key,
+      occurrence_index: occurrenceIndex,
+    };
+    await updateExceptions(dispatch, [toUpdate], pacedTrainId);
+    return toUpdate;
+  }
+
+  const exceptionToCreate: PacedTrainException = {
+    ...generatedException,
+    // TODO_EXCEPTION: remove this when key is dropped from the model
+    key: uuidV4(),
+    occurrence_index: occurrenceIndex,
+  };
+  const [created] = await createExceptions(
+    dispatch,
+    [exceptionToCreate],
+    pacedTrainId,
+    timetableId
+  );
+  return { ...exceptionToCreate, id: created.id };
 }
 
 export async function syncAndUpdatePacedTrain(
