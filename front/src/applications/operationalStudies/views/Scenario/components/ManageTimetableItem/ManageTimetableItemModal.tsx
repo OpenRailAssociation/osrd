@@ -9,12 +9,12 @@ import { castErrorToFailure } from 'utils/error';
 
 import { MANAGE_TIMETABLE_ITEM_TYPES } from '../../consts';
 import { TrainScheduleSetCatalogDialog } from '../ImportTrainScheduleSets';
-import ManageTimetableItemLeftPanel, {
-  type ManageTimetableItemLeftPanelProps,
-} from './ManageTimetableItemLeftPanel';
 import ManageTrainSchedule from './ManageTrainSchedule';
+import ManageTrainScheduleLeftPanel, {
+  type ManageTrainScheduleLeftPanelProps,
+} from './ManageTrainScheduleLeftPanel';
 
-type ManageTimetableItemModalProps = ManageTimetableItemLeftPanelProps & {
+type ManageTimetableItemModalProps = ManageTrainScheduleLeftPanelProps & {
   setCollapsedTimetableEdit: () => void;
   collapsedTimetableEdit: boolean;
   importTrainScheduleSets: ReturnType<
@@ -46,7 +46,7 @@ const ManageTimetableItemModal = ({
   return (
     <div className="scenario-manage-timetable-item-modal">
       <ManageTrainScheduleContextProvider>
-        <ManageTimetableItemLeftPanel
+        <ManageTrainScheduleLeftPanel
           displayTimetableItemManagement={displayTimetableItemManagement}
           setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
           upsertTimetableItems={upsertTimetableItems}
