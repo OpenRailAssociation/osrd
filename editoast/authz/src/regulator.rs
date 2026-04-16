@@ -104,9 +104,6 @@ pub trait StorageDriver: Clone {
         new_identities: &[String],
     ) -> impl Future<Output = Result<bool, Self::Error>> + Send;
 
-    fn delete_group(&self, group_id: i64)
-    -> impl Future<Output = Result<bool, Self::Error>> + Send;
-
     fn infra_exists(&self, infra_id: i64)
     -> impl Future<Output = Result<bool, Self::Error>> + Send;
 }

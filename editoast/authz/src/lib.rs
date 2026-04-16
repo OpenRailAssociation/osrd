@@ -376,21 +376,5 @@ mod mock_driver {
             };
             Ok(true)
         }
-
-        async fn delete_group(&self, group_id: i64) -> Result<bool, Self::Error> {
-            let groups = self.groups.lock().unwrap();
-
-            let group_name = groups
-                .iter()
-                .find_map(|(k, &v)| if v == group_id { Some(k) } else { None });
-
-            if let Some(name) = group_name {
-                let mut groups = self.groups.lock().unwrap();
-                groups.remove(name);
-                Ok(true)
-            } else {
-                Ok(false)
-            }
-        }
     }
 }

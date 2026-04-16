@@ -16,6 +16,7 @@ use std::collections::HashSet;
 use std::sync::Arc;
 
 use editoast_models::PgAuthDriver;
+use editoast_models::prelude::*;
 
 use crate::authorizers::Rejection;
 use crate::authorizers::SystemAuthorizer;
@@ -214,9 +215,10 @@ pub async fn delete_group(
 ) -> anyhow::Result<()> {
     let regulator = openfga_config.into_regulator(pool.clone()).await?;
     let driver = regulator.driver();
+    let mut conn = pool.get().await?;
     let system = SystemAuthorizer {
         openfga: regulator.openfga(),
-        conn: pool.get().await?,
+        conn: conn.clone(),
     };
     let group_id = if let Some(id) = driver.get_group_id(&name).await? {
         id
@@ -235,7 +237,7 @@ pub async fn delete_group(
         Err(rejection) => impossible!(rejection),
     }
 
-    let deleted = driver.delete_group(group_id).await?;
+    let deleted = editoast_models::Group::delete_static(&mut conn, group_id).await?;
     if deleted {
         tracing::info!("group '{name}' deleted");
     } else {
