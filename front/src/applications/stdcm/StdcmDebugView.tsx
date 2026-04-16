@@ -43,6 +43,8 @@ const StdcmDebugView = () => {
     result = <div>Loading...</div>;
   } else if (error) {
     result = <div>Error: {JSON.stringify(error)}</div>;
+  } else if (!simulationData) {
+    result = <div>No simulation data available</div>;
   } else {
     result = <DebugSpaceTimeChart simulationData={simulationData} />;
   }
