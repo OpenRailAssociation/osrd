@@ -1,5 +1,4 @@
 import { isEqual, omit } from 'lodash';
-import { v4 as uuidV4 } from 'uuid';
 
 import type { PacedTrainWithPaced } from 'applications/operationalStudies/types';
 import type { TrainSchedule, PacedTrainException } from 'common/api/osrdEditoastApi';
@@ -175,42 +174,33 @@ export function updatePacedTrainExceptionsList<T extends PacedTrainException>(
 }
 
 /**
- * Build a PacedTrain with an updated or new exception for a specific occurrence.
- * This centralizes the pattern of generating an exception and updating the exceptions list.
+ * Computes the exception diff data needed to create/update/delete an exception
+ * for a given occurrence update. Pure function — caller handles the API calls.
  */
-export function buildPacedTrainWithUpdatedException(
-  originalPacedTrain: PacedTrainWithPaced,
+export function buildOccurrenceExceptionData(
+  originalPacedTrain: Omit<PacedTrainWithPaced, 'train_schedule_set_id'>,
   updatedOccurrence: TrainSchedule,
   occurrenceId: OccurrenceId
-): PacedTrainWithPaced {
+): {
+  generatedException: Omit<PacedTrainException, 'key' | 'occurrence_index'>;
+  existingException: PacedTrainException | undefined;
+  occurrenceIndex: number | undefined;
+} {
   const occurrenceIndex = isIndexedOccurrenceId(occurrenceId)
     ? extractOccurrenceIndexFromOccurrenceId(occurrenceId)
     : undefined;
 
-  const baseException = generatePacedTrainException(
-    updatedOccurrence,
-    originalPacedTrain,
-    occurrenceIndex ?? null
-  );
-
-  const existingException = findExceptionWithOccurrenceId(
-    originalPacedTrain.paced.exceptions,
-    occurrenceId
-  );
-
-  const updatedExceptions = updatePacedTrainExceptionsList(
-    originalPacedTrain.paced.exceptions,
-    {
-      ...baseException,
-      key: existingException?.key ?? uuidV4(),
-      occurrence_index: occurrenceIndex,
-    },
-    occurrenceId
-  );
-
   return {
-    ...originalPacedTrain,
-    paced: { ...originalPacedTrain.paced, exceptions: updatedExceptions },
+    generatedException: generatePacedTrainException(
+      updatedOccurrence,
+      originalPacedTrain,
+      occurrenceIndex ?? null
+    ),
+    existingException: findExceptionWithOccurrenceId(
+      originalPacedTrain.paced.exceptions,
+      occurrenceId
+    ),
+    occurrenceIndex,
   };
 }
 
