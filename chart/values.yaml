@@ -105,7 +105,7 @@ services:
     tolerations: []
     affinity: {}
     resources: {}
-    # -- (string) Service account name to mount in case of kubernetes deployment
+    # -- (string|null) Service account name to mount in case of kubernetes deployment
     service_account_name: null
     env: []
     config:

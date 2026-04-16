@@ -27,6 +27,18 @@ helm install osrd oci://ghcr.io/openrailassociation/osrd-charts/osrd-dev --versi
 
 Check the `values.yaml` file.
 
+## Schema generation
+
+The `values.schema.json` is generated using the [helm-schema plugin](https://github.com/dadav/helm-schema).
+
+From the `chart/` directory, run:
+
+```bash
+helm schema -a -p
+```
+
+The CI will fail if the committed schema doesn't match the generated output.
+
 ## Values
 
 | Key | Type | Default | Description |
@@ -59,7 +71,7 @@ Check the `values.yaml` file.
 | services.core.labels | object | `{}` |  |
 | services.core.nodeSelector | object | `{}` |  |
 | services.core.resources | object | `{}` |  |
-| services.core.service_account_name | string | `nil` | Service account name to mount in case of kubernetes deployment |
+| services.core.service_account_name | string|null | `nil` | Service account name to mount in case of kubernetes deployment |
 | services.core.tolerations | list | `[]` |  |
 | services.editoast.affinity | object | `{}` |  |
 | services.editoast.annotations | object | `{}` |  |
