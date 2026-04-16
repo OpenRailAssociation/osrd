@@ -36,7 +36,7 @@ type MapProps = {
   pathStepsAndSuggestedOPs?: SuggestedOP[];
 };
 
-const ManageTimetableItemMap = ({
+const ManageTrainScheduleMap = ({
   pathProperties,
   simulationPathSteps,
   pathStepsAndSuggestedOPs,
@@ -229,4 +229,4 @@ const ManageTimetableItemMap = ({
   );
 };
 
-export default ManageTimetableItemMap;
+export default ManageTrainScheduleMap;
