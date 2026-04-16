@@ -47,7 +47,7 @@ import PowerRestrictionsSelector from './PowerRestrictionsSelector/PowerRestrict
 import SimulationSettings from './SimulationSettings';
 import TrainSettings from './TrainSettings';
 
-const ManageTimetableItem = () => {
+const ManageTrainSchedule = () => {
   const [showTrainSettings, setShowTrainSettings] = useState(true);
   const dispatch = useAppDispatch();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
@@ -303,4 +303,4 @@ const ManageTimetableItem = () => {
   );
 };
 
-export default ManageTimetableItem;
+export default ManageTrainSchedule;
