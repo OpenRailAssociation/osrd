@@ -146,7 +146,7 @@ export const buildTimetableExportPayload = (
   };
 };
 
-export const exportTimetableItems = (
+export const exportTrainSchedules = (
   selectedTimeTableIdsFromClick: number[],
   timetableItems: TimetableItem[],
   roundTrips?: RoundTrips
