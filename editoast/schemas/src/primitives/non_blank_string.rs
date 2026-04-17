@@ -57,20 +57,20 @@ impl DerefMut for NonBlankString {
 
 impl From<String> for NonBlankString {
     fn from(s: String) -> Self {
-        s.as_str().into()
+        assert!(!s.is_empty());
+        NonBlankString(s)
     }
 }
 
 impl From<&String> for NonBlankString {
     fn from(s: &String) -> Self {
-        s.as_str().into()
+        s.clone().into()
     }
 }
 
 impl From<&str> for NonBlankString {
     fn from(s: &str) -> Self {
-        assert!(!s.is_empty());
-        NonBlankString(s.into())
+        s.to_string().into()
     }
 }
 
