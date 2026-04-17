@@ -25,14 +25,14 @@ describe('processJsonFile', () => {
 
   describe('Export/Import of timetable', () => {
     it('Should export and import timetable', () => {
-      const payloadItems = [train0, train1];
+      const payloadTrains = [train0, train1];
 
       const payloadRoundTrips: RoundTrips = {
         round_trips: [[0, 1]],
       };
       const exportPayload = buildTimetableExportPayload(
-        payloadItems,
-        payloadItems.map(({ id }) => id),
+        payloadTrains,
+        payloadTrains.map(({ id }) => id),
         payloadRoundTrips
       );
       const importPayload = processJsonFile(
@@ -42,7 +42,7 @@ describe('processJsonFile', () => {
       );
       expect(importPayload).toEqual(
         expect.objectContaining({
-          paced_trains: payloadItems.map(
+          paced_trains: payloadTrains.map(
             ({ id: _id, train_schedule_set_id: _train_schedule_set_id, ...rest }) => rest
           ),
           round_trips: [[0, 1]],

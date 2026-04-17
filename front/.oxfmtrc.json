@@ -8,7 +8,7 @@
   "ignorePatterns": [
     "*.md",
     "public/locales/en/infraEditor.json",
-    "src/applications/OperationalStudies/views/Scenario/components/ImportTimetableItem/rollingstock_opendata2osrd.json",
+    "src/applications/operationalStudies/views/Scenario/components/ImportTrainSchedule/rollingstock_opendata2osrd.json",
     "src/assets/mapstyles/*.json",
     "src/common/NavBar/json/licenses.json",
     "src/reducers/osrdconf/infra_schema.json",

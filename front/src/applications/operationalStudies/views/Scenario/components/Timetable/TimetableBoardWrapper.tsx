@@ -18,8 +18,8 @@ import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { mapBy } from 'utils/types';
 
-import { validateTimetableJsonPayload } from '../ImportTimetableItem/helpers/parseJson';
-import { postFullImportPayload } from '../ImportTimetableItem/helpers/postPayloads';
+import { validateTimetableJsonPayload } from '../ImportTrainSchedule/helpers/parseJson';
+import { postFullImportPayload } from '../ImportTrainSchedule/helpers/postPayloads';
 import Timetable from './Timetable';
 import { copyTimetableItemsToClipboard } from './utils';
 

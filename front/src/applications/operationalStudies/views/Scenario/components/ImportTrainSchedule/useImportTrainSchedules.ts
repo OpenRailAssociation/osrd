@@ -16,11 +16,11 @@ import { processJsonFile } from './helpers/parseJson';
 import locallyProcessXmlFile from './helpers/parseXML';
 import { postFullImportPayload } from './helpers/postPayloads';
 
-type ImportTimetableItemsProps = {
+type ImportTrainSchedulesProps = {
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
 };
 
-const useImportTimetableItems = ({ upsertTimetableItems }: ImportTimetableItemsProps) => {
+const useImportTrainSchedules = ({ upsertTimetableItems }: ImportTrainSchedulesProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'importTrains' });
   const dispatch = useAppDispatch();
   const { scenario, sandboxId } = useScenarioContext();
@@ -58,7 +58,7 @@ const useImportTimetableItems = ({ upsertTimetableItems }: ImportTimetableItemsP
     try {
       const timetableJsonPayload = await processFile(file);
 
-      const importedTimetableItems = await postFullImportPayload(
+      const importedTrainSchedules = await postFullImportPayload(
         sandboxId,
         scenario.timetable_id,
         scenario.id,
@@ -73,7 +73,7 @@ const useImportTimetableItems = ({ upsertTimetableItems }: ImportTimetableItemsP
         setSuccess({
           title: t('success'),
           text: t('status.successfulImport', {
-            count: importedTimetableItems.length,
+            count: importedTrainSchedules.length,
           }),
         })
       );
@@ -85,4 +85,4 @@ const useImportTimetableItems = ({ upsertTimetableItems }: ImportTimetableItemsP
   return importFile;
 };
 
-export default useImportTimetableItems;
+export default useImportTrainSchedules;
