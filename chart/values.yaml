@@ -14,16 +14,43 @@ affinity: {}
 # The variables can be either a string or directly an object that would be used
 # in the env variable that uses it (merged directly).
 endpoints:
+  # -- (string) Public url of the application
   public: https://my-osrd-instance.org
+  # -- (object) amqp configuration
   amqp:
+    # @schema
+    # type: [string, object]
+    # @schema
+    # --(string, object) amqp server url text or reference to a secret
     url: "amqp://osrd:password@rabbitmq:5672/%2f"
+    # @schema
+    # type: [string, object]
+    # @schema
+    # -- (string, object) amqp management url
     management: "http://osrd:password@rabbitmq:15672"
+    # @schema
+    # type: [string, object]
+    # @schema
+    # -- (string, object) amqp management url including vhost
     managementWithVhost: "http://osrd:password@rabbitmq:15672/%2f"
+  # @schema
+  # type: [string, object]
+  # @schema
+  # -- (string, object) postgresql url
   postgresql: "postgres://osrd:password@postgres:5432/osrd"
+  # @schema
+  # type: [string, object]
+  # @schema
+  # -- (string, object) postgresql url for openFGA
   postgresqlOpenFGA: "postgres://osrd:password@postgres:5432/osrd?search_path=openfga"
+  # @schema
+  # type: [string, object]
+  # @schema
+  # -- (string, object) redis/valkey url
   redis: redis://username:pwd@redis:6379/0
 
 # Container images related settings
+# -- (list) list of imagePullSecrets to use
 imagePullSecrets: []
 pullPolicy: IfNotPresent
 images:
@@ -33,7 +60,7 @@ images:
   osrdyne: ghcr.io/openrailassociation/osrd-REPOSITORY_VERSION_REPLACE_ME/osrd-osrdyne:IMAGES_VERSION_REPLACE_ME
   openfga: openfga/openfga:v1.8.6
 
-# Services direct settings and overides
+# -- (object) Services direct settings and overides
 services:
   openfga:
     enabled: false
@@ -105,12 +132,21 @@ services:
     tolerations: []
     affinity: {}
     resources: {}
-    # -- (string|null) Service account name to mount in case of kubernetes deployment
+    # @schema
+    # required: false
+    # type: [string, null]
+    # @schema
+    # -- (string, null) Service account name to mount in case of kubernetes deployment
     service_account_name: null
     env: []
     config:
       telemetry: null
+    # -- (object) autoscaling configuration of osrdyne KubernetesDriver detail in https://github.com/OpenRailAssociation/osrd/blob/dev/osrdyne/src/drivers/kubernetes.rs
     autoscaling:
+      # @schema
+      # enum: [NoScaling, Keda, Hpa]
+      # @schema
+      # -- (string) Type of autoscaling
       type: NoScaling
 
   gateway:
@@ -120,14 +156,18 @@ services:
       type: ClusterIP
       port: 80
       targetPort: 80
+    # -- (object) Gateway ingress configuration
     ingress:
       enabled: false
       className: ""
+      # -- (list) List of domains to serve
       domains:
         - osrd.local
+      # -- (string) Secret containing the tls certificates can be null
       secretName: osrd-gateway-tls
       annotations: {}
       tls: []
+    # -- (object) gateway authentication configuration see https://github.com/OpenRailAssociation/osrd/blob/dev/gateway/README.md
     config:
       auth:
         providers:
@@ -190,13 +230,29 @@ services:
     init:
       enabled: true
       extend: ""
+    # -- (object) cronjob configuration. Runs editoast gc
     cronjob:
-      # set to null to disable cronjob
+      # @schema
+      # type: [string, null]
+      # @schema
+      # -- (string, null) cronjob format time of execution. Set to null to disable
       schedule: "3 1 * * mon-fri"
-      # command to be executed before editoast gc
+      # @schema
+      # type: [string, null]
+      # @schema
+      # -- (string, null) shell commands to be executed before editoast gc
       extend: ""
+      # -- (list) list of env variable to pass to cronjob script. Editoast default service variables are already set
       env: []
+    # @schema
+    # type: [string, null]
+    # @schema
+    # -- (string, null) size in Kubernetes format for editoast shared storage mount in all hosts. null to disable permanent storage
     permanent_storage_size: null
+    # @schema
+    # type: [string, null]
+    # @schema
+    # -- (string, null) storage class for permanent storage
     permanent_storage_class: null
     labels: {}
     nodeSelector: {}

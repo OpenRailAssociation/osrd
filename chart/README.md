@@ -45,15 +45,16 @@ The CI will fail if the committed schema doesn't match the generated output.
 |-----|------|---------|-------------|
 | affinity | object | `{}` |  |
 | annotations | object | `{}` |  |
-| endpoints.amqp.management | string | `"http://osrd:password@rabbitmq:15672"` |  |
-| endpoints.amqp.managementWithVhost | string | `"http://osrd:password@rabbitmq:15672/%2f"` |  |
-| endpoints.amqp.url | string | `"amqp://osrd:password@rabbitmq:5672/%2f"` |  |
-| endpoints.postgresql | string | `"postgres://osrd:password@postgres:5432/osrd"` |  |
-| endpoints.postgresqlOpenFGA | string | `"postgres://osrd:password@postgres:5432/osrd?search_path=openfga"` |  |
-| endpoints.public | string | `"https://my-osrd-instance.org"` |  |
-| endpoints.redis | string | `"redis://username:pwd@redis:6379/0"` |  |
+| endpoints.amqp | object | `{"management":"http://osrd:password@rabbitmq:15672","managementWithVhost":"http://osrd:password@rabbitmq:15672/%2f","url":"amqp://osrd:password@rabbitmq:5672/%2f"}` | amqp configuration |
+| endpoints.amqp.management | string, object | `"http://osrd:password@rabbitmq:15672"` | amqp management url |
+| endpoints.amqp.managementWithVhost | string, object | `"http://osrd:password@rabbitmq:15672/%2f"` | amqp management url including vhost |
+| endpoints.amqp.url | string, object | `"amqp://osrd:password@rabbitmq:5672/%2f"` | amqp server url text or reference to a secret |
+| endpoints.postgresql | string, object | `"postgres://osrd:password@postgres:5432/osrd"` | postgresql url |
+| endpoints.postgresqlOpenFGA | string, object | `"postgres://osrd:password@postgres:5432/osrd?search_path=openfga"` | postgresql url for openFGA |
+| endpoints.public | string | `"https://my-osrd-instance.org"` | Public url of the application |
+| endpoints.redis | string, object | `"redis://username:pwd@redis:6379/0"` | redis/valkey url |
 | fullnameOverride | string | `""` |  |
-| imagePullSecrets | list | `[]` |  |
+| imagePullSecrets | list | `[]` | list of imagePullSecrets to use |
 | images.core | string | `"ghcr.io/openrailassociation/osrd-REPOSITORY_VERSION_REPLACE_ME/osrd-core:IMAGES_VERSION_REPLACE_ME"` |  |
 | images.editoast | string | `"ghcr.io/openrailassociation/osrd-REPOSITORY_VERSION_REPLACE_ME/osrd-editoast:IMAGES_VERSION_REPLACE_ME"` |  |
 | images.gateway | string | `"ghcr.io/openrailassociation/osrd-REPOSITORY_VERSION_REPLACE_ME/osrd-gateway:IMAGES_VERSION_REPLACE_ME-front"` |  |
@@ -63,153 +64,20 @@ The CI will fail if the committed schema doesn't match the generated output.
 | nameOverride | string | `""` |  |
 | nodeSelector | object | `{}` |  |
 | pullPolicy | string | `"IfNotPresent"` |  |
-| services.core.affinity | object | `{}` |  |
-| services.core.annotations | object | `{}` |  |
-| services.core.autoscaling.type | string | `"NoScaling"` |  |
-| services.core.config.telemetry | string | `nil` |  |
-| services.core.env | list | `[]` |  |
-| services.core.labels | object | `{}` |  |
-| services.core.nodeSelector | object | `{}` |  |
-| services.core.resources | object | `{}` |  |
-| services.core.service_account_name | string|null | `nil` | Service account name to mount in case of kubernetes deployment |
-| services.core.tolerations | list | `[]` |  |
-| services.editoast.affinity | object | `{}` |  |
-| services.editoast.annotations | object | `{}` |  |
-| services.editoast.cronjob.env | list | `[]` |  |
-| services.editoast.cronjob.extend | string | `""` |  |
-| services.editoast.cronjob.schedule | string | `"3 1 * * mon-fri"` |  |
-| services.editoast.enabled | bool | `true` |  |
-| services.editoast.env | list | `[]` |  |
-| services.editoast.hpa.annotations | object | `{}` |  |
-| services.editoast.hpa.enabled | bool | `true` |  |
-| services.editoast.hpa.labels | object | `{}` |  |
-| services.editoast.hpa.maxReplicas | int | `10` |  |
-| services.editoast.hpa.minReplicas | int | `2` |  |
-| services.editoast.hpa.targetCPUUtilizationPercentage | int | `80` |  |
-| services.editoast.init.enabled | bool | `true` |  |
-| services.editoast.init.extend | string | `""` |  |
-| services.editoast.labels | object | `{}` |  |
-| services.editoast.livenessProbe.disabled | bool | `false` |  |
-| services.editoast.livenessProbe.initialDelaySeconds | int | `0` |  |
-| services.editoast.livenessProbe.periodSeconds | int | `10` |  |
-| services.editoast.livenessProbe.timeoutSeconds | int | `3` |  |
-| services.editoast.nodeSelector | object | `{}` |  |
-| services.editoast.permanent_storage_class | string | `nil` |  |
-| services.editoast.permanent_storage_size | string | `nil` |  |
-| services.editoast.readinessProbe.disabled | bool | `false` |  |
-| services.editoast.readinessProbe.initialDelaySeconds | int | `5` |  |
-| services.editoast.readinessProbe.periodSeconds | int | `10` |  |
-| services.editoast.readinessProbe.timeoutSeconds | int | `3` |  |
-| services.editoast.replicaCount | int | `2` |  |
-| services.editoast.resources | object | `{}` |  |
-| services.editoast.service.port | int | `80` |  |
-| services.editoast.service.targetPort | int | `80` |  |
-| services.editoast.service.type | string | `"ClusterIP"` |  |
-| services.editoast.tolerations | list | `[]` |  |
-| services.gateway.affinity | object | `{}` |  |
-| services.gateway.annotations | object | `{}` |  |
-| services.gateway.config.auth.providers[0].provider_id | string | `"mocked"` |  |
-| services.gateway.config.auth.providers[0].type | string | `"Mocked"` |  |
-| services.gateway.config.auth.providers[0].username | string | `"osrd-admin"` |  |
-| services.gateway.config.railway_manager_interface.enabled | bool | `false` |  |
-| services.gateway.config.railway_manager_interface.prefix | string | `"/railway-manager"` |  |
-| services.gateway.config.railway_manager_interface.upstream | string | `""` |  |
-| services.gateway.config.tracing.config | object | `{}` |  |
-| services.gateway.config.tracing.enabled | bool | `false` |  |
-| services.gateway.config.tracing.type | string | `""` |  |
-| services.gateway.config.trusted_proxies[0] | string | `"10.0.0.0/8"` |  |
-| services.gateway.config.trusted_proxies[1] | string | `"172.16.0.0/12"` |  |
-| services.gateway.config.trusted_proxies[2] | string | `"192.168.0.0/16"` |  |
-| services.gateway.enabled | bool | `true` |  |
-| services.gateway.env | list | `[]` |  |
-| services.gateway.ingress.annotations | object | `{}` |  |
-| services.gateway.ingress.className | string | `""` |  |
-| services.gateway.ingress.domains[0] | string | `"osrd.local"` |  |
-| services.gateway.ingress.enabled | bool | `false` |  |
-| services.gateway.ingress.secretName | string | `"osrd-gateway-tls"` |  |
-| services.gateway.ingress.tls | list | `[]` |  |
-| services.gateway.labels | object | `{}` |  |
-| services.gateway.livenessProbe.disabled | bool | `false` |  |
-| services.gateway.nodeSelector | object | `{}` |  |
-| services.gateway.readinessProbe.disabled | bool | `false` |  |
-| services.gateway.replicaCount | int | `1` |  |
-| services.gateway.resources | object | `{}` |  |
-| services.gateway.service.port | int | `80` |  |
-| services.gateway.service.targetPort | int | `80` |  |
-| services.gateway.service.type | string | `"ClusterIP"` |  |
-| services.gateway.tolerations | list | `[]` |  |
-| services.gateway.volumeMounts | list | `[]` |  |
-| services.gateway.volumes | list | `[]` |  |
-| services.images.affinity | object | `{}` |  |
-| services.images.annotations | object | `{}` |  |
-| services.images.enabled | bool | `true` |  |
-| services.images.env | list | `[]` |  |
-| services.images.labels | object | `{}` |  |
-| services.images.nodeSelector | object | `{}` |  |
-| services.images.replicaCount | int | `1` |  |
-| services.images.resources | object | `{}` |  |
-| services.images.service.port | int | `80` |  |
-| services.images.service.targetPort | int | `80` |  |
-| services.images.service.type | string | `"ClusterIP"` |  |
-| services.images.tolerations | list | `[]` |  |
-| services.openfga.affinity | object | `{}` |  |
-| services.openfga.annotations | object | `{}` |  |
-| services.openfga.enabled | bool | `false` |  |
-| services.openfga.env | list | `[]` |  |
-| services.openfga.labels | object | `{}` |  |
-| services.openfga.nodeSelector | object | `{}` |  |
-| services.openfga.readinessProbe.disabled | bool | `false` |  |
-| services.openfga.readinessProbe.initialDelaySeconds | int | `5` |  |
-| services.openfga.readinessProbe.periodSeconds | int | `10` |  |
-| services.openfga.readinessProbe.timeoutSeconds | int | `3` |  |
-| services.openfga.replicaCount | int | `2` |  |
-| services.openfga.resources | object | `{}` |  |
-| services.openfga.service.port | int | `80` |  |
-| services.openfga.service.targetPort | int | `8080` |  |
-| services.openfga.service.type | string | `"ClusterIP"` |  |
-| services.openfga.tolerations | list | `[]` |  |
-| services.osrdyne.affinity | object | `{}` |  |
-| services.osrdyne.annotations | object | `{}` |  |
-| services.osrdyne.config.api_address | string | `"0.0.0.0:80"` |  |
-| services.osrdyne.config.default_message_ttl | string | `nil` |  |
-| services.osrdyne.config.max_length | string | `nil` |  |
-| services.osrdyne.config.max_length_bytes | string | `nil` |  |
-| services.osrdyne.config.pool_id | string | `"core"` |  |
-| services.osrdyne.enabled | bool | `true` |  |
-| services.osrdyne.env | list | `[]` |  |
-| services.osrdyne.labels | object | `{}` |  |
-| services.osrdyne.livenessProbe.disabled | bool | `false` |  |
-| services.osrdyne.livenessProbe.initialDelaySeconds | int | `5` |  |
-| services.osrdyne.livenessProbe.periodSeconds | int | `10` |  |
-| services.osrdyne.livenessProbe.timeoutSeconds | int | `3` |  |
-| services.osrdyne.nodeSelector | object | `{}` |  |
-| services.osrdyne.readinessProbe.disabled | bool | `false` |  |
-| services.osrdyne.replicaCount | int | `1` |  |
-| services.osrdyne.resources | object | `{}` |  |
-| services.osrdyne.service.port | int | `80` |  |
-| services.osrdyne.service.targetPort | int | `80` |  |
-| services.osrdyne.service.type | string | `"ClusterIP"` |  |
-| services.osrdyne.tolerations | list | `[]` |  |
-| services.statefulEditoast.affinity | object | `{}` |  |
-| services.statefulEditoast.annotations | object | `{}` |  |
-| services.statefulEditoast.enabled | bool | `true` |  |
-| services.statefulEditoast.env | list | `[]` |  |
-| services.statefulEditoast.labels | object | `{}` |  |
-| services.statefulEditoast.livenessProbe.disabled | bool | `false` |  |
-| services.statefulEditoast.livenessProbe.initialDelaySeconds | int | `0` |  |
-| services.statefulEditoast.livenessProbe.periodSeconds | int | `10` |  |
-| services.statefulEditoast.livenessProbe.timeoutSeconds | int | `3` |  |
-| services.statefulEditoast.nodeSelector | object | `{}` |  |
-| services.statefulEditoast.readinessProbe.disabled | bool | `false` |  |
-| services.statefulEditoast.readinessProbe.initialDelaySeconds | int | `5` |  |
-| services.statefulEditoast.readinessProbe.periodSeconds | int | `10` |  |
-| services.statefulEditoast.readinessProbe.timeoutSeconds | int | `3` |  |
-| services.statefulEditoast.replicaCount | int | `1` |  |
-| services.statefulEditoast.resources | object | `{}` |  |
-| services.statefulEditoast.service.port | int | `80` |  |
-| services.statefulEditoast.service.targetPort | int | `80` |  |
-| services.statefulEditoast.service.type | string | `"ClusterIP"` |  |
-| services.statefulEditoast.tolerations | list | `[]` |  |
+| services | object | `{"core":{"affinity":{},"annotations":{},"autoscaling":{"type":"NoScaling"},"config":{"telemetry":null},"env":[],"labels":{},"nodeSelector":{},"resources":{},"service_account_name":null,"tolerations":[]},"editoast":{"affinity":{},"annotations":{},"cronjob":{"env":[],"extend":"","schedule":"3 1 * * mon-fri"},"enabled":true,"env":[],"hpa":{"annotations":{},"enabled":true,"labels":{},"maxReplicas":10,"minReplicas":2,"targetCPUUtilizationPercentage":80},"init":{"enabled":true,"extend":""},"labels":{},"livenessProbe":{"disabled":false,"initialDelaySeconds":0,"periodSeconds":10,"timeoutSeconds":3},"nodeSelector":{},"permanent_storage_class":null,"permanent_storage_size":null,"readinessProbe":{"disabled":false,"initialDelaySeconds":5,"periodSeconds":10,"timeoutSeconds":3},"replicaCount":2,"resources":{},"service":{"port":80,"targetPort":80,"type":"ClusterIP"},"tolerations":[]},"gateway":{"affinity":{},"annotations":{},"config":{"auth":{"providers":[{"provider_id":"mocked","type":"Mocked","username":"osrd-admin"}]},"railway_manager_interface":{"enabled":false,"prefix":"/railway-manager","upstream":""},"tracing":{"config":{},"enabled":false,"type":""},"trusted_proxies":["10.0.0.0/8","172.16.0.0/12","192.168.0.0/16"]},"enabled":true,"env":[],"ingress":{"annotations":{},"className":"","domains":["osrd.local"],"enabled":false,"secretName":"osrd-gateway-tls","tls":[]},"labels":{},"livenessProbe":{"disabled":false},"nodeSelector":{},"readinessProbe":{"disabled":false},"replicaCount":1,"resources":{},"service":{"port":80,"targetPort":80,"type":"ClusterIP"},"tolerations":[],"volumeMounts":[],"volumes":[]},"images":{"affinity":{},"annotations":{},"enabled":true,"env":[],"labels":{},"nodeSelector":{},"replicaCount":1,"resources":{},"service":{"port":80,"targetPort":80,"type":"ClusterIP"},"tolerations":[]},"openfga":{"affinity":{},"annotations":{},"enabled":false,"env":[],"labels":{},"nodeSelector":{},"readinessProbe":{"disabled":false,"initialDelaySeconds":5,"periodSeconds":10,"timeoutSeconds":3},"replicaCount":2,"resources":{},"service":{"port":80,"targetPort":8080,"type":"ClusterIP"},"tolerations":[]},"osrdyne":{"affinity":{},"annotations":{},"config":{"api_address":"0.0.0.0:80","default_message_ttl":null,"max_length":null,"max_length_bytes":null,"pool_id":"core"},"enabled":true,"env":[],"labels":{},"livenessProbe":{"disabled":false,"initialDelaySeconds":5,"periodSeconds":10,"timeoutSeconds":3},"nodeSelector":{},"readinessProbe":{"disabled":false},"replicaCount":1,"resources":{},"service":{"port":80,"targetPort":80,"type":"ClusterIP"},"tolerations":[]},"statefulEditoast":{"affinity":{},"annotations":{},"enabled":true,"env":[],"labels":{},"livenessProbe":{"disabled":false,"initialDelaySeconds":0,"periodSeconds":10,"timeoutSeconds":3},"nodeSelector":{},"readinessProbe":{"disabled":false,"initialDelaySeconds":5,"periodSeconds":10,"timeoutSeconds":3},"replicaCount":1,"resources":{},"service":{"port":80,"targetPort":80,"type":"ClusterIP"},"tolerations":[]}}` | Services direct settings and overides |
+| services.core.autoscaling | object | `{"type":"NoScaling"}` | autoscaling configuration of osrdyne KubernetesDriver detail in https://github.com/OpenRailAssociation/osrd/blob/dev/osrdyne/src/drivers/kubernetes.rs |
+| services.core.autoscaling.type | string | `"NoScaling"` | Type of autoscaling |
+| services.core.service_account_name | string, null | `nil` | Service account name to mount in case of kubernetes deployment |
+| services.editoast.cronjob | object | `{"env":[],"extend":"","schedule":"3 1 * * mon-fri"}` | cronjob configuration. Runs editoast gc |
+| services.editoast.cronjob.env | list | `[]` | list of env variable to pass to cronjob script. Editoast default service variables are already set |
+| services.editoast.cronjob.extend | string, null | `""` | shell commands to be executed before editoast gc |
+| services.editoast.cronjob.schedule | string, null | `"3 1 * * mon-fri"` | cronjob format time of execution. Set to null to disable |
+| services.editoast.permanent_storage_class | string, null | `nil` | storage class for permanent storage |
+| services.editoast.permanent_storage_size | string, null | `nil` | size in Kubernetes format for editoast shared storage mount in all hosts. null to disable permanent storage |
+| services.gateway.config | object | `{"auth":{"providers":[{"provider_id":"mocked","type":"Mocked","username":"osrd-admin"}]},"railway_manager_interface":{"enabled":false,"prefix":"/railway-manager","upstream":""},"tracing":{"config":{},"enabled":false,"type":""},"trusted_proxies":["10.0.0.0/8","172.16.0.0/12","192.168.0.0/16"]}` | gateway authentication configuration see https://github.com/OpenRailAssociation/osrd/blob/dev/gateway/README.md |
+| services.gateway.ingress | object | `{"annotations":{},"className":"","domains":["osrd.local"],"enabled":false,"secretName":"osrd-gateway-tls","tls":[]}` | Gateway ingress configuration |
+| services.gateway.ingress.domains | list | `["osrd.local"]` | List of domains to serve |
+| services.gateway.ingress.secretName | string | `"osrd-gateway-tls"` | Secret containing the tls certificates can be null |
 | tolerations | list | `[]` |  |
 
 ## Contributing
