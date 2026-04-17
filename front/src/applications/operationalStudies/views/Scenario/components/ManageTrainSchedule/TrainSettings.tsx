@@ -59,7 +59,7 @@ const TrainSettings = () => {
     }
   };
 
-  const isInvalidTimetableItemName = isInvalidName(name);
+  const isInvalidTrainScheduleName = isInvalidName(name);
 
   return (
     <div className="row no-gutters">
@@ -72,10 +72,10 @@ const TrainSettings = () => {
               <span className="text-nowrap">{t('trainScheduleName')}</span>
             </>
           }
-          id="timetable-item-name"
+          id="train-schedule-name"
           onChange={(e) => dispatch(updateName(e.target.value))}
           value={name}
-          isInvalid={isInvalidTimetableItemName}
+          isInvalid={isInvalidTrainScheduleName}
           errorMsg={!name ? t('errorMessages.requiredField') : t('errorMessages.nameLengthLimit')}
           noMargin
           inputProps={{

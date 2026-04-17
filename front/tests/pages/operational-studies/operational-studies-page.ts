@@ -29,9 +29,9 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
     button: Locator;
     list: Locator;
   };
-  private readonly timetableItemNameInput: Locator;
+  private readonly trainScheduleNameInput: Locator;
   private readonly initialSpeedInput: Locator;
-  private readonly timetableItemTagsInput: Locator;
+  private readonly trainScheduleTagsInput: Locator;
   private readonly createTimetableItemButton: Locator;
   private readonly simulationSettingsTab: Locator;
   private readonly timesAndStopsTab: Locator;
@@ -60,9 +60,9 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
     };
     this.createTimetableItemButton = page.getByTestId('create-timetable-item-button');
     this.manageTrainSchedulePage = page.getByTestId('manage-train-schedule');
-    this.timetableItemNameInput = page.getByTestId('timetable-item-name-input');
+    this.trainScheduleNameInput = page.getByTestId('train-schedule-name-input');
     this.initialSpeedInput = page.getByTestId('initial-speed-input');
-    this.timetableItemTagsInput = page.getByTestId('chips-input');
+    this.trainScheduleTagsInput = page.getByTestId('chips-input');
     this.categorySelector = page.getByTestId('category-selector-select');
   }
 
@@ -96,7 +96,7 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
     await expect(this.routeTab).not.toHaveClass(/warning/);
   }
 
-  async setTimetableItemStartTime(departureTime: string, departureDate?: string) {
+  async setTrainScheduleStartTime(departureTime: string, departureDate?: string) {
     const currentDate = departureDate || new Date().toISOString().split('T')[0];
     const startTime = `${currentDate}T${departureTime}`;
     await expect(this.startTimeField).toBeVisible();
@@ -140,7 +140,7 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
     );
     await expect(this.definePacedTrainCheckbox).not.toBeChecked();
     await expect(this.returnSimulationResultButton).toBeVisible();
-    await expect(this.timetableItemNameInput).toBeVisible();
+    await expect(this.trainScheduleNameInput).toBeVisible();
     await expect(this.startTimeField).toBeVisible();
     const startTimeDate = createDateInSpecialTimeZone(
       await this.startTimeField.inputValue(),
@@ -156,7 +156,7 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
     await expect(this.initialSpeedInput).toBeVisible();
     await expect(this.initialSpeedInput).toHaveValue('0');
 
-    await expect(this.timetableItemTagsInput).toBeVisible();
+    await expect(this.trainScheduleTagsInput).toBeVisible();
   }
 
   async updateTimetableItem(expectedButtonText?: string) {
@@ -244,7 +244,7 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
     await this.definePacedTrainCheckboxLabel.click();
     await this.setTimeWindow(timeWindow);
     await this.setInterval(interval);
-    await this.setTimetableItemName(name);
+    await this.setTrainScheduleName(name);
     await this.setFormattedStartTime(startTime);
   }
 
@@ -262,9 +262,9 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
     await this.createTimetableItemButton.click();
   }
 
-  async setTimetableItemName(name: string) {
-    await this.timetableItemNameInput.fill(name);
-    await expect(this.timetableItemNameInput).toHaveValue(name);
+  async setTrainScheduleName(name: string) {
+    await this.trainScheduleNameInput.fill(name);
+    await expect(this.trainScheduleNameInput).toHaveValue(name);
   }
 
   async checkInputsBeforeEditingAPacedTrain(

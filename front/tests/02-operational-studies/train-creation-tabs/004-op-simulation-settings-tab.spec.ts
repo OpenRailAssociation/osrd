@@ -93,9 +93,9 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
     });
     await test.step('Add a new unique train, set its properties and perform pathfinding', async () => {
       await operationalStudiesPage.openTimetableItemForm();
-      await operationalStudiesPage.setTimetableItemName(TRAIN_NAME);
+      await operationalStudiesPage.setTrainScheduleName(TRAIN_NAME);
       await rollingStockSelector.selectRollingStock(improbableRollingStockName);
-      await operationalStudiesPage.setTimetableItemStartTime(TRAIN_START_TIME);
+      await operationalStudiesPage.setTrainScheduleStartTime(TRAIN_START_TIME);
       await operationalStudiesPage.selectCategory(FREIGHT_TRAIN.category);
       await operationalStudiesPage.openRouteTab();
       await routeTab.performPathfindingByTrigram({

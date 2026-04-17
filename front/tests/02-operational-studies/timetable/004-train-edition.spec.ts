@@ -93,7 +93,7 @@ test.describe('Train edition', { tag: ['@op', '@paced-trains', '@unique-trains']
     await test.step('Update paced train properties', async () => {
       await operationalStudiesPage.setTimeWindow(TIME_WINDOW);
       await operationalStudiesPage.setInterval(INTERVAL);
-      await operationalStudiesPage.setTimetableItemName(EDITED_PACED_TRAIN_NAME);
+      await operationalStudiesPage.setTrainScheduleName(EDITED_PACED_TRAIN_NAME);
       await operationalStudiesPage.selectCategory(FREIGHT_TRAIN.category);
     });
 

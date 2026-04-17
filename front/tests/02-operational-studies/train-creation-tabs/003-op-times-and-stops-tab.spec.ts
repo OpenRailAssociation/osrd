@@ -59,9 +59,9 @@ test.describe('Times and Stops tab', { tag: ['@op', '@times-stops-tab'] }, () =>
     });
     await test.step('Add a new unique train and set its properties', async () => {
       await operationalStudiesPage.openTimetableItemForm();
-      await operationalStudiesPage.setTimetableItemStartTime(TRAIN_START_TIME);
+      await operationalStudiesPage.setTrainScheduleStartTime(TRAIN_START_TIME);
       await rollingStockSelector.selectRollingStock(dualModeRollingStockName);
-      await operationalStudiesPage.setTimetableItemName(TRAIN_NAME);
+      await operationalStudiesPage.setTrainScheduleName(TRAIN_NAME);
     });
     await test.step('Perform pathfinding then navigate to Times and Stops tab', async () => {
       await operationalStudiesPage.openRouteTab();
