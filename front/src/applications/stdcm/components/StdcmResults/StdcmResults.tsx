@@ -36,7 +36,6 @@ import {
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
 import SendToRailwayManagerModal from './SendToRailwayManagerModal';
-import StdcmDebugResults from './StdcmDebugResults';
 import StdcmFeedback from './StdcmFeedback';
 import StdcmResultsTable from './StdcmResultsTable';
 import StdcmSimulationNavigator from './StdcmSimulationNavigator';
@@ -100,6 +99,7 @@ const StdcmResults = ({
   const { outputs, alternativePath } = selectedSimulation;
 
   const hasSimulationResults = hasResults(outputs);
+  const traceId = outputs && ('results' in outputs ? outputs.results.traceId : outputs.traceId);
 
   const simulationReportSheetNumber = useMemo(
     () => generateCodeNumber(),
@@ -451,8 +451,16 @@ const StdcmResults = ({
               />
             </div>
           </div>
-
-          {isDebugMode && <StdcmDebugResults simulationOutputs={outputs} />}
+          {isDebugMode && traceId && (
+            <a
+              href={`/stdcm/debug?traceId=${encodeURIComponent(traceId)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ fontSize: '0.75rem', opacity: 0.9 }}
+            >
+              Link to debug page with more simulation details
+            </a>
+          )}
         </>
       )}
     </>
