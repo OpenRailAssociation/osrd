@@ -97,6 +97,7 @@ const ItineraryModal = ({
   const pendingStepIdRef = useRef<string>('');
   const [pathSteps, setPathSteps] = useState<PathStepV2[]>([]);
   const [categoryWarning, setCategoryWarning] = useState<string | undefined>(undefined);
+  const [alertBoxWiggle, setAlertBoxWiggle] = useState(0);
 
   const [hoveredGapIndex, setHoveredGapIndex] = useState<number | null>(null);
   const [mapSelectionStepId, setMapSelectionStepId] = useState<string | null>(null);
@@ -316,6 +317,10 @@ const ItineraryModal = ({
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
   useEffect(() => {
+    setSubmitAttempted(false);
+  }, [pathSteps]);
+
+  useEffect(() => {
     if (
       displayTimetableItemManagement === MANAGE_TIMETABLE_ITEM_TYPES.edit ||
       displayTimetableItemManagement === MANAGE_TIMETABLE_ITEM_TYPES.add
@@ -442,6 +447,7 @@ const ItineraryModal = ({
   };
   const submitItinerary = () => {
     setSubmitAttempted(true);
+    setAlertBoxWiggle((c) => c + 1);
     if (isNameEmpty) return;
 
     const stepsWithLocationOrInput = pathSteps.filter(
@@ -513,10 +519,32 @@ const ItineraryModal = ({
         </div>
         <div className="itinerary-modal-form-body">
           {categoryWarning && <AlertBox message={categoryWarning} closeable />}
-          {hasInvalidPathStepDisplay && <AlertBox type="error" message={t('alertInvalidOP')} />}
-          {!hasInvalidPathStepDisplay && pathfindingError && (
-            <AlertBox type="error" message={pathfindingError} />
+          {hasInvalidPathStepDisplay && (
+            <div key={`invalid-op-${alertBoxWiggle}`}>
+              <AlertBox type="error" message={t('alertInvalidOP')} />
+            </div>
           )}
+          {!hasInvalidPathStepDisplay && pathfindingError && (
+            <div key={`pathfinding-${alertBoxWiggle}`}>
+              <AlertBox type="error" message={pathfindingError} />
+            </div>
+          )}
+          {submitAttempted &&
+            !hasInvalidPathStepDisplay &&
+            (!pathSteps[0]?.location || locatedStepsCount < 2) && (
+              <div key={`missing-step-${alertBoxWiggle}`}>
+                <AlertBox
+                  type="error"
+                  message={t(
+                    locatedStepsCount === 0
+                      ? 'alertMissingRequestedPoint'
+                      : !pathSteps[0]?.location
+                        ? 'alertMissingOrigin'
+                        : 'alertMissingDestination'
+                  )}
+                />
+              </div>
+            )}
           <TypeAndPath rollingStockId={modalFormState.rollingStockId} isInNewModal />
           <div className="path-step-list">
             <button
