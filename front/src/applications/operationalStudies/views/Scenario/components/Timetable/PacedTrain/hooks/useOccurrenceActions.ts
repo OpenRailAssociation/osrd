@@ -14,7 +14,7 @@ import {
   createExceptions,
   deleteExceptions,
   updateExceptions,
-} from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
+} from 'modules/timetableItem/helpers/updateTrainScheduleHelpers';
 import type {
   Occurrence,
   PacedTrainWithPacedWithDetails,
