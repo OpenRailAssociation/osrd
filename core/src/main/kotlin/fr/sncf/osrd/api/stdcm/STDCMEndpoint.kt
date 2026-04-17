@@ -196,8 +196,8 @@ class STDCMEndpoint(
                     failureExplainer = failureExplainer,
                     callback,
                 )
+            failureExplainer.saveReport(s3Context)
             if (path == null || hasDuplicateTracks(infra, path.trainPath)) {
-                failureExplainer.saveReport(s3Context)
                 val result = PathNotFound()
                 val response = STDCMFinalResult(status = STDCMProgressStatus.DONE, result = result)
                 return RsJson(RsWithBody(STDCMFinalResult.adapter.toJson(response)))
