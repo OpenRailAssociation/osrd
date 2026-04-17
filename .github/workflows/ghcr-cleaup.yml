@@ -1,0 +1,25 @@
+name: cleanup_ghcr
+
+on:
+  workflow_dispatch:
+  push: # TODO REMOVE
+  schedule:
+    - cron: '0 5 * * *'
+
+jobs:
+  delete-old-images:
+    name: Delete untagged and old images
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - uses: dataaxiom/ghcr-cleanup-action@v1
+        with:
+          dry-run: true # TODO REMOVE
+          packages: 'osrd-edge/osrd-front,osrd-edge/osrd-editoast,osrd-edge/osrd-gateway,osrd-edge/osrd-core,osrd-edge/osrd-osrdyne'
+          exclude-tags: dev,staging
+          delete-untagged: true
+          delete-orphaned-images: true
+          delete-ghost-images: true
+          delete-partial-images: true
+          keep-n-tagged: 100
