@@ -8,7 +8,7 @@ import BoardWrapper from 'applications/operationalStudies/views/Scenario/compone
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
-import { deleteTrainSchedules } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
+import { deleteTrainSchedules } from 'modules/timetableItem/helpers/updateTrainScheduleHelpers';
 import type { TrainScheduleWithDetails } from 'modules/timetableItem/types';
 import { setFailure, setSuccess } from 'reducers/main';
 import type { TimetableItem, TrainScheduleToEditData, TrainId } from 'reducers/osrdconf/types';

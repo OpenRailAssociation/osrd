@@ -7,7 +7,7 @@ import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/compon
 import {
   createExceptions,
   createPacedTrains,
-} from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
+} from 'modules/timetableItem/helpers/updateTrainScheduleHelpers';
 import { setFailure, setSuccess } from 'reducers/main';
 import { clearAddedExceptionsList } from 'reducers/osrdconf/operationalStudiesConf';
 import {

@@ -15,7 +15,7 @@ import {
 import {
   createPacedTrains,
   createExceptions,
-} from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
+} from 'modules/timetableItem/helpers/updateTrainScheduleHelpers';
 import { setWarning, setFailure } from 'reducers/main';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';

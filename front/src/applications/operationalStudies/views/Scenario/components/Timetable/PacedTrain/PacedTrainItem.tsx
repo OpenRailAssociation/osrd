@@ -27,7 +27,7 @@ import {
   createPacedTrains,
   deleteExceptions,
   deleteTrainSchedules,
-} from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
+} from 'modules/timetableItem/helpers/updateTrainScheduleHelpers';
 import type { PacedTrainWithPacedWithDetails } from 'modules/timetableItem/types';
 import { setFailure, setSuccess } from 'reducers/main';
 import type { TimetableItem, TrainId, OccurrenceId } from 'reducers/osrdconf/types';

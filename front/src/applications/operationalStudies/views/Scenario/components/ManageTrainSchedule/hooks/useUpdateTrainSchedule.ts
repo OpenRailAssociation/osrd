@@ -17,7 +17,7 @@ import {
   syncAndUpdatePacedTrain,
   syncOccurrenceException,
   updateExceptions,
-} from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
+} from 'modules/timetableItem/helpers/updateTrainScheduleHelpers';
 import { setSuccess } from 'reducers/main';
 import { clearAddedExceptionsList } from 'reducers/osrdconf/operationalStudiesConf';
 import {
