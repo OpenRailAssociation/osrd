@@ -16,7 +16,7 @@ const DeleteModal = ({
   const { t } = useTranslation(['operational-studies', 'translation']);
   const { closeModal } = useModal();
 
-  const deleteTimetableItemsComputedLabel = () => {
+  const deleteTrainSchedulesComputedLabel = () => {
     if (selectedPacedTrainCount > 0 && selectedUniqueTrainCount === 0) {
       return t('main.timetable.deletePacedTrainSelectionConfirmation', {
         selectedPacedTrainsCount: selectedPacedTrainCount,
@@ -37,7 +37,7 @@ const DeleteModal = ({
   return (
     <>
       <ModalBodySNCF>
-        <div className="lead my-4 w-100 text-center">{deleteTimetableItemsComputedLabel()}</div>
+        <div className="lead my-4 w-100 text-center">{deleteTrainSchedulesComputedLabel()}</div>
       </ModalBodySNCF>
       <ModalFooterSNCF>
         <div className="d-flex align-items-center">

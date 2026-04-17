@@ -212,7 +212,7 @@ class PacedTrainSection extends CommonPage {
       projectItem: item.getByTestId('project-item'),
       duplicateItem: item.getByTestId('duplicate-item'),
       editItem: item.getByTestId('edit-item'),
-      deleteItem: item.getByTestId('delete-item'),
+      deleteTrain: item.getByTestId('delete-train'),
     };
 
     if (isPacedTrain && withExceptions) {
@@ -320,7 +320,7 @@ class PacedTrainSection extends CommonPage {
       itemIndex: index,
       itemType: 'paced-train',
     });
-    await pacedTrainActionButtons.deleteItem.click();
+    await pacedTrainActionButtons.deleteTrain.click();
 
     await expect(this.confirmationModalDeleteButton).toBeVisible();
     await this.confirmationModalDeleteButton.click();

@@ -24,7 +24,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   private readonly timetableSelectAllButton: Locator;
   private readonly timetableSelectOptionsButton: Locator;
   private readonly timetableTotalItemLabel: Locator;
-  private readonly deleteAllTimetableItemsButton: Locator;
+  private readonly deleteAllTrainsButton: Locator;
   private readonly confirmationModalDeleteButton: Locator;
   private readonly timetableFilterButton: Locator;
   private readonly timetableFilterButtonClose: Locator;
@@ -41,7 +41,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   private readonly timetableSpeedLimitTagFilterLabel: Locator;
   private readonly editItemButton: Locator;
   private readonly projectItemButton: Locator;
-  private readonly deleteItemButton: Locator;
+  private readonly deleteTrainButton: Locator;
   readonly editTrainScheduleButton: Locator;
   private readonly timetableItemArrivalTime: Locator;
   private readonly timetableItemArrivalTimeLoader: Locator;
@@ -58,7 +58,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     this.timetableTotalItemLabel = this.timetableBoardWrapper.getByTestId('board-header-name');
     this.timetableSelectAllButton = page.getByTestId('scenarios-select-all-button');
     this.timetableSelectOptionsButton = page.getByTestId('scenarios-select-options-button');
-    this.deleteAllTimetableItemsButton = page.getByTestId('delete-all-items-button');
+    this.deleteAllTrainsButton = page.getByTestId('delete-all-trains-button');
     this.confirmationModalDeleteButton = page.getByTestId('confirmation-modal-delete-button');
     this.timetableFilterButton = page.getByTestId('timetable-filter-button');
     this.timetableFilterButtonClose = page.getByTestId('timetable-filter-button-close');
@@ -85,7 +85,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     );
     this.editItemButton = page.getByTestId('edit-item');
     this.projectItemButton = page.getByTestId('project-item');
-    this.deleteItemButton = page.getByTestId('delete-item');
+    this.deleteTrainButton = page.getByTestId('delete-item');
     this.editTrainScheduleButton = page.getByTestId('submit-edit-train-schedule');
     this.timetableItemArrivalTime = page.getByTestId('timetable-item-arrival-time');
     this.timetableItemArrivalTimeLoader = page.getByTestId('arrival-time-loader');
@@ -330,10 +330,10 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     await this.editItemButton.nth(index).click();
   }
 
-  async deleteTimetableItem(index = 0) {
+  async deleteTrainSchedule(index = 0) {
     await expect(this.timetableItems.nth(index)).toBeVisible();
     await this.timetableItems.nth(index).click();
-    await this.deleteItemButton.nth(index).click();
+    await this.deleteTrainButton.nth(index).click();
   }
 
   async projectTrain(index = 0) {
@@ -363,7 +363,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     await this.timetableSelectAllButton.click();
     await expect(this.exportTrainScheduleButton).toBeVisible();
     await expect(this.unselectTrainSchedulesButton).toBeVisible();
-    await expect(this.deleteAllTimetableItemsButton).toBeVisible();
+    await expect(this.deleteAllTrainsButton).toBeVisible();
   }
 
   async selectAllTrainSchedulesAndVerifySelection(
@@ -389,15 +389,15 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     await expect(this.timetableTotalItemLabel).toHaveText(expectedComputedLabel);
   }
 
-  async deleteAllTimetableItems() {
-    await expect(this.deleteAllTimetableItemsButton).toBeVisible();
-    await this.deleteAllTimetableItemsButton.click();
+  async deleteAllTrainSchedules() {
+    await expect(this.deleteAllTrainsButton).toBeVisible();
+    await this.deleteAllTrainsButton.click();
 
     await expect(this.confirmationModalDeleteButton).toBeVisible();
     await this.confirmationModalDeleteButton.click();
   }
 
-  async verifyAllTimetableItemsHaveBeenDeleted(
+  async verifyAllTrainSchedulesHaveBeenDeleted(
     trainSchedulesCount: number,
     translations: TimetableFilterTranslations
   ) {

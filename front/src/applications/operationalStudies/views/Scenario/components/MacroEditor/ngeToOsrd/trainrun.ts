@@ -465,26 +465,26 @@ const handleCreateTimetableItem = async (
   storeRoundTrip(dispatch, newTrainIds[0], newTrainIds[1] ?? undefined);
 };
 
-const deleteTimetableItemById = async (
-  timetableItemId: number,
+const deleteTrainScheduleById = async (
+  trainScheduleId: number,
   dispatch: AppDispatch,
-  addDeletedTimetableItemIds: (timetableItemIds: number[]) => void
+  addDeletedTrainScheduleIds: (trainScheduleIds: number[]) => void
 ) => {
-  await deleteTrainSchedules(dispatch, [timetableItemId]);
+  await deleteTrainSchedules(dispatch, [trainScheduleId]);
 
-  addDeletedTimetableItemIds([timetableItemId]);
+  addDeletedTrainScheduleIds([trainScheduleId]);
 };
 
-const handleDeleteTimetableItem = async (
+const handleDeleteTrainSchedule = async (
   trainrunId: number,
   state: MacroEditorState,
   dispatch: AppDispatch,
-  addDeletedTimetableItemIds: (timetableItemIds: number[]) => void
+  addDeletedTrainScheduleIds: (trainScheduleIds: number[]) => void
 ) => {
   const timetableItemIds = state.timetableItemIdByNgeId.get(trainrunId);
   for (const timetableItemId of timetableItemIds ?? []) {
     if (timetableItemId) {
-      await deleteTimetableItemById(timetableItemId, dispatch, addDeletedTimetableItemIds);
+      await deleteTrainScheduleById(timetableItemId, dispatch, addDeletedTrainScheduleIds);
     }
   }
   state.timetableItemIdByNgeId.delete(trainrunId);
@@ -506,7 +506,7 @@ export const handleUpdateTimetableItem = async ({
   state,
   dispatch,
   addUpsertedTimetableItems,
-  addDeletedTimetableItemIds,
+  addDeletedTrainScheduleIds,
 }: {
   netzgrafikDto: NetzgrafikDto;
   trainrun: TrainrunDto;
@@ -515,7 +515,7 @@ export const handleUpdateTimetableItem = async ({
   state: MacroEditorState;
   dispatch: AppDispatch;
   addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void;
-  addDeletedTimetableItemIds: (timetableItemIds: number[]) => void;
+  addDeletedTrainScheduleIds: (trainScheduleIds: number[]) => void;
 }) => {
   const timetableItemIds = state.timetableItemIdByNgeId.get(trainrun.id);
   if (!timetableItemIds) return;
@@ -573,7 +573,7 @@ export const handleUpdateTimetableItem = async ({
       // NGE always selects the forward trip by default when going from round trip to one way trip,
       // thus the trip that needs to be deleted is always the return trip
       await storeRoundTrip(dispatch, newForwardTimetableItem.id);
-      await deleteTimetableItemById(timetableItemIds[1], dispatch, addDeletedTimetableItemIds);
+      await deleteTrainScheduleById(timetableItemIds[1], dispatch, addDeletedTrainScheduleIds);
     }
 
     state.timetableItemIdByNgeId.set(trainrun.id, [newForwardTimetableItem.id, null]);
@@ -662,7 +662,7 @@ export const handleTrainrunOperation = async ({
   state,
   dispatch,
   addUpsertedTimetableItems,
-  addDeletedTimetableItemIds,
+  addDeletedTrainScheduleIds,
 }: {
   type: NGEEvent['type'];
   netzgrafikDto: NetzgrafikDto;
@@ -672,7 +672,7 @@ export const handleTrainrunOperation = async ({
   state: MacroEditorState;
   dispatch: AppDispatch;
   addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void;
-  addDeletedTimetableItemIds: (timetableItemIds: number[]) => void;
+  addDeletedTrainScheduleIds: (trainScheduleIds: number[]) => void;
 }) => {
   const trainrun = netzgrafikDto.trainruns.find((tr) => tr.id === trainrunId);
   switch (type) {
@@ -697,12 +697,12 @@ export const handleTrainrunOperation = async ({
         dispatch,
         state,
         addUpsertedTimetableItems,
-        addDeletedTimetableItemIds,
+        addDeletedTrainScheduleIds,
       });
       break;
     }
     case 'delete': {
-      await handleDeleteTimetableItem(trainrunId, state, dispatch, addDeletedTimetableItemIds);
+      await handleDeleteTrainSchedule(trainrunId, state, dispatch, addDeletedTrainScheduleIds);
       break;
     }
     default:
@@ -717,7 +717,7 @@ export const updateTrainrunsByNode = async ({
   infraId,
   trainScheduleSetId,
   addUpsertedTimetableItems,
-  addDeletedTimetableItemIds,
+  addDeletedTrainScheduleIds,
   node,
 }: {
   state: MacroEditorState;
@@ -726,7 +726,7 @@ export const updateTrainrunsByNode = async ({
   infraId: number;
   trainScheduleSetId: number;
   addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void;
-  addDeletedTimetableItemIds: (timetableItemIds: number[]) => void;
+  addDeletedTrainScheduleIds: (trainScheduleIds: number[]) => void;
   node: NodeDto;
 }) => {
   const trainrunsById = new Map<number, TrainrunDto>();
@@ -751,7 +751,7 @@ export const updateTrainrunsByNode = async ({
       dispatch,
       state,
       addUpsertedTimetableItems,
-      addDeletedTimetableItemIds,
+      addDeletedTrainScheduleIds,
     });
   }
 };

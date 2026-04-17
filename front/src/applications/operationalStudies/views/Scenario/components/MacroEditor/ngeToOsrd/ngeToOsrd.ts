@@ -30,7 +30,7 @@ const handleLabelOperation = async ({
   state,
   dispatch,
   addUpsertedTimetableItems,
-  addDeletedTimetableItemIds,
+  addDeletedTrainScheduleIds,
 }: {
   type: NGEEvent['type'];
   netzgrafikDto: NetzgrafikDto;
@@ -40,7 +40,7 @@ const handleLabelOperation = async ({
   state: MacroEditorState;
   dispatch: AppDispatch;
   addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void;
-  addDeletedTimetableItemIds: (timetableItemIds: number[]) => void;
+  addDeletedTrainScheduleIds: (trainScheduleIds: number[]) => void;
 }) => {
   const { trainruns } = netzgrafikDto;
   switch (type) {
@@ -57,7 +57,7 @@ const handleLabelOperation = async ({
           state,
           dispatch,
           addUpsertedTimetableItems,
-          addDeletedTimetableItemIds,
+          addDeletedTrainScheduleIds,
         });
       });
       break;
@@ -76,7 +76,7 @@ export const handleOperation = async ({
   state,
   dispatch,
   addUpsertedTimetableItems,
-  addDeletedTimetableItemIds,
+  addDeletedTrainScheduleIds,
 }: {
   event: NGEEvent;
   netzgrafikDto: NetzgrafikDto;
@@ -85,7 +85,7 @@ export const handleOperation = async ({
   state: MacroEditorState;
   dispatch: AppDispatch;
   addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void;
-  addDeletedTimetableItemIds: (timetableItemsIds: number[]) => void;
+  addDeletedTrainScheduleIds: (trainScheduleIds: number[]) => void;
 }) => {
   const { type } = event;
   switch (event.objectType) {
@@ -97,7 +97,7 @@ export const handleOperation = async ({
         infraId,
         trainScheduleSetId,
         addUpsertedTimetableItems,
-        addDeletedTimetableItemIds,
+        addDeletedTrainScheduleIds,
         type,
         node: event.node,
       });
@@ -112,7 +112,7 @@ export const handleOperation = async ({
         state,
         dispatch,
         addUpsertedTimetableItems,
-        addDeletedTimetableItemIds,
+        addDeletedTrainScheduleIds,
       });
       break;
     }
@@ -126,7 +126,7 @@ export const handleOperation = async ({
         state,
         dispatch,
         addUpsertedTimetableItems,
-        addDeletedTimetableItemIds,
+        addDeletedTrainScheduleIds,
       });
       break;
     case 'note':

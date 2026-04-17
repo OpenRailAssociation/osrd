@@ -108,7 +108,7 @@ test.describe('Netzgrafik Editor', { tag: ['@op', '@nge'] }, () => {
   /** *************** Test 2 **************** */
   test('Delete a train from train list', async ({ page, scenarioTimetableSection, ngePage }) => {
     await test.step('Delete train from timetable list', async () => {
-      await scenarioTimetableSection.deleteTimetableItem();
+      await scenarioTimetableSection.deleteTrainSchedule();
     });
 
     await test.step('Reload page to refresh timetable state', async () => {

@@ -9,7 +9,7 @@ type TimetableSelectionToolbarProps = {
   areInvalidTrainSchedules: boolean;
   toggleAllTrainsSelection: () => void;
   handleExportTrainSchedules: () => void;
-  handleDeleteTimetableItems: () => void;
+  handleDeleteTrainSchedules: () => void;
   handleMoveTimetableItems: () => void;
 };
 
@@ -19,7 +19,7 @@ const TimetableSelectionToolbar = ({
   areInvalidTrainSchedules,
   toggleAllTrainsSelection,
   handleExportTrainSchedules,
-  handleDeleteTimetableItems,
+  handleDeleteTrainSchedules,
   handleMoveTimetableItems,
 }: TimetableSelectionToolbarProps) => {
   const { t } = useTranslation(['operational-studies', 'translation'], { keyPrefix: 'main' });
@@ -60,9 +60,9 @@ const TimetableSelectionToolbar = ({
           </button>
           <button
             className="delete-selection-button"
-            data-testid="delete-all-items-button"
+            data-testid="delete-all-trains-button"
             title={t('timetable.deleteSelection')}
-            onClick={handleDeleteTimetableItems}
+            onClick={handleDeleteTrainSchedules}
             type="button"
           >
             <Trash />

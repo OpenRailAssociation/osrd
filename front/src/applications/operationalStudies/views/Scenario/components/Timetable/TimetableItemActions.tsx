@@ -81,7 +81,7 @@ const TimetableItemActions = ({
         aria-label={t('timetable.delete')}
         title={t('timetable.delete')}
         onClick={deleteTimetableItem}
-        data-testid="delete-item"
+        data-testid="delete-train"
       >
         <Trash />
       </button>
