@@ -80,7 +80,7 @@ export const postFullImportPayload = async (
   subCategories: SubCategory[],
   dispatch: AppDispatch,
   t: TFunction<'operational-studies', 'importTrains'>,
-  upsertTimetableItems: (items: TimetableItem[]) => void
+  upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void
 ): Promise<TimetableItem[]> => {
   try {
     const { round_trips, macro_nodes, macro_notes } = timetableJsonPayload;
@@ -90,18 +90,18 @@ export const postFullImportPayload = async (
     }: { trainSchedules: TrainSchedule[]; exceptions: PacedTrainException[][] } =
       generateTrainPayloads(timetableJsonPayload.paced_trains, subCategories);
 
-    const timetableItems: TimetableItem[] = [];
+    const newtrainschedules: TimetableItem[] = [];
 
     const BATCH_SIZE = 1000;
     const trainChunks = chunk(trainSchedules, BATCH_SIZE);
     for (const trainChunk of trainChunks) {
       const createdTrains = await createPacedTrains(dispatch, trainScheduleSetId, trainChunk);
-      timetableItems.push(...createdTrains);
+      newtrainschedules.push(...createdTrains);
     }
 
     // TODO: when batch POST is available, replace this loop with a single batch call
     const exceptionsWithTrainIds = exceptions
-      .map((trainExceptions, i) => ({ trainExceptions, pacedTrainId: timetableItems[i].id }))
+      .map((trainExceptions, i) => ({ trainExceptions, pacedTrainId: newtrainschedules[i].id }))
       .filter(({ trainExceptions }) => trainExceptions.length > 0);
 
     for (const { trainExceptions, pacedTrainId } of exceptionsWithTrainIds) {
@@ -117,12 +117,14 @@ export const postFullImportPayload = async (
         })
       );
 
-      // Update the timetableItem with its exceptions
-      const trainIndex = timetableItems.findIndex((item) => item.id === pacedTrainId);
+      // Update the trainSchedule with its exceptions
+      const trainIndex = newtrainschedules.findIndex(
+        (trainSchedule) => trainSchedule.id === pacedTrainId
+      );
       if (trainIndex === -1) continue;
-      const currentTrain = timetableItems[trainIndex];
+      const currentTrain = newtrainschedules[trainIndex];
       if (currentTrain.paced) {
-        timetableItems[trainIndex] = {
+        newtrainschedules[trainIndex] = {
           ...currentTrain,
           paced: {
             ...currentTrain.paced,
@@ -133,7 +135,7 @@ export const postFullImportPayload = async (
     }
 
     if (round_trips) {
-      await postRoundTrips(round_trips, timetableItems, dispatch);
+      await postRoundTrips(round_trips, newtrainschedules, dispatch);
     }
 
     if (macro_nodes && macro_nodes.length > 0) {
@@ -151,9 +153,9 @@ export const postFullImportPayload = async (
       ).unwrap();
     }
 
-    upsertTimetableItems(timetableItems);
+    upsertTrainSchedules(newtrainschedules);
 
-    return timetableItems;
+    return newtrainschedules;
   } catch (error) {
     dispatch(
       setFailure({

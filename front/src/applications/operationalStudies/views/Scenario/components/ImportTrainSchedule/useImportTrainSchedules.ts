@@ -17,10 +17,10 @@ import locallyProcessXmlFile from './helpers/parseXML';
 import { postFullImportPayload } from './helpers/postPayloads';
 
 type ImportTrainSchedulesProps = {
-  upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
+  upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void;
 };
 
-const useImportTrainSchedules = ({ upsertTimetableItems }: ImportTrainSchedulesProps) => {
+const useImportTrainSchedules = ({ upsertTrainSchedules }: ImportTrainSchedulesProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'importTrains' });
   const dispatch = useAppDispatch();
   const { scenario, sandboxId } = useScenarioContext();
@@ -66,7 +66,7 @@ const useImportTrainSchedules = ({ upsertTimetableItems }: ImportTrainSchedulesP
         subCategories,
         dispatch,
         t,
-        upsertTimetableItems
+        upsertTrainSchedules
       );
 
       dispatch(

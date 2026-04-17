@@ -56,7 +56,7 @@ type SimulationResultsProps = {
   conflicts?: Conflict[];
   activeBoards: Set<Board>;
   updateTrainDepartureTime: (trainId: number, newDepartureTime: Date) => Promise<void>;
-  upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
+  upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void;
 };
 
 const SimulationResults = ({
@@ -67,7 +67,7 @@ const SimulationResults = ({
   conflicts = [],
   activeBoards,
   updateTrainDepartureTime,
-  upsertTimetableItems,
+  upsertTrainSchedules,
 }: SimulationResultsProps) => {
   const { t } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
@@ -376,7 +376,7 @@ const SimulationResults = ({
                 infraId={infraId}
                 selectedTrain={simulationResults?.train}
                 trainSchedulesWithDetails={trainSchedulesWithDetails}
-                upsertTimetableItems={upsertTimetableItems}
+                upsertTrainSchedules={upsertTrainSchedules}
                 isSimulationDataLoading={isSimulationDataLoading}
                 operationalPointsOnPath={simulationResults.pathProperties?.operationalPoints}
                 voltages={simulationResults.pathProperties?.voltages}

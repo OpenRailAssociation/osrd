@@ -25,7 +25,7 @@ import { copyTimetableItemsToClipboard } from './utils';
 
 type TimetableBoardWrapperProps = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
-  upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
+  upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void;
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
   removeTrainSchedules: (trainScheduleIdsToRemove: number[]) => void;
   trainScheduleToEditData?: TrainScheduleToEditData;
@@ -39,7 +39,7 @@ type TimetableBoardWrapperProps = {
 
 const TimetableBoardWrapper = ({
   setDisplayTrainScheduleManagement,
-  upsertTimetableItems,
+  upsertTrainSchedules,
   setTrainScheduleToEditData,
   removeTrainSchedules,
   trainScheduleToEditData,
@@ -222,7 +222,7 @@ const TimetableBoardWrapper = ({
         subCategories,
         dispatch,
         t,
-        upsertTimetableItems
+        upsertTrainSchedules
       );
 
       setSelectedTrainScheduleIds(newTimetableItems.map((item) => item.id));
@@ -293,7 +293,7 @@ const TimetableBoardWrapper = ({
         selectedTrainScheduleIds={selectedTrainScheduleIds}
         setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
         setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-        upsertTimetableItems={upsertTimetableItems}
+        upsertTrainSchedules={upsertTrainSchedules}
         setTrainScheduleToEditData={setTrainScheduleToEditData}
         removeAndUnselectTrains={removeTrainSchedules}
         handleDeleteTrainSchedules={handleDeleteTrainSchedules}

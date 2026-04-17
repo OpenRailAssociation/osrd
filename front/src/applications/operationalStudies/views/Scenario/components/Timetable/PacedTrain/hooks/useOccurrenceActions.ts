@@ -34,7 +34,7 @@ type OccurrenceActionsParams = {
     originalPacedTrain?: PacedTrainWithPacedWithDetails,
     occurrenceId?: OccurrenceId
   ) => void;
-  upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
+  upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void;
   timetableId: number;
 };
 
@@ -42,7 +42,7 @@ const useOccurrenceActions = ({
   pacedTrain,
   occurrences,
   selectPacedTrainToEdit,
-  upsertTimetableItems,
+  upsertTrainSchedules,
   timetableId,
 }: OccurrenceActionsParams) => {
   const dispatch = useAppDispatch();
@@ -53,7 +53,7 @@ const useOccurrenceActions = ({
     (newExceptions: SimulatedException[]) => {
       const formattedPacedTrain = formatPacedTrainWithDetailsToPacedTrainPayload(pacedTrain);
 
-      upsertTimetableItems([
+      upsertTrainSchedules([
         {
           ...formattedPacedTrain,
           id: pacedTrain.id,
@@ -64,7 +64,7 @@ const useOccurrenceActions = ({
         },
       ]);
     },
-    [pacedTrain, upsertTimetableItems]
+    [pacedTrain, upsertTrainSchedules]
   );
 
   const selectOccurrence = useCallback((occurrenceId: OccurrenceId) => {

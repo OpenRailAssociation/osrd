@@ -68,19 +68,19 @@ const formatRequestedMargin = (requestedMargin: MarginValue | null) => {
  * When a cell is edited (TimeCell or DurationCell), this callback:
  * 1. Updates the train's schedule array
  * 2. Calls the API to persist the change
- * 3. Triggers simulation re-run via upsertTimetableItems
+ * 3. Triggers simulation re-run via upsertTrainSchedules
  *
  * When editing an occurrence:
  * - Finds the parent PacedTrain from trainSchedulesWithDetails
  * - Generates or updates the exception for this occurrence
  * - Updates the PacedTrain with the new exception
- * - Calls upsertTimetableItems to trigger re-simulation
+ * - Calls upsertTrainSchedules to trigger re-simulation
  */
 const useUpdateTimesStopsTable = (
   selectedTrain: Train,
   allRows: TimesStopsRowNew[],
   trainSchedulesWithDetails: TrainScheduleWithDetails[],
-  upsertTimetableItems: (timetableItems: TimetableItem[]) => void
+  upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void
 ) => {
   const dispatch = useAppDispatch();
   const { timetableId } = useScenarioContext();
@@ -112,7 +112,7 @@ const useUpdateTimesStopsTable = (
       id: train.id,
       trainSchedule: train,
     }).unwrap();
-    upsertTimetableItems([train]);
+    upsertTrainSchedules([train]);
     return 'updated';
   };
 

@@ -44,7 +44,7 @@ export type TrainScheduleSetManager = {
 export default function useScenarioTrainScheduleSet(
   trainSchedulesWithDetails: TrainScheduleWithDetails[],
   timetableItems: TimetableItem[],
-  upsertTimetableItems: (timetableItems: TimetableItem[]) => void
+  upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void
 ) {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'main.timetable.trainScheduleSets.error',
@@ -207,7 +207,7 @@ export default function useScenarioTrainScheduleSet(
       // create the trains and attach them to the new local tss
       const createdTrains = await createPacedTrains(dispatch, newTss.id, trainsToCopy);
 
-      upsertTimetableItems(createdTrains);
+      upsertTrainSchedules(createdTrains);
     },
     [
       createTrainScheduleSetMutation,
@@ -318,7 +318,7 @@ export default function useScenarioTrainScheduleSet(
       }).unwrap();
 
       if (allTrainsToUpsert.length > 0) {
-        upsertTimetableItems(allTrainsToUpsert);
+        upsertTrainSchedules(allTrainsToUpsert);
       }
     },
     [
@@ -328,7 +328,7 @@ export default function useScenarioTrainScheduleSet(
       createPacedTrains,
       linkTrainScheduleSetToTimetable,
       timetableId,
-      upsertTimetableItems,
+      upsertTrainSchedules,
     ]
   );
 

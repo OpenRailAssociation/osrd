@@ -14,7 +14,7 @@ import { castNgeNode, handleNodeOperation } from './node';
 import { castNgeNoteToOsrd, handleNoteOperation } from './note';
 import {
   handleTrainrunOperation,
-  handleUpdateTimetableItem,
+  handleUpdateTrainSchedule,
   getTrainrunSectionsByTrainrunId,
   getTrainrunLabels,
   generatePathAndSchedule,
@@ -29,7 +29,7 @@ const handleLabelOperation = async ({
   infraId,
   state,
   dispatch,
-  addUpsertedTimetableItems,
+  addUpsertedTrainSchedules,
   addDeletedTrainScheduleIds,
 }: {
   type: NGEEvent['type'];
@@ -39,7 +39,7 @@ const handleLabelOperation = async ({
   infraId: number;
   state: MacroEditorState;
   dispatch: AppDispatch;
-  addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void;
+  addUpsertedTrainSchedules: (trainSchedules: TimetableItem[]) => void;
   addDeletedTrainScheduleIds: (trainScheduleIds: number[]) => void;
 }) => {
   const { trainruns } = netzgrafikDto;
@@ -49,14 +49,14 @@ const handleLabelOperation = async ({
         trainrun.labelIds.includes(label.id)
       );
       trainrunUpdateLabels.forEach(async (trainrun) => {
-        await handleUpdateTimetableItem({
+        await handleUpdateTrainSchedule({
           netzgrafikDto,
           trainrun,
           trainScheduleSetId,
           infraId,
           state,
           dispatch,
-          addUpsertedTimetableItems,
+          addUpsertedTrainSchedules,
           addDeletedTrainScheduleIds,
         });
       });
@@ -75,7 +75,7 @@ export const handleOperation = async ({
   infraId,
   state,
   dispatch,
-  addUpsertedTimetableItems,
+  addUpsertedTrainSchedules,
   addDeletedTrainScheduleIds,
 }: {
   event: NGEEvent;
@@ -84,7 +84,7 @@ export const handleOperation = async ({
   infraId: number;
   state: MacroEditorState;
   dispatch: AppDispatch;
-  addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void;
+  addUpsertedTrainSchedules: (trainSchedules: TimetableItem[]) => void;
   addDeletedTrainScheduleIds: (trainScheduleIds: number[]) => void;
 }) => {
   const { type } = event;
@@ -96,7 +96,7 @@ export const handleOperation = async ({
         netzgrafikDto,
         infraId,
         trainScheduleSetId,
-        addUpsertedTimetableItems,
+        addUpsertedTrainSchedules,
         addDeletedTrainScheduleIds,
         type,
         node: event.node,
@@ -111,7 +111,7 @@ export const handleOperation = async ({
         infraId,
         state,
         dispatch,
-        addUpsertedTimetableItems,
+        addUpsertedTrainSchedules,
         addDeletedTrainScheduleIds,
       });
       break;
@@ -125,7 +125,7 @@ export const handleOperation = async ({
         infraId,
         state,
         dispatch,
-        addUpsertedTimetableItems,
+        addUpsertedTrainSchedules,
         addDeletedTrainScheduleIds,
       });
       break;

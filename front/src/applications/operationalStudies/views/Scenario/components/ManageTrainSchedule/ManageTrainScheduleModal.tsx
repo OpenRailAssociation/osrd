@@ -25,7 +25,7 @@ type ManageTrainScheduleModalProps = ManageTrainScheduleLeftPanelProps & {
 const ManageTrainScheduleModal = ({
   displayTrainScheduleManagement,
   setDisplayTrainScheduleManagement,
-  upsertTimetableItems,
+  upsertTrainSchedules,
   trainScheduleToEditData,
   setTrainScheduleToEditData,
   setCollapsedTimetableEdit,
@@ -49,7 +49,7 @@ const ManageTrainScheduleModal = ({
         <ManageTrainScheduleLeftPanel
           displayTrainScheduleManagement={displayTrainScheduleManagement}
           setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-          upsertTimetableItems={upsertTimetableItems}
+          upsertTrainSchedules={upsertTrainSchedules}
           trainScheduleToEditData={trainScheduleToEditData}
           setTrainScheduleToEditData={setTrainScheduleToEditData}
         />

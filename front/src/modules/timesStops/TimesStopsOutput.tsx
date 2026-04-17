@@ -40,7 +40,7 @@ type TimesStopsOutputProps = {
   isValid?: boolean;
   selectedTrain: Train;
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
-  upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
+  upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void;
   simulatedTrain?: SimulationResponseSuccess['final_output'];
   simulatedPath?: CorePathfindingResultSuccess;
   simulatedPathItemTimes?: Extract<SimulationSummary, { isValid: true }>['pathItemTimes'];
@@ -79,7 +79,7 @@ const TimesStopsOutput = ({
   isValid = false,
   selectedTrain,
   trainSchedulesWithDetails,
-  upsertTimetableItems,
+  upsertTrainSchedules,
   simulatedTrain,
   simulatedPathItemTimes,
   simulatedPathItemRespect,
@@ -181,7 +181,7 @@ const TimesStopsOutput = ({
     selectedTrain,
     newRows,
     trainSchedulesWithDetails,
-    upsertTimetableItems
+    upsertTrainSchedules
   );
 
   // True if we are still waiting for fresh simulation data after a user edit.
