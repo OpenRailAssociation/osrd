@@ -25,6 +25,7 @@ export type SpeedDistanceDiagramWrapperProps = {
   setHeight: React.Dispatch<React.SetStateAction<number>>;
   fetchEtcsBrakingCurves?: () => Promise<void>;
   etcsBrakingCurves?: EtcsBrakingCurves;
+  initialLayersDisplay?: Parameters<typeof SpeedSpaceChart>[0]['initialLayersDisplay'];
 };
 
 const SPEED_DISTANCE_DIAGRAM_MIN_HEIGHT = 400;
@@ -39,6 +40,7 @@ const SpeedDistanceDiagramWrapper = ({
   setHeight,
   fetchEtcsBrakingCurves,
   etcsBrakingCurves,
+  initialLayersDisplay,
 }: SpeedDistanceDiagramWrapperProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'simulationResults' });
 
@@ -125,6 +127,7 @@ const SpeedDistanceDiagramWrapper = ({
           backgroundColor={SPEED_DISTANCE_DIAGRAM_BACKGROUND_COLOR}
           data={data}
           translations={translations}
+          initialLayersDisplay={initialLayersDisplay}
           fetchEtcsBrakingCurves={fetchEtcsBrakingCurves}
           etcsBrakingCurves={etcsBrakingCurves}
         />

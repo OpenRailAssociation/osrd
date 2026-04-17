@@ -52,6 +52,7 @@ const DebugSpeedDistanceDiagram = ({ simulationData }: { simulationData: unknown
       timetableItemSimulation={simData.sim_output}
       pathProperties={pathProperties}
       rollingStock={{ length: 0 } as RollingStockWithLiveries}
+      initialLayersDisplay={{ speedLimits: true }}
       height={height}
       setHeight={setHeight}
     />
