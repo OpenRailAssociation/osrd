@@ -94,6 +94,23 @@ docker cp /tmp/allowed_tracks.json osrd-editoast:/tmp/
 docker compose exec editoast editoast stdcm-search-env set-from-scenario <id> --speed-limit-tags "CC100|100" "CC90|90" "CC200|200" --default-speed-limit-tag "CC100" /tmp/allowed_tracks.json
 ```
 
+### Alternative (experimental)
+
+The project also attempts to maintain a `flake.nix` to have a full development
+environment. If you are a user of `nix` package manager, you can `nix shell` to
+enter a shell where all the necessary components to develop are available. First, you need to set up 2 things:
+- `export OSRD_PATH="$(pwd)"`
+- download [`opentelemetry-javaagent.jar`](https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar) in `core/`
+
+Then, you can start the stack with the two following commands.
+
+```sh
+# Launch all the external services, still relies on Docker
+./osrd-compose up --detach postgres rabbitmq valkey openfga jaeger s3
+# Launch the OSRD stack
+process-compose
+```
+
 ## Working on a single component
 
 Each component has a _justfile_ to run usual development tasks. Install [just](https://github.com/casey/just#installation) and run it to see available recipes. All the components include:

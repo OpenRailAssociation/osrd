@@ -1,0 +1,69 @@
+version: "0.5"
+is_strict: true
+
+environment:
+  - "OSRD_PATH=${OSRD_PATH}" # Define `OSRD_PATH` in your `.env` (or `.envrc` with `direnv`)
+  - "OTEL_EXPORTER_OTLP_TRACES_PROTOCOL=grpc"
+  - "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://localhost:4317"
+  - "OTEL_METRICS_EXPORTER=none"
+  - "OTEL_LOGS_EXPORTER=none"
+
+processes:
+  core:
+    working_dir: "${OSRD_PATH}/core/"
+    command: "gradle run --args='worker'"
+    environment:
+      - "ALL_INFRA=true"
+      - "CORE_EDITOAST_URL=http://localhost:8090"
+      - "JAVA_TOOL_OPTIONS=-ea -javaagent:${OSRD_PATH}/core/opentelemetry-javaagent.jar"
+      - "CORE_MONITOR_TYPE=opentelemetry"
+      - "OTEL_SERVICE_NAME=osrd-core"
+      - "VALKEY_URL=redis://localhost"
+      - "AWS_ACCESS_KEY_ID=access_key"
+      - "AWS_SECRET_ACCESS_KEY=secret_key"
+      - "AWS_ENDPOINT_URL_S3=http://localhost:9900"
+      - "BUCKET_NAME=osrd"
+  gateway:
+    working_dir: "${OSRD_PATH}/gateway/"
+    command: "cargo run"
+    environment:
+      - "OTEL_SERVICE_NAME=osrd-gateway"
+  editoast:
+    working_dir: "${OSRD_PATH}/editoast/"
+    command: |
+      cargo run --package fga_migrations -- apply
+      diesel migration run --locked-schema
+      cargo run -- user add 'Example User' 'mock/mocked'
+      cargo run -- roles add 'mock/mocked' Admin
+      cargo run -- runserver
+    environment:
+      - "EDITOAST_PORT=8090"
+      - "ROOT_URL=http://localhost:4000/api"
+      - "VALKEY_URL=redis://localhost"
+      - "DATABASE_URL=postgres://osrd:password@localhost/osrd"
+      - "OSRDYNE_API_URL=http://localhost:4242/"
+      - "OTEL_SERVICE_NAME=osrd-editoast"
+      - "TELEMETRY_KIND=opentelemetry"
+      - "TELEMETRY_ENDPOINT=http://localhost:4317"
+      - "OSRD_MQ_URL=amqp://osrd:password@localhost:5672/%2f"
+      - "FGA_API_URL=http://localhost:8091"
+      - "EDITOAST_ENABLE_AUTHORIZATION=${EDITOAST_ENABLE_AUTHORIZATION:-true}"
+      - "EDITOAST_NO_CACHE=${EDITOAST_NO_CACHE:-false}"
+      - "EDITOAST_CORE_SINGLE_WORKER=true"
+      - "DYNAMIC_ASSETS_PATH=${OSRD_PATH}/assets"
+  front:
+    working_dir: "${OSRD_PATH}/front/"
+    command: |
+      npm install
+      npm run build-ui
+      npm start
+  osrdyne:
+    working_dir: "${OSRD_PATH}/osrdyne/"
+    command: "cargo run -- ${OSRD_PATH}/process-compose/osrdyne.yaml"
+    environment:
+      - "OTEL_SERVICE_NAME=osrd-osrdyne"
+      - "OSRDYNE__OPENTELEMETRY__ENDPOINT=http://localhost:4317"
+      - "OSRDYNE__AMQP_URI=amqp://osrd:password@localhost:5672/%2f"
+      - "OSRDYNE__MAX_MSG_SIZE=671088640" # 1024 * 1024 * 128 * 5
+      - "OSRDYNE__MANAGEMENT_URI=http://osrd:password@localhost:15672/"
+      - "OSRDYNE__OPENTELEMETRY__ENDPOINT=http://localhost:4317"

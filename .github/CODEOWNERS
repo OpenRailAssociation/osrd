@@ -9,6 +9,10 @@
 /docker                                                  @openrailassociation/OSRD-DevOps
 /docker-compose.yml                                      @openrailassociation/OSRD-DevOps
 
+# -- Process Compose --
+/process-compose                                         @openrailassociation/OSRD-DevOps
+/process-compose.yaml                                    @openrailassociation/OSRD-DevOps
+
 # -- Scripts --
 /scripts                                                 @openrailassociation/OSRD-DevOps
 
