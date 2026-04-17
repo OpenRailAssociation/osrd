@@ -8,7 +8,7 @@ type TimetableSelectionToolbarProps = {
   areAllTrainchedulesSelected: boolean;
   areInvalidTrainSchedules: boolean;
   toggleAllTrainsSelection: () => void;
-  handleExportTimetableItems: () => void;
+  handleExportTrainSchedules: () => void;
   handleDeleteTimetableItems: () => void;
   handleMoveTimetableItems: () => void;
 };
@@ -18,7 +18,7 @@ const TimetableSelectionToolbar = ({
   areAllTrainchedulesSelected,
   areInvalidTrainSchedules,
   toggleAllTrainsSelection,
-  handleExportTimetableItems,
+  handleExportTrainSchedules,
   handleDeleteTimetableItems,
   handleMoveTimetableItems,
 }: TimetableSelectionToolbarProps) => {
@@ -53,7 +53,7 @@ const TimetableSelectionToolbar = ({
             data-testid="export-selection-button"
             className="export-selection-button"
             title={t('timetable.exportSelection')}
-            onClick={handleExportTimetableItems}
+            onClick={handleExportTrainSchedules}
             type="button"
           >
             <Upload />

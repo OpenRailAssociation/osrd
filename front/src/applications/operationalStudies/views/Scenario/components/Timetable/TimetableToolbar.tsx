@@ -30,7 +30,7 @@ import RoundTripsModal from '../RoundTrips/RoundTripsModal';
 import FilterPanel from './FilterPanel';
 import SelectionToolBar from './TimetableSelectionToolbar';
 import type { TimetableFilters, TimetableMode } from './types';
-import { exportTimetableItems, timetableHasInvalidTrainSchedule } from './utils';
+import { exportTrainSchedules, timetableHasInvalidTrainSchedule } from './utils';
 
 type TimetableToolbarProps = {
   timetableFilters: TimetableFilters;
@@ -95,8 +95,8 @@ const TimetableToolbar = ({
     setIsFilterPanelOpen(!isFilterPanelOpen);
   };
 
-  const handleExportTimetableItems = () => {
-    exportTimetableItems(
+  const handleExportTrainSchedules = () => {
+    exportTrainSchedules(
       selectedTimetableItemIds,
       timetableItems,
       pacedTrainRoundTripsData?.results
@@ -258,7 +258,7 @@ const TimetableToolbar = ({
           areAllTrainchedulesSelected={areAllTrainchedulesSelected}
           areInvalidTrainSchedules={areInvalidTrainSchedules}
           toggleAllTrainsSelection={toggleAllTrainsSelection}
-          handleExportTimetableItems={handleExportTimetableItems}
+          handleExportTrainSchedules={handleExportTrainSchedules}
           handleDeleteTimetableItems={handleDeleteTimetableItems}
           handleMoveTimetableItems={handleMoveTimetableItems}
         />
