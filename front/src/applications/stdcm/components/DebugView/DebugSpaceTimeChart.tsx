@@ -19,6 +19,8 @@ type OtherRequirement = {
   end_time: number;
   train_name?: string;
 };
+type ZoneUpdate = { zone: string; is_entry: boolean; time: number };
+type SpacingRequirement = { zone: string; begin_time: number; end_time: number };
 type OperationalPointRaw = {
   position: number;
   extensions: { identifier: { name: string }; sncf: { ch: string } };
@@ -31,6 +33,12 @@ type SimulationData = {
   zone_locations: ZoneLocation[];
   other_requirements: OtherRequirement[];
   path_properties: { operational_points: OperationalPointRaw[] };
+  sim_output?: {
+    final_output: {
+      zone_updates: ZoneUpdate[];
+      spacing_requirements: SpacingRequirement[];
+    };
+  };
 };
 
 type DebugBlock = {
@@ -40,15 +48,24 @@ type DebugBlock = {
   spaceEnd: number;
   zoneName: string;
   trainName: string;
+  kind: 'other' | 'zone_update' | 'spacing_req';
 };
+
+type BlockLayerStyle = { fill: string; stroke: string };
 
 const CHART_HEIGHT = 600;
 
-function DebugOtherTrainsLayer({ blocks }: { blocks: DebugBlock[] }) {
+const KIND_LABEL: Record<DebugBlock['kind'], string> = {
+  other: 'Other train',
+  zone_update: 'Zone update',
+  spacing_req: 'Spacing requirement',
+};
+
+function DebugBlocksLayer({ blocks, style }: { blocks: DebugBlock[]; style: BlockLayerStyle }) {
   const draw = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
     (ctx, { getTimePixel, getSpacePixel }) => {
-      ctx.fillStyle = 'rgba(240, 128, 128, 0.5)';
-      ctx.strokeStyle = 'rgba(200, 60, 60, 0.9)';
+      ctx.fillStyle = style.fill;
+      ctx.strokeStyle = style.stroke;
       ctx.lineWidth = 1;
       for (const b of blocks) {
         const x = getTimePixel(b.timeStart);
@@ -59,11 +76,17 @@ function DebugOtherTrainsLayer({ blocks }: { blocks: DebugBlock[] }) {
         ctx.strokeRect(x, y, w, h);
       }
     },
-    [blocks]
+    [blocks, style]
   );
   useDraw(SpaceTimeChartCanvasContext, 'background', draw);
   return null;
 }
+
+const LAYER_STYLES: Record<DebugBlock['kind'], BlockLayerStyle> = {
+  other: { fill: 'rgba(240, 128, 128, 0.5)', stroke: 'rgba(200, 60, 60, 0.9)' },
+  zone_update: { fill: 'rgba(135, 206, 250, 0.5)', stroke: 'rgba(65, 105, 225, 0.9)' },
+  spacing_req: { fill: 'rgba(244, 164, 96, 0.5)', stroke: 'rgba(210, 105, 30, 0.9)' },
+};
 
 type DebugSpaceTimeChartProps = { simulationData: unknown };
 
@@ -74,13 +97,12 @@ const DebugSpaceTimeChart = ({ simulationData }: DebugSpaceTimeChartProps) => {
   const spaceTimeChartRef = useRef<HTMLDivElement>(null);
 
   const chartData = useMemo(() => {
-    // All positions kept in mm (raw from the API)
     const zoneMap = new Map(
       simData.zone_locations.map((z) => [z.name, { spaceStart: z.from, spaceEnd: z.to }])
     );
     const departureMs = Date.parse(simData.departure_time);
 
-    const otherBlocks = simData.other_requirements.flatMap((req) => {
+    const otherBlocks: DebugBlock[] = simData.other_requirements.flatMap((req) => {
       const pos = zoneMap.get(req.zone_name);
       if (!pos) return [];
       return [
@@ -91,13 +113,57 @@ const DebugSpaceTimeChart = ({ simulationData }: DebugSpaceTimeChartProps) => {
           spaceEnd: pos.spaceEnd,
           zoneName: req.zone_name,
           trainName: req.train_name ?? '',
+          kind: 'other',
         },
       ];
     });
 
+    const finalOutput = simData.sim_output?.final_output;
+
+    const zoneUpdateBlocks: DebugBlock[] = [];
+    if (finalOutput) {
+      const entries: Record<string, number> = {};
+      const exits: Record<string, number> = {};
+      for (const u of finalOutput.zone_updates) {
+        if (u.is_entry) entries[u.zone] = u.time;
+        else exits[u.zone] = u.time;
+      }
+      for (const zone of Object.keys(entries)) {
+        if (!(zone in exits)) continue;
+        const pos = zoneMap.get(zone);
+        if (!pos) continue;
+        zoneUpdateBlocks.push({
+          timeStart: departureMs + entries[zone],
+          timeEnd: departureMs + exits[zone],
+          spaceStart: pos.spaceStart,
+          spaceEnd: pos.spaceEnd,
+          zoneName: zone,
+          trainName: '',
+          kind: 'zone_update',
+        });
+      }
+    }
+
+    const spacingReqBlocks: DebugBlock[] = [];
+    if (finalOutput) {
+      for (const req of finalOutput.spacing_requirements) {
+        const pos = zoneMap.get(req.zone);
+        if (!pos) continue;
+        spacingReqBlocks.push({
+          timeStart: departureMs + req.begin_time,
+          timeEnd: departureMs + req.end_time,
+          spaceStart: pos.spaceStart,
+          spaceEnd: pos.spaceEnd,
+          zoneName: req.zone,
+          trainName: '',
+          kind: 'spacing_req',
+        });
+      }
+    }
+
     const manchetteWaypoints = simData.path_properties.operational_points.map((op) => ({
       id: op.extensions.identifier.name + '-' + op.extensions.sncf.ch,
-      position: op.position, // mm
+      position: op.position,
       name: op.extensions.identifier.name,
       secondaryCode: op.extensions.sncf.ch,
     }));
@@ -109,12 +175,22 @@ const DebugSpaceTimeChart = ({ simulationData }: DebugSpaceTimeChartProps) => {
             label: 'New train',
             points: simData.train_positions.map((pos, i) => ({
               time: departureMs + simData.train_times[i],
-              position: pos, // mm
+              position: pos,
             })),
           }
         : null;
 
-    return { departureMs, otherBlocks, manchetteWaypoints, trainPath };
+    const allBlocks = [...otherBlocks, ...zoneUpdateBlocks, ...spacingReqBlocks];
+
+    return {
+      departureMs,
+      otherBlocks,
+      zoneUpdateBlocks,
+      spacingReqBlocks,
+      allBlocks,
+      manchetteWaypoints,
+      trainPath,
+    };
   }, [simData]);
 
   const { manchetteProps, spaceTimeChartProps, handleScroll, handleXZoom, xZoom, setTimeOrigin } =
@@ -136,7 +212,7 @@ const DebugSpaceTimeChart = ({ simulationData }: DebugSpaceTimeChartProps) => {
     NonNullable<Parameters<typeof SpaceTimeChart>[0]['onMouseMove']>
   >(
     ({ data: dataPoint }) => {
-      const hit = chartData.otherBlocks.find(
+      const hit = chartData.allBlocks.find(
         (b) =>
           dataPoint.time >= b.timeStart &&
           dataPoint.time <= b.timeEnd &&
@@ -210,7 +286,15 @@ const DebugSpaceTimeChart = ({ simulationData }: DebugSpaceTimeChartProps) => {
               }}
               onMouseMove={handleMouseMove}
             >
-              <DebugOtherTrainsLayer blocks={chartData.otherBlocks} />
+              <DebugBlocksLayer blocks={chartData.otherBlocks} style={LAYER_STYLES.other} />
+              <DebugBlocksLayer
+                blocks={chartData.zoneUpdateBlocks}
+                style={LAYER_STYLES.zone_update}
+              />
+              <DebugBlocksLayer
+                blocks={chartData.spacingReqBlocks}
+                style={LAYER_STYLES.spacing_req}
+              />
               {chartData.trainPath && <PathLayer path={chartData.trainPath} color="#0000ff" />}
             </SpaceTimeChart>
           </div>
@@ -232,7 +316,8 @@ const DebugSpaceTimeChart = ({ simulationData }: DebugSpaceTimeChartProps) => {
           }}
         >
           <div>
-            <strong>{hoveredBlock.trainName}</strong>
+            <strong>{KIND_LABEL[hoveredBlock.kind]}</strong>
+            {hoveredBlock.trainName && <span> — {hoveredBlock.trainName}</span>}
           </div>
           <div style={{ fontSize: 11, wordBreak: 'break-all' }}>{hoveredBlock.zoneName}</div>
         </div>
