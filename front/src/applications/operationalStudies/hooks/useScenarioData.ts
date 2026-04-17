@@ -17,7 +17,7 @@ import usePathProjection from './usePathProjection';
 import { useScenarioContext } from './useScenarioContext';
 
 type ScenarioBroadcastMessage =
-  | { type: 'upsertTimetableItems'; timetableItems: TimetableItem[] }
+  | { type: 'upsertTrainSchedules'; trainSchedules: TimetableItem[] }
   | { type: 'removeTrainSchedules'; trainScheduleIds: number[] }
   | { type: 'setTimetableItemDepartureTime'; timetableItemId: number; newDeparture: Date };
 
@@ -132,17 +132,17 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     broadcastChannel.current?.postMessage(msg);
   };
 
-  const upsertTimetableItems = useCallback((timetableItemsToUpsert: TimetableItem[]) => {
+  const upsertTrainSchedules = useCallback((trainSchedulesToUpsert: TimetableItem[]) => {
     setTimetableItems((prev) =>
       sortBy(
-        Object.values({ ...keyBy(prev, 'id'), ...keyBy(timetableItemsToUpsert, 'id') }),
+        Object.values({ ...keyBy(prev, 'id'), ...keyBy(trainSchedulesToUpsert, 'id') }),
         'start_time'
       )
     );
 
-    removeSimulatedTimetableItems(timetableItemsToUpsert.map((item) => item.id));
-    removeProjectedTimetableItems(timetableItemsToUpsert.map((item) => item.id));
-    simulateTimetableItems(timetableItemsToUpsert);
+    removeSimulatedTimetableItems(trainSchedulesToUpsert.map((trainSchedule) => trainSchedule.id));
+    removeProjectedTimetableItems(trainSchedulesToUpsert.map((trainSchedule) => trainSchedule.id));
+    simulateTimetableItems(trainSchedulesToUpsert);
   }, []);
 
   const removeTrainSchedules = useCallback((_trainSchedulesToRemove: number[]) => {
@@ -207,15 +207,15 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     [timetableItems]
   );
 
-  const upsertTimetableItemsWithBroadcast = useCallback(
-    (timetableItemsToUpsert: TimetableItem[]) => {
-      upsertTimetableItems(timetableItemsToUpsert);
+  const upsertTrainSchedulesWithBroadcast = useCallback(
+    (trainSchedulesToUpsert: TimetableItem[]) => {
+      upsertTrainSchedules(trainSchedulesToUpsert);
       broadcastScenarioMessage({
-        type: 'upsertTimetableItems',
-        timetableItems: timetableItemsToUpsert,
+        type: 'upsertTrainSchedules',
+        trainSchedules: trainSchedulesToUpsert,
       });
     },
-    [upsertTimetableItems]
+    [upsertTrainSchedules]
   );
 
   const removeTrainSchedulesWithBroadcast = useCallback(
@@ -249,8 +249,8 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       const msg: ScenarioBroadcastMessage = event.data;
 
       switch (msg.type) {
-        case 'upsertTimetableItems':
-          upsertTimetableItems(msg.timetableItems);
+        case 'upsertTrainSchedules':
+          upsertTrainSchedules(msg.trainSchedules);
           break;
         case 'removeTrainSchedules':
           removeTrainSchedules(msg.trainScheduleIds);
@@ -289,7 +289,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       conflicts,
       isConflictsLoading,
       removeTrainSchedules: removeTrainSchedulesWithBroadcast,
-      upsertTimetableItems: upsertTimetableItemsWithBroadcast,
+      upsertTrainSchedules: upsertTrainSchedulesWithBroadcast,
       updateTrainDepartureTime: updateTrainDepartureTimeWithBroadcast,
       selectedTrainScheduleIds,
       setSelectedTrainScheduleIds,
@@ -305,7 +305,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       isConflictsLoading,
       rollingStocks,
       removeTrainSchedulesWithBroadcast,
-      upsertTimetableItemsWithBroadcast,
+      upsertTrainSchedulesWithBroadcast,
       updateTrainDepartureTimeWithBroadcast,
       selectedTrainScheduleIds,
     ]

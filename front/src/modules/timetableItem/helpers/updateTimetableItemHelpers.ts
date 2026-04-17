@@ -218,14 +218,14 @@ export async function storePacedTrain(
   timetableItemIdToUpdate: number,
   pacedTrain: Omit<TrainScheduleResponse, 'id'>,
   dispatch: AppDispatch,
-  upsertTimetableItems: (timetableItems: TimetableItem[]) => void
+  upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void
 ): Promise<TimetableItem> {
   const updatedPacedTrain = await syncAndUpdatePacedTrain(
     timetableItemIdToUpdate,
     pacedTrain,
     dispatch
   );
-  upsertTimetableItems([updatedPacedTrain]);
+  upsertTrainSchedules([updatedPacedTrain]);
 
   return updatedPacedTrain;
 }

@@ -26,7 +26,7 @@ export type ManageTrainScheduleLeftPanelProps = {
   displayTrainScheduleManagement: string;
   trainScheduleToEditData?: TrainScheduleToEditData;
   setDisplayTrainScheduleManagement: (type: string) => void;
-  upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
+  upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void;
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
 };
 
@@ -36,7 +36,7 @@ export type ManageTrainScheduleLeftPanelProps = {
 const ManageTrainScheduleLeftPanel = ({
   displayTrainScheduleManagement,
   setDisplayTrainScheduleManagement,
-  upsertTimetableItems,
+  upsertTrainSchedules,
   trainScheduleToEditData,
   setTrainScheduleToEditData,
 }: ManageTrainScheduleLeftPanelProps) => {
@@ -59,7 +59,7 @@ const ManageTrainScheduleLeftPanel = ({
   const updateTimetable = useUpdateTimetableItem(
     setIsWorking,
     setDisplayTrainScheduleManagement,
-    upsertTimetableItems,
+    upsertTrainSchedules,
     setTrainScheduleToEditData,
     trainScheduleToEditData
   );
@@ -148,7 +148,7 @@ const ManageTrainScheduleLeftPanel = ({
             ) : (
               <CreateTimetableItemButton
                 setIsWorking={setIsWorking}
-                upsertTimetableItems={upsertTimetableItems}
+                upsertTrainSchedules={upsertTrainSchedules}
                 isPacedTrainMode={editingItemType === 'pacedTrain'}
               />
             )}

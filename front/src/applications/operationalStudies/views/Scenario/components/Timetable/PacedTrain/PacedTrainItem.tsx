@@ -69,7 +69,7 @@ type PacedTrainItemProps = {
     originalPacedTrain?: PacedTrainWithPacedWithDetails,
     occurrenceId?: OccurrenceId
   ) => void;
-  upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
+  upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void;
   removePacedTrains: (pacedTrainIdsToRemove: number[]) => void;
   setSelectedTrainScheduleIds: React.Dispatch<React.SetStateAction<number[]>>;
   subCategories: SubCategory[];
@@ -90,7 +90,7 @@ const PacedTrainItem = ({
   isOnEdit,
   selectPacedTrainToEdit,
   selectedTrainId,
-  upsertTimetableItems,
+  upsertTrainSchedules,
   removePacedTrains,
   setSelectedTrainScheduleIds,
   subCategories,
@@ -154,7 +154,7 @@ const PacedTrainItem = ({
     pacedTrain,
     occurrences,
     selectPacedTrainToEdit,
-    upsertTimetableItems,
+    upsertTrainSchedules,
     timetableId,
   });
 
@@ -199,7 +199,7 @@ const PacedTrainItem = ({
       paced: { ...pacedTrain.paced, exceptions: [] },
     });
 
-    upsertTimetableItems([
+    upsertTrainSchedules([
       {
         ...updatedPacedTrainPayload,
         train_schedule_set_id: pacedTrain.train_schedule_set_id,
@@ -251,7 +251,7 @@ const PacedTrainItem = ({
         by: 'timetable',
       })
     );
-    upsertTimetableItems([formattedPacedTrainResponse]);
+    upsertTrainSchedules([formattedPacedTrainResponse]);
 
     const newExceptions =
       payloadExceptions.length > 0
@@ -280,7 +280,7 @@ const PacedTrainItem = ({
     });
 
     // We add the new exceptions to the duplicate paced train, so they contain their new exception ids
-    upsertTimetableItems([
+    upsertTrainSchedules([
       {
         ...formattedPacedTrainResponse,
         ...(formattedPacedTrainResponse.paced && {

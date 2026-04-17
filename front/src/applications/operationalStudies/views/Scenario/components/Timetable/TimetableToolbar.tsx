@@ -48,7 +48,7 @@ type TimetableToolbarProps = {
   handleMoveTimetableItems: () => void;
   timetableMode: TimetableMode;
   setTimetableMode: React.Dispatch<React.SetStateAction<TimetableMode>>;
-  upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
+  upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void;
 };
 
 const TimetableToolbar = ({
@@ -67,7 +67,7 @@ const TimetableToolbar = ({
   handleMoveTimetableItems,
   timetableMode,
   setTimetableMode,
-  upsertTimetableItems,
+  upsertTrainSchedules,
 }: TimetableToolbarProps) => {
   const { t } = useTranslation(['operational-studies', 'translation'], { keyPrefix: 'main' });
 
@@ -81,7 +81,7 @@ const TimetableToolbar = ({
   const [roundTripsModalIsOpen, setRoundTripsModalIsOpen] = useState(false);
 
   const { openModal, closeModal } = useContext(ModalContext);
-  const importFile = useImportTrainSchedules({ upsertTimetableItems });
+  const importFile = useImportTrainSchedules({ upsertTrainSchedules });
 
   const toggleisSelectMode = () => {
     setIsSelectMode(!isSelectMode);

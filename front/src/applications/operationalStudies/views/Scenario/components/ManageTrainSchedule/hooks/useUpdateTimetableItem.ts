@@ -42,7 +42,7 @@ import {
 const useUpdateTimetableItem = (
   setIsWorking: (isWorking: boolean) => void,
   setDisplayTrainScheduleManagement: (type: string) => void,
-  upsertTimetableItems: (timetableItems: TimetableItem[]) => void,
+  upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void,
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void,
   trainScheduleToEditData?: TrainScheduleToEditData
 ) => {
@@ -137,7 +137,7 @@ const useUpdateTimetableItem = (
       const formattedPacedTrain =
         formatPacedTrainWithDetailsToPacedTrainPayload(originalPacedTrain);
 
-      upsertTimetableItems([
+      upsertTrainSchedules([
         {
           ...formattedPacedTrain,
           id: trainScheduleId,
@@ -200,7 +200,7 @@ const useUpdateTimetableItem = (
 
     // If we just converted a unique train to a paced train, upsert with created exceptions and return
     if (!originalPacedTrain.paced) {
-      upsertTimetableItems([
+      upsertTrainSchedules([
         {
           ...trainSchedule,
           id: trainScheduleId,
@@ -228,7 +228,7 @@ const useUpdateTimetableItem = (
           train_schedule_set_id: originalPacedTrain.train_schedule_set_id,
         },
         dispatch,
-        upsertTimetableItems
+        upsertTrainSchedules
       );
 
       return handleUpdateSuccess(trainScheduleId, trainScheduleToEditData);
@@ -274,7 +274,7 @@ const useUpdateTimetableItem = (
         }),
       },
       dispatch,
-      upsertTimetableItems
+      upsertTrainSchedules
     );
 
     return handleUpdateSuccess(trainScheduleId, trainScheduleToEditData);

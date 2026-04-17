@@ -20,7 +20,7 @@ import useFilterTrainSchedules from './useFilterTimetableItems';
 
 type TimetableProps = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
-  upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
+  upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void;
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
   setSelectedTrainScheduleIds: React.Dispatch<React.SetStateAction<number[]>>;
   removeAndUnselectTrains: (trainIds: number[]) => void;
@@ -35,7 +35,7 @@ type TimetableProps = {
 
 const Timetable = ({
   setDisplayTrainScheduleManagement,
-  upsertTimetableItems,
+  upsertTrainSchedules,
   setTrainScheduleToEditData,
   setSelectedTrainScheduleIds,
   removeAndUnselectTrains,
@@ -68,7 +68,7 @@ const Timetable = ({
   const [trainScheduleSetIdSelected, setTrainScheduleSetIdSelected] = useState<number>();
 
   const { trainSchedulesByTrainScheduleSets, catalogEntries, manageTrainScheduleSet } =
-    useScenarioTrainScheduleSet(trainSchedulesWithDetails, timetableItems, upsertTimetableItems);
+    useScenarioTrainScheduleSet(trainSchedulesWithDetails, timetableItems, upsertTrainSchedules);
 
   const { filteredTrainSchedules, ...timetableFilters } =
     useFilterTrainSchedules(trainSchedulesWithDetails);
@@ -129,7 +129,7 @@ const Timetable = ({
             train_schedule_set_id: trainScheduleSetId,
           }));
 
-        upsertTimetableItems(trainsToUpsert);
+        upsertTrainSchedules(trainsToUpsert);
       } catch (e) {
         dispatch(setFailure(castErrorToFailure(e)));
       } finally {
@@ -162,11 +162,11 @@ const Timetable = ({
           handleMoveTimetableItems={() => openMoveDialog(selectedTrainScheduleIds)}
           timetableMode={timetableMode}
           setTimetableMode={setTimetableMode}
-          upsertTimetableItems={upsertTimetableItems}
+          upsertTrainSchedules={upsertTrainSchedules}
         />
         <TrainList
           setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-          upsertTimetableItems={upsertTimetableItems}
+          upsertTrainSchedules={upsertTrainSchedules}
           setTrainScheduleToEditData={setTrainScheduleToEditData}
           setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
           removeAndUnselectTrains={removeAndUnselectTrains}

@@ -44,7 +44,7 @@ export const handleNodeOperation = async ({
   dispatch,
   infraId,
   trainScheduleSetId,
-  addUpsertedTimetableItems,
+  addUpsertedTrainSchedules,
   addDeletedTrainScheduleIds,
 }: {
   state: MacroEditorState;
@@ -54,7 +54,7 @@ export const handleNodeOperation = async ({
   dispatch: AppDispatch;
   infraId: number;
   trainScheduleSetId: number;
-  addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void;
+  addUpsertedTrainSchedules: (trainSchedules: TimetableItem[]) => void;
   addDeletedTrainScheduleIds: (trainScheduleIds: number[]) => void;
 }): Promise<void> => {
   const indexNode = state.getNodeByNgeId(node.id);
@@ -94,7 +94,7 @@ export const handleNodeOperation = async ({
               dispatch,
               infraId,
               trainScheduleSetId,
-              addUpsertedTimetableItems,
+              addUpsertedTrainSchedules,
               addDeletedTrainScheduleIds,
               node,
             });

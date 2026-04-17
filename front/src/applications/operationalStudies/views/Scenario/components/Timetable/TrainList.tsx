@@ -32,7 +32,7 @@ import UniqueTrainItem from './UniqueTrainItem';
 
 type TrainListProps = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
-  upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
+  upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void;
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
   setSelectedTrainScheduleIds: React.Dispatch<React.SetStateAction<number[]>>;
   removeAndUnselectTrains: (trainIds: number[]) => void;
@@ -57,7 +57,7 @@ const formatDepartureDate = (d: Date, locale: Intl.Locale) =>
 
 const TrainList = ({
   setDisplayTrainScheduleManagement,
-  upsertTimetableItems,
+  upsertTrainSchedules,
   setTrainScheduleToEditData,
   setSelectedTrainScheduleIds,
   removeAndUnselectTrains,
@@ -172,7 +172,7 @@ const TrainList = ({
                 selectedTrainId === formatEditoastIdToPacedTrainId(trainSchedule.id)
               }
               isModified={trainSchedule.id === trainScheduleToEditData?.trainScheduleId}
-              upsertUniqueTrains={upsertTimetableItems}
+              upsertUniqueTrains={upsertTrainSchedules}
               removeTrains={removeAndUnselectTrains}
               selectTrainToEdit={selectTrainScheduleToEdit}
               setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
@@ -195,7 +195,7 @@ const TrainList = ({
               handleOpenOccurrencesList={handleExpandTimetableItem}
               isOnEdit={trainSchedule.id === trainScheduleToEditData?.trainScheduleId}
               selectedTrainId={selectedTrainId}
-              upsertTimetableItems={upsertTimetableItems}
+              upsertTrainSchedules={upsertTrainSchedules}
               removePacedTrains={removeAndUnselectTrains}
               setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
               infraIsCached={workerStatus === 'READY'}
@@ -227,7 +227,7 @@ const TrainList = ({
       trainScheduleToEditData?.trainScheduleId,
       timetableMode,
       trainIdUsedForProjection,
-      upsertTimetableItems,
+      upsertTrainSchedules,
       workerStatus,
     ]
   );

@@ -56,7 +56,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
     projectionData,
     conflicts,
     isConflictsLoading,
-    upsertTimetableItems,
+    upsertTrainSchedules,
     removeTrainSchedules,
     updateTrainDepartureTime,
     selectedTrainScheduleIds,
@@ -91,18 +91,18 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
     // eslint-disable-next-line react-hooks/use-memo
   }, [dispatch, infraId, scenario.id, scenario.timetable_id, activeBoards.has('macro')]);
 
-  const upsertTimetableItemsWithNge = useCallback(
-    (updatedTimetableItems: TimetableItem[]) => {
-      upsertTimetableItems(updatedTimetableItems);
+  const upsertTrainSchedulesWithNge = useCallback(
+    (updatedTrainSchedules: TimetableItem[]) => {
+      upsertTrainSchedules(updatedTrainSchedules);
       refreshNge();
     },
-    [upsertTimetableItems, refreshNge]
+    [upsertTrainSchedules, refreshNge]
   );
 
   const { importTrainScheduleSets } = useScenarioTrainScheduleSet(
     trainSchedulesWithDetails,
     useMemo(() => timetableItems || [], [timetableItems]),
-    upsertTimetableItemsWithNge
+    upsertTrainSchedulesWithNge
   );
 
   const removeTrainSchedulesWithNge = useCallback(
@@ -146,7 +146,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
           infraId,
           state: macroEditorState.current!,
           dispatch,
-          addUpsertedTimetableItems: upsertTimetableItems,
+          addUpsertedTrainSchedules: upsertTrainSchedules,
           addDeletedTrainScheduleIds: removeTrainSchedules,
         });
       } catch (err) {
@@ -165,7 +165,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
           <ManageTrainScheduleModal
             displayTrainScheduleManagement={displayTrainScheduleManagement}
             setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-            upsertTimetableItems={upsertTimetableItemsWithNge}
+            upsertTrainSchedules={upsertTrainSchedulesWithNge}
             trainScheduleToEditData={trainScheduleToEditData}
             setTrainScheduleToEditData={setTrainScheduleToEditData}
             setCollapsedTimetableEdit={() => setCollapsedTimetableEdit(!collapsedTimetableEdit)}
@@ -181,7 +181,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
           <div className="scenario-sidemenu">
             <TimetableBoardWrapper
               setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-              upsertTimetableItems={upsertTimetableItemsWithNge}
+              upsertTrainSchedules={upsertTrainSchedulesWithNge}
               removeTrainSchedules={removeTrainSchedulesWithNge}
               timetableItems={timetableItems}
               trainSchedulesWithDetails={trainSchedulesWithDetails}
@@ -212,7 +212,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
                 timetableItems={timetableItems ?? []}
                 activeBoards={activeBoards}
                 updateTrainDepartureTime={updateTrainDepartureTimeWithNge}
-                upsertTimetableItems={upsertTimetableItemsWithNge}
+                upsertTrainSchedules={upsertTrainSchedulesWithNge}
               />
             )}
             {activeBoards.has('macro') && (

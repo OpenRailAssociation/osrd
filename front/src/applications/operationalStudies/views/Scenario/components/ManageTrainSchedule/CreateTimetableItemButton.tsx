@@ -28,7 +28,7 @@ import {
 
 type CreateTimetableItemButtonProps = {
   setIsWorking: (isWorking: boolean) => void;
-  upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
+  upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void;
   isPacedTrainMode: boolean;
 };
 
@@ -37,7 +37,7 @@ type CreateTimetableItemButtonProps = {
  */
 const CreateTimetableItemButton = ({
   setIsWorking,
-  upsertTimetableItems,
+  upsertTrainSchedules,
   isPacedTrainMode,
 }: CreateTimetableItemButtonProps) => {
   const dispatch = useAppDispatch();
@@ -73,7 +73,7 @@ const CreateTimetableItemButton = ({
         })
       );
 
-      let timetableItemToUpsert = formattedNewTrainSchedule;
+      let trainScheduleToUpsert = formattedNewTrainSchedule;
 
       const newAddedExceptions = addedExceptions.map(({ startTime: exStartTime }) => ({
         key: '', // TODO : remove this when the key will be removed from the model
@@ -104,8 +104,8 @@ const CreateTimetableItemButton = ({
           };
         });
 
-        // Add the new exceptions to the timetable item so they contain their new exception ids
-        timetableItemToUpsert = {
+        // Add the new exceptions to the train schedule so they contain their new exception ids
+        trainScheduleToUpsert = {
           ...formattedNewTrainSchedule,
           ...(formattedNewTrainSchedule.paced && {
             paced: {
@@ -125,7 +125,7 @@ const CreateTimetableItemButton = ({
       if (simulationConf.editingItemType === 'pacedTrain') {
         dispatch(clearAddedExceptionsList());
       }
-      upsertTimetableItems([timetableItemToUpsert]);
+      upsertTrainSchedules([trainScheduleToUpsert]);
     } catch (e) {
       dispatch(setFailure(castErrorToFailure(e)));
     } finally {
