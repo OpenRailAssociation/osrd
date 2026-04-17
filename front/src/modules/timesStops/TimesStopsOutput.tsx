@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import cx from 'classnames';
 import { useSelector } from 'react-redux';
@@ -14,7 +14,7 @@ import type { SimulationSummary, TimetableItemWithDetails } from 'modules/timeta
 import type { TimetableItem, Train } from 'reducers/osrdconf/types';
 import { getUseNewTimesStopsTable } from 'reducers/user/userSelectors';
 import { formatLocalTime } from 'utils/date';
-import { Duration } from 'utils/duration';
+import { Duration, addDurationToDate } from 'utils/duration';
 
 import { computeOptimisticRow, propagationToEdits } from './helpers/cellUpdate';
 import { computePowerRestrictionWarnings } from './helpers/powerRestrictionIncompatibility';
@@ -116,12 +116,41 @@ const TimesStopsOutput = ({
   // TimesStopsTable (warnings, styling, etc.) should be computed from optimisticRows,
   // not from selectedTrain, to stay in sync with the displayed values during edits.
   const optimisticRows = useMemo(() => {
-    if (!optimisticEdits) return newRows;
-    const editMap = new Map(optimisticEdits.map((e) => [e.rowId, e]));
-    return newRows.map((row) => {
-      const edit = editMap.get(row.id);
-      return edit ? { ...row, ...computeOptimisticRow(row, edit) } : row;
-    });
+    let rows: TimesStopsRowNew[] = newRows;
+    if (optimisticEdits) {
+      const editMap = new Map(optimisticEdits.map((e): [string, PendingEdit] => [e.rowId, e]));
+      rows = newRows.map((row) => {
+        const edit = editMap.get(row.id);
+        return edit ? { ...row, ...computeOptimisticRow(row, edit) } : row;
+      });
+    }
+
+    // If a row's requested time falls before the previous row's, it crossed midnight — bump it by one day.
+    const ONE_DAY = new Duration({ hours: 24 });
+    return rows.reduce<[TimesStopsRowNew[], Date | null]>(
+      ([acc, lastArrival], row) => {
+        if (row.requestedArrival === null) return [[...acc, row], lastArrival];
+        if (lastArrival !== null && row.requestedArrival < lastArrival) {
+          const bumped = addDurationToDate(row.requestedArrival, ONE_DAY);
+          return [
+            [
+              ...acc,
+              {
+                ...row,
+                requestedArrival: bumped,
+                requestedDeparture:
+                  row.requestedDeparture !== null
+                    ? addDurationToDate(row.requestedDeparture, ONE_DAY)
+                    : null,
+              },
+            ],
+            bumped,
+          ];
+        }
+        return [[...acc, row], row.requestedArrival];
+      },
+      [[], null]
+    )[0];
   }, [newRows, optimisticEdits]);
 
   const startTime = useMemo(() => new Date(selectedTrain.start_time), [selectedTrain.start_time]);
@@ -206,12 +235,30 @@ const TimesStopsOutput = ({
     update: CellUpdate & { propagationMode: PropagationMode }
   ): PendingEdit[] => {
     const propagationResult = propagateTime(update, selectedTrain);
-    return [
-      singleEdit,
-      ...(propagationResult
-        ? propagationToEdits(propagationResult, newRows).filter((e) => e.rowId !== singleEdit.rowId)
-        : []),
-    ];
+    if (!propagationResult) return [singleEdit];
+
+    const propagationEdits = propagationToEdits(propagationResult, newRows);
+
+    // Origin arrival = start_time (not in schedule), so propagationToEdits misses it.
+    const originRow = newRows[0];
+    const originEdits: PendingEdit[] =
+      originRow &&
+      originRow.requestedArrival?.getTime() !== propagationResult.updatedStartTime.getTime()
+        ? [
+            {
+              rowId: originRow.id,
+              field: 'requestedArrival',
+              value: propagationResult.updatedStartTime,
+            },
+          ]
+        : [];
+
+    if (update.propagationMode === 'shiftAllWaypoints') {
+      // All rows are covered by propagation; singleEdit is skipped because it can have the wrong calendar day.
+      return [...originEdits, ...propagationEdits];
+    }
+
+    return [...originEdits, singleEdit, ...propagationEdits.filter((e) => e.rowId !== singleEdit.rowId)];
   };
 
   const buildEditsForMarginUpdate = (
