@@ -55,7 +55,7 @@ type SimulationResultsProps = {
   timetableItems: TimetableItem[];
   conflicts?: Conflict[];
   activeBoards: Set<Board>;
-  updateTrainDepartureTime: (trainId: number, newDepartureTime: Date) => Promise<void>;
+  updateTrainScheduleDepartureTime: (trainId: number, newDepartureTime: Date) => Promise<void>;
   upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void;
 };
 
@@ -66,7 +66,7 @@ const SimulationResults = ({
   timetableItems,
   conflicts = [],
   activeBoards,
-  updateTrainDepartureTime,
+  updateTrainScheduleDepartureTime,
   upsertTrainSchedules,
 }: SimulationResultsProps) => {
   const { t } = useTranslation('operational-studies');
@@ -161,7 +161,7 @@ const SimulationResults = ({
     timetableItemProjections,
     setTimetableItemProjections,
     handleTrainDragInTrackOccupancy,
-    updateTrainDepartureTime,
+    updateTrainScheduleDepartureTime,
   });
 
   const isEtcs = useMemo(

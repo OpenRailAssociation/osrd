@@ -58,7 +58,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
     isConflictsLoading,
     upsertTrainSchedules,
     removeTrainSchedules,
-    updateTrainDepartureTime,
+    updateTrainScheduleDepartureTime,
     selectedTrainScheduleIds,
     setSelectedTrainScheduleIds,
   } = useScenarioData(scenario, infraId, timetableId);
@@ -113,12 +113,12 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
     [removeTrainSchedules, refreshNge]
   );
 
-  const updateTrainDepartureTimeWithNge = useCallback(
-    async (timetableItemId: number, newDeparture: Date) => {
-      await updateTrainDepartureTime(timetableItemId, newDeparture);
+  const updateTrainScheduleDepartureTimeWithNge = useCallback(
+    async (trainScheduleId: number, newDeparture: Date) => {
+      await updateTrainScheduleDepartureTime(trainScheduleId, newDeparture);
       refreshNge();
     },
-    [updateTrainDepartureTime, refreshNge]
+    [updateTrainScheduleDepartureTime, refreshNge]
   );
 
   const simulationResultBoards = ['map', 'tables', 'std', 'sdd', 'chronogram'] as Board[];
@@ -211,7 +211,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
                 trainSchedulesWithDetails={trainSchedulesWithDetails}
                 timetableItems={timetableItems ?? []}
                 activeBoards={activeBoards}
-                updateTrainDepartureTime={updateTrainDepartureTimeWithNge}
+                updateTrainScheduleDepartureTime={updateTrainScheduleDepartureTimeWithNge}
                 upsertTrainSchedules={upsertTrainSchedulesWithNge}
               />
             )}

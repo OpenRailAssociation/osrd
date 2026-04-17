@@ -19,7 +19,7 @@ import { useScenarioContext } from './useScenarioContext';
 type ScenarioBroadcastMessage =
   | { type: 'upsertTrainSchedules'; trainSchedules: TimetableItem[] }
   | { type: 'removeTrainSchedules'; trainScheduleIds: number[] }
-  | { type: 'setTimetableItemDepartureTime'; timetableItemId: number; newDeparture: Date };
+  | { type: 'setTrainScheduleDepartureTime'; trainScheduleId: number; newDeparture: Date };
 
 const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetableId: number) => {
   const dispatch = useAppDispatch();
@@ -162,10 +162,10 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     removeProjectedTimetableItems(_trainSchedulesToRemove);
   }, []);
 
-  const setTimetableItemDepartureTime = useCallback(
-    (timetableItemId: number, newDeparture: Date) => {
+  const setTrainScheduleDepartureTime = useCallback(
+    (trainScheduleId: number, newDeparture: Date) => {
       setTimetableItems((prev) => {
-        const timetableItem = prev?.find((item) => item.id === timetableItemId);
+        const timetableItem = prev?.find((item) => item.id === trainScheduleId);
         if (!timetableItem) {
           return prev;
         }
@@ -180,18 +180,18 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
         return sortBy(Object.values(newTimetableItemsById), 'start_time');
       });
 
-      updateSimulatedTimetableItemDepartureTime(timetableItemId, newDeparture);
-      updateProjectedTimetableItemDepartureTime(timetableItemId, newDeparture);
+      updateSimulatedTimetableItemDepartureTime(trainScheduleId, newDeparture);
+      updateProjectedTimetableItemDepartureTime(trainScheduleId, newDeparture);
     },
     []
   );
 
-  /** Update only departure time of a timetable item */
-  const updateTrainDepartureTime = useCallback(
-    async (timetableItemId: number, newDeparture: Date) => {
-      const timetableItem = timetableItems?.find((item) => item.id === timetableItemId);
+  /** Update only departure time of a train schedule */
+  const updateTrainScheduleDepartureTime = useCallback(
+    async (trainScheduleId: number, newDeparture: Date) => {
+      const timetableItem = timetableItems?.find((item) => item.id === trainScheduleId);
       if (!timetableItem) {
-        throw new Error(`Timetable item "${timetableItemId}" not found`);
+        throw new Error(`Timetable item "${trainScheduleId}" not found`);
       }
 
       await updateTrainSchedule({
@@ -202,7 +202,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
         },
       }).unwrap();
 
-      setTimetableItemDepartureTime(timetableItemId, newDeparture);
+      setTrainScheduleDepartureTime(trainScheduleId, newDeparture);
     },
     [timetableItems]
   );
@@ -229,16 +229,16 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     [removeTrainSchedules]
   );
 
-  const updateTrainDepartureTimeWithBroadcast = useCallback(
-    async (timetableItemId: number, newDeparture: Date) => {
-      await updateTrainDepartureTime(timetableItemId, newDeparture);
+  const updateTrainScheduleDepartureTimeWithBroadcast = useCallback(
+    async (trainScheduleId: number, newDeparture: Date) => {
+      await updateTrainScheduleDepartureTime(trainScheduleId, newDeparture);
       broadcastScenarioMessage({
-        type: 'setTimetableItemDepartureTime',
-        timetableItemId,
+        type: 'setTrainScheduleDepartureTime',
+        trainScheduleId,
         newDeparture,
       });
     },
-    [updateTrainDepartureTime]
+    [updateTrainScheduleDepartureTime]
   );
 
   useEffect(() => {
@@ -255,8 +255,8 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
         case 'removeTrainSchedules':
           removeTrainSchedules(msg.trainScheduleIds);
           break;
-        case 'setTimetableItemDepartureTime':
-          setTimetableItemDepartureTime(msg.timetableItemId, msg.newDeparture);
+        case 'setTrainScheduleDepartureTime':
+          setTrainScheduleDepartureTime(msg.trainScheduleId, msg.newDeparture);
           break;
         default:
           console.error('Unknown scenario broadcast channel message type:', msg);
@@ -290,7 +290,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       isConflictsLoading,
       removeTrainSchedules: removeTrainSchedulesWithBroadcast,
       upsertTrainSchedules: upsertTrainSchedulesWithBroadcast,
-      updateTrainDepartureTime: updateTrainDepartureTimeWithBroadcast,
+      updateTrainScheduleDepartureTime: updateTrainScheduleDepartureTimeWithBroadcast,
       selectedTrainScheduleIds,
       setSelectedTrainScheduleIds,
     }),
@@ -306,7 +306,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       rollingStocks,
       removeTrainSchedulesWithBroadcast,
       upsertTrainSchedulesWithBroadcast,
-      updateTrainDepartureTimeWithBroadcast,
+      updateTrainScheduleDepartureTimeWithBroadcast,
       selectedTrainScheduleIds,
     ]
   );

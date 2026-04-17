@@ -10,7 +10,7 @@ export default function createHandleTrainDrag({
   timetableItemProjections,
   setTimetableItemProjections,
   handleTrainDragInTrackOccupancy,
-  updateTrainDepartureTime,
+  updateTrainScheduleDepartureTime,
 }: {
   timetableItemProjections: TrainSpaceTimeData[];
   setTimetableItemProjections: (newProjections: TrainSpaceTimeData[]) => void;
@@ -20,7 +20,10 @@ export default function createHandleTrainDrag({
     initialDepartureTime: Date;
     stopPanning: boolean;
   }) => Promise<void>;
-  updateTrainDepartureTime: (trainId: number, newDepartureTime: Date) => Promise<void>;
+  updateTrainScheduleDepartureTime: (
+    trainScheduleId: number,
+    newDepartureTime: Date
+  ) => Promise<void>;
 }) {
   return async function handleTrainDrag({
     draggedTrainId,
@@ -62,7 +65,7 @@ export default function createHandleTrainDrag({
       return;
     }
 
-    await updateTrainDepartureTime(draggedItemId, newDepartureTime);
+    await updateTrainScheduleDepartureTime(draggedItemId, newDepartureTime);
 
     // Handle retrieving track occupancy data from server (so with stopPanning: true):
     await handleTrainDragInTrackOccupancy({
