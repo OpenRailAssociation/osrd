@@ -75,10 +75,10 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
 
   const {
     simulatedTrainsById,
-    simulateTimetableItems,
+    simulateTrainSchedules,
     allTrainsSimulated,
-    removeSimulatedTimetableItems,
-    updateSimulatedTimetableItemDepartureTime,
+    removeSimulatedTrainSchedules,
+    updateSimulatedTrainScheduleDepartureTime,
   } = useLazySimulateTrains({
     infraId,
     timetableId,
@@ -122,7 +122,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
   // first load of the summaries
   useEffect(() => {
     if (timetableItems && workerStatus === 'READY' && simulatedTrainsById.size === 0) {
-      simulateTimetableItems(timetableItems);
+      simulateTrainSchedules(timetableItems);
     }
   }, [timetableItems, workerStatus, simulatedTrainsById]);
 
@@ -140,9 +140,9 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       )
     );
 
-    removeSimulatedTimetableItems(trainSchedulesToUpsert.map((trainSchedule) => trainSchedule.id));
+    removeSimulatedTrainSchedules(trainSchedulesToUpsert.map((trainSchedule) => trainSchedule.id));
     removeProjectedTrainSchedules(trainSchedulesToUpsert.map((trainSchedule) => trainSchedule.id));
-    simulateTimetableItems(trainSchedulesToUpsert);
+    simulateTrainSchedules(trainSchedulesToUpsert);
   }, []);
 
   const removeTrainSchedules = useCallback((_trainSchedulesToRemove: number[]) => {
@@ -158,7 +158,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       prevSelected.filter((id) => !_trainSchedulesToRemove.includes(id))
     );
 
-    removeSimulatedTimetableItems(_trainSchedulesToRemove);
+    removeSimulatedTrainSchedules(_trainSchedulesToRemove);
     removeProjectedTrainSchedules(_trainSchedulesToRemove);
   }, []);
 
@@ -180,7 +180,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
         return sortBy(Object.values(newTimetableItemsById), 'start_time');
       });
 
-      updateSimulatedTimetableItemDepartureTime(trainScheduleId, newDeparture);
+      updateSimulatedTrainScheduleDepartureTime(trainScheduleId, newDeparture);
       updateProjectedTrainScheduleDepartureTime(trainScheduleId, newDeparture);
     },
     []

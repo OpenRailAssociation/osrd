@@ -4,7 +4,7 @@ import type {
   LightRollingStockWithLiveries,
   TrainScheduleSimulationSummaryResult,
 } from 'common/api/osrdEditoastApi';
-import formatTimetableItemSummaries from 'modules/simulationResult/helpers/formatTimetableItemSummaries';
+import formatTrainScheduleSummaries from 'modules/simulationResult/helpers/formatTimetableItemSummaries';
 import type { TrainScheduleWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
@@ -22,12 +22,12 @@ type UseLazySimulateTrainsOptions = {
 /**
  * Hook to incrementally simulate trains.
  *
- * The returned simulateTimetableItems() function takes timetable items as
+ * The returned simulateTrainSchedules() function takes train schedules as
  * input, and adds them to the list of trains which need to be simulated.
  * Eventually, the returned simulatedTrainsById map will be populated with
  * completed simulations for these trains.
  *
- * The returned removeSimulatedTimetableItems() function drops timetable items
+ * The returned removeSimulatedTrainSchedules() function drops train schedules
  * from the list of trains which need to be simulated and from the returned
  * simulatedTrainsById map.
  *
@@ -43,7 +43,7 @@ export default function useLazySimulateTrains({
 }: UseLazySimulateTrainsOptions) {
   const dispatch = useAppDispatch();
   const loaderRef = useRef<TrainSimulationLazyLoader>(null);
-  const timetableItemsByIdRef = useRef<Map<number, TimetableItem>>(new Map());
+  const trainSchedulesByIdRef = useRef<Map<number, TimetableItem>>(new Map());
   const [simulatedTrainsById, setSimulatedTrainsById] = useState<
     Map<number, TrainScheduleWithDetails>
   >(new Map());
@@ -60,9 +60,9 @@ export default function useLazySimulateTrains({
       timetableId,
       electricalProfileSetId,
       onProgress: (pacedTrainSummaries: Map<number, TrainScheduleSimulationSummaryResult>) => {
-        const summaries = formatTimetableItemSummaries(
+        const summaries = formatTrainScheduleSummaries(
           pacedTrainSummaries,
-          timetableItemsByIdRef.current,
+          trainSchedulesByIdRef.current,
           rollingStocks
         );
         setSimulatedTrainsById((prev) => new Map([...prev.entries(), ...summaries.entries()]));
@@ -70,7 +70,7 @@ export default function useLazySimulateTrains({
       },
     });
 
-    loader.simulateTimetableItems([...timetableItemsByIdRef.current.keys()]);
+    loader.simulateTrainSchedules([...trainSchedulesByIdRef.current.keys()]);
 
     loaderRef.current = loader;
     return () => {
@@ -79,17 +79,17 @@ export default function useLazySimulateTrains({
     };
   }, [infraId, electricalProfileSetId, rollingStocks]);
 
-  const simulateTimetableItems = useCallback((timetableItems: TimetableItem[]) => {
-    for (const timetableItem of timetableItems) {
-      timetableItemsByIdRef.current.set(timetableItem.id, timetableItem);
+  const simulateTrainSchedules = useCallback((trainSchedules: TimetableItem[]) => {
+    for (const trainSchedule of trainSchedules) {
+      trainSchedulesByIdRef.current.set(trainSchedule.id, trainSchedule);
     }
 
-    loaderRef.current?.simulateTimetableItems(timetableItems.map(({ id }) => id));
+    loaderRef.current?.simulateTrainSchedules(trainSchedules.map(({ id }) => id));
   }, []);
 
-  const removeSimulatedTimetableItems = useCallback((ids: number[]) => {
+  const removeSimulatedTrainSchedules = useCallback((ids: number[]) => {
     for (const id of ids) {
-      timetableItemsByIdRef.current.delete(id);
+      trainSchedulesByIdRef.current.delete(id);
     }
 
     setSimulatedTrainsById((prev) => {
@@ -101,7 +101,7 @@ export default function useLazySimulateTrains({
     });
   }, []);
 
-  const updateSimulatedTimetableItemDepartureTime = useCallback(
+  const updateSimulatedTrainScheduleDepartureTime = useCallback(
     (id: number, newDeparture: Date) => {
       setSimulatedTrainsById((prev) => {
         const result = prev.get(id);
@@ -121,9 +121,9 @@ export default function useLazySimulateTrains({
 
   return {
     simulatedTrainsById,
-    simulateTimetableItems,
-    removeSimulatedTimetableItems,
-    updateSimulatedTimetableItemDepartureTime,
+    simulateTrainSchedules,
+    removeSimulatedTrainSchedules,
+    updateSimulatedTrainScheduleDepartureTime,
     allTrainsSimulated: loaderRef.current && loaderRef.current.pending.length === 0,
   };
 }
