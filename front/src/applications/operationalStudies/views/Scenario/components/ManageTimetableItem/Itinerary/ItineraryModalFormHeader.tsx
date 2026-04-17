@@ -96,7 +96,7 @@ const ItineraryModalFormHeader = ({
   const [isNameBlurred, setIsNameBlurred] = useState(false);
 
   const nameError: StatusWithMessage | undefined = useMemo(() => {
-    const shouldShowError = (isNameBlurred || (submitAttempted && isNameBlurred)) && isNameEmpty;
+    const shouldShowError = (isNameBlurred || submitAttempted) && isNameEmpty;
     if (!shouldShowError) return undefined;
 
     return {

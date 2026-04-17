@@ -1,5 +1,23 @@
 @use './scenario';
 
+@keyframes wiggle {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(5px);
+  }
+  50% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
 .itinerary-modal {
   --header-height: 164px;
   --footer-height: 96px;
@@ -133,6 +151,7 @@
 
       .alert-box {
         margin-top: -1px;
+        animation: wiggle 0.4s ease-in;
       }
 
       .path-step-list {
