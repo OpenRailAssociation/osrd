@@ -103,7 +103,7 @@ Nice-to-have tools (and unofficial maintainers/main users):
 
 * `pr-tests-compose.sh` script (@bougue-pe)
 * `justfile`s to run component-specific commands (@Tristramg @bougue-pe)
-* `process-compose`, a non-containerized alternative to docker-compose (@leovalais)
+* `process-compose`, a non-containerized alternative to docker-compose (@leovalais @woshilapin)
 * `Podman`, a container-management tool (@emersion)
 * `Nix` package-management tool (@woshilapin @Synar @flomonster)
 
