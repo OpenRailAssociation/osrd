@@ -25,7 +25,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - name: Cache node_modules
-        uses: actions/cache@v5
+        uses: actions/cache@v5.0.4
         with:
           path: "**/node_modules"
           key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
