@@ -58,9 +58,9 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
   const {
     projectedTrainsById,
     allTrainsProjected,
-    projectTimetableItems,
-    removeProjectedTimetableItems,
-    updateProjectedTimetableItemDepartureTime,
+    projectTrainSchedules,
+    removeProjectedTrainSchedules,
+    updateProjectedTrainScheduleDepartureTime,
   } = useLazyProjectTrains({
     infraId,
     timetableId: scenario.timetable_id,
@@ -85,7 +85,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     electricalProfileSetId: scenario.electrical_profile_set_id,
     rollingStocks,
     onProgress: (summaries) => {
-      projectTimetableItems([...summaries.keys()].map((id) => timetableItemsById.get(id)!));
+      projectTrainSchedules([...summaries.keys()].map((id) => timetableItemsById.get(id)!));
     },
   });
 
@@ -141,7 +141,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     );
 
     removeSimulatedTimetableItems(trainSchedulesToUpsert.map((trainSchedule) => trainSchedule.id));
-    removeProjectedTimetableItems(trainSchedulesToUpsert.map((trainSchedule) => trainSchedule.id));
+    removeProjectedTrainSchedules(trainSchedulesToUpsert.map((trainSchedule) => trainSchedule.id));
     simulateTimetableItems(trainSchedulesToUpsert);
   }, []);
 
@@ -159,7 +159,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     );
 
     removeSimulatedTimetableItems(_trainSchedulesToRemove);
-    removeProjectedTimetableItems(_trainSchedulesToRemove);
+    removeProjectedTrainSchedules(_trainSchedulesToRemove);
   }, []);
 
   const setTrainScheduleDepartureTime = useCallback(
@@ -181,7 +181,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       });
 
       updateSimulatedTimetableItemDepartureTime(trainScheduleId, newDeparture);
-      updateProjectedTimetableItemDepartureTime(trainScheduleId, newDeparture);
+      updateProjectedTrainScheduleDepartureTime(trainScheduleId, newDeparture);
     },
     []
   );

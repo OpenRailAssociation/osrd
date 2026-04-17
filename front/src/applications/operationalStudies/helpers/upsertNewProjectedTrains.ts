@@ -8,13 +8,13 @@ import type { ProjectionResult } from './TrainProjectionLazyLoaderAbstract';
 const upsertNewProjectedTrains = (
   projectedTrains: Map<number, TrainSpaceTimeData>,
   projectedTrainsToUpsert: Map<number, ProjectionResult>,
-  timetableItemsById: Map<number, TimetableItem>
+  trainSchedulesById: Map<number, TimetableItem>
 ) => {
   const newProjectedTrains = new Map(projectedTrains);
 
   // For each key (train, id) in projectedTrainsToUpsert, we either add it or update it in the state
   for (const [trainIdKey, trainData] of projectedTrainsToUpsert) {
-    const matchingTrain = timetableItemsById.get(trainIdKey);
+    const matchingTrain = trainSchedulesById.get(trainIdKey);
     if (!matchingTrain) {
       continue;
     }

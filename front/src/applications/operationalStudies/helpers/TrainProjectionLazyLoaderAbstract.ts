@@ -38,9 +38,9 @@ export default abstract class TrainProjectionLazyLoaderAbstract {
     this.options = options;
   }
 
-  projectTimetableItems(ids: number[]) {
+  projectTrainSchedules(ids: number[]) {
     if (this.cancelled) {
-      throw new Error('projectTimetableItems() called after cancel()');
+      throw new Error('projectTrainSchedules() called after cancel()');
     }
     this.pending.push(...ids);
     this.prevPromise = this.prevPromise.finally(() => this.processPending());
