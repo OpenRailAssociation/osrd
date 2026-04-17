@@ -48,3 +48,27 @@ impl AsRef<UserInfo> for User {
         &self.info
     }
 }
+
+impl From<User> for crate::model::User {
+    fn from(user: User) -> Self {
+        crate::model::User(user.id)
+    }
+}
+
+impl From<Group> for crate::model::Group {
+    fn from(group: Group) -> Self {
+        crate::model::Group(group.id)
+    }
+}
+
+impl From<User> for crate::model::Subject {
+    fn from(user: User) -> Self {
+        crate::model::Subject::user(user)
+    }
+}
+
+impl From<Group> for crate::model::Subject {
+    fn from(group: Group) -> Self {
+        crate::model::Subject::group(group)
+    }
+}
