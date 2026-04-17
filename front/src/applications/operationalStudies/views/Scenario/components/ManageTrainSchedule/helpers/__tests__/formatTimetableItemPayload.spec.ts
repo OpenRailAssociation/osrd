@@ -59,7 +59,7 @@ describe('formatPacedTrainPayload', () => {
     powerRestriction: [],
     timeWindow: Duration.parse('PT3H'),
     interval: Duration.parse('PT1H'),
-    editingItemType: 'pacedTrain',
+    editingTrainType: 'pacedTrain',
     addedExceptions: [],
   };
   const rollingStockName = 'DUAL-MODE_RS_E2Ee';
@@ -125,7 +125,7 @@ describe('formatPacedTrainPayload', () => {
     it('should return a TrainSchedule payload without paced fields', () => {
       const osrdconfUniqueTrain: OperationalStudiesConfState = {
         ...rawOsrdconf,
-        editingItemType: 'uniqueTrain',
+        editingTrainType: 'uniqueTrain',
       };
       const newTrainSchedulePayload = formatPacedTrainPayload(
         osrdconfUniqueTrain,

@@ -9,16 +9,16 @@ import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/vie
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import { ConfirmModal, useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import DotsLoader from 'common/DotsLoader';
-import { toggleEditingItemType } from 'reducers/osrdconf/operationalStudiesConf';
+import { toggleEditingTrainType } from 'reducers/osrdconf/operationalStudiesConf';
 import {
-  getEditingItemType,
+  getEditingTrainType,
   getOperationalStudiesConf,
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { TimetableItem, TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 
 import CreateTimetableItemButton from './CreateTimetableItemButton';
-import useUpdateTrainSchedule from './hooks/useUpdateTimetableItem';
+import useUpdateTrainSchedule from './hooks/useUpdateTrainSchedule';
 import ItineraryModal from './Itinerary/ItineraryModal';
 import PacedTrainSettings from './PacedTrainSettings';
 
@@ -43,7 +43,7 @@ const ManageTrainScheduleLeftPanel = ({
   const { setEditedElementContainer } = useContext(EditedElementContainerContext);
   const dispatch = useAppDispatch();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
-  const editingItemType = useSelector(getEditingItemType);
+  const editingTrainType = useSelector(getEditingTrainType);
   const osrdConf = useSelector(getOperationalStudiesConf);
 
   const { openModal, closeModal } = useModal();
@@ -65,11 +65,11 @@ const ManageTrainScheduleLeftPanel = ({
   );
 
   const getEditLabel = (_itemToEdit: TrainScheduleToEditData) => {
-    if (!_itemToEdit.originalPacedTrain.paced && editingItemType === 'uniqueTrain') {
+    if (!_itemToEdit.originalPacedTrain.paced && editingTrainType === 'uniqueTrain') {
       return t('updateUniqueTrain');
     }
-    if (_itemToEdit.originalPacedTrain.paced && editingItemType !== 'uniqueTrain') {
-      return editingItemType === 'pacedTrain' ? t('updatePacedTrain') : t('updateOccurrence');
+    if (_itemToEdit.originalPacedTrain.paced && editingTrainType !== 'uniqueTrain') {
+      return editingTrainType === 'pacedTrain' ? t('updatePacedTrain') : t('updateOccurrence');
     }
     return !_itemToEdit.originalPacedTrain.paced
       ? t('turnUniqueTrainIntoPacedTrain')
@@ -117,7 +117,7 @@ const ManageTrainScheduleLeftPanel = ({
                 </span>
                 {getEditLabel(trainScheduleToEditData)}
               </button>
-              {editingItemType !== 'occurrence' && (
+              {editingTrainType !== 'occurrence' && (
                 <div className="osrd-config-item-container paced-trains-container">
                   <CheckboxRadioSNCF
                     type="checkbox"
@@ -125,10 +125,10 @@ const ManageTrainScheduleLeftPanel = ({
                     id="define-paced-train"
                     name="define-paced-train"
                     containerClassName="mb-0"
-                    checked={editingItemType === 'pacedTrain'}
-                    onChange={() => dispatch(toggleEditingItemType())}
+                    checked={editingTrainType === 'pacedTrain'}
+                    onChange={() => dispatch(toggleEditingTrainType())}
                   />
-                  {editingItemType === 'pacedTrain' && <PacedTrainSettings />}
+                  {editingTrainType === 'pacedTrain' && <PacedTrainSettings />}
                 </div>
               )}
             </>
@@ -149,7 +149,7 @@ const ManageTrainScheduleLeftPanel = ({
               <CreateTimetableItemButton
                 setIsWorking={setIsWorking}
                 upsertTrainSchedules={upsertTrainSchedules}
-                isPacedTrainMode={editingItemType === 'pacedTrain'}
+                isPacedTrainMode={editingTrainType === 'pacedTrain'}
               />
             )}
             <div className="osrd-config-item-container paced-trains-container">
@@ -159,10 +159,10 @@ const ManageTrainScheduleLeftPanel = ({
                 id="define-paced-train"
                 name="define-paced-train"
                 containerClassName="mb-0"
-                checked={editingItemType === 'pacedTrain'}
-                onChange={() => dispatch(toggleEditingItemType())}
+                checked={editingTrainType === 'pacedTrain'}
+                onChange={() => dispatch(toggleEditingTrainType())}
               />
-              {editingItemType === 'pacedTrain' && <PacedTrainSettings />}
+              {editingTrainType === 'pacedTrain' && <PacedTrainSettings />}
             </div>
           </>
         )}
