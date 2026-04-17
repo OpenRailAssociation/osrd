@@ -7,39 +7,39 @@ import type { TrainScheduleWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { mapBy } from 'utils/types';
 
-type SummaryWithCorrespondingTimetableItemId = {
-  timetableItemId: number;
+type SummaryWithCorrespondingTrainScheduleId = {
+  trainScheduleId: number;
   summary: TrainScheduleSimulationSummaryResult;
 };
 
-const formatTimetableItemWithDetails = (
-  inputs: SummaryWithCorrespondingTimetableItemId,
-  rawTimetableItems: Map<number, TimetableItem>,
+const formatTrainScheduleWithDetails = (
+  inputs: SummaryWithCorrespondingTrainScheduleId,
+  rawTrainSchedules: Map<number, TimetableItem>,
   rollingStocks: LightRollingStockWithLiveries[]
 ) => {
-  const timetableItem = rawTimetableItems.get(inputs.timetableItemId);
-  if (!timetableItem) {
-    throw new Error('Missing timetable item');
+  const trainSchedule = rawTrainSchedules.get(inputs.trainScheduleId);
+  if (!trainSchedule) {
+    throw new Error('Missing train schedule');
   }
-  const rollingStock = rollingStocks.find((rs) => rs.name === timetableItem.rolling_stock_name);
-  return formatPacedTrainWithDetails(timetableItem, rollingStock, inputs.summary);
+  const rollingStock = rollingStocks.find((rs) => rs.name === trainSchedule.rolling_stock_name);
+  return formatPacedTrainWithDetails(trainSchedule, rollingStock, inputs.summary);
 };
 
-/** Format the timetable items with their simulation summaries */
-const formatTimetableItemSummaries = (
+/** Format the train schedules with their simulation summaries */
+const formatTrainScheduleSummaries = (
   rawPacedTrainSummaries: Map<number, TrainScheduleSimulationSummaryResult>,
-  rawTimetableItems: Map<number, TimetableItem>,
+  rawTrainSchedules: Map<number, TimetableItem>,
   rollingStocks: LightRollingStockWithLiveries[]
 ): Map<number, TrainScheduleWithDetails> => {
   const trainSchedules: TrainScheduleWithDetails[] = [...rawPacedTrainSummaries].map(
     ([id, pacedTrainSummary]) =>
-      formatTimetableItemWithDetails(
-        { timetableItemId: id, summary: pacedTrainSummary },
-        rawTimetableItems,
+      formatTrainScheduleWithDetails(
+        { trainScheduleId: id, summary: pacedTrainSummary },
+        rawTrainSchedules,
         rollingStocks
       )
   );
   return mapBy(trainSchedules, 'id');
 };
 
-export default formatTimetableItemSummaries;
+export default formatTrainScheduleSummaries;

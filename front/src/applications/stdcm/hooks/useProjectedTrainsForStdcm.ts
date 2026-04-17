@@ -87,7 +87,7 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
   });
 
   // Progressive loading of the trains
-  const { simulatedTrainsById, simulateTimetableItems } = useLazySimulateTrains({
+  const { simulatedTrainsById, simulateTrainSchedules } = useLazySimulateTrains({
     infraId,
     timetableId,
     electricalProfileSetId,
@@ -100,7 +100,7 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
   });
 
   useEffect(() => {
-    simulateTimetableItems(trainSchedules);
+    simulateTrainSchedules(trainSchedules);
   }, [trainSchedules]);
 
   useEffect(() => {

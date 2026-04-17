@@ -41,9 +41,9 @@ export default class TrainSimulationLazyLoader {
   /**
    * Queue train IDs for simulation.
    */
-  simulateTimetableItems(ids: number[]) {
+  simulateTrainSchedules(ids: number[]) {
     if (this.cancelled) {
-      throw new Error('simulateTimetableItems() called after cancel()');
+      throw new Error('simulateTrainSchedules() called after cancel()');
     }
     this.pending.push(...ids);
     this.prevPromise = this.prevPromise.finally(() => this.processPending());
