@@ -17,7 +17,7 @@ import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
 import { getOcurrencesIds, isPacedTrainBase } from './pacedTrain';
 
-export async function fetchTimetableItem(
+export async function fetchTrainSchedule(
   id: number,
   dispatch: AppDispatch
 ): Promise<TimetableItem> {
@@ -182,12 +182,12 @@ export async function syncOccurrenceException(
 }
 
 export async function syncAndUpdatePacedTrain(
-  timetableItemIdToUpdate: number,
+  trainScheduleIdToUpdate: number,
   pacedTrain: Omit<TrainScheduleResponse, 'id'>,
   dispatch: AppDispatch
 ): Promise<TimetableItem> {
   if (isPacedTrainBase(pacedTrain)) {
-    const pacedTrainId = formatEditoastIdToPacedTrainId(timetableItemIdToUpdate);
+    const pacedTrainId = formatEditoastIdToPacedTrainId(trainScheduleIdToUpdate);
     dispatch(
       unsetTrainIdsMatchingMissingOccurrencesOf({
         pacedTrainId,
@@ -209,19 +209,19 @@ export async function syncAndUpdatePacedTrain(
       }
     : pacedTrainWithoutTrainScheduleSetId;
 
-  await updatePacedTrain(dispatch, timetableItemIdToUpdate, trainSchedulePayload);
+  await updatePacedTrain(dispatch, trainScheduleIdToUpdate, trainSchedulePayload);
 
-  return { ...pacedTrain, id: timetableItemIdToUpdate };
+  return { ...pacedTrain, id: trainScheduleIdToUpdate };
 }
 
 export async function storePacedTrain(
-  timetableItemIdToUpdate: number,
+  trainScheduleIdToUpdate: number,
   pacedTrain: Omit<TrainScheduleResponse, 'id'>,
   dispatch: AppDispatch,
   upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void
 ): Promise<TimetableItem> {
   const updatedPacedTrain = await syncAndUpdatePacedTrain(
-    timetableItemIdToUpdate,
+    trainScheduleIdToUpdate,
     pacedTrain,
     dispatch
   );
