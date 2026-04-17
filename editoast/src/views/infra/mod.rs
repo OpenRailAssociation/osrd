@@ -841,9 +841,7 @@ pub(in crate::views) async fn match_operational_points(
             .await?;
     for operational_point_reference in operational_point_references {
         // Retrieve related OP based on the input operational point identifier:
-        let related_operational_points = op_cache
-            .get_reference(operational_point_reference)
-            .expect("should get the provided reference");
+        let related_operational_points = op_cache.get_reference(operational_point_reference);
 
         // Add the operational point reference related operational point to the response:
         operational_points.push(related_operational_points);
