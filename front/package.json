@@ -137,7 +137,7 @@
     "tsx": "^4.21.0",
     "typescript": "^6.0.2",
     "typescript-eslint": "^8.58.1",
-    "vite": "^8.0.5",
+    "vite": "^8.0.8",
     "vite-plugin-checker": "^0.12.0",
     "vite-plugin-static-copy": "^4.0.0",
     "vite-tsconfig-paths": "^6.1.1",
