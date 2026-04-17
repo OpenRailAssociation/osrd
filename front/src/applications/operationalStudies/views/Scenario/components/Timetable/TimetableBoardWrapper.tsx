@@ -33,8 +33,8 @@ type TimetableBoardWrapperProps = {
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
   refreshNge: () => Promise<void>;
   projectingOnSimulatedPathException: boolean | undefined;
-  selectedTimetableItemIds: number[];
-  setSelectedTimetableItemIds: React.Dispatch<React.SetStateAction<number[]>>;
+  selectedTrainScheduleIds: number[];
+  setSelectedTrainScheduleIds: React.Dispatch<React.SetStateAction<number[]>>;
 };
 
 const TimetableBoardWrapper = ({
@@ -47,8 +47,8 @@ const TimetableBoardWrapper = ({
   trainSchedulesWithDetails,
   refreshNge,
   projectingOnSimulatedPathException,
-  selectedTimetableItemIds,
-  setSelectedTimetableItemIds,
+  selectedTrainScheduleIds,
+  setSelectedTrainScheduleIds,
 }: TimetableBoardWrapperProps) => {
   const { openModal } = useContext(ModalContext);
 
@@ -80,12 +80,12 @@ const TimetableBoardWrapper = ({
 
   const { selectedUniqueTrainIds, selectedPacedTrainIds } = useMemo(() => {
     const trainSchedulesById = mapBy(trainSchedulesWithDetails, 'id');
-    return selectedTimetableItemIds.reduce(
-      (acc, timetableItemId) => {
-        const pacedTrain = trainSchedulesById.get(timetableItemId);
-        if (!pacedTrain) throw new Error(`No timetableItem found for id ${timetableItemId}`);
-        if (!pacedTrain.paced) acc.selectedUniqueTrainIds.push(timetableItemId);
-        else acc.selectedPacedTrainIds.push(timetableItemId);
+    return selectedTrainScheduleIds.reduce(
+      (acc, trainScheduleId) => {
+        const pacedTrain = trainSchedulesById.get(trainScheduleId);
+        if (!pacedTrain) throw new Error(`No train schedule found for id ${trainScheduleId}`);
+        if (!pacedTrain.paced) acc.selectedUniqueTrainIds.push(trainScheduleId);
+        else acc.selectedPacedTrainIds.push(trainScheduleId);
         return acc;
       },
       { selectedUniqueTrainIds: [], selectedPacedTrainIds: [] } as {
@@ -93,10 +93,10 @@ const TimetableBoardWrapper = ({
         selectedPacedTrainIds: number[];
       }
     );
-  }, [selectedTimetableItemIds]);
+  }, [selectedTrainScheduleIds]);
 
   // --- BOARD WRAPPER TITLE MANAGEMENT -------------------------
-  const computedItemLabel = useCallback(() => {
+  const computedTrainLabel = useCallback(() => {
     if (totalUniqueTrainCount === 0 && totalPacedTrainCount === 0)
       return t('main.timetable.noTrainSchedule');
 
@@ -141,33 +141,33 @@ const TimetableBoardWrapper = ({
     (timetableItemIds: number[]) => {
       removeTimetableItems(timetableItemIds);
     },
-    [removeTimetableItems, setSelectedTimetableItemIds]
+    [removeTimetableItems, setSelectedTrainScheduleIds]
   );
 
   const handleTrainsDelete = async (
     currentSelectedTrainId?: TrainId,
     hideToast: boolean = false
   ) => {
-    const trainSchedulesCount = selectedTimetableItemIds.length;
+    const trainSchedulesCount = selectedTrainScheduleIds.length;
 
-    const isSelectedTimetableItemInSelection =
+    const isSelectedTrainScheduleInSelection =
       currentSelectedTrainId !== undefined &&
-      selectedTimetableItemIds.some((timetableItemId) =>
-        currentSelectedTrainId.includes(`${timetableItemId}`)
+      selectedTrainScheduleIds.some((trainScheduleId) =>
+        currentSelectedTrainId.includes(`${trainScheduleId}`)
       );
 
-    if (isSelectedTimetableItemInSelection) {
+    if (isSelectedTrainScheduleInSelection) {
       // we need to clear the selected train, otherwise just after the delete,
       // some unvalid rtk calls are dispatched (see rollingstock request in SimulationResults)
       dispatch(updateSelectedTrain(undefined));
     }
 
     try {
-      if (selectedTimetableItemIds.length > 0) {
-        await deleteTrainSchedules(dispatch, selectedTimetableItemIds);
+      if (selectedTrainScheduleIds.length > 0) {
+        await deleteTrainSchedules(dispatch, selectedTrainScheduleIds);
       }
 
-      removeAndUnselectTrains(selectedTimetableItemIds);
+      removeAndUnselectTrains(selectedTrainScheduleIds);
 
       if (!hideToast) {
         dispatch(
@@ -180,7 +180,7 @@ const TimetableBoardWrapper = ({
         );
       }
     } catch (e) {
-      if (isSelectedTimetableItemInSelection) {
+      if (isSelectedTrainScheduleInSelection) {
         dispatch(updateSelectedTrain({ id: currentSelectedTrainId, by: 'timetable' }));
       } else {
         dispatch(setFailure(castErrorToFailure(e)));
@@ -194,18 +194,18 @@ const TimetableBoardWrapper = ({
     const selectedText = document.getSelection()?.toString();
     if (selectedText !== undefined && selectedText.length > 0) return;
 
-    if (selectedTimetableItemIds.length === 0) {
+    if (selectedTrainScheduleIds.length === 0) {
       return;
     }
 
-    await copyTimetableItemsToClipboard(selectedTimetableItemIds, timetableItems);
+    await copyTimetableItemsToClipboard(selectedTrainScheduleIds, timetableItems);
     dispatch(
       setSuccess({
         title: t('main.copyTimetable.title'),
-        text: t('main.copyTimetable.text', { count: selectedTimetableItemIds.length }),
+        text: t('main.copyTimetable.text', { count: selectedTrainScheduleIds.length }),
       })
     );
-  }, [selectedTimetableItemIds, timetableItems]);
+  }, [selectedTrainScheduleIds, timetableItems]);
 
   const handlePaste = useCallback(async () => {
     let data = null;
@@ -225,7 +225,7 @@ const TimetableBoardWrapper = ({
         upsertTimetableItems
       );
 
-      setSelectedTimetableItemIds(newTimetableItems.map((item) => item.id));
+      setSelectedTrainScheduleIds(newTimetableItems.map((item) => item.id));
       dispatch(
         setSuccess({
           title: t('main.pasteTimetable.title'),
@@ -244,21 +244,21 @@ const TimetableBoardWrapper = ({
       const selectedText = document.getSelection()?.toString();
       if (selectedText !== undefined && selectedText.length > 0) return;
 
-      if (selectedTimetableItemIds.length === 0) {
+      if (selectedTrainScheduleIds.length === 0) {
         return;
       }
 
       event.preventDefault();
-      await copyTimetableItemsToClipboard(selectedTimetableItemIds, timetableItems);
+      await copyTimetableItemsToClipboard(selectedTrainScheduleIds, timetableItems);
       await handleTrainsDelete(selectedTrainId, true);
       dispatch(
         setSuccess({
           title: t('main.cutTimetable.title'),
-          text: t('main.cutTimetable.text', { count: selectedTimetableItemIds.length }),
+          text: t('main.cutTimetable.text', { count: selectedTrainScheduleIds.length }),
         })
       );
     },
-    [selectedTimetableItemIds, timetableItems]
+    [selectedTrainScheduleIds, timetableItems]
   );
 
   const handleDeleteTimetableItems = () => {
@@ -288,10 +288,10 @@ const TimetableBoardWrapper = ({
   }, [handleCut]);
 
   return (
-    <BoardWrapper withFooter name={computedItemLabel()} dataTestId="timetable-board-wrapper">
+    <BoardWrapper withFooter name={computedTrainLabel()} dataTestId="timetable-board-wrapper">
       <Timetable
-        selectedTimetableItemIds={selectedTimetableItemIds}
-        setSelectedTimetableItemIds={setSelectedTimetableItemIds}
+        selectedTrainScheduleIds={selectedTrainScheduleIds}
+        setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
         setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
         upsertTimetableItems={upsertTimetableItems}
         setTrainScheduleToEditData={setTrainScheduleToEditData}

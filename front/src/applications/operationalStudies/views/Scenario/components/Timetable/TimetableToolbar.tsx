@@ -36,10 +36,10 @@ type TimetableToolbarProps = {
   timetableFilters: TimetableFilters;
   timetableItems: TimetableItem[];
   filteredTrainSchedules: TrainScheduleWithDetails[];
-  selectedTimetableItemIds: number[];
+  selectedTrainScheduleIds: number[];
   showTrainDetails: boolean;
   isSelectMode: boolean;
-  setSelectedTimetableItemIds: (selectedTimetableItemIds: number[]) => void;
+  setSelectedTrainScheduleIds: (selectedTrainScheduleIds: number[]) => void;
   setShowTrainDetails: (show: boolean) => void;
   setIsSelectMode: (show: boolean) => void;
   setDisplayTrainScheduleManagement: (mode: string) => void;
@@ -55,12 +55,12 @@ const TimetableToolbar = ({
   timetableFilters,
   timetableItems,
   filteredTrainSchedules,
-  selectedTimetableItemIds,
+  selectedTrainScheduleIds,
   showTrainDetails,
   isSelectMode,
   setShowTrainDetails,
   setIsSelectMode,
-  setSelectedTimetableItemIds,
+  setSelectedTrainScheduleIds,
   setDisplayTrainScheduleManagement,
   refreshNge,
   handleDeleteTimetableItems,
@@ -97,23 +97,23 @@ const TimetableToolbar = ({
 
   const handleExportTrainSchedules = () => {
     exportTrainSchedules(
-      selectedTimetableItemIds,
+      selectedTrainScheduleIds,
       timetableItems,
       pacedTrainRoundTripsData?.results
     );
   };
 
   const areAllTrainchedulesSelected =
-    selectedTimetableItemIds.length === filteredTrainSchedules.length;
+    selectedTrainScheduleIds.length === filteredTrainSchedules.length;
 
   const areInvalidTrainSchedules = timetableHasInvalidTrainSchedule(filteredTrainSchedules);
 
   const toggleAllTrainsSelection = () => {
     if (!areAllTrainchedulesSelected) {
       const trainSchedulesDisplayed = filteredTrainSchedules.map(({ id }) => id);
-      setSelectedTimetableItemIds(trainSchedulesDisplayed);
+      setSelectedTrainScheduleIds(trainSchedulesDisplayed);
     } else {
-      setSelectedTimetableItemIds([]);
+      setSelectedTrainScheduleIds([]);
     }
   };
 
@@ -254,7 +254,7 @@ const TimetableToolbar = ({
       </div>
       {isSelectMode && filteredTrainSchedules.length > 0 && (
         <SelectionToolBar
-          selectedTimetableItemIds={selectedTimetableItemIds}
+          selectedTrainScheduleIds={selectedTrainScheduleIds}
           areAllTrainchedulesSelected={areAllTrainchedulesSelected}
           areInvalidTrainSchedules={areInvalidTrainSchedules}
           toggleAllTrainsSelection={toggleAllTrainsSelection}

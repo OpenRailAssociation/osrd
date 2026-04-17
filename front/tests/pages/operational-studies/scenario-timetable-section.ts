@@ -368,7 +368,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
   async selectAllTimetableItemsAndVerifySelection(
     translations: TimetableFilterTranslations & CommonTranslations,
-    itemCounts: {
+    trainCounts: {
       totalPacedTrainCount: number;
       totalUniqueTrainCount: number;
     }
@@ -377,7 +377,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     await expect(this.timetableSelectAllButton).toBeVisible();
     await this.selectAllTimetableItems();
 
-    const { totalPacedTrainCount, totalUniqueTrainCount } = itemCounts;
+    const { totalPacedTrainCount, totalUniqueTrainCount } = trainCounts;
     await expect(this.timetableTotalItemLabel).toBeVisible();
 
     // Rebuild the expected text for total items label which has the syntax : "X/X services and Y/Y trains selected"

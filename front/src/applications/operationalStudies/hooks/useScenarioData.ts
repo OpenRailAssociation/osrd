@@ -26,7 +26,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
 
   const [timetableItems, setTimetableItems] = useState<TimetableItem[]>();
   const timetableItemsById = useMemo(() => mapBy(timetableItems, 'id'), [timetableItems]);
-  const [selectedTimetableItemIds, setSelectedTimetableItemIds] = useState<number[]>([]);
+  const [selectedTrainScheduleIds, setSelectedTrainScheduleIds] = useState<number[]>([]);
 
   const [updateTrainSchedule] = osrdEditoastApi.endpoints.putTrainSchedulesById.useMutation();
 
@@ -154,7 +154,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       return Array.from(prevTimetableItemsById.values());
     });
 
-    setSelectedTimetableItemIds((prevSelected) =>
+    setSelectedTrainScheduleIds((prevSelected) =>
       prevSelected.filter((id) => !_timetableItemsToRemove.includes(id))
     );
 
@@ -291,8 +291,8 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       removeTimetableItems: removeTimetableItemsWithBroadcast,
       upsertTimetableItems: upsertTimetableItemsWithBroadcast,
       updateTrainDepartureTime: updateTrainDepartureTimeWithBroadcast,
-      selectedTimetableItemIds,
-      setSelectedTimetableItemIds,
+      selectedTrainScheduleIds,
+      setSelectedTrainScheduleIds,
     }),
     [
       trainSchedulesWithDetails,
@@ -307,7 +307,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       removeTimetableItemsWithBroadcast,
       upsertTimetableItemsWithBroadcast,
       updateTrainDepartureTimeWithBroadcast,
-      selectedTimetableItemIds,
+      selectedTrainScheduleIds,
     ]
   );
 

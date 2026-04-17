@@ -4,7 +4,7 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 type TimetableSelectionToolbarProps = {
-  selectedTimetableItemIds: number[];
+  selectedTrainScheduleIds: number[];
   areAllTrainchedulesSelected: boolean;
   areInvalidTrainSchedules: boolean;
   toggleAllTrainsSelection: () => void;
@@ -14,7 +14,7 @@ type TimetableSelectionToolbarProps = {
 };
 
 const TimetableSelectionToolbar = ({
-  selectedTimetableItemIds,
+  selectedTrainScheduleIds,
   areAllTrainchedulesSelected,
   areInvalidTrainSchedules,
   toggleAllTrainsSelection,
@@ -42,12 +42,12 @@ const TimetableSelectionToolbar = ({
       >
         <Checkbox
           small
-          isIndeterminate={!areAllTrainchedulesSelected && selectedTimetableItemIds.length > 0}
+          isIndeterminate={!areAllTrainchedulesSelected && selectedTrainScheduleIds.length > 0}
           checked={areAllTrainchedulesSelected}
           onChange={toggleAllTrainsSelection}
         />
       </button>
-      {selectedTimetableItemIds.length > 0 && (
+      {selectedTrainScheduleIds.length > 0 && (
         <>
           <button
             data-testid="export-selection-button"
