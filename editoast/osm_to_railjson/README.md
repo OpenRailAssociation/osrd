@@ -6,6 +6,12 @@ Example for Germany:
 
 1. Download OSM's German data (~4Gb `germany-latest.osm.pbf`) from
     https://download.geofabrik.de/europe/germany.html
+
+    This is not mandatory, but we strongly recommend using [osmium](https://osmcode.org/osmium-tool/) to filter the osm.pbf file with only the data needed by osm_to_railjson.
+    ```sh
+    osmium tags-filter <path/to/germany-latest.osm.pbf> nwr/railway r/public_transport=stop_area -o <path/to/germany-latest.osm.pbf>
+    ```
+    It can divide by 3 the time taken by osm_to_railjson.
 2. Launch conversion (release build of editoast and conversion can be long):
     ```sh
     cd ../../editoast
