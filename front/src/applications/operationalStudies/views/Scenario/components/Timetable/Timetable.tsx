@@ -22,14 +22,14 @@ type TimetableProps = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
-  setSelectedTimetableItemIds: React.Dispatch<React.SetStateAction<number[]>>;
+  setSelectedTrainScheduleIds: React.Dispatch<React.SetStateAction<number[]>>;
   removeAndUnselectTrains: (trainIds: number[]) => void;
   handleDeleteTimetableItems: () => void;
   trainScheduleToEditData?: TrainScheduleToEditData;
   timetableItems?: TimetableItem[];
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
   refreshNge: () => Promise<void>;
-  selectedTimetableItemIds: number[];
+  selectedTrainScheduleIds: number[];
   projectingOnSimulatedPathException: boolean | undefined;
 };
 
@@ -37,14 +37,14 @@ const Timetable = ({
   setDisplayTrainScheduleManagement,
   upsertTimetableItems,
   setTrainScheduleToEditData,
-  setSelectedTimetableItemIds,
+  setSelectedTrainScheduleIds,
   removeAndUnselectTrains,
   handleDeleteTimetableItems,
   trainScheduleToEditData,
   timetableItems = [],
   trainSchedulesWithDetails,
   refreshNge,
-  selectedTimetableItemIds,
+  selectedTrainScheduleIds,
   projectingOnSimulatedPathException,
 }: TimetableProps) => {
   const dispatch = useAppDispatch();
@@ -88,21 +88,21 @@ const Timetable = ({
 
   const handleSelectTrainScheduleSet = useCallback(
     (trainIds: number[]) => {
-      const allSelected = trainIds.every((id) => selectedTimetableItemIds.includes(id));
+      const allSelected = trainIds.every((id) => selectedTrainScheduleIds.includes(id));
       if (allSelected) {
         // Deselect all
-        setSelectedTimetableItemIds((prevSelectedIds) =>
+        setSelectedTrainScheduleIds((prevSelectedIds) =>
           prevSelectedIds.filter((id) => !trainIds.includes(id))
         );
       } else {
         // Select all
-        setSelectedTimetableItemIds((prevSelectedIds) => [
+        setSelectedTrainScheduleIds((prevSelectedIds) => [
           ...prevSelectedIds,
           ...trainIds.filter((id) => !prevSelectedIds.includes(id)),
         ]);
       }
     },
-    [selectedTimetableItemIds]
+    [selectedTrainScheduleIds]
   );
 
   const openMoveDialog = useCallback((pacedTrainIds: number[]) => {
@@ -150,16 +150,16 @@ const Timetable = ({
           filteredTrainSchedules={filteredTrainSchedules}
           timetableFilters={timetableFilters}
           timetableItems={timetableItems}
-          selectedTimetableItemIds={selectedTimetableItemIds}
+          selectedTrainScheduleIds={selectedTrainScheduleIds}
           showTrainDetails={showTrainDetails}
           isSelectMode={isSelectMode}
-          setSelectedTimetableItemIds={setSelectedTimetableItemIds}
+          setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
           setShowTrainDetails={setShowTrainDetails}
           setIsSelectMode={setIsSelectMode}
           setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
           refreshNge={refreshNge}
           handleDeleteTimetableItems={handleDeleteTimetableItems}
-          handleMoveTimetableItems={() => openMoveDialog(selectedTimetableItemIds)}
+          handleMoveTimetableItems={() => openMoveDialog(selectedTrainScheduleIds)}
           timetableMode={timetableMode}
           setTimetableMode={setTimetableMode}
           upsertTimetableItems={upsertTimetableItems}
@@ -168,11 +168,11 @@ const Timetable = ({
           setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
           upsertTimetableItems={upsertTimetableItems}
           setTrainScheduleToEditData={setTrainScheduleToEditData}
-          setSelectedTimetableItemIds={setSelectedTimetableItemIds}
+          setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
           removeAndUnselectTrains={removeAndUnselectTrains}
           trainScheduleToEditData={trainScheduleToEditData}
           trainSchedulesWithDetails={filteredTrainSchedules}
-          selectedTimetableItemIds={selectedTimetableItemIds}
+          selectedTrainScheduleIds={selectedTrainScheduleIds}
           projectingOnSimulatedPathException={projectingOnSimulatedPathException}
           isSelectMode={isSelectMode}
           timetableMode={timetableMode}

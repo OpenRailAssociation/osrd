@@ -45,7 +45,7 @@ type UniqueTrainItemProps = {
   removeTrains: (trainIds: number[]) => void;
   projectionPathIsUsed: boolean;
   selectTrainToEdit: (train: TrainScheduleWithDetails) => void;
-  setSelectedTimetableItemIds: React.Dispatch<React.SetStateAction<number[]>>;
+  setSelectedTrainScheduleIds: React.Dispatch<React.SetStateAction<number[]>>;
   subCategories: SubCategory[];
   isSelectMode: boolean;
   moveTimetableItem: () => void;
@@ -62,7 +62,7 @@ const UniqueTrainItem = ({
   removeTrains,
   projectionPathIsUsed,
   selectTrainToEdit,
-  setSelectedTimetableItemIds,
+  setSelectedTrainScheduleIds,
   subCategories,
   isSelectMode,
   moveTimetableItem,
@@ -86,7 +86,7 @@ const UniqueTrainItem = ({
     deleteTrainSchedules(dispatch, [train.id])
       .then(() => {
         removeTrains([train.id]);
-        setSelectedTimetableItemIds((prev) => prev.filter((id) => id !== train.id));
+        setSelectedTrainScheduleIds((prev) => prev.filter((id) => id !== train.id));
         dispatch(
           setSuccess({
             title: t('timetable.trainDeleted', { name: train.name }),

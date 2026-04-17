@@ -59,8 +59,8 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
     upsertTimetableItems,
     removeTimetableItems,
     updateTrainDepartureTime,
-    selectedTimetableItemIds,
-    setSelectedTimetableItemIds,
+    selectedTrainScheduleIds,
+    setSelectedTrainScheduleIds,
   } = useScenarioData(scenario, infraId, timetableId);
 
   const {
@@ -191,8 +191,8 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
               projectingOnSimulatedPathException={
                 projectionData?.projectingOnSimulatedPathException
               }
-              selectedTimetableItemIds={selectedTimetableItemIds}
-              setSelectedTimetableItemIds={setSelectedTimetableItemIds}
+              selectedTrainScheduleIds={selectedTrainScheduleIds}
+              setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
             />
           </div>
         </div>

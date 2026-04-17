@@ -34,11 +34,11 @@ type TrainListProps = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
-  setSelectedTimetableItemIds: React.Dispatch<React.SetStateAction<number[]>>;
+  setSelectedTrainScheduleIds: React.Dispatch<React.SetStateAction<number[]>>;
   removeAndUnselectTrains: (trainIds: number[]) => void;
   trainScheduleToEditData?: TrainScheduleToEditData;
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
-  selectedTimetableItemIds: number[];
+  selectedTrainScheduleIds: number[];
   projectingOnSimulatedPathException: boolean | undefined;
   isSelectMode: boolean;
   timetableMode: TimetableMode;
@@ -59,11 +59,11 @@ const TrainList = ({
   setDisplayTrainScheduleManagement,
   upsertTimetableItems,
   setTrainScheduleToEditData,
-  setSelectedTimetableItemIds,
+  setSelectedTrainScheduleIds,
   removeAndUnselectTrains,
   trainScheduleToEditData,
   trainSchedulesWithDetails,
-  selectedTimetableItemIds,
+  selectedTrainScheduleIds,
   projectingOnSimulatedPathException,
   isSelectMode,
   timetableMode,
@@ -87,9 +87,9 @@ const TrainList = ({
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
   const dispatch = useAppDispatch();
 
-  const handleSelectTimetableItem = useCallback(
+  const handleSelectTrainSchedule = useCallback(
     (id: number) => {
-      const currentSelectedTrainIds: number[] = selectedTimetableItemIds;
+      const currentSelectedTrainIds: number[] = selectedTrainScheduleIds;
       const index = currentSelectedTrainIds.indexOf(id);
 
       if (index === -1) {
@@ -98,9 +98,9 @@ const TrainList = ({
         currentSelectedTrainIds.splice(index, 1);
       }
 
-      setSelectedTimetableItemIds([...currentSelectedTrainIds]);
+      setSelectedTrainScheduleIds([...currentSelectedTrainIds]);
     },
-    [selectedTimetableItemIds]
+    [selectedTrainScheduleIds]
   );
 
   const handleExpandTimetableItem = useCallback((id: number) => {
@@ -164,8 +164,8 @@ const TrainList = ({
           )}
           {!isPacedTrainWithDetails(trainSchedule) ? (
             <UniqueTrainItem
-              isInSelection={selectedTimetableItemIds.includes(trainSchedule.id)}
-              handleSelectTrain={handleSelectTimetableItem}
+              isInSelection={selectedTrainScheduleIds.includes(trainSchedule.id)}
+              handleSelectTrain={handleSelectTrainSchedule}
               train={trainSchedule}
               isSelected={
                 workerStatus === 'READY' &&
@@ -175,7 +175,7 @@ const TrainList = ({
               upsertUniqueTrains={upsertTimetableItems}
               removeTrains={removeAndUnselectTrains}
               selectTrainToEdit={selectTrainScheduleToEdit}
-              setSelectedTimetableItemIds={setSelectedTimetableItemIds}
+              setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
               projectionPathIsUsed={
                 workerStatus === 'READY' &&
                 trainIdUsedForProjection === formatEditoastIdToPacedTrainId(trainSchedule.id)
@@ -188,16 +188,16 @@ const TrainList = ({
           ) : (
             <PacedTrainItem
               pacedTrain={trainSchedule}
-              isInSelection={selectedTimetableItemIds.includes(trainSchedule.id)}
+              isInSelection={selectedTrainScheduleIds.includes(trainSchedule.id)}
               selectPacedTrainToEdit={selectTrainScheduleToEdit}
-              handleSelectPacedTrain={handleSelectTimetableItem}
+              handleSelectPacedTrain={handleSelectTrainSchedule}
               isOccurrencesListOpen={expandedTimetableItemIds.has(trainSchedule.id)}
               handleOpenOccurrencesList={handleExpandTimetableItem}
               isOnEdit={trainSchedule.id === trainScheduleToEditData?.trainScheduleId}
               selectedTrainId={selectedTrainId}
               upsertTimetableItems={upsertTimetableItems}
               removePacedTrains={removeAndUnselectTrains}
-              setSelectedTimetableItemIds={setSelectedTimetableItemIds}
+              setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
               infraIsCached={workerStatus === 'READY'}
               subCategories={subCategories}
               projectingOnSimulatedPathException={projectingOnSimulatedPathException}
@@ -214,15 +214,15 @@ const TrainList = ({
       showDepartureDates,
       expandedTimetableItemIds,
       handleExpandTimetableItem,
-      handleSelectTimetableItem,
+      handleSelectTrainSchedule,
       isSelectMode,
       moveTimetableItem,
       projectingOnSimulatedPathException,
       removeAndUnselectTrains,
       selectTrainScheduleToEdit,
-      selectedTimetableItemIds,
+      selectedTrainScheduleIds,
       selectedTrainId,
-      setSelectedTimetableItemIds,
+      setSelectedTrainScheduleIds,
       subCategories,
       trainScheduleToEditData?.trainScheduleId,
       timetableMode,
@@ -242,9 +242,9 @@ const TrainList = ({
               const trainScheduleSetTrainsIds = trains.map((train) => train.id);
               const isSelected =
                 trains.length > 0 &&
-                trains.every((train) => selectedTimetableItemIds.includes(train.id));
+                trains.every((train) => selectedTrainScheduleIds.includes(train.id));
               const isIndeterminate =
-                !isSelected && trains.some((train) => selectedTimetableItemIds.includes(train.id));
+                !isSelected && trains.some((train) => selectedTrainScheduleIds.includes(train.id));
               const isCheckboxDisabled = trains.length === 0;
               const isTrainListOpen = expandedTrainScheduleSetIds.has(trainScheduleSet.id);
 

@@ -74,8 +74,8 @@ test.describe('Timetable items multiselection', { tag: ['@op', '@timetable-items
       });
     });
 
-    await test.step('Select all timetable items', async () => {
-      await scenarioTimetableSection.selectAllTimetableItemsAndVerifySelection(frTranslations, {
+    await test.step('Select all train schedules', async () => {
+      await scenarioTimetableSection.selectAllTrainSchedulesAndVerifySelection(frTranslations, {
         totalPacedTrainCount: TOTAL_PACED_TRAINS,
         totalUniqueTrainCount: TOTAL_UNIQUE_TRAINS,
       });
