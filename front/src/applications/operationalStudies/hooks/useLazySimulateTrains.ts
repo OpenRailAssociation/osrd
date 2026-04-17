@@ -4,7 +4,7 @@ import type {
   LightRollingStockWithLiveries,
   TrainScheduleSimulationSummaryResult,
 } from 'common/api/osrdEditoastApi';
-import formatTrainScheduleSummaries from 'modules/simulationResult/helpers/formatTimetableItemSummaries';
+import formatTrainScheduleSummaries from 'modules/simulationResult/helpers/formatTrainScheduleSummaries';
 import type { TrainScheduleWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
