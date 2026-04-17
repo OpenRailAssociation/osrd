@@ -60,30 +60,21 @@ declare module '@tanstack/react-table' {
 
 /**
  * Get the reference date for arrival editing.
- * Uses the previous row's latest time (departure > arrival) to determine the correct day.
+ * The TimeCell bumps any typed time that falls before this date to the next day,
+ * so returning the previous stop's time means "anything earlier than this is D+1".
  */
 const getArrivalReferenceDate = (
   row: TimesStopsRowNew,
   allRows: TimesStopsRowNew[],
   startTime: Date
 ): Date => {
-  // Find the previous row with any time information
   const previousRow = allRows.findLast(
-    (r) =>
-      r.opOnPathIndex < row.opOnPathIndex &&
-      (r.computedDeparture || r.computedArrival || r.requestedDeparture || r.requestedArrival)
+    (r) => r.opOnPathIndex < row.opOnPathIndex && (r.requestedDeparture || r.requestedArrival)
   );
 
   if (!previousRow) return startTime;
 
-  // Use the latest available time from the previous row
-  return (
-    previousRow.computedDeparture ??
-    previousRow.computedArrival ??
-    previousRow.requestedDeparture ??
-    previousRow.requestedArrival ??
-    startTime
-  );
+  return previousRow.requestedDeparture ?? previousRow.requestedArrival ?? startTime;
 };
 
 /**
@@ -91,7 +82,7 @@ const getArrivalReferenceDate = (
  * Uses the current row's arrival time since departure must be after arrival.
  */
 const getDepartureReferenceDate = (row: TimesStopsRowNew, startTime: Date): Date =>
-  row.computedArrival ?? row.requestedArrival ?? startTime;
+  row.requestedArrival ?? row.computedArrival ?? startTime;
 
 /**
  * Check if the OP is a scheduled OP.
@@ -615,9 +606,8 @@ const TimesStopsTable = ({
 
   const getRowDayOffset = (row: Row<TimesStopsRowNew>): number | null => {
     if (!row.original.isPathStep) return null;
-    const date = row.original.computedArrival ?? row.original.requestedArrival;
-    if (!date) return null;
-    return calculateTimeDifferenceInDays(startTime, date);
+    if (!row.original.requestedArrival) return null;
+    return calculateTimeDifferenceInDays(startTime, row.original.requestedArrival);
   };
 
   const tableRows = table.getRowModel().rows;
@@ -709,7 +699,7 @@ const TimesStopsTable = ({
             const rowIndex = virtualRow.index;
             const row = tableRows[rowIndex];
 
-            const rowArrivalDate = row.original.computedArrival ?? row.original.requestedArrival;
+            const rowArrivalDate = row.original.requestedArrival ?? row.original.computedArrival;
             const dayOffset = effectiveDayOffsets[rowIndex];
             const prevDayOffset = rowIndex > 0 ? effectiveDayOffsets[rowIndex - 1] : 0;
             const hasDayChanged = dayOffset > prevDayOffset;
