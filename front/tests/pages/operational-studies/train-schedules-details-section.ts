@@ -9,8 +9,8 @@ export type DetailRow = {
   durationTime: string;
 };
 
-class TimetableItemDetailSection extends ScenarioTimetableSection {
-  private readonly showItemsDetailsButton: Locator;
+class TrainScheduleDetailSection extends ScenarioTimetableSection {
+  private readonly showTrainsDetailsButton: Locator;
   private readonly pacedTrainDetailLabels: Locator;
   private readonly uniqueTrainDetailLabels: Locator;
   private readonly pacedTrainStopsCount: Locator;
@@ -24,7 +24,7 @@ class TimetableItemDetailSection extends ScenarioTimetableSection {
 
   constructor(page: Page) {
     super(page);
-    this.showItemsDetailsButton = page.getByTestId('scenarios-show-train-details-button');
+    this.showTrainsDetailsButton = page.getByTestId('scenarios-show-train-details-button');
     this.pacedTrainDetailLabels = page.getByTestId('paced-train-more-info');
     this.uniqueTrainDetailLabels = page.getByTestId('unique-train-more-info');
     this.pacedTrainStopsCount = page.getByTestId('paced-train-stop-count');
@@ -37,8 +37,8 @@ class TimetableItemDetailSection extends ScenarioTimetableSection {
     this.uniqueTrainDurationTime = page.getByTestId('unique-train-duration-time');
   }
 
-  async showTimetableItemsDetails(): Promise<void> {
-    await this.showItemsDetailsButton.click();
+  async showTrainSchedulesDetails(): Promise<void> {
+    await this.showTrainsDetailsButton.click();
     await expect(this.pacedTrainDetailLabels.first()).toBeVisible();
     await expect(this.uniqueTrainDetailLabels.first()).toBeVisible();
   }
@@ -82,4 +82,4 @@ class TimetableItemDetailSection extends ScenarioTimetableSection {
   }
 }
 
-export default TimetableItemDetailSection;
+export default TrainScheduleDetailSection;

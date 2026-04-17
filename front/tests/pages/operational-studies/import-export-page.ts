@@ -10,30 +10,30 @@ import ScenarioTimetableSection from './scenario-timetable-section';
 
 class ImportExportPage extends ScenarioTimetableSection {
   private readonly importTimetableMenuButton: Locator;
-  private readonly importTimetableItemButton: Locator;
+  private readonly importTrainScheduleButton: Locator;
   private readonly uploadFileDropzone: Locator;
   private readonly cancelUploadButton: Locator;
   private readonly uploadFileDownloadButton: Locator;
 
   constructor(page: Page) {
     super(page);
-    this.importTimetableMenuButton = page.getByTestId('scenarios-import-timetable-item-button');
-    this.importTimetableItemButton = page.getByTestId('scenarios-import-timetable-by-file');
+    this.importTimetableMenuButton = page.getByTestId('scenarios-import-train-schedule-button');
+    this.importTrainScheduleButton = page.getByTestId('scenarios-import-timetable-by-file');
     this.uploadFileDropzone = page.getByTestId('upload-file-modal-dropzone');
     this.cancelUploadButton = page.getByTestId('upload-file-modal-cancel-button');
     this.uploadFileDownloadButton = page.getByTestId('upload-file-modal-download-button');
   }
 
-  async openImportTimetableItemUploadDialog() {
+  async openImportTrainScheduleUploadDialog() {
     await this.importTimetableMenuButton.click();
     await expect(this.importTimetableMenuButton).toBeVisible();
-    await this.importTimetableItemButton.click();
+    await this.importTrainScheduleButton.click();
     await expect(this.uploadFileDropzone).toBeVisible();
     await expect(this.cancelUploadButton).toBeEnabled();
     await expect(this.uploadFileDownloadButton).toBeDisabled();
   }
 
-  async uploadTimetableItemFile(filePath: string, toastMessage: string): Promise<void> {
+  async uploadTrainScheduleFile(filePath: string, toastMessage: string): Promise<void> {
     await this.uploadFileDropzone.setInputFiles(filePath);
     await expect(this.uploadFileDownloadButton).toBeEnabled();
 
@@ -42,8 +42,8 @@ class ImportExportPage extends ScenarioTimetableSection {
     await this.checkToastHasBeenLaunched(toastMessage);
   }
 
-  async exportTimetableItems(downloadDir: string): Promise<string> {
-    const download = await triggerFileDownload(this.page, this.exportTimetableItemButton);
+  async exportTrainSchedules(downloadDir: string): Promise<string> {
+    const download = await triggerFileDownload(this.page, this.exportTrainScheduleButton);
 
     assertSuggestedFilename(download, /^timetable.*\.json$/);
 
