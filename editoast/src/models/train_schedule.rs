@@ -65,6 +65,11 @@ pub struct TrainSchedule {
 }
 
 impl TrainSchedule {
+    pub fn is_exception_occurrence_index_valid(&self, occurrence_index: i64) -> bool {
+        usize::try_from(occurrence_index)
+            .is_ok_and(|i| (0..self.num_base_occurrences()).contains(&i))
+    }
+
     pub fn apply_train_schedule_exception(
         &self,
         exception: &TrainScheduleException,
@@ -471,6 +476,71 @@ mod tests {
             sub_category: None,
             exceptions: vec![],
         }
+    }
+
+    #[rstest]
+    #[case(
+        chrono::Duration::try_hours(2),
+        chrono::Duration::try_minutes(30),
+        0,
+        true
+    )]
+    #[case(
+        chrono::Duration::try_hours(2),
+        chrono::Duration::try_minutes(30),
+        1,
+        true
+    )]
+    #[case(
+        chrono::Duration::try_hours(2),
+        chrono::Duration::try_minutes(30),
+        3,
+        true
+    )]
+    #[case(
+        chrono::Duration::try_hours(2),
+        chrono::Duration::try_minutes(30),
+        4,
+        false
+    )]
+    #[case(
+        chrono::Duration::try_hours(2),
+        chrono::Duration::try_minutes(30),
+        100,
+        false
+    )]
+    #[case(chrono::Duration::try_hours(2), chrono::Duration::try_minutes(30), -1, false)]
+    #[case(
+        chrono::Duration::try_seconds(120),
+        chrono::Duration::try_seconds(50),
+        3,
+        false
+    )]
+    #[case(
+        chrono::Duration::try_minutes(60),
+        chrono::Duration::try_minutes(25),
+        2,
+        true
+    )]
+    #[case(
+        chrono::Duration::try_minutes(60),
+        chrono::Duration::try_minutes(25),
+        3,
+        false
+    )]
+    fn train_schedule_is_exception_occurrence_index_invalid(
+        #[case] time_window: Option<chrono::Duration>,
+        #[case] interval: Option<chrono::Duration>,
+        #[case] occurrence_index: i64,
+        #[case] expected_valid: bool,
+    ) {
+        let mut train_schedule = create_paced_train();
+        train_schedule.time_window = time_window;
+        train_schedule.interval = interval;
+        assert_eq!(
+            train_schedule.is_exception_occurrence_index_valid(occurrence_index),
+            expected_valid
+        );
     }
 
     #[tokio::test]
