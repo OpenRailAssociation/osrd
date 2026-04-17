@@ -159,10 +159,10 @@
     "pacedTrainCountSelected_other": "{{count}}/{{totalCount}} services selected",
     "pacedTrainCount_one": "1/{{totalCount}} service",
     "pacedTrainCount_other": "{{count}}/{{totalCount}} services",
-    "pacedTrainCount_zero": "0/{{totalCount}} service",
+    "pacedTrainCount_zero": "0/{{totalCount}} services",
     "pacedTrain_one": "1 service",
     "pacedTrain_other": "{{count}} services",
-    "pacedTrain_zero": "0 service",
+    "pacedTrain_zero": "0 services",
     "pasteTimetable": {
       "text_one": "Train pasted",
       "text_other": "Trains pasted",
@@ -302,8 +302,10 @@
           "tssNameDuplicate": "Series {{name}} is already in use in set with id {{catalogId}}"
         },
         "existingCatalogEntry": "Use an existing set",
-        "localRemoveDialogTitle": "Remove local package",
-        "localRemoveDialogWarning": "This package is local: all information it contains will be permanently deleted.",
+        "localRemoveDialogTitle": "Delete local package",
+        "localRemoveDialogWarning": "This package is local: $t(main.pacedTrain, { 'count': {{pacedTrainCount}} }) and $t(main.train, { 'count': {{uniqueTrainCount}} }) will be permanently deleted.",
+        "localRemoveDialogWarningEmpty": "This package is local: all information it contains will be permanently deleted.",
+        "localRemoveFromScenario": "Delete package",
         "moveToPackage": "Move to package",
         "moveToSelectPackage": "Move to selected package",
         "movingToAnotherPackage": "Moving to another package",
@@ -319,6 +321,7 @@
         "publishToCatalog": "Publish to catalog",
         "removeDialogText": "You’re about to remove '{{name}}' from this scenario.",
         "removeDialogTitle": "Remove package",
+        "removeDialogWarning": "$t(main.pacedTrain, { 'count': {{pacedTrainCount}} }) and $t(main.train, { 'count': {{uniqueTrainCount}} }) will be removed.",
         "removeFromScenario": "Remove from scenario",
         "sandbox": "Sandbox",
         "transformToLocalCopy": "Transform to local copy",
@@ -336,10 +339,10 @@
     "trainCountSelected_other": "{{count}}/{{totalCount}} trains selected",
     "trainCount_one": "1/{{totalCount}} train",
     "trainCount_other": "{{count}}/{{totalCount}} trains",
-    "trainCount_zero": "0/{{totalCount}} train",
+    "trainCount_zero": "0/{{totalCount}} trains",
     "train_one": "1 train",
     "train_other": "{{count}} trains",
-    "train_zero": "0 train"
+    "train_zero": "0 trains"
   },
   "manageTimetableItem": {
     "addPacedTrain": "Add a service",
