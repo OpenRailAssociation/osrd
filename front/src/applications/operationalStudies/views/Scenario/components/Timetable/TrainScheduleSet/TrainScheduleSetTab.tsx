@@ -21,6 +21,7 @@ import { useTranslation } from 'react-i18next';
 import type { TrainScheduleSetManager } from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
 import type { CatalogEntry, TrainScheduleSet } from 'common/api/osrdEditoastApi';
 import MenuTriggerButton, { type MenuProps } from 'common/MenuTriggerButton';
+import type { PacedTrainWithDetails } from 'modules/timetableItem/types';
 
 import TrainScheduleDeleteDialog from './TrainScheduleDeleteDialog';
 import { computeTrainScheduleSetName, isSandbox } from '../utils';
@@ -48,6 +49,7 @@ type TrainScheduleSetTabProps = PropsWithChildren<{
   isTrainListOpen: boolean;
   catalogEntries: CatalogEntry[];
   manageTrainScheduleSet: TrainScheduleSetManager;
+  trains: PacedTrainWithDetails[];
 }>;
 
 const TrainScheduleSetTab = ({
@@ -62,12 +64,35 @@ const TrainScheduleSetTab = ({
   isTrainListOpen,
   catalogEntries,
   manageTrainScheduleSet,
+  trains,
 }: TrainScheduleSetTabProps) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'main.timetable.trainScheduleSets',
   });
   const [openedDialog, setOpenedDialog] = useState<OpenDialogName | null>(null);
-
+  const { pacedTrainCount, uniqueTrainCount } = useMemo(
+    () =>
+      trains.reduce(
+        (acc, train) => {
+          if (!train.paced) {
+            acc.uniqueTrainCount += 1;
+          } else {
+            acc.pacedTrainCount += 1;
+          }
+          return acc;
+        },
+        { pacedTrainCount: 0, uniqueTrainCount: 0 }
+      ),
+    [trains]
+  );
+  const computeRemoveDialogWarning = () => {
+    if (openedDialog === 'removeLocal') {
+      return trains.length > 0
+        ? t('localRemoveDialogWarning', { pacedTrainCount, uniqueTrainCount })
+        : t('localRemoveDialogWarningEmpty');
+    }
+    return trains.length > 0 ? t('removeDialogWarning', { pacedTrainCount, uniqueTrainCount }) : '';
+  };
   const menuProps: MenuProps = useMemo(
     () => ({
       items: [
@@ -232,9 +257,11 @@ const TrainScheduleSetTab = ({
                 t('removeDialogText', {
                   name: trainScheduleSet.name,
                 }),
-                openedDialog === 'removeLocal' ? t('localRemoveDialogWarning') : '',
+                computeRemoveDialogWarning(),
               ],
-              submit: t('removeFromScenario'),
+              submit: t(
+                openedDialog === 'removeLocal' ? 'localRemoveFromScenario' : 'removeFromScenario'
+              ),
               cancel: t('cancel'),
             }}
             onCancel={() => setOpenedDialog(null)}

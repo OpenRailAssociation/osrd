@@ -261,6 +261,7 @@ const TrainList = ({
                   isTrainListOpen={isTrainListOpen}
                   catalogEntries={catalogEntries}
                   manageTrainScheduleSet={manageTrainScheduleSet}
+                  trains={trains}
                 />
               );
 
