@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import DebugFailureMap from 'applications/stdcm/components/DebugView/DebugFailureMap';
 import DebugSpaceTimeChart from 'applications/stdcm/components/DebugView/DebugSpaceTimeChart';
+import DebugSpeedDistanceDiagram from 'applications/stdcm/components/DebugView/DebugSpeedDistanceDiagram';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 const StdcmDebugView = () => {
@@ -51,6 +52,7 @@ const StdcmDebugView = () => {
     result = (
       <>
         {simulationData && <DebugSpaceTimeChart simulationData={simulationData} />}
+        {simulationData && <DebugSpeedDistanceDiagram simulationData={simulationData} />}
         {failureData && <DebugFailureMap failureData={failureData} />}
       </>
     );
