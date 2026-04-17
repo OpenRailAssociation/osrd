@@ -17,7 +17,7 @@ import SimulationSettingsTab from './pages/operational-studies/simulation-settin
 import StudyPage from './pages/operational-studies/study-page';
 import TimeAndStopSimulationOutputs from './pages/operational-studies/time-stop-simulation-outputs';
 import TimesAndStopsTab from './pages/operational-studies/times-and-stops-tab';
-import TimetableItemDetailSection from './pages/operational-studies/timetable-items-details-section';
+import TrainScheduleDetailSection from './pages/operational-studies/train-schedules-details-section';
 import RollingstockEditorPage from './pages/rolling-stock/rolling-stock-editor-page';
 import RollingStockSelector from './pages/rolling-stock/rolling-stock-selector';
 import ConsistChangeSection from './pages/stdcm/consist-change-section';
@@ -42,7 +42,7 @@ type Fixtures = {
   simulationSettingsTab: SimulationSettingsTab;
   opSimulationResultPage: OpSimulationResultPage;
   scenarioTimetableSection: ScenarioTimetableSection;
-  timetableItemDetailSection: TimetableItemDetailSection;
+  trainScheduleDetailSection: TrainScheduleDetailSection;
   getManchetteComponent: GetManchetteComponent;
   ngePage: NGEPage;
   roundTripPage: RoundTripPage;
@@ -119,8 +119,8 @@ const test = testWithLogging.extend<Fixtures>({
   scenarioTimetableSection: async ({ page }, use) => {
     await use(new ScenarioTimetableSection(page));
   },
-  timetableItemDetailSection: async ({ page }, use) => {
-    await use(new TimetableItemDetailSection(page));
+  trainScheduleDetailSection: async ({ page }, use) => {
+    await use(new TrainScheduleDetailSection(page));
   },
   getManchetteComponent: async ({ page }, use) => {
     await use(new GetManchetteComponent(page));

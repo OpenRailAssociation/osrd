@@ -180,7 +180,7 @@ const TimetableToolbar = ({
           <MenuTriggerButton
             buttonProps={{
               icon: <Download />,
-              dataTestID: 'scenarios-import-timetable-item-button',
+              dataTestID: 'scenarios-import-train-schedule-button',
               title: t('timetable.importTimetableNetworkGraphItem'),
               className: 'import-button',
             }}
