@@ -74,7 +74,7 @@
     "json-schema": "^0.4.0",
     "lodash": "^4.18.1",
     "maplibre-gl": "^5.22.0",
-    "oxfmt": "^0.43.0",
+    "oxfmt": "^0.44.0",
     "party-js": "^2.2.0",
     "pmtiles": "^4.4.1",
     "rc-slider": "^11.1.9",
