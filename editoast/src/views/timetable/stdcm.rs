@@ -43,6 +43,7 @@ use std::sync::Arc;
 use thiserror::Error;
 use tokio::spawn;
 use tokio::sync::mpsc;
+use tracing::Instrument as _;
 use tracing::Span;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
@@ -419,7 +420,7 @@ pub(in crate::views) async fn stdcm_handler(
     let (tx, rx) = mpsc::unbounded_channel();
     let core_payload = returned_request.clone();
 
-    spawn(async move {
+    let stream_result_lambda = async move {
         let stream_stdcm_response = stdcm_request
             .fetch_streaming::<core_client::Json<core_client::stdcm::ProgressStatus>>(
                 core_client.as_ref(),
@@ -487,7 +488,8 @@ pub(in crate::views) async fn stdcm_handler(
                 break;
             }
         }
-    });
+    };
+    spawn(stream_result_lambda.in_current_span());
     let stream = tokio_stream::wrappers::UnboundedReceiverStream::new(rx);
     Ok(StreamBodyAs::json_nl(stream))
 }
