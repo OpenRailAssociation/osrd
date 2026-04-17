@@ -6356,6 +6356,7 @@ components:
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorTrainScheduleSetNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorBatchNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorDatabase'
+      - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorInvalidOccurrenceIndex'
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorNotPacedTrain'
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorTimetableNotFound'
@@ -8673,6 +8674,39 @@ components:
           type: string
           enum:
           - editoast:train_schedule_exception:Database
+    EditoastTrainScheduleExceptionErrorInvalidOccurrenceIndex:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - interval
+          - occurrence_index
+          - time_window
+          - train_schedule_id
+          properties:
+            interval:
+              type: string
+            occurrence_index:
+              type: integer
+            time_window:
+              type: string
+            train_schedule_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:train_schedule_exception:InvalidOccurrenceIndex
     EditoastTrainScheduleExceptionErrorNotFound:
       type: object
       required:
