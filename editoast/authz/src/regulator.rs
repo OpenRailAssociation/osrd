@@ -227,68 +227,6 @@ impl<S: StorageDriver> Regulator<S> {
     }
 
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn infra_direct_grant(
-        &self,
-        subject: &Subject,
-        infra: &Infra,
-    ) -> Result<Option<InfraGrant>, Error<S::Error>> {
-        // Check if the infra exists
-        if !self
-            .driver
-            .infra_exists(infra.0)
-            .await
-            .map_err(Error::Storage)?
-        {
-            return Err(Error::UnknownResource(infra.0));
-        }
-
-        // Check if subject exists
-        if !self.subject_exists(subject).await? {
-            return Err(Error::UnknownSubject(subject.id()));
-        }
-
-        // Calling openfga
-        let (is_reader, is_writer, is_owner) = match subject {
-            Subject::User(user) => tokio::try_join!(
-                self.openfga
-                    .tuple_exists(Infra::reader().tuple(user, infra)),
-                self.openfga
-                    .tuple_exists(Infra::writer().tuple(user, infra)),
-                self.openfga.tuple_exists(Infra::owner().tuple(user, infra)),
-            )?,
-            Subject::Group(group) => tokio::try_join!(
-                self.openfga
-                    .tuple_exists(Infra::reader().tuple(Group::member().userset(group), infra)),
-                self.openfga
-                    .tuple_exists(Infra::writer().tuple(Group::member().userset(group), infra)),
-                self.openfga
-                    .tuple_exists(Infra::owner().tuple(Group::member().userset(group), infra)),
-            )?,
-        };
-
-        match (is_reader, is_writer, is_owner) {
-            (true, false, false) => Ok(Some(InfraGrant::Reader)),
-            (false, true, false) => Ok(Some(InfraGrant::Writer)),
-            (false, false, true) => Ok(Some(InfraGrant::Owner)),
-            (false, false, false) => Ok(None),
-            _ => {
-                tracing::error!(
-                    is_reader,
-                    is_writer,
-                    is_owner,
-                    ?subject,
-                    resource = ?infra,
-                    "Subject has multiple direct grants on the same resource"
-                );
-                panic!(
-                    "Subject '{subject:?}' has multiple direct grants on the same resource '{infra:?}', which is not supposed to happen by design. \n\
-                    Detected direct grants: reader: {is_reader}, writer: {is_writer}, owner: {is_owner}"
-                )
-            }
-        }
-    }
-
-    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn authorize_infra(
         &self,
         user: &User,

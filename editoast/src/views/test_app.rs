@@ -361,6 +361,10 @@ impl TestApp {
         self.app_state.valkey_client.clone()
     }
 
+    pub fn openfga(&self) -> &fga::Client {
+        self.app_state.regulator.openfga()
+    }
+
     pub fn speed_limit_tag_ids(&self) -> Arc<SpeedLimitTagIds> {
         self.app_state.speed_limit_tag_ids.clone()
     }
@@ -445,13 +449,6 @@ impl TestApp {
         )
     }
 
-    pub fn infra_direct_grant(&self, infra_id: i64, subject_id: i64) -> Option<InfraGrant> {
-        let regulator = &self.app_state.regulator;
-        let subject = self.authz_subject(subject_id);
-        block_on(regulator.infra_direct_grant(&subject, &authz::Infra(infra_id)))
-            .expect("Infra direct grant should be fetched successfully")
-    }
-
     #[track_caller]
     pub fn assert_infra_grant(
         &self,
@@ -464,21 +461,6 @@ impl TestApp {
             actual_grant,
             expected_grant,
             "Infra grant for subject '{subject_id}' on infra '{infra_id}' does not match"
-        );
-    }
-
-    #[track_caller]
-    pub fn assert_infra_direct_grant(
-        &self,
-        infra_id: i64,
-        subject_id: i64,
-        expected_grant: Option<InfraGrant>,
-    ) {
-        let actual_grant = self.infra_direct_grant(infra_id, subject_id);
-        pretty_assertions::assert_eq!(
-            actual_grant,
-            expected_grant,
-            "Infra direct grant for subject '{subject_id}' on infra '{infra_id}' does not match"
         );
     }
 }
