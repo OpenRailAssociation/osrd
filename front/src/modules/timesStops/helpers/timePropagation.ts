@@ -4,6 +4,8 @@ import { addDurationToDate, Duration } from 'utils/duration';
 
 import type { ArrivalUpdate, CellUpdate, PropagationMode } from '../types';
 
+const ONE_DAY = new Duration({ hours: 24 });
+
 export type PropagationResult = {
   updatedPath: PathItem[];
   updatedSchedule: ScheduleItem[];
@@ -54,10 +56,15 @@ const formatSignedDelta = (delta: Duration) => {
 export const formatPropagationDeltaLabelByMode = (
   oldValue: Date | null,
   newValue: Date | null,
-  mode: PropagationMode
+  mode: PropagationMode,
+  isOrigin = false
 ): string => {
-  const delta = computeDeltaForPropagationMode(oldValue, newValue, mode) ?? Duration.zero;
-  return formatSignedDelta(delta);
+  // At the origin, propagation always uses HH:mm:ss delta (start_time shift),
+  // regardless of mode, to keep the label consistent with the actual propagation.
+  const delta = isOrigin
+    ? computeDelta(oldValue, newValue)
+    : computeDeltaForPropagationMode(oldValue, newValue, mode);
+  return formatSignedDelta(delta ?? Duration.zero);
 };
 
 /**
@@ -65,6 +72,8 @@ export const formatPropagationDeltaLabelByMode = (
  * - toDestination: adds delta to arrivals from the edited point and after.
  * - fromDeparture: shifts start_time by +delta and arrivals after by -delta (they cancel out,
  *   so only the edited point and everything before it actually moves).
+ * In both cases, steps are processed in path order and any step that ends up before the previous
+ * one is bumped by 24h.
  */
 const propagateFromEditedPoint = (
   delta: Duration,
@@ -78,34 +87,56 @@ const propagateFromEditedPoint = (
   const editedPathIndex = selectedTrain.path.findIndex((step) => step.id === editedPathStepId);
   if (editedPathIndex < 0) return undefined;
 
-  const updatedSchedule = (selectedTrain.schedule ?? []).map((item) => {
-    const itemPathIndex = selectedTrain.path.findIndex((step) => step.id === item.at);
-    if (item.arrival == null) return item;
-
-    const isAffectedByDelta =
-      direction === 'fromDeparture'
-        ? itemPathIndex > editedPathIndex
-        : itemPathIndex >= editedPathIndex;
-
-    if (!isAffectedByDelta) return item;
-
-    const oldArrival = Duration.parse(item.arrival);
-    const newArrival =
-      direction === 'fromDeparture' ? oldArrival.sub(delta) : oldArrival.add(delta);
-
-    return {
-      ...item,
-      arrival: newArrival.toISOString(),
-    };
-  });
-
   const currentStartTime = new Date(selectedTrain.start_time);
+  // For fromDeparture: the train's start time shifts by delta. For toDestination: it stays the same.
+  const newStartTime =
+    direction === 'fromDeparture' ? addDurationToDate(currentStartTime, delta) : currentStartTime;
+
+  // Compute shifted offsets for all affected items, sorted by path order.
+  const affectedItems = Iterator.from(selectedTrain.schedule ?? [])
+    .map((item) => ({
+      item,
+      pathIndex: selectedTrain.path.findIndex((step) => step.id === item.at),
+    }))
+    .filter(({ item, pathIndex }) => {
+      if (item.arrival === null) return false;
+      return direction === 'fromDeparture'
+        ? pathIndex > editedPathIndex
+        : pathIndex >= editedPathIndex;
+    })
+    .toArray();
+
+  // Apply cascade: each waypoint is compared against the previous one.
+  // If it falls before, it crossed midnight and gets +24h.
+  // For fromDeparture: the edited item is excluded from the loop, but its offset is the baseline —
+  // any shifted offset that falls before it gets +24h.
+  // For toDestination: the edited item is included in the loop, so start at 0.
+  const editedItem = selectedTrain.schedule?.find((item) => item.at === editedPathStepId);
+  const editedOldOffset = editedItem?.arrival ? Duration.parse(editedItem.arrival) : null;
+  let lastOffset =
+    direction === 'fromDeparture' && editedOldOffset !== null
+      ? editedOldOffset
+      : new Duration({ seconds: 0 });
+  const adjustments = new Map<string, string>();
+
+  for (const { item } of affectedItems) {
+    const shifted =
+      direction === 'fromDeparture'
+        ? Duration.parse(item.arrival!).sub(delta)
+        : Duration.parse(item.arrival!).add(delta);
+    const adjustedArrival = shifted.ms < lastOffset.ms ? shifted.add(ONE_DAY) : shifted;
+    adjustments.set(item.at, adjustedArrival.toISOString());
+    lastOffset = adjustedArrival;
+  }
+
+  const updatedSchedule = (selectedTrain.schedule ?? []).map((item) =>
+    adjustments.has(item.at) ? { ...item, arrival: adjustments.get(item.at) } : item
+  );
 
   return {
     updatedPath: selectedTrain.path,
     updatedSchedule,
-    updatedStartTime:
-      direction === 'fromDeparture' ? addDurationToDate(currentStartTime, delta) : currentStartTime,
+    updatedStartTime: newStartTime,
   };
 };
 
@@ -121,6 +152,41 @@ const propagateShiftAll = (
   };
 };
 
+/**
+ * For atThisWaypoint: waypoints after the edited point that now fall before it in time
+ * must be on the next day.
+ */
+export const adjustFollowingWaypointsForMidnight = (
+  newValue: Date,
+  editedPathStepId: string,
+  selectedTrain: Train
+): ScheduleItem[] => {
+  const startTime = new Date(selectedTrain.start_time);
+  const editedPathIndex = selectedTrain.path.findIndex((step) => step.id === editedPathStepId);
+
+  const itemsAfterUpdatedStep = Iterator.from(selectedTrain.schedule ?? [])
+    .map((item) => ({
+      item,
+      pathIndex: selectedTrain.path.findIndex((step) => step.id === item.at),
+    }))
+    .filter(({ item, pathIndex }) => item.arrival != null && pathIndex > editedPathIndex)
+    .toArray();
+
+  let lastOffset = Duration.subtractDate(newValue, startTime);
+  const adjustments = new Map<string, string>();
+
+  for (const { item } of itemsAfterUpdatedStep) {
+    const itemOffset = Duration.parse(item.arrival!);
+    const adjustedArrival = itemOffset.ms < lastOffset.ms ? itemOffset.add(ONE_DAY) : itemOffset;
+    adjustments.set(item.at, adjustedArrival.toISOString());
+    lastOffset = adjustedArrival;
+  }
+
+  return (selectedTrain.schedule ?? []).map((item) =>
+    adjustments.has(item.at) ? { ...item, arrival: adjustments.get(item.at) } : item
+  );
+};
+
 export const propagateTime = (
   update: CellUpdate,
   selectedTrain: Train
@@ -128,19 +194,29 @@ export const propagateTime = (
   if (update.field !== 'requestedArrival' && update.field !== 'requestedDeparture')
     return undefined;
 
-  const delta = computeDelta(update.row[update.field], update.value);
+  const oldValue = update.row[update.field];
+  const newValue = update.value;
+  const isOriginUpdate = isOriginArrivalUpdate(update);
+  const isShiftAllPropagation = update.propagationMode === 'shiftAllWaypoints';
+  // Origin and shiftAll use HH:mm:ss delta only. toDestination uses full datetime (can produce D+1).
+  // fromDeparture uses HH:mm:ss only since start_time absorbs the shift.
+  const delta =
+    isOriginUpdate || isShiftAllPropagation
+      ? computeDelta(oldValue, newValue)
+      : computeDeltaForPropagationMode(oldValue, newValue, update.propagationMode);
   if (delta === null) return undefined;
 
-  if (isOriginArrivalUpdate(update)) {
-    if (update.propagationMode === 'toDestination') return propagateShiftAll(delta, selectedTrain);
+  if (isOriginUpdate || update.propagationMode === 'shiftAllWaypoints') {
+    if (!isOriginUpdate) return propagateShiftAll(delta, selectedTrain);
+    if (isShiftAllPropagation || update.propagationMode === 'toDestination')
+      return propagateShiftAll(delta, selectedTrain);
+    // atThisWaypoint at origin = only move start_time. Following offsets are compensated so
+    // their absolute times stay the same — which is exactly what fromDeparture does.
     if (update.propagationMode === 'atThisWaypoint')
       return propagateFromEditedPoint(delta, update.row.id, selectedTrain, 'fromDeparture');
+    return undefined;
   }
 
-  if (update.propagationMode === 'shiftAllWaypoints')
-    return propagateShiftAll(delta, selectedTrain);
-
   if (update.propagationMode === 'atThisWaypoint' || !update.row.isPathStep) return undefined;
-
   return propagateFromEditedPoint(delta, update.row.id, selectedTrain, update.propagationMode);
 };

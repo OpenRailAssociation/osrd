@@ -36,7 +36,7 @@ import {
   buildPowerRestrictionsFromRows,
   insertScheduleItemInOrder,
 } from '../helpers/cellUpdate';
-import { propagateTime } from '../helpers/timePropagation';
+import { adjustFollowingWaypointsForMidnight, propagateTime } from '../helpers/timePropagation';
 import type {
   CellUpdate,
   OptimisticEdit,
@@ -190,6 +190,20 @@ const useUpdateTimesStopsTable = (
         if (newArrival !== null && !isOrigin) newItem.arrival = newArrival;
         if (newStopFor !== null) newItem.stop_for = newStopFor;
         updatedSchedule = insertScheduleItemInOrder(currentSchedule, newItem, updatedPath);
+      }
+
+      // For atThisWaypoint: stops after the edited point that now fall before it in time
+      // must be bumped to the next day.
+      if (
+        (update.field === 'requestedArrival' || update.field === 'requestedDeparture') &&
+        update.propagationMode === 'atThisWaypoint' &&
+        update.value !== null &&
+        !isOrigin
+      ) {
+        updatedSchedule = adjustFollowingWaypointsForMidnight(update.value, pathStepId, {
+          ...selectedTrain,
+          schedule: updatedSchedule,
+        });
       }
 
       return { updatedPath, updatedSchedule, updatedMargins: selectedTrain.margins };

@@ -16,6 +16,7 @@ type TimePropagationMenuProps = {
   onSelectMode: (mode: PropagationMode) => void;
   disableFromDeparture?: boolean;
   disableToDestination?: boolean;
+  isOrigin?: boolean;
 };
 
 const TimePropagationMenu = ({
@@ -26,6 +27,7 @@ const TimePropagationMenu = ({
   onSelectMode,
   disableFromDeparture = false,
   disableToDestination = false,
+  isOrigin = false,
 }: TimePropagationMenuProps) => {
   const { t } = useTranslation('translation', { keyPrefix: 'timeStopTable.propagationMenu' });
   const shiftAllWaypointsDeltaLabel = formatPropagationDeltaLabelByMode(
@@ -41,12 +43,14 @@ const TimePropagationMenu = ({
   const atThisWaypointDeltaLabel = formatPropagationDeltaLabelByMode(
     oldValue,
     newValue,
-    'atThisWaypoint'
+    'atThisWaypoint',
+    isOrigin
   );
   const toDestinationDeltaLabel = formatPropagationDeltaLabelByMode(
     oldValue,
     newValue,
-    'toDestination'
+    'toDestination',
+    isOrigin
   );
   const selectMode = (mode: PropagationMode) => () => onSelectMode(mode);
 
