@@ -30,6 +30,7 @@ export type SpeedSpaceChartProps = {
   setHeight: React.Dispatch<React.SetStateAction<number>>;
   fetchEtcsBrakingCurves?: () => Promise<void>;
   etcsBrakingCurves?: EtcsBrakingCurves;
+  initialLayersDisplay?: Partial<Store['layersDisplay']>;
   data: Data;
   translations?: {
     detailsBoxDisplay: {
@@ -79,6 +80,7 @@ const SpeedSpaceChart = ({
   translations,
   fetchEtcsBrakingCurves,
   etcsBrakingCurves,
+  initialLayersDisplay,
 }: SpeedSpaceChartProps) => {
   const [store, setStore] = useState<Store>({
     speeds: [],
@@ -112,6 +114,7 @@ const SpeedSpaceChart = ({
       electricalProfiles: false,
       powerRestrictions: false,
       speedLimitTags: false,
+      ...initialLayersDisplay,
     },
     etcsLayersDisplay: DEFAULT_ETCS_LAYERS_DISPLAY,
     isSettingsPanelOpened: false,
