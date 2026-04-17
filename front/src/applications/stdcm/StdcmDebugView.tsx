@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
+import DebugFailureMap from 'applications/stdcm/components/DebugView/DebugFailureMap';
 import DebugSpaceTimeChart from 'applications/stdcm/components/DebugView/DebugSpaceTimeChart';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
@@ -16,6 +17,7 @@ const StdcmDebugView = () => {
     { skip: !traceId }
   );
   const simulationData = data?.simulation_data;
+  const failureData = data?.failure;
 
   const inputForm = (
     <form
@@ -43,10 +45,15 @@ const StdcmDebugView = () => {
     result = <div>Loading...</div>;
   } else if (error) {
     result = <div>Error: {JSON.stringify(error)}</div>;
-  } else if (!simulationData) {
-    result = <div>No simulation data available</div>;
+  } else if (!simulationData && !failureData) {
+    result = <div>No data available</div>;
   } else {
-    result = <DebugSpaceTimeChart simulationData={simulationData} />;
+    result = (
+      <>
+        {simulationData && <DebugSpaceTimeChart simulationData={simulationData} />}
+        {failureData && <DebugFailureMap failureData={failureData} />}
+      </>
+    );
   }
   return (
     <div>
