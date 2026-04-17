@@ -57,7 +57,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
     conflicts,
     isConflictsLoading,
     upsertTimetableItems,
-    removeTimetableItems,
+    removeTrainSchedules,
     updateTrainDepartureTime,
     selectedTrainScheduleIds,
     setSelectedTrainScheduleIds,
@@ -105,12 +105,12 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
     upsertTimetableItemsWithNge
   );
 
-  const removeTimetableItemsWithNge = useCallback(
-    (timetableItemIds: number[]) => {
-      removeTimetableItems(timetableItemIds);
+  const removeTrainSchedulesWithNge = useCallback(
+    (trainScheduleIds: number[]) => {
+      removeTrainSchedules(trainScheduleIds);
       refreshNge();
     },
-    [removeTimetableItems, refreshNge]
+    [removeTrainSchedules, refreshNge]
   );
 
   const updateTrainDepartureTimeWithNge = useCallback(
@@ -147,7 +147,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
           state: macroEditorState.current!,
           dispatch,
           addUpsertedTimetableItems: upsertTimetableItems,
-          addDeletedTimetableItemIds: removeTimetableItems,
+          addDeletedTrainScheduleIds: removeTrainSchedules,
         });
       } catch (err) {
         console.error(err);
@@ -182,7 +182,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
             <TimetableBoardWrapper
               setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
               upsertTimetableItems={upsertTimetableItemsWithNge}
-              removeTimetableItems={removeTimetableItemsWithNge}
+              removeTrainSchedules={removeTrainSchedulesWithNge}
               timetableItems={timetableItems}
               trainSchedulesWithDetails={trainSchedulesWithDetails}
               setTrainScheduleToEditData={setTrainScheduleToEditData}

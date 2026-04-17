@@ -82,11 +82,11 @@ test.describe('Timetable items multiselection', { tag: ['@op', '@timetable-items
     });
 
     await test.step('Delete all selected items', async () => {
-      await scenarioTimetableSection.deleteAllTimetableItems();
+      await scenarioTimetableSection.deleteAllTrainSchedules();
     });
 
     await test.step('Verify deletion notifications', async () => {
-      await scenarioTimetableSection.verifyAllTimetableItemsHaveBeenDeleted(
+      await scenarioTimetableSection.verifyAllTrainSchedulesHaveBeenDeleted(
         TOTAL_TIMETABLE_ITEMS,
         frTranslations
       );

@@ -18,7 +18,7 @@ import { useScenarioContext } from './useScenarioContext';
 
 type ScenarioBroadcastMessage =
   | { type: 'upsertTimetableItems'; timetableItems: TimetableItem[] }
-  | { type: 'removeTimetableItems'; timetableItemIds: number[] }
+  | { type: 'removeTrainSchedules'; trainScheduleIds: number[] }
   | { type: 'setTimetableItemDepartureTime'; timetableItemId: number; newDeparture: Date };
 
 const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetableId: number) => {
@@ -145,21 +145,21 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     simulateTimetableItems(timetableItemsToUpsert);
   }, []);
 
-  const removeTimetableItems = useCallback((_timetableItemsToRemove: number[]) => {
+  const removeTrainSchedules = useCallback((_trainSchedulesToRemove: number[]) => {
     setTimetableItems((prev) => {
       const prevTimetableItemsById = mapBy(prev, 'id');
-      _timetableItemsToRemove.forEach((timetableItemId) => {
-        prevTimetableItemsById.delete(timetableItemId);
+      _trainSchedulesToRemove.forEach((trainScheduleId) => {
+        prevTimetableItemsById.delete(trainScheduleId);
       });
       return Array.from(prevTimetableItemsById.values());
     });
 
     setSelectedTrainScheduleIds((prevSelected) =>
-      prevSelected.filter((id) => !_timetableItemsToRemove.includes(id))
+      prevSelected.filter((id) => !_trainSchedulesToRemove.includes(id))
     );
 
-    removeSimulatedTimetableItems(_timetableItemsToRemove);
-    removeProjectedTimetableItems(_timetableItemsToRemove);
+    removeSimulatedTimetableItems(_trainSchedulesToRemove);
+    removeProjectedTimetableItems(_trainSchedulesToRemove);
   }, []);
 
   const setTimetableItemDepartureTime = useCallback(
@@ -218,15 +218,15 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     [upsertTimetableItems]
   );
 
-  const removeTimetableItemsWithBroadcast = useCallback(
+  const removeTrainSchedulesWithBroadcast = useCallback(
     (ids: number[]) => {
-      removeTimetableItems(ids);
+      removeTrainSchedules(ids);
       broadcastScenarioMessage({
-        type: 'removeTimetableItems',
-        timetableItemIds: ids,
+        type: 'removeTrainSchedules',
+        trainScheduleIds: ids,
       });
     },
-    [removeTimetableItems]
+    [removeTrainSchedules]
   );
 
   const updateTrainDepartureTimeWithBroadcast = useCallback(
@@ -252,8 +252,8 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
         case 'upsertTimetableItems':
           upsertTimetableItems(msg.timetableItems);
           break;
-        case 'removeTimetableItems':
-          removeTimetableItems(msg.timetableItemIds);
+        case 'removeTrainSchedules':
+          removeTrainSchedules(msg.trainScheduleIds);
           break;
         case 'setTimetableItemDepartureTime':
           setTimetableItemDepartureTime(msg.timetableItemId, msg.newDeparture);
@@ -288,7 +288,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
         : undefined,
       conflicts,
       isConflictsLoading,
-      removeTimetableItems: removeTimetableItemsWithBroadcast,
+      removeTrainSchedules: removeTrainSchedulesWithBroadcast,
       upsertTimetableItems: upsertTimetableItemsWithBroadcast,
       updateTrainDepartureTime: updateTrainDepartureTimeWithBroadcast,
       selectedTrainScheduleIds,
@@ -304,7 +304,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       conflicts,
       isConflictsLoading,
       rollingStocks,
-      removeTimetableItemsWithBroadcast,
+      removeTrainSchedulesWithBroadcast,
       upsertTimetableItemsWithBroadcast,
       updateTrainDepartureTimeWithBroadcast,
       selectedTrainScheduleIds,

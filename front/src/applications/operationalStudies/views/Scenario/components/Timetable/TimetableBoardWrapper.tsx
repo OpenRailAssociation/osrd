@@ -27,7 +27,7 @@ type TimetableBoardWrapperProps = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
-  removeTimetableItems: (timetableItemsToRemove: number[]) => void;
+  removeTrainSchedules: (trainScheduleIdsToRemove: number[]) => void;
   trainScheduleToEditData?: TrainScheduleToEditData;
   timetableItems?: TimetableItem[];
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
@@ -41,7 +41,7 @@ const TimetableBoardWrapper = ({
   setDisplayTrainScheduleManagement,
   upsertTimetableItems,
   setTrainScheduleToEditData,
-  removeTimetableItems,
+  removeTrainSchedules,
   trainScheduleToEditData,
   timetableItems = [],
   trainSchedulesWithDetails,
@@ -138,10 +138,10 @@ const TimetableBoardWrapper = ({
   // --- END BOARD WRAPPER TITLE MANAGEMENT ---------------------
 
   const removeAndUnselectTrains = useCallback(
-    (timetableItemIds: number[]) => {
-      removeTimetableItems(timetableItemIds);
+    (trainScheduleIds: number[]) => {
+      removeTrainSchedules(trainScheduleIds);
     },
-    [removeTimetableItems, setSelectedTrainScheduleIds]
+    [removeTrainSchedules, setSelectedTrainScheduleIds]
   );
 
   const handleTrainsDelete = async (
@@ -261,7 +261,7 @@ const TimetableBoardWrapper = ({
     [selectedTrainScheduleIds, timetableItems]
   );
 
-  const handleDeleteTimetableItems = () => {
+  const handleDeleteTrainSchedules = () => {
     openModal(
       <DeleteModal
         handleDelete={() => handleTrainsDelete(selectedTrainId)}
@@ -295,8 +295,8 @@ const TimetableBoardWrapper = ({
         setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
         upsertTimetableItems={upsertTimetableItems}
         setTrainScheduleToEditData={setTrainScheduleToEditData}
-        removeAndUnselectTrains={removeTimetableItems}
-        handleDeleteTimetableItems={handleDeleteTimetableItems}
+        removeAndUnselectTrains={removeTrainSchedules}
+        handleDeleteTrainSchedules={handleDeleteTrainSchedules}
         trainScheduleToEditData={trainScheduleToEditData}
         timetableItems={timetableItems}
         trainSchedulesWithDetails={trainSchedulesWithDetails}

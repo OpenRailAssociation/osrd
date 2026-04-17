@@ -24,7 +24,7 @@ type TimetableProps = {
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
   setSelectedTrainScheduleIds: React.Dispatch<React.SetStateAction<number[]>>;
   removeAndUnselectTrains: (trainIds: number[]) => void;
-  handleDeleteTimetableItems: () => void;
+  handleDeleteTrainSchedules: () => void;
   trainScheduleToEditData?: TrainScheduleToEditData;
   timetableItems?: TimetableItem[];
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
@@ -39,7 +39,7 @@ const Timetable = ({
   setTrainScheduleToEditData,
   setSelectedTrainScheduleIds,
   removeAndUnselectTrains,
-  handleDeleteTimetableItems,
+  handleDeleteTrainSchedules,
   trainScheduleToEditData,
   timetableItems = [],
   trainSchedulesWithDetails,
@@ -158,7 +158,7 @@ const Timetable = ({
           setIsSelectMode={setIsSelectMode}
           setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
           refreshNge={refreshNge}
-          handleDeleteTimetableItems={handleDeleteTimetableItems}
+          handleDeleteTrainSchedules={handleDeleteTrainSchedules}
           handleMoveTimetableItems={() => openMoveDialog(selectedTrainScheduleIds)}
           timetableMode={timetableMode}
           setTimetableMode={setTimetableMode}

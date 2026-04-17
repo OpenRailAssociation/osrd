@@ -45,7 +45,7 @@ export const handleNodeOperation = async ({
   infraId,
   trainScheduleSetId,
   addUpsertedTimetableItems,
-  addDeletedTimetableItemIds,
+  addDeletedTrainScheduleIds,
 }: {
   state: MacroEditorState;
   type: NGEEvent['type'];
@@ -55,7 +55,7 @@ export const handleNodeOperation = async ({
   infraId: number;
   trainScheduleSetId: number;
   addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void;
-  addDeletedTimetableItemIds: (timetableItemIds: number[]) => void;
+  addDeletedTrainScheduleIds: (trainScheduleIds: number[]) => void;
 }): Promise<void> => {
   const indexNode = state.getNodeByNgeId(node.id);
   switch (type) {
@@ -95,7 +95,7 @@ export const handleNodeOperation = async ({
               infraId,
               trainScheduleSetId,
               addUpsertedTimetableItems,
-              addDeletedTimetableItemIds,
+              addDeletedTrainScheduleIds,
               node,
             });
           }
