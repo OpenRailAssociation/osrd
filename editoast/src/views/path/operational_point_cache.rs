@@ -359,11 +359,8 @@ impl OperationalPointCache {
         }
     }
 
-    pub fn get_reference(
-        &self,
-        op_ref: OperationalPointReference,
-    ) -> Result<Option<&OperationalPoint>> {
-        let related_operational_point = match op_ref {
+    pub fn get_reference(&self, op_ref: OperationalPointReference) -> Option<&OperationalPoint> {
+        match op_ref {
             OperationalPointReference::Id {
                 ref operational_point,
             } => self
@@ -391,8 +388,7 @@ impl OperationalPointCache {
                     None
                 }
             }
-        };
-        Ok(related_operational_point)
+        }
     }
 }
 
