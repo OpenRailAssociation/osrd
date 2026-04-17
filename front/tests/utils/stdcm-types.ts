@@ -138,6 +138,13 @@ export type EditableConsistFields = {
   maxSpeed?: string;
 };
 
+export type ConsistChangeFields = {
+  tractionEngine: string;
+  towedRollingStock?: string;
+  tonnage: string;
+  length: string;
+};
+
 export type ExpectedPrefilledValues = {
   expectedTonnage: string;
   expectedLength: string;

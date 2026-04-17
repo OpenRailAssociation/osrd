@@ -136,7 +136,7 @@ const StdcmResultsTable = ({
                       <td className="index">
                         <Container />
                       </td>
-                      <td colSpan={8}>
+                      <td colSpan={8} data-testid="consist-change">
                         <p className="consist-change-label">{t('consist.consistChange')}</p>
                         <p>
                           {t('consist.tonnage')} ({consistChanges.currentConsist.totalMass}t{' '}

@@ -3,6 +3,7 @@ export const electricRollingStockName = 'ELECTRIC_RS_E2E';
 export const dualModeRollingStockName = 'DUAL-MODE_RS_E2E';
 export const slowRollingStockName = 'SLOW_RS_E2E';
 export const fastRollingStockName = 'FAST_RS_E2E';
+export const towedRollingStockName = 'TOWED-TEST-E2E';
 export const improbableRollingStockName = 'IMPROBABLE_RS_E2E';
 export const infrastructureName = 'small_infra_test_e2e';
 export const timetableItemProjectName = 'TI_project_test_e2e';

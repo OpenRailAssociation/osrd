@@ -111,6 +111,27 @@ class SimulationResultPage {
     });
   }
 
+  async verifyConsistChangeInTable({
+    consistChangeLabel,
+    tonnageLabel,
+    lengthLabel,
+    tonnageTransition,
+    lengthTransition,
+  }: {
+    consistChangeLabel: string;
+    tonnageLabel: string;
+    lengthLabel: string;
+    tonnageTransition: string;
+    lengthTransition: string;
+    index?: number;
+  }): Promise<void> {
+    const consistChangeRow = this.simulationResultTable.getByTestId('consist-change').nth(0);
+    await expect(consistChangeRow).toBeVisible();
+    await expect(consistChangeRow).toContainText(
+      `${consistChangeLabel}${tonnageLabel} ${tonnageTransition}, ${lengthLabel} ${lengthTransition}`
+    );
+  }
+
   async displayAllOperationalPoints() {
     await this.allViasButton.click();
   }
