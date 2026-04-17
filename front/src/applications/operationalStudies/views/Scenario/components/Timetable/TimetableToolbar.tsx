@@ -25,7 +25,7 @@ import type { TrainScheduleWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../../consts';
-import useImportTimetableItems from '../ImportTimetableItem';
+import useImportTrainSchedules from '../ImportTrainSchedule';
 import RoundTripsModal from '../RoundTrips/RoundTripsModal';
 import FilterPanel from './FilterPanel';
 import SelectionToolBar from './TimetableSelectionToolbar';
@@ -81,7 +81,7 @@ const TimetableToolbar = ({
   const [roundTripsModalIsOpen, setRoundTripsModalIsOpen] = useState(false);
 
   const { openModal, closeModal } = useContext(ModalContext);
-  const importFile = useImportTimetableItems({ upsertTimetableItems });
+  const importFile = useImportTrainSchedules({ upsertTimetableItems });
 
   const toggleisSelectMode = () => {
     setIsSelectMode(!isSelectMode);
