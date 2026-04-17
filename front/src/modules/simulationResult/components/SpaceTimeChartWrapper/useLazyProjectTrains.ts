@@ -35,7 +35,7 @@ const useLazyProjectTrains = ({
 }: UseLazyProjectTrainsOptions) => {
   const dispatch = useAppDispatch();
   const loaderRef = useRef<TrainProjectionLazyLoaderAbstract>(null);
-  const timetableItemsByIdRef = useRef<Map<number, TimetableItem>>(new Map());
+  const trainSchedulesByIdRef = useRef<Map<number, TimetableItem>>(new Map());
   const [projectedTrainsById, setProjectedTrainsById] = useState<Map<number, TrainSpaceTimeData>>(
     new Map()
   );
@@ -44,7 +44,7 @@ const useLazyProjectTrains = ({
 
   const onProgress = useCallback((results: Map<number, ProjectionResult>) => {
     setProjectedTrainsById((prev) =>
-      upsertNewProjectedTrains(prev, results, timetableItemsByIdRef.current)
+      upsertNewProjectedTrains(prev, results, trainSchedulesByIdRef.current)
     );
   }, []);
 
@@ -74,7 +74,7 @@ const useLazyProjectTrains = ({
       );
     }
 
-    loader.projectTimetableItems([...timetableItemsByIdRef.current.keys()]);
+    loader.projectTrainSchedules([...trainSchedulesByIdRef.current.keys()]);
 
     loaderRef.current = loader;
     return () => {
@@ -91,17 +91,17 @@ const useLazyProjectTrains = ({
     isSimulationEnabled,
   ]);
 
-  const projectTimetableItems = useCallback((timetableItems: TimetableItem[]) => {
-    for (const timetableItem of timetableItems) {
-      timetableItemsByIdRef.current.set(timetableItem.id, timetableItem);
+  const projectTrainSchedules = useCallback((trainSchedules: TimetableItem[]) => {
+    for (const trainSchedule of trainSchedules) {
+      trainSchedulesByIdRef.current.set(trainSchedule.id, trainSchedule);
     }
 
-    loaderRef.current?.projectTimetableItems(timetableItems.map(({ id }) => id));
+    loaderRef.current?.projectTrainSchedules(trainSchedules.map(({ id }) => id));
   }, []);
 
-  const removeProjectedTimetableItems = useCallback((ids: number[]) => {
+  const removeProjectedTrainSchedules = useCallback((ids: number[]) => {
     for (const id of ids) {
-      timetableItemsByIdRef.current.delete(id);
+      trainSchedulesByIdRef.current.delete(id);
     }
 
     setProjectedTrainsById((prev) => {
@@ -113,7 +113,7 @@ const useLazyProjectTrains = ({
     });
   }, []);
 
-  const updateProjectedTimetableItemDepartureTime = useCallback(
+  const updateProjectedTrainScheduleDepartureTime = useCallback(
     (id: number, newDeparture: Date) => {
       setProjectedTrainsById((prev) => {
         const result = prev.get(id);
@@ -127,13 +127,13 @@ const useLazyProjectTrains = ({
         });
         return next;
       });
-      // Update the timetable item in the reference map
+      // Update the train schedule in the reference map
       // This is necessary to keep the reference up-to-date for future projections
       // and to ensure that the projected trains are correctly updated
       // when the projection type changes
-      const timetableItem = timetableItemsByIdRef.current.get(id);
-      if (timetableItem) {
-        timetableItem.start_time = newDeparture.toISOString();
+      const trainSchedule = trainSchedulesByIdRef.current.get(id);
+      if (trainSchedule) {
+        trainSchedule.start_time = newDeparture.toISOString();
       }
     },
     []
@@ -141,9 +141,9 @@ const useLazyProjectTrains = ({
 
   return {
     projectedTrainsById,
-    projectTimetableItems,
-    removeProjectedTimetableItems,
-    updateProjectedTimetableItemDepartureTime,
+    projectTrainSchedules,
+    removeProjectedTrainSchedules,
+    updateProjectedTrainScheduleDepartureTime,
     allTrainsProjected: Boolean(loaderRef.current && loaderRef.current.pending.length === 0),
   };
 };

@@ -79,7 +79,7 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
   );
 
   // Progressive projection of the trains
-  const { projectedTrainsById, allTrainsProjected, projectTimetableItems } = useLazyProjectTrains({
+  const { projectedTrainsById, allTrainsProjected, projectTrainSchedules } = useLazyProjectTrains({
     infraId,
     timetableId,
     electricalProfileSetId,
@@ -95,7 +95,7 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
     onProgress: (results) => {
       if (!stdcmResponse) return;
       const relevantTrainScheduleIds = keepTrainsRunningDuringStdcm(stdcmResponse, results);
-      projectTimetableItems([...relevantTrainScheduleIds].map((id) => trainSchedulesById.get(id)!));
+      projectTrainSchedules([...relevantTrainScheduleIds].map((id) => trainSchedulesById.get(id)!));
     },
   });
 
@@ -111,7 +111,7 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
         stdcmResponse,
         simulatedTrainsById
       );
-      projectTimetableItems([...relevantTrainScheduleIds].map((id) => trainSchedulesById.get(id)!));
+      projectTrainSchedules([...relevantTrainScheduleIds].map((id) => trainSchedulesById.get(id)!));
     }
   }, [stdcmResponse]);
 
