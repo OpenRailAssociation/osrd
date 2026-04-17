@@ -24,7 +24,7 @@ class ViaSection extends STDCMPage {
     return this.suggestionItems.filter({ hasText: text });
   }
 
-  private getViaCard(viaNumber: number): Locator {
+  protected getViaCard(viaNumber: number): Locator {
     return this.viaCards.nth(viaNumber - 1);
   }
 
@@ -187,6 +187,46 @@ class ViaSection extends STDCMPage {
       default:
         throw new Error(`Unsupported viaSearch value: ${ciSearchText}`);
     }
+  }
+
+  async addServiceStopVia({
+    viaNumber,
+    ciSearchText,
+    expectedChValue,
+    selectedSuggestionText,
+    defaultViaType,
+    stopType,
+    stopTime,
+  }: {
+    viaNumber: number;
+    ciSearchText: ViaSearchText;
+    expectedChValue: string;
+    selectedSuggestionText: string;
+    defaultViaType: string;
+    stopType: string;
+    stopTime: string;
+  }): Promise<void> {
+    await this.addAndFillVia({
+      viaNumber,
+      ciSearchText,
+      expectedChValue,
+      selectedSuggestionText,
+      defaultViaType,
+    });
+    await this.setViaStopType(viaNumber, stopType);
+    await this.getViaStopTime(viaNumber).fill(stopTime);
+    await expect(this.getViaStopTime(viaNumber)).toHaveValue(stopTime);
+  }
+
+  async setViaStopType(viaNumber: number, stopType: string): Promise<void> {
+    await this.getViaType(viaNumber).selectOption(stopType);
+    await expect(this.getViaType(viaNumber)).toHaveValue(stopType);
+  }
+
+  async setViaStopTime(viaNumber: number, stopTime: string): Promise<void> {
+    const stopTimeInput = this.getViaStopTime(viaNumber);
+    await stopTimeInput.fill(stopTime);
+    await expect(stopTimeInput).toHaveValue(stopTime);
   }
 
   async verifyViaDetails({

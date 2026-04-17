@@ -5,7 +5,7 @@ import { expect } from '@playwright/test';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 
 import { logger } from '../logging-fixture';
-import type { PdfSimulationContent } from './types';
+import type { PdfConsistChangeContent, PdfSimulationContent } from './types';
 
 /**
  * Find the first PDF file in a directory.
@@ -102,4 +102,23 @@ export function verifySimulationContent(pdfText: string, expectedSimulation: Pdf
     expectedSimulation.simulationDetails.disclaimer,
   ];
   textChecks.forEach((check) => expect(pdfText).toContain(check));
+}
+
+/**
+ * Verify the PDF content against the expected consist change section.
+ * @param pdfText The text extracted from the PDF.
+ * @param expected The expected consist change content.
+ */
+export function verifyConsistChangeContent(pdfText: string, expected: PdfConsistChangeContent) {
+  const checks = [
+    expected.simulationTableLabel,
+    ...expected.simulationTableContent,
+    expected.sectionHeader,
+    expected.changes,
+    ...expected.massList,
+    ...expected.lengthList,
+    ...expected.rollingStockList,
+    ...expected.towedRollingStockList,
+  ];
+  checks.forEach((check) => expect(pdfText).toContain(check));
 }

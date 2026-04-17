@@ -20,6 +20,7 @@ import TimesAndStopsTab from './pages/operational-studies/times-and-stops-tab';
 import TimetableItemDetailSection from './pages/operational-studies/timetable-items-details-section';
 import RollingstockEditorPage from './pages/rolling-stock/rolling-stock-editor-page';
 import RollingStockSelector from './pages/rolling-stock/rolling-stock-selector';
+import ConsistChangeSection from './pages/stdcm/consist-change-section';
 import ConsistSection from './pages/stdcm/consist-section';
 import DestinationSection from './pages/stdcm/destination-section';
 import LinkedTrainSection from './pages/stdcm/linked-train-section';
@@ -56,6 +57,7 @@ type Fixtures = {
   consistSection: ConsistSection;
   originSection: OriginSection;
   viaSection: ViaSection;
+  consistChangeSection: ConsistChangeSection;
   destinationSection: DestinationSection;
   linkedTrainSection: LinkedTrainSection;
   stdcmSimulationResultPage: SimulationResultPage;
@@ -150,6 +152,9 @@ const test = testWithLogging.extend<Fixtures>({
   },
   viaSection: async ({ page }, use) => {
     await use(new ViaSection(page));
+  },
+  consistChangeSection: async ({ page }, use) => {
+    await use(new ConsistChangeSection(page));
   },
   destinationSection: async ({ page }, use) => {
     await use(new DestinationSection(page));

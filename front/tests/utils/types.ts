@@ -63,6 +63,17 @@ export type PdfSimulationContent = {
   };
 };
 
+export type PdfConsistChangeContent = {
+  simulationTableLabel: string;
+  simulationTableContent: string[];
+  sectionHeader: string;
+  changes: string;
+  massList: string[];
+  lengthList: string[];
+  rollingStockList: string[];
+  towedRollingStockList: string[];
+};
+
 type Margin = {
   theoretical: string;
   theoreticalS: string;
@@ -187,10 +198,16 @@ export type StdcmTranslations = {
     tractionEngine: string;
     towedRollingStock: string;
     compositionCode: string;
+    consistChange: string;
     loadingGauge: string;
     tonnage: string;
     length: string;
     maxSpeed: string;
+  };
+  reportSheet: {
+    consistChange: string;
+    weight: string;
+    length: string;
   };
   mailFeedback: {
     subject: string;
@@ -202,6 +219,9 @@ export type StdcmTranslations = {
   trainPath: {
     origin: string;
     destination: string;
+    stopType: {
+      consistChange: string;
+    };
   };
   departureTime: string;
   simulation: {
@@ -229,6 +249,8 @@ export type StdcmTranslations = {
       origin: string;
       vias: string;
       destination: string;
+      viaConsistTotalMass: string;
+      viaConsistTotalLength: string;
     };
     routeErrors: {
       bothPointAreScheduled: string;

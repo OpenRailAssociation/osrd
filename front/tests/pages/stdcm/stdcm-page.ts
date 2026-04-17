@@ -68,6 +68,12 @@ class STDCMPage {
     expect(actualSuggestions).toEqual(expectedSuggestions);
   }
 
+  async enableDebugMode(): Promise<void> {
+    await expect(this.debugButton).toBeVisible();
+    await this.debugButton.click();
+    await expect(this.debugButton).toHaveClass(/selected/);
+  }
+
   async verifyStdcmElementsVisibility(): Promise<void> {
     const elements = [
       this.debugButton,
