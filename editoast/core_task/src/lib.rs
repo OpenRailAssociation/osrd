@@ -108,17 +108,20 @@ pub trait Task: Sized + Send {
                         );
                     }
                     Ok(serialized) => {
-                        tokio::spawn(async move {
-                            use deadpool_redis::redis::AsyncCommands as _;
-                            if let Err(e) = vkconn
-                                .lock()
-                                .await
-                                .set::<_, _, ()>(key.clone(), serialized)
-                                .await
-                            {
-                                tracing::error!(?e, key, "cache write error");
+                        tokio::spawn(
+                            async move {
+                                use deadpool_redis::redis::AsyncCommands as _;
+                                if let Err(e) = vkconn
+                                    .lock()
+                                    .await
+                                    .set::<_, _, ()>(key.clone(), serialized)
+                                    .await
+                                {
+                                    tracing::error!(?e, key, "cache write error");
+                                }
                             }
-                        });
+                            .in_current_span(),
+                        );
                     }
                 };
                 Ok(value)
@@ -297,7 +300,8 @@ where
                                 }
                             }
                         };
-                    }),
+                    })
+                    .in_current_span(),
             );
         }
 
@@ -308,39 +312,42 @@ where
             // 'aggregation' task, receives requests and potential cached task outputs. If cached,
             // directly send the value to the result stream, otherwise compute the value (send a request to Core),
             // send it to the 'write_cache' task and to the result stream.
-            tokio::spawn(async move {
-                while let Some((input, correlation_key, cache_key, cache_entry)) =
-                    cache_read_rx.recv().await
-                {
-                    if let Some(cached_value) = cache_entry {
-                        results_tx
-                            .unbounded_send(Correlated::new(correlation_key, Ok(cached_value)))
-                            .ok();
-                    } else {
-                        match input.compute(ctx.clone()).await {
-                            Ok(value) => {
-                                #[cfg(not(test))]
-                                let serialized = serde_json::to_string(&value).unwrap();
-                                #[cfg(test)]
-                                let serialized = {
-                                    let mut serialized = serde_json::to_value(&value).unwrap();
-                                    serialized.sort_all_objects();
-                                    serialized.to_string()
-                                };
-                                cache_write_tx.send((cache_key, serialized)).ok();
-                                results_tx
-                                    .unbounded_send(Correlated::new(correlation_key, Ok(value)))
-                                    .ok();
-                            }
-                            Err(err) => {
-                                results_tx
-                                    .unbounded_send(Correlated::new(correlation_key, Err(err)))
-                                    .ok();
-                            }
-                        };
+            tokio::spawn(
+                async move {
+                    while let Some((input, correlation_key, cache_key, cache_entry)) =
+                        cache_read_rx.recv().await
+                    {
+                        if let Some(cached_value) = cache_entry {
+                            results_tx
+                                .unbounded_send(Correlated::new(correlation_key, Ok(cached_value)))
+                                .ok();
+                        } else {
+                            match input.compute(ctx.clone()).await {
+                                Ok(value) => {
+                                    #[cfg(not(test))]
+                                    let serialized = serde_json::to_string(&value).unwrap();
+                                    #[cfg(test)]
+                                    let serialized = {
+                                        let mut serialized = serde_json::to_value(&value).unwrap();
+                                        serialized.sort_all_objects();
+                                        serialized.to_string()
+                                    };
+                                    cache_write_tx.send((cache_key, serialized)).ok();
+                                    results_tx
+                                        .unbounded_send(Correlated::new(correlation_key, Ok(value)))
+                                        .ok();
+                                }
+                                Err(err) => {
+                                    results_tx
+                                        .unbounded_send(Correlated::new(correlation_key, Err(err)))
+                                        .ok();
+                                }
+                            };
+                        }
                     }
                 }
-            });
+                .in_current_span(),
+            );
         }
 
         // The receiver implements Stream
