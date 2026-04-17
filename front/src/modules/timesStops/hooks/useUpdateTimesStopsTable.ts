@@ -346,9 +346,9 @@ const useUpdateTimesStopsTable = (
   );
 
   /**
-   * Handle update when the selected train is a TimetableItem (not an occurrence).
+   * Handle update when the selected train is a TrainSchedule (not an occurrence).
    */
-  const updateTimetableItem = useCallback(
+  const handleUpdateTrainSchedule = useCallback(
     async (trainId: PacedTrainId, update: CellUpdate): Promise<UpdateCellStatus> => {
       const editoastId = extractEditoastIdFromPacedTrainId(trainId);
 
@@ -387,12 +387,12 @@ const useUpdateTimesStopsTable = (
       if (isOccurrenceId(trainId)) {
         return updateOccurrence(trainId, update);
       } else if (isPacedTrainId(trainId)) {
-        return updateTimetableItem(trainId, update);
+        return handleUpdateTrainSchedule(trainId, update);
       } else {
         throw new Error('TrainSchedules are not handled anymore.');
       }
     },
-    [selectedTrain, updateOccurrence, updateTimetableItem]
+    [selectedTrain, updateOccurrence, handleUpdateTrainSchedule]
   );
 
   // Functions are included in deps (exception to the project convention) to propagate
