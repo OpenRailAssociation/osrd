@@ -122,7 +122,7 @@ const CreateTimetableItemButton = ({
           text: `${simulationConf.name}: ${simulationConf.startTime.toLocaleTimeString()}`,
         })
       );
-      if (simulationConf.editingItemType === 'pacedTrain') {
+      if (simulationConf.editingTrainType === 'pacedTrain') {
         dispatch(clearAddedExceptionsList());
       }
       upsertTrainSchedules([trainScheduleToUpsert]);

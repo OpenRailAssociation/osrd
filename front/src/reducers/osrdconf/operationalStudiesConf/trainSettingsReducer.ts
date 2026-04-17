@@ -61,8 +61,8 @@ const trainSettingsReducer = {
   ) {
     state.interval = action.payload;
   },
-  toggleEditingItemType(state: Draft<OperationalStudiesConfState>) {
-    state.editingItemType = state.editingItemType === 'pacedTrain' ? 'uniqueTrain' : 'pacedTrain';
+  toggleEditingTrainType(state: Draft<OperationalStudiesConfState>) {
+    state.editingTrainType = state.editingTrainType === 'pacedTrain' ? 'uniqueTrain' : 'pacedTrain';
   },
   updateItineraryForm(
     state: Draft<OperationalStudiesConfState>,

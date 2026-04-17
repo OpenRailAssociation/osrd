@@ -31,7 +31,7 @@ const testTrainSettingsReducer = () => {
     updateTimeWindow,
     updateInterval,
     updateCategory,
-    toggleEditingItemType,
+    toggleEditingTrainType: toggleEditingItemType,
   } = slice.actions;
 
   const getState = () => defaultStore.getState()[operationalStudiesConfSlice.name];
@@ -120,7 +120,7 @@ const testTrainSettingsReducer = () => {
     const newEditingItemType = 'pacedTrain';
     defaultStore.dispatch(toggleEditingItemType());
     const state = getState();
-    expect(state.editingItemType).toBe(newEditingItemType);
+    expect(state.editingTrainType).toBe(newEditingItemType);
   });
 };
 

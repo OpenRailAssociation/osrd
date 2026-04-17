@@ -21,7 +21,7 @@ const checkCurrentConfig = (
     startTime,
     interval,
     timeWindow,
-    editingItemType,
+    editingTrainType: editingItemType,
   } = osrdconf;
   let error = false;
   if (pathSteps[0] === null) {

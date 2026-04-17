@@ -69,7 +69,7 @@ export type OperationalStudiesConfState = OsrdConfState & {
   addedExceptions: {
     startTime: Date;
   }[];
-  editingItemType: 'uniqueTrain' | 'pacedTrain' | 'occurrence';
+  editingTrainType: 'uniqueTrain' | 'pacedTrain' | 'occurrence';
 };
 
 export type OsrdStdcmConfState = OsrdConfState & {

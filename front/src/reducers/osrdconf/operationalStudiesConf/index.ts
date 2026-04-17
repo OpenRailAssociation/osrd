@@ -33,7 +33,7 @@ export const operationalStudiesInitialConf: OperationalStudiesConfState = {
   timeWindow: new Duration({ minutes: 120 }),
   interval: new Duration({ minutes: 60 }),
   addedExceptions: [],
-  editingItemType: 'uniqueTrain',
+  editingTrainType: 'uniqueTrain',
 };
 
 export const operationalStudiesConfSlice = createSlice({
@@ -88,11 +88,11 @@ export const operationalStudiesConfSlice = createSlice({
       state.constraintDistribution = constraint_distribution || 'STANDARD';
 
       if (isPacedTrainWithDetails(action.payload.trainSchedule)) {
-        state.editingItemType = action.payload.isOccurrence ? 'occurrence' : 'pacedTrain';
+        state.editingTrainType = action.payload.isOccurrence ? 'occurrence' : 'pacedTrain';
         state.timeWindow = action.payload.trainSchedule.paced.timeWindow;
         state.interval = action.payload.trainSchedule.paced.interval;
       } else {
-        state.editingItemType = 'uniqueTrain';
+        state.editingTrainType = 'uniqueTrain';
         state.timeWindow = new Duration({ minutes: 120 });
         state.interval = new Duration({ minutes: 60 });
       }
@@ -152,7 +152,7 @@ export const {
   addAddedException,
   deleteAddedException,
   clearAddedExceptionsList,
-  toggleEditingItemType,
+  toggleEditingTrainType,
   updateCategory,
   updateItineraryForm,
 

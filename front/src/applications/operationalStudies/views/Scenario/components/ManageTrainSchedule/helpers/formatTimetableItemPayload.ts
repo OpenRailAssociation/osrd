@@ -137,7 +137,7 @@ export function formatPacedTrainPayload(
 ): TrainSchedule {
   const baseTrain = formatTimetableItemPayload(osrdconf, rollingStockName);
 
-  if (osrdconf.editingItemType === 'uniqueTrain') return baseTrain;
+  if (osrdconf.editingTrainType === 'uniqueTrain') return baseTrain;
 
   const newPacedTrain: Omit<PacedTrainWithPaced, 'train_schedule_set_id'> = {
     ...baseTrain,

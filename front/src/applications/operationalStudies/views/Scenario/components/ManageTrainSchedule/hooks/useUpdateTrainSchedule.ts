@@ -70,7 +70,7 @@ const useUpdateTrainSchedule = (
     dispatch(
       setSuccess({
         title:
-          simulationConf.editingItemType === 'uniqueTrain'
+          simulationConf.editingTrainType === 'uniqueTrain'
             ? t('pacedTrainUpdated')
             : t('uniqueTrainUpdated'),
         text: `${confName}: ${startTime.toLocaleString()}`,

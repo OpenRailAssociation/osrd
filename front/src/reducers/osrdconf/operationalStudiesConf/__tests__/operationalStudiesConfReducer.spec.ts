@@ -149,7 +149,7 @@ describe('simulationConfReducer', () => {
         startTime: new Date('2021-01-01T00:00:00+00:00'),
         timeWindow: new Duration({ minutes: 60 }),
         interval: new Duration({ minutes: 30 }),
-        editingItemType: 'pacedTrain',
+        editingTrainType: 'pacedTrain',
       };
       expect(state).toEqual(expectedState);
     });
