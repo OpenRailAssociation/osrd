@@ -788,6 +788,7 @@ pub(in crate::views) async fn list_groups(
 mod tests {
     use std::collections::HashSet;
 
+    use authz::v2::TestClientExt as _;
     use axum::http::StatusCode;
 
     use crate::models::fixtures::create_empty_infra;
@@ -1122,22 +1123,23 @@ mod tests {
         // Finally, it removes the new user from the infra.
         let app = test_app!().enable_authorization(true).build();
         let db_pool = app.db_pool();
-        let infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let openfga = app.openfga();
+        let infra = authz::Infra(create_small_infra(&mut db_pool.get_ok()).await.id);
         let owner = app
             .user("owner", "Owner")
             .with_roles([Role::OperationalStudies])
-            .with_infra_grant(infra.id, InfraGrant::Owner)
+            .with_infra_grant(*infra, InfraGrant::Owner)
             .create()
             .await;
 
         // Create a new user and add it as a writer to the infra with the grant API
-        let writer = app.user("writer", "Writer").create().await;
+        let writer = authz::User::from(app.user("writer", "Writer").create().await);
         let request_grant = app.post("/authz/grants").by_user(&owner).json(&json!({
             "grant": [
                 {
-                    "subject_id": writer.id,
+                    "subject_id": *writer,
                     "resource_type": ResourceType::Infra,
-                    "resource_id": infra.id,
+                    "resource_id": *infra,
                     "grant": InfraGrant::Writer
                 }
             ]
@@ -1147,15 +1149,18 @@ mod tests {
             .assert_status(StatusCode::CREATED);
 
         // Check that the new user has the good grant
-        app.assert_infra_direct_grant(infra.id, writer.id, Some(InfraGrant::Writer));
+        assert_eq!(
+            openfga.infra_direct_grant(writer, infra).await,
+            Some(InfraGrant::Writer)
+        );
 
         // Remove the user from the API
         let request_revoke = app.post("/authz/grants").by_user(&owner).json(&json!({
             "revoke": [
                 {
-                    "subject_id": writer.id,
+                    "subject_id": *writer,
                     "resource_type": ResourceType::Infra,
-                    "resource_id": infra.id
+                    "resource_id": *infra
                 }
             ]
         }));
@@ -1164,12 +1169,13 @@ mod tests {
             .assert_status(StatusCode::NO_CONTENT);
 
         // Check that the new user has the good grant
-        app.assert_infra_direct_grant(infra.id, writer.id, None);
+        assert_eq!(openfga.infra_direct_grant(writer, infra).await, None);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn give_grant_to_groups() {
         let app = test_app!().enable_authorization(true).build();
+        let openfga = app.openfga();
         let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
         let alice = app
             .user("alice", "Alice")
@@ -1182,19 +1188,24 @@ mod tests {
             .with_members([&alice, &bob])
             .create()
             .await;
+        let infra = authz::Infra(infra.id);
+        let alice_info = alice.clone();
+        let alice = authz::User::from(alice);
+        let bob = authz::User::from(bob);
+        let alice_and_bob = authz::Group::from(alice_and_bob);
 
-        app.fetch(app.post("/authz/grants").by_user(&alice).json(&json!({
+        app.fetch(app.post("/authz/grants").by_user(&alice_info).json(&json!({
             "grant": [
                 {
-                    "subject_id": alice_and_bob.id,
+                    "subject_id": *alice_and_bob,
                     "resource_type": ResourceType::Infra,
-                    "resource_id": infra.id,
+                    "resource_id": *infra,
                     "grant": InfraGrant::Writer
                 },
                 {
-                    "subject_id": bob.id,
+                    "subject_id": *bob,
                     "resource_type": ResourceType::Infra,
-                    "resource_id": infra.id,
+                    "resource_id": *infra,
                     "grant": InfraGrant::Reader
                 }
             ]
@@ -1202,27 +1213,39 @@ mod tests {
         .await
         .assert_status(StatusCode::CREATED);
 
-        app.assert_infra_direct_grant(infra.id, alice.id, Some(InfraGrant::Owner)); // still owner
-        app.assert_infra_direct_grant(infra.id, alice_and_bob.id, Some(InfraGrant::Writer)); // direct group grant
-        app.assert_infra_direct_grant(infra.id, bob.id, Some(InfraGrant::Reader)); // direct user grant
+        assert_eq!(
+            openfga.infra_direct_grant(alice, infra).await,
+            Some(InfraGrant::Owner)
+        ); // still owner
+        assert_eq!(
+            openfga.infra_direct_grant(alice_and_bob, infra).await,
+            Some(InfraGrant::Writer)
+        ); // direct group grant
+        assert_eq!(
+            openfga.infra_direct_grant(bob, infra).await,
+            Some(InfraGrant::Reader)
+        ); // direct user grant
 
-        app.assert_infra_grant(infra.id, bob.id, Some(InfraGrant::Writer)); // inherited group grant
-        app.assert_infra_grant(infra.id, alice.id, Some(InfraGrant::Owner)); // inherited group grant superseded by direct user grant
+        app.assert_infra_grant(*infra, *bob, Some(InfraGrant::Writer)); // inherited group grant
+        app.assert_infra_grant(*infra, *alice, Some(InfraGrant::Owner)); // inherited group grant superseded by direct user grant
 
-        app.fetch(app.post("/authz/grants").by_user(&alice).json(&json!({
+        app.fetch(app.post("/authz/grants").by_user(&alice_info).json(&json!({
             "revoke": [
                 {
-                    "subject_id": alice_and_bob.id,
+                    "subject_id": *alice_and_bob,
                     "resource_type": ResourceType::Infra,
-                    "resource_id": infra.id
+                    "resource_id": *infra
                 }
             ]
         })))
         .await
         .assert_status(StatusCode::NO_CONTENT);
 
-        app.assert_infra_direct_grant(infra.id, alice_and_bob.id, None); // group grant removed
-        app.assert_infra_direct_grant(infra.id, bob.id, Some(InfraGrant::Reader)); // bob's direct grant is still there
+        assert_eq!(openfga.infra_direct_grant(alice_and_bob, infra).await, None); // group grant removed
+        assert_eq!(
+            openfga.infra_direct_grant(bob, infra).await,
+            Some(InfraGrant::Reader)
+        ); // bob's direct grant is still there
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1256,21 +1279,23 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn skipped_authz_can_set_and_remove_grants() {
         let app = test_app!().enable_authorization(true).build();
+        let openfga = app.openfga();
         let db_pool = app.db_pool();
-        let infra = create_small_infra(&mut db_pool.get_ok()).await;
-        let user = app
-            .user("authz", "Authz")
-            .with_infra_grant(infra.id, InfraGrant::Owner)
-            .create()
-            .await;
+        let infra = authz::Infra(create_small_infra(&mut db_pool.get_ok()).await.id);
+        let user = authz::User::from(
+            app.user("authz", "Authz")
+                .with_infra_grant(*infra, InfraGrant::Owner)
+                .create()
+                .await,
+        );
 
         // Adding OWNER on the same user/infra
         let request_grant = app.post("/authz/grants").skip_authz().json(&json!({
             "grant": [
                 {
-                    "subject_id": user.id,
+                    "subject_id": *user,
                     "resource_type": ResourceType::Infra,
-                    "resource_id": infra.id,
+                    "resource_id": *infra,
                     "grant": InfraGrant::Owner
                 }
             ]
@@ -1279,15 +1304,18 @@ mod tests {
             .await
             .assert_status(StatusCode::CREATED);
 
-        app.assert_infra_direct_grant(infra.id, user.id, Some(InfraGrant::Owner));
+        assert_eq!(
+            openfga.infra_direct_grant(user, infra).await,
+            Some(InfraGrant::Owner)
+        );
 
         // Remove the grant
         let request_revoke = app.post("/authz/grants").skip_authz().json(&json!({
             "revoke": [
                 {
-                    "subject_id": user.id,
+                    "subject_id": *user,
                     "resource_type": ResourceType::Infra,
-                    "resource_id": infra.id
+                    "resource_id": *infra
                 }
             ]
         }));
@@ -1295,7 +1323,7 @@ mod tests {
             .await
             .assert_status(StatusCode::NO_CONTENT);
 
-        app.assert_infra_direct_grant(infra.id, user.id, None);
+        assert_eq!(openfga.infra_direct_grant(user, infra).await, None);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

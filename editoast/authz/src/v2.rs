@@ -415,12 +415,69 @@ pub fn remove_roles(subject: Subject, roles: HashSet<Role>) -> Protected<()> {
         .with_guardrail(Guardrail::IssuerHasRole(Role::Admin))
 }
 
+/// Returns the *direct grant* a subject has on an [Infra], if any
+///
+/// A user can have *indirect grants* on a resource through group membership.
+/// For those, use [`infra_effective_grant`].
+///
+/// A subject can have at most one direct grant on any resource. Should this
+/// invariant be violated, the protected operation will panic.
+pub fn infra_direct_grant(subject: Subject, infra: Infra) -> Protected<Option<InfraGrant>> {
+    Protected::new(move |openfga| {
+        async move {
+            let (is_reader, is_writer, is_owner) = match &subject {
+                Subject::User(user) => tokio::try_join!(
+                    openfga
+                        .tuple_exists(Infra::reader().tuple(user, &infra)),
+                    openfga
+                        .tuple_exists(Infra::writer().tuple(user, &infra)),
+                    openfga.tuple_exists(Infra::owner().tuple(user, &infra)),
+                )?,
+                Subject::Group(group) => tokio::try_join!(
+                    openfga
+                        .tuple_exists(Infra::reader().tuple(Group::member().userset(group), &infra)),
+                    openfga
+                        .tuple_exists(Infra::writer().tuple(Group::member().userset(group), &infra)),
+                    openfga
+                        .tuple_exists(Infra::owner().tuple(Group::member().userset(group), &infra)),
+                )?,
+            };
+
+            match (is_reader, is_writer, is_owner) {
+                (true, false, false) => Ok(Some(InfraGrant::Reader)),
+                (false, true, false) => Ok(Some(InfraGrant::Writer)),
+                (false, false, true) => Ok(Some(InfraGrant::Owner)),
+                (false, false, false) => Ok(None),
+                _ => {
+                    tracing::error!(
+                        is_reader,
+                        is_writer,
+                        is_owner,
+                        ?subject,
+                        resource = ?infra,
+                        "Subject has multiple direct grants on the same resource"
+                    );
+                    panic!(
+                        "Subject '{subject:?}' has multiple direct grants on the same resource '{infra:?}', which is not supposed to happen by design. \n\
+                        Detected direct grants: reader: {is_reader}, writer: {is_writer}, owner: {is_owner}"
+                    )
+                }
+            }
+        }
+        .boxed()
+    })
+    .with_check(SanityCheck::SubjectExists(subject))
+    .with_check(SanityCheck::InfraExists(infra))
+}
+
 /// Returns the effective (maximum) grant a subject has on an [Infra], if any
 ///
 /// A given user may have multiple grants on the same resource. This can happen
 /// if a user inherits a grant from one of its groups and also has a direct grant.
 /// Inherited grants are not the same thing as privileges: they do not have the same semantic,
 /// are not represented by the same enum, do no work on the same scale nor in the same way.
+///
+/// For direct grants, see [`infra_direct_grant`].
 ///
 /// Groups only have direct grants. If multiple direct grants are found, this protected operation will panic.
 pub fn infra_effective_grant(subject: Subject, infra: Infra) -> Protected<Option<InfraGrant>> {
@@ -574,6 +631,11 @@ pub trait TestClientExt {
     async fn subject_roles(&self, subject: &Subject) -> HashSet<Role>;
     async fn group_members(&self, group: &Group) -> HashSet<User>;
     async fn infra_effective_grant(&self, subject: Subject, infra: Infra) -> Option<InfraGrant>;
+    async fn infra_direct_grant(
+        &self,
+        subject: impl Into<Subject>,
+        infra: Infra,
+    ) -> Option<InfraGrant>;
     async fn infra_privileges(&self, user: User, infra: Infra) -> HashSet<InfraPrivilege>;
 }
 
@@ -601,6 +663,18 @@ impl TestClientExt for fga::Client {
         let authorize = special_authorizers::Authorize(self);
         authorize
             .access_value(infra_effective_grant(subject, infra))
+            .await
+            .unwrap()
+    }
+
+    async fn infra_direct_grant(
+        &self,
+        subject: impl Into<Subject>,
+        infra: Infra,
+    ) -> Option<InfraGrant> {
+        let authorize = special_authorizers::Authorize(self);
+        authorize
+            .access_value(infra_direct_grant(subject.into(), infra))
             .await
             .unwrap()
     }
@@ -951,6 +1025,134 @@ mod tests {
             .unwrap_authorized()
             .await;
         assert_eq!(grant, Some(InfraGrant::Owner));
+    }
+
+    #[tokio::test]
+    async fn user_infra_direct_grant() {
+        let openfga = crate::authz_client!();
+        let authorize = Authorize(&openfga);
+
+        let infra_grant = async |user_id: i64| {
+            infra_direct_grant(Subject::user(user_id), Infra(1))
+                .authorize(&authorize)
+                .await
+                .unwrap()
+                .unwrap_authorized()
+                .await
+        };
+
+        assert_eq!(infra_grant(1).await, None);
+
+        openfga
+            .prepare_writes()
+            .write(&Infra::reader().tuple(&User(1), &Infra(1)))
+            .write(&Infra::writer().tuple(&User(2), &Infra(1)))
+            .write(&Infra::owner().tuple(&User(3), &Infra(1)))
+            .execute()
+            .await
+            .unwrap();
+
+        assert_eq!(infra_grant(1).await, Some(InfraGrant::Reader));
+        assert_eq!(infra_grant(2).await, Some(InfraGrant::Writer));
+        assert_eq!(infra_grant(3).await, Some(InfraGrant::Owner));
+    }
+
+    #[tokio::test]
+    async fn group_infra_direct_grant() {
+        let openfga = crate::authz_client!();
+        let authorize = Authorize(&openfga);
+
+        let infra_grant = async |group_id: i64| {
+            infra_direct_grant(Subject::group(group_id), Infra(1))
+                .authorize(&authorize)
+                .await
+                .unwrap()
+                .unwrap_authorized()
+                .await
+        };
+
+        assert_eq!(infra_grant(1).await, None);
+
+        openfga
+            .prepare_writes()
+            .write(&Infra::reader().tuple(Group::member().userset(&Group(1)), &Infra(1)))
+            .write(&Infra::writer().tuple(Group::member().userset(&Group(2)), &Infra(1)))
+            .write(&Infra::owner().tuple(Group::member().userset(&Group(3)), &Infra(1)))
+            .execute()
+            .await
+            .unwrap();
+
+        assert_eq!(infra_grant(1).await, Some(InfraGrant::Reader));
+        assert_eq!(infra_grant(2).await, Some(InfraGrant::Writer));
+        assert_eq!(infra_grant(3).await, Some(InfraGrant::Owner));
+    }
+
+    #[tokio::test]
+    async fn no_inference_infra_direct_grant() {
+        let openfga = crate::authz_client!();
+        let authorize = Authorize(&openfga);
+
+        openfga
+            .prepare_writes()
+            .write(&Group::member().tuple(&User(1), &Group(1)))
+            .write(&Group::member().tuple(&User(2), &Group(2)))
+            .write(&Group::member().tuple(&User(3), &Group(3)))
+            .write(&Infra::reader().tuple(&User(1), &Infra(1)))
+            .write(&Infra::writer().tuple(Group::member().userset(&Group(2)), &Infra(1)))
+            .write(&Infra::owner().tuple(&User(3), &Infra(1)))
+            .write(&Infra::reader().tuple(Group::member().userset(&Group(3)), &Infra(1)))
+            .execute()
+            .await
+            .unwrap();
+
+        let user_direct_grant = async |user_id: i64| {
+            infra_direct_grant(Subject::user(user_id), Infra(1))
+                .authorize(&authorize)
+                .await
+                .unwrap()
+                .unwrap_authorized()
+                .await
+        };
+
+        let group_direct_grant = async |group_id: i64| {
+            infra_direct_grant(Subject::group(group_id), Infra(1))
+                .authorize(&authorize)
+                .await
+                .unwrap()
+                .unwrap_authorized()
+                .await
+        };
+
+        assert_eq!(user_direct_grant(1).await, Some(InfraGrant::Reader));
+        assert_eq!(group_direct_grant(1).await, None);
+
+        assert_eq!(user_direct_grant(2).await, None);
+        assert_eq!(group_direct_grant(2).await, Some(InfraGrant::Writer));
+
+        assert_eq!(user_direct_grant(3).await, Some(InfraGrant::Owner));
+        assert_eq!(group_direct_grant(3).await, Some(InfraGrant::Reader));
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn infra_direct_grant_inconsistent_state_panics() {
+        let openfga = crate::authz_client!();
+        let authorize = Authorize(&openfga);
+
+        openfga
+            .prepare_writes()
+            .write(&Infra::reader().tuple(&User(1), &Infra(1)))
+            .write(&Infra::writer().tuple(&User(1), &Infra(1)))
+            .execute()
+            .await
+            .unwrap();
+
+        infra_direct_grant(Subject::user(1), Infra(1))
+            .authorize(&authorize)
+            .await
+            .unwrap()
+            .unwrap_authorized()
+            .await;
     }
 
     #[tokio::test]
