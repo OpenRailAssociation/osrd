@@ -20,59 +20,81 @@
       "properties": {
         "amqp": {
           "additionalProperties": false,
+          "description": "amqp configuration",
           "properties": {
             "management": {
               "default": "http://osrd:password@rabbitmq:15672",
+              "description": "amqp management url",
+              "required": [],
               "title": "management",
-              "type": "string"
+              "type": [
+                "string",
+                "object"
+              ]
             },
             "managementWithVhost": {
               "default": "http://osrd:password@rabbitmq:15672/%2f",
+              "description": "amqp management url including vhost",
+              "required": [],
               "title": "managementWithVhost",
-              "type": "string"
+              "type": [
+                "string",
+                "object"
+              ]
             },
             "url": {
               "default": "amqp://osrd:password@rabbitmq:5672/%2f",
+              "description": "amqp server url text or reference to a secret",
+              "required": [],
               "title": "url",
-              "type": "string"
+              "type": [
+                "string",
+                "object"
+              ]
             }
           },
-          "required": [
-            "url",
-            "management",
-            "managementWithVhost"
-          ],
+          "required": [],
           "title": "amqp",
           "type": "object"
         },
         "postgresql": {
           "default": "postgres://osrd:password@postgres:5432/osrd",
+          "description": "postgresql url",
+          "required": [],
           "title": "postgresql",
-          "type": "string"
+          "type": [
+            "string",
+            "object"
+          ]
         },
         "postgresqlOpenFGA": {
           "default": "postgres://osrd:password@postgres:5432/osrd?search_path=openfga",
+          "description": "postgresql url for openFGA",
+          "required": [],
           "title": "postgresqlOpenFGA",
-          "type": "string"
+          "type": [
+            "string",
+            "object"
+          ]
         },
         "public": {
           "default": "https://my-osrd-instance.org",
+          "description": "Public url of the application",
           "title": "public",
           "type": "string"
         },
         "redis": {
           "default": "redis://username:pwd@redis:6379/0",
+          "description": "redis/valkey url",
+          "required": [],
           "title": "redis",
-          "type": "string"
+          "type": [
+            "string",
+            "object"
+          ]
         }
       },
-      "required": [
-        "public",
-        "amqp",
-        "postgresql",
-        "postgresqlOpenFGA",
-        "redis"
-      ],
+      "required": [],
       "title": "endpoints"
     },
     "fullnameOverride": {
@@ -87,7 +109,7 @@
       "type": "object"
     },
     "imagePullSecrets": {
-      "description": "Container images related settings",
+      "description": "list of imagePullSecrets to use",
       "items": {
         "required": []
       },
@@ -177,16 +199,21 @@
             },
             "autoscaling": {
               "additionalProperties": false,
+              "description": "autoscaling configuration of osrdyne KubernetesDriver detail in https://github.com/OpenRailAssociation/osrd/blob/dev/osrdyne/src/drivers/kubernetes.rs",
               "properties": {
                 "type": {
                   "default": "NoScaling",
+                  "description": "Type of autoscaling",
+                  "enum": [
+                    "NoScaling",
+                    "Keda",
+                    "Hpa"
+                  ],
                   "title": "type",
                   "type": "string"
                 }
               },
-              "required": [
-                "type"
-              ],
+              "required": [],
               "title": "autoscaling",
               "type": "object"
             },
@@ -234,7 +261,11 @@
               "default": "null",
               "description": "Service account name to mount in case of kubernetes deployment",
               "required": [],
-              "title": "service_account_name"
+              "title": "service_account_name",
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "tolerations": {
               "items": {
@@ -252,8 +283,7 @@
             "affinity",
             "resources",
             "env",
-            "config",
-            "autoscaling"
+            "config"
           ],
           "title": "core",
           "type": "object"
@@ -275,8 +305,10 @@
             },
             "cronjob": {
               "additionalProperties": false,
+              "description": "cronjob configuration. Runs editoast gc",
               "properties": {
                 "env": {
+                  "description": "list of env variable to pass to cronjob script. Editoast default service variables are already set",
                   "items": {
                     "required": []
                   },
@@ -285,22 +317,26 @@
                 },
                 "extend": {
                   "default": "",
-                  "description": "command to be executed before editoast gc",
+                  "description": "shell commands to be executed before editoast gc",
+                  "required": [],
                   "title": "extend",
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 },
                 "schedule": {
                   "default": "3 1 * * mon-fri",
-                  "description": "set to null to disable cronjob",
+                  "description": "cronjob format time of execution. Set to null to disable",
+                  "required": [],
                   "title": "schedule",
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 }
               },
-              "required": [
-                "schedule",
-                "extend",
-                "env"
-              ],
+              "required": [],
               "title": "cronjob",
               "type": "object"
             },
@@ -431,13 +467,23 @@
             },
             "permanent_storage_class": {
               "default": "null",
+              "description": "storage class for permanent storage",
+              "required": [],
               "title": "permanent_storage_class",
-              "type": "null"
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "permanent_storage_size": {
               "default": "null",
+              "description": "size in Kubernetes format for editoast shared storage mount in all hosts. null to disable permanent storage",
+              "required": [],
               "title": "permanent_storage_size",
-              "type": "null"
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "readinessProbe": {
               "additionalProperties": false,
@@ -527,9 +573,6 @@
             "hpa",
             "annotations",
             "init",
-            "cronjob",
-            "permanent_storage_size",
-            "permanent_storage_class",
             "labels",
             "nodeSelector",
             "tolerations",
@@ -557,6 +600,7 @@
             },
             "config": {
               "additionalProperties": false,
+              "description": "gateway authentication configuration see https://github.com/OpenRailAssociation/osrd/blob/dev/gateway/README.md",
               "properties": {
                 "auth": {
                   "additionalProperties": false,
@@ -699,6 +743,7 @@
             },
             "ingress": {
               "additionalProperties": false,
+              "description": "Gateway ingress configuration",
               "properties": {
                 "annotations": {
                   "additionalProperties": false,
@@ -712,6 +757,7 @@
                   "type": "string"
                 },
                 "domains": {
+                  "description": "List of domains to serve",
                   "items": {
                     "anyOf": [
                       {
@@ -730,6 +776,7 @@
                 },
                 "secretName": {
                   "default": "osrd-gateway-tls",
+                  "description": "Secret containing the tls certificates can be null",
                   "title": "secretName",
                   "type": "string"
                 },
@@ -744,8 +791,6 @@
               "required": [
                 "enabled",
                 "className",
-                "domains",
-                "secretName",
                 "annotations",
                 "tls"
               ],
@@ -858,8 +903,6 @@
             "enabled",
             "replicaCount",
             "service",
-            "ingress",
-            "config",
             "livenessProbe",
             "readinessProbe",
             "annotations",
@@ -1495,10 +1538,8 @@
     "nodeSelector",
     "tolerations",
     "affinity",
-    "imagePullSecrets",
     "pullPolicy",
-    "images",
-    "services"
+    "images"
   ],
   "type": "object"
 }
