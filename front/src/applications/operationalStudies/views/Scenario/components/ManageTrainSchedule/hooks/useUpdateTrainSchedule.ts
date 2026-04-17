@@ -39,7 +39,7 @@ import {
   formatPacedTrainWithDetailsToPacedTrainPayload,
 } from '../helpers/formatTimetableItemPayload';
 
-const useUpdateTimetableItem = (
+const useUpdateTrainSchedule = (
   setIsWorking: (isWorking: boolean) => void,
   setDisplayTrainScheduleManagement: (type: string) => void,
   upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void,
@@ -281,4 +281,4 @@ const useUpdateTimetableItem = (
   };
 };
 
-export default useUpdateTimetableItem;
+export default useUpdateTrainSchedule;

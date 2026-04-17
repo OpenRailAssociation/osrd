@@ -18,7 +18,7 @@ import type { TimetableItem, TrainScheduleToEditData } from 'reducers/osrdconf/t
 import { useAppDispatch } from 'store';
 
 import CreateTimetableItemButton from './CreateTimetableItemButton';
-import useUpdateTimetableItem from './hooks/useUpdateTimetableItem';
+import useUpdateTrainSchedule from './hooks/useUpdateTimetableItem';
 import ItineraryModal from './Itinerary/ItineraryModal';
 import PacedTrainSettings from './PacedTrainSettings';
 
@@ -56,7 +56,7 @@ const ManageTrainScheduleLeftPanel = ({
     setTrainScheduleToEditData(undefined);
   };
 
-  const updateTimetable = useUpdateTimetableItem(
+  const updateTimetable = useUpdateTrainSchedule(
     setIsWorking,
     setDisplayTrainScheduleManagement,
     upsertTrainSchedules,
