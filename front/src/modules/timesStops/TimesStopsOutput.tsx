@@ -1,4 +1,4 @@
- import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import cx from 'classnames';
 import { useSelector } from 'react-redux';
@@ -49,6 +49,29 @@ type TimesStopsOutputProps = {
   voltages?: PathPropertiesFormatted['voltages'];
   isSimulationDataLoading?: boolean;
   rollingStock?: RollingStock;
+};
+
+const ONE_DAY = new Duration({ hours: 24 });
+
+const bumpMidnightCrossings = (rows: TimesStopsRowNew[]): TimesStopsRowNew[] => {
+  let lastArrival: Date | null = null;
+  return rows.map((row) => {
+    if (row.requestedArrival === null) return row;
+    if (lastArrival !== null && row.requestedArrival < lastArrival) {
+      const bumped = addDurationToDate(row.requestedArrival, ONE_DAY);
+      lastArrival = bumped;
+      return {
+        ...row,
+        requestedArrival: bumped,
+        requestedDeparture:
+          row.requestedDeparture !== null
+            ? addDurationToDate(row.requestedDeparture, ONE_DAY)
+            : null,
+      };
+    }
+    lastArrival = row.requestedArrival;
+    return row;
+  });
 };
 
 const TimesStopsOutput = ({
@@ -125,32 +148,7 @@ const TimesStopsOutput = ({
       });
     }
 
-    // If a row's requested time falls before the previous row's, it crossed midnight — bump it by one day.
-    const ONE_DAY = new Duration({ hours: 24 });
-    return rows.reduce<[TimesStopsRowNew[], Date | null]>(
-      ([acc, lastArrival], row) => {
-        if (row.requestedArrival === null) return [[...acc, row], lastArrival];
-        if (lastArrival !== null && row.requestedArrival < lastArrival) {
-          const bumped = addDurationToDate(row.requestedArrival, ONE_DAY);
-          return [
-            [
-              ...acc,
-              {
-                ...row,
-                requestedArrival: bumped,
-                requestedDeparture:
-                  row.requestedDeparture !== null
-                    ? addDurationToDate(row.requestedDeparture, ONE_DAY)
-                    : null,
-              },
-            ],
-            bumped,
-          ];
-        }
-        return [[...acc, row], row.requestedArrival];
-      },
-      [[], null]
-    )[0];
+    return bumpMidnightCrossings(rows);
   }, [newRows, optimisticEdits]);
 
   const startTime = useMemo(() => new Date(selectedTrain.start_time), [selectedTrain.start_time]);
@@ -240,7 +238,7 @@ const TimesStopsOutput = ({
     const propagationEdits = propagationToEdits(propagationResult, newRows);
 
     // Origin arrival = start_time (not in schedule), so propagationToEdits misses it.
-    const originRow = newRows[0];
+    const originRow = newRows.at(0);
     const originEdits: PendingEdit[] =
       originRow &&
       originRow.requestedArrival?.getTime() !== propagationResult.updatedStartTime.getTime()
@@ -253,12 +251,20 @@ const TimesStopsOutput = ({
           ]
         : [];
 
-    if (update.propagationMode === 'shiftAllWaypoints') {
-      // All rows are covered by propagation; singleEdit is skipped because it can have the wrong calendar day.
+    // When editing the origin, originEdits already has the correct date.
+    // singleEdit must be skipped because the typed value can carry the
+    // wrong calendar day (the input only captures HH:mm:ss, not the date).
+    const editedRowIsOrigin = originEdits.some((e) => e.rowId === singleEdit.rowId);
+
+    if (update.propagationMode === 'shiftAllWaypoints' || editedRowIsOrigin) {
       return [...originEdits, ...propagationEdits];
     }
 
-    return [...originEdits, singleEdit, ...propagationEdits.filter((e) => e.rowId !== singleEdit.rowId)];
+    return [
+      ...originEdits,
+      singleEdit,
+      ...propagationEdits.filter((e) => e.rowId !== singleEdit.rowId),
+    ];
   };
 
   const buildEditsForMarginUpdate = (

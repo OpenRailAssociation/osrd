@@ -725,6 +725,7 @@ const TimeCell = ({
           onSelectMode={handleSelectPropagationMode}
           disableFromDeparture={column.id === 'requestedArrival' && isFirstRow}
           disableToDestination={column.id === 'requestedArrival' && isLastRow}
+          isOrigin={isFirstRow}
         />
       </div>
       <ClearButton
