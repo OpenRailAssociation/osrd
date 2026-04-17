@@ -2,6 +2,7 @@ import type {
   PostTimetableByIdStdcmApiArg,
   PostTimetableByIdStdcmApiResponseWithTraceId,
   StdcmResponse,
+  StdcmResponseWithTraceId,
 } from 'common/api/osrdEditoastApi';
 
 export default function postTimetableByIdStdcm(args: PostTimetableByIdStdcmApiArg) {
@@ -63,11 +64,11 @@ export default function postTimetableByIdStdcm(args: PostTimetableByIdStdcmApiAr
   };
 
   const runAndAwaitResult = () =>
-    new Promise<StdcmResponse>((resolve, reject) => {
+    new Promise<StdcmResponseWithTraceId>((resolve, reject) => {
       subscribe((event) => {
         if (event.event === 'error') reject(event.error);
         else {
-          if (event.event === 'completed') resolve(event.data);
+          if (event.event === 'completed') resolve({ ...event.data, traceId: event.traceId });
         }
       });
     });
