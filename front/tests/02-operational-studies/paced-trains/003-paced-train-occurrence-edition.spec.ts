@@ -105,7 +105,7 @@ test.describe(
 
       await test.step('Edit occurrence name and save', async () => {
         await pacedTrainSection.clickOccurrenceMenuButton('edit');
-        await operationalStudiesPage.setTimetableItemName(EDITED_OCCURRENCE_NAME);
+        await operationalStudiesPage.setTrainScheduleName(EDITED_OCCURRENCE_NAME);
         await operationalStudiesPage.updateTimetableItem(
           frTranslations.pacedTrains.updatePacedTrain
         );
@@ -197,7 +197,7 @@ test.describe(
           destinationTrigram: 'NES',
         });
 
-        await operationalStudiesPage.setTimetableItemStartTime('02:40', '2024-10-16');
+        await operationalStudiesPage.setTrainScheduleStartTime('02:40', '2024-10-16');
 
         await operationalStudiesPage.openTimesAndStopsTab();
         await timesAndStopsTab.fillTableCellByStationAndHeader(

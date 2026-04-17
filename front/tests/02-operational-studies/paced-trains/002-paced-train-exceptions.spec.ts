@@ -116,7 +116,7 @@ test.describe('Paced train exceptions', { tag: ['@op', '@paced-trains', '@except
       });
 
       await test.step('Update departure time and submit edit', async () => {
-        await operationalStudiesPage.setTimetableItemStartTime('12:00');
+        await operationalStudiesPage.setTrainScheduleStartTime('12:00');
         await operationalStudiesPage.submitTimetableItemEdit();
         await operationalStudiesPage.checkToastHasBeenLaunched(
           frTranslations.timetable.pacedTrainUpdated
