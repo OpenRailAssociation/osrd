@@ -317,11 +317,13 @@ pub(in crate::views) async fn simulation_summary(
     .await?;
 
     let train_schedules: Vec<models::TrainSchedule> =
-        models::TrainSchedule::retrieve_batch_or_fail(conn, train_schedule_ids.clone(), |missing| {
-            TrainScheduleError::BatchNotFound {
+        models::TrainSchedule::retrieve_batch_or_fail(
+            conn,
+            train_schedule_ids.clone(),
+            |missing| TrainScheduleError::BatchNotFound {
                 count: missing.len(),
-            }
-        })
+            },
+        )
         .await?;
 
     let mut exceptions = TrainScheduleException::retrieve_exceptions_by_train_schedules(
