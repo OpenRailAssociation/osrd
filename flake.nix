@@ -60,6 +60,7 @@
             taplo
             uv
             openfga-cli
+            process-compose
 
             # Core
             gradle
