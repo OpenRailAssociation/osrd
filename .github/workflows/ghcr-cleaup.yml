@@ -15,7 +15,6 @@ jobs:
     steps:
       - uses: dataaxiom/ghcr-cleanup-action@v1
         with:
-          dry-run: true # TODO REMOVE
           packages: 'osrd-edge/osrd-front,osrd-edge/osrd-editoast,osrd-edge/osrd-gateway,osrd-edge/osrd-core,osrd-edge/osrd-osrdyne'
           exclude-tags: dev,staging
           delete-untagged: true
