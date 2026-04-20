@@ -19,58 +19,62 @@ import { deleteScenario } from '../../utils/teardown-utils';
 
 const trains: TrainSchedule[] = readJsonFile('./tests/assets/trains/trains.json');
 
-test.describe('@op @paced-train @unique-train', () => {
-  let project: Project;
-  let study: Study;
-  let scenarioItems: Scenario;
-  let infra: Infra;
-  let scenarioTimetableSection: ScenarioTimetableSection;
-  let pacedTrainSection: PacedTrainSection;
-  let timeAndStopSimulationOutputs: TimeAndStopSimulationOutputs;
+test.describe(
+  'Invalid train simulation',
+  { tag: ['@op', '@paced-trains', '@unique-trains', '@invalid-trains'] },
+  () => {
+    let project: Project;
+    let study: Study;
+    let scenarioItems: Scenario;
+    let infra: Infra;
+    let scenarioTimetableSection: ScenarioTimetableSection;
+    let pacedTrainSection: PacedTrainSection;
+    let timeAndStopSimulationOutputs: TimeAndStopSimulationOutputs;
 
-  test.beforeAll('Fetch project, study and infrastructure', async () => {
-    project = await getProject(timetableItemProjectName);
-    study = await getStudy(project.id, timetableItemStudyName);
-    infra = await getInfra();
-  });
-
-  test.beforeEach('Setup scenario with invalid trains', async ({ page }) => {
-    scenarioTimetableSection = new ScenarioTimetableSection(page);
-    pacedTrainSection = new PacedTrainSection(page);
-    timeAndStopSimulationOutputs = new TimeAndStopSimulationOutputs(page);
-    scenarioItems = (
-      await createScenario(
-        generateUniqueName('invalid-train-scenario'),
-        project.id,
-        study.id,
-        infra.id
-      )
-    ).scenario;
-
-    const selectedTrains = [...trains.slice(3, 4), ...trains.slice(17, 18)];
-    await sendTrains(scenarioItems.timetable_id, selectedTrains);
-
-    await page.goto(
-      `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
-    );
-    await waitForInfraStateToBeCached(infra.id);
-  });
-
-  test.afterAll('Delete the created scenario', async () => {
-    await deleteScenario(study.id, scenarioItems.name);
-  });
-
-  /** *************** Test 1 **************** */
-  test('@smoke Verify invalid train simulation result', async () => {
-    await test.step('Project paced train and verify invalid simulation outputs', async () => {
-      await pacedTrainSection.projectPacedTrain();
-      await scenarioTimetableSection.verifyInvalidTrainSimulationResultsVisibility();
+    test.beforeAll('Fetch project, study and infrastructure', async () => {
+      project = await getProject(timetableItemProjectName);
+      study = await getStudy(project.id, timetableItemStudyName);
+      infra = await getInfra();
     });
-    await timeAndStopSimulationOutputs.getOutputTableData(invalidPacedTrainTimetableOutput);
-    await test.step('Project invalid train and verify invalid simulation outputs', async () => {
-      await scenarioTimetableSection.projectTrain(1);
-      await scenarioTimetableSection.verifyInvalidTrainSimulationResultsVisibility();
-      await timeAndStopSimulationOutputs.getOutputTableData(invalidUniqueTrainTimetableOutput);
+
+    test.beforeEach('Setup scenario with invalid trains', async ({ page }) => {
+      scenarioTimetableSection = new ScenarioTimetableSection(page);
+      pacedTrainSection = new PacedTrainSection(page);
+      timeAndStopSimulationOutputs = new TimeAndStopSimulationOutputs(page);
+      scenarioItems = (
+        await createScenario(
+          generateUniqueName('invalid-train-scenario'),
+          project.id,
+          study.id,
+          infra.id
+        )
+      ).scenario;
+
+      const selectedTrains = [...trains.slice(3, 4), ...trains.slice(17, 18)];
+      await sendTrains(scenarioItems.timetable_id, selectedTrains);
+
+      await page.goto(
+        `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
+      );
+      await waitForInfraStateToBeCached(infra.id);
     });
-  });
-});
+
+    test.afterAll('Delete the created scenario', async () => {
+      await deleteScenario(study.id, scenarioItems.name);
+    });
+
+    /** *************** Test 1 **************** */
+    test('Verify invalid train simulation result', { tag: '@smoke' }, async () => {
+      await test.step('Project paced train and verify invalid simulation outputs', async () => {
+        await pacedTrainSection.projectPacedTrain();
+        await scenarioTimetableSection.verifyInvalidTrainSimulationResultsVisibility();
+      });
+      await timeAndStopSimulationOutputs.getOutputTableData(invalidPacedTrainTimetableOutput);
+      await test.step('Project invalid train and verify invalid simulation outputs', async () => {
+        await scenarioTimetableSection.projectTrain(1);
+        await scenarioTimetableSection.verifyInvalidTrainSimulationResultsVisibility();
+        await timeAndStopSimulationOutputs.getOutputTableData(invalidUniqueTrainTimetableOutput);
+      });
+    });
+  }
+);

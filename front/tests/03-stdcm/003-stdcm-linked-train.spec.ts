@@ -24,7 +24,7 @@ import test, { createStdcmTab } from './../page-object-fixture';
 import { waitForInfraStateToBeCached } from './../utils';
 import { getInfra, setTowedRollingStock } from './../utils/api-utils';
 
-test.describe('@stdcm @stdcm-linked-train', () => {
+test.describe('STDCM linked train simulation', { tag: ['@stdcm', '@stdcm-linked-train'] }, () => {
   let infra: Infra;
   let createdTowedRollingStock: TowedRollingStock;
   let towedConsistDetails: ConsistFields;

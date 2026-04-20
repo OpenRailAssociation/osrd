@@ -51,7 +51,7 @@ const expectedCellDataForAllSettings: StationData[] = readJsonFile(
   './tests/assets/operation-studies/simulation-settings/all-settings.json'
 );
 
-test.describe('@op @simulation-settings-tab', () => {
+test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-tab'] }, () => {
   let electricalProfileSet: ElectricalProfileSet;
   let project: Project;
   let study: Study;
@@ -320,60 +320,64 @@ test.describe('@op @simulation-settings-tab', () => {
   });
 
   /** *************** Test 4 **************** */
-  test('@smoke Add all the simulation settings', async ({
-    browserName,
-    timesAndStopsTab,
-    operationalStudiesPage,
-    simulationSettingsTab,
-    scenarioTimetableSection,
-    opSimulationResultPage,
-    timeAndStopSimulationOutputs,
-  }) => {
-    const inputTableData: CellData[] = [
-      { stationName: 'Mid_East_station', header: 'stopTime', value: '124' },
-      {
-        stationName: 'West_station',
-        header: 'theoreticalMargin',
-        value: '5%',
-        marginForm: '% ou min/100km',
-      },
-    ];
+  test(
+    'Add all the simulation settings',
+    { tag: '@smoke' },
+    async ({
+      browserName,
+      timesAndStopsTab,
+      operationalStudiesPage,
+      simulationSettingsTab,
+      scenarioTimetableSection,
+      opSimulationResultPage,
+      timeAndStopSimulationOutputs,
+    }) => {
+      const inputTableData: CellData[] = [
+        { stationName: 'Mid_East_station', header: 'stopTime', value: '124' },
+        {
+          stationName: 'West_station',
+          header: 'theoreticalMargin',
+          value: '5%',
+          marginForm: '% ou min/100km',
+        },
+      ];
 
-    await test.step('Fill Times & Stops inputs', async () => {
-      for (const cell of inputTableData) {
-        const translatedHeader = cleanWhitespace(frTranslations[cell.header]);
-        await timesAndStopsTab.fillTableCellByStationAndHeader(
-          cell.stationName,
-          translatedHeader,
-          cell.value,
-          cell.marginForm
-        );
-      }
-    });
+      await test.step('Fill Times & Stops inputs', async () => {
+        for (const cell of inputTableData) {
+          const translatedHeader = cleanWhitespace(frTranslations[cell.header]);
+          await timesAndStopsTab.fillTableCellByStationAndHeader(
+            cell.stationName,
+            translatedHeader,
+            cell.value,
+            cell.marginForm
+          );
+        }
+      });
 
-    await test.step('Enable Linear margin + electrical profile + speed limit tag', async () => {
-      await operationalStudiesPage.openSimulationSettingsTab();
-      await simulationSettingsTab.checkElectricalProfile();
-      await simulationSettingsTab.activateLinearMargin();
-      await simulationSettingsTab.selectSpeedLimitTagOption('E32C');
-    });
+      await test.step('Enable Linear margin + electrical profile + speed limit tag', async () => {
+        await operationalStudiesPage.openSimulationSettingsTab();
+        await simulationSettingsTab.checkElectricalProfile();
+        await simulationSettingsTab.activateLinearMargin();
+        await simulationSettingsTab.selectSpeedLimitTagOption('E32C');
+      });
 
-    await test.step('Create unique train and verify outputs (all settings ON)', async () => {
-      await operationalStudiesPage.createTimetableItem();
-      await operationalStudiesPage.closeToastNotification();
-      await operationalStudiesPage.returnSimulationResult();
-      await opSimulationResultPage.setTrainListVisible();
+      await test.step('Create unique train and verify outputs (all settings ON)', async () => {
+        await operationalStudiesPage.createTimetableItem();
+        await operationalStudiesPage.closeToastNotification();
+        await operationalStudiesPage.returnSimulationResult();
+        await opSimulationResultPage.setTrainListVisible();
 
-      await operationalStudiesPage.verifyTimesStopsDataSheetVisibility();
-      await opSimulationResultPage.selectAllSpeedSpaceChartCheckboxes();
-      if (browserName === 'chromium') {
-        await expect(opSimulationResultPage.speedSpaceChart).toHaveScreenshot(
-          'SpeedSpaceChart-AllSettingsEnabled.png'
-        );
-      }
-      await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataForAllSettings);
-      await opSimulationResultPage.setTrainListVisible(false);
-      await scenarioTimetableSection.getTimetableItemArrivalTime('11:50');
-    });
-  });
+        await operationalStudiesPage.verifyTimesStopsDataSheetVisibility();
+        await opSimulationResultPage.selectAllSpeedSpaceChartCheckboxes();
+        if (browserName === 'chromium') {
+          await expect(opSimulationResultPage.speedSpaceChart).toHaveScreenshot(
+            'SpeedSpaceChart-AllSettingsEnabled.png'
+          );
+        }
+        await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataForAllSettings);
+        await opSimulationResultPage.setTrainListVisible(false);
+        await scenarioTimetableSection.getTimetableItemArrivalTime('11:50');
+      });
+    }
+  );
 });

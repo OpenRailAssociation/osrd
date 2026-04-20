@@ -24,127 +24,136 @@ import test from './../page-object-fixture';
 import { waitForInfraStateToBeCached } from './../utils';
 import { getInfra } from './../utils/api-utils';
 
-test.describe('@stdcm @stdcm-missing-fields', () => {
-  let infra: Infra;
+test.describe(
+  'STDCM missing fields and warning handling',
+  { tag: ['@stdcm', '@stdcm-missing-fields'] },
+  () => {
+    let infra: Infra;
 
-  test.beforeAll('Fetch infrastructure', async () => {
-    infra = await getInfra();
-  });
-
-  test.beforeEach('Navigate to the STDCM page', async ({ page }) => {
-    await page.goto(STDCM_URL);
-    await waitForInfraStateToBeCached(infra.id);
-  });
-
-  /** *************** Test 1 **************** */
-  test('Verify missing fields warnings when launching simulation', async ({
-    stdcmPage,
-    consistSection,
-    originSection,
-    destinationSection,
-    stdcmSimulationResultPage,
-  }) => {
-    await test.step('Launch simulation with all fields empty → expect all missing field warnings', async () => {
-      const allMissingLabels = getFieldsLabel(ALL_MISSING_FIELDS_KEY, STDCM_TRANSLATIONS);
-      await stdcmPage.verifyInvalidSimulationLaunch();
-      await stdcmPage.expectWarningBoxVisible();
-      await stdcmPage.expectWarningBoxContains(allMissingLabels);
+    test.beforeAll('Fetch infrastructure', async () => {
+      infra = await getInfra();
     });
 
-    await test.step('Fill origin and destination → expect partial missing field warnings', async () => {
-      await originSection.fillOriginDetailsLight({
-        originDetails: {
-          ...LIGHT_ORIGIN_DETAILS,
-          suggestionText: CI_SUGGESTIONS.north[2],
-        },
-        expectedSuggestions: CI_SUGGESTIONS.north,
-        expectedCiValue: CI_SUGGESTIONS.north[2],
-      });
-
-      await destinationSection.fillDestinationDetailsLight({
-        destinationDetails: {
-          ...LIGHT_DESTINATION_DETAILS,
-          expectedCiValue: CI_SUGGESTIONS.south[1],
-        },
-        southSuggestions: CI_SUGGESTIONS.south,
-        suggestionText: CI_SUGGESTIONS.south[1],
-      });
-
-      await stdcmPage.verifyInvalidSimulationLaunch();
-      await stdcmPage.expectWarningBoxVisible();
-
-      const partialMissingLabels = getFieldsLabel(PARTIAL_MISSING_FIELDS_KEYS, STDCM_TRANSLATIONS);
-      const nonMissingLabels = getFieldsLabel(REMOVED_MISSING_FIELDS_KEYS, STDCM_TRANSLATIONS);
-      await stdcmPage.expectWarningBoxContains(partialMissingLabels, nonMissingLabels);
+    test.beforeEach('Navigate to the STDCM page', async ({ page }) => {
+      await page.goto(STDCM_URL);
+      await waitForInfraStateToBeCached(infra.id);
     });
 
-    await test.step('Fill all mandatory fields → expect valid simulation', async () => {
-      await consistSection.fillAndVerifyConsistDetails({
-        consistFields: { tractionEngine: electricRollingStockName },
-        defaultMaxSpeed: DEFAULT_DETAILS.maxSpeed,
-        tractionEnginePrefilledValues: {
-          expectedTonnage: TRACTION_ENGINE_PREFILLED_VALUES.tonnage,
-          expectedLength: TRACTION_ENGINE_PREFILLED_VALUES.length,
-        },
+    /** *************** Test 1 **************** */
+    test('Verify missing fields warnings when launching simulation', async ({
+      stdcmPage,
+      consistSection,
+      originSection,
+      destinationSection,
+      stdcmSimulationResultPage,
+    }) => {
+      await test.step('Launch simulation with all fields empty → expect all missing field warnings', async () => {
+        const allMissingLabels = getFieldsLabel(ALL_MISSING_FIELDS_KEY, STDCM_TRANSLATIONS);
+        await stdcmPage.verifyInvalidSimulationLaunch();
+        await stdcmPage.expectWarningBoxVisible();
+        await stdcmPage.expectWarningBoxContains(allMissingLabels);
       });
 
-      await stdcmPage.verifyValidSimulationLaunch(
-        STDCM_TRANSLATIONS.simulation.results.status.completed
-      );
-      await stdcmPage.expectWarningBoxHidden();
-      await stdcmSimulationResultPage.verifySimulationDetails({
-        ...SIMULATION_RESULTS_DETAILS,
-        noOutputSimulationName: STDCM_TRANSLATIONS.simulation.results.simulationName.withoutOutputs,
-      });
-    });
+      await test.step('Fill origin and destination → expect partial missing field warnings', async () => {
+        await originSection.fillOriginDetailsLight({
+          originDetails: {
+            ...LIGHT_ORIGIN_DETAILS,
+            suggestionText: CI_SUGGESTIONS.north[2],
+          },
+          expectedSuggestions: CI_SUGGESTIONS.north,
+          expectedCiValue: CI_SUGGESTIONS.north[2],
+        });
 
-    await test.step('Enter invalid tonnage, length and max speed → expect invalid field warnings', async () => {
-      await consistSection.setTonnage(INVALID_CONSIST_DATA.invalidTonnage);
-      await consistSection.setLength(INVALID_CONSIST_DATA.invalidLength);
-      await consistSection.setMaxSpeed(INVALID_CONSIST_DATA.invalidMaxSpeed);
-      await stdcmPage.verifyInvalidSimulationLaunch();
-      await stdcmPage.expectWarningBoxVisible();
-      await stdcmPage.expectWarningBoxContains([
-        STDCM_TRANSLATIONS.stdcmErrors.invalidFields.totalMass,
-        STDCM_TRANSLATIONS.stdcmErrors.invalidFields.totalLength,
-        STDCM_TRANSLATIONS.stdcmErrors.invalidFields.maxSpeed,
-      ]);
-    });
+        await destinationSection.fillDestinationDetailsLight({
+          destinationDetails: {
+            ...LIGHT_DESTINATION_DETAILS,
+            expectedCiValue: CI_SUGGESTIONS.south[1],
+          },
+          southSuggestions: CI_SUGGESTIONS.south,
+          suggestionText: CI_SUGGESTIONS.south[1],
+        });
 
-    await test.step('Fix tonnage, clear length and destination → expect missing + invalid warnings', async () => {
-      await consistSection.setTonnage(VALID_CONSIST_DATA.validTonnage);
-      await consistSection.clearLength();
-      await destinationSection.clearDestination();
-      await stdcmPage.verifyInvalidSimulationLaunch();
-      await stdcmPage.expectWarningBoxVisible();
-      await stdcmPage.expectWarningBoxContains([
-        STDCM_TRANSLATIONS.stdcmErrors.missingFields.destination,
-        STDCM_TRANSLATIONS.stdcmErrors.missingFields.totalLength,
-        STDCM_TRANSLATIONS.stdcmErrors.invalidFields.maxSpeed,
-      ]);
-    });
+        await stdcmPage.verifyInvalidSimulationLaunch();
+        await stdcmPage.expectWarningBoxVisible();
 
-    await test.step('Fill all fields with valid values → expect valid simulation', async () => {
-      await consistSection.setLength(VALID_CONSIST_DATA.validLength);
-      await consistSection.setMaxSpeed(VALID_CONSIST_DATA.validMaxSpeed);
-
-      await destinationSection.fillDestinationDetailsLight({
-        destinationDetails: {
-          ...LIGHT_DESTINATION_DETAILS,
-          expectedCiValue: CI_SUGGESTIONS.south[1],
-        },
-        southSuggestions: CI_SUGGESTIONS.south,
-        suggestionText: CI_SUGGESTIONS.south[1],
+        const partialMissingLabels = getFieldsLabel(
+          PARTIAL_MISSING_FIELDS_KEYS,
+          STDCM_TRANSLATIONS
+        );
+        const nonMissingLabels = getFieldsLabel(REMOVED_MISSING_FIELDS_KEYS, STDCM_TRANSLATIONS);
+        await stdcmPage.expectWarningBoxContains(partialMissingLabels, nonMissingLabels);
       });
 
-      await stdcmPage.verifyValidSimulationLaunch(
-        STDCM_TRANSLATIONS.simulation.results.status.completed
-      );
-      await stdcmPage.expectWarningBoxHidden();
-      await stdcmSimulationResultPage.verifySimulationDetails({
-        ...MISSING_FIELDS_SIMULATION_RESULTS_DETAILS,
-        noOutputSimulationName: STDCM_TRANSLATIONS.simulation.results.simulationName.withoutOutputs,
+      await test.step('Fill all mandatory fields → expect valid simulation', async () => {
+        await consistSection.fillAndVerifyConsistDetails({
+          consistFields: { tractionEngine: electricRollingStockName },
+          defaultMaxSpeed: DEFAULT_DETAILS.maxSpeed,
+          tractionEnginePrefilledValues: {
+            expectedTonnage: TRACTION_ENGINE_PREFILLED_VALUES.tonnage,
+            expectedLength: TRACTION_ENGINE_PREFILLED_VALUES.length,
+          },
+        });
+
+        await stdcmPage.verifyValidSimulationLaunch(
+          STDCM_TRANSLATIONS.simulation.results.status.completed
+        );
+        await stdcmPage.expectWarningBoxHidden();
+        await stdcmSimulationResultPage.verifySimulationDetails({
+          ...SIMULATION_RESULTS_DETAILS,
+          noOutputSimulationName:
+            STDCM_TRANSLATIONS.simulation.results.simulationName.withoutOutputs,
+        });
+      });
+
+      await test.step('Enter invalid tonnage, length and max speed → expect invalid field warnings', async () => {
+        await consistSection.setTonnage(INVALID_CONSIST_DATA.invalidTonnage);
+        await consistSection.setLength(INVALID_CONSIST_DATA.invalidLength);
+        await consistSection.setMaxSpeed(INVALID_CONSIST_DATA.invalidMaxSpeed);
+        await stdcmPage.verifyInvalidSimulationLaunch();
+        await stdcmPage.expectWarningBoxVisible();
+        await stdcmPage.expectWarningBoxContains([
+          STDCM_TRANSLATIONS.stdcmErrors.invalidFields.totalMass,
+          STDCM_TRANSLATIONS.stdcmErrors.invalidFields.totalLength,
+          STDCM_TRANSLATIONS.stdcmErrors.invalidFields.maxSpeed,
+        ]);
+      });
+
+      await test.step('Fix tonnage, clear length and destination → expect missing + invalid warnings', async () => {
+        await consistSection.setTonnage(VALID_CONSIST_DATA.validTonnage);
+        await consistSection.clearLength();
+        await destinationSection.clearDestination();
+        await stdcmPage.verifyInvalidSimulationLaunch();
+        await stdcmPage.expectWarningBoxVisible();
+        await stdcmPage.expectWarningBoxContains([
+          STDCM_TRANSLATIONS.stdcmErrors.missingFields.destination,
+          STDCM_TRANSLATIONS.stdcmErrors.missingFields.totalLength,
+          STDCM_TRANSLATIONS.stdcmErrors.invalidFields.maxSpeed,
+        ]);
+      });
+
+      await test.step('Fill all fields with valid values → expect valid simulation', async () => {
+        await consistSection.setLength(VALID_CONSIST_DATA.validLength);
+        await consistSection.setMaxSpeed(VALID_CONSIST_DATA.validMaxSpeed);
+
+        await destinationSection.fillDestinationDetailsLight({
+          destinationDetails: {
+            ...LIGHT_DESTINATION_DETAILS,
+            expectedCiValue: CI_SUGGESTIONS.south[1],
+          },
+          southSuggestions: CI_SUGGESTIONS.south,
+          suggestionText: CI_SUGGESTIONS.south[1],
+        });
+
+        await stdcmPage.verifyValidSimulationLaunch(
+          STDCM_TRANSLATIONS.simulation.results.status.completed
+        );
+        await stdcmPage.expectWarningBoxHidden();
+        await stdcmSimulationResultPage.verifySimulationDetails({
+          ...MISSING_FIELDS_SIMULATION_RESULTS_DETAILS,
+          noOutputSimulationName:
+            STDCM_TRANSLATIONS.simulation.results.simulationName.withoutOutputs,
+        });
       });
     });
-  });
-});
+  }
+);

@@ -10,7 +10,7 @@ import { generateUniqueName } from '../../utils';
 import { createProject } from '../../utils/setup-utils';
 import { deleteProject } from '../../utils/teardown-utils';
 
-test.describe('@op @project @management', () => {
+test.describe('Project management', { tag: ['@op', '@project', '@management'] }, () => {
   let project: Project;
   const createdProjects: string[] = [];
 
@@ -20,7 +20,7 @@ test.describe('@op @project @management', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('@smoke Create a new project', async ({ page, projectPage }) => {
+  test('Create a new project', { tag: '@smoke' }, async ({ page, projectPage }) => {
     const projectName = generateUniqueName(PROJECT_DATA.name);
     createdProjects.push(projectName);
 

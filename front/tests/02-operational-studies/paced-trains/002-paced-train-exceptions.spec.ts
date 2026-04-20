@@ -41,7 +41,7 @@ const frTranslations = {
 
 const trains: TrainSchedule[] = readJsonFile('./tests/assets/trains/trains.json');
 
-test.describe('@op @paced-trains @exceptions', () => {
+test.describe('Paced train exceptions', { tag: ['@op', '@paced-trains', '@exceptions'] }, () => {
   let project: Project;
   let study: Study;
   let infra: Infra;
@@ -77,127 +77,133 @@ test.describe('@op @paced-trains @exceptions', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('@smoke Edit a paced train and handle exceptions', async ({
-    pacedTrainSection,
-    scenarioTimetableSection,
-    rollingStockSelector,
-    operationalStudiesPage,
-  }) => {
-    const editedPacedTrainData = trains[5];
+  test(
+    'Edit a paced train and handle exceptions',
+    { tag: '@smoke' },
+    async ({
+      pacedTrainSection,
+      scenarioTimetableSection,
+      rollingStockSelector,
+      operationalStudiesPage,
+    }) => {
+      const editedPacedTrainData = trains[5];
 
-    await test.step('Open action buttons for paced train at index 5', async () => {
-      await pacedTrainSection.getActionButtonsLocators({
-        itemIndex: 5,
-        itemType: 'paced-train',
-        withExceptions: true,
-        checkVisibility: true,
+      await test.step('Open action buttons for paced train at index 5', async () => {
+        await pacedTrainSection.getActionButtonsLocators({
+          itemIndex: 5,
+          itemType: 'paced-train',
+          withExceptions: true,
+          checkVisibility: true,
+        });
       });
-    });
 
-    await test.step('Edit the paced train', async () => {
-      await pacedTrainSection.openPacedTrainEditor(5);
-      await scenarioTimetableSection.verifyEditTimetableItemButtonVisibility();
-    });
-
-    await test.step('Update rolling stock', async () => {
-      await rollingStockSelector.openRollingstockModal();
-      await rollingStockSelector.searchRollingstock(fastRollingStockName);
-      await rollingStockSelector.selectRollingStockCard({
-        name: fastRollingStockName,
-        confirmSelection: true,
+      await test.step('Edit the paced train', async () => {
+        await pacedTrainSection.openPacedTrainEditor(5);
+        await scenarioTimetableSection.verifyEditTimetableItemButtonVisibility();
       });
-      await expect(rollingStockSelector.selectedRollingStockName).toHaveText(fastRollingStockName);
-    });
 
-    await test.step('Update departure time and submit edit', async () => {
-      await operationalStudiesPage.setTimetableItemStartTime('12:00');
-      await operationalStudiesPage.submitTimetableItemEdit();
-      await operationalStudiesPage.checkToastHasBeenLaunched(
-        frTranslations.timetable.pacedTrainUpdated
-      );
-    });
-
-    await test.step('Verify all occurrences (4 occurrences including 1 added exception)', async () => {
-      await pacedTrainSection.verifyOccurrenceDetails(
-        {
-          name: `${editedPacedTrainData.train_name}/+`,
-          startTime: '21:00',
-          arrivalTime: '21:03',
-          rollingStock: fastRollingStockName,
-        },
-        0
-      );
-      await pacedTrainSection.verifyOccurrenceDetails(
-        {
-          name: `${editedPacedTrainData.train_name} 1`,
-          startTime: '12:00',
-          arrivalTime: '12:07',
-          rollingStock: slowRollingStockName,
-        },
-        1
-      );
-      await pacedTrainSection.verifyOccurrenceDetails(
-        {
-          name: `${editedPacedTrainData.train_name} 3`,
-          startTime: '13:00',
-          arrivalTime: '13:03',
-          rollingStock: fastRollingStockName,
-        },
-        2
-      );
-      await pacedTrainSection.verifyOccurrenceDetails(
-        {
-          name: `${editedPacedTrainData.train_name} 5`,
-          startTime: '14:00',
-          arrivalTime: '14:03',
-          rollingStock: fastRollingStockName,
-        },
-        3
-      );
-    });
-
-    await test.step('Reset all exceptions', async () => {
-      await pacedTrainSection.resetAllPacedTrainExceptions(5);
-    });
-
-    await test.step('Verify occurrences after reset', async () => {
-      await pacedTrainSection.verifyOccurrenceDetails(
-        {
-          name: `${editedPacedTrainData.train_name} 1`,
-          startTime: '12:00',
-          arrivalTime: '12:03',
-          rollingStock: editedPacedTrainData.rolling_stock_name,
-        },
-        0
-      );
-      await pacedTrainSection.verifyOccurrenceDetails(
-        {
-          name: `${editedPacedTrainData.train_name} 3`,
-          startTime: '13:00',
-          arrivalTime: '13:03',
-          rollingStock: editedPacedTrainData.rolling_stock_name,
-        },
-        1
-      );
-      await pacedTrainSection.verifyOccurrenceDetails(
-        {
-          name: `${editedPacedTrainData.train_name} 5`,
-          startTime: '14:00',
-          arrivalTime: '14:03',
-          rollingStock: editedPacedTrainData.rolling_stock_name,
-        },
-        2
-      );
-    });
-
-    await test.step('Check action buttons count after reset (4 buttons instead of 5)', async () => {
-      await pacedTrainSection.getActionButtonsLocators({
-        itemIndex: 5,
-        itemType: 'paced-train',
-        checkVisibility: true,
+      await test.step('Update rolling stock', async () => {
+        await rollingStockSelector.openRollingstockModal();
+        await rollingStockSelector.searchRollingstock(fastRollingStockName);
+        await rollingStockSelector.selectRollingStockCard({
+          name: fastRollingStockName,
+          confirmSelection: true,
+        });
+        await expect(rollingStockSelector.selectedRollingStockName).toHaveText(
+          fastRollingStockName
+        );
       });
-    });
-  });
+
+      await test.step('Update departure time and submit edit', async () => {
+        await operationalStudiesPage.setTimetableItemStartTime('12:00');
+        await operationalStudiesPage.submitTimetableItemEdit();
+        await operationalStudiesPage.checkToastHasBeenLaunched(
+          frTranslations.timetable.pacedTrainUpdated
+        );
+      });
+
+      await test.step('Verify all occurrences (4 occurrences including 1 added exception)', async () => {
+        await pacedTrainSection.verifyOccurrenceDetails(
+          {
+            name: `${editedPacedTrainData.train_name}/+`,
+            startTime: '21:00',
+            arrivalTime: '21:03',
+            rollingStock: fastRollingStockName,
+          },
+          0
+        );
+        await pacedTrainSection.verifyOccurrenceDetails(
+          {
+            name: `${editedPacedTrainData.train_name} 1`,
+            startTime: '12:00',
+            arrivalTime: '12:07',
+            rollingStock: slowRollingStockName,
+          },
+          1
+        );
+        await pacedTrainSection.verifyOccurrenceDetails(
+          {
+            name: `${editedPacedTrainData.train_name} 3`,
+            startTime: '13:00',
+            arrivalTime: '13:03',
+            rollingStock: fastRollingStockName,
+          },
+          2
+        );
+        await pacedTrainSection.verifyOccurrenceDetails(
+          {
+            name: `${editedPacedTrainData.train_name} 5`,
+            startTime: '14:00',
+            arrivalTime: '14:03',
+            rollingStock: fastRollingStockName,
+          },
+          3
+        );
+      });
+
+      await test.step('Reset all exceptions', async () => {
+        await pacedTrainSection.resetAllPacedTrainExceptions(5);
+      });
+
+      await test.step('Verify occurrences after reset', async () => {
+        await pacedTrainSection.verifyOccurrenceDetails(
+          {
+            name: `${editedPacedTrainData.train_name} 1`,
+            startTime: '12:00',
+            arrivalTime: '12:03',
+            rollingStock: editedPacedTrainData.rolling_stock_name,
+          },
+          0
+        );
+        await pacedTrainSection.verifyOccurrenceDetails(
+          {
+            name: `${editedPacedTrainData.train_name} 3`,
+            startTime: '13:00',
+            arrivalTime: '13:03',
+            rollingStock: editedPacedTrainData.rolling_stock_name,
+          },
+          1
+        );
+        await pacedTrainSection.verifyOccurrenceDetails(
+          {
+            name: `${editedPacedTrainData.train_name} 5`,
+            startTime: '14:00',
+            arrivalTime: '14:03',
+            rollingStock: editedPacedTrainData.rolling_stock_name,
+          },
+          2
+        );
+      });
+
+      await test.step('Check action buttons count after reset (4 buttons instead of 5)', async () => {
+        await pacedTrainSection.getActionButtonsLocators({
+          itemIndex: 5,
+          itemType: 'paced-train',
+          checkVisibility: true,
+        });
+      });
+    }
+  );
 
   /** *************** Test 2 **************** */
   test('Modify a paced train and create added exception', async ({

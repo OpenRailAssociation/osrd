@@ -24,7 +24,7 @@ import {
 import createScenario from '../../utils/scenario';
 import { deleteScenario } from '../../utils/teardown-utils';
 
-test.describe('@op @scenario @management', () => {
+test.describe('Scenario management', { tag: ['@op', '@scenario', '@management'] }, () => {
   let project: Project;
   let study: Study;
   let scenario: Scenario;
@@ -47,7 +47,7 @@ test.describe('@op @scenario @management', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('@smoke Create a new scenario', async ({ page, scenarioPage }) => {
+  test('Create a new scenario', { tag: '@smoke' }, async ({ page, scenarioPage }) => {
     const scenarioName = generateUniqueName(SCENARIO_DATA.name);
     createdScenarios.push({ projectId: project.id, studyId: study.id, name: scenarioName });
 
@@ -78,7 +78,7 @@ test.describe('@op @scenario @management', () => {
   });
 
   /** *************** Test 2 **************** */
-  test('@smoke Update an existing scenario', async ({ page, scenarioPage }) => {
+  test('Update an existing scenario', { tag: '@smoke' }, async ({ page, scenarioPage }) => {
     await test.step('Create a base scenario', async () => {
       ({ project, study, scenario } = await createScenario());
     });
@@ -89,7 +89,11 @@ test.describe('@op @scenario @management', () => {
       name: updatedScenarioName,
     };
 
-    createdScenarios.push({ projectId: project.id, studyId: study.id, name: updatedScenarioName });
+    createdScenarios.push({
+      projectId: project.id,
+      studyId: study.id,
+      name: updatedScenarioName,
+    });
 
     await test.step('Open scenario from study page and wait for infra cache', async () => {
       await page.goto(SCENARIO_URLS.study(project.id, study.id));

@@ -182,7 +182,7 @@ The `@smoke` tag should be used for:
 ### Example
 
 ```ts
-test('@smoke create a new study', async ({ page }) => {
+test('Create a new study', { tag: '@smoke' }, async ({ page }) => {
   ...
 });
 ```
@@ -190,7 +190,7 @@ test('@smoke create a new study', async ({ page }) => {
 ### Run only smoke tests
 
 ```bash
-npx playwright test -g "@smoke"
+npx playwright test -g @smoke
 ```
 
 ---

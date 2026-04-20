@@ -13,7 +13,7 @@ import { DATE_OFFSET, formatDateToDayMonthYear, getISODate } from '../../utils/d
 import { createStudy } from '../../utils/setup-utils';
 import { deleteStudy } from '../../utils/teardown-utils';
 
-test.describe('@op @study @management', () => {
+test.describe('Study management', { tag: ['@op', '@study', '@management'] }, () => {
   let project: Project;
   let study: Study;
 
@@ -29,7 +29,7 @@ test.describe('@op @study @management', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('@smoke Create a new study', async ({ studyPage, page }) => {
+  test('Create a new study', { tag: '@smoke' }, async ({ studyPage, page }) => {
     const studyName = generateUniqueName(STUDY_DATA.name);
     const todayISO = getISODate(DATE_OFFSET.TODAY);
     const expectedDate = formatDateToDayMonthYear(todayISO);

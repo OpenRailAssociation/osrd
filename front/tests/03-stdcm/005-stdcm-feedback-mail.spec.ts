@@ -16,7 +16,7 @@ import test from './../page-object-fixture';
 import { waitForInfraStateToBeCached } from './../utils';
 import { getInfra } from './../utils/api-utils';
 
-test.describe('@stdcm @stdcm-feedback', () => {
+test.describe('STDCM mail feedback ', { tag: ['@stdcm', '@stdcm-feedback'] }, () => {
   let infra: Infra;
 
   test.beforeAll('Fetch infrastructure', async () => {

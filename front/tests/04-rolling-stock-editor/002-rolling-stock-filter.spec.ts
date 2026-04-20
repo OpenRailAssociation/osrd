@@ -3,7 +3,7 @@ import { expect } from '@playwright/test';
 import { dualModeRollingStockName } from './../assets/constants/project-const';
 import test from './../page-object-fixture';
 
-test.describe('@rs-editor @filter', () => {
+test.describe('Rolling stock editor filter', { tag: ['@rs-editor', '@filter'] }, () => {
   test.beforeEach('Navigate to editor page', async ({ rollingStockEditorPage }) => {
     await rollingStockEditorPage.navigateToRollingStockPage();
   });

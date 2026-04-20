@@ -38,7 +38,7 @@ const expectedViaValues = [
   { name: 'Mid_East_station', ch: 'BV', uic: '44', km: 'KM 26.500' },
 ];
 
-test.describe('@op @times-stops-tab', () => {
+test.describe('Times and Stops tab', { tag: ['@op', '@times-stops-tab'] }, () => {
   let project: Project;
   let study: Study;
   let scenario: Scenario;
@@ -78,122 +78,126 @@ test.describe('@op @times-stops-tab', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('@smoke Set and display times and stops tables', async ({
-    timesAndStopsTab,
-    operationalStudiesPage,
-    routeTab,
-    timeAndStopSimulationOutputs,
-  }) => {
-    await test.step('Verify table headers', async () => {
-      const expectedColumnNames = cleanWhitespaceInArray([
-        frTranslations.name,
-        frTranslations.ch,
-        frTranslations.trackName,
-        frTranslations.arrivalTime,
-        frTranslations.stopTime,
-        frTranslations.departureTime,
-        frTranslations.receptionOnClosedSignal,
-        frTranslations.shortSlipDistance,
-        frTranslations.theoreticalMargin,
-      ]);
-      const actualColumnHeaders = cleanWhitespaceInArray(
-        await timesAndStopsTab.columnHeaders.allInnerTexts()
-      );
-      expect(actualColumnHeaders).toEqual(expectedColumnNames);
-    });
-
-    await test.step('Fill initial inputs (2 active rows → 4 active rows)', async () => {
-      await timesAndStopsTab.verifyActiveRowsCount(2);
-      for (const cell of initialInputsData) {
-        const translatedHeader = cleanWhitespace(frTranslations[cell.header]);
-        await timesAndStopsTab.fillTableCellByStationAndHeader(
-          cell.stationName,
-          translatedHeader,
-          cell.value,
-          cell.marginForm
+  test(
+    'Set and display times and stops tables',
+    { tag: '@smoke' },
+    async ({
+      timesAndStopsTab,
+      operationalStudiesPage,
+      routeTab,
+      timeAndStopSimulationOutputs,
+    }) => {
+      await test.step('Verify table headers', async () => {
+        const expectedColumnNames = cleanWhitespaceInArray([
+          frTranslations.name,
+          frTranslations.ch,
+          frTranslations.trackName,
+          frTranslations.arrivalTime,
+          frTranslations.stopTime,
+          frTranslations.departureTime,
+          frTranslations.receptionOnClosedSignal,
+          frTranslations.shortSlipDistance,
+          frTranslations.theoreticalMargin,
+        ]);
+        const actualColumnHeaders = cleanWhitespaceInArray(
+          await timesAndStopsTab.columnHeaders.allInnerTexts()
         );
-      }
-    });
+        expect(actualColumnHeaders).toEqual(expectedColumnNames);
+      });
 
-    await test.step('Verify input table state after fill', async () => {
-      await timesAndStopsTab.verifyActiveRowsCount(4);
-      await timesAndStopsTab.verifyClearButtons(2);
-      await timesAndStopsTab.verifyInputTableData(inputExpectedData);
-    });
+      await test.step('Fill initial inputs (2 active rows → 4 active rows)', async () => {
+        await timesAndStopsTab.verifyActiveRowsCount(2);
+        for (const cell of initialInputsData) {
+          const translatedHeader = cleanWhitespace(frTranslations[cell.header]);
+          await timesAndStopsTab.fillTableCellByStationAndHeader(
+            cell.stationName,
+            translatedHeader,
+            cell.value,
+            cell.marginForm
+          );
+        }
+      });
 
-    await test.step('Validate waypoints in Route tab', async () => {
-      await operationalStudiesPage.openRouteTab();
-      for (const [viaIndex, expectedValue] of expectedViaValues.entries()) {
-        const droppedWaypoint = routeTab.droppedWaypoints.nth(viaIndex);
-        await routeTab.validateAddedWaypoint(
-          droppedWaypoint,
-          expectedValue.name,
-          expectedValue.ch,
-          expectedValue.uic
-        );
-      }
-    });
+      await test.step('Verify input table state after fill', async () => {
+        await timesAndStopsTab.verifyActiveRowsCount(4);
+        await timesAndStopsTab.verifyClearButtons(2);
+        await timesAndStopsTab.verifyInputTableData(inputExpectedData);
+      });
 
-    await test.step('Create timetable item, open results and verify outputs', async () => {
-      await operationalStudiesPage.createTimetableItem();
-      await operationalStudiesPage.closeToastNotification();
-      await operationalStudiesPage.returnSimulationResult();
-      await operationalStudiesPage.verifyTimesStopsDataSheetVisibility();
-      await timeAndStopSimulationOutputs.getOutputTableData(outputExpectedCellData);
-    });
-  });
+      await test.step('Validate waypoints in Route tab', async () => {
+        await operationalStudiesPage.openRouteTab();
+        for (const [viaIndex, expectedValue] of expectedViaValues.entries()) {
+          const droppedWaypoint = routeTab.droppedWaypoints.nth(viaIndex);
+          await routeTab.validateAddedWaypoint(
+            droppedWaypoint,
+            expectedValue.name,
+            expectedValue.ch,
+            expectedValue.uic
+          );
+        }
+      });
+
+      await test.step('Create timetable item, open results and verify outputs', async () => {
+        await operationalStudiesPage.createTimetableItem();
+        await operationalStudiesPage.closeToastNotification();
+        await operationalStudiesPage.returnSimulationResult();
+        await operationalStudiesPage.verifyTimesStopsDataSheetVisibility();
+        await timeAndStopSimulationOutputs.getOutputTableData(outputExpectedCellData);
+      });
+    }
+  );
 
   /** *************** Test 2 **************** */
-  test('@smoke Update and clear input table row', async ({
-    timesAndStopsTab,
-    operationalStudiesPage,
-    routeTab,
-  }) => {
-    await test.step('Fill initial inputs and verify table', async () => {
-      for (const cell of initialInputsData) {
-        const translatedHeader = cleanWhitespace(frTranslations[cell.header]);
-        await timesAndStopsTab.fillTableCellByStationAndHeader(
-          cell.stationName,
-          translatedHeader,
-          cell.value,
-          cell.marginForm
-        );
-      }
-      await timesAndStopsTab.verifyInputTableData(inputExpectedData);
-    });
+  test(
+    'Update and clear input table row',
+    { tag: '@smoke' },
+    async ({ timesAndStopsTab, operationalStudiesPage, routeTab }) => {
+      await test.step('Fill initial inputs and verify table', async () => {
+        for (const cell of initialInputsData) {
+          const translatedHeader = cleanWhitespace(frTranslations[cell.header]);
+          await timesAndStopsTab.fillTableCellByStationAndHeader(
+            cell.stationName,
+            translatedHeader,
+            cell.value,
+            cell.marginForm
+          );
+        }
+        await timesAndStopsTab.verifyInputTableData(inputExpectedData);
+      });
 
-    await test.step('Update inputs (keep 4 active rows)', async () => {
-      await timesAndStopsTab.verifyActiveRowsCount(4);
-      for (const cell of updatedInputsData) {
-        const translatedHeader = cleanWhitespace(frTranslations[cell.header]);
-        await timesAndStopsTab.fillTableCellByStationAndHeader(
-          cell.stationName,
-          translatedHeader,
-          cell.value,
-          cell.marginForm
-        );
-      }
-    });
+      await test.step('Update inputs (keep 4 active rows)', async () => {
+        await timesAndStopsTab.verifyActiveRowsCount(4);
+        for (const cell of updatedInputsData) {
+          const translatedHeader = cleanWhitespace(frTranslations[cell.header]);
+          await timesAndStopsTab.fillTableCellByStationAndHeader(
+            cell.stationName,
+            translatedHeader,
+            cell.value,
+            cell.marginForm
+          );
+        }
+      });
 
-    await test.step('Clear a row and verify new state (row count remains unchanged)', async () => {
-      await timesAndStopsTab.verifyClearButtons(2);
-      await timesAndStopsTab.clearRow(0);
-      await timesAndStopsTab.verifyActiveRowsCount(4);
-      await timesAndStopsTab.verifyClearButtons(1);
-      await timesAndStopsTab.verifyInputTableData(updatedCellData);
-    });
+      await test.step('Clear a row and verify new state (row count remains unchanged)', async () => {
+        await timesAndStopsTab.verifyClearButtons(2);
+        await timesAndStopsTab.clearRow(0);
+        await timesAndStopsTab.verifyActiveRowsCount(4);
+        await timesAndStopsTab.verifyClearButtons(1);
+        await timesAndStopsTab.verifyInputTableData(updatedCellData);
+      });
 
-    await test.step('Validate waypoints after updates (Route tab)', async () => {
-      await operationalStudiesPage.openRouteTab();
-      for (const [viaIndex, expectedValue] of expectedViaValues.entries()) {
-        const droppedWaypoint = routeTab.droppedWaypoints.nth(viaIndex);
-        await routeTab.validateAddedWaypoint(
-          droppedWaypoint,
-          expectedValue.name,
-          expectedValue.ch,
-          expectedValue.uic
-        );
-      }
-    });
-  });
+      await test.step('Validate waypoints after updates (Route tab)', async () => {
+        await operationalStudiesPage.openRouteTab();
+        for (const [viaIndex, expectedValue] of expectedViaValues.entries()) {
+          const droppedWaypoint = routeTab.droppedWaypoints.nth(viaIndex);
+          await routeTab.validateAddedWaypoint(
+            droppedWaypoint,
+            expectedValue.name,
+            expectedValue.ch,
+            expectedValue.uic
+          );
+        }
+      });
+    }
+  );
 });
