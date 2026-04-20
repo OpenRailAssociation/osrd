@@ -68,6 +68,7 @@ pub trait StorageDriver: Clone {
             .map(|info| UserSubject { id: user_id, info }))
     }
 
+    #[deprecated = "use editoast_models::User::register instead"]
     fn ensure_user(
         &self,
         user_name: &UserName,

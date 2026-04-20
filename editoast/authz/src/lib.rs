@@ -161,6 +161,7 @@ mod mock_driver {
     impl Regulator<MockAuthDriver> {
         pub async fn create_user(&self, identity: &str, name: &str) -> model::User {
             model::User(
+                #[expect(deprecated)] // soon to be removed
                 self.driver
                     .ensure_user(&name.to_string(), &identity.to_string())
                     .await
