@@ -602,12 +602,11 @@ fn build_pathfinding_consist(
     }
 }
 
-// Panics if the operational point cache doesn’t contain one of the path items of the train occurrence
 pub fn build_simulation_train(
     train_occurrence: &schemas::TrainOccurrence,
     physics_consist_parameters: &PhysicsConsistParameters,
     operational_point_cache: &OperationalPointCache,
-) -> SimulationTrain {
+) -> Result<SimulationTrain, PathfindingFailure> {
     let schemas::TrainOccurrence {
         train_name: _,
         labels: _,
@@ -650,9 +649,8 @@ pub fn build_simulation_train(
         .iter()
         .map(|path_item| &path_item.location)
         .collect_vec();
-    let track_offsets = operational_point_cache
-        .extract_location_from_path_items(&path_item_locations)
-        .expect("the path item cache should be built out from all the input path items of the train occurrence");
+    let track_offsets =
+        operational_point_cache.extract_location_from_path_items(&path_item_locations)?;
     let schedule_map = schedule
         .iter()
         .map(|schedule_item @ ScheduleItem { at, .. }| (at, schedule_item))
@@ -704,7 +702,7 @@ pub fn build_simulation_train(
             power_restriction.value.clone(),
         );
     });
-    simulation_train
+    Ok(simulation_train)
 }
 
 fn build_simulation_request<T: TrainScheduleLike>(
