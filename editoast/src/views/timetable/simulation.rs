@@ -331,16 +331,26 @@ impl SummaryResponse {
                     PathfindingResult::Success(_pathfinding_result_success) => {
                         unreachable!("simulation only returns errors of pathfinding in this field")
                     }
-                    PathfindingResult::Failure(PathfindingFailure::PathfindingInputError(
-                        pathfinding_input_error,
-                    )) => SummaryResponse::PathfindingInputError(pathfinding_input_error),
-                    PathfindingResult::Failure(PathfindingFailure::PathfindingNotFound(
-                        pathfinding_not_found,
-                    )) => SummaryResponse::PathfindingNotFound(pathfinding_not_found),
-                    PathfindingResult::Failure(PathfindingFailure::InternalError {
-                        core_error,
-                    }) => SummaryResponse::PathfindingFailure { core_error },
+                    PathfindingResult::Failure(pathfinding_failure) => {
+                        SummaryResponse::from(pathfinding_failure)
+                    }
                 }
+            }
+        }
+    }
+}
+
+impl From<PathfindingFailure> for SummaryResponse {
+    fn from(pathfinding_failure: PathfindingFailure) -> Self {
+        match pathfinding_failure {
+            PathfindingFailure::PathfindingInputError(pathfinding_input_error) => {
+                SummaryResponse::PathfindingInputError(pathfinding_input_error)
+            }
+            PathfindingFailure::PathfindingNotFound(pathfinding_not_found) => {
+                SummaryResponse::PathfindingNotFound(pathfinding_not_found)
+            }
+            PathfindingFailure::InternalError { core_error } => {
+                SummaryResponse::PathfindingFailure { core_error }
             }
         }
     }
