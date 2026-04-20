@@ -160,10 +160,13 @@
       "Detector": "Detector",
       "Electrification": "Electrification",
       "LevelCrossing": "Level crossing",
+      "NeutralSection": "Neutral section",
+      "OperationalPoint": "Operational point",
       "Route": "Route",
       "Signal": "Signal",
       "SpeedSection": "Speed limit",
       "Switch": "Switch",
+      "SwitchType": "Switch type",
       "TrackSection": "Track section"
     },
     "tools": {
@@ -389,6 +392,7 @@
         "link": "Link",
         "no-track-picked-yet": "No track selected yet",
         "point_switch": "Point switch",
+        "port": "Port {{portId}}",
         "single_slip_switch": "Single slip switch",
         "switch-type": "Switch type",
         "switch_type_w_port_count_one": "{{type}} ({{count}} port)",
