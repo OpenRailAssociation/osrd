@@ -74,11 +74,6 @@ pub trait StorageDriver: Clone {
         user: &UserIdentity,
     ) -> impl Future<Output = Result<UserSubject, Self::Error>> + Send;
 
-    fn ensure_group(
-        &self,
-        group: &GroupInfo,
-    ) -> impl Future<Output = Result<i64, Self::Error>> + Send;
-
     fn add_user_identities(
         &self,
         user_identity: Either<i64, String>,

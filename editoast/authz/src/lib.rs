@@ -262,16 +262,6 @@ mod mock_driver {
             })
         }
 
-        async fn ensure_group(&self, group: &GroupInfo) -> Result<i64, Self::Error> {
-            let mut groups = self.groups.lock().unwrap();
-            let group_id = {
-                let id = self.counter.read().unwrap();
-                *groups.entry(group.name.clone()).or_insert(*id)
-            };
-            *self.counter.write().unwrap() += 1;
-            Ok(group_id)
-        }
-
         async fn get_user_id(
             &self,
             user_identity: &UserIdentity,

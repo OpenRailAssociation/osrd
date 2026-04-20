@@ -14,7 +14,6 @@ use database::DbConnectionPoolV2;
 use std::collections::HashSet;
 use std::sync::Arc;
 
-use editoast_models::PgAuthDriver;
 use editoast_models::prelude::*;
 
 use crate::authorizers::Rejection;
@@ -73,11 +72,12 @@ pub struct DeleteArgs {
     name: String,
 }
 
-pub async fn create_group(args: CreateArgs, pool: Arc<DbConnectionPoolV2>) -> anyhow::Result<()> {
-    let driver = PgAuthDriver::new(pool);
-    let group_info = GroupInfo { name: args.name };
-    let id = driver.ensure_group(&group_info).await?;
-    tracing::info!(name = group_info.name, id, "Group created");
+pub async fn create_group(
+    CreateArgs { name }: CreateArgs,
+    pool: Arc<DbConnectionPoolV2>,
+) -> anyhow::Result<()> {
+    let editoast_models::Group { id, .. } =
+        editoast_models::Group::upsert(pool.get().await?, name).await?;
     println!("{id}");
     Ok(())
 }

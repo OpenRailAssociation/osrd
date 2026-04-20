@@ -213,7 +213,6 @@ mod tests {
     use crate::fixtures::create_scenario_fixtures_set;
     use crate::fixtures::create_timetable;
     use authz::StorageDriver;
-    use authz::identity::GroupInfo;
     use editoast_models::PgAuthDriver;
     use editoast_models::stdcm_search_environment::StdcmSearchEnvironment;
     use editoast_models::stdcm_search_environment::fixtures::stdcm_search_env_fixtures;
@@ -337,20 +336,16 @@ mod tests {
                 .id,
         );
         let existing_group = authz::Group(
-            driver
-                .ensure_group(&GroupInfo {
-                    name: "existing-group".into(),
-                })
+            Group::upsert(db_pool.get_ok(), "existing-group".into())
                 .await
-                .unwrap(),
+                .unwrap()
+                .id,
         );
         let orphan_group = authz::Group(
-            driver
-                .ensure_group(&GroupInfo {
-                    name: "orphan-group".into(),
-                })
+            Group::upsert(db_pool.get_ok(), "orphan-group".into())
                 .await
-                .unwrap(),
+                .unwrap()
+                .id,
         );
 
         // Write tuples: direct users + group usersets, on both the existing and orphan infra

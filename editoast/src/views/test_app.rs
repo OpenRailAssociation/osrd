@@ -589,11 +589,11 @@ impl<'a> GroupBuilder<'a> {
         }
         let regulator = &app.app_state.regulator;
 
-        let id = regulator
-            .driver()
-            .ensure_group(&info)
-            .await
-            .expect("Group should be created successfully");
+        let id =
+            editoast_models::Group::upsert(app.db_pool().get().await.unwrap(), info.name.clone())
+                .await
+                .expect("group should be created successfully")
+                .id;
         let group = authz::identity::Group { id, info };
         if !authz_disabled {
             let group_auth = authz::Group(group.id);
