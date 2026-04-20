@@ -55,6 +55,7 @@ pub trait StorageDriver: Clone {
         group_id: i64,
     ) -> impl Future<Output = Result<Option<GroupInfo>, Self::Error>> + Send;
 
+    #[deprecated = "use the database directly"]
     async fn get_user_info_by_identity(
         &self,
         user_identity: &UserIdentity,

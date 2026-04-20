@@ -152,6 +152,7 @@ impl StorageDriver for PgAuthDriver {
     ) -> Result<User, Self::Error> {
         let conn = self.pool.get().await?;
         conn.transaction(async move |conn| {
+            #[expect(deprecated)] // soon to be removed
             match self.get_user_info_by_identity(user_identity).await? {
                 Some(user) => {
                     if &user.info.name == user_name {

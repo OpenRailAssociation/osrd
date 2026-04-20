@@ -31,6 +31,7 @@ impl<S: StorageDriver> Authorizer<S> {
         user: UserIdentity,
         regulator: Regulator<S>,
     ) -> Result<Self, Error<S::Error>> {
+        #[allow(deprecated)] // soon to be removed
         let user_info = regulator
             .driver
             .get_user_info_by_identity(&user)
