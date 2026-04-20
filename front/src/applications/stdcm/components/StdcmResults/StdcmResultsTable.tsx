@@ -80,14 +80,18 @@ const StdcmResultsTable = ({
             });
 
             const initialConsistMass = consist.totalMass ?? stdcmData.rollingStock.mass / 1000;
-
-            const extremityStepMass = isLastStep
-              ? (lastDefinedConsistChange?.totalMass ?? initialConsistMass)
-              : initialConsistMass;
-
+            const extremityStepMass =
+              (isLastStep && lastDefinedConsistChange?.totalMass) || initialConsistMass;
             const displayedMass = isNotExtremity
               ? consistChanges?.updatedConsist.totalMass
               : extremityStepMass;
+
+            const initialRollingStock = stdcmData.rollingStock.name;
+            const extremityRollingStock =
+              (isLastStep && lastDefinedConsistChange?.rollingStockName) || initialRollingStock;
+            const displayedRollingStock = isNotExtremity
+              ? consistChanges?.updatedConsist.rollingStockName
+              : extremityRollingStock;
 
             if (showAllOP || shouldRenderRow) {
               return (
@@ -128,7 +132,7 @@ const StdcmResultsTable = ({
                       {displayedMass ? `${Math.floor(displayedMass)}t` : '='}
                     </td>
                     <td className={cx('ref', { 'muted-text': !isFirstStep })}>
-                      {isNotExtremity ? '=' : stdcmData.rollingStock.metadata?.reference}
+                      {displayedRollingStock ?? '='}
                     </td>
                   </tr>
                   {consistChanges && (

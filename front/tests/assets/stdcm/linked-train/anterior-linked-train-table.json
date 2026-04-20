@@ -8,7 +8,7 @@
     "passageStop": "",
     "startStop": "12:37",
     "weight": "236t",
-    "refEngine": ""
+    "refEngine": "FAST_RS_E2E"
   },
   {
     "index": 2,
@@ -30,6 +30,6 @@
     "passageStop": "",
     "startStop": "",
     "weight": "236t",
-    "refEngine": ""
+    "refEngine": "FAST_RS_E2E"
   }
 ]
