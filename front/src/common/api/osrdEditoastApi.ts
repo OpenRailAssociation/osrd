@@ -1,3 +1,4 @@
+import type { ThunkDispatch, Action } from '@reduxjs/toolkit';
 import type { BaseQueryFn } from '@reduxjs/toolkit/query';
 import { isNil, sortBy } from 'lodash';
 
@@ -63,6 +64,49 @@ const compressedQuery = async <Response>(
 
   return result as { data: Response } | { error: ApiError };
 };
+
+type Endpoints = (typeof generatedEditoastApi)['endpoints'];
+
+type QueryArg<E> = E extends { Types: { QueryArg: infer A } } ? A : never;
+
+type ResultType<E> = E extends { Types: { ResultType: infer R } } ? R : never;
+
+type PaginatedQueryArg<E> = QueryArg<E> extends { page?: number; pageSize?: number } ? QueryArg<E> : never;
+
+type PaginatedResultType<E> = ResultType<E> extends { results: infer R } ? R : never;
+
+//const a: PaginatedResultType<Endpoints['getCatalogEntries']> = 42;
+
+type PaginatedEndpoints = {
+  [Name in keyof Endpoints]: {
+    QueryArg: PaginatedQueryArg<Endpoints[Name]>,
+    ResultType: PaginatedResultType<Endpoints[Name]>,
+  };
+};
+
+async function fetchAllPages<E extends 'getCatalogEntries' | 'getTimetableByIdTrainSchedules'>(
+  endpoint: E,
+  arg: PaginatedEndpoints[E]['QueryArg'],
+  dispatch: ThunkDispatch<unknown, unknown, Action>
+): Promise<PaginatedEndpoints[E]['ResultType']> {
+  let page = 1;
+  let reachEnd = false;
+  const results: PaginatedEndpoints[E]['ResultType'] = [];
+  while (!reachEnd) {
+    const pageArg: PaginatedEndpoints[E]['QueryArg'] = {
+      ...arg,
+      page,
+    };
+    const promise = dispatch(
+      generatedEditoastApi.endpoints[endpoint].initiate(pageArg, { subscribe: false })
+    );
+    const data = await promise.unwrap();
+    if (data) results.push(...data.results);
+    reachEnd = isNil(data?.next);
+    page += 1;
+  }
+  return results;
+}
 
 const osrdEditoastApi = generatedEditoastApi
   .injectEndpoints({
