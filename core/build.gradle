@@ -12,6 +12,7 @@ plugins {
     alias(libs.plugins.spotless)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.kotlin.multiplatform) apply false
+    alias(libs.plugins.kotlinx.benchmark)
 }
 
 // region DEPENDENCIES
@@ -36,6 +37,7 @@ dependencies {
     implementation libs.kotlinx.serialization.core
     implementation libs.kotlinx.serialization.cbor
     testImplementation libs.kotlin.test
+    testImplementation libs.kotlinx.benchmark.runtime
     testImplementation libs.kotlinx.coroutines.test
 
     implementation project(':kt-osrd-utils')
@@ -143,6 +145,12 @@ sourceSets {
         resources {
             srcDirs += "../tests/data"
         }
+    }
+}
+
+benchmark {
+    targets {
+        register("test")
     }
 }
 
