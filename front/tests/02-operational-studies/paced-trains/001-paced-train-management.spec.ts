@@ -69,7 +69,7 @@ const expectedOutputData: { pacedTrain: StationData[]; secondOccurrence: Station
 
 const trains: [TrainSchedule] = readJsonFile('./tests/assets/trains/trains.json');
 
-test.describe('@op @paced-trains', () => {
+test.describe('Paced train management', { tag: ['@op', '@paced-trains'] }, () => {
   let project: Project;
   let study: Study;
   let scenario: Scenario;
@@ -119,89 +119,93 @@ test.describe('@op @paced-trains', () => {
   });
 
   /** *************** Test 2 **************** */
-  test('@smoke Add a paced train and verify its timetable details', async ({
-    browserName,
-    operationalStudiesPage,
-    rollingStockSelector,
-    routeTab,
-    timesAndStopsTab,
-    scenarioTimetableSection,
-    pacedTrainSection,
-    opSimulationResultPage,
-    timeAndStopSimulationOutputs,
-  }) => {
-    await test.step('Open timetable item form', async () => {
-      await operationalStudiesPage.openTimetableItemForm();
-    });
-
-    await test.step('Fill paced train inputs', async () => {
-      await operationalStudiesPage.fillPacedTrainSettings(NEW_PACED_TRAIN_SETTINGS);
-    });
-
-    await test.step('Select rolling stock', async () => {
-      await rollingStockSelector.selectRollingStock(dualModeRollingStockName);
-    });
-
-    await test.step('Select itinerary and verify distance', async () => {
-      await operationalStudiesPage.openRouteTab();
-      await routeTab.performPathfindingByTrigram({
-        originTrigram: 'WS',
-        destinationTrigram: 'NES',
+  test(
+    'Add a paced train and verify its timetable details',
+    { tag: '@smoke' },
+    async ({
+      browserName,
+      operationalStudiesPage,
+      rollingStockSelector,
+      routeTab,
+      timesAndStopsTab,
+      scenarioTimetableSection,
+      pacedTrainSection,
+      opSimulationResultPage,
+      timeAndStopSimulationOutputs,
+    }) => {
+      await test.step('Open timetable item form', async () => {
+        await operationalStudiesPage.openTimetableItemForm();
       });
-      await operationalStudiesPage.checkPathfindingDistance('46.050 km');
-    });
 
-    await test.step('Fill Times & Stops table with initial inputs', async () => {
-      await operationalStudiesPage.openTimesAndStopsTab();
-      await timesAndStopsTab.verifyActiveRowsCount(2);
-
-      for (const cell of initialInputsData) {
-        const translatedHeader = cleanWhitespace(frTranslations[cell.header]);
-        await timesAndStopsTab.fillTableCellByStationAndHeader(
-          cell.stationName,
-          translatedHeader,
-          cell.value,
-          cell.marginForm
-        );
-      }
-    });
-
-    await test.step('Create paced train and return to results', async () => {
-      await operationalStudiesPage.createTimetableItem();
-      await operationalStudiesPage.checkToastHasBeenLaunched(frTranslations.pacedTrains.added);
-      await operationalStudiesPage.returnSimulationResult();
-    });
-
-    await test.step('Verify list contains exactly one paced train', async () => {
-      await scenarioTimetableSection.verifyTimetableItemsCount(1);
-    });
-
-    await test.step('Verify paced train is selected when clicked', async () => {
-      await pacedTrainSection.verifyPacedTrainSelected(0);
-    });
-
-    await test.step('Verify result in output table is paced train result', async () => {
-      await timeAndStopSimulationOutputs.getOutputTableData(expectedOutputData.pacedTrain);
-    });
-
-    await test.step('Verify paced train card and first occurrence details', async () => {
-      await pacedTrainSection.verifyPacedTrainItemDetails(NEW_PACED_TRAIN_SETTINGS, 0, {
-        occurrenceData: ADD_PACED_TRAIN_OCCURRENCES_DETAILS[0],
-        occurrenceColor: FREIGHT_TRAIN.color,
+      await test.step('Fill paced train inputs', async () => {
+        await operationalStudiesPage.fillPacedTrainSettings(NEW_PACED_TRAIN_SETTINGS);
       });
-    });
 
-    await test.step('Open first occurrence and verify its simulation results (screenshot comparison for the GEV)', async () => {
-      await pacedTrainSection.selectOccurrence({ pacedTrainIndex: 0, occurrenceIndex: 1 });
-      await opSimulationResultPage.setTrainListVisible();
-      if (browserName === 'chromium') {
-        await expect(opSimulationResultPage.speedSpaceChart).toHaveScreenshot(
-          'SpeedSpaceChart-InitialInputs.png'
-        );
-      }
-      await timeAndStopSimulationOutputs.getOutputTableData(expectedOutputData.secondOccurrence);
-    });
-  });
+      await test.step('Select rolling stock', async () => {
+        await rollingStockSelector.selectRollingStock(dualModeRollingStockName);
+      });
+
+      await test.step('Select itinerary and verify distance', async () => {
+        await operationalStudiesPage.openRouteTab();
+        await routeTab.performPathfindingByTrigram({
+          originTrigram: 'WS',
+          destinationTrigram: 'NES',
+        });
+        await operationalStudiesPage.checkPathfindingDistance('46.050 km');
+      });
+
+      await test.step('Fill Times & Stops table with initial inputs', async () => {
+        await operationalStudiesPage.openTimesAndStopsTab();
+        await timesAndStopsTab.verifyActiveRowsCount(2);
+
+        for (const cell of initialInputsData) {
+          const translatedHeader = cleanWhitespace(frTranslations[cell.header]);
+          await timesAndStopsTab.fillTableCellByStationAndHeader(
+            cell.stationName,
+            translatedHeader,
+            cell.value,
+            cell.marginForm
+          );
+        }
+      });
+
+      await test.step('Create paced train and return to results', async () => {
+        await operationalStudiesPage.createTimetableItem();
+        await operationalStudiesPage.checkToastHasBeenLaunched(frTranslations.pacedTrains.added);
+        await operationalStudiesPage.returnSimulationResult();
+      });
+
+      await test.step('Verify list contains exactly one paced train', async () => {
+        await scenarioTimetableSection.verifyTimetableItemsCount(1);
+      });
+
+      await test.step('Verify paced train is selected when clicked', async () => {
+        await pacedTrainSection.verifyPacedTrainSelected(0);
+      });
+
+      await test.step('Verify result in output table is paced train result', async () => {
+        await timeAndStopSimulationOutputs.getOutputTableData(expectedOutputData.pacedTrain);
+      });
+
+      await test.step('Verify paced train card and first occurrence details', async () => {
+        await pacedTrainSection.verifyPacedTrainItemDetails(NEW_PACED_TRAIN_SETTINGS, 0, {
+          occurrenceData: ADD_PACED_TRAIN_OCCURRENCES_DETAILS[0],
+          occurrenceColor: FREIGHT_TRAIN.color,
+        });
+      });
+
+      await test.step('Open first occurrence and verify its simulation results (screenshot comparison for the GEV)', async () => {
+        await pacedTrainSection.selectOccurrence({ pacedTrainIndex: 0, occurrenceIndex: 1 });
+        await opSimulationResultPage.setTrainListVisible();
+        if (browserName === 'chromium') {
+          await expect(opSimulationResultPage.speedSpaceChart).toHaveScreenshot(
+            'SpeedSpaceChart-InitialInputs.png'
+          );
+        }
+        await timeAndStopSimulationOutputs.getOutputTableData(expectedOutputData.secondOccurrence);
+      });
+    }
+  );
 
   /** *************** Test 3 **************** */
   test('Duplicate and delete a paced train', async ({

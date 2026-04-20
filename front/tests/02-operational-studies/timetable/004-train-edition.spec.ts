@@ -41,7 +41,7 @@ const frTranslations = {
 
 const trains: TrainSchedule[] = readJsonFile('./tests/assets/trains/trains.json');
 
-test.describe('@op @paced-train @unique-train', () => {
+test.describe('Train edition', { tag: ['@op', '@paced-trains', '@unique-trains'] }, () => {
   let project: Project;
   let study: Study;
   let scenarioItems: Scenario;

@@ -40,7 +40,7 @@ test.skip(
   'This test is only stable on Chromium due to tab sync flakiness in Firefox'
 );
 
-test.describe('@op @multi-tab-sync', () => {
+test.describe('Scenario page synchronization', { tag: ['@op, @multi-tab-sync'] }, () => {
   let project: Project;
   let study: Study;
   let scenarioItems: Scenario;

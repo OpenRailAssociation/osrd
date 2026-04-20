@@ -61,7 +61,7 @@ test.skip(
   'Limit to Chromium for GitHub snapshots storage optimization'
 );
 
-test.describe('@op @manchette @std', () => {
+test.describe('Space Time Diagram / Manchette', { tag: ['@op', '@manchette', '@std'] }, () => {
   let project: Project;
   let study: Study;
   let scenarioItems: Scenario;
@@ -95,68 +95,68 @@ test.describe('@op @manchette @std', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('@smoke Basic checks for STD/Manchette', async ({
-    scenarioTimetableSection,
-    opSimulationResultPage,
-    getManchetteComponent,
-  }) => {
-    await test.step('Verify first unique train is selected', async () => {
-      await scenarioTimetableSection.verifyFirstTimetableItemIsSelected();
-      await opSimulationResultPage.setTrainListVisible();
-    });
-    await test.step('Assert GET slider', async () => {
-      await getManchetteComponent.assertDefaultSliderValue();
-    });
+  test(
+    'Basic checks for Space Time Diagram / Manchette',
+    { tag: '@smoke' },
+    async ({ scenarioTimetableSection, opSimulationResultPage, getManchetteComponent }) => {
+      await test.step('Verify first unique train is selected', async () => {
+        await scenarioTimetableSection.verifyFirstTimetableItemIsSelected();
+        await opSimulationResultPage.setTrainListVisible();
+      });
+      await test.step('Assert GET slider', async () => {
+        await getManchetteComponent.assertDefaultSliderValue();
+      });
 
-    await test.step('Toggle linear km mode', async () => {
-      await getManchetteComponent.toggleLinearKmMode();
-    });
+      await test.step('Toggle linear km mode', async () => {
+        await getManchetteComponent.toggleLinearKmMode();
+      });
 
-    await test.step('Expand and collapse warped map', async () => {
-      await getManchetteComponent.expandWarpedMap();
-      await getManchetteComponent.collapseWarpedMap();
-    });
+      await test.step('Expand and collapse warped map', async () => {
+        await getManchetteComponent.expandWarpedMap();
+        await getManchetteComponent.collapseWarpedMap();
+      });
 
-    await test.step('Zoom controls on GET', async () => {
-      await getManchetteComponent.adjustAndResetGetZoom();
-    });
+      await test.step('Zoom controls on GET', async () => {
+        await getManchetteComponent.adjustAndResetGetZoom();
+      });
 
-    await test.step('Zoom controls on Manchette', async () => {
-      await getManchetteComponent.zoomInAndResetManchette();
-    });
+      await test.step('Zoom controls on Manchette', async () => {
+        await getManchetteComponent.zoomInAndResetManchette();
+      });
 
-    await test.step('Tracks occupancy panel can open/close', async () => {
-      await getManchetteComponent.openTrackOccupancyPanel(
-        STD_MANCHETTE.occupancyWaypointIndex,
-        frTranslations
-      );
-      await getManchetteComponent.closeTrackOccupancyPanel(
-        STD_MANCHETTE.occupancyWaypointIndex,
-        frTranslations
-      );
-    });
+      await test.step('Tracks occupancy panel can open/close', async () => {
+        await getManchetteComponent.openTrackOccupancyPanel(
+          STD_MANCHETTE.occupancyWaypointIndex,
+          frTranslations
+        );
+        await getManchetteComponent.closeTrackOccupancyPanel(
+          STD_MANCHETTE.occupancyWaypointIndex,
+          frTranslations
+        );
+      });
 
-    await test.step('Show and hide waypoints', async () => {
-      await getManchetteComponent.verifyVisibleWaypointsCount(
-        STD_MANCHETTE.initialVisibleWaypoints
-      );
-      await getManchetteComponent.hideWaypoint(STD_MANCHETTE.normalWaypointIndex);
-      // After hiding the normal waypoint the requested point is displayed instead
-      await getManchetteComponent.verifyVisibleWaypointsCount(
-        STD_MANCHETTE.initialVisibleWaypoints
-      );
-      await getManchetteComponent.hideWaypoint(STD_MANCHETTE.requestedWaypointIndex, true);
-      await getManchetteComponent.verifyVisibleWaypointsCount(
-        STD_MANCHETTE.visibleAfterHidingRequested
-      );
-      await getManchetteComponent.openManchettePanel();
-      await getManchetteComponent.verifyWaypointsCheckedState(
-        WAYPOINT_CHECKBOX_STATE.checked,
-        WAYPOINT_CHECKBOX_STATE.total
-      );
-      await getManchetteComponent.closeWaypointPanel();
-    });
-  });
+      await test.step('Show and hide waypoints', async () => {
+        await getManchetteComponent.verifyVisibleWaypointsCount(
+          STD_MANCHETTE.initialVisibleWaypoints
+        );
+        await getManchetteComponent.hideWaypoint(STD_MANCHETTE.normalWaypointIndex);
+        // After hiding the normal waypoint the requested point is displayed instead
+        await getManchetteComponent.verifyVisibleWaypointsCount(
+          STD_MANCHETTE.initialVisibleWaypoints
+        );
+        await getManchetteComponent.hideWaypoint(STD_MANCHETTE.requestedWaypointIndex, true);
+        await getManchetteComponent.verifyVisibleWaypointsCount(
+          STD_MANCHETTE.visibleAfterHidingRequested
+        );
+        await getManchetteComponent.openManchettePanel();
+        await getManchetteComponent.verifyWaypointsCheckedState(
+          WAYPOINT_CHECKBOX_STATE.checked,
+          WAYPOINT_CHECKBOX_STATE.total
+        );
+        await getManchetteComponent.closeWaypointPanel();
+      });
+    }
+  );
 
   /** *************** Test 2 **************** */
   test.skip('Space time diagram (temporarily skipped until STD snapshots are stable)', async ({

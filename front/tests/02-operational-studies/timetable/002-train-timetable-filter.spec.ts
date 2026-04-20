@@ -44,7 +44,7 @@ const frTranslations = {
 //       this workaround simply makes the viewport bigger so the whole list is rendered.
 test.use({ viewport: { width: 1920, height: 1920 } });
 
-test.describe('@op @timetable-items @filter', () => {
+test.describe('Timetable items filtering', { tag: ['@op', '@timetable-items', '@filter'] }, () => {
   let project: Project;
   let study: Study;
   let scenario: Scenario;

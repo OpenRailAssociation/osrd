@@ -15,7 +15,7 @@ const rollingstockDetails: RollingStockDetails = readJsonFile(
   './tests/assets/rolling-stock/rolling-stock-details.json'
 );
 
-test.describe('@rs-editor', () => {
+test.describe('Rolling stock editor management', { tag: '@rs-editor' }, () => {
   const createdRollingStocks: string[] = [];
 
   let uniqueRollingStockName: string;
@@ -48,89 +48,93 @@ test.describe('@rs-editor', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('@smoke Create a new rolling stock', async ({ page, rollingStockEditorPage }) => {
-    createdRollingStocks.push(uniqueRollingStockName);
+  test(
+    'Create a new rolling stock',
+    { tag: '@smoke' },
+    async ({ page, rollingStockEditorPage }) => {
+      createdRollingStocks.push(uniqueRollingStockName);
 
-    await test.step('Open creation form', async () => {
-      await rollingStockEditorPage.openNewRollingStockForm();
-    });
+      await test.step('Open creation form', async () => {
+        await rollingStockEditorPage.openNewRollingStockForm();
+      });
 
-    await test.step('Fill base details and loading gauge', async () => {
-      for (const input of rollingstockDetails.inputs) {
-        const value = input.id === 'name' ? uniqueRollingStockName : input.value;
-        await fillAndCheckInputById(page, input.id, value, input.isNumeric);
-      }
-      await rollingStockEditorPage.selectLoadingGauge('GA');
-    });
+      await test.step('Fill base details and loading gauge', async () => {
+        for (const input of rollingstockDetails.inputs) {
+          const value = input.id === 'name' ? uniqueRollingStockName : input.value;
+          await fillAndCheckInputById(page, input.id, value, input.isNumeric);
+        }
+        await rollingStockEditorPage.selectLoadingGauge('GA');
+      });
 
-    await test.step('Select categories (primary + other)', async () => {
-      await rollingStockEditorPage.selectPrimaryCategory('WORK_TRAIN');
-      await rollingStockEditorPage.selectPrimaryCategory('NIGHT_TRAIN');
-      await rollingStockEditorPage.uncheckCategoryCheckbox('WORK_TRAIN');
-      await rollingStockEditorPage.selectPrimaryCategory('WORK_TRAIN');
-      await rollingStockEditorPage.selectPrimaryCategory('NIGHT_TRAIN');
-      await rollingStockEditorPage.checkCategoryCheckbox('FREIGHT_TRAIN');
-      await rollingStockEditorPage.checkCategoryCheckbox('FAST_FREIGHT_TRAIN');
-      await rollingStockEditorPage.uncheckCategoryCheckbox('FAST_FREIGHT_TRAIN');
-    });
+      await test.step('Select categories (primary + other)', async () => {
+        await rollingStockEditorPage.selectPrimaryCategory('WORK_TRAIN');
+        await rollingStockEditorPage.selectPrimaryCategory('NIGHT_TRAIN');
+        await rollingStockEditorPage.uncheckCategoryCheckbox('WORK_TRAIN');
+        await rollingStockEditorPage.selectPrimaryCategory('WORK_TRAIN');
+        await rollingStockEditorPage.selectPrimaryCategory('NIGHT_TRAIN');
+        await rollingStockEditorPage.checkCategoryCheckbox('FREIGHT_TRAIN');
+        await rollingStockEditorPage.checkCategoryCheckbox('FAST_FREIGHT_TRAIN');
+        await rollingStockEditorPage.uncheckCategoryCheckbox('FAST_FREIGHT_TRAIN');
+      });
 
-    await test.step('Submit initial form and handle warnings', async () => {
-      await rollingStockEditorPage.submitRollingstock();
-      await expect(rollingStockEditorPage.toastContainer).toBeVisible();
-    });
+      await test.step('Submit initial form and handle warnings', async () => {
+        await rollingStockEditorPage.submitRollingstock();
+        await expect(rollingStockEditorPage.toastContainer).toBeVisible();
+      });
 
-    await test.step('Fill speed effort curves (Not specified + C1)', async () => {
-      await rollingStockEditorPage.fillSpeedEffortCurves(
-        rollingstockDetails.speedEffortData,
-        false,
-        '',
-        '1500V'
-      );
-      await rollingStockEditorPage.fillSpeedEffortCurves(
-        rollingstockDetails.speedEffortDataC1,
-        true,
-        'C1 ',
-        '1500V'
-      );
-    });
+      await test.step('Fill speed effort curves (Not specified + C1)', async () => {
+        await rollingStockEditorPage.fillSpeedEffortCurves(
+          rollingstockDetails.speedEffortData,
+          false,
+          '',
+          '1500V'
+        );
+        await rollingStockEditorPage.fillSpeedEffortCurves(
+          rollingstockDetails.speedEffortDataC1,
+          true,
+          'C1 ',
+          '1500V'
+        );
+      });
 
-    await test.step('Fill additional details', async () => {
-      await rollingStockEditorPage.fillAdditionalDetails(rollingstockDetails.additionalDetails);
-    });
+      await test.step('Fill additional details', async () => {
+        await rollingStockEditorPage.fillAdditionalDetails(rollingstockDetails.additionalDetails);
+      });
 
-    await test.step('Submit and confirm rolling stock creation', async () => {
-      await rollingStockEditorPage.confirmRollingStockCreation();
-      expect(
-        rollingStockEditorPage.page.getByTestId(`rollingstock-${uniqueRollingStockName}`)
-      ).toBeDefined();
-    });
+      await test.step('Submit and confirm rolling stock creation', async () => {
+        await rollingStockEditorPage.confirmRollingStockCreation();
+        expect(
+          rollingStockEditorPage.page.getByTestId(`rollingstock-${uniqueRollingStockName}`)
+        ).toBeDefined();
+      });
 
-    await test.step('Search and verify rolling stock details', async () => {
-      await rollingStockEditorPage.searchRollingStock(uniqueRollingStockName);
-      await rollingStockEditorPage.verifyRollingStockDetailsTable(
-        rollingstockDetails.expectedValues
-      );
-      await rollingStockEditorPage.editRollingStock(uniqueRollingStockName);
-      for (const input of rollingstockDetails.inputs) {
-        const value = input.id === 'name' ? uniqueRollingStockName : input.value;
-        await verifyAndCheckInputById(page, input.id, value, input.isNumeric);
-      }
-    });
+      await test.step('Search and verify rolling stock details', async () => {
+        await rollingStockEditorPage.searchRollingStock(uniqueRollingStockName);
+        await rollingStockEditorPage.verifyRollingStockDetailsTable(
+          rollingstockDetails.expectedValues
+        );
+        await rollingStockEditorPage.editRollingStock(uniqueRollingStockName);
+        for (const input of rollingstockDetails.inputs) {
+          const value = input.id === 'name' ? uniqueRollingStockName : input.value;
+          await verifyAndCheckInputById(page, input.id, value, input.isNumeric);
+        }
+      });
 
-    await test.step('Verify speed effort curves values', async () => {
-      await rollingStockEditorPage.openSpeedEffortCurves();
-      await rollingStockEditorPage.verifySpeedEffortCurves(
-        rollingstockDetails.speedEffortData,
-        false,
-        'C1'
-      );
-      await rollingStockEditorPage.verifySpeedEffortCurves(
-        rollingstockDetails.speedEffortDataC1,
-        true,
-        'C1'
-      );
-    });
-  });
+      await test.step('Verify speed effort curves values', async () => {
+        await rollingStockEditorPage.openSpeedEffortCurves();
+        await rollingStockEditorPage.verifySpeedEffortCurves(
+          rollingstockDetails.speedEffortData,
+          false,
+          'C1'
+        );
+        await rollingStockEditorPage.verifySpeedEffortCurves(
+          rollingstockDetails.speedEffortDataC1,
+          true,
+          'C1'
+        );
+      });
+    }
+  );
 
   /** *************** Test 2 **************** */
   test('Duplicate and modify a rolling stock', async ({ page, rollingStockEditorPage }) => {

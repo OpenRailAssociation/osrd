@@ -19,7 +19,7 @@ const frTranslations: TimetableFilterTranslations = readJsonFile<{
   main: TimetableFilterTranslations;
 }>('public/locales/fr/operational-studies.json').main;
 
-test.describe('@op @nge', () => {
+test.describe('Netzgrafik Editor', { tag: ['@op', '@nge'] }, () => {
   let project: Project;
   let study: Study;
   let scenarioItems: Scenario;

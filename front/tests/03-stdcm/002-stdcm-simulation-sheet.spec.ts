@@ -29,7 +29,7 @@ import { getInfra } from './../utils/api-utils';
 import { findFirstPdf, parsePdfText, verifySimulationContent } from './../utils/pdf-parser';
 import type { PdfSimulationContent } from './../utils/types';
 
-test.describe('@stdcm @stdcm-sheet', () => {
+test.describe('STDCM simulation sheet', { tag: ['@stdcm, @stdcm-sheet'] }, () => {
   test.describe.configure({ mode: 'serial' });
 
   let infra: Infra;
@@ -45,119 +45,126 @@ test.describe('@stdcm @stdcm-sheet', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('@smoke Verify STDCM stops and simulation sheet', async ({
-    browserName,
-    context,
-    consistSection,
-    originSection,
-    destinationSection,
-    viaSection,
-    stdcmPage,
-    stdcmSimulationResultPage,
-  }, testInfo) => {
-    await test.step('Fill consist, origin, destination and via', async () => {
-      await consistSection.fillAndVerifyConsistDetails({
-        consistFields: CONSIST_DETAILS,
-        defaultMaxSpeed: DEFAULT_DETAILS.maxSpeed,
-        tractionEnginePrefilledValues: {
-          expectedTonnage: TRACTION_ENGINE_PREFILLED_VALUES.tonnage,
-          expectedLength: TRACTION_ENGINE_PREFILLED_VALUES.length,
-        },
+  test(
+    'Verify STDCM stops and simulation sheet',
+    { tag: '@smoke' },
+    async (
+      {
+        browserName,
+        context,
+        consistSection,
+        originSection,
+        destinationSection,
+        viaSection,
+        stdcmPage,
+        stdcmSimulationResultPage,
+      },
+      testInfo
+    ) => {
+      await test.step('Fill consist, origin, destination and via', async () => {
+        await consistSection.fillAndVerifyConsistDetails({
+          consistFields: CONSIST_DETAILS,
+          defaultMaxSpeed: DEFAULT_DETAILS.maxSpeed,
+          tractionEnginePrefilledValues: {
+            expectedTonnage: TRACTION_ENGINE_PREFILLED_VALUES.tonnage,
+            expectedLength: TRACTION_ENGINE_PREFILLED_VALUES.length,
+          },
+        });
+
+        await originSection.fillOriginDetailsLight({
+          originDetails: {
+            ...LIGHT_ORIGIN_DETAILS,
+            suggestionText: CI_SUGGESTIONS.north[2],
+          },
+          expectedSuggestions: CI_SUGGESTIONS.north,
+          expectedCiValue: CI_SUGGESTIONS.north[2],
+        });
+
+        await destinationSection.fillDestinationDetailsLight({
+          destinationDetails: {
+            ...LIGHT_DESTINATION_DETAILS,
+            expectedCiValue: CI_SUGGESTIONS.south[1],
+          },
+          southSuggestions: CI_SUGGESTIONS.south,
+          suggestionText: CI_SUGGESTIONS.south[1],
+        });
+
+        await viaSection.fillAndVerifyViaDetails({
+          viaNumber: 1,
+          ciSearchText: 'mid_west',
+          expectedChValue: DEFAULT_DETAILS.chValue,
+          stopTypes: VIA_STOP_TYPES,
+          stopTimes: VIA_STOP_TIMES,
+          suggestionTextBySearch: {
+            mid_west: VIA_SUGGESTIONS[0],
+            mid_east: VIA_SUGGESTIONS[1],
+            nS: VIA_SUGGESTIONS[2],
+          },
+          driverSwitchTooShortWarning:
+            STDCM_TRANSLATIONS.stdcmErrors.routeErrors.viaStopDurationDriverSwitchTooShort,
+        });
       });
 
-      await originSection.fillOriginDetailsLight({
-        originDetails: {
-          ...LIGHT_ORIGIN_DETAILS,
-          suggestionText: CI_SUGGESTIONS.north[2],
-        },
-        expectedSuggestions: CI_SUGGESTIONS.north,
-        expectedCiValue: CI_SUGGESTIONS.north[2],
+      await test.step('Verify input map markers (Chromium only)', async () => {
+        if (browserName === 'chromium') {
+          await stdcmPage.mapMarkerVisibility();
+        }
       });
 
-      await destinationSection.fillDestinationDetailsLight({
-        destinationDetails: {
-          ...LIGHT_DESTINATION_DETAILS,
-          expectedCiValue: CI_SUGGESTIONS.south[1],
-        },
-        southSuggestions: CI_SUGGESTIONS.south,
-        suggestionText: CI_SUGGESTIONS.south[1],
+      await test.step('Launch simulation', async () => {
+        await stdcmPage.verifyValidSimulationLaunch(
+          STDCM_TRANSLATIONS.simulation.results.status.completed
+        );
       });
 
-      await viaSection.fillAndVerifyViaDetails({
-        viaNumber: 1,
-        ciSearchText: 'mid_west',
-        expectedChValue: DEFAULT_DETAILS.chValue,
-        stopTypes: VIA_STOP_TYPES,
-        stopTimes: VIA_STOP_TIMES,
-        suggestionTextBySearch: {
-          mid_west: VIA_SUGGESTIONS[0],
-          mid_east: VIA_SUGGESTIONS[1],
-          nS: VIA_SUGGESTIONS[2],
-        },
-        driverSwitchTooShortWarning:
-          STDCM_TRANSLATIONS.stdcmErrors.routeErrors.viaStopDurationDriverSwitchTooShort,
-      });
-    });
-
-    await test.step('Verify input map markers (Chromium only)', async () => {
-      if (browserName === 'chromium') {
-        await stdcmPage.mapMarkerVisibility();
-      }
-    });
-
-    await test.step('Launch simulation', async () => {
-      await stdcmPage.verifyValidSimulationLaunch(
-        STDCM_TRANSLATIONS.simulation.results.status.completed
-      );
-    });
-
-    await test.step('Verify result map markers and tables', async () => {
-      if (browserName === 'chromium') {
-        await stdcmSimulationResultPage.mapMarkerResultVisibility();
-      }
-      await stdcmSimulationResultPage.verifyTableData(STDCM_WITHOUT_ALL_VIA_DATA_PATH);
-      await stdcmSimulationResultPage.displayAllOperationalPoints();
-      await stdcmSimulationResultPage.verifyTableData(STDCM_WITH_ALL_VIA_DATA_PATH);
-    });
-
-    await test.step('Retain & download simulation PDF', async () => {
-      await stdcmSimulationResultPage.retainSimulation();
-      downloadDir = testInfo.outputDir;
-      await stdcmSimulationResultPage.downloadSimulation(downloadDir);
-    });
-
-    await test.step('Start a new query and verify fields are reset', async () => {
-      const [newPage] = await Promise.all([
-        context.waitForEvent('page'),
-        stdcmSimulationResultPage.startNewQuery(),
-      ]);
-      await newPage.waitForLoadState();
-
-      const [newConsistSection, newOriginSection, newDestinationSection] = [
-        new ConsistSection(newPage),
-        new OriginSection(newPage),
-        new DestinationSection(newPage),
-      ];
-
-      await newConsistSection.verifyDefaultConsistFields({
-        defaultSpeedLimitTag: DEFAULT_DETAILS.speedLimitTag,
+      await test.step('Verify result map markers and tables', async () => {
+        if (browserName === 'chromium') {
+          await stdcmSimulationResultPage.mapMarkerResultVisibility();
+        }
+        await stdcmSimulationResultPage.verifyTableData(STDCM_WITHOUT_ALL_VIA_DATA_PATH);
+        await stdcmSimulationResultPage.displayAllOperationalPoints();
+        await stdcmSimulationResultPage.verifyTableData(STDCM_WITH_ALL_VIA_DATA_PATH);
       });
 
-      await newOriginSection.verifyDefaultOriginFields({
-        arrivalType: ORIGIN_DETAILS.arrivalType.default,
-        arrivalDate: DEFAULT_DETAILS.arrivalDate,
-        arrivalTime: DEFAULT_DETAILS.arrivalTime,
-        tolerance: DEFAULT_DETAILS.tolerance,
+      await test.step('Retain & download simulation PDF', async () => {
+        await stdcmSimulationResultPage.retainSimulation();
+        downloadDir = testInfo.outputDir;
+        await stdcmSimulationResultPage.downloadSimulation(downloadDir);
       });
 
-      await newDestinationSection.verifyDefaultDestinationFields(
-        DESTINATION_DETAILS.arrivalType.default
-      );
-    });
-  });
+      await test.step('Start a new query and verify fields are reset', async () => {
+        const [newPage] = await Promise.all([
+          context.waitForEvent('page'),
+          stdcmSimulationResultPage.startNewQuery(),
+        ]);
+        await newPage.waitForLoadState();
+
+        const [newConsistSection, newOriginSection, newDestinationSection] = [
+          new ConsistSection(newPage),
+          new OriginSection(newPage),
+          new DestinationSection(newPage),
+        ];
+
+        await newConsistSection.verifyDefaultConsistFields({
+          defaultSpeedLimitTag: DEFAULT_DETAILS.speedLimitTag,
+        });
+
+        await newOriginSection.verifyDefaultOriginFields({
+          arrivalType: ORIGIN_DETAILS.arrivalType.default,
+          arrivalDate: DEFAULT_DETAILS.arrivalDate,
+          arrivalTime: DEFAULT_DETAILS.arrivalTime,
+          tolerance: DEFAULT_DETAILS.tolerance,
+        });
+
+        await newDestinationSection.verifyDefaultDestinationFields(
+          DESTINATION_DETAILS.arrivalType.default
+        );
+      });
+    }
+  );
 
   /** *************** Test 2 *************** */
-  test('@smoke Verify simulation sheet content', async () => {
+  test('Verify simulation sheet content', { tag: '@smoke' }, async () => {
     const pdfFilePath = await test.step('Find the downloaded PDF', async () => {
       const filePath = findFirstPdf(downloadDir!);
       if (!filePath) {

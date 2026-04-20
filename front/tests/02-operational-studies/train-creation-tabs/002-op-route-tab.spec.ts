@@ -7,7 +7,7 @@ import { getInfra } from '../../utils/api-utils';
 import createScenario from '../../utils/scenario';
 import { deleteScenario } from '../../utils/teardown-utils';
 
-test.describe('@op @route-tab', () => {
+test.describe('Route tab', { tag: ['@op', '@route-tab'] }, () => {
   let project: Project;
   let study: Study;
   let scenario: Scenario;
@@ -39,34 +39,38 @@ test.describe('@op @route-tab', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('@smoke Select a route for operational study', async ({
-    browserName,
-    routeTab,
-    operationalStudiesPage,
-  }) => {
-    await test.step('Verify no route selected initially', async () => {
-      await routeTab.verifyNoSelectedRoute();
-    });
-
-    await test.step('Perform pathfinding by trigrams (WS → NES via MES)', async () => {
-      await routeTab.performPathfindingByTrigram({
-        originTrigram: 'WS',
-        destinationTrigram: 'NES',
-        viaTrigram: 'MES',
+  test(
+    'Select a route for operational study',
+    { tag: '@smoke' },
+    async ({ browserName, routeTab, operationalStudiesPage }) => {
+      await test.step('Verify no route selected initially', async () => {
+        await routeTab.verifyNoSelectedRoute();
       });
-    });
 
-    await test.step('Verify map markers (Chromium only)', async () => {
-      if (browserName === 'chromium') {
-        const expectedMapMarkersValues = ['West_station', 'North_East_station', 'Mid_East_station'];
-        await routeTab.verifyMapMarkers(...expectedMapMarkersValues);
-      }
-    });
+      await test.step('Perform pathfinding by trigrams (WS → NES via MES)', async () => {
+        await routeTab.performPathfindingByTrigram({
+          originTrigram: 'WS',
+          destinationTrigram: 'NES',
+          viaTrigram: 'MES',
+        });
+      });
 
-    await test.step('Verify tab warnings are absent', async () => {
-      await operationalStudiesPage.verifyTabWarningAbsence();
-    });
-  });
+      await test.step('Verify map markers (Chromium only)', async () => {
+        if (browserName === 'chromium') {
+          const expectedMapMarkersValues = [
+            'West_station',
+            'North_East_station',
+            'Mid_East_station',
+          ];
+          await routeTab.verifyMapMarkers(...expectedMapMarkersValues);
+        }
+      });
+
+      await test.step('Verify tab warnings are absent', async () => {
+        await operationalStudiesPage.verifyTabWarningAbsence();
+      });
+    }
+  );
 
   /** *************** Test 2 **************** */
   test('Adding waypoints to a route for operational study', async ({

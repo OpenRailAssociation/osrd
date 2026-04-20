@@ -24,7 +24,7 @@ const frTranslations = {
   ...frCommonTranslations,
 };
 
-test.describe('@op @nge @round-trips', () => {
+test.describe('Netzgrafik Editor', { tag: ['@op', '@nge', '@round-trips'] }, () => {
   test.use({ ignorePageErrors: true });
 
   let project: Project;
@@ -59,53 +59,53 @@ test.describe('@op @nge @round-trips', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('@smoke Add a train from NGE', async ({
-    ngePage,
-    scenarioTimetableSection,
-    roundTripPage,
-  }) => {
-    await test.step('Create three nodes', async () => {
-      await ngePage.createNode({ x: 50, y: 400 }, 'NWS', 'Origin');
-      await expect(ngePage.nodeCards).toHaveCount(1);
+  test(
+    'Add a train from NGE',
+    { tag: '@smoke' },
+    async ({ ngePage, scenarioTimetableSection, roundTripPage }) => {
+      await test.step('Create three nodes', async () => {
+        await ngePage.createNode({ x: 50, y: 400 }, 'NWS', 'Origin');
+        await expect(ngePage.nodeCards).toHaveCount(1);
 
-      await ngePage.createNode({ x: 250, y: 400 }, 'MWS', 'OP');
-      await expect(ngePage.nodeCards).toHaveCount(2);
+        await ngePage.createNode({ x: 250, y: 400 }, 'MWS', 'OP');
+        await expect(ngePage.nodeCards).toHaveCount(2);
 
-      await ngePage.createNode({ x: 450, y: 400 }, 'SS', 'Destination');
-      await expect(ngePage.nodeCards).toHaveCount(3);
-    });
-
-    await test.step('Connect Origin → OP and create Train1', async () => {
-      await ngePage.connectNodesByIndex(0, 1);
-      await expect(ngePage.trainDetailsGroup).toBeVisible();
-      await ngePage.setTrainBasics({ name: 'Train1', isFrequency30: true });
-      await ngePage.closeDetailsDialogIfVisible();
-      await expect(ngePage.trainDetailsGroup).toBeHidden();
-      await expect(ngePage.trainLines).toHaveCount(1);
-    });
-
-    await test.step('Connect OP → Destination', async () => {
-      await ngePage.connectNodesByIndex(1, 2);
-      await expect(ngePage.trainDetailsGroup).toBeHidden();
-      await expect(ngePage.trainLines).toHaveCount(2);
-    });
-
-    await test.step('Validate timetable list and round-trip modal', async () => {
-      await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
-        totalPacedTrainCount: 2,
-        totalUniqueTrainCount: 0,
+        await ngePage.createNode({ x: 450, y: 400 }, 'SS', 'Destination');
+        await expect(ngePage.nodeCards).toHaveCount(3);
       });
-      await scenarioTimetableSection.verifyInvalidReasons([
-        frTranslations.timetable.invalid.rolling_stock_not_found,
-        frTranslations.timetable.invalid.rolling_stock_not_found,
-      ]);
 
-      await roundTripPage.openRoundTripModal();
-      await roundTripPage.assertRoundTripColumnCounts({
-        expectedToDoCount: 0,
-        expectedOneWayCount: 0,
-        expectedRoundTripCount: 1,
+      await test.step('Connect Origin → OP and create Train1', async () => {
+        await ngePage.connectNodesByIndex(0, 1);
+        await expect(ngePage.trainDetailsGroup).toBeVisible();
+        await ngePage.setTrainBasics({ name: 'Train1', isFrequency30: true });
+        await ngePage.closeDetailsDialogIfVisible();
+        await expect(ngePage.trainDetailsGroup).toBeHidden();
+        await expect(ngePage.trainLines).toHaveCount(1);
       });
-    });
-  });
+
+      await test.step('Connect OP → Destination', async () => {
+        await ngePage.connectNodesByIndex(1, 2);
+        await expect(ngePage.trainDetailsGroup).toBeHidden();
+        await expect(ngePage.trainLines).toHaveCount(2);
+      });
+
+      await test.step('Validate timetable list and round-trip modal', async () => {
+        await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
+          totalPacedTrainCount: 2,
+          totalUniqueTrainCount: 0,
+        });
+        await scenarioTimetableSection.verifyInvalidReasons([
+          frTranslations.timetable.invalid.rolling_stock_not_found,
+          frTranslations.timetable.invalid.rolling_stock_not_found,
+        ]);
+
+        await roundTripPage.openRoundTripModal();
+        await roundTripPage.assertRoundTripColumnCounts({
+          expectedToDoCount: 0,
+          expectedOneWayCount: 0,
+          expectedRoundTripCount: 1,
+        });
+      });
+    }
+  );
 });

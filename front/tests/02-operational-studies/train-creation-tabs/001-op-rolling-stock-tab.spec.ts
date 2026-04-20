@@ -18,7 +18,7 @@ import { getInfra, getRollingStock } from '../../utils/api-utils';
 import createScenario from '../../utils/scenario';
 import { deleteScenario } from '../../utils/teardown-utils';
 
-test.describe('@op @rs-tab', () => {
+test.describe('Rolling stock tab', { tag: ['@op', '@rs-tab'] }, () => {
   let project: Project;
   let study: Study;
   let scenario: Scenario;
@@ -47,37 +47,38 @@ test.describe('@op @rs-tab', () => {
   );
 
   /** *************** Test 1 **************** */
-  test('@smoke Select a rolling stock for operational study', async ({
-    operationalStudiesPage,
-    rollingStockSelector,
-  }) => {
-    await test.step('Verify tab warnings are present', async () => {
-      await operationalStudiesPage.verifyTabWarningPresence();
-    });
-
-    await test.step('Open selector and search dual-mode rolling stock', async () => {
-      await rollingStockSelector.openEmptyRollingStockSelector();
-      await rollingStockSelector.searchRollingstock(dualModeRollingStockName);
-    });
-
-    await test.step('Verify RS card is inactive before selection', async () => {
-      await rollingStockSelector.verifyRollingStockIsInactive(dualModeRollingStockName);
-    });
-
-    await test.step('Activate RS card', async () => {
-      await rollingStockSelector.selectRollingStockCard({ name: dualModeRollingStockName });
-    });
-
-    await test.step('Select AIR_CONDITIONING comfort and confirm the new RS is displayed', async () => {
-      const comfortACRadioText = await rollingStockSelector.comfortACButton.innerText();
-      await rollingStockSelector.selectRollingStockCard({
-        name: dualModeRollingStockName,
-        selectComfort: true,
-        confirmSelection: true,
+  test(
+    'Select a rolling stock for operational study',
+    { tag: '@smoke' },
+    async ({ operationalStudiesPage, rollingStockSelector }) => {
+      await test.step('Verify tab warnings are present', async () => {
+        await operationalStudiesPage.verifyTabWarningPresence();
       });
-      await rollingStockSelector.verifySelectedComfortMatches(comfortACRadioText);
-    });
-  });
+
+      await test.step('Open selector and search dual-mode rolling stock', async () => {
+        await rollingStockSelector.openEmptyRollingStockSelector();
+        await rollingStockSelector.searchRollingstock(dualModeRollingStockName);
+      });
+
+      await test.step('Verify RS card is inactive before selection', async () => {
+        await rollingStockSelector.verifyRollingStockIsInactive(dualModeRollingStockName);
+      });
+
+      await test.step('Activate RS card', async () => {
+        await rollingStockSelector.selectRollingStockCard({ name: dualModeRollingStockName });
+      });
+
+      await test.step('Select AIR_CONDITIONING comfort and confirm the new RS is displayed', async () => {
+        const comfortACRadioText = await rollingStockSelector.comfortACButton.innerText();
+        await rollingStockSelector.selectRollingStockCard({
+          name: dualModeRollingStockName,
+          selectComfort: true,
+          confirmSelection: true,
+        });
+        await rollingStockSelector.verifySelectedComfortMatches(comfortACRadioText);
+      });
+    }
+  );
 
   /** *************** Test 2 **************** */
   test('Modify a rolling stock for operational study', async ({ rollingStockSelector }) => {

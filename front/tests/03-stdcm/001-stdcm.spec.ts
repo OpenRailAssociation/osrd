@@ -29,7 +29,7 @@ import test, { createStdcmTab } from './../page-object-fixture';
 import { waitForInfraStateToBeCached } from './../utils';
 import { getInfra, setTowedRollingStock } from './../utils/api-utils';
 
-test.describe('@stdcm', () => {
+test.describe('STDCM simulation with all stops and towed rolling stock', { tag: '@stdcm' }, () => {
   let infra: Infra;
   let createdTowedRollingStock: TowedRollingStock;
 
@@ -43,148 +43,157 @@ test.describe('@stdcm', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('@smoke Verify default STDCM page', async ({
-    stdcmPage,
-    consistSection,
-    originSection,
-    viaSection,
-    destinationSection,
-    linkedTrainSection,
-  }) => {
-    await test.step('Verify base UI sections are visible', async () => {
-      await stdcmPage.verifyStdcmElementsVisibility();
-    });
-
-    await test.step('Verify default input values', async () => {
-      await consistSection.verifyDefaultConsistFields({
-        defaultSpeedLimitTag: DEFAULT_DETAILS.speedLimitTag,
+  test(
+    ' Verify default STDCM page',
+    { tag: '@smoke' },
+    async ({
+      stdcmPage,
+      consistSection,
+      originSection,
+      viaSection,
+      destinationSection,
+      linkedTrainSection,
+    }) => {
+      await test.step('Verify base UI sections are visible', async () => {
+        await stdcmPage.verifyStdcmElementsVisibility();
       });
 
-      await originSection.verifyDefaultOriginFields({
-        arrivalType: ORIGIN_DETAILS.arrivalType.default,
-        arrivalDate: DEFAULT_DETAILS.arrivalDate,
-        arrivalTime: DEFAULT_DETAILS.arrivalTime,
-        tolerance: DEFAULT_DETAILS.tolerance,
+      await test.step('Verify default input values', async () => {
+        await consistSection.verifyDefaultConsistFields({
+          defaultSpeedLimitTag: DEFAULT_DETAILS.speedLimitTag,
+        });
+
+        await originSection.verifyDefaultOriginFields({
+          arrivalType: ORIGIN_DETAILS.arrivalType.default,
+          arrivalDate: DEFAULT_DETAILS.arrivalDate,
+          arrivalTime: DEFAULT_DETAILS.arrivalTime,
+          tolerance: DEFAULT_DETAILS.tolerance,
+        });
+
+        await destinationSection.verifyDefaultDestinationFields(
+          DESTINATION_DETAILS.arrivalType.default
+        );
       });
 
-      await destinationSection.verifyDefaultDestinationFields(
-        DESTINATION_DETAILS.arrivalType.default
-      );
-    });
-
-    await test.step('Add/delete default via and linked path', async () => {
-      await viaSection.addAndDeletedDefaultVia(VIA_STOP_TYPES.PASSAGE_TIME);
-      await linkedTrainSection.addAndDeleteDefaultLinkedPath({
-        defaultDate: DEFAULT_DETAILS.arrivalDate,
+      await test.step('Add/delete default via and linked path', async () => {
+        await viaSection.addAndDeletedDefaultVia(VIA_STOP_TYPES.PASSAGE_TIME);
+        await linkedTrainSection.addAndDeleteDefaultLinkedPath({
+          defaultDate: DEFAULT_DETAILS.arrivalDate,
+        });
       });
-    });
-  });
+    }
+  );
 
   /** *************** Test 2 **************** */
-  test('@smoke Launch STDCM simulation with all stops', async ({
-    page,
-    consistSection,
-    originSection,
-    destinationSection,
-    viaSection,
-    stdcmPage,
-    stdcmSimulationResultPage,
-  }) => {
-    await test.step('Fill consist, origin and destination', async () => {
-      await consistSection.fillAndVerifyConsistDetails({
-        consistFields: CONSIST_DETAILS,
-        defaultMaxSpeed: DEFAULT_DETAILS.maxSpeed,
-        tractionEnginePrefilledValues: {
-          expectedTonnage: TRACTION_ENGINE_PREFILLED_VALUES.tonnage,
-          expectedLength: TRACTION_ENGINE_PREFILLED_VALUES.length,
-        },
-      });
-
-      await originSection.fillAndVerifyOriginDetails({
-        input: ORIGIN_DETAILS.input,
-        expectedCiValue: ORIGIN_DETAILS.suggestion,
-        suggestionText: CI_SUGGESTIONS.north[2],
-        expectedSuggestions: CI_SUGGESTIONS.north,
-        chValue: ORIGIN_DETAILS.chValue,
-        arrivalDate: ORIGIN_DETAILS.arrivalDate,
-        arrivalTime: ORIGIN_DETAILS.arrivalTime,
-        tolerance: ORIGIN_DETAILS.tolerance,
-        updatedChValue: ORIGIN_DETAILS.updatedChValue,
-        arrivalType: ORIGIN_DETAILS.arrivalType,
-      });
-
-      await destinationSection.fillAndVerifyDestinationDetails({
-        destinationDetails: {
-          ...DESTINATION_DETAILS,
-          expectedCiValue: CI_SUGGESTIONS.south[1],
-        },
-        southSuggestions: CI_SUGGESTIONS.south,
-        noScheduledPointMessage: STDCM_TRANSLATIONS.stdcmErrors.routeErrors.noScheduledPoint,
-      });
-    });
-
-    await test.step('Fill three vias and verify each', async () => {
-      for (const viaDetail of VIA_DETAILS) {
-        await viaSection.fillAndVerifyViaDetails({
-          ...viaDetail,
-          expectedChValue: DEFAULT_DETAILS.chValue,
-          stopTypes: VIA_STOP_TYPES,
-          stopTimes: VIA_STOP_TIMES,
-          suggestionTextBySearch: {
-            mid_west: VIA_SUGGESTIONS[0],
-            mid_east: VIA_SUGGESTIONS[1],
-            nS: VIA_SUGGESTIONS[2],
+  test(
+    'Launch STDCM simulation with all stops',
+    { tag: '@smoke' },
+    async ({
+      page,
+      consistSection,
+      originSection,
+      destinationSection,
+      viaSection,
+      stdcmPage,
+      stdcmSimulationResultPage,
+    }) => {
+      await test.step('Fill consist, origin and destination', async () => {
+        await consistSection.fillAndVerifyConsistDetails({
+          consistFields: CONSIST_DETAILS,
+          defaultMaxSpeed: DEFAULT_DETAILS.maxSpeed,
+          tractionEnginePrefilledValues: {
+            expectedTonnage: TRACTION_ENGINE_PREFILLED_VALUES.tonnage,
+            expectedLength: TRACTION_ENGINE_PREFILLED_VALUES.length,
           },
-          driverSwitchTooShortWarning:
-            STDCM_TRANSLATIONS.stdcmErrors.routeErrors.viaStopDurationDriverSwitchTooShort,
         });
-      }
-    });
 
-    await test.step('Launch simulation and verify results table', async () => {
-      await stdcmPage.verifyValidSimulationLaunch(
-        STDCM_TRANSLATIONS.simulation.results.status.completed
-      );
-      await stdcmSimulationResultPage.verifySimulationDetails({
-        ...SIMULATION_RESULTS_WITH_STOPS_DETAILS,
-        noOutputSimulationName: STDCM_TRANSLATIONS.simulation.results.simulationName.withoutOutputs,
-      });
-      await stdcmSimulationResultPage.verifyTableData(ALL_STOPS_TABLE_DATA_PATH);
-    });
+        await originSection.fillAndVerifyOriginDetails({
+          input: ORIGIN_DETAILS.input,
+          expectedCiValue: ORIGIN_DETAILS.suggestion,
+          suggestionText: CI_SUGGESTIONS.north[2],
+          expectedSuggestions: CI_SUGGESTIONS.north,
+          chValue: ORIGIN_DETAILS.chValue,
+          arrivalDate: ORIGIN_DETAILS.arrivalDate,
+          arrivalTime: ORIGIN_DETAILS.arrivalTime,
+          tolerance: ORIGIN_DETAILS.tolerance,
+          updatedChValue: ORIGIN_DETAILS.updatedChValue,
+          arrivalType: ORIGIN_DETAILS.arrivalType,
+        });
 
-    await test.step('Retain simulation and start new query without data', async () => {
-      await stdcmSimulationResultPage.retainSimulation();
-
-      const [newPage] = await Promise.all([
-        page.context().waitForEvent('page'),
-        stdcmSimulationResultPage.startNewQueryWithoutData(),
-      ]);
-
-      await newPage.bringToFront();
-      await newPage.waitForLoadState('domcontentloaded');
-
-      const {
-        consistSection: newConsistSection,
-        originSection: newOriginSection,
-        destinationSection: newDestinationSection,
-      } = createStdcmTab(newPage);
-
-      await newConsistSection.verifyDefaultConsistFields({
-        defaultSpeedLimitTag: DEFAULT_DETAILS.speedLimitTag,
+        await destinationSection.fillAndVerifyDestinationDetails({
+          destinationDetails: {
+            ...DESTINATION_DETAILS,
+            expectedCiValue: CI_SUGGESTIONS.south[1],
+          },
+          southSuggestions: CI_SUGGESTIONS.south,
+          noScheduledPointMessage: STDCM_TRANSLATIONS.stdcmErrors.routeErrors.noScheduledPoint,
+        });
       });
 
-      await newOriginSection.verifyDefaultOriginFields({
-        arrivalType: ORIGIN_DETAILS.arrivalType.default,
-        arrivalDate: DEFAULT_DETAILS.arrivalDate,
-        arrivalTime: DEFAULT_DETAILS.arrivalTime,
-        tolerance: DEFAULT_DETAILS.tolerance,
+      await test.step('Fill three vias and verify each', async () => {
+        for (const viaDetail of VIA_DETAILS) {
+          await viaSection.fillAndVerifyViaDetails({
+            ...viaDetail,
+            expectedChValue: DEFAULT_DETAILS.chValue,
+            stopTypes: VIA_STOP_TYPES,
+            stopTimes: VIA_STOP_TIMES,
+            suggestionTextBySearch: {
+              mid_west: VIA_SUGGESTIONS[0],
+              mid_east: VIA_SUGGESTIONS[1],
+              nS: VIA_SUGGESTIONS[2],
+            },
+            driverSwitchTooShortWarning:
+              STDCM_TRANSLATIONS.stdcmErrors.routeErrors.viaStopDurationDriverSwitchTooShort,
+          });
+        }
       });
 
-      await newDestinationSection.verifyDefaultDestinationFields(
-        DESTINATION_DETAILS.arrivalType.default
-      );
-    });
-  });
+      await test.step('Launch simulation and verify results table', async () => {
+        await stdcmPage.verifyValidSimulationLaunch(
+          STDCM_TRANSLATIONS.simulation.results.status.completed
+        );
+        await stdcmSimulationResultPage.verifySimulationDetails({
+          ...SIMULATION_RESULTS_WITH_STOPS_DETAILS,
+          noOutputSimulationName:
+            STDCM_TRANSLATIONS.simulation.results.simulationName.withoutOutputs,
+        });
+        await stdcmSimulationResultPage.verifyTableData(ALL_STOPS_TABLE_DATA_PATH);
+      });
+
+      await test.step('Retain simulation and start new query without data', async () => {
+        await stdcmSimulationResultPage.retainSimulation();
+
+        const [newPage] = await Promise.all([
+          page.context().waitForEvent('page'),
+          stdcmSimulationResultPage.startNewQueryWithoutData(),
+        ]);
+
+        await newPage.bringToFront();
+        await newPage.waitForLoadState('domcontentloaded');
+
+        const {
+          consistSection: newConsistSection,
+          originSection: newOriginSection,
+          destinationSection: newDestinationSection,
+        } = createStdcmTab(newPage);
+
+        await newConsistSection.verifyDefaultConsistFields({
+          defaultSpeedLimitTag: DEFAULT_DETAILS.speedLimitTag,
+        });
+
+        await newOriginSection.verifyDefaultOriginFields({
+          arrivalType: ORIGIN_DETAILS.arrivalType.default,
+          arrivalDate: DEFAULT_DETAILS.arrivalDate,
+          arrivalTime: DEFAULT_DETAILS.arrivalTime,
+          tolerance: DEFAULT_DETAILS.tolerance,
+        });
+
+        await newDestinationSection.verifyDefaultDestinationFields(
+          DESTINATION_DETAILS.arrivalType.default
+        );
+      });
+    }
+  );
 
   /** *************** Test 3 **************** */
   test('Launch simulation with and without capacity for towed rolling stock', async ({
