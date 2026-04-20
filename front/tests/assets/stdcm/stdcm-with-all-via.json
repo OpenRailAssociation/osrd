@@ -7,7 +7,7 @@
     "passageStop": "",
     "startStop": "20:21",
     "weight": "950t",
-    "refEngine": ""
+    "refEngine": "ELECTRIC_RS_E2E"
   },
   {
     "index": 2,
@@ -38,6 +38,6 @@
     "passageStop": "",
     "startStop": "",
     "weight": "950t",
-    "refEngine": ""
+    "refEngine": "ELECTRIC_RS_E2E"
   }
 ]
