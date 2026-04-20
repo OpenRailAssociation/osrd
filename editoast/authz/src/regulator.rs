@@ -10,7 +10,6 @@ use crate::Authorization;
 use crate::Error;
 use crate::Role;
 use crate::identity::GroupInfo;
-use crate::identity::GroupName;
 use crate::identity::User as UserSubject;
 use crate::identity::UserIdentity;
 use crate::identity::UserInfo;
@@ -38,11 +37,6 @@ pub trait StorageDriver: Clone {
     fn get_user_id(
         &self,
         user_identity: &UserIdentity,
-    ) -> impl Future<Output = Result<Option<i64>, Self::Error>> + Send;
-
-    fn get_group_id(
-        &self,
-        group_name: &GroupName,
     ) -> impl Future<Output = Result<Option<i64>, Self::Error>> + Send;
 
     fn get_user_info(

@@ -103,7 +103,11 @@ pub async fn group_info(
         openfga: regulator.openfga(),
         conn: pool.get().await?,
     };
-    let Some(group_id) = driver.get_group_id(&name).await? else {
+    let Some(editoast_models::Group {
+        id: group_id,
+        name: _,
+    }) = editoast_models::Group::retrieve(pool.get().await?, name.clone()).await?
+    else {
         tracing::error!(name, "No such group");
         return Ok(());
     };
@@ -146,15 +150,15 @@ pub async fn exclude_group(
     }
 
     let regulator = openfga_config.into_regulator(pool.clone()).await?;
-    let driver = regulator.driver();
     let system = SystemAuthorizer {
         openfga: regulator.openfga(),
         conn: pool.get().await?,
     };
 
-    let Some(group_id) = driver.get_group_id(&group_name).await? else {
-        bail!("No such group: '{group_name}'");
-    };
+    let group_id = editoast_models::Group::retrieve(pool.get().await?, group_name.clone())
+        .await?
+        .ok_or_else(|| anyhow!("No such group: '{group_name}'"))?
+        .id;
 
     let mut authz_users = HashSet::new();
     for user in &users {
@@ -189,15 +193,15 @@ pub async fn include_group(
     }
 
     let regulator = openfga_config.into_regulator(pool.clone()).await?;
-    let driver = regulator.driver();
     let system = SystemAuthorizer {
         openfga: regulator.openfga(),
         conn: pool.get().await?,
     };
 
-    let Some(group_id) = driver.get_group_id(&group_name).await? else {
-        bail!("No such group: '{group_name}'");
-    };
+    let group_id = editoast_models::Group::retrieve(pool.get().await?, group_name.clone())
+        .await?
+        .ok_or_else(|| anyhow!("No such group: '{group_name}'"))?
+        .id;
 
     let mut authz_users = HashSet::new();
     for user in &users {
@@ -227,17 +231,15 @@ pub async fn delete_group(
     pool: Arc<DbConnectionPoolV2>,
 ) -> anyhow::Result<()> {
     let regulator = openfga_config.into_regulator(pool.clone()).await?;
-    let driver = regulator.driver();
     let mut conn = pool.get().await?;
     let system = SystemAuthorizer {
         openfga: regulator.openfga(),
         conn: conn.clone(),
     };
-    let group_id = if let Some(id) = driver.get_group_id(&name).await? {
-        id
-    } else {
-        anyhow::bail!("group '{name}' could not be deleted (not found)");
-    };
+    let group_id = editoast_models::Group::retrieve(pool.get().await?, name.clone())
+        .await?
+        .ok_or_else(|| anyhow!("group '{name}' could not be deleted (not found)"))?
+        .id;
     let group = Group(group_id);
 
     // Delete the relationships between the group to be deleted and its members

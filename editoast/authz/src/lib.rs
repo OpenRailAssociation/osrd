@@ -271,10 +271,6 @@ mod mock_driver {
             Ok(self.users.lock().unwrap().get(user_identity).copied())
         }
 
-        async fn get_group_id(&self, group_name: &GroupName) -> Result<Option<i64>, Self::Error> {
-            Ok(self.groups.lock().unwrap().get(group_name).copied())
-        }
-
         async fn get_user_info(&self, user_id: i64) -> Result<Option<UserInfo>, Self::Error> {
             let users = self.users.lock().unwrap();
             let identities = users

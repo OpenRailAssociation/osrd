@@ -3,7 +3,6 @@ use std::sync::Arc;
 
 use authz::StorageDriver;
 use authz::identity::GroupInfo;
-use authz::identity::GroupName;
 use authz::identity::User;
 use authz::identity::UserIdentity;
 use authz::identity::UserInfo;
@@ -101,18 +100,6 @@ impl StorageDriver for PgAuthDriver {
             .inner_join(authn_user_identity::table)
             .select(authn_user::id)
             .filter(authn_user_identity::identity.eq(&user_identity))
-            .first::<i64>(conn.write().await.deref_mut())
-            .await
-            .optional()?;
-        Ok(id)
-    }
-
-    #[tracing::instrument(skip_all, fields(%group_name), ret(level = Level::DEBUG), err)]
-    async fn get_group_id(&self, group_name: &GroupName) -> Result<Option<i64>, Self::Error> {
-        let conn = self.pool.get().await?;
-        let id = authn_group::table
-            .select(authn_group::id)
-            .filter(authn_group::name.eq(group_name))
             .first::<i64>(conn.write().await.deref_mut())
             .await
             .optional()?;
