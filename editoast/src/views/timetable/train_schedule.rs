@@ -24,6 +24,7 @@ use editoast_derive::EditoastError;
 use editoast_models::prelude::*;
 use editoast_models::round_trips::TrainScheduleRoundTrips;
 use futures::StreamExt as _;
+use itertools::Either;
 use itertools::Itertools as _;
 use itertools::izip;
 use reqwest::StatusCode;
@@ -421,18 +422,21 @@ pub(in crate::views) async fn simulation_summary(
         OperationalPointCache::load_path_items(conn.clone(), infra.id, &path_items).await?;
 
     // Build the simulation trains for the simulation environment
-    let simulation_trains = train_occurrences_with_physics_consist.iter().map(
-        |(occurrence_id, (train_occurrence, physics_consist_parameters))| {
-            (
-                occurrence_id.clone(),
-                simulation::build_simulation_train(
+    let (simulation_trains, pathfinding_failures): (Vec<_>, Vec<_>) =
+        train_occurrences_with_physics_consist.iter().partition_map(
+            |(occurrence_id, (train_occurrence, physics_consist_parameters))| {
+                match simulation::build_simulation_train(
                     train_occurrence,
                     physics_consist_parameters,
                     &path_item_cache,
-                ),
-            )
-        },
-    );
+                ) {
+                    Ok(simulation_train) => Either::Left((occurrence_id.clone(), simulation_train)),
+                    Err(pathfinding_failure) => {
+                        Either::Right((occurrence_id.clone(), pathfinding_failure))
+                    }
+                }
+            },
+        );
 
     /////
     // Populate the simulation environment and simulate
@@ -534,6 +538,13 @@ pub(in crate::views) async fn simulation_summary(
                 )
             },
         ))
+        .chain(
+            pathfinding_failures
+                .into_iter()
+                .map(|(occurrence_id, pathfinding_failure)| {
+                    (occurrence_id, SummaryResponse::from(pathfinding_failure))
+                }),
+        )
         .fold(
             HashMap::<i64, TrainScheduleSummaryResponseBuilder>::default(),
             |mut simulation_summaries, (occurrence_id, summary_response)| {
@@ -1794,6 +1805,7 @@ mod tests {
     use chrono::TimeDelta;
     use chrono::Utc;
     use core_client::mocking::MockingClient;
+    use core_client::pathfinding::InvalidPathItem;
     use core_client::pathfinding::PathfindingInputError;
     use core_client::pathfinding::PathfindingResultSuccess;
     use core_client::pathfinding::TrackRange;
@@ -1815,6 +1827,7 @@ mod tests {
     use schemas::paced_train::InitialSpeedChangeGroup;
     use schemas::paced_train::Paced;
     use schemas::paced_train::PacedTrainException;
+    use schemas::paced_train::PathAndScheduleChangeGroup;
     use schemas::paced_train::RollingStockChangeGroup;
     use schemas::paced_train::TrainNameChangeGroup;
     use schemas::paced_train::TrainSchedule;
@@ -1822,6 +1835,7 @@ mod tests {
     use schemas::primitives::PositiveDuration;
     use schemas::rolling_stock::TrainCategory;
     use schemas::train_schedule::Comfort;
+    use schemas::train_schedule::MarginValue;
     use schemas::train_schedule::OperationalPointPartReference;
     use schemas::train_schedule::OperationalPointReference;
     use schemas::train_schedule::PathItem;
@@ -2433,6 +2447,33 @@ mod tests {
                 },
                 ..Default::default()
             });
+        // Add one exception with a different path whose path item don’t exists
+        // Should result in a pathfinding error
+        paced_train_response
+            .train_schedule
+            .paced
+            .as_mut()
+            .unwrap()
+            .exceptions
+            .push(PacedTrainException {
+                key: "unknown_path_item".to_string(),
+                change_groups: TrainScheduleExceptionChangeGroups {
+                    path_and_schedule: Some(PathAndScheduleChangeGroup {
+                        path: vec![
+                            PathItem::new_operational_point("unknown_origin"),
+                            PathItem::new_operational_point("unknown_destination"),
+                        ],
+                        schedule: vec![],
+                        margins: schemas::train_schedule::Margins {
+                            boundaries: vec![],
+                            values: vec![MarginValue::MinPer100Km(2.0_f64)],
+                        },
+                        power_restrictions: vec![],
+                    }),
+                    ..Default::default()
+                },
+                ..Default::default()
+            });
         let request = app
             .put(format!("/train_schedules/{paced_train_id}").as_str())
             .json(&json!(paced_train_response.train_schedule));
@@ -2500,6 +2541,35 @@ mod tests {
                 path_item_respect_times: vec![true, false, true, false],
                 path_item_respect_margins: vec![true, true, true, true],
             }
+        );
+        assert_eq!(
+            exceptions.get("unknown_path_item").unwrap(),
+            &SummaryResponse::PathfindingInputError(PathfindingInputError::InvalidPathItems {
+                items: vec![
+                    InvalidPathItem {
+                        index: 0,
+                        path_item: PathItemLocation::OperationalPointPartReference(
+                            OperationalPointPartReference {
+                                operational_point: OperationalPointReference::Id {
+                                    operational_point: "unknown_origin".into(),
+                                },
+                                local_track_name: None,
+                            },
+                        )
+                    },
+                    InvalidPathItem {
+                        index: 1,
+                        path_item: PathItemLocation::OperationalPointPartReference(
+                            OperationalPointPartReference {
+                                operational_point: OperationalPointReference::Id {
+                                    operational_point: "unknown_destination".into(),
+                                },
+                                local_track_name: None,
+                            },
+                        )
+                    }
+                ]
+            })
         );
     }
 
