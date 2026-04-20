@@ -36,7 +36,6 @@
   "devDependencies": {
     "cheerio": "^1.2.0",
     "svgo": "4.0.1",
-    "@rollup/plugin-eslint": "^9.2.0",
     "@rollup/plugin-typescript": "^12.3.0"
   }
 }

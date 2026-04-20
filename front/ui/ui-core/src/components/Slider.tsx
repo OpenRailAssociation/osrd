@@ -30,7 +30,7 @@ const Slider = ({
 
   useEffect(() => {
     // TODO: fix this lint
-    /* eslint-disable-next-line react-hooks/set-state-in-effect */
+    /* eslint-disable-next-line react-hooks-js/set-state-in-effect */
     setValue(Number(initialValue));
   }, [initialValue]);
 

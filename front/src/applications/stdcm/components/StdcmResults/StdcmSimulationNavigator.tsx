@@ -79,7 +79,7 @@ const StdcmSimulationNavigator = ({
                 }
                 if (hasValidResults) {
                   // TODO: fix this lint
-                  // eslint-disable-next-line react-hooks/immutability
+                  // eslint-disable-next-line react-hooks-js/immutability
                   displayedIndex += 1;
                 }
                 const simulationId = hasValidResults ? displayedIndex : '';

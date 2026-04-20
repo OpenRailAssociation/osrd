@@ -1,7 +1,6 @@
 import path from 'path';
 import process from 'process';
 
-import eslint from '@rollup/plugin-eslint';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
 import livereload from 'rollup-plugin-livereload';
@@ -22,10 +21,6 @@ const generateRollupBaseConfig = () => ({
   })),
   plugins: [
     nodeResolve({ rootDir }),
-    eslint({
-      throwOnError: !process.env.ROLLUP_WATCH,
-      throwOnWarning: !process.env.ROLLUP_WATCH,
-    }),
     typescript(),
     postcss({
       extract: 'theme.css',

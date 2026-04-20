@@ -93,13 +93,13 @@ const SpeedLimitTagsLayer = ({ width, marginTop, store }: SpeedLimitTagsLayerPro
         style={{ marginTop }}
       />
       {/* TODO: fix this lint */}
-      {/* eslint-disable react-hooks/refs */}
+      {/* eslint-disable-next-line react-hooks-js/refs */}
       {tooltip.current && (
         <Tooltip
-          cursorX={tooltip.current.cursorX}
+          cursorX={/* eslint-disable-next-line react-hooks-js/refs */ tooltip.current.cursorX}
           cursorY={marginTop - TOOLTIP_HEIGHT - MARGIN_ADJUSTMENT}
           height={TOOLTIP_HEIGHT}
-          text={tooltip.current.text}
+          text={/* eslint-disable-next-line react-hooks-js/refs */ tooltip.current.text}
         />
       )}
     </>

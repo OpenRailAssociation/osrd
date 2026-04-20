@@ -674,8 +674,7 @@ jobs:
         run: |
           docker run --name=front-format --net=host \
             ${{ fromJSON(needs.build-front.outputs.stable_tags).front-tests }} \
-            sh -c "npx oxfmt . --check && cd ui && npx oxfmt . --check"
-
+            sh -c "npx oxfmt . --check"
           exit $(docker wait front-format)
 
       - name: Check lints

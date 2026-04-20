@@ -28,14 +28,14 @@ import TimeCell, { type TimeCellHandle } from './TimeCell';
 import type { MarginValue, PropagationMode, TimesStopsRowNew } from './types';
 
 declare module '@tanstack/react-table' {
-  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions, @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
   interface ColumnMeta<TData extends RowData, TValue> {
     className: string;
     tabbable?: boolean;
     title?: string;
     'data-testid'?: string;
   }
-  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions, @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
   interface TableMeta<TData extends RowData> {
     allRows: TimesStopsRowNew[];
     isComputedDataPending?: boolean;
@@ -598,7 +598,7 @@ const TimesStopsTable = ({
     [startTime, focusCellBelow, focusRequestedCellOnTab, t]
   );
 
-  // eslint-disable-next-line react-hooks/incompatible-library
+  // eslint-disable-next-line react-hooks-js/incompatible-library
   const table = useReactTable({
     data: rows,
     columns,

@@ -15,7 +15,6 @@
     "experimentalDecorators": false,
     "forceConsistentCasingInFileNames": true,
     "importHelpers": false,
-    "importsNotUsedAsValues": "remove",
     "inlineSourceMap": false,
     "inlineSources": false,
     "isolatedModules": false,
@@ -32,7 +31,6 @@
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
-    "noImplicitUseStrict": false,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "outDir": "./dist",
@@ -50,8 +48,6 @@
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
     "stripInternal": true,
-    "suppressExcessPropertyErrors": false,
-    "suppressImplicitAnyIndexErrors": false,
     "noUncheckedSideEffectImports": false,
     "target": "esnext"
   }

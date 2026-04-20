@@ -14,13 +14,15 @@ const config: StorybookConfig = {
   async viteFinal(viteConfig) {
     return mergeConfig(viteConfig, {
       plugins: [
-        vitePluginChecker({
-          typescript: true,
-          eslint: {
-            useFlatConfig: true,
-            lintCommand: 'eslint stories .storybook --max-warnings 0',
-          },
-        }),
+        {
+          ...vitePluginChecker({
+            typescript: true,
+            oxlint: {
+              lintCommand: 'oxlint -c ../../.oxlintrc.json',
+            },
+          }),
+          apply: 'serve',
+        },
       ],
     });
   },

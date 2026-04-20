@@ -16,7 +16,7 @@ const TimePickerStory = (props: TimePickerProps) => {
   };
   useEffect(() => {
     // TODO: fix this lint
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    // eslint-disable-next-line react-hooks-js/set-state-in-effect
     setSelectedHour(props.hours);
     setSelectedMinute(props.minutes);
     setSelectedSecond(props.seconds);

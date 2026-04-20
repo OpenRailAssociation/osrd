@@ -134,7 +134,9 @@ const MarginCellEditable = ({
           inherited: isInherited,
         })}
         data-testid={dataTestId}
+        role="button"
         onClick={!isInherited ? () => startEditing() : undefined}
+        tabIndex={0}
       >
         {displayValue && <MarginDisplayLabel margin={displayValue} />}
         {isInherited && <CellPlaceholder onClick={startEditing} />}

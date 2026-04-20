@@ -69,7 +69,7 @@ const NavBar = ({ appName }: NavBarProps) => {
           )}
         </Link>
       </div>
-      <header role="banner" className="d-flex flex-grow-1">
+      <header className="d-flex flex-grow-1">
         <h1 className="text-white pl-3 mb-0">{appName}</h1>
       </header>
       <ul className="right-tool-bar">
