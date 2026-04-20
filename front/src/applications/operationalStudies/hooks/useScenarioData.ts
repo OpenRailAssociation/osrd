@@ -90,13 +90,13 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
   // TODO Paced trains : adapt this to handle paced trains in the conflicts issue
   const {
     data: conflicts,
-    isLoading,
+    isUninitialized,
     isFetching,
   } = osrdEditoastApi.endpoints.getTimetableByIdConflicts.useQuery(
     allTrainsSimulated ? { id: scenario.timetable_id, infraId: scenario.infra_id } : skipToken
   );
 
-  const isConflictsLoading = isLoading || isFetching;
+  const isConflictsLoading = isUninitialized || isFetching;
 
   const timetableItemsWithDetails = useMemo(() => {
     const items = (timetableItems || []).map((timetableItem) => {
