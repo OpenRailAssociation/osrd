@@ -73,17 +73,19 @@ const Select = <T,>({
           small,
           'read-only': readOnly,
         })}
-        value={selectedOption ? getOptionValue(selectedOption) : undefined}
+        value={selectedOption ? getOptionValue(selectedOption) : PLACEHOLDER_VALUE}
         required={required}
         disabled={disabled || readOnly}
         onChange={handleOnChange}
         {...props}
       >
-        {placeholder && (
+        {placeholder ? (
           <option
             value={PLACEHOLDER_VALUE}
             className="placeholder-option"
           >{`– ${placeholder} –`}</option>
+        ) : (
+          <option value={PLACEHOLDER_VALUE} hidden />
         )}
         {options.map((option) => (
           <option key={getOptionValue(option)} value={getOptionValue(option)}>
