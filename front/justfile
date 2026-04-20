@@ -18,7 +18,7 @@ test:
 
 # Format the source code
 format:
-    @echo "Formatting is included with eslint"
+    @echo "Formatting is handled together with lints"
     @echo "run \`just fix-lint\`"
 
 # Verify code lints without applying any fix

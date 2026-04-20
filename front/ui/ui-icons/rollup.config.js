@@ -1,4 +1,3 @@
-import eslint from '@rollup/plugin-eslint';
 import typescript from '@rollup/plugin-typescript';
 
 const formats = ['esm'];
@@ -12,6 +11,6 @@ export default {
     name: 'osrdicons',
     sourcemap: true,
   })),
-  plugins: [eslint(), typescript()],
+  plugins: [typescript()],
   external: ['react'],
 };

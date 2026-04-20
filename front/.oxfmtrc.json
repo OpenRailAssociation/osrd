@@ -13,7 +13,6 @@
     "src/common/NavBar/json/licenses.json",
     "src/reducers/osrdconf/infra_schema.json",
     "src/utils/__tests__/assets/*.json",
-    "/ui",
     "node_modules"
   ],
   "sortImports": {

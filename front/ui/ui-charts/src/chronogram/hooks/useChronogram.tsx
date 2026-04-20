@@ -72,7 +72,7 @@ const useChronogram = ({
 
   useEffect(() => {
     // TODO: fix this lint
-    /* eslint-disable-next-line react-hooks/set-state-in-effect */
+    /* eslint-disable-next-line react-hooks-js/set-state-in-effect */
     setHeight(chronogramHeight);
   }, [chronogramHeight, setHeight]);
 

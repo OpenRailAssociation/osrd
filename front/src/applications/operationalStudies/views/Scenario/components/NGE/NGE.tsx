@@ -65,14 +65,14 @@ const NGE = ({ dto, onOperation, onLoad }: NGEProps) => {
 
   useEffect(() => {
     if (ngeRootElement && i18n.language) {
-      // eslint-disable-next-line react-hooks/immutability
+      // eslint-disable-next-line react-hooks-js/immutability
       ngeRootElement.language = i18n.language;
     }
   }, [i18n.language, ngeRootElement]);
 
   useEffect(() => {
     if (ngeRootElement && dto) {
-      // eslint-disable-next-line react-hooks/immutability
+      // eslint-disable-next-line react-hooks-js/immutability
       ngeRootElement.netzgrafikDto = dto;
     }
   }, [dto, ngeRootElement]);

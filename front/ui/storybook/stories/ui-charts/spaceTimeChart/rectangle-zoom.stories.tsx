@@ -107,12 +107,12 @@ const RectangleZoomWrapper = ({
 
   useEffect(() => {
     // TODO: fix this lint
-    /* eslint-disable-next-line react-hooks/set-state-in-effect */
+    /* eslint-disable-next-line react-hooks-js/set-state-in-effect */
     setState((prev) => ({ ...prev, xOffset }));
   }, [xOffset]);
   useEffect(() => {
     // TODO: fix this lint
-    /* eslint-disable-next-line react-hooks/set-state-in-effect */
+    /* eslint-disable-next-line react-hooks-js/set-state-in-effect */
     setState((prev) => ({ ...prev, yOffset }));
   }, [yOffset]);
 
@@ -235,7 +235,7 @@ const RectangleZoomWrapper = ({
         ? spaceRange / (DEFAULT_HEIGHT - captionSize)
         : spaceRange / (DEFAULT_WIDTH - captionSize);
       // TODO: fix this lint
-      /* eslint-disable-next-line react-hooks/set-state-in-effect */
+      /* eslint-disable-next-line react-hooks-js/set-state-in-effect */
       handleRectangleZoom({
         scales: { chosenTimeScale, chosenSpaceScale },
         overrideState: { rect: null },

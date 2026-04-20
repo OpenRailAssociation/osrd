@@ -120,7 +120,7 @@ const ModalSuggestedVias = ({ suggestedVias, launchPathfinding }: ModalSuggested
             if (!isOriginOrDestination(via)) {
               // If name is undefined, we know the op/via has been added by clicking on map
               // TODO: fix this lint
-              // eslint-disable-next-line react-hooks/immutability
+              // eslint-disable-next-line react-hooks-js/immutability
               if (isVia(vias, via)) idxTrueVia += 1;
               return formatOP(via, idx, idxTrueVia);
             }

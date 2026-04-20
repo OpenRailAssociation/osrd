@@ -21,10 +21,11 @@ export function getAsyncMemoData<T>(state: AsyncMemoState<T>): T | undefined {
 export function useAsyncMemo<T>(fn: () => Promise<T>, deps: DependencyList): AsyncMemoState<T> {
   const [state, setState] = useState<AsyncMemoState<T>>({ type: 'loading' });
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     let aborted = false;
     // TODO: fix this lint
-    /* eslint-disable-next-line react-hooks/set-state-in-effect */
+    // eslint-disable-next-line react-hooks-js/set-state-in-effect
     setState({ type: 'loading', previousData: getAsyncMemoData(state) });
     fn()
       .then((data) => {

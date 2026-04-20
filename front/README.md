@@ -15,7 +15,7 @@ OSRD in this mode:
 
 The first time the container starts up, the osrd-ui library will be missing. This will trigger some
 build errors, which should go away as soon as osrd-ui gets built. Restarting the front container
-helps getting rid of lingering ESLint errors.
+helps getting rid of lingering oxlint errors.
 
 ### Outside of Docker
 
@@ -47,37 +47,21 @@ to open OSRD, as requests must pass through the `gateway`.
 
 ## IDE integrations
 
-Make sure you configure your IDE to enable Oxfmt and ESLint integrations.
+Make sure you configure your IDE to enable Oxfmt and Oxlint integrations.
 
 ### VSCode
 
-To lint your code directly from your VSCode editor, enable the [ESLint extension](https://github.com/microsoft/vscode-eslint).
-
-Also, make sure to install the [Oxc extension](https://marketplace.visualstudio.com/items?itemName=oxc.oxc-vscode), and to configure it in `.vscode/settings.json` like this:
+To format and lint your code directly from your VSCode editor, enable the [Oxc extension](https://marketplace.visualstudio.com/items?itemName=oxc.oxc-vscode), and to configure it in `.vscode/settings.json` like this:
 
 ```jsonc
 {
   // ...your previous settings...
-  "oxc.enable.oxfmt": true,
-  "oxc.requireConfig": false,
+  "oxc.configPath": "front/.oxlintrc.json",
   "oxc.fmt.configPath": "front/.oxfmtrc.json",
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "oxc.oxc-vscode"
 }
 ```
-
-> [!NOTE]
-> Make sure the extension or integration you use inside your IDE adds `--flag v10_config_lookup_from_file`
-> so `eslint` can be run from anywhere (including if it should lint a file in `ui/`).
->
-> For example, in VSCode, add this snippet in your `settings.json`:
->
-> ```jsonc
-> {
->   // ...
->   "eslint.options": { "flags": ["v10_config_lookup_from_file"] }
-> }
-> ```
 
 ## Commands
 
@@ -256,20 +240,13 @@ keys. You can use `./scripts/i18n-order-checker.sh --fix` to automatically sort 
 
 ### Javascript / Javascript-React
 
-### Javascript / Javascript-React
-
-- ESLint is used as linter and oxfmt as formatter. Both are configured as devDependencies to
-  enforce default eslint configuration eventually overridden by
-  [airbnb rules](https://airbnb.io/javascript/) translation. A few rules (see eslintrc) has been
-  disabled and will be re-enabled in the near future:
+- `oxlint` is used as linter and `oxfmt` as formatter. Both are configured as `devDependencies` to
+  enforce default oxlint configuration eventually overridden by [airbnb rules](https://airbnb.io/javascript/)
+  translation. A few rules (see oxlintrc) has been disabled and will be re-enabled in the near future:
   - 'no-named-as-default': 'off',
   - 'react/jsx-props-no-spreading': 0,
   - 'react/static-property-placement': 0,
-- eslint rules incompatible with oxfmt usage are disabled, yet these styling errors will be
-  displayed as oxfmt issues.
 - Please push commits exclusively dedicated to styling issues
-- _For VSCode Users_: Install [Oxc](https://marketplace.visualstudio.com/items?itemName=oxc.oxc-vscode)
-  and follow instructions from [Oxfmt documentation](https://oxc.rs/docs/guide/usage/formatter/editors.html#vs-code).
 
 You may also use `npm run lint-fix` to format/lint.
 

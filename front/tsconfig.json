@@ -16,7 +16,6 @@
     "experimentalDecorators": false,
     "forceConsistentCasingInFileNames": true,
     "importHelpers": true,
-    "importsNotUsedAsValues": "remove",
     "isolatedModules": true,
     "jsx": "react-jsx",
     "lib": ["dom", "dom.iterable", "esnext"],
@@ -51,10 +50,7 @@
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
     "stripInternal": true,
-    "suppressExcessPropertyErrors": false,
-    "suppressImplicitAnyIndexErrors": false,
     "typeRoots": ["node_modules/@types"],
-    "types": ["vite/client"],
     "target": "ESNext",
     "verbatimModuleSyntax": true
   }
