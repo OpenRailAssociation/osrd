@@ -193,8 +193,11 @@ export type MissingFields =
   | 'totalLength'
   | 'maxSpeed'
   | 'origin'
+  | 'originCh'
   | 'vias'
+  | 'viasCh'
   | 'destination'
+  | 'destinationCh'
   | 'viaConsistTotalMass'
   | 'viaConsistTotalLength';
 

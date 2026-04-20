@@ -236,8 +236,10 @@
     "invalidInformations": "Informations invalides pour le calcul :",
     "missingFields": {
       "destination": "la destination",
+      "destinationCh": "le CH de la destination",
       "maxSpeed": "la vitesse maximale du convoi",
       "origin": "l'origine",
+      "originCh": "le CH de l'origine",
       "timeDestination": "l'heure d'arrivée à la destination",
       "timeOrigin": "l'heure de départ à l'origine",
       "totalLength": "la longueur totale du convoi",
@@ -245,7 +247,8 @@
       "tractionEngine": "l'engin de traction",
       "viaConsistTotalLength": "la longueur totale d'un changement convoi",
       "viaConsistTotalMass": "le poids total d'un changement de convoi",
-      "vias": "au moins un PR intermédiaire"
+      "vias": "au moins un PR intermédiaire",
+      "viasCh": "le CH d'au moins un PR intermédiaire"
     },
     "missingInformations": "Informations manquantes pour le calcul :",
     "noPaths": "Incompatibilité avec d'autres sillons.",

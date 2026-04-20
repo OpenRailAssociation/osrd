@@ -23,7 +23,7 @@ const formatStdcmTrainIntoSpaceTimeData = (
         operational_point: {
           type: 'uic',
           uic: origin.operationalPoint.uic,
-          secondary_code: origin.operationalPoint.secondaryCode,
+          secondary_code: origin.operationalPoint.secondaryCode!,
         },
       },
     },
@@ -34,7 +34,7 @@ const formatStdcmTrainIntoSpaceTimeData = (
         operational_point: {
           type: 'uic',
           uic: destination.operationalPoint.uic,
-          secondary_code: destination.operationalPoint.secondaryCode,
+          secondary_code: destination.operationalPoint.secondaryCode!,
         },
       },
     },

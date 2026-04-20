@@ -19,9 +19,7 @@ type StdcmOperationalPointProps = {
   onItineraryChange: () => void;
 };
 
-function formatChCode(chCode: string) {
-  return chCode === '' ? 'BV' : chCode;
-}
+const formatChCode = (chCode?: string) => chCode || 'BV';
 
 const stdcmOpFromSearchResult = (searchResult: SearchResultItemOperationalPoint): StdcmOp => ({
   id: searchResult.obj_id,
@@ -83,19 +81,22 @@ const StdcmOperationalPoint = ({
   );
 
   const handleCiSelect = async (selectedSuggestion?: StdcmOp) => {
+    const { secondaryCode: _, ...op } = selectedSuggestion ?? { secondaryCode: undefined };
     dispatch(
-      updateStdcmPathStep({ id: pathStepId, updates: { operationalPoint: selectedSuggestion } })
+      updateStdcmPathStep({
+        id: pathStepId,
+        updates: { operationalPoint: selectedSuggestion ? (op as StdcmOp) : undefined },
+      })
     );
     onItineraryChange();
-    if (selectedSuggestion) {
-      const operationalPointParts = await searchOperationalPointsByTrigram(
-        selectedSuggestion.trigram
-      );
-      const newChSuggestions = extractChCodes(operationalPointParts, selectedSuggestion);
-      setChSuggestions(newChSuggestions);
-    } else {
+    if (!selectedSuggestion) {
       setChSuggestions([]);
+      return;
     }
+    const operationalPointParts = await searchOperationalPointsByTrigram(
+      selectedSuggestion.trigram
+    );
+    setChSuggestions(extractChCodes(operationalPointParts, selectedSuggestion));
   };
 
   const handleChSelect = (selectedChCode?: StdcmOp) => {
@@ -127,6 +128,7 @@ const StdcmOperationalPoint = ({
       setSearchTerm(operationalPoint.name);
       // Clear the list of CH suggestions if the location has changed to avoid showing outated suggestions
       if (
+        operationalPoint.secondaryCode &&
         !chSuggestions.some(
           (suggestion) => suggestion.secondaryCode === operationalPoint.secondaryCode
         )
@@ -172,11 +174,11 @@ const StdcmOperationalPoint = ({
           label={t('trainPath.ch')}
           id={`${pathStepId}-ch`}
           data-testid="operational-point-ch"
-          value={operationalPoint}
+          value={operationalPoint?.secondaryCode ? operationalPoint : undefined}
           onChange={handleChSelect}
           options={chSuggestions}
           getOptionLabel={(option) => formatChCode(option.secondaryCode)}
-          getOptionValue={(option) => option.secondaryCode}
+          getOptionValue={(option) => option.secondaryCode ?? ''}
           disabled={disabled}
           narrow
         />

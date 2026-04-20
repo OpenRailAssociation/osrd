@@ -143,6 +143,18 @@ const checkStdcmConfigErrors = ({
     routeErrors = keptErrors;
   }
 
+  if (shouldCheckMandatoryFields) {
+    if (origin.operationalPoint && !origin.operationalPoint.secondaryCode) {
+      missingFields.push('originCh');
+    }
+    if (vias.some((step) => step.operationalPoint && !step.operationalPoint.secondaryCode)) {
+      missingFields.push('viasCh');
+    }
+    if (destination.operationalPoint && !destination.operationalPoint.secondaryCode) {
+      missingFields.push('destinationCh');
+    }
+  }
+
   const finalMissingFields = missingFields.length > 0 ? missingFields : undefined;
   const finalInvalidFields = invalidFields.length > 0 ? invalidFields : undefined;
   const finalRouteErrors = routeErrors.length > 0 ? routeErrors : undefined;

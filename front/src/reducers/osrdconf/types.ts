@@ -172,7 +172,7 @@ export type StdcmPathStep = {
     id: string;
     trigram: string;
     uic: number;
-    secondaryCode: string;
+    secondaryCode?: string;
     name: string;
     coordinates: [number, number];
   };
