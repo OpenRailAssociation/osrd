@@ -11,7 +11,6 @@ use authz::identity::GroupInfo;
 use authz::identity::UserInfo;
 
 use database::DbConnectionPoolV2;
-use futures::TryStreamExt;
 use std::collections::HashSet;
 use std::sync::Arc;
 
@@ -84,13 +83,13 @@ pub async fn create_group(args: CreateArgs, pool: Arc<DbConnectionPoolV2>) -> an
 }
 
 pub async fn list_group(pool: Arc<DbConnectionPoolV2>) -> anyhow::Result<()> {
-    let driver = PgAuthDriver::new(pool);
-    let groups = driver.list_groups().await?.try_collect::<Vec<_>>().await?;
+    let mut conn = pool.get().await?;
+    let groups = editoast_models::Group::list(&mut conn, Default::default()).await?;
     if groups.is_empty() {
         tracing::info!("No group found.");
         return Ok(());
     }
-    for (id, GroupInfo { name }) in &groups {
+    for editoast_models::Group { id, name } in groups {
         println!("[{id}]: {name}");
     }
     Ok(())
