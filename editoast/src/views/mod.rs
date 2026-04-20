@@ -850,6 +850,7 @@ async fn authenticate(
         Ok(authorizer) => authorizer,
         Err(AuthorizerError::UnknownUser { .. }) => {
             // The user is not in the database, let's add it
+            #[allow(deprecated)] // soon to be removed
             regulator
                 .clone()
                 .driver()
