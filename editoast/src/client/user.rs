@@ -7,7 +7,6 @@ use clap::Args;
 use clap::Subcommand;
 use database::DbConnectionPoolV2;
 use editoast_models::Group;
-use editoast_models::PgAuthDriver;
 use editoast_models::User;
 use editoast_models::authn::user::AddIdentitiesError;
 use editoast_models::authn::user::UserWithIdentities;
@@ -167,14 +166,16 @@ pub async fn user_info(
     openfga_config: OpenfgaConfig,
     pool: Arc<DbConnectionPoolV2>,
 ) -> anyhow::Result<()> {
-    let regulator = openfga_config.into_regulator(pool.clone()).await?;
-    let driver = regulator.driver();
     let uid = if let Ok(id) = user.parse::<i64>() {
         id
     } else {
-        let uid = driver.get_user_id(&user).await?;
-        uid.ok_or_else(|| anyhow!("No user with identity '{user}' found"))?
+        editoast_models::User::retrieve_by_identity(&user, pool.get().await?)
+            .await?
+            .ok_or_else(|| anyhow!("No user with identity '{user}' found"))?
+            .id
     };
+    let regulator = openfga_config.into_regulator(pool.clone()).await?;
+    let driver = regulator.driver();
     let Some(UserInfo { identities, name }) = driver.get_user_info(uid).await? else {
         tracing::error!(user.id = uid, "User not found");
         return Ok(());
@@ -201,13 +202,13 @@ pub async fn delete_user(
     DeleteArgs { user }: DeleteArgs,
     pool: Arc<DbConnectionPoolV2>,
 ) -> anyhow::Result<()> {
-    let driver = PgAuthDriver::new(pool.clone());
-
     let uid = if let Ok(id) = user.parse::<i64>() {
         id
     } else {
-        let uid = driver.get_user_id(&user).await?;
-        uid.ok_or_else(|| anyhow!("No user with identity '{user}' found"))?
+        editoast_models::User::retrieve_by_identity(&user, pool.get().await?)
+            .await?
+            .ok_or_else(|| anyhow!("No user with identity '{user}' found"))?
+            .id
     };
 
     let conn = &mut pool.get().await?;

@@ -148,8 +148,10 @@ pub async fn exclude_group(
         let uid = if let Ok(id) = user.parse::<i64>() {
             id
         } else {
-            let uid = driver.get_user_id(user).await?;
-            uid.ok_or_else(|| anyhow!("No user with identity '{user}' found"))?
+            editoast_models::User::retrieve_by_identity(user, pool.get().await?)
+                .await?
+                .ok_or_else(|| anyhow!("No user with identity '{user}' found"))?
+                .id
         };
         authz_users.insert(authz::User(uid));
     }
@@ -189,8 +191,10 @@ pub async fn include_group(
         let uid = if let Ok(id) = user.parse::<i64>() {
             id
         } else {
-            let uid = driver.get_user_id(user).await?;
-            uid.ok_or_else(|| anyhow!("No user with identity '{user}' found"))?
+            editoast_models::User::retrieve_by_identity(user, pool.get().await?)
+                .await?
+                .ok_or_else(|| anyhow!("No user with identity '{user}' found"))?
+                .id
         };
         authz_users.insert(authz::User(uid));
     }

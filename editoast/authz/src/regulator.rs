@@ -34,6 +34,7 @@ pub struct Regulator<S: StorageDriver> {
 pub trait StorageDriver: Clone {
     type Error: std::error::Error;
 
+    #[deprecated(note = "use editoast_models::User::retrieve_by_identity instead")]
     fn get_user_id(
         &self,
         user_identity: &UserIdentity,
@@ -60,6 +61,7 @@ pub trait StorageDriver: Clone {
         &self,
         user_identity: &UserIdentity,
     ) -> Result<Option<UserSubject>, Self::Error> {
+        #[expect(deprecated)]
         let Some(user_id) = self.get_user_id(user_identity).await? else {
             return Ok(None);
         };
