@@ -212,8 +212,6 @@ mod tests {
     use crate::fixtures::create_empty_infra;
     use crate::fixtures::create_scenario_fixtures_set;
     use crate::fixtures::create_timetable;
-    use authz::StorageDriver;
-    use editoast_models::PgAuthDriver;
     use editoast_models::stdcm_search_environment::StdcmSearchEnvironment;
     use editoast_models::stdcm_search_environment::fixtures::stdcm_search_env_fixtures;
 
@@ -313,7 +311,6 @@ mod tests {
 
         // Create entities in DB
         let db_pool = Arc::new(DbConnectionPoolV2::for_tests());
-        let driver = PgAuthDriver::new(db_pool.clone());
 
         let (fga_infra, orphan_infra) = {
             let conn = &mut db_pool.get_ok();
@@ -322,18 +319,24 @@ mod tests {
             (authz::Infra(existing.id), authz::Infra(orphan.id))
         };
         let existing_user = authz::User(
-            driver
-                .ensure_user(&"alice".into(), &"alice".into())
-                .await
-                .unwrap()
-                .id,
+            editoast_models::User::register(
+                db_pool.get_ok(),
+                vec!["alice".to_owned()],
+                "Alice".to_owned(),
+            )
+            .await
+            .unwrap()
+            .id,
         );
         let orphan_user = authz::User(
-            driver
-                .ensure_user(&"bob".into(), &"bob".into())
-                .await
-                .unwrap()
-                .id,
+            editoast_models::User::register(
+                db_pool.get_ok(),
+                vec!["bob".to_owned()],
+                "Bob".to_owned(),
+            )
+            .await
+            .unwrap()
+            .id,
         );
         let existing_group = authz::Group(
             Group::upsert(db_pool.get_ok(), "existing-group".into())

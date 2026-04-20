@@ -13,7 +13,6 @@ use tokio::sync::RwLock;
 
 use authz::InfraGrant;
 use authz::Role;
-use authz::StorageDriver;
 use authz::identity::GroupInfo;
 use authz::identity::UserInfo;
 use axum::Router;
@@ -515,11 +514,11 @@ impl<'a> UserBuilder<'a> {
         }
         let regulator = &app.app_state.regulator;
 
-        let user = regulator
-            .driver()
-            .ensure_user(&info.name, &info.identities[0])
-            .await
-            .expect("User should be created successfully");
+        let authz::identity::UserInfo { identities, name } = info.clone();
+        let user =
+            editoast_models::User::register(app.db_pool().get().await.unwrap(), identities, name)
+                .await
+                .expect("User should be created successfully");
         if app.app_state.config.enable_authorization {
             v2::add_roles(authz::Subject::user(user.id), roles)
                 .authorize(&special_authorizers::Authorize(regulator.openfga()))
@@ -539,7 +538,7 @@ impl<'a> UserBuilder<'a> {
                     .expect("Infra grant should be given successfully")
             }
         }
-        user
+        authz::identity::User { info, id: user.id }
     }
 }
 
