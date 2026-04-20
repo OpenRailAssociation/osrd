@@ -247,24 +247,6 @@ impl StorageDriver for PgAuthDriver {
         Ok(users)
     }
 
-    async fn list_groups(
-        &self,
-    ) -> Result<
-        impl futures::stream::TryStream<Ok = (i64, GroupInfo), Error = Self::Error>,
-        Self::Error,
-    > {
-        let conn = self.pool.get().await?;
-        let groups = authn_group::table
-            .select((authn_group::id, authn_group::name))
-            .load_stream::<(i64, String)>(&mut conn.write().await)
-            .await?
-            .map(|res| match res {
-                Ok((id, name)) => Ok((id, GroupInfo { name })),
-                Err(e) => Err(e.into()),
-            });
-        Ok(groups)
-    }
-
     #[tracing::instrument(skip_all, fields(identities, user = %user_identity), ret(level = Level::DEBUG), err)]
     async fn add_user_identities(
         &self,

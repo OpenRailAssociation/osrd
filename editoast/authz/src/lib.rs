@@ -333,20 +333,6 @@ mod mock_driver {
             )))
         }
 
-        async fn list_groups(
-            &self,
-        ) -> Result<impl stream::TryStream<Ok = (i64, GroupInfo), Error = Self::Error>, Self::Error>
-        {
-            Ok(stream::iter(
-                self.groups
-                    .lock()
-                    .unwrap()
-                    .clone()
-                    .into_iter()
-                    .map(|(name, id)| Ok((id, GroupInfo { name }))),
-            ))
-        }
-
         async fn infra_exists(&self, _infra_id: i64) -> Result<bool, Self::Error> {
             // Mock implementation, always return true
             Ok(true)

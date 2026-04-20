@@ -89,15 +89,6 @@ pub trait StorageDriver: Clone {
         >,
     > + Send;
 
-    fn list_groups(
-        &self,
-    ) -> impl Future<
-        Output = Result<
-            impl stream::TryStream<Ok = (i64, GroupInfo), Error = Self::Error>,
-            Self::Error,
-        >,
-    > + Send;
-
     fn add_user_identities(
         &self,
         user_identity: Either<i64, String>,

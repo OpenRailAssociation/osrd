@@ -77,18 +77,22 @@ pub async fn list_user(
     openfga_config: OpenfgaConfig,
     pool: Arc<DbConnectionPoolV2>,
 ) -> anyhow::Result<()> {
-    let regulator = openfga_config.into_regulator(pool).await?;
+    let regulator = openfga_config.into_regulator(pool.clone()).await?;
     let driver = regulator.driver();
 
     let (users, groups) = tokio::join!(
         async { driver.list_users().await?.try_collect::<Vec<_>>().await },
-        async { driver.list_groups().await?.try_collect::<Vec<_>>().await }
+        async {
+            let conn = &mut pool.get().await?;
+            let groups = editoast_models::Group::list(conn, Default::default()).await?;
+            anyhow::Ok(groups)
+        }
     );
     let users = if without_groups {
         let group_members =
             try_join_all(groups?.into_iter().zip(std::iter::repeat(regulator)).map(
-                |((group_id, _), regulator)| async move {
-                    regulator.group_members(&authz::Group(group_id)).await
+                |(group, regulator)| async move {
+                    regulator.group_members(&authz::Group(group.id)).await
                 },
             ))
             .await?
