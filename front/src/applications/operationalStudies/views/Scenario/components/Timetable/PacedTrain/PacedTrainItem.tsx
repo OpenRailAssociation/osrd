@@ -302,7 +302,7 @@ const PacedTrainItem = ({
         ...change_groups,
         ...restExceptions,
         // TODO_EXCEPTION: remove this when drop key in the model
-        key: restExceptions.id.toString(),
+        key: '',
       };
     });
 

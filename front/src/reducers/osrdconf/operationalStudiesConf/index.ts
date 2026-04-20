@@ -1,5 +1,4 @@
 import { createSlice, type Draft, type PayloadAction } from '@reduxjs/toolkit';
-import { v4 as uuidV4 } from 'uuid';
 
 import computeBasePathStep from 'modules/timetableItem/helpers/computeBasePathStep';
 import { isPacedTrainWithDetails } from 'modules/timetableItem/helpers/pacedTrain';
@@ -117,12 +116,11 @@ export const operationalStudiesConfSlice = createSlice({
     },
     addAddedException(state: Draft<OperationalStudiesConfState>, action: PayloadAction<Date>) {
       state.addedExceptions.push({
-        key: uuidV4(),
         startTime: action.payload,
       });
     },
-    deleteAddedException(state: Draft<OperationalStudiesConfState>, action: PayloadAction<string>) {
-      const indexToDelete = state.addedExceptions.findIndex((e) => e.key === action.payload);
+    deleteAddedException(state: Draft<OperationalStudiesConfState>, action: PayloadAction<number>) {
+      const indexToDelete = action.payload;
       state.addedExceptions.splice(indexToDelete, 1);
     },
     clearAddedExceptionsList(state: Draft<OperationalStudiesConfState>) {

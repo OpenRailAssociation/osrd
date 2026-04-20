@@ -177,8 +177,8 @@ const useUpdateTimetableItem = (
     const originalPacedExceptions = originalPacedTrain.paced?.exceptions ?? [];
 
     const newAddedExceptions: PacedTrainException[] = addedExceptions.map(
-      ({ key, startTime: exStartTime }) => ({
-        key,
+      ({ startTime: exStartTime }) => ({
+        key: '', // TODO : remove this when the key will be removed from the model
         start_time: { value: exStartTime.toISOString() },
       }),
     );
@@ -218,9 +218,9 @@ const useUpdateTimetableItem = (
           ...change_groups,
           ...rest,
           // TODO_EXCEPTION: remove this when drop key in the model
-          key: rest.id.toString(),
-        }),
-      );
+          key: '',
+        })
+    );
     }
 
     // If we just converted a unique train to a paced train, upsert with created exceptions and return

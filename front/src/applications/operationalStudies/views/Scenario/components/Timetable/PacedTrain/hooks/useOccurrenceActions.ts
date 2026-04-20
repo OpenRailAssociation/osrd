@@ -1,7 +1,6 @@
 import { useCallback } from 'react';
 
 import { useSelector } from 'react-redux';
-import { v4 as uuidV4 } from 'uuid';
 
 import { updatePacedTrainExceptionsList } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/buildPacedTrainException';
 import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/formatTimetableItemPayload';
@@ -147,7 +146,7 @@ const useOccurrenceActions = ({
         }
 
         // TODO_EXCEPTION: remove key when using TrainSchedulingException type
-        const key = uuidV4();
+        const key = '';
         // No exception yet: create one with disabled: true
         const exceptionToCreate: PacedTrainException = {
           occurrence_index: occurrence.occurrenceIndex,
@@ -214,7 +213,7 @@ const useOccurrenceActions = ({
           // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
           id: exceptionToUpdate.id!,
           // TODO_EXCEPTION: remove `key` when using TrainSchedulingException type
-          key: exceptionToUpdate.id!.toString(),
+          key: '',
           start_time: exceptionToUpdate.start_time,
         };
         // for an added exception, we want to reset all change groups except the start time
