@@ -12,9 +12,6 @@ const IGNORE_MISSING: RegExp[] = [
   /stdcm-help-section:externalSupport/,
   /stdcm-help-section:sections/,
   /stdcm:stdcmErrors\..*/,
-  /translation:Editor.obj-types.NeutralSection/,
-  /translation:Editor.obj-types.SwitchType/,
-  /translation:Editor.obj-types.OperationalPoint/,
 ];
 
 const IGNORE_UNUSED: RegExp[] = [
