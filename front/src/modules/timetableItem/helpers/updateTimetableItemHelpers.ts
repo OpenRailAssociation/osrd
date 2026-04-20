@@ -1,5 +1,4 @@
 import { isEmpty } from 'lodash';
-import { v4 as uuidV4 } from 'uuid';
 
 import {
   osrdEditoastApi,
@@ -151,7 +150,8 @@ export async function syncOccurrenceException(
       // Return the empty exception so updatePacedTrainExceptionsList removes it from local state
       return {
         ...generatedException,
-        key: existingException.key,
+        // TODO_EXCEPTION: remove this when key is dropped from the model
+        key: '',
         occurrence_index: occurrenceIndex,
       };
     }
@@ -159,7 +159,7 @@ export async function syncOccurrenceException(
       ...generatedException,
       id: existingException.id,
       // TODO_EXCEPTION: remove this when key is dropped from the model
-      key: existingException.key,
+      key: '',
       occurrence_index: occurrenceIndex,
     };
     await updateExceptions(dispatch, [toUpdate], pacedTrainId);
@@ -169,7 +169,7 @@ export async function syncOccurrenceException(
   const exceptionToCreate: PacedTrainException = {
     ...generatedException,
     // TODO_EXCEPTION: remove this when key is dropped from the model
-    key: uuidV4(),
+    key: '',
     occurrence_index: occurrenceIndex,
   };
   const [created] = await createExceptions(

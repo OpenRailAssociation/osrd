@@ -113,7 +113,7 @@ export const postFullImportPayload = async (
           ...change_groups,
           ...rest,
           // TODO_EXCEPTION: remove this when drop key in the model
-          key: rest.id.toString(),
+          key: '',
         })
       );
 

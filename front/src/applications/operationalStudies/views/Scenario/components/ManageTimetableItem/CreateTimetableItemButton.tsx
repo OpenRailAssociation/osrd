@@ -66,12 +66,12 @@ const CreateTimetableItemButton = ({
       const formattedNewTrainSchedule: TimetableItem = (
         await createPacedTrains(dispatch, sandboxId, [newTrainSchedulePayload])
       )[0];
-      dispatch(updateSelectedTrainId(formatEditoastIdToPacedTrainId(formattedNewPacedTrain.id)));
+      dispatch(updateSelectedTrainId(formatEditoastIdToPacedTrainId(formattedNewTrainSchedule.id)));
 
       let timetableItemToUpsert = formattedNewTrainSchedule;
 
-      const newAddedExceptions = addedExceptions.map(({ key, startTime: exStartTime }) => ({
-        key,
+      const newAddedExceptions = addedExceptions.map(({ startTime: exStartTime }) => ({
+        key: '', // TODO : remove this when the key will be removed from the model
         start_time: { value: exStartTime.toISOString() },
       }));
 
@@ -95,7 +95,7 @@ const CreateTimetableItemButton = ({
             ...change_groups,
             ...restExceptions,
             // TODO_EXCEPTION: remove this when drop key in the model
-            key: restExceptions.id.toString(),
+            key: '',
           };
         });
 

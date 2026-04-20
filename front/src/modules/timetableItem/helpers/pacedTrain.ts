@@ -269,7 +269,7 @@ export const isOccurrencePresentInPacedTrain = (
 
   if (isAddedExceptionId(occurrenceId)) {
     const exceptionId = extractExceptionIdFromOccurrenceId(occurrenceId);
-    return paced.exceptions.some((exception) => exception.key === exceptionId);
+    return paced.exceptions.some((exception) => exception.id === exceptionId);
   }
 
   const occurrenceIndex = extractOccurrenceIndexFromOccurrenceId(occurrenceId);
