@@ -76,7 +76,7 @@ const useConflictsFilter = (
 
   useEffect(() => {
     if (isConflictsLoading) return;
-    const sortedByStartTime = [...(conflicts ?? [])].sort(
+    const sortedByStartTime = [...conflicts!].sort(
       (a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
     );
     setEnrichedConflicts(addTrainNamesToConflicts(sortedByStartTime, timetableItems));
