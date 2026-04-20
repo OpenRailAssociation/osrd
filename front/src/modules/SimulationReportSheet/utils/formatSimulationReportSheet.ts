@@ -361,7 +361,7 @@ export const getArrivalTimes = (
 };
 
 export const getSecondaryCode = ({ operationalPoint }: StdcmPathStep) =>
-  operationalPoint!.secondaryCode;
+  operationalPoint!.secondaryCode ?? '';
 
 export const getStopType = (stopType: StdcmStopTypes | undefined, t: TFunction<'stdcm'>) =>
   !stopType
@@ -378,7 +378,7 @@ export const transformStepsToApiFormat = (
       duration: 0,
       location: {
         uic: step.operationalPoint!.uic,
-        secondary_code: step.operationalPoint!.secondaryCode,
+        secondary_code: step.operationalPoint!.secondaryCode!,
       },
     };
 

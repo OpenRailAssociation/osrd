@@ -236,8 +236,10 @@
     "invalidInformations": "Invalid information for calculation:",
     "missingFields": {
       "destination": "the destination",
+      "destinationCh": "the CH of the destination",
       "maxSpeed": "the maximum speed of the consist",
       "origin": "the origin",
+      "originCh": "the CH of the origin",
       "timeDestination": "the arrival time at the destination",
       "timeOrigin": "the departure time at the origin",
       "totalLength": "the total length of the consist",
@@ -245,7 +247,8 @@
       "tractionEngine": "the traction engine",
       "viaConsistTotalLength": "the total length of a consist change",
       "viaConsistTotalMass": "the total mass of a consist change",
-      "vias": "At least one intermediate OP"
+      "vias": "at least one intermediate OP",
+      "viasCh": "the CH of at least one intermediate OP"
     },
     "missingInformations": "Missing informations for calculation:",
     "noPaths": "Incompatibility with other train paths.",
