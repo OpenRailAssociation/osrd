@@ -12,7 +12,10 @@ use authz::identity::UserInfo;
 use authz::v2::Authorizer;
 use clap::Args;
 use clap::Subcommand;
+use database::DbConnection;
 use database::DbConnectionPoolV2;
+use editoast_models::Group;
+use editoast_models::prelude::*;
 use itertools::Itertools as _;
 use strum::IntoEnumIterator;
 use tracing::info;
@@ -114,6 +117,7 @@ impl Display for Subject {
 async fn parse_and_fetch_subject(
     subject: &String,
     driver: &PgAuthDriver,
+    conn: DbConnection,
 ) -> anyhow::Result<Subject> {
     let id = if let Ok(id) = subject.parse::<i64>() {
         id
@@ -123,8 +127,8 @@ async fn parse_and_fetch_subject(
     };
     let subject = if let Some(info) = driver.get_user_info(id).await? {
         Subject::new_user(id, info)
-    } else if let Some(info) = driver.get_group_info(id).await? {
-        Subject::new_group(id, info)
+    } else if let Some(group) = Group::retrieve(conn, id).await? {
+        Subject::new_group(id, GroupInfo { name: group.name })
     } else {
         bail!("No subject found with ID {id}");
     };
@@ -137,8 +141,9 @@ pub async fn list_subject_roles(
     pool: Arc<DbConnectionPoolV2>,
     openfga_config: OpenfgaConfig,
 ) -> anyhow::Result<()> {
+    let conn = pool.get().await?;
     let regulator = openfga_config.into_regulator(pool).await?;
-    let roles = match parse_and_fetch_subject(&subject, regulator.driver()).await? {
+    let roles = match parse_and_fetch_subject(&subject, regulator.driver(), conn).await? {
         Subject {
             id,
             info: SubjectInfo::User(_),
@@ -192,7 +197,8 @@ pub async fn add_roles(
             .collect_vec()
             .join(", "),
     );
-    let subject = parse_and_fetch_subject(&subject, &PgAuthDriver::new(pool)).await?;
+    let conn = pool.get().await?;
+    let subject = parse_and_fetch_subject(&subject, &PgAuthDriver::new(pool), conn).await?;
     let add_roles = authz::v2::add_roles(subject.into_authz(), roles);
     match system.authorize(add_roles).await?.access().await? {
         Ok(()) => Ok(()),
@@ -227,7 +233,8 @@ pub async fn remove_roles(
             .collect_vec()
             .join(", "),
     );
-    let subject = parse_and_fetch_subject(&subject, &PgAuthDriver::new(pool)).await?;
+    let conn = pool.get().await?;
+    let subject = parse_and_fetch_subject(&subject, &PgAuthDriver::new(pool), conn).await?;
     let remove_roles = authz::v2::remove_roles(subject.into_authz(), roles);
     match system.authorize(remove_roles).await?.access().await? {
         Ok(()) => Ok(()),

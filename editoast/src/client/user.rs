@@ -2,11 +2,11 @@ use anyhow::anyhow;
 use anyhow::bail;
 use authz;
 use authz::StorageDriver;
-use authz::identity::GroupInfo;
 use authz::identity::UserInfo;
 use clap::Args;
 use clap::Subcommand;
 use database::DbConnectionPoolV2;
+use editoast_models::Group;
 use editoast_models::PgAuthDriver;
 use editoast_models::User;
 use editoast_models::authn::user::AddIdentitiesError;
@@ -150,7 +150,7 @@ pub async fn user_info(
     openfga_config: OpenfgaConfig,
     pool: Arc<DbConnectionPoolV2>,
 ) -> anyhow::Result<()> {
-    let regulator = openfga_config.into_regulator(pool).await?;
+    let regulator = openfga_config.into_regulator(pool.clone()).await?;
     let driver = regulator.driver();
     let uid = if let Ok(id) = user.parse::<i64>() {
         id
@@ -163,21 +163,18 @@ pub async fn user_info(
         return Ok(());
     };
     let groups = regulator.user_groups(&authz::User(uid)).await?;
+    let conn = pool.get().await?;
 
     println!("id      : {uid}");
     println!("identities: {}", identities.join(", "));
     println!("name    : {name}");
     println!("groups  :");
     for authz::Group(group_id) in groups {
-        let Some(GroupInfo { name }) = driver.get_group_info(group_id).await? else {
-            tracing::warn!(
-                group.id = group_id,
-                group.name = name,
-                "group not found, skipping it!"
-            );
+        let Some(group) = Group::retrieve(conn.clone(), group_id).await? else {
+            tracing::warn!(group.id = group_id, "group not found, skipping it!");
             continue;
         };
-        println!("- [{group_id}] {name}");
+        println!("- [{group_id}] {}", group.name);
     }
     Ok(())
 }

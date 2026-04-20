@@ -1,20 +1,17 @@
 use anyhow::anyhow;
 use anyhow::bail;
+use authz;
 use authz::Group;
+use authz::StorageDriver;
+use authz::identity::UserInfo;
 use authz::v2::Authorizer;
 use clap::Args;
 use clap::Subcommand;
-
-use authz;
-use authz::StorageDriver;
-use authz::identity::GroupInfo;
-use authz::identity::UserInfo;
-
 use database::DbConnectionPoolV2;
+use editoast_models::prelude::*;
+
 use std::collections::HashSet;
 use std::sync::Arc;
-
-use editoast_models::prelude::*;
 
 use crate::authorizers::Rejection;
 use crate::authorizers::SystemAuthorizer;
@@ -100,20 +97,20 @@ pub async fn group_info(
     openfga_config: OpenfgaConfig,
     pool: Arc<DbConnectionPoolV2>,
 ) -> anyhow::Result<()> {
-    let regulator = openfga_config.into_regulator(pool).await?;
+    let regulator = openfga_config.into_regulator(pool.clone()).await?;
     let driver = regulator.driver();
     let Some(group_id) = driver.get_group_id(&name).await? else {
         tracing::error!(name, "No such group");
         return Ok(());
     };
-    let Some(GroupInfo { name }) = driver.get_group_info(group_id).await? else {
+    let Some(group) = editoast_models::Group::retrieve(pool.get().await?, group_id).await? else {
         tracing::error!(group.id = group_id, "No such group");
         return Ok(());
     };
     let user_ids = regulator.group_members(&authz::Group(group_id)).await?;
 
     println!("id     : {group_id}");
-    println!("name   : {name}");
+    println!("name   : {}", group.name);
     println!("members:");
     for authz::User(user_id) in user_ids {
         let Some(UserInfo { identities, name }) = driver.get_user_info(user_id).await? else {
