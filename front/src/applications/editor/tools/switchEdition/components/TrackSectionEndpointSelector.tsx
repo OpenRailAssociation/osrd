@@ -110,7 +110,7 @@ const TrackSectionEndpointSelector = ({
 
   return (
     <div className="mb-4">
-      {schema.title && <h5>{schema.title}</h5>}
+      <h5>{t(`Editor.tools.switch-edition.port`, { portId })}</h5>
       {schema.description && <p>{schema.description}</p>}
       {duplicateWith.map(({ track, port }, i) => (
         <div className="text-danger small font-weight-bold" key={`${name}-${track}-${i}`}>
