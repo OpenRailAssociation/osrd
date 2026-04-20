@@ -206,11 +206,11 @@ export const getOcurrencesIds = (pacedTrain: PacedTrainWithPaced, pacedTrainId: 
   const occurrencesIds: OccurrenceId[] = pacedTrain.paced.exceptions
     .filter((exception) => exception.occurrence_index === undefined) // Indexed exceptions follow the regular indexed occurrence id pattern
     .map((exception) => formatPacedTrainIdToExceptionId(pacedTrainId, exception.key));
-  const indexedOccurencesCount = getOccurrencesNb({
+  const indexedOccurrencesCount = getOccurrencesNb({
     timeWindow: Duration.parse(pacedTrain.paced.time_window),
     interval: Duration.parse(pacedTrain.paced.interval),
   });
-  for (let i = 0; i < indexedOccurencesCount; i += 1) {
+  for (let i = 0; i < indexedOccurrencesCount; i += 1) {
     occurrencesIds.push(formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, i));
   }
   return occurrencesIds;

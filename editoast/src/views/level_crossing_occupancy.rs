@@ -172,7 +172,7 @@ pub(in crate::views) async fn occupancy(
     // For each occurrence + simulation result, compute level crossing occupancy and group by level crossing id
     let mut results: HashMap<Identifier, Vec<LevelCrossingOccupancy>> = HashMap::new();
 
-    let train_occurences_with_rollingstock = train_occurrences
+    let train_occurrences_with_rollingstock = train_occurrences
         .into_iter()
         .zip(simulations_result)
         .filter_map(
@@ -192,7 +192,7 @@ pub(in crate::views) async fn occupancy(
     for level_crossing in level_crossings {
         let level_crossing_occupancies = results.entry(level_crossing.obj_id.into()).or_default();
         for (rolling_stock_length, (occurrence_id, train_schedule, simulation, pathfinding)) in
-            &train_occurences_with_rollingstock
+            &train_occurrences_with_rollingstock
         {
             if let Some(occupancy) = find_level_crossing_occupancy(
                 &level_crossing.schema,

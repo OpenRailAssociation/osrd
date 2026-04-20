@@ -6,7 +6,7 @@ import {
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import {
   unsetTrainIdsMatching,
-  unsetTrainIdsMatchingMissingOccurencesOf,
+  unsetTrainIdsMatchingMissingOccurrencesOf,
 } from 'reducers/simulationResults';
 import type { AppDispatch } from 'store';
 import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
@@ -70,7 +70,7 @@ export async function storePacedTrain(
   if (isPacedTrainBase(pacedTrain)) {
     const pacedTrainId = formatEditoastIdToPacedTrainId(timetableItemIdToUpdate);
     dispatch(
-      unsetTrainIdsMatchingMissingOccurencesOf({
+      unsetTrainIdsMatchingMissingOccurrencesOf({
         pacedTrainId,
         occurrencesPresent: getOcurrencesIds(pacedTrain, pacedTrainId),
       })

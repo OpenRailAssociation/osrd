@@ -56,41 +56,41 @@ export const simulationResultsSlice = createSlice({
     unsetTrainIdsMatching(state: Draft<SimulationResultsState>, action: PayloadAction<TrainId>) {
       const idToUnset = action.payload;
 
-      const isIdMatchingOccurence = (id: TrainId | undefined) =>
+      const isIdMatchingOccurrence = (id: TrainId | undefined) =>
         id && isOccurrenceId(id) && extractPacedTrainIdFromOccurrenceId(id) === idToUnset;
 
       if (
         state.trainIdUsedForProjection === idToUnset ||
-        isIdMatchingOccurence(state.trainIdUsedForProjection)
+        isIdMatchingOccurrence(state.trainIdUsedForProjection)
       ) {
         state.trainIdUsedForProjection = undefined;
       }
-      if (state.selectedTrainId === idToUnset || isIdMatchingOccurence(state.selectedTrainId)) {
+      if (state.selectedTrainId === idToUnset || isIdMatchingOccurrence(state.selectedTrainId)) {
         state.selectedTrainId = undefined;
       }
-      if (state.hoveredTrainId === idToUnset || isIdMatchingOccurence(state.hoveredTrainId)) {
+      if (state.hoveredTrainId === idToUnset || isIdMatchingOccurrence(state.hoveredTrainId)) {
         state.hoveredTrainId = undefined;
       }
     },
-    unsetTrainIdsMatchingMissingOccurencesOf(
+    unsetTrainIdsMatchingMissingOccurrencesOf(
       state: Draft<SimulationResultsState>,
       action: PayloadAction<{ pacedTrainId: PacedTrainId; occurrencesPresent: OccurrenceId[] }>
     ) {
       const { pacedTrainId, occurrencesPresent } = action.payload;
 
-      const isIdMatchingMissingOccurence = (id: TrainId | undefined) =>
+      const isIdMatchingMissingOccurrence = (id: TrainId | undefined) =>
         id &&
         isOccurrenceId(id) &&
         extractPacedTrainIdFromOccurrenceId(id) === pacedTrainId &&
         !occurrencesPresent.includes(id);
 
-      if (isIdMatchingMissingOccurence(state.trainIdUsedForProjection)) {
+      if (isIdMatchingMissingOccurrence(state.trainIdUsedForProjection)) {
         state.trainIdUsedForProjection = undefined;
       }
-      if (isIdMatchingMissingOccurence(state.selectedTrainId)) {
+      if (isIdMatchingMissingOccurrence(state.selectedTrainId)) {
         state.selectedTrainId = undefined;
       }
-      if (isIdMatchingMissingOccurence(state.hoveredTrainId)) {
+      if (isIdMatchingMissingOccurrence(state.hoveredTrainId)) {
         state.hoveredTrainId = undefined;
       }
     },
@@ -105,7 +105,7 @@ export const {
   updateTrainIdUsedForProjection,
   updateProjectionType,
   unsetTrainIdsMatching,
-  unsetTrainIdsMatchingMissingOccurencesOf,
+  unsetTrainIdsMatchingMissingOccurrencesOf,
 } = simulationResultsSlice.actions;
 
 export default simulationResultsSlice.reducer;
