@@ -179,37 +179,6 @@ impl StorageDriver for PgAuthDriver {
         .await
     }
 
-    #[tracing::instrument(skip_all, fields(%group), ret(level = Level::DEBUG), err)]
-    async fn ensure_group(&self, group: &GroupInfo) -> Result<i64, Self::Error> {
-        let conn = self.pool.get().await?;
-        conn.transaction(async move |conn| {
-            let group_id = authn_group::table
-                .select(authn_group::id)
-                .filter(authn_group::name.eq(&group.name))
-                .first::<i64>(conn.write().await.deref_mut())
-                .await
-                .optional()?;
-            match group_id {
-                Some(group_id) => {
-                    tracing::debug!(group_id, "group already exists in db");
-                    Ok(group_id)
-                }
-
-                None => {
-                    tracing::info!("registering new group in db");
-                    let id = dsl::insert_into(authn_group::table)
-                        .values(authn_group::name.eq(&group.name))
-                        .returning(authn_group::id)
-                        .get_result(conn.write().await.deref_mut())
-                        .await?;
-
-                    Ok(id)
-                }
-            }
-        })
-        .await
-    }
-
     #[tracing::instrument(skip_all, fields(identities, user = %user_identity), ret(level = Level::DEBUG), err)]
     async fn add_user_identities(
         &self,

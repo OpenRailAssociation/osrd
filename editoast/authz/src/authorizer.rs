@@ -118,7 +118,6 @@ mod tests {
     use super::*;
     use crate::Role;
     use crate::authz_client;
-    use crate::identity::GroupInfo;
     use crate::identity::User;
     use crate::mock_driver::MockAuthDriver;
     use crate::model;
@@ -270,9 +269,6 @@ mod tests {
             identities: vec![bob_identity()],
             name: "Bob".to_owned(),
         };
-        let friends = || GroupInfo {
-            name: "friends".to_owned(),
-        };
 
         let regulator = Regulator::new(authz_client!(), MockAuthDriver::default());
         let regulator = move || regulator.clone();
@@ -290,13 +286,7 @@ mod tests {
             .await
             .expect("bob should be created")
             .id;
-        let friends = model::Group(
-            regulator()
-                .driver
-                .ensure_group(&friends())
-                .await
-                .expect("group should be created"),
-        );
+        let friends = model::Group(0);
 
         // add members
         v2::add_members(friends, HashSet::from([User(alice_id), User(bob_id)]))
