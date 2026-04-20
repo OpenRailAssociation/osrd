@@ -49,6 +49,7 @@ pub trait StorageDriver: Clone {
         user_id: i64,
     ) -> impl Future<Output = Result<Option<UserInfo>, Self::Error>> + Send;
 
+    #[deprecated(note = "use editoast_models::Group::retrieve directly")]
     fn get_group_info(
         &self,
         group_id: i64,
@@ -103,6 +104,7 @@ impl<S: StorageDriver> Regulator<S> {
     /// Returns whether a group with some id exists
     #[tracing::instrument(skip_all, fields(group_id = %group_id), ret(level = Level::DEBUG), err)]
     pub async fn group_exists(&self, group_id: i64) -> Result<bool, Error<S::Error>> {
+        #[expect(deprecated)] // to be removed soon
         self.driver
             .get_group_info(group_id)
             .await
