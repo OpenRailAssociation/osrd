@@ -11,6 +11,8 @@ pub enum InfraApiError {
     NotFound { infra_id: i64 },
     #[editoast_error(status = 400)]
     BadRequest { message: String },
+    #[editoast_error(forward)]
+    WithInner(#[from] InnerError),
     InternalError,
 }
 
@@ -43,14 +45,25 @@ impl crate::error::EditoastError for InfraApiError {
                     .expect("EditoastError: invalid status expression")
             }
             #[allow(unused)]
+            Self::WithInner(__editoast_error_unamed_field) => {
+                __editoast_error_unamed_field.get_status()
+            }
+            #[allow(unused)]
             Self::InternalError => axum::http::StatusCode::from_u16(500u16).unwrap(),
         }
     }
-    fn get_type(&self) -> &'static str {
+    fn get_type(&self) -> &str {
         match self {
-            Self::NotFound { .. } => "editoast:infra:NotFound",
-            Self::BadRequest { .. } => "editoast:infra:BadRequest",
-            Self::InternalError { .. } => "editoast:infra:InternalError",
+            #[allow(unused)]
+            Self::NotFound { infra_id } => "editoast:infra:NotFound",
+            #[allow(unused)]
+            Self::BadRequest { message } => "editoast:infra:BadRequest",
+            #[allow(unused)]
+            Self::WithInner(__editoast_error_unamed_field) => {
+                __editoast_error_unamed_field.get_type()
+            }
+            #[allow(unused)]
+            Self::InternalError => "editoast:infra:InternalError",
         }
     }
     fn context(&self) -> std::collections::HashMap<String, serde_json::Value> {
@@ -64,6 +77,9 @@ impl crate::error::EditoastError for InfraApiError {
                     ),
                 ]
                     .into()
+            }
+            Self::WithInner(__editoast_error_unamed_field) => {
+                __editoast_error_unamed_field.context()
             }
             Self::InternalError { .. } => Default::default(),
         }

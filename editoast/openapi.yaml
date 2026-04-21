@@ -5581,25 +5581,6 @@ components:
           type: string
           enum:
           - editoast:authz:Authorizer
-    EditoastAuthzErrorAuthz:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:authz:Authz
     EditoastAuthzErrorDatabase:
       type: object
       required:
@@ -6185,7 +6166,6 @@ components:
       - $ref: '#/components/schemas/EditoastAuthorizationErrorImpersonatedUserNotFound'
       - $ref: '#/components/schemas/EditoastAuthorizationErrorUnauthorized'
       - $ref: '#/components/schemas/EditoastAuthzErrorAuthorizer'
-      - $ref: '#/components/schemas/EditoastAuthzErrorAuthz'
       - $ref: '#/components/schemas/EditoastAuthzErrorDatabase'
       - $ref: '#/components/schemas/EditoastAuthzErrorUnknownIdentity'
       - $ref: '#/components/schemas/EditoastAuthzErrorUnknownResource'
