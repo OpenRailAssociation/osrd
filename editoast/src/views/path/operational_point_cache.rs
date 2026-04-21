@@ -369,25 +369,17 @@ impl OperationalPointCache {
             OperationalPointReference::Trigram {
                 ref trigram,
                 secondary_code,
-            } => {
-                if let Some(op_models) = self.get_from_trigram(&trigram.0) {
-                    find_op_by_secondary_code(secondary_code.as_ref(), op_models.collect())
-                        .map(|op| &op.schema)
-                } else {
-                    None
-                }
-            }
+            } => self.get_from_trigram(&trigram.0).and_then(|op_models| {
+                find_op_by_secondary_code(secondary_code.as_ref(), op_models.collect())
+                    .map(|op| &op.schema)
+            }),
             OperationalPointReference::Uic {
                 uic,
                 secondary_code,
-            } => {
-                if let Some(op_models) = self.get_from_uic(uic) {
-                    find_op_by_secondary_code(secondary_code.as_ref(), op_models.collect())
-                        .map(|op| &op.schema)
-                } else {
-                    None
-                }
-            }
+            } => self.get_from_uic(uic).and_then(|op_models| {
+                find_op_by_secondary_code(secondary_code.as_ref(), op_models.collect())
+                    .map(|op| &op.schema)
+            }),
         }
     }
 }
