@@ -83,6 +83,8 @@ export const STDCM_ROLLING_STOCKS = [
   'G1206UM',
   'G1206US',
   'G2000US',
+  'MT80',
+  'MT100',
   'PE7200',
   'PE8500',
   'PE8500P2',
