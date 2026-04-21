@@ -86,6 +86,7 @@ class TimetableCacheManager(
     private val mutexes = ConcurrentHashMap<String, Mutex>()
 
     private val fetchDispatcher = Dispatchers.IO
+    private val scope = CoroutineScope(fetchDispatcher + SupervisorJob())
 
     private val logger = LoggerFactory.getLogger(TimetableCacheManager::class.java)
 
@@ -101,39 +102,48 @@ class TimetableCacheManager(
             if (disableAllCaching) {
                 logger.info("Cache disabled")
                 return@coroutineScope withContext(fetchDispatcher) {
-                    return@withContext fetchTimetableRequirements(infra, timetableId, cacheKey)
+                    fetchTimetableRequirements(infra, timetableId, cacheKey)
                 }
             }
             cache[cacheKey]?.let {
                 logger.debug("Timetable cache hit for ID $timetableId")
                 return@coroutineScope it
             }
-
             val mutex = mutexes.computeIfAbsent(cacheKey) { Mutex() }
             mutex.withLock {
                 try {
                     cache[cacheKey]?.let {
                         return@coroutineScope it
                     }
-                    logger.info("Start computing timetable requirements")
-                    val requirements: STDCMTimetableData
-                    val time = measureTime {
-                        requirements =
-                            withContext(fetchDispatcher) {
-                                fetchTimetableRequirements(infra, timetableId, cacheKey)
-                            }
-                    }
-                    cache[cacheKey] = requirements
-                    val nEntries = requirements.zoneUses.entries.sumOf { it.value.asRanges().size }
-                    logger.info(
-                        "timetable requirements computed in ${time.inWholeSeconds} seconds, $nEntries map entries"
-                    )
-                    return@coroutineScope requirements
+                    fetchAndCache(infra, timetableId, cacheKey)
                 } finally {
                     mutexes.remove(cacheKey)
                 }
             }
         }
+
+    /** Starts loading timetable data in the background. Noop if already loaded or loading. */
+    fun startLoading(infra: FullInfra, timetableId: TimetableId) {
+        if (disableAllCaching) return
+        val cacheKey = getCacheKey(infra, timetableId)
+        if (cache.containsKey(cacheKey)) return
+        val mutex = mutexes.computeIfAbsent(cacheKey) { Mutex() }
+        if (!mutex.tryLock()) return
+        scope.launch {
+            try {
+                fetchAndCache(infra, timetableId, cacheKey)
+            } finally {
+                mutex.unlock()
+                mutexes.remove(cacheKey)
+            }
+        }
+    }
+
+    /** Returns true if the timetable data is already in the in-memory cache. */
+    fun isLoaded(infra: FullInfra, timetableId: TimetableId): Boolean {
+        if (disableAllCaching) return true
+        return cache.containsKey(getCacheKey(infra, timetableId))
+    }
 
     /** Generates a string key for a given infra + timetable. */
     fun getCacheKey(infra: FullInfra, timetableId: TimetableId): String {
@@ -146,6 +156,27 @@ class TimetableCacheManager(
     @WithSpan(value = "Preloading timetable content", kind = SpanKind.SERVER)
     fun load(infra: FullInfra, timetableId: TimetableId) {
         if (!disableAllCaching) runBlocking { get(infra, timetableId) }
+    }
+
+    private suspend fun fetchAndCache(
+        infra: FullInfra,
+        timetableId: TimetableId,
+        cacheKey: String,
+    ): STDCMTimetableData {
+        logger.info("Start computing timetable requirements")
+        val requirements: STDCMTimetableData
+        val time = measureTime {
+            requirements =
+                withContext(fetchDispatcher) {
+                    fetchTimetableRequirements(infra, timetableId, cacheKey)
+                }
+        }
+        cache[cacheKey] = requirements
+        val nEntries = requirements.zoneUses.entries.sumOf { it.value.asRanges().size }
+        logger.info(
+            "timetable requirements computed in ${time.inWholeSeconds} seconds, $nEntries map entries"
+        )
+        return requirements
     }
 
     @WithSpan(kind = SpanKind.SERVER)

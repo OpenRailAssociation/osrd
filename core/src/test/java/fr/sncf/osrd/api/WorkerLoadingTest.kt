@@ -12,7 +12,7 @@ import org.junit.jupiter.params.provider.CsvSource
 @OptIn(ExperimentalSerializationApi::class)
 class WorkerLoadingTest : ApiTest() {
     @ParameterizedTest
-    @CsvSource("true, 400", "false, 204")
+    @CsvSource("true, 400", "false, 200")
     @Throws(IOException::class)
     fun infraLoadEndpoint_act_request_returns_correct_responses(
         isRequestNull: Boolean,

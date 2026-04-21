@@ -1,5 +1,7 @@
+use serde::Deserialize;
 use serde::Serialize;
 
+use crate::Json;
 use crate::WorkerKey;
 
 use super::AsCoreRequest;
@@ -13,7 +15,13 @@ pub struct WorkerLoadRequest {
     pub timetable: Option<i64>,
 }
 
-impl AsCoreRequest<()> for WorkerLoadRequest {
+/// A Core infra load response
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+pub struct WorkerLoadResponse {
+    pub loaded: bool,
+}
+
+impl AsCoreRequest<Json<WorkerLoadResponse>> for WorkerLoadRequest {
     const URL_PATH: &'static str = "/worker_load";
     const OVERRIDE_TIMEOUT: Option<std::time::Duration> = Some(std::time::Duration::from_secs(1));
 
