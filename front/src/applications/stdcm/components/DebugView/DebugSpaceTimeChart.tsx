@@ -225,18 +225,8 @@ const DebugSpaceTimeChart = ({ simulationData }: DebugSpaceTimeChartProps) => {
   );
 
   return (
-    <div style={{ position: 'relative', width: '100%' }}>
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          padding: '4px 8px',
-          background: '#f5f5f5',
-          borderBottom: '1px solid #ddd',
-          fontSize: 13,
-        }}
-      >
+    <div className="debug-space-time-chart">
+      <div className="debug-space-time-chart__controls">
         <span>Time zoom:</span>
         <input
           type="range"
@@ -244,13 +234,13 @@ const DebugSpaceTimeChart = ({ simulationData }: DebugSpaceTimeChartProps) => {
           max={100}
           step={0.5}
           value={xZoom}
-          style={{ width: 140 }}
+          className="debug-space-time-chart__zoom-slider"
           onChange={(e) => handleXZoom(Number(e.target.value))}
         />
         <button type="button" onClick={() => manchetteProps.resetZoom()}>
           Reset
         </button>
-        <span style={{ color: '#888', marginLeft: 8 }}>
+        <span className="debug-space-time-chart__hint">
           Scroll: space zoom · Drag: pan · Ctrl+scroll: Y zoom
         </span>
       </div>
@@ -266,7 +256,6 @@ const DebugSpaceTimeChart = ({ simulationData }: DebugSpaceTimeChartProps) => {
         <div
           ref={manchetteWithSpaceTimeChartRef}
           className="manchette flex"
-          style={{ height: CHART_HEIGHT }}
           onScroll={handleScroll}
         >
           <Manchette {...manchetteProps} />
@@ -303,23 +292,14 @@ const DebugSpaceTimeChart = ({ simulationData }: DebugSpaceTimeChartProps) => {
 
       {hoveredBlock && mousePos && (
         <div
-          style={{
-            position: 'fixed',
-            left: mousePos.x + 12,
-            top: mousePos.y + 12,
-            background: 'white',
-            border: '1px solid #ccc',
-            padding: '4px 8px',
-            pointerEvents: 'none',
-            zIndex: 1000,
-            maxWidth: 400,
-          }}
+          className="debug-space-time-chart__tooltip"
+          style={{ left: mousePos.x + 12, top: mousePos.y + 12 }}
         >
           <div>
             <strong>{KIND_LABEL[hoveredBlock.kind]}</strong>
             {hoveredBlock.trainName && <span> — {hoveredBlock.trainName}</span>}
           </div>
-          <div style={{ fontSize: 11, wordBreak: 'break-all' }}>{hoveredBlock.zoneName}</div>
+          <div className="debug-space-time-chart__tooltip-zone">{hoveredBlock.zoneName}</div>
         </div>
       )}
     </div>
