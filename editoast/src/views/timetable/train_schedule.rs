@@ -2070,6 +2070,80 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn update_paced_train_resets_exceptions_when_interval_changes() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        let (timetable, train_schedule_set) =
+            create_timetable_with_train_schedule_set(&mut pool.get_ok()).await;
+
+        let simple_train_schedule =
+            simple_paced_train_changeset(train_schedule_set.id).exceptions(vec![]);
+        let train_schedule = simple_train_schedule
+            .create(&mut pool.get_ok())
+            .await
+            .expect("Failed to create paced train");
+
+        let _exception_1 = create_train_schedule_exception(
+            &mut pool.get_ok(),
+            timetable.id,
+            train_schedule.id,
+            None,
+            Some("exception_1".to_string()),
+            None,
+        )
+        .await;
+
+        let _exception_2 = create_train_schedule_exception(
+            &mut pool.get_ok(),
+            timetable.id,
+            train_schedule.id,
+            Some(0),
+            Some("exception_2".to_string()),
+            None,
+        )
+        .await;
+
+        let exceptions_before = TrainScheduleException::retrieve_exceptions_by_train_schedules(
+            &mut pool.get_ok(),
+            timetable.id,
+            vec![train_schedule.id],
+        )
+        .await
+        .expect("Failed to retrieve exceptions before update");
+        assert_eq!(exceptions_before.len(), 2);
+
+        let mut updated_train_schedule = simple_paced_train_base();
+        updated_train_schedule.paced.as_mut().unwrap().interval =
+            chrono::Duration::minutes(30).try_into().unwrap();
+
+        let request = app
+            .put(&format!(
+                "/train_schedules/{}?timetable_id={}",
+                train_schedule.id, timetable.id
+            ))
+            .json(&json!(&updated_train_schedule));
+
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NO_CONTENT);
+
+        let exceptions_after = TrainScheduleException::retrieve_exceptions_by_train_schedules(
+            &mut pool.get_ok(),
+            timetable.id,
+            vec![train_schedule.id],
+        )
+        .await
+        .expect("Failed to retrieve exceptions after update");
+
+        assert!(
+            exceptions_after.is_empty(),
+            "Expected exceptions to be reset after interval change, but found {}",
+            exceptions_after.len()
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_paced_train() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
