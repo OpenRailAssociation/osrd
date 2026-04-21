@@ -10,36 +10,10 @@ import {
   SpaceTimeChartCanvasContext,
   useDraw,
   useManchetteWithSpaceTimeChart,
+  type Waypoint,
 } from '@osrd-project/ui-charts';
 
-type ZoneLocation = { name: string; from: number; to: number };
-type OtherRequirement = {
-  zone_name: string;
-  begin_time: number;
-  end_time: number;
-  train_name?: string;
-};
-type ZoneUpdate = { zone: string; is_entry: boolean; time: number };
-type SpacingRequirement = { zone: string; begin_time: number; end_time: number };
-type OperationalPointRaw = {
-  position: number;
-  extensions: { identifier: { name: string }; sncf: { ch: string } };
-};
-
-type SimulationData = {
-  departure_time: string;
-  train_positions: number[];
-  train_times: number[];
-  zone_locations: ZoneLocation[];
-  other_requirements: OtherRequirement[];
-  path_properties: { operational_points: OperationalPointRaw[] };
-  sim_output?: {
-    final_output: {
-      zone_updates: ZoneUpdate[];
-      spacing_requirements: SpacingRequirement[];
-    };
-  };
-};
+import type { SimDebugData } from 'common/api/osrdEditoastApi';
 
 type DebugBlock = {
   timeStart: number;
@@ -67,13 +41,13 @@ function DebugBlocksLayer({ blocks, style }: { blocks: DebugBlock[]; style: Bloc
       ctx.fillStyle = style.fill;
       ctx.strokeStyle = style.stroke;
       ctx.lineWidth = 1;
-      for (const b of blocks) {
-        const x = getTimePixel(b.timeStart);
-        const y = getSpacePixel(b.spaceStart);
-        const w = getTimePixel(b.timeEnd) - x;
-        const h = getSpacePixel(b.spaceEnd) - y;
-        ctx.fillRect(x, y, w, h);
-        ctx.strokeRect(x, y, w, h);
+      for (const block of blocks) {
+        const timePixel = getTimePixel(block.timeStart);
+        const spacePixel = getSpacePixel(block.spaceStart);
+        const rectWidth = getTimePixel(block.timeEnd) - timePixel;
+        const rectHeight = getSpacePixel(block.spaceEnd) - spacePixel;
+        ctx.fillRect(timePixel, spacePixel, rectWidth, rectHeight);
+        ctx.strokeRect(timePixel, spacePixel, rectWidth, rectHeight);
       }
     },
     [blocks, style]
@@ -88,17 +62,18 @@ const LAYER_STYLES: Record<DebugBlock['kind'], BlockLayerStyle> = {
   spacing_req: { fill: 'rgba(244, 164, 96, 0.5)', stroke: 'rgba(210, 105, 30, 0.9)' },
 };
 
-type DebugSpaceTimeChartProps = { simulationData: unknown };
+type DebugSpaceTimeChartProps = { simData: SimDebugData };
 
-const DebugSpaceTimeChart = ({ simulationData }: DebugSpaceTimeChartProps) => {
-  const simData = simulationData as SimulationData;
-
+const DebugSpaceTimeChart = ({ simData }: DebugSpaceTimeChartProps) => {
   const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);
   const spaceTimeChartRef = useRef<HTMLDivElement>(null);
 
   const chartData = useMemo(() => {
     const zoneMap = new Map(
-      simData.zone_locations.map((z) => [z.name, { spaceStart: z.from, spaceEnd: z.to }])
+      simData.zone_locations.map((zone) => [
+        zone.name,
+        { spaceStart: zone.from, spaceEnd: zone.to },
+      ])
     );
     const departureMs = Date.parse(simData.departure_time);
 
@@ -124,9 +99,9 @@ const DebugSpaceTimeChart = ({ simulationData }: DebugSpaceTimeChartProps) => {
     if (finalOutput) {
       const entries: Record<string, number> = {};
       const exits: Record<string, number> = {};
-      for (const u of finalOutput.zone_updates) {
-        if (u.is_entry) entries[u.zone] = u.time;
-        else exits[u.zone] = u.time;
+      for (const zoneUpdate of finalOutput.zone_updates) {
+        if (zoneUpdate.is_entry) entries[zoneUpdate.zone] = zoneUpdate.time;
+        else exits[zoneUpdate.zone] = zoneUpdate.time;
       }
       for (const zone of Object.keys(entries)) {
         if (!(zone in exits)) continue;
@@ -161,11 +136,12 @@ const DebugSpaceTimeChart = ({ simulationData }: DebugSpaceTimeChartProps) => {
       }
     }
 
-    const manchetteWaypoints = simData.path_properties.operational_points.map((op) => ({
-      id: op.extensions.identifier.name + '-' + op.extensions.sncf.ch,
+    const manchetteWaypoints: Waypoint[] = simData.path_properties.operational_points.map((op) => ({
+      id: `${op.id}-${op.position}`,
       position: op.position,
-      name: op.extensions.identifier.name,
-      secondaryCode: op.extensions.sncf.ch,
+      name: op.extensions?.identifier?.name ?? '',
+      secondaryCode: op.extensions?.sncf?.ch ?? '',
+      weight: op.weight ?? 0,
     }));
 
     const trainPath: PathData | null =
@@ -206,37 +182,11 @@ const DebugSpaceTimeChart = ({ simulationData }: DebugSpaceTimeChartProps) => {
   }, [chartData]);
 
   const [hoveredBlock, setHoveredBlock] = useState<DebugBlock | null>(null);
-  const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
-
-  const handleMouseMove = useCallback<
-    NonNullable<Parameters<typeof SpaceTimeChart>[0]['onMouseMove']>
-  >(
-    ({ data: dataPoint }) => {
-      const hit = chartData.allBlocks.find(
-        (b) =>
-          dataPoint.time >= b.timeStart &&
-          dataPoint.time <= b.timeEnd &&
-          dataPoint.position >= b.spaceStart &&
-          dataPoint.position <= b.spaceEnd
-      );
-      setHoveredBlock(hit ?? null);
-    },
-    [chartData]
-  );
+  const [mousePos, setMousePos] = useState<{ clientX: number; clientY: number } | null>(null);
 
   return (
-    <div style={{ position: 'relative', width: '100%' }}>
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          padding: '4px 8px',
-          background: '#f5f5f5',
-          borderBottom: '1px solid #ddd',
-          fontSize: 13,
-        }}
-      >
+    <div className="debug-space-time-chart">
+      <div className="debug-space-time-chart__controls">
         <span>Time zoom:</span>
         <input
           type="range"
@@ -244,20 +194,20 @@ const DebugSpaceTimeChart = ({ simulationData }: DebugSpaceTimeChartProps) => {
           max={100}
           step={0.5}
           value={xZoom}
-          style={{ width: 140 }}
-          onChange={(e) => handleXZoom(Number(e.target.value))}
+          className="debug-space-time-chart__zoom-slider"
+          onChange={(event) => handleXZoom(Number(event.target.value))}
         />
         <button type="button" onClick={() => manchetteProps.resetZoom()}>
           Reset
         </button>
-        <span style={{ color: '#888', marginLeft: 8 }}>
-          Scroll: space zoom · Drag: pan · Ctrl+scroll: Y zoom
+        <span className="debug-space-time-chart__hint">
+          Shift+scroll: time zoom · Ctrl+scroll: space zoom · Drag: pan
         </span>
       </div>
 
       <div
         className="ui-manchette-space-time-chart-wrapper"
-        onMouseMove={(e) => setMousePos({ x: e.clientX, y: e.clientY })}
+        onMouseMove={(event) => setMousePos({ clientX: event.clientX, clientY: event.clientY })}
         onMouseLeave={() => {
           setMousePos(null);
           setHoveredBlock(null);
@@ -266,7 +216,6 @@ const DebugSpaceTimeChart = ({ simulationData }: DebugSpaceTimeChartProps) => {
         <div
           ref={manchetteWithSpaceTimeChartRef}
           className="manchette flex"
-          style={{ height: CHART_HEIGHT }}
           onScroll={handleScroll}
         >
           <Manchette {...manchetteProps} />
@@ -284,7 +233,16 @@ const DebugSpaceTimeChart = ({ simulationData }: DebugSpaceTimeChartProps) => {
                   spaceTimeChartProps.onZoom?.(payload);
                 }
               }}
-              onMouseMove={handleMouseMove}
+              onMouseMove={({ data: dataPoint }) => {
+                const hit = chartData.allBlocks.find(
+                  (block) =>
+                    dataPoint.time >= block.timeStart &&
+                    dataPoint.time <= block.timeEnd &&
+                    dataPoint.position >= block.spaceStart &&
+                    dataPoint.position <= block.spaceEnd
+                );
+                setHoveredBlock(hit ?? null);
+              }}
             >
               <DebugBlocksLayer blocks={chartData.otherBlocks} style={LAYER_STYLES.other} />
               <DebugBlocksLayer
@@ -303,23 +261,14 @@ const DebugSpaceTimeChart = ({ simulationData }: DebugSpaceTimeChartProps) => {
 
       {hoveredBlock && mousePos && (
         <div
-          style={{
-            position: 'fixed',
-            left: mousePos.x + 12,
-            top: mousePos.y + 12,
-            background: 'white',
-            border: '1px solid #ccc',
-            padding: '4px 8px',
-            pointerEvents: 'none',
-            zIndex: 1000,
-            maxWidth: 400,
-          }}
+          className="debug-space-time-chart__tooltip"
+          style={{ left: mousePos.clientX + 12, top: mousePos.clientY + 12 }}
         >
           <div>
             <strong>{KIND_LABEL[hoveredBlock.kind]}</strong>
             {hoveredBlock.trainName && <span> — {hoveredBlock.trainName}</span>}
           </div>
-          <div style={{ fontSize: 11, wordBreak: 'break-all' }}>{hoveredBlock.zoneName}</div>
+          <div className="debug-space-time-chart__tooltip-zone">{hoveredBlock.zoneName}</div>
         </div>
       )}
     </div>

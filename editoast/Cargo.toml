@@ -91,8 +91,8 @@ itertools = "0.14.0"
 lapin = { version = "4.7.4", default-features = false, features = ["tokio"] }
 linkme = "0.3.36"
 mvt = "0.13.0"
+object_store = { version = "0.13.2", features = ["aws"] }
 openssl = "0.10.80"
-object_store = { version = "0.13", features = ["aws"] }
 opentelemetry = { version = "0.31.0", default-features = false, features = [
   "trace",
 ] }

@@ -1665,6 +1665,46 @@ class EditoastSpriteErrorsUnknownSignalingSystem(BaseModel):
     type: Literal["EditoastSpriteErrorsUnknownSignalingSystem"]
 
 
+class EditoastStdcmDebugErrorJsonParseErrorContext(BaseModel):
+    message: str
+    path: str
+
+
+class EditoastStdcmDebugErrorJsonParseError(BaseModel):
+    context: Annotated[
+        EditoastStdcmDebugErrorJsonParseErrorContext | None,
+        Field(title="EditoastStdcmDebugErrorJsonParseErrorContext"),
+    ] = None
+    message: str
+    status: Literal[500]
+    type: Literal["EditoastStdcmDebugErrorJsonParseError"]
+
+
+class EditoastStdcmDebugErrorS3ErrorContext(BaseModel):
+    message: str
+    path: str
+
+
+class EditoastStdcmDebugErrorS3Error(BaseModel):
+    context: Annotated[
+        EditoastStdcmDebugErrorS3ErrorContext | None,
+        Field(title="EditoastStdcmDebugErrorS3ErrorContext"),
+    ] = None
+    message: str
+    status: Literal[500]
+    type: Literal["EditoastStdcmDebugErrorS3Error"]
+
+
+class EditoastStdcmDebugErrorS3NotConfigured(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None,
+        Field(title="EditoastStdcmDebugErrorS3NotConfiguredContext"),
+    ] = None
+    message: str
+    status: Literal[503]
+    type: Literal["EditoastStdcmDebugErrorS3NotConfigured"]
+
+
 class EditoastStdcmErrorBatchRollingStockNotFoundContext(BaseModel):
     ids: dict[str, Any]
 
@@ -3292,6 +3332,41 @@ class SignalSncfExtension(BaseModel):
     side: Side | None = None
 
 
+class SimDebugConflictReport(BaseModel):
+    at: AwareDatetime
+    best_remaining_time: float
+    caused_by: str
+    current_travel_time: float
+    lastOPName: str | None = None
+    lat: float
+    lon: float
+    time_lost: float
+
+
+class SimDebugEngineeringAllowanceRange(BaseModel):
+    added_duration: float
+    from_: Annotated[float, Field(alias="from")]
+    to: float
+
+
+class SimDebugFailureReport(BaseModel):
+    closest_conflicts: list[SimDebugConflictReport]
+    largest_conflicts: list[SimDebugConflictReport]
+
+
+class SimDebugTrainZoneRequirement(BaseModel):
+    begin_time: float
+    end_time: float
+    train_name: str | None = None
+    zone_name: str
+
+
+class SimDebugZoneLocation(BaseModel):
+    from_: Annotated[float, Field(alias="from")]
+    name: str
+    to: float
+
+
 class SimilarTrainWaypoint(BaseModel):
     id: str
     stop: bool
@@ -4351,6 +4426,9 @@ class EditoastError(
         | EditoastSimilarTrainsErrorSpeedLimitNotFound
         | EditoastSpriteErrorsFileNotFound
         | EditoastSpriteErrorsUnknownSignalingSystem
+        | EditoastStdcmDebugErrorJsonParseError
+        | EditoastStdcmDebugErrorS3Error
+        | EditoastStdcmDebugErrorS3NotConfigured
         | EditoastStdcmErrorBatchRollingStockNotFound
         | EditoastStdcmErrorDatabase
         | EditoastStdcmErrorInfraNotFound
@@ -4509,6 +4587,9 @@ class EditoastError(
         | EditoastSimilarTrainsErrorSpeedLimitNotFound
         | EditoastSpriteErrorsFileNotFound
         | EditoastSpriteErrorsUnknownSignalingSystem
+        | EditoastStdcmDebugErrorJsonParseError
+        | EditoastStdcmDebugErrorS3Error
+        | EditoastStdcmDebugErrorS3NotConfigured
         | EditoastStdcmErrorBatchRollingStockNotFound
         | EditoastStdcmErrorDatabase
         | EditoastStdcmErrorInfraNotFound
@@ -6052,6 +6133,17 @@ class Signal(BaseModel):
     position: float
     sight_distance: float
     track: Annotated[str, Field(max_length=255, min_length=1)]
+
+
+class SimDebugData(BaseModel):
+    departure_time: AwareDatetime
+    engineering_allowances_ranges: list[SimDebugEngineeringAllowanceRange]
+    other_requirements: list[SimDebugTrainZoneRequirement]
+    path_properties: PathProperties
+    sim_output: SimulationResponseSuccess | None = None
+    train_positions: list[float]
+    train_times: list[float]
+    zone_locations: list[SimDebugZoneLocation]
 
 
 class ResponseSuccess(SimulationResponseSuccess):

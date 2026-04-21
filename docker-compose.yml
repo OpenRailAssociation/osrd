@@ -166,7 +166,6 @@ services:
       valkey: { condition: service_healthy }
       rabbitmq: { condition: service_healthy }
       openfga: { condition: service_started }
-      s3_init: { condition: service_completed_successfully }
     build:
       context: editoast
       dockerfile: Dockerfile
