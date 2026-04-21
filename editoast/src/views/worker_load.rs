@@ -5,6 +5,7 @@ use core_client::AsCoreRequest;
 use core_client::Error as CoreClientError;
 use core_client::mq_client::MqClientError;
 use core_client::worker_load::WorkerLoadRequest;
+use core_client::worker_load::WorkerLoadResponse;
 use editoast_derive::EditoastError;
 use editoast_models::prelude::*;
 use serde::Deserialize;
@@ -122,7 +123,8 @@ pub(in crate::views) async fn worker_load(
     let status = infra_request.fetch(core_client.as_ref()).await;
 
     let status = match status {
-        Ok(()) => WorkerStatus::Ready,
+        Ok(WorkerLoadResponse { loaded: true }) => WorkerStatus::Ready,
+        Ok(WorkerLoadResponse { loaded: false }) => WorkerStatus::NotReady,
         Err(CoreClientError::MqClientError(MqClientError::ResponseTimeout)) => {
             // Treat timeout as NotReady
             WorkerStatus::NotReady
@@ -136,23 +138,27 @@ pub(in crate::views) async fn worker_load(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::models::fixtures::create_empty_infra;
+    use crate::views::test_app::TestAppBuilder;
     use core_client::CoreClient;
     use core_client::mocking::MockingClient;
     use database::DbConnectionPoolV2;
     use reqwest::StatusCode;
+    use rstest::rstest;
+    use serde_json::json;
 
-    use crate::models::fixtures::create_empty_infra;
-    use crate::views::test_app::TestAppBuilder;
-
+    #[rstest]
+    #[case(true, WorkerStatus::Ready)]
+    #[case(false, WorkerStatus::NotReady)]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn worker_load_test() {
+    async fn worker_load_test(#[case] loaded: bool, #[case] expected: WorkerStatus) {
         let db_pool = DbConnectionPoolV2::for_tests();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
         let mut core = MockingClient::default();
         core.stub("/worker_load")
             .response(StatusCode::OK)
-            .body("")
+            .json(json!({ "loaded": loaded }))
             .finish();
 
         let app = TestAppBuilder::new()
@@ -168,6 +174,6 @@ mod tests {
             .await
             .assert_status(StatusCode::OK)
             .json_into();
-        assert_eq!(response, WorkerStatus::Ready);
+        assert_eq!(response, expected);
     }
 }

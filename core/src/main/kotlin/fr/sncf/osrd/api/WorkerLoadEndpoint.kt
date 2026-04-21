@@ -25,11 +25,15 @@ class WorkerLoadEndpoint(
                 adapterRequest.fromJson(body)
                     ?: return RsWithStatus(RsText("missing request body"), 400)
 
-            // load infra and timetable
             val infra = infraManager.load(request.infra, request.expectedVersion)
-            if (request.timetable != null) timetableManager.load(infra, request.timetable!!)
+            val timetableId = request.timetable
+            if (timetableId != null) timetableManager.startLoading(infra, timetableId)
+            val isLoaded = timetableId == null || timetableManager.isLoaded(infra, timetableId)
 
-            return RsWithStatus(RsWithBody(""), 204)
+            return RsWithStatus(
+                RsWithBody(responseAdapterRequest.toJson(WorkerLoadResponse(isLoaded))),
+                200,
+            )
         } catch (ex: Throwable) {
             // TODO: include warnings in the response
             return ExceptionHandler.handle(ex)
@@ -52,5 +56,17 @@ class WorkerLoadEndpoint(
                 .addLast(KotlinJsonAdapterFactory())
                 .build()
                 .adapter(WorkerLoadRequest::class.java)
+
+        @JvmField
+        val responseAdapterRequest: JsonAdapter<WorkerLoadResponse?> =
+            Moshi.Builder()
+                .addLast(KotlinJsonAdapterFactory())
+                .build()
+                .adapter(WorkerLoadResponse::class.java)
     }
+
+    data class WorkerLoadResponse(
+        /** Is everything loaded */
+        var loaded: Boolean
+    )
 }
