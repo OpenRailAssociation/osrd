@@ -72,6 +72,7 @@ enum AuthzError {
     #[editoast_error(status = 404)]
     UnknownIdentity { identity: String },
     #[error("Authorization error")]
+    #[editoast_error(forward)]
     Authz(#[from] AuthorizationError),
 
     #[error(transparent)]

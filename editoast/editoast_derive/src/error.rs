@@ -25,6 +25,7 @@ struct ErrorOptions {
 struct ErrorVariantParams {
     status: Option<syn::Expr>,
     no_context: Option<bool>,
+    forward: Option<bool>,
 }
 
 #[derive(Debug)]
@@ -57,6 +58,13 @@ pub fn expand_editoast_error(input: &DeriveInput) -> Result<TokenStream> {
         .collect::<Result<Vec<TokenStream>>>()?;
 
     let error_definitions: TokenStream = error_definition.into_iter().collect();
+
+    let get_type_lt = if variants.iter().any(|v| v.params.forward.unwrap_or(false)) {
+        quote! {}
+    } else {
+        quote! {'static}
+    };
+
     Ok(quote! {
         #error_definitions
 
@@ -65,7 +73,7 @@ pub fn expand_editoast_error(input: &DeriveInput) -> Result<TokenStream> {
                 #get_statuses
             }
 
-            fn get_type(&self) -> &'static str {
+            fn get_type(&self) -> &#get_type_lt str {
                 #get_types
             }
 
@@ -82,13 +90,18 @@ fn parse_error_definition(
     namespace: &String,
     variant: &ParsedVariant,
 ) -> Result<TokenStream> {
+    if variant.params.forward.unwrap_or(false) {
+        // Forwarded variants forward their error types, we don't want to register them as error definitions
+        return Ok(quote! {});
+    }
+
     //Error name
     let name = variant.ident.unraw().to_string();
 
     // Compute its id
     let id = format!("editoast:{base_id}:{name}");
 
-    // Retieve error status (or get the default one)
+    // Retrieve error status (or get the default one)
     let status = match variant.params.status.as_ref() {
         Some(syn::Expr::Lit(exprlit)) => match &exprlit.lit {
             Lit::Int(lit) => lit.base10_parse::<u16>().unwrap(),
@@ -143,6 +156,21 @@ fn parse_variants(enum_data: &DataEnum) -> Result<Vec<ParsedVariant>> {
                 let ident = v.ident.clone();
                 let params = ErrorVariantParams::from_variant(v)?;
                 let fields = v.fields.clone();
+
+                if params.forward.unwrap_or(false) {
+                    if params.status.is_some() {
+                        return Err(darling::Error::custom(
+                            "explicit status is incompatible with forward attribute",
+                        ));
+                    }
+
+                    if !matches!(&fields, Fields::Unnamed(fields_unnamed) if fields_unnamed.unnamed.len() == 1) {
+                        return Err(darling::Error::custom(
+                            "forward attribute can only be used on tuple variants with a single field",
+                        ));
+                    }
+                }
+
                 Ok(ParsedVariant {
                     ident,
                     params,
@@ -155,8 +183,16 @@ fn parse_variants(enum_data: &DataEnum) -> Result<Vec<ParsedVariant>> {
     Ok(variants)
 }
 
-fn expand_get_statuses(variants: &[ParsedVariant], default_status: u16) -> Result<TokenStream> {
-    let match_variants = variants.iter().map(|variant| {
+fn forward_binding() -> syn::Ident {
+    syn::Ident::new(
+        "__editoast_error_unamed_field",
+        proc_macro2::Span::mixed_site(),
+    )
+}
+
+fn match_variants<'a>(variants: &'a [ParsedVariant]) -> impl Iterator<Item = TokenStream> + 'a {
+    let forward_binding = forward_binding();
+    variants.iter().map(move |variant| {
         let ident = &variant.ident;
         match &variant.fields {
             Fields::Named(fields_named) => {
@@ -166,12 +202,24 @@ fn expand_get_statuses(variants: &[ParsedVariant], default_status: u16) -> Resul
                 });
                 quote! {#ident { #(#field_ident),* }}
             }
-            Fields::Unnamed(_) => quote! {#ident(..)},
+            Fields::Unnamed(fields_unnamed) if fields_unnamed.unnamed.len() == 1 => {
+                quote! { #ident(#forward_binding) }
+            }
+            Fields::Unnamed(..) => quote! { #ident(..) },
             Fields::Unit => quote! {#ident},
         }
-    });
+    })
+}
+
+fn expand_get_statuses(variants: &[ParsedVariant], default_status: u16) -> Result<TokenStream> {
+    let forward_binding = forward_binding();
+    let match_variants = match_variants(variants);
 
     let statuses = variants.iter().map(|variant| {
+        if variant.params.forward.unwrap_or(false) {
+            return quote!{ #forward_binding.get_status() }
+        }
+
         let Some(status) = variant.params.status.as_ref() else {
             return quote! { axum::http::StatusCode::from_u16(#default_status).unwrap() };
         };
@@ -186,18 +234,21 @@ fn expand_get_statuses(variants: &[ParsedVariant], default_status: u16) -> Resul
 }
 
 fn expand_get_types(variants: &[ParsedVariant], base_id: &String) -> TokenStream {
-    let match_variants = variants.iter().map(|variant| {
-        let ident = &variant.ident;
-        quote! {#ident {..}}
-    });
+    let forward_binding = forward_binding();
+    let match_variants = match_variants(variants);
 
-    let ids = variants
-        .iter()
-        .map(|variant| format!("editoast:{}:{}", base_id, variant.ident));
+    let ids = variants.iter().map(|variant| {
+        if variant.params.forward.unwrap_or(false) {
+            quote! { #forward_binding.get_type() }
+        } else {
+            let id = format!("editoast:{}:{}", base_id, variant.ident);
+            quote! { #id }
+        }
+    });
 
     quote! {
         match self {
-            #(Self::#match_variants => #ids),*
+            #(#[allow(unused)] Self::#match_variants => #ids),*
         }
     }
 }
@@ -206,8 +257,9 @@ fn expand_contexts(variants: &[ParsedVariant]) -> TokenStream {
     let context = variants.iter().map(|variant| {
         let ident = &variant.ident;
         let no_context = variant.params.no_context.unwrap_or(false);
-        match (&variant.fields, no_context) {
-            (Fields::Named(fields_named), false) => {
+        let forward = variant.params.forward.unwrap_or(false);
+        match (&variant.fields, no_context, forward) {
+            (Fields::Named(fields_named), false, _) => {
                 let field_ident = fields_named.named.iter().map(|f| {
                     let ident = f.ident.clone().unwrap();
                     quote! {#ident}
@@ -215,6 +267,10 @@ fn expand_contexts(variants: &[ParsedVariant]) -> TokenStream {
                 let field_ident2 = field_ident.clone();
                 let field_ident3 = field_ident.clone();
                 quote! {Self::#ident { #(#field_ident),*} => [#((stringify!(#field_ident2).to_string(), serde_json::to_value(#field_ident3).unwrap())),*].into()}
+            }
+            (Fields::Unnamed(_), false, true) => {
+                let forward_ident = forward_binding();
+                quote! {Self::#ident(#forward_ident) => #forward_ident.context()}
             }
             _ => quote! {Self::#ident {..} => Default::default()},
         }
@@ -258,6 +314,8 @@ mod tests {
                     NotFound { infra_id: i64 },
                     #[editoast_error(status = 400)]
                     BadRequest { message: String },
+                    #[editoast_error(forward)]
+                    WithInner(#[from] InnerError),
                     InternalError,
                 }
             }

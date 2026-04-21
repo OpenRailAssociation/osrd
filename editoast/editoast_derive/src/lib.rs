@@ -25,6 +25,9 @@ use syn::parse_macro_input;
 ///
 /// You can also use `#[editoast_error(status = ???)]` for each variant, which will be the HTTP status code.
 ///
+/// Alternatively, you can use `#[editoast_error(forward)]` to forward the status code and type of an inner EditoastError.
+/// That's only possible with a single field tuple variant.
+///
 /// ### Example
 ///
 /// ```ignore
@@ -36,6 +39,8 @@ use syn::parse_macro_input;
 ///   MyErrorWithContext{ context: usize },
 ///   #[editoast_error(no_context)]
 ///   MyErrorWithoutContext{ context: usize },
+///   #[editoast_error(forward)]
+///   MyForwardedError(#[from] AnotherEditoastError),
 /// }
 /// ```
 #[proc_macro_derive(EditoastError, attributes(editoast_error))]
