@@ -83,6 +83,7 @@ export {
   // used in place of the real osrdEditoastApi.
   //
   // Because this file is placed in a __mocks__ directory, vitest will load it
-  // by default when vi.mock('common/api/osrdEditoastApi') is called.
+  // by default when vi.mock('common/api/osrdEditoastApi') is called by
+  // vite.setup.ts.
   mockApi as osrdEditoastApi,
 };

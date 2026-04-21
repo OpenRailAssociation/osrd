@@ -108,6 +108,7 @@ export default [
             'eslint.config.js',
             'playwright.config.ts',
             'vite.config.ts',
+            'vitest.setup.ts',
           ],
         },
       ],
