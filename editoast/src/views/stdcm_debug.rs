@@ -3,7 +3,6 @@ use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
-use deadpool_redis::redis::AsyncCommands as _;
 use editoast_derive::EditoastError;
 use object_store::GetOptions;
 use object_store::ObjectStore as _;
@@ -17,8 +16,6 @@ use crate::AppState;
 use crate::error::Result;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-
-const CACHE_TTL_SECONDS: u64 = 600;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "stdcm_debug")]
@@ -64,12 +61,6 @@ pub(in crate::views) async fn get_debug_data(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let cache_key = format!("stdcm_debug:{trace_id}");
-    let mut conn = state.valkey_client.get_connection().await?;
-    if let Ok(Some(cached)) = conn.json_get::<StdcmDebugDataResponse, _>(&cache_key).await {
-        return Ok(Json(cached));
-    }
-
     let s3 = state
         .s3_client
         .as_ref()
@@ -87,11 +78,6 @@ pub(in crate::views) async fn get_debug_data(
         failure,
         simulation_data,
     };
-
-    if let Ok(serialized) = serde_json::to_string(&response) {
-        let _: Result<(), _> = conn.set_ex(&cache_key, serialized, CACHE_TTL_SECONDS).await;
-    }
-
     Ok(Json(response))
 }
 
