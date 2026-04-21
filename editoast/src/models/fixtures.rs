@@ -18,8 +18,6 @@ use editoast_models::timetable::Timetable;
 use editoast_models::timetable_train_schedule_set::TimetableTrainScheduleSet;
 use editoast_models::train_schedule_exception::TrainScheduleException;
 use schemas::TrainScheduleExceptionChangeGroups;
-use schemas::fixtures::simple_created_exception_with_change_groups;
-use schemas::fixtures::simple_modified_exception_with_change_groups;
 use schemas::infra::InfraObject;
 use schemas::infra::RailJson;
 use schemas::paced_train::Paced;
@@ -113,10 +111,7 @@ pub fn simple_paced_train_base() -> TrainSchedule {
         paced: Some(Paced {
             time_window: ChronoDuration::hours(2).try_into().unwrap(),
             interval: ChronoDuration::minutes(15).try_into().unwrap(),
-            exceptions: vec![
-                simple_created_exception_with_change_groups("exception_key_1"),
-                simple_modified_exception_with_change_groups("exception_key_2", 0),
-            ],
+            exceptions: vec![],
         }),
     }
 }
