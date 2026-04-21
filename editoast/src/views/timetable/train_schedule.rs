@@ -79,7 +79,7 @@ use crate::views::timetable::simulation::train_simulation_batch;
 use crate::views::timetable::track_occupancy;
 use editoast_models::rolling_stock::RollingStock;
 
-#[derive(Debug, Error, EditoastError)]
+#[derive(Debug, Error, EditoastError, derive_more::From)]
 #[editoast_error(base_id = "train_schedule")]
 enum TrainScheduleError {
     #[error("{count} train schedule(s) could not be found")]
@@ -109,7 +109,8 @@ enum TrainScheduleError {
 
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    Database(#[from] editoast_models::Error),
+    #[from(editoast_models::Error, database::DatabaseError)]
+    Database(editoast_models::Error),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
@@ -200,11 +201,31 @@ pub(in crate::views) async fn update_train_schedule(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let conn = &mut db_pool.get().await?;
+    db_pool
+        .get()
+        .await?
+        .transaction(async move |tx| {
+            let train_schedule =
+                models::TrainSchedule::retrieve_or_fail(tx.clone(), train_schedule_id, || {
+                    TrainScheduleError::NotFound { train_schedule_id }
+                })
+                .await?;
+
+            if !train_schedule.has_same_pace(&train_schedule_base.paced) {
+                TrainScheduleException::delete_exceptions_for_train_schedule(
+                    &mut tx.clone(),
+                    train_schedule.id,
+                )
+                .await?;
+            }
+
     let train_schedule_changeset: TrainScheduleChangeset = train_schedule_base.into();
     train_schedule_changeset
-        .update_or_fail(conn, train_schedule_id, || TrainScheduleError::NotFound {
-            train_schedule_id,
+                .update_or_fail(&mut tx.clone(), train_schedule_id, || {
+                    TrainScheduleError::NotFound { train_schedule_id }
+                })
+                .await?;
+            Ok::<_, TrainScheduleError>(())
         })
         .await?;
 

@@ -271,6 +271,12 @@ impl TrainSchedule {
             .chain(self.get_created_occurrences_exceptions(exceptions))
             .sorted_by_key(|(_, ts)| ts.start_time)
     }
+
+    /// Determines whether the pace (time window and interval) of the train schedule is the same as the given pace.
+    pub fn has_same_pace(&self, paced: &Option<Paced>) -> bool {
+        self.interval == paced.as_ref().map(|p| p.interval.into())
+            && self.time_window == paced.as_ref().map(|p| p.time_window.into())
+    }
 }
 
 impl From<paced_train::TrainSchedule> for TrainScheduleChangeset {
@@ -541,6 +547,34 @@ mod tests {
             train_schedule.is_exception_occurrence_index_valid(occurrence_index),
             expected_valid
         );
+    }
+
+    #[test]
+    fn has_same_pace_when_nothing_changed() {
+        let train_schedule = create_paced_train();
+        let train_schedule_update: schemas::paced_train::TrainSchedule =
+            create_paced_train().into();
+        assert!(train_schedule.has_same_pace(&train_schedule_update.paced));
+    }
+
+    #[test]
+    fn has_same_pace_when_interval_changed() {
+        let train_schedule = create_paced_train();
+        let mut train_schedule_update: schemas::paced_train::TrainSchedule =
+            create_paced_train().into();
+        train_schedule_update.paced.as_mut().unwrap().interval =
+            chrono::Duration::minutes(60).try_into().unwrap();
+        assert!(!train_schedule.has_same_pace(&train_schedule_update.paced));
+    }
+
+    #[test]
+    fn has_same_pace_when_time_window_changed() {
+        let train_schedule = create_paced_train();
+        let mut train_schedule_update: schemas::paced_train::TrainSchedule =
+            create_paced_train().into();
+        train_schedule_update.paced.as_mut().unwrap().time_window =
+            chrono::Duration::hours(4).try_into().unwrap();
+        assert!(!train_schedule.has_same_pace(&train_schedule_update.paced));
     }
 
     #[tokio::test]
