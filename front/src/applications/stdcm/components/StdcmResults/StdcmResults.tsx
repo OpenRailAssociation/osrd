@@ -446,7 +446,7 @@ const StdcmResults = ({
               href={`/stdcm/debug?traceId=${encodeURIComponent(traceId)}`}
               target="_blank"
               rel="noopener noreferrer"
-              style={{ fontSize: '0.75rem', opacity: 0.9 }}
+              className="stdcm-debug-link"
             >
               Link to debug page with more simulation details
             </a>
