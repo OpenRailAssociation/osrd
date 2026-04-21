@@ -219,8 +219,8 @@ pub(in crate::views) async fn update_train_schedule(
                 .await?;
             }
 
-    let train_schedule_changeset: TrainScheduleChangeset = train_schedule_base.into();
-    train_schedule_changeset
+            let train_schedule_changeset: TrainScheduleChangeset = train_schedule_base.into();
+            train_schedule_changeset
                 .update_or_fail(&mut tx.clone(), train_schedule_id, || {
                     TrainScheduleError::NotFound { train_schedule_id }
                 })
@@ -2148,7 +2148,8 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
+        let (timetable, train_schedule_set) =
+            create_timetable_with_train_schedule_set(&mut pool.get_ok()).await;
         let paced_train =
             create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
 
@@ -2159,7 +2160,13 @@ mod tests {
             Duration::minutes(15).try_into().unwrap();
 
         let request = app
-            .put(format!("/train_schedules/{}", paced_train.id).as_str())
+            .put(
+                format!(
+                    "/train_schedules/{}?timetable_id={}",
+                    paced_train.id, timetable.id
+                )
+                .as_str(),
+            )
             .json(&json!(&paced_train_base));
 
         app.fetch(request)

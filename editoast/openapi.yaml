@@ -6350,6 +6350,7 @@ components:
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorInvalidOccurrenceIndex'
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorNotPacedTrain'
+      - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorOccurrenceIndexAlreadyUsed'
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorTimetableNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorTrainScheduleNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleSetErrorDatabase'
@@ -8746,6 +8747,30 @@ components:
           type: string
           enum:
           - editoast:train_schedule_exception:NotPacedTrain
+    EditoastTrainScheduleExceptionErrorOccurrenceIndexAlreadyUsed:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - index
+          properties:
+            index:
+              type: string
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:train_schedule_exception:OccurrenceIndexAlreadyUsed
     EditoastTrainScheduleExceptionErrorTimetableNotFound:
       type: object
       required:
