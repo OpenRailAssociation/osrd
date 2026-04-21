@@ -84,6 +84,7 @@ export default defineConfig(({ mode }) => {
         all: true,
         reportsDirectory: 'coverage',
       },
+      silent: 'passed-only',
     },
   };
 });
