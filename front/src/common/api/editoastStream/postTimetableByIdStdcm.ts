@@ -1,7 +1,6 @@
 import type {
   PostTimetableByIdStdcmApiArg,
   PostTimetableByIdStdcmApiResponseWithTraceId,
-  StdcmResponse,
   StdcmResponseWithTraceId,
 } from 'common/api/osrdEditoastApi';
 

@@ -84,7 +84,7 @@ const DebugFailureMap = ({ failureData }: DebugFailureMapProps) => {
   }, []);
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: 500 }}>
+    <div className="debug-failure-map">
       <ReactMapGL
         ref={mapRef}
         initialViewState={initialViewState}
@@ -133,61 +133,21 @@ const DebugFailureMap = ({ failureData }: DebugFailureMapProps) => {
         </Source>
       </ReactMapGL>
 
-      <div
-        style={{
-          position: 'absolute',
-          top: 8,
-          right: 8,
-          background: 'white',
-          border: '1px solid #ccc',
-          padding: '4px 8px',
-          fontSize: 12,
-          display: 'flex',
-          gap: 12,
-        }}
-      >
+      <div className="debug-failure-map__legend">
         <span>
-          <span
-            style={{
-              display: 'inline-block',
-              width: 10,
-              height: 10,
-              borderRadius: '50%',
-              background: 'rgba(220,50,50,0.85)',
-              marginRight: 4,
-            }}
-          />
+          <span className="debug-failure-map__legend-dot largest" />
           Largest conflicts
         </span>
         <span>
-          <span
-            style={{
-              display: 'inline-block',
-              width: 10,
-              height: 10,
-              borderRadius: '50%',
-              background: 'rgba(50,120,220,0.85)',
-              marginRight: 4,
-            }}
-          />
+          <span className="debug-failure-map__legend-dot closest" />
           Closest conflicts
         </span>
       </div>
 
       {hovered && (
         <div
-          style={{
-            position: 'absolute',
-            left: hovered.x + 12,
-            top: hovered.y + 12,
-            background: 'white',
-            border: '1px solid #ccc',
-            padding: '6px 10px',
-            pointerEvents: 'none',
-            fontSize: 12,
-            maxWidth: 280,
-            lineHeight: 1.6,
-          }}
+          className="debug-failure-map__tooltip"
+          style={{ left: hovered.x + 12, top: hovered.y + 12 }}
         >
           <div>
             <strong>{hovered.point.lastOPName}</strong>
