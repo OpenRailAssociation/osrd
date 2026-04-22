@@ -61,6 +61,7 @@
     .search-result-table-item {
       cursor: pointer;
       border-radius: 4px;
+      min-height: 32px;
       td {
         cursor: pointer;
         vertical-align: middle;
@@ -68,7 +69,7 @@
       }
       font-size: 0.9rem;
       img {
-        height: 32px;
+        height: 24px;
       }
       &:hover {
         background-color: #d7d7d7;
