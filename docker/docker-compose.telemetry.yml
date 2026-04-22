@@ -1,0 +1,8 @@
+services:
+  core:
+    environment:
+      CORE_MONITOR_TYPE: "opentelemetry"
+
+  editoast:
+    environment:
+      TELEMETRY_KIND: "opentelemetry"

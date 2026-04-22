@@ -183,7 +183,7 @@ services:
       VALKEY_URL: "redis://valkey"
       DATABASE_URL: "postgres://osrd:password@postgres/osrd"
       OSRDYNE_API_URL: "http://osrdyne:4242/"
-      TELEMETRY_KIND: "opentelemetry"
+      TELEMETRY_KIND: "none"
       TELEMETRY_ENDPOINT: "http://jaeger:4317"
       OSRD_MQ_URL: "amqp://osrd:password@rabbitmq:5672/%2f"
       FGA_API_URL: "http://openfga:8091"
@@ -241,6 +241,8 @@ services:
   jaeger:
     image: jaegertracing/jaeger:latest
     container_name: osrd-jaeger
+    profiles:
+      - telemetry
     restart: unless-stopped
     ports:
       - "4317:4317"
