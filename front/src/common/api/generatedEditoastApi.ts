@@ -5,6 +5,7 @@ export const addTagTypes = [
   'documents',
   'electrical_profiles',
   'fonts',
+  'icons',
   'infra',
   'rolling_stock',
   'delimited_area',
@@ -223,6 +224,15 @@ const injectedRtkApi = api
       getHealth: build.query<GetHealthApiResponse, GetHealthApiArg>({
         query: () => ({ url: `/health` }),
         providesTags: [],
+      }),
+      getIconsBySignalingSystemAndFileName: build.query<
+        GetIconsBySignalingSystemAndFileNameApiResponse,
+        GetIconsBySignalingSystemAndFileNameApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/icons/${queryArg.signalingSystem}/${queryArg.fileName}`,
+        }),
+        providesTags: ['icons'],
       }),
       getInfra: build.query<GetInfraApiResponse, GetInfraApiArg>({
         query: (queryArg) => ({
@@ -1715,6 +1725,13 @@ export type GetFontsByFontAndGlyphApiArg = {
 };
 export type GetHealthApiResponse = unknown;
 export type GetHealthApiArg = void;
+export type GetIconsBySignalingSystemAndFileNameApiResponse = unknown;
+export type GetIconsBySignalingSystemAndFileNameApiArg = {
+  /** Signaling system name */
+  signalingSystem: string;
+  /** File name (svg) */
+  fileName: string;
+};
 export type GetInfraApiResponse =
   /** status 200 All infras, paginated */ PaginationStats & {
     results: Infra[];

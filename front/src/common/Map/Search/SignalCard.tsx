@@ -16,7 +16,7 @@ const SignalCard = ({ signalSearchResult, onResultClick }: SignalCardProps) => (
       {typeof signalSearchResult.sprite === 'string' &&
         typeof signalSearchResult.sprite_signaling_system === 'string' && (
           <img
-            src={`${mainConfig.proxy_editoast}/sprites/${signalSearchResult.sprite_signaling_system}/${signalSearchResult.sprite}.svg`}
+            src={`${mainConfig.proxy_editoast}/icons/${signalSearchResult.sprite_signaling_system}/${signalSearchResult.sprite}.svg`}
             alt={`${signalSearchResult.sprite_signaling_system} ${signalSearchResult.sprite}`}
           />
         )}

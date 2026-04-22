@@ -85,6 +85,9 @@
     "geometry": {
       "UnexpectedGeometry": "Geometrie {{expected}} erwartet, aber {{actual}} erhalten"
     },
+    "icons": {
+      "FileNotFound": "Datei nicht gefunden"
+    },
     "infra": {
       "Database": "Interner Fehler",
       "NotFound": "Infrastruktur '{{infra_id}}' existiert nicht",

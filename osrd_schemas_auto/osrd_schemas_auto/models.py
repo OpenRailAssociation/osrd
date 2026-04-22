@@ -939,6 +939,20 @@ class EditoastGetObjectsErrorsObjectIdNotFound(BaseModel):
     type: Literal["EditoastGetObjectsErrorsObjectIdNotFound"]
 
 
+class EditoastIconErrorsFileNotFoundContext(BaseModel):
+    file: str
+
+
+class EditoastIconErrorsFileNotFound(BaseModel):
+    context: Annotated[
+        EditoastIconErrorsFileNotFoundContext | None,
+        Field(title="EditoastIconErrorsFileNotFoundContext"),
+    ] = None
+    message: str
+    status: Literal[404]
+    type: Literal["EditoastIconErrorsFileNotFound"]
+
+
 class EditoastInfraApiErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastInfraApiErrorDatabaseContext")
@@ -4367,6 +4381,7 @@ class EditoastError(
         | EditoastGeometryErrorUnexpectedGeometry
         | EditoastGetObjectsErrorsDuplicateIdsProvided
         | EditoastGetObjectsErrorsObjectIdNotFound
+        | EditoastIconErrorsFileNotFound
         | EditoastInfraApiErrorDatabase
         | EditoastInfraApiErrorNotFound
         | EditoastLayersErrorLayerNotFound
@@ -4528,6 +4543,7 @@ class EditoastError(
         | EditoastGeometryErrorUnexpectedGeometry
         | EditoastGetObjectsErrorsDuplicateIdsProvided
         | EditoastGetObjectsErrorsObjectIdNotFound
+        | EditoastIconErrorsFileNotFound
         | EditoastInfraApiErrorDatabase
         | EditoastInfraApiErrorNotFound
         | EditoastLayersErrorLayerNotFound

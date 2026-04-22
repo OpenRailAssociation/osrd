@@ -596,6 +596,26 @@ paths:
             text/plain:
               schema:
                 type: string
+  /icons/{signaling_system}/{file_name}:
+    get:
+      tags:
+      - icons
+      parameters:
+      - name: signaling_system
+        in: path
+        description: Signaling system name
+        required: true
+        schema:
+          type: string
+      - name: file_name
+        in: path
+        description: File name (svg)
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The requested icon
   /infra:
     get:
       tags:
@@ -7186,6 +7206,7 @@ components:
       - $ref: '#/components/schemas/EditoastGeometryErrorUnexpectedGeometry'
       - $ref: '#/components/schemas/EditoastGetObjectsErrorsDuplicateIdsProvided'
       - $ref: '#/components/schemas/EditoastGetObjectsErrorsObjectIdNotFound'
+      - $ref: '#/components/schemas/EditoastIconErrorsFileNotFound'
       - $ref: '#/components/schemas/EditoastInfraApiErrorDatabase'
       - $ref: '#/components/schemas/EditoastInfraApiErrorNotFound'
       - $ref: '#/components/schemas/EditoastLayersErrorLayerNotFound'
@@ -7403,6 +7424,31 @@ components:
           type: string
           enum:
           - editoast:infra:objects:ObjectIdNotFound
+    EditoastIconErrorsFileNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastIconErrorsFileNotFoundContext
+          required:
+          - file
+          properties:
+            file:
+              type: string
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:icons:FileNotFound
     EditoastInfraApiErrorDatabase:
       type: object
       required:

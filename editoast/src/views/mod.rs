@@ -3,6 +3,7 @@ mod catalog_entry;
 mod documents;
 pub mod electrical_profiles;
 pub mod fonts;
+pub mod icons;
 pub mod infra;
 mod layers;
 mod level_crossing_occupancy;
@@ -172,6 +173,7 @@ fn service_router() -> router::DocumentedRouter {
                 path.route("/signaling_systems", get!(sprites::signaling_systems))
                     .route("/{signaling_system}/{file_name}", get!(sprites::sprites))
             })
+            .route("/icons/{signaling_system}/{file_name}", get!(icons::icons))
             .route("/search", post!(search::search))
             .route(
                 "/stdcm/debug_data/{trace_id}",
