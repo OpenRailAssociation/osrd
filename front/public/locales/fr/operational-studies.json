@@ -671,6 +671,8 @@
         "title": "ETCS",
         "transition": "Trans."
       },
+      "invalidSimulation": "Le train sélectionné ne peut pas être simulé",
+      "noData": "La donnée est affichée lorsqu'un train est sélectionné",
       "powerRestrictions": "Restrictions de puissance",
       "reticleInfos": "Infos réticule",
       "slopes": "Déclivités",

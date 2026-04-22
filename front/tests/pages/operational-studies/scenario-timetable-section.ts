@@ -312,7 +312,14 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
       const count = await occurrences.count();
       for (let occurrenceIndex = 0; occurrenceIndex < count; occurrenceIndex += 1) {
         const occurrenceButton = occurrences.nth(occurrenceIndex);
-        await occurrenceButton.click();
+
+        const isSelected = await occurrenceButton.evaluate((el) =>
+          el.classList.contains('selected')
+        );
+        if (!isSelected) {
+          await occurrenceButton.click();
+        }
+
         await this.verifySimulationResultsVisibility();
       }
 

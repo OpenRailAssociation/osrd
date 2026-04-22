@@ -82,8 +82,8 @@ const UniqueTrainItem = ({
 
   const formattedTrainId = formatEditoastIdToPacedTrainId(train.id);
 
-  const changeSelectedTrainId = (trainId: TrainId) => {
-    dispatch(updateSelectedTrain({ id: trainId, by: 'timetable' }));
+  const toggleUniqueTrainSelection = (trainId: TrainId) => {
+    dispatch(updateSelectedTrain(isSelected ? undefined : { id: trainId, by: 'timetable' }));
   };
 
   const deleteTrain = async () => {
@@ -184,7 +184,7 @@ const UniqueTrainItem = ({
         data-testid="scenario-timetable-unique-train-button"
         role="button"
         tabIndex={0}
-        onClick={() => changeSelectedTrainId(formattedTrainId)}
+        onClick={() => toggleUniqueTrainSelection(formattedTrainId)}
         className="w-full clickable-button"
       >
         <div

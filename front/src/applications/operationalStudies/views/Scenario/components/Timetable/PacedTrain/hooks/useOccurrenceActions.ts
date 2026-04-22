@@ -71,9 +71,16 @@ const useOccurrenceActions = ({
     [pacedTrain, upsertTrainSchedules]
   );
 
-  const selectOccurrence = useCallback((occurrenceId: OccurrenceId) => {
-    dispatch(updateSelectedTrain({ id: occurrenceId, by: 'timetable' }));
-  }, []);
+  const toggleOccurrenceSelection = useCallback(
+    (occurrenceId: OccurrenceId) => {
+      dispatch(
+        updateSelectedTrain(
+          occurrenceId === selectedTrainId ? undefined : { id: occurrenceId, by: 'timetable' }
+        )
+      );
+    },
+    [dispatch, selectedTrainId]
+  );
 
   const selectOccurrenceForProjection = useCallback((occurrenceId: OccurrenceId) => {
     dispatch(updateTrainIdUsedForProjection(occurrenceId));
@@ -268,7 +275,7 @@ const useOccurrenceActions = ({
   );
 
   return {
-    selectOccurrence,
+    toggleOccurrenceSelection,
     selectOccurrenceForProjection,
     editOccurrence,
     updateOccurrenceStatus,

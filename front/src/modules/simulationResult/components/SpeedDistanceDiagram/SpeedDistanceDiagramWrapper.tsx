@@ -17,15 +17,16 @@ import type {
 import { formatData } from './helpers';
 
 export type SpeedDistanceDiagramWrapperProps = {
-  trainScheduleSimulation: SimulationResponseSuccess;
+  trainScheduleSimulation?: SimulationResponseSuccess;
   selectedTrainSchedulePowerRestrictions?: LayerData<PowerRestrictionValues>[];
-  pathProperties: PathPropertiesFormatted;
+  pathProperties?: PathPropertiesFormatted;
   height: number;
-  rollingStock: RollingStockWithLiveries;
+  rollingStock?: RollingStockWithLiveries;
   setHeight: React.Dispatch<React.SetStateAction<number>>;
   fetchEtcsBrakingCurves?: () => Promise<void>;
   etcsBrakingCurves?: EtcsBrakingCurves;
   initialLayersDisplay?: Parameters<typeof SpeedSpaceChart>[0]['initialLayersDisplay'];
+  isSimulationInvalid?: boolean;
 };
 
 const SPEED_DISTANCE_DIAGRAM_MIN_HEIGHT = 400;
@@ -41,18 +42,22 @@ const SpeedDistanceDiagramWrapper = ({
   fetchEtcsBrakingCurves,
   etcsBrakingCurves,
   initialLayersDisplay,
+  isSimulationInvalid,
 }: SpeedDistanceDiagramWrapperProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'simulationResults' });
 
   const root = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState<number>(root.current?.clientWidth || 0);
 
-  const data = formatData(
-    trainScheduleSimulation,
-    rollingStock.length,
-    selectedTrainSchedulePowerRestrictions,
-    pathProperties
-  );
+  const data =
+    trainScheduleSimulation && rollingStock
+      ? formatData(
+          trainScheduleSimulation,
+          rollingStock.length,
+          selectedTrainSchedulePowerRestrictions,
+          pathProperties
+        )
+      : null;
 
   const translations = {
     detailsBoxDisplay: {
@@ -119,7 +124,7 @@ const SpeedDistanceDiagramWrapper = ({
       data-testid="speed-space-chart"
       style={{ height: `${height}px` }}
     >
-      {containerWidth > 0 && (
+      {data && containerWidth > 0 ? (
         <SpeedSpaceChart
           width={containerWidth || SPEED_DISTANCE_DIAGRAM_MIN_HEIGHT}
           height={height}
@@ -131,6 +136,14 @@ const SpeedDistanceDiagramWrapper = ({
           fetchEtcsBrakingCurves={fetchEtcsBrakingCurves}
           etcsBrakingCurves={etcsBrakingCurves}
         />
+      ) : (
+        <div className="speed-space-chart-wrapper" style={{ height: `${height}px` }}>
+          <span className="no-data">
+            {isSimulationInvalid
+              ? t('speedDistanceSettings.invalidSimulation')
+              : t('speedDistanceSettings.noData')}
+          </span>
+        </div>
       )}
     </div>
   );
