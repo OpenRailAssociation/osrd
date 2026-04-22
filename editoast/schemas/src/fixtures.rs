@@ -1,26 +1,9 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::str::FromStr;
 
-use chrono::DateTime;
-use chrono::Utc;
 use common::units;
 
 use crate::RollingStock;
-use crate::TrainScheduleExceptionChangeGroups;
-use crate::paced_train::ConstraintDistributionChangeGroup;
-use crate::paced_train::ExceptionType;
-use crate::paced_train::InitialSpeedChangeGroup;
-use crate::paced_train::LabelsChangeGroup;
-use crate::paced_train::OptionsChangeGroup;
-use crate::paced_train::PacedTrainException;
-use crate::paced_train::PathAndScheduleChangeGroup;
-use crate::paced_train::RollingStockCategoryChangeGroup;
-use crate::paced_train::RollingStockChangeGroup;
-use crate::paced_train::SpeedLimitTagChangeGroup;
-use crate::paced_train::StartTimeChangeGroup;
-use crate::paced_train::TrainNameChangeGroup;
-use crate::primitives::NonBlankString;
 use crate::rolling_stock::EffortCurves;
 use crate::rolling_stock::LoadingGaugeType;
 use crate::rolling_stock::RollingResistance;
@@ -28,11 +11,6 @@ use crate::rolling_stock::RollingResistancePerWeight;
 use crate::rolling_stock::TowedRollingStock;
 use crate::rolling_stock::TrainMainCategory;
 use crate::rolling_stock::default_rolling_stock_railjson_version;
-use crate::train_schedule::Comfort;
-use crate::train_schedule::Distribution;
-use crate::train_schedule::MarginValue;
-use crate::train_schedule::Margins;
-use crate::train_schedule::TrainScheduleOptions;
 
 pub fn simple_rolling_stock() -> RollingStock {
     RollingStock {
@@ -105,57 +83,4 @@ pub fn rolling_stock_with_energy_sources() -> RollingStock {
 
 pub fn rolling_stock_with_invalid_effort_curves_json() -> &'static str {
     include_str!("../examples/rolling_stock_invalid_effort_curves.json")
-}
-
-pub fn simple_created_exception_with_change_groups(key: &str) -> PacedTrainException {
-    PacedTrainException {
-        id: None,
-        key: key.into(),
-        exception_type: ExceptionType::Created {},
-        disabled: false,
-        change_groups: TrainScheduleExceptionChangeGroups {
-            train_name: Some(TrainNameChangeGroup {
-                value: "exception_train_name".into(),
-            }),
-            constraint_distribution: Some(ConstraintDistributionChangeGroup {
-                value: Distribution::Mareco,
-            }),
-            initial_speed: Some(InitialSpeedChangeGroup { value: 10.0 }),
-            labels: Some(LabelsChangeGroup {
-                value: vec!["Label 1".to_string(), "Label 3".to_string()],
-            }),
-            options: Some(OptionsChangeGroup {
-                value: TrainScheduleOptions::default(),
-            }),
-            path_and_schedule: Some(PathAndScheduleChangeGroup {
-                power_restrictions: vec![],
-                schedule: vec![],
-                path: vec![],
-                margins: Margins {
-                    boundaries: vec![],
-                    values: vec![MarginValue::Percentage(5.0)],
-                },
-            }),
-            rolling_stock: Some(RollingStockChangeGroup {
-                rolling_stock_name: "TJV".into(),
-                comfort: Comfort::AirConditioning,
-            }),
-            rolling_stock_category: Some(RollingStockCategoryChangeGroup { value: None }),
-            speed_limit_tag: Some(SpeedLimitTagChangeGroup {
-                value: Some(NonBlankString("GB".into())),
-            }),
-            start_time: Some(StartTimeChangeGroup {
-                value: DateTime::<Utc>::from_str("2025-05-05T20:05:00+02:00").unwrap(),
-            }),
-        },
-    }
-}
-
-pub fn simple_modified_exception_with_change_groups(
-    key: &str,
-    occurrence_index: usize,
-) -> PacedTrainException {
-    let mut exception = simple_created_exception_with_change_groups(key);
-    exception.exception_type = ExceptionType::Modified { occurrence_index };
-    exception
 }
