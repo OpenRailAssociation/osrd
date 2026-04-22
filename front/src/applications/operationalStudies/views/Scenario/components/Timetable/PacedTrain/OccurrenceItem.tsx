@@ -72,7 +72,7 @@ const OccurrenceItem = ({
   isSelected,
   nextOccurrence,
   occurrenceActions: {
-    selectOccurrence,
+    toggleOccurrenceSelection,
     selectOccurrenceForProjection,
     editOccurrence,
     updateOccurrenceStatus,
@@ -215,7 +215,7 @@ const OccurrenceItem = ({
       onMouseLeave={() => dispatch(updateHoveredTrainId(undefined))}
       onClick={() => {
         if (isMenuOpen || disabled) return;
-        selectOccurrence(occurrence.id);
+        toggleOccurrenceSelection(occurrence.id);
       }}
     >
       <div

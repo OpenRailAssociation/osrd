@@ -28,7 +28,7 @@ import { mToMm } from 'utils/physics';
 const MAP_ID = 'simulation-result-map';
 
 type SimulationResultMapProps = {
-  pathSteps: TrainSchedule['path'];
+  pathSteps?: TrainSchedule['path'];
   pathProperties?: PathPropertiesFormatted;
   setMapCanvas?: (mapCanvas: string) => void;
 };
@@ -121,7 +121,7 @@ const SimulationResultMap = ({
           let name = '';
           if (index === 0) {
             name = t('requestedOrigin');
-          } else if (index === pathSteps.length - 1) {
+          } else if (pathSteps && index === pathSteps.length - 1) {
             name = t('requestedDestination');
           } else {
             name = t('requestedPoint', { count: index + 1 });
@@ -259,9 +259,7 @@ const SimulationResultMap = ({
           <Itinerary geojsonPath={geojsonPath} layerOrder={LAYER_GROUPS_ORDER[LAYERS.PATH.GROUP]} />
         )}
 
-        {mapMarkers.map((marker) => (
-          <PathStepMarker key={marker.id} {...marker} />
-        ))}
+        {pathSteps && mapMarkers.map((marker) => <PathStepMarker key={marker.id} {...marker} />)}
       </BaseMap>
     </MapContextProvider>
   );

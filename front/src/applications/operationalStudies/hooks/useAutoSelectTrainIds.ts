@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useSelector } from 'react-redux';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -52,6 +52,10 @@ const useAutoSelectTrainIds = (
   const localKey = `useAutoSelectTrainIds_project${urlProjectId}_study${urlStudyId}_scenario${urlScenarioId}`;
 
   const [parametersLoaded, setParametersLoaded] = useState<boolean>(false);
+
+  // We want to have a default selection only at first load,
+  // not when the selected train is deleted
+  const initialAutoSelectDoneRef = useRef(false);
 
   /**
    * Get a parameter from the URL, or if absent from local storage
@@ -114,6 +118,7 @@ const useAutoSelectTrainIds = (
     }
 
     if (trainSchedulesWithDetails.length === 0) {
+      initialAutoSelectDoneRef.current = false;
       if (selectedTrainId) dispatch(updateSelectedTrain(undefined));
       if (currentTrainIdForProjection) dispatch(updateTrainIdUsedForProjection(undefined));
       setParametersLoaded(true);
@@ -134,6 +139,8 @@ const useAutoSelectTrainIds = (
 
     // if a selected train schedule is given and is still in the timetable, don't change the selected train
     if (isSelectedTrainIdValid) {
+      initialAutoSelectDoneRef.current = true;
+
       // if no train is used for the projection or the id is invalid, use the selected train
       if (!isProjectedTrainIdValid) {
         dispatch(updateTrainIdUsedForProjection(selectedTrainId));
@@ -142,8 +149,11 @@ const useAutoSelectTrainIds = (
     }
 
     // at this point, the selected train is not in the timetable anymore or is undefined
-    // by default, select the first valid train schedule for the projection
-    // if no valid train schedule is found, select train schedule with valid pathfinding
+    if (!selectedTrainId && initialAutoSelectDoneRef.current) {
+      return;
+    }
+    // by default, select the first valid item for the projection
+    // if no valid item is found, select item with valid pathfinding
     const firstTrainCanBeUsedForProjection =
       trainSchedulesWithDetails.find((trainSchedule) => trainSchedule.summary?.isValid) ??
       trainSchedulesWithDetails.find(
@@ -151,6 +161,7 @@ const useAutoSelectTrainIds = (
       );
 
     if (firstTrainCanBeUsedForProjection) {
+      initialAutoSelectDoneRef.current = true;
       const pacedTrainId = formatEditoastIdToPacedTrainId(firstTrainCanBeUsedForProjection.id);
       dispatch(updateSelectedTrain({ id: pacedTrainId, by: 'timetable' }));
       if (!isProjectedTrainIdValid) dispatch(updateTrainIdUsedForProjection(pacedTrainId));

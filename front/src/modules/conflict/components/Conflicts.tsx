@@ -19,15 +19,13 @@ const Conflicts = ({
 }: ConflictsProps) => (
   <div className="scenario-conflicts">
     <div className="scenario-conflicts-content">
-      {selectedTrainName && (
-        <ConflictsToolbar
-          isFilterActive={showOnlySelectedTrain}
-          onToggleFilter={onToggleFilter}
-          selectedTrainName={selectedTrainName}
-          conflictsCount={conflictsCount}
-          disabled={!selectedTrainName}
-        />
-      )}
+      <ConflictsToolbar
+        isFilterActive={showOnlySelectedTrain}
+        onToggleFilter={onToggleFilter}
+        selectedTrainName={selectedTrainName}
+        conflictsCount={conflictsCount}
+        disabled={!selectedTrainName}
+      />
       <div className="conflicts-container">
         {displayedConflicts.map((conflict, index) => (
           <ConflictCard key={index} conflict={conflict} />

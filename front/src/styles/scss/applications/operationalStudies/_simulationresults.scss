@@ -92,6 +92,16 @@
       .speed-space-chart-wrapper {
         overflow: hidden;
       }
+      .no-data {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: rgba(121, 118, 113, 1);
+        font-size: 14px;
+        font-family: 'IBM Plex Sans-Regular', sans-serif;
+        line-height: 20px;
+      }
     }
 
     .simulation-map {

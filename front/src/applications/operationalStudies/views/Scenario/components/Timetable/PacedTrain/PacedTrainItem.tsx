@@ -181,8 +181,14 @@ const PacedTrainItem = ({
     }
   };
 
-  const selectPacedTrainId = () => {
-    dispatch(updateSelectedTrain({ id: formattedPacedTrainId, by: 'timetable' }));
+  const togglePacedTrainSelection = () => {
+    dispatch(
+      updateSelectedTrain(
+        selectedTrainId === formattedPacedTrainId
+          ? undefined
+          : { id: formattedPacedTrainId, by: 'timetable' }
+      )
+    );
   };
 
   const deleteAllExceptions = async () => {
@@ -381,7 +387,7 @@ const PacedTrainItem = ({
             className="train-info"
             data-testid="selected-paced-train-area"
             role="button"
-            onClick={selectPacedTrainId}
+            onClick={togglePacedTrainSelection}
             tabIndex={0}
           >
             <span

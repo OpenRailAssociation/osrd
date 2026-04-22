@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 
 import { ChevronLeft, ChevronRight, Eye } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
@@ -89,6 +89,15 @@ const SimulationResults = ({
     MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT
   );
 
+  const sddData = simulationResults?.isValid
+    ? {
+        trainScheduleSimulation: simulationResults.simulation,
+        powerRestrictions: simulationResults.powerRestrictions,
+        rollingStock: simulationResults.rollingStock,
+        pathProperties: simulationResults.pathProperties,
+      }
+    : undefined;
+
   const [SDDHeight, setSDDHeight] = useState(SDD_INITIAL_HEIGHT);
 
   const [chronogramHeight, setChronogramHeight] = useState(CHRONOGRAM_INITIAL_HEIGHT);
@@ -177,6 +186,15 @@ const SimulationResults = ({
     simulationResults?.isValid ? simulationResults.simulation : undefined,
     trainSchedules
   );
+
+  const prevSddDataRef = useRef(sddData);
+  // We need to reset the SDD height when SDD data goes from undefined to defined in order to keep a consistent size.
+  useEffect(() => {
+    if (!prevSddDataRef.current && sddData) {
+      setSDDHeight(SDD_INITIAL_HEIGHT);
+    }
+    prevSddDataRef.current = sddData;
+  }, [sddData]);
 
   if (!simulationResults && !projectionData) {
     return null;
@@ -269,51 +287,48 @@ const SimulationResults = ({
         </BoardWrapper>
       )}
 
+      {/* SIMULATION : SPEED SPACE CHART */}
+      {activeBoards.has('sdd') && (
+        <BoardWrapper
+          name={t('simulationResults.speedDistanceDiagram')}
+          fullName={t('boardFullNames.sdd')}
+          resizable={{
+            height: SDDHeight,
+            setHeight: setSDDHeight,
+            minHeight: SDD_MIN_HEIGHT,
+          }}
+        >
+          <div className="osrd-simulation-container">
+            <SpeedDistanceDiagramWrapper
+              trainScheduleSimulation={sddData?.trainScheduleSimulation}
+              selectedTrainSchedulePowerRestrictions={sddData?.powerRestrictions}
+              rollingStock={sddData?.rollingStock}
+              pathProperties={sddData?.pathProperties}
+              height={SDDHeight - HIDDEN_CHART_TOP_HEIGHT}
+              setHeight={setSDDHeight}
+              fetchEtcsBrakingCurves={fetchEtcsBrakingCurves}
+              etcsBrakingCurves={etcsBrakingCurves}
+              isSimulationInvalid={simulationResults !== undefined && !simulationResults.isValid}
+            />
+          </div>
+        </BoardWrapper>
+      )}
+
+      {/* SIMULATION : MAP */}
+      <BoardWrapper hidden={!activeBoards.has('map')} name={t('boards.map')} withFooter>
+        <div data-testid="simulation-map" className="simulation-map">
+          <SimulationResultsMap
+            pathSteps={simulationResults?.train.path}
+            pathProperties={
+              simulationResults?.isValid ? simulationResults.pathProperties : undefined
+            }
+            setMapCanvas={setMapCanvas}
+          />
+        </div>
+      </BoardWrapper>
+
       {simulationResults && (
         <>
-          {simulationResults.isValid && (
-            <>
-              {/* SIMULATION : SPEED SPACE CHART */}
-              {activeBoards.has('sdd') && (
-                <BoardWrapper
-                  name={t('simulationResults.speedDistanceDiagram')}
-                  fullName={t('boardFullNames.sdd')}
-                  resizable={{
-                    height: SDDHeight,
-                    setHeight: setSDDHeight,
-                    minHeight: SDD_MIN_HEIGHT,
-                  }}
-                >
-                  <div className="osrd-simulation-container">
-                    <SpeedDistanceDiagramWrapper
-                      trainScheduleSimulation={simulationResults.simulation}
-                      selectedTrainSchedulePowerRestrictions={simulationResults.powerRestrictions}
-                      rollingStock={simulationResults.rollingStock}
-                      pathProperties={simulationResults.pathProperties}
-                      height={SDDHeight - HIDDEN_CHART_TOP_HEIGHT}
-                      setHeight={setSDDHeight}
-                      fetchEtcsBrakingCurves={fetchEtcsBrakingCurves}
-                      etcsBrakingCurves={etcsBrakingCurves}
-                    />
-                  </div>
-                </BoardWrapper>
-              )}
-            </>
-          )}
-
-          {/* SIMULATION : MAP */}
-          <BoardWrapper hidden={!activeBoards.has('map')} name={t('boards.map')} withFooter>
-            <div data-testid="simulation-map" className="simulation-map">
-              <SimulationResultsMap
-                pathSteps={simulationResults.train.path}
-                pathProperties={
-                  simulationResults.isValid ? simulationResults.pathProperties : undefined
-                }
-                setMapCanvas={setMapCanvas}
-              />
-            </div>
-          </BoardWrapper>
-
           {/* CHRONOGRAMME */}
           {trainSchedulesWithDetails.length > 0 && (
             <BoardWrapper

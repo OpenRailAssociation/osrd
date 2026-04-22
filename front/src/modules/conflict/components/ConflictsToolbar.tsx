@@ -20,7 +20,9 @@ const ConflictsToolbar = ({
 
   const getDisplayText = () => {
     if (!selectedTrainName) {
-      return <span className="filter-text">{t('main.conflicts.filterWithSelectedTrain')}</span>;
+      return (
+        <span className="filter-text-disabled">{t('main.conflicts.filterWithSelectedTrain')}</span>
+      );
     }
 
     const conflictsText = t('main.conflicts.conflictsCount', { count: conflictsCount });

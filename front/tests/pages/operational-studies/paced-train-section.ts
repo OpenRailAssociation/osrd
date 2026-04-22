@@ -12,7 +12,6 @@ import CommonPage from '../common-page';
 
 class PacedTrainSection extends CommonPage {
   private readonly pacedTrainItem: Locator;
-  private readonly selectedPacedTrainArea: Locator;
   private readonly testedPacedTrain: Locator;
   private readonly testedPacedTrainShowOccurrencesButton: Locator;
   private readonly testedPacedTrainName: Locator;
@@ -39,7 +38,6 @@ class PacedTrainSection extends CommonPage {
   constructor(page: Page) {
     super(page);
     this.pacedTrainItem = page.getByTestId('paced-train');
-    this.selectedPacedTrainArea = page.getByTestId('selected-paced-train-area');
     this.testedPacedTrain = page.locator('.paced-train:not(.closed)');
     this.testedPacedTrainShowOccurrencesButton =
       this.testedPacedTrain.getByTestId('show-occurrences-button');
@@ -82,10 +80,6 @@ class PacedTrainSection extends CommonPage {
 
   private async collapsePacedTrainToggleIcon(index: number) {
     return this.pacedTrainItem.nth(index).getByTestId('toggle-icon-close');
-  }
-
-  private async selectPacedTrain(pacedTrainIndex: number) {
-    await this.selectedPacedTrainArea.nth(pacedTrainIndex).click();
   }
 
   async expandPacedTrainOccurrenceList(index: number) {
@@ -151,7 +145,6 @@ class PacedTrainSection extends CommonPage {
   }
 
   async verifyPacedTrainSelected(pacedTrainIndex: number) {
-    await this.selectPacedTrain(pacedTrainIndex);
     await expect(this.pacedTrainItem.nth(pacedTrainIndex)).toHaveClass(/selected/);
   }
 
