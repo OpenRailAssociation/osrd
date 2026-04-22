@@ -170,7 +170,7 @@ test.describe('Paced train management', { tag: ['@op', '@paced-trains'] }, () =>
       });
 
       await test.step('Create paced train and return to results', async () => {
-        await operationalStudiesPage.createTimetableItem();
+        await operationalStudiesPage.createTrainSchedule();
         await operationalStudiesPage.checkToastHasBeenLaunched(frTranslations.pacedTrains.added);
         await operationalStudiesPage.returnSimulationResult();
       });

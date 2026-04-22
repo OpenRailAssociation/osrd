@@ -37,7 +37,7 @@ import {
   formatOccurrenceException,
   formatPacedTrainPayload,
   formatPacedTrainWithDetailsToPacedTrainPayload,
-} from '../helpers/formatTimetableItemPayload';
+} from '../helpers/formatTrainSchedulePayload';
 
 const useUpdateTrainSchedule = (
   setIsWorking: (isWorking: boolean) => void,
