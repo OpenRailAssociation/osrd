@@ -71,14 +71,6 @@ impl<S: StorageDriver> Authorizer<S> {
             .await
     }
 
-    pub async fn list_authorized_infra(
-        &self,
-    ) -> Result<Authorization<Vec<Infra>>, Error<S::Error>> {
-        self.regulator
-            .list_authorized_infra(&User(self.user_id))
-            .await
-    }
-
     pub async fn give_infra_grant(
         &self,
         subject: &Subject,

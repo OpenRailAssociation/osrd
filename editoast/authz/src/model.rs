@@ -156,6 +156,7 @@ pub struct RollingStock(pub i64);
     Eq,
     Hash,
 )]
+#[cfg_attr(test, derive(PartialOrd, Ord))]
 pub struct Infra(pub i64);
 
 #[derive(Debug, Clone, Copy, Display, PartialEq, Eq, Hash, Serialize, Deserialize)]

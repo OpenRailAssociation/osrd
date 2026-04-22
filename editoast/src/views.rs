@@ -37,7 +37,6 @@ use ::core::str;
 
 use ::authz::Authorization;
 use ::authz::Authorizer;
-use ::authz::Infra;
 use core_client::CoreClient;
 use editoast_derive::EditoastError;
 use editoast_models::PgAuthDriver;
@@ -484,18 +483,6 @@ impl Authentication {
                 .map_err(Into::into)?
                 .allowed()
                 .map_err(|_| AuthorizationError::Forbidden),
-        }
-    }
-
-    /// Returns the list of infra IDs that the issuer of the request is authorized to read.
-    /// If user has full access (in case of admin or skip authorization), it return a Bypassed with an empty list
-    async fn list_authorized_infra(&self) -> Result<Authorization<Vec<Infra>>, AuthorizerError> {
-        match self {
-            Authentication::SkipAuthorization { .. } => Ok(Authorization::Bypassed),
-            Authentication::Unauthenticated => Ok(Authorization::Denied {
-                reason: "user is not authenticated",
-            }),
-            Authentication::Authenticated(authorizer) => authorizer.list_authorized_infra().await,
         }
     }
 

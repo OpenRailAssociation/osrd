@@ -239,24 +239,6 @@ impl<S: StorageDriver> Regulator<S> {
         Ok(Authorization::from_privilege_check(check))
     }
 
-    /// Get IDS of infras a subject can read
-    pub async fn list_authorized_infra(
-        &self,
-        user: &User,
-    ) -> Result<Authorization<Vec<Infra>>, Error<S::Error>> {
-        // Bypass if user is an admin
-        if self.is_admin(user).await? {
-            return Ok(Authorization::Bypassed);
-        }
-
-        let infra_list = self
-            .openfga
-            .list_objects(Infra::can_read().query_objects(user))
-            .await?;
-
-        Ok(Authorization::Granted(infra_list))
-    }
-
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn give_infra_grant_unchecked(
         &self,
