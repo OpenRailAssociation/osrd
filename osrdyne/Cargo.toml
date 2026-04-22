@@ -8,7 +8,7 @@ version = "0.1.0"
 [dependencies]
 anyhow = "1.0.102"
 axum = "0.8.9"
-axum-extra = { version = "0.12.5", features = ["query"] }
+axum-extra = { version = "0.12.6", features = ["query"] }
 axum-tracing-opentelemetry = "0.33.1"
 bollard = "0.20"
 figment = { version = "0.10.19", features = ["env", "yaml"] }
