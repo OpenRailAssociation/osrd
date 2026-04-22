@@ -1,5 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
+import { EMPTY_SELECT_VALUE } from '../../assets/constants/stdcm/stdcm-const';
 import { expectFieldsToHaveValues } from '../../utils';
 import type {
   ViaSearchText,
@@ -108,7 +109,8 @@ class ViaSection extends STDCMPage {
     await expect(selectedSuggestion).toBeVisible();
     await selectedSuggestion.click();
 
-    await ch.click({ trial: true });
+    await expect(ch).toHaveValue(EMPTY_SELECT_VALUE);
+    await ch.selectOption(expectedChValue);
     await expect(ch).toHaveValue(expectedChValue);
     await expect(type).toHaveValue(defaultViaType);
   }
@@ -122,7 +124,7 @@ class ViaSection extends STDCMPage {
     await expect(this.viaCards).toBeVisible();
     await expectFieldsToHaveValues([
       [ci, ''],
-      [ch, ''],
+      [ch, EMPTY_SELECT_VALUE],
       [type, defaultPassageTimeType],
     ]);
 

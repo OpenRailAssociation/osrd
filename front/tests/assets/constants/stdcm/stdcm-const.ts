@@ -5,6 +5,8 @@ import { electricRollingStockName } from '../project-const';
 
 export const STDCM_TRANSLATIONS: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');
 
+export const EMPTY_SELECT_VALUE = '__PLACEHOLDER__';
+
 export const STDCM_URL = '/stdcm';
 
 export const ALL_STOPS_TABLE_DATA_PATH = './tests/assets/stdcm/stdcm-all-stops.json';
