@@ -1,5 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
+import { EMPTY_SELECT_VALUE } from '../../assets/constants/stdcm/stdcm-const';
 import type {
   DefaultOriginFields,
   ExpectedOriginDetails,
@@ -51,9 +52,8 @@ class OriginSection extends STDCMPage {
     arrivalTime,
     tolerance,
   }: DefaultOriginFields): Promise<void> {
-    await Promise.all(
-      [this.originCiField, this.originChField].map((field) => expect(field).toHaveValue(''))
-    );
+    await expect(this.originCiField).toHaveValue('');
+    await expect(this.originChField).toHaveValue(EMPTY_SELECT_VALUE);
     await expect(this.originArrival).toHaveValue(arrivalType);
     await expect(this.dateOriginArrival).toHaveValue(arrivalDate);
     await expect(this.timeOriginArrival).toHaveValue(arrivalTime);
@@ -97,12 +97,14 @@ class OriginSection extends STDCMPage {
       expectedSuggestions,
     });
 
-    await expect(this.originChField).toHaveValue(chValue);
+    await expect(this.originChField).toHaveValue(EMPTY_SELECT_VALUE);
     await expect(this.originArrival).toHaveValue(arrivalType.default);
     await expect(this.dateOriginArrival).toHaveValue(arrivalDate);
     await expect(this.timeOriginArrival).toHaveValue(arrivalTime);
     await expect(this.toleranceOriginArrival).toHaveValue(tolerance);
 
+    await this.originChField.selectOption(chValue);
+    await expect(this.originChField).toHaveValue(chValue);
     await this.originChField.selectOption(updatedChValue);
     await expect(this.originChField).toHaveValue(updatedChValue);
 
@@ -137,12 +139,13 @@ class OriginSection extends STDCMPage {
       expectedSuggestions,
     });
 
+    await this.originChField.selectOption(chValue);
+    await expect(this.originChField).toHaveValue(chValue);
+
     if (isPrecise && arrivalTypeOverride) {
       await this.originArrival.selectOption(arrivalTypeOverride);
       return;
     }
-
-    await expect(this.originChField).toHaveValue(chValue);
     await expect(this.originArrival).toHaveValue(arrivalType);
     await this.dateOriginArrival.fill(arrivalDate);
     await this.timeOriginArrival.fill(arrivalTimeOverride ?? arrivalTime);

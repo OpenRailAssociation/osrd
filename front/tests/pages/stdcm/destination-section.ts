@@ -1,5 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
+import { EMPTY_SELECT_VALUE } from '../../assets/constants/stdcm/stdcm-const';
 import { expectFieldsToHaveValues } from '../../utils';
 import type { DestinationDetailsData, LightDestinationDetailsData } from '../../utils/stdcm-types';
 import STDCMPage from './stdcm-page';
@@ -90,7 +91,7 @@ class DestinationSection extends STDCMPage {
   async verifyDefaultDestinationFields(defaultArrivalType: string): Promise<void> {
     await expectFieldsToHaveValues([
       [this.destinationCiField, ''],
-      [this.destinationChField, ''],
+      [this.destinationChField, EMPTY_SELECT_VALUE],
       [this.destinationArrival, defaultArrivalType],
     ]);
   }
@@ -121,6 +122,7 @@ class DestinationSection extends STDCMPage {
       expectedSuggestions: southSuggestions,
     });
 
+    await this.destinationChField.selectOption(chValue);
     await expect(this.destinationChField).toHaveValue(chValue);
     await expect(this.destinationArrival).toHaveValue(arrivalType.default);
 
@@ -168,6 +170,7 @@ class DestinationSection extends STDCMPage {
       expectedSuggestions: southSuggestions,
     });
 
+    await this.destinationChField.selectOption(chValue);
     await expect(this.destinationChField).toHaveValue(chValue);
     await expect(this.destinationArrival).toHaveValue(arrivalType);
   }
