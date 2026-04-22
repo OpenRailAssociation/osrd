@@ -4,7 +4,7 @@ import { defaultMapSettings } from 'reducers/commonMap';
 import type { OperationalStudiesConfState } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 
-import { formatPacedTrainPayload } from '../formatTimetableItemPayload';
+import { formatPacedTrainPayload } from '../formatTrainSchedulePayload';
 
 describe('formatPacedTrainPayload', () => {
   const rawOsrdconf: OperationalStudiesConfState = {

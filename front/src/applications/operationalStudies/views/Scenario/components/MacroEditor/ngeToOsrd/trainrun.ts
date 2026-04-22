@@ -387,7 +387,7 @@ export const createPacedAttributesFromTrainrun = (
  * which is equivalent to a PacedTrain (paced.interval = 60min).
  * No UniqueTrain can be created here, but only updated from an existing PacedTrain.
  */
-const handleCreateTimetableItem = async (
+const handleCreateTrainSchedule = async (
   netzgrafikDto: NetzgrafikDto,
   trainrun: TrainrunDto,
   trainScheduleSetId: number,
@@ -677,7 +677,7 @@ export const handleTrainrunOperation = async ({
   const trainrun = netzgrafikDto.trainruns.find((tr) => tr.id === trainrunId);
   switch (type) {
     case 'create': {
-      await handleCreateTimetableItem(
+      await handleCreateTrainSchedule(
         netzgrafikDto,
         trainrun!,
         trainScheduleSetId,

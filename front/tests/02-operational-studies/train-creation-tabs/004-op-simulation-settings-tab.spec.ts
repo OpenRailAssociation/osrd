@@ -139,7 +139,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
     });
 
     await test.step('Create unique train and verify (electrical profile ON)', async () => {
-      await operationalStudiesPage.createTimetableItem();
+      await operationalStudiesPage.createTrainSchedule();
       await operationalStudiesPage.closeToastNotification();
       await operationalStudiesPage.returnSimulationResult();
       await scenarioTimetableSection.getTimetableItemArrivalTime('11:48');
@@ -206,7 +206,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
     });
 
     await test.step('Create unique train and verify (speed limit tag ON)', async () => {
-      await operationalStudiesPage.createTimetableItem();
+      await operationalStudiesPage.createTrainSchedule();
       await operationalStudiesPage.closeToastNotification();
       await operationalStudiesPage.returnSimulationResult();
       await scenarioTimetableSection.getTimetableItemArrivalTime('11:49');
@@ -282,7 +282,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
     });
 
     await test.step('Create unique train and verify (Linear)', async () => {
-      await operationalStudiesPage.createTimetableItem();
+      await operationalStudiesPage.createTrainSchedule();
       await operationalStudiesPage.closeToastNotification();
       await operationalStudiesPage.returnSimulationResult();
       await scenarioTimetableSection.getTimetableItemArrivalTime('11:51');
@@ -362,7 +362,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
       });
 
       await test.step('Create unique train and verify outputs (all settings ON)', async () => {
-        await operationalStudiesPage.createTimetableItem();
+        await operationalStudiesPage.createTrainSchedule();
         await operationalStudiesPage.closeToastNotification();
         await operationalStudiesPage.returnSimulationResult();
         await opSimulationResultPage.setTrainListVisible();

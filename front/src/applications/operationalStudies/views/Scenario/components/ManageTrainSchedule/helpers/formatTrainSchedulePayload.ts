@@ -14,7 +14,7 @@ import { generatePacedTrainException } from './buildPacedTrainException';
 import formatMargin from './formatMargin';
 import formatSchedule from './formatSchedule';
 
-export function formatTimetableItemPayload(
+export function formatTrainSchedulePayload(
   osrdconf: OperationalStudiesConfState,
   // TODO TS2 : remove this when rollingStockName will replace rollingStockId in the store
   rollingStockName: string
@@ -91,7 +91,7 @@ export function formatOccurrenceException(
   generatedException: Omit<PacedTrainException, 'key' | 'occurrence_index'>;
   occurrenceIndex: number | undefined;
 } {
-  const baseTrain = formatTimetableItemPayload(osrdconf, rollingStockName);
+  const baseTrain = formatTrainSchedulePayload(osrdconf, rollingStockName);
 
   const newPacedTrain: Omit<PacedTrainWithPaced, 'train_schedule_set_id'> = {
     ...baseTrain,
@@ -135,7 +135,7 @@ export function formatPacedTrainPayload(
   // TODO TS2 : remove this when rollingStockName will replace rollingStockId in the store
   rollingStockName: string
 ): TrainSchedule {
-  const baseTrain = formatTimetableItemPayload(osrdconf, rollingStockName);
+  const baseTrain = formatTrainSchedulePayload(osrdconf, rollingStockName);
 
   if (osrdconf.editingTrainType === 'uniqueTrain') return baseTrain;
 

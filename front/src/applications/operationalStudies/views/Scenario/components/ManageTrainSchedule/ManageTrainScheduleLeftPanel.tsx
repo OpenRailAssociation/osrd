@@ -17,7 +17,7 @@ import {
 import type { TimetableItem, TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 
-import CreateTimetableItemButton from './CreateTimetableItemButton';
+import CreateTrainScheduleButton from './CreateTrainScheduleButton';
 import useUpdateTrainSchedule from './hooks/useUpdateTrainSchedule';
 import ItineraryModal from './Itinerary/ItineraryModal';
 import PacedTrainSettings from './PacedTrainSettings';
@@ -146,7 +146,7 @@ const ManageTrainScheduleLeftPanel = ({
                 <DotsLoader />
               </button>
             ) : (
-              <CreateTimetableItemButton
+              <CreateTrainScheduleButton
                 setIsWorking={setIsWorking}
                 upsertTrainSchedules={upsertTrainSchedules}
                 isPacedTrainMode={editingTrainType === 'pacedTrain'}

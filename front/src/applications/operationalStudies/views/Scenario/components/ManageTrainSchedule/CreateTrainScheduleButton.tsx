@@ -23,10 +23,10 @@ import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 import checkCurrentConfig from './helpers/checkCurrentConfig';
 import {
   formatPacedTrainPayload,
-  formatTimetableItemPayload,
-} from './helpers/formatTimetableItemPayload';
+  formatTrainSchedulePayload,
+} from './helpers/formatTrainSchedulePayload';
 
-type CreateTimetableItemButtonProps = {
+type CreateTrainScheduleButtonProps = {
   setIsWorking: (isWorking: boolean) => void;
   upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void;
   isPacedTrainMode: boolean;
@@ -35,11 +35,11 @@ type CreateTimetableItemButtonProps = {
 /**
  * Create unique trains and paced trains
  */
-const CreateTimetableItemButton = ({
+const CreateTrainScheduleButton = ({
   setIsWorking,
   upsertTrainSchedules,
   isPacedTrainMode,
-}: CreateTimetableItemButtonProps) => {
+}: CreateTrainScheduleButtonProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
 
@@ -61,7 +61,7 @@ const CreateTimetableItemButton = ({
     try {
       const newTrainSchedulePayload = isPacedTrainMode
         ? formatPacedTrainPayload(simulationConf, rollingStock!.name)
-        : formatTimetableItemPayload(simulationConf, rollingStock!.name);
+        : formatTrainSchedulePayload(simulationConf, rollingStock!.name);
 
       const formattedNewTrainSchedule: TimetableItem = (
         await createPacedTrains(dispatch, sandboxId, [newTrainSchedulePayload])
@@ -139,7 +139,7 @@ const CreateTimetableItemButton = ({
       type="button"
       disabled={workerStatus !== 'READY'}
       onClick={createTrainSchedules}
-      data-testid="create-timetable-item-button"
+      data-testid="create-train-schedule-button"
     >
       <span className="mr-2">
         <Plus size="lg" />
@@ -149,4 +149,4 @@ const CreateTimetableItemButton = ({
   );
 };
 
-export default CreateTimetableItemButton;
+export default CreateTrainScheduleButton;
