@@ -55,17 +55,16 @@ pub enum TrainScheduleExceptionError {
         interval: String,
     },
     #[error(
-        "The occurrence index '{index}' is already used for another exception of the same train schedule"
+        "The occurrence index '{occurrence_index}' is already used for another exception of the same train schedule"
     )]
     #[editoast_error(status = 400)]
-    OccurrenceIndexAlreadyUsed { index: String },
+    OccurrenceIndexAlreadyUsed { occurrence_index: String },
     #[error(transparent)]
     Database(editoast_models::Error),
 }
 
 impl From<editoast_models::Error> for TrainScheduleExceptionError {
     fn from(e: editoast_models::Error) -> Self {
-        dbg!(&e);
         match e {
             editoast_models::Error::UniqueViolation {
                 constraint,
@@ -75,7 +74,9 @@ impl From<editoast_models::Error> for TrainScheduleExceptionError {
                 == "train_schedule_exception_timetable_id_train_schedule_id_occ_key"
                 && column == "timetable_id, train_schedule_id, occurrence_index" =>
             {
-                Self::OccurrenceIndexAlreadyUsed { index: value }
+                Self::OccurrenceIndexAlreadyUsed {
+                    occurrence_index: value,
+                }
             }
             e => Self::Database(e),
         }

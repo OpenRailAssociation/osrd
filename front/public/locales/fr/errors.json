@@ -291,9 +291,9 @@
       "BatchNotFound": "'{{count}}' exception(s) non trouvée(s)",
       "Database": "Erreur interne (base de données)",
       "InvalidOccurrenceIndex": "L'index d'occurrence '{{occurrence_index}}' est invalide pour la circulation '{{train_schedule_id}}' avec une fenêtre temporelle de '{{time_window}}' et un intervalle de '{{interval}}'",
-      "OccurrenceIndexAlreadyUsed": "L'index d'occurrence '{{occurrence_index}}' est déjà utilisé pour une autre exception de la même circulation",
       "NotFound": "Exception '{{exception_id}}' non trouvée",
       "NotPacedTrain": "La circulation '{{train_schedule_id}}' n'est pas une mission",
+      "OccurrenceIndexAlreadyUsed": "L'index d'occurrence '{{occurrence_index}}' est déjà utilisé pour une autre exception de la même circulation",
       "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée",
       "TrainScheduleNotFound": "La circulation '{{train_schedule_id}}' n’a pas été trouvée"
     },

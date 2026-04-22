@@ -8757,9 +8757,9 @@ components:
         context:
           type: object
           required:
-          - index
+          - occurrence_index
           properties:
-            index:
+            occurrence_index:
               type: string
         message:
           type: string

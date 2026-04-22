@@ -291,9 +291,9 @@
       "BatchNotFound": "'{{count}}' train schedule exception(s) could not be found",
       "Database": "Internal error (database)",
       "InvalidOccurrenceIndex": "Occurrence index '{{occurrence_index}}' is invalid for train schedule '{{train_schedule_id}}' with time window '{{time_window}}' and interval '{{interval}}'",
-      "OccurrenceIndexAlreadyUsed": "The occurrence index '{{occurrence_index}}' is already used for another exception of the same train schedule",
       "NotFound": "Train schedule exception '{{exception_id}}' could not be found",
       "NotPacedTrain": "Train schedule '{{train_schedule_id}}' is not a paced train",
+      "OccurrenceIndexAlreadyUsed": "The occurrence index '{{occurrence_index}}' is already used for another exception of the same train schedule",
       "TimetableNotFound": "Timetable '{{timetable_id}}' could not be found",
       "TrainScheduleNotFound": "Train schedule '{{train_schedule_id}}' could not be found"
     },

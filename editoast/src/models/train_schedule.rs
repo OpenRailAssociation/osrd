@@ -558,7 +558,7 @@ mod tests {
     }
 
     #[test]
-    fn has_same_pace_when_interval_changed() {
+    fn has_not_same_pace_when_interval_changed() {
         let train_schedule = create_paced_train();
         let mut train_schedule_update: schemas::paced_train::TrainSchedule =
             create_paced_train().into();
@@ -568,7 +568,7 @@ mod tests {
     }
 
     #[test]
-    fn has_same_pace_when_time_window_changed() {
+    fn has_not_same_pace_when_time_window_changed() {
         let train_schedule = create_paced_train();
         let mut train_schedule_update: schemas::paced_train::TrainSchedule =
             create_paced_train().into();
