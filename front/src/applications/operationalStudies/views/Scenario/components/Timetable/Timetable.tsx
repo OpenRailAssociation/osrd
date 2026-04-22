@@ -159,7 +159,7 @@ const Timetable = ({
           setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
           refreshNge={refreshNge}
           handleDeleteTrainSchedules={handleDeleteTrainSchedules}
-          handleMoveTimetableItems={() => openMoveDialog(selectedTrainScheduleIds)}
+          handleMoveTrainSchedules={() => openMoveDialog(selectedTrainScheduleIds)}
           timetableMode={timetableMode}
           setTimetableMode={setTimetableMode}
           upsertTrainSchedules={upsertTrainSchedules}
@@ -180,7 +180,7 @@ const Timetable = ({
           handleClickTrainScheduleSet={handleClickTrainScheduleSet}
           handleSelectTrainScheduleSet={handleSelectTrainScheduleSet}
           catalogEntries={catalogEntries}
-          moveTimetableItem={(pacedTrainIds) => openMoveDialog(pacedTrainIds)}
+          moveTrainSchedule={(pacedTrainIds) => openMoveDialog(pacedTrainIds)}
           manageTrainScheduleSet={manageTrainScheduleSet}
           expandedTrainScheduleSetIds={expandedTrainScheduleSetIds}
           setShowTrainScheduleSetDialog={setShowTrainScheduleSetDialog}

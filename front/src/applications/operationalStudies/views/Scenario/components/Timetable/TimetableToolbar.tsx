@@ -45,7 +45,7 @@ type TimetableToolbarProps = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
   refreshNge: () => Promise<void>;
   handleDeleteTrainSchedules: () => void;
-  handleMoveTimetableItems: () => void;
+  handleMoveTrainSchedules: () => void;
   timetableMode: TimetableMode;
   setTimetableMode: React.Dispatch<React.SetStateAction<TimetableMode>>;
   upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void;
@@ -64,7 +64,7 @@ const TimetableToolbar = ({
   setDisplayTrainScheduleManagement,
   refreshNge,
   handleDeleteTrainSchedules,
-  handleMoveTimetableItems,
+  handleMoveTrainSchedules,
   timetableMode,
   setTimetableMode,
   upsertTrainSchedules,
@@ -260,7 +260,7 @@ const TimetableToolbar = ({
           toggleAllTrainsSelection={toggleAllTrainsSelection}
           handleExportTrainSchedules={handleExportTrainSchedules}
           handleDeleteTrainSchedules={handleDeleteTrainSchedules}
-          handleMoveTimetableItems={handleMoveTimetableItems}
+          handleMoveTrainSchedules={handleMoveTrainSchedules}
         />
       )}
       {isFilterPanelOpen && (

@@ -48,7 +48,7 @@ type UniqueTrainItemProps = {
   setSelectedTrainScheduleIds: React.Dispatch<React.SetStateAction<number[]>>;
   subCategories: SubCategory[];
   isSelectMode: boolean;
-  moveTimetableItem: () => void;
+  moveTrainSchedule: () => void;
   showMovebutton: boolean;
 };
 
@@ -65,7 +65,7 @@ const UniqueTrainItem = ({
   setSelectedTrainScheduleIds,
   subCategories,
   isSelectMode,
-  moveTimetableItem,
+  moveTrainSchedule,
   showMovebutton,
 }: UniqueTrainItemProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
@@ -307,7 +307,7 @@ const UniqueTrainItem = ({
       </div>
       <TimetableItemActions
         selectPathProjection={selectPathProjection}
-        moveTimetableItem={moveTimetableItem}
+        moveTrainSchedule={moveTrainSchedule}
         duplicateTimetableItem={duplicateTrain}
         editTimetableItem={() => selectTrainToEdit(train)}
         deleteTimetableItem={deleteTrain}
