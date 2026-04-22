@@ -54,8 +54,33 @@ pub enum TrainScheduleExceptionError {
         time_window: String,
         interval: String,
     },
+    #[error(
+        "The occurrence index '{occurrence_index}' is already used for another exception of the same train schedule"
+    )]
+    #[editoast_error(status = 400)]
+    OccurrenceIndexAlreadyUsed { occurrence_index: String },
     #[error(transparent)]
-    Database(#[from] editoast_models::Error),
+    Database(editoast_models::Error),
+}
+
+impl From<editoast_models::Error> for TrainScheduleExceptionError {
+    fn from(e: editoast_models::Error) -> Self {
+        match e {
+            editoast_models::Error::UniqueViolation {
+                constraint,
+                column,
+                value,
+            } if constraint
+                == "train_schedule_exception_timetable_id_train_schedule_id_occ_key"
+                && column == "timetable_id, train_schedule_id, occurrence_index" =>
+            {
+                Self::OccurrenceIndexAlreadyUsed {
+                    occurrence_index: value,
+                }
+            }
+            e => Self::Database(e),
+        }
+    }
 }
 
 #[derive(IntoParams, Deserialize)]
@@ -165,7 +190,8 @@ pub(in crate::views) async fn create_train_schedule_exception(
         train_schedule_exception_changeset.timetable_id(timetable_id);
     let train_schedule_exception: TrainScheduleException = train_schedule_exception_changeset
         .create(conn)
-        .await?
+        .await
+        .map_err(TrainScheduleExceptionError::from)?
         .into();
 
     Ok(Json(train_schedule_exception))
@@ -375,6 +401,50 @@ mod tests {
             &response.error_type,
             "editoast:train_schedule_exception:InvalidOccurrenceIndex"
         );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn train_schedule_exception_duplicated_occurrence_index_post() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        let mut conn = pool.get_ok();
+
+        let (timetable, train_schedule) = create_timetable_with_simple_paced_train(&mut conn).await;
+
+        let _train_schedule_exception_1 = create_train_schedule_exception(
+            &mut pool.get_ok(),
+            timetable.id,
+            train_schedule.id,
+            Some(0),
+            None,
+            None,
+        )
+        .await;
+
+        let train_schedule_exception_form: TrainScheduleExceptionForm =
+            TrainScheduleExceptionForm {
+                train_schedule_id: train_schedule.id,
+                occurrence_index: Some(0),
+                disabled: false,
+                change_groups: TrainScheduleExceptionChangeGroups::fixture_modified(),
+            };
+
+        // Insert train schedule exception
+        let request = app
+            .post(format!("/timetable/{}/train_schedule_exception", timetable.id).as_str())
+            .json(&json!(&train_schedule_exception_form));
+
+        let response: InternalError = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::BAD_REQUEST)
+            .json_into();
+
+        assert_eq!(
+            &response.error_type,
+            "editoast:train_schedule_exception:OccurrenceIndexAlreadyUsed"
+        )
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

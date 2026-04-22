@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::ops::DerefMut;
 
 use database::DbConnection;
 use editoast_derive::Model;
@@ -92,6 +93,23 @@ impl TrainScheduleException {
             .collect();
 
         Ok(exceptions)
+    }
+
+    pub async fn delete_exceptions_for_train_schedule(
+        conn: &mut DbConnection,
+        train_schedule_id: i64,
+    ) -> Result<usize, editoast_models::Error> {
+        use database::tables::train_schedule_exception::dsl;
+        use diesel::prelude::*;
+        use diesel_async::RunQueryDsl;
+
+        let deleted = diesel::delete(
+            dsl::train_schedule_exception.filter(dsl::train_schedule_id.eq(train_schedule_id)),
+        )
+        .execute(conn.write().await.deref_mut())
+        .await?;
+
+        Ok(deleted)
     }
 }
 
