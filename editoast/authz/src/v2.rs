@@ -319,6 +319,36 @@ impl<'a, T, R: std::fmt::Debug> Access<'a, T, R> {
     }
 }
 
+/// Represents the list authorized resources returned by a [`Protected`] operation.
+///
+/// This enum can either represent the list of objects returned by openfga after looking up user
+/// permissions on a given resource type, or the [`AuthorizedResources::All`] bypass variant if
+/// the authorization was not checked against openfga as the user is an admin and would have had
+/// access to all objects of that resource type anyway.
+///
+/// Bypassing the authorization check prevents sending unnecessary queries with possibly massive
+/// response payloads, as for example the full list of existing infras when checking which infras
+/// an admin has access to. To retrieve all objects of one kind from the authorization store, we need to retrieve all tuples
+/// related to objects of that type and there is no way to do that only for tuples containing a
+/// specific type so we end up retrieving all tuples from the store and then filtering them per
+/// object type.
+#[cfg_attr(test, derive(PartialOrd, Ord, PartialEq, Eq))]
+pub enum ResourcesList<T: fga::model::Type> {
+    /// All objects of the given type are authorized, openfga was not called.
+    All,
+    /// The list of authorized objects returned by Openfga.
+    Privileged(Vec<T>),
+}
+
+impl<T: fga::model::Type> ResourcesList<T> {
+    pub fn unwrap_privileged(self) -> Vec<T> {
+        match self {
+            ResourcesList::All => panic!("enum is not a List::Privileged variant"),
+            ResourcesList::Privileged(objects) => objects,
+        }
+    }
+}
+
 pub mod special_authorizers {
     use std::convert::Infallible;
 

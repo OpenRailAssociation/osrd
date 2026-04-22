@@ -10,9 +10,10 @@ use crate::InfraPrivilege;
 use crate::Role;
 use crate::RollingStock;
 use crate::RollingStockGrant;
-use crate::RollingStockPrivilege;
 use crate::Subject;
 use crate::User;
+use crate::model::RollingStockPrivilege;
+use crate::v2::ResourcesList;
 use crate::v2::infra_direct_grant;
 use crate::v2::infra_effective_grant;
 use crate::v2::infra_granted_subjects;
@@ -37,7 +38,7 @@ pub trait TestClientExt {
     async fn infra_revoke_grant(&self, subject: Subject, infra: Infra) -> bool;
     async fn infra_privileges(&self, user: User, infra: Infra) -> HashSet<InfraPrivilege>;
     async fn infra_granted_subjects(&self, infra: Infra, grant: InfraGrant) -> Vec<Subject>;
-
+    async fn infra_list(&self, user: User, privilege: InfraPrivilege) -> ResourcesList<Infra>;
     async fn rolling_stock_privileges(
         &self,
         user: User,
@@ -236,5 +237,13 @@ impl TestClientExt for fga::Client {
             }
         }
         .unwrap()
+    }
+
+    async fn infra_list(&self, user: User, privilege: InfraPrivilege) -> ResourcesList<Infra> {
+        let authorize = special_authorizers::Authorize(self);
+        authorize
+            .access_value(crate::v2::infra::infra_list(user, privilege))
+            .await
+            .unwrap()
     }
 }

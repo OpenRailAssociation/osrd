@@ -11,6 +11,9 @@ pub(in crate::views) mod routes;
 
 use authz;
 use authz::InfraGrant;
+use authz::InfraPrivilege;
+use authz::v2::Authorizer as _;
+use authz::v2::Check;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -46,6 +49,7 @@ use crate::generated_data::operational_point::OperationalPointLayer;
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::infra_cache::InfraCache;
 use crate::map;
+use crate::views::AuthorizationError;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::params;
@@ -169,6 +173,7 @@ pub(in crate::views) async fn refresh(
 }
 
 #[derive(Serialize, ToSchema)]
+#[cfg_attr(test, derive(Deserialize))]
 pub(in crate::views) struct InfraListResponse {
     #[serde(flatten)]
     stats: PaginationStats,
@@ -186,25 +191,47 @@ pub(in crate::views) struct InfraListResponse {
     ),
 )]
 pub(in crate::views) async fn list(
-    State(AppState { db_pool, .. }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    State(AppState {
+        db_pool, regulator, ..
+    }): State<AppState>,
+    Extension(user): Extension<Option<authz::User>>,
+    Extension(roles): Extension<Vec<authz::Role>>,
+    Extension(authn): Extension<crate::authentication::State>,
     Query(pagination): Query<PaginationQueryParams<1000>>,
 ) -> Result<Json<InfraListResponse>> {
     let conn = &mut db_pool.get().await?;
-
     let default_settings = pagination.into_selection_settings();
-    let settings = match auth.list_authorized_infra().await? {
-        authz::Authorization::Granted(infras) => default_settings
-            .filter(move || Infra::ID.eq_any(infras.iter().map(|infra| infra.0).collect())),
-        authz::Authorization::Bypassed => default_settings,
-        authz::Authorization::Denied { reason } => {
-            unreachable!("user is authenticated at this point: {reason}")
+    let settings = match (user, authn) {
+        (_, crate::authentication::State::Skip { .. }) => default_settings,
+        (Some(user), _) => {
+            let authorizer = crate::authorizers::UserAuthorizer::new(
+                user,
+                roles.clone(),
+                regulator.openfga(),
+                conn.clone(),
+            );
+            let authorized_infras = authorizer
+                .authorize(authz::v2::infra_list(user, InfraPrivilege::CanRead))
+                .await?
+                .access()
+                .await?
+                .map_err(|err| match err {
+                    Check::SubjectExists(_) => unreachable!("checked above"),
+                    _ => AuthorizationError::Forbidden,
+                })?;
+            match authorized_infras {
+                authz::v2::ResourcesList::All => default_settings,
+                authz::v2::ResourcesList::Privileged(authorized_infras) => {
+                    default_settings.filter(move || {
+                        Infra::ID.eq_any(authorized_infras.iter().map(|infra| infra.0).collect())
+                    })
+                }
+            }
         }
+        (None, _) => return Err(AuthorizationError::Unauthorized)?,
     };
-
     let (infras, stats) =
         Infra::list_paginated(conn, settings.order_by(move || Infra::ID.asc())).await?;
-
     let response = InfraListResponse {
         stats,
         results: infras,
@@ -855,7 +882,7 @@ pub mod tests {
     use crate::infra_cache::operation::create::apply_create_operation;
     use crate::views::test_app;
     use crate::views::test_app::TestApp;
-
+    use crate::views::test_app::TestRequestExt as _;
     use editoast_models::infra::DEFAULT_INFRA_VERSION;
     use editoast_models::infra_objects::get_geometry_layer_table;
     use editoast_models::infra_objects::get_table;
@@ -987,6 +1014,89 @@ pub mod tests {
     async fn infra_list() {
         let app = test_app!().skip_authz().build();
         app.get("/infra/").await.assert_status_ok();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn infra_list_filters_authorized_infras() {
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+        let infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let infra_no_grant = create_small_infra(&mut db_pool.get_ok()).await;
+
+        // Regular user with the correct roles should see only the infra he is associated with:
+        let user = app
+            .user("user_identity", "user_name")
+            .with_infra_grant(infra.id, InfraGrant::Reader)
+            .create()
+            .await;
+        let response: InfraListResponse = app
+            .get("/infra/")
+            .by_user(user.as_ref())
+            .await
+            .assert_status(StatusCode::OK)
+            .json();
+        assert_eq!(
+            response.results.iter().map(|infra| infra.id).collect_vec(),
+            vec![infra.id]
+        );
+
+        // An admin should see all the infras:
+        let admin = app
+            .user("admin", "admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+        let response: InfraListResponse = app
+            .get("/infra/")
+            .by_user(admin.as_ref())
+            .await
+            .assert_status(StatusCode::OK)
+            .json();
+        assert_eq!(
+            response.results.iter().map(|infra| infra.id).collect_vec(),
+            vec![infra.id, infra_no_grant.id]
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn infra_list_impersonated_user() {
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+        let infra_no_grant = create_small_infra(&mut db_pool.get_ok()).await;
+        let infra_impersonated = create_small_infra(&mut db_pool.get_ok()).await;
+        let impersonator = app
+            .user("impersonator_identity", "impersonator_name")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+        let impersonated = app
+            .user("impersonated_identity", "impersonated_name")
+            .with_infra_grant(infra_impersonated.id, InfraGrant::Reader)
+            .create()
+            .await;
+
+        let request_normal = app.get("/infra/").by_user(impersonator.as_ref());
+        let request_impersonate = app
+            .get("/infra/")
+            .by_user(impersonator.as_ref())
+            .impersonate(impersonated.as_ref());
+
+        // The impersonator is admin and should see all the infras by default:
+        let InfraListResponse {
+            results: infras, ..
+        } = request_normal.await.assert_status(StatusCode::OK).json();
+        let infra_ids = infras.iter().map(|infra| infra.id).collect_vec();
+        assert_eq!(infra_ids, vec![infra_no_grant.id, infra_impersonated.id]);
+
+        // When impersonating, the impersonator should only see infras `impersonated` has access to:
+        let InfraListResponse {
+            results: infras, ..
+        } = request_impersonate
+            .await
+            .assert_status(StatusCode::OK)
+            .json();
+        let infra_ids = infras.iter().map(|infra| infra.id).collect_vec();
+        assert_eq!(infra_ids, vec![infra_impersonated.id]);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

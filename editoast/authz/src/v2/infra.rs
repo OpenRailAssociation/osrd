@@ -15,6 +15,8 @@ use crate::User;
 use crate::v2::Actor;
 use crate::v2::Check;
 use crate::v2::Protected;
+use crate::v2::ResourcesList;
+use crate::v2::subject_roles;
 
 /// Returns the *direct grant* a subject has on an [Infra], if any
 ///
@@ -309,6 +311,55 @@ pub fn infra_granted_subjects(infra: Infra, grant: InfraGrant) -> Protected<Vec<
             infra,
         ))
         .with_check(Check::InfraExists(infra))
+}
+
+pub fn infra_list(user: User, privilege: InfraPrivilege) -> Protected<ResourcesList<Infra>> {
+    subject_roles(Subject::user(user)).map(move |openfga, roles| {
+        async move {
+            if roles.contains(&Role::Admin) {
+                return Ok(ResourcesList::All);
+            }
+            let authorized_infras = match privilege {
+                InfraPrivilege::CanRead => {
+                    openfga
+                        .list_objects(Infra::can_read().query_objects(&user))
+                        .await?
+                }
+                InfraPrivilege::CanShareRead => {
+                    openfga
+                        .list_objects(Infra::can_share_read().query_objects(&user))
+                        .await?
+                }
+                InfraPrivilege::CanWrite => {
+                    openfga
+                        .list_objects(Infra::can_write().query_objects(&user))
+                        .await?
+                }
+                InfraPrivilege::CanShareWrite => {
+                    openfga
+                        .list_objects(Infra::can_share_write().query_objects(&user))
+                        .await?
+                }
+                InfraPrivilege::CanDelete => {
+                    openfga
+                        .list_objects(Infra::can_delete().query_objects(&user))
+                        .await?
+                }
+                InfraPrivilege::CanShareOwnership => {
+                    openfga
+                        .list_objects(Infra::can_share_ownership().query_objects(&user))
+                        .await?
+                }
+                InfraPrivilege::CanRevoke => {
+                    openfga
+                        .list_objects(Infra::can_revoke().query_objects(&user))
+                        .await?
+                }
+            };
+            Ok(ResourcesList::Privileged(authorized_infras))
+        }
+        .boxed()
+    })
 }
 
 #[cfg(test)]
@@ -631,5 +682,68 @@ mod tests {
         expected.sort();
         response.sort();
         assert_eq!(response, expected);
+    }
+
+    #[tokio::test]
+    async fn infra_list() {
+        let openfga = crate::authz_client!();
+        openfga
+            .prepare_writes()
+            .write(&Infra::reader().tuple(&User(1), &Infra(1)))
+            .write(&Infra::reader().tuple(&User(1), &Infra(3)))
+            .write(&Infra::writer().tuple(&User(2), &Infra(2)))
+            .write(&User::role().tuple(&Role::Admin, &User(3)))
+            .execute()
+            .await
+            .unwrap();
+        let infras_1 = openfga
+            .infra_list(User(1), InfraPrivilege::CanRead)
+            .await
+            .unwrap_privileged()
+            .into_iter();
+        let infras_2 = openfga
+            .infra_list(User(2), InfraPrivilege::CanRead)
+            .await
+            .unwrap_privileged()
+            .into_iter();
+        let infras_no_rights = openfga
+            .infra_list(User(4), InfraPrivilege::CanRead)
+            .await
+            .unwrap_privileged();
+        let infras_admin = openfga.infra_list(User(3), InfraPrivilege::CanRead).await;
+        assert_eq!(infras_1.sorted().collect_vec(), vec![Infra(1), Infra(3)]);
+        assert_eq!(infras_2.sorted().collect_vec(), vec![Infra(2)]);
+        assert_eq!(infras_no_rights, vec![]);
+        assert!(matches!(infras_admin, ResourcesList::All));
+    }
+
+    #[tokio::test]
+    async fn infra_list_different_privileges() {
+        let openfga = crate::authz_client!();
+        openfga
+            .prepare_writes()
+            .write(&Infra::reader().tuple(&User(1), &Infra(1)))
+            .write(&Infra::writer().tuple(&User(2), &Infra(1)))
+            .execute()
+            .await
+            .unwrap();
+        let infras_read_user_1 = openfga.infra_list(User(1), InfraPrivilege::CanRead).await;
+        let infras_read_user_2 = openfga.infra_list(User(2), InfraPrivilege::CanRead).await;
+        let infras_write_user_1 = openfga.infra_list(User(1), InfraPrivilege::CanWrite).await;
+        let infras_write_user_2 = openfga.infra_list(User(2), InfraPrivilege::CanWrite).await;
+        let (infras_1, infras_2) = (
+            infras_read_user_1.unwrap_privileged(),
+            infras_read_user_2.unwrap_privileged(),
+        );
+        // Both users should have the infra listed as readable
+        assert_eq!(infras_1, vec![Infra(1)]);
+        assert_eq!(infras_2, vec![Infra(1)]);
+        let (infras_1, infras_2) = (
+            infras_write_user_1.unwrap_privileged(),
+            infras_write_user_2.unwrap_privileged(),
+        );
+        // Only user_2 with reader grant should see the infra as being writable
+        assert_eq!(infras_1, vec![]);
+        assert_eq!(infras_2, vec![Infra(1)]);
     }
 }
