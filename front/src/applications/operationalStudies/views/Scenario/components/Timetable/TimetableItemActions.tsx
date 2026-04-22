@@ -4,7 +4,7 @@ import { GiPathDistance } from 'react-icons/gi';
 
 type TimetableItemActionsProps = {
   selectPathProjection: () => Promise<void>;
-  moveTimetableItem: () => void;
+  moveTrainSchedule: () => void;
   duplicateTimetableItem: () => Promise<void>;
   editTimetableItem: () => void;
   deleteTimetableItem: () => Promise<void>;
@@ -15,7 +15,7 @@ type TimetableItemActionsProps = {
 
 const TimetableItemActions = ({
   selectPathProjection,
-  moveTimetableItem,
+  moveTrainSchedule,
   duplicateTimetableItem,
   editTimetableItem,
   deleteTimetableItem,
@@ -52,8 +52,8 @@ const TimetableItemActions = ({
           type="button"
           aria-label={t('timetable.trainScheduleSets.moveToPackage')}
           title={t('timetable.trainScheduleSets.moveToPackage')}
-          onClick={moveTimetableItem}
-          data-testid="move-item"
+          onClick={moveTrainSchedule}
+          data-testid="move-train"
         >
           <FileDirectorySymlink />
         </button>

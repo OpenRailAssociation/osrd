@@ -10,7 +10,7 @@ type TimetableSelectionToolbarProps = {
   toggleAllTrainsSelection: () => void;
   handleExportTrainSchedules: () => void;
   handleDeleteTrainSchedules: () => void;
-  handleMoveTimetableItems: () => void;
+  handleMoveTrainSchedules: () => void;
 };
 
 const TimetableSelectionToolbar = ({
@@ -20,7 +20,7 @@ const TimetableSelectionToolbar = ({
   toggleAllTrainsSelection,
   handleExportTrainSchedules,
   handleDeleteTrainSchedules,
-  handleMoveTimetableItems,
+  handleMoveTrainSchedules,
 }: TimetableSelectionToolbarProps) => {
   const { t } = useTranslation(['operational-studies', 'translation'], { keyPrefix: 'main' });
 
@@ -71,7 +71,7 @@ const TimetableSelectionToolbar = ({
             className="delete-selection-button"
             data-testid="move-all-items-button"
             title={t('timetable.trainScheduleSets.moveToPackage')}
-            onClick={handleMoveTimetableItems}
+            onClick={handleMoveTrainSchedules}
             type="button"
           >
             <FileDirectorySymlink />

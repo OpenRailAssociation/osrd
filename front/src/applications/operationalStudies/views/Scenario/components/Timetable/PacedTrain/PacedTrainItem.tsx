@@ -76,7 +76,7 @@ type PacedTrainItemProps = {
   infraIsCached: boolean;
   projectingOnSimulatedPathException: boolean | undefined;
   isSelectMode: boolean;
-  moveTimetableItem: () => void;
+  moveTrainSchedule: () => void;
   showMovebutton: boolean;
   timetableId: number;
 };
@@ -97,7 +97,7 @@ const PacedTrainItem = ({
   infraIsCached,
   projectingOnSimulatedPathException,
   isSelectMode,
-  moveTimetableItem,
+  moveTrainSchedule,
   showMovebutton,
   timetableId,
 }: PacedTrainItemProps) => {
@@ -421,7 +421,7 @@ const PacedTrainItem = ({
 
         <TimetableItemActions
           selectPathProjection={selectPathProjection}
-          moveTimetableItem={moveTimetableItem}
+          moveTrainSchedule={moveTrainSchedule}
           duplicateTimetableItem={duplicatePacedTrain}
           editTimetableItem={() => selectPacedTrainToEdit(pacedTrain)}
           deleteTimetableItem={async () => {

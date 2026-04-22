@@ -42,7 +42,7 @@ type TrainListProps = {
   projectingOnSimulatedPathException: boolean | undefined;
   isSelectMode: boolean;
   timetableMode: TimetableMode;
-  moveTimetableItem?: (pacedTrainIds: number[]) => void;
+  moveTrainSchedule?: (pacedTrainIds: number[]) => void;
   trainSchedulesByTrainScheduleSets: TrainSchedulesByTrainScheduleSet[] | null;
   handleClickTrainScheduleSet: (id: number) => void;
   handleSelectTrainScheduleSet: (trainIds: number[]) => void;
@@ -67,7 +67,7 @@ const TrainList = ({
   projectingOnSimulatedPathException,
   isSelectMode,
   timetableMode,
-  moveTimetableItem,
+  moveTrainSchedule,
   trainSchedulesByTrainScheduleSets = null,
   handleClickTrainScheduleSet,
   handleSelectTrainScheduleSet,
@@ -182,7 +182,7 @@ const TrainList = ({
               }
               subCategories={subCategories}
               isSelectMode={isSelectMode}
-              moveTimetableItem={() => moveTimetableItem?.([trainSchedule.id])}
+              moveTrainSchedule={() => moveTrainSchedule?.([trainSchedule.id])}
               showMovebutton={timetableMode === 'trainScheduleSet'}
             />
           ) : (
@@ -202,7 +202,7 @@ const TrainList = ({
               subCategories={subCategories}
               projectingOnSimulatedPathException={projectingOnSimulatedPathException}
               isSelectMode={isSelectMode}
-              moveTimetableItem={() => moveTimetableItem?.([trainSchedule.id])}
+              moveTrainSchedule={() => moveTrainSchedule?.([trainSchedule.id])}
               showMovebutton={timetableMode === 'trainScheduleSet'}
               timetableId={timetableId}
             />
@@ -216,7 +216,7 @@ const TrainList = ({
       handleExpandTimetableItem,
       handleSelectTrainSchedule,
       isSelectMode,
-      moveTimetableItem,
+      moveTrainSchedule,
       projectingOnSimulatedPathException,
       removeAndUnselectTrains,
       selectTrainScheduleToEdit,
