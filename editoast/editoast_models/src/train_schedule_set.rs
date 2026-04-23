@@ -1,12 +1,16 @@
-use database::DbConnection;
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
-use editoast_derive::Model;
-use editoast_models::prelude::*;
 use serde::Deserialize;
 use serde::Serialize;
 use std::ops::DerefMut;
 use utoipa::ToSchema;
+
+use database::DbConnection;
+use editoast_derive::Model;
+
+use crate::prelude::*;
+
+use crate as editoast_models;
 
 #[derive(Deserialize, Serialize, ToSchema, Debug, Clone, PartialEq, Model)]
 #[model(table = database::tables::train_schedule_set)]
@@ -36,7 +40,7 @@ impl TrainScheduleSet {
     }
 
     /// Deletes train schedule sets that are not published or linked to a timetable
-    pub async fn delete_orphaned(conn: &mut DbConnection) -> anyhow::Result<usize> {
+    pub async fn delete_orphaned(conn: &mut DbConnection) -> Result<usize, crate::Error> {
         use database::tables::timetable_train_schedule_set::dsl as tt_dsl;
         use database::tables::train_schedule_set::dsl as tss_dsl;
 
@@ -45,7 +49,7 @@ impl TrainScheduleSet {
 
         loop {
             let deleted_count = conn
-                .transaction(async move |mut conn| -> anyhow::Result<usize> {
+                .transaction(async move |mut conn| -> Result<usize, crate::Error> {
                     let ids_to_delete: Vec<i64> = tss_dsl::train_schedule_set
                         .filter(
                             tss_dsl::published.eq(false).and(

@@ -2,7 +2,7 @@ use database::DbConnectionPoolV2;
 use editoast_models::timetable::Timetable;
 use std::sync::Arc;
 
-use crate::models::train_schedule_set::TrainScheduleSet;
+use editoast_models::TrainScheduleSet;
 
 use crate::client::OpenfgaConfig;
 use crate::models::infra::Infra;

@@ -58,7 +58,7 @@ use schemas::train_schedule::TrainScheduleOptions;
 use crate::infra_cache::operation::create::apply_create_operation;
 use crate::models;
 use crate::models::Infra;
-use crate::models::train_schedule_set::TrainScheduleSet;
+use editoast_models::TrainScheduleSet;
 
 pub async fn create_project(conn: &mut DbConnection, name: &str) -> Project {
     Project::fake(name)

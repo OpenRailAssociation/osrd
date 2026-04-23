@@ -7,7 +7,6 @@ pub mod macro_note;
 pub mod railjson;
 pub mod stdcm_search_environment;
 pub mod train_schedule;
-pub mod train_schedule_set;
 
 pub use infra::Infra;
 pub use infra_objects::*;
