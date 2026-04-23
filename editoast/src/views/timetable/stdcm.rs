@@ -14,7 +14,7 @@ use chrono::DateTime;
 use chrono::Duration;
 use chrono::Utc;
 use common::units::millisecond;
-use core_client::AsCoreRequest;
+use core_client::AsCoreProgression;
 use core_client::CoreClient;
 use core_client::pathfinding::InvalidPathItem;
 use core_client::pathfinding::PathfindingResultSuccess;
@@ -49,7 +49,6 @@ use thiserror::Error;
 use tokio::spawn;
 use tokio::sync::mpsc;
 use tracing::Instrument as _;
-use tracing::Span;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
@@ -364,38 +363,50 @@ pub(in crate::views) async fn stdcm(
     let (tx, rx) = mpsc::unbounded_channel();
 
     let stream_result_lambda = async move {
-        let stream_stdcm_response = stdcm_request
-            .fetch_streaming::<core_client::Json<core_client::stdcm::ProgressStatus>>(
-                core_client.as_ref(),
-            )
-            .await
-            .map_err(InternalError::from);
-        let stream_stdcm_response = match stream_stdcm_response {
-            Ok(stream_stdcm_response) => stream_stdcm_response,
-            Err(e) => {
-                let _ = tx.send(StdcmProgression::Completed(StdcmResponse::InternalError {
-                    error: e,
-                }));
-                return;
-            }
-        };
+        let (tx_updates, rx_updates) = mpsc::unbounded_channel();
+
+        let stdcm_response: tokio::task::JoinHandle<
+            Result<core_client::stdcm::Response, core_client::Error>,
+        > = spawn(async move {
+            stdcm_request
+                .fetch_updates(core_client.as_ref(), tx_updates)
+                .await
+        });
 
         // 6. Handle STDCM Core Response
-        let result_stream = stream_stdcm_response.map(move |response| {
-            let response = response.map_err(InternalError::from);
+        let result_stream =
+            tokio_stream::wrappers::UnboundedReceiverStream::new(rx_updates).map(|response| {
+                let response = response.map_err(InternalError::from);
 
-            let span = Span::current();
-
-            match response {
-                Ok(result) => match result {
-                    core_client::stdcm::ProgressStatus::InProgress {
+                match response {
+                    Ok(core_client::stdcm::ProgressionEvent {
                         point,
                         best_travel_time,
-                    } => StdcmProgression::Ongoing(StdcmProgressionEvent {
+                    }) => StdcmProgression::Ongoing(StdcmProgressionEvent {
                         point: Geometry::new(Value::Point(vec![point.lon, point.lat])),
                         best_travel_time,
                     }),
-                    core_client::stdcm::ProgressStatus::Done { result } => match result {
+                    Err(e) => {
+                        StdcmProgression::Completed(StdcmResponse::InternalError { error: e })
+                    }
+                }
+            });
+
+        let mut result_stream = pin!(result_stream);
+        while let Some(item) = result_stream.next().await {
+            if tx.send(item).is_err() {
+                break;
+            }
+        }
+
+        let stdcm_response = stdcm_response.await.map_err(InternalError::from);
+        let final_response = match stdcm_response {
+            Ok(result) => {
+                let result = result.map_err(InternalError::from);
+                let span =
+                    tracing::info_span!("response handling", "path_found" = tracing::field::Empty);
+                match result {
+                    Ok(result) => match result {
                         core_client::stdcm::Response::Success {
                             simulation,
                             path,
@@ -413,17 +424,15 @@ pub(in crate::views) async fn stdcm(
                             StdcmProgression::Completed(StdcmResponse::PathNotFound {})
                         }
                     },
-                },
-                Err(e) => StdcmProgression::Completed(StdcmResponse::InternalError { error: e }),
+                    Err(e) => {
+                        StdcmProgression::Completed(StdcmResponse::InternalError { error: e })
+                    }
+                }
             }
-        });
+            Err(e) => StdcmProgression::Completed(StdcmResponse::InternalError { error: e }),
+        };
 
-        let mut result_stream = pin!(result_stream);
-        while let Some(item) = result_stream.next().await {
-            if tx.send(item).is_err() {
-                break;
-            }
-        }
+        let _ = tx.send(final_response);
     };
     spawn(stream_result_lambda.in_current_span());
     let stream = tokio_stream::wrappers::UnboundedReceiverStream::new(rx);
@@ -1136,12 +1145,16 @@ mod tests {
         core.stub("/stdcm")
             .response(StatusCode::OK)
             .json(core_client::stdcm::ProgressStatus::InProgress {
-                point: core_client::stdcm::ProgressCoordinates { lat: 0.0, lon: 0.0 },
-                best_travel_time: 1,
+                event: core_client::stdcm::ProgressionEvent {
+                    point: core_client::stdcm::ProgressCoordinates { lat: 0.0, lon: 0.0 },
+                    best_travel_time: 1,
+                },
             })
             .json(core_client::stdcm::ProgressStatus::InProgress {
-                point: core_client::stdcm::ProgressCoordinates { lat: 1.0, lon: 1.0 },
-                best_travel_time: 5,
+                event: core_client::stdcm::ProgressionEvent {
+                    point: core_client::stdcm::ProgressCoordinates { lat: 1.0, lon: 1.0 },
+                    best_travel_time: 5,
+                },
             })
             .json(core_client::stdcm::ProgressStatus::Done {
                 result: core_client::stdcm::Response::Success {
@@ -1211,12 +1224,16 @@ mod tests {
         core.stub("/stdcm")
             .response(StatusCode::OK)
             .json(core_client::stdcm::ProgressStatus::InProgress {
-                point: core_client::stdcm::ProgressCoordinates { lat: 0.0, lon: 0.0 },
-                best_travel_time: 1,
+                event: core_client::stdcm::ProgressionEvent {
+                    point: core_client::stdcm::ProgressCoordinates { lat: 0.0, lon: 0.0 },
+                    best_travel_time: 1,
+                },
             })
             .json(core_client::stdcm::ProgressStatus::InProgress {
-                point: core_client::stdcm::ProgressCoordinates { lat: 1.0, lon: 1.0 },
-                best_travel_time: 5,
+                event: core_client::stdcm::ProgressionEvent {
+                    point: core_client::stdcm::ProgressCoordinates { lat: 1.0, lon: 1.0 },
+                    best_travel_time: 5,
+                },
             })
             .json(core_client::stdcm::ProgressStatus::Done {
                 result: core_client::stdcm::Response::PathNotFound,
