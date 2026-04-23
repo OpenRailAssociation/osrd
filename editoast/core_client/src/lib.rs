@@ -246,23 +246,6 @@ where
         )
         .await
     }
-
-    async fn fetch_streaming<'a, S>(
-        &'a self,
-        core: &CoreClient,
-    ) -> Result<impl Stream<Item = Result<S::Response, Error>>, Error>
-    where
-        S: CoreResponse,
-        <S as CoreResponse>::Response: 'a + Send,
-    {
-        core.fetch_streaming::<Self, S>(
-            Self::URL_PATH,
-            Some(self),
-            self.worker_key(),
-            Self::OVERRIDE_TIMEOUT,
-        )
-        .await
-    }
 }
 
 /// Results of parsing a streaming response
