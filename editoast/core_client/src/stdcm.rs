@@ -15,8 +15,7 @@ use super::pathfinding::PathfindingResultSuccess;
 use super::pathfinding::TrackRange;
 use super::simulation::PhysicsConsist;
 use super::simulation::SimulationSuccess;
-use crate::AsCoreRequest;
-use crate::Json;
+use crate::AsCoreStreaming;
 use crate::WorkerKey;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
@@ -143,17 +142,16 @@ pub struct ConsistSchedule {
     pub values: Vec<ConsistConfiguration>,
 }
 
+/// Intermediate event emitted during progression
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
+pub struct UpdateEvent {
+    pub point: ProgressCoordinates,
+    pub best_travel_time: u64,
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
-#[serde(tag = "status", rename_all = "SCREAMING_SNAKE_CASE")]
-#[allow(clippy::large_enum_variant)]
-pub enum ProgressStatus {
-    InProgress {
-        point: ProgressCoordinates,
-        best_travel_time: u64,
-    },
-    Done {
-        result: Response,
-    },
+pub struct FinalEvent {
+    pub result: Response,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
@@ -176,7 +174,8 @@ pub enum Response {
     PathNotFound,
 }
 
-impl AsCoreRequest<Json<Response>> for Request {
+impl AsCoreStreaming for Request {
+    type Response = crate::Progress<UpdateEvent, FinalEvent>;
     const URL_PATH: &'static str = "/stdcm";
 
     fn worker_key(&self) -> WorkerKey {
