@@ -34,7 +34,6 @@ use ::authz::Authorization;
 use ::authz::Infra;
 use ::authz::StorageDriver;
 use ::authz::v2::special_authorizers;
-use axum::Extension;
 use common::Version;
 use fga::client::Limits;
 #[cfg(test)]
@@ -484,6 +483,10 @@ fn service_router() -> router::DocumentedRouter {
 }
 
 async fn authentication_extraction_middleware(mut req: Request, next: Next) -> Result<Response> {
+    if req.uri().path() == "/health" {
+        return Ok(next.run(req).await);
+    }
+
     const IDENTITY: &str = "x-remote-user-identity";
     const NAME: &str = "x-remote-user-name";
     const SKIP_AUTHZ: &str = "x-osrd-skip-authz";
@@ -556,13 +559,22 @@ async fn authentication_extraction_middleware(mut req: Request, next: Next) -> R
 /// - the impersonated user must already exist in the database, we do not create it if it does not
 /// - push the roles of the origin user in the request extensions
 async fn authentication_validation_middleware(
-    Extension(authn): Extension<crate::authentication::Authentication>,
     State(AppState {
         db_pool, regulator, ..
     }): State<AppState>,
     mut req: Request,
     next: Next,
 ) -> Result<Response> {
+    if req.uri().path() == "/health" {
+        return Ok(next.run(req).await);
+    }
+
+    let authn = req
+        .extensions()
+        .get::<crate::authentication::Authentication>()
+        .expect("authentication extension missing — authentication_extraction_middleware must run first")
+        .clone();
+
     let openfga = regulator.openfga(); // to remove once OpenFGA is in the AppState directly
     let conn = db_pool.get().await?;
 
@@ -902,6 +914,10 @@ async fn authentication_middleware(
     mut req: Request,
     next: Next,
 ) -> Result<Response> {
+    if req.uri().path() == "/health" {
+        return Ok(next.run(req).await);
+    }
+
     let headers = req.headers();
     let authorizer = authenticate(config.enable_authorization, headers, regulator).await?;
     req.extensions_mut().insert(authorizer);
@@ -983,7 +999,11 @@ pub async fn check_health(
     core_client: Arc<CoreClient>,
     openfga: &fga::Client,
 ) -> Result<()> {
-    let mut db_connection = db_pool.clone().get().await?;
+    let mut db_connection = db_pool
+        .clone()
+        .get()
+        .instrument(tracing::debug_span!("health db connection acquire"))
+        .await?;
     let openfga_ping = async move {
         openfga
             .is_healthy()
@@ -1000,25 +1020,32 @@ pub async fn check_health(
                     Ok(())
                 }
             })
-    };
+    }
+    .instrument(tracing::debug_span!("health openfga ping"));
     let valkey_ping = async {
         use deadpool_redis::redis::AsyncCommands as _;
         let mut vkconn = valkey_client
             .get_connection()
+            .instrument(tracing::debug_span!("health valkey connection acquire"))
             .await
             .map_err(anyhow::Error::from)
             .map_err(AppHealthError::Valkey)?;
         vkconn
             .ping::<()>()
+            .instrument(tracing::debug_span!("health valkey ping"))
             .await
             .map_err(anyhow::Error::from)
-            .map_err(AppHealthError::Valkey)?;
-        Ok(())
+            .map_err(AppHealthError::Valkey)
     };
     tokio::try_join!(
-        ping_database(&mut db_connection).map_err(AppHealthError::Database),
+        ping_database(&mut db_connection)
+            .instrument(tracing::debug_span!("health db ping"))
+            .map_err(AppHealthError::Database),
         valkey_ping,
-        core_client.ping().map_err(AppHealthError::Core),
+        core_client
+            .ping()
+            .instrument(tracing::debug_span!("health core ping"))
+            .map_err(AppHealthError::Core),
         openfga_ping
     )?;
     Ok(())
