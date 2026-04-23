@@ -181,7 +181,7 @@ describe('isTrainIdInTimetable', () => {
         timeWindow: Duration.parse('PT2H'),
         interval: Duration.parse('PT30M'),
         exceptions: [
-          // TODO_EXCEPTION: delete `key` 
+          // TODO_EXCEPTION: delete `key`
           { key: '0', id: 0 },
           { key: '1', id: 1, occurrence_index: 1, disabled: true },
           { key: '2', id: 2, occurrence_index: 2, disabled: false },
@@ -254,19 +254,13 @@ describe('isTrainIdInTimetable', () => {
 
   it('should return true if added exception id is present in timetable', () => {
     expect(
-      isTrainIdInTimetable(
-        formatPacedTrainIdToExceptionId(pacedTrainId, 0),
-        timetableItems
-      )
+      isTrainIdInTimetable(formatPacedTrainIdToExceptionId(pacedTrainId, 0), timetableItems)
     ).toEqual(true);
   });
 
   it('should return false if added exception id is not present in timetable', () => {
     expect(
-      isTrainIdInTimetable(
-        formatPacedTrainIdToExceptionId(pacedTrainId, 999),
-        timetableItems
-      )
+      isTrainIdInTimetable(formatPacedTrainIdToExceptionId(pacedTrainId, 999), timetableItems)
     ).toEqual(false);
   });
 });

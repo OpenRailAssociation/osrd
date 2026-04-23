@@ -1,15 +1,15 @@
-import { useTranslation } from "react-i18next";
-import { useSelector } from "react-redux";
+import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
-import { useScenarioContext } from "applications/operationalStudies/hooks/useScenarioContext";
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import {
   checkChangeGroups,
   updatePacedTrainExceptionsList,
-} from "applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/buildPacedTrainException";
-import { MANAGE_TIMETABLE_ITEM_TYPES } from "applications/operationalStudies/views/Scenario/consts";
-import type { PacedTrainException } from "common/api/osrdEditoastApi";
-import { useStoreDataForRollingStockSelector } from "modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector";
-import { findExceptionWithOccurrenceId } from "modules/timetableItem/helpers/pacedTrain";
+} from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/buildPacedTrainException';
+import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/views/Scenario/consts';
+import type { PacedTrainException } from 'common/api/osrdEditoastApi';
+import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
+import { findExceptionWithOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
 import {
   createExceptions,
   deleteExceptions,
@@ -17,45 +17,37 @@ import {
   syncAndUpdatePacedTrain,
   syncOccurrenceException,
   updateExceptions,
-} from "modules/timetableItem/helpers/updateTimetableItemHelpers";
-import { setSuccess } from "reducers/main";
-import { clearAddedExceptionsList } from "reducers/osrdconf/operationalStudiesConf";
+} from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
+import { setSuccess } from 'reducers/main';
+import { clearAddedExceptionsList } from 'reducers/osrdconf/operationalStudiesConf';
 import {
   getName,
   getStartTime,
   getOperationalStudiesConf,
   getAddedExceptions,
-} from "reducers/osrdconf/operationalStudiesConf/selectors";
-import type {
-  TimetableItem,
-  TimetableItemToEditData,
-} from "reducers/osrdconf/types";
-import {
-  updateSelectedTrainId,
-  updateTrainIdUsedForProjection,
-} from "reducers/simulationResults";
-import { getTrainIdUsedForProjection } from "reducers/simulationResults/selectors";
-import { useAppDispatch } from "store";
-import { formatEditoastIdToPacedTrainId, isOccurrenceId } from "utils/trainId";
+} from 'reducers/osrdconf/operationalStudiesConf/selectors';
+import type { TimetableItem, TimetableItemToEditData } from 'reducers/osrdconf/types';
+import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
+import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
+import { useAppDispatch } from 'store';
+import { formatEditoastIdToPacedTrainId, isOccurrenceId } from 'utils/trainId';
 
-import checkCurrentConfig from "../helpers/checkCurrentConfig";
+import checkCurrentConfig from '../helpers/checkCurrentConfig';
 import {
   formatOccurrenceException,
   formatPacedTrainPayload,
   formatPacedTrainWithDetailsToPacedTrainPayload,
-} from "../helpers/formatTimetableItemPayload";
+} from '../helpers/formatTimetableItemPayload';
 
 const useUpdateTimetableItem = (
   setIsWorking: (isWorking: boolean) => void,
   setDisplayTimetableItemManagement: (type: string) => void,
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void,
-  setTimetableItemIdToEdit: (
-    timetableItemToEditData?: TimetableItemToEditData,
-  ) => void,
-  timetableItemToEditData?: TimetableItemToEditData,
+  setTimetableItemIdToEdit: (timetableItemToEditData?: TimetableItemToEditData) => void,
+  timetableItemToEditData?: TimetableItemToEditData
 ) => {
-  const { t } = useTranslation("operational-studies", {
-    keyPrefix: "manageTimetableItem",
+  const { t } = useTranslation('operational-studies', {
+    keyPrefix: 'manageTimetableItem',
   });
   const dispatch = useAppDispatch();
 
@@ -71,22 +63,18 @@ const useUpdateTimetableItem = (
   });
 
   // Shared post-submit logic: dispatches success, updates selected train id, closes modal
-  const handleUpdateSuccess = (
-    timetableItemId: number,
-    editData: TimetableItemToEditData,
-  ) => {
+  const handleUpdateSuccess = (timetableItemId: number, editData: TimetableItemToEditData) => {
     const editedTrainId =
-      editData.occurrenceId ??
-      formatEditoastIdToPacedTrainId(editData.timetableItemId);
+      editData.occurrenceId ?? formatEditoastIdToPacedTrainId(editData.timetableItemId);
 
     dispatch(
       setSuccess({
         title:
-          simulationConf.editingItemType === "uniqueTrain"
-            ? t("pacedTrainUpdated")
-            : t("uniqueTrainUpdated"),
+          simulationConf.editingItemType === 'uniqueTrain'
+            ? t('pacedTrainUpdated')
+            : t('uniqueTrainUpdated'),
         text: `${confName}: ${startTime.toLocaleString()}`,
-      }),
+      })
     );
     dispatch(updateSelectedTrainId(editedTrainId));
 
@@ -98,11 +86,7 @@ const useUpdateTimetableItem = (
       trainIdUsedForProjection.includes(`_${timetableItemId}_`) &&
       !editData.originalPacedTrain.paced
     ) {
-      dispatch(
-        updateTrainIdUsedForProjection(
-          formatEditoastIdToPacedTrainId(timetableItemId),
-        ),
-      );
+      dispatch(updateTrainIdUsedForProjection(formatEditoastIdToPacedTrainId(timetableItemId)));
     }
 
     dispatch(clearAddedExceptionsList());
@@ -119,8 +103,7 @@ const useUpdateTimetableItem = (
 
     setIsWorking(true);
 
-    const { timetableItemId, occurrenceId, originalPacedTrain } =
-      timetableItemToEditData;
+    const { timetableItemId, occurrenceId, originalPacedTrain } = timetableItemToEditData;
 
     // ========== user is editing an occurrence ==========
     if (occurrenceId) {
@@ -128,13 +111,13 @@ const useUpdateTimetableItem = (
         simulationConf,
         rollingStock!.name,
         timetableItemToEditData as TimetableItemToEditData & {
-          occurrenceId: NonNullable<TimetableItemToEditData["occurrenceId"]>;
-        },
+          occurrenceId: NonNullable<TimetableItemToEditData['occurrenceId']>;
+        }
       );
 
       const existingException = findExceptionWithOccurrenceId(
         originalPacedTrain.paced?.exceptions ?? [],
-        occurrenceId,
+        occurrenceId
       );
 
       const finalException = await syncOccurrenceException(
@@ -143,13 +126,13 @@ const useUpdateTimetableItem = (
         existingException,
         occurrenceIndex,
         timetableItemId,
-        timetableId,
+        timetableId
       );
 
       const updatedExceptions = updatePacedTrainExceptionsList(
         originalPacedTrain.paced?.exceptions ?? [],
         finalException,
-        occurrenceId,
+        occurrenceId
       );
       const formattedPacedTrain =
         formatPacedTrainWithDetailsToPacedTrainPayload(originalPacedTrain);
@@ -169,10 +152,7 @@ const useUpdateTimetableItem = (
     }
 
     // ========== user is editing the whole paced train or transforming from an unique train ==========
-    const trainSchedule = formatPacedTrainPayload(
-      simulationConf,
-      rollingStock!.name,
-    );
+    const trainSchedule = formatPacedTrainPayload(simulationConf, rollingStock!.name);
 
     const originalPacedExceptions = originalPacedTrain.paced?.exceptions ?? [];
 
@@ -180,7 +160,7 @@ const useUpdateTimetableItem = (
       ({ startTime: exStartTime }) => ({
         key: '', // TODO : remove this when the key will be removed from the model
         start_time: { value: exStartTime.toISOString() },
-      }),
+      })
     );
 
     // Converting a unique train into a paced train:
@@ -193,7 +173,7 @@ const useUpdateTimetableItem = (
           ...trainSchedule,
           train_schedule_set_id: originalPacedTrain.train_schedule_set_id,
         },
-        dispatch,
+        dispatch
       );
     }
 
@@ -204,23 +184,18 @@ const useUpdateTimetableItem = (
         dispatch,
         newAddedExceptions,
         timetableItemId,
-        timetableId,
+        timetableId
       );
 
       // TODO: remove this part when the back will be done inserting the new exception format in TrainSchedule
       createdExceptions = created.map(
-        ({
-          change_groups,
-          train_schedule_id: _,
-          timetable_id: __,
-          ...rest
-        }) => ({
+        ({ change_groups, train_schedule_id: _, timetable_id: __, ...rest }) => ({
           ...change_groups,
           ...rest,
           // TODO_EXCEPTION: remove this when drop key in the model
           key: '',
         })
-    );
+      );
     }
 
     // If we just converted a unique train to a paced train, upsert with created exceptions and return
@@ -248,7 +223,7 @@ const useUpdateTimetableItem = (
           train_schedule_set_id: originalPacedTrain.train_schedule_set_id,
         },
         dispatch,
-        upsertTimetableItems,
+        upsertTimetableItems
       );
 
       return handleUpdateSuccess(timetableItemId, timetableItemToEditData);
@@ -262,11 +237,7 @@ const useUpdateTimetableItem = (
       exceptions: reconciledExceptions,
       modifiedExceptions: exceptionsToUpdate,
       exceptionsToDeleteIds,
-    } = checkChangeGroups(
-      trainSchedule,
-      trainSchedule.paced,
-      originalPacedExceptions,
-    );
+    } = checkChangeGroups(trainSchedule, trainSchedule.paced, originalPacedExceptions);
 
     if (exceptionsToDeleteIds.length > 0) {
       await deleteExceptions(dispatch, exceptionsToDeleteIds);
@@ -289,7 +260,7 @@ const useUpdateTimetableItem = (
         }),
       },
       dispatch,
-      upsertTimetableItems,
+      upsertTimetableItems
     );
 
     return handleUpdateSuccess(timetableItemId, timetableItemToEditData);

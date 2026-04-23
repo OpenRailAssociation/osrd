@@ -334,7 +334,7 @@ describe('isOccurrencePresentInPacedTrain', () => {
     timeWindow: Duration.parse('PT2H'),
     interval: Duration.parse('PT30M'),
     exceptions: [
-      // TODO_EXCEPTION: delete `key` 
+      // TODO_EXCEPTION: delete `key`
       { id: 0, key: '0' },
       { id: 1, key: '1', occurrence_index: 1, disabled: true },
       { id: 2, key: '2', occurrence_index: 2, disabled: false },
