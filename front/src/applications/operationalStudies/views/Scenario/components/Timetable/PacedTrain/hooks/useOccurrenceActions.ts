@@ -242,8 +242,16 @@ const useOccurrenceActions = ({
       await deleteExceptions(dispatch, [exceptionToDelete.id]);
 
       upsertWithNewExceptions(newExceptions);
+
+      // If the deleted exception was selected, select the first remaining enabled occurrence
+      if (selectedTrainId === occurrenceId) {
+        const firstEnabledOccurrence = occurrences.find(
+          (occ) => occ.id !== occurrenceId && !occ.disabled
+        );
+        dispatch(updateSelectedTrainId(firstEnabledOccurrence?.id));
+      }
     },
-    [pacedTrain.paced.exceptions]
+    [pacedTrain.paced.exceptions, occurrences, selectedTrainId]
   );
 
   return {
