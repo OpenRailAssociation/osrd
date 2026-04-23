@@ -324,7 +324,8 @@ const useTimesStopsTableData = (
           startDate,
           schedule,
           computedArrival,
-          invalidPathStep: !matchingOp,
+          invalidPathStep:
+            !matchingOp && pathStepLocation.type === 'operational_point_part_reference',
           scheduleNotHonored,
           marginNotHonored,
           powerRestriction,
