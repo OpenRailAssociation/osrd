@@ -50,7 +50,6 @@ use crate::models;
 use crate::models::Infra;
 use crate::models::train_schedule::OccurrenceId;
 use crate::models::train_schedule::TrainScheduleChangeset;
-use crate::models::train_schedule_set::TrainScheduleSet;
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraIdQueryParam;
 use crate::views::path::operational_point_cache::OperationalPointCache;
@@ -76,6 +75,7 @@ use crate::views::timetable::simulation::build_sim_power_restriction_items;
 use crate::views::timetable::simulation::build_sim_schedule_items;
 use crate::views::timetable::simulation::train_simulation_batch;
 use crate::views::timetable::track_occupancy;
+use editoast_models::TrainScheduleSet;
 use editoast_models::rolling_stock::RollingStock;
 
 #[derive(Debug, Error, EditoastError)]

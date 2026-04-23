@@ -65,10 +65,10 @@ use crate::error::Result;
 use crate::models;
 use crate::models::Infra;
 use crate::models::train_schedule::OccurrenceId;
-use crate::models::train_schedule_set::TrainScheduleSet;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
+use editoast_models::TrainScheduleSet;
 
 #[derive(Debug, Error, EditoastError, derive_more::From)]
 #[editoast_error(base_id = "timetable")]
