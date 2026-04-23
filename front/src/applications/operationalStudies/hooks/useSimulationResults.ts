@@ -12,7 +12,7 @@ import {
   computeIndexedOccurrenceStartTime,
   getOccurrenceTrainName,
 } from 'modules/timetableItem/helpers/pacedTrain';
-import useSelectedTimetableItem from 'modules/timetableItem/hooks/useSelectedTimetableItem';
+import useSelectedTrainSchedule from 'modules/timetableItem/hooks/useSelectedTrainSchedule';
 import type { TimetableItem, Train } from 'reducers/osrdconf/types';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { Duration } from 'utils/duration';
@@ -40,16 +40,16 @@ const useSimulationResults = (
   const { infraId, electricalProfileSetId } = useScenarioContext();
   const selectedTrainId = useSelector(getSelectedTrainId);
 
-  const timetableItem = useSelectedTimetableItem(timetableItems);
+  const trainSchedule = useSelectedTrainSchedule(timetableItems);
 
   const train: Train | undefined = useMemo(() => {
-    if (!selectedTrainId || !timetableItem) return undefined;
-    if (!isOccurrenceId(selectedTrainId) || !timetableItem.paced) {
-      return { ...timetableItem, id: formatEditoastIdToPacedTrainId(timetableItem.id) };
+    if (!selectedTrainId || !trainSchedule) return undefined;
+    if (!isOccurrenceId(selectedTrainId) || !trainSchedule.paced) {
+      return { ...trainSchedule, id: formatEditoastIdToPacedTrainId(trainSchedule.id) };
     }
 
     const exception = findExceptionWithOccurrenceId(
-      timetableItem.paced.exceptions,
+      trainSchedule.paced.exceptions,
       selectedTrainId
     );
 
@@ -59,31 +59,31 @@ const useSimulationResults = (
     } else {
       const selectedOccurrenceIndex = extractOccurrenceIndexFromOccurrenceId(selectedTrainId);
       startTime = computeIndexedOccurrenceStartTime(
-        new Date(timetableItem.start_time),
-        Duration.parse(timetableItem.paced.interval),
+        new Date(trainSchedule.start_time),
+        Duration.parse(trainSchedule.paced.interval),
         selectedOccurrenceIndex
       ).toISOString();
     }
 
     return {
-      ...timetableItem,
-      ...(exception ? extractOccurrenceDetailsFromPacedTrain(timetableItem, exception) : {}),
+      ...trainSchedule,
+      ...(exception ? extractOccurrenceDetailsFromPacedTrain(trainSchedule, exception) : {}),
       // overwrite start_time from extractOccurrenceDetailsFromPacedTrain
       start_time: startTime,
       // overwrite train_name to reflect the occurrence name
       train_name: getOccurrenceTrainName(
-        { train_name: timetableItem.train_name, paced: timetableItem.paced },
+        { train_name: trainSchedule.train_name, paced: trainSchedule.paced },
         selectedTrainId
       ),
       id: selectedTrainId,
     };
-  }, [selectedTrainId, timetableItem]);
+  }, [selectedTrainId, trainSchedule]);
 
   const exception = useMemo(() => {
-    if (!selectedTrainId || !isOccurrenceId(selectedTrainId) || !timetableItem?.paced)
+    if (!selectedTrainId || !isOccurrenceId(selectedTrainId) || !trainSchedule?.paced)
       return undefined;
-    return findExceptionWithOccurrenceId(timetableItem.paced.exceptions, selectedTrainId);
-  }, [selectedTrainId, timetableItem]);
+    return findExceptionWithOccurrenceId(trainSchedule.paced.exceptions, selectedTrainId);
+  }, [selectedTrainId, trainSchedule]);
 
   const { currentData: pathfinding, isFetching: isPathfindingFetching } =
     osrdEditoastApi.endpoints.getTrainPath.useQuery(

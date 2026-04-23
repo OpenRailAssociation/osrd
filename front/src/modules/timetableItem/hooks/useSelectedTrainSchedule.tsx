@@ -10,24 +10,24 @@ import {
   isOccurrenceId,
 } from 'utils/trainId';
 
-const extractTimetableItemId = (trainId?: TrainId) => {
+const extractTrainScheduleId = (trainId?: TrainId) => {
   if (!trainId) return undefined;
   return extractEditoastIdFromPacedTrainId(
     isOccurrenceId(trainId) ? extractPacedTrainIdFromOccurrenceId(trainId) : trainId
   );
 };
 
-const useSelectedTimetableItem = (
-  timetableItems: TimetableItem[] | undefined
+const useSelectedTrainSchedule = (
+  trainSchedules: TimetableItem[] | undefined
 ): TimetableItem | undefined => {
   const trainId = useSelector(getSelectedTrainId);
 
-  const timetableItemId = extractTimetableItemId(trainId);
+  const trainScheduleId = extractTrainScheduleId(trainId);
 
   return useMemo(
-    () => timetableItems?.find((item) => item.id === timetableItemId),
-    [timetableItems, timetableItemId]
+    () => trainSchedules?.find((trainSchedule) => trainSchedule.id === trainScheduleId),
+    [trainSchedules, trainScheduleId]
   );
 };
 
-export default useSelectedTimetableItem;
+export default useSelectedTrainSchedule;

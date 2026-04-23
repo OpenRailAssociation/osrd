@@ -19,7 +19,7 @@ import {
   findExceptionWithOccurrenceId,
   isPacedTrain,
 } from 'modules/timetableItem/helpers/pacedTrain';
-import useSelectedTimetableItem from 'modules/timetableItem/hooks/useSelectedTimetableItem';
+import useSelectedTrainSchedule from 'modules/timetableItem/hooks/useSelectedTrainSchedule';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { isOccurrenceId, isPacedTrainId } from 'utils/trainId';
@@ -64,19 +64,19 @@ const useEtcsBrakingCurves = (
 
   const { infraId, electricalProfileSetId } = useScenarioContext();
   const selectedTrainId = useSelector(getSelectedTrainId);
-  const timetableItem = useSelectedTimetableItem(timetableItems);
+  const trainSchedule = useSelectedTrainSchedule(timetableItems);
   const exception = useMemo(() => {
     if (
       !selectedTrainId ||
-      !timetableItem ||
-      !isPacedTrain(timetableItem) ||
+      !trainSchedule ||
+      !isPacedTrain(trainSchedule) ||
       isPacedTrainId(selectedTrainId)
     )
       return undefined;
     if (!isOccurrenceId(selectedTrainId))
       throw new Error(`trainId ${selectedTrainId} should be a occurrence id`);
-    return findExceptionWithOccurrenceId(timetableItem.paced.exceptions, selectedTrainId);
-  }, [selectedTrainId, timetableItem]);
+    return findExceptionWithOccurrenceId(trainSchedule.paced.exceptions, selectedTrainId);
+  }, [selectedTrainId, trainSchedule]);
 
   const fetchEtcsBrakingCurves = useCallback(async () => {
     if (selectedTrainId) {
