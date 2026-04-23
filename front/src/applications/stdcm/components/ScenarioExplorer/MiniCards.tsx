@@ -81,18 +81,18 @@ export const ScenarioMiniCard = ({
   const dispatch = useAppDispatch();
   const { closeModal } = useContext(ModalContext);
 
-  const [getTimetableItems] =
+  const [getTrainSchedules] =
     osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.useLazyQuery();
   const [getSpeedLimitTags] =
     osrdEditoastApi.endpoints.getInfraByInfraIdSpeedLimitTags.useLazyQuery();
 
   const selectScenario = async () => {
     const speedLimitTags = await getSpeedLimitTags({ infraId: scenario.infra_id }).unwrap();
-    const timetableItems = await getTimetableItems({
+    const trainSchedules = await getTrainSchedules({
       timetableId: scenario.timetable_id,
     }).unwrap();
 
-    const scenarioDateTimeWindow = getScenarioDatetimeWindow(timetableItems);
+    const scenarioDateTimeWindow = getScenarioDatetimeWindow(trainSchedules);
 
     dispatch(resetStdcmSimulations());
     dispatch(
