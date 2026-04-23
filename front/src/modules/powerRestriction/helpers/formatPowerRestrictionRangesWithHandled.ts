@@ -74,12 +74,12 @@ export const convertPowerRestrictionsAndCheckCompatibility = (
 };
 
 const formatPowerRestrictionRangesWithHandled = ({
-  selectedTimetableItem: { power_restrictions: powerRestrictions, path: pathInput },
+  selectedTrainSchedule: { power_restrictions: powerRestrictions, path: pathInput },
   selectedTrainRollingStock,
   pathfindingResult,
   pathProperties,
 }: {
-  selectedTimetableItem: Pick<TimetableItem, 'path' | 'power_restrictions'>;
+  selectedTrainSchedule: Pick<TimetableItem, 'path' | 'power_restrictions'>;
   selectedTrainRollingStock?: RollingStock;
   pathfindingResult: CorePathfindingResultSuccess;
   pathProperties: PathPropertiesFormatted;

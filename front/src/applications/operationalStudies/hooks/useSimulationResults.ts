@@ -167,7 +167,7 @@ const useSimulationResults = (
 
   const powerRestrictions =
     formatPowerRestrictionRangesWithHandled({
-      selectedTimetableItem: train,
+      selectedTrainSchedule: train,
       selectedTrainRollingStock: rollingStock,
       pathfindingResult: pathfinding,
       pathProperties,

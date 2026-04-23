@@ -24,7 +24,7 @@ const computeChartData = (
     t
   );
   const formattedPowerRestrictions = formatPowerRestrictionRangesWithHandled({
-    selectedTimetableItem: stdcmTrainResult,
+    selectedTrainSchedule: stdcmTrainResult,
     selectedTrainRollingStock: rollingStock,
     pathfindingResult,
     pathProperties: formattedPathProperties,
