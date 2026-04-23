@@ -578,6 +578,21 @@ pub fn infra_privileges(user: User, infra: Infra) -> Protected<HashSet<InfraPriv
     ))
 }
 
+/// Returns the IDs of the groups for the provided user
+pub fn user_groups(user: User) -> Protected<HashSet<Group>> {
+    Protected::new(move |openfga| {
+        async move {
+            let groups = openfga
+                .list_users(User::group().query_users(&user))
+                .await
+                .map_err(QueryError::parsing_ok)?;
+            Ok(groups.users.into_iter().collect())
+        }
+        .boxed()
+    })
+    .with_check(SanityCheck::SubjectExists(Subject::user(user)))
+}
+
 pub mod special_authorizers {
     use std::convert::Infallible;
 

@@ -1,5 +1,7 @@
 use std::convert::Infallible;
 
+use derive_more::Display;
+
 use authz::InfraPrivilege;
 use authz::v2::Access;
 use authz::v2::Authorizer;
@@ -97,19 +99,24 @@ pub enum Error {
     OpenFga(#[from] authz::v2::OpenFgaError),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Display)]
 #[non_exhaustive]
 pub enum Rejection {
     // Sanity check rejections
+    #[display("No such user: {_0}")]
     NoSuchUser(i64),
+    #[display("No such group: {_0}")]
     NoSuchGroup(#[expect(dead_code)] i64),
+    #[display("No such infra: {_0}")]
     NoSuchInfra(i64),
 
     // Guardrail rejections
+    #[display("Lacking role: {_0}, {_1}")]
     LackingRole(
         #[expect(dead_code)] authz::Subject,
         #[expect(dead_code)] authz::Role,
     ),
+    #[display("Lacking infra privilege: {_0}, {_1}")]
     LackingInfraPrivilege(
         InfraPrivilege,
         #[expect(dead_code)] authz::Subject,

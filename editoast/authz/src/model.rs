@@ -6,7 +6,7 @@ use strum::EnumIter;
 use strum::EnumString;
 use utoipa::ToSchema;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, derive_more::From)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, derive_more::From, derive_more::Display)]
 pub enum Subject {
     User(User),
     Group(Group),
@@ -71,6 +71,7 @@ impl AsRef<Group> for Subject {
     derive_more::From,
     derive_more::FromStr,
     derive_more::Deref,
+    derive_more::Display,
     Debug,
     Clone,
     Copy,
@@ -87,6 +88,7 @@ pub struct User(pub i64);
     derive_more::From,
     derive_more::FromStr,
     derive_more::Deref,
+    derive_more::Display,
     Debug,
     Clone,
     Copy,

@@ -150,6 +150,7 @@ impl<S: StorageDriver> Regulator<S> {
 
     /// Returns the IDs of the groups for the provided user
     #[tracing::instrument(skip_all, fields(user), ret(level = Level::DEBUG), err)]
+    // TODO PR: delete me
     pub async fn user_groups(&self, user: &User) -> Result<HashSet<Group>, Error<S::Error>> {
         if !self.user_exists(user.0).await? {
             return Err(Error::UnknownSubject(user.0));

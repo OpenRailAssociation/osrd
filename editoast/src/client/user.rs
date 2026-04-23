@@ -3,6 +3,7 @@ use authz;
 use authz::StorageDriver;
 use authz::identity::GroupInfo;
 use authz::identity::UserInfo;
+use authz::v2::Authorizer as _;
 use clap::Args;
 use clap::Subcommand;
 use database::DbConnectionPoolV2;
@@ -14,6 +15,8 @@ use std::collections::HashSet;
 use std::sync::Arc;
 
 use editoast_models::PgAuthDriver;
+
+use crate::authorizers::SystemAuthorizer;
 
 use super::openfga_config::OpenfgaConfig;
 
@@ -135,7 +138,7 @@ pub async fn user_info(
     openfga_config: OpenfgaConfig,
     pool: Arc<DbConnectionPoolV2>,
 ) -> anyhow::Result<()> {
-    let regulator = openfga_config.into_regulator(pool).await?;
+    let regulator = openfga_config.into_regulator(pool.clone()).await?;
     let driver = regulator.driver();
     let uid = if let Ok(id) = user.parse::<i64>() {
         id
@@ -147,7 +150,16 @@ pub async fn user_info(
         tracing::error!(user.id = uid, "User not found");
         return Ok(());
     };
-    let groups = regulator.user_groups(&authz::User(uid)).await?;
+    let authorizer = SystemAuthorizer {
+        openfga: regulator.openfga(),
+        conn: pool.get().await?,
+    };
+    let groups = authorizer
+        .authorize(authz::v2::user_groups(authz::User(uid)))
+        .await?
+        .access()
+        .await?
+        .map_err(|rejection| anyhow!("Authorization failed: {rejection}"))?;
 
     println!("id      : {uid}");
     println!("identities: {}", identities.join(", "));

@@ -135,14 +135,24 @@ pub(in crate::views) async fn whoami(
     ))
 )]
 pub(in crate::views) async fn user_groups(
-    Extension(auth): AuthenticationExt,
+    Extension(user): Extension<Option<authz::User>>,
+    Extension(roles): Extension<Vec<authz::Role>>,
     State(AppState {
         regulator, db_pool, ..
     }): State<AppState>,
 ) -> Result<Json<Vec<Group>>> {
-    let authorizer = auth.authorizer()?;
-    let user_id = authorizer.user_id();
-    let user_groups = regulator.user_groups(&authz::User(user_id)).await?;
+    let Some(user) = user else {
+        return Err(AuthorizationError::Unauthorized)?;
+    };
+    let conn = db_pool.get().await?;
+    let authorizer = UserAuthorizer::new(user, roles, regulator.openfga(), conn);
+    let user_groups = authorizer
+        .authorize(authz::v2::user_groups(user))
+        .await?
+        .access()
+        .await?
+        .expect("user retrieved above, there should be no other authorization rejection motives");
+
     let groups_id: Vec<i64> = user_groups.iter().map(|authz::Group(id)| *id).collect();
 
     let (result, missing_ids) =
