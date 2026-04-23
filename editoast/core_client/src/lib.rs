@@ -23,6 +23,7 @@ use std::marker::PhantomData;
 use std::pin::pin;
 use std::time::Duration;
 use thiserror::Error;
+use tokio::sync::mpsc::UnboundedSender;
 use tracing::trace;
 
 pub use mq_client::RabbitMQClient;
@@ -261,6 +262,94 @@ where
             Self::OVERRIDE_TIMEOUT,
         )
         .await
+    }
+}
+
+/// Results of parsing a streaming response
+pub enum Progress<E, F> {
+    /// Intermediate event
+    Event(E),
+    /// Final event
+    Final(F),
+}
+
+/// Trait for requests that support streaming responses from the core service
+pub trait AsCoreStreaming: Serialize + Sized + Sync {
+    type Response: CoreResponse;
+
+    /// The URL path of this request
+    const URL_PATH: &'static str;
+
+    /// An optional between the payloads timeout override for this request
+    const OVERRIDE_TIMEOUT: Option<Duration> = None;
+
+    /// Returns the worker id used for the request. Must be provided.
+    fn worker_key(&self) -> WorkerKey;
+
+    /// Sends this request using the given [CoreClient] and returns a stream of response items
+    ///
+    /// Each item in the stream is a [Result], allowing both successful responses and errors
+    async fn fetch(
+        &self,
+        core: &CoreClient,
+    ) -> Result<impl Stream<Item = Result<<Self::Response as CoreResponse>::Response, Error>>, Error>
+    where
+        <Self::Response as CoreResponse>::Response: Send,
+    {
+        core.fetch_streaming::<Self, Self::Response>(
+            Self::URL_PATH,
+            Some(self),
+            self.worker_key(),
+            Self::OVERRIDE_TIMEOUT,
+        )
+        .await
+    }
+}
+
+/// This trait provides a higher-level abstraction where streamed responses are
+/// interpreted as either intermediate events or a final response
+pub trait AsCoreProgression: AsCoreStreaming {
+    /// Type of intermediate events
+    type Event;
+
+    /// Type of the final response
+    type FinalResponse;
+
+    /// Converts a raw streamed response into either an event or a final response
+    ///
+    /// Implementations define how to interpret backend responses
+    fn parse_response(
+        response: Result<<Self::Response as CoreResponse>::Response, Error>,
+    ) -> Result<Progress<Self::Event, Self::FinalResponse>, Error>;
+
+    /// Consumes the streaming response returned by [`Self::fetch`] and emits intermediate events through a channel
+    ///
+    /// The intermediate events are sent through `sender` and returns the final response
+    async fn fetch_updates(
+        &self,
+        core: &CoreClient,
+        sender: UnboundedSender<Result<Self::Event, Error>>,
+    ) -> Result<Self::FinalResponse, Error>
+    where
+        <Self::Response as CoreResponse>::Response: Send,
+    {
+        let mut stream = pin!(self.fetch(core).await?);
+
+        while let Some(item) = stream.next().await {
+            let event = match Self::parse_response(item) {
+                Ok(result) => match result {
+                    Progress::Event(e) => Ok(e),
+                    Progress::Final(f) => {
+                        return Ok(f);
+                    }
+                },
+                Err(e) => Err(e),
+            };
+            if sender.send(event).is_err() {
+                break;
+            }
+        }
+        Err(Error::MqClientError(MqClientError::ResponseChannelClosed))
     }
 }
 
