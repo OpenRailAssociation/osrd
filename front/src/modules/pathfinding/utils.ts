@@ -16,8 +16,6 @@ import type { PathStep } from 'reducers/osrdconf/types';
 import { addElementAtIndex } from 'utils/array';
 import { getPointOnTrackCoordinates } from 'utils/geometry';
 
-import getStepLocation from './helpers/getStepLocation';
-
 export const formatSuggestedOperationalPoints = (
   operationalPoints: Array<
     NonNullable<Required<PathProperties['operational_points']>>[number] & {
@@ -81,9 +79,7 @@ export const getPathfindingQuery = ({
   const destination = pathSteps.at(-1);
   if (infraId && rollingStock && origin && destination) {
     // Only origin and destination can be null so we can compact and we want to remove any via that would be null
-    const pathItems: PathfindingInput['path_items'] = compact(pathSteps).map((step) =>
-      getStepLocation(step)
-    );
+    const pathItems: PathfindingInput['path_items'] = compact(pathSteps);
 
     return {
       infraId,
