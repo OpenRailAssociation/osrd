@@ -29,6 +29,7 @@ pub enum Config {
     Valkey {
         url: Url,
         response_timeout: Duration,
+        pool_size: usize,
     },
 }
 
@@ -41,9 +42,15 @@ impl Client {
                 Config::Valkey {
                     url,
                     response_timeout,
+                    pool_size,
                 } => ClientInner::Tokio(
                     deadpool_redis::Config::from_url(url)
-                        .create_pool(Some(Runtime::Tokio1))
+                        .builder()
+                        .unwrap()
+                        .runtime(Runtime::Tokio1)
+                        .max_size(pool_size)
+                        .wait_timeout(Some(std::time::Duration::from_millis(100)))
+                        .build()
                         .unwrap(),
                     response_timeout,
                 ),
