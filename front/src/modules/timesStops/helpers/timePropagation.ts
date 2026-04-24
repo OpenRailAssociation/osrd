@@ -213,10 +213,20 @@ export const propagateTime = (
     // atThisWaypoint at origin = only move start_time. Following offsets are compensated so
     // their absolute times stay the same — which is exactly what fromDeparture does.
     if (update.propagationMode === 'atThisWaypoint')
-      return propagateFromEditedPoint(delta, update.row.id, selectedTrain, 'fromDeparture');
+      return propagateFromEditedPoint(
+        delta,
+        update.row.pathStepId!,
+        selectedTrain,
+        'fromDeparture'
+      );
     return undefined;
   }
 
   if (update.propagationMode === 'atThisWaypoint' || !update.row.pathStepId) return undefined;
-  return propagateFromEditedPoint(delta, update.row.id, selectedTrain, update.propagationMode);
+  return propagateFromEditedPoint(
+    delta,
+    update.row.pathStepId,
+    selectedTrain,
+    update.propagationMode
+  );
 };
