@@ -66,13 +66,10 @@ pub(in crate::views) async fn get_debug_data(
         .as_ref()
         .ok_or(StdcmDebugError::S3NotConfigured)?;
 
-    let prefix = format!("stdcm/requests/{trace_id}");
-    let failure = fetch_optional_json(s3.as_ref(), &format!("{prefix}/failure.json")).await?;
-    let simulation_data = fetch_optional_json(
-        s3.as_ref(),
-        &format!("{prefix}/output_simulation_data.json"),
-    )
-    .await?;
+    let prefix = OsPath::from("stdcm/requests/").join(trace_id);
+    let failure = fetch_optional_json(s3.as_ref(), &prefix.clone().join("failure.json")).await?;
+    let simulation_data =
+        fetch_optional_json(s3.as_ref(), &prefix.join("output_simulation_data.json")).await?;
 
     let response = StdcmDebugDataResponse {
         failure,
@@ -83,25 +80,25 @@ pub(in crate::views) async fn get_debug_data(
 
 async fn fetch_optional_json(
     s3: &AmazonS3,
-    path: &str,
+    path: &OsPath,
 ) -> Result<Option<serde_json::Value>, StdcmDebugError> {
-    let location = OsPath::from(path);
-    match s3.get_opts(&location, GetOptions::default()).await {
+    dbg!(path.clone());
+    match s3.get_opts(&path, GetOptions::default()).await {
         Ok(result) => {
             let bytes = result.bytes().await.map_err(|e| StdcmDebugError::S3Error {
-                path: path.to_owned(),
+                path: path.to_string(),
                 message: e.to_string(),
             })?;
             let value =
                 serde_json::from_slice(&bytes).map_err(|e| StdcmDebugError::JsonParseError {
-                    path: path.to_owned(),
+                    path: path.to_string(),
                     message: e.to_string(),
                 })?;
             Ok(Some(value))
         }
         Err(object_store::Error::NotFound { .. }) => Ok(None),
         Err(e) => Err(StdcmDebugError::S3Error {
-            path: path.to_owned(),
+            path: path.to_string(),
             message: e.to_string(),
         }),
     }
