@@ -314,7 +314,7 @@ const useTimesStopsTableData = (
         );
 
         const row = buildTableRow({
-          id: pathStep.id,
+          id: `path-step-${pathStep.id}`,
           pathStepId: pathStep.id,
           // opOnPathIndex is a placeholder here (-1), it will be replaced by opIndex when matching with operationalPointsOnPath
           opOnPathIndex: -1,
@@ -385,7 +385,7 @@ const useTimesStopsTableData = (
 
           formattedRows.push({
             ...buildTableRow({
-              id: op.id,
+              id: `op-${op.id}`,
               pathStepId: null,
               opOnPathIndex: opIndex,
               name: op.extensions?.identifier?.name,

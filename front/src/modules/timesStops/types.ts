@@ -27,6 +27,7 @@ export type StepStatus =
 
 export type TimesStopsRowNew = {
   // Identification
+  /** Unique, opaque identifier for the row. Not to be confused with path step IDs or OP IDs. */
   id: string;
   /** Path step ID the row originates from, if any. null if it's an OP along the path not explicitly picked by the user. */
   pathStepId: string | null;
