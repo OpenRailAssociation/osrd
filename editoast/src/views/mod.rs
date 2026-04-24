@@ -1231,7 +1231,7 @@ fn build_s3_client(optional_config: &Option<S3Config>) -> Option<Arc<AmazonS3>> 
     let bucket = config.bucket_name.clone();
     let builder = AmazonS3Builder::new()
         .with_bucket_name(bucket)
-        .with_region("us-east-1")
+        .with_region("eu-west-3")
         .with_virtual_hosted_style_request(false)
         .with_allow_http(true)
         .with_endpoint(config.endpoint.as_str())
