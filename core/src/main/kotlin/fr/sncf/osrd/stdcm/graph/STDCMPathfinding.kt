@@ -247,6 +247,7 @@ class STDCMPathfinding(
             .getAdjacentEdges(node)
             .map { it.getEdgeEnd(graph) }
             .filter { it.timeData.timeSinceDeparture + it.remainingTimeEstimation <= maxRunTime }
+            .filter { graph.tryMarkPending(it) }
     }
 
     private fun buildResult(node: STDCMNode): Result {
