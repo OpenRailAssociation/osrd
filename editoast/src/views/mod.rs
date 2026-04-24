@@ -571,9 +571,6 @@ async fn authentication_validation_middleware(
     mut req: Request,
     next: Next,
 ) -> Result<Response> {
-    let openfga = regulator.openfga(); // to remove once OpenFGA is in the AppState directly
-    let conn = db_pool.get().await?;
-
     let is_impersonation = matches!(
         authn,
         crate::authentication::Authentication::Impersonating { .. }
@@ -615,8 +612,11 @@ async fn authentication_validation_middleware(
         Ok((Some(user), ::authz::v2::subject_roles(authz_user)))
     }
 
-    let (user, roles_prot) = conn
-        .transaction(async move |conn| {
+    let (user, roles_prot) = if authn.origin().is_none() {
+        (None, ::authz::v2::Protected::default())
+    } else {
+        let conn = db_pool.get().await?;
+        conn.transaction(async move |conn| {
             let origin = match &authn {
                 crate::authentication::Authentication::Authenticated { identity, name } => {
                     let user =
@@ -655,28 +655,15 @@ async fn authentication_validation_middleware(
             };
 
             Ok(match origin {
-                // origin user does exist, we use the Protected afterwards
                 Some((user, roles_prot)) => (Some(user), roles_prot),
-                // origin user does not exist
-                None => {
-                    // if there is an origin user (no skip or unauthenticated)
-                    if let Some(origin) = authn.origin() {
-                        register_origin_user(conn, origin).await?
-                    } else {
-                        (None, ::authz::v2::Protected::default())
-                    }
-                }
+                None => register_origin_user(conn, authn.origin().unwrap()).await?,
             })
         })
-        .await?;
-
-    // Drop the connection to avoid keeping it open while calling next middlewares
-    // and the resuest handler itself. Keeping it open would cause deadlocks under
-    // heavy load as all connection would be held by this function and handlers will
-    // fail to acquire one from the pool.
-    std::mem::drop(conn);
+        .await?
+    };
 
     // A failed OpenFGA request does not invalidate the creation of a new user
+    let openfga = regulator.openfga(); // to remove once OpenFGA is in the AppState directly
     let roles = special_authorizers::Authorize(openfga)
         .access_value(roles_prot)
         .await
