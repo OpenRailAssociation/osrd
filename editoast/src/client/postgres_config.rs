@@ -15,7 +15,7 @@ pub struct PostgresConfig {
     )]
     pub database_url: Url,
     #[educe(Default = 32)]
-    #[arg(long, env, default_value_t = 32)]
+    #[arg(long, env = "DATABASE_POOL_SIZE", default_value_t = 32)]
     pub pool_size: usize,
 }
 
