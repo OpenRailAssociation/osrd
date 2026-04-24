@@ -88,7 +88,7 @@ http = "1.4"
 indexmap = "2.13"
 itertools = "0.14.0"
 lapin = { version = "4.5.0", default-features = false, features = ["tokio"] }
-linkme = "0.3.35"
+linkme = "0.3.36"
 mvt = "0.12.0"
 openssl = "0.10.78"
 opentelemetry = { version = "0.31.0", default-features = false, features = [
