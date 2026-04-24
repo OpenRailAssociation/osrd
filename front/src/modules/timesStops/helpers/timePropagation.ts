@@ -217,6 +217,6 @@ export const propagateTime = (
     return undefined;
   }
 
-  if (update.propagationMode === 'atThisWaypoint' || !update.row.isPathStep) return undefined;
+  if (update.propagationMode === 'atThisWaypoint' || !update.row.pathStepId) return undefined;
   return propagateFromEditedPoint(delta, update.row.id, selectedTrain, update.propagationMode);
 };

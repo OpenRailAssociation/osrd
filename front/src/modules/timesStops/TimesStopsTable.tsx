@@ -203,7 +203,8 @@ const TimesStopsTable = ({
             return <span>&nbsp;</span>;
           }
 
-          const { stepStatus, computedArrival, requestedArrival, isPathStep } = info.row.original;
+          const { stepStatus, computedArrival, requestedArrival, pathStepId } = info.row.original;
+          const isPathStep = Boolean(pathStepId);
 
           const isSuccessSchedule =
             requestedArrival &&
@@ -227,10 +228,10 @@ const TimesStopsTable = ({
       columnHelper.accessor('name', {
         header: () => t('operational_point'),
         cell: (info) => {
-          const { name, secondaryCode, isPathStep } = info.row.original;
+          const { name, secondaryCode, pathStepId } = info.row.original;
           return (
             <>
-              {isPathStep && <span className="requested-point-dot" />}
+              {pathStepId && <span className="requested-point-dot" />}
               <span
                 className="op-full-name"
                 title={`${name}${secondaryCode ? ` ${secondaryCode}` : ''}`}
@@ -249,10 +250,10 @@ const TimesStopsTable = ({
       columnHelper.accessor('track', {
         header: () => t('trackName'),
         cell: (info) => {
-          const { isPathStep, hasRequestedTrack } = info.row.original;
+          const { pathStepId, hasRequestedTrack } = info.row.original;
           return (
             <>
-              {isPathStep && hasRequestedTrack && <span className="requested-point-dot" />}
+              {pathStepId && hasRequestedTrack && <span className="requested-point-dot" />}
               <span title={info.getValue()}>{info.getValue() ?? ''}</span>
             </>
           );
@@ -605,7 +606,7 @@ const TimesStopsTable = ({
   );
 
   const getRowDayOffset = (row: Row<TimesStopsRowNew>): number | null => {
-    if (!row.original.isPathStep) return null;
+    if (!row.original.pathStepId) return null;
     if (!row.original.requestedArrival) return null;
     return calculateTimeDifferenceInDays(startTime, row.original.requestedArrival);
   };

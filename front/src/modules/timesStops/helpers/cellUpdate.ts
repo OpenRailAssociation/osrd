@@ -21,7 +21,7 @@ const computeInsertIndex = (
 ): number => {
   // Build a map of pathStepId -> opOnPathIndex from rows that are path steps
   const pathStepOpIndices = new Map(
-    allRows.filter((r) => r.isPathStep).map((r) => [r.id, r.opOnPathIndex])
+    allRows.filter((r) => r.pathStepId).map((r) => [r.id, r.opOnPathIndex])
   );
 
   // Find the first PathStep whose opOnPathIndex is greater than the edited OP's
@@ -39,7 +39,7 @@ export const upsertPathStep = (
   currentPath: PathItem[],
   allRows: TimesStopsRowNew[]
 ): { pathStepId: string; updatedPath: PathItem[] } => {
-  if (editedRow.isPathStep) {
+  if (editedRow.pathStepId) {
     return { pathStepId: editedRow.id, updatedPath: currentPath };
   }
 
@@ -253,7 +253,7 @@ export const propagationToEdits = (
 export const buildPowerRestrictionsFromRows = (
   rows: TimesStopsRowNew[]
 ): PowerRestrictionItem[] => {
-  const pathStepRows = rows.filter((r) => r.isPathStep);
+  const pathStepRows = rows.filter((r) => r.pathStepId);
   const result: PowerRestrictionItem[] = [];
 
   for (let i = 0; i < pathStepRows.length - 1; i++) {

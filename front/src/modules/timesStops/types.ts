@@ -28,6 +28,8 @@ export type StepStatus =
 export type TimesStopsRowNew = {
   // Identification
   id: string;
+  /** Path step ID the row originates from, if any. null if it's an OP along the path not explicitly picked by the user. */
+  pathStepId: string | null;
   opOnPathIndex: number;
 
   // Schedule information
@@ -39,8 +41,6 @@ export type TimesStopsRowNew = {
   track: string;
 
   // Path information
-  /** True if this row corresponds to a pathStep input, false if it's just a waypoint */
-  isPathStep: boolean;
   /** True if the pathStep had an explicit track in its location (TrackOffset or local_track_name) */
   hasRequestedTrack: boolean;
   /** Location info to create a new PathItem when editing a waypoint that's not yet a pathStep */
