@@ -21,7 +21,7 @@ const computeInsertIndex = (
 ): number => {
   // Build a map of pathStepId -> opOnPathIndex from rows that are path steps
   const pathStepOpIndices = new Map(
-    allRows.filter((r) => r.pathStepId).map((r) => [r.id, r.opOnPathIndex])
+    allRows.filter((r) => r.pathStepId).map((r) => [r.pathStepId!, r.opOnPathIndex])
   );
 
   // Find the first PathStep whose opOnPathIndex is greater than the edited OP's
@@ -40,7 +40,7 @@ export const upsertPathStep = (
   allRows: TimesStopsRowNew[]
 ): { pathStepId: string; updatedPath: PathItem[] } => {
   if (editedRow.pathStepId) {
-    return { pathStepId: editedRow.id, updatedPath: currentPath };
+    return { pathStepId: editedRow.pathStepId, updatedPath: currentPath };
   }
 
   const newPathStep: PathItem = { id: uuidV4(), location: editedRow.location };
@@ -229,7 +229,7 @@ export const propagationToEdits = (
   rows: TimesStopsRowNew[]
 ): PendingEdit[] =>
   rows.flatMap((row) => {
-    const item = result.updatedSchedule.find((s) => s.at === row.id);
+    const item = result.updatedSchedule.find((s) => s.at === row.pathStepId);
     if (!item?.arrival) return [];
     const newArrival = new Date(
       result.updatedStartTime.getTime() + Duration.parse(item.arrival).ms
@@ -260,12 +260,12 @@ export const buildPowerRestrictionsFromRows = (
     const code = pathStepRows[i].powerRestriction;
     if (!code) continue;
 
-    const from = pathStepRows[i].id;
+    const from = pathStepRows[i].pathStepId!;
     let j = i + 1;
     while (j < pathStepRows.length - 1 && !pathStepRows[j].powerRestriction) {
       j++;
     }
-    const to = pathStepRows[j].id;
+    const to = pathStepRows[j].pathStepId!;
     result.push({ from, to, value: code });
   }
 
