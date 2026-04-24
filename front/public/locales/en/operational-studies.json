@@ -319,7 +319,7 @@
         "publishDialogTitle": "Publish local package",
         "publishSubmit": "Publish package",
         "publishToCatalog": "Publish to catalog",
-        "removeDialogText": "You’re about to remove '{{name}}' from this scenario.",
+        "removeDialogText": "You’re about to remove \"{{name}}\" from this scenario.",
         "removeDialogTitle": "Remove package",
         "removeDialogWarning": "$t(main.pacedTrain, { 'count': {{pacedTrainCount}} }) and $t(main.train, { 'count': {{uniqueTrainCount}} }) will be removed.",
         "removeFromScenario": "Remove from scenario",

@@ -319,7 +319,7 @@
         "publishDialogTitle": "Publier le paquet local",
         "publishSubmit": "Publier le paquet",
         "publishToCatalog": "Publier au catalogue",
-        "removeDialogText": "Vous êtes sur le point de retirer {{name}} du scénario.",
+        "removeDialogText": "Vous êtes sur le point de retirer \"{{name}}\" du scénario.",
         "removeDialogTitle": "Retirer le paquet",
         "removeDialogWarning": "$t(main.pacedTrain, { 'count': {{pacedTrainCount}} }) et $t(main.train, { 'count': {{uniqueTrainCount}} }) seront retirés.",
         "removeFromScenario": "Retirer du scénario",
