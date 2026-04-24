@@ -385,7 +385,7 @@ const useTimesStopsTableData = (
 
           formattedRows.push({
             ...buildTableRow({
-              id: `op-${op.id}`,
+              id: `op-${op.id}-${op.position}`,
               pathStepId: null,
               opOnPathIndex: opIndex,
               name: op.extensions?.identifier?.name,
