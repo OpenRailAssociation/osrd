@@ -23,6 +23,11 @@ const useLevelCrossingsWithChronogram = ({ trains }: UseLevelCrossingsWithChrono
 
   const trainIds = useMemo(() => trains.map((train) => train.id), [trains]);
 
+  const trainNameById = useMemo(
+    () => new Map(trains.map((train) => [train.id, train.name])),
+    [trains]
+  );
+
   const { currentData: levelCrossingsIds } =
     osrdEditoastApi.endpoints.getInfraByInfraIdObjectsAndObjectTypeIds.useQuery(
       infraId
@@ -59,8 +64,12 @@ const useLevelCrossingsWithChronogram = ({ trains }: UseLevelCrossingsWithChrono
 
   const levelCrossingData = useMemo(() => {
     if (!levelCrossingOccupancies || !levelCrossings) return [];
-    return formatLevelCrossingOccupanciesForChronogram(levelCrossingOccupancies, levelCrossings);
-  }, [levelCrossingOccupancies, levelCrossings]);
+    return formatLevelCrossingOccupanciesForChronogram(
+      levelCrossingOccupancies,
+      levelCrossings,
+      trainNameById
+    );
+  }, [levelCrossingOccupancies, levelCrossings, trainNameById]);
 
   useEffect(() => {
     if (error) {
