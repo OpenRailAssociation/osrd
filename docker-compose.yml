@@ -193,7 +193,7 @@ services:
       AWS_ACCESS_KEY_ID: access_key
       AWS_SECRET_ACCESS_KEY: secret_key
       AWS_ENDPOINT_URL_S3: http://s3:9900
-      BUCKET_NAME: osrd
+      AWS_BUCKET_NAME: osrd
     command: >
       /bin/sh -c "
         fga_migrations apply &&

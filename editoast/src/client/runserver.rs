@@ -39,7 +39,7 @@ pub struct CoreArgs {
 pub struct S3Args {
     #[clap(long, env = "AWS_ENDPOINT_URL_S3")]
     pub endpoint: Option<Url>,
-    #[clap(long, env = "BUCKET_NAME")]
+    #[clap(long, env = "AWS_BUCKET_NAME")]
     pub bucket_name: Option<String>,
     #[clap(long, env = "AWS_ACCESS_KEY_ID")]
     pub access_key_id: Option<String>,
