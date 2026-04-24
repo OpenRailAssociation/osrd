@@ -255,7 +255,7 @@ const TrainScheduleSetTab = ({
               ),
               texts: [
                 t('removeDialogText', {
-                  name: trainScheduleSet.name,
+                  name: computeTrainScheduleSetName(trainScheduleSet.name!, catalogName),
                 }),
                 computeRemoveDialogWarning(),
               ],
