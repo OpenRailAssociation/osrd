@@ -26,7 +26,8 @@ use tokio::sync::mpsc;
 use tokio::task;
 use tokio::time::Duration;
 use tokio_stream::StreamExt;
-use tracing::Instrument;
+use tracing::Instrument as _;
+use tracing::debug_span;
 use url::Url;
 use uuid::Uuid;
 
@@ -297,9 +298,17 @@ impl RabbitMQClient {
 
     #[tracing::instrument(name = "ping_mq", skip_all)]
     pub async fn ping(&self) -> Result<bool, MqClientError> {
+        let pool_status = self.pool.status();
+        let pool_status_span = debug_span!(
+            "mq.pool.get",
+            pool.size = pool_status.size,
+            pool.available = pool_status.available,
+            pool.waiting = pool_status.waiting
+        );
         let channel_worker = self
             .pool
             .get()
+            .instrument(pool_status_span)
             .await
             .map_err(|_| MqClientError::PoolChannelFail)?;
         let channel = channel_worker.get_channel();
