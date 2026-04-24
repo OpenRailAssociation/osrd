@@ -50,7 +50,7 @@ pub(in crate::views) struct StdcmDebugDataResponse {
 )]
 pub(in crate::views) async fn get_debug_data(
     Extension(auth): AuthenticationExt,
-    State(state): State<AppState>,
+    State(AppState { s3_client, .. }): State<AppState>,
     Path(trace_id): Path<String>,
 ) -> Result<Json<StdcmDebugDataResponse>> {
     let authorized = auth
@@ -61,10 +61,7 @@ pub(in crate::views) async fn get_debug_data(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let s3 = state
-        .s3_client
-        .as_ref()
-        .ok_or(StdcmDebugError::S3NotConfigured)?;
+    let s3 = s3_client.as_ref().ok_or(StdcmDebugError::S3NotConfigured)?;
 
     let prefix = OsPath::from("stdcm/requests/").join(trace_id);
     let failure = fetch_optional_json(s3.as_ref(), &prefix.clone().join("failure.json")).await?;
