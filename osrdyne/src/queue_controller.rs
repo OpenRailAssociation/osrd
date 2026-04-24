@@ -187,7 +187,10 @@ async fn update_queue(
 
             chan.queue_declare(
                 queue_name.clone().into(),
-                QueueDeclareOptions::default(),
+                QueueDeclareOptions {
+                    durable: true,
+                    ..Default::default()
+                },
                 FieldTable::default(),
             )
             .await?;
@@ -205,7 +208,10 @@ async fn update_queue(
 
             chan.queue_declare(
                 queue_name.clone().into(),
-                QueueDeclareOptions::default(),
+                QueueDeclareOptions {
+                    durable: true,
+                    ..Default::default()
+                },
                 FieldTable::default(),
             )
             .await?;
