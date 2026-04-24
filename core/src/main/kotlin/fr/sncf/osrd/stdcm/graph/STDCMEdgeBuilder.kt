@@ -98,6 +98,11 @@ internal constructor(
                         infraExplorer.getStepTracker().getCurrentReachedPlannedStepIndex(),
                         startOffset,
                         getNextStopOnCurrentBlock(infraExplorer),
+                        graph.stdcmSimulations.getEndSpeed(
+                            infraExplorer,
+                            graph.temporarySpeedLimitManager,
+                            graph.tag,
+                        ),
                     ),
                 )
         return envelope

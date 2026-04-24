@@ -63,6 +63,7 @@ fun simulateBlock(
         sim.simulateBlock(
             infraExplorer,
             initialSpeed,
+            Double.POSITIVE_INFINITY,
             start,
             rollingStock,
             comfort,

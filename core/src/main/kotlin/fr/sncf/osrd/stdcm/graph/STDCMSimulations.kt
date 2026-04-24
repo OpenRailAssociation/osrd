@@ -23,11 +23,16 @@ import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.stdcm.BacktrackingSelfTypeHolder
+import fr.sncf.osrd.stdcm.graph.engineering_allowance.runSimplifiedSimulation
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
+import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.utils.SelfTypeHolder
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.meters
 import java.lang.ref.SoftReference
+import kotlin.math.absoluteValue
+import kotlin.math.min
 
 /** This class contains all the methods used to simulate the train behavior. */
 class STDCMSimulations {
@@ -56,6 +61,7 @@ class STDCMSimulations {
             simulateBlock(
                 infraExplorer,
                 blockParams.initialSpeed,
+                blockParams.endSpeed,
                 blockParams.start,
                 rollingStock,
                 comfort,
@@ -69,6 +75,65 @@ class STDCMSimulations {
     }
 
     /**
+     * Compute the maximum safe speed at the end of the current block, given the lookahead. Looks at
+     * upcoming speed limits and stops in the lookahead blocks, and uses constant deceleration to
+     * compute how fast the train can go at the current block boundary while still being able to
+     * decelerate in time.
+     */
+    fun getEndSpeed(
+        infraExplorer: InfraExplorerWithEnvelope,
+        temporarySpeedLimitManager: TemporarySpeedLimitManager?,
+        trainTag: String?,
+    ): Double {
+        val rollingStock = infraExplorer.getCurrentRollingStock()
+        val acceleration = -rollingStock.deceleration.absoluteValue
+        val lookahead = infraExplorer.getLookahead()
+        if (lookahead.isEmpty()) return Double.POSITIVE_INFINITY
+
+        val maxSpeed = rollingStock.maxSpeed
+        val brakingDistance = maxSpeed * maxSpeed / (2 * rollingStock.deceleration)
+        val lookaheadLength = lookahead.sumOf { it.length.meters }
+        assert(lookaheadLength >= brakingDistance) {
+            "Lookahead too short for full braking: $lookaheadLength < $brakingDistance"
+        }
+
+        var currentMinSpeed = Double.POSITIVE_INFINITY
+        fun addSpeedConstraint(speed: Double, distanceAfterCurrentBlockEnd: Distance) {
+            val minPossibleSpeed =
+                runSimplifiedSimulation(acceleration, speed, distanceAfterCurrentBlockEnd.meters)
+                    .newBeginSpeed
+            currentMinSpeed = min(currentMinSpeed, minPossibleSpeed)
+        }
+
+        // Check stops in the lookahead
+        for (step in infraExplorer.getStepTracker().iterateStepsInLookaheadBackwards()) {
+            if (!step.originalStep.stop) continue
+            val distanceAfterBlockEnd =
+                step.travelledPathOffset -
+                    infraExplorer.getCurrentBlockRange().objectAbsolutePathEnd
+            if (distanceAfterBlockEnd <= 0.meters) continue
+            addSpeedConstraint(0.0, distanceAfterBlockEnd)
+        }
+
+        // Check speed limits in the lookahead blocks
+        var previousOffset = 0.meters
+        for (blockRange in lookahead) {
+            val path = infraExplorer.getBlockPathProperties(blockRange)
+            val speedLimits = path.getSpeedLimitProperties(trainTag, temporarySpeedLimitManager)
+            speedLimits.forEach { lower, _, value ->
+                addSpeedConstraint(value.speed.metersPerSecond, previousOffset + lower)
+            }
+            previousOffset += path.getLength().distance
+            if (
+                runSimplifiedSimulation(acceleration, 0.0, previousOffset.meters).newBeginSpeed >
+                    currentMinSpeed
+            )
+                break
+        }
+        return currentMinSpeed
+    }
+
+    /**
      * Returns an envelope matching the given block. The envelope time starts when the train enters
      * the block. stopPosition specifies the position at which the train should stop, may be null
      * (no stop).
@@ -79,6 +144,7 @@ class STDCMSimulations {
     fun simulateBlock(
         infraExplorer: InfraExplorer,
         initialSpeed: Double,
+        endSpeed: Double,
         start: Offset<Block>,
         rollingStock: PhysicsRollingStock,
         comfort: Comfort?,
@@ -106,7 +172,10 @@ class STDCMSimulations {
         val mrsp = computeMRSP(path, rollingStock, false, trainTag, temporarySpeedLimitManager)
         return try {
             val maxSpeedEnvelope = maxSpeedEnvelopeFrom(context, stops, mrsp)
-            maxEffortEnvelopeFrom(context, initialSpeed, maxSpeedEnvelope)
+            val maxEffortEnvelope = maxEffortEnvelopeFrom(context, initialSpeed, maxSpeedEnvelope)
+            if (endSpeed < maxEffortEnvelope.endSpeed)
+                addEndBrakingPart(context, endSpeed, maxEffortEnvelope)
+            else maxEffortEnvelope
         } catch (e: OSRDError) {
             // The train can't reach its destination, for example because of high slopes
             if (nFailedSimulation == 0) {
@@ -153,6 +222,7 @@ fun addEndBrakingPart(
     endSpeed: Double,
     oldEnvelope: Envelope,
 ): Envelope {
+    if (endSpeed >= oldEnvelope.endSpeed) return oldEnvelope
     val partBuilder = EnvelopePartBuilder()
     partBuilder.setAttr(EnvelopeProfile.BRAKING)
     partBuilder.setAttr(BacktrackingSelfTypeHolder())

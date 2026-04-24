@@ -14,4 +14,5 @@ data class BlockSimulationParameters(
     val currentStep: Int,
     val start: Offset<Block>,
     val stop: Offset<Block>?,
+    val endSpeed: Double = Double.POSITIVE_INFINITY,
 )

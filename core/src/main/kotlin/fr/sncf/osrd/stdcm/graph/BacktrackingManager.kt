@@ -34,6 +34,8 @@ class BacktrackingManager(private val graph: STDCMGraph) {
             return edge
         }
 
+        logger.warn("Unexpected backtracking: previousNode speed vs beginSpeed mismatch")
+
         // To limit caching and improve performance as much as possible, speed should be rounded to
         // 1e-1. Deltas related to this small approximation can and will be handled by the stdcm
         // post-processing.
@@ -84,6 +86,11 @@ class BacktrackingManager(private val graph: STDCMGraph) {
                     },
                     old.envelopeStartOffset,
                     getNextStopOnCurrentBlock(old.infraExplorer),
+                    graph.stdcmSimulations.getEndSpeed(
+                        old.infraExplorer,
+                        graph.temporarySpeedLimitManager,
+                        graph.tag,
+                    ),
                 ),
             )
         val path = old.infraExplorer.getCurrentEdgePathProperties(old.envelopeStartOffset, null)

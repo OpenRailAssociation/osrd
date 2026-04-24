@@ -22,7 +22,6 @@ import fr.sncf.osrd.utils.appendOnlyMapOf
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
-import fr.sncf.osrd.utils.units.meters
 import java.util.*
 import kotlin.math.max
 import kotlin.to
@@ -53,6 +52,9 @@ interface InfraExplorer {
      * given length. If no length is given, the path covers the rest of the block.
      */
     fun getCurrentEdgePathProperties(offset: Offset<Block>, length: Distance?): TrainPath
+
+    /** Get the path properties for the given block range */
+    fun getBlockPathProperties(blockRange: BlockRange): TrainPath
 
     /**
      * Returns an object that can be used to identify edges. The last edge contains the current
@@ -217,28 +219,48 @@ private class InfraExplorerImpl(
     override var isPathComplete: Boolean = false,
 ) : InfraExplorer {
     override fun getCurrentEdgePathProperties(offset: Offset<Block>, length: Distance?): TrainPath {
-        // We re-compute the routes of the current path since the cache may be incorrect
-        // because of a previous iteration.
-        // We also can't set a first route for sure in initInfraExplorer, but we set the first cache
-        // entry.
-        // So we have to correct that here now that we now which route we're on.
+        val block = getCurrentBlock()
+        val blockLength = blockInfra.getBlockLength(block)
+        return getBlockPathProperties(
+            block,
+            offset,
+            length?.let { offset.plus(length) } ?: blockLength,
+            blockLength,
+        )
+    }
+
+    override fun getBlockPathProperties(blockRange: BlockRange): TrainPath {
+        return getBlockPathProperties(
+            blockRange.value,
+            blockRange.objectBegin,
+            blockRange.objectEnd,
+            blockRange.objectLength,
+        )
+    }
+
+    private fun getBlockPathProperties(
+        block: BlockId,
+        from: Offset<Block>,
+        to: Offset<Block>,
+        blockLength: Length<Block>,
+    ): TrainPath {
+        // We re-compute the routes of the current path since the cache may be incorrect because of
+        // a previous iteration. We also can't set a first route for sure in initInfraExplorer, but
+        // we set the first cache entry. So we have to correct that here now that we now which route
+        // we're on.
         val path =
-            trainPathCache.getOrElse(getCurrentBlock()) {
-                val res = buildTrainPathFromBlock(rawInfra, blockInfra, getCurrentBlock())
-                trainPathCache[getCurrentBlock()] = res
+            trainPathCache.getOrElse(block) {
+                val res = buildTrainPathFromBlock(rawInfra, blockInfra, block)
+                trainPathCache[block] = res
                 res
             }
-        val route = blockRoutes[getCurrentBlock()]!!
-
+        val route = blockRoutes[block]!!
         val pathWithRoutes = path.withRoutes(listOf(route))
-
-        val blockLength = blockInfra.getBlockLength(getCurrentBlock())
-        val endOffset: Offset<Block> = if (length == null) blockLength else offset.plus(length)
-        if (offset.distance == 0.meters && endOffset == blockLength) {
+        if (from == Offset.zero<Block>() && to == blockLength) {
             return pathWithRoutes
         }
-        // In that case, start of the block is start of the travelled path
-        return pathWithRoutes.subPath(offset.cast(), endOffset.cast())
+        // In that case, start of the block is start of the travelled path, so cast is OK
+        return pathWithRoutes.subPath(from.cast(), to.cast())
     }
 
     override fun getLastEdgeIdentifier(): EdgeIdentifier {
