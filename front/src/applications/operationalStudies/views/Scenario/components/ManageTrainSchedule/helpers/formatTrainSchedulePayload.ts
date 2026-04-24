@@ -2,7 +2,6 @@ import { compact } from 'lodash';
 
 import type { PacedTrainWithPaced } from 'applications/operationalStudies/types';
 import type { PacedTrainException, TrainSchedule } from 'common/api/osrdEditoastApi';
-import getStepLocation from 'modules/pathfinding/helpers/getStepLocation';
 import { isPacedTrainBase } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { PacedTrainWithDetails } from 'modules/trainSchedule/types';
 import type { TrainScheduleToEditData, OperationalStudiesConfState } from 'reducers/osrdconf/types';
@@ -33,7 +32,7 @@ export function formatTrainSchedulePayload(
     },
     path: compact(osrdconf.pathSteps).map((step) => ({
       id: step.id,
-      location: getStepLocation(step.location),
+      location: step.location,
     })),
     power_restrictions: osrdconf.powerRestriction,
     rolling_stock_name: rollingStockName,

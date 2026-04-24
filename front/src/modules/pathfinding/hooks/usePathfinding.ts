@@ -14,7 +14,6 @@ import type {
   RelatedOperationalPoint,
 } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import getStepLocation from 'modules/pathfinding/helpers/getStepLocation';
 import {
   formatSuggestedOperationalPoints,
   getPathfindingQuery,
@@ -84,7 +83,7 @@ const usePathfinding = ({
       if (!infraId || !steps.length) return;
 
       const opRefs = steps.flatMap((step) => {
-        const pathItemLocation = getStepLocation(step.location);
+        const pathItemLocation = step.location;
         if (pathItemLocation.type === 'track_offset') return [];
         return [pathItemLocation.operational_point];
       });
