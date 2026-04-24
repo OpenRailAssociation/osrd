@@ -161,7 +161,7 @@ export const getInfra = async (infraName = infrastructureName): Promise<Infra> =
  */
 export const getWorkerStatus = async (infraId: number): Promise<WorkerStatus> => {
   try {
-    const response = await postApiRequest(`/api//worker_load/`, {
+    const response = await postApiRequest(`/api/worker_load/`, {
       infra_id: infraId,
     });
     return response as WorkerStatus;
