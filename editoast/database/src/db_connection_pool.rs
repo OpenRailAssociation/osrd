@@ -22,6 +22,8 @@ use openssl::ssl::SslMethod;
 use openssl::ssl::SslVerifyMode;
 use tokio::sync::OwnedRwLockWriteGuard;
 use tokio::sync::RwLock;
+use tracing::Instrument as _;
+use tracing::debug_span;
 use tracing::trace;
 use url::Url;
 
@@ -285,10 +287,18 @@ impl DbConnectionPoolV2 {
     /// hold several opened. This function is intended to be a drop-in replacement for the
     /// `deadpool`'s `get` function.
     /// ```
+    #[tracing::instrument(skip_all)]
     pub async fn get(&self) -> Result<DbConnection, DatabasePoolError> {
         use diesel_async::AsyncConnection as _;
 
-        let mut connection = self.pool.get().await?;
+        let pool_status = self.pool.status();
+        let pool_status_span = debug_span!(
+            "database.pool.get",
+            pool.size = pool_status.size,
+            pool.available = pool_status.available,
+            pool.waiting = pool_status.waiting
+        );
+        let mut connection = self.pool.get().instrument(pool_status_span).await?;
         connection.set_instrumentation(tracing_instrumentation::TracingInstrumentation::default());
         Ok(DbConnection::new(Arc::new(RwLock::new(connection))))
     }
