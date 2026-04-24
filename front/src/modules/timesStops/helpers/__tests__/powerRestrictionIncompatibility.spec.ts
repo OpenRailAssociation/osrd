@@ -7,12 +7,12 @@ import { computeRowPowerRestrictionStatus } from '../powerRestrictionIncompatibi
 const row = (
   id: string,
   opOnPathIndex: number,
-  opts: { isPathStep?: boolean; powerRestriction?: string | null } = {}
+  opts: { pathStepId?: string; powerRestriction?: string | null } = {}
 ): TimesStopsRowNew =>
   ({
     id,
     opOnPathIndex,
-    isPathStep: opts.isPathStep ?? false,
+    pathStepId: opts.pathStepId ?? null,
     powerRestriction: opts.powerRestriction ?? null,
   }) as TimesStopsRowNew;
 
@@ -124,9 +124,9 @@ describe('computeRowPowerRestrictionStatus', () => {
 
   it('propagates the active restriction along the rows', () => {
     const rows = [
-      row('a', 0, { isPathStep: true, powerRestriction: 'C1US' }),
+      row('a', 0, { pathStepId: 'foo', powerRestriction: 'C1US' }),
       row('b', 1),
-      row('c', 2, { isPathStep: true, powerRestriction: 'M1US' }),
+      row('c', 2, { pathStepId: 'bar', powerRestriction: 'M1US' }),
       row('d', 3),
     ];
     const positions = new Map([
@@ -146,10 +146,10 @@ describe('computeRowPowerRestrictionStatus', () => {
 
   it('NO_POWER_RESTRICTION resets the propagated value to null', () => {
     const rows = [
-      row('a', 0, { isPathStep: true, powerRestriction: 'C1US' }),
+      row('a', 0, { pathStepId: 'foo', powerRestriction: 'C1US' }),
       row('b', 1),
       row('c', 2, {
-        isPathStep: true,
+        pathStepId: 'bar',
         powerRestriction: 'NO_POWER_RESTRICTION',
       }),
       row('d', 3),
@@ -171,8 +171,8 @@ describe('computeRowPowerRestrictionStatus', () => {
 
   it('non-pathStep rows do not reset the propagated value', () => {
     const rows = [
-      row('a', 0, { isPathStep: true, powerRestriction: 'C1US' }),
-      row('b', 1, { isPathStep: false, powerRestriction: null }),
+      row('a', 0, { pathStepId: 'foo', powerRestriction: 'C1US' }),
+      row('b', 1, { pathStepId: 'bar', powerRestriction: null }),
       row('c', 2),
     ];
     const positions = new Map([

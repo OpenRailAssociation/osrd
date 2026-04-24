@@ -233,14 +233,7 @@ const useUpdateTimesStopsTable = (
   const computePowerRestrictionUpdate = (update: PowerRestrictionUpdate) => {
     const { pathStepId, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
     const modifiedRows = allRows.map((r) =>
-      r.id === update.row.id
-        ? {
-            ...r,
-            id: pathStepId,
-            isPathStep: true,
-            powerRestriction: update.value,
-          }
-        : r
+      r.id === update.row.id ? { ...r, pathStepId, powerRestriction: update.value } : r
     );
     return {
       updatedPath,

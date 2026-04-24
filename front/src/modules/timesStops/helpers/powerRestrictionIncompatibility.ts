@@ -68,7 +68,7 @@ export const computeRowPowerRestrictionStatus = (
 
   for (const row of rows) {
     // 1. Update the active restriction when a path step defines one.
-    if (row.isPathStep && row.powerRestriction !== null) {
+    if (row.pathStepId && row.powerRestriction !== null) {
       activeRestriction =
         row.powerRestriction === NO_POWER_RESTRICTION ? null : row.powerRestriction;
     }

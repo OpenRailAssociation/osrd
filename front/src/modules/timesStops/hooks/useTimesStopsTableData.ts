@@ -49,6 +49,7 @@ const getPowerRestrictionForPathStep = (
 
 type BuildTableRowParams = {
   id: string;
+  pathStepId: string | null;
   opOnPathIndex: number;
   name?: string;
   secondaryCode?: string;
@@ -62,7 +63,6 @@ type BuildTableRowParams = {
   marginNotHonored?: boolean;
   powerRestriction?: string | null;
   location: PathItemLocation;
-  isPathStep: boolean;
   shortSlipDistance?: boolean;
   closedSignal?: boolean;
   margins?: Margins;
@@ -70,6 +70,7 @@ type BuildTableRowParams = {
 
 const buildTableRow = ({
   id,
+  pathStepId,
   opOnPathIndex,
   name,
   secondaryCode,
@@ -83,7 +84,6 @@ const buildTableRow = ({
   marginNotHonored,
   powerRestriction = null,
   location,
-  isPathStep,
   shortSlipDistance,
   closedSignal,
   margins,
@@ -139,6 +139,7 @@ const buildTableRow = ({
 
   return {
     id,
+    pathStepId,
     stepStatus,
     opOnPathIndex,
     name: name ?? '',
@@ -149,7 +150,6 @@ const buildTableRow = ({
     stopDuration,
     requestedDeparture,
     computedDeparture,
-    isPathStep,
     hasRequestedTrack,
     location,
     closedSignal,
@@ -315,6 +315,7 @@ const useTimesStopsTableData = (
 
         const row = buildTableRow({
           id: pathStep.id,
+          pathStepId: pathStep.id,
           // opOnPathIndex is a placeholder here (-1), it will be replaced by opIndex when matching with operationalPointsOnPath
           opOnPathIndex: -1,
           name,
@@ -330,7 +331,6 @@ const useTimesStopsTableData = (
           marginNotHonored,
           powerRestriction,
           location: pathStep.location,
-          isPathStep: true,
           shortSlipDistance,
           closedSignal: onStopSignal,
           margins,
@@ -386,6 +386,7 @@ const useTimesStopsTableData = (
           formattedRows.push({
             ...buildTableRow({
               id: op.id,
+              pathStepId: null,
               opOnPathIndex: opIndex,
               name: op.extensions?.identifier?.name,
               secondaryCode: op.extensions?.sncf?.ch,
@@ -405,7 +406,6 @@ const useTimesStopsTableData = (
                 },
                 local_track_name: op.part.local_track_name,
               },
-              isPathStep: false,
             }),
           });
         }
@@ -431,7 +431,7 @@ const useTimesStopsTableData = (
   ]);
 
   const filteredRows = useMemo(
-    () => (displayOnlyPathSteps ? allRows.filter((row) => row.isPathStep) : allRows),
+    () => (displayOnlyPathSteps ? allRows.filter((row) => row.pathStepId) : allRows),
     [allRows, displayOnlyPathSteps]
   );
 
