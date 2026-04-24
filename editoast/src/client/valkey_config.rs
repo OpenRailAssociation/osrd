@@ -18,6 +18,9 @@ pub struct ValkeyConfig {
     #[arg(long, env, default_value_t = 1000)]
     /// Response timeout for Valkey requests in ms
     pub valkey_timeout: u64,
+    #[educe(Default = 32)]
+    #[arg(long, default_value_t = 32)]
+    pub valkey_pool_size: usize,
 }
 
 impl ValkeyConfig {
@@ -28,6 +31,7 @@ impl ValkeyConfig {
             cache::Config::Valkey {
                 url: self.valkey_url,
                 response_timeout: Duration::from_millis(self.valkey_timeout),
+                pool_size: self.valkey_pool_size,
             }
         }
     }
