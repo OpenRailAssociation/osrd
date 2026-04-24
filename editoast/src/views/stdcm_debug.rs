@@ -79,7 +79,6 @@ async fn fetch_optional_json(
     s3: &AmazonS3,
     path: &OsPath,
 ) -> Result<Option<serde_json::Value>, StdcmDebugError> {
-    dbg!(path.clone());
     match s3.get_opts(&path, GetOptions::default()).await {
         Ok(result) => {
             let bytes = result.bytes().await.map_err(|e| StdcmDebugError::S3Error {
