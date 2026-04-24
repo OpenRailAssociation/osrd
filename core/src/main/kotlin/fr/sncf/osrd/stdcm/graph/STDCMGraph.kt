@@ -175,6 +175,31 @@ class STDCMGraph(
     }
 
     /**
+     * Return false if the given node is already covered by a pending node in the A* queue, meaning
+     * it should not be added. Return true and mark the node as pending if it's not in the queue.
+     */
+    fun tryMarkPending(node: STDCMNode): Boolean {
+        val explorer = node.infraExplorer
+        val fingerprint =
+            VisitedNodes.Fingerprint(
+                explorer.getLastEdgeIdentifier(),
+                explorer.getStepTracker().nStepsExcludingLookahead,
+                node.locationOnEdge?.distance ?: 0.meters,
+            )
+        val params =
+            VisitedNodes.Parameters(
+                fingerprint,
+                node.timeData,
+                maxMarginDuration = 0.0,
+                remainingTimeEstimation = node.remainingTimeEstimation,
+                explorer = explorer,
+            )
+        if (visitedNodes.isPending(params)) return false
+        visitedNodes.markAsPending(params)
+        return true
+    }
+
+    /**
      * Give a (rough) estimation of how much delay we could add before this node with engineering
      * margins. Should be on the pessimistic side.
      */

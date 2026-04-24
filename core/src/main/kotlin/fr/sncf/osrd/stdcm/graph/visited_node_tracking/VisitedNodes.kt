@@ -76,6 +76,13 @@ data class VisitedNodes(
     /** Any class that implements this interface may be added to the visited ranges. */
     private val visitedRangesPerLocation = mutableMapOf<Fingerprint, VisitedRangeMap>()
 
+    /**
+     * Tracks time ranges covered by nodes that have been added to the A* queue. Prevents equivalent
+     * nodes from accumulating in the queue, which would otherwise cause OOM. Uses the same
+     * structure as [visitedRangesPerLocation]. Dequeued nodes are not removed.
+     */
+    private val pendingRangesPerLocation = mutableMapOf<Fingerprint, VisitedRangeMap>()
+
     // For any given block, keep track of the maximum number of steps that have been reached.
     // Any future path that has less passed steps at this block will be discarded.
     // The underlying assumption being, for a requested path "A -> B -> C":
@@ -140,6 +147,23 @@ data class VisitedNodes(
         }
         val visitedRanges = visitedRangesPerLocation[parameters.fingerprint] ?: return false
         return visitedRanges.isVisited(parameters.withClippedMarginDuration(0.0))
+    }
+
+    /**
+     * Return true if this node is "pending", i.e. has been added to the queue. It may or may not
+     * have been dequeued since. Avoids duplicated notes in the queue, which can cause OOM issues.
+     */
+    fun isPending(parameters: Parameters): Boolean {
+        val pendingRanges = pendingRangesPerLocation[parameters.fingerprint] ?: return false
+        return pendingRanges.isVisited(parameters.withClippedMarginDuration(0.0))
+    }
+
+    /** Mark a node as "pending" as it's added to the A* queue. */
+    fun markAsPending(parameters: Parameters) {
+        val fingerprint = parameters.fingerprint!!
+        val newRangeMap = visitedRangeMapFromParameters(parameters, minDelay)
+        val pendingRanges = pendingRangesPerLocation.getOrPut(fingerprint) { VisitedRangeMap() }
+        pendingRanges.putAll(newRangeMap)
     }
 
     /** Marks the input as visited */
