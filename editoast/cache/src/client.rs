@@ -4,6 +4,8 @@ use arcstr::ArcStr;
 use deadpool_redis::Pool;
 use deadpool_redis::PoolError;
 use deadpool_redis::Runtime;
+use tracing::Instrument as _;
+use tracing::debug_span;
 use url::Url;
 
 use crate::connection::Connection;
@@ -59,10 +61,18 @@ impl Client {
         }
     }
 
+    #[tracing::instrument(skip_all)]
     pub async fn get_connection(&self) -> Result<Connection, PoolError> {
         match &self.inner {
             ClientInner::Tokio(pool, response_timeout) => Ok({
-                let mut connection = pool.get().await?;
+                let pool_status = pool.status();
+                let pool_status_span = debug_span!(
+                    "mq.pool.get",
+                    pool.size = pool_status.size,
+                    pool.available = pool_status.available,
+                    pool.waiting = pool_status.waiting
+                );
+                let mut connection = pool.get().instrument(pool_status_span).await?;
                 connection.set_response_timeout(*response_timeout);
                 Connection::new(ConnectionInner::Tokio(connection), self.app_version.clone())
             }),
