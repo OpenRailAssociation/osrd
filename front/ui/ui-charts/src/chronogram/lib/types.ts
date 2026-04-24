@@ -4,6 +4,7 @@ import type { SpaceTimeChartTheme } from '../../spaceTimeChart';
 export type OccupancyBlock = {
   startTime: number;
   endTime: number;
+  trainNames: string[];
 };
 
 export type LevelCrossingOccupancies = OccupancyBlock[][];

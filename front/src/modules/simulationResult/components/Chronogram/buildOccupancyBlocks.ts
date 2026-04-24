@@ -15,7 +15,8 @@ const MIN_GAP_BETWEEN_OCCUPANCIES_MS = 15_000; // 15 seconds
  * we consider them as part of the same group.
  */
 function computeOccupanciesBlocks(
-  occupancies: PostLevelCrossingOccupancyApiResponse[number]
+  occupancies: PostLevelCrossingOccupancyApiResponse[number],
+  trainNameById: Map<number, string>
 ): LevelCrossingOccupancies {
   const sortedOccupancies = occupancies
     .map((occupancy) => ({
@@ -24,6 +25,7 @@ function computeOccupanciesBlocks(
         new Date(occupancy.time_begin),
         Duration.parse(occupancy.duration)
       ).getTime(),
+      trainNames: [trainNameById.get(occupancy.train_schedule_id) ?? ''],
     }))
     .sort((a, b) => a.startTime - b.startTime);
 
@@ -35,6 +37,7 @@ function computeOccupanciesBlocks(
         occupanciesGroups.push([occupancy]);
       } else if (occupancy.startTime <= lastOccupancy.endTime) {
         lastOccupancy.endTime = Math.max(lastOccupancy.endTime, occupancy.endTime);
+        lastOccupancy.trainNames.push(...occupancy.trainNames);
       } else if (occupancy.startTime - lastOccupancy.endTime < MIN_GAP_BETWEEN_OCCUPANCIES_MS) {
         currentGroup.push(occupancy);
       } else {
@@ -49,7 +52,8 @@ function computeOccupanciesBlocks(
 
 export function formatLevelCrossingOccupanciesForChronogram(
   levelCrossingOccupancies: PostLevelCrossingOccupancyApiResponse,
-  levelCrossingsMetadata: InfraObjectWithGeometry[]
+  levelCrossingsMetadata: InfraObjectWithGeometry[],
+  trainNameById: Map<number, string>
 ): LevelCrossingData[] {
   const levelCrossingsRailJsonById = levelCrossingsMetadata.reduce<Record<string, LevelCrossing>>(
     (acc, metadata) => {
@@ -61,7 +65,7 @@ export function formatLevelCrossingOccupanciesForChronogram(
   return Object.entries(levelCrossingOccupancies)
     .map(([levelCrossingId, occupancies]) => ({
       name: levelCrossingsRailJsonById[levelCrossingId].name,
-      occupancies: computeOccupanciesBlocks(occupancies),
+      occupancies: computeOccupanciesBlocks(occupancies, trainNameById),
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
 }

@@ -1,7 +1,14 @@
 import { useCallback, useContext } from 'react';
 
 import { TimeChartCanvasContext } from '../../common/context';
-import { BLACK_100, GREY_30, GREY_90, RED_100, WHITE_100 } from '../../common/helpers/colors';
+import {
+  BLACK_100,
+  GREY_30,
+  GREY_50,
+  GREY_90,
+  RED_100,
+  WHITE_100,
+} from '../../common/helpers/colors';
 import { useDraw } from '../../common/hooks/useCanvas';
 import type { TimeChartContextType, DrawingFunction } from '../../common/types';
 import { CHRONOGRAM_HEADER_HEIGHT, LEVEL_CROSSING_ITEM_HEIGHT } from '../lib/const';
@@ -15,6 +22,7 @@ const STRIPE_SPACING = 24;
 const STRIPE_WIDTH = 8;
 const TRACKS_INTERVALS = 3;
 const CLOSING_TIME_Y_OFFSET = 5;
+const TRAIN_NAME_Y_OFFSET = 14;
 
 const drawTrackLines = (
   ctx: CanvasRenderingContext2D,
@@ -82,50 +90,72 @@ const drawGapBlock = (
   }
 };
 
-/** Draws the closing time text above an occupancy block */
-const drawClosingTime = (
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  blockWidth: number,
-  text: string
-) => {
+/** Draws text around an occupancy block */
+const drawBlockText = ({
+  ctx,
+  x,
+  y,
+  text,
+  color,
+  maxWidth,
+}: {
+  ctx: CanvasRenderingContext2D;
+  x: number;
+  y: number;
+  text: string;
+  color?: string;
+  maxWidth?: number;
+}) => {
   ctx.save();
   ctx.font = '12px IBM Plex Sans';
-
-  const textWidth = ctx.measureText(text).width;
-  const startX = textWidth < blockWidth ? x + (blockWidth - textWidth) / 2 : x;
-
-  ctx.fillText(text, startX, y - CLOSING_TIME_Y_OFFSET, blockWidth);
+  if (color) ctx.fillStyle = color;
+  ctx.textAlign = 'center';
+  ctx.fillText(text, x, y, maxWidth);
   ctx.restore();
 };
 
-const drawBlocks = (
-  ctx: CanvasRenderingContext2D,
-  blocks: OccupancyBlock[],
-  getTimePixel: (time: number) => number,
-  bandTop: number
-) => {
+const drawBlocks = ({
+  ctx,
+  blocks,
+  getTimePixel,
+  bandTop,
+  bandBottom,
+}: {
+  ctx: CanvasRenderingContext2D;
+  blocks: OccupancyBlock[];
+  getTimePixel: (time: number) => number;
+  bandTop: number;
+  bandBottom: number;
+}) => {
   let previousBlockEndX: number | undefined;
 
   for (const block of blocks) {
     const blockStartX = getTimePixel(block.startTime);
     const blockEndX = getTimePixel(block.endTime);
     const blockWidth = blockEndX - blockStartX;
+    const blockCenterX = blockStartX + blockWidth / 2;
     if (blockWidth <= 0) continue;
 
     if (previousBlockEndX !== undefined) {
       drawGapBlock(ctx, bandTop, previousBlockEndX, blockStartX);
     }
 
-    drawClosingTime(
+    drawBlockText({
       ctx,
-      blockStartX,
-      bandTop,
-      blockWidth,
-      formatDuration(block.startTime, block.endTime)
-    );
+      x: blockCenterX,
+      y: bandTop - CLOSING_TIME_Y_OFFSET,
+      text: formatDuration(block.startTime, block.endTime),
+      maxWidth: blockWidth,
+    });
     drawStripedBlock(ctx, blockStartX, bandTop, blockWidth);
+
+    drawBlockText({
+      ctx,
+      x: blockCenterX,
+      y: bandBottom + TRAIN_NAME_Y_OFFSET,
+      text: block.trainNames.join('; '),
+      color: GREY_50,
+    });
 
     previousBlockEndX = blockEndX;
   }
@@ -148,7 +178,7 @@ export const OccupancyBlocksLayer = () => {
         for (const blocks of levelCrossing) {
           if (!blocks.length) continue;
 
-          drawBlocks(ctx, blocks, getTimePixel, bandTop);
+          drawBlocks({ ctx, blocks, getTimePixel, bandTop, bandBottom });
         }
 
         startY += LEVEL_CROSSING_ITEM_HEIGHT;
