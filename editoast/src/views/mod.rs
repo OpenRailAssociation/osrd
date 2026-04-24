@@ -40,6 +40,7 @@ use fga::client::Limits;
 #[cfg(test)]
 use test_app::test_app;
 use tracing::Instrument;
+use tracing::info_span;
 
 use ::core::str;
 use std::collections::HashSet;
@@ -984,6 +985,7 @@ async fn health(
     Ok("ok")
 }
 
+#[tracing::instrument(skip_all)]
 pub async fn check_health(
     db_pool: Arc<DbConnectionPoolV2>,
     valkey_client: Arc<cache::Client>,
@@ -991,6 +993,7 @@ pub async fn check_health(
     openfga: &fga::Client,
 ) -> Result<()> {
     let mut db_connection = db_pool.clone().get().await?;
+    let database_ping = ping_database(&mut db_connection).map_err(AppHealthError::Database);
     let openfga_ping = async move {
         openfga
             .is_healthy()
@@ -1008,6 +1011,7 @@ pub async fn check_health(
                 }
             })
     };
+    let mq_ping = core_client.ping().map_err(AppHealthError::Core);
     let valkey_ping = async {
         use deadpool_redis::redis::AsyncCommands as _;
         let mut vkconn = valkey_client
@@ -1023,10 +1027,10 @@ pub async fn check_health(
         Ok(())
     };
     tokio::try_join!(
-        ping_database(&mut db_connection).map_err(AppHealthError::Database),
-        valkey_ping,
-        core_client.ping().map_err(AppHealthError::Core),
-        openfga_ping
+        database_ping.instrument(info_span!("database ping")),
+        valkey_ping.instrument(info_span!("valkey ping")),
+        mq_ping.instrument(info_span!("mq ping")),
+        openfga_ping.instrument(info_span!("openfga ping"))
     )?;
     Ok(())
 }
