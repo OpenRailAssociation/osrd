@@ -981,38 +981,27 @@ pub async fn check_health(
 ) -> Result<()> {
     let mut db_connection = db_pool.clone().get().await?;
     let database_ping = ping_database(&mut db_connection).map_err(AppHealthError::Database);
-    let openfga_ping = async move {
-        openfga
-            .is_healthy()
-            .await
-            .map_err(|err| {
-                AppHealthError::Openfga(anyhow::anyhow!("OpenFGA health request failure: {err}"))
-            })
-            .and_then(|healthy| {
-                if !healthy {
-                    Err(AppHealthError::Openfga(anyhow::anyhow!(
-                        "OpenFGA is not healthy"
-                    )))
-                } else {
-                    Ok(())
-                }
-            })
-    };
+    let openfga_ping = openfga
+        .is_healthy()
+        .map_err(|err| anyhow::anyhow!("OpenFGA health request failure: {err}"))
+        .and_then(|healthy| {
+            if !healthy {
+                futures::future::err(anyhow::anyhow!("OpenFGA is not healthy"))
+            } else {
+                futures::future::ok(())
+            }
+        })
+        .map_err(AppHealthError::Openfga);
     let mq_ping = core_client.ping().map_err(AppHealthError::Core);
-    let valkey_ping = async {
-        use deadpool_redis::redis::AsyncCommands as _;
-        let mut vkconn = valkey_client
-            .get_connection()
-            .await
-            .map_err(anyhow::Error::from)
-            .map_err(AppHealthError::Valkey)?;
-        vkconn
-            .ping::<()>()
-            .await
-            .map_err(anyhow::Error::from)
-            .map_err(AppHealthError::Valkey)?;
-        Ok(())
-    };
+    let valkey_ping = valkey_client
+        .get_connection()
+        .map_err(anyhow::Error::from)
+        .and_then(|mut vkconn| async move {
+            deadpool_redis::redis::AsyncCommands::ping::<()>(&mut vkconn)
+                .map_err(anyhow::Error::from)
+                .await
+        })
+        .map_err(AppHealthError::Valkey);
     tokio::try_join!(
         database_ping.instrument(info_span!("database ping")),
         valkey_ping.instrument(info_span!("valkey ping")),
