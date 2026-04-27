@@ -745,7 +745,7 @@ impl InfraCache {
         Ok(self
             .track_sections()
             .get(track_section_id)
-            .ok_or_else(|| InfraCacheEditoastError::ObjectNotFound {
+            .ok_or_else(|| CacheOperationError::ObjectNotFound {
                 obj_type: ObjectType::TrackSection.to_string(),
                 obj_id: track_section_id.to_string(),
             })?
@@ -756,7 +756,7 @@ impl InfraCache {
         Ok(self
             .signals()
             .get(signal_id)
-            .ok_or_else(|| InfraCacheEditoastError::ObjectNotFound {
+            .ok_or_else(|| CacheOperationError::ObjectNotFound {
                 obj_type: ObjectType::Signal.to_string(),
                 obj_id: signal_id.to_string(),
             })?
@@ -767,7 +767,7 @@ impl InfraCache {
         Ok(self
             .speed_sections()
             .get(speed_section_id)
-            .ok_or_else(|| InfraCacheEditoastError::ObjectNotFound {
+            .ok_or_else(|| CacheOperationError::ObjectNotFound {
                 obj_type: ObjectType::SpeedSection.to_string(),
                 obj_id: speed_section_id.to_string(),
             })?
@@ -778,7 +778,7 @@ impl InfraCache {
         Ok(self
             .neutral_sections()
             .get(neutral_section_id)
-            .ok_or_else(|| InfraCacheEditoastError::ObjectNotFound {
+            .ok_or_else(|| CacheOperationError::ObjectNotFound {
                 obj_type: ObjectType::NeutralSection.to_string(),
                 obj_id: neutral_section_id.to_string(),
             })?
@@ -789,7 +789,7 @@ impl InfraCache {
         Ok(self
             .detectors()
             .get(detector_id)
-            .ok_or_else(|| InfraCacheEditoastError::ObjectNotFound {
+            .ok_or_else(|| CacheOperationError::ObjectNotFound {
                 obj_type: ObjectType::Detector.to_string(),
                 obj_id: detector_id.to_string(),
             })?
@@ -800,7 +800,7 @@ impl InfraCache {
         Ok(self
             .switches()
             .get(switch_id)
-            .ok_or_else(|| InfraCacheEditoastError::ObjectNotFound {
+            .ok_or_else(|| CacheOperationError::ObjectNotFound {
                 obj_type: ObjectType::Switch.to_string(),
                 obj_id: switch_id.to_string(),
             })?
@@ -811,7 +811,7 @@ impl InfraCache {
         Ok(self
             .switch_types()
             .get(switch_type_id)
-            .ok_or_else(|| InfraCacheEditoastError::ObjectNotFound {
+            .ok_or_else(|| CacheOperationError::ObjectNotFound {
                 obj_type: ObjectType::SwitchType.to_string(),
                 obj_id: switch_type_id.to_string(),
             })?
@@ -822,7 +822,7 @@ impl InfraCache {
         Ok(self
             .buffer_stops()
             .get(buffer_stop_id)
-            .ok_or_else(|| InfraCacheEditoastError::ObjectNotFound {
+            .ok_or_else(|| CacheOperationError::ObjectNotFound {
                 obj_type: ObjectType::BufferStop.to_string(),
                 obj_id: buffer_stop_id.to_string(),
             })?
@@ -833,7 +833,7 @@ impl InfraCache {
         Ok(self
             .routes()
             .get(route_id)
-            .ok_or_else(|| InfraCacheEditoastError::ObjectNotFound {
+            .ok_or_else(|| CacheOperationError::ObjectNotFound {
                 obj_type: ObjectType::Route.to_string(),
                 obj_id: route_id.to_string(),
             })?
@@ -847,7 +847,7 @@ impl InfraCache {
         Ok(self
             .operational_points()
             .get(operational_point_id)
-            .ok_or_else(|| InfraCacheEditoastError::ObjectNotFound {
+            .ok_or_else(|| CacheOperationError::ObjectNotFound {
                 obj_type: ObjectType::OperationalPoint.to_string(),
                 obj_id: operational_point_id.to_string(),
             })?
@@ -858,7 +858,7 @@ impl InfraCache {
         Ok(self
             .electrifications()
             .get(electrification_id)
-            .ok_or_else(|| InfraCacheEditoastError::ObjectNotFound {
+            .ok_or_else(|| CacheOperationError::ObjectNotFound {
                 obj_type: ObjectType::Electrification.to_string(),
                 obj_id: electrification_id.to_string(),
             })?
@@ -882,7 +882,7 @@ impl InfraCache {
         Ok(self
             .level_crossings()
             .get(level_crossing_id)
-            .ok_or_else(|| InfraCacheEditoastError::ObjectNotFound {
+            .ok_or_else(|| CacheOperationError::ObjectNotFound {
                 obj_type: ObjectType::LevelCrossing.to_string(),
                 obj_id: level_crossing_id.to_string(),
             })?
@@ -989,14 +989,6 @@ pub enum CacheOperationError {
     #[error("{obj_type} '{obj_id}', a duplicate already exists")]
     #[editoast_error(status = 404)]
     DuplicateIdsProvided { obj_type: String, obj_id: String },
-}
-
-#[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "infra_cache")]
-pub enum InfraCacheEditoastError {
-    #[error("{obj_type} '{obj_id}', could not be found in the infrastructure cache")]
-    #[editoast_error(status = 404)]
-    ObjectNotFound { obj_type: String, obj_id: String },
 }
 
 impl From<&RailJson> for InfraCache {
@@ -1574,8 +1566,8 @@ pub mod tests {
         use std::collections::HashMap;
 
         use super::create_track_section_cache;
+        use crate::infra_cache::CacheOperationError;
         use crate::infra_cache::InfraCache;
-        use crate::infra_cache::InfraCacheEditoastError;
         use crate::infra_cache::tests::create_buffer_stop_cache;
         use crate::infra_cache::tests::create_detector_cache;
         use crate::infra_cache::tests::create_electrification_cache;
@@ -1600,7 +1592,7 @@ pub mod tests {
 
             assert_eq!(
                 infra_cache.get_track_section(ID).unwrap_err(),
-                InfraCacheEditoastError::ObjectNotFound {
+                CacheOperationError::ObjectNotFound {
                     obj_type: ObjectType::TrackSection.to_string(),
                     obj_id: ID.to_string()
                 }
@@ -1619,7 +1611,7 @@ pub mod tests {
 
             assert_eq!(
                 infra_cache.get_signal(ID).unwrap_err(),
-                InfraCacheEditoastError::ObjectNotFound {
+                CacheOperationError::ObjectNotFound {
                     obj_type: ObjectType::Signal.to_string(),
                     obj_id: ID.to_string()
                 }
@@ -1638,7 +1630,7 @@ pub mod tests {
 
             assert_eq!(
                 infra_cache.get_speed_section(ID).unwrap_err(),
-                InfraCacheEditoastError::ObjectNotFound {
+                CacheOperationError::ObjectNotFound {
                     obj_type: ObjectType::SpeedSection.to_string(),
                     obj_id: ID.to_string()
                 }
@@ -1658,7 +1650,7 @@ pub mod tests {
 
             assert_eq!(
                 infra_cache.get_detector(ID).unwrap_err(),
-                InfraCacheEditoastError::ObjectNotFound {
+                CacheOperationError::ObjectNotFound {
                     obj_type: ObjectType::Detector.to_string(),
                     obj_id: ID.to_string()
                 }
@@ -1677,7 +1669,7 @@ pub mod tests {
 
             assert_eq!(
                 infra_cache.get_switch(ID).unwrap_err(),
-                InfraCacheEditoastError::ObjectNotFound {
+                CacheOperationError::ObjectNotFound {
                     obj_type: ObjectType::Switch.to_string(),
                     obj_id: ID.to_string()
                 }
@@ -1703,7 +1695,7 @@ pub mod tests {
 
             assert_eq!(
                 infra_cache.get_switch_type(ID).unwrap_err(),
-                InfraCacheEditoastError::ObjectNotFound {
+                CacheOperationError::ObjectNotFound {
                     obj_type: ObjectType::SwitchType.to_string(),
                     obj_id: ID.to_string()
                 }
@@ -1722,7 +1714,7 @@ pub mod tests {
 
             assert_eq!(
                 infra_cache.get_buffer_stop(ID).unwrap_err(),
-                InfraCacheEditoastError::ObjectNotFound {
+                CacheOperationError::ObjectNotFound {
                     obj_type: ObjectType::BufferStop.to_string(),
                     obj_id: ID.to_string()
                 }
@@ -1742,7 +1734,7 @@ pub mod tests {
 
             assert_eq!(
                 infra_cache.get_route(ID).unwrap_err(),
-                InfraCacheEditoastError::ObjectNotFound {
+                CacheOperationError::ObjectNotFound {
                     obj_type: ObjectType::Route.to_string(),
                     obj_id: ID.to_string()
                 }
@@ -1773,7 +1765,7 @@ pub mod tests {
 
             assert_eq!(
                 infra_cache.get_operational_point(ID).unwrap_err(),
-                InfraCacheEditoastError::ObjectNotFound {
+                CacheOperationError::ObjectNotFound {
                     obj_type: ObjectType::OperationalPoint.to_string(),
                     obj_id: ID.to_string()
                 }
@@ -1796,7 +1788,7 @@ pub mod tests {
 
             assert_eq!(
                 infra_cache.get_electrification(ID).unwrap_err(),
-                InfraCacheEditoastError::ObjectNotFound {
+                CacheOperationError::ObjectNotFound {
                     obj_type: ObjectType::Electrification.to_string(),
                     obj_id: ID.to_string()
                 }
@@ -1819,7 +1811,7 @@ pub mod tests {
 
             assert_eq!(
                 infra_cache.get_level_crossing(ID).unwrap_err(),
-                InfraCacheEditoastError::ObjectNotFound {
+                CacheOperationError::ObjectNotFound {
                     obj_type: ObjectType::LevelCrossing.to_string(),
                     obj_id: ID.to_string()
                 }
