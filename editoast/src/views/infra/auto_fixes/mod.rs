@@ -14,7 +14,6 @@ use tracing::debug;
 use tracing::error;
 
 use crate::AppState;
-use crate::error::InternalError;
 use crate::error::Result;
 use crate::generated_data::generate_infra_errors;
 use crate::generated_data::infra_error::InfraError;
@@ -151,61 +150,61 @@ fn fix_infra(
             ObjectType::TrackSection => {
                 let track_section = infra_cache
                     .get_track_section(&object_ref.obj_id)
-                    .map_err(|e| AutoFixesEditoastError::MissingErrorObject { source: e })?;
+                    .map_err(AutoFixesEditoastError::MissingErrorObject)?;
                 track_section::fix_track_section(track_section, errors)
             }
             ObjectType::Signal => {
                 let signal = infra_cache
                     .get_signal(&object_ref.obj_id)
-                    .map_err(|e| AutoFixesEditoastError::MissingErrorObject { source: e })?;
+                    .map_err(AutoFixesEditoastError::MissingErrorObject)?;
                 signal::fix_signal(signal, errors)
             }
             ObjectType::SpeedSection => {
                 let speed_section = infra_cache
                     .get_speed_section(&object_ref.obj_id)
-                    .map_err(|e| AutoFixesEditoastError::MissingErrorObject { source: e })?;
+                    .map_err(AutoFixesEditoastError::MissingErrorObject)?;
                 speed_section::fix_speed_section(speed_section, errors)
             }
             ObjectType::Detector => {
                 let detector = infra_cache
                     .get_detector(&object_ref.obj_id)
-                    .map_err(|e| AutoFixesEditoastError::MissingErrorObject { source: e })?;
+                    .map_err(AutoFixesEditoastError::MissingErrorObject)?;
                 detector::fix_detector(detector, errors)
             }
             ObjectType::Switch => {
                 let switch = infra_cache
                     .get_switch(&object_ref.obj_id)
-                    .map_err(|e| AutoFixesEditoastError::MissingErrorObject { source: e })?;
+                    .map_err(AutoFixesEditoastError::MissingErrorObject)?;
                 switch::fix_switch(switch, errors)
             }
             ObjectType::BufferStop => {
                 let buffer_stop = infra_cache
                     .get_buffer_stop(&object_ref.obj_id)
-                    .map_err(|e| AutoFixesEditoastError::MissingErrorObject { source: e })?;
+                    .map_err(AutoFixesEditoastError::MissingErrorObject)?;
                 buffer_stop::fix_buffer_stop(buffer_stop, errors)
             }
             ObjectType::Route => {
                 let route = infra_cache
                     .get_route(&object_ref.obj_id)
-                    .map_err(|e| AutoFixesEditoastError::MissingErrorObject { source: e })?;
+                    .map_err(AutoFixesEditoastError::MissingErrorObject)?;
                 route::fix_route(route, errors)
             }
             ObjectType::OperationalPoint => {
                 let operational_point = infra_cache
                     .get_operational_point(&object_ref.obj_id)
-                    .map_err(|e| AutoFixesEditoastError::MissingErrorObject { source: e })?;
+                    .map_err(AutoFixesEditoastError::MissingErrorObject)?;
                 operational_point::fix_operational_point(operational_point, errors)
             }
             ObjectType::Electrification => {
                 let electrification = infra_cache
                     .get_electrification(&object_ref.obj_id)
-                    .map_err(|e| AutoFixesEditoastError::MissingErrorObject { source: e })?;
+                    .map_err(AutoFixesEditoastError::MissingErrorObject)?;
                 electrifications::fix_electrification(electrification, errors)
             }
             ObjectType::LevelCrossing => {
                 let level_crossing = infra_cache
                     .get_level_crossing(&object_ref.obj_id)
-                    .map_err(|e| AutoFixesEditoastError::MissingErrorObject { source: e })?;
+                    .map_err(AutoFixesEditoastError::MissingErrorObject)?;
                 level_crossing::fix_level_crossing(level_crossing, errors)
             }
             object_type => {
@@ -236,7 +235,7 @@ fn fix_infra(
         fixes.into_values().unzip();
     infra_cache
         .apply_operations(&cache_operations)
-        .map_err(|source| AutoFixesEditoastError::FixTrialFailure { source })?;
+        .map_err(AutoFixesEditoastError::FixTrialFailure)?;
     Ok(operations)
 }
 
@@ -333,7 +332,7 @@ pub enum AutoFixesEditoastError {
     MaximumIterationReached,
     #[error("Failed trying to apply fixes")]
     #[editoast_error(status = 500)]
-    FixTrialFailure { source: InternalError },
+    FixTrialFailure(#[source] crate::infra_cache::CacheOperationError),
     #[error("Conflicting fixes for the same object on the same fix-iteration")]
     #[editoast_error(status = 500)]
     ConflictingFixesOnSameObject {
@@ -342,7 +341,7 @@ pub enum AutoFixesEditoastError {
     },
     #[error("Failed to find the error's object")]
     #[editoast_error(status = 500)]
-    MissingErrorObject { source: InternalError },
+    MissingErrorObject(#[source] crate::infra_cache::CacheOperationError),
 }
 
 #[cfg(test)]
@@ -557,13 +556,10 @@ mod tests {
         let error = fix_infra(&mut infra_cache, vec![error]).unwrap_err();
         assert_eq!(
             error,
-            AutoFixesEditoastError::MissingErrorObject {
-                source: CacheOperationError::ObjectNotFound {
-                    obj_type: ObjectType::Signal.to_string(),
-                    obj_id: signal.get_id().to_string()
-                }
-                .into()
-            }
+            AutoFixesEditoastError::MissingErrorObject(CacheOperationError::ObjectNotFound {
+                obj_type: ObjectType::Signal.to_string(),
+                obj_id: signal.get_id().to_string()
+            })
             .into()
         );
     }
@@ -634,13 +630,10 @@ mod tests {
         let error = fix_infra(&mut infra_cache, vec![error]).unwrap_err();
         assert_eq!(
             error,
-            AutoFixesEditoastError::MissingErrorObject {
-                source: CacheOperationError::ObjectNotFound {
-                    obj_type: ObjectType::Route.to_string(),
-                    obj_id: route.get_id().to_string()
-                }
-                .into()
-            }
+            AutoFixesEditoastError::MissingErrorObject(CacheOperationError::ObjectNotFound {
+                obj_type: ObjectType::Route.to_string(),
+                obj_id: route.get_id().to_string()
+            })
             .into()
         );
     }
