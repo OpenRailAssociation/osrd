@@ -7276,7 +7276,6 @@ components:
       - $ref: '#/components/schemas/EditoastGetObjectsErrorsObjectIdNotFound'
       - $ref: '#/components/schemas/EditoastInfraApiErrorDatabase'
       - $ref: '#/components/schemas/EditoastInfraApiErrorNotFound'
-      - $ref: '#/components/schemas/EditoastInfraCacheEditoastErrorObjectNotFound'
       - $ref: '#/components/schemas/EditoastLayersErrorLayerNotFound'
       - $ref: '#/components/schemas/EditoastLayersErrorViewNotFound'
       - $ref: '#/components/schemas/EditoastLevelCrossingErrorDatabase'
@@ -7534,34 +7533,6 @@ components:
           type: string
           enum:
           - editoast:infra:NotFound
-    EditoastInfraCacheEditoastErrorObjectNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          title: EditoastInfraCacheEditoastErrorObjectNotFoundContext
-          required:
-          - obj_id
-          - obj_type
-          properties:
-            obj_id:
-              type: string
-            obj_type:
-              type: string
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:infra_cache:ObjectNotFound
     EditoastLayersErrorLayerNotFound:
       type: object
       required:

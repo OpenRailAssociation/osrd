@@ -360,7 +360,7 @@ mod tests {
     use crate::fixtures::create_small_infra;
     use crate::generated_data::InfraGeneratedData as _;
     use crate::generated_data::infra_error::InfraErrorType;
-    use crate::infra_cache::InfraCacheEditoastError;
+    use crate::infra_cache::CacheOperationError;
     use crate::infra_cache::object_cache::BufferStopCache;
     use crate::infra_cache::object_cache::DetectorCache;
     use crate::infra_cache::object_cache::SignalCache;
@@ -558,7 +558,7 @@ mod tests {
         assert_eq!(
             error,
             AutoFixesEditoastError::MissingErrorObject {
-                source: InfraCacheEditoastError::ObjectNotFound {
+                source: CacheOperationError::ObjectNotFound {
                     obj_type: ObjectType::Signal.to_string(),
                     obj_id: signal.get_id().to_string()
                 }
@@ -635,7 +635,7 @@ mod tests {
         assert_eq!(
             error,
             AutoFixesEditoastError::MissingErrorObject {
-                source: InfraCacheEditoastError::ObjectNotFound {
+                source: CacheOperationError::ObjectNotFound {
                     obj_type: ObjectType::Route.to_string(),
                     obj_id: route.get_id().to_string()
                 }
