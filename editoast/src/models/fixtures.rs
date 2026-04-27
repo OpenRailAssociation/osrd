@@ -24,7 +24,6 @@ use schemas::TrainScheduleExceptionChangeGroups;
 use schemas::fixtures::simple_created_exception_with_change_groups;
 use schemas::fixtures::simple_modified_exception_with_change_groups;
 use schemas::infra::InfraObject;
-use schemas::infra::RailJson;
 use schemas::infra::TrackOffset;
 use schemas::paced_train::ConstraintDistributionChangeGroup;
 use schemas::paced_train::ExceptionType;
@@ -416,10 +415,7 @@ where
 }
 
 pub async fn create_small_infra(conn: &mut DbConnection) -> Infra {
-    let railjson: RailJson = serde_json::from_str(include_str!(
-        "../../../tests/data/infras/small_infra/infra.json"
-    ))
-    .unwrap();
+    let railjson = schemas::fixtures::small_infra();
     Infra::changeset()
         .name("small_infra".to_owned())
         .last_railjson_version()
