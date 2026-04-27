@@ -24,23 +24,25 @@ use tracing::debug;
 use tracing::error;
 use uuid::Uuid;
 
-use crate::models::get_geometry_layer_table;
-use crate::models::get_table;
-use crate::models::railjson::RailJsonError;
-use crate::models::railjson::persist_railjson;
+use crate::infra_objects::get_geometry_layer_table;
+use crate::infra_objects::get_table;
+use crate::prelude::*;
+use crate::railjson::RailJsonError;
+use crate::railjson::persist_railjson;
 use database::DbConnection;
 use database::tables::infra::dsl;
-use editoast_models::prelude::*;
 pub use object_queryable::ObjectQueryable;
 use schemas::infra::RAILJSON_VERSION;
 use schemas::infra::RailJson;
 use schemas::primitives::ObjectType;
 
+use crate as editoast_models;
+
 /// The default version of a newly created infrastructure
 ///
 /// This value is set by the database. This constant is used
 /// in unit tests.
-#[cfg(test)]
+#[cfg(any(test, feature = "testing"))]
 pub const DEFAULT_INFRA_VERSION: i64 = 0;
 
 #[derive(Debug, Clone, Educe, Serialize, Deserialize, Model, utoipa::ToSchema)]
@@ -275,6 +277,8 @@ impl Infra {
 pub mod tests {
     use pretty_assertions::assert_eq;
 
+    use database::DbConnection;
+    use database::DbConnectionPoolV2;
     use schemas::infra::BufferStop;
     use schemas::infra::Detector;
     use schemas::infra::Electrification;
@@ -292,13 +296,21 @@ pub mod tests {
     use schemas::primitives::OSRDIdentified;
     use uuid::Uuid;
 
+    use super::DEFAULT_INFRA_VERSION;
     use super::Infra;
-    use crate::models::fixtures::create_empty_infra;
-    use crate::models::infra::DEFAULT_INFRA_VERSION;
-    use crate::models::railjson::RailJsonError;
-    use crate::models::railjson::find_all_schemas;
-    use database::DbConnectionPoolV2;
-    use editoast_models::prelude::*;
+    use crate::railjson::RailJsonError;
+    use crate::railjson::find_all_schemas;
+
+    use crate::prelude::*;
+
+    async fn create_empty_infra(conn: &mut DbConnection) -> Infra {
+        Infra::changeset()
+            .name("empty_infra".to_owned())
+            .last_railjson_version()
+            .create(conn)
+            .await
+            .expect("Failed to create empty infra")
+    }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_infra() {

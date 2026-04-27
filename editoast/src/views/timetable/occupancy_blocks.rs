@@ -18,9 +18,9 @@ use std::sync::Arc;
 use utoipa::ToSchema;
 
 use crate::error::Result;
-use crate::models::infra::Infra;
 use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::train_simulation_batch;
+use editoast_models::Infra;
 
 /// Occupancy block output is described by time-space points and blocks
 pub type OccupancyBlocks = Vec<SignalUpdate>;

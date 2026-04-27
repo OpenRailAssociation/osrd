@@ -47,9 +47,9 @@ use crate::generated_data::infra_error::InfraError;
 use crate::generated_data::infra_error::InfraErrorTypeLabel;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::operation::CacheOperation;
-use crate::models::Infra;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
+use editoast_models::Infra;
 use editoast_models::prelude::*;
 
 /// This trait define how a generated data table should be handled

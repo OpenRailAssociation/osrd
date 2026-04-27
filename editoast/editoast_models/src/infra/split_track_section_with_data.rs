@@ -2,6 +2,7 @@ use std::ops::DerefMut;
 
 use database::DbConnection;
 use diesel::OptionalExtension;
+use diesel::QueryableByName;
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Double;

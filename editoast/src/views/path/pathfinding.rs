@@ -35,11 +35,11 @@ use utoipa::ToSchema;
 use crate::AppState;
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::models::Infra;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::path::PathfindingError;
 use crate::views::path::operational_point_cache::OperationalPointCache;
+use editoast_models::Infra;
 use editoast_models::prelude::*;
 use editoast_models::rolling_stock::RollingStock;
 

@@ -24,7 +24,6 @@ use utoipa::ToSchema;
 
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::models::Infra;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::operational_studies::OperationalStudiesOrderingParam;
@@ -33,6 +32,7 @@ use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
 use crate::views::project::ProjectError;
 use crate::views::study::StudyError;
+use editoast_models::Infra;
 use editoast_models::project::Project;
 use editoast_models::scenario::Scenario;
 use editoast_models::study::Study;

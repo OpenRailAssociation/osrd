@@ -107,7 +107,6 @@ pub mod tests {
     use pretty_assertions::assert_eq;
 
     use super::*;
-    use crate::models::Infra;
     use crate::models::fixtures::create_electrical_profile_set;
     use crate::models::fixtures::create_empty_infra;
     use crate::models::fixtures::create_temporary_speed_limit_group;
@@ -115,6 +114,7 @@ pub mod tests {
     use crate::models::fixtures::create_work_schedule_group;
     use database::DbConnectionPoolV2;
     use editoast_models::ElectricalProfileSet;
+    use editoast_models::Infra;
     use editoast_models::TemporarySpeedLimitGroup;
     use editoast_models::WorkScheduleGroup;
     use editoast_models::timetable::Timetable;

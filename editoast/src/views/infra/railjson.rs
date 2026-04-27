@@ -24,13 +24,13 @@ use crate::AppState;
 use crate::error::Result;
 use crate::generated_data::InfraGeneratedData as _;
 use crate::infra_cache::InfraCache;
-use crate::models::Infra;
 use crate::views::Authentication;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use database::DbConnectionPoolV2;
+use editoast_models::Infra;
 use editoast_models::prelude::*;
 use schemas::primitives::ObjectType;
 
@@ -164,14 +164,13 @@ pub enum RailJsonError {
     #[error("Unsupported railjson version '{actual}'. Should be {expected}.")]
     UnsupportedVersion { actual: String, expected: String },
     #[error(transparent)]
-    #[from(forward)]
     #[editoast_error(forward)]
     Database(editoast_models::Error),
 }
 
-impl From<crate::models::railjson::RailJsonError> for RailJsonError {
-    fn from(err: crate::models::railjson::RailJsonError) -> Self {
-        use crate::models::railjson::RailJsonError as ModelsRailJsonError;
+impl From<editoast_models::railjson::RailJsonError> for RailJsonError {
+    fn from(err: editoast_models::railjson::RailJsonError) -> Self {
+        use editoast_models::railjson::RailJsonError as ModelsRailJsonError;
         match err {
             ModelsRailJsonError::UnsupportedVersion { actual, expected } => {
                 RailJsonError::UnsupportedVersion { actual, expected }

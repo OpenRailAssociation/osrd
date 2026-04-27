@@ -13,8 +13,8 @@ use schemas::infra::RailJson;
 use crate::generated_data::InfraGeneratedData as _;
 use crate::infra_cache::InfraCache;
 use crate::map;
-use crate::models::Infra;
 use cache;
+use editoast_models::Infra;
 use editoast_models::map::MapLayers;
 use editoast_models::prelude::*;
 

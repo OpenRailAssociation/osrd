@@ -5,11 +5,12 @@ use editoast_derive::Model;
 use serde::Deserialize;
 use serde::Serialize;
 
+use crate::prelude::*;
 use database::DbConnection;
 use database::tables::*;
-use editoast_models::prelude::*;
 use schemas::primitives::ObjectType;
 
+use crate as editoast_models;
 pub trait ModelBackedSchema: Sized {
     type Model: SchemaModel + Into<Self>;
 }
@@ -304,14 +305,20 @@ impl OperationalPointModel {
 #[cfg(test)]
 mod tests_persist {
     use super::*;
+    use crate::Infra;
 
     macro_rules! test_persist {
         ($obj:ident, $test_fn:ident) => {
             #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
             async fn $test_fn() {
                 let db_pool = database::DbConnectionPoolV2::for_tests();
-                let infra =
-                    crate::models::fixtures::create_empty_infra(&mut db_pool.get_ok()).await;
+                let railjson = schemas::fixtures::small_infra();
+                let infra = Infra::changeset()
+                    .name("small_infra".to_owned())
+                    .last_railjson_version()
+                    .persist(railjson, &mut db_pool.get_ok())
+                    .await
+                    .unwrap();
                 let schemas = (0..10).map(|_| Default::default());
                 let changesets = $obj::from_infra_schemas(infra.id, schemas);
                 assert!(
@@ -343,13 +350,18 @@ mod tests_retrieve {
     use pretty_assertions::assert_eq;
 
     use super::*;
-    use crate::models::fixtures::create_small_infra;
+    use crate::Infra;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn from_trigrams() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
-
+        let railjson = schemas::fixtures::small_infra();
+        let small_infra = Infra::changeset()
+            .name("small_infra".to_owned())
+            .last_railjson_version()
+            .persist(railjson, &mut db_pool.get_ok())
+            .await
+            .unwrap();
         let trigrams = vec!["MES".to_string(), "WS".to_string()];
         let res = OperationalPointModel::retrieve_from_trigrams(
             &mut db_pool.get_ok(),
@@ -365,7 +377,13 @@ mod tests_retrieve {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn from_uic() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let railjson = schemas::fixtures::small_infra();
+        let small_infra = Infra::changeset()
+            .name("small_infra".to_owned())
+            .last_railjson_version()
+            .persist(railjson, &mut db_pool.get_ok())
+            .await
+            .unwrap();
         let uic = vec![8711, 8722];
         let res =
             OperationalPointModel::retrieve_from_uic(&mut db_pool.get_ok(), small_infra.id, &uic)

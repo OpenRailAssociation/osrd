@@ -45,14 +45,14 @@ use crate::generated_data::operational_point::OperationalPointLayer;
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::infra_cache::InfraCache;
 use crate::map;
-use crate::models::Infra;
-use crate::models::SwitchTypeModel;
 use crate::views::AuthorizationError;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::params;
 use crate::views::path::operational_point_cache::OperationalPointCache;
 use authz::Role;
+use editoast_models::Infra;
+use editoast_models::SwitchTypeModel;
 use schemas::infra::OperationalPoint;
 use schemas::infra::OperationalPointExtensions;
 use schemas::infra::OperationalPointPart;
@@ -283,9 +283,11 @@ pub struct InfraCreateForm {
     pub name: String,
 }
 
-impl From<InfraCreateForm> for Changeset<Infra> {
-    fn from(infra: InfraCreateForm) -> Self {
-        Self::default().name(infra.name).last_railjson_version()
+impl InfraCreateForm {
+    pub fn into_changeset(self) -> Changeset<Infra> {
+        Changeset::<Infra>::default()
+            .name(self.name)
+            .last_railjson_version()
     }
 }
 
@@ -316,7 +318,7 @@ pub(in crate::views) async fn create(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let infra: Changeset<Infra> = infra_form.into();
+    let infra: Changeset<Infra> = infra_form.into_changeset();
     let infra = infra.create(&mut db_pool.get().await?).await?;
 
     // Assign OWNER to the user on the infra if authz is enabled
@@ -455,9 +457,9 @@ pub(in crate::views) struct InfraPatchForm {
     pub name: String,
 }
 
-impl From<InfraPatchForm> for Changeset<Infra> {
-    fn from(patch: InfraPatchForm) -> Self {
-        Infra::changeset().name(patch.name)
+impl InfraPatchForm {
+    pub fn into_changeset(self) -> Changeset<Infra> {
+        Infra::changeset().name(self.name)
     }
 }
 
@@ -487,7 +489,7 @@ pub(in crate::views) async fn put(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let infra_cs: Changeset<Infra> = patch.into();
+    let infra_cs: Changeset<Infra> = patch.into_changeset();
     let infra = infra_cs
         .update_or_fail(&mut db_pool.get().await?, infra, || {
             InfraApiError::NotFound { infra_id: infra }
@@ -945,11 +947,11 @@ pub mod tests {
     use crate::models::fixtures::create_empty_infra;
     use crate::models::fixtures::create_rolling_stock_with_energy_sources;
     use crate::models::fixtures::create_small_infra;
-    use crate::models::get_geometry_layer_table;
-    use crate::models::get_table;
-    use crate::models::infra::DEFAULT_INFRA_VERSION;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
+    use editoast_models::infra::DEFAULT_INFRA_VERSION;
+    use editoast_models::infra_objects::get_geometry_layer_table;
+    use editoast_models::infra_objects::get_table;
     use schemas::train_schedule::OperationalPointReference;
 
     impl TestApp {

@@ -10,7 +10,7 @@ use editoast_derive::EditoastError;
 use thiserror::Error;
 
 use crate::error::Result;
-use crate::models::Infra;
+use editoast_models::Infra;
 use editoast_models::prelude::*;
 
 #[derive(Debug, Error, EditoastError)]

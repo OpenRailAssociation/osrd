@@ -17,6 +17,7 @@ diesel.workspace = true
 diesel-async.workspace = true
 diesel_json.workspace = true
 editoast_derive.workspace = true
+educe.workspace = true
 fga.workspace = true
 futures.workspace = true
 futures-util.workspace = true
@@ -39,6 +40,7 @@ tokio-postgres.workspace = true
 tracing.workspace = true
 url.workspace = true
 utoipa.workspace = true
+uuid.workspace = true
 
 [dev-dependencies]
 # The feature 'testing' is needed for all of the doc-tests
