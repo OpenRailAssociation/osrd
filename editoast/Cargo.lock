@@ -1422,6 +1422,7 @@ dependencies = [
  "diesel_json",
  "editoast_derive",
  "editoast_models",
+ "educe",
  "fga",
  "futures 0.3.32",
  "futures-util",
@@ -1445,6 +1446,7 @@ dependencies = [
  "tracing",
  "url",
  "utoipa",
+ "uuid",
 ]
 
 [[package]]

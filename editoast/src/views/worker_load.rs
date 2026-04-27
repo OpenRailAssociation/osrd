@@ -16,8 +16,8 @@ use utoipa::ToSchema;
 use super::AuthenticationExt;
 use crate::AppState;
 use crate::error::Result;
-use crate::models::Infra;
 use crate::views::AuthorizationError;
+use editoast_models::Infra;
 use editoast_models::timetable::Timetable;
 
 #[derive(Serialize, Deserialize, ToSchema)]

@@ -417,7 +417,7 @@ pub(in crate::views) async fn search(
 )]
 /// A search result item for a query with `object = "track"`
 ///
-// **IMPORTANT**: Please note that any modification to this struct should be reflected in [crate::models::infra::Infra::clone]
+// **IMPORTANT**: Please note that any modification to this struct should be reflected in [editoast_models::Infra::clone]
 pub(super) struct SearchResultItemTrack {
     #[search(sql = "search_track.infra_id")]
     infra_id: i64,
@@ -474,7 +474,7 @@ pub(super) struct SearchResultItemTrack {
 )]
 /// A search result item for a query with `object = "operationalpoint"`
 ///
-// **IMPORTANT**: Please note that any modification to this struct should be reflected in [crate::models::infra::Infra::clone]
+// **IMPORTANT**: Please note that any modification to this struct should be reflected in [editoast_models::Infra::clone]
 pub(super) struct SearchResultItemOperationalPoint {
     #[search(sql = "OP.obj_id")]
     obj_id: String,
@@ -557,7 +557,7 @@ pub(super) struct SearchResultItemOperationalPointTrackSections {
 )]
 /// A search result item for a query with `object = "signal"`
 ///
-// **IMPORTANT**: Please note that any modification to this struct should be reflected in [crate::models::infra::Infra::clone]
+// **IMPORTANT**: Please note that any modification to this struct should be reflected in [editoast_models::Infra::clone]
 pub(super) struct SearchResultItemSignal {
     #[search(sql = "sig.obj_id")]
     obj_id: String,

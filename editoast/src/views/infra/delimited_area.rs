@@ -2,7 +2,6 @@ use crate::AppState;
 use crate::error::Result;
 use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
-use crate::models::Infra;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
@@ -13,6 +12,7 @@ use axum::Json;
 use axum::extract::Path;
 use axum::extract::State;
 use editoast_derive::EditoastError;
+use editoast_models::Infra;
 use editoast_models::prelude::*;
 use itertools::Either;
 use itertools::Itertools;
@@ -518,11 +518,11 @@ fn track_range_from_endpoint(
 
 #[cfg(test)]
 mod tests {
-    use crate::models::Infra;
     use crate::models::fixtures::create_small_infra;
     use crate::views::infra::delimited_area::DelimitedAreaResponse;
     use crate::views::test_app::TestAppBuilder;
     use axum::http::StatusCode;
+    use editoast_models::Infra;
 
     use schemas::infra::Direction;
     use schemas::infra::DirectionalTrackRange;

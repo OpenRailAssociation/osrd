@@ -21,7 +21,7 @@ use serde_json::json;
 
 use super::OperationError;
 use crate::error::Result;
-use crate::models::get_table;
+use editoast_models::infra_objects::get_table;
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, utoipa::ToSchema)]
 #[serde(deny_unknown_fields)]

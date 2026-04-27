@@ -38,12 +38,12 @@ use crate::infra_cache::operation::DeleteOperation;
 use crate::infra_cache::operation::Operation;
 use crate::infra_cache::operation::UpdateOperation;
 use crate::map;
-use crate::models::Infra;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use database::DbConnection;
+use editoast_models::Infra;
 use editoast_models::prelude::*;
 use schemas::infra::InfraObject;
 
@@ -1005,10 +1005,10 @@ pub mod tests {
     use crate::generated_data::infra_error::InfraError;
     use crate::generated_data::infra_error::InfraErrorType;
     use crate::models::fixtures::create_small_infra;
-    use crate::models::infra::ObjectQueryable;
     use crate::views::infra::errors::query_errors;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
+    use editoast_models::infra::ObjectQueryable;
 
     async fn setup_split_track_test() -> (TestApp, Infra) {
         let app = TestAppBuilder::default_app();

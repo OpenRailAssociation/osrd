@@ -5,8 +5,8 @@ use std::sync::Arc;
 use editoast_models::TrainScheduleSet;
 
 use crate::client::OpenfgaConfig;
-use crate::models::infra::Infra;
 use editoast_models::Group;
+use editoast_models::Infra;
 use editoast_models::User;
 use editoast_models::prelude::*;
 use fga::client::UntypedTuple;

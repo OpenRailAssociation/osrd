@@ -24,13 +24,13 @@ use utoipa::ToSchema;
 
 use super::path::operational_point_cache::OperationalPointCache;
 
-use crate::models::infra::Infra;
 use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::projection::PathProjection;
 use crate::views::path::projection::TrackLocationFromPath;
 use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 use crate::views::timetable::simulation::train_simulation_batch;
+use editoast_models::Infra;
 
 #[derive(Debug, Deserialize, ToSchema)]
 pub struct ProjectPathForm {

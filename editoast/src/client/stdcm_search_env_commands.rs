@@ -1,4 +1,3 @@
-use crate::models::Infra;
 use crate::models::stdcm_search_environment::StdcmSearchEnvironment;
 use chrono::DateTime;
 use chrono::Duration;
@@ -8,6 +7,7 @@ use clap::Subcommand;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_models::ElectricalProfileSet;
+use editoast_models::Infra;
 use editoast_models::WorkScheduleGroup;
 use editoast_models::prelude::*;
 use editoast_models::scenario::Scenario;

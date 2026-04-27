@@ -18,13 +18,13 @@ use crate::generated_data::InfraErrorLevel;
 use crate::generated_data::InfraGeneratedData as _;
 use crate::generated_data::infra_error::InfraError;
 use crate::generated_data::infra_error::InfraErrorTypeLabel;
-use crate::models::Infra;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraIdParam;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
 use database::DbConnectionPoolV2;
+use editoast_models::Infra;
 use editoast_models::prelude::*;
 
 use super::InfraApiError;

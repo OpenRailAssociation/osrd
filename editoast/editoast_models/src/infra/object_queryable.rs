@@ -15,8 +15,8 @@ use serde::Deserialize;
 use serde::Serialize;
 
 use super::Infra;
-use crate::models::get_geometry_layer_table;
-use crate::models::get_table;
+use crate::infra_objects::get_geometry_layer_table;
+use crate::infra_objects::get_table;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, QueryableByName, utoipa::ToSchema)]
 #[schema(as = InfraObjectWithGeometry)]
@@ -37,7 +37,7 @@ impl Infra {
         conn: &mut DbConnection,
         object_type: ObjectType,
         object_ids: &Vec<String>,
-    ) -> Result<Vec<ObjectQueryable>, editoast_models::Error> {
+    ) -> Result<Vec<ObjectQueryable>, crate::Error> {
         // Prepare query
         let query = if [ObjectType::SwitchType, ObjectType::Route].contains(&object_type) {
             format!(
@@ -73,7 +73,7 @@ impl Infra {
         &self,
         conn: &mut DbConnection,
         object_type: ObjectType,
-    ) -> Result<Vec<String>, editoast_models::Error> {
+    ) -> Result<Vec<String>, crate::Error> {
         let query = format!(
             "SELECT obj_id FROM {} WHERE infra_id = $1",
             get_table(&object_type)

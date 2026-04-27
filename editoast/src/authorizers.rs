@@ -142,7 +142,7 @@ async fn sanity_check(
                 .then_some(Rejection::NoSuchGroup(*group_id)))
         }
         SanityCheck::InfraExists(authz::Infra(infra_id)) => {
-            Ok((!crate::models::Infra::exists(conn, *infra_id).await?)
+            Ok((!editoast_models::Infra::exists(conn, *infra_id).await?)
                 .then_some(Rejection::NoSuchInfra(*infra_id)))
         }
     }

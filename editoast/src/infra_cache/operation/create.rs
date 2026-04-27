@@ -11,7 +11,7 @@ use std::ops::DerefMut;
 
 use super::OperationError;
 use crate::error::Result;
-use crate::models::get_table;
+use editoast_models::infra_objects::get_table;
 
 pub async fn apply_create_operation<'r>(
     infra_object: &'r InfraObject,

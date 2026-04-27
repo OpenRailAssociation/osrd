@@ -62,10 +62,10 @@ use crate::infra_cache::object_cache::SignalCache;
 use crate::infra_cache::object_cache::SwitchCache;
 use crate::infra_cache::object_cache::TrackSectionCache;
 use crate::infra_cache::operation::CacheOperation;
-use crate::models::Infra;
-use crate::models::railjson::find_all_schemas;
 use cache::Client as ValkeyClient;
 use database::DbConnection;
+use editoast_models::Infra;
+use editoast_models::railjson::find_all_schemas;
 use schemas::infra::InfraObject;
 use schemas::primitives::BoundingBox;
 

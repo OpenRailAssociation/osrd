@@ -3,11 +3,13 @@ use schemas::infra::RAILJSON_VERSION;
 use schemas::infra::RailJson;
 use schemas::infra::major_version;
 
-use crate::models::infra_objects::*;
+use crate::infra_objects::*;
+use crate::prelude::*;
 use database::DbConnection;
-use editoast_models::prelude::*;
 
 use super::Infra;
+
+use crate as editoast_models;
 
 #[derive(Debug, derive_more::From, thiserror::Error, PartialEq)]
 pub enum RailJsonError {

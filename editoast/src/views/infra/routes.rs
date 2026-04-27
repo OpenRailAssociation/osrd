@@ -18,12 +18,12 @@ use crate::AppState;
 use crate::error::Result;
 use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
-use crate::models::Infra;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use crate::views::params::List;
+use editoast_models::Infra;
 use editoast_models::prelude::*;
 
 #[derive(Debug, Display, Clone, Copy, Deserialize, ToSchema)]

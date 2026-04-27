@@ -63,11 +63,11 @@ use super::path::pathfinding::PathfindingResult;
 use crate::AppState;
 use crate::error::Result;
 use crate::models;
-use crate::models::Infra;
 use crate::models::train_schedule::OccurrenceId;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
+use editoast_models::Infra;
 use editoast_models::TrainScheduleSet;
 
 #[derive(Debug, Error, EditoastError, derive_more::From)]

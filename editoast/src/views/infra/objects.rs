@@ -15,10 +15,10 @@ use thiserror::Error;
 use super::InfraApiError;
 use super::InfraIdParam;
 use crate::error::Result;
-use crate::models::Infra;
-use crate::models::infra::ObjectQueryable;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
+use editoast_models::Infra;
+use editoast_models::infra::ObjectQueryable;
 use editoast_models::prelude::*;
 
 #[derive(Debug, Error, EditoastError)]

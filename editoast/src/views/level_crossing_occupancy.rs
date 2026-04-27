@@ -1,7 +1,5 @@
 use crate::AppState;
 use crate::error::Result;
-use crate::models::Infra;
-use crate::models::LevelCrossingModel;
 use crate::models::TrainSchedule;
 use crate::models::train_schedule::OccurrenceId;
 use crate::views::AuthenticationExt;
@@ -13,6 +11,8 @@ use crate::views::rolling_stock::RollingStockError;
 use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 use crate::views::timetable::simulation::train_simulation_batch;
+use editoast_models::Infra;
+use editoast_models::LevelCrossingModel;
 
 use axum::Extension;
 use axum::extract::Json;
