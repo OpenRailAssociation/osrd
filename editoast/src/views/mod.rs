@@ -617,11 +617,9 @@ async fn authentication_validation_middleware(
         Ok((Some(user), ::authz::v2::subject_roles(authz_user)))
     }
 
-    let (user, roles_prot) = if authn.origin().is_none() {
-        (None, ::authz::v2::Protected::default())
-    } else {
+    let (user, roles_prot) = if let Some(req_origin) = authn.origin() {
         let conn = db_pool.get().await?;
-        conn.transaction(async move |conn| {
+        conn.transaction(async |conn| {
             let origin = match &authn {
                 crate::authentication::Authentication::Authenticated { identity, name } => {
                     let user =
@@ -661,10 +659,12 @@ async fn authentication_validation_middleware(
 
             Ok(match origin {
                 Some((user, roles_prot)) => (Some(user), roles_prot),
-                None => register_origin_user(conn, authn.origin().unwrap()).await?,
+                None => register_origin_user(conn, req_origin).await?,
             })
         })
         .await?
+    } else {
+        (None, ::authz::v2::Protected::default())
     };
 
     // A failed OpenFGA request does not invalidate the creation of a new user
