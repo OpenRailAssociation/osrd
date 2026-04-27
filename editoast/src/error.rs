@@ -336,6 +336,59 @@ impl From<crate::authorizers::Error> for InternalError {
     }
 }
 
+inventory::submit! {
+    ErrorDefinition::new("editoast:cache_operation:ObjectNotFound","ObjectNotFound","CacheOperationError",404u16,"{\"obj_type\":\"String\",\"obj_id\":\"String\"}")
+}
+inventory::submit! {
+    ErrorDefinition::new("editoast:cache_operation:DuplicateIdsProvided","DuplicateIdsProvided","CacheOperationError",404u16,"{\"obj_id\":\"String\",\"obj_type\":\"String\"}")
+}
+
+impl EditoastError for crate::infra_cache::CacheOperationError {
+    fn get_status(&self) -> axum::http::StatusCode {
+        match self {
+            Self::ObjectNotFound { .. } => axum::http::StatusCode::try_from(404)
+                .expect("EditoastError: invalid status expression"),
+            Self::DuplicateIdsProvided { .. } => axum::http::StatusCode::try_from(404)
+                .expect("EditoastError: invalid status expression"),
+            Self::DatabaseError(fwd) => fwd.get_status(),
+            Self::ValkeyPoolError(fwd) => fwd.get_status(),
+            Self::ValkeyError(fwd) => fwd.get_status(),
+        }
+    }
+    fn get_type(&self) -> &str {
+        match self {
+            Self::ObjectNotFound { .. } => "editoast:cache_operation:ObjectNotFound",
+            Self::DuplicateIdsProvided { .. } => "editoast:cache_operation:DuplicateIdsProvided",
+            Self::DatabaseError(fwd) => fwd.get_type(),
+            Self::ValkeyPoolError(fwd) => fwd.get_type(),
+            Self::ValkeyError(fwd) => fwd.get_type(),
+        }
+    }
+    fn context(&self) -> std::collections::HashMap<String, serde_json::Value> {
+        match self {
+            Self::ObjectNotFound { obj_type, obj_id } => [
+                (
+                    "obj_type".to_string(),
+                    serde_json::to_value(obj_type).unwrap(),
+                ),
+                ("obj_id".to_string(), serde_json::to_value(obj_id).unwrap()),
+            ]
+            .into(),
+            Self::DuplicateIdsProvided { obj_type, obj_id } => [
+                (
+                    "obj_type".to_string(),
+                    serde_json::to_value(obj_type).unwrap(),
+                ),
+                ("obj_id".to_string(), serde_json::to_value(obj_id).unwrap()),
+            ]
+            .into(),
+            Self::DatabaseError(fwd) => fwd.context(),
+            Self::ValkeyPoolError(fwd) => fwd.context(),
+            Self::ValkeyError(fwd) => fwd.context(),
+        }
+    }
+}
+
 // error definition : uses by the macro EditoastError to generate
 // the list of error and share it with the openAPI generator
 #[derive(Debug)]

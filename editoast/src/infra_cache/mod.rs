@@ -19,7 +19,6 @@ use diesel::sql_types::Integer;
 use diesel::sql_types::Nullable;
 use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
-use editoast_derive::EditoastError;
 use enum_map::EnumMap;
 use geos::geojson::Geometry;
 pub use graph::Graph;
@@ -1005,30 +1004,24 @@ impl InfraCache {
     }
 }
 
-#[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "cache_operation")]
+#[derive(Debug, Error)]
 pub enum CacheOperationError {
     #[error("{obj_type} '{obj_id}', could not be found everywhere in the infrastructure cache")]
-    #[editoast_error(status = 404)]
     ObjectNotFound { obj_type: String, obj_id: String },
     #[error("{obj_type} '{obj_id}', a duplicate already exists")]
-    #[editoast_error(status = 404)]
     DuplicateIdsProvided { obj_type: String, obj_id: String },
     #[error(transparent)]
-    #[editoast_error(forward)]
     DatabaseError(#[from] editoast_models::Error),
     #[error(transparent)]
-    #[editoast_error(forward)]
     ValkeyPoolError(#[from] deadpool_redis::PoolError),
     #[error(transparent)]
-    #[editoast_error(forward)]
     ValkeyError(#[from] cache::RedisError),
 }
 
 #[cfg(test)]
 impl PartialEq for CacheOperationError {
     fn eq(&self, other: &Self) -> bool {
-        // Gooed enough for tests
+        // Good enough for tests
         self.to_string() == other.to_string()
     }
 }
