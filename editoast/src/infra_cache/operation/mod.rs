@@ -5,7 +5,6 @@ mod update;
 use std::ops::Deref as _;
 
 use chrono::Utc;
-use editoast_derive::EditoastError;
 use json_patch::Patch;
 use schemas::primitives::OSRDObject as _;
 use serde::Deserialize;
@@ -224,12 +223,10 @@ pub fn patch_infra_object(
     Ok(railjson_object)
 }
 
-#[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "operation")]
+#[derive(Debug, Error)]
 pub enum OperationError {
     // To modify
     #[error("Object '{obj_id}', could not be found in the infrastructure '{infra_id}'")]
-    #[editoast_error(status = 404)]
     ObjectNotFound { obj_id: String, infra_id: i64 },
     #[error("Empty string id is forbidden")]
     EmptyId,
@@ -238,7 +235,6 @@ pub enum OperationError {
     #[error("A Json Patch error occurred: '{error}'")]
     InvalidPatch { error: String },
     #[error(transparent)]
-    #[editoast_error(forward)]
     DatabaseError(#[from] editoast_models::Error),
 }
 
