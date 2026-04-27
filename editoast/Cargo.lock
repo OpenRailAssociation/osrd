@@ -1089,6 +1089,7 @@ checksum = "d7a1e2f27636f116493b8b860f5546edb47c8d8f8ea73e1d2a20be88e28d1fea"
 name = "database"
 version = "0.1.0"
 dependencies = [
+ "derive_more",
  "diesel",
  "diesel-async",
  "diesel_migrations",
