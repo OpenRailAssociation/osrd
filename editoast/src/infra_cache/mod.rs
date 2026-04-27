@@ -53,7 +53,6 @@ use serde::Serialize;
 use std::ops::DerefMut;
 use thiserror::Error;
 
-use crate::error::Result;
 use crate::infra_cache::object_cache::BufferStopCache;
 use crate::infra_cache::object_cache::DetectorCache;
 use crate::infra_cache::object_cache::LevelCrossingCache;
@@ -382,7 +381,7 @@ impl From<LevelCrossingQueryable> for LevelCrossingCache {
 impl InfraCache {
     /// Add an object to the cache.
     /// If the object already exists, it will fail (without inserting).
-    pub fn add<T: Cache>(&mut self, obj: &T) -> Result<()> {
+    pub fn add<T: Cache>(&mut self, obj: &T) -> Result<(), CacheOperationError> {
         for track_id in obj.get_track_referenced_id() {
             self.track_sections_refs
                 .entry(track_id.clone())
@@ -395,8 +394,7 @@ impl InfraCache {
             Entry::Occupied(_) => Err(CacheOperationError::DuplicateIdsProvided {
                 obj_type: obj.get_type().to_string(),
                 obj_id: obj.get_id().clone(),
-            }
-            .into()),
+            }),
             Entry::Vacant(v) => {
                 v.insert(obj.get_object_cache());
                 Ok(())
@@ -482,7 +480,7 @@ impl InfraCache {
         mut bs: impl Iterator<Item = impl Borrow<BufferStopCache>>,
         mut e: impl Iterator<Item = impl Borrow<Electrification>>,
         mut lc: impl Iterator<Item = impl Borrow<LevelCrossingCache>>,
-    ) -> Result<InfraCache> {
+    ) -> Result<InfraCache, CacheOperationError> {
         let mut infra_cache = Self::default();
         // Track sections
         ts.try_for_each(|obj| infra_cache.add(obj.borrow()))?;
@@ -520,7 +518,10 @@ impl InfraCache {
     }
 
     /// Given an infra id load infra cache from database
-    pub async fn load(conn: &mut DbConnection, infra: &Infra) -> Result<InfraCache> {
+    pub async fn load(
+        conn: &mut DbConnection,
+        infra: &Infra,
+    ) -> Result<InfraCache, CacheOperationError> {
         let infra_id = infra.id;
 
         let ts = sql_query(
@@ -601,7 +602,7 @@ impl InfraCache {
         infra: &Infra,
         valkey: &Arc<ValkeyClient>,
         app_version: Option<&str>,
-    ) -> Result<Ref<'a, i64, InfraCache>> {
+    ) -> Result<Ref<'a, i64, InfraCache>, CacheOperationError> {
         Self::get_or_load_mut(conn, infra_caches, infra, valkey, app_version)
             .await
             .map(|ref_mut| ref_mut.downgrade())
@@ -620,7 +621,7 @@ impl InfraCache {
         infra: &Infra,
         valkey: &Arc<ValkeyClient>,
         app_version: Option<&str>,
-    ) -> Result<RefMut<'a, i64, InfraCache>> {
+    ) -> Result<RefMut<'a, i64, InfraCache>, CacheOperationError> {
         let Some(mut infra_cache) = infra_caches.get_mut(&infra.id) else {
             // Cache miss
             let infra_cache = InfraCache::load(conn, infra).await?;
@@ -673,7 +674,7 @@ impl InfraCache {
     }
 
     /// Apply delete operation to the infra cache
-    pub fn apply_delete(&mut self, object_ref: &ObjectRef) -> Result<()> {
+    pub fn apply_delete(&mut self, object_ref: &ObjectRef) -> Result<(), CacheOperationError> {
         let obj_cache = self.objects[object_ref.obj_type]
             .remove(&object_ref.obj_id)
             .ok_or_else(|| CacheOperationError::ObjectNotFound {
@@ -694,14 +695,14 @@ impl InfraCache {
     }
 
     /// Apply update operation to the infra cache
-    fn apply_update(&mut self, object_cache: &ObjectCache) -> Result<()> {
+    fn apply_update(&mut self, object_cache: &ObjectCache) -> Result<(), CacheOperationError> {
         self.apply_delete(&object_cache.get_ref())?;
         self.apply_create(object_cache)?;
         Ok(())
     }
 
     /// Apply create operation to the infra cache
-    fn apply_create(&mut self, object_cache: &ObjectCache) -> Result<()> {
+    fn apply_create(&mut self, object_cache: &ObjectCache) -> Result<(), CacheOperationError> {
         match object_cache {
             ObjectCache::TrackSection(track_section) => {
                 self.add::<TrackSectionCache>(track_section)?;
@@ -730,7 +731,10 @@ impl InfraCache {
     }
 
     /// Apply an operation to the infra cache
-    pub fn apply_operations(&mut self, operations: &[CacheOperation]) -> Result<()> {
+    pub fn apply_operations(
+        &mut self,
+        operations: &[CacheOperation],
+    ) -> Result<(), CacheOperationError> {
         for op_res in operations {
             match op_res {
                 CacheOperation::Delete(obj_ref) => self.apply_delete(obj_ref)?,
@@ -741,7 +745,10 @@ impl InfraCache {
         Ok(())
     }
 
-    pub fn get_track_section(&self, track_section_id: &str) -> Result<&TrackSectionCache> {
+    pub fn get_track_section(
+        &self,
+        track_section_id: &str,
+    ) -> Result<&TrackSectionCache, CacheOperationError> {
         Ok(self
             .track_sections()
             .get(track_section_id)
@@ -752,7 +759,7 @@ impl InfraCache {
             .unwrap_track_section())
     }
 
-    pub fn get_signal(&self, signal_id: &str) -> Result<&SignalCache> {
+    pub fn get_signal(&self, signal_id: &str) -> Result<&SignalCache, CacheOperationError> {
         Ok(self
             .signals()
             .get(signal_id)
@@ -763,7 +770,10 @@ impl InfraCache {
             .unwrap_signal())
     }
 
-    pub fn get_speed_section(&self, speed_section_id: &str) -> Result<&SpeedSection> {
+    pub fn get_speed_section(
+        &self,
+        speed_section_id: &str,
+    ) -> Result<&SpeedSection, CacheOperationError> {
         Ok(self
             .speed_sections()
             .get(speed_section_id)
@@ -774,7 +784,10 @@ impl InfraCache {
             .unwrap_speed_section())
     }
 
-    pub fn get_neutral_section(&self, neutral_section_id: &str) -> Result<&NeutralSection> {
+    pub fn get_neutral_section(
+        &self,
+        neutral_section_id: &str,
+    ) -> Result<&NeutralSection, CacheOperationError> {
         Ok(self
             .neutral_sections()
             .get(neutral_section_id)
@@ -785,7 +798,7 @@ impl InfraCache {
             .unwrap_neutral_section())
     }
 
-    pub fn get_detector(&self, detector_id: &str) -> Result<&DetectorCache> {
+    pub fn get_detector(&self, detector_id: &str) -> Result<&DetectorCache, CacheOperationError> {
         Ok(self
             .detectors()
             .get(detector_id)
@@ -796,7 +809,7 @@ impl InfraCache {
             .unwrap_detector())
     }
 
-    pub fn get_switch(&self, switch_id: &str) -> Result<&SwitchCache> {
+    pub fn get_switch(&self, switch_id: &str) -> Result<&SwitchCache, CacheOperationError> {
         Ok(self
             .switches()
             .get(switch_id)
@@ -807,7 +820,10 @@ impl InfraCache {
             .unwrap_switch())
     }
 
-    pub fn get_switch_type(&self, switch_type_id: &str) -> Result<&SwitchType> {
+    pub fn get_switch_type(
+        &self,
+        switch_type_id: &str,
+    ) -> Result<&SwitchType, CacheOperationError> {
         Ok(self
             .switch_types()
             .get(switch_type_id)
@@ -818,7 +834,10 @@ impl InfraCache {
             .unwrap_switch_type())
     }
 
-    pub fn get_buffer_stop(&self, buffer_stop_id: &str) -> Result<&BufferStopCache> {
+    pub fn get_buffer_stop(
+        &self,
+        buffer_stop_id: &str,
+    ) -> Result<&BufferStopCache, CacheOperationError> {
         Ok(self
             .buffer_stops()
             .get(buffer_stop_id)
@@ -829,7 +848,7 @@ impl InfraCache {
             .unwrap_buffer_stop())
     }
 
-    pub fn get_route(&self, route_id: &str) -> Result<&Route> {
+    pub fn get_route(&self, route_id: &str) -> Result<&Route, CacheOperationError> {
         Ok(self
             .routes()
             .get(route_id)
@@ -843,7 +862,7 @@ impl InfraCache {
     pub fn get_operational_point(
         &self,
         operational_point_id: &str,
-    ) -> Result<&OperationalPointCache> {
+    ) -> Result<&OperationalPointCache, CacheOperationError> {
         Ok(self
             .operational_points()
             .get(operational_point_id)
@@ -854,7 +873,10 @@ impl InfraCache {
             .unwrap_operational_point())
     }
 
-    pub fn get_electrification(&self, electrification_id: &str) -> Result<&Electrification> {
+    pub fn get_electrification(
+        &self,
+        electrification_id: &str,
+    ) -> Result<&Electrification, CacheOperationError> {
         Ok(self
             .electrifications()
             .get(electrification_id)
@@ -878,7 +900,10 @@ impl InfraCache {
         }
     }
 
-    pub fn get_level_crossing(&self, level_crossing_id: &str) -> Result<&LevelCrossingCache> {
+    pub fn get_level_crossing(
+        &self,
+        level_crossing_id: &str,
+    ) -> Result<&LevelCrossingCache, CacheOperationError> {
         Ok(self
             .level_crossings()
             .get(level_crossing_id)
@@ -989,6 +1014,35 @@ pub enum CacheOperationError {
     #[error("{obj_type} '{obj_id}', a duplicate already exists")]
     #[editoast_error(status = 404)]
     DuplicateIdsProvided { obj_type: String, obj_id: String },
+    #[error(transparent)]
+    #[editoast_error(forward)]
+    DatabaseError(#[from] editoast_models::Error),
+    #[error(transparent)]
+    #[editoast_error(forward)]
+    ValkeyPoolError(#[from] deadpool_redis::PoolError),
+    #[error(transparent)]
+    #[editoast_error(forward)]
+    ValkeyError(#[from] cache::RedisError),
+}
+
+#[cfg(test)]
+impl PartialEq for CacheOperationError {
+    fn eq(&self, other: &Self) -> bool {
+        // Gooed enough for tests
+        self.to_string() == other.to_string()
+    }
+}
+
+impl From<diesel::result::Error> for CacheOperationError {
+    fn from(err: diesel::result::Error) -> Self {
+        Self::DatabaseError(editoast_models::Error::from(err))
+    }
+}
+
+impl From<database::DatabaseError> for CacheOperationError {
+    fn from(err: database::DatabaseError) -> Self {
+        Self::DatabaseError(editoast_models::Error::from(err))
+    }
 }
 
 impl From<&RailJson> for InfraCache {
@@ -1596,7 +1650,6 @@ pub mod tests {
                     obj_type: ObjectType::TrackSection.to_string(),
                     obj_id: ID.to_string()
                 }
-                .into()
             );
             let track_section = create_track_section_cache(ID, 100.0);
             infra_cache.add(&track_section).unwrap();
@@ -1615,7 +1668,6 @@ pub mod tests {
                     obj_type: ObjectType::Signal.to_string(),
                     obj_id: ID.to_string()
                 }
-                .into()
             );
             let signal = create_signal_cache(ID, "track_section_id", 0.0);
             infra_cache.add(&signal).unwrap();
@@ -1634,7 +1686,6 @@ pub mod tests {
                     obj_type: ObjectType::SpeedSection.to_string(),
                     obj_id: ID.to_string()
                 }
-                .into()
             );
             let speed_section =
                 create_speed_section_cache(ID, vec![("track_section_id", 0.0, 100.0)]);
@@ -1654,7 +1705,6 @@ pub mod tests {
                     obj_type: ObjectType::Detector.to_string(),
                     obj_id: ID.to_string()
                 }
-                .into()
             );
             let detector = create_detector_cache(ID, "track_section_id", 0.0);
             infra_cache.add(&detector).unwrap();
@@ -1673,7 +1723,6 @@ pub mod tests {
                     obj_type: ObjectType::Switch.to_string(),
                     obj_id: ID.to_string()
                 }
-                .into()
             );
             let switch = create_switch_cache_point(
                 ID.to_string(),
@@ -1699,7 +1748,6 @@ pub mod tests {
                     obj_type: ObjectType::SwitchType.to_string(),
                     obj_id: ID.to_string()
                 }
-                .into()
             );
             let switch_type = create_switch_type_cache(ID, vec![], HashMap::default());
             infra_cache.add(&switch_type).unwrap();
@@ -1718,7 +1766,6 @@ pub mod tests {
                     obj_type: ObjectType::BufferStop.to_string(),
                     obj_id: ID.to_string()
                 }
-                .into()
             );
             let buffer_stop = create_buffer_stop_cache(ID, "track_section_id", 0.0);
 
@@ -1738,7 +1785,6 @@ pub mod tests {
                     obj_type: ObjectType::Route.to_string(),
                     obj_id: ID.to_string()
                 }
-                .into()
             );
             let route = create_route_cache(
                 ID,
@@ -1769,7 +1815,6 @@ pub mod tests {
                     obj_type: ObjectType::OperationalPoint.to_string(),
                     obj_id: ID.to_string()
                 }
-                .into()
             );
             let operational_point = create_operational_point_cache(ID, "track_section_id", 0.0);
 
@@ -1792,7 +1837,6 @@ pub mod tests {
                     obj_type: ObjectType::Electrification.to_string(),
                     obj_id: ID.to_string()
                 }
-                .into()
             );
             let electrification = create_electrification_cache(ID, vec![]);
 
@@ -1815,7 +1859,6 @@ pub mod tests {
                     obj_type: ObjectType::LevelCrossing.to_string(),
                     obj_id: ID.to_string()
                 }
-                .into()
             );
             let level_crossing = create_level_crossing_cache(ID, "track_section_id", 0.0);
 

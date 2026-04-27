@@ -6793,11 +6793,6 @@ components:
         context:
           type: object
           title: EditoastAutoFixesEditoastErrorFixTrialFailureContext
-          required:
-          - source
-          properties:
-            source:
-              type: object
         message:
           type: string
         status:
@@ -6838,11 +6833,6 @@ components:
         context:
           type: object
           title: EditoastAutoFixesEditoastErrorMissingErrorObjectContext
-          required:
-          - source
-          properties:
-            source:
-              type: object
         message:
           type: string
         status:
