@@ -10,6 +10,7 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::http::header;
 use axum::response::IntoResponse;
+use editoast_derive::EditoastError;
 use enum_map::EnumMap;
 use futures::future::try_join_all;
 use schemas::infra::RailJson;
@@ -156,6 +157,29 @@ pub(in crate::views) struct PostRailjsonResponse {
     pub infra: i64,
 }
 
+#[derive(Debug, derive_more::From, thiserror::Error, EditoastError)]
+#[editoast_error(base_id = "railjson")]
+pub enum RailJsonError {
+    #[error("Unsupported railjson version '{actual}'. Should be {expected}.")]
+    UnsupportedVersion { actual: String, expected: String },
+    #[error(transparent)]
+    #[from(forward)]
+    #[editoast_error(forward)]
+    Database(editoast_models::Error),
+}
+
+impl From<crate::models::railjson::RailJsonError> for RailJsonError {
+    fn from(err: crate::models::railjson::RailJsonError) -> Self {
+        use crate::models::railjson::RailJsonError as ModelsRailJsonError;
+        match err {
+            ModelsRailJsonError::UnsupportedVersion { actual, expected } => {
+                RailJsonError::UnsupportedVersion { actual, expected }
+            }
+            ModelsRailJsonError::Database(e) => RailJsonError::Database(e),
+        }
+    }
+}
+
 /// Import an infra from railjson
 #[editoast_derive::route]
 #[utoipa::path(
@@ -192,7 +216,8 @@ pub(in crate::views) async fn post_railjson(
         .name(params.name.clone())
         .last_railjson_version()
         .persist(railjson, &mut db_pool.get().await?)
-        .await?;
+        .await
+        .map_err(RailJsonError::from)?;
     let infra_id = infra.id;
 
     // Assing OWNER to the user on the infra if authz is enabled

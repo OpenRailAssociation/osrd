@@ -335,7 +335,6 @@ pub mod tests {
     use uuid::Uuid;
 
     use super::Infra;
-    use crate::error::EditoastError;
     use crate::models::fixtures::create_empty_infra;
     use crate::models::infra::DEFAULT_INFRA_VERSION;
     use crate::models::railjson::RailJsonError;
@@ -392,7 +391,7 @@ pub mod tests {
             actual: "0".to_string(),
             expected: RAILJSON_VERSION.to_string(),
         };
-        assert_eq!(res.unwrap_err().get_type(), expected_error.get_type());
+        assert_eq!(res.unwrap_err(), expected_error);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
