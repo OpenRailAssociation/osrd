@@ -365,6 +365,7 @@ mod tests {
     use schemas::infra::BufferStopExtension;
 
     use super::*;
+    use crate::generated_data::InfraGeneratedData as _;
     use crate::generated_data::infra_error::InfraErrorType;
     use crate::infra_cache::InfraCacheEditoastError;
     use crate::infra_cache::object_cache::BufferStopCache;

@@ -20,24 +20,19 @@ use editoast_derive::Model;
 use educe::Educe;
 use serde::Deserialize;
 use serde::Serialize;
-use std::sync::Arc;
 use strum::IntoEnumIterator;
 use tracing::debug;
 use tracing::error;
 use uuid::Uuid;
 
-pub use object_queryable::ObjectQueryable;
-
-use crate::generated_data;
-use crate::infra_cache::InfraCache;
 use crate::models::get_geometry_layer_table;
 use crate::models::get_table;
 use crate::models::railjson::RailJsonError;
 use crate::models::railjson::persist_railjson;
 use database::DbConnection;
-use database::DbConnectionPoolV2;
 use database::tables::infra::dsl;
 use editoast_models::prelude::*;
+pub use object_queryable::ObjectQueryable;
 use schemas::infra::RAILJSON_VERSION;
 use schemas::infra::RailJson;
 use schemas::primitives::ObjectType;
@@ -223,42 +218,6 @@ impl Infra {
 
             Ok(cloned_infra)
         })).await
-    }
-
-    /// Refreshes generated data if not up to date and returns whether they were refreshed.
-    /// `force` argument allows us to refresh it in any cases.
-    /// This function will update `generated_version` accordingly.
-    /// If refreshed you need to call `invalidate_after_refresh` to invalidate layer cache
-    pub async fn refresh(
-        &mut self,
-        db_pool: Arc<DbConnectionPoolV2>,
-        force: bool,
-        infra_cache: &InfraCache,
-    ) -> Result<bool, database::DatabasePoolError> {
-        // Check if refresh is needed
-        if !force && Some(self.version) == self.generated_version {
-            return Ok(false);
-        }
-
-        // TODO: lock self for update
-
-        generated_data::refresh_all(db_pool.clone(), self.id, infra_cache).await?;
-
-        // Update generated infra version
-        self.bump_generated_version(&mut db_pool.get().await?)
-            .await?;
-
-        Ok(true)
-    }
-
-    /// Clear generated data of the infra
-    /// This function will update `generated_version` accordingly.
-    pub async fn clear(&mut self, conn: &mut DbConnection) -> Result<bool, editoast_models::Error> {
-        // TODO: lock self for update
-        generated_data::clear_all(conn, self.id).await?;
-        self.generated_version = None;
-        self.save(conn).await?;
-        Ok(true)
     }
 
     /// Delete efficiently all the data of the infra.

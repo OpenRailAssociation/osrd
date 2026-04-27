@@ -40,6 +40,7 @@ use super::pagination::PaginationStats;
 use crate::AppState;
 use crate::Arc;
 use crate::error::Result;
+use crate::generated_data::InfraGeneratedData as _;
 use crate::generated_data::operational_point::OperationalPointLayer;
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::infra_cache::InfraCache;

@@ -22,6 +22,7 @@ use utoipa::ToSchema;
 
 use crate::AppState;
 use crate::error::Result;
+use crate::generated_data::InfraGeneratedData as _;
 use crate::infra_cache::InfraCache;
 use crate::models::Infra;
 use crate::views::Authentication;
