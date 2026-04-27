@@ -38,7 +38,6 @@ use switch::SwitchLayer;
 use tracing::debug;
 use track_section::TrackSectionLayer;
 
-use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::operation::CacheOperation;
 use database::DbConnection;
@@ -47,9 +46,13 @@ use database::DbConnectionPoolV2;
 /// This trait define how a generated data table should be handled
 pub trait GeneratedData {
     fn table_name() -> &'static str;
-    async fn generate(conn: &mut DbConnection, infra: i64, infra_cache: &InfraCache) -> Result<()>;
+    async fn generate(
+        conn: &mut DbConnection,
+        infra: i64,
+        infra_cache: &InfraCache,
+    ) -> Result<(), database::DatabaseError>;
 
-    async fn clear(conn: &mut DbConnection, infra: i64) -> Result<()> {
+    async fn clear(conn: &mut DbConnection, infra: i64) -> Result<(), database::DatabaseError> {
         sql_query(format!(
             "DELETE FROM {} WHERE infra_id = $1",
             Self::table_name()
@@ -60,7 +63,11 @@ pub trait GeneratedData {
         Ok(())
     }
 
-    async fn refresh(conn: &mut DbConnection, infra: i64, infra_cache: &InfraCache) -> Result<()> {
+    async fn refresh(
+        conn: &mut DbConnection,
+        infra: i64,
+        infra_cache: &InfraCache,
+    ) -> Result<(), database::DatabaseError> {
         Self::clear(conn, infra).await?;
         Self::generate(conn, infra, infra_cache).await
     }
@@ -69,8 +76,8 @@ pub trait GeneratedData {
         pool: Arc<DbConnectionPoolV2>,
         infra: i64,
         infra_cache: &InfraCache,
-    ) -> Result<()> {
-        Self::refresh(&mut pool.get().await?, infra, infra_cache).await
+    ) -> Result<(), database::DatabasePoolError> {
+        Ok(Self::refresh(&mut pool.get().await?, infra, infra_cache).await?)
     }
 
     /// Search and update all objects that needs to be refreshed given a list of operation.
@@ -79,7 +86,7 @@ pub trait GeneratedData {
         infra: i64,
         operations: &[CacheOperation],
         infra_cache: &InfraCache,
-    ) -> Result<()>;
+    ) -> Result<(), database::DatabaseError>;
 }
 
 /// Refresh all the generated data of a given infra
@@ -88,7 +95,7 @@ pub async fn refresh_all(
     db_pool: Arc<DbConnectionPoolV2>,
     infra_id: i64,
     infra_cache: &InfraCache,
-) -> Result<()> {
+) -> Result<(), database::DatabasePoolError> {
     // The other layers depend on track section layer.
     // We must wait until its completion before running the other requests in parallel
     TrackSectionLayer::refresh_pool(db_pool.clone(), infra_id, infra_cache).await?;
@@ -121,7 +128,7 @@ pub async fn refresh_all(
 }
 
 /// Clear all the generated data of a given infra
-pub async fn clear_all(conn: &mut DbConnection, infra: i64) -> Result<()> {
+pub async fn clear_all(conn: &mut DbConnection, infra: i64) -> Result<(), database::DatabaseError> {
     TrackSectionLayer::clear(conn, infra).await?;
     SpeedSectionLayer::clear(conn, infra).await?;
     SignalLayer::clear(conn, infra).await?;
@@ -144,7 +151,7 @@ pub async fn update_all(
     infra: i64,
     operations: &[CacheOperation],
     infra_cache: &InfraCache,
-) -> Result<()> {
+) -> Result<(), database::DatabaseError> {
     TrackSectionLayer::update(conn, infra, operations, infra_cache).await?;
     SpeedSectionLayer::update(conn, infra, operations, infra_cache).await?;
     SignalLayer::update(conn, infra, operations, infra_cache).await?;

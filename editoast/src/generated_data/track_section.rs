@@ -13,7 +13,6 @@ use std::ops::DerefMut;
 use super::GeneratedData;
 use super::utils::InvolvedObjects;
 use crate::diesel::ExpressionMethods;
-use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::operation::CacheOperation;
 
@@ -24,7 +23,11 @@ impl GeneratedData for TrackSectionLayer {
         "infra_layer_track_section"
     }
 
-    async fn generate(conn: &mut DbConnection, infra: i64, _cache: &InfraCache) -> Result<()> {
+    async fn generate(
+        conn: &mut DbConnection,
+        infra: i64,
+        _cache: &InfraCache,
+    ) -> Result<(), database::DatabaseError> {
         sql_query(include_str!("sql/generate_track_section_layer.sql"))
             .bind::<BigInt, _>(infra)
             .execute(conn.write().await.deref_mut())
@@ -37,7 +40,7 @@ impl GeneratedData for TrackSectionLayer {
         infra: i64,
         operations: &[CacheOperation],
         infra_cache: &InfraCache,
-    ) -> Result<()> {
+    ) -> Result<(), database::DatabaseError> {
         let involved_objects =
             InvolvedObjects::from_operations(operations, infra_cache, ObjectType::TrackSection);
 

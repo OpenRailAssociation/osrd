@@ -17,7 +17,6 @@ use schemas::primitives::ObjectType;
 use super::GeneratedData;
 use super::utils::InvolvedObjects;
 use crate::diesel::ExpressionMethods;
-use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::operation::CacheOperation;
 
@@ -28,7 +27,11 @@ impl GeneratedData for OperationalPointLayer {
         "infra_layer_operational_point"
     }
 
-    async fn generate(conn: &mut DbConnection, infra: i64, _cache: &InfraCache) -> Result<()> {
+    async fn generate(
+        conn: &mut DbConnection,
+        infra: i64,
+        _cache: &InfraCache,
+    ) -> Result<(), database::DatabaseError> {
         sql_query(include_str!("sql/generate_operational_point_layer.sql"))
             .bind::<BigInt, _>(infra)
             .execute(conn.write().await.deref_mut())
@@ -41,7 +44,7 @@ impl GeneratedData for OperationalPointLayer {
         infra: i64,
         operations: &[CacheOperation],
         infra_cache: &InfraCache,
-    ) -> Result<()> {
+    ) -> Result<(), database::DatabaseError> {
         let involved_objects =
             InvolvedObjects::from_operations(operations, infra_cache, ObjectType::OperationalPoint);
 
@@ -87,7 +90,7 @@ impl OperationalPointLayer {
         conn: &mut DbConnection,
         infra_id: i64,
         ids: &[&str],
-    ) -> Result<HashMap<String, Vec<geos::geojson::Geometry>>> {
+    ) -> Result<HashMap<String, Vec<geos::geojson::Geometry>>, database::DatabaseError> {
         Ok(sql_query(
             "SELECT obj_id, ST_AsGeoJSON(ST_Transform(geographic, 4326))::jsonb AS geo
                 FROM infra_layer_operational_point

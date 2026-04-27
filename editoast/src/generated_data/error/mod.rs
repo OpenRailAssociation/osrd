@@ -34,7 +34,6 @@ use std::ops::DerefMut;
 use tracing::warn;
 
 use super::GeneratedData;
-use crate::error::Result;
 use crate::generated_data::infra_error::InfraError;
 use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
@@ -308,7 +307,7 @@ fn dispatch_errors_by_object_type(
 async fn retrieve_current_errors_hash(
     conn: &mut DbConnection,
     infra_id: i64,
-) -> Result<Vec<ErrorHash>> {
+) -> Result<Vec<ErrorHash>, database::DatabaseError> {
     use database::tables::infra_layer_error::dsl;
     Ok(dsl::infra_layer_error
         .filter(dsl::infra_id.eq(infra_id))
@@ -322,7 +321,7 @@ async fn remove_errors_from_hashes(
     conn: &mut DbConnection,
     infra_id: i64,
     errors_hash: &Vec<&ErrorHash>,
-) -> Result<()> {
+) -> Result<(), database::DatabaseError> {
     use database::tables::infra_layer_error::dsl;
     let nb_deleted = diesel::delete(
         dsl::infra_layer_error
@@ -340,7 +339,7 @@ async fn create_errors(
     conn: &mut DbConnection,
     infra_id: i64,
     errors: Vec<ErrorWithHash>,
-) -> Result<()> {
+) -> Result<(), database::DatabaseError> {
     let errors_by_type = dispatch_errors_by_object_type(errors);
     for (obj_type, errors) in errors_by_type {
         let mut errors_information = vec![];
@@ -368,7 +367,7 @@ async fn update_errors(
     conn: &mut DbConnection,
     infra_id: i64,
     errors: Vec<InfraError>,
-) -> Result<()> {
+) -> Result<(), database::DatabaseError> {
     let new_errors_with_hash: Vec<ErrorWithHash> = errors.into_iter().map_into().collect();
     let new_errors_hash = new_errors_with_hash
         .iter()
@@ -412,7 +411,7 @@ impl GeneratedData for ErrorLayer {
         conn: &mut DbConnection,
         infra_id: i64,
         infra_cache: &InfraCache,
-    ) -> Result<()> {
+    ) -> Result<(), database::DatabaseError> {
         // Compute current errors
         let infra_errors = generate_infra_errors(infra_cache).await;
 
@@ -425,7 +424,7 @@ impl GeneratedData for ErrorLayer {
         infra_id: i64,
         _operations: &[CacheOperation],
         infra_cache: &InfraCache,
-    ) -> Result<()> {
+    ) -> Result<(), database::DatabaseError> {
         // Generate already act like an update
         Self::generate(conn, infra_id, infra_cache).await
     }
