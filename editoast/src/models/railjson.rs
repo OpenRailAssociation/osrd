@@ -1,5 +1,4 @@
 use chrono::Utc;
-use editoast_derive::EditoastError;
 use schemas::infra::RAILJSON_VERSION;
 use schemas::infra::RailJson;
 use schemas::infra::major_version;
@@ -10,14 +9,12 @@ use editoast_models::prelude::*;
 
 use super::Infra;
 
-#[derive(Debug, derive_more::From, thiserror::Error, EditoastError)]
-#[editoast_error(base_id = "railjson")]
+#[derive(Debug, derive_more::From, thiserror::Error, PartialEq)]
 pub enum RailJsonError {
     #[error("Unsupported railjson version '{actual}'. Should be {expected}.")]
     UnsupportedVersion { actual: String, expected: String },
     #[error(transparent)]
     #[from(forward)]
-    #[editoast_error(forward)]
     Database(editoast_models::Error),
 }
 
