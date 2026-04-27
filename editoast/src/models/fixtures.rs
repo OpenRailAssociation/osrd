@@ -8,7 +8,6 @@ use database::DbConnection;
 use editoast_models::CatalogEntry;
 use editoast_models::ElectricalProfileSet;
 use editoast_models::SubCategory;
-use editoast_models::TemporarySpeedLimitGroup;
 use editoast_models::WorkSchedule;
 use editoast_models::WorkScheduleGroup;
 use editoast_models::prelude::*;
@@ -431,17 +430,6 @@ pub async fn create_work_schedule_group(conn: &mut DbConnection) -> WorkSchedule
         .create(conn)
         .await
         .expect("Failed to create empty work schedule group")
-}
-
-pub async fn create_temporary_speed_limit_group(
-    conn: &mut DbConnection,
-) -> TemporarySpeedLimitGroup {
-    TemporarySpeedLimitGroup::changeset()
-        .name("Empty temporary speed limit group".to_string())
-        .creation_date(Utc::now())
-        .create(conn)
-        .await
-        .expect("Failed to create empty temporary speed limit group")
 }
 
 pub async fn create_work_schedules_fixture_set(

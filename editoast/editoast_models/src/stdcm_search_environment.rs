@@ -11,13 +11,15 @@ use std::collections::HashSet;
 use std::ops::DerefMut;
 use utoipa::ToSchema;
 
-use editoast_models::prelude::*;
+use crate::prelude::*;
+
+use crate as editoast_models;
 
 #[derive(Clone, Debug, Serialize, Model, ToSchema)]
 #[model(table = database::tables::stdcm_search_environment)]
 #[model(gen(ops = crd, list))]
 #[cfg_attr(
-    test,
+    any(test, feature = "testing"),
     derive(serde::Deserialize, PartialEq),
     model(changeset(derive(Clone)))
 )]
@@ -88,7 +90,7 @@ impl StdcmSearchEnvironment {
     }
 
     /// Delete all existing search environments.
-    #[cfg(test)]
+    #[cfg(any(test, feature = "testing"))]
     pub async fn delete_all(conn: &mut DbConnection) -> Result<(), editoast_models::Error> {
         use database::tables::stdcm_search_environment::dsl::*;
         diesel::delete(stdcm_search_environment)
@@ -98,26 +100,16 @@ impl StdcmSearchEnvironment {
     }
 }
 
-#[cfg(test)]
-pub mod tests {
-    use chrono::Duration;
-    use chrono::DurationRound;
-    use chrono::TimeZone;
+#[cfg(any(test, feature = "testing"))]
+pub mod fixtures {
     use chrono::Utc;
-    use pretty_assertions::assert_eq;
 
     use super::*;
-    use crate::models::fixtures::create_electrical_profile_set;
-    use crate::models::fixtures::create_empty_infra;
-    use crate::models::fixtures::create_temporary_speed_limit_group;
-    use crate::models::fixtures::create_timetable;
-    use crate::models::fixtures::create_work_schedule_group;
-    use database::DbConnectionPoolV2;
-    use editoast_models::ElectricalProfileSet;
-    use editoast_models::Infra;
-    use editoast_models::TemporarySpeedLimitGroup;
-    use editoast_models::WorkScheduleGroup;
-    use editoast_models::timetable::Timetable;
+    use crate::ElectricalProfileSet;
+    use crate::Infra;
+    use crate::TemporarySpeedLimitGroup;
+    use crate::WorkScheduleGroup;
+    use crate::timetable::Timetable;
 
     pub async fn stdcm_search_env_fixtures(
         conn: &mut DbConnection,
@@ -128,11 +120,36 @@ pub mod tests {
         TemporarySpeedLimitGroup,
         ElectricalProfileSet,
     ) {
-        let infra = create_empty_infra(conn).await;
-        let timetable = create_timetable(conn).await;
-        let work_schedule_group = create_work_schedule_group(conn).await;
-        let temporary_speed_limit_group = create_temporary_speed_limit_group(conn).await;
-        let electrical_profile_set = create_electrical_profile_set(conn).await;
+        let infra = Infra::changeset()
+            .name("empty_infra".to_owned())
+            .last_railjson_version()
+            .create(conn)
+            .await
+            .expect("Failed to create empty infra");
+
+        let timetable = Timetable::changeset()
+            .create(conn)
+            .await
+            .expect("Failed to create timetable");
+
+        let work_schedule_group = WorkScheduleGroup::changeset()
+            .name("Test work schedule group".to_string())
+            .creation_date(Utc::now())
+            .create(conn)
+            .await
+            .expect("Failed to create work schedule group");
+
+        let temporary_speed_limit_group = TemporarySpeedLimitGroup::changeset()
+            .name("Test temporary speed limit group".to_string())
+            .creation_date(Utc::now())
+            .create(conn)
+            .await
+            .expect("Failed to create temporary speed limit group");
+
+        let electrical_profile_set = ElectricalProfileSet::outer_space()
+            .create(conn)
+            .await
+            .expect("Failed to create electrical profile set");
 
         (
             infra,
@@ -142,6 +159,20 @@ pub mod tests {
             electrical_profile_set,
         )
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use chrono::Duration;
+    use chrono::DurationRound;
+    use chrono::TimeZone;
+    use chrono::Utc;
+    use pretty_assertions::assert_eq;
+
+    use database::DbConnectionPoolV2;
+
+    use super::fixtures::stdcm_search_env_fixtures;
+    use super::*;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_retrieve_latest() {
