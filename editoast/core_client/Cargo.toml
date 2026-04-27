@@ -20,7 +20,7 @@ itertools.workspace = true
 lapin.workspace = true
 opentelemetry.workspace = true
 ordered-float.workspace = true
-schemas = { workspace = true, features = ["testing"] }
+schemas.workspace = true
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
 thiserror.workspace = true

@@ -72,7 +72,6 @@ pub struct OperationalPointSncfExtension {
     pub trigram: String,
 }
 
-#[cfg(feature = "testing")]
 impl OperationalPointSncfExtension {
     pub fn new(ci: i64, ch: &str, trigram: &str) -> Self {
         Self {
