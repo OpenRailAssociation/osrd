@@ -138,7 +138,6 @@ mod tests {
     use std::ops::DerefMut;
 
     use super::UpdateOperation;
-    use crate::error::EditoastError;
     use crate::fixtures::create_empty_infra;
     use crate::fixtures::create_infra_object;
     use crate::infra_cache::operation::OperationError;
@@ -212,10 +211,7 @@ mod tests {
         let res = update_track.apply(infra.id, &mut db_pool.get_ok()).await;
 
         assert!(res.is_err());
-        assert_eq!(
-            res.unwrap_err().get_type(),
-            OperationError::ModifyId.get_type()
-        );
+        assert!(matches!(res.unwrap_err(), OperationError::ModifyId));
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -335,13 +331,9 @@ mod tests {
         let res = update_track.apply(infra.id, &mut db_pool.get_ok()).await;
 
         assert!(res.is_err());
-        assert_eq!(
-            res.unwrap_err().get_type(),
-            OperationError::ObjectNotFound {
-                obj_id: "non_existent_id".to_string(),
-                infra_id: infra.id
-            }
-            .get_type()
-        );
+        assert!(matches!(
+            res.unwrap_err(),
+            OperationError::ObjectNotFound { .. }
+        ));
     }
 }
