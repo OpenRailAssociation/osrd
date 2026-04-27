@@ -40,8 +40,10 @@ use track_section::TrackSectionLayer;
 
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::operation::CacheOperation;
+use crate::models::Infra;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
+use editoast_models::prelude::*;
 
 /// This trait define how a generated data table should be handled
 pub trait GeneratedData {
@@ -87,6 +89,55 @@ pub trait GeneratedData {
         operations: &[CacheOperation],
         infra_cache: &InfraCache,
     ) -> Result<(), database::DatabaseError>;
+}
+
+pub trait InfraGeneratedData {
+    async fn refresh(
+        &mut self,
+        db_pool: Arc<DbConnectionPoolV2>,
+        force: bool,
+        infra_cache: &InfraCache,
+    ) -> Result<bool, database::DatabasePoolError>;
+
+    async fn clear(&mut self, conn: &mut DbConnection) -> Result<bool, editoast_models::Error>;
+}
+
+impl InfraGeneratedData for Infra {
+    /// Refreshes generated data if not up to date and returns whether they were refreshed.
+    /// `force` argument allows us to refresh it in any cases.
+    /// This function will update `generated_version` accordingly.
+    /// If refreshed you need to call `invalidate_after_refresh` to invalidate layer cache
+    async fn refresh(
+        &mut self,
+        db_pool: Arc<DbConnectionPoolV2>,
+        force: bool,
+        infra_cache: &InfraCache,
+    ) -> Result<bool, database::DatabasePoolError> {
+        // Check if refresh is needed
+        if !force && Some(self.version) == self.generated_version {
+            return Ok(false);
+        }
+
+        // TODO: lock self for update
+
+        refresh_all(db_pool.clone(), self.id, infra_cache).await?;
+
+        // Update generated infra version
+        self.bump_generated_version(&mut db_pool.get().await?)
+            .await?;
+
+        Ok(true)
+    }
+
+    /// Clear generated data of the infra
+    /// This function will update `generated_version` accordingly.
+    async fn clear(&mut self, conn: &mut DbConnection) -> Result<bool, editoast_models::Error> {
+        // TODO: lock self for update
+        clear_all(conn, self.id).await?;
+        self.generated_version = None;
+        self.save(conn).await?;
+        Ok(true)
+    }
 }
 
 /// Refresh all the generated data of a given infra
