@@ -4,18 +4,21 @@ use schemas::infra::RAILJSON_VERSION;
 use schemas::infra::RailJson;
 use schemas::infra::major_version;
 
-use crate::error::Result;
 use crate::models::infra_objects::*;
 use database::DbConnection;
 use editoast_models::prelude::*;
 
 use super::Infra;
 
-#[derive(Debug, thiserror::Error, EditoastError)]
+#[derive(Debug, derive_more::From, thiserror::Error, EditoastError)]
 #[editoast_error(base_id = "railjson")]
 pub enum RailJsonError {
     #[error("Unsupported railjson version '{actual}'. Should be {expected}.")]
     UnsupportedVersion { actual: String, expected: String },
+    #[error(transparent)]
+    #[from(forward)]
+    #[editoast_error(forward)]
+    Database(editoast_models::Error),
 }
 
 /// Inserts the content of a RailJson object into the database
@@ -26,7 +29,7 @@ pub async fn persist_railjson(
     connection: &mut DbConnection,
     infra_id: i64,
     railjson: RailJson,
-) -> Result<()> {
+) -> Result<(), RailJsonError> {
     let RailJson {
         version,
         track_sections,
@@ -47,8 +50,7 @@ pub async fn persist_railjson(
         return Err(RailJsonError::UnsupportedVersion {
             actual: version,
             expected: RAILJSON_VERSION.to_string(),
-        }
-        .into());
+        });
     }
 
     connection
@@ -137,7 +139,10 @@ pub async fn persist_railjson(
         .await
 }
 
-pub async fn find_all_schemas<T, C>(conn: &mut DbConnection, infra_id: i64) -> Result<C>
+pub async fn find_all_schemas<T, C>(
+    conn: &mut DbConnection,
+    infra_id: i64,
+) -> Result<C, database::DatabaseError>
 where
     T: ModelBackedSchema,
     C: FromIterator<T>,

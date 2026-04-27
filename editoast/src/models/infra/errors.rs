@@ -6,7 +6,6 @@ use schemas::primitives::Identifier;
 use serde::Deserialize;
 
 use super::Infra;
-use crate::error::Result;
 use crate::generated_data::infra_error::InfraError;
 use crate::generated_data::infra_error::InfraErrorTypeLabel;
 use database::DbConnection;
@@ -30,7 +29,7 @@ impl Infra {
         object_id: Option<Identifier>,
         page: u64,
         page_size: u64,
-    ) -> Result<(Vec<InfraError>, u64)> {
+    ) -> Result<(Vec<InfraError>, u64), editoast_models::Error> {
         use database::tables::infra_layer_error::dsl;
         use database::tables::infra_layer_error::table;
         use diesel::dsl::sql;
@@ -81,7 +80,7 @@ impl Infra {
     pub async fn get_error_summary(
         &self,
         conn: &mut DbConnection,
-    ) -> Result<HashMap<(String, String), u64>> {
+    ) -> Result<HashMap<(String, String), u64>, editoast_models::Error> {
         use database::tables::infra_layer_error::dsl;
         use diesel::dsl::count_star;
         use diesel::dsl::sql;
