@@ -126,3 +126,23 @@ impl Scenario {
         .await
     }
 }
+
+#[cfg(any(test, feature = "testing"))]
+impl Scenario {
+    pub fn fake(
+        name: impl Into<String>,
+        study_id: i64,
+        infra_id: i64,
+        timetable_id: i64,
+    ) -> Changeset<Self> {
+        Self::changeset()
+            .name(name.into())
+            .description(String::new())
+            .creation_date(Utc::now())
+            .last_modification(Utc::now())
+            .tags(Tags::default())
+            .study_id(study_id)
+            .infra_id(infra_id)
+            .timetable_id(timetable_id)
+    }
+}
