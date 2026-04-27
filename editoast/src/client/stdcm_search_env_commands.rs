@@ -1,4 +1,3 @@
-use crate::models::stdcm_search_environment::StdcmSearchEnvironment;
 use chrono::DateTime;
 use chrono::Duration;
 use chrono::Utc;
@@ -11,6 +10,7 @@ use editoast_models::Infra;
 use editoast_models::WorkScheduleGroup;
 use editoast_models::prelude::*;
 use editoast_models::scenario::Scenario;
+use editoast_models::stdcm_search_environment::StdcmSearchEnvironment;
 use editoast_models::timetable::Timetable;
 use std::collections::HashMap;
 use std::collections::HashSet;

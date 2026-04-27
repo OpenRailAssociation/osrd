@@ -212,11 +212,11 @@ mod tests {
     use crate::models::fixtures::create_empty_infra;
     use crate::models::fixtures::create_scenario_fixtures_set;
     use crate::models::fixtures::create_timetable;
-    use crate::models::stdcm_search_environment::StdcmSearchEnvironment;
-    use crate::models::stdcm_search_environment::tests::stdcm_search_env_fixtures;
     use authz::StorageDriver;
     use authz::identity::GroupInfo;
     use editoast_models::PgAuthDriver;
+    use editoast_models::stdcm_search_environment::StdcmSearchEnvironment;
+    use editoast_models::stdcm_search_environment::fixtures::stdcm_search_env_fixtures;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_clean_orphaned_timetables() {

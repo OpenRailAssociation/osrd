@@ -15,6 +15,7 @@ use chrono::Utc;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
 use editoast_models::prelude::*;
+use editoast_models::stdcm_search_environment::StdcmSearchEnvironment;
 use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
@@ -28,7 +29,6 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::error::Result;
-use crate::models::stdcm_search_environment::StdcmSearchEnvironment;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 
@@ -135,10 +135,12 @@ impl Serialize for StdcmSearchEnvironmentCreateForm {
     }
 }
 
-impl From<StdcmSearchEnvironmentCreateForm> for Changeset<StdcmSearchEnvironment> {
+impl From<StdcmSearchEnvironmentCreateForm>
+    for editoast_models::stdcm_search_environment::StdcmSearchEnvironmentChangeset
+{
     fn from(form: StdcmSearchEnvironmentCreateForm) -> Self {
         let speed_limits = form.speed_limits.unwrap_or_default();
-        StdcmSearchEnvironment::changeset()
+        editoast_models::stdcm_search_environment::StdcmSearchEnvironment::changeset()
             .infra_id(form.infra_id)
             .electrical_profile_set_id(form.electrical_profile_set_id)
             .work_schedule_group_id(form.work_schedule_group_id)
@@ -156,8 +158,10 @@ impl From<StdcmSearchEnvironmentCreateForm> for Changeset<StdcmSearchEnvironment
     }
 }
 
-impl From<StdcmSearchEnvironment> for StdcmSearchEnvironmentResponse {
-    fn from(from: StdcmSearchEnvironment) -> Self {
+impl From<editoast_models::stdcm_search_environment::StdcmSearchEnvironment>
+    for StdcmSearchEnvironmentResponse
+{
+    fn from(from: editoast_models::stdcm_search_environment::StdcmSearchEnvironment) -> Self {
         let speed_limits = if !from.speed_limit_tags.is_empty() {
             Some(SpeedLimits {
                 speed_limit_tags: from.speed_limit_tags,
@@ -338,8 +342,9 @@ pub mod tests {
     use chrono::Utc;
     use pretty_assertions::assert_eq;
 
+    use editoast_models::stdcm_search_environment::fixtures::stdcm_search_env_fixtures;
+
     use super::*;
-    use crate::models::stdcm_search_environment::tests::stdcm_search_env_fixtures;
     use crate::views::test_app::TestAppBuilder;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
