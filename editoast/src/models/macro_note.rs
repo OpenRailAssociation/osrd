@@ -24,19 +24,45 @@ pub mod test {
     use super::*;
 
     use database::DbConnectionPoolV2;
+    use editoast_models::Infra;
     use editoast_models::prelude::*;
+    use editoast_models::project::Project;
+    use editoast_models::scenario::Scenario;
+    use editoast_models::study::Study;
+    use editoast_models::timetable::Timetable;
     use pretty_assertions::assert_eq;
-
-    use crate::models::fixtures::create_scenario_fixtures_set;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn macro_note_create_and_get() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let fixtures =
-            create_scenario_fixtures_set(&mut db_pool.get_ok(), "test_scenario_name").await;
+        let infra = Infra::changeset()
+            .name("empty_infra".to_owned())
+            .last_railjson_version()
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create empty infra");
+
+        let timetable = Timetable::changeset()
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create timetable");
+
+        let project = Project::fake("test_project")
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create project");
+        let study = Study::fake("test_study", project.id)
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create study");
+        let scenario = Scenario::fake("test_scenario_name", study.id, infra.id, timetable.id)
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create scenario");
+
         // Create note
         let created = MacroNote::changeset()
-            .scenario_id(fixtures.scenario.id)
+            .scenario_id(scenario.id)
             .x(10)
             .y(12)
             .title("New note".to_string())
