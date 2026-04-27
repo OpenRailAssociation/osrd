@@ -15,7 +15,6 @@ pub use update::UpdateOperation;
 use utoipa::ToSchema;
 
 pub use self::delete::DeleteOperation;
-use crate::error::Result;
 use crate::infra_cache::ObjectCache;
 use database::DbConnection;
 use editoast_models::Infra;
@@ -107,7 +106,10 @@ pub enum CacheOperation {
 }
 
 impl CacheOperation {
-    pub fn try_from_operation(operation: &Operation, infra_object: InfraObject) -> Result<Self> {
+    pub fn try_from_operation(
+        operation: &Operation,
+        infra_object: InfraObject,
+    ) -> Result<Self, OperationError> {
         let cache_operation = match operation {
             Operation::Create(new_railjson_object) => {
                 debug_assert_eq!(new_railjson_object.get_ref(), infra_object.get_ref());
@@ -132,21 +134,21 @@ impl Operation {
         &self,
         infra_id: i64,
         conn: &mut DbConnection,
-    ) -> Result<Option<InfraObject>> {
+    ) -> Result<Option<InfraObject>, OperationError> {
         let res = match self {
             Operation::Delete(deletion) => {
                 deletion.apply(infra_id, conn).await?;
-                Ok::<_, crate::error::InternalError>(None)
+                None
             }
             Operation::Create(railjson_object) => {
                 create::apply_create_operation(railjson_object, infra_id, conn).await?;
-                Ok(Some(railjson_object.deref().clone()))
+                Some(railjson_object.deref().clone())
             }
             Operation::Update(update) => {
                 let railjson_object = update.apply(infra_id, conn).await?;
-                Ok(Some(railjson_object))
+                Some(railjson_object)
             }
-        }?;
+        };
         Infra::changeset()
             .modified(Utc::now())
             .update(conn, infra_id)
@@ -155,7 +157,10 @@ impl Operation {
     }
 }
 
-pub fn patch_infra_object(infra_object: &InfraObject, json_patch: &Patch) -> Result<InfraObject> {
+pub fn patch_infra_object(
+    infra_object: &InfraObject,
+    json_patch: &Patch,
+) -> Result<InfraObject, OperationError> {
     // `json_patch::patch()` operates on `serde_json::Value`.
     // Therefore, we have to:
     // (1) transform `RailjsonObject` into `serde_json::Value`,
@@ -221,7 +226,7 @@ pub fn patch_infra_object(infra_object: &InfraObject, json_patch: &Patch) -> Res
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "operation")]
-enum OperationError {
+pub enum OperationError {
     // To modify
     #[error("Object '{obj_id}', could not be found in the infrastructure '{infra_id}'")]
     #[editoast_error(status = 404)]
@@ -232,4 +237,29 @@ enum OperationError {
     ModifyId,
     #[error("A Json Patch error occurred: '{error}'")]
     InvalidPatch { error: String },
+    #[error(transparent)]
+    #[editoast_error(forward)]
+    DatabaseError(#[from] editoast_models::Error),
+}
+
+impl From<serde_json::Error> for OperationError {
+    fn from(err: serde_json::Error) -> Self {
+        OperationError::InvalidPatch {
+            error: err.to_string(),
+        }
+    }
+}
+
+impl From<json_patch::PatchError> for OperationError {
+    fn from(err: json_patch::PatchError) -> Self {
+        OperationError::InvalidPatch {
+            error: err.to_string(),
+        }
+    }
+}
+
+impl From<diesel::result::Error> for OperationError {
+    fn from(err: diesel::result::Error) -> Self {
+        OperationError::DatabaseError(editoast_models::Error::from(err))
+    }
 }

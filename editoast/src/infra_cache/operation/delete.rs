@@ -10,7 +10,6 @@ use serde::Serialize;
 use std::ops::DerefMut;
 
 use super::OperationError;
-use crate::error::Result;
 use editoast_models::infra_objects::get_table;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Deserialize, Serialize, utoipa::ToSchema)]
@@ -22,7 +21,11 @@ pub struct DeleteOperation {
 }
 
 impl DeleteOperation {
-    pub async fn apply(&self, infra_id: i64, conn: &mut DbConnection) -> Result<()> {
+    pub async fn apply(
+        &self,
+        infra_id: i64,
+        conn: &mut DbConnection,
+    ) -> Result<(), OperationError> {
         match sql_query(format!(
             "DELETE FROM {} WHERE obj_id = $1 AND infra_id = $2",
             get_table(&self.obj_type)
@@ -36,9 +39,8 @@ impl DeleteOperation {
             Ok(_) => Err(OperationError::ObjectNotFound {
                 obj_id: self.obj_id.clone(),
                 infra_id,
-            }
-            .into()),
-            Err(err) => Err(err.into()),
+            }),
+            Err(err) => Err(editoast_models::Error::from(err).into()),
         }
     }
 }

@@ -10,16 +10,15 @@ use schemas::primitives::OSRDObject;
 use std::ops::DerefMut;
 
 use super::OperationError;
-use crate::error::Result;
 use editoast_models::infra_objects::get_table;
 
 pub async fn apply_create_operation<'r>(
     infra_object: &'r InfraObject,
     infra_id: i64,
     conn: &mut DbConnection,
-) -> Result<(usize, &'r InfraObject)> {
+) -> Result<(usize, &'r InfraObject), OperationError> {
     if infra_object.get_id().is_empty() {
-        return Err(OperationError::EmptyId.into());
+        return Err(OperationError::EmptyId);
     }
     sql_query(format!(
         "INSERT INTO {} (infra_id, obj_id, data) VALUES ($1, $2, $3)",
