@@ -20,7 +20,6 @@ use serde_json::from_value;
 use serde_json::json;
 
 use super::OperationError;
-use crate::error::Result;
 use editoast_models::infra_objects::get_table;
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, utoipa::ToSchema)]
@@ -33,7 +32,11 @@ pub struct UpdateOperation {
 }
 
 impl UpdateOperation {
-    pub async fn apply(&self, infra_id: i64, conn: &mut DbConnection) -> Result<InfraObject> {
+    pub async fn apply(
+        &self,
+        infra_id: i64,
+        conn: &mut DbConnection,
+    ) -> Result<InfraObject, OperationError> {
         // Load object
 
         let mut obj: DataObject = match sql_query(format!(
@@ -50,8 +53,7 @@ impl UpdateOperation {
                 return Err(OperationError::ObjectNotFound {
                     obj_id: self.obj_id.clone(),
                     infra_id,
-                }
-                .into());
+                });
             }
             Err(err) => return Err(err.into()),
         };
@@ -74,8 +76,7 @@ impl UpdateOperation {
             Ok(_) => Err(OperationError::ObjectNotFound {
                 obj_id: self.obj_id.clone(),
                 infra_id,
-            }
-            .into()),
+            }),
             Err(err) => Err(err.into()),
         }
     }
@@ -90,7 +91,10 @@ struct DataObject {
 impl DataObject {
     /// This function will patch the data object given an update operation.
     /// It will also check that the id of the id of the object is untouched and that the resulted data is valid.
-    pub fn patch_and_check(&mut self, update: &UpdateOperation) -> Result<InfraObject> {
+    pub fn patch_and_check(
+        &mut self,
+        update: &UpdateOperation,
+    ) -> Result<InfraObject, OperationError> {
         json_patch::patch(&mut self.data, &update.railjson_patch).map_err(|err| {
             OperationError::InvalidPatch {
                 error: err.to_string(),
@@ -107,13 +111,12 @@ impl DataObject {
             Err(err) => {
                 return Err(OperationError::InvalidPatch {
                     error: err.to_string(),
-                }
-                .into());
+                });
             }
         };
 
         if obj_railjson.get_id() != &update.obj_id {
-            return Err(OperationError::ModifyId.into());
+            return Err(OperationError::ModifyId);
         }
 
         Ok(obj_railjson)
