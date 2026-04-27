@@ -18,12 +18,12 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::error::Result;
-use crate::models::macro_node::MacroNode;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
+use editoast_models::macro_node::MacroNode;
 use editoast_models::prelude::*;
 use editoast_models::scenario::Scenario;
 use editoast_models::tags::Tags;
