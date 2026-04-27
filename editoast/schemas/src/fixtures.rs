@@ -158,3 +158,10 @@ pub fn simple_modified_exception_with_change_groups(
     exception.exception_type = ExceptionType::Modified { occurrence_index };
     exception
 }
+
+pub fn small_infra() -> crate::infra::RailJson {
+    serde_json::from_str(include_str!(
+        "../../../tests/data/infras/small_infra/infra.json"
+    ))
+    .expect("Unable to parse small infra RailJson")
+}
