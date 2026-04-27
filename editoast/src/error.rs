@@ -389,6 +389,58 @@ impl EditoastError for crate::infra_cache::CacheOperationError {
     }
 }
 
+inventory::submit! {
+    ErrorDefinition::new("editoast:operation:ObjectNotFound","ObjectNotFound","OperationError",404u16,"{\"infra_id\":\"i64\",\"obj_id\":\"String\"}")
+}
+inventory::submit! {
+    ErrorDefinition::new("editoast:operation:EmptyId","EmptyId","OperationError",400u16,"{}")
+}
+inventory::submit! {
+    ErrorDefinition::new("editoast:operation:ModifyId","ModifyId","OperationError",400u16,"{}")
+}
+inventory::submit! {
+    ErrorDefinition::new("editoast:operation:InvalidPatch","InvalidPatch","OperationError",400u16,"{\"error\":\"String\"}")
+}
+impl crate::error::EditoastError for crate::infra_cache::operation::OperationError {
+    fn get_status(&self) -> axum::http::StatusCode {
+        match self {
+            Self::ObjectNotFound { .. } => axum::http::StatusCode::try_from(404)
+                .expect("EditoastError: invalid status expression"),
+            Self::EmptyId => axum::http::StatusCode::from_u16(400u16).unwrap(),
+            Self::ModifyId => axum::http::StatusCode::from_u16(400u16).unwrap(),
+            Self::InvalidPatch { .. } => axum::http::StatusCode::from_u16(400u16).unwrap(),
+            Self::DatabaseError(fwd) => fwd.get_status(),
+        }
+    }
+    fn get_type(&self) -> &str {
+        match self {
+            Self::ObjectNotFound { .. } => "editoast:operation:ObjectNotFound",
+            Self::EmptyId => "editoast:operation:EmptyId",
+            Self::ModifyId => "editoast:operation:ModifyId",
+            Self::InvalidPatch { .. } => "editoast:operation:InvalidPatch",
+            Self::DatabaseError(fwd) => fwd.get_type(),
+        }
+    }
+    fn context(&self) -> std::collections::HashMap<String, serde_json::Value> {
+        match self {
+            Self::ObjectNotFound { obj_id, infra_id } => [
+                ("obj_id".to_string(), serde_json::to_value(obj_id).unwrap()),
+                (
+                    "infra_id".to_string(),
+                    serde_json::to_value(infra_id).unwrap(),
+                ),
+            ]
+            .into(),
+            Self::EmptyId { .. } => Default::default(),
+            Self::ModifyId { .. } => Default::default(),
+            Self::InvalidPatch { error } => {
+                [("error".to_string(), serde_json::to_value(error).unwrap())].into()
+            }
+            Self::DatabaseError(fwd) => fwd.context(),
+        }
+    }
+}
+
 // error definition : uses by the macro EditoastError to generate
 // the list of error and share it with the openAPI generator
 #[derive(Debug)]
