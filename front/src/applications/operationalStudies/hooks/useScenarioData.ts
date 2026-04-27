@@ -128,22 +128,17 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
     broadcastChannel.current?.postMessage(msg);
   };
 
-  const upsertTimetableItems = useCallback(
-    (timetableItemsToUpsert: TimetableItem[], withoutSimulation: boolean = false) => {
-      setTimetableItems((prev) =>
-        sortBy(
-          Object.values({ ...keyBy(prev, 'id'), ...keyBy(timetableItemsToUpsert, 'id') }),
-          'start_time'
-        )
-      );
+  const upsertTimetableItems = useCallback((timetableItemsToUpsert: TimetableItem[]) => {
+    setTimetableItems((prev) =>
+      sortBy(
+        Object.values({ ...keyBy(prev, 'id'), ...keyBy(timetableItemsToUpsert, 'id') }),
+        'start_time'
+      )
+    );
 
-      if (!withoutSimulation) {
-        removeProjectedTimetableItems(timetableItemsToUpsert.map((item) => item.id));
-        simulateTimetableItems(timetableItemsToUpsert);
-      }
-    },
-    []
-  );
+    removeProjectedTimetableItems(timetableItemsToUpsert.map((item) => item.id));
+    simulateTimetableItems(timetableItemsToUpsert);
+  }, []);
 
   const removeTimetableItems = useCallback((_timetableItemsToRemove: number[]) => {
     setTimetableItems((prev) => {
@@ -208,8 +203,8 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
   );
 
   const upsertTimetableItemsWithBroadcast = useCallback(
-    (timetableItemsToUpsert: TimetableItem[], withoutSimulation = false) => {
-      upsertTimetableItems(timetableItemsToUpsert, withoutSimulation);
+    (timetableItemsToUpsert: TimetableItem[]) => {
+      upsertTimetableItems(timetableItemsToUpsert);
       broadcastScenarioMessage({
         type: 'upsertTimetableItems',
         timetableItems: timetableItemsToUpsert,
