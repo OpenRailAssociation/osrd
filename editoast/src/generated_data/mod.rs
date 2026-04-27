@@ -18,9 +18,11 @@ mod track_section;
 
 use buffer_stop::BufferStopLayer;
 use detector::DetectorLayer;
+use diesel::pg::Pg;
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
 use diesel_async::RunQueryDsl;
+use editoast_models::pagination::load_for_pagination;
 use electrification::ElectrificationLayer;
 use error::ErrorLayer;
 pub use error::generate_infra_errors;
@@ -30,14 +32,19 @@ use neutral_section::NeutralSectionLayer;
 use neutral_sign::NeutralSignLayer;
 use operational_point::OperationalPointLayer;
 use psl_sign::PSLSignLayer;
+use schemas::primitives::Identifier;
+use serde::Deserialize;
 use signal::SignalLayer;
 use speed_section::SpeedSectionLayer;
+use std::collections::HashMap;
 use std::ops::DerefMut;
 use std::sync::Arc;
 use switch::SwitchLayer;
 use tracing::debug;
 use track_section::TrackSectionLayer;
 
+use crate::generated_data::infra_error::InfraError;
+use crate::generated_data::infra_error::InfraErrorTypeLabel;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::operation::CacheOperation;
 use crate::models::Infra;
@@ -91,6 +98,15 @@ pub trait GeneratedData {
     ) -> Result<(), database::DatabaseError>;
 }
 
+#[derive(Default, Debug, Clone, PartialEq, Eq, Deserialize, utoipa::ToSchema)]
+#[serde(rename_all = "lowercase")]
+pub enum InfraErrorLevel {
+    Warnings,
+    Errors,
+    #[default]
+    All,
+}
+
 pub trait InfraGeneratedData {
     async fn refresh(
         &mut self,
@@ -100,6 +116,21 @@ pub trait InfraGeneratedData {
     ) -> Result<bool, database::DatabasePoolError>;
 
     async fn clear(&mut self, conn: &mut DbConnection) -> Result<bool, editoast_models::Error>;
+
+    async fn get_paginated_errors(
+        &self,
+        conn: &mut DbConnection,
+        level: InfraErrorLevel,
+        error_type: Option<InfraErrorTypeLabel>,
+        object_id: Option<Identifier>,
+        page: u64,
+        page_size: u64,
+    ) -> Result<(Vec<InfraError>, u64), editoast_models::Error>;
+
+    async fn get_error_summary(
+        &self,
+        conn: &mut DbConnection,
+    ) -> Result<HashMap<(String, String), u64>, editoast_models::Error>;
 }
 
 impl InfraGeneratedData for Infra {
@@ -137,6 +168,101 @@ impl InfraGeneratedData for Infra {
         self.generated_version = None;
         self.save(conn).await?;
         Ok(true)
+    }
+
+    async fn get_paginated_errors(
+        &self,
+        conn: &mut DbConnection,
+        level: InfraErrorLevel,
+        error_type: Option<InfraErrorTypeLabel>,
+        object_id: Option<Identifier>,
+        page: u64,
+        page_size: u64,
+    ) -> Result<(Vec<InfraError>, u64), editoast_models::Error> {
+        use database::tables::infra_layer_error::dsl;
+        use database::tables::infra_layer_error::table;
+        use diesel::dsl::sql;
+        use diesel::prelude::*;
+        use diesel::sql_types::*;
+
+        type Filter = Box<dyn BoxableExpression<table, Pg, SqlType = Bool>>;
+        fn sql_true() -> Filter {
+            Box::new(sql::<Bool>("TRUE"))
+        }
+
+        let level_filter: Filter = match level {
+            InfraErrorLevel::Warnings => {
+                Box::new(sql::<Text>("information->>'is_warning'").eq("true"))
+            }
+            InfraErrorLevel::Errors => {
+                Box::new(sql::<Text>("information->>'is_warning'").eq("false"))
+            }
+            InfraErrorLevel::All => sql_true(),
+        };
+        let error_type_filter: Filter = error_type
+            .as_ref()
+            .map(|ty| ty.as_ref())
+            .map(|ty| -> Filter {
+                Box::new(sql::<Text>("information->>'error_type'").eq(ty.to_owned()))
+            })
+            .unwrap_or_else(sql_true);
+        let object_id_filter: Filter = object_id
+            .map(|id| id.0)
+            .map(|id| -> Filter { Box::new(sql::<Text>("information->>'obj_id'").eq(id)) })
+            .unwrap_or_else(sql_true);
+
+        let query = dsl::infra_layer_error
+            .select(dsl::information)
+            .filter(dsl::infra_id.eq(self.id))
+            .filter(level_filter)
+            .filter(error_type_filter)
+            .filter(object_id_filter);
+
+        #[derive(QueryableByName)]
+        struct Result {
+            #[diesel(sql_type = Jsonb)]
+            information: diesel_json::Json<InfraError>,
+        }
+        let (results, count): (Vec<Result>, _) =
+            load_for_pagination(conn, query, page, page_size).await?;
+        let results = results.into_iter().map(|r| r.information.0).collect();
+        Ok((results, count))
+    }
+
+    /// Get the number of errors for each error type and object type.
+    async fn get_error_summary(
+        &self,
+        conn: &mut DbConnection,
+    ) -> Result<HashMap<(String, String), u64>, editoast_models::Error> {
+        use database::tables::infra_layer_error::dsl;
+        use diesel::dsl::count_star;
+        use diesel::dsl::sql;
+        use diesel::prelude::*;
+        use diesel::sql_types::Text;
+        use diesel_async::RunQueryDsl;
+
+        let query = dsl::infra_layer_error
+            .select((
+                sql::<Text>("information->>'error_type'"),
+                sql::<Text>("information->>'obj_type'"),
+                count_star(),
+            ))
+            .filter(dsl::infra_id.eq(self.id))
+            .filter(sql::<Text>("information->>'is_warning'").eq("false"))
+            .group_by((
+                sql::<Text>("information->>'error_type'"),
+                sql::<Text>("information->>'obj_type'"),
+            ))
+            .order_by(count_star().desc());
+
+        let results = query
+            .load::<(String, String, i64)>(conn.write().await.deref_mut())
+            .await?;
+
+        Ok(results
+            .into_iter()
+            .map(|(err_ty, obj_ty, count)| ((err_ty, obj_ty), count as u64))
+            .collect())
     }
 }
 

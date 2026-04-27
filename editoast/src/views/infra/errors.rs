@@ -14,10 +14,11 @@ use serde::Serialize;
 use thiserror::Error;
 
 use crate::error::Result;
+use crate::generated_data::InfraErrorLevel;
+use crate::generated_data::InfraGeneratedData as _;
 use crate::generated_data::infra_error::InfraError;
 use crate::generated_data::infra_error::InfraErrorTypeLabel;
 use crate::models::Infra;
-use crate::models::infra::errors::Level;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraIdParam;
@@ -34,7 +35,7 @@ pub(in crate::views) struct ErrorListQueryParams {
     /// Whether the response should include errors or warnings
     #[serde(default)]
     #[param(inline)]
-    level: Level,
+    level: InfraErrorLevel,
     /// The type of error to filter on
     #[param(value_type = Option<InfraErrorTypeLabel>, inline)]
     error_type: Option<String>,
@@ -131,7 +132,7 @@ pub(in crate::views) async fn query_errors(
     infra: &Infra,
 ) -> (Vec<InfraError>, u64) {
     infra
-        .get_paginated_errors(conn, Level::All, None, None, 1, 10000)
+        .get_paginated_errors(conn, InfraErrorLevel::All, None, None, 1, 10000)
         .await
         .expect("errors should be fetched successfully")
 }
