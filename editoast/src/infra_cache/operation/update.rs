@@ -131,20 +131,48 @@ mod tests {
     use diesel_async::RunQueryDsl;
     use pretty_assertions::assert_eq;
 
+    use database::DbConnection;
+    use editoast_models::Infra;
+    use editoast_models::prelude::*;
+    use schemas::infra::InfraObject;
     use schemas::infra::Signal;
     use schemas::infra::SpeedSection;
     use schemas::infra::Switch;
+    use schemas::primitives::OSRDObject;
     use serde_json::from_str;
     use std::ops::DerefMut;
 
     use super::UpdateOperation;
-    use crate::fixtures::create_empty_infra;
-    use crate::fixtures::create_infra_object;
     use crate::infra_cache::operation::OperationError;
+    use crate::infra_cache::operation::create::apply_create_operation;
     use database::DbConnectionPoolV2;
     use schemas::infra::TrackSection;
     use schemas::primitives::OSRDIdentified;
     use schemas::primitives::ObjectType;
+
+    async fn create_empty_infra(conn: &mut DbConnection) -> Infra {
+        Infra::changeset()
+            .name("empty_infra".to_owned())
+            .last_railjson_version()
+            .create(conn)
+            .await
+            .expect("Failed to create empty infra")
+    }
+
+    async fn create_infra_object<T>(
+        conn: &mut DbConnection,
+        infra_id: i64,
+        object: T,
+    ) -> InfraObject
+    where
+        T: Into<InfraObject> + OSRDObject,
+    {
+        let object_type = object.get_type();
+        let railjson_object: InfraObject = object.into();
+        let result = apply_create_operation(&railjson_object, infra_id, conn).await;
+        assert!(result.is_ok(), "Failed to create a {object_type}");
+        railjson_object
+    }
 
     #[derive(QueryableByName)]
     struct Value {
