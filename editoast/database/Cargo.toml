@@ -8,6 +8,7 @@ edition.workspace = true
 testing = []
 
 [dependencies]
+derive_more.workspace = true
 diesel.workspace = true
 diesel-async.workspace = true
 diesel_migrations = { version = "2.3.1" }

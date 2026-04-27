@@ -245,9 +245,14 @@ impl Default for DbConnectionPoolV2 {
 #[error("an error occurred while building the database pool: '{0}'")]
 pub struct DatabasePoolBuildError(#[from] diesel_async::pooled_connection::deadpool::BuildError);
 
-#[derive(Debug, thiserror::Error)]
-#[error("an error occurred while getting a connection from the database pool: '{0}'")]
-pub struct DatabasePoolError(#[from] diesel_async::pooled_connection::deadpool::PoolError);
+#[derive(Debug, thiserror::Error, derive_more::From)]
+pub enum DatabasePoolError {
+    #[error("an error occurred while getting a connection from the database pool: '{0}'")]
+    PoolError(#[from] diesel_async::pooled_connection::deadpool::PoolError),
+    #[error(transparent)]
+    #[from(forward)]
+    DatabaseError(DatabaseError),
+}
 
 impl DbConnectionPoolV2 {
     /// Get inner pool for retro compatibility
