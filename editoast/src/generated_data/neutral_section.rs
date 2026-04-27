@@ -6,7 +6,6 @@ use diesel::sql_types::BigInt;
 use diesel_async::RunQueryDsl;
 
 use super::GeneratedData;
-use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::operation::CacheOperation;
 
@@ -17,7 +16,11 @@ impl GeneratedData for NeutralSectionLayer {
         "infra_layer_neutral_section"
     }
 
-    async fn generate(conn: &mut DbConnection, infra: i64, _cache: &InfraCache) -> Result<()> {
+    async fn generate(
+        conn: &mut DbConnection,
+        infra: i64,
+        _cache: &InfraCache,
+    ) -> Result<(), database::DatabaseError> {
         sql_query(include_str!("sql/generate_neutral_section_layer.sql"))
             .bind::<BigInt, _>(infra)
             .execute(conn.write().await.deref_mut())
@@ -30,7 +33,7 @@ impl GeneratedData for NeutralSectionLayer {
         _infra: i64,
         _operations: &[CacheOperation],
         _infra_cache: &InfraCache,
-    ) -> Result<()> {
+    ) -> Result<(), database::DatabaseError> {
         // TODO: we don't manage the update of the neutral_section layer for the moment
         Ok(())
     }

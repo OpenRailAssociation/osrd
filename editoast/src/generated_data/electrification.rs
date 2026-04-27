@@ -14,7 +14,6 @@ use schemas::primitives::ObjectType;
 use super::GeneratedData;
 use super::utils::InvolvedObjects;
 use crate::diesel::ExpressionMethods;
-use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::operation::CacheOperation;
 
@@ -29,7 +28,7 @@ impl GeneratedData for ElectrificationLayer {
         conn: &mut DbConnection,
         infra: i64,
         _infra_cache: &InfraCache,
-    ) -> Result<()> {
+    ) -> Result<(), database::DatabaseError> {
         sql_query(include_str!("sql/generate_electrification_layer.sql"))
             .bind::<BigInt, _>(infra)
             .execute(conn.write().await.deref_mut())
@@ -42,7 +41,7 @@ impl GeneratedData for ElectrificationLayer {
         infra: i64,
         operations: &[CacheOperation],
         infra_cache: &InfraCache,
-    ) -> Result<()> {
+    ) -> Result<(), database::DatabaseError> {
         let involved_objects =
             InvolvedObjects::from_operations(operations, infra_cache, ObjectType::Electrification);
 

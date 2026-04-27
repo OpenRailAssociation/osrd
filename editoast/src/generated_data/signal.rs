@@ -16,7 +16,6 @@ use schemas::primitives::ObjectType;
 use super::GeneratedData;
 use super::utils::InvolvedObjects;
 use crate::diesel::ExpressionMethods;
-use crate::error::Result;
 use crate::generated_data::sprite_config::SpriteConfig;
 use crate::generated_data::sprite_config::SpriteConfigs;
 use crate::infra_cache::InfraCache;
@@ -47,7 +46,7 @@ async fn generate_signaling_system_and_sprite<'a, T: Iterator<Item = &'a SignalC
     conn: &mut DbConnection,
     infra: i64,
     updated_signals: T,
-) -> Result<()> {
+) -> Result<(), database::DatabaseError> {
     let sprite_configs = SpriteConfig::load();
     let mut group_by_sprite: HashMap<_, Vec<_>> = HashMap::new();
 
@@ -84,7 +83,11 @@ impl GeneratedData for SignalLayer {
         "infra_layer_signal"
     }
 
-    async fn generate(conn: &mut DbConnection, infra: i64, infra_cache: &InfraCache) -> Result<()> {
+    async fn generate(
+        conn: &mut DbConnection,
+        infra: i64,
+        infra_cache: &InfraCache,
+    ) -> Result<(), database::DatabaseError> {
         use diesel_async::RunQueryDsl;
 
         sql_query(include_str!("sql/generate_signal_layer.sql"))
@@ -108,7 +111,7 @@ impl GeneratedData for SignalLayer {
         infra: i64,
         operations: &[CacheOperation],
         infra_cache: &InfraCache,
-    ) -> Result<()> {
+    ) -> Result<(), database::DatabaseError> {
         use diesel_async::RunQueryDsl;
 
         let involved_objects =
