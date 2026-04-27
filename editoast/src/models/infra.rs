@@ -28,11 +28,11 @@ use uuid::Uuid;
 
 pub use object_queryable::ObjectQueryable;
 
-use crate::error::Result;
 use crate::generated_data;
 use crate::infra_cache::InfraCache;
 use crate::models::get_geometry_layer_table;
 use crate::models::get_table;
+use crate::models::railjson::RailJsonError;
 use crate::models::railjson::persist_railjson;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
@@ -69,7 +69,11 @@ pub struct Infra {
 }
 
 impl InfraChangeset {
-    pub async fn persist(self, railjson: RailJson, conn: &mut DbConnection) -> Result<Infra> {
+    pub async fn persist(
+        self,
+        railjson: RailJson,
+        conn: &mut DbConnection,
+    ) -> Result<Infra, RailJsonError> {
         let infra = self.create(conn).await?;
         // TODO: lock infra for update
         debug!("🛤  Begin importing all railjson objects");
@@ -111,12 +115,20 @@ impl Infra {
     pub async fn bump_generated_version(
         &mut self,
         conn: &mut DbConnection,
-    ) -> Result<(), editoast_models::Error> {
-        self.generated_version = Some(self.version);
-        self.save(conn).await
+    ) -> Result<(), database::DatabaseError> {
+        diesel::update(dsl::infra.filter(dsl::id.eq(self.id)))
+            .set((dsl::generated_version.eq(self.generated_version),))
+            .execute(conn.write().await.deref_mut())
+            .await?;
+
+        Ok(())
     }
 
-    pub async fn clone(&self, conn: &mut DbConnection, new_name: String) -> Result<Infra> {
+    pub async fn clone(
+        &self,
+        conn: &mut DbConnection,
+        new_name: String,
+    ) -> Result<Infra, editoast_models::Error> {
         conn.clone().transaction(|conn| Box::pin(async move {
             // Duplicate infra shell
             let now = Utc::now();
@@ -222,7 +234,7 @@ impl Infra {
         db_pool: Arc<DbConnectionPoolV2>,
         force: bool,
         infra_cache: &InfraCache,
-    ) -> Result<bool> {
+    ) -> Result<bool, database::DatabasePoolError> {
         // Check if refresh is needed
         if !force && Some(self.version) == self.generated_version {
             return Ok(false);
@@ -241,7 +253,7 @@ impl Infra {
 
     /// Clear generated data of the infra
     /// This function will update `generated_version` accordingly.
-    pub async fn clear(&mut self, conn: &mut DbConnection) -> Result<bool> {
+    pub async fn clear(&mut self, conn: &mut DbConnection) -> Result<bool, editoast_models::Error> {
         // TODO: lock self for update
         generated_data::clear_all(conn, self.id).await?;
         self.generated_version = None;
@@ -253,7 +265,10 @@ impl Infra {
     /// This disable some triggers to speed up the deletion.
     ///
     /// Note: Everything is done in one transaction for consistency.
-    pub async fn fast_delete_static(conn: DbConnection, infra_id: i64) -> Result<bool> {
+    pub async fn fast_delete_static(
+        conn: DbConnection,
+        infra_id: i64,
+    ) -> Result<bool, editoast_models::Error> {
         use database::tables::infra_object_track_section::dsl as track_section_dsl;
         use database::tables::search_track::dsl as search_track_dsl;
 
@@ -295,7 +310,6 @@ impl Infra {
             })
         })
         .await
-        .map_err(Into::into)
     }
 }
 

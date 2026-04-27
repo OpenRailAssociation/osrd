@@ -8,7 +8,6 @@ use diesel_async::RunQueryDsl;
 use schemas::primitives::ObjectType;
 
 use super::Infra;
-use crate::error::Result;
 use crate::models::get_table;
 
 #[derive(QueryableByName, Default)]
@@ -22,7 +21,7 @@ impl Infra {
         conn: &mut DbConnection,
         infra_id: i64,
         object_type: &ObjectType,
-    ) -> Result<Vec<RailJsonData>> {
+    ) -> Result<Vec<RailJsonData>, editoast_models::Error> {
         let table_name = get_table(object_type);
         let query = format!(
             "SELECT (x.data)::text AS railjson FROM {table_name} x WHERE x.infra_id = $1 ORDER BY x.obj_id"
