@@ -5,6 +5,8 @@ use utoipa::ToSchema;
 
 use editoast_models::tags::Tags;
 
+use crate as editoast_models;
+
 #[derive(Clone, Debug, Serialize, Deserialize, Model, ToSchema, PartialEq)]
 #[model(table = database::tables::macro_note)]
 #[model(gen(ops = crud, batch_ops = c, list))]
@@ -23,13 +25,13 @@ pub struct MacroNote {
 pub mod test {
     use super::*;
 
+    use crate::Infra;
+    use crate::prelude::*;
+    use crate::project::Project;
+    use crate::scenario::Scenario;
+    use crate::study::Study;
+    use crate::timetable::Timetable;
     use database::DbConnectionPoolV2;
-    use editoast_models::Infra;
-    use editoast_models::prelude::*;
-    use editoast_models::project::Project;
-    use editoast_models::scenario::Scenario;
-    use editoast_models::study::Study;
-    use editoast_models::timetable::Timetable;
     use pretty_assertions::assert_eq;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
