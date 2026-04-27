@@ -25,7 +25,7 @@ pub enum Authentication {
     },
 }
 
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct AuthenticationParameters {
     pub identity: Option<String>,
     pub name: Option<String>,
@@ -35,6 +35,7 @@ pub struct AuthenticationParameters {
 }
 
 impl Authentication {
+    #[tracing::instrument(name = "authentication request")]
     pub fn try_new(params: AuthenticationParameters) -> Result<Self, AuthenticationParameters> {
         let authn = match params {
             AuthenticationParameters {

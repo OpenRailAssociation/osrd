@@ -40,6 +40,7 @@ use fga::client::Limits;
 #[cfg(test)]
 use test_app::test_app;
 use tracing::Instrument;
+use tracing::Span;
 use tracing::info_span;
 
 use ::core::str;
@@ -484,6 +485,7 @@ fn service_router() -> router::DocumentedRouter {
     })
 }
 
+#[tracing::instrument(skip_all, fields(authn))]
 async fn authentication_extraction_middleware(
     State(AppState { config, .. }): State<AppState>,
     mut req: Request,
@@ -512,49 +514,37 @@ async fn authentication_extraction_middleware(
     });
     let skip_authz = headers.contains_key(SKIP_AUTHZ);
 
-    let authn = tracing::info_span!(
-        "authenticating request",
+    let authn = crate::authentication::Authentication::try_new(AuthenticationParameters {
         identity,
         name,
         impersonate,
-        skip_authz,
-    )
-    .in_scope(move || {
-        crate::authentication::Authentication::try_new(AuthenticationParameters {
-            identity,
-            name,
-            impersonate,
-            skip: skip_authz,
-            authorization_enabled: config.enable_authorization,
-        })
-        .map_err(
-            |AuthenticationParameters {
-                 identity,
-                 name,
-                 impersonate,
-                 skip,
-                 authorization_enabled,
-             }| {
-                tracing::error!(
-                    identity,
-                    name,
-                    impersonate,
-                    skip,
-                    authorization_enabled,
-                    "invalid authentication parameters"
-                );
-                AuthorizationError::Unauthorized
-            },
-        )
-    })?;
+        skip: skip_authz,
+        authorization_enabled: config.enable_authorization,
+    })
+    .map_err(
+        |AuthenticationParameters {
+             identity,
+             name,
+             impersonate,
+             skip,
+             authorization_enabled,
+         }| {
+            tracing::error!(
+                identity,
+                name,
+                impersonate,
+                skip,
+                authorization_enabled,
+                "invalid authentication parameters"
+            );
+            AuthorizationError::Unauthorized
+        },
+    )?;
 
     tracing::info!(?authn, "authentication complete");
-    Ok(tracing::info_span!("authentication", ?authn)
-        .in_scope(move || {
-            req.extensions_mut().insert(authn.clone());
-            next.run(req).in_current_span()
-        })
-        .await)
+    Span::current().record("authn", tracing::field::debug(&authn));
+    req.extensions_mut().insert(authn);
+    Ok(next.run(req).await)
 }
 
 /// Takes an authenticated request and performs a few verifications
