@@ -35,6 +35,9 @@ pub async fn apply_create_operation<'r>(
 
 #[cfg(test)]
 pub mod tests {
+    use database::DbConnection;
+    use editoast_models::Infra;
+    use editoast_models::prelude::*;
     use schemas::infra::BufferStop;
     use schemas::infra::Detector;
     use schemas::infra::Electrification;
@@ -48,12 +51,21 @@ pub mod tests {
     use schemas::infra::SwitchType;
     use schemas::infra::TrackSection;
 
+    async fn create_empty_infra(conn: &mut DbConnection) -> Infra {
+        Infra::changeset()
+            .name("empty_infra".to_owned())
+            .last_railjson_version()
+            .create(conn)
+            .await
+            .expect("Failed to create empty infra")
+    }
+
     macro_rules! test_create_object {
         ($obj:ident, $test_fn:ident) => {
             #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
             async fn $test_fn() {
                 let db_pool = database::DbConnectionPoolV2::for_tests();
-                let infra = crate::fixtures::create_empty_infra(&mut db_pool.get_ok()).await;
+                let infra = create_empty_infra(&mut db_pool.get_ok()).await;
                 let infra_object = schemas::infra::InfraObject::$obj {
                     railjson: $obj::default(),
                 };

@@ -1077,32 +1077,21 @@ impl From<&RailJson> for InfraCache {
 
 #[cfg(test)]
 pub mod tests {
-    // use dashmap::DashMap;
     use pretty_assertions::assert_eq;
-
-    use schemas::infra::BufferStop;
-    use schemas::infra::Detector;
-    use schemas::infra::Waypoint;
     use std::collections::HashMap;
 
-    use super::LevelCrossingCache;
-    use super::OperationalPointCache;
-    use crate::fixtures::create_empty_infra;
-    use crate::fixtures::create_infra_object;
-    use crate::infra_cache::InfraCache;
-    use crate::infra_cache::SwitchCache;
-    use crate::infra_cache::object_cache::BufferStopCache;
-    use crate::infra_cache::object_cache::DetectorCache;
-    use crate::infra_cache::object_cache::LevelCrossingPartCache;
-    use crate::infra_cache::object_cache::OperationalPointPartCache;
-    use crate::infra_cache::object_cache::SignalCache;
-    use crate::infra_cache::object_cache::TrackSectionCache;
+    use database::DbConnection;
     use database::DbConnectionPoolV2;
+    use editoast_models::Infra;
+    use editoast_models::prelude::*;
     use schemas::infra::ApplicableDirections;
     use schemas::infra::ApplicableDirectionsTrackRange;
+    use schemas::infra::BufferStop;
+    use schemas::infra::Detector;
     use schemas::infra::Direction;
     use schemas::infra::Electrification;
     use schemas::infra::Endpoint;
+    use schemas::infra::InfraObject;
     use schemas::infra::LevelCrossing;
     use schemas::infra::OperationalPoint;
     use schemas::infra::Route;
@@ -1113,10 +1102,48 @@ pub mod tests {
     use schemas::infra::SwitchType;
     use schemas::infra::TrackEndpoint;
     use schemas::infra::TrackSection;
+    use schemas::infra::Waypoint;
     use schemas::primitives::BoundingBox;
     use schemas::primitives::Identifier;
     use schemas::primitives::NonBlankString;
     use schemas::primitives::OSRDIdentified;
+    use schemas::primitives::OSRDObject;
+
+    use super::InfraCache;
+    use super::LevelCrossingCache;
+    use super::OperationalPointCache;
+    use super::SwitchCache;
+    use super::object_cache::BufferStopCache;
+    use super::object_cache::DetectorCache;
+    use super::object_cache::LevelCrossingPartCache;
+    use super::object_cache::OperationalPointPartCache;
+    use super::object_cache::SignalCache;
+    use super::object_cache::TrackSectionCache;
+    use super::operation::create::apply_create_operation;
+
+    async fn create_empty_infra(conn: &mut DbConnection) -> Infra {
+        Infra::changeset()
+            .name("empty_infra".to_owned())
+            .last_railjson_version()
+            .create(conn)
+            .await
+            .expect("Failed to create empty infra")
+    }
+
+    async fn create_infra_object<T>(
+        conn: &mut DbConnection,
+        infra_id: i64,
+        object: T,
+    ) -> InfraObject
+    where
+        T: Into<InfraObject> + OSRDObject,
+    {
+        let object_type = object.get_type();
+        let railjson_object: InfraObject = object.into();
+        let result = apply_create_operation(&railjson_object, infra_id, conn).await;
+        assert!(result.is_ok(), "Failed to create a {object_type}");
+        railjson_object
+    }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn load_track_section() {

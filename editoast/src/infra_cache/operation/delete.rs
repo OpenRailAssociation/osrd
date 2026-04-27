@@ -67,7 +67,10 @@ impl From<ObjectRef> for DeleteOperation {
 mod tests {
     use diesel::sql_types::BigInt;
 
+    use database::DbConnection;
     use database::DbConnectionPoolV2;
+    use editoast_models::Infra;
+    use editoast_models::prelude::*;
     use schemas::infra::BufferStop;
     use schemas::infra::Detector;
     use schemas::infra::Electrification;
@@ -81,6 +84,15 @@ mod tests {
     use schemas::infra::TrackSection;
     use schemas::primitives::OSRDIdentified;
     use schemas::primitives::OSRDObject;
+
+    async fn create_empty_infra(conn: &mut DbConnection) -> Infra {
+        Infra::changeset()
+            .name("empty_infra".to_owned())
+            .last_railjson_version()
+            .create(conn)
+            .await
+            .expect("Failed to create empty infra")
+    }
 
     #[derive(QueryableByName)]
     struct Count {
@@ -96,7 +108,7 @@ mod tests {
                 use std::ops::DerefMut;
 
                 let db_pool = DbConnectionPoolV2::for_tests();
-                let infra = crate::fixtures::create_empty_infra(&mut db_pool.get_ok()).await;
+                let infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
                 let railjson_object = schemas::infra::InfraObject::$obj {
                     railjson: $obj::default(),
