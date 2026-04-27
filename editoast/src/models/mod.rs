@@ -1,6 +1,5 @@
 #[cfg(test)]
 pub mod fixtures;
-pub mod macro_node;
 pub mod macro_note;
 pub mod train_schedule;
 
