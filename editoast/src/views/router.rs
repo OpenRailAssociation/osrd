@@ -1,5 +1,10 @@
 use std::collections::VecDeque;
 
+use axum::Extension;
+use axum::response::IntoResponse as _;
+
+use super::AuthorizationError;
+
 pub(super) struct RouteDocumentation {
     pub(super) http_methods: Vec<utoipa::openapi::path::HttpMethod>,
     pub(super) operation: utoipa::openapi::path::Operation,
@@ -10,13 +15,18 @@ pub(super) struct RouteDocumentation {
     )>,
 }
 
+pub(in crate::views) struct RouteMetadata {
+    pub(in crate::views) documentation: fn() -> RouteDocumentation,
+    pub(in crate::views) required_role: Option<authz::Role>,
+}
+
 // fn(function_type_name) -> utoipa::Path::path_item
 //
 // We can't just build a slice of tuples (&'static str, fn) because std::any::type_name_of_val
 // constness is unstable. So O(n^2) here we go...
 //
 // If this takes too long, we can always optimize it later (structure, search algorithm, featuring utoipa).
-pub(in crate::views) type OpenApiRouteSliceItem = fn(&str) -> Option<fn() -> RouteDocumentation>;
+pub(in crate::views) type OpenApiRouteSliceItem = fn(&str) -> Option<RouteMetadata>;
 
 #[linkme::distributed_slice]
 pub(in crate::views) static OPENAPI_ROUTES: [OpenApiRouteSliceItem];
@@ -105,7 +115,11 @@ impl DocumentedRouter {
             utoipa::openapi::HttpMethod,
         ),
     ) -> Self {
-        let Some(path_item) = OPENAPI_ROUTES.iter().find_map(|matcher| matcher(type_name)) else {
+        let Some(RouteMetadata {
+            documentation: path_item,
+            required_role,
+        }) = OPENAPI_ROUTES.iter().find_map(|matcher| matcher(type_name))
+        else {
             panic!("no openapi found for route {path} with type {type_name}!");
         };
         let RouteDocumentation { http_methods, .. } = path_item();
@@ -120,6 +134,18 @@ impl DocumentedRouter {
             path_segment: path,
             path_item,
         });
+        let method_router = if let Some(required_role) = required_role {
+            method_router.route_layer(axum::middleware::from_fn(
+                move |Extension(roles): Extension<Vec<authz::Role>>,
+                      Extension(authn): Extension<crate::authentication::Authentication>,
+                      req: axum::extract::Request,
+                      next: axum::middleware::Next| {
+                    verify_role(required_role, roles, authn, req, next)
+                },
+            ))
+        } else {
+            method_router
+        };
         Self {
             router: self.router.route(path, method_router),
             path_trees: self.path_trees,
@@ -135,6 +161,34 @@ impl DocumentedRouter {
         Self {
             router: self.router.nest(path, router),
             path_trees: self.path_trees,
+        }
+    }
+}
+
+#[tracing::instrument(name = "role verification", skip_all, fields(?required_role, decision = tracing::field::Empty))]
+async fn verify_role(
+    required_role: authz::Role,
+    roles: Vec<authz::Role>,
+    authn: crate::authentication::Authentication,
+    req: axum::extract::Request,
+    next: axum::middleware::Next,
+) -> axum::response::Response {
+    match (authn, roles) {
+        (crate::authentication::Authentication::Skip { .. }, _) => {
+            tracing::Span::current().record("decision", "skip");
+            next.run(req).await
+        }
+        (_, roles) if roles.contains(&required_role) => {
+            tracing::Span::current().record("decision", "allow");
+            next.run(req).await
+        }
+        (_, roles) if roles.contains(&authz::Role::Admin) => {
+            tracing::Span::current().record("decision", "admin");
+            next.run(req).await
+        }
+        _ => {
+            tracing::Span::current().record("decision", "deny");
+            crate::error::InternalError::from(AuthorizationError::Forbidden).into_response()
         }
     }
 }

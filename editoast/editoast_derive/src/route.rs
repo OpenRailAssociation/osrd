@@ -4,8 +4,23 @@ use std::hash::Hasher as _;
 use proc_macro2::TokenStream;
 use syn::Ident;
 use syn::ItemFn;
+use syn::Path;
+use syn::parse::Parser as _;
 
-pub(super) fn route(input: &ItemFn) -> darling::Result<TokenStream> {
+fn parse_role(attr: TokenStream) -> darling::Result<Option<Path>> {
+    if attr.is_empty() {
+        return Ok(None);
+    }
+    let role = Path::parse_mod_style
+        .parse2(attr)
+        .map_err(darling::Error::from)?;
+    Ok(Some(role))
+}
+
+pub(super) fn route(attr: TokenStream, input: &ItemFn) -> darling::Result<TokenStream> {
+    let required_role = parse_role(attr)?
+        .map(|role| quote::quote! { Some(#role) })
+        .unwrap_or_else(|| quote::quote! { None });
     let name = &input.sig.ident;
     // some handlers have the same name (eg: get, create, list) which would result in duplicate
     // static names
@@ -28,19 +43,22 @@ pub(super) fn route(input: &ItemFn) -> darling::Result<TokenStream> {
         #[doc(hidden)]
         #[linkme::distributed_slice(crate::views::router::OPENAPI_ROUTES)]
         static #static_name: crate::views::router::OpenApiRouteSliceItem = |type_name: &str| {
-            (type_name == std::any::type_name_of_val(&#name)).then_some(|| {
-                use utoipa::Path;
-                use utoipa::__dev::Tags; // private API, but can't find another way :/
-                use utoipa::__dev::SchemaReferences; // same...
+            (type_name == std::any::type_name_of_val(&#name)).then_some(crate::views::router::RouteMetadata {
+                required_role: #required_role,
+                documentation: || {
+                    use utoipa::Path;
+                    use utoipa::__dev::Tags; // private API, but can't find another way :/
+                    use utoipa::__dev::SchemaReferences; // same...
 
-                let mut schemas = Vec::new();
-                <#path_name as SchemaReferences>::schemas(&mut schemas);
+                    let mut schemas = Vec::new();
+                    <#path_name as SchemaReferences>::schemas(&mut schemas);
 
-                crate::views::router::RouteDocumentation {
-                    http_methods: <#path_name as Path>::methods(),
-                    operation: <#path_name as Path>::operation(),
-                    tags: <#path_name as Tags>::tags(),
-                    schemas,
+                    crate::views::router::RouteDocumentation {
+                        http_methods: <#path_name as Path>::methods(),
+                        operation: <#path_name as Path>::operation(),
+                        tags: <#path_name as Tags>::tags(),
+                        schemas,
+                    }
                 }
             })
         };
