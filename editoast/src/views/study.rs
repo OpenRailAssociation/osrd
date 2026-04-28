@@ -450,8 +450,8 @@ pub mod tests {
     use serde_json::json;
 
     use super::*;
-    use crate::models::fixtures::create_project;
-    use crate::models::fixtures::create_study;
+    use crate::fixtures::create_project;
+    use crate::fixtures::create_study;
     use crate::views::test_app::TestAppBuilder;
     use editoast_models::study::Study;
 

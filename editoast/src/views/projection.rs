@@ -962,7 +962,7 @@ pub async fn extract_train_details<T: TrainScheduleLike>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::fixtures::create_small_infra;
+    use crate::fixtures::create_small_infra;
     use crate::views::test_app::TestAppBuilder;
     use rstest::rstest;
     use schemas::infra::Direction;

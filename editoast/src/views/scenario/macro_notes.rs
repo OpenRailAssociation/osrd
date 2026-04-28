@@ -326,7 +326,7 @@ pub mod test {
     use rand::rng;
 
     use super::*;
-    use crate::models::fixtures::create_scenario_fixtures_set;
+    use crate::fixtures::create_scenario_fixtures_set;
     use crate::views::test_app::TestAppBuilder;
 
     impl PartialEq<MacroNoteResponse> for MacroNoteForm {

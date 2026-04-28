@@ -101,7 +101,7 @@ pub async fn electrical_profile_set_delete(
 
 #[cfg(test)]
 mod tests {
-    use crate::models::fixtures::create_electrical_profile_set;
+    use crate::fixtures::create_electrical_profile_set;
 
     use super::*;
 

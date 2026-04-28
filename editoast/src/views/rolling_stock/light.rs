@@ -281,7 +281,7 @@ mod tests {
     use super::LightRollingStockWithLiveries;
     use super::LightRollingStockWithLiveriesCountList;
     use crate::error::InternalError;
-    use crate::models::fixtures::create_fast_rolling_stock;
+    use crate::fixtures::create_fast_rolling_stock;
     use crate::views::test_app::TestAppBuilder;
 
     fn is_sorted(data: &[i64]) -> bool {

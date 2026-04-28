@@ -129,7 +129,7 @@ pub(in crate::views) async fn worker_load(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::fixtures::create_empty_infra;
+    use crate::fixtures::create_empty_infra;
     use crate::views::test_app::TestAppBuilder;
     use core_client::CoreClient;
     use core_client::mocking::MockingClient;

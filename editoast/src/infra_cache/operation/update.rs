@@ -136,9 +136,9 @@ mod tests {
 
     use super::UpdateOperation;
     use crate::error::EditoastError;
+    use crate::fixtures::create_empty_infra;
+    use crate::fixtures::create_infra_object;
     use crate::infra_cache::operation::OperationError;
-    use crate::models::fixtures::create_empty_infra;
-    use crate::models::fixtures::create_infra_object;
     use database::DbConnectionPoolV2;
     use schemas::infra::TrackSection;
     use schemas::primitives::OSRDIdentified;

@@ -367,7 +367,7 @@ pub mod tests {
 
     use serde_json::json;
 
-    use crate::models::fixtures::create_project;
+    use crate::fixtures::create_project;
     use crate::views::test_app;
     use crate::views::test_app::TestAppBuilder;
     use crate::views::test_app::TestRequestExt;

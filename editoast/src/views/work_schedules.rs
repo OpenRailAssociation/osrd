@@ -445,7 +445,7 @@ pub mod tests {
     use serde_json::json;
 
     use super::*;
-    use crate::models::fixtures::create_work_schedules_fixture_set;
+    use crate::fixtures::create_work_schedules_fixture_set;
     use crate::views::test_app::TestAppBuilder;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

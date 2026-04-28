@@ -182,9 +182,9 @@ pub mod tests {
     use schemas::rolling_stock::SubCategory;
     use serde_json::json;
 
-    use crate::models::fixtures::create_train_schedule_set;
-    use crate::models::fixtures::simple_paced_train_changeset;
-    use crate::models::fixtures::simple_sub_category;
+    use crate::fixtures::create_train_schedule_set;
+    use crate::fixtures::simple_paced_train_changeset;
+    use crate::fixtures::simple_sub_category;
     use crate::views::sub_categories::SubCategoryPage;
     use crate::views::test_app::TestAppBuilder;
     use editoast_models::prelude::*;

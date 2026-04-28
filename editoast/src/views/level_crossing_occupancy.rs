@@ -340,9 +340,9 @@ fn find_pedal_position(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::fixtures::create_fast_rolling_stock;
-    use crate::models::fixtures::create_small_infra;
-    use crate::models::fixtures::create_train_schedule_set;
+    use crate::fixtures::create_fast_rolling_stock;
+    use crate::fixtures::create_small_infra;
+    use crate::fixtures::create_train_schedule_set;
     use crate::views::test_app::TestAppBuilder;
     use crate::views::test_app::TestResponse;
     use chrono::TimeDelta;

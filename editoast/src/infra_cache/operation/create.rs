@@ -54,8 +54,7 @@ pub mod tests {
             #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
             async fn $test_fn() {
                 let db_pool = database::DbConnectionPoolV2::for_tests();
-                let infra =
-                    crate::models::fixtures::create_empty_infra(&mut db_pool.get_ok()).await;
+                let infra = crate::fixtures::create_empty_infra(&mut db_pool.get_ok()).await;
                 let infra_object = schemas::infra::InfraObject::$obj {
                     railjson: $obj::default(),
                 };

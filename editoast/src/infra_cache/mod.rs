@@ -1048,6 +1048,8 @@ pub mod tests {
 
     use super::LevelCrossingCache;
     use super::OperationalPointCache;
+    use crate::fixtures::create_empty_infra;
+    use crate::fixtures::create_infra_object;
     use crate::infra_cache::InfraCache;
     use crate::infra_cache::SwitchCache;
     use crate::infra_cache::object_cache::BufferStopCache;
@@ -1056,8 +1058,6 @@ pub mod tests {
     use crate::infra_cache::object_cache::OperationalPointPartCache;
     use crate::infra_cache::object_cache::SignalCache;
     use crate::infra_cache::object_cache::TrackSectionCache;
-    use crate::models::fixtures::create_empty_infra;
-    use crate::models::fixtures::create_infra_object;
     use database::DbConnectionPoolV2;
     use schemas::infra::ApplicableDirections;
     use schemas::infra::ApplicableDirectionsTrackRange;

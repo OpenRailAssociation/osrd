@@ -134,7 +134,7 @@ mod tests {
     use serde_json::json;
 
     use super::PathProperties;
-    use crate::models::fixtures::create_small_infra;
+    use crate::fixtures::create_small_infra;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
 

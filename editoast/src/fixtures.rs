@@ -365,7 +365,7 @@ pub async fn create_rolling_stock_with_energy_sources(
 }
 
 pub async fn create_electrical_profile_set(conn: &mut DbConnection) -> ElectricalProfileSet {
-    let json = include_str!("../tests/electrical_profile_set.json");
+    let json = include_str!("tests/electrical_profile_set.json");
     serde_json::from_str::<Changeset<ElectricalProfileSet>>(json)
         .expect("Unable to parse")
         .create(conn)

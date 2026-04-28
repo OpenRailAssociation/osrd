@@ -243,8 +243,8 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     use super::*;
+    use crate::fixtures::create_empty_infra;
     use crate::infra_cache::operation::create::apply_create_operation;
-    use crate::models::fixtures::create_empty_infra;
     use crate::views::test_app::TestAppBuilder;
     use schemas::infra::RAILJSON_VERSION;
     use schemas::infra::SwitchType;

@@ -348,10 +348,10 @@ pub async fn update_all(
 #[cfg(test)]
 pub mod tests {
 
+    use crate::fixtures::create_empty_infra;
     use crate::generated_data::clear_all;
     use crate::generated_data::refresh_all;
     use crate::generated_data::update_all;
-    use crate::models::fixtures::create_empty_infra;
     use database::DbConnectionPoolV2;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

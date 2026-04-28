@@ -171,7 +171,7 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     use super::*;
-    use crate::models::fixtures::create_electrical_profile_set;
+    use crate::fixtures::create_electrical_profile_set;
     use crate::views::test_app::TestAppBuilder;
     use schemas::infra::ElectricalProfile;
     use schemas::infra::TrackRange;

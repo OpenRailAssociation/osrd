@@ -1754,16 +1754,16 @@ mod tests {
     use super::*;
     use crate::error::InternalError;
 
-    use crate::models::fixtures::create_created_exception_with_change_groups;
-    use crate::models::fixtures::create_fast_rolling_stock;
-    use crate::models::fixtures::create_paced_train_with_exceptions;
-    use crate::models::fixtures::create_rolling_stock_with_energy_sources;
-    use crate::models::fixtures::create_simple_paced_train;
-    use crate::models::fixtures::create_small_infra;
-    use crate::models::fixtures::create_train_schedule_set;
-    use crate::models::fixtures::simple_paced_train_base;
-    use crate::models::fixtures::simple_paced_train_changeset;
-    use crate::models::fixtures::simple_sub_category;
+    use crate::fixtures::create_created_exception_with_change_groups;
+    use crate::fixtures::create_fast_rolling_stock;
+    use crate::fixtures::create_paced_train_with_exceptions;
+    use crate::fixtures::create_rolling_stock_with_energy_sources;
+    use crate::fixtures::create_simple_paced_train;
+    use crate::fixtures::create_small_infra;
+    use crate::fixtures::create_train_schedule_set;
+    use crate::fixtures::simple_paced_train_base;
+    use crate::fixtures::simple_paced_train_changeset;
+    use crate::fixtures::simple_sub_category;
     use crate::views::path::pathfinding::PathfindingFailure;
     use crate::views::path::pathfinding::PathfindingResult;
     use crate::views::test_app::TestApp;

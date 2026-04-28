@@ -213,8 +213,8 @@ mod tests {
     use schemas::paced_train::TrainNameChangeGroup;
     use serde_json::json;
 
-    use crate::models::fixtures::create_timetable_with_simple_paced_train;
-    use crate::models::fixtures::create_train_schedule_exception;
+    use crate::fixtures::create_timetable_with_simple_paced_train;
+    use crate::fixtures::create_train_schedule_exception;
     use crate::views::test_app::TestAppBuilder;
     use crate::views::timetable::train_schedule_exceptions::TrainScheduleExceptionForm;
 
