@@ -230,11 +230,9 @@ use search::query_into_sql;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json::value::Value as JsonValue;
-use std::collections::HashSet;
 use utoipa::ToSchema;
 
 use crate::error::Result;
-use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::pagination::PaginationQueryParams;
 use database::DbConnectionPoolV2;
@@ -340,17 +338,16 @@ struct SearchDBResult {
 )]
 pub(in crate::views) async fn search(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
+    Extension(roles): Extension<Vec<authz::Role>>,
+    Extension(authn): Extension<crate::authentication::Authentication>,
     Query(PaginationQueryParams { page, page_size }): Query<PaginationQueryParams<1000>>,
     Json(SearchPayload { object, query, dry }): Json<SearchPayload>,
 ) -> Result<Json<serde_json::Value>> {
-    let roles: HashSet<Role> = match object.as_str() {
+    let required_role = match object.as_str() {
         "track" | "signal" | "project" | "study" | "scenario" => {
-            HashSet::from([Role::OperationalStudies])
+            Some(authz::Role::OperationalStudies)
         }
-        "trainschedule" | "operationalpoint" | "user" => {
-            HashSet::from([Role::OperationalStudies, Role::Stdcm])
-        }
+        "trainschedule" | "operationalpoint" | "user" => None,
         _ => {
             return Err(SearchApiError::ObjectType {
                 object_type: object.to_owned(),
@@ -359,11 +356,11 @@ pub(in crate::views) async fn search(
         }
     };
 
-    let authorized = auth
-        .check_roles(roles)
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
+    if let Some(required_role) = required_role
+        && !matches!(authn, crate::authentication::Authentication::Skip { .. })
+        && !roles.contains(&required_role)
+        && !roles.contains(&Role::Admin)
+    {
         return Err(AuthorizationError::Forbidden.into());
     }
 
