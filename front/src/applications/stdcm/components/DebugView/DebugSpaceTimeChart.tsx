@@ -67,13 +67,13 @@ function DebugBlocksLayer({ blocks, style }: { blocks: DebugBlock[]; style: Bloc
       ctx.fillStyle = style.fill;
       ctx.strokeStyle = style.stroke;
       ctx.lineWidth = 1;
-      for (const b of blocks) {
-        const x = getTimePixel(b.timeStart);
-        const y = getSpacePixel(b.spaceStart);
-        const w = getTimePixel(b.timeEnd) - x;
-        const h = getSpacePixel(b.spaceEnd) - y;
-        ctx.fillRect(x, y, w, h);
-        ctx.strokeRect(x, y, w, h);
+      for (const block of blocks) {
+        const timePixel = getTimePixel(block.timeStart);
+        const spacePixel = getSpacePixel(block.spaceStart);
+        const rectWidth = getTimePixel(block.timeEnd) - timePixel;
+        const rectHeight = getSpacePixel(block.spaceEnd) - spacePixel;
+        ctx.fillRect(timePixel, spacePixel, rectWidth, rectHeight);
+        ctx.strokeRect(timePixel, spacePixel, rectWidth, rectHeight);
       }
     },
     [blocks, style]
@@ -98,7 +98,7 @@ const DebugSpaceTimeChart = ({ simulationData }: DebugSpaceTimeChartProps) => {
 
   const chartData = useMemo(() => {
     const zoneMap = new Map(
-      simData.zone_locations.map((z) => [z.name, { spaceStart: z.from, spaceEnd: z.to }])
+      simData.zone_locations.map((zone) => [zone.name, { spaceStart: zone.from, spaceEnd: zone.to }])
     );
     const departureMs = Date.parse(simData.departure_time);
 
@@ -124,9 +124,9 @@ const DebugSpaceTimeChart = ({ simulationData }: DebugSpaceTimeChartProps) => {
     if (finalOutput) {
       const entries: Record<string, number> = {};
       const exits: Record<string, number> = {};
-      for (const u of finalOutput.zone_updates) {
-        if (u.is_entry) entries[u.zone] = u.time;
-        else exits[u.zone] = u.time;
+      for (const zoneUpdate of finalOutput.zone_updates) {
+        if (zoneUpdate.is_entry) entries[zoneUpdate.zone] = zoneUpdate.time;
+        else exits[zoneUpdate.zone] = zoneUpdate.time;
       }
       for (const zone of Object.keys(entries)) {
         if (!(zone in exits)) continue;
@@ -206,18 +206,18 @@ const DebugSpaceTimeChart = ({ simulationData }: DebugSpaceTimeChartProps) => {
   }, [chartData]);
 
   const [hoveredBlock, setHoveredBlock] = useState<DebugBlock | null>(null);
-  const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
+  const [mousePos, setMousePos] = useState<{ clientX: number; clientY: number } | null>(null);
 
   const handleMouseMove = useCallback<
     NonNullable<Parameters<typeof SpaceTimeChart>[0]['onMouseMove']>
   >(
     ({ data: dataPoint }) => {
       const hit = chartData.allBlocks.find(
-        (b) =>
-          dataPoint.time >= b.timeStart &&
-          dataPoint.time <= b.timeEnd &&
-          dataPoint.position >= b.spaceStart &&
-          dataPoint.position <= b.spaceEnd
+        (block) =>
+          dataPoint.time >= block.timeStart &&
+          dataPoint.time <= block.timeEnd &&
+          dataPoint.position >= block.spaceStart &&
+          dataPoint.position <= block.spaceEnd
       );
       setHoveredBlock(hit ?? null);
     },
@@ -235,7 +235,7 @@ const DebugSpaceTimeChart = ({ simulationData }: DebugSpaceTimeChartProps) => {
           step={0.5}
           value={xZoom}
           className="debug-space-time-chart__zoom-slider"
-          onChange={(e) => handleXZoom(Number(e.target.value))}
+          onChange={(event) => handleXZoom(Number(event.target.value))}
         />
         <button type="button" onClick={() => manchetteProps.resetZoom()}>
           Reset
@@ -247,7 +247,7 @@ const DebugSpaceTimeChart = ({ simulationData }: DebugSpaceTimeChartProps) => {
 
       <div
         className="ui-manchette-space-time-chart-wrapper"
-        onMouseMove={(e) => setMousePos({ x: e.clientX, y: e.clientY })}
+        onMouseMove={(event) => setMousePos({ clientX: event.clientX, clientY: event.clientY })}
         onMouseLeave={() => {
           setMousePos(null);
           setHoveredBlock(null);
@@ -293,7 +293,7 @@ const DebugSpaceTimeChart = ({ simulationData }: DebugSpaceTimeChartProps) => {
       {hoveredBlock && mousePos && (
         <div
           className="debug-space-time-chart__tooltip"
-          style={{ left: mousePos.x + 12, top: mousePos.y + 12 }}
+          style={{ left: mousePos.clientX + 12, top: mousePos.clientY + 12 }}
         >
           <div>
             <strong>{KIND_LABEL[hoveredBlock.kind]}</strong>
