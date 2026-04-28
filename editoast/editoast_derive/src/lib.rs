@@ -266,10 +266,19 @@ pub fn annotate_units(_attr: TokenStream, input: TokenStream) -> TokenStream {
         .into()
 }
 
+/// Axum handlers must be annotated with this macro to tie them to their utoipa documentation
+///
+/// A role to be verified can be specified, in which case an additional role verification layer
+/// is added to the handler.
+///
+/// Syntaxes:
+/// * `#[editoast_derive::route]` — all roles are allowed
+/// * `#[editoast_derive::route(authz::Role::Stdcm)]` — only `authz::Role::Stdcm` and `authz::Role::Admin`
 #[proc_macro_attribute]
-pub fn route(_attr: TokenStream, input: TokenStream) -> TokenStream {
+pub fn route(attr: TokenStream, input: TokenStream) -> TokenStream {
+    let attr = proc_macro2::TokenStream::from(attr);
     let input = parse_macro_input!(input as syn::ItemFn);
-    route::route(&input)
+    route::route(attr, &input)
         .unwrap_or_else(darling::Error::write_errors)
         .into()
 }
