@@ -1,7 +1,5 @@
 use crate::AppState;
 use crate::error::Result;
-use crate::models::TrainSchedule;
-use crate::models::train_schedule::OccurrenceId;
 use crate::views::AuthenticationExt;
 use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::projection::PathProjection;
@@ -12,6 +10,8 @@ use crate::views::timetable::simulation::SimulationResponseSuccess;
 use crate::views::timetable::simulation::train_simulation_batch;
 use editoast_models::Infra;
 use editoast_models::LevelCrossingModel;
+use editoast_models::TrainSchedule;
+use editoast_models::train_schedule::OccurrenceId;
 
 use axum::Extension;
 use axum::extract::Json;
@@ -541,7 +541,7 @@ mod tests {
             .await
             .expect("Failed to create level crossing");
 
-        let train = crate::models::TrainSchedule::default()
+        let train = editoast_models::TrainSchedule::default()
             .into_changeset()
             .train_schedule_set_id(train_schedule_set.id)
             .rolling_stock_name(rolling_stock.name)

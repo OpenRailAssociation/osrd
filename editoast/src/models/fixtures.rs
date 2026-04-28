@@ -1,7 +1,6 @@
 use std::str::FromStr;
 
 use chrono::DateTime;
-use chrono::Duration as ChronoDuration;
 use chrono::Utc;
 use database::DbConnection;
 
@@ -20,8 +19,6 @@ use editoast_models::timetable::Timetable;
 use editoast_models::timetable_train_schedule_set::TimetableTrainScheduleSet;
 use editoast_models::train_schedule_exception::TrainScheduleException;
 use schemas::TrainScheduleExceptionChangeGroups;
-use schemas::fixtures::simple_created_exception_with_change_groups;
-use schemas::fixtures::simple_modified_exception_with_change_groups;
 use schemas::infra::InfraObject;
 use schemas::infra::TrackOffset;
 use schemas::paced_train::ConstraintDistributionChangeGroup;
@@ -29,7 +26,6 @@ use schemas::paced_train::ExceptionType;
 use schemas::paced_train::InitialSpeedChangeGroup;
 use schemas::paced_train::LabelsChangeGroup;
 use schemas::paced_train::OptionsChangeGroup;
-use schemas::paced_train::Paced;
 use schemas::paced_train::PacedTrainException;
 use schemas::paced_train::PathAndScheduleChangeGroup;
 use schemas::paced_train::RollingStockCategoryChangeGroup;
@@ -37,7 +33,6 @@ use schemas::paced_train::RollingStockChangeGroup;
 use schemas::paced_train::SpeedLimitTagChangeGroup;
 use schemas::paced_train::StartTimeChangeGroup;
 use schemas::paced_train::TrainNameChangeGroup;
-use schemas::paced_train::TrainSchedule;
 use schemas::primitives::Identifier;
 use schemas::primitives::NonBlankString;
 use schemas::primitives::OSRDObject;
@@ -54,7 +49,6 @@ use schemas::train_schedule::ScheduleItem;
 use schemas::train_schedule::TrainScheduleOptions;
 
 use crate::infra_cache::operation::create::apply_create_operation;
-use crate::models;
 use editoast_models::Infra;
 use editoast_models::TrainScheduleSet;
 
@@ -84,7 +78,7 @@ pub async fn create_timetable_with_train_schedule_set(
 
 pub async fn create_timetable_with_simple_paced_train(
     conn: &mut DbConnection,
-) -> (Timetable, models::TrainSchedule) {
+) -> (Timetable, editoast_models::TrainSchedule) {
     let (timetable, train_schedule_set) = create_timetable_with_train_schedule_set(conn).await;
     let train_schedule = create_simple_paced_train(conn, train_schedule_set.id).await;
 
@@ -224,28 +218,18 @@ pub fn create_created_exception_with_change_groups(key: &str) -> PacedTrainExcep
     }
 }
 
-pub fn create_modified_exception_with_change_groups(
-    key: &str,
-    occurrence_index: usize,
-) -> PacedTrainException {
-    let mut exception = create_created_exception_with_change_groups(key);
-    exception.exception_type = ExceptionType::Modified { occurrence_index };
-    exception.change_groups.start_time = None;
-    exception.change_groups.train_name = Some(TrainNameChangeGroup {
-        value: "modified_exception_train_name".to_string(),
-    });
-    exception
-}
-
-pub fn simple_paced_train_base() -> TrainSchedule {
-    TrainSchedule {
+pub fn simple_paced_train_base() -> schemas::paced_train::TrainSchedule {
+    schemas::paced_train::TrainSchedule {
         train_occurrence: schemas::TrainOccurrence::fake(),
-        paced: Some(Paced {
-            time_window: ChronoDuration::hours(2).try_into().unwrap(),
-            interval: ChronoDuration::minutes(15).try_into().unwrap(),
+        paced: Some(schemas::paced_train::Paced {
+            time_window: chrono::Duration::hours(2).try_into().unwrap(),
+            interval: chrono::Duration::minutes(15).try_into().unwrap(),
             exceptions: vec![
-                simple_created_exception_with_change_groups("exception_key_1"),
-                simple_modified_exception_with_change_groups("exception_key_2", 0),
+                schemas::fixtures::simple_created_exception_with_change_groups("exception_key_1"),
+                schemas::fixtures::simple_modified_exception_with_change_groups(
+                    "exception_key_2",
+                    0,
+                ),
             ],
         }),
     }
@@ -253,15 +237,15 @@ pub fn simple_paced_train_base() -> TrainSchedule {
 
 pub fn simple_paced_train_changeset(
     train_schedule_set_id: i64,
-) -> Changeset<models::TrainSchedule> {
-    Changeset::<models::TrainSchedule>::from(simple_paced_train_base())
+) -> Changeset<editoast_models::TrainSchedule> {
+    Changeset::<editoast_models::TrainSchedule>::from(simple_paced_train_base())
         .train_schedule_set_id(train_schedule_set_id)
 }
 
 pub async fn create_simple_paced_train(
     conn: &mut DbConnection,
     train_schedule_set_id: i64,
-) -> models::TrainSchedule {
+) -> editoast_models::TrainSchedule {
     simple_paced_train_changeset(train_schedule_set_id)
         .create(conn)
         .await
@@ -272,7 +256,7 @@ pub async fn create_paced_train_with_exceptions(
     conn: &mut DbConnection,
     train_schedule_set_id: i64,
     exceptions: Vec<PacedTrainException>,
-) -> models::TrainSchedule {
+) -> editoast_models::TrainSchedule {
     let paced_train = simple_paced_train_changeset(train_schedule_set_id).exceptions(exceptions);
     paced_train
         .create(conn)

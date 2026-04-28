@@ -1,10 +1,10 @@
+use crate::prelude::*;
+use crate::rolling_stock::TrainMainCategory;
+use crate::tags::Tags;
 use chrono::DateTime;
 use chrono::Duration as ChronoDuration;
 use chrono::Utc;
 use editoast_derive::Model;
-use editoast_models::prelude::*;
-use editoast_models::rolling_stock::TrainMainCategory;
-use editoast_models::tags::Tags;
 use itertools::Itertools;
 use schemas;
 use schemas::paced_train;
@@ -25,8 +25,10 @@ use serde::Serialize;
 use std::fmt::Display;
 use utoipa::ToSchema;
 
+use crate as editoast_models;
+
 #[derive(Debug, Clone, Model)]
-#[cfg_attr(test, derive(Default, PartialEq))]
+#[cfg_attr(any(test, feature = "testing"), derive(Default, PartialEq))]
 #[model(table = database::tables::train_schedule)]
 #[model(gen(ops = crud, batch_ops = crud, list))]
 pub struct TrainSchedule {
@@ -397,30 +399,184 @@ impl Display for OccurrenceId {
 mod tests {
     use std::str::FromStr;
 
-    use crate::models::TrainSchedule;
-    use crate::models::fixtures::create_created_exception_with_change_groups;
-    use crate::models::fixtures::create_modified_exception_with_change_groups;
-    use crate::models::fixtures::create_timetable;
-    use crate::models::fixtures::simple_paced_train_changeset;
-    use crate::models::fixtures::simple_sub_category;
-    use crate::models::train_schedule::OccurrenceId;
+    use crate::SubCategory;
+    use crate::timetable::Timetable;
+
+    use super::OccurrenceId;
+    use super::TrainSchedule;
+    use crate::rolling_stock::TrainMainCategory;
+    use crate::tags::Tags;
     use chrono::DateTime;
     use chrono::Utc;
     use database::DbConnectionPoolV2;
-    use editoast_models::prelude::*;
-    use editoast_models::rolling_stock::TrainMainCategory;
-    use editoast_models::tags::Tags;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
+    use schemas::TrainScheduleExceptionChangeGroups;
+
+    use schemas::infra::TrackOffset;
+    use schemas::paced_train::ConstraintDistributionChangeGroup;
+    use schemas::paced_train::ExceptionType;
+    use schemas::paced_train::InitialSpeedChangeGroup;
+    use schemas::paced_train::LabelsChangeGroup;
+    use schemas::paced_train::OptionsChangeGroup;
+    use schemas::paced_train::Paced;
     use schemas::paced_train::PacedTrainException;
+    use schemas::paced_train::PathAndScheduleChangeGroup;
     use schemas::paced_train::RollingStockCategoryChangeGroup;
+    use schemas::paced_train::RollingStockChangeGroup;
+    use schemas::paced_train::SpeedLimitTagChangeGroup;
     use schemas::paced_train::StartTimeChangeGroup;
+    use schemas::paced_train::TrainNameChangeGroup;
+    use schemas::primitives::Identifier;
+    use schemas::primitives::NonBlankString;
+
+    use schemas::rolling_stock::SubCategoryColor;
     use schemas::train_schedule::Comfort;
     use schemas::train_schedule::Distribution;
+    use schemas::train_schedule::MarginValue;
     use schemas::train_schedule::Margins;
+    use schemas::train_schedule::OperationalPointPartReference;
+    use schemas::train_schedule::OperationalPointReference;
+    use schemas::train_schedule::PathItem;
+    use schemas::train_schedule::PathItemLocation;
+    use schemas::train_schedule::ScheduleItem;
     use schemas::train_schedule::TrainScheduleOptions;
 
-    pub fn create_paced_train(exceptions: Vec<PacedTrainException>) -> TrainSchedule {
+    use crate::prelude::*;
+
+    fn create_created_exception_with_change_groups(key: &str) -> PacedTrainException {
+        PacedTrainException {
+            key: key.into(),
+            exception_type: ExceptionType::Created {},
+            disabled: false,
+            change_groups: TrainScheduleExceptionChangeGroups {
+                train_name: Some(TrainNameChangeGroup {
+                    value: "created_exception_train_name".into(),
+                }),
+                constraint_distribution: Some(ConstraintDistributionChangeGroup {
+                    value: Distribution::Mareco,
+                }),
+                initial_speed: Some(InitialSpeedChangeGroup { value: 10.0 }),
+                labels: Some(LabelsChangeGroup {
+                    value: vec!["Label 1".to_string(), "Label 3".to_string()],
+                }),
+                options: Some(OptionsChangeGroup {
+                    value: TrainScheduleOptions::default(),
+                }),
+                path_and_schedule: Some(PathAndScheduleChangeGroup {
+                    power_restrictions: vec![],
+                    schedule: vec![
+                        ScheduleItem {
+                            at: NonBlankString("aa".to_string()),
+                            ..Default::default()
+                        },
+                        ScheduleItem {
+                            at: NonBlankString("bb".to_string()),
+                            ..Default::default()
+                        },
+                        ScheduleItem {
+                            at: NonBlankString("cc".to_string()),
+                            ..Default::default()
+                        },
+                        ScheduleItem {
+                            at: NonBlankString("dd".to_string()),
+                            ..Default::default()
+                        },
+                    ],
+                    path: vec![
+                        PathItem {
+                            id: "aa".into(),
+                            location: PathItemLocation::TrackOffset(TrackOffset {
+                                offset: 300,
+                                track: Identifier("TC0".to_string()),
+                            }),
+                        },
+                        PathItem {
+                            id: "bb".into(),
+                            location: PathItemLocation::OperationalPointPartReference(
+                                OperationalPointPartReference {
+                                    operational_point: OperationalPointReference::Id {
+                                        operational_point: Identifier(
+                                            "Mid_East_station".to_string(),
+                                        ),
+                                    },
+                                    local_track_name: None,
+                                },
+                            ),
+                        },
+                        PathItem {
+                            id: "cc".into(),
+                            location: PathItemLocation::TrackOffset(TrackOffset {
+                                offset: 300,
+                                track: Identifier("TC1".to_string()),
+                            }),
+                        },
+                        PathItem {
+                            id: "dd".into(),
+                            location: PathItemLocation::TrackOffset(TrackOffset {
+                                offset: 300,
+                                track: Identifier("TC2".to_string()),
+                            }),
+                        },
+                    ],
+                    margins: Margins {
+                        boundaries: vec![],
+                        values: vec![MarginValue::Percentage(5.0)],
+                    },
+                }),
+                rolling_stock: Some(RollingStockChangeGroup {
+                    rolling_stock_name: "simulation_rolling_stock".into(),
+                    comfort: Comfort::AirConditioning,
+                }),
+                rolling_stock_category: Some(RollingStockCategoryChangeGroup { value: None }),
+                speed_limit_tag: Some(SpeedLimitTagChangeGroup {
+                    value: Some(NonBlankString("GB".into())),
+                }),
+                start_time: Some(StartTimeChangeGroup {
+                    value: DateTime::<Utc>::from_str("2025-05-15T15:10:00+02:00").unwrap(),
+                }),
+            },
+        }
+    }
+
+    fn create_modified_exception_with_change_groups(
+        key: &str,
+        occurrence_index: usize,
+    ) -> PacedTrainException {
+        let mut exception = create_created_exception_with_change_groups(key);
+        exception.exception_type = ExceptionType::Modified { occurrence_index };
+        exception.change_groups.start_time = None;
+        exception.change_groups.train_name = Some(TrainNameChangeGroup {
+            value: "modified_exception_train_name".to_string(),
+        });
+        exception
+    }
+
+    fn simple_paced_train_base() -> schemas::paced_train::TrainSchedule {
+        schemas::paced_train::TrainSchedule {
+            train_occurrence: schemas::TrainOccurrence::fake(),
+            paced: Some(Paced {
+                time_window: chrono::Duration::hours(2).try_into().unwrap(),
+                interval: chrono::Duration::minutes(15).try_into().unwrap(),
+                exceptions: vec![
+                    schemas::fixtures::simple_created_exception_with_change_groups(
+                        "exception_key_1",
+                    ),
+                    schemas::fixtures::simple_modified_exception_with_change_groups(
+                        "exception_key_2",
+                        0,
+                    ),
+                ],
+            }),
+        }
+    }
+
+    fn simple_paced_train_changeset(train_schedule_set_id: i64) -> Changeset<TrainSchedule> {
+        Changeset::<TrainSchedule>::from(simple_paced_train_base())
+            .train_schedule_set_id(train_schedule_set_id)
+    }
+
+    fn create_paced_train(exceptions: Vec<PacedTrainException>) -> TrainSchedule {
         TrainSchedule {
             id: 1,
             train_schedule_set_id: 1,
@@ -448,6 +604,19 @@ mod tests {
             sub_category: None,
             exceptions,
         }
+    }
+
+    fn simple_sub_category(
+        code: &str,
+        main_category: crate::rolling_stock::TrainMainCategory,
+    ) -> Changeset<SubCategory> {
+        SubCategory::changeset()
+            .code(code.to_string())
+            .name(code.to_uppercase())
+            .main_category(main_category)
+            .color("#ff0000".parse::<SubCategoryColor>().unwrap())
+            .background_color("#ff2200".parse::<SubCategoryColor>().unwrap())
+            .hovered_color("#ff4400".parse::<SubCategoryColor>().unwrap())
     }
 
     #[tokio::test]
@@ -685,7 +854,10 @@ mod tests {
     async fn paced_train_both_categories_check_post() {
         let pool = DbConnectionPoolV2::for_tests();
 
-        let timetable = create_timetable(&mut pool.get_ok()).await;
+        let timetable = Timetable::changeset()
+            .create(&mut pool.get_ok())
+            .await
+            .expect("Failed to create timetable");
         let paced_train_changeset = simple_paced_train_changeset(timetable.id);
         let created_sub_category = simple_sub_category(
             "tjv",
@@ -707,7 +879,7 @@ mod tests {
 
         assert_eq!(
             error,
-            editoast_models::Error::CheckViolation {
+            crate::Error::CheckViolation {
                 constraint: "only_one_category".to_string(),
             }
         );
