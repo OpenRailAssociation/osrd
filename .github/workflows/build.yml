@@ -26,12 +26,21 @@ jobs:
 
   build-editoast:
     uses: ./.github/workflows/build-images.yml
-    name: Build (editoast, editoast-test)
+    name: Build (editoast)
     with:
-      targets: editoast editoast-test
+      targets: editoast
       artifact_name: images-editoast
       artifact_paths: |
         osrd-editoast.tar
+    secrets: inherit
+
+  build-editoast-test:
+    uses: ./.github/workflows/build-images.yml
+    name: Build (editoast-test)
+    with:
+      targets: editoast-test
+      artifact_name: images-editoast-test
+      artifact_paths: |
         osrd-editoast-test.tar
     secrets: inherit
 
@@ -396,7 +405,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Check editoast tests
     needs:
-      - build-editoast
+      - build-editoast-test
     steps:
       - name: Checkout
         uses: actions/checkout@v7.0.1
@@ -411,7 +420,7 @@ jobs:
           path: .
 
       - name: Load built images
-        if: needs.build-editoast.outputs.output_method == 'artifact'
+        if: needs.build-editoast-test.outputs.output_method == 'artifact'
         run: |
           docker load --input ./osrd-editoast-test.tar
 
@@ -435,7 +444,7 @@ jobs:
             -e DATABASE_URL="postgres://osrd:password@localhost:5432/osrd" \
             -e CI="true" \
             -e FGA_API_URL="http://localhost:8091" \
-            ${{ fromJSON(needs.build-editoast.outputs.stable_tags).editoast-test }} \
+            ${{ fromJSON(needs.build-editoast-test.outputs.stable_tags).editoast-test }} \
             /bin/sh -c "diesel migration run --locked-schema && RUST_LOG=error RUST_BACKTRACE=1 cargo test --workspace -- --test-threads=4"
 
           exit $(docker wait editoast-test)
@@ -447,7 +456,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Check editoast lints
     needs:
-      - build-editoast
+      - build-editoast-test
     steps:
       - name: Checkout
         uses: actions/checkout@v7.0.1
@@ -462,7 +471,7 @@ jobs:
           path: .
 
       - name: Load built images
-        if: needs.build-editoast.outputs.output_method == 'artifact'
+        if: needs.build-editoast-test.outputs.output_method == 'artifact'
         run: |
           docker load --input ./osrd-editoast-test.tar
 
@@ -470,7 +479,7 @@ jobs:
         run: |
           docker run --name=editoast-doc --net=host -v $PWD/output:/output \
             -e RUSTDOCFLAGS="-D warnings" \
-            ${{ fromJSON(needs.build-editoast.outputs.stable_tags).editoast-test }} \
+            ${{ fromJSON(needs.build-editoast-test.outputs.stable_tags).editoast-test }} \
             cargo doc --manifest-path ./Cargo.toml --no-deps
 
           exit $(docker wait editoast-doc)
@@ -478,7 +487,7 @@ jobs:
       - name: Format check
         run: |
           docker run --name=editoast-format --net=host -v $PWD/output:/output \
-            ${{ fromJSON(needs.build-editoast.outputs.stable_tags).editoast-test }} \
+            ${{ fromJSON(needs.build-editoast-test.outputs.stable_tags).editoast-test }} \
             cargo fmt --check
 
           exit $(docker wait editoast-format)
@@ -486,7 +495,7 @@ jobs:
       - name: Clippy check
         run: |
           docker run --name=editoast-clippy --net=host -v $PWD/output:/output \
-            ${{ fromJSON(needs.build-editoast.outputs.stable_tags).editoast-test }} \
+            ${{ fromJSON(needs.build-editoast-test.outputs.stable_tags).editoast-test }} \
             cargo clippy --workspace --all-features --all-targets -- -D warnings
 
           exit $(docker wait editoast-clippy)
