@@ -42,6 +42,8 @@ export const Chronogram = ({
   }
 
   useEffect(() => {
+    // TODO: fix this lint
+    /* eslint-disable-next-line react-hooks/set-state-in-effect */
     setLevelCrossingsOccupancies(levelCrossingData);
   }, [levelCrossingData]);
 

@@ -29,8 +29,6 @@ const ReticleLayer = ({
     // The tooltip shouldn't be displayed when hovering on the linear layers
     if (store.cursor.y && store.cursor.y < height - MARGINS.MARGIN_TOP - MARGINS.MARGIN_BOTTOM) {
       const detailsBox = drawCursor({ ctx, width, height, store });
-      // TODO: fix this lint
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTrainDetails(detailsBox || null);
     } else {
       clearCanvas(ctx, width, height);

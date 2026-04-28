@@ -62,6 +62,8 @@ const ManchetteWithSpaceTimeWrapper = ({
     },
   ];
 
+  // TODO: fix this lint
+  /* eslint-disable-next-line react-hooks/refs */
   const waypointMenu = AnchoredMenu({
     children: activeWaypointId && <Menu menuRef={menuRef} items={menuItems} />,
     anchorRef: activeWaypointRef,

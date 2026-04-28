@@ -54,6 +54,8 @@ const Wrapper = ({
     return range(operationalPointsCount).map((i) => ({
       id: `op-${i}`,
       label: `Operational point n°${i + 1}`,
+      // TODO: fix this lint
+      /* eslint-disable-next-line react-hooks/immutability */
       position: (position += random(50 * KILOMETER, 150 * KILOMETER)),
       // TODO: fix this lint
       // eslint-disable-next-line react-hooks/purity

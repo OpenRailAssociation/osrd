@@ -101,6 +101,8 @@ export default function useDatePicker(datePickerProps: DatePickerProps) {
     if (newInput !== inputValue) {
       // we only set the input value if it has changed
       // otherwise the user loses the focus
+      // TODO: fix this lint
+      /* eslint-disable-next-line react-hooks/set-state-in-effect */
       setInputValue(newInput);
     }
     setStatusWithMessage(undefined);

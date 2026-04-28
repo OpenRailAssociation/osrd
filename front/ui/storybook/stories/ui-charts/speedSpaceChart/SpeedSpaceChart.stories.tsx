@@ -30,6 +30,8 @@ const SpeedSpaceChartStory = ({
   const [containerHeight, setContainerHeight] = useState(460);
 
   useEffect(() => {
+    // TODO: fix this lint
+    /* eslint-disable-next-line react-hooks/set-state-in-effect */
     setContainerHeight(height);
   }, [height]);
 

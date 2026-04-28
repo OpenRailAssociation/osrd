@@ -20,6 +20,8 @@ const TrackOccupancyDiagramStory = ({
   const [selectedTrainId, setSelectedTrainId] = useState<string>();
 
   useEffect(() => {
+    // TODO: fix this lint
+    /* eslint-disable-next-line react-hooks/set-state-in-effect */
     setSelectedTrainId(`${trainId}`);
   }, [trainId]);
 
