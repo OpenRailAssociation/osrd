@@ -26,7 +26,7 @@
     "@reduxjs/toolkit": "^2.11.2",
     "@rjsf/core": "^6.5.1",
     "@rjsf/utils": "^6.4.2",
-    "@rjsf/validator-ajv8": "^6.4.2",
+    "@rjsf/validator-ajv8": "^6.5.1",
     "@sdziadkowiec/react-datasheet-grid": "^4.12.3",
     "@tanstack/react-table": "^8.21.3",
     "@tanstack/react-virtual": "^3.13.24",
