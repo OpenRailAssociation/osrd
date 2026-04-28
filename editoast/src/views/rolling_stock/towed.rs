@@ -2,13 +2,10 @@ use std::sync::Arc;
 
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::views::AuthenticationExt;
-use crate::views::AuthorizationError;
 use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
 use authz::Role;
-use axum::Extension;
 use axum::Json;
 use axum::extract::Path;
 use axum::extract::Query;
@@ -49,7 +46,7 @@ pub(in crate::views) struct PostTowedRollingStockQueryParams {
 }
 
 /// Create a towed rolling stock
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
     tag = "rolling_stock",
@@ -61,17 +58,9 @@ pub(in crate::views) struct PostTowedRollingStockQueryParams {
 )]
 pub(in crate::views) async fn post(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Query(query_params): Query<PostTowedRollingStockQueryParams>,
     Json(towed_rolling_stock_form): Json<TowedRollingStockForm>,
 ) -> Result<Json<TowedRollingStock>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
     let conn = &mut db_pool.get().await?;
     let rolling_stock_changeset: Changeset<TowedRollingStock> = towed_rolling_stock_form.into();
 
@@ -103,16 +92,8 @@ pub(in crate::views) struct TowedRollingStockCountList {
 )]
 pub(in crate::views) async fn get_list(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Query(page_settings): Query<PaginationQueryParams<50>>,
 ) -> Result<Json<TowedRollingStockCountList>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
     let settings = page_settings
         .into_selection_settings()
         .order_by(|| TowedRollingStock::ID.asc());
@@ -141,19 +122,10 @@ pub struct TowedRollingStockIdParam {
 )]
 pub(in crate::views) async fn get_by_id(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(TowedRollingStockIdParam {
         towed_rolling_stock_id,
     }): Path<TowedRollingStockIdParam>,
 ) -> Result<Json<TowedRollingStock>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let towed_rolling_stock =
         TowedRollingStock::retrieve_or_fail(db_pool.get().await?, towed_rolling_stock_id, || {
             TowedRollingStockError::IdNotFound {
@@ -164,7 +136,7 @@ pub(in crate::views) async fn get_by_id(
     Ok(Json(towed_rolling_stock))
 }
 
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     put, path = "",
     tag = "rolling_stock",
@@ -176,20 +148,11 @@ pub(in crate::views) async fn get_by_id(
 )]
 pub(in crate::views) async fn put_by_id(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(TowedRollingStockIdParam {
         towed_rolling_stock_id,
     }): Path<TowedRollingStockIdParam>,
     Json(towed_rolling_stock_form): Json<TowedRollingStockForm>,
 ) -> Result<Json<TowedRollingStock>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let new_towed_rolling_stock = db_pool
         .get()
         .await?
@@ -236,7 +199,7 @@ pub(in crate::views) struct TowedRollingStockLockedForm {
     pub locked: bool,
 }
 
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     patch, path = "",
     tag = "rolling_stock",
@@ -248,18 +211,9 @@ pub(in crate::views) struct TowedRollingStockLockedForm {
 )]
 pub(in crate::views) async fn patch_by_id_locked(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(towed_rolling_stock_id): Path<i64>,
     Json(TowedRollingStockLockedForm { locked }): Json<TowedRollingStockLockedForm>,
 ) -> Result<StatusCode> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let conn = &mut db_pool.get().await?;
 
     TowedRollingStock::changeset()

@@ -16,7 +16,6 @@ use super::InfraApiError;
 use super::InfraIdParam;
 use crate::error::Result;
 use crate::views::AuthenticationExt;
-use crate::views::AuthorizationError;
 use editoast_models::Infra;
 use editoast_models::infra::ObjectQueryable;
 use editoast_models::prelude::*;
@@ -60,14 +59,6 @@ pub(in crate::views) async fn get_objects(
     Extension(auth): AuthenticationExt,
     Json(obj_ids): Json<Vec<String>>,
 ) -> Result<Json<Vec<ObjectQueryable>>> {
-    // Check user roles
-    let has_role = auth
-        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
-        .await?;
-    if !has_role {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     if !has_unique_ids(&obj_ids) {
         return Err(GetObjectsErrors::DuplicateIdsProvided.into());
     }
@@ -140,15 +131,6 @@ pub(in crate::views) async fn list_objects_ids(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<ListObjectsResponse>> {
-    // Check user roles
-    let has_role = auth
-        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !has_role {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })

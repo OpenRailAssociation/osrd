@@ -176,7 +176,7 @@ pub(in crate::views) struct UserInfo {
     groups: HashSet<Group>,
 }
 
-#[editoast_derive::route]
+#[editoast_derive::route(Role::Admin)]
 #[utoipa::path(
     post,
     path = "",
@@ -192,19 +192,11 @@ pub(in crate::views) struct UserInfo {
     ))
 )]
 pub(in crate::views) async fn users_info(
-    Extension(auth): AuthenticationExt,
     State(AppState {
         regulator, db_pool, ..
     }): State<AppState>,
     Json(body): Json<UsersInfoRequest>,
 ) -> Result<Json<Vec<UserInfo>>> {
-    let authorized = auth
-        .check_roles([Role::Admin].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
     let UsersInfoRequest { ids: user_ids, .. } = body.clone();
 
     // Retrieve users by IDs
@@ -755,7 +747,7 @@ pub(in crate::views) async fn update_grants(
     }
 }
 
-#[editoast_derive::route]
+#[editoast_derive::route(Role::Admin)]
 #[utoipa::path(
     get,
     path = "",
@@ -767,17 +759,8 @@ pub(in crate::views) async fn update_grants(
     ))
 )]
 pub(in crate::views) async fn list_groups(
-    Extension(auth): AuthenticationExt,
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
 ) -> Result<Json<Vec<Group>>> {
-    let authorized = auth
-        .check_roles([Role::Admin].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let mut groups = Group::list(&mut db_pool.get().await?, SelectionSettings::new()).await?;
 
     groups.sort_by_key(|g| g.id);

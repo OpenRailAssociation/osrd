@@ -7,7 +7,6 @@ use std::io::Cursor;
 use std::sync::Arc;
 
 use authz::Role;
-use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Multipart;
 use axum::extract::Path;
@@ -39,8 +38,6 @@ use utoipa::ToSchema;
 
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::views::AuthenticationExt;
-use crate::views::AuthorizationError;
 
 #[derive(Debug, Serialize, ToSchema)]
 pub struct RollingStockWithLiveries {
@@ -173,7 +170,7 @@ pub struct RollingStockNameParam {
 }
 
 /// Get a rolling stock by Id
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     get, path = "",
     tag = "rolling_stock",
@@ -184,16 +181,8 @@ pub struct RollingStockNameParam {
 )]
 pub(in crate::views) async fn get(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(rolling_stock_id): Path<i64>,
 ) -> Result<Json<RollingStockWithLiveries>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
     let rolling_stock = retrieve_existing_rolling_stock(
         &mut db_pool.get().await?,
         RollingStockKey::Id(rolling_stock_id),
@@ -205,7 +194,7 @@ pub(in crate::views) async fn get(
 }
 
 /// Get a rolling stock by name
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     get, path = "",
     tag = "rolling_stock",
@@ -216,17 +205,8 @@ pub(in crate::views) async fn get(
 )]
 pub(in crate::views) async fn get_by_name(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(rolling_stock_name): Path<String>,
 ) -> Result<Json<RollingStockWithLiveries>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let rolling_stock = retrieve_existing_rolling_stock(
         &mut db_pool.get().await?,
         RollingStockKey::Name(rolling_stock_name),
@@ -238,7 +218,7 @@ pub(in crate::views) async fn get_by_name(
 }
 
 /// Returns the set of power restrictions for all rolling_stocks modes.
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     get, path = "",
     tag = "rolling_stock",
@@ -248,15 +228,7 @@ pub(in crate::views) async fn get_by_name(
 )]
 pub(in crate::views) async fn get_power_restrictions(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
 ) -> Result<Json<Vec<String>>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
     let conn = &mut db_pool.get().await?;
     let power_restrictions = RollingStock::get_power_restrictions(conn).await?;
     Ok(Json(
@@ -275,7 +247,7 @@ pub(in crate::views) struct PostRollingStockQueryParams {
 }
 
 /// Create a rolling stock
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
     tag = "rolling_stock",
@@ -287,18 +259,9 @@ pub(in crate::views) struct PostRollingStockQueryParams {
 )]
 pub(in crate::views) async fn create(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Query(query_params): Query<PostRollingStockQueryParams>,
     Json(rolling_stock_form): Json<RollingStockForm>,
 ) -> Result<Json<RollingStock>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let conn = &mut db_pool.get().await?;
     let rolling_stock_changeset: Changeset<RollingStock> = rolling_stock_form.into();
 
@@ -313,7 +276,7 @@ pub(in crate::views) async fn create(
 }
 
 /// Modify a rolling stock
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     put, path = "",
     tag = "rolling_stock",
@@ -325,18 +288,9 @@ pub(in crate::views) async fn create(
 )]
 pub(in crate::views) async fn update(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(rolling_stock_id): Path<i64>,
     Json(rolling_stock_form): Json<RollingStockForm>,
 ) -> Result<Json<RollingStockWithLiveries>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let new_rolling_stock = db_pool
         .get()
         .await?
@@ -383,7 +337,7 @@ pub(in crate::views) struct DeleteRollingStockQueryParams {
 }
 
 /// Delete a rolling_stock and all entities linked to it
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     delete, path = "",
     tag = "rolling_stock",
@@ -397,17 +351,9 @@ pub(in crate::views) struct DeleteRollingStockQueryParams {
 )]
 pub(in crate::views) async fn delete(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(rolling_stock_id): Path<i64>,
     Query(DeleteRollingStockQueryParams { force }): Query<DeleteRollingStockQueryParams>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
     let conn = &mut db_pool.get().await?;
 
     let rolling_stock = RollingStock::retrieve_or_fail(conn.clone(), rolling_stock_id, || {
@@ -453,7 +399,7 @@ pub(in crate::views) struct RollingStockLockedUpdateForm {
 }
 
 /// Update rolling_stock locked field
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     patch, path = "",
     tag = "rolling_stock",
@@ -465,18 +411,9 @@ pub(in crate::views) struct RollingStockLockedUpdateForm {
 )]
 pub(in crate::views) async fn update_locked(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(rolling_stock_id): Path<i64>,
     Json(RollingStockLockedUpdateForm { locked }): Json<RollingStockLockedUpdateForm>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let conn = &mut db_pool.get().await?;
 
     RollingStock::changeset()
@@ -535,7 +472,7 @@ async fn parse_multipart_content(
 }
 
 /// Create a rolling stock livery
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
     tags = ["rolling_stock", "rolling_stock_livery"],
@@ -548,17 +485,9 @@ async fn parse_multipart_content(
 )]
 pub(in crate::views) async fn create_livery(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(rolling_stock_id): Path<i64>,
     form: Multipart,
 ) -> Result<Json<schemas::rolling_stock::RollingStockLivery>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
     let conn = &mut db_pool.get().await?;
 
     let (name, images) = parse_multipart_content(form)

@@ -6,7 +6,6 @@ use std::hash::Hasher;
 use std::sync::Arc;
 
 use authz;
-use authz::Role;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -36,7 +35,6 @@ use crate::AppState;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::views::AuthenticationExt;
-use crate::views::AuthorizationError;
 use crate::views::path::PathfindingError;
 use crate::views::path::operational_point_cache::OperationalPointCache;
 use editoast_models::Infra;
@@ -229,14 +227,6 @@ pub(in crate::views) async fn post(
     Path(infra_id): Path<i64>,
     Json(path_input): Json<PathfindingInput>,
 ) -> Result<Json<PathfindingResult>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let conn = db_pool.get().await?;
     let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || {
         PathfindingError::InfraNotFound { infra_id }

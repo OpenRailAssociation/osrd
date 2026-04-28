@@ -26,7 +26,6 @@ use crate::infra_cache::operation::Operation;
 use crate::infra_cache::operation::UpdateOperation;
 use crate::infra_cache::operation::patch_infra_object;
 use crate::views::AuthenticationExt;
-use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use editoast_models::Infra;
@@ -100,14 +99,6 @@ pub(in crate::views) async fn list_auto_fixes(
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<Vec<Operation>>> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let mut conn = db_pool.get().await?;
     let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || InfraApiError::NotFound {
         infra_id,

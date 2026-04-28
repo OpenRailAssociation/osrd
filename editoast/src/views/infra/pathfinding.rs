@@ -20,7 +20,6 @@ use crate::error::Result;
 use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::views::AuthenticationExt;
-use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use editoast_models::Infra;
@@ -99,14 +98,6 @@ pub(in crate::views) async fn pathfinding_view(
     Query(params): Query<QueryParam>,
     Json(input): Json<InfraPathfindingInput>,
 ) -> Result<Json<Vec<PathfindingOutput>>> {
-    // Check user roles
-    let has_role = auth
-        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
-        .await?;
-    if !has_role {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     // Parse and check input
     let number = params.number.unwrap_or(DEFAULT_NUMBER_OF_PATHS);
     if !(1..=MAX_NUMBER_OF_PATHS).contains(&number) {

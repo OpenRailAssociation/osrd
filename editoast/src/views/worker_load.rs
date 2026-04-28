@@ -16,7 +16,6 @@ use utoipa::ToSchema;
 use super::AuthenticationExt;
 use crate::AppState;
 use crate::error::Result;
-use crate::views::AuthorizationError;
 use editoast_models::Infra;
 use editoast_models::timetable::Timetable;
 
@@ -85,14 +84,6 @@ pub(in crate::views) async fn worker_load(
         timetable_id,
     }): Json<WorkerLoadForm>,
 ) -> Result<Json<WorkerStatus>> {
-    // Check user roles
-    let has_role = auth
-        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
-        .await?;
-    if !has_role {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         WorkerLoadError::InfraNotFound { infra_id }
     })

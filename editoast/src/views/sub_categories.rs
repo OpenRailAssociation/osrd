@@ -1,5 +1,4 @@
 use authz;
-use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
@@ -18,8 +17,6 @@ use utoipa::ToSchema;
 
 use crate::error::Result;
 use crate::models;
-use crate::views::AuthenticationExt;
-use crate::views::AuthorizationError;
 use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
@@ -70,17 +67,8 @@ pub(in crate::views) struct SubCategoryPage {
 )]
 pub(in crate::views) async fn get_sub_categories(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Query(pagination): Query<PaginationQueryParams<1000>>,
 ) -> Result<Json<SubCategoryPage>> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let mut conn = db_pool.get().await?;
 
     let (sub_categories, stats) = editoast_models::SubCategory::list_paginated(
@@ -97,7 +85,7 @@ pub(in crate::views) async fn get_sub_categories(
     }))
 }
 
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::Admin)]
 #[utoipa::path(
     post, path = "",
     tag = "sub_categories",
@@ -108,16 +96,8 @@ pub(in crate::views) async fn get_sub_categories(
 )]
 pub(in crate::views) async fn create_sub_categories(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Json(data): Json<Vec<SubCategory>>,
 ) -> Result<Json<Vec<SubCategory>>> {
-    let authorized = auth
-        .check_roles([authz::Role::Admin].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
     let conn = &mut db_pool.get().await?;
 
     let sub_categories: Vec<Changeset<editoast_models::SubCategory>> =
@@ -138,7 +118,7 @@ struct SubCategoryCodeParam {
     code: String,
 }
 
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::Admin)]
 #[utoipa::path(
     delete, path = "",
     tag = "sub_categories",
@@ -150,16 +130,7 @@ struct SubCategoryCodeParam {
 pub(in crate::views) async fn delete_sub_category(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Path(code): Path<String>,
-    Extension(auth): AuthenticationExt,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([authz::Role::Admin].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let conn = db_pool.get().await?;
 
     conn.transaction(|mut tx| {

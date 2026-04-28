@@ -2,7 +2,6 @@ use std::collections::HashSet;
 use std::sync::Arc;
 
 use authz;
-use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
@@ -21,10 +20,8 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
-use super::AuthenticationExt;
 use crate::error::Result;
 use crate::models;
-use crate::views::AuthorizationError;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "train_schedule_exception")]
@@ -84,7 +81,7 @@ impl From<TrainScheduleExceptionForm> for TrainScheduleExceptionChangeset {
 }
 
 /// Create a train schedule exception
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
     tags = ["train_schedule_exceptions"],
@@ -96,18 +93,9 @@ impl From<TrainScheduleExceptionForm> for TrainScheduleExceptionChangeset {
 )]
 pub(in crate::views) async fn create_train_schedule_exception(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
     Json(train_schedule_exception_form): Json<TrainScheduleExceptionForm>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let conn = &mut db_pool.get().await?;
 
     Timetable::exists_or_fail(conn, timetable_id, || {
@@ -144,7 +132,7 @@ pub(in crate::views) async fn create_train_schedule_exception(
 }
 
 /// Delete train schedule exceptions
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
     tags = ["train_schedule_exceptions"],
@@ -158,17 +146,8 @@ pub(in crate::views) async fn create_train_schedule_exception(
 )]
 pub(in crate::views) async fn delete(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Json(ExceptionIdsParam { ids: exception_ids }): Json<ExceptionIdsParam>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let conn = &mut db_pool.get().await?;
 
     editoast_models::TrainScheduleException::delete_batch_or_fail(conn, exception_ids, |count| {
@@ -180,7 +159,7 @@ pub(in crate::views) async fn delete(
 }
 
 /// Update a train schedule exception
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     put, path = "",
     tags = ["train_schedule_exceptions"],
@@ -192,18 +171,9 @@ pub(in crate::views) async fn delete(
 )]
 pub(in crate::views) async fn update(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(ExceptionIdParam { id: exception_id }): Path<ExceptionIdParam>,
     Json(train_schedule_exception_form): Json<TrainScheduleExceptionForm>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let conn = &mut db_pool.get().await?;
 
     let train_schedule_id = train_schedule_exception_form.train_schedule_id;

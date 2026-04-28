@@ -1,5 +1,4 @@
 use authz::Role;
-use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
@@ -19,8 +18,6 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
-use super::AuthenticationExt;
-use super::AuthorizationError;
 use super::operational_studies::OperationalStudiesOrderingParam;
 use super::pagination::PaginationStats;
 use crate::error::InternalError;
@@ -162,7 +159,7 @@ impl StudyCreateForm {
 }
 
 /// Create a new study
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
     tag = "studies",
@@ -173,17 +170,8 @@ impl StudyCreateForm {
 )]
 pub(in crate::views) async fn create(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Json(data): Json<StudyCreateForm>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let study = Project::transactional_content_update(
         db_pool.get().await?,
         data.project_id,
@@ -210,7 +198,7 @@ pub(in crate::views) struct StudyIdParam {
 }
 
 /// Delete a study
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     delete, path = "",
     tag = "studies",
@@ -221,17 +209,8 @@ pub(in crate::views) struct StudyIdParam {
 )]
 pub(in crate::views) async fn delete(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(StudyIdParam { study_id }): Path<StudyIdParam>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let conn = db_pool.get().await?;
 
     conn.transaction(async move |conn| {
@@ -255,7 +234,7 @@ pub(in crate::views) async fn delete(
 }
 
 /// Return a specific study
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     get, path = "",
     tag = "studies",
@@ -266,17 +245,8 @@ pub(in crate::views) async fn delete(
 )]
 pub(in crate::views) async fn get(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(StudyIdParam { study_id }): Path<StudyIdParam>,
 ) -> Result<Json<StudyResponse>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let (study_scenarios, project) = db_pool
         .get()
         .await?
@@ -361,7 +331,7 @@ impl StudyPatchForm {
 }
 
 /// Update a study
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     patch, path = "",
     tag = "studies",
@@ -376,18 +346,9 @@ impl StudyPatchForm {
 )]
 pub(in crate::views) async fn patch(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(StudyIdParam { study_id }): Path<StudyIdParam>,
     Json(data): Json<StudyPatchForm>,
 ) -> Result<Json<StudyWithScenarioCount>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let response = Study::transactional_content_update(
         db_pool.get().await?,
         study_id,
@@ -443,7 +404,7 @@ pub(in crate::views) struct ListStudiesQueryParams {
 }
 
 /// Return a list of studies
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     get, path = "",
     tag = "studies",
@@ -454,19 +415,10 @@ pub(in crate::views) struct ListStudiesQueryParams {
 )]
 pub(in crate::views) async fn list(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Query(ListStudiesQueryParams { project_id }): Query<ListStudiesQueryParams>,
     Query(pagination_params): Query<PaginationQueryParams<1000>>,
     Query(ordering_params): Query<OperationalStudiesOrderingParam>,
 ) -> Result<Json<StudyListResponse>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let ordering = ordering_params.ordering;
     match Project::exists(&mut db_pool.get().await?, project_id).await {
         Ok(true) => (),

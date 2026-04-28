@@ -49,7 +49,6 @@ use crate::error::Result;
 use crate::models;
 use crate::models::train_schedule::OccurrenceId;
 use crate::models::train_schedule::TrainScheduleChangeset;
-use crate::views::AuthorizationError;
 use crate::views::infra::InfraIdQueryParam;
 use crate::views::path::operational_point_cache::OperationalPointCache;
 use crate::views::path::pathfinding::PathfindingResult;
@@ -146,19 +145,10 @@ pub(in crate::views) struct TrainScheduleIdParam {
 )]
 pub(in crate::views) async fn get_by_id(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(TrainScheduleIdParam {
         id: train_schedule_id,
     }): Path<TrainScheduleIdParam>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let conn = &mut db_pool.get().await?;
 
     let train_schedule =
@@ -173,7 +163,7 @@ pub(in crate::views) async fn get_by_id(
 }
 
 /// Update a paced train
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     put, path = "",
     tags = ["timetable", "train_schedule"],
@@ -185,20 +175,11 @@ pub(in crate::views) async fn get_by_id(
 )]
 pub(in crate::views) async fn update_train_schedule(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(TrainScheduleIdParam {
         id: train_schedule_id,
     }): Path<TrainScheduleIdParam>,
     Json(train_schedule_base): Json<TrainSchedule>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let conn = &mut db_pool.get().await?;
     let train_schedule_changeset: TrainScheduleChangeset = train_schedule_base.into();
     train_schedule_changeset
@@ -216,7 +197,7 @@ pub(in crate::views) struct TrainScheduleIds {
 }
 
 /// Delete a train schedule
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     delete, path = "",
     tags = ["timetable", "train_schedule"],
@@ -227,19 +208,10 @@ pub(in crate::views) struct TrainScheduleIds {
 )]
 pub(in crate::views) async fn delete(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Json(TrainScheduleIds {
         ids: train_schedule_ids,
     }): Json<TrainScheduleIds>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let conn = &mut db_pool.get().await?;
     models::TrainSchedule::delete_batch_or_fail(conn, train_schedule_ids, |count| {
         TrainScheduleError::BatchNotFound { count }
@@ -303,7 +275,7 @@ struct SimulationContext {
 
 /// Associate each train schedule id with its simulation summaries response
 /// If the simulation fails, it associates the reason: pathfinding failed or running time failed
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
     tag = "train_schedule",
@@ -326,14 +298,6 @@ pub(in crate::views) async fn simulation_summary(
         ids: train_schedule_ids,
     }): Json<SimulationBatchForm>,
 ) -> Result<Json<HashMap<i64, TrainScheduleSummaryResponse>>> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let conn = &mut db_pool.get().await?;
 
     let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || {
@@ -620,13 +584,6 @@ pub(in crate::views) async fn get_path(
     Query(InfraIdQueryParam { infra_id }): Query<InfraIdQueryParam>,
     Query(ExceptionQueryParam { exception_key }): Query<ExceptionQueryParam>,
 ) -> Result<Json<PathfindingResult>> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
     let conn = db_pool.get().await?;
     let mut valkey_conn = valkey_client.get_connection().await?;
 
@@ -684,7 +641,7 @@ pub struct ElectricalProfileSetIdQueryParam {
 }
 
 /// Retrieve the space, speed and time curve of a given train
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     get, path = "",
     tag = "train_schedule",
@@ -711,14 +668,6 @@ pub(in crate::views) async fn simulation(
     }): Query<ElectricalProfileSetIdQueryParam>,
     Query(ExceptionQueryParam { exception_key }): Query<ExceptionQueryParam>,
 ) -> Result<Json<simulation::Response>> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     // Retrieve infra or fail
     let infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         TrainScheduleError::InfraNotFound { infra_id }
@@ -800,14 +749,6 @@ pub(in crate::views) async fn etcs_braking_curves(
     }): Query<ElectricalProfileSetIdQueryParam>,
     Query(ExceptionQueryParam { exception_key }): Query<ExceptionQueryParam>,
 ) -> Result<Json<core_client::etcs_braking_curves::Response>> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     // Retrieve infra or fail
     let infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         TrainScheduleError::InfraNotFound { infra_id }
@@ -940,7 +881,7 @@ pub struct ProjectPathTrainScheduleResult {
 ///     - train schedules for which the simulation fails
 /// - Trains that have a simulation but that does not honor their schedule, use their schedule with straight lines
 ///   between the known points.
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
     tag = "train_schedule",
@@ -968,14 +909,6 @@ pub(in crate::views) async fn project_path(
         TrainScheduleError::InfraNotFound { infra_id }
     })
     .await?;
-
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
 
     auth.check_authorization(async |authorizer| {
         authorizer
@@ -1104,14 +1037,6 @@ pub(in crate::views) async fn project_path_op(
         TrainScheduleError::InfraNotFound { infra_id }
     })
     .await?;
-
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
 
     auth.check_authorization(async |authorizer| {
         authorizer
@@ -1254,7 +1179,7 @@ pub struct OccupancyBlocksTrainScheduleResult {
 /// - train schedules for which pathfinding fails
 /// - train schedules for which the simulation fails
 /// - train schedules for which the simulation does not respect schedule times
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
     tag = "train_schedule",
@@ -1279,14 +1204,6 @@ pub(in crate::views) async fn occupancy_blocks(
         electrical_profile_set_id,
     }): Json<OccupancyBlockForm>,
 ) -> Result<Json<HashMap<i64, OccupancyBlocksTrainScheduleResult>>> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     auth.check_authorization(async |authorizer| {
         authorizer
             .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
@@ -1404,7 +1321,7 @@ pub(in crate::views) struct TrackSectionOccupancy {
     trains: Vec<TrackOccupancy>,
 }
 
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
     tag = "train_schedule",
@@ -1431,14 +1348,6 @@ pub(in crate::views) async fn track_occupancy(
         use_simulation,
     }): Json<TrackOccupancyForm>,
 ) -> Result<Json<Vec<TrackSectionOccupancy>>> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     auth.check_authorization(async |authorizer| {
         authorizer
             .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
@@ -1707,7 +1616,7 @@ pub(in crate::views) struct MoveTrainSchedulesForm {
     pub train_schedule_set_id: i64,
 }
 
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     patch, path = "",
     tag = "train_schedule",
@@ -1718,20 +1627,11 @@ pub(in crate::views) struct MoveTrainSchedulesForm {
 )]
 pub(in crate::views) async fn move_train_schedules_to_another_train_schedule_set(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Json(MoveTrainSchedulesForm {
         train_schedule_ids,
         train_schedule_set_id,
     }): Json<MoveTrainSchedulesForm>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     TrainScheduleSet::exists_or_fail(&mut db_pool.get().await?, train_schedule_set_id, || {
         TrainScheduleError::TrainScheduleSetNotFound {
             train_schedule_set_id,

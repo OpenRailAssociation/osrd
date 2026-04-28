@@ -12,7 +12,6 @@ use thiserror::Error;
 
 use crate::error::Result;
 use crate::views::AuthenticationExt;
-use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use editoast_models::Infra;
@@ -44,14 +43,6 @@ pub(in crate::views) async fn get_line_bbox(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<BoundingBox>> {
-    // Check user roles
-    let has_role = auth
-        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
-        .await?;
-    if !has_role {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let line_code: i32 = line_code.try_into().unwrap();
 
     let mut conn = db_pool.get().await?;

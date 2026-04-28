@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 
-use authz::Role;
-use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
@@ -20,8 +18,6 @@ use crate::AppState;
 use crate::error::Result;
 use crate::map::get_cache_tile_key;
 use crate::map::get_view_cache_prefix;
-use crate::views::AuthenticationExt;
-use crate::views::AuthorizationError;
 use editoast_models::map::GeoJsonAndData;
 use editoast_models::map::Layer;
 use editoast_models::map::MapLayers;
@@ -107,18 +103,9 @@ pub(in crate::views) async fn layer_view(
     State(AppState {
         map_layers, config, ..
     }): State<AppState>,
-    Extension(auth): AuthenticationExt,
     Path((layer_slug, view_slug)): Path<(String, String)>,
     Query(InfraQueryParam { infra: infra_id }): Query<InfraQueryParam>,
 ) -> Result<Json<ViewMetadata>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let layer = match map_layers.layers.get(&layer_slug) {
         Some(layer) => layer,
         None => return Err(LayersError::new_layer_not_found(layer_slug, &map_layers).into()),
@@ -177,18 +164,9 @@ pub(in crate::views) async fn cache_and_get_mvt_tile(
         config,
         ..
     }): State<AppState>,
-    Extension(auth): AuthenticationExt,
     Path((layer_slug, view_slug, z, x, y)): Path<(String, String, u64, u64, u64)>,
     Query(InfraQueryParam { infra: infra_id }): Query<InfraQueryParam>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let layer = match map_layers.layers.get(&layer_slug) {
         Some(layer) => layer,
         None => return Err(LayersError::new_layer_not_found(layer_slug, &map_layers).into()),

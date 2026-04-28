@@ -2,7 +2,6 @@ use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
 use authz::Role;
-use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
@@ -29,8 +28,6 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::error::Result;
-use crate::views::AuthenticationExt;
-use crate::views::AuthorizationError;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "stdcm_search_env")]
@@ -194,7 +191,7 @@ impl From<editoast_models::stdcm_search_environment::StdcmSearchEnvironment>
     }
 }
 
-#[editoast_derive::route]
+#[editoast_derive::route(Role::Admin)]
 #[utoipa::path(
     post, path = "",
     tag = "stdcm_search_environment",
@@ -205,23 +202,14 @@ impl From<editoast_models::stdcm_search_environment::StdcmSearchEnvironment>
 )]
 pub(in crate::views) async fn create(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Json(form): Json<StdcmSearchEnvironmentCreateForm>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([Role::Admin].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let conn = &mut db_pool.get().await?;
     let changeset: Changeset<StdcmSearchEnvironment> = form.into();
     Ok((StatusCode::CREATED, Json(changeset.create(conn).await?)))
 }
 
-#[editoast_derive::route]
+#[editoast_derive::route(Role::Stdcm)]
 #[utoipa::path(
     get, path = "",
     tag = "stdcm_search_environment",
@@ -232,16 +220,7 @@ pub(in crate::views) async fn create(
 )]
 pub(in crate::views) async fn retrieve_latest(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
 ) -> Result<Response> {
-    let authorized = auth
-        .check_roles([Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let conn = &mut db_pool.get().await?;
     let search_env = StdcmSearchEnvironment::retrieve_latest_enabled(conn).await;
     if let Some(search_env) = search_env {
@@ -259,7 +238,7 @@ pub(in crate::views) struct StdcmSearchEnvIdParam {
     env_id: i64,
 }
 
-#[editoast_derive::route]
+#[editoast_derive::route(Role::Admin)]
 #[utoipa::path(
     delete, path = "",
     tag = "stdcm_search_environment",
@@ -270,17 +249,8 @@ pub(in crate::views) struct StdcmSearchEnvIdParam {
 )]
 pub(in crate::views) async fn delete(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(StdcmSearchEnvIdParam { env_id }): Path<StdcmSearchEnvIdParam>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([Role::Admin].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let conn = &mut db_pool.get().await?;
     StdcmSearchEnvironment::delete_static_or_fail(conn, env_id, || StdcmSearchEnvError::NotFound {
         env_id,
@@ -299,7 +269,7 @@ pub(in crate::views) struct SdcmSearchEnvListResponse {
     stats: PaginationStats,
 }
 
-#[editoast_derive::route]
+#[editoast_derive::route(Role::Admin)]
 #[utoipa::path(
     get, path = "",
     tag = "stdcm_search_environment",
@@ -310,16 +280,8 @@ pub(in crate::views) struct SdcmSearchEnvListResponse {
 )]
 pub(in crate::views) async fn list(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Query(page_settings): Query<PaginationQueryParams<1000>>,
 ) -> Result<Json<SdcmSearchEnvListResponse>> {
-    let authorized = auth
-        .check_roles([Role::Admin].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
     let mut conn = db_pool.get().await?;
     let settings = page_settings
         .into_selection_settings()

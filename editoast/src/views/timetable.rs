@@ -65,7 +65,6 @@ use crate::error::Result;
 use crate::models;
 use crate::models::train_schedule::OccurrenceId;
 use crate::views::AuthenticationExt;
-use crate::views::AuthorizationError;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 use editoast_models::Infra;
 use editoast_models::TrainScheduleSet;
@@ -113,7 +112,7 @@ pub struct TimetableIdParam {
 }
 
 /// Create a timetable
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
     tag = "timetable",
@@ -123,16 +122,7 @@ pub struct TimetableIdParam {
 )]
 pub(in crate::views) async fn post(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let conn = &mut db_pool.get().await?;
 
     let timetable = Timetable::changeset().create(conn).await?;
@@ -142,7 +132,7 @@ pub(in crate::views) async fn post(
 }
 
 /// Delete a timetable
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     delete, path = "",
     tag = "timetable",
@@ -154,17 +144,8 @@ pub(in crate::views) async fn post(
 )]
 pub(in crate::views) async fn delete(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let conn = &mut db_pool.get().await?;
     Timetable::delete_static_or_fail(conn, timetable_id, || TimetableError::NotFound {
         timetable_id,
@@ -183,7 +164,7 @@ pub(in crate::views) struct ListTrainSchedulesResponse {
 }
 
 /// Return a specific timetable with its associated paced trains
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     get, path = "",
     tag = "timetable",
@@ -195,18 +176,9 @@ pub(in crate::views) struct ListTrainSchedulesResponse {
 )]
 pub(in crate::views) async fn get_train_schedules(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
     Query(pagination_params): Query<PaginationQueryParams<200>>,
 ) -> Result<Json<ListTrainSchedulesResponse>> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let conn = &mut db_pool.get().await?;
 
     let timetable_exists = Timetable::exists(conn, timetable_id).await?;
@@ -323,14 +295,6 @@ pub(in crate::views) async fn conflicts(
         electrical_profile_set_id,
     }): Query<ElectricalProfileSetIdQueryParam>,
 ) -> Result<Json<Vec<Conflict>>> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let conn = db_pool.get().await?;
 
     let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || TimetableError::InfraNotFound {
@@ -473,14 +437,6 @@ pub(in crate::views) async fn requirements(
         electrical_profile_set_id,
     }): Query<ElectricalProfileSetIdQueryParam>,
 ) -> Result<Json<TrainRequirementsPage>> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
         authorizer
@@ -774,20 +730,11 @@ impl From<PhysicsConsistParameters> for PhysicsConsist {
 )]
 pub(in crate::views) async fn set_links_train_schedule_sets_to_timetable(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
     Json(TrainScheduleSetForm {
         train_schedule_set_ids,
     }): Json<TrainScheduleSetForm>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let mut conn = db_pool.get().await?;
 
     Timetable::exists_or_fail(&mut conn, timetable_id, || TimetableError::NotFound {
@@ -821,17 +768,8 @@ pub(in crate::views) async fn set_links_train_schedule_sets_to_timetable(
 )]
 pub(in crate::views) async fn get_train_schedule_sets_from_timetable(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
 ) -> Result<Json<Vec<TrainScheduleSet>>> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     Timetable::exists_or_fail(&mut db_pool.get().await?, timetable_id, || {
         TimetableError::NotFound { timetable_id }
     })

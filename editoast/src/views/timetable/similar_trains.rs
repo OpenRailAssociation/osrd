@@ -25,7 +25,6 @@ use std::ops::Deref;
 
 use arcstr::ArcStr;
 use authz::Role;
-use axum::Extension;
 use axum::Json;
 use axum::extract::State;
 use chrono::DateTime;
@@ -47,8 +46,6 @@ use editoast_models::prelude::*;
 use editoast_models::rolling_stock::RollingStock;
 
 use super::AppState;
-use super::AuthenticationExt;
-use super::AuthorizationError;
 
 // Simulation layer struct, not a view struct, to move in some mod.rs when the simulation crate will be there
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Display, Deref)]
@@ -164,7 +161,7 @@ enum SimilarTrainsError {
     Database(editoast_models::Error),
 }
 
-#[editoast_derive::route]
+#[editoast_derive::route(Role::Stdcm)]
 #[utoipa::path(
     post, path = "",
     tags = ["similar_trains", "stdcm", "sncf"],
@@ -178,7 +175,6 @@ enum SimilarTrainsError {
     ),
 )]
 pub(in crate::views) async fn similar_trains(
-    Extension(auth): AuthenticationExt,
     State(AppState {
         db_pool,
         speed_limit_tag_ids,
@@ -190,14 +186,6 @@ pub(in crate::views) async fn similar_trains(
         waypoints,
     }): Json<Request>,
 ) -> Result<Json<Response>> {
-    let authorized = auth
-        .check_roles([Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let mut conn = db_pool.get().await?;
 
     // Get trains traffic

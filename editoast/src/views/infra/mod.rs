@@ -45,7 +45,6 @@ use crate::generated_data::operational_point::OperationalPointLayer;
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::infra_cache::InfraCache;
 use crate::map;
-use crate::views::AuthorizationError;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::params;
@@ -98,7 +97,7 @@ pub(in crate::views) struct RefreshResponse {
 }
 
 /// Refresh infra generated geographic layers
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
     tag = "infra",
@@ -117,16 +116,8 @@ pub(in crate::views) async fn refresh(
         config,
         ..
     }): State<AppState>,
-    Extension(auth): AuthenticationExt,
     Query(query_params): Query<RefreshQueryParams>,
 ) -> Result<Json<RefreshResponse>> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     // Use a transaction to give scope to infra list lock
     let RefreshQueryParams {
         force,
@@ -199,13 +190,6 @@ pub(in crate::views) async fn list(
     Extension(auth): AuthenticationExt,
     Query(pagination): Query<PaginationQueryParams<1000>>,
 ) -> Result<Json<InfraListResponse>> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
-        .await?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let conn = &mut db_pool.get().await?;
 
     let default_settings = pagination.into_selection_settings();
@@ -251,14 +235,6 @@ pub(in crate::views) async fn get(
     Extension(auth): AuthenticationExt,
     Path(infra): Path<InfraIdParam>,
 ) -> Result<Json<Infra>> {
-    // check user roles
-    let has_role = auth
-        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
-        .await?;
-    if !has_role {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let infra_id = infra.infra_id;
     let infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
@@ -294,7 +270,7 @@ impl InfraCreateForm {
 /// Creates an empty infra
 ///
 /// The infra may be edited by batch later via the `POST /infra/ID` or `POST /infra/ID/railjson` endpoints.
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
     tag = "infra",
@@ -310,14 +286,6 @@ pub(in crate::views) async fn create(
     Extension(auth): AuthenticationExt,
     Json(infra_form): Json<InfraCreateForm>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let infra: Changeset<Infra> = infra_form.into_changeset();
     let infra = infra.create(&mut db_pool.get().await?).await?;
 
@@ -344,7 +312,7 @@ pub(in crate::views) struct CloneQuery {
 }
 
 /// Duplicate an infra
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
     tag = "infra",
@@ -362,15 +330,6 @@ pub(in crate::views) async fn clone(
     }): State<AppState>,
     Query(CloneQuery { name }): Query<CloneQuery>,
 ) -> Result<Json<i64>> {
-    // check user roles
-    let has_role = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !has_role {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let mut conn = db_pool.get().await?;
     let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || InfraApiError::NotFound {
         infra_id,
@@ -412,7 +371,7 @@ pub(in crate::views) async fn clone(
 /// You've been warned.
 ///
 /// This operation may take a while to complete.
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     delete, path = "",
     tag = "infra",
@@ -427,15 +386,6 @@ pub(in crate::views) async fn delete(
     Extension(auth): AuthenticationExt,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
 ) -> Result<impl IntoResponse> {
-    // Check user roles
-    let has_role = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !has_role {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
         authorizer
@@ -464,7 +414,7 @@ impl InfraPatchForm {
 }
 
 /// Rename an infra
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     put, path = "",
     tag = "infra",
@@ -477,18 +427,9 @@ impl InfraPatchForm {
 )]
 pub(in crate::views) async fn put(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(infra): Path<i64>,
     Json(patch): Json<InfraPatchForm>,
 ) -> Result<Json<Infra>> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let infra_cs: Changeset<Infra> = patch.into_changeset();
     let infra = infra_cs
         .update_or_fail(&mut db_pool.get().await?, infra, || {
@@ -514,14 +455,6 @@ pub(in crate::views) async fn get_switch_types(
     Extension(auth): AuthenticationExt,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
 ) -> Result<Json<Vec<SwitchType>>> {
-    // Check user roles
-    let has_role = auth
-        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
-        .await?;
-    if !has_role {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let mut conn = db_pool.get().await?;
 
     let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || InfraApiError::NotFound {
@@ -573,14 +506,6 @@ pub(in crate::views) async fn get_speed_limit_tags(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     State(builtin_tags): State<Arc<SpeedLimitTagIds>>,
 ) -> Result<Json<HashSet<String>>> {
-    // Check user roles
-    let has_role = auth
-        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
-        .await?;
-    if !has_role {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let mut conn = db_pool.get().await?;
 
     let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || InfraApiError::NotFound {
@@ -630,13 +555,6 @@ pub(in crate::views) async fn get_voltages(
     Query(param): Query<GetVoltagesQueryParams>,
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
 ) -> Result<Json<Vec<String>>> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
-        .await?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let include_rolling_stock_modes = param.include_rolling_stock_modes;
     let infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
@@ -669,16 +587,7 @@ pub(in crate::views) async fn get_voltages(
 )]
 pub(in crate::views) async fn get_all_voltages(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
 ) -> Result<Json<Vec<String>>> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let voltages = Infra::get_all_voltages(&mut db_pool.get().await?).await?;
     Ok(Json(voltages.into_iter().map(|el| el.voltage).collect()))
 }
@@ -695,7 +604,7 @@ async fn set_locked(mut conn: DbConnection, infra_id: i64, locked: bool) -> Resu
 }
 
 /// Lock an infra
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
     tag = "infra",
@@ -710,14 +619,6 @@ pub(in crate::views) async fn lock(
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
 ) -> Result<impl IntoResponse> {
-    // Check user roles
-    let has_role = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await?;
-    if !has_role {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
         authorizer
@@ -731,7 +632,7 @@ pub(in crate::views) async fn lock(
 }
 
 /// Unlock an infra
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
     tag = "infra",
@@ -746,14 +647,6 @@ pub(in crate::views) async fn unlock(
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
 ) -> Result<impl IntoResponse> {
-    // Check user roles
-    let has_role = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await?;
-    if !has_role {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
         authorizer
@@ -802,7 +695,7 @@ pub(in crate::views) struct MatchOperationalPointsResponse {
     related_operational_points: Vec<Option<RelatedOperationalPoint>>,
 }
 
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
     tag = "infra",
@@ -823,13 +716,6 @@ pub(in crate::views) async fn match_operational_points(
         operational_point_references,
     }): Json<MatchOperationalPointsForm>,
 ) -> Result<Json<MatchOperationalPointsResponse>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
     auth.check_authorization(async |authorizer| {
         authorizer
             .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
