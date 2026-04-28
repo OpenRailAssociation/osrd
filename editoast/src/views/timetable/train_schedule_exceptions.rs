@@ -21,7 +21,6 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::error::Result;
-use crate::models;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "train_schedule_exception")]
@@ -103,7 +102,7 @@ pub(in crate::views) async fn create_train_schedule_exception(
     })
     .await?;
 
-    let train_schedule = models::TrainSchedule::retrieve_or_fail(
+    let train_schedule = editoast_models::TrainSchedule::retrieve_or_fail(
         conn.clone(),
         train_schedule_exception_form.train_schedule_id,
         || TrainScheduleExceptionError::TrainScheduleNotFound {
@@ -178,7 +177,7 @@ pub(in crate::views) async fn update(
 
     let train_schedule_id = train_schedule_exception_form.train_schedule_id;
 
-    let train_schedule = models::TrainSchedule::retrieve_or_fail(
+    let train_schedule = editoast_models::TrainSchedule::retrieve_or_fail(
         conn.clone(),
         train_schedule_exception_form.train_schedule_id,
         || TrainScheduleExceptionError::TrainScheduleNotFound { train_schedule_id },

@@ -10,8 +10,6 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::error::Result;
-use crate::models;
-use crate::models::train_schedule::TrainScheduleChangeset;
 use crate::views::timetable::train_schedule::TrainScheduleResponse;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -19,6 +17,7 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use editoast_models::TrainScheduleSet;
+use editoast_models::train_schedule::TrainScheduleChangeset;
 use serde::Deserialize;
 use serde::Serialize;
 use std::sync::Arc;
@@ -280,7 +279,8 @@ pub(in crate::views) async fn post_train_schedule(
         .collect::<Vec<_>>();
 
     // Create a batch of train schedules
-    let train_schedules: Vec<_> = models::TrainSchedule::create_batch(conn, changesets).await?;
+    let train_schedules: Vec<_> =
+        editoast_models::TrainSchedule::create_batch(conn, changesets).await?;
     let response: Vec<TrainScheduleResponse> = train_schedules.into_iter().map_into().collect();
 
     Ok((StatusCode::CREATED, Json(response)))
@@ -313,16 +313,17 @@ pub(in crate::views) async fn get_train_schedules(
         .into());
     }
 
-    let settings = SelectionSettings::new()
-        .filter(move || models::TrainSchedule::TRAIN_SCHEDULE_SET_ID.eq(train_schedule_set_id));
+    let settings = SelectionSettings::new().filter(move || {
+        editoast_models::TrainSchedule::TRAIN_SCHEDULE_SET_ID.eq(train_schedule_set_id)
+    });
 
-    let train_schedules = models::TrainSchedule::list(conn, settings).await?;
+    let train_schedules = editoast_models::TrainSchedule::list(conn, settings).await?;
     Ok(Json(train_schedules.into_iter().map_into().collect()))
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::models;
+
     use crate::models::fixtures::create_catalog_entry;
     use crate::models::fixtures::create_train_schedule_set;
     use crate::models::fixtures::simple_paced_train_base;
@@ -393,11 +394,13 @@ mod tests {
         assert!(response.len() == 2);
 
         let settings = SelectionSettings::default()
-            .filter(move || models::TrainSchedule::TRAIN_SCHEDULE_SET_ID.eq(train_schedule_set.id))
+            .filter(move || {
+                editoast_models::TrainSchedule::TRAIN_SCHEDULE_SET_ID.eq(train_schedule_set.id)
+            })
             .limit(25)
             .offset(0);
 
-        let list_result = models::TrainSchedule::list(&mut pool.get_ok(), settings)
+        let list_result = editoast_models::TrainSchedule::list(&mut pool.get_ok(), settings)
             .await
             .expect("Failed to fetch train schedules");
 
@@ -462,11 +465,13 @@ mod tests {
             .json_into();
 
         let settings = SelectionSettings::default()
-            .filter(move || models::TrainSchedule::TRAIN_SCHEDULE_SET_ID.eq(train_schedule_set.id))
+            .filter(move || {
+                editoast_models::TrainSchedule::TRAIN_SCHEDULE_SET_ID.eq(train_schedule_set.id)
+            })
             .limit(25)
             .offset(0);
 
-        let list_result = models::TrainSchedule::list(&mut pool.get_ok(), settings)
+        let list_result = editoast_models::TrainSchedule::list(&mut pool.get_ok(), settings)
             .await
             .expect("Failed to fetch paced trains");
 

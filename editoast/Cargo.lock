@@ -1394,6 +1394,7 @@ dependencies = [
  "postgres-openssl",
  "pretty_assertions",
  "regex",
+ "rstest",
  "schemas",
  "serde",
  "serde_json",

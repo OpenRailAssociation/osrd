@@ -16,7 +16,6 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::error::Result;
-use crate::models;
 use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
@@ -153,17 +152,18 @@ async fn delete_sub_category_and_fallback_to_main(
         .await?;
 
     let sub_category_code = Some(sub_category.code.clone());
-    let paced_trains_ids: Vec<i64> = models::TrainSchedule::list(
+    let paced_trains_ids: Vec<i64> = editoast_models::TrainSchedule::list(
         conn,
-        SelectionSettings::new()
-            .filter(move || models::TrainSchedule::SUB_CATEGORY.eq(sub_category_code.clone())),
+        SelectionSettings::new().filter(move || {
+            editoast_models::TrainSchedule::SUB_CATEGORY.eq(sub_category_code.clone())
+        }),
     )
     .await?
     .into_iter()
     .map(|paced_train| paced_train.id)
     .collect();
 
-    let _: (Vec<_>, _) = models::TrainSchedule::changeset()
+    let _: (Vec<_>, _) = editoast_models::TrainSchedule::changeset()
         .main_category(Some(sub_category.main_category.clone()))
         .sub_category(None)
         .update_batch(conn, paced_trains_ids)
@@ -182,7 +182,6 @@ pub mod tests {
     use schemas::rolling_stock::SubCategory;
     use serde_json::json;
 
-    use crate::models;
     use crate::models::fixtures::create_train_schedule_set;
     use crate::models::fixtures::simple_paced_train_changeset;
     use crate::models::fixtures::simple_sub_category;
@@ -345,15 +344,17 @@ pub mod tests {
             .await
             .assert_status(StatusCode::NO_CONTENT);
 
-        let paced_train_1 = models::TrainSchedule::retrieve(db_pool.get_ok(), paced_train_1.id)
-            .await
-            .expect("Failed to retrieve paced train")
-            .expect("Paced train 1 not found");
+        let paced_train_1 =
+            editoast_models::TrainSchedule::retrieve(db_pool.get_ok(), paced_train_1.id)
+                .await
+                .expect("Failed to retrieve paced train")
+                .expect("Paced train 1 not found");
 
-        let paced_train_2 = models::TrainSchedule::retrieve(db_pool.get_ok(), paced_train_2.id)
-            .await
-            .expect("Failed to retrieve paced train")
-            .expect("Paced train 2 not found");
+        let paced_train_2 =
+            editoast_models::TrainSchedule::retrieve(db_pool.get_ok(), paced_train_2.id)
+                .await
+                .expect("Failed to retrieve paced train")
+                .expect("Paced train 2 not found");
 
         assert_eq!(paced_train_1.sub_category, None);
         assert_eq!(paced_train_2.sub_category, None);
