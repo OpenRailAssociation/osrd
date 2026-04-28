@@ -190,33 +190,33 @@ class PacedTrainSection extends CommonPage {
   }
 
   async getActionButtonsLocators({
-    itemIndex,
-    itemType,
+    trainIndex,
+    trainType,
     withExceptions = false,
     checkVisibility = false,
   }: {
-    itemIndex: number;
-    itemType: 'paced-train' | 'occurrence';
+    trainIndex: number;
+    trainType: 'paced-train' | 'occurrence';
     withExceptions?: boolean;
     checkVisibility?: boolean;
   }): Promise<Record<string, Locator>> {
-    const isPacedTrain = itemType === 'paced-train';
+    const isPacedTrain = trainType === 'paced-train';
 
-    const item = isPacedTrain
-      ? this.pacedTrainItem.nth(itemIndex)
-      : this.testedPacedTrainOccurrences.nth(itemIndex);
-    await expect(item).toBeVisible();
-    await item.hover({ position: { x: 5, y: 5 } }); // Hover near the left edge to avoid action buttons
+    const train = isPacedTrain
+      ? this.pacedTrainItem.nth(trainIndex)
+      : this.testedPacedTrainOccurrences.nth(trainIndex);
+    await expect(train).toBeVisible();
+    await train.hover({ position: { x: 5, y: 5 } }); // Hover near the left edge to avoid action buttons
 
     const actionButtons: Record<string, Locator> = {
-      projectItem: item.getByTestId('project-item'),
-      duplicateItem: item.getByTestId('duplicate-item'),
-      editItem: item.getByTestId('edit-item'),
-      deleteTrain: item.getByTestId('delete-train'),
+      projectItem: train.getByTestId('project-train'),
+      duplicateItem: train.getByTestId('duplicate-train'),
+      editItem: train.getByTestId('edit-train'),
+      deleteTrain: train.getByTestId('delete-train'),
     };
 
     if (isPacedTrain && withExceptions) {
-      actionButtons.resetExceptions = item.getByTestId('reset-exceptions');
+      actionButtons.resetExceptions = train.getByTestId('reset-exceptions');
     }
 
     if (checkVisibility) {
@@ -229,15 +229,15 @@ class PacedTrainSection extends CommonPage {
   }
 
   private async verifyItemsVisibility(
-    itemIndex: number,
-    itemType: 'paced-train' | 'occurrence'
+    trainIndex: number,
+    trainType: 'paced-train' | 'occurrence'
   ): Promise<void> {
-    const actionButtonsLocators = await this.getActionButtonsLocators({ itemIndex, itemType });
+    const actionButtonsLocators = await this.getActionButtonsLocators({ trainIndex, trainType });
 
     // Actions buttons should be visible when hovering a paced train but not for an occurrence
     await Promise.all(
       Object.values(actionButtonsLocators).map((locator) =>
-        itemType === 'paced-train'
+        trainType === 'paced-train'
           ? expect(locator).toBeVisible()
           : expect(locator).not.toBeVisible()
       )
@@ -281,8 +281,8 @@ class PacedTrainSection extends CommonPage {
   async duplicatePacedTrain(index = 0) {
     await this.expandPacedTrainOccurrenceList(index);
     const actionButtons = await this.getActionButtonsLocators({
-      itemIndex: index,
-      itemType: 'paced-train',
+      trainIndex: index,
+      trainType: 'paced-train',
     });
     await actionButtons.duplicateItem.click();
     await this.collapsePacedTrainOccurrenceList(index);
@@ -291,8 +291,8 @@ class PacedTrainSection extends CommonPage {
   async openPacedTrainEditor(index = 0) {
     await this.expandPacedTrainOccurrenceList(index);
     const actionButtons = await this.getActionButtonsLocators({
-      itemIndex: index,
-      itemType: 'paced-train',
+      trainIndex: index,
+      trainType: 'paced-train',
     });
     await expect(actionButtons.editItem).toBeVisible();
     await actionButtons.editItem.click();
@@ -302,8 +302,8 @@ class PacedTrainSection extends CommonPage {
   async projectPacedTrain(index = 0) {
     await this.expandPacedTrainOccurrenceList(index);
     const actionButtons = await this.getActionButtonsLocators({
-      itemIndex: index,
-      itemType: 'paced-train',
+      trainIndex: index,
+      trainType: 'paced-train',
     });
     await expect(actionButtons.projectItem).toBeVisible();
     await actionButtons.projectItem.click();
@@ -317,8 +317,8 @@ class PacedTrainSection extends CommonPage {
     const timetableItemToDelete = this.pacedTrainItem.nth(index);
     await timetableItemToDelete.hover({ position: { x: 5, y: 5 } });
     const pacedTrainActionButtons = await this.getActionButtonsLocators({
-      itemIndex: index,
-      itemType: 'paced-train',
+      trainIndex: index,
+      trainType: 'paced-train',
     });
     await pacedTrainActionButtons.deleteTrain.click();
 
@@ -399,8 +399,8 @@ class PacedTrainSection extends CommonPage {
 
   async resetAllPacedTrainExceptions(pacedTrainIndex: number) {
     const { resetExceptions } = await this.getActionButtonsLocators({
-      itemIndex: pacedTrainIndex,
-      itemType: 'paced-train',
+      trainIndex: pacedTrainIndex,
+      trainType: 'paced-train',
       withExceptions: true,
     });
 

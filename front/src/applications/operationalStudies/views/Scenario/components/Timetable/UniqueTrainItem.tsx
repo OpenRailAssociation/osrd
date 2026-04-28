@@ -32,7 +32,7 @@ import { castErrorToFailure } from 'utils/error';
 import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
 import { TIMETABLE_ITEM_DELTA } from './consts';
-import TimetableItemActions from './TimetableItemActions';
+import TrainScheduleActions from './TrainScheduleActions';
 import { formatTrainDuration, getTrainCategoryClassName } from './utils';
 
 type UniqueTrainItemProps = {
@@ -305,12 +305,12 @@ const UniqueTrainItem = ({
           </div>
         )}
       </div>
-      <TimetableItemActions
+      <TrainScheduleActions
         selectPathProjection={selectPathProjection}
         moveTrainSchedule={moveTrainSchedule}
-        duplicateTimetableItem={duplicateTrain}
-        editTimetableItem={() => selectTrainToEdit(train)}
-        deleteTimetableItem={deleteTrain}
+        duplicateTrainSchedule={duplicateTrain}
+        editTrainSchedule={() => selectTrainToEdit(train)}
+        deleteTrainSchedule={deleteTrain}
         showMovebutton={showMovebutton}
       />
     </div>

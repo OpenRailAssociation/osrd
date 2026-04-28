@@ -2,27 +2,27 @@ import { Duplicate, FileDirectorySymlink, Iterations, Pencil, Trash } from '@osr
 import { useTranslation } from 'react-i18next';
 import { GiPathDistance } from 'react-icons/gi';
 
-type TimetableItemActionsProps = {
+type TrainScheduleActionsProps = {
   selectPathProjection: () => Promise<void>;
   moveTrainSchedule: () => void;
-  duplicateTimetableItem: () => Promise<void>;
-  editTimetableItem: () => void;
-  deleteTimetableItem: () => Promise<void>;
+  duplicateTrainSchedule: () => Promise<void>;
+  editTrainSchedule: () => void;
+  deleteTrainSchedule: () => Promise<void>;
   showResetExceptionsButton?: boolean;
   resetAllExceptions?: () => void;
   showMovebutton: boolean;
 };
 
-const TimetableItemActions = ({
+const TrainScheduleActions = ({
   selectPathProjection,
   moveTrainSchedule,
-  duplicateTimetableItem,
-  editTimetableItem,
-  deleteTimetableItem,
+  duplicateTrainSchedule,
+  editTrainSchedule,
+  deleteTrainSchedule,
   showResetExceptionsButton,
   resetAllExceptions,
   showMovebutton,
-}: TimetableItemActionsProps) => {
+}: TrainScheduleActionsProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   return (
     <div className="action-buttons">
@@ -43,7 +43,7 @@ const TimetableItemActions = ({
         aria-label={t('timetable.choosePath')}
         title={t('timetable.choosePath')}
         onClick={selectPathProjection}
-        data-testid="project-item"
+        data-testid="project-train"
       >
         <GiPathDistance />
       </button>
@@ -62,8 +62,8 @@ const TimetableItemActions = ({
         type="button"
         aria-label={t('timetable.duplicate')}
         title={t('timetable.duplicate')}
-        onClick={duplicateTimetableItem}
-        data-testid="duplicate-item"
+        onClick={duplicateTrainSchedule}
+        data-testid="duplicate-train"
       >
         <Duplicate />
       </button>
@@ -71,8 +71,8 @@ const TimetableItemActions = ({
         type="button"
         aria-label={t('timetable.update')}
         title={t('timetable.update')}
-        onClick={editTimetableItem}
-        data-testid="edit-item"
+        onClick={editTrainSchedule}
+        data-testid="edit-train"
       >
         <Pencil />
       </button>
@@ -80,7 +80,7 @@ const TimetableItemActions = ({
         type="button"
         aria-label={t('timetable.delete')}
         title={t('timetable.delete')}
-        onClick={deleteTimetableItem}
+        onClick={deleteTrainSchedule}
         data-testid="delete-train"
       >
         <Trash />
@@ -89,4 +89,4 @@ const TimetableItemActions = ({
   );
 };
 
-export default TimetableItemActions;
+export default TrainScheduleActions;

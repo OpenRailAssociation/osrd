@@ -39,8 +39,8 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   private readonly timetableTrainTypeFilterSelectLabel: Locator;
   private readonly timetableTrainTypeFilterSelect: Locator;
   private readonly timetableSpeedLimitTagFilterLabel: Locator;
-  private readonly editItemButton: Locator;
-  private readonly projectItemButton: Locator;
+  private readonly editTrainButton: Locator;
+  private readonly projectTrainButton: Locator;
   private readonly deleteTrainButton: Locator;
   readonly editTrainScheduleButton: Locator;
   private readonly timetableItemArrivalTime: Locator;
@@ -83,9 +83,9 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     this.timetableSpeedLimitTagFilterLabel = page.getByTestId(
       'timetable-speed-limit-tag-filter-label'
     );
-    this.editItemButton = page.getByTestId('edit-item');
-    this.projectItemButton = page.getByTestId('project-item');
-    this.deleteTrainButton = page.getByTestId('delete-item');
+    this.editTrainButton = page.getByTestId('edit-train');
+    this.projectTrainButton = page.getByTestId('project-train');
+    this.deleteTrainButton = page.getByTestId('delete-train');
     this.editTrainScheduleButton = page.getByTestId('submit-edit-train-schedule');
     this.timetableItemArrivalTime = page.getByTestId('timetable-item-arrival-time');
     this.timetableItemArrivalTimeLoader = page.getByTestId('arrival-time-loader');
@@ -324,10 +324,10 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     }
   }
 
-  async editTimetableItem(index = 0) {
+  async editTrainSchedule(index = 0) {
     await expect(this.timetableItems.nth(index)).toBeVisible();
     await this.timetableItems.nth(index).click();
-    await this.editItemButton.nth(index).click();
+    await this.editTrainButton.nth(index).click();
   }
 
   async deleteTrainSchedule(index = 0) {
@@ -345,8 +345,8 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     await UniqueTrainButton.click({ position: { x: 5, y: 5 } });
     await UniqueTrainButton.scrollIntoViewIfNeeded();
     await UniqueTrainButton.hover({ position: { x: 5, y: 5 } });
-    await expect(this.projectItemButton.nth(index)).toBeVisible();
-    await this.projectItemButton.nth(index).click();
+    await expect(this.projectTrainButton.nth(index)).toBeVisible();
+    await this.projectTrainButton.nth(index).click();
   }
 
   async getTimetableItemArrivalTime(expectedArrivalTime: string, index = 0) {

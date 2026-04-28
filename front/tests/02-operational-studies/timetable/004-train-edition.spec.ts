@@ -151,7 +151,7 @@ test.describe('Train edition', { tag: ['@op', '@paced-trains', '@unique-trains']
     operationalStudiesPage,
   }) => {
     await test.step('Edit unique train at index 1', async () => {
-      await scenarioTimetableSection.editTimetableItem(1);
+      await scenarioTimetableSection.editTrainSchedule(1);
     });
 
     await test.step('Convert unique train to paced train', async () => {

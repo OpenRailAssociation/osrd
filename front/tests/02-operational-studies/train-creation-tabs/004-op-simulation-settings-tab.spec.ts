@@ -158,7 +158,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
     });
 
     await test.step('Deactivate electrical profiles and verify (OFF)', async () => {
-      await scenarioTimetableSection.editTimetableItem();
+      await scenarioTimetableSection.editTrainSchedule();
       await operationalStudiesPage.openSimulationSettingsTab();
       await simulationSettingsTab.deactivateElectricalProfile();
       await operationalStudiesPage.submitTimetableItemEdit();
@@ -224,7 +224,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
     });
 
     await test.step('Remove speed limit tag and verify (speed limit tag OFF)', async () => {
-      await scenarioTimetableSection.editTimetableItem();
+      await scenarioTimetableSection.editTrainSchedule();
       await operationalStudiesPage.openSimulationSettingsTab();
       await simulationSettingsTab.selectSpeedLimitTagOption('__PLACEHOLDER__');
       await operationalStudiesPage.submitTimetableItemEdit();
@@ -300,7 +300,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
     });
 
     await test.step('Edit to Mareco margin and verify', async () => {
-      await scenarioTimetableSection.editTimetableItem();
+      await scenarioTimetableSection.editTrainSchedule();
       await operationalStudiesPage.openSimulationSettingsTab();
       await simulationSettingsTab.activateMarecoMargin();
       await operationalStudiesPage.submitTimetableItemEdit();
