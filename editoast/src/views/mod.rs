@@ -744,18 +744,6 @@ impl Authentication {
         }
     }
 
-    /// Checks if the issuer of the request has at least one of the required roles.
-    /// Always returns `false` if the request is unauthenticated.
-    async fn check_roles(&self, required_roles: HashSet<Role>) -> Result<bool, AuthorizerError> {
-        match self {
-            Authentication::SkipAuthorization { .. } => Ok(true),
-            Authentication::Unauthenticated => Ok(false),
-            Authentication::Authenticated(authorizer) => {
-                authorizer.check_roles(required_roles).await
-            }
-        }
-    }
-
     /// Function wrapper that allows you to check if the issuer of the request has the good privilege, grant, role....
     /// If the request is unauthenticated, it will return an Unauthorized error, and for the SkipAuthorization.
     /// The provided function will be called with the authorizer and its result will be checked by the allowed() method.
