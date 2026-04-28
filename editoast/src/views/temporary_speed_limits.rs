@@ -1,4 +1,3 @@
-use axum::Extension;
 use axum::extract::Json;
 use axum::extract::State;
 use axum::http::StatusCode;
@@ -18,8 +17,6 @@ use thiserror::Error;
 use utoipa::ToSchema;
 
 use crate::error::Result;
-use crate::views::AuthenticationExt;
-use crate::views::AuthorizationError;
 use authz::Role;
 use editoast_models::TemporarySpeedLimit;
 use editoast_models::TemporarySpeedLimitGroup;
@@ -112,7 +109,7 @@ impl From<temporary_speed_limits::TslGroupError> for TemporarySpeedLimitError {
     }
 }
 
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
     tag = "temporary_speed_limits",
@@ -123,20 +120,11 @@ impl From<temporary_speed_limits::TslGroupError> for TemporarySpeedLimitError {
 )]
 pub(in crate::views) async fn create_temporary_speed_limit_group(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Json(TemporarySpeedLimitCreateForm {
         speed_limit_group_name,
         speed_limits,
     }): Json<TemporarySpeedLimitCreateForm>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let conn = &mut db_pool.get().await?;
 
     // Create the speed limits group

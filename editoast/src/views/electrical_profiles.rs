@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use authz::Role;
-use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
@@ -17,8 +16,6 @@ use serde::Deserialize;
 use thiserror::Error;
 use utoipa::IntoParams;
 
-use super::AuthenticationExt;
-use super::AuthorizationError;
 use crate::error::Result;
 use editoast_models::ElectricalProfileSet;
 use editoast_models::LightElectricalProfileSet;
@@ -41,15 +38,7 @@ pub struct ElectricalProfileSetId {
 )]
 pub(in crate::views) async fn list(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
 ) -> Result<Json<Vec<LightElectricalProfileSet>>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
     let mut conn = db_pool.get().await?;
     Ok(Json(ElectricalProfileSet::list_light(&mut conn).await?))
 }
@@ -66,16 +55,8 @@ pub(in crate::views) async fn list(
 )]
 pub(in crate::views) async fn get(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(electrical_profile_set_id): Path<i64>,
 ) -> Result<Json<ElectricalProfileSetData>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
     let ep_set = ElectricalProfileSet::retrieve_or_fail(
         db_pool.get().await?,
         electrical_profile_set_id,
@@ -106,16 +87,8 @@ pub(in crate::views) async fn get(
 )]
 pub(in crate::views) async fn get_level_order(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(electrical_profile_set_id): Path<i64>,
 ) -> Result<Json<HashMap<String, LevelValues>>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
     let ep_set = ElectricalProfileSet::retrieve_or_fail(
         db_pool.get().await?,
         electrical_profile_set_id,
@@ -128,7 +101,7 @@ pub(in crate::views) async fn get_level_order(
 }
 
 /// Delete an electrical profile set
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     delete, path = "",
     tag = "electrical_profiles",
@@ -139,16 +112,8 @@ pub(in crate::views) async fn get_level_order(
 )]
 pub(in crate::views) async fn delete(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(electrical_profile_set_id): Path<i64>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
     let conn = &mut db_pool.get().await?;
     let deleted = ElectricalProfileSet::delete_static(conn, electrical_profile_set_id).await?;
     if deleted {
@@ -165,7 +130,7 @@ pub(in crate::views) struct ElectricalProfileQueryArgs {
 }
 
 /// import a new electrical profile set
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
     tag = "electrical_profiles",
@@ -177,17 +142,9 @@ pub(in crate::views) struct ElectricalProfileQueryArgs {
 )]
 pub(in crate::views) async fn post_electrical_profile(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Query(ep_set_name): Query<ElectricalProfileQueryArgs>,
     Json(ep_data): Json<ElectricalProfileSetData>,
 ) -> Result<Json<ElectricalProfileSet>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
     let ep_set = ElectricalProfileSet::changeset()
         .name(ep_set_name.name)
         .data(ep_data);

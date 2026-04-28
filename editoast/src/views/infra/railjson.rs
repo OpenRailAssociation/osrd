@@ -26,7 +26,6 @@ use crate::generated_data::InfraGeneratedData as _;
 use crate::infra_cache::InfraCache;
 use crate::views::Authentication;
 use crate::views::AuthenticationExt;
-use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use database::DbConnectionPoolV2;
@@ -50,14 +49,6 @@ pub(in crate::views) async fn get_railjson(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
 ) -> Result<impl IntoResponse> {
-    // Check user roles
-    let has_role = auth
-        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
-        .await?;
-    if !has_role {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let infra_id = infra.infra_id;
     let infra_meta = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
@@ -181,7 +172,7 @@ impl From<editoast_models::railjson::RailJsonError> for RailJsonError {
 }
 
 /// Import an infra from railjson
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
     tag = "infra",
@@ -205,13 +196,6 @@ pub(in crate::views) async fn post_railjson(
     Query(params): Query<PostRailjsonQueryParams>,
     Json(railjson): Json<RailJson>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let mut infra = Infra::changeset()
         .name(params.name.clone())
         .last_railjson_version()

@@ -3,7 +3,6 @@ use crate::error::Result;
 use crate::models::TrainSchedule;
 use crate::models::train_schedule::OccurrenceId;
 use crate::views::AuthenticationExt;
-use crate::views::AuthorizationError;
 use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::projection::PathProjection;
 use crate::views::projection::interpolate_arrival_time;
@@ -76,7 +75,7 @@ pub(in crate::views) struct LevelCrossingOccupancy {
 }
 
 /// Get the occupancy of a set of level crossings for a set of trains
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
     tag = "level_crossing",
@@ -101,14 +100,6 @@ pub(in crate::views) async fn occupancy(
         electrical_profile_set_id,
     }): Json<LevelCrossingOccupancyForm>,
 ) -> Result<Json<HashMap<Identifier, Vec<LevelCrossingOccupancy>>>> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     auth.check_authorization(async |authorizer| {
         authorizer
             .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)

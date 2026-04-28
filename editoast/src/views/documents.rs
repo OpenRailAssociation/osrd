@@ -1,5 +1,4 @@
 use authz::Role;
-use axum::Extension;
 use axum::Json;
 use axum::body::Bytes;
 use axum::extract::Path;
@@ -18,9 +17,6 @@ use crate::error::Result;
 use database::DbConnectionPoolV2;
 use editoast_models::Document;
 use editoast_models::prelude::*;
-
-use super::AuthenticationExt;
-use super::AuthorizationError;
 
 #[derive(Error, Debug, EditoastError)]
 #[editoast_error(base_id = "document")]
@@ -52,16 +48,8 @@ pub enum DocumentErrors {
 )]
 pub(in crate::views) async fn get(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(document_id): Path<i64>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
     let conn = &mut db_pool.get().await?;
     let doc = Document::retrieve_or_fail(conn.clone(), document_id, || DocumentErrors::NotFound {
         document_key: document_id,
@@ -83,7 +71,7 @@ struct NewDocumentResponse {
 }
 
 /// Post a new document (content_type by header + binary data)
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
     tag = "documents",
@@ -97,17 +85,9 @@ struct NewDocumentResponse {
 )]
 pub(in crate::views) async fn post(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     axum_extra::TypedHeader(content_type): axum_extra::TypedHeader<headers::ContentType>,
     bytes: Bytes,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
     let content_type = content_type.to_string();
 
     // Create document
@@ -128,7 +108,7 @@ pub(in crate::views) async fn post(
 }
 
 /// Delete an existing document
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     delete, path = "",
     tag = "documents",
@@ -141,16 +121,8 @@ pub(in crate::views) async fn post(
 )]
 pub(in crate::views) async fn delete(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(document_id): Path<i64>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
     let conn = &mut db_pool.get().await?;
     Document::delete_static_or_fail(conn, document_id, || DocumentErrors::NotFound {
         document_key: document_id,

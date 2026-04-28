@@ -4,12 +4,9 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::error::Result;
-use crate::views::AuthenticationExt;
-use crate::views::AuthorizationError;
 use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
-use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
@@ -52,7 +49,7 @@ pub(in crate::views) struct CatalogEntryIdParam {
     id: i64,
 }
 
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
     tag = "catalog_entry",
@@ -63,16 +60,8 @@ pub(in crate::views) struct CatalogEntryIdParam {
 )]
 pub(in crate::views) async fn post(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Json(catalog_entry_create_form): Json<CatalogEntryForm>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
     let catalog_entry_changeset = catalog_entry_create_form.into_changeset();
     let catalog_entry = catalog_entry_changeset
         .create(&mut db_pool.get().await?)
@@ -88,7 +77,7 @@ pub(in crate::views) struct CatalogEntryPage {
     results: Vec<CatalogEntry>,
 }
 
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     get, path = "",
     tag = "catalog_entry",
@@ -99,17 +88,8 @@ pub(in crate::views) struct CatalogEntryPage {
 )]
 pub(in crate::views) async fn list_paginated(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Query(pagination_params): Query<PaginationQueryParams<100>>,
 ) -> Result<Json<CatalogEntryPage>> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    };
-
     let settings = pagination_params.into_selection_settings();
     let conn = &mut db_pool.get().await?;
     let (catalog_entries, stats) = CatalogEntry::list_paginated(conn, settings).await?;
@@ -120,7 +100,7 @@ pub(in crate::views) async fn list_paginated(
     }))
 }
 
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     put, path = "",
     tag = "catalog_entry",
@@ -133,20 +113,11 @@ pub(in crate::views) async fn list_paginated(
 )]
 pub(in crate::views) async fn put(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(CatalogEntryIdParam {
         id: catalog_entry_id,
     }): Path<CatalogEntryIdParam>,
     Json(catalog_entry_form): Json<CatalogEntryForm>,
 ) -> Result<Json<CatalogEntry>> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let conn = &mut db_pool.get().await?;
     let catalog_entry_changeset = catalog_entry_form.into_changeset();
     let catalog_entry = catalog_entry_changeset
@@ -157,7 +128,7 @@ pub(in crate::views) async fn put(
     Ok(Json(catalog_entry))
 }
 
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     delete, path = "",
     tag = "catalog_entry",
@@ -169,18 +140,10 @@ pub(in crate::views) async fn put(
 )]
 pub(in crate::views) async fn delete(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(CatalogEntryIdParam {
         id: catalog_entry_id,
     }): Path<CatalogEntryIdParam>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
     CatalogEntry::delete_static_or_fail(&mut db_pool.get().await?, catalog_entry_id, || {
         CatalogEntryError::NotFound { catalog_entry_id }
     })

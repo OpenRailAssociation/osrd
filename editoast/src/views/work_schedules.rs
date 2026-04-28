@@ -1,14 +1,11 @@
 use super::pagination::PaginatedList;
 use crate::error::Result;
-use crate::views::AuthenticationExt;
-use crate::views::AuthorizationError;
 use crate::views::operational_studies::Ordering;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
 use crate::views::path::projection::Intersection;
 use crate::views::path::projection::PathProjection;
 use authz::Role;
-use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
@@ -140,7 +137,6 @@ pub(in crate::views) struct WorkScheduleCreateResponse {
 )]
 pub(in crate::views) async fn create(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Json(WorkScheduleCreateForm {
         work_schedule_group_name,
         work_schedules,
@@ -149,7 +145,6 @@ pub(in crate::views) async fn create(
     // Create the group (using the method for the create group endpoint)
     let work_schedule_group = create_group(
         State(db_pool.clone()),
-        Extension(auth),
         Json(WorkScheduleGroupCreateForm {
             work_schedule_group_name: Some(work_schedule_group_name),
         }),
@@ -214,20 +209,11 @@ pub(in crate::views) struct WorkScheduleProjection {
 )]
 pub(in crate::views) async fn project_path(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Json(WorkScheduleProjectForm {
         work_schedule_group_id,
         path_track_ranges,
     }): Json<WorkScheduleProjectForm>,
 ) -> Result<Json<Vec<WorkScheduleProjection>>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     // get all work_schedule of the group
     let conn = &mut db_pool.get().await?;
     let settings: SelectionSettings<WorkSchedule> = SelectionSettings::new()
@@ -279,7 +265,7 @@ pub(in crate::views) struct WorkScheduleGroupCreateResponse {
     work_schedule_group_id: i64,
 }
 
-#[editoast_derive::route]
+#[editoast_derive::route(Role::Stdcm)]
 #[utoipa::path(
     post, path = "",
     tag = "work_schedules",
@@ -290,19 +276,10 @@ pub(in crate::views) struct WorkScheduleGroupCreateResponse {
 )]
 pub(in crate::views) async fn create_group(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Json(WorkScheduleGroupCreateForm {
         work_schedule_group_name,
     }): Json<WorkScheduleGroupCreateForm>,
 ) -> Result<Json<WorkScheduleGroupCreateResponse>> {
-    let authorized = auth
-        .check_roles([Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let conn = &mut db_pool.get().await?;
     let group_name = work_schedule_group_name.unwrap_or(Uuid::new_v4().to_string());
 
@@ -319,7 +296,7 @@ pub(in crate::views) async fn create_group(
     }))
 }
 
-#[editoast_derive::route]
+#[editoast_derive::route(Role::Stdcm)]
 #[utoipa::path(
     delete, path = "",
     tag = "work_schedules",
@@ -331,17 +308,8 @@ pub(in crate::views) async fn create_group(
 )]
 pub(in crate::views) async fn delete_group(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(WorkScheduleGroupIdParam { id: group_id }): Path<WorkScheduleGroupIdParam>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let conn = &mut db_pool.get().await?;
     WorkScheduleGroup::delete_static_or_fail(conn, group_id, || {
         WorkScheduleError::WorkScheduleGroupNotFound { id: group_id }
@@ -361,16 +329,7 @@ pub(in crate::views) async fn delete_group(
 )]
 pub(in crate::views) async fn list_groups(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
 ) -> Result<Json<Vec<i64>>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let conn = &mut db_pool.get().await?;
 
     let selection_setting = SelectionSettings::new();
@@ -383,7 +342,7 @@ pub(in crate::views) async fn list_groups(
     Ok(Json(work_schedule_group_ids))
 }
 
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     put, path = "",
     tag = "work_schedules",
@@ -396,18 +355,9 @@ pub(in crate::views) async fn list_groups(
 )]
 pub(in crate::views) async fn put_in_group(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(WorkScheduleGroupIdParam { id: group_id }): Path<WorkScheduleGroupIdParam>,
     Json(work_schedules): Json<Vec<WorkScheduleItemForm>>,
 ) -> Result<Json<Vec<WorkSchedule>>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let conn = &mut db_pool.get().await?;
 
     conn.transaction(|conn| {
@@ -461,19 +411,10 @@ pub struct WorkScheduleOrderingParam {
 )]
 pub(in crate::views) async fn get_group(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(WorkScheduleGroupIdParam { id: group_id }): Path<WorkScheduleGroupIdParam>,
     Query(pagination_params): Query<PaginationQueryParams<100>>,
     Query(ordering_params): Query<WorkScheduleOrderingParam>,
 ) -> Result<Json<GroupContentResponse>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let ordering = ordering_params.ordering;
     let settings = pagination_params
         .into_selection_settings()

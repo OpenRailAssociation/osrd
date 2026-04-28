@@ -19,7 +19,6 @@ use crate::generated_data::InfraGeneratedData as _;
 use crate::generated_data::infra_error::InfraError;
 use crate::generated_data::infra_error::InfraErrorTypeLabel;
 use crate::views::AuthenticationExt;
-use crate::views::AuthorizationError;
 use crate::views::infra::InfraIdParam;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
@@ -71,7 +70,6 @@ pub(in crate::views) struct InfraErrorResponse {
  )]
 pub(in crate::views) async fn list_errors(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     Query(PaginationQueryParams { page, page_size }): Query<PaginationQueryParams<100>>,
     Query(ErrorListQueryParams {
@@ -79,15 +77,8 @@ pub(in crate::views) async fn list_errors(
         error_type,
         object_id,
     }): Query<ErrorListQueryParams>,
+    Extension(auth): AuthenticationExt,
 ) -> Result<Json<ErrorListResponse>> {
-    // Check user roles
-    let has_role = auth
-        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
-        .await?;
-    if !has_role {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let error_type = match error_type.map(|et| InfraErrorTypeLabel::from_str(&et).ok()) {
         Some(None) => return Err(ListErrorsErrors::WrongErrorTypeProvided.into()),
         Some(et) => et,

@@ -1,5 +1,4 @@
 use authz::Role;
-use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
@@ -19,13 +18,11 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
-use super::AuthenticationExt;
 use super::operational_studies::OperationalStudiesOrderingParam;
 use super::pagination::PaginatedList;
 use super::pagination::PaginationStats;
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::views::AuthorizationError;
 use crate::views::pagination::PaginationQueryParams;
 use editoast_models::Document;
 use editoast_models::project::Project;
@@ -133,7 +130,7 @@ impl ProjectWithStudyCount {
 }
 
 /// Create a new project
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
     tag = "projects",
@@ -144,16 +141,8 @@ impl ProjectWithStudyCount {
 )]
 pub(in crate::views) async fn create(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Json(project_create_form): Json<ProjectCreateForm>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
     let conn = &mut db_pool.get().await?;
     if let Some(image) = project_create_form.image {
         check_image_content(conn, image).await?;
@@ -174,7 +163,7 @@ pub(in crate::views) struct ProjectWithStudyCountList {
 }
 
 /// Returns a paginated list of projects
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     get, path = "",
     tag = "projects",
@@ -185,18 +174,9 @@ pub(in crate::views) struct ProjectWithStudyCountList {
 )]
 pub(in crate::views) async fn list(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Query(pagination_params): Query<PaginationQueryParams<1000>>,
     Query(ordering_params): Query<OperationalStudiesOrderingParam>,
 ) -> Result<Json<ProjectWithStudyCountList>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let ordering = ordering_params.ordering;
     let settings = pagination_params
         .into_selection_settings()
@@ -227,7 +207,7 @@ pub(in crate::views) struct ProjectIdParam {
 }
 
 /// Retrieve a project
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     get, path = "",
     tag = "projects",
@@ -238,16 +218,8 @@ pub(in crate::views) struct ProjectIdParam {
 )]
 pub(in crate::views) async fn get(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(project_id): Path<i64>,
 ) -> Result<Json<ProjectWithStudyCount>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
     let mut conn = db_pool.get().await?;
     let project = Project::retrieve_or_fail(conn.clone(), project_id, || ProjectError::NotFound {
         project_id,
@@ -259,7 +231,7 @@ pub(in crate::views) async fn get(
 }
 
 /// Delete a project
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     delete, path = "",
     tag = "projects",
@@ -270,17 +242,8 @@ pub(in crate::views) async fn get(
 )]
 pub(in crate::views) async fn delete(
     Path(project_id): Path<i64>,
-    Extension(auth): AuthenticationExt,
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     db_pool
         .get()
         .await?
@@ -335,7 +298,7 @@ impl ProjectPatchForm {
 }
 
 /// Update a project
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     patch, path = "",
     tag = "projects",
@@ -350,18 +313,9 @@ impl ProjectPatchForm {
 )]
 pub(in crate::views) async fn patch(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(project_id): Path<i64>,
     Json(mut form): Json<ProjectPatchForm>,
 ) -> Result<Json<ProjectWithStudyCount>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let mut conn = db_pool.get().await?;
     let update_image = match form.image {
         // image replacement

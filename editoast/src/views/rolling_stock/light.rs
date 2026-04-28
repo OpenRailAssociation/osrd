@@ -1,5 +1,3 @@
-use authz::Role;
-use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
@@ -37,9 +35,6 @@ use crate::views::pagination::PaginationStats;
 
 #[cfg(test)]
 use serde::Deserialize;
-
-use super::AuthenticationExt;
-use super::AuthorizationError;
 
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
@@ -90,16 +85,8 @@ pub(in crate::views) struct LightRollingStockWithLiveriesCountList {
 )]
 pub(in crate::views) async fn list(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Query(page_settings): Query<PaginationQueryParams<1000>>,
 ) -> Result<Json<LightRollingStockWithLiveriesCountList>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
     let settings = page_settings
         .into_selection_settings()
         .order_by(|| RollingStock::ID.asc());
@@ -132,16 +119,8 @@ pub(in crate::views) async fn list(
 )]
 pub(in crate::views) async fn get(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(light_rolling_stock_id): Path<i64>,
 ) -> Result<Json<LightRollingStockWithLiveries>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
     let rolling_stock =
         RollingStock::retrieve_or_fail(db_pool.get().await?, light_rolling_stock_id, || {
             RollingStockError::KeyNotFound {
@@ -166,16 +145,8 @@ pub(in crate::views) async fn get(
 )]
 pub(in crate::views) async fn get_by_name(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(light_rolling_stock_name): Path<String>,
 ) -> Result<Json<LightRollingStockWithLiveries>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
     let rolling_stock = RollingStock::retrieve_or_fail(
         db_pool.get().await?,
         light_rolling_stock_name.clone(),

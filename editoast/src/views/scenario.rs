@@ -2,7 +2,6 @@ pub mod macro_nodes;
 pub mod macro_notes;
 
 use authz::Role;
-use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
@@ -24,8 +23,6 @@ use utoipa::ToSchema;
 
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::views::AuthenticationExt;
-use crate::views::AuthorizationError;
 use crate::views::operational_studies::OperationalStudiesOrderingParam;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
@@ -169,7 +166,7 @@ impl ScenarioResponse {
 }
 
 /// Create a scenario
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
     tag = "scenarios",
@@ -180,17 +177,8 @@ impl ScenarioResponse {
 )]
 pub(in crate::views) async fn create(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Json(data): Json<ScenarioCreateForm>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let timetable_id = data.timetable_id;
     let infra_id = data.infra_id;
     let study_id = data.study_id;
@@ -223,7 +211,7 @@ pub(in crate::views) async fn create(
 }
 
 /// Delete a scenario
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     delete, path = "",
     tag = "scenarios",
@@ -234,17 +222,8 @@ pub(in crate::views) async fn create(
 )]
 pub(in crate::views) async fn delete(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(ScenarioIdParam { scenario_id }): Path<ScenarioIdParam>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let conn = db_pool.get().await?;
 
     conn.transaction(async move |conn| {
@@ -295,7 +274,7 @@ impl ScenarioPatchForm {
 }
 
 /// Update a scenario
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     patch, path = "",
     tag = "scenarios",
@@ -307,18 +286,9 @@ impl ScenarioPatchForm {
 )]
 pub(in crate::views) async fn patch(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(ScenarioIdParam { scenario_id }): Path<ScenarioIdParam>,
     Json(form): Json<ScenarioPatchForm>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let details = Scenario::transactional_content_update(
         db_pool.get().await?,
         scenario_id,
@@ -348,7 +318,7 @@ pub(in crate::views) async fn patch(
 }
 
 /// Return a specific scenario
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     get, path = "",
     tag = "scenarios",
@@ -359,17 +329,8 @@ pub(in crate::views) async fn patch(
 )]
 pub(in crate::views) async fn get(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(ScenarioIdParam { scenario_id }): Path<ScenarioIdParam>,
 ) -> Result<Json<ScenarioResponse>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let (details, project, study) = db_pool
         .get()
         .await?
@@ -417,7 +378,7 @@ pub(in crate::views) struct ListScenariosQueryParams {
 }
 
 /// Return a list of scenarios
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     get, path = "",
     tag = "scenarios",
@@ -429,19 +390,10 @@ pub(in crate::views) struct ListScenariosQueryParams {
 )]
 pub(in crate::views) async fn list(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Query(ListScenariosQueryParams { study_id }): Query<ListScenariosQueryParams>,
     Query(pagination_params): Query<PaginationQueryParams<1000>>,
     Query(OperationalStudiesOrderingParam { ordering }): Query<OperationalStudiesOrderingParam>,
 ) -> Result<Json<ListScenariosResponse>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let conn = &mut db_pool.get().await?;
 
     let settings = pagination_params

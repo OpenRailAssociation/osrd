@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use authz::Role;
-use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
@@ -18,8 +17,6 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::error::Result;
-use crate::views::AuthenticationExt;
-use crate::views::AuthorizationError;
 use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
@@ -149,7 +146,7 @@ pub(in crate::views) struct ListMacroNodesQueryParams {
 }
 
 /// Get macro node list by scenario id
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     get, path = "",
     tag = "scenarios",
@@ -160,19 +157,10 @@ pub(in crate::views) struct ListMacroNodesQueryParams {
 )]
 pub(in crate::views) async fn list(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Query(ListMacroNodesQueryParams { scenario_id }): Query<ListMacroNodesQueryParams>,
     Query(pagination_params): Query<PaginationQueryParams<100>>,
 ) -> Result<Json<MacroNodeListResponse>> {
     // Checking role
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let mut conn = db_pool.get().await?;
 
     // Ask the db
@@ -194,7 +182,7 @@ pub(in crate::views) async fn list(
 }
 
 /// Create macro nodes in batch
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
     tag = "scenarios",
@@ -205,21 +193,12 @@ pub(in crate::views) async fn list(
 )]
 pub(in crate::views) async fn create(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Json(MacroNodeBatchForm {
         macro_nodes,
         scenario_id,
     }): Json<MacroNodeBatchForm>,
 ) -> Result<impl IntoResponse> {
     // Checking role
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let created = Scenario::transactional_content_update(
         db_pool.get().await?,
         scenario_id,
@@ -246,7 +225,7 @@ pub(in crate::views) async fn create(
 }
 
 /// Retrieve a macro node by id
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     get, path = "",
     tag = "scenarios",
@@ -257,18 +236,9 @@ pub(in crate::views) async fn create(
 )]
 pub(in crate::views) async fn get(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(MacroNodeIdParam { node_id }): Path<MacroNodeIdParam>,
 ) -> Result<Json<MacroNodeResponse>> {
     // Checking role
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let conn = db_pool.get().await?;
 
     // Get the node
@@ -279,7 +249,7 @@ pub(in crate::views) async fn get(
 }
 
 /// Update a macro node
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     put, path = "",
     tag = "scenarios",
@@ -291,18 +261,9 @@ pub(in crate::views) async fn get(
 )]
 pub(in crate::views) async fn update(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(MacroNodeIdParam { node_id }): Path<MacroNodeIdParam>,
     Json(data): Json<MacroNodeForm>,
 ) -> Result<Json<MacroNodeResponse>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let conn = db_pool.get().await?;
 
     let updated_macro_node = conn
@@ -335,7 +296,7 @@ pub(in crate::views) async fn update(
 }
 
 /// Delete a macro node
-#[editoast_derive::route]
+#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     delete, path = "",
     tag = "scenarios",
@@ -346,17 +307,8 @@ pub(in crate::views) async fn update(
 )]
 pub(in crate::views) async fn delete(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
     Path(MacroNodeIdParam { node_id }): Path<MacroNodeIdParam>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let conn = db_pool.get().await?;
 
     conn.transaction(async move |conn| {

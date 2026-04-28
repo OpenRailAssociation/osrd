@@ -19,7 +19,6 @@ use crate::error::Result;
 use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::views::AuthenticationExt;
-use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use crate::views::params::List;
@@ -64,14 +63,6 @@ pub(in crate::views) async fn get_routes_from_waypoint(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<RoutesResponse>> {
-    // Check user roles
-    let has_role = auth
-        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
-        .await?;
-    if !has_role {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let mut conn = db_pool.get().await?;
     let infra = Infra::retrieve_or_fail(conn.clone(), path.infra_id, || InfraApiError::NotFound {
         infra_id: path.infra_id,
@@ -158,15 +149,6 @@ pub(in crate::views) async fn get_routes_track_ranges(
     Path(infra): Path<i64>,
     Query(params): Query<RouteTrackRangesParams>,
 ) -> Result<Json<Vec<RouteTrackRangesResult>>> {
-    // Check user roles
-    let has_role = auth
-        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !has_role {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let db_pool = db_pool.clone();
     let infra_caches = infra_caches.clone();
     let infra_id = infra;
@@ -237,14 +219,6 @@ pub(in crate::views) async fn get_routes_nodes(
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     Json(node_states): Json<HashMap<String, Option<String>>>,
 ) -> Result<Json<RoutesFromNodesPositions>> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })

@@ -13,7 +13,6 @@ use crate::AppState;
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::views::AuthenticationExt;
-use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use editoast_models::Infra;
 use editoast_models::prelude::*;
@@ -72,14 +71,6 @@ pub(in crate::views) async fn attached(
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<HashMap<ObjectType, Vec<String>>>> {
-    // Check user roles
-    let has_role = auth
-        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
-        .await?;
-    if !has_role {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     // Check that infra exists
     let mut conn = db_pool.get().await?;
     // TODO: lock for share

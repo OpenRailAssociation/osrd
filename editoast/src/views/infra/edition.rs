@@ -39,7 +39,6 @@ use crate::infra_cache::operation::Operation;
 use crate::infra_cache::operation::UpdateOperation;
 use crate::map;
 use crate::views::AuthenticationExt;
-use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use database::DbConnection;
@@ -57,7 +56,7 @@ use schemas::infra::InfraObject;
 ///
 /// After editing the object, the generated cartographic layers are invalidated and
 /// regenerated. The edition step fails if the regeneration fails.
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
     tag = "infra",
@@ -80,13 +79,6 @@ pub(in crate::views) async fn edit(
     Extension(auth): AuthenticationExt,
     Json(operations): Json<Vec<Operation>>,
 ) -> Result<Json<Vec<InfraObject>>> {
-    let has_role = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await?;
-    if !has_role {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     // TODO: lock for update
     let mut infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
@@ -131,7 +123,7 @@ pub(in crate::views) async fn edit(
     Ok(Json(operation_results))
 }
 
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
     tag = "infra",
@@ -154,14 +146,6 @@ pub(in crate::views) async fn split_track_section(
     Extension(auth): AuthenticationExt,
     Json(payload): Json<TrackOffset>,
 ) -> Result<Json<Vec<String>>> {
-    // Check user roles
-    let has_role = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await?;
-    if !has_role {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     info!(
         track_id = payload.track.as_str(),
         offset = payload.offset,

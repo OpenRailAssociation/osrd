@@ -54,7 +54,6 @@ use crate::AppState;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::views::AuthenticationExt;
-use crate::views::AuthorizationError;
 use crate::views::timetable::PhysicsConsistParameters;
 use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
@@ -181,7 +180,7 @@ pub(in crate::views) struct StdcmQueryParams {
         path_found,
     )
 )]
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::Stdcm)]
 #[utoipa::path(
     post, path = "",
     tag = "stdcm",
@@ -241,14 +240,6 @@ pub(in crate::views) async fn stdcm_handler(
     Json(request): Json<Request>,
     returned_request: &mut Option<core_client::stdcm::Request>,
 ) -> Result<Response> {
-    let authorized = auth
-        .check_roles([authz::Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let mut conn = db_pool.get().await?;
 
     let timetable_id = id;

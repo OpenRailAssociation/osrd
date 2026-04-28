@@ -3,7 +3,6 @@ use crate::error::Result;
 use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::views::AuthenticationExt;
-use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use authz;
@@ -106,7 +105,7 @@ impl From<Sign> for DirectedLocation {
     }
 }
 
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     get, path = "",
     tag = "delimited_area",
@@ -123,7 +122,6 @@ impl From<Sign> for DirectedLocation {
 /// To prevent a missing exit to cause the graph traversal to never stop exploring, the exploration
 /// stops when a maximum distance is reached and no exit has been found.
 pub(in crate::views) async fn delimited_area(
-    Extension(auth): AuthenticationExt,
     State(AppState {
         infra_caches,
         db_pool,
@@ -132,18 +130,11 @@ pub(in crate::views) async fn delimited_area(
         ..
     }): State<AppState>,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
+    Extension(auth): AuthenticationExt,
     Json(DelimitedAreaForm { entries, exits }): Json<DelimitedAreaForm>,
 ) -> Result<Json<DelimitedAreaResponse>> {
     // TODO in case of a missing exit, return an empty list of track ranges instead of returning all
     // the track ranges explored until the stopping condition ?
-    // Check user roles
-    let has_role = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await?;
-    if !has_role {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     // Retrieve the infra
     let mut conn = db_pool.get().await?;
     let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || InfraApiError::NotFound {
