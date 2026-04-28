@@ -28,14 +28,14 @@ type FailureData = {
 type HoveredPoint = ConflictPoint & { category: 'largest' | 'closest' };
 
 const toFeatures = (points: ConflictPoint[], category: 'largest' | 'closest'): Feature<Point>[] =>
-  points.map((p, i) => ({
+  points.map((point, i) => ({
     type: 'Feature',
     id: i,
-    properties: { ...p, category },
-    geometry: { type: 'Point', coordinates: [p.lon, p.lat] },
+    properties: { ...point, category },
+    geometry: { type: 'Point', coordinates: [point.lon, point.lat] },
   }));
 
-const fmtSeconds = (s: number) => `${Math.round(s)}s`;
+const fmtSeconds = (seconds: number) => `${Math.round(seconds)}s`;
 
 type DebugFailureMapProps = { failureData: unknown };
 
@@ -43,7 +43,7 @@ const DebugFailureMap = ({ failureData }: DebugFailureMapProps) => {
   const data = failureData as FailureData;
   const mapRef = useRef<MapRef | null>(null);
   const mapBlankStyle = useMapBlankStyle();
-  const [hovered, setHovered] = useState<{ point: HoveredPoint; x: number; y: number } | null>(
+  const [hovered, setHovered] = useState<{ point: HoveredPoint; clientX: number; clientY: number } | null>(
     null
   );
 
@@ -61,8 +61,8 @@ const DebugFailureMap = ({ failureData }: DebugFailureMapProps) => {
   const initialViewState = useMemo(() => {
     const allPoints = [...(data.largest_conflicts ?? []), ...(data.closest_conflicts ?? [])];
     if (allPoints.length === 0) return { latitude: 46.2, longitude: 2.5, zoom: 5 };
-    const lats = allPoints.map((p) => p.lat);
-    const lons = allPoints.map((p) => p.lon);
+    const lats = allPoints.map((point) => point.lat);
+    const lons = allPoints.map((point) => point.lon);
     return {
       latitude: (Math.min(...lats) + Math.max(...lats)) / 2,
       longitude: (Math.min(...lons) + Math.max(...lons)) / 2,
@@ -70,16 +70,16 @@ const DebugFailureMap = ({ failureData }: DebugFailureMapProps) => {
     };
   }, [data]);
 
-  const handleMouseMove = useCallback((e: MapLayerMouseEvent) => {
-    const feature = e.features?.[0];
+  const handleMouseMove = useCallback((event: MapLayerMouseEvent) => {
+    const feature = event.features?.[0];
     if (!feature) {
       setHovered(null);
       return;
     }
     setHovered({
       point: feature.properties as HoveredPoint,
-      x: e.point.x,
-      y: e.point.y,
+      clientX: event.point.x,
+      clientY: event.point.y,
     });
   }, []);
 
@@ -101,7 +101,7 @@ const DebugFailureMap = ({ failureData }: DebugFailureMapProps) => {
           { showOSM3dBuildings: false },
           LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]
         )
-          .filter((p): p is typeof p & { id: string } => p.id !== undefined)
+          .filter((layer): layer is typeof layer & { id: string } => layer.id !== undefined)
           .map(({ id, ...props }) => (
             <OrderedLayer key={id} id={id} {...props} />
           ))}
@@ -147,7 +147,7 @@ const DebugFailureMap = ({ failureData }: DebugFailureMapProps) => {
       {hovered && (
         <div
           className="debug-failure-map__tooltip"
-          style={{ left: hovered.x + 12, top: hovered.y + 12 }}
+          style={{ left: hovered.clientX + 12, top: hovered.clientY + 12 }}
         >
           <div>
             <strong>{hovered.point.lastOPName}</strong>

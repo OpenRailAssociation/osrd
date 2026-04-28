@@ -22,15 +22,15 @@ const StdcmDebugView = () => {
 
   const inputForm = (
     <form
-      onSubmit={(e) => {
-        e.preventDefault();
+      onSubmit={(event) => {
+        event.preventDefault();
         if (inputId.trim()) navigate(`/stdcm/debug?traceId=${encodeURIComponent(inputId.trim())}`);
       }}
     >
       <input
         id="trace-id-input"
         value={inputId}
-        onChange={(e) => setInputId(e.target.value)}
+        onChange={(event) => setInputId(event.target.value)}
         placeholder="Enter trace ID"
       />
       <button type="submit">Open</button>
