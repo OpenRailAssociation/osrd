@@ -50,7 +50,7 @@ import {
 } from 'utils/trainId';
 
 import { TIMETABLE_ITEM_DELTA } from '../consts';
-import TimetableItemActions from '../TimetableItemActions';
+import TrainScheduleActions from '../TrainScheduleActions';
 import { formatTrainDuration, getTrainCategoryClassName } from '../utils';
 import useOccurrenceActions from './hooks/useOccurrenceActions';
 import useOccurrences from './hooks/useOccurrences';
@@ -419,12 +419,12 @@ const PacedTrainItem = ({
           </div>
         )}
 
-        <TimetableItemActions
+        <TrainScheduleActions
           selectPathProjection={selectPathProjection}
           moveTrainSchedule={moveTrainSchedule}
-          duplicateTimetableItem={duplicatePacedTrain}
-          editTimetableItem={() => selectPacedTrainToEdit(pacedTrain)}
-          deleteTimetableItem={async () => {
+          duplicateTrainSchedule={duplicatePacedTrain}
+          editTrainSchedule={() => selectPacedTrainToEdit(pacedTrain)}
+          deleteTrainSchedule={async () => {
             openModal(
               <DeleteModal
                 handleDelete={async () => deletePacedTrain()}

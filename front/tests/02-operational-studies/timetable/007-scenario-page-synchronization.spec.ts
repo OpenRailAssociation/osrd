@@ -108,7 +108,7 @@ test.describe('Scenario page synchronization', { tag: ['@op, @multi-tab-sync'] }
     });
 
     await test.step('Edit a unique train in second tab and verify the update', async () => {
-      await secondScenarioTimetableSection.editTimetableItem(1);
+      await secondScenarioTimetableSection.editTrainSchedule(1);
       await secondOperationalStudiesPage.setFormattedStartTime('2025-03-15T08:35:40');
       await secondOperationalStudiesPage.submitTimetableItemEdit();
       await secondScenarioTimetableSection.getTimetableItemArrivalTime('08:43', 1);

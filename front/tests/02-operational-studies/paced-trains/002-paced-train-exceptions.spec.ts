@@ -91,8 +91,8 @@ test.describe('Paced train exceptions', { tag: ['@op', '@paced-trains', '@except
 
       await test.step('Open action buttons for paced train at index 5', async () => {
         await pacedTrainSection.getActionButtonsLocators({
-          itemIndex: 5,
-          itemType: 'paced-train',
+          trainIndex: 5,
+          trainType: 'paced-train',
           withExceptions: true,
           checkVisibility: true,
         });
@@ -198,8 +198,8 @@ test.describe('Paced train exceptions', { tag: ['@op', '@paced-trains', '@except
 
       await test.step('Check action buttons count after reset (4 buttons instead of 5)', async () => {
         await pacedTrainSection.getActionButtonsLocators({
-          itemIndex: 5,
-          itemType: 'paced-train',
+          trainIndex: 5,
+          trainType: 'paced-train',
           checkVisibility: true,
         });
       });
