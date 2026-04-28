@@ -149,7 +149,7 @@ const usePathfinding = ({
     }));
 
     if (invalidPathItems.length > 0) {
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define, react-hooks/immutability
       launchPathfinding(updatedPathSteps);
     } else {
       setError(t('missingPathSteps'));

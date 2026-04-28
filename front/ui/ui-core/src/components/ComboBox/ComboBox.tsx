@@ -95,6 +95,8 @@ const ComboBox = <T,>({
   /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
     if (value) {
+      // TODO: fix this lint
+      /* eslint-disable-next-line react-hooks/set-state-in-effect */
       setInputValue(getSuggestionLabel(value));
     } else {
       setInputValue('');

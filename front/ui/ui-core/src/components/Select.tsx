@@ -49,6 +49,8 @@ const Select = <T,>({
   };
 
   useEffect(() => {
+    // TODO: fix this lint
+    /* eslint-disable-next-line react-hooks/set-state-in-effect */
     setSelectedOption(value);
   }, [value]);
 

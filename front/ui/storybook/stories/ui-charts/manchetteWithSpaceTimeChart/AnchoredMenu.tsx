@@ -31,8 +31,6 @@ const AnchoredMenu = ({ children, anchorRef, onDismiss }: AnchoreMenuParams) => 
     const menuRefBoundingRect = menuRef.current?.getBoundingClientRect();
 
     if (anchorRefBoundingRect && menuRefBoundingRect) {
-      // TODO: fix this lint
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMenuPosition({
         top: anchorRefBoundingRect.bottom,
         left: anchorRefBoundingRect.left,

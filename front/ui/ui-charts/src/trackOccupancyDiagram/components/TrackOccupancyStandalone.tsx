@@ -27,6 +27,8 @@ const TrackOccupancyStandalone = ({
   const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);
   const spaceTimeChartRef = useRef<HTMLDivElement>(null);
   const defaultTimeOrigin = useMemo(() => {
+    // TODO: fix this lint
+    /* eslint-disable-next-line react-hooks/purity */
     const minTime = Math.min(...(occupancyZones.map((zone) => zone.startTime) || Date.now()));
     // Take first round hour before minTime:
     return Math.floor(minTime / HOUR) * HOUR;
