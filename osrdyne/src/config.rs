@@ -1,9 +1,6 @@
 use std::{path::PathBuf, time::Duration};
 
-use crate::drivers::{
-    docker::DockerDriverOptions, kubernetes::KubernetesDriverOptions,
-    process_compose::PCDriverOptions,
-};
+use crate::drivers::{docker::DockerDriverOptions, kubernetes::KubernetesDriverOptions};
 use serde::{Deserialize, Serialize};
 
 use figment::{
@@ -19,7 +16,6 @@ pub enum WorkerDriverConfig {
     Noop,
     DockerDriver(DockerDriverOptions),
     KubernetesDriver(Box<KubernetesDriverOptions>),
-    ProcessComposeDriver(PCDriverOptions),
 }
 
 #[derive(Debug, Deserialize, Serialize)]
