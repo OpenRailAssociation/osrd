@@ -828,11 +828,11 @@ pub mod tests {
     use strum::IntoEnumIterator;
 
     use super::*;
+    use crate::fixtures::create_empty_infra;
+    use crate::fixtures::create_rolling_stock_with_energy_sources;
+    use crate::fixtures::create_small_infra;
     use crate::generated_data;
     use crate::infra_cache::operation::create::apply_create_operation;
-    use crate::models::fixtures::create_empty_infra;
-    use crate::models::fixtures::create_rolling_stock_with_energy_sources;
-    use crate::models::fixtures::create_small_infra;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
     use editoast_models::infra::DEFAULT_INFRA_VERSION;

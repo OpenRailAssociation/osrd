@@ -467,8 +467,8 @@ mod tests {
     use schemas::primitives::Identifier;
 
     use super::*;
-    use crate::models::fixtures::create_empty_infra;
-    use crate::models::fixtures::create_infra_object;
+    use crate::fixtures::create_empty_infra;
+    use crate::fixtures::create_infra_object;
 
     fn create_op(obj_id: &str, trigram: Option<&str>, uic: Option<u32>) -> OperationalPoint {
         let extensions = OperationalPointExtensions {

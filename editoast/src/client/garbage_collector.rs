@@ -209,9 +209,9 @@ fn is_tuple_orphaned(untyped: &UntypedTuple, entities: &ExistingEntities) -> boo
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::fixtures::create_empty_infra;
-    use crate::models::fixtures::create_scenario_fixtures_set;
-    use crate::models::fixtures::create_timetable;
+    use crate::fixtures::create_empty_infra;
+    use crate::fixtures::create_scenario_fixtures_set;
+    use crate::fixtures::create_timetable;
     use authz::StorageDriver;
     use authz::identity::GroupInfo;
     use editoast_models::PgAuthDriver;

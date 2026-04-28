@@ -680,14 +680,14 @@ pub mod tests {
 
     use super::*;
     use crate::error::InternalError;
-    use crate::models::fixtures::create_fast_rolling_stock;
-    use crate::models::fixtures::create_project;
-    use crate::models::fixtures::create_rolling_stock_with_energy_sources;
-    use crate::models::fixtures::create_scenario;
-    use crate::models::fixtures::create_small_infra;
-    use crate::models::fixtures::create_study;
-    use crate::models::fixtures::create_timetable_with_train_schedule_set;
-    use crate::models::fixtures::simple_paced_train_changeset;
+    use crate::fixtures::create_fast_rolling_stock;
+    use crate::fixtures::create_project;
+    use crate::fixtures::create_rolling_stock_with_energy_sources;
+    use crate::fixtures::create_scenario;
+    use crate::fixtures::create_small_infra;
+    use crate::fixtures::create_study;
+    use crate::fixtures::create_timetable_with_train_schedule_set;
+    use crate::fixtures::simple_paced_train_changeset;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
     use editoast_models::rolling_stock::RollingStock;

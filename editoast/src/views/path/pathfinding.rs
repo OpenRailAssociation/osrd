@@ -520,7 +520,7 @@ pub mod tests {
     use schemas::train_schedule::OperationalPointReference;
     use schemas::train_schedule::PathItemLocation;
 
-    use crate::models::fixtures::create_small_infra;
+    use crate::fixtures::create_small_infra;
     use crate::views::path::pathfinding::PathfindingFailure;
     use crate::views::path::pathfinding::PathfindingInput;
     use crate::views::path::pathfinding::PathfindingResult;

@@ -324,9 +324,9 @@ pub(in crate::views) async fn get_train_schedules(
 #[cfg(test)]
 mod tests {
 
-    use crate::models::fixtures::create_catalog_entry;
-    use crate::models::fixtures::create_train_schedule_set;
-    use crate::models::fixtures::simple_paced_train_base;
+    use crate::fixtures::create_catalog_entry;
+    use crate::fixtures::create_train_schedule_set;
+    use crate::fixtures::simple_paced_train_base;
     use crate::views::test_app::TestAppBuilder;
     use crate::views::timetable::train_schedule::TrainScheduleResponse;
     use crate::views::train_schedule_set::TrainScheduleSetForm;

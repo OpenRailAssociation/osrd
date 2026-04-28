@@ -306,9 +306,9 @@ mod tests {
     use std::collections::HashMap;
     use std::collections::HashSet;
 
+    use crate::fixtures::create_empty_infra;
+    use crate::fixtures::create_small_infra;
     use crate::infra_cache::operation::create::apply_create_operation;
-    use crate::models::fixtures::create_empty_infra;
-    use crate::models::fixtures::create_small_infra;
     use crate::views::infra::routes::RoutesFromNodesPositions;
     use crate::views::infra::routes::RoutesResponse;
     use crate::views::infra::routes::WaypointType;

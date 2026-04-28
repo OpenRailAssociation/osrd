@@ -454,7 +454,7 @@ mod tests {
     use rstest::rstest;
     use uuid::Uuid;
 
-    use crate::models::fixtures::create_fast_rolling_stock;
+    use crate::fixtures::create_fast_rolling_stock;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
     use crate::views::timetable::similar_trains::trains_traffic::TrainTraffic;

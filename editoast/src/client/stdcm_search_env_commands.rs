@@ -298,13 +298,13 @@ async fn show_stdcm_search_env(conn: &mut DbConnection) -> anyhow::Result<()> {
 #[cfg(test)]
 mod tests {
     use crate::client::generate_temp_file;
-    use crate::models::fixtures::create_electrical_profile_set;
-    use crate::models::fixtures::create_empty_infra;
-    use crate::models::fixtures::create_scenario_fixtures_set;
-    use crate::models::fixtures::create_timetable;
-    use crate::models::fixtures::create_timetable_with_train_schedule_set;
-    use crate::models::fixtures::create_work_schedule_group;
-    use crate::models::fixtures::simple_paced_train_changeset;
+    use crate::fixtures::create_electrical_profile_set;
+    use crate::fixtures::create_empty_infra;
+    use crate::fixtures::create_scenario_fixtures_set;
+    use crate::fixtures::create_timetable;
+    use crate::fixtures::create_timetable_with_train_schedule_set;
+    use crate::fixtures::create_work_schedule_group;
+    use crate::fixtures::simple_paced_train_changeset;
 
     use editoast_models::prelude::*;
 

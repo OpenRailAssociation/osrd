@@ -775,11 +775,11 @@ mod tests {
     use authz::v2::TestClientExt as _;
     use axum::http::StatusCode;
 
-    use crate::models::fixtures::create_empty_infra;
+    use crate::fixtures::create_empty_infra;
     use crate::views::test_app::test_app;
 
     use super::*;
-    use crate::models::fixtures::create_small_infra;
+    use crate::fixtures::create_small_infra;
     use crate::views::test_app::TestRequestExt;
     use pretty_assertions::assert_eq;
 

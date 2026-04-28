@@ -90,8 +90,8 @@ mod tests {
     use serde_json::json;
     use std::str::FromStr;
 
+    use crate::fixtures::create_empty_infra;
     use crate::infra_cache::operation::create::apply_create_operation;
-    use crate::models::fixtures::create_empty_infra;
     use crate::views::test_app::TestAppBuilder;
     use schemas::infra::TrackSection;
     use schemas::infra::TrackSectionExtensions;

@@ -509,7 +509,7 @@ fn track_range_from_endpoint(
 
 #[cfg(test)]
 mod tests {
-    use crate::models::fixtures::create_small_infra;
+    use crate::fixtures::create_small_infra;
     use crate::views::infra::delimited_area::DelimitedAreaResponse;
     use crate::views::test_app::TestAppBuilder;
     use axum::http::StatusCode;

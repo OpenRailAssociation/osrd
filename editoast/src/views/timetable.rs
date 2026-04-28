@@ -860,10 +860,10 @@ mod tests {
 
     use super::*;
     use crate::error::InternalError;
-    use crate::models::fixtures::create_timetable;
-    use crate::models::fixtures::create_timetable_with_train_schedule_set;
-    use crate::models::fixtures::create_train_schedule_set;
-    use crate::models::fixtures::simple_paced_train_base;
+    use crate::fixtures::create_timetable;
+    use crate::fixtures::create_timetable_with_train_schedule_set;
+    use crate::fixtures::create_train_schedule_set;
+    use crate::fixtures::simple_paced_train_base;
     use crate::views::test_app::TestAppBuilder;
     use editoast_models::train_schedule::TrainScheduleChangeset;
 

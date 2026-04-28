@@ -422,11 +422,11 @@ mod tests {
     use serde_json::json;
 
     use super::*;
-    use crate::models::fixtures::create_empty_infra;
-    use crate::models::fixtures::create_project;
-    use crate::models::fixtures::create_scenario_fixtures_set;
-    use crate::models::fixtures::create_study;
-    use crate::models::fixtures::create_timetable;
+    use crate::fixtures::create_empty_infra;
+    use crate::fixtures::create_project;
+    use crate::fixtures::create_scenario_fixtures_set;
+    use crate::fixtures::create_study;
+    use crate::fixtures::create_timetable;
     use crate::views::test_app::TestAppBuilder;
 
     pub fn scenario_url(scenario_id: Option<i64>) -> String {

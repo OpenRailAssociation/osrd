@@ -986,9 +986,9 @@ pub mod tests {
     use pretty_assertions::assert_eq;
 
     use super::*;
+    use crate::fixtures::create_small_infra;
     use crate::generated_data::infra_error::InfraError;
     use crate::generated_data::infra_error::InfraErrorType;
-    use crate::models::fixtures::create_small_infra;
     use crate::views::infra::errors::query_errors;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;

@@ -356,6 +356,8 @@ mod tests {
     use schemas::infra::BufferStopExtension;
 
     use super::*;
+    use crate::fixtures::create_empty_infra;
+    use crate::fixtures::create_small_infra;
     use crate::generated_data::InfraGeneratedData as _;
     use crate::generated_data::infra_error::InfraErrorType;
     use crate::infra_cache::InfraCacheEditoastError;
@@ -365,8 +367,6 @@ mod tests {
     use crate::infra_cache::operation::DeleteOperation;
     use crate::infra_cache::operation::Operation;
     use crate::infra_cache::operation::create::apply_create_operation;
-    use crate::models::fixtures::create_empty_infra;
-    use crate::models::fixtures::create_small_infra;
     use crate::views::infra::errors::query_errors;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;

@@ -655,10 +655,10 @@ mod tests {
     use uuid::Uuid;
 
     use crate::error::InternalError;
-    use crate::models::fixtures::create_fast_rolling_stock;
-    use crate::models::fixtures::create_rolling_stock_with_energy_sources;
-    use crate::models::fixtures::create_small_infra;
-    use crate::models::fixtures::create_timetable;
+    use crate::fixtures::create_fast_rolling_stock;
+    use crate::fixtures::create_rolling_stock_with_energy_sources;
+    use crate::fixtures::create_small_infra;
+    use crate::fixtures::create_timetable;
     use crate::views::path::pathfinding::PathfindingResult;
     use crate::views::test_app::TestAppBuilder;
     use crate::views::timetable::simulation_empty_response;

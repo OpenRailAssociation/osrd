@@ -132,7 +132,7 @@ pub(in crate::views) async fn query_errors(
 mod tests {
     use axum::http::StatusCode;
 
-    use crate::models::fixtures::create_empty_infra;
+    use crate::fixtures::create_empty_infra;
     use crate::views::test_app::TestAppBuilder;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
