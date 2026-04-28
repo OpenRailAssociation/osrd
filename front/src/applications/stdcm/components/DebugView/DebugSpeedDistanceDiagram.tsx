@@ -1,47 +1,29 @@
 import { useState } from 'react';
 
-import type {
-  BoundariesData,
-  ElectricalBoundariesData,
-  ElectrificationUsage,
-  PathPropertiesFormatted,
-} from 'applications/operationalStudies/types';
-import {
-  transformBoundariesDataToPositionDataArray,
-  transformElectricalBoundariesToRanges,
-} from 'applications/operationalStudies/utils';
-import type {
-  RollingStockWithLiveries,
-  SimulationResponseSuccess,
-} from 'common/api/osrdEditoastApi';
+import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
+import { transformBoundariesDataToPositionDataArray } from 'applications/operationalStudies/utils';
+import type { CoreDebugSimulationData, RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import SpeedDistanceDiagramWrapper from 'modules/simulationResult/components/SpeedDistanceDiagram/SpeedDistanceDiagramWrapper';
 
-type LocalSimData = {
-  sim_output: SimulationResponseSuccess;
-  path_properties: {
-    slopes: BoundariesData;
-    electrifications: ElectricalBoundariesData<ElectrificationUsage>;
-    operational_points: NonNullable<PathPropertiesFormatted['operationalPoints']>;
-  };
-};
+type DebugSpeedDistanceDiagramProps = { simulationData: CoreDebugSimulationData };
 
-const DebugSpeedDistanceDiagram = ({ simulationData }: { simulationData: unknown }) => {
-  const simData = simulationData as LocalSimData;
+const DebugSpeedDistanceDiagram = ({ simulationData }: DebugSpeedDistanceDiagramProps) => {
   const [height, setHeight] = useState(400);
+  const sim_output = simulationData.sim_output;
+  if (!sim_output) {
+    return null;
+  }
 
-  const pathLength = simData.sim_output.base.positions.at(-1) ?? 0;
+  const pathLength = sim_output.base.positions.at(-1) ?? 0;
 
   const pathProperties = {
     slopes: transformBoundariesDataToPositionDataArray(
-      simData.path_properties.slopes,
+      simulationData.path_properties.slopes,
       pathLength,
       'gradient'
     ),
-    electrifications: transformElectricalBoundariesToRanges(
-      simData.path_properties.electrifications,
-      pathLength
-    ),
-    operationalPoints: simData.path_properties.operational_points,
+    electrifications: [], // We should be able to forward electrification, but the types don't quite line up
+    operationalPoints: simulationData.path_properties.operational_points,
     curves: [],
     voltages: [],
     geometry: { type: 'LineString', coordinates: [] },
@@ -49,7 +31,7 @@ const DebugSpeedDistanceDiagram = ({ simulationData }: { simulationData: unknown
 
   return (
     <SpeedDistanceDiagramWrapper
-      timetableItemSimulation={simData.sim_output}
+      timetableItemSimulation={sim_output}
       pathProperties={pathProperties}
       rollingStock={{ length: 0 } as RollingStockWithLiveries}
       initialLayersDisplay={{ speedLimits: true }}

@@ -8,7 +8,10 @@ use object_store::GetOptions;
 use object_store::ObjectStore as _;
 use object_store::aws::AmazonS3;
 use object_store::path::Path as OsPath;
+use core_client::stdcm_debug::DebugFailureReport;
+use core_client::stdcm_debug::DebugSimulationData;
 use serde::Serialize;
+use serde::de::DeserializeOwned;
 use thiserror::Error;
 use utoipa::ToSchema;
 
@@ -33,8 +36,8 @@ enum StdcmDebugError {
 
 #[derive(Serialize, serde::Deserialize, ToSchema)]
 pub(in crate::views) struct StdcmDebugDataResponse {
-    failure: Option<serde_json::Value>,
-    simulation_data: Option<serde_json::Value>,
+    failure: Option<DebugFailureReport>,
+    simulation_data: Option<DebugSimulationData>,
 }
 
 #[editoast_derive::route]
@@ -64,9 +67,9 @@ pub(in crate::views) async fn get_debug_data(
     let s3 = s3_client.as_ref().ok_or(StdcmDebugError::S3NotConfigured)?;
 
     let prefix = OsPath::from("stdcm/requests/").join(trace_id);
-    let failure = fetch_optional_json(s3.as_ref(), &prefix.clone().join("failure.json")).await?;
+    let failure = fetch_optional_json::<DebugFailureReport>(s3.as_ref(), &prefix.clone().join("failure.json")).await?;
     let simulation_data =
-        fetch_optional_json(s3.as_ref(), &prefix.join("output_simulation_data.json")).await?;
+        fetch_optional_json::<DebugSimulationData>(s3.as_ref(), &prefix.join("output_simulation_data.json")).await?;
 
     let response = StdcmDebugDataResponse {
         failure,
@@ -75,10 +78,10 @@ pub(in crate::views) async fn get_debug_data(
     Ok(Json(response))
 }
 
-async fn fetch_optional_json(
+async fn fetch_optional_json<T: DeserializeOwned>(
     s3: &AmazonS3,
     path: &OsPath,
-) -> Result<Option<serde_json::Value>, StdcmDebugError> {
+) -> Result<Option<T>, StdcmDebugError> {
     match s3.get_opts(&path, GetOptions::default()).await {
         Ok(result) => {
             let bytes = result.bytes().await.map_err(|e| StdcmDebugError::S3Error {

@@ -6,6 +6,8 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
+use common::geometry::GeoJsonLineString;
+
 use crate::AsCoreRequest;
 use crate::Json;
 use crate::WorkerKey;
@@ -22,19 +24,26 @@ pub struct PathPropertiesRequest<'a> {
 }
 
 /// Properties along a path.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[schema(as = core::PathPropertiesResponse)]
 pub struct PathPropertiesResponse {
     /// Slopes along the path
+    #[schema(inline)]
     pub slopes: PropertyValuesF64,
     /// Curves along the path
+    #[schema(inline)]
     pub curves: PropertyValuesF64,
     /// Electrification modes and neutral section along the path
+    #[schema(inline)]
     pub electrifications: PropertyElectrificationValues,
     /// Geometry of the path
+    #[schema(value_type = GeoJsonLineString)]
     pub geometry: Geometry,
     /// Operational points along the path
+    #[schema(inline)]
     pub operational_points: Vec<OperationalPointOnPath>,
     /// Zones along the path
+    #[schema(inline)]
     pub zones: PropertyZoneValues,
 }
 

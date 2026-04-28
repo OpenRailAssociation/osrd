@@ -2904,8 +2904,14 @@ paths:
               schema:
                 type: object
                 properties:
-                  failure: {}
-                  simulation_data: {}
+                  failure:
+                    oneOf:
+                    - type: 'null'
+                    - $ref: '#/components/schemas/core.DebugFailureReport'
+                  simulation_data:
+                    oneOf:
+                    - type: 'null'
+                    - $ref: '#/components/schemas/core.DebugSimulationData'
   /stdcm/search_environment:
     get:
       tags:
@@ -15122,6 +15128,161 @@ components:
             type: string
           description: List of supported signaling systems
           uniqueItems: true
+    core.DebugConflictReport:
+      type: object
+      description: Describes a given conflict in debug data.
+      required:
+      - at
+      - time_lost
+      - best_remaining_time
+      - current_travel_time
+      - caused_by
+      - lat
+      - lon
+      properties:
+        at:
+          type: string
+          format: date-time
+        best_remaining_time:
+          type: number
+          format: double
+        caused_by:
+          type: string
+        current_travel_time:
+          type: number
+          format: double
+        lastOPName:
+          type:
+          - string
+          - 'null'
+        lat:
+          type: number
+          format: double
+        lon:
+          type: number
+          format: double
+        time_lost:
+          type: number
+          format: double
+    core.DebugEngineeringAllowanceRange:
+      type: object
+      description: Range where an engineering allowance is applied.
+      required:
+      - from
+      - to
+      - added_duration
+      properties:
+        added_duration:
+          type: number
+          format: double
+        from:
+          type: integer
+          format: int64
+          minimum: 0
+        to:
+          type: integer
+          format: int64
+          minimum: 0
+    core.DebugFailureReport:
+      type: object
+      description: Debug report for a failed STDCM search.
+      required:
+      - largest_conflicts
+      - closest_conflicts
+      properties:
+        closest_conflicts:
+          type: array
+          items:
+            $ref: '#/components/schemas/core.DebugConflictReport'
+        largest_conflicts:
+          type: array
+          items:
+            $ref: '#/components/schemas/core.DebugConflictReport'
+    core.DebugSimulationData:
+      type: object
+      description: Contains data describing the output STDCM simulation.
+      required:
+      - path_properties
+      - other_requirements
+      - departure_time
+      - engineering_allowances_ranges
+      - zone_locations
+      - train_times
+      - train_positions
+      properties:
+        departure_time:
+          type: string
+          format: date-time
+        engineering_allowances_ranges:
+          type: array
+          items:
+            $ref: '#/components/schemas/core.DebugEngineeringAllowanceRange'
+        other_requirements:
+          type: array
+          items:
+            $ref: '#/components/schemas/core.DebugTrainZoneRequirement'
+        path_properties:
+          $ref: '#/components/schemas/core.PathPropertiesResponse'
+        sim_output:
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/core.SimulationSuccess'
+        train_positions:
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 0
+        train_times:
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 0
+        zone_locations:
+          type: array
+          items:
+            $ref: '#/components/schemas/core.DebugZoneLocation'
+    core.DebugTrainZoneRequirement:
+      type: object
+      description: Requirements for another train in a zone.
+      required:
+      - zone_name
+      - begin_time
+      - end_time
+      properties:
+        begin_time:
+          type: integer
+          format: int64
+          minimum: 0
+        end_time:
+          type: integer
+          format: int64
+          minimum: 0
+        train_name:
+          type:
+          - string
+          - 'null'
+        zone_name:
+          type: string
+    core.DebugZoneLocation:
+      type: object
+      description: Location of a zone along the path.
+      required:
+      - name
+      - from
+      - to
+      properties:
+        from:
+          type: integer
+          format: int64
+          minimum: 0
+        name:
+          type: string
+        to:
+          type: integer
+          format: int64
+          minimum: 0
     core.ETCSBrakingCurvesResponse:
       type: object
       required:
@@ -15439,6 +15600,184 @@ components:
           format: int64
           description: Stop duration in milliseconds. None if the train does not stop at this path item.
           minimum: 0
+    core.PathPropertiesResponse:
+      type: object
+      description: Properties along a path.
+      required:
+      - slopes
+      - curves
+      - electrifications
+      - geometry
+      - operational_points
+      - zones
+      properties:
+        curves:
+          oneOf:
+          - type: object
+            description: Property f64 values along a path. Each value is associated to a range of the path.
+            required:
+            - boundaries
+            - values
+            properties:
+              boundaries:
+                type: array
+                items:
+                  type: integer
+                  format: int64
+                  minimum: 0
+                description: |-
+                  List of `n` boundaries of the ranges.
+                  A boundary is a distance from the beginning of the path in mm.
+              values:
+                type: array
+                items:
+                  type: number
+                  format: double
+                description: List of `n+1` values associated to the ranges
+          description: Curves along the path
+        electrifications:
+          oneOf:
+          - type: object
+            description: Electrification property along a path. Each value is associated to a range of the path.
+            required:
+            - boundaries
+            - values
+            properties:
+              boundaries:
+                type: array
+                items:
+                  type: integer
+                  format: int64
+                  minimum: 0
+                description: |-
+                  List of `n` boundaries of the ranges.
+                  A boundary is a distance from the beginning of the path in mm.
+              values:
+                type: array
+                items:
+                  oneOf:
+                  - type: object
+                    description: Electrified section with a given voltage
+                    required:
+                    - voltage
+                    - type
+                    properties:
+                      type:
+                        type: string
+                        enum:
+                        - electrification
+                      voltage:
+                        type: string
+                  - type: object
+                    description: Neutral section with a lower pantograph instruction or just a dead section
+                    required:
+                    - lower_pantograph
+                    - type
+                    properties:
+                      lower_pantograph:
+                        type: boolean
+                      type:
+                        type: string
+                        enum:
+                        - neutral_section
+                  - type: object
+                    description: Non electrified section
+                    required:
+                    - type
+                    properties:
+                      type:
+                        type: string
+                        enum:
+                        - non_electrified
+                description: List of `n+1` values associated to the ranges
+          description: Electrification modes and neutral section along the path
+        geometry:
+          $ref: '#/components/schemas/GeoJsonLineString'
+          description: Geometry of the path
+        operational_points:
+          type: array
+          items:
+            type: object
+            description: Operational point along a path.
+            required:
+            - id
+            - part
+            - position
+            - weight
+            properties:
+              extensions:
+                $ref: '#/components/schemas/OperationalPointExtensions'
+                description: Extensions associated to the operational point
+              id:
+                oneOf:
+                - type: string
+                  maxLength: 255
+                  minLength: 1
+                description: Id of the operational point
+              part:
+                $ref: '#/components/schemas/OperationalPointPart'
+                description: The part along the path
+              position:
+                type: integer
+                format: int64
+                description: Distance from the beginning of the path in mm
+                minimum: 0
+              weight:
+                type:
+                - integer
+                - 'null'
+                format: int32
+                description: Importance of the operational point
+                maximum: 100
+                minimum: 0
+          description: Operational points along the path
+        slopes:
+          oneOf:
+          - type: object
+            description: Property f64 values along a path. Each value is associated to a range of the path.
+            required:
+            - boundaries
+            - values
+            properties:
+              boundaries:
+                type: array
+                items:
+                  type: integer
+                  format: int64
+                  minimum: 0
+                description: |-
+                  List of `n` boundaries of the ranges.
+                  A boundary is a distance from the beginning of the path in mm.
+              values:
+                type: array
+                items:
+                  type: number
+                  format: double
+                description: List of `n+1` values associated to the ranges
+          description: Slopes along the path
+        zones:
+          oneOf:
+          - type: object
+            description: Zones along a path. Each value is associated to a range of the path.
+            required:
+            - boundaries
+            - values
+            properties:
+              boundaries:
+                type: array
+                items:
+                  type: integer
+                  format: int64
+                  minimum: 0
+                description: |-
+                  List of `n` boundaries of the ranges.
+                  A boundary is a distance from the beginning of the path in mm.
+              values:
+                type: array
+                items:
+                  type: string
+                description: List of `n+1` values associated to the ranges
+          description: Zones along the path
     core.PathfindingInputError:
       oneOf:
       - type: object
@@ -15746,6 +16085,155 @@ components:
           format: int64
           description: The aspects start being displayed at this time (number of ms since `departure_time`)
           minimum: 0
+    core.SimulationSuccess:
+      type: object
+      required:
+      - base
+      - provisional
+      - final_output
+      - mrsp
+      - electrical_profiles
+      properties:
+        base:
+          $ref: '#/components/schemas/core.ReportTrain'
+          description: Simulation without any regularity margins
+        electrical_profiles:
+          type: object
+          required:
+          - boundaries
+          - values
+          properties:
+            boundaries:
+              type: array
+              items:
+                type: integer
+                format: int64
+                minimum: 0
+              description: |-
+                List of `n` boundaries of the ranges (block path).
+                A boundary is a distance from the beginning of the path in mm.
+            values:
+              type: array
+              items:
+                oneOf:
+                - type: object
+                  required:
+                  - electrical_profile_type
+                  properties:
+                    electrical_profile_type:
+                      type: string
+                      enum:
+                      - no_profile
+                - type: object
+                  required:
+                  - handled
+                  - electrical_profile_type
+                  properties:
+                    electrical_profile_type:
+                      type: string
+                      enum:
+                      - profile
+                    handled:
+                      type: boolean
+                    profile:
+                      type:
+                      - string
+                      - 'null'
+              description: List of `n+1` values associated to the ranges
+        final_output:
+          oneOf:
+          - allOf:
+            - $ref: '#/components/schemas/core.ReportTrain'
+            - type: object
+              required:
+              - signal_critical_positions
+              - zone_updates
+              - spacing_requirements
+              - routing_requirements
+              properties:
+                routing_requirements:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/core.RoutingRequirement'
+                signal_critical_positions:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/core.SignalCriticalPosition'
+                spacing_requirements:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/core.SpacingRequirement'
+                zone_updates:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/core.ZoneUpdate'
+          description: Simulation that takes into account the regularity margins and the schedule item times
+        mrsp:
+          type: object
+          description: A MRSP computation result (Most Restrictive Speed Profile)
+          required:
+          - boundaries
+          - values
+          properties:
+            boundaries:
+              type: array
+              items:
+                type: integer
+                format: int64
+                minimum: 0
+              description: |-
+                List of `n` boundaries of the ranges (block path).
+                A boundary is a distance from the beginning of the path in mm.
+            values:
+              type: array
+              items:
+                type: object
+                required:
+                - speed
+                properties:
+                  source:
+                    oneOf:
+                    - type: 'null'
+                    - oneOf:
+                      - type: object
+                        required:
+                        - tag
+                        - speed_limit_source_type
+                        properties:
+                          speed_limit_source_type:
+                            type: string
+                            enum:
+                            - given_train_tag
+                          tag:
+                            type: string
+                      - type: object
+                        required:
+                        - tag
+                        - speed_limit_source_type
+                        properties:
+                          speed_limit_source_type:
+                            type: string
+                            enum:
+                            - fallback_tag
+                          tag:
+                            type: string
+                      - type: object
+                        required:
+                        - speed_limit_source_type
+                        properties:
+                          speed_limit_source_type:
+                            type: string
+                            enum:
+                            - unknown_tag
+                    description: source of the speed-limit if relevant (tag used)
+                  speed:
+                    type: number
+                    format: double
+                    description: in meters per second
+              description: List of `n+1` values associated to the ranges
+        provisional:
+          $ref: '#/components/schemas/core.ReportTrain'
+          description: Simulation that takes into account the regularity margins
     core.SpacingRequirement:
       type: object
       required:

@@ -5,29 +5,17 @@ import type { MapLayerMouseEvent } from 'maplibre-gl';
 import type { MapRef } from 'react-map-gl/maplibre';
 import ReactMapGL, { Source } from 'react-map-gl/maplibre';
 
+import type { CoreDebugConflictReport, CoreDebugFailureReport } from 'common/api/osrdEditoastApi';
 import { OrderedLayer, VirtualLayers, genOSMLayerProps, useMapBlankStyle } from 'common/Map/Layers';
 import OpenStreetMapSource from 'common/Map/Sources/OpenStreetMap';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 
-type ConflictPoint = {
-  at: string;
-  time_lost: number;
-  best_remaining_time: number;
-  current_travel_time: number;
-  caused_by: string;
-  lat: number;
-  lon: number;
-  lastOPName: string;
-};
+type HoveredPoint = CoreDebugConflictReport & { category: 'largest' | 'closest' };
 
-type FailureData = {
-  largest_conflicts: ConflictPoint[];
-  closest_conflicts: ConflictPoint[];
-};
-
-type HoveredPoint = ConflictPoint & { category: 'largest' | 'closest' };
-
-const toFeatures = (points: ConflictPoint[], category: 'largest' | 'closest'): Feature<Point>[] =>
+const toFeatures = (
+  points: CoreDebugConflictReport[],
+  category: 'largest' | 'closest'
+): Feature<Point>[] =>
   points.map((point, i) => ({
     type: 'Feature',
     id: i,
@@ -37,29 +25,33 @@ const toFeatures = (points: ConflictPoint[], category: 'largest' | 'closest'): F
 
 const fmtSeconds = (seconds: number) => `${Math.round(seconds)}s`;
 
-type DebugFailureMapProps = { failureData: unknown };
+type DebugFailureMapProps = { failureData: CoreDebugFailureReport };
 
 const DebugFailureMap = ({ failureData }: DebugFailureMapProps) => {
-  const data = failureData as FailureData;
   const mapRef = useRef<MapRef | null>(null);
   const mapBlankStyle = useMapBlankStyle();
-  const [hovered, setHovered] = useState<{ point: HoveredPoint; clientX: number; clientY: number } | null>(
-    null
-  );
+  const [hovered, setHovered] = useState<{
+    point: HoveredPoint;
+    clientX: number;
+    clientY: number;
+  } | null>(null);
 
   const geojson = useMemo<FeatureCollection<Point>>(
     () => ({
       type: 'FeatureCollection',
       features: [
-        ...toFeatures(data.largest_conflicts ?? [], 'largest'),
-        ...toFeatures(data.closest_conflicts ?? [], 'closest'),
+        ...toFeatures(failureData.largest_conflicts ?? [], 'largest'),
+        ...toFeatures(failureData.closest_conflicts ?? [], 'closest'),
       ],
     }),
-    [data]
+    [failureData]
   );
 
   const initialViewState = useMemo(() => {
-    const allPoints = [...(data.largest_conflicts ?? []), ...(data.closest_conflicts ?? [])];
+    const allPoints = [
+      ...(failureData.largest_conflicts ?? []),
+      ...(failureData.closest_conflicts ?? []),
+    ];
     if (allPoints.length === 0) return { latitude: 46.2, longitude: 2.5, zoom: 5 };
     const lats = allPoints.map((point) => point.lat);
     const lons = allPoints.map((point) => point.lon);
@@ -68,7 +60,7 @@ const DebugFailureMap = ({ failureData }: DebugFailureMapProps) => {
       longitude: (Math.min(...lons) + Math.max(...lons)) / 2,
       zoom: 8,
     };
-  }, [data]);
+  }, [failureData]);
 
   const handleMouseMove = useCallback((event: MapLayerMouseEvent) => {
     const feature = event.features?.[0];

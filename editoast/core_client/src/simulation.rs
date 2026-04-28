@@ -284,15 +284,19 @@ pub struct Request {
     pub path_item_positions: Vec<u64>,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
+#[schema(as = core::SimulationSuccess)]
 pub struct SimulationSuccess {
     /// Simulation without any regularity margins
     pub base: ReportTrain,
     /// Simulation that takes into account the regularity margins
     pub provisional: ReportTrain,
     /// Simulation that takes into account the regularity margins and the schedule item times
+    #[schema(inline)]
     pub final_output: CompleteReportTrain,
+    #[schema(inline)]
     pub mrsp: SpeedLimitProperties,
+    #[schema(inline)]
     pub electrical_profiles: ElectricalProfiles,
 }
 

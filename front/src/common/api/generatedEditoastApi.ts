@@ -2301,8 +2301,8 @@ export type GetSpritesBySignalingSystemAndFileNameApiArg = {
 };
 export type GetStdcmDebugDataByTraceIdApiResponse =
   /** status 200  */ {
-    failure?: unknown;
-    simulation_data?: unknown;
+    failure?: null | CoreDebugFailureReport;
+    simulation_data?: null | CoreDebugSimulationData;
   };
 export type GetStdcmDebugDataByTraceIdApiArg = {
   /** OpenTelemetry trace ID of the STDCM request */
@@ -4351,6 +4351,211 @@ export type SimilarTrainWaypoint = {
   id: string;
   stop: boolean;
 };
+export type CoreDebugConflictReport = {
+  at: string;
+  best_remaining_time: number;
+  caused_by: string;
+  current_travel_time: number;
+  lastOPName?: string | null;
+  lat: number;
+  lon: number;
+  time_lost: number;
+};
+export type CoreDebugFailureReport = {
+  closest_conflicts: CoreDebugConflictReport[];
+  largest_conflicts: CoreDebugConflictReport[];
+};
+export type CoreDebugEngineeringAllowanceRange = {
+  added_duration: number;
+  from: number;
+  to: number;
+};
+export type CoreDebugTrainZoneRequirement = {
+  begin_time: number;
+  end_time: number;
+  train_name?: string | null;
+  zone_name: string;
+};
+export type CorePathPropertiesResponse = {
+  /** Curves along the path */
+  curves: {
+    /** List of `n` boundaries of the ranges.
+        A boundary is a distance from the beginning of the path in mm. */
+    boundaries: number[];
+    /** List of `n+1` values associated to the ranges */
+    values: number[];
+  };
+  /** Electrification modes and neutral section along the path */
+  electrifications: {
+    /** List of `n` boundaries of the ranges.
+        A boundary is a distance from the beginning of the path in mm. */
+    boundaries: number[];
+    /** List of `n+1` values associated to the ranges */
+    values: (
+      | {
+          type: 'electrification';
+          voltage: string;
+        }
+      | {
+          lower_pantograph: boolean;
+          type: 'neutral_section';
+        }
+      | {
+          type: 'non_electrified';
+        }
+    )[];
+  };
+  /** Geometry of the path */
+  geometry: GeoJsonLineString;
+  /** Operational points along the path */
+  operational_points: {
+    /** Extensions associated to the operational point */
+    extensions?: OperationalPointExtensions;
+    /** Id of the operational point */
+    id: string;
+    /** The part along the path */
+    part: OperationalPointPart;
+    /** Distance from the beginning of the path in mm */
+    position: number;
+    /** Importance of the operational point */
+    weight: number | null;
+  }[];
+  /** Slopes along the path */
+  slopes: {
+    /** List of `n` boundaries of the ranges.
+        A boundary is a distance from the beginning of the path in mm. */
+    boundaries: number[];
+    /** List of `n+1` values associated to the ranges */
+    values: number[];
+  };
+  /** Zones along the path */
+  zones: {
+    /** List of `n` boundaries of the ranges.
+        A boundary is a distance from the beginning of the path in mm. */
+    boundaries: number[];
+    /** List of `n+1` values associated to the ranges */
+    values: string[];
+  };
+};
+export type CoreReportTrain = {
+  /** Total energy consumption */
+  energy_consumption: number;
+  /** Time in ms of each path item given as input of the pathfinding
+    The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path) */
+  path_item_times: number[];
+  /** List of positions of a train
+    Both positions (in mm) and times (in ms) must have the same length */
+  positions: number[];
+  /** List of speeds associated to a position */
+  speeds: number[];
+  times: number[];
+};
+export type CoreRoutingZoneRequirement = {
+  /** Time in ms */
+  end_time: number;
+  entry_detector: string;
+  exit_detector: string;
+  switches: {
+    [key: string]: string;
+  };
+  zone: string;
+};
+export type CoreRoutingRequirement = {
+  /** Time in ms */
+  begin_time: number;
+  route: string;
+  zones: CoreRoutingZoneRequirement[];
+};
+export type CoreSignalCriticalPosition = {
+  /** Position in mm */
+  position: number;
+  signal: string;
+  state: string;
+  /** Time in ms */
+  time: number;
+};
+export type CoreSpacingRequirement = {
+  begin_time: number;
+  end_time: number;
+  zone: string;
+};
+export type CoreZoneUpdate = {
+  is_entry: boolean;
+  position: number;
+  time: number;
+  zone: string;
+};
+export type CoreSimulationSuccess = {
+  /** Simulation without any regularity margins */
+  base: CoreReportTrain;
+  electrical_profiles: {
+    /** List of `n` boundaries of the ranges (block path).
+        A boundary is a distance from the beginning of the path in mm. */
+    boundaries: number[];
+    /** List of `n+1` values associated to the ranges */
+    values: (
+      | {
+          electrical_profile_type: 'no_profile';
+        }
+      | {
+          electrical_profile_type: 'profile';
+          handled: boolean;
+          profile?: string | null;
+        }
+    )[];
+  };
+  /** Simulation that takes into account the regularity margins and the schedule item times */
+  final_output: CoreReportTrain & {
+    routing_requirements: CoreRoutingRequirement[];
+    signal_critical_positions: CoreSignalCriticalPosition[];
+    spacing_requirements: CoreSpacingRequirement[];
+    zone_updates: CoreZoneUpdate[];
+  };
+  /** A MRSP computation result (Most Restrictive Speed Profile) */
+  mrsp: {
+    /** List of `n` boundaries of the ranges (block path).
+        A boundary is a distance from the beginning of the path in mm. */
+    boundaries: number[];
+    /** List of `n+1` values associated to the ranges */
+    values: {
+      /** source of the speed-limit if relevant (tag used) */
+      source?:
+        | null
+        | (
+            | {
+                speed_limit_source_type: 'given_train_tag';
+                tag: string;
+              }
+            | {
+                speed_limit_source_type: 'fallback_tag';
+                tag: string;
+              }
+            | {
+                speed_limit_source_type: 'unknown_tag';
+              }
+          );
+      /** in meters per second */
+      speed: number;
+    }[];
+  };
+  /** Simulation that takes into account the regularity margins */
+  provisional: CoreReportTrain;
+};
+export type CoreDebugZoneLocation = {
+  from: number;
+  name: string;
+  to: number;
+};
+export type CoreDebugSimulationData = {
+  departure_time: string;
+  engineering_allowances_ranges: CoreDebugEngineeringAllowanceRange[];
+  other_requirements: CoreDebugTrainZoneRequirement[];
+  path_properties: CorePathPropertiesResponse;
+  sim_output?: null | CoreSimulationSuccess;
+  train_positions: number[];
+  train_times: number[];
+  zone_locations: CoreDebugZoneLocation[];
+};
 export type SpeedLimits = {
   default_speed_limit_tag?: string | null;
   speed_limit_tags: {
@@ -4520,27 +4725,6 @@ export type Conflict = {
   /** List of work schedule ids involved in the conflict */
   work_schedule_ids: number[];
 };
-export type CoreRoutingZoneRequirement = {
-  /** Time in ms */
-  end_time: number;
-  entry_detector: string;
-  exit_detector: string;
-  switches: {
-    [key: string]: string;
-  };
-  zone: string;
-};
-export type CoreRoutingRequirement = {
-  /** Time in ms */
-  begin_time: number;
-  route: string;
-  zones: CoreRoutingZoneRequirement[];
-};
-export type CoreSpacingRequirement = {
-  begin_time: number;
-  end_time: number;
-  zone: string;
-};
 export type CoreTrainRequirementsById = {
   routing_requirements: CoreRoutingRequirement[];
   spacing_requirements: CoreSpacingRequirement[];
@@ -4649,33 +4833,6 @@ export type CoreStdcmRequest = {
   timetable_id: number;
   /** List of planned work schedules */
   work_schedules: CoreWorkSchedule[];
-};
-export type CoreReportTrain = {
-  /** Total energy consumption */
-  energy_consumption: number;
-  /** Time in ms of each path item given as input of the pathfinding
-    The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path) */
-  path_item_times: number[];
-  /** List of positions of a train
-    Both positions (in mm) and times (in ms) must have the same length */
-  positions: number[];
-  /** List of speeds associated to a position */
-  speeds: number[];
-  times: number[];
-};
-export type CoreSignalCriticalPosition = {
-  /** Position in mm */
-  position: number;
-  signal: string;
-  state: string;
-  /** Time in ms */
-  time: number;
-};
-export type CoreZoneUpdate = {
-  is_entry: boolean;
-  position: number;
-  time: number;
-  zone: string;
 };
 export type SimulationResponseSuccess = {
   /** Simulation without any regularity margins */

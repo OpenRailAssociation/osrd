@@ -12,34 +12,7 @@ import {
   useManchetteWithSpaceTimeChart,
 } from '@osrd-project/ui-charts';
 
-type ZoneLocation = { name: string; from: number; to: number };
-type OtherRequirement = {
-  zone_name: string;
-  begin_time: number;
-  end_time: number;
-  train_name?: string;
-};
-type ZoneUpdate = { zone: string; is_entry: boolean; time: number };
-type SpacingRequirement = { zone: string; begin_time: number; end_time: number };
-type OperationalPointRaw = {
-  position: number;
-  extensions: { identifier: { name: string }; sncf: { ch: string } };
-};
-
-type SimulationData = {
-  departure_time: string;
-  train_positions: number[];
-  train_times: number[];
-  zone_locations: ZoneLocation[];
-  other_requirements: OtherRequirement[];
-  path_properties: { operational_points: OperationalPointRaw[] };
-  sim_output?: {
-    final_output: {
-      zone_updates: ZoneUpdate[];
-      spacing_requirements: SpacingRequirement[];
-    };
-  };
-};
+import type { CoreDebugSimulationData } from 'common/api/osrdEditoastApi';
 
 type DebugBlock = {
   timeStart: number;
@@ -88,21 +61,22 @@ const LAYER_STYLES: Record<DebugBlock['kind'], BlockLayerStyle> = {
   spacing_req: { fill: 'rgba(244, 164, 96, 0.5)', stroke: 'rgba(210, 105, 30, 0.9)' },
 };
 
-type DebugSpaceTimeChartProps = { simulationData: unknown };
+type DebugSpaceTimeChartProps = { simulationData: CoreDebugSimulationData };
 
 const DebugSpaceTimeChart = ({ simulationData }: DebugSpaceTimeChartProps) => {
-  const simData = simulationData as SimulationData;
-
   const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);
   const spaceTimeChartRef = useRef<HTMLDivElement>(null);
 
   const chartData = useMemo(() => {
     const zoneMap = new Map(
-      simData.zone_locations.map((zone) => [zone.name, { spaceStart: zone.from, spaceEnd: zone.to }])
+      simulationData.zone_locations.map((zone) => [
+        zone.name,
+        { spaceStart: zone.from, spaceEnd: zone.to },
+      ])
     );
-    const departureMs = Date.parse(simData.departure_time);
+    const departureMs = Date.parse(simulationData.departure_time);
 
-    const otherBlocks: DebugBlock[] = simData.other_requirements.flatMap((req) => {
+    const otherBlocks: DebugBlock[] = simulationData.other_requirements.flatMap((req) => {
       const pos = zoneMap.get(req.zone_name);
       if (!pos) return [];
       return [
@@ -118,7 +92,7 @@ const DebugSpaceTimeChart = ({ simulationData }: DebugSpaceTimeChartProps) => {
       ];
     });
 
-    const finalOutput = simData.sim_output?.final_output;
+    const finalOutput = simulationData.sim_output?.final_output;
 
     const zoneUpdateBlocks: DebugBlock[] = [];
     if (finalOutput) {
@@ -161,20 +135,20 @@ const DebugSpaceTimeChart = ({ simulationData }: DebugSpaceTimeChartProps) => {
       }
     }
 
-    const manchetteWaypoints = simData.path_properties.operational_points.map((op) => ({
-      id: op.extensions.identifier.name + '-' + op.extensions.sncf.ch,
+    const manchetteWaypoints = simulationData.path_properties.operational_points.map((op) => ({
+      id: op.extensions?.identifier?.name + '-' + op.extensions?.sncf?.ch,
       position: op.position,
-      name: op.extensions.identifier.name,
-      secondaryCode: op.extensions.sncf.ch,
+      name: op.extensions?.identifier?.name,
+      secondaryCode: op.extensions?.sncf?.ch,
     }));
 
     const trainPath: PathData | null =
-      simData.train_positions?.length > 0
+      simulationData.train_positions?.length > 0
         ? {
             id: 'new-train',
             label: 'New train',
-            points: simData.train_positions.map((pos, i) => ({
-              time: departureMs + simData.train_times[i],
+            points: simulationData.train_positions.map((pos, i) => ({
+              time: departureMs + simulationData.train_times[i],
               position: pos,
             })),
           }
@@ -191,7 +165,7 @@ const DebugSpaceTimeChart = ({ simulationData }: DebugSpaceTimeChartProps) => {
       manchetteWaypoints,
       trainPath,
     };
-  }, [simData]);
+  }, [simulationData]);
 
   const { manchetteProps, spaceTimeChartProps, handleScroll, handleXZoom, xZoom, setTimeOrigin } =
     useManchetteWithSpaceTimeChart({
