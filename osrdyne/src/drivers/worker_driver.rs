@@ -29,8 +29,6 @@ pub enum DriverError {
     DockerError(bollard::errors::Error),
     /// Kubernetes error
     KubernetesError(kube::Error),
-    /// Process-compose error
-    ProcessComposeError(anyhow::Error),
 }
 
 impl Display for DriverError {
@@ -38,7 +36,6 @@ impl Display for DriverError {
         match self {
             DriverError::DockerError(e) => write!(f, "Docker error: {e}"),
             DriverError::KubernetesError(e) => write!(f, "Kubernetes error: {e}"),
-            DriverError::ProcessComposeError(e) => write!(f, "process-compose error: {e}"),
         }
     }
 }
@@ -59,7 +56,7 @@ pub trait WorkerDriver: Send {
         worker_key: Key,
     ) -> Pin<Box<dyn Future<Output = Result<(), DriverError>> + Send + '_>>;
 
-    /// This method should check if any ressources are dangling and clean them up.
+    /// This method should check if any resources are dangling and clean them up.
     fn cleanup_stalled(
         &mut self,
     ) -> Pin<Box<dyn Future<Output = Result<(), DriverError>> + Send + '_>>;

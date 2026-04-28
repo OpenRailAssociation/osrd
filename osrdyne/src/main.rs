@@ -31,7 +31,6 @@ use crate::config::WorkerDriverConfig;
 use crate::drivers::docker::DockerDriver;
 use crate::drivers::kubernetes::KubernetesDriver;
 use crate::drivers::noop::NoopDriver;
-use crate::drivers::process_compose::PCDriver;
 use crate::drivers::worker_driver::WorkerDriver;
 
 mod api;
@@ -99,7 +98,7 @@ async fn main() -> Result<(), anyhow::Error> {
     debug!(?init_keys, "Existing queuest");
 
     // start the state tracker. The state tracker is not directly related to the message queue.
-    // it is kept running accross rabbitmq reconnects.
+    // it is kept running across rabbitmq reconnects.
     let (sender, tracker_inbox) = mpsc::channel(100);
     let target_tracker_client = TargetTrackerClient::new(sender);
     let target_tracker_config = TargetTrackerConfig::default();
@@ -142,11 +141,6 @@ async fn main() -> Result<(), anyhow::Error> {
                 )
             }
 
-            WorkerDriverConfig::ProcessComposeDriver(opts) => {
-                info!("Using process-compose driver");
-                Box::new(PCDriver::new(opts, config.amqp_uri.clone()))
-            }
-
             WorkerDriverConfig::Noop => {
                 info!("Using Noop driver");
                 Box::new(NoopDriver::new())
@@ -185,7 +179,7 @@ async fn main() -> Result<(), anyhow::Error> {
         }
 
         // stop workers. shutdown is not graceful, as the system is expected
-        // to be capable to handle interuptions and network partitions at any time.
+        // to be capable to handle interruptions and network partitions at any time.
         if tokio::time::timeout(Duration::from_secs(10), tasks.shutdown())
             .await
             .is_err()
