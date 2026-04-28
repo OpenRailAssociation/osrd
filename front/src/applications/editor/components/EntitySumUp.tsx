@@ -332,15 +332,16 @@ const EntitySumUp = ({ entity, id, objType, classes, status, error }: EntitySumU
     const fetchEntities = async () => {
       setState({ type: 'loading' });
 
-      if (!entity && objType && id) {
-        entity = await getEntity(infraID!, id, objType, dispatch);
+      let effectiveEntity = entity;
+      if (!effectiveEntity && objType && id) {
+        effectiveEntity = await getEntity(infraID!, id, objType, dispatch);
       }
 
-      if (entity) {
-        const additionalEntities = await getAdditionalEntities(infraID!, entity, dispatch);
+      if (effectiveEntity) {
+        const additionalEntities = await getAdditionalEntities(infraID!, effectiveEntity, dispatch);
         setState({
           type: 'ready',
-          entity,
+          entity: effectiveEntity,
           additionalEntities,
         });
       }
