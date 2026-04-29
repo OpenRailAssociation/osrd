@@ -990,3 +990,26 @@ jobs:
       - uses: actions/checkout@v6
       - name: REUSE Compliance Check
         uses: fsfe/reuse-action@v6
+
+  check_railway_manager_interface:
+    runs-on: ubuntu-latest
+    name: Check railway manager interface
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up 'uv'
+        uses: astral-sh/setup-uv@v8.0.0
+        with:
+          python-version: "3.11"
+          enable-cache: true
+      - name: Install railway_manager_interface dependencies
+        run: |
+          uv --directory railway_manager_interface/ sync --all-extras --locked
+      - name: Pyright
+        run: |
+          uv --directory railway_manager_interface/ run pyright
+      - name: Ruff check
+        run: |
+          uv --directory railway_manager_interface/ run ruff check --output-format github
+      - name: Ruff format
+        run: |
+          uv --directory railway_manager_interface/ run ruff format --check
