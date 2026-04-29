@@ -5,9 +5,9 @@ import type { PacedTrainException } from 'common/api/osrdEditoastApi';
 import { type TrainSpaceTimeData } from 'modules/simulationResult/types';
 import { Duration } from 'utils/duration';
 
-import makeProjectedItems from '../makeProjectedItems';
+import makeProjectedTrains from '../makeProjectedTrains';
 
-describe('makeProjectedItems', () => {
+describe('makeProjectedTrains', () => {
   describe('paced train with indexed 2 occurrences, 2nd’s is a path exception', () => {
     const exceptionId = 1;
     const exception: PacedTrainException = {
@@ -71,7 +71,7 @@ describe('makeProjectedItems', () => {
       signalUpdates: [],
     };
 
-    const timetableItemProjections: TrainSpaceTimeData[] = [
+    const trainProjections: TrainSpaceTimeData[] = [
       {
         name: 'GE LYD',
         departureTime: new Date('2025-07-09T05:30:00.000Z'),
@@ -119,9 +119,9 @@ describe('makeProjectedItems', () => {
     ];
 
     test('first occurrence should use paced train projection, second occurrence should use its own projection', () => {
-      const pacedTrain = timetableItemProjections[0];
+      const pacedTrain = trainProjections[0];
 
-      const result = makeProjectedItems(timetableItemProjections);
+      const result = makeProjectedTrains(trainProjections);
 
       expect(result[0]).toEqual({
         id: 'indexedoccurrence_2562_0',
@@ -204,7 +204,7 @@ describe('makeProjectedItems', () => {
       signalUpdates: [],
     };
 
-    const timetableItemProjections: TrainSpaceTimeData[] = [
+    const trainProjections: TrainSpaceTimeData[] = [
       {
         name: 'auie',
         departureTime: new Date('2025-07-09T05:30:00.000Z'),
@@ -240,9 +240,9 @@ describe('makeProjectedItems', () => {
     ];
 
     test('added path exception should use its own projection', () => {
-      const pacedTrain = timetableItemProjections[0];
+      const pacedTrain = trainProjections[0];
 
-      const result = makeProjectedItems(timetableItemProjections);
+      const result = makeProjectedTrains(trainProjections);
 
       expect(result.length).toBe(4);
       expect(result[0]).toEqual({

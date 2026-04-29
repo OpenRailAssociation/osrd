@@ -102,7 +102,7 @@ const pathfindingResultsDiffer = (
 
 const usePathProjection = (
   infraId: number,
-  timetableItemsById: Map<number, TrainScheduleResponse>
+  trainSchedulesById: Map<number, TrainScheduleResponse>
 ): PathProjectionResult | undefined => {
   const { t } = useTranslation('operational-studies');
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
@@ -117,7 +117,7 @@ const usePathProjection = (
     } else {
       const pacedTrainId = extractPacedTrainIdFromOccurrenceId(trainIdUsedForProjection);
       rawPacedTrainId = extractEditoastIdFromPacedTrainId(pacedTrainId);
-      exceptionId = getExceptionFromOccurrenceId(timetableItemsById, trainIdUsedForProjection)?.id;
+      exceptionId = getExceptionFromOccurrenceId(trainSchedulesById, trainIdUsedForProjection)?.id;
     }
   }
 
@@ -147,17 +147,17 @@ const usePathProjection = (
   const pathUsedForProjection = useMemo(() => {
     if (!trainIdUsedForProjection) return undefined;
     if (!isOccurrenceId(trainIdUsedForProjection)) {
-      return timetableItemsById.get(extractEditoastIdFromPacedTrainId(trainIdUsedForProjection))
+      return trainSchedulesById.get(extractEditoastIdFromPacedTrainId(trainIdUsedForProjection))
         ?.path;
     }
-    const pacedTrain = timetableItemsById.get(
+    const pacedTrain = trainSchedulesById.get(
       extractEditoastIdFromPacedTrainId(
         extractPacedTrainIdFromOccurrenceId(trainIdUsedForProjection)
       )
     );
-    const exception = getExceptionFromOccurrenceId(timetableItemsById, trainIdUsedForProjection);
+    const exception = getExceptionFromOccurrenceId(trainSchedulesById, trainIdUsedForProjection);
     return exception?.path_and_schedule?.path ?? pacedTrain?.path;
-  }, [trainIdUsedForProjection, timetableItemsById]);
+  }, [trainIdUsedForProjection, trainSchedulesById]);
 
   const opRefs = useMemo(() => {
     const refs: OperationalPointReference[] = [];

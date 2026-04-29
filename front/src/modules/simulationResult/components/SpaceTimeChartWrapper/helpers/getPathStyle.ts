@@ -32,7 +32,7 @@ const getPathStyle = (
     if (!isPacedTrainId(train.id)) throw new Error();
     pacedTrainId = train.id;
   }
-  const timetableItemId = extractEditoastIdFromPacedTrainId(pacedTrainId);
+  const trainScheduleId = extractEditoastIdFromPacedTrainId(pacedTrainId);
   const { colors } = train;
 
   const invalidBorder = {
@@ -49,7 +49,7 @@ const getPathStyle = (
       train.id === hoveredTrainIdFromChart ||
       // if the hovered train is an occurrence from the same paced train, apply the hovered style
       (isOccurrenceId(hoveredTrainIdFromChart) &&
-        timetableItemId ===
+        trainScheduleId ===
           extractEditoastIdFromPacedTrainId(
             extractPacedTrainIdFromOccurrenceId(hoveredTrainIdFromChart)
           ))
@@ -75,7 +75,7 @@ const getPathStyle = (
           ...(train.isSimulated === false && { border: invalidBorder }),
         };
       }
-    } else if (timetableItemId === extractEditoastIdFromPacedTrainId(hoveredTrainIdFromTimetable)) {
+    } else if (trainScheduleId === extractEditoastIdFromPacedTrainId(hoveredTrainIdFromTimetable)) {
       return {
         color: colors.hovered,
         level: 1,

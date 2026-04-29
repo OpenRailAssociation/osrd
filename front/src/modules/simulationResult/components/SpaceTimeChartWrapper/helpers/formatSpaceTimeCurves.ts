@@ -29,11 +29,11 @@ const getTrainCategory = (
   trainSchedulesWithDetailsById: Map<number, TrainScheduleWithDetails>,
   trainId: TrainId
 ) => {
-  const timetableItemId = extractEditoastIdFromPacedTrainId(
+  const trainScheduleId = extractEditoastIdFromPacedTrainId(
     isOccurrenceId(trainId) ? extractPacedTrainIdFromOccurrenceId(trainId) : trainId
   );
 
-  const trainSchedule = trainSchedulesWithDetailsById.get(timetableItemId);
+  const trainSchedule = trainSchedulesWithDetailsById.get(trainScheduleId);
 
   if (!trainSchedule || !isPacedTrainWithDetails(trainSchedule) || !isOccurrenceId(trainId))
     return trainSchedule?.category;

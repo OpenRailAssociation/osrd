@@ -8,9 +8,7 @@ import type {
   TrainSchedulesByTrainScheduleSet,
   TrainScheduleSetManager,
 } from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
-import type { CatalogEntry,
-  TrainScheduleResponse,
-} from 'common/api/osrdEditoastApi';
+import type { CatalogEntry, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { isPacedTrainWithDetails } from 'modules/trainSchedule/helpers/pacedTrain';
@@ -83,7 +81,7 @@ const TrainList = ({
   const { workerStatus, timetableId } = useScenarioContext();
   const subCategories = useSubCategoryContext();
 
-  const [expandedTimetableItemIds, setExpandedTimetableItemIds] = useState<Set<number>>(new Set());
+  const [expandedTrainScheduleIds, setExpandedTrainScheduleIds] = useState<Set<number>>(new Set());
 
   const selectedTrainId = useSelector(getSelectedTrainId);
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
@@ -105,8 +103,8 @@ const TrainList = ({
     [selectedTrainScheduleIds]
   );
 
-  const handleExpandTimetableItem = useCallback((id: number) => {
-    setExpandedTimetableItemIds((prevExpandedIds) => {
+  const handleExpandTrainSchedule = useCallback((id: number) => {
+    setExpandedTrainScheduleIds((prevExpandedIds) => {
       const newExpandedIds = new Set(prevExpandedIds);
       if (newExpandedIds.has(id)) {
         newExpandedIds.delete(id);
@@ -193,8 +191,8 @@ const TrainList = ({
               isInSelection={selectedTrainScheduleIds.includes(trainSchedule.id)}
               selectPacedTrainToEdit={selectTrainScheduleToEdit}
               handleSelectPacedTrain={handleSelectTrainSchedule}
-              isOccurrencesListOpen={expandedTimetableItemIds.has(trainSchedule.id)}
-              handleOpenOccurrencesList={handleExpandTimetableItem}
+              isOccurrencesListOpen={expandedTrainScheduleIds.has(trainSchedule.id)}
+              handleOpenOccurrencesList={handleExpandTrainSchedule}
               isOnEdit={trainSchedule.id === trainScheduleToEditData?.trainScheduleId}
               selectedTrainId={selectedTrainId}
               upsertTrainSchedules={upsertTrainSchedules}
@@ -214,8 +212,8 @@ const TrainList = ({
     [
       currentDepartureDates,
       showDepartureDates,
-      expandedTimetableItemIds,
-      handleExpandTimetableItem,
+      expandedTrainScheduleIds,
+      handleExpandTrainSchedule,
       handleSelectTrainSchedule,
       isSelectMode,
       moveTrainSchedule,

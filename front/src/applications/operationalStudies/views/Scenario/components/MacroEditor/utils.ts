@@ -178,14 +178,14 @@ export const getFrequencyFromFrequencyId = (
 /**
  * Get the associated TrainrunFrequency of a TrainScheduleResponse.
  */
-export const getTrainrunFrequencyFromTimetableItem = (
-  timetableItem: TrainScheduleResponse,
+export const getTrainrunFrequencyFromTrainSchedule = (
+  trainSchedule: TrainScheduleResponse,
   state: MacroEditorState
 ): TrainrunFrequency => {
-  if (!isPacedTrain(timetableItem)) {
+  if (!isPacedTrain(trainSchedule)) {
     return getFrequencyFromFrequencyId(state.trainrunFrequencies, UNIQUE_TRAIN_FREQUENCY_ID);
   }
-  const intervalInMinutes = Duration.parse(timetableItem.paced.interval).total('minute');
+  const intervalInMinutes = Duration.parse(trainSchedule.paced.interval).total('minute');
   const trainrunFrequency = state.trainrunFrequencies.find(
     (f) => f.frequency === intervalInMinutes
   );

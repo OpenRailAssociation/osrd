@@ -46,26 +46,26 @@ import {
   getDefaultTrainrunFrequencies,
   getNetzgrafikColors,
   getTrainrunCategoryId,
-  getTrainrunFrequencyFromTimetableItem,
+  getTrainrunFrequencyFromTrainSchedule,
   getTrainrunTimeCategoryFromFrequency,
   storeTrainPathNodes,
 } from './utils';
 
 /**
- * Get the TrainrunFrequencies from the TimetableItems.
+ * Get the TrainrunFrequencies from the TrainSchedules.
  * We need to add the unknown frequencies from the PacedTrains.
  */
 const getNgeTrainrunFrequencies = (
-  timetableItems: TrainScheduleResponse[],
+  trainSchedules: TrainScheduleResponse[],
   t: TFunction<'operational-studies'>
 ): TrainrunFrequency[] => {
   // Get the default frequencies (TrainSchedule/30min/60min/120min)
   const trainrunFrequencies = getDefaultTrainrunFrequencies(t);
 
   // Add the unknown frequencies from the PacedTrains
-  timetableItems.forEach((timetableItem) => {
-    if (isPacedTrain(timetableItem)) {
-      const intervalInMinutes = Duration.parse(timetableItem.paced.interval).total('minute');
+  trainSchedules.forEach((trainSchedule) => {
+    if (isPacedTrain(trainSchedule)) {
+      const intervalInMinutes = Duration.parse(trainSchedule.paced.interval).total('minute');
       if (!trainrunFrequencies.find((f) => f.frequency === intervalInMinutes)) {
         const newFrequency: TrainrunFrequency = {
           id: trainrunFrequencies.length + 1,
@@ -162,10 +162,10 @@ const avoidNodesOverlaps = (
  * Apply a layout on nodes and save the new position.
  * Nodes that are saved are fixed.
  */
-const applyLayout = (state: MacroEditorState, timetableItems: TrainScheduleResponse[]) => {
+const applyLayout = (state: MacroEditorState, trainSchedules: TrainScheduleResponse[]) => {
   const indexedNodes = uniqBy(
-    timetableItems.flatMap((timetableItem) =>
-      timetableItem.path.map((pathItem) => pathItem.location)
+    trainSchedules.flatMap((trainSchedule) =>
+      trainSchedule.path.map((pathItem) => pathItem.location)
     ),
     MacroEditorState.getPathKey
   ).map((pathItem) => {
@@ -374,30 +374,30 @@ export const loadAndIndexNge = async (
 };
 
 /**
- * Translate the TimetableItems of OSRD into NGE Trainruns.
+ * Translate the TrainSchedules of OSRD into NGE Trainruns.
  */
 const getNgeTrainruns = (
   state: MacroEditorState,
-  groupedTimetableItems: (readonly [TrainScheduleResponse, TrainScheduleResponse | null])[],
+  groupedTrainSchedules: (readonly [TrainScheduleResponse, TrainScheduleResponse | null])[],
   labels: LabelDto[]
 ): TrainrunDto[] =>
-  groupedTimetableItems
+  groupedTrainSchedules
     .map(([a, b]) => ({ ...a, returnId: b?.id ?? null }))
-    .filter((timetableItem) => timetableItem.path.length >= 2)
-    .map((timetableItem, index) => {
-      state.timetableItemIdByNgeId.set(index + 1, [timetableItem.id, timetableItem.returnId]);
-      const trainrunFrequency = getTrainrunFrequencyFromTimetableItem(timetableItem, state);
+    .filter((trainSchedule) => trainSchedule.path.length >= 2)
+    .map((trainSchedule, index) => {
+      state.trainScheduleIdByNgeId.set(index + 1, [trainSchedule.id, trainSchedule.returnId]);
+      const trainrunFrequency = getTrainrunFrequencyFromTrainSchedule(trainSchedule, state);
 
       return {
         id: index + 1,
-        name: timetableItem.train_name,
-        categoryId: getTrainrunCategoryId(state.trainrunCategories, timetableItem.category),
+        name: trainSchedule.train_name,
+        categoryId: getTrainrunCategoryId(state.trainrunCategories, trainSchedule.category),
         frequencyId: trainrunFrequency.id,
         trainrunTimeCategoryId: getTrainrunTimeCategoryFromFrequency(trainrunFrequency).id,
-        labelIds: (timetableItem.labels || []).map((l) =>
+        labelIds: (trainSchedule.labels || []).map((l) =>
           labels.findIndex((e) => e.label === l && e.labelGroupId === TRAINRUN_LABEL_GROUP.id)
         ),
-        direction: timetableItem.returnId ? 'round_trip' : 'one_way',
+        direction: trainSchedule.returnId ? 'round_trip' : 'one_way',
       };
     });
 
@@ -435,7 +435,7 @@ const createDepartureTimeLock = (scheduleItem: ScheduleItem | undefined, startTi
  */
 const getNgeTrainrunSectionsWithNodes = (
   state: MacroEditorState,
-  groupedTimetableItems: (readonly [TrainScheduleResponse, TrainScheduleResponse | null])[],
+  groupedTrainSchedules: (readonly [TrainScheduleResponse, TrainScheduleResponse | null])[],
   labels: LabelDto[]
 ) => {
   let portId = 1;
@@ -470,27 +470,27 @@ const getNgeTrainrunSectionsWithNodes = (
   }
 
   let trainrunSectionId = 0;
-  const trainrunSections: TrainrunSectionDto[] = groupedTimetableItems.flatMap(
-    ([timetableItem, returnTimetableItem], index) => {
+  const trainrunSections: TrainrunSectionDto[] = groupedTrainSchedules.flatMap(
+    ([trainSchedule, returnTrainSchedule], index) => {
       // Figure out the primary node key for each path item
-      const pathNodeKeys = timetableItem.path.map((pathItem) => {
+      const pathNodeKeys = trainSchedule.path.map((pathItem) => {
         const node = state.getNodeByKey(MacroEditorState.getPathKey(pathItem.location));
         return node!.path_item_key;
       });
 
-      const startTime = new Date(timetableItem.start_time);
-      const returnStartTime = returnTimetableItem ? new Date(returnTimetableItem.start_time) : null;
+      const startTime = new Date(trainSchedule.start_time);
+      const returnStartTime = returnTrainSchedule ? new Date(returnTrainSchedule.start_time) : null;
 
       // OSRD describes the path in terms of nodes, NGE describes it in terms
       // of sections between nodes. Iterate over path items two-by-two to
       // convert them.
       let prevPort: PortDto | null = null;
       return pathNodeKeys.slice(0, -1).map((sourceNodeKey, i) => {
-        // returnTimetableItem contains the same path as timetableItem but in
-        // reverse order. `timetableItem.path.length - 1` is the index of the
+        // returnTrainSchedule contains the same path as trainSchedule but in
+        // reverse order. `trainSchedule.path.length - 1` is the index of the
         // last path item, subtracting `i` will iterate from the end of the
         // list to the start.
-        const returnIndex = timetableItem.path.length - 1 - i;
+        const returnIndex = trainSchedule.path.length - 1 - i;
 
         const sourceNode = ngeNodesByPathKey[sourceNodeKey];
         const targetNodeKey = pathNodeKeys[i + 1];
@@ -503,17 +503,17 @@ const getNgeTrainrunSectionsWithNodes = (
         targetNode.ports.push(targetPort);
 
         // Adding schedule
-        const sourceScheduleEntry = timetableItem.schedule!.find(
-          (entry) => entry.at === timetableItem.path[i].id
+        const sourceScheduleEntry = trainSchedule.schedule!.find(
+          (entry) => entry.at === trainSchedule.path[i].id
         );
-        const targetScheduleEntry = timetableItem.schedule!.find(
-          (entry) => entry.at === timetableItem.path[i + 1].id
+        const targetScheduleEntry = trainSchedule.schedule!.find(
+          (entry) => entry.at === trainSchedule.path[i + 1].id
         );
-        const returnSourceScheduleEntry = returnTimetableItem?.schedule?.find(
-          (entry) => entry.at === returnTimetableItem.path[returnIndex].id
+        const returnSourceScheduleEntry = returnTrainSchedule?.schedule?.find(
+          (entry) => entry.at === returnTrainSchedule.path[returnIndex].id
         );
-        const returnTargetScheduleEntry = returnTimetableItem?.schedule?.find(
-          (entry) => entry.at === returnTimetableItem.path[returnIndex - 1].id
+        const returnTargetScheduleEntry = returnTrainSchedule?.schedule?.find(
+          (entry) => entry.at === returnTrainSchedule.path[returnIndex - 1].id
         );
 
         // Create a transition between the previous section and the one we're creating
@@ -641,7 +641,7 @@ const getNoteLabelIds = (labelTexts: string[], state: MacroEditorState): number[
  */
 export const getNgeDto = (
   state: MacroEditorState,
-  groupedTimetableItems: (readonly [TrainScheduleResponse, TrainScheduleResponse | null])[],
+  groupedTrainSchedules: (readonly [TrainScheduleResponse, TrainScheduleResponse | null])[],
   subCategories: SubCategory[],
   notes: MacroNoteResponse[]
 ): NetzgrafikDto => {
@@ -661,8 +661,8 @@ export const getNgeDto = (
   }));
 
   return {
-    ...getNgeTrainrunSectionsWithNodes(state, groupedTimetableItems, labels),
-    trainruns: getNgeTrainruns(state, groupedTimetableItems, labels),
+    ...getNgeTrainrunSectionsWithNodes(state, groupedTrainSchedules, labels),
+    trainruns: getNgeTrainruns(state, groupedTrainSchedules, labels),
     resources: [state.ngeResource],
     metadata: {
       netzgrafikColors: getNetzgrafikColors(subCategories),
@@ -742,10 +742,10 @@ export const loadNgeDto = async (
     (pacedTrain) => pacedTrain.path.length >= 2
   );
 
-  const timetableItems = await fetchTrainSchedulePathOps(state.infraId, pacedTrains, dispatch);
+  const trainSchedules = await fetchTrainSchedulePathOps(state.infraId, pacedTrains, dispatch);
 
-  const timetableItemsById = new Map(
-    timetableItems.map((timetableItem) => [timetableItem.id, timetableItem])
+  const trainSchedulesById = new Map(
+    trainSchedules.map((trainSchedule) => [trainSchedule.id, trainSchedule])
   );
 
   const pacedTrainRoundTripsPromise = dispatch(
@@ -755,13 +755,13 @@ export const loadNgeDto = async (
     )
   );
   const { results: pacedTrainRoundTrips } = await pacedTrainRoundTripsPromise.unwrap();
-  const roundTripGroups = groupRoundTrips(timetableItemsById, pacedTrainRoundTrips);
-  const groupedTimetableItems = groupCompatibleRoundTrips(roundTripGroups);
+  const roundTripGroups = groupRoundTrips(trainSchedulesById, pacedTrainRoundTrips);
+  const groupedTrainSchedules = groupCompatibleRoundTrips(roundTripGroups);
 
   const { results: subCategories } = await dispatch(
     osrdEditoastApi.endpoints.getSubCategory.initiate({ page: 1 }, { subscribe: false })
   ).unwrap();
 
-  await loadAndIndexNge(state, timetableItems, dispatch, t, subCategories, notes);
-  return await getNgeDto(state, groupedTimetableItems, subCategories, notes);
+  await loadAndIndexNge(state, trainSchedules, dispatch, t, subCategories, notes);
+  return await getNgeDto(state, groupedTrainSchedules, subCategories, notes);
 };

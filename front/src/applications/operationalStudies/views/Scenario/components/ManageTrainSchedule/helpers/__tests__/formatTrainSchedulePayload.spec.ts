@@ -6,7 +6,7 @@ import { Duration } from 'utils/duration';
 
 import { formatPacedTrainPayload } from '../formatTrainSchedulePayload';
 
-describe('formatPacedTrainPayload', () => {
+describe('formatTrainSchedulePayload', () => {
   const rawOsrdconf: OperationalStudiesConfState = {
     timetableID: 184,
     rollingStockName: 'rollingStock1',

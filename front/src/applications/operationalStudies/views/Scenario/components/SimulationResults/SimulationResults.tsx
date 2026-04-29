@@ -51,7 +51,7 @@ type SimulationResultsProps = {
   scenarioData: { name: string; infraName: string };
   projectionData: ProjectionData | undefined;
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
-  timetableItems: TrainScheduleResponse[];
+  trainSchedules: TrainScheduleResponse[];
   conflicts?: Conflict[];
   activeBoards: Set<Board>;
   updateTrainScheduleDepartureTime: (trainId: number, newDepartureTime: Date) => Promise<void>;
@@ -62,7 +62,7 @@ const SimulationResults = ({
   scenarioData,
   projectionData,
   trainSchedulesWithDetails,
-  timetableItems,
+  trainSchedules,
   conflicts = [],
   activeBoards,
   updateTrainScheduleDepartureTime,
@@ -74,7 +74,7 @@ const SimulationResults = ({
   const useNewTimesStopsTable = useSelector(getUseNewTimesStopsTable);
 
   const { results: simulationResults, isSimulationDataLoading } =
-    useSimulationResults(timetableItems);
+    useSimulationResults(trainSchedules);
   const selectedTrainId = simulationResults?.train.id;
 
   const displayOnlyPathSteps = useSelector(getDisplayOnlyPathSteps);
@@ -94,17 +94,17 @@ const SimulationResults = ({
 
   const [mapCanvas, setMapCanvas] = useState<string>();
 
-  const [timetableItemProjections, setTimetableItemProjections] = useState<TrainSpaceTimeData[]>(
+  const [trainScheduleProjections, setTrainScheduleProjections] = useState<TrainSpaceTimeData[]>(
     []
   );
 
   useEffect(() => {
-    setTimetableItemProjections(projectionData?.projectedTrains || []);
+    setTrainScheduleProjections(projectionData?.projectedTrains || []);
   }, [projectionData]);
 
   const enrichedProjections = useHandleInvalidProjections({
     trainSchedulesWithDetails,
-    projections: timetableItemProjections,
+    projections: trainScheduleProjections,
   });
 
   const {
@@ -127,7 +127,7 @@ const SimulationResults = ({
     infraId,
     timetableId,
     pathOperationalPoints: filteredOperationalPoints,
-    timetableItemProjections,
+    trainScheduleProjections,
   });
 
   const conflictZones = useProjectedConflicts(infraId, conflicts, projectionData?.pathfinding);
@@ -157,8 +157,8 @@ const SimulationResults = ({
   }, [trainSchedulesWithDetails, selectedTrainId]);
 
   const handleTrainDrag = createHandleTrainDrag({
-    timetableItemProjections,
-    setTimetableItemProjections,
+    trainScheduleProjections,
+    setTrainScheduleProjections,
     handleTrainDragInTrackOccupancy,
     updateTrainScheduleDepartureTime,
   });
@@ -174,7 +174,7 @@ const SimulationResults = ({
   const { etcsBrakingCurves, fetchEtcsBrakingCurves } = useEtcsBrakingCurves(
     isEtcs,
     simulationResults?.isValid ? simulationResults.simulation : undefined,
-    timetableItems
+    trainSchedules
   );
 
   if (!simulationResults && !projectionData) {
@@ -236,7 +236,7 @@ const SimulationResults = ({
               {trainIdUsedForProjection && projectionData && (
                 <SpaceTimeChartWrapper
                   operationalPoints={projectedOperationalPoints}
-                  timetableItemProjections={enrichedProjections}
+                  trainScheduleProjections={enrichedProjections}
                   selectedTrainId={selectedTrainId}
                   trainSchedulesWithDetails={trainSchedulesWithDetails}
                   waypointsPanelData={{
@@ -286,8 +286,8 @@ const SimulationResults = ({
                 >
                   <div className="osrd-simulation-container">
                     <SpeedDistanceDiagramWrapper
-                      timetableItemSimulation={simulationResults.simulation}
-                      selectedTimetableItemPowerRestrictions={simulationResults.powerRestrictions}
+                      trainScheduleSimulation={simulationResults.simulation}
+                      selectedTrainSchedulePowerRestrictions={simulationResults.powerRestrictions}
                       rollingStock={simulationResults.rollingStock}
                       pathProperties={simulationResults.pathProperties}
                       height={SDDHeight - HIDDEN_CHART_TOP_HEIGHT}

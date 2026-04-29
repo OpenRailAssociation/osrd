@@ -7,8 +7,12 @@ import dayjs from 'dayjs';
 import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
-import { osrdEditoastApi , type TrainScheduleResponse } from 'common/api/osrdEditoastApi';
-import type { SubCategory, TrainSchedule } from 'common/api/osrdEditoastApi';
+import {
+  osrdEditoastApi,
+  type SubCategory,
+  type TrainSchedule,
+  type TrainScheduleResponse,
+} from 'common/api/osrdEditoastApi';
 import { SkeletonLoader } from 'common/Loaders';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import isMainCategory from 'modules/rollingStock/helpers/category';
@@ -31,7 +35,7 @@ import { addDurationToDate, Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
 import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
-import { TIMETABLE_ITEM_DELTA } from './consts';
+import { TRAIN_SCHEDULE_DELTA } from './consts';
 import TrainScheduleActions from './TrainScheduleActions';
 import { formatTrainDuration, getTrainCategoryClassName } from './utils';
 
@@ -112,7 +116,7 @@ const UniqueTrainItem = ({
 
       const startTime = addDurationToDate(
         new Date(trainDetail.start_time),
-        new Duration({ minutes: TIMETABLE_ITEM_DELTA })
+        new Duration({ minutes: TRAIN_SCHEDULE_DELTA })
       );
 
       const newUniqueTrainPayload: TrainSchedule = {

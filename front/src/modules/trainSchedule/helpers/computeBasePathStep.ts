@@ -16,14 +16,14 @@ const findCorrespondingMargin = (
 };
 
 /**
- * Given a timetable item and a path item index, aggregate schedule, margins and the corresponding path item to return a PathStep
+ * Given a train schedule and a path item index, aggregate schedule, margins and the corresponding path item to return a PathStep
  */
 const computeBasePathStep = (
-  timetableItem: Pick<TrainSchedule, 'path' | 'schedule' | 'margins'>,
+  trainSchedule: Pick<TrainSchedule, 'path' | 'schedule' | 'margins'>,
   pathItemIndex: number
 ): PathStep => {
-  const { id, location } = timetableItem.path[pathItemIndex];
-  const correspondingSchedule = timetableItem.schedule?.find((schedule) => schedule.at === id);
+  const { id, location } = trainSchedule.path[pathItemIndex];
+  const correspondingSchedule = trainSchedule.schedule?.find((schedule) => schedule.at === id);
 
   const {
     arrival,
@@ -47,8 +47,8 @@ const computeBasePathStep = (
   }
 
   let theoreticalMargin;
-  if (timetableItem.margins && pathItemIndex !== timetableItem.path.length - 1) {
-    theoreticalMargin = findCorrespondingMargin(id, pathItemIndex, timetableItem.margins);
+  if (trainSchedule.margins && pathItemIndex !== trainSchedule.path.length - 1) {
+    theoreticalMargin = findCorrespondingMargin(id, pathItemIndex, trainSchedule.margins);
   }
 
   return {

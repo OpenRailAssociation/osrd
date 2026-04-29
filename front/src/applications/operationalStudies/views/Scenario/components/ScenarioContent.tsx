@@ -1,5 +1,4 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
-import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 
 import { useTranslation } from 'react-i18next';
 
@@ -9,6 +8,7 @@ import useScenarioTrainScheduleSet from 'applications/operationalStudies/hooks/u
 import type { Board } from 'applications/operationalStudies/types';
 import ManageTrainScheduleModal from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule';
 import SimulationResults from 'applications/operationalStudies/views/Scenario/components/SimulationResults';
+import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 import Conflicts from 'modules/conflict/components/Conflicts';
 import useConflictsFilter from 'modules/conflict/hooks/useConflictsFilter';
@@ -53,7 +53,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
 
   const {
     trainSchedulesWithDetails,
-    timetableItems,
+    trainSchedules,
     projectionData,
     conflicts,
     isConflictsLoading,
@@ -72,7 +72,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
     selectedTrainConflictsCount,
     displayedConflicts,
   } = useConflictsFilter(
-    useMemo(() => timetableItems || [], [timetableItems]),
+    useMemo(() => trainSchedules || [], [trainSchedules]),
     conflicts,
     isConflictsLoading
   );
@@ -102,7 +102,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
 
   const { importTrainScheduleSets } = useScenarioTrainScheduleSet(
     trainSchedulesWithDetails,
-    useMemo(() => timetableItems || [], [timetableItems]),
+    useMemo(() => trainSchedules || [], [trainSchedules]),
     upsertTrainSchedulesWithNge
   );
 
@@ -184,7 +184,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
               setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
               upsertTrainSchedules={upsertTrainSchedulesWithNge}
               removeTrainSchedules={removeTrainSchedulesWithNge}
-              timetableItems={timetableItems}
+              trainSchedules={trainSchedules}
               trainSchedulesWithDetails={trainSchedulesWithDetails}
               setTrainScheduleToEditData={setTrainScheduleToEditData}
               trainScheduleToEditData={trainScheduleToEditData}
@@ -210,7 +210,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
                 projectionData={projectionData}
                 conflicts={conflicts}
                 trainSchedulesWithDetails={trainSchedulesWithDetails}
-                timetableItems={timetableItems ?? []}
+                trainSchedules={trainSchedules ?? []}
                 activeBoards={activeBoards}
                 updateTrainScheduleDepartureTime={updateTrainScheduleDepartureTimeWithNge}
                 upsertTrainSchedules={upsertTrainSchedulesWithNge}

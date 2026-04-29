@@ -24,7 +24,7 @@ import addTrainNamesToConflicts, {
 } from '../utils';
 
 const useConflictsFilter = (
-  timetableItems: TrainScheduleResponse[],
+  trainSchedules: TrainScheduleResponse[],
   conflicts: Conflict[],
   isConflictsLoading: boolean
 ) => {
@@ -36,9 +36,9 @@ const useConflictsFilter = (
     setShowOnlySelectedTrain(!showOnlySelectedTrain);
   }, [showOnlySelectedTrain]);
 
-  const timetableItemById = useMemo<Map<number, TrainScheduleResponse>>(
-    () => new Map(timetableItems.map((item) => [item.id, item])),
-    [timetableItems]
+  const trainScheduleById = useMemo<Map<number, TrainScheduleResponse>>(
+    () => new Map(trainSchedules.map((trainSchedule) => [trainSchedule.id, trainSchedule])),
+    [trainSchedules]
   );
 
   const selectedTrainName = useMemo(() => {
@@ -49,7 +49,7 @@ const useConflictsFilter = (
         ? extractPacedTrainIdFromOccurrenceId(selectedTrainId)
         : selectedTrainId
     );
-    const selectedTrain = timetableItemById.get(id);
+    const selectedTrain = trainScheduleById.get(id);
 
     if (!selectedTrain || !isOccurrenceId(selectedTrainId) || !isPacedTrain(selectedTrain))
       return selectedTrain?.train_name || null;
@@ -69,7 +69,7 @@ const useConflictsFilter = (
     }
     // added exception: name is `${pacedTrainName}/+`
     return `${selectedTrain.train_name}/+`;
-  }, [selectedTrainId, timetableItemById]);
+  }, [selectedTrainId, trainScheduleById]);
 
   const totalConflictsCount = useMemo(() => conflicts.length, [conflicts]);
 
@@ -78,8 +78,8 @@ const useConflictsFilter = (
     const sortedByStartTime = [...conflicts].sort(
       (a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
     );
-    setEnrichedConflicts(addTrainNamesToConflicts(sortedByStartTime, timetableItems));
-  }, [conflicts, isConflictsLoading, timetableItems]);
+    setEnrichedConflicts(addTrainNamesToConflicts(sortedByStartTime, trainSchedules));
+  }, [conflicts, isConflictsLoading, trainSchedules]);
 
   const selectedEnrichedConflicts = useMemo(() => {
     if (!selectedTrainName || !selectedTrainId) return [];

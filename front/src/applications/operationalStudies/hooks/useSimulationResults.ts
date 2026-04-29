@@ -30,7 +30,7 @@ import { useScenarioContext } from './useScenarioContext';
  * Prepare data to be used in simulation results
  */
 const useSimulationResults = (
-  timetableItems: TrainScheduleResponse[] | undefined
+  trainSchedules: TrainScheduleResponse[] | undefined
 ): {
   results: SimulationResults | undefined;
   isSimulationDataLoading: boolean;
@@ -40,7 +40,7 @@ const useSimulationResults = (
   const { infraId, electricalProfileSetId } = useScenarioContext();
   const selectedTrainId = useSelector(getSelectedTrainId);
 
-  const trainSchedule = useSelectedTrainSchedule(timetableItems);
+  const trainSchedule = useSelectedTrainSchedule(trainSchedules);
 
   const train: Train | undefined = useMemo(() => {
     if (!selectedTrainId || !trainSchedule) return undefined;

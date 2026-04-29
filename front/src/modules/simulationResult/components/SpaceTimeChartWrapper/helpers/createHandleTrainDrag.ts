@@ -7,13 +7,13 @@ import {
 } from 'utils/trainId';
 
 export default function createHandleTrainDrag({
-  timetableItemProjections,
-  setTimetableItemProjections,
+  trainScheduleProjections,
+  setTrainScheduleProjections,
   handleTrainDragInTrackOccupancy,
   updateTrainScheduleDepartureTime,
 }: {
-  timetableItemProjections: TrainSpaceTimeData[];
-  setTimetableItemProjections: (newProjections: TrainSpaceTimeData[]) => void;
+  trainScheduleProjections: TrainSpaceTimeData[];
+  setTrainScheduleProjections: (newProjections: TrainSpaceTimeData[]) => void;
   handleTrainDragInTrackOccupancy: (args: {
     draggedTrainId: TrainId;
     newTrainData: TrainSpaceTimeData;
@@ -41,7 +41,7 @@ export default function createHandleTrainDrag({
         ? extractPacedTrainIdFromOccurrenceId(draggedTrainId)
         : draggedTrainId
     );
-    const draggedTrain = timetableItemProjections.find((train) => train.id === draggedItemId);
+    const draggedTrain = trainScheduleProjections.find((train) => train.id === draggedItemId);
     if (!draggedTrain) return;
 
     const newTrainData = {
@@ -59,8 +59,8 @@ export default function createHandleTrainDrag({
 
     if (!stopPanning) {
       // update in the state
-      setTimetableItemProjections(
-        timetableItemProjections.map((train) => (train.id === draggedItemId ? newTrainData : train))
+      setTrainScheduleProjections(
+        trainScheduleProjections.map((train) => (train.id === draggedItemId ? newTrainData : train))
       );
       return;
     }

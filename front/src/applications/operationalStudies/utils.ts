@@ -225,31 +225,31 @@ export const isSimulated = (summary: SimulationSummary | undefined): boolean => 
 };
 
 /**
- * Check if the scheduled points are honored with a timetable item summary,
+ * Check if the scheduled points are honored with a train schedule summary,
  * meaning that it respects the requested arrival time at scheduled steps (steps with an arrival time set)
- * @param timetableItemSummary
+ * @param trainScheduleSummary
  * @returns true if the scheduled points are not honored
  */
 export const isScheduledPointsNotHonored = (
-  timetableItemSummary: Extract<SimulationSummaryResult, { status: 'success' }>
-): boolean => timetableItemSummary.path_item_respect_times.some((respected) => !respected);
+  trainScheduleSummary: Extract<SimulationSummaryResult, { status: 'success' }>
+): boolean => trainScheduleSummary.path_item_respect_times.some((respected) => !respected);
 
-export const getPathItemByIndexDict = (timetableItemResult: TrainScheduleResponse) =>
-  timetableItemResult.path.reduce((acc, pathItem, index) => {
+export const getPathItemByIndexDict = (trainSchedule: TrainScheduleResponse) =>
+  trainSchedule.path.reduce((acc, pathItem, index) => {
     acc[pathItem.id] = index;
     return acc;
   }, {} as Dictionary<number>);
 
 /**
- * Check if the item is too fast with a timetable item and a timetable item summary,
+ * Check if the train is too fast with a train schedule and a train schedule summary,
  * meaning that it does not respect the requested margin between at least 2 scheduled steps (steps with an arrival time or a margin set)
- * @param timetableItem
- * @param timetableItemSummary
+ * @param trainSchedule
+ * @param trainScheduleSummary
  * @returns true if the train is too fast
  */
 export const isTooFast = (
-  timetableItemSummary: Extract<SimulationSummaryResult, { status: 'success' }>
-): boolean => timetableItemSummary.path_item_respect_margins.some((respected) => !respected);
+  trainScheduleSummary: Extract<SimulationSummaryResult, { status: 'success' }>
+): boolean => trainScheduleSummary.path_item_respect_margins.some((respected) => !respected);
 
 export const getStationFromOps = (ops: OperationalPoint[]): OperationalPoint | undefined =>
   ops.find((op) => ['BV', '00'].includes(op.extensions?.sncf?.ch || '')) || ops.at(0);

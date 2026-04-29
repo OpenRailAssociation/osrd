@@ -18,4 +18,4 @@ export const TRAIN_MAIN_CATEGORY_CLASS: Record<TrainMainCategory | 'None', strin
   None: 'none',
 };
 
-export const TIMETABLE_ITEM_DELTA = 5;
+export const TRAIN_SCHEDULE_DELTA = 5;

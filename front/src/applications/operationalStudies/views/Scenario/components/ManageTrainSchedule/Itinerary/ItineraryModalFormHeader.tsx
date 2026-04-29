@@ -113,7 +113,7 @@ const ItineraryModalFormHeader = ({
   // Composition code/speed limit by tag
   const speedLimitTags = useSpeedLimitTags();
 
-  // Timetable item name error
+  // Train schedule name error
   const [isNameBlurred, setIsNameBlurred] = useState(false);
 
   const nameError: StatusWithMessage | undefined = useMemo(() => {

@@ -2,7 +2,9 @@ import type {
   PacedTrainResponseWithPaced,
   PacedTrainWithPaced,
 } from 'applications/operationalStudies/types';
-import type { TrainSchedule, PacedTrainException,
+import type {
+  TrainSchedule,
+  PacedTrainException,
   TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import type { OccurrenceId, PacedTrainId } from 'reducers/osrdconf/types';
@@ -47,8 +49,8 @@ export const hasNoChangeGroups = (exception: PacedTrainException) =>
   CHANGE_GROUP_KEYS.every((key) => !(key in exception));
 
 export const isPacedTrain = (
-  timetableItem: TrainScheduleResponse
-): timetableItem is PacedTrainResponseWithPaced => !!timetableItem.paced;
+  trainSchedule: TrainScheduleResponse
+): trainSchedule is PacedTrainResponseWithPaced => !!trainSchedule.paced;
 
 export const isPacedTrainWithDetails = (
   trainSchedule: TrainScheduleWithDetails
@@ -132,7 +134,7 @@ export const extractOccurrenceDetailsFromPacedTrain = <
     occurrence.schedule = exceptionChangeGroups.path_and_schedule.schedule;
   }
   if (exceptionChangeGroups.options) {
-    // options is optional when creating a timetable item but
+    // options is optional when creating a train schedule but
     // is always present when editing an existing one
     occurrence.options!.use_electrical_profiles =
       exceptionChangeGroups.options.value?.use_electrical_profiles;
@@ -172,13 +174,13 @@ export const getOccurrencesWorstStatus = (
 };
 
 export const getExceptionFromOccurrenceId = (
-  timetableItemsById: Map<number, TrainScheduleResponse>,
+  trainSchedulesById: Map<number, TrainScheduleResponse>,
   occurrenceId: OccurrenceId
 ) => {
   const pacedTrainId = extractEditoastIdFromPacedTrainId(
     extractPacedTrainIdFromOccurrenceId(occurrenceId)
   );
-  const pacedTrain = timetableItemsById.get(pacedTrainId);
+  const pacedTrain = trainSchedulesById.get(pacedTrainId);
   if (!pacedTrain) return undefined;
   if (!isPacedTrain(pacedTrain)) throw new Error(`No paced train found for id ${pacedTrainId}`);
 

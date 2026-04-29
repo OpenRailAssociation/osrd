@@ -275,7 +275,7 @@ const useUpdateTimesStopsTable = (
         throw new Error('Formatted PacedTrain is missing paced field');
       }
       // formatPacedTrainWithDetailsToPacedTrainPayload intentionally strips exceptions
-      // (they have dedicated endpoints). Restore the actual list from timetableItemsWithDetails
+      // (they have dedicated endpoints). Restore the actual list from trainSchedulesWithDetails
       // so lookups, diff computation, and local state updates see the full current state.
       const originalPacedTrain: PacedTrainWithPaced = {
         ...formattedPacedTrain,

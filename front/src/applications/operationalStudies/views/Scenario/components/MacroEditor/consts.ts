@@ -47,7 +47,7 @@ export const NOTE_LABEL_GROUP: LabelGroupDto = {
 
 /**
  * Return the default TrainrunFrequencies without their translated names.
- * The main types of TimetableItems are to be displayed:
+ * The main types of TrainSchedules are to be displayed:
  * - `UniqueTrain` -> `TrainrunFrequency.linePatternRef = '120'`
  * - `PacedTrain`:
  *    - `paced.interval = 30` -> `TrainrunFrequency.linePatternRef = '30'`
@@ -101,7 +101,7 @@ export const DEFAULT_PACED_TRAIN_FREQUENCY_IDS = DEFAULT_TRAINRUN_FREQUENCIES.fi
 
 /**
  * For cosmetic use only, attributes except id and linePatternRef are not used.
- * The main types of TimetableItems are to be displayed:
+ * The main types of TrainSchedules are to be displayed:
  * - `UniqueTrain` -> `TrainrunTimeCategory.linePatternRef = 'ZEITWEISE'`
  * - `PacedTrain`:
  *    - `paced.interval = 30` -> `TrainrunTimeCategory.linePatternRef = '7/24'`
