@@ -476,7 +476,7 @@ fn local_track_name_fallback(
         .find(|track_section| track_section.id == *track)
         .and_then(|track_section| {
             if let Some(sncf) = &track_section.extensions.sncf
-                && sncf.track_name != "??".into()
+                && "??" != sncf.track_name
             {
                 Some(sncf.track_name.clone())
             } else {
@@ -666,7 +666,7 @@ mod tests {
 
         let electrification = electrifications(&edge).unwrap();
 
-        assert_eq!(electrification.voltage, expected.into());
+        assert_eq!(expected, electrification.voltage);
     }
 
     #[test]
