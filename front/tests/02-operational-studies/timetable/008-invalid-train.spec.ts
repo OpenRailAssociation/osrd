@@ -1,8 +1,8 @@
 import type { Scenario, Project, Study, Infra, TrainSchedule } from 'common/api/osrdEditoastApi';
 
 import {
-  timetableItemProjectName,
-  timetableItemStudyName,
+  trainScheduleProjectName,
+  trainScheduleStudyName,
 } from '../../assets/constants/project-const';
 import { invalidPacedTrainTimetableOutput } from '../../assets/operation-studies/invalid-trains/invalid-paced-train-timetable-output';
 import { invalidUniqueTrainTimetableOutput } from '../../assets/operation-studies/invalid-trains/invalid-unique-train-timetable-output';
@@ -32,8 +32,8 @@ test.describe(
     let timeAndStopSimulationOutputs: TimeAndStopSimulationOutputs;
 
     test.beforeAll('Fetch project, study and infrastructure', async () => {
-      project = await getProject(timetableItemProjectName);
-      study = await getStudy(project.id, timetableItemStudyName);
+      project = await getProject(trainScheduleProjectName);
+      study = await getStudy(project.id, trainScheduleStudyName);
       infra = await getInfra();
     });
 

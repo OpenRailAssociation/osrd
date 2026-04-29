@@ -1,4 +1,4 @@
-# Timetable Items Test Dataset
+# Train Schedules Test Dataset
 
 Ensures full functional coverage of timetable import, parsing, and validation.
 

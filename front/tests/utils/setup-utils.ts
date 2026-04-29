@@ -21,9 +21,9 @@ import {
   improbableRollingStockName,
   infrastructureName,
   slowRollingStockName,
-  timetableItemProjectName,
-  timetableItemScenarioName,
-  timetableItemStudyName,
+  trainScheduleProjectName,
+  trainScheduleScenarioName,
+  trainScheduleStudyName,
 } from '../assets/constants/project-const';
 import { PROJECT_DATA } from '../assets/operation-studies/project-const';
 import { STUDY_DATA } from '../assets/operation-studies/study-const';
@@ -176,15 +176,15 @@ export async function createDataForTests(): Promise<void> {
     await createScenario(undefined, project.id, study.id, mediumInfra.id);
 
     // Step 6: Create a project, study, scenario and import unique train and paced train data
-    const projectWithTimetableItems = await createProject(timetableItemProjectName);
-    const studyWithTimetableItems = await createStudy(
-      projectWithTimetableItems.id,
-      timetableItemStudyName
+    const projectWithTrainSchedules = await createProject(trainScheduleProjectName);
+    const studyWithTrainSchedules = await createStudy(
+      projectWithTrainSchedules.id,
+      trainScheduleStudyName
     );
     const { scenario, trainScheduleSet } = await createScenario(
-      timetableItemScenarioName,
-      projectWithTimetableItems.id,
-      studyWithTimetableItems.id,
+      trainScheduleScenarioName,
+      projectWithTrainSchedules.id,
+      studyWithTrainSchedules.id,
       mediumInfra.id
     );
     await sendTrains(trainScheduleSet.id, trains, scenario.timetable_id);

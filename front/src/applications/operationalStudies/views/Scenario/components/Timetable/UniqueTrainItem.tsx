@@ -169,7 +169,7 @@ const UniqueTrainItem = ({
 
   return (
     <div
-      data-testid="scenario-timetable-item"
+      data-testid="scenario-train-schedule"
       data-train-id={train.id}
       className={cx('scenario-timetable-train', {
         selected: isSelected,
@@ -253,7 +253,7 @@ const UniqueTrainItem = ({
                   (summary.notHonoredReason === 'scheduleNotHonored' ? <Clock /> : <Flame />)}
               </div>
               <div
-                data-testid="timetable-item-arrival-time"
+                data-testid="train-schedule-arrival-time"
                 className="scenario-timetable-train-times"
                 title={arrivalTime ? arrivalTime.toLocaleString(dateTimeLocale) : undefined}
               >

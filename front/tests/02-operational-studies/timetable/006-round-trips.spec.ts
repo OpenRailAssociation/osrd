@@ -1,8 +1,8 @@
 import type { Scenario, Project, Study, Infra, TrainSchedule } from 'common/api/osrdEditoastApi';
 
 import {
-  timetableItemProjectName,
-  timetableItemStudyName,
+  trainScheduleProjectName,
+  trainScheduleStudyName,
 } from '../../assets/constants/project-const';
 import {
   FirstPacedTrain,
@@ -29,7 +29,7 @@ const trains: TrainSchedule[] = readJsonFile('./tests/assets/trains/trains.json'
 
 test.describe(
   'Round trips management',
-  { tag: ['@op', '@timetable-items', '@round-trips'] },
+  { tag: ['@op', '@train-schedules', '@round-trips'] },
   () => {
     let project: Project;
     let study: Study;
@@ -37,8 +37,8 @@ test.describe(
     let infra: Infra;
 
     test.beforeAll('Fetch project, study and infrastructure', async () => {
-      project = await getProject(timetableItemProjectName);
-      study = await getStudy(project.id, timetableItemStudyName);
+      project = await getProject(trainScheduleProjectName);
+      study = await getStudy(project.id, trainScheduleStudyName);
       infra = await getInfra();
     });
 

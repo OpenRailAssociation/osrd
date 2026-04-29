@@ -3,8 +3,8 @@ import { expect } from '@playwright/test';
 import type { Scenario, Project, Study, Infra } from 'common/api/osrdEditoastApi';
 
 import {
-  timetableItemProjectName,
-  timetableItemStudyName,
+  trainScheduleProjectName,
+  trainScheduleStudyName,
 } from '../../assets/constants/project-const';
 import test from '../../page-object-fixture';
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
@@ -33,8 +33,8 @@ test.describe('Netzgrafik Editor', { tag: ['@op', '@nge', '@round-trips'] }, () 
   let infra: Infra;
 
   test.beforeAll('Fetch project, study and infrastructure', async () => {
-    project = await getProject(timetableItemProjectName);
-    study = await getStudy(project.id, timetableItemStudyName);
+    project = await getProject(trainScheduleProjectName);
+    study = await getStudy(project.id, trainScheduleStudyName);
     infra = await getInfra();
   });
 
@@ -90,7 +90,7 @@ test.describe('Netzgrafik Editor', { tag: ['@op', '@nge', '@round-trips'] }, () 
       });
 
       await test.step('Validate timetable list and round-trip modal', async () => {
-        await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
+        await scenarioTimetableSection.verifyTotalTrainSchedulesLabel(frTranslations, {
           totalPacedTrainCount: 2,
           totalUniqueTrainCount: 0,
         });

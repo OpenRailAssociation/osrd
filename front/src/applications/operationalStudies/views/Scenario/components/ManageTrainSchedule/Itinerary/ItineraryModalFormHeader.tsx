@@ -217,7 +217,7 @@ const ItineraryModalFormHeader = ({
           <Input
             narrow
             small
-            id="itinerary-modal-timetable-item-name"
+            id="itinerary-modal-train-schedule-name"
             label={t('itineraryModal.trainName')}
             value={modalFormState.name}
             title={modalFormState.name}

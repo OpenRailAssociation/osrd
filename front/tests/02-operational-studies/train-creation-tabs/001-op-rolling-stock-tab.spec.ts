@@ -42,7 +42,7 @@ test.describe('Rolling stock tab', { tag: ['@op', '@rs-tab'] }, () => {
         `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
       );
       await waitForInfraStateToBeCached(infra.id);
-      await operationalStudiesPage.openTimetableItemForm();
+      await operationalStudiesPage.openTrainScheduleForm();
     }
   );
 
