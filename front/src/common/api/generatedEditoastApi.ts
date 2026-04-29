@@ -2439,21 +2439,14 @@ export type PostTimetableByIdStdcmApiArg = {
     comfort: Comfort;
     consist_schedule: ConsistSchedule;
     electrical_profile_set_id?: number | null;
-    loading_gauge_type?: null | LoadingGaugeType;
     /** Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km` */
     margin?: string | null;
-    /**  Maximum speed of the consist in km/h
-        Velocity in m·s⁻¹ */
-    max_speed?: number | null;
     /** By how long we can shift the departure time in milliseconds
         Deprecated, first step data should be used instead */
     maximum_departure_delay?: number | null;
     /** Specifies how long the total run time can be in milliseconds
         Deprecated, first step data should be used instead */
     maximum_run_time?: number | null;
-    rolling_stock_id: number;
-    /** Train categories for speed limits */
-    speed_limit_tags?: string | null;
     /** Deprecated, first step arrival time should be used instead */
     start_time?: string | null;
     steps: PathfindingItem[];
@@ -2468,13 +2461,6 @@ export type PostTimetableByIdStdcmApiArg = {
         Enforces that the path used by the train should be free and
         available at least that many milliseconds before its passage. */
     time_gap_before?: number;
-    /**  Total length of the consist in meters
-        Length in m */
-    total_length?: number | null;
-    /**  Total mass of the consist
-        Mass in kg */
-    total_mass?: number | null;
-    towed_rolling_stock_id?: number | null;
     work_schedule_group_id?: number | null;
   };
 };
@@ -4546,6 +4532,7 @@ export type ConsistConfiguration = {
   /** Velocity in m·s⁻¹ */
   max_speed?: number | null;
   rolling_stock_id: number;
+  /** Train categories for speed limits */
   speed_limit_tag?: string | null;
   /** Length in m */
   total_length?: number | null;
@@ -4558,7 +4545,7 @@ export type ConsistSchedule = {
     It should not contain 0 and len(steps) and should be increasing */
   boundaries: number[];
   /** Consist configuration for each segment
-    It should contains one more element than boundaries */
+    It should contain one more element than boundaries */
   values: ConsistConfiguration[];
 };
 export type CoreStepTimingData = {

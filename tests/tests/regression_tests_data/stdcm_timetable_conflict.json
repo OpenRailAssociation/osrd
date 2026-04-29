@@ -4,7 +4,6 @@
     "error": "{\"status\":500,\"type\":\"core:assert_error\",\"context\":{\"stack_trace\":[\"STDCMEndpointV2.kt:172\",\"STDCMEndpointV2.kt:1\",\"STDCMEndpointV2.kt:116\",\"FkRegex.java:153\",\"FkRegex.java:217\",\"FkChain.java:72\",\"TkFork.java:98\",\"TkFallback.java:84\",\"TkFallback.java:66\",\"TkWrap.java:58\",\"TkSlf4j.java:110\",\"BkBasic.java:123\",\"BkBasic.java:99\",\"BkSafe.java:46\",\"BkWrap.java:51\",\"BkParallel.java:81\",\"ThreadPoolExecutor.java:1136\",\"ThreadPoolExecutor.java:635\",\"Thread.java:840\"],\"url\":\"http://localhost:8080//stdcm\",\"assert_message\":\"STDCM result is conflicting with the scheduled timetable\",\"file_location\":\"STDCMEndpointV2.kt:172\"},\"message\":\"assert check failed\"}",
     "infra_name": "small_infra",
     "stdcm_payload": {
-        "rolling_stock_id": 470,
         "start_time": "2024-01-01T23:02:27+00:00",
         "maximum_departure_delay": 5251097,
         "maximum_run_time": 31681873,
@@ -48,7 +47,7 @@
         "margin": "0%",
         "consist_schedule": {
             "boundaries": [],
-            "values": []
+            "values": [{"rolling_stock_id": 470}]
         }
     },
     "prelude": [

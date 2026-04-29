@@ -231,6 +231,7 @@
       "InfraNotFound": "Infrastructure '{{infra_id}}' does not exist",
       "InvalidConsistLength": "Invalid consist length {{provided_consist_length}}: it should be greater than '{{expected_min}}'",
       "InvalidConsistMass": "Invalid consist mass {{provided_consist_mass}}: it should be greater than '{{expected_min}}'",
+      "InvalidConsistMaxSpeed": "Invalid consist max speed {{provided_consist_max_speed}}: it should be positive  and lower than '{{expected_max}}'",
       "InvalidPathItems": "Invalid waypoint(s) {{items}}",
       "TimetableNotFound": "Timetable '{{timetable_id}}' does not exist",
       "TowedRollingStockNotFound": "Towed rolling stock {towed_rolling_stock_id} does not exist",

@@ -335,7 +335,6 @@ def _make_stdcm_payload(path: list[tuple[str, float]], rolling_stock: int) -> di
     Creates a payload for an STDCM request
     """
     res = {
-        "rolling_stock_id": rolling_stock,
         "start_time": _make_random_time(),
         "maximum_departure_delay": random.randint(0, 3_600_000 * 4),
         "maximum_run_time": random.randint(3_600_000 * 5, 3_600_000 * 10),
@@ -344,7 +343,14 @@ def _make_stdcm_payload(path: list[tuple[str, float]], rolling_stock: int) -> di
         "steps": [_convert_stop_stdcm(stop) for stop in path],
         "comfort": "STANDARD",
         "margin": "0%",
-        "consist_schedule": {"boundaries": [], "values": []},
+        "consist_schedule": {
+            "boundaries": [],
+            "values": [
+                {
+                    "rolling_stock_id": rolling_stock,
+                }
+            ],
+        },
     }
     res["steps"][-1]["duration"] = 1  # Force a stop at the end
     allowance_value = _make_random_margin_value()

@@ -62,7 +62,7 @@ def _update_stdcm_payload(payload, rolling_stock_id: int):
     """
     Edit the given stdcm payload to replace the ids for the rolling stock.
     """
-    payload["rolling_stock_id"] = rolling_stock_id
+    payload["consist_schedule"]["values"][0]["rolling_stock_id"] = rolling_stock_id
 
 
 def _check_result(editoast_url: str, schedule_id: int, infra_id: int, session: Session):
