@@ -100,6 +100,7 @@ jobs:
         with:
           python-version: "3.12"
           enable-cache: true
+          cache-suffix: ${{ github.job }}
       - name: Install dependencies
         run: |
           uv --directory railway_manager_interface/ sync --locked
@@ -131,7 +132,7 @@ jobs:
         with:
           python-version: "3.11"
           enable-cache: true
-
+          cache-suffix: ${{ github.job }}
       - name: Install railjson_generator dependencies
         run: |
           uv --directory python/railjson_generator/ sync --locked
@@ -154,7 +155,7 @@ jobs:
         with:
           python-version: "3.11"
           enable-cache: true
-
+          cache-suffix: ${{ github.job }}
       - name: Install railjson_generator dependencies
         run: |
           uv --directory python/railjson_generator/ sync --extra check --locked
@@ -236,6 +237,7 @@ jobs:
         with:
           python-version: "3.11"
           enable-cache: true
+          cache-suffix: ${{ github.job }}
       - name: Install dependencies
         run: |
           uv --directory tests/ sync --extra check --locked
@@ -257,6 +259,7 @@ jobs:
         with:
           python-version: "3.11"
           enable-cache: true
+          cache-suffix: ${{ github.job }}
       - name: Install dependencies
         run: |
           uv --directory python/osrd_schemas/ sync --extra check --locked
@@ -293,6 +296,7 @@ jobs:
         with:
           python-version: "3.11"
           enable-cache: true
+          cache-suffix: ${{ github.job }}
       - name: Check infra_schema.json sync
         run: |
           cp front/src/reducers/osrdconf/infra_schema.json current_infra_schema.json
@@ -743,6 +747,7 @@ jobs:
         with:
           python-version: "3.11"
           enable-cache: true
+          cache-suffix: ${{ github.job }}
       - name: Install dependencies
         run: |
           uv --directory tests/ sync --locked
@@ -1001,6 +1006,7 @@ jobs:
         with:
           python-version: "3.11"
           enable-cache: true
+          cache-suffix: ${{ github.job }}
       - name: Install railway_manager_interface dependencies
         run: |
           uv --directory railway_manager_interface/ sync --all-extras --locked
