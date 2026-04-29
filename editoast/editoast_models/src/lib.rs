@@ -185,8 +185,6 @@ mod tests {
 
     use crate::prelude::*;
 
-    use crate as editoast_models;
-
     #[derive(Debug, Default, Clone, Model, PartialEq, Eq)]
     #[model(table = database::tables::document, error = DocError)]
     #[model(gen(ops = crud, batch_ops = crud, list))]

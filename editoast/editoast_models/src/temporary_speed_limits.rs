@@ -4,8 +4,6 @@ use editoast_derive::Model;
 use schemas::infra::DirectionalTrackRange;
 use serde::Serialize;
 
-use crate as editoast_models; // HACK: remove when all models are in this crate
-
 #[derive(Debug, Clone, Model)]
 #[model(table = database::tables::temporary_speed_limit_group)]
 #[model(gen(ops = crd, batch_ops = c, list))]

@@ -13,8 +13,6 @@ use utoipa::ToSchema;
 
 use crate::prelude::*;
 
-use crate as editoast_models;
-
 #[derive(Clone, Debug, Serialize, Model, ToSchema)]
 #[model(table = database::tables::stdcm_search_environment)]
 #[model(gen(ops = crd, list))]

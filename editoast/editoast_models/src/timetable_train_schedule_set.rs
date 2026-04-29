@@ -1,7 +1,5 @@
 use editoast_derive::Model;
 
-use crate as editoast_models;
-
 #[derive(Debug, Clone, Model)]
 #[cfg_attr(test, derive(Default, PartialEq))]
 #[model(table = database::tables::timetable_train_schedule_set)]

@@ -5,7 +5,6 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate as editoast_models;
 use crate::prelude::*; // HACK: remove after all models are in this crate
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Model, ToSchema)]

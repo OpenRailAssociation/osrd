@@ -25,8 +25,6 @@ use serde::Serialize;
 use std::fmt::Display;
 use utoipa::ToSchema;
 
-use crate as editoast_models;
-
 #[derive(Debug, Clone, Model)]
 #[cfg_attr(any(test, feature = "testing"), derive(Default, PartialEq))]
 #[model(table = database::tables::train_schedule)]

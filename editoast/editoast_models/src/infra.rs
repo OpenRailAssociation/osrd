@@ -36,8 +36,6 @@ use schemas::infra::RAILJSON_VERSION;
 use schemas::infra::RailJson;
 use schemas::primitives::ObjectType;
 
-use crate as editoast_models;
-
 /// The default version of a newly created infrastructure
 ///
 /// This value is set by the database. This constant is used

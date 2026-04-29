@@ -7,8 +7,6 @@ use serde::Serialize;
 use strum::FromRepr;
 use utoipa::ToSchema;
 
-use crate as editoast_models;
-
 #[derive(Debug, Clone, Model)]
 #[model(table = database::tables::work_schedule_group)]
 #[model(gen(ops = crd, batch_ops = c, list))]

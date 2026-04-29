@@ -9,7 +9,6 @@ use schemas::rolling_stock::RollingResistancePerWeight;
 use serde::Deserialize;
 use serde::Serialize;
 
-use crate as editoast_models;
 use crate::prelude::*;
 
 #[editoast_derive::annotate_units]

@@ -10,7 +10,6 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate as editoast_models; // HACK: remove after all models are in this crate
 use crate::Error;
 
 #[cfg(any(test, feature = "testing"))]

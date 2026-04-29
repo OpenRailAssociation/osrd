@@ -13,8 +13,6 @@ use crate::project::Project;
 use crate::scenario::Scenario;
 use crate::tags::Tags;
 
-use crate as editoast_models;
-
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Model, ToSchema)]
 #[model(table = database::tables::study)]
 #[model(gen(ops = crud, list))]

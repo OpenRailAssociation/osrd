@@ -1,8 +1,6 @@
 use editoast_derive::Model;
 use schemas::train_schedule_exception::TrainScheduleExceptionChangeGroups;
 
-use crate as editoast_models;
-
 #[derive(Debug, Clone, Model)]
 #[cfg_attr(test, derive(serde::Deserialize))]
 #[model(table = database::tables::train_schedule_exception)]
