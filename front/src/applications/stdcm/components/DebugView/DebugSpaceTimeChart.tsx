@@ -12,34 +12,7 @@ import {
   useManchetteWithSpaceTimeChart,
 } from '@osrd-project/ui-charts';
 
-type ZoneLocation = { name: string; from: number; to: number };
-type OtherRequirement = {
-  zone_name: string;
-  begin_time: number;
-  end_time: number;
-  train_name?: string;
-};
-type ZoneUpdate = { zone: string; is_entry: boolean; time: number };
-type SpacingRequirement = { zone: string; begin_time: number; end_time: number };
-type OperationalPointRaw = {
-  position: number;
-  extensions: { identifier: { name: string }; sncf: { ch: string } };
-};
-
-type SimulationData = {
-  departure_time: string;
-  train_positions: number[];
-  train_times: number[];
-  zone_locations: ZoneLocation[];
-  other_requirements: OtherRequirement[];
-  path_properties: { operational_points: OperationalPointRaw[] };
-  sim_output?: {
-    final_output: {
-      zone_updates: ZoneUpdate[];
-      spacing_requirements: SpacingRequirement[];
-    };
-  };
-};
+import type { SimDebugData } from 'common/api/osrdEditoastApi';
 
 type DebugBlock = {
   timeStart: number;
@@ -88,17 +61,20 @@ const LAYER_STYLES: Record<DebugBlock['kind'], BlockLayerStyle> = {
   spacing_req: { fill: 'rgba(244, 164, 96, 0.5)', stroke: 'rgba(210, 105, 30, 0.9)' },
 };
 
-type DebugSpaceTimeChartProps = { simulationData: unknown };
+type DebugSpaceTimeChartProps = { simulationData: SimDebugData };
 
 const DebugSpaceTimeChart = ({ simulationData }: DebugSpaceTimeChartProps) => {
-  const simData = simulationData as SimulationData;
+  const simData = simulationData;
 
   const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);
   const spaceTimeChartRef = useRef<HTMLDivElement>(null);
 
   const chartData = useMemo(() => {
     const zoneMap = new Map(
-      simData.zone_locations.map((zone) => [zone.name, { spaceStart: zone.from, spaceEnd: zone.to }])
+      simData.zone_locations.map((zone) => [
+        zone.name,
+        { spaceStart: zone.from, spaceEnd: zone.to },
+      ])
     );
     const departureMs = Date.parse(simData.departure_time);
 
@@ -162,10 +138,10 @@ const DebugSpaceTimeChart = ({ simulationData }: DebugSpaceTimeChartProps) => {
     }
 
     const manchetteWaypoints = simData.path_properties.operational_points.map((op) => ({
-      id: op.extensions.identifier.name + '-' + op.extensions.sncf.ch,
+      id: (op.extensions?.identifier?.name ?? '') + '-' + (op.extensions?.sncf?.ch ?? ''),
       position: op.position,
-      name: op.extensions.identifier.name,
-      secondaryCode: op.extensions.sncf.ch,
+      name: op.extensions?.identifier?.name ?? '',
+      secondaryCode: op.extensions?.sncf?.ch ?? '',
     }));
 
     const trainPath: PathData | null =

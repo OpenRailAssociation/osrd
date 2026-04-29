@@ -2904,8 +2904,14 @@ paths:
               schema:
                 type: object
                 properties:
-                  failure: {}
-                  simulation_data: {}
+                  failure:
+                    oneOf:
+                    - type: 'null'
+                    - $ref: '#/components/schemas/SimDebugFailureReport'
+                  simulation_data:
+                    oneOf:
+                    - type: 'null'
+                    - $ref: '#/components/schemas/SimDebugData'
   /stdcm/search_environment:
     get:
       tags:
@@ -13127,6 +13133,147 @@ components:
           maxLength: 255
           minLength: 1
       additionalProperties: false
+    SimDebugConflictReport:
+      type: object
+      required:
+      - at
+      - time_lost
+      - best_remaining_time
+      - current_travel_time
+      - caused_by
+      - lat
+      - lon
+      properties:
+        at:
+          type: string
+          format: date-time
+        best_remaining_time:
+          type: number
+          format: double
+        caused_by:
+          type: string
+        current_travel_time:
+          type: number
+          format: double
+        lastOPName:
+          type:
+          - string
+          - 'null'
+        lat:
+          type: number
+          format: double
+        lon:
+          type: number
+          format: double
+        time_lost:
+          type: number
+          format: double
+    SimDebugData:
+      type: object
+      required:
+      - path_properties
+      - other_requirements
+      - departure_time
+      - engineering_allowances_ranges
+      - zone_locations
+      - train_times
+      - train_positions
+      properties:
+        departure_time:
+          type: string
+          format: date-time
+        engineering_allowances_ranges:
+          type: array
+          items:
+            $ref: '#/components/schemas/SimDebugEngineeringAllowanceRange'
+        other_requirements:
+          type: array
+          items:
+            $ref: '#/components/schemas/SimDebugTrainZoneRequirement'
+        path_properties:
+          $ref: '#/components/schemas/PathProperties'
+        sim_output:
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/SimulationResponseSuccess'
+        train_positions:
+          type: array
+          items:
+            type: number
+            format: double
+        train_times:
+          type: array
+          items:
+            type: number
+            format: double
+        zone_locations:
+          type: array
+          items:
+            $ref: '#/components/schemas/SimDebugZoneLocation'
+    SimDebugEngineeringAllowanceRange:
+      type: object
+      required:
+      - from
+      - to
+      - added_duration
+      properties:
+        added_duration:
+          type: number
+          format: double
+        from:
+          type: number
+          format: double
+        to:
+          type: number
+          format: double
+    SimDebugFailureReport:
+      type: object
+      required:
+      - largest_conflicts
+      - closest_conflicts
+      properties:
+        closest_conflicts:
+          type: array
+          items:
+            $ref: '#/components/schemas/SimDebugConflictReport'
+        largest_conflicts:
+          type: array
+          items:
+            $ref: '#/components/schemas/SimDebugConflictReport'
+    SimDebugTrainZoneRequirement:
+      type: object
+      required:
+      - zone_name
+      - begin_time
+      - end_time
+      properties:
+        begin_time:
+          type: number
+          format: double
+        end_time:
+          type: number
+          format: double
+        train_name:
+          type:
+          - string
+          - 'null'
+        zone_name:
+          type: string
+    SimDebugZoneLocation:
+      type: object
+      required:
+      - name
+      - from
+      - to
+      properties:
+        from:
+          type: number
+          format: double
+        name:
+          type: string
+        to:
+          type: number
+          format: double
     SimilarTrainWaypoint:
       type: object
       required:
