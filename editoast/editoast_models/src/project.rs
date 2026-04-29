@@ -32,10 +32,7 @@ pub struct Project {
 }
 
 #[tracing::instrument(skip(conn), ret, err)]
-async fn try_delete_document(
-    conn: &DbConnection,
-    doc_id: i64,
-) -> Result<(), editoast_models::Error> {
+async fn try_delete_document(conn: &DbConnection, doc_id: i64) -> Result<(), crate::Error> {
     let res = conn
         .transaction(async move |mut conn| {
             match Document::delete_static(&mut conn, doc_id).await {
@@ -56,7 +53,7 @@ async fn try_delete_document(
         .await;
     match res {
         Ok(_) => Ok(()),
-        Err(editoast_models::Error::ForeignKeyViolation { constraint })
+        Err(crate::Error::ForeignKeyViolation { constraint })
             if constraint == "project_image_id_fkey" =>
         {
             Ok(())
@@ -71,7 +68,7 @@ pub enum Error {
     NotFound { project_id: i64 },
     #[error(transparent)]
     #[from(forward)]
-    Database(editoast_models::Error),
+    Database(crate::Error),
 }
 
 impl Project {
@@ -79,16 +76,13 @@ impl Project {
     pub async fn update_last_modified(
         &mut self,
         conn: &mut DbConnection,
-    ) -> Result<(), editoast_models::Error> {
+    ) -> Result<(), crate::Error> {
         self.last_modification = Utc::now();
         self.save(conn).await?;
         Ok(())
     }
 
-    pub async fn studies_count(
-        &self,
-        conn: &mut DbConnection,
-    ) -> Result<u64, editoast_models::Error> {
+    pub async fn studies_count(&self, conn: &mut DbConnection) -> Result<u64, crate::Error> {
         let project_id = self.id;
         let studies_count = Study::count(
             conn,
@@ -104,7 +98,7 @@ impl Project {
         &mut self,
         conn: &mut DbConnection,
         new_doc_id: Option<i64>,
-    ) -> Result<(), editoast_models::Error> {
+    ) -> Result<(), crate::Error> {
         conn.transaction(async move |mut conn| {
             let old_doc_id = self.image;
             self.image = new_doc_id;
@@ -114,7 +108,7 @@ impl Project {
             {
                 try_delete_document(&conn, old_doc_id).await?;
             }
-            Ok::<_, editoast_models::Error>(())
+            Ok::<_, crate::Error>(())
         })
         .await?;
         Ok(())
@@ -125,7 +119,7 @@ impl Project {
     pub async fn delete_and_prune_document(
         self,
         conn: &mut DbConnection,
-    ) -> Result<(), editoast_models::Error> {
+    ) -> Result<(), crate::Error> {
         conn.transaction(async move |mut conn| {
             if !self.delete(&mut conn).await? {
                 tracing::warn!(

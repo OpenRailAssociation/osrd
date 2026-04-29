@@ -281,7 +281,7 @@ impl StorageDriver for PgAuthDriver {
     }
 
     async fn infra_exists(&self, infra_id: i64) -> Result<bool, Self::Error> {
-        // TODO model_migration: use Infra once available in editoast_models
+        // TODO model_migration: use Infra once available in crate
         Ok(
             dsl::select(dsl::exists(infra::table.filter(infra::id.eq(infra_id))))
                 .get_result::<bool>(self.pool.get().await?.write().await.deref_mut())

@@ -198,7 +198,7 @@ mod tests {
 
     #[derive(Debug, thiserror::Error)]
     #[error("oh no {0}")]
-    struct DocError(#[from] editoast_models::Error);
+    struct DocError(#[from] crate::Error);
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_batch() {

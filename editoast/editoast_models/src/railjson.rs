@@ -17,7 +17,7 @@ pub enum RailJsonError {
     UnsupportedVersion { actual: String, expected: String },
     #[error(transparent)]
     #[from(forward)]
-    Database(editoast_models::Error),
+    Database(crate::Error),
 }
 
 /// Inserts the content of a RailJson object into the database

@@ -43,23 +43,20 @@ pub enum Error {
     NotFound { study_id: i64 },
     #[error(transparent)]
     #[from(forward)]
-    Database(editoast_models::Error),
+    Database(crate::Error),
 }
 
 impl Study {
     pub async fn update_last_modified(
         &mut self,
         conn: &mut DbConnection,
-    ) -> Result<(), editoast_models::Error> {
+    ) -> Result<(), crate::Error> {
         self.last_modification = Utc::now();
         self.save(conn).await?;
         Ok(())
     }
 
-    pub async fn scenarios_count(
-        &self,
-        conn: &mut DbConnection,
-    ) -> Result<u64, editoast_models::Error> {
+    pub async fn scenarios_count(&self, conn: &mut DbConnection) -> Result<u64, crate::Error> {
         let study_id = self.id;
         let count = Scenario::count(
             conn,

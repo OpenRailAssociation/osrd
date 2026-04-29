@@ -3,7 +3,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use editoast_models::tags::Tags;
+use crate::tags::Tags;
 
 use crate as editoast_models;
 

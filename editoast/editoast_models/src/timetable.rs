@@ -91,7 +91,7 @@ impl Timetable {
         timetable_id: i64,
         train_schedule_set_ids: HashSet<i64>,
         conn: &mut DbConnection,
-    ) -> Result<(), editoast_models::Error> {
+    ) -> Result<(), crate::Error> {
         use crate::prelude::*;
         use database::tables::timetable_train_schedule_set::dsl;
 

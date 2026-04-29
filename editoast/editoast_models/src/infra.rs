@@ -99,10 +99,7 @@ impl Infra {
             .collect()
     }
 
-    pub async fn bump_version(
-        &mut self,
-        conn: &mut DbConnection,
-    ) -> Result<(), editoast_models::Error> {
+    pub async fn bump_version(&mut self, conn: &mut DbConnection) -> Result<(), crate::Error> {
         self.version += 1;
         self.modified = Utc::now();
         self.save(conn).await
@@ -124,7 +121,7 @@ impl Infra {
         &self,
         conn: &mut DbConnection,
         new_name: String,
-    ) -> Result<Infra, editoast_models::Error> {
+    ) -> Result<Infra, crate::Error> {
         conn.clone().transaction(|conn| Box::pin(async move {
             // Duplicate infra shell
             let now = Utc::now();
@@ -228,7 +225,7 @@ impl Infra {
     pub async fn fast_delete_static(
         conn: DbConnection,
         infra_id: i64,
-    ) -> Result<bool, editoast_models::Error> {
+    ) -> Result<bool, crate::Error> {
         use database::tables::infra_object_track_section::dsl as track_section_dsl;
         use database::tables::search_track::dsl as search_track_dsl;
 

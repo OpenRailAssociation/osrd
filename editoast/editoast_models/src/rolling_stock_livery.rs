@@ -48,7 +48,7 @@ impl RollingStockLivery {
     pub async fn delete_with_compound_image(
         &self,
         conn: &mut DbConnection,
-    ) -> Result<bool, editoast_models::Error> {
+    ) -> Result<bool, crate::Error> {
         let livery = RollingStockLivery::delete_static(conn, self.id).await?;
         if let Some(image_id) = self.compound_image_id {
             let doc_delete_result = Document::delete_static(conn, image_id).await?;
@@ -68,14 +68,14 @@ pub mod tests {
     async fn create_delete_rolling_stock_livery() {
         let db_pool = DbConnectionPoolV2::for_tests();
 
-        let image = editoast_models::Document::changeset()
+        let image = crate::Document::changeset()
             .content_type("text/fake_data".into())
             .data(vec![])
             .create(&mut db_pool.get_ok())
             .await
             .expect("Failed to create document");
 
-        let rs = Changeset::<editoast_models::rolling_stock::RollingStock>::from(
+        let rs = Changeset::<crate::rolling_stock::RollingStock>::from(
             schemas::fixtures::simple_rolling_stock(),
         )
         .name("test_create_delete_rolling_stock_livery".into())

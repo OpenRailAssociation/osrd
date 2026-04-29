@@ -46,7 +46,7 @@ pub enum Error {
     NotFound { scenario_id: i64 },
     #[error(transparent)]
     #[from(forward)]
-    Database(editoast_models::Error),
+    Database(crate::Error),
 }
 
 impl Scenario {
@@ -73,7 +73,7 @@ impl Scenario {
     pub async fn update_last_modified(
         &mut self,
         conn: &mut DbConnection,
-    ) -> Result<(), editoast_models::Error> {
+    ) -> Result<(), crate::Error> {
         self.last_modification = Utc::now();
         self.save(conn).await?;
         Ok(())

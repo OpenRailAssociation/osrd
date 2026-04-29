@@ -91,7 +91,7 @@ impl StdcmSearchEnvironment {
 
     /// Delete all existing search environments.
     #[cfg(any(test, feature = "testing"))]
-    pub async fn delete_all(conn: &mut DbConnection) -> Result<(), editoast_models::Error> {
+    pub async fn delete_all(conn: &mut DbConnection) -> Result<(), crate::Error> {
         use database::tables::stdcm_search_environment::dsl::*;
         diesel::delete(stdcm_search_environment)
             .execute(conn.write().await.deref_mut())
