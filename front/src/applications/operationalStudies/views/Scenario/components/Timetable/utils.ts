@@ -18,7 +18,7 @@ import type { Duration } from 'utils/duration';
 import { specialCodeDictionary, TRAIN_MAIN_CATEGORY_CLASS } from './consts';
 
 /** Filter train  schedules by their names and labels */
-export const keepItem = (name: string | undefined, labels: string[], searchString: string) => {
+export const keepTrain = (name: string | undefined, labels: string[], searchString: string) => {
   if (!searchString) return true;
   if (!name) return false;
   const isNameFilterInTimetable = name.toLowerCase().includes(searchString.toLowerCase());
