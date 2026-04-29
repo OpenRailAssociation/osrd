@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { Alert, Stop, X } from '@osrd-project/ui-icons';
+import { Alert, Blocked, X } from '@osrd-project/ui-icons';
 
 type AlertType = 'warning' | 'error';
 
@@ -12,7 +12,7 @@ type AlertBoxProps = {
 
 const iconByType = {
   warning: <Alert variant="fill" size="lg" className="alert-box-icon warning" />,
-  error: <Stop size="lg" className="alert-box-icon error" />,
+  error: <Blocked size="lg" variant="fill" className="alert-box-icon error" />,
 };
 
 const AlertBox = ({ type = 'warning', message, closeable }: AlertBoxProps) => {
