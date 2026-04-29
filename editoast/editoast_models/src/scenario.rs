@@ -18,8 +18,6 @@ use crate::study::Study;
 use crate::tags::Tags;
 use crate::timetable::Timetable;
 
-use crate as editoast_models;
-
 #[derive(Debug, Clone, Model, Deserialize, Serialize, ToSchema)]
 #[model(table = database::tables::scenario)]
 #[model(gen(ops = crud, list))]

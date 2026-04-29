@@ -11,8 +11,6 @@ use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
 use itertools::Itertools as _;
 
-use crate as editoast_models; // HACK: remove after all models are in this crate
-
 #[derive(Debug, Clone, PartialEq, Eq, Model)]
 #[model(table = database::tables::authn_user)]
 #[model(gen(ops = rd, batch_ops = r, list))]

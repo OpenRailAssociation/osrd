@@ -6,8 +6,6 @@ use editoast_derive::Model;
 use crate::Document;
 use crate::prelude::*;
 
-use crate as editoast_models;
-
 #[cfg(test)]
 use serde::Deserialize;
 

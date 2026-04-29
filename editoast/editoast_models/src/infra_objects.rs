@@ -10,7 +10,6 @@ use database::DbConnection;
 use database::tables::*;
 use schemas::primitives::ObjectType;
 
-use crate as editoast_models;
 pub trait ModelBackedSchema: Sized {
     type Model: SchemaModel + Into<Self>;
 }

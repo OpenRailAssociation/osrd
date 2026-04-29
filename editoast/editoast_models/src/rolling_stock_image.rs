@@ -6,8 +6,6 @@
 use editoast_derive::Model;
 use serde::Serialize;
 
-use crate as editoast_models; // HACK: remove after all models are in this crate
-
 #[derive(Debug, Clone, Serialize, Model)]
 #[model(table = database::tables::rolling_stock_separate_image)]
 #[model(gen(ops = c))]

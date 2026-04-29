@@ -13,7 +13,6 @@ use std::ops::DerefMut;
 
 use database::DbConnection;
 
-use crate as editoast_models;
 use crate::timetable_train_schedule_set::TimetableTrainScheduleSet;
 
 #[derive(Debug, Default, Clone, Model)]

@@ -11,8 +11,6 @@ use crate::prelude::*;
 use crate::study::Study;
 use crate::tags::Tags;
 
-use crate as editoast_models;
-
 #[derive(Clone, Debug, Serialize, Deserialize, Model, ToSchema, PartialEq)]
 #[model(table = database::tables::project)]
 #[model(gen(ops = crud, list))]

@@ -10,8 +10,6 @@ use editoast_derive::Model;
 
 use crate::prelude::*;
 
-use crate as editoast_models;
-
 #[derive(Deserialize, Serialize, ToSchema, Debug, Clone, PartialEq, Model)]
 #[model(table = database::tables::train_schedule_set)]
 #[model(gen(ops = crud, batch_ops = crud, list))]

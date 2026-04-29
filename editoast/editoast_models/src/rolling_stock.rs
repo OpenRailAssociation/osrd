@@ -21,7 +21,6 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate as editoast_models;
 use crate::prelude::*;
 
 mod schedules_from_rolling_stock;

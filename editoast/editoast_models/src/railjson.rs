@@ -9,8 +9,6 @@ use database::DbConnection;
 
 use super::Infra;
 
-use crate as editoast_models;
-
 #[derive(Debug, derive_more::From, thiserror::Error, PartialEq)]
 pub enum RailJsonError {
     #[error("Unsupported railjson version '{actual}'. Should be {expected}.")]

@@ -5,8 +5,6 @@ use utoipa::ToSchema;
 
 use crate::tags::Tags;
 
-use crate as editoast_models;
-
 #[derive(Clone, Debug, Serialize, Deserialize, Model, ToSchema, PartialEq)]
 #[model(table = database::tables::macro_node)]
 #[model(gen(ops = crud, batch_ops = c, list))]

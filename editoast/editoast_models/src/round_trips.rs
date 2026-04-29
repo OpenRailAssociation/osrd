@@ -7,8 +7,6 @@ use itertools::Itertools;
 
 use crate::pagination::load_for_pagination;
 
-use crate as editoast_models;
-
 #[derive(Clone, Debug, Model)]
 #[model(row(derive(QueryableByName)))]
 #[model(table = database::tables::train_schedule_round_trips)]

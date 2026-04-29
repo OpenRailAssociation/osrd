@@ -1,4 +1,3 @@
-use crate as editoast_models; // HACK: remove after all models are in this crate
 use editoast_derive::Model;
 use serde::Deserialize;
 use serde::Serialize;
