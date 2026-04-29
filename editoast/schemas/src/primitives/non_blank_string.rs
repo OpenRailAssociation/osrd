@@ -117,6 +117,12 @@ impl PartialEq<NonBlankString> for &str {
     }
 }
 
+impl PartialEq<NonBlankString> for String {
+    fn eq(&self, other: &NonBlankString) -> bool {
+        self.as_str().eq(other.as_ref())
+    }
+}
+
 impl utoipa::PartialSchema for NonBlankString {
     fn schema() -> RefOr<Schema> {
         ObjectBuilder::new()
