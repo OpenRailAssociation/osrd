@@ -23,7 +23,7 @@ def model_dump(model: BaseModel) -> MutableMapping[str, Any]:
     if hasattr(model, "model_dump"):
         # Use mode='json' to ensure all objects are converted to JSON-serializable types
         # This handles complex Pydantic types like DataType that aren't directly YAML-serializable
-        return model.model_dump(by_alias=True, exclude_none=True, mode='json')
+        return model.model_dump(by_alias=True, exclude_none=True, mode="json")
     return model.dict(by_alias=True, exclude_none=True)
 
 
