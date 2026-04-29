@@ -5,17 +5,17 @@ import {
   IMPORTED_PACED_TRAIN_DETAILS,
 } from '../../assets/constants/operational-studies-const';
 import {
-  timetableItemProjectName,
-  timetableItemScenarioName,
-  timetableItemStudyName,
+  trainScheduleProjectName,
+  trainScheduleScenarioName,
+  trainScheduleStudyName,
 } from '../../assets/constants/project-const';
 import {
-  TOTAL_TIMETABLE_ITEMS,
+  TOTAL_TRAIN_SCHEDULES,
   TOTAL_PACED_TRAINS,
   TOTAL_UNIQUE_TRAINS,
   VALID_PACED_TRAINS,
   VALID_UNIQUE_TRAIN,
-} from '../../assets/constants/timetable-items-count';
+} from '../../assets/constants/train-schedules-count';
 import test from '../../page-object-fixture';
 import { waitForInfraStateToBeCached } from '../../utils';
 import { getInfra, getProject, getScenario, getStudy } from '../../utils/api-utils';
@@ -36,16 +36,16 @@ const frTranslations = {
 //       this workaround simply makes the viewport bigger so the whole list is rendered.
 test.use({ viewport: { width: 1920, height: 1920 } });
 
-test.describe('Timetable items management', { tag: ['@op', '@timetable-items'] }, () => {
+test.describe('Train schedules management', { tag: ['@op', '@train-schedules'] }, () => {
   let project: Project;
   let study: Study;
   let scenario: Scenario;
   let infra: Infra;
 
   test.beforeAll('Fetch project, study and scenario with unique train', async () => {
-    project = await getProject(timetableItemProjectName);
-    study = await getStudy(project.id, timetableItemStudyName);
-    scenario = await getScenario(study.id, timetableItemScenarioName);
+    project = await getProject(trainScheduleProjectName);
+    study = await getStudy(project.id, trainScheduleStudyName);
+    scenario = await getScenario(study.id, trainScheduleScenarioName);
     infra = await getInfra();
   });
 
@@ -61,11 +61,11 @@ test.describe('Timetable items management', { tag: ['@op', '@timetable-items'] }
 
   /** *************** Test 1 **************** */
   test(
-    'Loading timetable items and verifying simulation result for unique trains',
+    'Loading train schedules and verifying simulation result for unique trains',
     { tag: '@smoke' },
     async ({ scenarioTimetableSection }) => {
       await test.step('Verify counts then filter valid unique trains', async () => {
-        await scenarioTimetableSection.verifyTimetableItemsCount(TOTAL_TIMETABLE_ITEMS);
+        await scenarioTimetableSection.verifyTrainSchedulesCount(TOTAL_TRAIN_SCHEDULES);
         await scenarioTimetableSection.filterTrainTypeAndVerifyTrainCount(
           'Unique train',
           TOTAL_UNIQUE_TRAINS
@@ -84,7 +84,7 @@ test.describe('Timetable items management', { tag: ['@op', '@timetable-items'] }
   );
 
   /** *************** Test 2 **************** */
-  test('Loading timetable items and verifying simulation result for paced trains', async ({
+  test('Loading train schedules and verifying simulation result for paced trains', async ({
     scenarioTimetableSection,
   }) => {
     test.slow(); // Verifying all occurrences of paced trains can take some time, this test will be reworked later to optimize it
@@ -107,7 +107,7 @@ test.describe('Timetable items management', { tag: ['@op', '@timetable-items'] }
   });
 
   /** *************** Test 3 **************** */
-  test('Loading timetable items and verifying paced trains display', async ({
+  test('Loading train schedules and verifying paced trains display', async ({
     scenarioTimetableSection,
     pacedTrainSection,
   }) => {

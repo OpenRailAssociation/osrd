@@ -209,9 +209,9 @@ class PacedTrainSection extends CommonPage {
     await train.hover({ position: { x: 5, y: 5 } }); // Hover near the left edge to avoid action buttons
 
     const actionButtons: Record<string, Locator> = {
-      projectItem: train.getByTestId('project-train'),
-      duplicateItem: train.getByTestId('duplicate-train'),
-      editItem: train.getByTestId('edit-train'),
+      projectTrain: train.getByTestId('project-train'),
+      duplicateTrain: train.getByTestId('duplicate-train'),
+      editTrain: train.getByTestId('edit-train'),
       deleteTrain: train.getByTestId('delete-train'),
     };
 
@@ -284,7 +284,7 @@ class PacedTrainSection extends CommonPage {
       trainIndex: index,
       trainType: 'paced-train',
     });
-    await actionButtons.duplicateItem.click();
+    await actionButtons.duplicateTrain.click();
     await this.collapsePacedTrainOccurrenceList(index);
   }
 
@@ -294,8 +294,8 @@ class PacedTrainSection extends CommonPage {
       trainIndex: index,
       trainType: 'paced-train',
     });
-    await expect(actionButtons.editItem).toBeVisible();
-    await actionButtons.editItem.click();
+    await expect(actionButtons.editTrain).toBeVisible();
+    await actionButtons.editTrain.click();
     await expect(this.manageTrainSchedulePage).toBeVisible();
   }
 
@@ -305,8 +305,8 @@ class PacedTrainSection extends CommonPage {
       trainIndex: index,
       trainType: 'paced-train',
     });
-    await expect(actionButtons.projectItem).toBeVisible();
-    await actionButtons.projectItem.click();
+    await expect(actionButtons.projectTrain).toBeVisible();
+    await actionButtons.projectTrain.click();
   }
 
   async deletePacedTrain(
@@ -314,8 +314,8 @@ class PacedTrainSection extends CommonPage {
     translations: TimetableFilterTranslations,
     pacedTrainData?: PacedTrainDetails
   ) {
-    const timetableItemToDelete = this.pacedTrainItem.nth(index);
-    await timetableItemToDelete.hover({ position: { x: 5, y: 5 } });
+    const trainScheduleToDelete = this.pacedTrainItem.nth(index);
+    await trainScheduleToDelete.hover({ position: { x: 5, y: 5 } });
     const pacedTrainActionButtons = await this.getActionButtonsLocators({
       trainIndex: index,
       trainType: 'paced-train',
@@ -330,7 +330,7 @@ class PacedTrainSection extends CommonPage {
 
       await this.verifyPacedTrainHasBeenDeleted(name, translations);
 
-      await expect(timetableItemToDelete).not.toHaveText(name);
+      await expect(trainScheduleToDelete).not.toHaveText(name);
     }
   }
 

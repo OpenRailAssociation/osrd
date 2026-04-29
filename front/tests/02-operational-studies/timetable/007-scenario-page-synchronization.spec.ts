@@ -1,8 +1,8 @@
 import type { Scenario, Project, Study, Infra, TrainSchedule } from 'common/api/osrdEditoastApi';
 
 import {
-  timetableItemProjectName,
-  timetableItemStudyName,
+  trainScheduleProjectName,
+  trainScheduleStudyName,
 } from '../../assets/constants/project-const';
 import test from '../../page-object-fixture';
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
@@ -47,10 +47,10 @@ test.describe('Scenario page synchronization', { tag: ['@op, @multi-tab-sync'] }
   let infra: Infra;
 
   test.beforeAll(
-    'Setup project, study, infra and create scenario with timetableItems',
+    'Setup project, study, infra and create scenario with trainSchedules',
     async () => {
-      project = await getProject(timetableItemProjectName);
-      study = await getStudy(project.id, timetableItemStudyName);
+      project = await getProject(trainScheduleProjectName);
+      study = await getStudy(project.id, trainScheduleStudyName);
       infra = await getInfra();
       const { scenario, trainScheduleSet } = await createScenario(
         generateUniqueName('scenario-page-synchronization'),
@@ -93,7 +93,7 @@ test.describe('Scenario page synchronization', { tag: ['@op, @multi-tab-sync'] }
     await test.step('Delete a paced train in first tab and verify counts', async () => {
       await page.bringToFront();
       await pacedTrainSection.deletePacedTrain(1, frTranslations);
-      await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
+      await scenarioTimetableSection.verifyTotalTrainSchedulesLabel(frTranslations, {
         totalPacedTrainCount: 1,
         totalUniqueTrainCount: 2,
       });
@@ -101,7 +101,7 @@ test.describe('Scenario page synchronization', { tag: ['@op, @multi-tab-sync'] }
 
     await test.step('Verify deletion is reflected in second tab', async () => {
       await secondPage.bringToFront();
-      await secondScenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
+      await secondScenarioTimetableSection.verifyTotalTrainSchedulesLabel(frTranslations, {
         totalPacedTrainCount: 1,
         totalUniqueTrainCount: 2,
       });
@@ -110,13 +110,13 @@ test.describe('Scenario page synchronization', { tag: ['@op, @multi-tab-sync'] }
     await test.step('Edit a unique train in second tab and verify the update', async () => {
       await secondScenarioTimetableSection.editTrainSchedule(1);
       await secondOperationalStudiesPage.setFormattedStartTime('2025-03-15T08:35:40');
-      await secondOperationalStudiesPage.submitTimetableItemEdit();
-      await secondScenarioTimetableSection.getTimetableItemArrivalTime('08:43', 1);
+      await secondOperationalStudiesPage.submitTrainScheduleEdit();
+      await secondScenarioTimetableSection.getTrainScheduleArrivalTime('08:43', 1);
     });
 
     await test.step('Confirm edit is synchronized back in first tab', async () => {
       await page.bringToFront();
-      await scenarioTimetableSection.getTimetableItemArrivalTime('08:43', 1);
+      await scenarioTimetableSection.getTrainScheduleArrivalTime('08:43', 1);
     });
 
     await test.step('Go to study page in first tab, verify train count, delete scenario', async () => {

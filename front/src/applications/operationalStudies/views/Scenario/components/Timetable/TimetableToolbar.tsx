@@ -131,7 +131,7 @@ const TimetableToolbar = ({
       {areInvalidTrainSchedules && (
         <div className="invalid-trains">
           <Alert size="sm" variant="fill" />
-          <span data-testid="invalid-timetable-item-message" className="invalid-trains-message">
+          <span data-testid="invalid-train-schedule-message" className="invalid-trains-message">
             {t('timetable.invalidTrains')}
           </span>
         </div>
@@ -203,7 +203,7 @@ const TimetableToolbar = ({
           />
           <button
             className="add-button"
-            data-testid="scenarios-add-timetable-item-button"
+            data-testid="scenarios-add-train-schedule-button"
             title={t('timetable.addTrainSchedule')}
             onClick={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.add)}
             type="button"

@@ -1,14 +1,14 @@
 import type { Scenario, Project, Study, Infra, TrainSchedule } from 'common/api/osrdEditoastApi';
 
 import {
-  timetableItemProjectName,
-  timetableItemStudyName,
+  trainScheduleProjectName,
+  trainScheduleStudyName,
 } from '../../assets/constants/project-const';
 import {
-  TOTAL_TIMETABLE_ITEMS,
+  TOTAL_TRAIN_SCHEDULES,
   TOTAL_PACED_TRAINS,
   TOTAL_UNIQUE_TRAINS,
-} from '../../assets/constants/timetable-items-count';
+} from '../../assets/constants/train-schedules-count';
 import test from '../../page-object-fixture';
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
 import { getInfra, getProject, getStudy } from '../../utils/api-utils';
@@ -30,20 +30,20 @@ const frTranslations = {
 
 const trains: TrainSchedule[] = readJsonFile('./tests/assets/trains/trains.json');
 
-test.describe('Timetable items multiselection', { tag: ['@op', '@timetable-items'] }, () => {
+test.describe('Train schedules multiselection', { tag: ['@op', '@train-schedules'] }, () => {
   let project: Project;
   let study: Study;
   let scenarioItems: Scenario;
   let infra: Infra;
 
   test.beforeAll(
-    'Setup project, study, infra and create scenario with timetableItems',
+    'Setup project, study, infra and create scenario with trainSchedules',
     async () => {
-      project = await getProject(timetableItemProjectName);
-      study = await getStudy(project.id, timetableItemStudyName);
+      project = await getProject(trainScheduleProjectName);
+      study = await getStudy(project.id, trainScheduleStudyName);
       infra = await getInfra();
       const { scenario, trainScheduleSet } = await createScenario(
-        generateUniqueName('timetable-item-scenario'),
+        generateUniqueName('train-schedule-scenario'),
         project.id,
         study.id,
         infra.id
@@ -66,9 +66,9 @@ test.describe('Timetable items multiselection', { tag: ['@op', '@timetable-items
   });
 
   /** *************** Test 1 **************** */
-  test('Select and delete all timetable items', async ({ scenarioTimetableSection }) => {
+  test('Select and delete all train schedules', async ({ scenarioTimetableSection }) => {
     await test.step('Verify initial totals', async () => {
-      await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
+      await scenarioTimetableSection.verifyTotalTrainSchedulesLabel(frTranslations, {
         totalPacedTrainCount: TOTAL_PACED_TRAINS,
         totalUniqueTrainCount: TOTAL_UNIQUE_TRAINS,
       });
@@ -81,13 +81,13 @@ test.describe('Timetable items multiselection', { tag: ['@op', '@timetable-items
       });
     });
 
-    await test.step('Delete all selected items', async () => {
+    await test.step('Delete all selected train schedules', async () => {
       await scenarioTimetableSection.deleteAllTrainSchedules();
     });
 
     await test.step('Verify deletion notifications', async () => {
       await scenarioTimetableSection.verifyAllTrainSchedulesHaveBeenDeleted(
-        TOTAL_TIMETABLE_ITEMS,
+        TOTAL_TRAIN_SCHEDULES,
         frTranslations
       );
     });

@@ -3,8 +3,8 @@ import { expect } from '@playwright/test';
 import type { Scenario, Project, Study, Infra, TrainSchedule } from 'common/api/osrdEditoastApi';
 
 import {
-  timetableItemProjectName,
-  timetableItemStudyName,
+  trainScheduleProjectName,
+  trainScheduleStudyName,
 } from '../../assets/constants/project-const';
 import {
   ADDED_EXCEPTION_MENU_BUTTONS,
@@ -68,8 +68,8 @@ test.describe('Space Time Diagram / Manchette', { tag: ['@op', '@manchette', '@s
   let infra: Infra;
 
   test.beforeAll('Fetch project, study and infrastructure', async () => {
-    project = await getProject(timetableItemProjectName);
-    study = await getStudy(project.id, timetableItemStudyName);
+    project = await getProject(trainScheduleProjectName);
+    study = await getStudy(project.id, trainScheduleStudyName);
     infra = await getInfra();
     const { scenario, trainScheduleSet } = await createScenario(
       generateUniqueName('std-manchette-scenario'),
@@ -100,7 +100,7 @@ test.describe('Space Time Diagram / Manchette', { tag: ['@op', '@manchette', '@s
     { tag: '@smoke' },
     async ({ scenarioTimetableSection, opSimulationResultPage, getManchetteComponent }) => {
       await test.step('Verify first unique train is selected', async () => {
-        await scenarioTimetableSection.verifyFirstTimetableItemIsSelected();
+        await scenarioTimetableSection.verifyFirstTrainScheduleIsSelected();
         await opSimulationResultPage.setTrainListVisible();
       });
       await test.step('Assert GET slider', async () => {

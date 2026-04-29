@@ -1,19 +1,19 @@
 import type { Scenario, Project, Study, Infra } from 'common/api/osrdEditoastApi';
 
 import {
-  timetableItemProjectName,
-  timetableItemScenarioName,
-  timetableItemStudyName,
+  trainScheduleProjectName,
+  trainScheduleScenarioName,
+  trainScheduleStudyName,
 } from '../../assets/constants/project-const';
 import {
   TOTAL_PACED_TRAINS,
   TOTAL_UNIQUE_TRAINS,
-} from '../../assets/constants/timetable-items-count';
+} from '../../assets/constants/train-schedules-count';
 import {
   EXPECTED_COUNTS,
   PACED_DETAILS,
   UNIQUE_TRAIN_DETAILS,
-} from '../../assets/constants/timetable-items-details';
+} from '../../assets/constants/train-schedules-details';
 import test from '../../page-object-fixture';
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
 import { getInfra, getProject, getScenario, getStudy } from '../../utils/api-utils';
@@ -46,9 +46,9 @@ test.describe(
     let downloadedFilePath: string;
 
     test.beforeAll('Fetch project, study and infrastructure', async () => {
-      project = await getProject(timetableItemProjectName);
-      study = await getStudy(project.id, timetableItemStudyName);
-      scenarioToExport = await getScenario(study.id, timetableItemScenarioName);
+      project = await getProject(trainScheduleProjectName);
+      study = await getStudy(project.id, trainScheduleStudyName);
+      scenarioToExport = await getScenario(study.id, trainScheduleScenarioName);
       infra = await getInfra();
     });
 
@@ -80,11 +80,11 @@ test.describe(
       'Verify timetable is exported and imported correctly',
       { tag: '@smoke' },
       async ({ page, importExportPage, trainScheduleDetailSection }, testInfo) => {
-        await test.step('Open scenario to export and verify initial timetable items count', async () => {
+        await test.step('Open scenario to export and verify initial train schedules count', async () => {
           await page.goto(
             `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioToExport.id}`
           );
-          await trainScheduleDetailSection.verifyTotalItemsLabel(frTranslations, {
+          await trainScheduleDetailSection.verifyTotalTrainSchedulesLabel(frTranslations, {
             totalPacedTrainCount: TOTAL_PACED_TRAINS,
             totalUniqueTrainCount: TOTAL_UNIQUE_TRAINS,
           });
@@ -117,7 +117,7 @@ test.describe(
         });
 
         await test.step('Verify train schedules count after import', async () => {
-          await trainScheduleDetailSection.verifyTotalItemsLabel(frTranslations, {
+          await trainScheduleDetailSection.verifyTotalTrainSchedulesLabel(frTranslations, {
             totalPacedTrainCount: TOTAL_PACED_TRAINS,
             totalUniqueTrainCount: TOTAL_UNIQUE_TRAINS,
           });
@@ -132,13 +132,13 @@ test.describe(
         await test.step('Import train schedules JSON and return to scenario', async () => {
           await importExportPage.openImportTrainScheduleUploadDialog();
           await importExportPage.uploadTrainScheduleFile(
-            './tests/assets/operation-studies/timetable-items.json',
+            './tests/assets/operation-studies/train-schedules.json',
             frTranslations.success
           );
         });
 
         await test.step('Verify train schedules count after import', async () => {
-          await importExportPage.verifyTotalItemsLabel(frTranslations, EXPECTED_COUNTS);
+          await importExportPage.verifyTotalTrainSchedulesLabel(frTranslations, EXPECTED_COUNTS);
         });
 
         await test.step('Verify details for valid imported paced trains', async () => {
@@ -151,7 +151,7 @@ test.describe(
         await test.step('Verify details for valid imported unique trains', async () => {
           await trainScheduleDetailSection.verifyUniqueTrainsDetails(UNIQUE_TRAIN_DETAILS);
         });
-        await test.step('Verify invalid items reasons', async () => {
+        await test.step('Verify invalid trains reasons', async () => {
           await trainScheduleDetailSection.verifyInvalidReasons([
             frTranslations.timetable.invalid.rolling_stock_not_found,
             frTranslations.timetable.invalid.incompatible_constraints,

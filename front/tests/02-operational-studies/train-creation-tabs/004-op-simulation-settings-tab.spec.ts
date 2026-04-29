@@ -92,7 +92,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
       await waitForInfraStateToBeCached(infra.id);
     });
     await test.step('Add a new unique train, set its properties and perform pathfinding', async () => {
-      await operationalStudiesPage.openTimetableItemForm();
+      await operationalStudiesPage.openTrainScheduleForm();
       await operationalStudiesPage.setTrainScheduleName(TRAIN_NAME);
       await rollingStockSelector.selectRollingStock(improbableRollingStockName);
       await operationalStudiesPage.setTrainScheduleStartTime(TRAIN_START_TIME);
@@ -142,7 +142,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
       await operationalStudiesPage.createTrainSchedule();
       await operationalStudiesPage.closeToastNotification();
       await operationalStudiesPage.returnSimulationResult();
-      await scenarioTimetableSection.getTimetableItemArrivalTime('11:48');
+      await scenarioTimetableSection.getTrainScheduleArrivalTime('11:48');
       await scenarioTimetableSection.verifyTrainColor(FREIGHT_TRAIN.color);
       await opSimulationResultPage.setTrainListVisible();
 
@@ -161,7 +161,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
       await scenarioTimetableSection.editTrainSchedule();
       await operationalStudiesPage.openSimulationSettingsTab();
       await simulationSettingsTab.deactivateElectricalProfile();
-      await operationalStudiesPage.submitTimetableItemEdit();
+      await operationalStudiesPage.submitTrainScheduleEdit();
       await opSimulationResultPage.setTrainListVisible();
 
       await operationalStudiesPage.verifyTimesStopsDataSheetVisibility();
@@ -173,7 +173,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
       }
       await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataElectricalProfileOFF);
       await opSimulationResultPage.setTrainListVisible(false);
-      await scenarioTimetableSection.getTimetableItemArrivalTime('11:48');
+      await scenarioTimetableSection.getTrainScheduleArrivalTime('11:48');
     });
   });
 
@@ -209,7 +209,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
       await operationalStudiesPage.createTrainSchedule();
       await operationalStudiesPage.closeToastNotification();
       await operationalStudiesPage.returnSimulationResult();
-      await scenarioTimetableSection.getTimetableItemArrivalTime('11:49');
+      await scenarioTimetableSection.getTrainScheduleArrivalTime('11:49');
       await opSimulationResultPage.setTrainListVisible();
 
       await operationalStudiesPage.verifyTimesStopsDataSheetVisibility();
@@ -227,7 +227,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
       await scenarioTimetableSection.editTrainSchedule();
       await operationalStudiesPage.openSimulationSettingsTab();
       await simulationSettingsTab.selectSpeedLimitTagOption('__PLACEHOLDER__');
-      await operationalStudiesPage.submitTimetableItemEdit();
+      await operationalStudiesPage.submitTrainScheduleEdit();
       await opSimulationResultPage.setTrainListVisible();
 
       await operationalStudiesPage.verifyTimesStopsDataSheetVisibility();
@@ -239,7 +239,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
       }
       await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataCodeCompoOFF);
       await opSimulationResultPage.setTrainListVisible(false);
-      await scenarioTimetableSection.getTimetableItemArrivalTime('11:48');
+      await scenarioTimetableSection.getTrainScheduleArrivalTime('11:48');
     });
   });
 
@@ -285,7 +285,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
       await operationalStudiesPage.createTrainSchedule();
       await operationalStudiesPage.closeToastNotification();
       await operationalStudiesPage.returnSimulationResult();
-      await scenarioTimetableSection.getTimetableItemArrivalTime('11:51');
+      await scenarioTimetableSection.getTrainScheduleArrivalTime('11:51');
       await opSimulationResultPage.setTrainListVisible();
 
       await operationalStudiesPage.verifyTimesStopsDataSheetVisibility();
@@ -303,7 +303,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
       await scenarioTimetableSection.editTrainSchedule();
       await operationalStudiesPage.openSimulationSettingsTab();
       await simulationSettingsTab.activateMarecoMargin();
-      await operationalStudiesPage.submitTimetableItemEdit();
+      await operationalStudiesPage.submitTrainScheduleEdit();
       await opSimulationResultPage.setTrainListVisible();
 
       await operationalStudiesPage.verifyTimesStopsDataSheetVisibility();
@@ -315,7 +315,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
       }
       await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataMarecoMargin);
       await opSimulationResultPage.setTrainListVisible(false);
-      await scenarioTimetableSection.getTimetableItemArrivalTime('11:51');
+      await scenarioTimetableSection.getTrainScheduleArrivalTime('11:51');
     });
   });
 
@@ -376,7 +376,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
         }
         await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataForAllSettings);
         await opSimulationResultPage.setTrainListVisible(false);
-        await scenarioTimetableSection.getTimetableItemArrivalTime('11:50');
+        await scenarioTimetableSection.getTrainScheduleArrivalTime('11:50');
       });
     }
   );

@@ -313,7 +313,7 @@ const PacedTrainItem = ({
 
   const content = (
     <div
-      data-testid="scenario-timetable-item"
+      data-testid="scenario-train-schedule"
       data-train-id={pacedTrain.id}
       className={cx('scenario-timetable-train paced-train', {
         modified: isOnEdit,

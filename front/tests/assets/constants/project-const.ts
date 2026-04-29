@@ -6,11 +6,11 @@ export const fastRollingStockName = 'FAST_RS_E2E';
 export const towedRollingStockName = 'TOWED-TEST-E2E';
 export const improbableRollingStockName = 'IMPROBABLE_RS_E2E';
 export const infrastructureName = 'small_infra_test_e2e';
-export const timetableItemProjectName = 'TI_project_test_e2e';
+export const trainScheduleProjectName = 'TI_project_test_e2e';
 export const globalProjectName = 'project_test_e2e';
 export const globalStudyName = 'study_test_e2e';
-export const timetableItemStudyName = 'TI_study_test_e2e';
-export const timetableItemScenarioName = 'TI_scenario_test_e2e';
+export const trainScheduleStudyName = 'TI_study_test_e2e';
+export const trainScheduleScenarioName = 'TI_scenario_test_e2e';
 
 const ROLLING_STOCK_NAMES = [
   electricRollingStockName,

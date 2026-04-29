@@ -20,7 +20,7 @@ import {
   DUPLICATED_PACED_TRAIN_INDEX,
   TOTAL_PACED_TRAINS,
   TOTAL_PACED_TRAINS_WITH_DUPLICATE,
-} from '../../assets/constants/timetable-items-count';
+} from '../../assets/constants/train-schedules-count';
 import { FREIGHT_TRAIN, HIGH_SPEED_TRAIN_COLOR } from '../../assets/operation-studies/train-const';
 import test from '../../page-object-fixture';
 import { waitForInfraStateToBeCached } from '../../utils';
@@ -97,8 +97,8 @@ test.describe('Paced train management', { tag: ['@op', '@paced-trains'] }, () =>
 
   /** *************** Test 1 **************** */
   test('Verify default behaviors with paced train mode', async ({ operationalStudiesPage }) => {
-    await test.step('Open timetable item form', async () => {
-      await operationalStudiesPage.openTimetableItemForm();
+    await test.step('Open train schedule form', async () => {
+      await operationalStudiesPage.openTrainScheduleForm();
     });
 
     await test.step('Verify default inputs/buttons', async () => {
@@ -133,8 +133,8 @@ test.describe('Paced train management', { tag: ['@op', '@paced-trains'] }, () =>
       opSimulationResultPage,
       timeAndStopSimulationOutputs,
     }) => {
-      await test.step('Open timetable item form', async () => {
-        await operationalStudiesPage.openTimetableItemForm();
+      await test.step('Open train schedule form', async () => {
+        await operationalStudiesPage.openTrainScheduleForm();
       });
 
       await test.step('Fill paced train inputs', async () => {
@@ -176,7 +176,7 @@ test.describe('Paced train management', { tag: ['@op', '@paced-trains'] }, () =>
       });
 
       await test.step('Verify list contains exactly one paced train', async () => {
-        await scenarioTimetableSection.verifyTimetableItemsCount(1);
+        await scenarioTimetableSection.verifyTrainSchedulesCount(1);
       });
 
       await test.step('Verify paced train is selected when clicked', async () => {
@@ -220,7 +220,7 @@ test.describe('Paced train management', { tag: ['@op', '@paced-trains'] }, () =>
     });
 
     await test.step('Verify initial counters', async () => {
-      await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
+      await scenarioTimetableSection.verifyTotalTrainSchedulesLabel(frTranslations, {
         totalPacedTrainCount: TOTAL_PACED_TRAINS,
         totalUniqueTrainCount: 0,
       });
@@ -234,7 +234,7 @@ test.describe('Paced train management', { tag: ['@op', '@paced-trains'] }, () =>
     });
 
     await test.step('Verify counters increased by one', async () => {
-      await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
+      await scenarioTimetableSection.verifyTotalTrainSchedulesLabel(frTranslations, {
         totalPacedTrainCount: TOTAL_PACED_TRAINS + 1,
         totalUniqueTrainCount: 0,
       });
@@ -249,7 +249,7 @@ test.describe('Paced train management', { tag: ['@op', '@paced-trains'] }, () =>
     });
 
     await test.step('Verify global counter with duplicate', async () => {
-      await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
+      await scenarioTimetableSection.verifyTotalTrainSchedulesLabel(frTranslations, {
         totalPacedTrainCount: TOTAL_PACED_TRAINS_WITH_DUPLICATE,
         totalUniqueTrainCount: 0,
       });
@@ -261,7 +261,7 @@ test.describe('Paced train management', { tag: ['@op', '@paced-trains'] }, () =>
         frTranslations,
         DUPLICATED_PACED_TRAIN_DETAILS
       );
-      await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
+      await scenarioTimetableSection.verifyTotalTrainSchedulesLabel(frTranslations, {
         totalPacedTrainCount: TOTAL_PACED_TRAINS,
         totalUniqueTrainCount: 0,
       });

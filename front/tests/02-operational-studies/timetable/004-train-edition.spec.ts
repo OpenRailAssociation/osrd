@@ -1,8 +1,8 @@
 import type { Scenario, Project, Study, Infra, TrainSchedule } from 'common/api/osrdEditoastApi';
 
 import {
-  timetableItemProjectName,
-  timetableItemStudyName,
+  trainScheduleProjectName,
+  trainScheduleStudyName,
 } from '../../assets/constants/project-const';
 import { FREIGHT_TRAIN, HIGH_SPEED_TRAIN_COLOR } from '../../assets/operation-studies/train-const';
 import {
@@ -48,8 +48,8 @@ test.describe('Train edition', { tag: ['@op', '@paced-trains', '@unique-trains']
   let infra: Infra;
 
   test.beforeAll('Fetch project, study and infrastructure', async () => {
-    project = await getProject(timetableItemProjectName);
-    study = await getStudy(project.id, timetableItemStudyName);
+    project = await getProject(trainScheduleProjectName);
+    study = await getStudy(project.id, trainScheduleStudyName);
     infra = await getInfra();
   });
 
@@ -98,12 +98,12 @@ test.describe('Train edition', { tag: ['@op', '@paced-trains', '@unique-trains']
     });
 
     await test.step('Save paced train and verify toast notification', async () => {
-      await operationalStudiesPage.updateTimetableItem(frTranslations.updatePacedTrain);
+      await operationalStudiesPage.updateTrainSchedule(frTranslations.updatePacedTrain);
       await operationalStudiesPage.checkToastHasBeenLaunched(frTranslations.pacedTrainUpdated);
     });
 
     await test.step('Verify timetable labels and paced train details', async () => {
-      await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
+      await scenarioTimetableSection.verifyTotalTrainSchedulesLabel(frTranslations, {
         totalPacedTrainCount: 1,
         totalUniqueTrainCount: 1,
       });
@@ -138,7 +138,7 @@ test.describe('Train edition', { tag: ['@op', '@paced-trains', '@unique-trains']
     });
 
     await test.step('Verify timetable labels after conversion', async () => {
-      await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
+      await scenarioTimetableSection.verifyTotalTrainSchedulesLabel(frTranslations, {
         totalPacedTrainCount: 0,
         totalUniqueTrainCount: 2,
       });
@@ -160,7 +160,7 @@ test.describe('Train edition', { tag: ['@op', '@paced-trains', '@unique-trains']
     });
 
     await test.step('Verify timetable labels after conversion', async () => {
-      await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
+      await scenarioTimetableSection.verifyTotalTrainSchedulesLabel(frTranslations, {
         totalPacedTrainCount: 2,
         totalUniqueTrainCount: 0,
       });

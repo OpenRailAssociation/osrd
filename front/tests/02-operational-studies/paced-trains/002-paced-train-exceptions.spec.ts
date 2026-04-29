@@ -5,8 +5,8 @@ import type { Scenario, Project, Study, Infra, TrainSchedule } from 'common/api/
 import {
   fastRollingStockName,
   slowRollingStockName,
-  timetableItemProjectName,
-  timetableItemStudyName,
+  trainScheduleProjectName,
+  trainScheduleStudyName,
 } from '../../assets/constants/project-const';
 import { ADDED_EXCEPTION_MENU_BUTTONS } from '../../assets/paced-train/const';
 import test from '../../page-object-fixture';
@@ -49,8 +49,8 @@ test.describe('Paced train exceptions', { tag: ['@op', '@paced-trains', '@except
   let scenarioItems: Scenario;
 
   test.beforeAll('Setup project, study, infra and create scenario with paced trains', async () => {
-    project = await getProject(timetableItemProjectName);
-    study = await getStudy(project.id, timetableItemStudyName);
+    project = await getProject(trainScheduleProjectName);
+    study = await getStudy(project.id, trainScheduleStudyName);
     infra = await getInfra();
     const { scenario, trainScheduleSet } = await createScenario(
       generateUniqueName('paced-trains-scenario'),
@@ -117,7 +117,7 @@ test.describe('Paced train exceptions', { tag: ['@op', '@paced-trains', '@except
 
       await test.step('Update departure time and submit edit', async () => {
         await operationalStudiesPage.setTrainScheduleStartTime('12:00');
-        await operationalStudiesPage.submitTimetableItemEdit();
+        await operationalStudiesPage.submitTrainScheduleEdit();
         await operationalStudiesPage.checkToastHasBeenLaunched(
           frTranslations.timetable.pacedTrainUpdated
         );
@@ -232,7 +232,7 @@ test.describe('Paced train exceptions', { tag: ['@op', '@paced-trains', '@except
     });
 
     await test.step('Submit edit and verify the occurrences count (5)', async () => {
-      await operationalStudiesPage.submitTimetableItemEdit();
+      await operationalStudiesPage.submitTrainScheduleEdit();
       await pacedTrainSection.expectOccurrencesListLength(5);
       await operationalStudiesPage.checkToastHasBeenLaunched(
         frTranslations.timetable.pacedTrainUpdated

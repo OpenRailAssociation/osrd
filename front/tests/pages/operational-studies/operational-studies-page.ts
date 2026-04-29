@@ -11,7 +11,7 @@ import type { ManageTrainScheduleTranslations, PacedTrainDetails } from '../../u
 import ScenarioTimetableSection from './scenario-timetable-section';
 
 class OperationalStudiesPage extends ScenarioTimetableSection {
-  private readonly addTimetableItemButton: Locator;
+  private readonly addTrainScheduleButton: Locator;
   private readonly manageTrainSchedulePage: Locator;
   private readonly rollingStockTab: Locator;
   private readonly routeTab: Locator;
@@ -40,7 +40,7 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
   constructor(page: Page) {
     super(page);
     this.resultPathfindingDistance = page.getByTestId('result-pathfinding-distance');
-    this.addTimetableItemButton = page.getByTestId('scenarios-add-timetable-item-button');
+    this.addTrainScheduleButton = page.getByTestId('scenarios-add-train-schedule-button');
     this.rollingStockTab = page.getByTestId('tab-rollingstock');
     this.routeTab = page.getByTestId('tab-pathfinding');
     this.simulationSettingsTab = page.getByTestId('tab-simulation-settings');
@@ -66,9 +66,9 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
     this.categorySelector = page.getByTestId('category-selector-select');
   }
 
-  // Click on the button to add a scenario timetable item.
-  async openTimetableItemForm() {
-    await this.addTimetableItemButton.click();
+  // Click on the button to add a scenario train schedule.
+  async openTrainScheduleForm() {
+    await this.addTrainScheduleButton.click();
     await expect(this.manageTrainSchedulePage).toBeVisible();
   }
 
@@ -120,7 +120,7 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
     await this.returnSimulationResultButton.click();
   }
 
-  async submitTimetableItemEdit() {
+  async submitTrainScheduleEdit() {
     await this.editTrainScheduleButton.click();
     await expect(this.returnSimulationResultButton).not.toBeVisible();
     await this.closeToastNotification();
@@ -159,11 +159,11 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
     await expect(this.trainScheduleTagsInput).toBeVisible();
   }
 
-  async updateTimetableItem(expectedButtonText?: string) {
+  async updateTrainSchedule(expectedButtonText?: string) {
     if (expectedButtonText) {
       await expect(this.editTrainScheduleButton).toHaveText(expectedButtonText);
     }
-    await this.submitTimetableItemEdit();
+    await this.submitTrainScheduleEdit();
   }
 
   async turnUniqueTrainIntoPacedTrain(translations: ManageTrainScheduleTranslations) {
@@ -177,7 +177,7 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
       translations.turnUniqueTrainIntoPacedTrain
     );
 
-    await this.submitTimetableItemEdit();
+    await this.submitTrainScheduleEdit();
   }
 
   async turnPacedTrainIntoUniqueTrain(translations: ManageTrainScheduleTranslations) {
@@ -191,7 +191,7 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
       translations.turnPacedTrainIntoUniqueTrain
     );
 
-    await this.submitTimetableItemEdit();
+    await this.submitTrainScheduleEdit();
   }
 
   async checkTabs() {

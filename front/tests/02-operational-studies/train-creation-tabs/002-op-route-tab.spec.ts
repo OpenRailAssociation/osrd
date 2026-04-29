@@ -28,7 +28,7 @@ test.describe('Route tab', { tag: ['@op', '@route-tab'] }, () => {
         `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
       );
       await waitForInfraStateToBeCached(infra.id);
-      await operationalStudiesPage.openTimetableItemForm();
+      await operationalStudiesPage.openTrainScheduleForm();
       await operationalStudiesPage.verifyTabWarningPresence();
     });
 

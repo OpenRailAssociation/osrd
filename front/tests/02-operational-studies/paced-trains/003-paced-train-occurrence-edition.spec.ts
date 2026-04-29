@@ -2,8 +2,8 @@ import type { Scenario, Project, Study, Infra, TrainSchedule } from 'common/api/
 
 import {
   electricRollingStockName,
-  timetableItemProjectName,
-  timetableItemStudyName,
+  trainScheduleProjectName,
+  trainScheduleStudyName,
 } from '../../assets/constants/project-const';
 import {
   ADDED_EXCEPTION_MENU_BUTTONS,
@@ -62,8 +62,8 @@ test.describe(
     test.beforeAll(
       'Setup project, study, infra and create scenario with paced trains',
       async () => {
-        project = await getProject(timetableItemProjectName);
-        study = await getStudy(project.id, timetableItemStudyName);
+        project = await getProject(trainScheduleProjectName);
+        study = await getStudy(project.id, trainScheduleStudyName);
         infra = await getInfra();
         const { scenario, trainScheduleSet } = await createScenario(
           generateUniqueName('paced-trains-scenario'),
@@ -106,7 +106,7 @@ test.describe(
       await test.step('Edit occurrence name and save', async () => {
         await pacedTrainSection.clickOccurrenceMenuButton('edit');
         await operationalStudiesPage.setTrainScheduleName(EDITED_OCCURRENCE_NAME);
-        await operationalStudiesPage.updateTimetableItem(
+        await operationalStudiesPage.updateTrainSchedule(
           frTranslations.pacedTrains.updatePacedTrain
         );
         await operationalStudiesPage.checkToastHasBeenLaunched(
@@ -209,7 +209,7 @@ test.describe(
         await operationalStudiesPage.openSimulationSettingsTab();
         await simulationSettingsTab.selectSpeedLimitTagOption('MA100');
 
-        await operationalStudiesPage.submitTimetableItemEdit();
+        await operationalStudiesPage.submitTrainScheduleEdit();
         await operationalStudiesPage.checkToastHasBeenLaunched(
           frTranslations.timetable.pacedTrainUpdated
         );
