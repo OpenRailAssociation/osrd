@@ -8,13 +8,15 @@ import type {
   TrainSchedulesByTrainScheduleSet,
   TrainScheduleSetManager,
 } from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
-import type { CatalogEntry } from 'common/api/osrdEditoastApi';
+import type { CatalogEntry,
+  TrainScheduleResponse,
+} from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { isPacedTrainWithDetails } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { PacedTrainWithDetails, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
-import type { OccurrenceId, TimetableItem, TrainScheduleToEditData } from 'reducers/osrdconf/types';
+import type { OccurrenceId, TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import {
   getSelectedTrainId,
   getTrainIdUsedForProjection,
@@ -32,7 +34,7 @@ import UniqueTrainItem from './UniqueTrainItem';
 
 type TrainListProps = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
-  upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void;
+  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
   setSelectedTrainScheduleIds: React.Dispatch<React.SetStateAction<number[]>>;
   removeAndUnselectTrains: (trainIds: number[]) => void;

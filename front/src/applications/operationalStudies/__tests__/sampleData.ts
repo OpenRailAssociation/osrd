@@ -7,8 +7,7 @@ import type {
   ElectrificationValue,
   PositionData,
 } from 'applications/operationalStudies/types';
-import type { SimulationSummaryResult } from 'common/api/osrdEditoastApi';
-import type { TimetableItem } from 'reducers/osrdconf/types';
+import type { SimulationSummaryResult, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 
 export const pathLength = 4000;
 export const pathLengthLong = 6000;
@@ -350,7 +349,7 @@ export const trainSummaryNotHonored: Extract<SimulationSummaryResult, { status: 
   path_item_respect_margins: [true, true, true],
 };
 
-export const uniqueTrainHonored: TimetableItem = {
+export const uniqueTrainHonored: TrainScheduleResponse = {
   id: 95,
   train_schedule_set_id: 1000,
   train_name: 'normal',

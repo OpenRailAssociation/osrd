@@ -2,8 +2,7 @@ import type {
   PacedTrainFromJson,
   TimetableJsonPayload,
 } from 'applications/operationalStudies/types';
-import { type MacroNodeForm } from 'common/api/osrdEditoastApi';
-import type { TimetableItem } from 'reducers/osrdconf/types';
+import type { MacroNodeForm, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import type { AppDispatch } from 'store';
 
 import type { NetzgrafikDto, NGEEvent, NodeDto, LabelDto } from '../../NGE/types';
@@ -39,7 +38,7 @@ const handleLabelOperation = async ({
   infraId: number;
   state: MacroEditorState;
   dispatch: AppDispatch;
-  addUpsertedTrainSchedules: (trainSchedules: TimetableItem[]) => void;
+  addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   addDeletedTrainScheduleIds: (trainScheduleIds: number[]) => void;
 }) => {
   const { trainruns } = netzgrafikDto;
@@ -84,7 +83,7 @@ export const handleOperation = async ({
   infraId: number;
   state: MacroEditorState;
   dispatch: AppDispatch;
-  addUpsertedTrainSchedules: (trainSchedules: TimetableItem[]) => void;
+  addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   addDeletedTrainScheduleIds: (trainScheduleIds: number[]) => void;
 }) => {
   const { type } = event;

@@ -4,7 +4,11 @@ import { useSelector } from 'react-redux';
 
 import { updatePacedTrainExceptionsList } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/buildPacedTrainException';
 import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/formatTrainSchedulePayload';
-import type { PacedTrainException, TrainSchedule } from 'common/api/osrdEditoastApi';
+import type {
+  PacedTrainException,
+  TrainSchedule,
+  TrainScheduleResponse,
+} from 'common/api/osrdEditoastApi';
 import {
   findExceptionWithOccurrenceId,
   extractOccurrenceDetailsFromPacedTrain,
@@ -20,7 +24,7 @@ import type {
   PacedTrainWithPacedWithDetails,
   SimulatedException,
 } from 'modules/trainSchedule/types';
-import type { OccurrenceId, TimetableItem } from 'reducers/osrdconf/types';
+import type { OccurrenceId } from 'reducers/osrdconf/types';
 import { updateSelectedTrain, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
@@ -34,7 +38,7 @@ type OccurrenceActionsParams = {
     originalPacedTrain?: PacedTrainWithPacedWithDetails,
     occurrenceId?: OccurrenceId
   ) => void;
-  upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void;
+  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   timetableId: number;
 };
 

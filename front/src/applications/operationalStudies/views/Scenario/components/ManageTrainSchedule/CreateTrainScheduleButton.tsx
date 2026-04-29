@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
+import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import {
   createExceptions,
@@ -14,7 +15,6 @@ import {
   getOperationalStudiesConf,
   getAddedExceptions,
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import type { TimetableItem } from 'reducers/osrdconf/types';
 import { updateSelectedTrain } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
@@ -28,7 +28,7 @@ import {
 
 type CreateTrainScheduleButtonProps = {
   setIsWorking: (isWorking: boolean) => void;
-  upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void;
+  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   isPacedTrainMode: boolean;
 };
 
@@ -63,7 +63,7 @@ const CreateTrainScheduleButton = ({
         ? formatPacedTrainPayload(simulationConf, rollingStock!.name)
         : formatTrainSchedulePayload(simulationConf, rollingStock!.name);
 
-      const formattedNewTrainSchedule: TimetableItem = (
+      const formattedNewTrainSchedule: TrainScheduleResponse = (
         await createPacedTrains(dispatch, sandboxId, [newTrainSchedulePayload])
       )[0];
       dispatch(

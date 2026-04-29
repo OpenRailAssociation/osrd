@@ -7,10 +7,10 @@ import {
   type SearchResultItemOperationalPoint,
   type SubCategory,
   type TrainCategory,
+  type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import { isPacedTrain } from 'modules/trainSchedule/helpers/pacedTrain';
-import type { TimetableItem } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 
@@ -176,10 +176,10 @@ export const getFrequencyFromFrequencyId = (
 };
 
 /**
- * Get the associated TrainrunFrequency of a TimetableItem.
+ * Get the associated TrainrunFrequency of a TrainScheduleResponse.
  */
 export const getTrainrunFrequencyFromTimetableItem = (
-  timetableItem: TimetableItem,
+  timetableItem: TrainScheduleResponse,
   state: MacroEditorState
 ): TrainrunFrequency => {
   if (!isPacedTrain(timetableItem)) {

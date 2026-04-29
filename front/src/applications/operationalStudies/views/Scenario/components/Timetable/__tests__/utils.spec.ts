@@ -1,15 +1,16 @@
 import { describe, it, expect } from 'vitest';
 
-import type { RoundTrips } from 'common/api/osrdEditoastApi';
-import type { TimetableItem } from 'reducers/osrdconf/types';
+import type { RoundTrips,
+  TrainScheduleResponse,
+} from 'common/api/osrdEditoastApi';
 
 import { buildTimetableExportPayload } from '../utils';
 
-const buildPacedTrain = (id: number): TimetableItem =>
+const buildPacedTrain = (id: number): TrainScheduleResponse =>
   ({
     id,
     train_name: `Paced ${id}`,
-  }) as TimetableItem;
+  }) as TrainScheduleResponse;
 
 describe('buildTimetableExportPayload', () => {
   it('includes forced one-way round trips for selected paced trains', () => {

@@ -2,8 +2,10 @@ import type {
   PacedTrainResponseWithPaced,
   PacedTrainWithPaced,
 } from 'applications/operationalStudies/types';
-import type { TrainSchedule, PacedTrainException } from 'common/api/osrdEditoastApi';
-import type { OccurrenceId, PacedTrainId, TimetableItem } from 'reducers/osrdconf/types';
+import type { TrainSchedule, PacedTrainException,
+  TrainScheduleResponse,
+} from 'common/api/osrdEditoastApi';
+import type { OccurrenceId, PacedTrainId } from 'reducers/osrdconf/types';
 import { Duration, addDurationToDate } from 'utils/duration';
 import {
   extractEditoastIdFromPacedTrainId,
@@ -45,7 +47,7 @@ export const hasNoChangeGroups = (exception: PacedTrainException) =>
   CHANGE_GROUP_KEYS.every((key) => !(key in exception));
 
 export const isPacedTrain = (
-  timetableItem: TimetableItem
+  timetableItem: TrainScheduleResponse
 ): timetableItem is PacedTrainResponseWithPaced => !!timetableItem.paced;
 
 export const isPacedTrainWithDetails = (
@@ -170,7 +172,7 @@ export const getOccurrencesWorstStatus = (
 };
 
 export const getExceptionFromOccurrenceId = (
-  timetableItemsById: Map<number, TimetableItem>,
+  timetableItemsById: Map<number, TrainScheduleResponse>,
   occurrenceId: OccurrenceId
 ) => {
   const pacedTrainId = extractEditoastIdFromPacedTrainId(

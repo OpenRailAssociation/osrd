@@ -9,10 +9,10 @@ import type {
   RoundTrips,
   TrainScheduleSet,
   CatalogEntry,
+  TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import type { SimulationSummary, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
-import type { TimetableItem } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
 
 import { specialCodeDictionary, TRAIN_MAIN_CATEGORY_CLASS } from './consts';
@@ -45,7 +45,7 @@ export const formatTrainDuration = (duration: Duration) =>
   dayjs.duration(duration.ms).format('HH[h]mm');
 
 const formatTimetableItemsForExport = (
-  timetableItems: TimetableItem[],
+  timetableItems: TrainScheduleResponse[],
   selectedTimeTableIdsFromClick: number[]
 ) => {
   const pacedTrainIndexByEditoastId = new Map<number, number>();
@@ -66,7 +66,7 @@ const formatTimetableItemsForExport = (
 
 export const copyTimetableItemsToClipboard = async (
   selectedTimeTableIdsFromClick: number[],
-  timetableItems: TimetableItem[]
+  timetableItems: TrainScheduleResponse[]
 ) => {
   const { formattedTimetableItems } = formatTimetableItemsForExport(
     timetableItems,
@@ -126,7 +126,7 @@ type TimetableExportPayload = {
 };
 
 export const buildTimetableExportPayload = (
-  timetableItems: TimetableItem[],
+  timetableItems: TrainScheduleResponse[],
   selectedTimeTableIdsFromClick: number[],
   roundTrips?: RoundTrips
 ): TimetableExportPayload => {
@@ -148,7 +148,7 @@ export const buildTimetableExportPayload = (
 
 export const exportTrainSchedules = (
   selectedTimeTableIdsFromClick: number[],
-  timetableItems: TimetableItem[],
+  timetableItems: TrainScheduleResponse[],
   roundTrips?: RoundTrips
 ) => {
   if (!timetableItems) return;

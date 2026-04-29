@@ -8,7 +8,7 @@ import useEtcsBrakingCurves from 'applications/operationalStudies/hooks/useEtcsB
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import useSimulationResults from 'applications/operationalStudies/hooks/useSimulationResults';
 import type { Board } from 'applications/operationalStudies/types';
-import { type Conflict } from 'common/api/osrdEditoastApi';
+import { type Conflict, type TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
 import ChronogramWrapper from 'modules/simulationResult/components/Chronogram/ChronogramWrapper';
 import createHandleTrainDrag from 'modules/simulationResult/components/SpaceTimeChartWrapper/helpers/createHandleTrainDrag';
@@ -24,7 +24,6 @@ import type { ProjectionData, TrainSpaceTimeData } from 'modules/simulationResul
 import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
 import { findExceptionWithOccurrenceId } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
-import type { TimetableItem } from 'reducers/osrdconf/types';
 import { toggleDisplayOnlyPathSteps, updateSelectedTrain } from 'reducers/simulationResults';
 import {
   getDisplayOnlyPathSteps,
@@ -52,11 +51,11 @@ type SimulationResultsProps = {
   scenarioData: { name: string; infraName: string };
   projectionData: ProjectionData | undefined;
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
-  timetableItems: TimetableItem[];
+  timetableItems: TrainScheduleResponse[];
   conflicts?: Conflict[];
   activeBoards: Set<Board>;
   updateTrainScheduleDepartureTime: (trainId: number, newDepartureTime: Date) => Promise<void>;
-  upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void;
+  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
 };
 
 const SimulationResults = ({

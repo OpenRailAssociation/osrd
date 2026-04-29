@@ -3,10 +3,10 @@ import { useRef, useEffect, useCallback, useState } from 'react';
 import type {
   LightRollingStockWithLiveries,
   TrainScheduleSimulationSummaryResult,
+  TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import formatTrainScheduleSummaries from 'modules/simulationResult/helpers/formatTrainScheduleSummaries';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
-import type { TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 
 import TrainSimulationLazyLoader from '../helpers/TrainSimulationLazyLoader';
@@ -43,7 +43,7 @@ export default function useLazySimulateTrains({
 }: UseLazySimulateTrainsOptions) {
   const dispatch = useAppDispatch();
   const loaderRef = useRef<TrainSimulationLazyLoader>(null);
-  const trainSchedulesByIdRef = useRef<Map<number, TimetableItem>>(new Map());
+  const trainSchedulesByIdRef = useRef<Map<number, TrainScheduleResponse>>(new Map());
   const [simulatedTrainsById, setSimulatedTrainsById] = useState<
     Map<number, TrainScheduleWithDetails>
   >(new Map());
@@ -79,7 +79,7 @@ export default function useLazySimulateTrains({
     };
   }, [infraId, electricalProfileSetId, rollingStocks]);
 
-  const simulateTrainSchedules = useCallback((trainSchedules: TimetableItem[]) => {
+  const simulateTrainSchedules = useCallback((trainSchedules: TrainScheduleResponse[]) => {
     for (const trainSchedule of trainSchedules) {
       trainSchedulesByIdRef.current.set(trainSchedule.id, trainSchedule);
     }

@@ -6,10 +6,10 @@ import type {
   CorePathfindingResultSuccess,
   RollingStock,
   TrainSchedule,
+  TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
 import { getRollingStockPowerRestrictionsByMode } from 'modules/rollingStock/helpers/powerRestrictions';
-import type { TimetableItem } from 'reducers/osrdconf/types';
 import { mmToKm, mToMm } from 'utils/physics';
 
 /**
@@ -79,7 +79,7 @@ const formatPowerRestrictionRangesWithHandled = ({
   pathfindingResult,
   pathProperties,
 }: {
-  selectedTrainSchedule: Pick<TimetableItem, 'path' | 'power_restrictions'>;
+  selectedTrainSchedule: Pick<TrainScheduleResponse, 'path' | 'power_restrictions'>;
   selectedTrainRollingStock?: RollingStock;
   pathfindingResult: CorePathfindingResultSuccess;
   pathProperties: PathPropertiesFormatted;

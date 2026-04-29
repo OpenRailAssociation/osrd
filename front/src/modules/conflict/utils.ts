@@ -1,11 +1,13 @@
-import type { Conflict, TrainCategory } from 'common/api/osrdEditoastApi';
+import type { Conflict, TrainCategory,
+  TrainScheduleResponse,
+} from 'common/api/osrdEditoastApi';
 import computeOccurrenceName from 'modules/trainSchedule/helpers/computeOccurrenceName';
 import { isPacedTrainBase } from 'modules/trainSchedule/helpers/pacedTrain';
-import type { TimetableItem, TrainId } from 'reducers/osrdconf/types';
+import type { TrainId } from 'reducers/osrdconf/types';
 
 import type { ConflictWithTrainNames } from './types';
 
-function getConflictTrainNames(conflict: Conflict, trainMap: Map<number, TimetableItem>): string[] {
+function getConflictTrainNames(conflict: Conflict, trainMap: Map<number, TrainScheduleResponse>): string[] {
   const trainNames: string[] = [];
   conflict.train_ids.forEach((train) => {
     const pacedTrain = trainMap.get(train.train_schedule_id);
@@ -58,7 +60,7 @@ function getConflictTrainNames(conflict: Conflict, trainMap: Map<number, Timetab
 
 function getConflictTrainCategories(
   conflict: Conflict,
-  trainMap: Map<number, TimetableItem>
+  trainMap: Map<number, TrainScheduleResponse>
 ): (TrainCategory | null)[] {
   // /!\ TODO: we don't use the exceptions here to get the correct categories
   return conflict.train_ids.map((train) => {
@@ -69,9 +71,9 @@ function getConflictTrainCategories(
 
 export default function addTrainNamesToConflicts(
   conflicts: Conflict[],
-  timetableItems: TimetableItem[]
+  timetableItems: TrainScheduleResponse[]
 ): ConflictWithTrainNames[] {
-  const trainMap: Map<number, TimetableItem> = new Map();
+  const trainMap: Map<number, TrainScheduleResponse> = new Map();
 
   for (const timetableItem of timetableItems) {
     trainMap.set(timetableItem.id, timetableItem);

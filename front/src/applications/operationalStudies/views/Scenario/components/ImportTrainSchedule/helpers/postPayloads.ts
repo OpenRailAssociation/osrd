@@ -11,20 +11,20 @@ import {
   type PacedTrainException,
   type SubCategory,
   type TrainSchedule,
+  type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import {
   createPacedTrains,
   createExceptions,
 } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import { setWarning, setFailure } from 'reducers/main';
-import type { TimetableItem } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 
 import { generateRoundTripsPayload, generateTrainPayloads } from './generatePayloads';
 
 const postRoundTrips = async (
   roundTrips: RoundTripsFromJson,
-  formattedPacedTrains: TimetableItem[],
+  formattedPacedTrains: TrainScheduleResponse[],
   dispatch: AppDispatch
 ): Promise<void> => {
   if (roundTrips.length > 0) {
@@ -80,8 +80,8 @@ export const postFullImportPayload = async (
   subCategories: SubCategory[],
   dispatch: AppDispatch,
   t: TFunction<'operational-studies', 'importTrains'>,
-  upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void
-): Promise<TimetableItem[]> => {
+  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void
+): Promise<TrainScheduleResponse[]> => {
   try {
     const { round_trips, macro_nodes, macro_notes } = timetableJsonPayload;
     const {
@@ -90,7 +90,7 @@ export const postFullImportPayload = async (
     }: { trainSchedules: TrainSchedule[]; exceptions: PacedTrainException[][] } =
       generateTrainPayloads(timetableJsonPayload.paced_trains, subCategories);
 
-    const newtrainschedules: TimetableItem[] = [];
+    const newtrainschedules: TrainScheduleResponse[] = [];
 
     const BATCH_SIZE = 1000;
     const trainChunks = chunk(trainSchedules, BATCH_SIZE);

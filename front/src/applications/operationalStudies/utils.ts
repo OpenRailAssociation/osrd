@@ -14,11 +14,12 @@ import type {
   TrainSchedule,
   ScheduleItem,
   PathItem,
+  TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
 import { isPacedTrain } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { SimulationSummary } from 'modules/trainSchedule/types';
-import type { TimetableItem, TrainScheduleWithPathOps } from 'reducers/osrdconf/types';
+import type { TrainScheduleWithPathOps } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 import { mmToM } from 'utils/physics';
 import { SMALL_INPUT_MAX_LENGTH } from 'utils/strings';
@@ -233,7 +234,7 @@ export const isScheduledPointsNotHonored = (
   timetableItemSummary: Extract<SimulationSummaryResult, { status: 'success' }>
 ): boolean => timetableItemSummary.path_item_respect_times.some((respected) => !respected);
 
-export const getPathItemByIndexDict = (timetableItemResult: TimetableItem) =>
+export const getPathItemByIndexDict = (timetableItemResult: TrainScheduleResponse) =>
   timetableItemResult.path.reduce((acc, pathItem, index) => {
     acc[pathItem.id] = index;
     return acc;
@@ -257,7 +258,7 @@ export const getStationFromOps = (ops: OperationalPoint[]): OperationalPoint | u
  * Get a list of unique OP references from train schedules paths.
  */
 export const getUniqueOpRefsFromTrainSchedules = (
-  trainSchedules: TimetableItem[]
+  trainSchedules: TrainScheduleResponse[]
 ): OperationalPointReference[] => {
   const pathItems = trainSchedules.flatMap((trainSchedule) => trainSchedule.path);
   const uniqueSteps = new Map<string, OperationalPointReference>();
@@ -277,7 +278,7 @@ export const getUniqueOpRefsFromTrainSchedules = (
  * matchAllOperationalPoints response.
  */
 export const addPathOpsToTrainSchedules = (
-  trainSchedules: TimetableItem[],
+  trainSchedules: TrainScheduleResponse[],
   timetableOpRefs: OperationalPointReference[],
   timetableOperationalPoints: (RelatedOperationalPoint | null)[]
 ): TrainScheduleWithPathOps[] => {

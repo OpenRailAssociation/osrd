@@ -13,9 +13,10 @@ import {
   type ScheduleItem,
   type SubCategory,
   type MacroNoteResponse,
+  type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import { isPacedTrain } from 'modules/trainSchedule/helpers/pacedTrain';
-import type { TimetableItem, TrainScheduleWithPathOps } from 'reducers/osrdconf/types';
+import type { TrainScheduleWithPathOps } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration, addDurationToDate } from 'utils/duration';
 
@@ -55,7 +56,7 @@ import {
  * We need to add the unknown frequencies from the PacedTrains.
  */
 const getNgeTrainrunFrequencies = (
-  timetableItems: TimetableItem[],
+  timetableItems: TrainScheduleResponse[],
   t: TFunction<'operational-studies'>
 ): TrainrunFrequency[] => {
   // Get the default frequencies (TrainSchedule/30min/60min/120min)
@@ -161,7 +162,7 @@ const avoidNodesOverlaps = (
  * Apply a layout on nodes and save the new position.
  * Nodes that are saved are fixed.
  */
-const applyLayout = (state: MacroEditorState, timetableItems: TimetableItem[]) => {
+const applyLayout = (state: MacroEditorState, timetableItems: TrainScheduleResponse[]) => {
   const indexedNodes = uniqBy(
     timetableItems.flatMap((timetableItem) =>
       timetableItem.path.map((pathItem) => pathItem.location)
@@ -377,7 +378,7 @@ export const loadAndIndexNge = async (
  */
 const getNgeTrainruns = (
   state: MacroEditorState,
-  groupedTimetableItems: (readonly [TimetableItem, TimetableItem | null])[],
+  groupedTimetableItems: (readonly [TrainScheduleResponse, TrainScheduleResponse | null])[],
   labels: LabelDto[]
 ): TrainrunDto[] =>
   groupedTimetableItems
@@ -429,12 +430,12 @@ const createDepartureTimeLock = (scheduleItem: ScheduleItem | undefined, startTi
 };
 
 /**
- * Translate the TimetableItem in NGE "TrainrunSection" & "Nodes".
+ * Translate the TrainScheduleResponse in NGE "TrainrunSection" & "Nodes".
  * It is needed to return the nodes as well, because we add ports & transitions on them.
  */
 const getNgeTrainrunSectionsWithNodes = (
   state: MacroEditorState,
-  groupedTimetableItems: (readonly [TimetableItem, TimetableItem | null])[],
+  groupedTimetableItems: (readonly [TrainScheduleResponse, TrainScheduleResponse | null])[],
   labels: LabelDto[]
 ) => {
   let portId = 1;
@@ -640,7 +641,7 @@ const getNoteLabelIds = (labelTexts: string[], state: MacroEditorState): number[
  */
 export const getNgeDto = (
   state: MacroEditorState,
-  groupedTimetableItems: (readonly [TimetableItem, TimetableItem | null])[],
+  groupedTimetableItems: (readonly [TrainScheduleResponse, TrainScheduleResponse | null])[],
   subCategories: SubCategory[],
   notes: MacroNoteResponse[]
 ): NetzgrafikDto => {
@@ -680,7 +681,7 @@ export const getNgeDto = (
 
 const fetchTrainSchedulePathOps = async (
   infraId: number,
-  trainSchedules: TimetableItem[],
+  trainSchedules: TrainScheduleResponse[],
   dispatch: AppDispatch
 ): Promise<TrainScheduleWithPathOps[]> => {
   const opRefs = getUniqueOpRefsFromTrainSchedules(trainSchedules);

@@ -22,11 +22,11 @@ import {
   type PostTimetableByIdStdcmApiArg,
   type RollingStockWithLiveries,
   type StdcmResponseWithTraceId,
+  type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
 import { addStdcmSimulations } from 'reducers/osrdconf/stdcmConf';
 import { getStdcmConf, getStdcmInfraID } from 'reducers/osrdconf/stdcmConf/selectors';
-import type { TimetableItem } from 'reducers/osrdconf/types';
 import { updateSelectedTrain } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { useDateTimeLocale } from 'utils/date';
@@ -98,7 +98,7 @@ const useStdcm = ({
         infraId,
         dispatch
       );
-      const stdcmTrain: Omit<TimetableItem, 'train_schedule_set_id'> = {
+      const stdcmTrain: Omit<TrainScheduleResponse, 'train_schedule_set_id'> = {
         id: STDCM_TRAIN_ID,
         comfort: payload.body.comfort,
         constraint_distribution: 'MARECO',

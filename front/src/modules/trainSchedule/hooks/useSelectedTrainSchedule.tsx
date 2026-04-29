@@ -2,7 +2,8 @@ import { useMemo } from 'react';
 
 import { useSelector } from 'react-redux';
 
-import type { TimetableItem, TrainId } from 'reducers/osrdconf/types';
+import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
+import type { TrainId } from 'reducers/osrdconf/types';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import {
   extractEditoastIdFromPacedTrainId,
@@ -18,8 +19,8 @@ const extractTrainScheduleId = (trainId?: TrainId) => {
 };
 
 const useSelectedTrainSchedule = (
-  trainSchedules: TimetableItem[] | undefined
-): TimetableItem | undefined => {
+  trainSchedules: TrainScheduleResponse[] | undefined
+): TrainScheduleResponse | undefined => {
   const trainId = useSelector(getSelectedTrainId);
 
   const trainScheduleId = extractTrainScheduleId(trainId);
