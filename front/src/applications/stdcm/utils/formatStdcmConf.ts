@@ -4,7 +4,6 @@ import type { Dispatch } from 'redux';
 
 import type {
   ConsistSchedule,
-  LoadingGaugeType,
   PathfindingItem,
   PostTimetableByIdStdcmApiArg,
 } from 'common/api/osrdEditoastApi';
@@ -18,16 +17,9 @@ import { StdcmStopTypes } from '../types';
 import createMargin from './createMargin';
 
 type ValidStdcmConfig = {
-  rollingStockId: number;
-  towedRollingStockID?: number;
   timetableId: number;
   infraId: number;
   path: PathfindingItem[];
-  speedLimitByTag?: string;
-  totalMass?: number;
-  totalLength?: number;
-  maxSpeed?: number;
-  loadingGauge?: LoadingGaugeType;
   margin?: StandardAllowance;
   gridMarginBefore?: Duration;
   gridMarginAfter?: Duration;
@@ -239,15 +231,8 @@ export const checkStdcmConf = (
 
   return {
     infraId: infraID!,
-    rollingStockId: rollingStockID!,
     timetableId: timetableID!,
     path,
-    speedLimitByTag,
-    totalMass: initialConsist.total_mass,
-    totalLength,
-    maxSpeed: initialConsist.max_speed,
-    loadingGauge,
-    towedRollingStockID,
     margin: standardAllowance,
     gridMarginBefore,
     gridMarginAfter,
@@ -268,19 +253,12 @@ export const formatStdcmPayload = (
   body: {
     comfort: 'STANDARD',
     margin: createMargin(validConfig.margin),
-    rolling_stock_id: validConfig.rollingStockId,
-    towed_rolling_stock_id: validConfig.towedRollingStockID,
-    speed_limit_tags: validConfig.speedLimitByTag,
-    total_mass: validConfig.totalMass,
-    max_speed: validConfig.maxSpeed,
-    total_length: validConfig.totalLength,
     steps: validConfig.path,
     time_gap_after: validConfig.gridMarginBefore?.ms,
     time_gap_before: validConfig.gridMarginAfter?.ms,
     work_schedule_group_id: validConfig.workScheduleGroupId,
     temporary_speed_limit_group_id: validConfig.temporarySpeedLimitGroupId,
     electrical_profile_set_id: validConfig.electricalProfileSetId,
-    loading_gauge_type: validConfig.loadingGauge,
     allowed_track_sections: validConfig.allowedTrackSections,
     consist_schedule: validConfig.consistSchedule,
   },

@@ -20,6 +20,7 @@ use serde::Serializer;
 use units::quantities;
 use uom::si::length::meter;
 use uom::si::mass::kilogram;
+use uom::si::velocity::meter_per_second;
 use utoipa::ToSchema;
 
 use crate::error::Result;
@@ -54,6 +55,8 @@ pub(crate) struct ConsistConfiguration {
     pub(crate) total_length: Option<quantities::Length>,
     #[serde(default, with = "units::meter_per_second::option")]
     pub(crate) max_speed: Option<quantities::Velocity>,
+    /// Train categories for speed limits
+    // TODO: rename the field and its description
     pub(crate) speed_limit_tag: Option<String>,
     pub(crate) loading_gauge_type: Option<LoadingGaugeType>,
 }
@@ -65,7 +68,7 @@ pub(crate) struct ConsistSchedule {
     /// It should not contain 0 and len(steps) and should be increasing
     pub(crate) boundaries: Vec<usize>,
     /// Consist configuration for each segment
-    /// It should contains one more element than boundaries
+    /// It should contain one more element than boundaries
     pub(crate) values: Vec<ConsistConfiguration>,
 }
 
@@ -98,8 +101,6 @@ pub(crate) struct Request {
     /// Deprecated, first step arrival time should be used instead
     pub(crate) start_time: Option<DateTime<Utc>>,
     pub(crate) steps: Vec<PathfindingItem>,
-    pub(crate) rolling_stock_id: i64,
-    pub(crate) towed_rolling_stock_id: Option<i64>,
     pub(crate) electrical_profile_set_id: Option<i64>,
     pub(crate) work_schedule_group_id: Option<i64>,
     pub(crate) temporary_speed_limit_group_id: Option<i64>,
@@ -110,9 +111,6 @@ pub(crate) struct Request {
     /// Specifies how long the total run time can be in milliseconds
     /// Deprecated, first step data should be used instead
     pub(crate) maximum_run_time: Option<u64>,
-    /// Train categories for speed limits
-    // TODO: rename the field and its description
-    pub(crate) speed_limit_tags: Option<String>,
     /// Margin before the train passage in seconds
     ///
     /// Enforces that the path used by the train should be free and
@@ -129,16 +127,6 @@ pub(crate) struct Request {
     #[serde(default)]
     #[schema(value_type = Option<String>, example = json!(["5%", "2min/100km"]))]
     pub(crate) margin: Option<MarginValue>,
-    /// Total mass of the consist
-    #[serde(default, with = "units::kilogram::option")]
-    pub(crate) total_mass: Option<quantities::Mass>,
-    /// Total length of the consist in meters
-    #[serde(default, with = "units::meter::option")]
-    pub(crate) total_length: Option<quantities::Length>,
-    /// Maximum speed of the consist in km/h
-    #[serde(default, with = "units::meter_per_second::option")]
-    pub(crate) max_speed: Option<quantities::Velocity>,
-    pub(crate) loading_gauge_type: Option<LoadingGaugeType>,
     /// Set of authorized track section ids for the current loading gauge,
     /// None value means no zone restriction.
     pub(crate) allowed_track_sections: Option<HashSet<String>>,
@@ -339,6 +327,7 @@ impl ConsistConfiguration {
     ) -> Result<()> {
         self.validate_consist_mass(traction_engine, towed_rolling_stock)?;
         self.validate_consist_length(traction_engine, towed_rolling_stock)?;
+        self.validate_consist_max_speed(traction_engine, towed_rolling_stock)?;
         Ok(())
     }
 
@@ -388,6 +377,33 @@ impl ConsistConfiguration {
 
         Ok(())
     }
+
+    fn validate_consist_max_speed(
+        &self,
+        traction_engine: &RollingStock,
+        towed_rolling_stock: Option<&schemas::TowedRollingStock>,
+    ) -> Result<()> {
+        let consist_max_speed = quantities::Velocity::min(
+            traction_engine.max_speed,
+            towed_rolling_stock
+                .and_then(|t| t.max_speed)
+                .unwrap_or(quantities::Velocity::new::<meter_per_second>(f64::INFINITY)),
+        );
+        let consist_max_speed = consist_max_speed.floor::<meter_per_second>();
+
+        if let Some(request_max_speed) = self.max_speed
+            && request_max_speed < quantities::Velocity::new::<meter_per_second>(0.0)
+            && request_max_speed > consist_max_speed
+        {
+            return Err(StdcmError::InvalidConsistMaxSpeed {
+                provided_consist_max_speed: request_max_speed.value,
+                expected_max: consist_max_speed.value,
+            }
+            .into());
+        }
+
+        Ok(())
+    }
 }
 
 impl<'de> Deserialize<'de> for Request {
@@ -396,32 +412,10 @@ impl<'de> Deserialize<'de> for Request {
         D: Deserializer<'de>,
     {
         let request = Request::deserialize(deserializer)?;
-        if let Some(mass) = request.total_mass
-            && mass <= units::kilogram::new(0.0)
-        {
-            return Err(serde::de::Error::custom(
-                "the total mass must be strictly positive",
-            ));
-        }
-
-        if let Some(total_length) = request.total_length
-            && total_length <= units::meter::new(0.0)
-        {
-            return Err(serde::de::Error::custom(
-                "the length mass must be strictly positive",
-            ));
-        }
-
-        if let Some(max_speed) = request.max_speed
-            && max_speed <= units::meter_per_second::new(0.0)
-        {
-            return Err(serde::de::Error::custom(
-                "the max_speed must be strictly positive",
-            ));
-        }
-
         let consist_schedule = &request.consist_schedule;
-        if !consist_schedule.values.is_empty() {
+        if consist_schedule.values.is_empty() {
+            return Err(serde::de::Error::custom("consist values cannot be empty"));
+        } else {
             if consist_schedule.boundaries.len() + 1 != consist_schedule.values.len() {
                 return Err(serde::de::Error::custom(
                     "the boundaries should have one less element than values",

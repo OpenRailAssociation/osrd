@@ -41,10 +41,10 @@ use editoast_models::timetable::Timetable;
 use editoast_models::timetable::TimetableWithTrains;
 use itertools::Itertools;
 use itertools::izip;
-use schemas::rolling_stock::EtcsBrakeParams;
 use schemas::rolling_stock::RollingResistance;
 use schemas::rolling_stock::RollingStock;
 use schemas::rolling_stock::TowedRollingStock;
+use schemas::rolling_stock::{EtcsBrakeParams, LoadingGaugeType};
 use schemas::train_schedule::TrainScheduleLike;
 use serde::Deserialize;
 use serde::Serialize;
@@ -543,6 +543,8 @@ pub struct PhysicsConsistParameters {
     pub total_mass: Option<Mass>,
     pub total_length: Option<Length>,
     pub max_speed: Option<Velocity>,
+    pub speed_limit_tag: Option<String>,
+    pub loading_gauge_type: Option<LoadingGaugeType>,
     pub towed_rolling_stock: Option<TowedRollingStock>,
     pub traction_engine: RollingStock,
 }
@@ -553,6 +555,8 @@ impl PhysicsConsistParameters {
             max_speed: None,
             total_length: None,
             total_mass: None,
+            speed_limit_tag: None,
+            loading_gauge_type: None,
             towed_rolling_stock: None,
             traction_engine,
         }
@@ -1010,7 +1014,7 @@ mod tests {
             .and_hms_opt(9, 0, 0)
             .unwrap()
             .and_utc();
-        let paced_interval = chrono::Duration::try_hours(1).unwrap();
+        let paced_interval = Duration::try_hours(1).unwrap();
 
         let train_ids = vec![
             OccurrenceId::new_base(paced_train_id, 0),
@@ -1128,6 +1132,8 @@ mod tests {
             total_length: Some(units::meter::new(100.0)),
             total_mass: Some(units::kilogram::new(50000.0)),
             max_speed: Some(units::meter_per_second::new(22.0)),
+            speed_limit_tag: None,
+            loading_gauge_type: Some(simple_rolling_stock().loading_gauge),
             towed_rolling_stock: Some(towed_rolling_stock()),
             traction_engine: simple_rolling_stock(),
         }

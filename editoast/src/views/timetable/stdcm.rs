@@ -140,6 +140,13 @@ enum StdcmError {
         provided_consist_length: f64,
         expected_min: f64,
     },
+    #[error(
+        "Invalid consist max speed {provided_consist_max_speed}: it should be positive and lower than {expected_max}"
+    )]
+    InvalidConsistMaxSpeed {
+        provided_consist_max_speed: f64,
+        expected_max: f64,
+    },
     #[error(transparent)]
     #[from(forward)]
     #[serde(skip)]
@@ -270,21 +277,9 @@ pub(in crate::views) async fn stdcm_handler(
     let work_schedules = request.get_work_schedules(&mut conn).await?;
 
     // 3. Get RollingStock
-    let consist_configs = if request.consist_schedule.values.is_empty() {
-        vec![request::ConsistConfiguration {
-            rolling_stock_id: request.rolling_stock_id,
-            towed_rolling_stock_id: request.towed_rolling_stock_id,
-            total_mass: request.total_mass,
-            total_length: request.total_length,
-            max_speed: request.max_speed,
-            speed_limit_tag: request.speed_limit_tags.clone(),
-            loading_gauge_type: request.loading_gauge_type,
-        }]
-    } else {
-        request.consist_schedule.values.clone()
-    };
-
-    let rolling_stock_ids: Vec<i64> = consist_configs
+    let rolling_stock_ids: Vec<i64> = request
+        .consist_schedule
+        .values
         .iter()
         .map(|consist_config| consist_config.rolling_stock_id)
         .collect();
@@ -311,7 +306,9 @@ pub(in crate::views) async fn stdcm_handler(
         rolling_stocks_models.into_iter().map(Into::into).collect();
 
     let mut physics_consists_parameters = vec![];
-    for (consist, rolling_stock) in consist_configs.iter().zip(rolling_stocks) {
+    for (consist, rolling_stock) in
+        itertools::izip!(&request.consist_schedule.values, rolling_stocks)
+    {
         let towed_rolling_stock = consist
             .get_towed_rolling_stock(&mut conn)
             .await?
@@ -322,6 +319,8 @@ pub(in crate::views) async fn stdcm_handler(
             max_speed: consist.max_speed,
             total_length: consist.total_length,
             total_mass: consist.total_mass,
+            speed_limit_tag: consist.speed_limit_tag.clone(),
+            loading_gauge_type: consist.loading_gauge_type,
             towed_rolling_stock,
             traction_engine: rolling_stock,
         });
@@ -363,21 +362,18 @@ pub(in crate::views) async fn stdcm_handler(
     let earliest_departure_time = request.get_earliest_departure_time(total_simulation_run_time);
     let latest_simulation_end = request.get_latest_simulation_end(total_simulation_run_time);
 
-    let stdcm_consist_schedule_values = consist_configs
+    let stdcm_consist_schedule_values = physics_consists_parameters
         .iter()
-        .zip(physics_consists_parameters.iter())
-        .map(
-            |(consist_config, physics_consist_param)| ConsistConfiguration {
-                loading_gauge_type: consist_config
-                    .loading_gauge_type
-                    .unwrap_or(physics_consist_param.traction_engine.loading_gauge),
-                supported_signaling_systems: physics_consist_param
-                    .traction_engine
-                    .supported_signaling_systems(),
-                speed_limit_tag: consist_config.speed_limit_tag.clone(),
-                physics_consist: physics_consist_param.clone().into(),
-            },
-        )
+        .map(|physics_consist_param| ConsistConfiguration {
+            loading_gauge_type: physics_consist_param
+                .loading_gauge_type
+                .unwrap_or(physics_consist_param.traction_engine.loading_gauge),
+            supported_signaling_systems: physics_consist_param
+                .traction_engine
+                .supported_signaling_systems(),
+            speed_limit_tag: physics_consist_param.speed_limit_tag.clone(),
+            physics_consist: physics_consist_param.clone().into(),
+        })
         .collect_vec();
 
     // 5. Build STDCM request
@@ -543,8 +539,8 @@ impl VirtualTrainRun {
                 comfort: stdcm_request.comfort,
                 path,
                 constraint_distribution: Default::default(),
-                speed_limit_tag: stdcm_request
-                    .speed_limit_tags
+                speed_limit_tag: consist_parameters
+                    .speed_limit_tag
                     .clone()
                     .map(schemas::primitives::NonBlankString::from),
                 power_restrictions: vec![],
@@ -670,10 +666,7 @@ mod tests {
     use super::*;
 
     fn get_stdcm_payload(
-        rolling_stock_id: i64,
         work_schedule_group_id: Option<i64>,
-        total_mass: Option<f64>,
-        total_length: Option<f64>,
         consist_schedule: ConsistSchedule,
     ) -> Request {
         Request {
@@ -713,22 +706,15 @@ mod tests {
                     timing_data: None,
                 },
             ],
-            rolling_stock_id,
-            towed_rolling_stock_id: None,
             electrical_profile_set_id: None,
             work_schedule_group_id,
             temporary_speed_limit_group_id: None,
             comfort: Comfort::Standard,
             maximum_departure_delay: None,
             maximum_run_time: None,
-            speed_limit_tags: Some("AR120".to_string()),
             time_gap_before: 35000,
             time_gap_after: 35000,
             margin: Some(MarginValue::MinPer100Km(4.5)),
-            total_mass: total_mass.map(Mass::new::<kilogram>),
-            total_length: total_length.map(Length::new::<meter>),
-            max_speed: None,
-            loading_gauge_type: None,
             allowed_track_sections: None,
             consist_schedule,
         }
@@ -737,15 +723,23 @@ mod tests {
     fn build_consist_config(
         rolling_stock_id: i64,
         total_mass: Option<f64>,
+        total_length: Option<f64>,
     ) -> request::ConsistConfiguration {
         request::ConsistConfiguration {
             rolling_stock_id,
             towed_rolling_stock_id: None,
             total_mass: total_mass.map(Mass::new::<kilogram>),
-            total_length: None,
+            total_length: total_length.map(Length::new::<meter>),
             max_speed: None,
-            speed_limit_tag: None,
+            speed_limit_tag: Some("AR120".to_string()),
             loading_gauge_type: None,
+        }
+    }
+
+    fn build_single_consist(consist_config: request::ConsistConfiguration) -> ConsistSchedule {
+        ConsistSchedule {
+            boundaries: vec![],
+            values: vec![consist_config],
         }
     }
 
@@ -753,12 +747,11 @@ mod tests {
         PathfindingItem {
             duration: Some(0),
             location: PathItemLocation::OperationalPointPartReference(
-                schemas::train_schedule::OperationalPointPartReference {
-                    operational_point:
-                        schemas::train_schedule::OperationalPointReference::Trigram {
-                            trigram: trigram.into(),
-                            secondary_code: Some("BV".to_string()),
-                        },
+                OperationalPointPartReference {
+                    operational_point: OperationalPointReference::Trigram {
+                        trigram: trigram.into(),
+                        secondary_code: Some("BV".to_string()),
+                    },
                     local_track_name: None,
                 },
             ),
@@ -814,6 +807,8 @@ mod tests {
             total_length: None,
             max_speed: None,
             total_mass: Some(total_mass),
+            speed_limit_tag: None,
+            loading_gauge_type: Some(rolling_stock.loading_gauge),
             towed_rolling_stock: Some(towed_rolling_stock.clone()),
             traction_engine: rolling_stock,
         };
@@ -841,6 +836,8 @@ mod tests {
             total_mass: Some(units::kilogram::new(123.0)),
             total_length: Some(units::meter::new(455.0)),
             max_speed: Some(units::meter_per_second::new(10.0)),
+            speed_limit_tag: None,
+            loading_gauge_type: Some(simple_rolling_stock().loading_gauge),
             towed_rolling_stock: None,
             traction_engine: simple_rolling_stock(),
         };
@@ -882,6 +879,8 @@ mod tests {
             total_length: None,
             total_mass: None,
             towed_rolling_stock: Some(towed_rolling_stock.clone()),
+            speed_limit_tag: None,
+            loading_gauge_type: Some(simple_rolling_stock().loading_gauge),
             traction_engine: rolling_stock,
         };
 
@@ -911,6 +910,8 @@ mod tests {
             max_speed: None,
             total_length: None,
             total_mass: None,
+            speed_limit_tag: None,
+            loading_gauge_type: Some(simple_rolling_stock().loading_gauge),
             towed_rolling_stock: Some(towed_rolling_stock()),
             traction_engine: simple_rolling_stock(),
         };
@@ -948,6 +949,8 @@ mod tests {
             total_mass: None,
             total_length: None,
             max_speed: Some(units::meter_per_second::new(30.0)),
+            speed_limit_tag: None,
+            loading_gauge_type: Some(simple_rolling_stock().loading_gauge),
             towed_rolling_stock: None,
             traction_engine: simple_rolling_stock(),
         };
@@ -981,16 +984,12 @@ mod tests {
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+        let consist_schedule =
+            build_single_consist(build_consist_config(rolling_stock.id, None, None));
 
         let request = app
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
-            .json(&get_stdcm_payload(
-                rolling_stock.id,
-                None,
-                None,
-                None,
-                ConsistSchedule::default(),
-            ));
+            .json(&get_stdcm_payload(None, consist_schedule));
 
         let stdcm_response: StdcmProgression = app
             .fetch(request)
@@ -1033,17 +1032,12 @@ mod tests {
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+        let consist_schedule =
+            build_single_consist(build_consist_config(rolling_stock.id, Some(80_000.0), None));
 
-        let total_mass = Some(80_000.0);
         let request = app
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
-            .json(&get_stdcm_payload(
-                rolling_stock.id,
-                None,
-                total_mass,
-                None,
-                ConsistSchedule::default(),
-            ));
+            .json(&get_stdcm_payload(None, consist_schedule));
 
         let stdcm_response: InternalError = app
             .fetch(request)
@@ -1078,19 +1072,15 @@ mod tests {
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let total_length = Some(300.0);
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+        let consist_schedule =
+            build_single_consist(build_consist_config(rolling_stock.id, None, total_length));
 
-        let total_length = Some(300.0);
         let request = app
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
-            .json(&get_stdcm_payload(
-                rolling_stock.id,
-                None,
-                None,
-                total_length,
-                ConsistSchedule::default(),
-            ));
+            .json(&get_stdcm_payload(None, consist_schedule));
 
         let stdcm_response: InternalError = app
             .fetch(request)
@@ -1124,20 +1114,19 @@ mod tests {
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let total_mass = Some(910_000.0);
+        let total_length = Some(410.0);
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+        let consist_schedule = build_single_consist(build_consist_config(
+            rolling_stock.id,
+            total_mass,
+            total_length,
+        ));
 
-        let total_length = Some(410.0);
-        let total_mass = Some(910_000.0);
         let request = app
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
-            .json(&get_stdcm_payload(
-                rolling_stock.id,
-                None,
-                total_mass,
-                total_length,
-                ConsistSchedule::default(),
-            ));
+            .json(&get_stdcm_payload(None, consist_schedule));
 
         let stdcm_response: StdcmProgression = app
             .fetch(request)
@@ -1177,16 +1166,12 @@ mod tests {
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+        let consist_schedule =
+            build_single_consist(build_consist_config(rolling_stock.id, None, None));
 
         let request = app
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
-            .json(&get_stdcm_payload(
-                rolling_stock.id,
-                None,
-                None,
-                None,
-                ConsistSchedule::default(),
-            ));
+            .json(&get_stdcm_payload(None, consist_schedule));
 
         let stdcm_response: StdcmProgression = app
             .fetch(request)
@@ -1229,16 +1214,12 @@ mod tests {
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+        let consist_schedule =
+            build_single_consist(build_consist_config(rolling_stock.id, None, None));
 
         let request = app
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
-            .json(&get_stdcm_payload(
-                rolling_stock.id,
-                None,
-                None,
-                None,
-                ConsistSchedule::default(),
-            ));
+            .json(&get_stdcm_payload(None, consist_schedule));
 
         let stdcm_response: Vec<StdcmProgression> = app
             .fetch(request)
@@ -1301,16 +1282,12 @@ mod tests {
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+        let consist_schedule =
+            build_single_consist(build_consist_config(rolling_stock.id, None, None));
 
         let request = app
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
-            .json(&get_stdcm_payload(
-                rolling_stock.id,
-                None,
-                None,
-                None,
-                ConsistSchedule::default(),
-            ));
+            .json(&get_stdcm_payload(None, consist_schedule));
 
         let stdcm_response: Vec<StdcmProgression> = app
             .fetch(request)
@@ -1382,19 +1359,19 @@ mod tests {
             .collect();
 
         // THEN
-        assert!(filtered.is_empty() == filtered_out);
+        assert_eq!(filtered.is_empty(), filtered_out);
     }
 
     #[test]
     fn consist_schedule_reject_same_len_values_and_boundaries() {
         let req = get_stdcm_payload(
-            1,
-            None,
-            None,
             None,
             ConsistSchedule {
                 boundaries: vec![1, 2],
-                values: vec![build_consist_config(1, None), build_consist_config(2, None)],
+                values: vec![
+                    build_consist_config(1, None, None),
+                    build_consist_config(2, None, None),
+                ],
             },
         );
 
@@ -1406,13 +1383,13 @@ mod tests {
     #[test]
     fn consist_schedule_reject_has_boundary_zero() {
         let req = get_stdcm_payload(
-            1,
-            None,
-            None,
             None,
             ConsistSchedule {
                 boundaries: vec![0],
-                values: vec![build_consist_config(1, None), build_consist_config(2, None)],
+                values: vec![
+                    build_consist_config(1, None, None),
+                    build_consist_config(2, None, None),
+                ],
             },
         );
 
@@ -1424,13 +1401,13 @@ mod tests {
     #[test]
     fn consist_schedule_reject_has_boundary_last_step() {
         let req = get_stdcm_payload(
-            1,
-            None,
-            None,
             None,
             ConsistSchedule {
                 boundaries: vec![2],
-                values: vec![build_consist_config(1, None), build_consist_config(2, None)],
+                values: vec![
+                    build_consist_config(1, None, None),
+                    build_consist_config(2, None, None),
+                ],
             },
         );
 
@@ -1442,16 +1419,13 @@ mod tests {
     #[test]
     fn consist_schedule_reject_decreasing_boundaries() {
         let req = get_stdcm_payload(
-            1,
-            None,
-            None,
             None,
             ConsistSchedule {
                 boundaries: vec![5, 3],
                 values: vec![
-                    build_consist_config(1, None),
-                    build_consist_config(2, None),
-                    build_consist_config(3, None),
+                    build_consist_config(1, None, None),
+                    build_consist_config(2, None, None),
+                    build_consist_config(3, None, None),
                 ],
             },
         );
@@ -1501,15 +1475,20 @@ mod tests {
         let total_mass_second_rolling_stock = Some(50_000.0);
 
         let mut payload = get_stdcm_payload(
-            first_rolling_stock.id,
-            None,
-            None,
             None,
             ConsistSchedule {
                 boundaries: vec![1],
                 values: vec![
-                    build_consist_config(first_rolling_stock.id, total_mass_first_rolling_stock),
-                    build_consist_config(second_rolling_stock.id, total_mass_second_rolling_stock),
+                    build_consist_config(
+                        first_rolling_stock.id,
+                        total_mass_first_rolling_stock,
+                        None,
+                    ),
+                    build_consist_config(
+                        second_rolling_stock.id,
+                        total_mass_second_rolling_stock,
+                        None,
+                    ),
                 ],
             },
         );
@@ -1587,16 +1566,13 @@ mod tests {
             create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
 
         let mut payload = get_stdcm_payload(
-            first_rolling_stock.id,
-            None,
-            None,
             None,
             ConsistSchedule {
                 boundaries: vec![1, 2],
                 values: vec![
-                    build_consist_config(first_rolling_stock.id, None),
-                    build_consist_config(second_rolling_stock.id, None),
-                    build_consist_config(third_rolling_stock.id, None),
+                    build_consist_config(first_rolling_stock.id, None, None),
+                    build_consist_config(second_rolling_stock.id, None, None),
+                    build_consist_config(third_rolling_stock.id, None, None),
                 ],
             },
         );
