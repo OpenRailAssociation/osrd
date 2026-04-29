@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import { checkRoundTripCompatible } from 'applications/operationalStudies/utils';
 import type { SubCategory } from 'common/api/osrdEditoastApi';
-import { isPacedTrainBase } from 'modules/timetableItem/helpers/pacedTrain';
+import { isPacedTrainBase } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithPathOps } from 'reducers/osrdconf/types';
 
 import RoundTripsModalCard from './RoundTripsModalCard';

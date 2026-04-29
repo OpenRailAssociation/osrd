@@ -18,8 +18,8 @@ import { formatSpeedCurve } from 'modules/simulationResult/components/SpeedDista
 import {
   findExceptionWithOccurrenceId,
   isPacedTrain,
-} from 'modules/timetableItem/helpers/pacedTrain';
-import useSelectedTrainSchedule from 'modules/timetableItem/hooks/useSelectedTrainSchedule';
+} from 'modules/trainSchedule/helpers/pacedTrain';
+import useSelectedTrainSchedule from 'modules/trainSchedule/hooks/useSelectedTrainSchedule';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { isOccurrenceId, isPacedTrainId } from 'utils/trainId';

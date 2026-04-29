@@ -21,7 +21,7 @@ import { useTranslation } from 'react-i18next';
 import type { TrainScheduleSetManager } from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
 import type { CatalogEntry, TrainScheduleSet } from 'common/api/osrdEditoastApi';
 import MenuTriggerButton, { type MenuProps } from 'common/MenuTriggerButton';
-import type { PacedTrainWithDetails } from 'modules/timetableItem/types';
+import type { PacedTrainWithDetails } from 'modules/trainSchedule/types';
 
 import { computeTrainScheduleSetName, isSandbox } from '../utils';
 import LocalCopyTrainScheduleSetDialog from './LocalCopyTrainScheduleSetDialog';

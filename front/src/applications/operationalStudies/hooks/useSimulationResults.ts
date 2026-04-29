@@ -11,8 +11,8 @@ import {
   findExceptionWithOccurrenceId,
   computeIndexedOccurrenceStartTime,
   getOccurrenceTrainName,
-} from 'modules/timetableItem/helpers/pacedTrain';
-import useSelectedTrainSchedule from 'modules/timetableItem/hooks/useSelectedTrainSchedule';
+} from 'modules/trainSchedule/helpers/pacedTrain';
+import useSelectedTrainSchedule from 'modules/trainSchedule/hooks/useSelectedTrainSchedule';
 import type { TimetableItem, Train } from 'reducers/osrdconf/types';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { Duration } from 'utils/duration';

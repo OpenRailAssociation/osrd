@@ -6,7 +6,7 @@ import { keyBy, sortBy } from 'lodash';
 import { osrdEditoastApi, type ScenarioWithDetails } from 'common/api/osrdEditoastApi';
 import { useRollingStockContext } from 'common/RollingStockContext';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChartWrapper/useLazyProjectTrains';
-import { formatPacedTrainWithDetails } from 'modules/timetableItem/helpers/formatTrainScheduleWithDetails';
+import { formatPacedTrainWithDetails } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { mapBy } from 'utils/types';

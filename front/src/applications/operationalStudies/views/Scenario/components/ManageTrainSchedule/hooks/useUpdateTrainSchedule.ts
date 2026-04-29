@@ -9,7 +9,7 @@ import {
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/views/Scenario/consts';
 import type { PacedTrainException } from 'common/api/osrdEditoastApi';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
-import { findExceptionWithOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
+import { findExceptionWithOccurrenceId } from 'modules/trainSchedule/helpers/pacedTrain';
 import {
   createExceptions,
   deleteExceptions,
@@ -17,7 +17,7 @@ import {
   syncAndUpdatePacedTrain,
   syncOccurrenceException,
   updateExceptions,
-} from 'modules/timetableItem/helpers/updateTrainScheduleHelpers';
+} from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import { setSuccess } from 'reducers/main';
 import { clearAddedExceptionsList } from 'reducers/osrdconf/operationalStudiesConf';
 import {

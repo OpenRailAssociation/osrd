@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import type { SubCategory } from 'common/api/osrdEditoastApi';
 import OSRDTooltip from 'common/OSRDTooltip';
 import isMainCategory from 'modules/rollingStock/helpers/category';
-import type { Occurrence, ExceptionChangeGroups } from 'modules/timetableItem/types';
+import type { Occurrence, ExceptionChangeGroups } from 'modules/trainSchedule/types';
 import { getExceptionType } from 'utils/trainId';
 
 import { getTrainCategoryClassName } from '../utils';

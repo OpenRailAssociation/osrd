@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
 import type { TrainSchedule, PacedTrainException } from 'common/api/osrdEditoastApi';
-import type { SimulatedException, SimulationSummary } from 'modules/timetableItem/types';
+import type { SimulatedException, SimulationSummary } from 'modules/trainSchedule/types';
 import { Duration } from 'utils/duration';
 import {
   formatEditoastIdToPacedTrainId,

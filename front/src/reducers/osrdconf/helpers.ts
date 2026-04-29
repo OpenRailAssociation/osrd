@@ -5,7 +5,7 @@ import { v4 as uuidV4 } from 'uuid';
 import { calculateDistanceAlongTrack } from 'applications/editor/tools/utils';
 import type { MapPathProperties } from 'applications/operationalStudies/types';
 import { pathStepMatchesOp } from 'modules/pathfinding/utils';
-import type { SuggestedOP } from 'modules/timetableItem/types';
+import type { SuggestedOP } from 'modules/trainSchedule/types';
 import { addElementAtIndex } from 'utils/array';
 
 import type { OperationalStudiesConfState, PathStep } from './types';

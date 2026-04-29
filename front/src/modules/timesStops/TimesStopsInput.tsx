@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { PathfindingState } from 'modules/pathfinding/types';
-import type { SuggestedOP } from 'modules/timetableItem/types';
+import type { SuggestedOP } from 'modules/trainSchedule/types';
 import {
   updatePathSteps,
   upsertSeveralViasFromSuggestedOP,

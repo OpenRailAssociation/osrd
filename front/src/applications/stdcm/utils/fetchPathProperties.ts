@@ -10,7 +10,7 @@ import type {
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { formatSuggestedOperationalPoints } from 'modules/pathfinding/utils';
 import type { PathOperationalPoint } from 'modules/simulationResult/types';
-import type { SuggestedOP } from 'modules/timetableItem/types';
+import type { SuggestedOP } from 'modules/trainSchedule/types';
 import type { AppDispatch } from 'store';
 
 /**

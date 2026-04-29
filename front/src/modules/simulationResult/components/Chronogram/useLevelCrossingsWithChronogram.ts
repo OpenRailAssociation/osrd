@@ -4,7 +4,7 @@ import { skipToken } from '@reduxjs/toolkit/query';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useInfraID } from 'common/osrdContext';
-import type { TrainScheduleWithDetails } from 'modules/timetableItem/types';
+import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';

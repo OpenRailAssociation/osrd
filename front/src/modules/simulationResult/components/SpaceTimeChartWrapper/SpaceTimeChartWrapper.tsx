@@ -36,8 +36,8 @@ import type {
   WaypointsPanelData,
   DraggingState,
 } from 'modules/simulationResult/types';
-import { isPacedTrainWithDetails } from 'modules/timetableItem/helpers/pacedTrain';
-import type { TrainScheduleWithDetails } from 'modules/timetableItem/types';
+import { isPacedTrainWithDetails } from 'modules/trainSchedule/helpers/pacedTrain';
+import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { TrainId } from 'reducers/osrdconf/types';
 import { getHoveredTrainId, getIsSimulationEnabled } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';

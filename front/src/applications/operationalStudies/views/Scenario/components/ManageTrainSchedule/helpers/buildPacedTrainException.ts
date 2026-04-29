@@ -2,14 +2,14 @@ import { isEqual, omit } from 'lodash';
 
 import type { PacedTrainWithPaced } from 'applications/operationalStudies/types';
 import type { TrainSchedule, PacedTrainException } from 'common/api/osrdEditoastApi';
-import computeBasePathStep from 'modules/timetableItem/helpers/computeBasePathStep';
-import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
+import computeBasePathStep from 'modules/trainSchedule/helpers/computeBasePathStep';
+import computeOccurrenceName from 'modules/trainSchedule/helpers/computeOccurrenceName';
 import {
   CHANGE_GROUP_KEYS,
   findExceptionWithOccurrenceId,
   computeIndexedOccurrenceStartTime,
   hasExceptions,
-} from 'modules/timetableItem/helpers/pacedTrain';
+} from 'modules/trainSchedule/helpers/pacedTrain';
 import type { OccurrenceId } from 'reducers/osrdconf/types';
 import { removeElementAtIndex, replaceElementAtIndex } from 'utils/array';
 import { Duration } from 'utils/duration';

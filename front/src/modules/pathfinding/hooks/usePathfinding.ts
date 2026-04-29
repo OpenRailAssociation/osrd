@@ -20,7 +20,7 @@ import {
   getPathfindingQuery,
   matchPathStepAndOp,
 } from 'modules/pathfinding/utils';
-import type { SuggestedOP } from 'modules/timetableItem/types';
+import type { SuggestedOP } from 'modules/trainSchedule/types';
 import { setFailure, setWarning } from 'reducers/main';
 import { replaceItinerary, updatePathSteps } from 'reducers/osrdconf/operationalStudiesConf';
 import {

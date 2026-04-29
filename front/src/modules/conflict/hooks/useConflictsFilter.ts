@@ -3,11 +3,11 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 
 import type { Conflict } from 'common/api/osrdEditoastApi';
-import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
+import computeOccurrenceName from 'modules/trainSchedule/helpers/computeOccurrenceName';
 import {
   findExceptionWithOccurrenceId,
   isPacedTrain,
-} from 'modules/timetableItem/helpers/pacedTrain';
+} from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import {

@@ -15,7 +15,7 @@ import type {
   TrainSchedule,
   PathItem,
 } from 'common/api/osrdEditoastApi';
-import type { PacedTrainWithDetails } from 'modules/timetableItem/types';
+import type { PacedTrainWithDetails } from 'modules/trainSchedule/types';
 import type { OccurrenceId, PacedTrainId } from 'reducers/osrdconf/types';
 import type { ArrayElement } from 'utils/types';
 

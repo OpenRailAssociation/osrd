@@ -16,7 +16,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import { interpolateValue } from 'modules/simulationResult/helpers/utils';
-import type { SimulationSummary } from 'modules/timetableItem/types';
+import type { SimulationSummary } from 'modules/trainSchedule/types';
 import type { Train } from 'reducers/osrdconf/types';
 import { getDisplayOnlyPathSteps } from 'reducers/simulationResults/selectors';
 import { Duration } from 'utils/duration';

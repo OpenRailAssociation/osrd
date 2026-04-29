@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
 import { isSimulated } from 'applications/operationalStudies/utils';
-import type { TrainScheduleWithDetails } from 'modules/timetableItem/types';
+import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { getIsSimulationEnabled } from 'reducers/simulationResults/selectors';
 
 import type { TrainSpaceTimeData } from '../../types';

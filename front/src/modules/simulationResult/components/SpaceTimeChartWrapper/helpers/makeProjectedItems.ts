@@ -1,12 +1,12 @@
 import { pick } from 'lodash';
 
 import type { IndividualTrainProjection, TrainSpaceTimeData } from 'modules/simulationResult/types';
-import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
+import computeOccurrenceName from 'modules/trainSchedule/helpers/computeOccurrenceName';
 import {
   computeIndexedOccurrenceStartTime,
   findExceptionWithOccurrenceId,
   getOccurrencesNb,
-} from 'modules/timetableItem/helpers/pacedTrain';
+} from 'modules/trainSchedule/helpers/pacedTrain';
 import {
   formatPacedTrainIdToIndexedOccurrenceId,
   formatEditoastIdToExceptionId,

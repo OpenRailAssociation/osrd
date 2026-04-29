@@ -15,14 +15,14 @@ import {
   type ReceptionSignal,
   type ScheduleItem,
 } from 'common/api/osrdEditoastApi';
-import computeBasePathStep from 'modules/timetableItem/helpers/computeBasePathStep';
+import computeBasePathStep from 'modules/trainSchedule/helpers/computeBasePathStep';
 import {
   getOccurrenceTrainName,
   isPacedTrainBase,
   isPacedTrainWithDetails,
-} from 'modules/timetableItem/helpers/pacedTrain';
-import { syncOccurrenceException } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
-import type { TrainScheduleWithDetails } from 'modules/timetableItem/types';
+} from 'modules/trainSchedule/helpers/pacedTrain';
+import { syncOccurrenceException } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
+import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { OccurrenceId, PacedTrainId, TimetableItem, Train } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { removeElementAtIndex, replaceElementAtIndex } from 'utils/array';

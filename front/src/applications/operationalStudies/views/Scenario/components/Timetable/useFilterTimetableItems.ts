@@ -4,8 +4,8 @@ import { uniq } from 'lodash';
 
 import { useRollingStockContext } from 'common/RollingStockContext';
 import isMainCategory from 'modules/rollingStock/helpers/category';
-import { isPacedTrainWithDetails } from 'modules/timetableItem/helpers/pacedTrain';
-import type { TrainScheduleWithDetails } from 'modules/timetableItem/types';
+import { isPacedTrainWithDetails } from 'modules/trainSchedule/helpers/pacedTrain';
+import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { useDebounce } from 'utils/hooks/useDebounce';
 
 import type {

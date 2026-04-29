@@ -10,7 +10,7 @@ import type {
   RollingStock,
   SimulationResponseSuccess,
 } from 'common/api/osrdEditoastApi';
-import type { SimulationSummary, TrainScheduleWithDetails } from 'modules/timetableItem/types';
+import type { SimulationSummary, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { TimetableItem, Train } from 'reducers/osrdconf/types';
 import { getUseNewTimesStopsTable } from 'reducers/user/userSelectors';
 import { formatLocalTime } from 'utils/date';

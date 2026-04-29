@@ -11,8 +11,8 @@ import type {
 import type { CatalogEntry } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
-import { isPacedTrainWithDetails } from 'modules/timetableItem/helpers/pacedTrain';
-import type { PacedTrainWithDetails, TrainScheduleWithDetails } from 'modules/timetableItem/types';
+import { isPacedTrainWithDetails } from 'modules/trainSchedule/helpers/pacedTrain';
+import type { PacedTrainWithDetails, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
 import type { OccurrenceId, TimetableItem, TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import {

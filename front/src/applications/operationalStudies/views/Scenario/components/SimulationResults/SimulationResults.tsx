@@ -22,8 +22,8 @@ import useTrackOccupancy from 'modules/simulationResult/components/SpaceTimeChar
 import SpeedDistanceDiagramWrapper from 'modules/simulationResult/components/SpeedDistanceDiagram/SpeedDistanceDiagramWrapper';
 import type { ProjectionData, TrainSpaceTimeData } from 'modules/simulationResult/types';
 import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
-import { findExceptionWithOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
-import type { TrainScheduleWithDetails } from 'modules/timetableItem/types';
+import { findExceptionWithOccurrenceId } from 'modules/trainSchedule/helpers/pacedTrain';
+import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { toggleDisplayOnlyPathSteps, updateSelectedTrain } from 'reducers/simulationResults';
 import {

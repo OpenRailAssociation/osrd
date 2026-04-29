@@ -11,8 +11,8 @@ import type { IndividualTrainProjection } from 'modules/simulationResult/types';
 import {
   findExceptionWithOccurrenceId,
   isPacedTrainWithDetails,
-} from 'modules/timetableItem/helpers/pacedTrain';
-import type { TrainScheduleWithDetails } from 'modules/timetableItem/types';
+} from 'modules/trainSchedule/helpers/pacedTrain';
+import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { TrainId } from 'reducers/osrdconf/types';
 import {
   isOccurrenceId,

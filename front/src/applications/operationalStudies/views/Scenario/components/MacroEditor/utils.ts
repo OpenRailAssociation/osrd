@@ -9,7 +9,7 @@ import {
   type TrainCategory,
 } from 'common/api/osrdEditoastApi';
 import isMainCategory from 'modules/rollingStock/helpers/category';
-import { isPacedTrain } from 'modules/timetableItem/helpers/pacedTrain';
+import { isPacedTrain } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration } from 'utils/duration';

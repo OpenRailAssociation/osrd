@@ -11,7 +11,7 @@ import type {
   CatalogEntry,
 } from 'common/api/osrdEditoastApi';
 import isMainCategory from 'modules/rollingStock/helpers/category';
-import type { SimulationSummary, TrainScheduleWithDetails } from 'modules/timetableItem/types';
+import type { SimulationSummary, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
 
