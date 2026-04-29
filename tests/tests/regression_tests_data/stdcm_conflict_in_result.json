@@ -4,7 +4,6 @@
     "error": "{\"status\":500,\"type\":\"core:assert_error\",\"context\":{\"assert_message\":\"STDCM result is conflicting with the scheduled timetable\",\"stack_trace\":[\"STDCMEndpointV2.kt:281\",\"STDCMEndpointV2.kt:1\",\"STDCMEndpointV2.kt:129\",\"WorkerCommand.kt:182\",\"AutorecoveringChannel.java:642\",\"ConsumerDispatcher.java:149\",\"ConsumerWorkService.java:111\",\"ThreadPoolExecutor.java:1136\",\"ThreadPoolExecutor.java:635\",\"Thread.java:840\"],\"url\":\"/v2/stdcm\",\"file_location\":\"STDCMEndpointV2.kt:281\"},\"message\":\"assert check failed\"}",
     "infra_name": "small_infra",
     "stdcm_payload": {
-        "rolling_stock_id": 474,
         "start_time": "2024-01-01T20:31:01+00:00",
         "maximum_departure_delay": 12554857,
         "maximum_run_time": 24293806,
@@ -56,7 +55,7 @@
         "margin": "0%",
         "consist_schedule": {
             "boundaries": [],
-            "values": []
+            "values": [{"rolling_stock_id": 474}]
         }
     },
     "prelude": [

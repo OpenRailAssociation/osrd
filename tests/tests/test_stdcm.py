@@ -71,7 +71,6 @@ def test_empty_timetable(
     op_study = create_op_study(EDITOAST_URL, foo_project_id, session)
     _, timetable, _ = create_scenario(EDITOAST_URL, small_infra.id, op_study, session)
     payload = {
-        "rolling_stock_id": fast_rolling_stock,
         "timetable_id": timetable,
         "margin": "0%",
         "start_time": "2024-08-13T21:26:05.793Z",
@@ -82,7 +81,14 @@ def test_empty_timetable(
         "comfort": "STANDARD",
         "maximum_departure_delay": 7200000,
         "maximum_run_time": 43200000,
-        "consist_schedule": {"boundaries": [], "values": []},
+        "consist_schedule": {
+            "boundaries": [],
+            "values": [
+                {
+                    "rolling_stock_id": fast_rolling_stock,
+                }
+            ],
+        },
     }
     r = session.post(
         EDITOAST_URL + f"/timetable/{timetable}/stdcm?infra={small_infra.id}",
@@ -101,7 +107,6 @@ def test_empty_timetable_with_stop(
     op_study = create_op_study(EDITOAST_URL, foo_project_id, session)
     _, timetable, _ = create_scenario(EDITOAST_URL, small_infra.id, op_study, session)
     payload = {
-        "rolling_stock_id": fast_rolling_stock,
         "timetable_id": timetable,
         "margin": "0%",
         "start_time": "2024-08-13T21:26:05.793Z",
@@ -113,7 +118,10 @@ def test_empty_timetable_with_stop(
         "comfort": "STANDARD",
         "maximum_departure_delay": 7200000,
         "maximum_run_time": 43200000,
-        "consist_schedule": {"boundaries": [], "values": []},
+        "consist_schedule": {
+            "boundaries": [],
+            "values": [{"rolling_stock_id": fast_rolling_stock}],
+        },
     }
     r = session.post(
         EDITOAST_URL + f"/timetable/{timetable}/stdcm?infra={small_infra.id}",
@@ -142,7 +150,6 @@ def test_between_trains(
         session,
     )
     payload = {
-        "rolling_stock_id": fast_rolling_stock,
         "timetable_id": small_scenario.timetable,
         "margin": "0%",
         "start_time": "2024-08-13T21:26:05.793Z",
@@ -154,7 +161,14 @@ def test_between_trains(
         "comfort": "STANDARD",
         "maximum_departure_delay": 7200000,
         "maximum_run_time": 43200000,
-        "consist_schedule": {"boundaries": [], "values": []},
+        "consist_schedule": {
+            "boundaries": [],
+            "values": [
+                {
+                    "rolling_stock_id": fast_rolling_stock,
+                }
+            ],
+        },
     }
     r = session.post(
         EDITOAST_URL
@@ -193,7 +207,6 @@ def test_work_schedules(
     work_schedules_response = work_schedules_r.json()
 
     payload = {
-        "rolling_stock_id": fast_rolling_stock,
         "start_time": "2024-01-05T13:00:00+00:00",
         "maximum_departure_delay": 7200000,
         "maximum_run_time": 43200000,
@@ -206,7 +219,14 @@ def test_work_schedules(
         "comfort": "STANDARD",
         "margin": "0%",
         "work_schedule_group_id": work_schedules_response["work_schedule_group_id"],
-        "consist_schedule": {"boundaries": [], "values": []},
+        "consist_schedule": {
+            "boundaries": [],
+            "values": [
+                {
+                    "rolling_stock_id": fast_rolling_stock,
+                }
+            ],
+        },
     }
     url = f"{EDITOAST_URL}timetable/{small_scenario.timetable}/stdcm/?infra={small_scenario.infra}"
     r = session.post(url, json=payload)
@@ -235,7 +255,6 @@ def test_mrsp_sources(
 ):
     stdcm_payload = {
         "start_time": "2024-05-22T10:00:00.000Z",
-        "rolling_stock_id": fast_rolling_stock,
         "comfort": "STANDARD",
         "maximum_departure_delay": 86400000,
         "maximum_run_time": 86400000,
@@ -246,12 +265,19 @@ def test_mrsp_sources(
                 "location": {"type": "track_offset", "track": "TH1", "offset": 5000000},
             },
         ],
-        "speed_limit_tags": "E32C",
         "time_gap_before": 3600000,
         "time_gap_after": 3600000,
         "margin": "0%",
         "standard_allowance": "3%",
-        "consist_schedule": {"boundaries": [], "values": []},
+        "consist_schedule": {
+            "boundaries": [],
+            "values": [
+                {
+                    "rolling_stock_id": fast_rolling_stock,
+                    "speed_limit_tag": "E32C",
+                }
+            ],
+        },
     }
 
     content = _get_stdcm_response(small_infra, timetable_id, stdcm_payload, session)
@@ -270,7 +296,7 @@ def test_mrsp_sources(
         ],
     }
 
-    stdcm_payload["speed_limit_tags"] = "MA80"
+    stdcm_payload["consist_schedule"]["values"][0]["speed_limit_tag"] = "MA80"
     content = _get_stdcm_response(small_infra, timetable_id, stdcm_payload, session)
     assert content["simulation"]["mrsp"] == {
         "boundaries": [3680000, 4580000],
@@ -347,7 +373,6 @@ def test_max_running_time(
     work_schedules_response = work_schedules_r.json()
 
     payload = {
-        "rolling_stock_id": fast_rolling_stock,
         "start_time": "2024-01-01T07:30:00+00:00",
         "maximum_departure_delay": 3600 * 10,
         "time_gap_before": 0,
@@ -359,7 +384,14 @@ def test_max_running_time(
         "comfort": "STANDARD",
         "margin": "0%",
         "work_schedule_group_id": work_schedules_response["work_schedule_group_id"],
-        "consist_schedule": {"boundaries": [], "values": []},
+        "consist_schedule": {
+            "boundaries": [],
+            "values": [
+                {
+                    "rolling_stock_id": fast_rolling_stock,
+                }
+            ],
+        },
     }
     url = f"{EDITOAST_URL}timetable/{small_scenario.timetable}/stdcm/?infra={small_scenario.infra}"
     r = session.post(url, json=payload)

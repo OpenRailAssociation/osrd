@@ -3433,7 +3433,6 @@ paths:
               description: An STDCM request
               required:
               - steps
-              - rolling_stock_id
               - comfort
               - consist_schedule
               properties:
@@ -3456,10 +3455,6 @@ paths:
                   - integer
                   - 'null'
                   format: int64
-                loading_gauge_type:
-                  oneOf:
-                  - type: 'null'
-                  - $ref: '#/components/schemas/LoadingGaugeType'
                 margin:
                   type:
                   - string
@@ -3468,14 +3463,6 @@ paths:
                   example:
                   - 5%
                   - 2min/100km
-                max_speed:
-                  type:
-                  - number
-                  - 'null'
-                  format: double
-                  description: |2-
-                     Maximum speed of the consist in km/h
-                    Velocity in m·s⁻¹
                 maximum_departure_delay:
                   type:
                   - integer
@@ -3494,14 +3481,6 @@ paths:
                     Specifies how long the total run time can be in milliseconds
                     Deprecated, first step data should be used instead
                   minimum: 0
-                rolling_stock_id:
-                  type: integer
-                  format: int64
-                speed_limit_tags:
-                  type:
-                  - string
-                  - 'null'
-                  description: Train categories for speed limits
                 start_time:
                   type:
                   - string
@@ -3535,27 +3514,6 @@ paths:
                     Enforces that the path used by the train should be free and
                     available at least that many milliseconds before its passage.
                   minimum: 0
-                total_length:
-                  type:
-                  - number
-                  - 'null'
-                  format: double
-                  description: |2-
-                     Total length of the consist in meters
-                    Length in m
-                total_mass:
-                  type:
-                  - number
-                  - 'null'
-                  format: double
-                  description: |2-
-                     Total mass of the consist
-                    Mass in kg
-                towed_rolling_stock_id:
-                  type:
-                  - integer
-                  - 'null'
-                  format: int64
                 work_schedule_group_id:
                   type:
                   - integer
@@ -5181,6 +5139,7 @@ components:
           type:
           - string
           - 'null'
+          description: Train categories for speed limits
         total_length:
           type:
           - number
@@ -5218,7 +5177,7 @@ components:
             $ref: '#/components/schemas/ConsistConfiguration'
           description: |-
             Consist configuration for each segment
-            It should contains one more element than boundaries
+            It should contain one more element than boundaries
     ConstraintDistributionChangeGroup:
       type: object
       required:
@@ -6298,6 +6257,7 @@ components:
       - $ref: '#/components/schemas/EditoastStdcmErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastStdcmErrorInvalidConsistLength'
       - $ref: '#/components/schemas/EditoastStdcmErrorInvalidConsistMass'
+      - $ref: '#/components/schemas/EditoastStdcmErrorInvalidConsistMaxSpeed'
       - $ref: '#/components/schemas/EditoastStdcmErrorInvalidPathItems'
       - $ref: '#/components/schemas/EditoastStdcmErrorTimetableNotFound'
       - $ref: '#/components/schemas/EditoastStdcmErrorTowedRollingStockNotFound'
@@ -7970,6 +7930,34 @@ components:
           type: string
           enum:
           - editoast:stdcm:InvalidConsistMass
+    EditoastStdcmErrorInvalidConsistMaxSpeed:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastStdcmErrorInvalidConsistMaxSpeedContext
+          required:
+          - expected_max
+          - provided_consist_max_speed
+          properties:
+            expected_max:
+              type: number
+            provided_consist_max_speed:
+              type: number
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:stdcm:InvalidConsistMaxSpeed
     EditoastStdcmErrorInvalidPathItems:
       type: object
       required:

@@ -231,6 +231,7 @@
       "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
       "InvalidConsistLength": "Longueur du convoi invalide {{provided_consist_length}} : doit être supérieure à '{{expected_min}}'",
       "InvalidConsistMass": "Masse du convoi invalide {{provided_consist_mass}} : elle doit être supérieure à '{{expected_min}}",
+      "InvalidConsistMaxSpeed": "Vitesse max. du convoi invalide {{provided_consist_max_speed}} : elle doit être positive et inférieure à '{{expected_max}}",
       "InvalidPathItems": "Point(s) de passage {{items}} invalide(s)",
       "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée",
       "TowedRollingStockNotFound": "Matériel roulant remorqué {towed_rolling_stock_id} non trouvé",
