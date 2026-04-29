@@ -43,7 +43,7 @@ export type TrainScheduleSetManager = {
 
 export default function useScenarioTrainScheduleSet(
   trainSchedulesWithDetails: TrainScheduleWithDetails[],
-  timetableItems: TrainScheduleResponse[],
+  trainSchedules: TrainScheduleResponse[],
   upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void
 ) {
   const { t } = useTranslation('operational-studies', {
@@ -194,10 +194,14 @@ export default function useScenarioTrainScheduleSet(
       }).unwrap();
 
       // copy all the trains that were attached to the old published tss
-      const trainsToCopy: TrainSchedule[] = timetableItems
-        .filter((item) => item.train_schedule_set_id === trainScheduleSet.id)
-        .map((item) => {
-          const { id: __id, train_schedule_set_id: _train_schedule_set_id, ...rest } = item;
+      const trainsToCopy: TrainSchedule[] = trainSchedules
+        .filter((trainSchedule) => trainSchedule.train_schedule_set_id === trainScheduleSet.id)
+        .map((trainSchedule) => {
+          const {
+            id: __id,
+            train_schedule_set_id: _train_schedule_set_id,
+            ...rest
+          } = trainSchedule;
 
           return {
             ...rest,
@@ -215,7 +219,7 @@ export default function useScenarioTrainScheduleSet(
       linkTrainScheduleSetToTimetable,
       timetableId,
       trainScheduleSets,
-      timetableItems,
+      trainSchedules,
     ]
   );
 

@@ -1,8 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import type { RoundTrips,
-  TrainScheduleResponse,
-} from 'common/api/osrdEditoastApi';
+import type { RoundTrips, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 
 import { buildTimetableExportPayload } from '../utils';
 
@@ -14,10 +12,10 @@ const buildPacedTrain = (id: number): TrainScheduleResponse =>
 
 describe('buildTimetableExportPayload', () => {
   it('includes forced one-way round trips for selected paced trains', () => {
-    const timetableItems = [buildPacedTrain(12)];
+    const trainSchedules = [buildPacedTrain(12)];
     const roundTrips: RoundTrips = { one_ways: [12], round_trips: [] };
 
-    const payload = buildTimetableExportPayload(timetableItems, [12], roundTrips);
+    const payload = buildTimetableExportPayload(trainSchedules, [12], roundTrips);
 
     expect(payload.round_trips).toEqual([[0, null]]);
   });

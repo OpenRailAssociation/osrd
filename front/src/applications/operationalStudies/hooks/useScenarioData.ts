@@ -3,7 +3,11 @@ import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { skipToken } from '@reduxjs/toolkit/query';
 import { keyBy, sortBy } from 'lodash';
 
-import { osrdEditoastApi, type ScenarioWithDetails , type TrainScheduleResponse } from 'common/api/osrdEditoastApi';
+import {
+  osrdEditoastApi,
+  type ScenarioWithDetails,
+  type TrainScheduleResponse,
+} from 'common/api/osrdEditoastApi';
 import { useRollingStockContext } from 'common/RollingStockContext';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChartWrapper/useLazyProjectTrains';
 import { formatPacedTrainWithDetails } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
@@ -23,8 +27,8 @@ type ScenarioBroadcastMessage =
 const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetableId: number) => {
   const dispatch = useAppDispatch();
 
-  const [timetableItems, setTimetableItems] = useState<TrainScheduleResponse[]>();
-  const timetableItemsById = useMemo(() => mapBy(timetableItems, 'id'), [timetableItems]);
+  const [trainSchedules, setTrainSchedules] = useState<TrainScheduleResponse[]>();
+  const trainSchedulesById = useMemo(() => mapBy(trainSchedules, 'id'), [trainSchedules]);
   const [selectedTrainScheduleIds, setSelectedTrainScheduleIds] = useState<number[]>([]);
 
   const [updateTrainSchedule] = osrdEditoastApi.endpoints.putTrainSchedulesById.useMutation();
@@ -32,7 +36,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
   const { workerStatus } = useScenarioContext();
   const { rollingStocks, rollingStockMap: rollingStocksByName } = useRollingStockContext();
 
-  const projectionPath = usePathProjection(infraId, timetableItemsById);
+  const projectionPath = usePathProjection(infraId, trainSchedulesById);
 
   useEffect(() => {
     const pacedTrainsResult = dispatch(
@@ -41,13 +45,13 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       })
     );
 
-    const fetchTimetableItems = async () => {
+    const fetchTrainSchedules = async () => {
       const pacedTrains = (await pacedTrainsResult.unwrap()) ?? [];
 
-      setTimetableItems(sortBy(pacedTrains, 'start_time'));
+      setTrainSchedules(sortBy(pacedTrains, 'start_time'));
     };
 
-    fetchTimetableItems();
+    fetchTrainSchedules();
 
     return () => {
       pacedTrainsResult.unsubscribe();
@@ -84,7 +88,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     electricalProfileSetId: scenario.electrical_profile_set_id,
     rollingStocks,
     onProgress: (summaries) => {
-      projectTrainSchedules([...summaries.keys()].map((id) => timetableItemsById.get(id)!));
+      projectTrainSchedules([...summaries.keys()].map((id) => trainSchedulesById.get(id)!));
     },
   });
 
@@ -102,28 +106,28 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
   const isConflictsLoading = isUninitialized || isFetching;
 
   const trainSchedulesWithDetails = useMemo(() => {
-    const items = (timetableItems || []).map((timetableItem) => {
-      const simulatedTrain = simulatedTrainsById.get(timetableItem.id);
+    const trains = (trainSchedules || []).map((trainSchedule) => {
+      const simulatedTrain = simulatedTrainsById.get(trainSchedule.id);
       if (simulatedTrain) return simulatedTrain;
-      const rollingStock = rollingStocksByName.get(timetableItem.rolling_stock_name);
-      return formatPacedTrainWithDetails(timetableItem, rollingStock);
+      const rollingStock = rollingStocksByName.get(trainSchedule.rolling_stock_name);
+      return formatPacedTrainWithDetails(trainSchedule, rollingStock);
     });
-    return sortBy(items, ['startTime', 'name', 'id']);
-  }, [timetableItems, rollingStocksByName, simulatedTrainsById]);
+    return sortBy(trains, ['startTime', 'name', 'id']);
+  }, [trainSchedules, rollingStocksByName, simulatedTrainsById]);
 
   const projectedTrains = useMemo(
     () => Array.from(projectedTrainsById.values()),
     [projectedTrainsById]
   );
 
-  useAutoSelectTrainIds(timetableItems ? trainSchedulesWithDetails : undefined);
+  useAutoSelectTrainIds(trainSchedules ? trainSchedulesWithDetails : undefined);
 
   // first load of the summaries
   useEffect(() => {
-    if (timetableItems && workerStatus === 'READY' && simulatedTrainsById.size === 0) {
-      simulateTrainSchedules(timetableItems);
+    if (trainSchedules && workerStatus === 'READY' && simulatedTrainsById.size === 0) {
+      simulateTrainSchedules(trainSchedules);
     }
-  }, [timetableItems, workerStatus, simulatedTrainsById]);
+  }, [trainSchedules, workerStatus, simulatedTrainsById]);
 
   const broadcastChannel = useRef<BroadcastChannel>(null);
 
@@ -132,7 +136,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
   };
 
   const upsertTrainSchedules = useCallback((trainSchedulesToUpsert: TrainScheduleResponse[]) => {
-    setTimetableItems((prev) =>
+    setTrainSchedules((prev) =>
       sortBy(
         Object.values({ ...keyBy(prev, 'id'), ...keyBy(trainSchedulesToUpsert, 'id') }),
         'start_time'
@@ -145,12 +149,12 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
   }, []);
 
   const removeTrainSchedules = useCallback((_trainSchedulesToRemove: number[]) => {
-    setTimetableItems((prev) => {
-      const prevTimetableItemsById = mapBy(prev, 'id');
+    setTrainSchedules((prev) => {
+      const prevTrainSchedulesById = mapBy(prev, 'id');
       _trainSchedulesToRemove.forEach((trainScheduleId) => {
-        prevTimetableItemsById.delete(trainScheduleId);
+        prevTrainSchedulesById.delete(trainScheduleId);
       });
-      return Array.from(prevTimetableItemsById.values());
+      return Array.from(prevTrainSchedulesById.values());
     });
 
     setSelectedTrainScheduleIds((prevSelected) =>
@@ -163,20 +167,20 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
 
   const setTrainScheduleDepartureTime = useCallback(
     (trainScheduleId: number, newDeparture: Date) => {
-      setTimetableItems((prev) => {
-        const timetableItem = prev?.find((item) => item.id === trainScheduleId);
-        if (!timetableItem) {
+      setTrainSchedules((prev) => {
+        const trainSchedule = prev?.find((train) => train.id === trainScheduleId);
+        if (!trainSchedule) {
           return prev;
         }
-        const updatedTimetableItem = {
-          ...timetableItem,
+        const updatedTrainSchedule = {
+          ...trainSchedule,
           start_time: newDeparture.toISOString(),
         };
-        const newTimetableItemsById = {
+        const newTrainSchedulesById = {
           ...keyBy(prev, 'id'),
-          ...keyBy([updatedTimetableItem], 'id'),
+          ...keyBy([updatedTrainSchedule], 'id'),
         };
-        return sortBy(Object.values(newTimetableItemsById), 'start_time');
+        return sortBy(Object.values(newTrainSchedulesById), 'start_time');
       });
 
       updateSimulatedTrainScheduleDepartureTime(trainScheduleId, newDeparture);
@@ -188,22 +192,22 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
   /** Update only departure time of a train schedule */
   const updateTrainScheduleDepartureTime = useCallback(
     async (trainScheduleId: number, newDeparture: Date) => {
-      const timetableItem = timetableItems?.find((item) => item.id === trainScheduleId);
-      if (!timetableItem) {
-        throw new Error(`Timetable item "${trainScheduleId}" not found`);
+      const trainSchedule = trainSchedules?.find((train) => train.id === trainScheduleId);
+      if (!trainSchedule) {
+        throw new Error(`Train schedule "${trainScheduleId}" not found`);
       }
 
       await updateTrainSchedule({
-        id: timetableItem.id,
+        id: trainSchedule.id,
         trainSchedule: {
-          ...timetableItem,
+          ...trainSchedule,
           start_time: newDeparture.toISOString(),
         },
       }).unwrap();
 
       setTrainScheduleDepartureTime(trainScheduleId, newDeparture);
     },
-    [timetableItems]
+    [trainSchedules]
   );
 
   const upsertTrainSchedulesWithBroadcast = useCallback(
@@ -274,14 +278,14 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
   const results = useMemo(
     () => ({
       trainSchedulesWithDetails,
-      timetableItems,
+      trainSchedules,
       projectionData: projectionPath
         ? {
             ...projectionPath,
             projectedTrains,
             projectionLoaderData: {
               allTrainsProjected,
-              totalTrains: timetableItems?.length ?? 0,
+              totalTrains: trainSchedules?.length ?? 0,
             },
           }
         : undefined,
@@ -295,11 +299,11 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     }),
     [
       trainSchedulesWithDetails,
-      timetableItems,
+      trainSchedules,
       projectionPath,
       projectedTrains,
       allTrainsProjected,
-      timetableItems?.length ?? 0,
+      trainSchedules?.length ?? 0,
       conflicts,
       isConflictsLoading,
       rollingStocks,

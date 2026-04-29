@@ -49,7 +49,7 @@ import {
   formatEditoastIdToPacedTrainId,
 } from 'utils/trainId';
 
-import { TIMETABLE_ITEM_DELTA } from '../consts';
+import { TRAIN_SCHEDULE_DELTA } from '../consts';
 import TrainScheduleActions from '../TrainScheduleActions';
 import { formatTrainDuration, getTrainCategoryClassName } from '../utils';
 import useOccurrenceActions from './hooks/useOccurrenceActions';
@@ -228,7 +228,7 @@ const PacedTrainItem = ({
 
     const startTime = addDurationToDate(
       new Date(pacedTrainDetail.start_time),
-      new Duration({ minutes: TIMETABLE_ITEM_DELTA })
+      new Duration({ minutes: TRAIN_SCHEDULE_DELTA })
     );
     const newPacedTrain: TrainSchedule = {
       ...omit(pacedTrainDetail, ['id', 'train_schedule_set_id']),

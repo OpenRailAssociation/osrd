@@ -327,8 +327,8 @@ describe('getOccurrencesWorstStatus', () => {
 });
 
 describe('isOccurrencePresentInPacedTrain', () => {
-  const timetableItemId = 123;
-  const pacedTrainId = formatEditoastIdToPacedTrainId(timetableItemId);
+  const trainScheduleId = 123;
+  const pacedTrainId = formatEditoastIdToPacedTrainId(trainScheduleId);
 
   const paced = {
     timeWindow: Duration.parse('PT2H'),
@@ -340,13 +340,13 @@ describe('isOccurrencePresentInPacedTrain', () => {
       { id: 2, key: '2', occurrence_index: 2, disabled: false },
     ],
   };
-  const timetableItem = { paced, id: timetableItemId };
+  const trainSchedule = { paced, id: trainScheduleId };
 
-  it('should return false if the timetable item is not paced', () => {
+  it('should return false if the train schedule is not paced', () => {
     expect(
       isOccurrencePresentInPacedTrain(formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, 0), {
         paced: undefined,
-        id: timetableItemId,
+        id: trainScheduleId,
       })
     ).toEqual(false);
   });
@@ -355,7 +355,7 @@ describe('isOccurrencePresentInPacedTrain', () => {
     expect(
       isOccurrencePresentInPacedTrain(
         formatPacedTrainIdToIndexedOccurrenceId(formatEditoastIdToPacedTrainId(999), 0),
-        timetableItem
+        trainSchedule
       )
     ).toEqual(false);
   });
@@ -364,13 +364,13 @@ describe('isOccurrencePresentInPacedTrain', () => {
     expect(
       isOccurrencePresentInPacedTrain(
         formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, 0), // regular occurrence
-        timetableItem
+        trainSchedule
       )
     ).toEqual(true);
     expect(
       isOccurrencePresentInPacedTrain(
         formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, 2), // modified exception
-        timetableItem
+        trainSchedule
       )
     ).toEqual(true);
   });
@@ -379,13 +379,13 @@ describe('isOccurrencePresentInPacedTrain', () => {
     expect(
       isOccurrencePresentInPacedTrain(
         formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, -1),
-        timetableItem
+        trainSchedule
       )
     ).toEqual(false);
     expect(
       isOccurrencePresentInPacedTrain(
         formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, 4),
-        timetableItem
+        trainSchedule
       )
     ).toEqual(false);
   });
@@ -394,7 +394,7 @@ describe('isOccurrencePresentInPacedTrain', () => {
     expect(
       isOccurrencePresentInPacedTrain(
         formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, 1),
-        timetableItem
+        trainSchedule
       )
     ).toEqual(false);
   });
@@ -403,7 +403,7 @@ describe('isOccurrencePresentInPacedTrain', () => {
     expect(
       isOccurrencePresentInPacedTrain(
         formatPacedTrainIdToExceptionId(pacedTrainId, 0),
-        timetableItem
+        trainSchedule
       )
     ).toEqual(true);
   });
@@ -412,7 +412,7 @@ describe('isOccurrencePresentInPacedTrain', () => {
     expect(
       isOccurrencePresentInPacedTrain(
         formatPacedTrainIdToExceptionId(pacedTrainId, 999),
-        timetableItem
+        trainSchedule
       )
     ).toEqual(false);
   });

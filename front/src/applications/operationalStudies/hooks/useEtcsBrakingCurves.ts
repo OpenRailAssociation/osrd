@@ -54,7 +54,7 @@ const formatEtcsCurves = (etcsBrakingCurves: CoreEtcsBrakingCurvesResponse): Etc
 const useEtcsBrakingCurves = (
   isEtcs: boolean,
   simulation: SimulationResponseSuccess | undefined,
-  timetableItems: TrainScheduleResponse[] | undefined
+  trainSchedules: TrainScheduleResponse[] | undefined
 ): {
   etcsBrakingCurves: EtcsBrakingCurves | undefined;
   fetchEtcsBrakingCurves: (() => Promise<void>) | undefined;
@@ -64,7 +64,7 @@ const useEtcsBrakingCurves = (
 
   const { infraId, electricalProfileSetId } = useScenarioContext();
   const selectedTrainId = useSelector(getSelectedTrainId);
-  const trainSchedule = useSelectedTrainSchedule(timetableItems);
+  const trainSchedule = useSelectedTrainSchedule(trainSchedules);
   const exception = useMemo(() => {
     if (
       !selectedTrainId ||

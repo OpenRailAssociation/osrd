@@ -17,26 +17,26 @@ import {
  * Turns trainSpaceTimeData (unique trains + pacedTrains) into individual train projection.
  * Extracts everything into one flat array.
  */
-const makeProjectedItems = (timetableItemProjections: TrainSpaceTimeData[]) =>
-  timetableItemProjections.flatMap<IndividualTrainProjection>((projectedItem) => {
-    const pacedTrainId = formatEditoastIdToPacedTrainId(projectedItem.id);
-    if (!projectedItem.paced) {
-      return { ...projectedItem, id: pacedTrainId };
+const makeProjectedTrains = (trainScheduleProjections: TrainSpaceTimeData[]) =>
+  trainScheduleProjections.flatMap<IndividualTrainProjection>((projectedTrain) => {
+    const pacedTrainId = formatEditoastIdToPacedTrainId(projectedTrain.id);
+    if (!projectedTrain.paced) {
+      return { ...projectedTrain, id: pacedTrainId };
     }
 
     const occurrences: IndividualTrainProjection[] = [];
-    const pacedTrainCurves = pick(projectedItem, [
+    const pacedTrainCurves = pick(projectedTrain, [
       'spaceTimeCurves',
       'signalUpdates',
       'isSimulated',
     ]);
 
     // =========== indexed occurrences ===========
-    const occurrencesCount = getOccurrencesNb(projectedItem.paced);
+    const occurrencesCount = getOccurrencesNb(projectedTrain.paced);
     for (let i = 0; i < occurrencesCount; i += 1) {
       const occurrenceId = formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, i);
       const correspondingException = findExceptionWithOccurrenceId(
-        projectedItem.paced.exceptions,
+        projectedTrain.paced.exceptions,
         occurrenceId
       );
 
@@ -47,31 +47,31 @@ const makeProjectedItems = (timetableItemProjections: TrainSpaceTimeData[]) =>
         occurrences.push({
           ...pacedTrainCurves,
           id: occurrenceId,
-          name: computeOccurrenceName(projectedItem.name, i),
+          name: computeOccurrenceName(projectedTrain.name, i),
           departureTime: computeIndexedOccurrenceStartTime(
-            projectedItem.departureTime,
-            projectedItem.paced.interval,
+            projectedTrain.departureTime,
+            projectedTrain.paced.interval,
             i
           ),
         });
         continue;
       }
 
-      const exceptionProjection = projectedItem.paced.exceptionProjections.get(
+      const exceptionProjection = projectedTrain.paced.exceptionProjections.get(
         correspondingException.id! // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
       );
 
       const departureTime = correspondingException.start_time
         ? new Date(correspondingException.start_time.value)
         : computeIndexedOccurrenceStartTime(
-            projectedItem.departureTime,
-            projectedItem.paced.interval,
+            projectedTrain.departureTime,
+            projectedTrain.paced.interval,
             i
           );
 
       const name = correspondingException?.train_name
         ? correspondingException.train_name.value
-        : computeOccurrenceName(projectedItem.name, i);
+        : computeOccurrenceName(projectedTrain.name, i);
 
       occurrences.push({
         ...(exceptionProjection ?? pacedTrainCurves),
@@ -83,7 +83,7 @@ const makeProjectedItems = (timetableItemProjections: TrainSpaceTimeData[]) =>
     }
 
     // =========== added exceptions ===========
-    for (const exception of projectedItem.paced.exceptions) {
+    for (const exception of projectedTrain.paced.exceptions) {
       if (Number.isInteger(exception.occurrence_index)) {
         // already done in the indexed occurrences loop above
         continue;
@@ -95,13 +95,13 @@ const makeProjectedItems = (timetableItemProjections: TrainSpaceTimeData[]) =>
       if (!exception.start_time) throw new Error('added exception should have a start time');
 
       const id = formatEditoastIdToExceptionId({
-        pacedTrainId: projectedItem.id,
+        pacedTrainId: projectedTrain.id,
         exceptionId: exception.id!, // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
       });
-      const name = exception.train_name ? exception.train_name.value : `${projectedItem.name}/+`;
+      const name = exception.train_name ? exception.train_name.value : `${projectedTrain.name}/+`;
 
       occurrences.push({
-        ...(projectedItem.paced.exceptionProjections.get(exception.id!) ?? pacedTrainCurves), // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
+        ...(projectedTrain.paced.exceptionProjections.get(exception.id!) ?? pacedTrainCurves), // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
         id,
         name,
         departureTime: new Date(exception.start_time.value),
@@ -111,4 +111,4 @@ const makeProjectedItems = (timetableItemProjections: TrainSpaceTimeData[]) =>
     return occurrences;
   });
 
-export default makeProjectedItems;
+export default makeProjectedTrains;

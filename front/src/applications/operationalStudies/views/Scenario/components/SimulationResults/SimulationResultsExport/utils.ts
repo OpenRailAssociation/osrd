@@ -19,7 +19,7 @@ export function massWithOneDecimal(number: number) {
 }
 
 // On the next function, we need to check if the found index is included in the array
-// to prevent a white screen when data are computing and synchronizing when switching the selected timetable item
+// to prevent a white screen when data are computing and synchronizing when switching the selected train schedule
 
 /**
  * Get the Vmax values at a givenPosition (in meters), using vmax (MRSP in m/s)
@@ -79,21 +79,21 @@ const getTimeAndSpeed = (
  */
 export const formatOperationalPoints = (
   operationalPoints: PathPropertiesFormatted['operationalPoints'],
-  simulatedTimetableItem: SimulationResponseSuccess,
-  timetableItem: Train,
+  simulatedTrainSchedule: SimulationResponseSuccess,
+  trainSchedule: Train,
   trackSections: Record<string, TrackSection>
 ): OperationalPointWithTimeAndSpeed[] => {
   // Format operational points
   const formattedStops: OperationalPointWithTimeAndSpeed[] = [];
 
-  const { final_output } = simulatedTimetableItem;
+  const { final_output } = simulatedTrainSchedule;
 
   operationalPoints.forEach((op) => {
     const { time: finalOutputTime, speed: finalOutputSpeed } = getTimeAndSpeed(final_output, op);
 
     // Get duration
     let stepDuration: Duration | undefined;
-    const correspondingStep = timetableItem.path.find((step) =>
+    const correspondingStep = trainSchedule.path.find((step) =>
       matchPathStepAndOp(step.location, {
         opId: op.id,
         uic: op.extensions?.identifier?.uic,
@@ -104,7 +104,7 @@ export const formatOperationalPoints = (
       })
     );
     if (correspondingStep) {
-      const correspondingSchedule = timetableItem.schedule?.find(
+      const correspondingSchedule = trainSchedule.schedule?.find(
         (step) => step.at === correspondingStep.id
       );
       if (correspondingSchedule && correspondingSchedule.stop_for) {
@@ -133,7 +133,7 @@ export const formatOperationalPoints = (
 
     formattedStops.push({
       time: addDurationToDate(
-        new Date(timetableItem.start_time),
+        new Date(trainSchedule.start_time),
         new Duration({ milliseconds: finalOutputTime })
       ),
       speed: finalOutputSpeed,

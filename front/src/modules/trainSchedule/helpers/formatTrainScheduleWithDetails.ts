@@ -59,13 +59,13 @@ const formatSummary = (summary?: SimulationSummaryResult): SimulationSummary | u
     : { isValid: false, invalidReason: extractInvalidReason(summary) };
 };
 
-const extractBaseTimetableItemProps = (timetableItem: TrainScheduleResponse) => ({
-  name: timetableItem.train_name,
-  startTime: new Date(timetableItem.start_time),
-  stopsCount: intermediateStopsCount(timetableItem),
-  rollingStockName: timetableItem.rolling_stock_name,
-  speedLimitTag: timetableItem.speed_limit_tag ?? null,
-  labels: timetableItem.labels ?? [],
+const extractBaseTrainScheduleProps = (trainSchedule: TrainScheduleResponse) => ({
+  name: trainSchedule.train_name,
+  startTime: new Date(trainSchedule.start_time),
+  stopsCount: intermediateStopsCount(trainSchedule),
+  rollingStockName: trainSchedule.rolling_stock_name,
+  speedLimitTag: trainSchedule.speed_limit_tag ?? null,
+  labels: trainSchedule.labels ?? [],
 });
 
 export const formatPacedTrainWithDetails = (
@@ -85,7 +85,7 @@ export const formatPacedTrainWithDetails = (
   if (!paced) {
     return {
       ...pacedTrainProps,
-      ...extractBaseTimetableItemProps(pacedTrain),
+      ...extractBaseTrainScheduleProps(pacedTrain),
       rollingStock,
       summary: formatSummary(pacedTrainSummary?.train_schedule),
     };
@@ -116,7 +116,7 @@ export const formatPacedTrainWithDetails = (
 
   return {
     ...pacedTrainProps,
-    ...extractBaseTimetableItemProps(pacedTrain),
+    ...extractBaseTrainScheduleProps(pacedTrain),
     rollingStock,
     paced: {
       timeWindow: Duration.parse(paced.time_window),

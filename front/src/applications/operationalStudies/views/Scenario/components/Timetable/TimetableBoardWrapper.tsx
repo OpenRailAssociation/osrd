@@ -22,7 +22,7 @@ import { mapBy } from 'utils/types';
 import { validateTimetableJsonPayload } from '../ImportTrainSchedule/helpers/parseJson';
 import { postFullImportPayload } from '../ImportTrainSchedule/helpers/postPayloads';
 import Timetable from './Timetable';
-import { copyTimetableItemsToClipboard } from './utils';
+import { copyTrainSchedulesToClipboard } from './utils';
 
 type TimetableBoardWrapperProps = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
@@ -30,7 +30,7 @@ type TimetableBoardWrapperProps = {
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
   removeTrainSchedules: (trainScheduleIdsToRemove: number[]) => void;
   trainScheduleToEditData?: TrainScheduleToEditData;
-  timetableItems?: TrainScheduleResponse[];
+  trainSchedules?: TrainScheduleResponse[];
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
   refreshNge: () => Promise<void>;
   projectingOnSimulatedPathException: boolean | undefined;
@@ -44,7 +44,7 @@ const TimetableBoardWrapper = ({
   setTrainScheduleToEditData,
   removeTrainSchedules,
   trainScheduleToEditData,
-  timetableItems = [],
+  trainSchedules = [],
   trainSchedulesWithDetails,
   refreshNge,
   projectingOnSimulatedPathException,
@@ -65,9 +65,9 @@ const TimetableBoardWrapper = ({
 
   const { totalPacedTrainCount, totalUniqueTrainCount } = useMemo(
     () =>
-      timetableItems.reduce(
-        (acc, timetableItem) => {
-          if (!timetableItem.paced) {
+      trainSchedules.reduce(
+        (acc, trainSchedule) => {
+          if (!trainSchedule.paced) {
             acc.totalUniqueTrainCount += 1;
           } else {
             acc.totalPacedTrainCount += 1;
@@ -76,7 +76,7 @@ const TimetableBoardWrapper = ({
         },
         { totalPacedTrainCount: 0, totalUniqueTrainCount: 0 }
       ),
-    [timetableItems]
+    [trainSchedules]
   );
 
   const { selectedUniqueTrainIds, selectedPacedTrainIds } = useMemo(() => {
@@ -199,14 +199,14 @@ const TimetableBoardWrapper = ({
       return;
     }
 
-    await copyTimetableItemsToClipboard(selectedTrainScheduleIds, timetableItems);
+    await copyTrainSchedulesToClipboard(selectedTrainScheduleIds, trainSchedules);
     dispatch(
       setSuccess({
         title: t('main.copyTimetable.title'),
         text: t('main.copyTimetable.text', { count: selectedTrainScheduleIds.length }),
       })
     );
-  }, [selectedTrainScheduleIds, timetableItems]);
+  }, [selectedTrainScheduleIds, trainSchedules]);
 
   const handlePaste = useCallback(async () => {
     let data = null;
@@ -215,7 +215,7 @@ const TimetableBoardWrapper = ({
       data = JSON.parse(clipboardContent);
       const importedPayload = validateTimetableJsonPayload(data);
 
-      const newTimetableItems = await postFullImportPayload(
+      const newTrainSchedules = await postFullImportPayload(
         sandboxId,
         scenario.timetable_id,
         scenario.id,
@@ -226,11 +226,11 @@ const TimetableBoardWrapper = ({
         upsertTrainSchedules
       );
 
-      setSelectedTrainScheduleIds(newTimetableItems.map((item) => item.id));
+      setSelectedTrainScheduleIds(newTrainSchedules.map((train) => train.id));
       dispatch(
         setSuccess({
           title: t('main.pasteTimetable.title'),
-          text: t('main.pasteTimetable.text', { count: newTimetableItems.length }),
+          text: t('main.pasteTimetable.text', { count: newTrainSchedules.length }),
         })
       );
     } catch (e) {
@@ -250,7 +250,7 @@ const TimetableBoardWrapper = ({
       }
 
       event.preventDefault();
-      await copyTimetableItemsToClipboard(selectedTrainScheduleIds, timetableItems);
+      await copyTrainSchedulesToClipboard(selectedTrainScheduleIds, trainSchedules);
       await handleTrainsDelete(selectedTrainId, true);
       dispatch(
         setSuccess({
@@ -259,7 +259,7 @@ const TimetableBoardWrapper = ({
         })
       );
     },
-    [selectedTrainScheduleIds, timetableItems]
+    [selectedTrainScheduleIds, trainSchedules]
   );
 
   const handleDeleteTrainSchedules = () => {
@@ -299,7 +299,7 @@ const TimetableBoardWrapper = ({
         removeAndUnselectTrains={removeTrainSchedules}
         handleDeleteTrainSchedules={handleDeleteTrainSchedules}
         trainScheduleToEditData={trainScheduleToEditData}
-        timetableItems={timetableItems}
+        trainSchedules={trainSchedules}
         trainSchedulesWithDetails={trainSchedulesWithDetails}
         refreshNge={refreshNge}
         projectingOnSimulatedPathException={projectingOnSimulatedPathException}

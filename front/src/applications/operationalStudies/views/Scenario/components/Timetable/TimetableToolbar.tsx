@@ -17,7 +17,7 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
-import { osrdEditoastApi , type TrainScheduleResponse } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import MenuTriggerButton from 'common/MenuTriggerButton';
 import UploadFileModal from 'common/uploadFileModal';
@@ -33,7 +33,7 @@ import { exportTrainSchedules, timetableHasInvalidTrainSchedule } from './utils'
 
 type TimetableToolbarProps = {
   timetableFilters: TimetableFilters;
-  timetableItems: TrainScheduleResponse[];
+  trainSchedules: TrainScheduleResponse[];
   filteredTrainSchedules: TrainScheduleWithDetails[];
   selectedTrainScheduleIds: number[];
   showTrainDetails: boolean;
@@ -52,7 +52,7 @@ type TimetableToolbarProps = {
 
 const TimetableToolbar = ({
   timetableFilters,
-  timetableItems,
+  trainSchedules,
   filteredTrainSchedules,
   selectedTrainScheduleIds,
   showTrainDetails,
@@ -97,7 +97,7 @@ const TimetableToolbar = ({
   const handleExportTrainSchedules = () => {
     exportTrainSchedules(
       selectedTrainScheduleIds,
-      timetableItems,
+      trainSchedules,
       pacedTrainRoundTripsData?.results
     );
   };
@@ -149,7 +149,7 @@ const TimetableToolbar = ({
             data-testid="scenarios-select-options-button"
             title={t('timetable.selectOptions')}
             onClick={toggleisSelectMode}
-            disabled={timetableItems.length === 0}
+            disabled={trainSchedules.length === 0}
             type="button"
           >
             <CheckBox />
@@ -161,7 +161,7 @@ const TimetableToolbar = ({
             data-testid="scenarios-show-train-details-button"
             title={showTrainDetails ? t('lessDetails') : t('moreDetails')}
             onClick={toggleShowTrainDetails}
-            disabled={timetableItems.length === 0}
+            disabled={trainSchedules.length === 0}
             type="button"
           >
             <Note />
@@ -171,7 +171,7 @@ const TimetableToolbar = ({
             data-testid="scenarios-manage-round-trips-button"
             title={t('roundTripsModal.manageRoundTrips')}
             onClick={() => setRoundTripsModalIsOpen(true)}
-            disabled={timetableItems.length === 0}
+            disabled={trainSchedules.length === 0}
             type="button"
           >
             <ArrowSwitch />
@@ -219,7 +219,7 @@ const TimetableToolbar = ({
             data-testid="timetable-filter-button"
             title={t('timetable.toggleFilters')}
             onClick={toggleFilterPanel}
-            disabled={timetableItems.length === 0}
+            disabled={trainSchedules.length === 0}
             type="button"
           >
             <Filter />
@@ -278,7 +278,7 @@ const TimetableToolbar = ({
           setRoundTripsModalIsOpen={setRoundTripsModalIsOpen}
           infraId={infraId}
           timetableId={timetableId}
-          trainSchedules={timetableItems}
+          trainSchedules={trainSchedules}
           refreshNge={refreshNge}
         />
       )}

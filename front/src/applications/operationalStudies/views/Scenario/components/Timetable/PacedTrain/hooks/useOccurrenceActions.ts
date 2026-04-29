@@ -79,7 +79,7 @@ const useOccurrenceActions = ({
     dispatch(updateTrainIdUsedForProjection(occurrenceId));
   }, []);
 
-  // We build a new timetable item to edit with the current paced train modified with
+  // We build a new train schedule to edit with the current paced train modified with
   // the occurrence start time and all its eventual exceptions
   const editOccurrence = useCallback(
     async (editedOccurrence: Occurrence) => {

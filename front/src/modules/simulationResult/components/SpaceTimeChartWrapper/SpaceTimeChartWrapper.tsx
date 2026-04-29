@@ -58,7 +58,7 @@ import { buildSplitPoints } from './buildSplitPoints';
 import cutSpaceTimeCurves from './helpers/cutSpaceTimeCurves';
 import formatSpaceTimeCurves from './helpers/formatSpaceTimeCurves';
 import getPathStyle from './helpers/getPathStyle';
-import makeProjectedItems from './helpers/makeProjectedItems';
+import makeProjectedTrains from './helpers/makeProjectedTrains';
 import { getOccupancyBlocks } from './helpers/utils';
 import ProjectionLoadingMessage from './ProjectionLoadingMessage';
 import SettingsPanel from './SettingsPanel';
@@ -68,7 +68,7 @@ import WaypointsPanel from './WaypointsPanel';
 
 type SpaceTimeChartWrapperBaseProps = {
   operationalPoints: PathOperationalPoint[];
-  timetableItemProjections: TrainSpaceTimeData[];
+  trainScheduleProjections: TrainSpaceTimeData[];
   selectedTrainId?: TrainId;
   conflicts?: Conflict[];
   workSchedules?: PostWorkSchedulesProjectPathApiResponse;
@@ -122,7 +122,7 @@ export const MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT = 561;
 
 const SpaceTimeChartWrapper = ({
   operationalPoints,
-  timetableItemProjections,
+  trainScheduleProjections,
   waypointsPanelData,
   conflicts = [],
   workSchedules,
@@ -152,15 +152,15 @@ const SpaceTimeChartWrapper = ({
 
   const translations = { linearMode: t('main.linearMode') };
 
-  const isTimetableItemValid = useMemo(() => {
-    const selectedItemId = extractEditoastIdFromPacedTrainId(
+  const isTrainScheduleValid = useMemo(() => {
+    const selectedTrainScheduleId = extractEditoastIdFromPacedTrainId(
       isOccurrenceId(selectedProjectionId)
         ? extractPacedTrainIdFromOccurrenceId(selectedProjectionId)
         : selectedProjectionId
     );
 
     const trainScheduleUsedForProjectionWithDetails = trainSchedulesWithDetails?.find(
-      (trainSchedule) => trainSchedule.id === selectedItemId
+      (trainSchedule) => trainSchedule.id === selectedTrainScheduleId
     );
 
     if (
@@ -194,8 +194,8 @@ const SpaceTimeChartWrapper = ({
   });
 
   const projectedTrains = useMemo(
-    () => makeProjectedItems(timetableItemProjections),
-    [timetableItemProjections]
+    () => makeProjectedTrains(trainScheduleProjections),
+    [trainScheduleProjections]
   );
 
   // Cut the spacetime chart curves if the first or last waypoints are hidden
@@ -297,13 +297,13 @@ const SpaceTimeChartWrapper = ({
       setTimeOrigin(+trainUsedForProjection.departureTime);
     } else {
       const minTime = Math.min(
-        ...timetableItemProjections
+        ...trainScheduleProjections
           .filter((train) => train.spaceTimeCurves.length > 0)
           .map((p) => +p.departureTime)
       );
       setTimeOrigin(minTime);
     }
-  }, [selectedProjectionId, timetableItemProjections.length]);
+  }, [selectedProjectionId, trainScheduleProjections.length]);
 
   const occupancyBlocks = getOccupancyBlocks(cutProjectedTrains);
 
@@ -338,7 +338,7 @@ const SpaceTimeChartWrapper = ({
       previousPanning,
       setPreviousPanning,
       zoomMode,
-      timetableItemProjections,
+      trainScheduleProjections,
       dispatch,
     }),
     [
@@ -348,7 +348,7 @@ const SpaceTimeChartWrapper = ({
       hoveredItem,
       previousPanning,
       zoomMode,
-      timetableItemProjections,
+      trainScheduleProjections,
       dispatch,
     ]
   );
@@ -392,7 +392,7 @@ const SpaceTimeChartWrapper = ({
         )}
       {!allTrainsProjected && (
         <ProjectionLoadingMessage
-          projectedTrainsNb={timetableItemProjections.length}
+          projectedTrainsNb={trainScheduleProjections.length}
           totalTrains={totalTrains}
         />
       )}
@@ -427,7 +427,7 @@ const SpaceTimeChartWrapper = ({
               settings={settings}
               onChange={setSettings}
               onClose={() => setShowSettingsPanel(false)}
-              isTimetableItemValid={isTimetableItemValid}
+              isTrainScheduleValid={isTrainScheduleValid}
             />
           )}
 

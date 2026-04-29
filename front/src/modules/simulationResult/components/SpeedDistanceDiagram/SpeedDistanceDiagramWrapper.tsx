@@ -17,8 +17,8 @@ import type {
 import { formatData } from './helpers';
 
 export type SpeedDistanceDiagramWrapperProps = {
-  timetableItemSimulation: SimulationResponseSuccess;
-  selectedTimetableItemPowerRestrictions?: LayerData<PowerRestrictionValues>[];
+  trainScheduleSimulation: SimulationResponseSuccess;
+  selectedTrainSchedulePowerRestrictions?: LayerData<PowerRestrictionValues>[];
   pathProperties: PathPropertiesFormatted;
   height: number;
   rollingStock: RollingStockWithLiveries;
@@ -31,8 +31,8 @@ const SPEED_DISTANCE_DIAGRAM_MIN_HEIGHT = 400;
 const SPEED_DISTANCE_DIAGRAM_BACKGROUND_COLOR = 'transparent';
 
 const SpeedDistanceDiagramWrapper = ({
-  timetableItemSimulation,
-  selectedTimetableItemPowerRestrictions,
+  trainScheduleSimulation,
+  selectedTrainSchedulePowerRestrictions,
   pathProperties,
   height,
   rollingStock,
@@ -46,9 +46,9 @@ const SpeedDistanceDiagramWrapper = ({
   const [containerWidth, setContainerWidth] = useState<number>(root.current?.clientWidth || 0);
 
   const data = formatData(
-    timetableItemSimulation,
+    trainScheduleSimulation,
     rollingStock.length,
-    selectedTimetableItemPowerRestrictions,
+    selectedTrainSchedulePowerRestrictions,
     pathProperties
   );
 

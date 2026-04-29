@@ -438,15 +438,15 @@ const handleCreateTrainSchedule = async (
   const returnTrip =
     trainrun.direction === 'round_trip' ? { ...forwardTrip, ...returnPathAndSchedule } : undefined;
 
-  const timetableItemsToCreate = returnTrip ? [forwardTrip, returnTrip] : [forwardTrip];
+  const trainSchedulesToCreate = returnTrip ? [forwardTrip, returnTrip] : [forwardTrip];
 
   const newTrainSchedules: TrainScheduleResponse[] = await createPacedTrains(
     dispatch,
     trainScheduleSetId,
-    timetableItemsToCreate
+    trainSchedulesToCreate
   );
-  if (newTrainSchedules.length !== timetableItemsToCreate.length) {
-    throw new Error('Failed to create timetable item(s)');
+  if (newTrainSchedules.length !== trainSchedulesToCreate.length) {
+    throw new Error('Failed to create train schedule(s)');
   }
   addUpsertedTrainSchedules(newTrainSchedules);
   dispatch(
@@ -460,7 +460,7 @@ const handleCreateTrainSchedule = async (
     newTrainSchedules[0].id,
     newTrainSchedules.at(1)?.id ?? null,
   ];
-  state.timetableItemIdByNgeId.set(trainrun.id, newTrainIds);
+  state.trainScheduleIdByNgeId.set(trainrun.id, newTrainIds);
   storeRoundTrip(dispatch, newTrainIds[0], newTrainIds[1] ?? undefined);
 };
 
@@ -480,13 +480,13 @@ const handleDeleteTrainSchedule = async (
   dispatch: AppDispatch,
   addDeletedTrainScheduleIds: (trainScheduleIds: number[]) => void
 ) => {
-  const timetableItemIds = state.timetableItemIdByNgeId.get(trainrunId);
-  for (const timetableItemId of timetableItemIds ?? []) {
-    if (timetableItemId) {
-      await deleteTrainScheduleById(timetableItemId, dispatch, addDeletedTrainScheduleIds);
+  const trainScheduleIds = state.trainScheduleIdByNgeId.get(trainrunId);
+  for (const trainScheduleId of trainScheduleIds ?? []) {
+    if (trainScheduleId) {
+      await deleteTrainScheduleById(trainScheduleId, dispatch, addDeletedTrainScheduleIds);
     }
   }
-  state.timetableItemIdByNgeId.delete(trainrunId);
+  state.trainScheduleIdByNgeId.delete(trainrunId);
 };
 
 /**
@@ -516,9 +516,9 @@ export const handleUpdateTrainSchedule = async ({
   addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   addDeletedTrainScheduleIds: (trainScheduleIds: number[]) => void;
 }) => {
-  const timetableItemIds = state.timetableItemIdByNgeId.get(trainrun.id);
-  if (!timetableItemIds) return;
-  const oldForwardTrainSchedule = await fetchTrainSchedule(timetableItemIds[0], dispatch);
+  const trainScheduleIds = state.trainScheduleIdByNgeId.get(trainrun.id);
+  if (!trainScheduleIds) return;
+  const oldForwardTrainSchedule = await fetchTrainSchedule(trainScheduleIds[0], dispatch);
   const trainrunSections = getContinuousTrainrunSectionsByTrainrunId(netzgrafikDto, trainrun.id);
   const labels = getTrainrunLabels(netzgrafikDto, trainrun);
   const forwardPathAndSchedule = generatePathAndSchedule(
@@ -568,14 +568,14 @@ export const handleUpdateTrainSchedule = async ({
   );
 
   if (trainrun.direction === 'one_way') {
-    if (timetableItemIds[1]) {
+    if (trainScheduleIds[1]) {
       // NGE always selects the forward trip by default when going from round trip to one way trip,
       // thus the trip that needs to be deleted is always the return trip
       await storeRoundTrip(dispatch, newForwardTrainSchedule.id);
-      await deleteTrainScheduleById(timetableItemIds[1], dispatch, addDeletedTrainScheduleIds);
+      await deleteTrainScheduleById(trainScheduleIds[1], dispatch, addDeletedTrainScheduleIds);
     }
 
-    state.timetableItemIdByNgeId.set(trainrun.id, [newForwardTrainSchedule.id, null]);
+    state.trainScheduleIdByNgeId.set(trainrun.id, [newForwardTrainSchedule.id, null]);
     return;
   }
 
@@ -592,10 +592,10 @@ export const handleUpdateTrainSchedule = async ({
   let newReturnTrainSchedule: TrainScheduleResponse;
   const returnPaced: TrainSchedule['paced'] = paced ? { ...paced, exceptions: [] } : null;
 
-  if (timetableItemIds[1]) {
+  if (trainScheduleIds[1]) {
     // update return if already present
-    const oldReturnTimetableItem = await fetchTrainSchedule(timetableItemIds[1], dispatch);
-    const { id: _return_id, ...oldReturnTrainBase } = oldReturnTimetableItem;
+    const oldReturnTrainSchedule = await fetchTrainSchedule(trainScheduleIds[1], dispatch);
+    const { id: _return_id, ...oldReturnTrainBase } = oldReturnTrainSchedule;
     const newReturnTrainBase: Omit<TrainScheduleResponse, 'id'> = {
       ...oldReturnTrainBase,
       train_name: trainrun.name,
@@ -607,18 +607,18 @@ export const handleUpdateTrainSchedule = async ({
       ...returnPathAndSchedule,
     };
 
-    if (returnPaced && oldReturnTimetableItem.paced) {
-      returnPaced.time_window = oldReturnTimetableItem.paced.time_window;
+    if (returnPaced && oldReturnTrainSchedule.paced) {
+      returnPaced.time_window = oldReturnTrainSchedule.paced.time_window;
       returnPaced.exceptions = checkChangeGroups(
         newReturnTrainBase,
         returnPaced,
-        oldReturnTimetableItem.paced.exceptions
+        oldReturnTrainSchedule.paced.exceptions
       ).exceptions;
       newReturnTrainBase.paced = returnPaced;
     }
 
     newReturnTrainSchedule = await storePacedTrain(
-      oldReturnTimetableItem.id,
+      oldReturnTrainSchedule.id,
       newReturnTrainBase,
       dispatch,
       addUpsertedTrainSchedules
@@ -646,7 +646,7 @@ export const handleUpdateTrainSchedule = async ({
   // Ensure the round-trip association is kept after updates/conversions
   await storeRoundTrip(dispatch, newForwardTrainSchedule.id, newReturnTrainSchedule.id);
 
-  state.timetableItemIdByNgeId.set(trainrun.id, [
+  state.trainScheduleIdByNgeId.set(trainrun.id, [
     newForwardTrainSchedule.id,
     newReturnTrainSchedule.id,
   ]);

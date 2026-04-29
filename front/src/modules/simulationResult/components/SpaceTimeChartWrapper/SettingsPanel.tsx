@@ -19,14 +19,14 @@ type SettingsPanelProps = {
   settings: Settings;
   onChange: (settings: Settings) => void;
   onClose: () => void;
-  isTimetableItemValid: boolean;
+  isTrainScheduleValid: boolean;
 };
 
 const SettingsPanel = ({
   settings,
   onChange,
   onClose,
-  isTimetableItemValid,
+  isTrainScheduleValid,
 }: SettingsPanelProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'simulationResults' });
   const dispatch = useAppDispatch();
@@ -57,7 +57,7 @@ const SettingsPanel = ({
           label={t('timeSpaceChartSettings.projection')}
           value={projectionType}
           onChange={(value) => dispatch(updateProjectionType(value as ProjectionType))}
-          disabled={!isTimetableItemValid || !isSimulationEnabled}
+          disabled={!isTrainScheduleValid || !isSimulationEnabled}
           options={[
             {
               label: t('timeSpaceChartSettings.trackProjection'),

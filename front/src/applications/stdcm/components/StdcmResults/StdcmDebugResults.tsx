@@ -71,7 +71,7 @@ const StdcmDebugResults = ({ simulationOutputs }: StdcmDebugResultsProps) => {
               <SpaceTimeChartWrapper
                 operationalPoints={pathProperties.manchetteOperationalPoints}
                 selectedTrainId={STDCM_TRAIN_TIMETABLE_ID}
-                timetableItemProjections={projectedData.spaceTimeData}
+                trainScheduleProjections={projectedData.spaceTimeData}
                 workSchedules={workSchedules}
                 projectionLoaderData={projectedData.projectionLoaderData}
                 height={manchetteWithSpaceTimeChartHeight - MANCHETTE_HEIGHT_DIFF}
@@ -90,8 +90,8 @@ const StdcmDebugResults = ({ simulationOutputs }: StdcmDebugResultsProps) => {
           }}
         >
           <SpeedDistanceDiagramWrapper
-            timetableItemSimulation={results.simulation}
-            selectedTimetableItemPowerRestrictions={
+            trainScheduleSimulation={results.simulation}
+            selectedTrainSchedulePowerRestrictions={
               speedDistanceDiagramData.formattedPowerRestrictions
             }
             pathProperties={speedDistanceDiagramData.formattedPathProperties}

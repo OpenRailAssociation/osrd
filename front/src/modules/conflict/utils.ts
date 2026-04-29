@@ -1,13 +1,14 @@
-import type { Conflict, TrainCategory,
-  TrainScheduleResponse,
-} from 'common/api/osrdEditoastApi';
+import type { Conflict, TrainCategory, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import computeOccurrenceName from 'modules/trainSchedule/helpers/computeOccurrenceName';
 import { isPacedTrainBase } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainId } from 'reducers/osrdconf/types';
 
 import type { ConflictWithTrainNames } from './types';
 
-function getConflictTrainNames(conflict: Conflict, trainMap: Map<number, TrainScheduleResponse>): string[] {
+function getConflictTrainNames(
+  conflict: Conflict,
+  trainMap: Map<number, TrainScheduleResponse>
+): string[] {
   const trainNames: string[] = [];
   conflict.train_ids.forEach((train) => {
     const pacedTrain = trainMap.get(train.train_schedule_id);
@@ -71,12 +72,12 @@ function getConflictTrainCategories(
 
 export default function addTrainNamesToConflicts(
   conflicts: Conflict[],
-  timetableItems: TrainScheduleResponse[]
+  trainSchedules: TrainScheduleResponse[]
 ): ConflictWithTrainNames[] {
   const trainMap: Map<number, TrainScheduleResponse> = new Map();
 
-  for (const timetableItem of timetableItems) {
-    trainMap.set(timetableItem.id, timetableItem);
+  for (const trainSchedule of trainSchedules) {
+    trainMap.set(trainSchedule.id, trainSchedule);
   }
 
   return conflicts.map((conflict) => {

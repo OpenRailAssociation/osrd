@@ -14,8 +14,8 @@ import { formatOperationalPoints } from './utils';
  * add time, speed, position, duration to operational points
  */
 const useFormattedOperationalPoints = (
-  timetableItem?: Train,
-  simulatedTimetableItem?: SimulationResponseSuccess,
+  trainSchedule?: Train,
+  simulatedTrainSchedule?: SimulationResponseSuccess,
   pathProperties?: PathPropertiesFormatted
 ) => {
   const [operationalPoints, setOperationalPoints] = useState<OperationalPointWithTimeAndSpeed[]>(
@@ -24,21 +24,21 @@ const useFormattedOperationalPoints = (
   const { getTrackSectionsByIds } = useScenarioContext();
 
   useEffect(() => {
-    if (timetableItem && simulatedTimetableItem && pathProperties) {
+    if (trainSchedule && simulatedTrainSchedule && pathProperties) {
       const fetchOperationalPoints = async () => {
         const trackIds = pathProperties.operationalPoints.map((op) => op.part.track);
         const trackSections = await getTrackSectionsByIds(trackIds);
         const formattedOperationalPoints = formatOperationalPoints(
           pathProperties.operationalPoints,
-          simulatedTimetableItem,
-          timetableItem,
+          simulatedTrainSchedule,
+          trainSchedule,
           trackSections
         );
         setOperationalPoints(formattedOperationalPoints);
       };
       fetchOperationalPoints();
     }
-  }, [timetableItem, simulatedTimetableItem, pathProperties, getTrackSectionsByIds]);
+  }, [trainSchedule, simulatedTrainSchedule, pathProperties, getTrackSectionsByIds]);
 
   return operationalPoints;
 };

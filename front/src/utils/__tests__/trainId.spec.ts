@@ -167,16 +167,16 @@ describe('extractExceptionIdFromOccurrenceId', () => {
 });
 
 describe('isTrainIdInTimetable', () => {
-  const pacedTimetableItemId = 123;
-  const notPacedTimetableItemId = 456;
-  const missingTimetableItemId = 999;
-  const pacedTrainId = formatEditoastIdToPacedTrainId(pacedTimetableItemId);
-  const notPacedTrainId = formatEditoastIdToPacedTrainId(notPacedTimetableItemId);
-  const missingPacedTrainId = formatEditoastIdToPacedTrainId(missingTimetableItemId);
+  const pacedTrainScheduleId = 123;
+  const notPacedTrainScheduleId = 456;
+  const missingTrainScheduleId = 999;
+  const pacedTrainId = formatEditoastIdToPacedTrainId(pacedTrainScheduleId);
+  const notPacedTrainId = formatEditoastIdToPacedTrainId(notPacedTrainScheduleId);
+  const missingPacedTrainId = formatEditoastIdToPacedTrainId(missingTrainScheduleId);
 
-  const timetableItems = [
+  const trainSchedules = [
     {
-      id: pacedTimetableItemId,
+      id: pacedTrainScheduleId,
       paced: {
         timeWindow: Duration.parse('PT2H'),
         interval: Duration.parse('PT30M'),
@@ -189,30 +189,30 @@ describe('isTrainIdInTimetable', () => {
       },
     },
     {
-      id: notPacedTimetableItemId,
+      id: notPacedTrainScheduleId,
       paced: undefined,
     },
   ];
 
   it('should return false if trainId is undefined', () => {
-    expect(isTrainIdInTimetable(undefined, timetableItems)).toEqual(false);
+    expect(isTrainIdInTimetable(undefined, trainSchedules)).toEqual(false);
   });
 
   it('should return true if paced train id is present in timetable', () => {
-    expect(isTrainIdInTimetable(pacedTrainId, timetableItems)).toEqual(true); // paced
-    expect(isTrainIdInTimetable(notPacedTrainId, timetableItems)).toEqual(true); // not paced
+    expect(isTrainIdInTimetable(pacedTrainId, trainSchedules)).toEqual(true); // paced
+    expect(isTrainIdInTimetable(notPacedTrainId, trainSchedules)).toEqual(true); // not paced
   });
 
   it('should return false if paced train id is not present in timetable', () => {
-    expect(isTrainIdInTimetable(missingPacedTrainId, timetableItems)).toEqual(false);
+    expect(isTrainIdInTimetable(missingPacedTrainId, trainSchedules)).toEqual(false);
   });
 
   it('should return true if indexed occurrence id is present in timetable', () => {
     expect(
-      isTrainIdInTimetable(formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, 0), timetableItems) // regular occurrence
+      isTrainIdInTimetable(formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, 0), trainSchedules) // regular occurrence
     ).toEqual(true);
     expect(
-      isTrainIdInTimetable(formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, 2), timetableItems) // modified exception
+      isTrainIdInTimetable(formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, 2), trainSchedules) // modified exception
     ).toEqual(true);
   });
 
@@ -220,7 +220,7 @@ describe('isTrainIdInTimetable', () => {
     expect(
       isTrainIdInTimetable(
         formatPacedTrainIdToIndexedOccurrenceId(missingPacedTrainId, 0),
-        timetableItems
+        trainSchedules
       )
     ).toEqual(false);
   });
@@ -229,7 +229,7 @@ describe('isTrainIdInTimetable', () => {
     expect(
       isTrainIdInTimetable(
         formatPacedTrainIdToIndexedOccurrenceId(notPacedTrainId, 0),
-        timetableItems
+        trainSchedules
       )
     ).toEqual(false);
   });
@@ -238,29 +238,29 @@ describe('isTrainIdInTimetable', () => {
     expect(
       isTrainIdInTimetable(
         formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, -1),
-        timetableItems
+        trainSchedules
       )
     ).toEqual(false);
     expect(
-      isTrainIdInTimetable(formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, 4), timetableItems)
+      isTrainIdInTimetable(formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, 4), trainSchedules)
     ).toEqual(false);
   });
 
   it('should return false if indexed occurrence id is not present in timetable as it is disabled', () => {
     expect(
-      isTrainIdInTimetable(formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, 1), timetableItems)
+      isTrainIdInTimetable(formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, 1), trainSchedules)
     ).toEqual(false);
   });
 
   it('should return true if added exception id is present in timetable', () => {
     expect(
-      isTrainIdInTimetable(formatPacedTrainIdToExceptionId(pacedTrainId, 0), timetableItems)
+      isTrainIdInTimetable(formatPacedTrainIdToExceptionId(pacedTrainId, 0), trainSchedules)
     ).toEqual(true);
   });
 
   it('should return false if added exception id is not present in timetable', () => {
     expect(
-      isTrainIdInTimetable(formatPacedTrainIdToExceptionId(pacedTrainId, 999), timetableItems)
+      isTrainIdInTimetable(formatPacedTrainIdToExceptionId(pacedTrainId, 999), trainSchedules)
     ).toEqual(false);
   });
 });

@@ -127,7 +127,7 @@ describe('usePrevious', () => {
       expect(result.current).toBe(curveV1);
     });
 
-    it('preserves the exact reference of the previous array for timetableItemProjections', () => {
+    it('preserves the exact reference of the previous array for trainScheduleProjections', () => {
       const projV1 = [{ id: '1', name: 'Train A' }];
       const projV2 = [
         { id: '1', name: 'Train A' },

@@ -4,7 +4,7 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import useScenarioTrainScheduleSet from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
-import { osrdEditoastApi , type TrainScheduleResponse } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure } from 'reducers/main';
 import type { TrainScheduleToEditData } from 'reducers/osrdconf/types';
@@ -26,7 +26,7 @@ type TimetableProps = {
   removeAndUnselectTrains: (trainIds: number[]) => void;
   handleDeleteTrainSchedules: () => void;
   trainScheduleToEditData?: TrainScheduleToEditData;
-  timetableItems?: TrainScheduleResponse[];
+  trainSchedules?: TrainScheduleResponse[];
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
   refreshNge: () => Promise<void>;
   selectedTrainScheduleIds: number[];
@@ -41,7 +41,7 @@ const Timetable = ({
   removeAndUnselectTrains,
   handleDeleteTrainSchedules,
   trainScheduleToEditData,
-  timetableItems = [],
+  trainSchedules = [],
   trainSchedulesWithDetails,
   refreshNge,
   selectedTrainScheduleIds,
@@ -68,7 +68,7 @@ const Timetable = ({
   const [trainScheduleSetIdSelected, setTrainScheduleSetIdSelected] = useState<number>();
 
   const { trainSchedulesByTrainScheduleSets, catalogEntries, manageTrainScheduleSet } =
-    useScenarioTrainScheduleSet(trainSchedulesWithDetails, timetableItems, upsertTrainSchedules);
+    useScenarioTrainScheduleSet(trainSchedulesWithDetails, trainSchedules, upsertTrainSchedules);
 
   const { filteredTrainSchedules, ...timetableFilters } =
     useFilterTrainSchedules(trainSchedulesWithDetails);
@@ -122,10 +122,10 @@ const Timetable = ({
           },
         }).unwrap();
 
-        const trainsToUpsert = timetableItems
-          .filter((item) => pacedTrainIdsToMove.includes(item.id))
-          .map((item) => ({
-            ...item,
+        const trainsToUpsert = trainSchedules
+          .filter((train) => pacedTrainIdsToMove.includes(train.id))
+          .map((train) => ({
+            ...train,
             train_schedule_set_id: trainScheduleSetId,
           }));
 
@@ -149,7 +149,7 @@ const Timetable = ({
         <TimetableToolbar
           filteredTrainSchedules={filteredTrainSchedules}
           timetableFilters={timetableFilters}
-          timetableItems={timetableItems}
+          trainSchedules={trainSchedules}
           selectedTrainScheduleIds={selectedTrainScheduleIds}
           showTrainDetails={showTrainDetails}
           isSelectMode={isSelectMode}
