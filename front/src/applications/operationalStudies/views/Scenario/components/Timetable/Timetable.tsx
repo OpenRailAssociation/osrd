@@ -16,7 +16,7 @@ import TrainList from './TrainList';
 import TrainScheduleMoveDialog from './TrainScheduleSet/TrainScheduleMoveDialog';
 import TrainScheduleSetDialog from './TrainScheduleSet/TrainScheduleSetDialog';
 import type { TimetableMode } from './types';
-import useFilterTrainSchedules from './useFilterTimetableItems';
+import useFilterTrainSchedules from './useFilterTrainSchedules';
 
 type TimetableProps = {
   setDisplayTrainScheduleManagement: (mode: string) => void;

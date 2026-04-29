@@ -15,7 +15,7 @@ import type {
   TrainTypeFilter,
   TrainCategoryFilter,
 } from './types';
-import { extractTagCode, keepItem } from './utils';
+import { extractTagCode, keepTrain } from './utils';
 
 /**
  * Hook filtering a train schedules array depending on some filters
@@ -69,7 +69,7 @@ const useFilterTrainSchedules = (
       TrainScheduleWithDetails,
       'name' | 'labels' | 'summary' | 'speedLimitTag' | 'rollingStock' | 'category'
     >) => {
-      if (!keepItem(name, labels, debouncedNameLabelFilter)) {
+      if (!keepTrain(name, labels, debouncedNameLabelFilter)) {
         return false;
       }
 
