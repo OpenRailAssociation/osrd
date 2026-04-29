@@ -1,10 +1,10 @@
 import type {
   LightRollingStockWithLiveries,
   TrainScheduleSimulationSummaryResult,
+  TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import { formatPacedTrainWithDetails } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
-import type { TimetableItem } from 'reducers/osrdconf/types';
 import { mapBy } from 'utils/types';
 
 type SummaryWithCorrespondingTrainScheduleId = {
@@ -14,7 +14,7 @@ type SummaryWithCorrespondingTrainScheduleId = {
 
 const formatTrainScheduleWithDetails = (
   inputs: SummaryWithCorrespondingTrainScheduleId,
-  rawTrainSchedules: Map<number, TimetableItem>,
+  rawTrainSchedules: Map<number, TrainScheduleResponse>,
   rollingStocks: LightRollingStockWithLiveries[]
 ) => {
   const trainSchedule = rawTrainSchedules.get(inputs.trainScheduleId);
@@ -28,7 +28,7 @@ const formatTrainScheduleWithDetails = (
 /** Format the train schedules with their simulation summaries */
 const formatTrainScheduleSummaries = (
   rawPacedTrainSummaries: Map<number, TrainScheduleSimulationSummaryResult>,
-  rawTrainSchedules: Map<number, TimetableItem>,
+  rawTrainSchedules: Map<number, TrainScheduleResponse>,
   rollingStocks: LightRollingStockWithLiveries[]
 ): Map<number, TrainScheduleWithDetails> => {
   const trainSchedules: TrainScheduleWithDetails[] = [...rawPacedTrainSummaries].map(

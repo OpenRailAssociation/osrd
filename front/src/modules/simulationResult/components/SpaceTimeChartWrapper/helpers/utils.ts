@@ -1,8 +1,9 @@
 import type { OccupancyBlock } from '@osrd-project/ui-charts';
 import { chunk, noop, omit } from 'lodash';
 
+import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import { ASPECT_LABELS_COLORS } from 'modules/simulationResult/consts';
-import type { OccurrenceId, TimetableItem } from 'reducers/osrdconf/types';
+import type { OccurrenceId } from 'reducers/osrdconf/types';
 import { isOccurrenceId } from 'utils/trainId';
 
 import type { AspectLabel, IndividualTrainProjection } from '../../../types';
@@ -10,7 +11,7 @@ import type { MovableOccupancyZone } from './zones';
 
 export const getWaypointsLocalStorageKey = (
   timetableId: number | undefined,
-  projectionPath: TimetableItem['path'] | undefined
+  projectionPath: TrainScheduleResponse['path'] | undefined
 ) => {
   // We need to remove the id because it can change for waypoints added by map click
   const simplifiedPath = projectionPath?.map((waypoint) => omit(waypoint, ['id']));

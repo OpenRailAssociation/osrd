@@ -7,9 +7,8 @@ import { useTranslation } from 'react-i18next';
 
 import useTrainSchedulesWithPathOps from 'applications/operationalStudies/hooks/useTrainSchedulesWithPathOps';
 import { checkRoundTripCompatible, groupRoundTrips } from 'applications/operationalStudies/utils';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
-import type { TimetableItem } from 'reducers/osrdconf/types';
 import { useDebounce } from 'utils/hooks/useDebounce';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 import { mapBy } from 'utils/types';
@@ -25,7 +24,7 @@ type RoundTripsModalProps = {
   setRoundTripsModalIsOpen: (isOpen: boolean) => void;
   infraId: number;
   timetableId: number;
-  trainSchedules: TimetableItem[];
+  trainSchedules: TrainScheduleResponse[];
   refreshNge: () => Promise<void>;
 };
 

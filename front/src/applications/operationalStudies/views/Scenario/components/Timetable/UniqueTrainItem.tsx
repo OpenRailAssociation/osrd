@@ -7,7 +7,7 @@ import dayjs from 'dayjs';
 import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi , type TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import type { SubCategory, TrainSchedule } from 'common/api/osrdEditoastApi';
 import { SkeletonLoader } from 'common/Loaders';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
@@ -18,7 +18,7 @@ import {
 } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure, setSuccess } from 'reducers/main';
-import type { TimetableItem, TrainId } from 'reducers/osrdconf/types';
+import type { TrainId } from 'reducers/osrdconf/types';
 import {
   updateHoveredTrainId,
   updateTrainIdUsedForProjection,
@@ -41,7 +41,7 @@ type UniqueTrainItemProps = {
   isSelected: boolean;
   isModified?: boolean;
   handleSelectTrain: (trainId: number) => void;
-  upsertUniqueTrains: (uniqueTrains: TimetableItem[]) => void;
+  upsertUniqueTrains: (uniqueTrains: TrainScheduleResponse[]) => void;
   removeTrains: (trainIds: number[]) => void;
   projectionPathIsUsed: boolean;
   selectTrainToEdit: (train: TrainScheduleWithDetails) => void;
@@ -121,7 +121,7 @@ const UniqueTrainItem = ({
         train_name: trainName,
       };
 
-      const newUniqueTrain: TimetableItem = (
+      const newUniqueTrain: TrainScheduleResponse = (
         await createPacedTrains(dispatch, trainDetail.train_schedule_set_id, [
           newUniqueTrainPayload,
         ])

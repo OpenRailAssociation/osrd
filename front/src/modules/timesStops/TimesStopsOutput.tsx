@@ -9,9 +9,10 @@ import type {
   ReceptionSignal,
   RollingStock,
   SimulationResponseSuccess,
+  TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import type { SimulationSummary, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
-import type { TimetableItem, Train } from 'reducers/osrdconf/types';
+import type { Train } from 'reducers/osrdconf/types';
 import { getUseNewTimesStopsTable } from 'reducers/user/userSelectors';
 import { formatLocalTime } from 'utils/date';
 import { Duration, addDurationToDate } from 'utils/duration';
@@ -40,7 +41,7 @@ type TimesStopsOutputProps = {
   isValid?: boolean;
   selectedTrain: Train;
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
-  upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void;
+  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   simulatedTrain?: SimulationResponseSuccess['final_output'];
   simulatedPath?: CorePathfindingResultSuccess;
   simulatedPathItemTimes?: Extract<SimulationSummary, { isValid: true }>['pathItemTimes'];

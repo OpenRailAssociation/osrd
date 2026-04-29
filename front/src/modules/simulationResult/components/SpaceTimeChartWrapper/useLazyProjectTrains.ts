@@ -7,9 +7,12 @@ import type { ProjectionResult } from 'applications/operationalStudies/helpers/T
 import type TrainProjectionLazyLoaderAbstract from 'applications/operationalStudies/helpers/TrainProjectionLazyLoaderAbstract';
 import TrainTrackProjectionLazyLoader from 'applications/operationalStudies/helpers/TrainTrackProjectionLazyLoader';
 import upsertNewProjectedTrains from 'applications/operationalStudies/helpers/upsertNewProjectedTrains';
-import { type OperationalPointReference, type CoreTrainPath } from 'common/api/osrdEditoastApi';
+import type {
+  OperationalPointReference,
+  CoreTrainPath,
+  TrainScheduleResponse,
+} from 'common/api/osrdEditoastApi';
 import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
-import type { TimetableItem } from 'reducers/osrdconf/types';
 import { getProjectionType, getIsSimulationEnabled } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 
@@ -35,7 +38,7 @@ const useLazyProjectTrains = ({
 }: UseLazyProjectTrainsOptions) => {
   const dispatch = useAppDispatch();
   const loaderRef = useRef<TrainProjectionLazyLoaderAbstract>(null);
-  const trainSchedulesByIdRef = useRef<Map<number, TimetableItem>>(new Map());
+  const trainSchedulesByIdRef = useRef<Map<number, TrainScheduleResponse>>(new Map());
   const [projectedTrainsById, setProjectedTrainsById] = useState<Map<number, TrainSpaceTimeData>>(
     new Map()
   );
@@ -91,7 +94,7 @@ const useLazyProjectTrains = ({
     isSimulationEnabled,
   ]);
 
-  const projectTrainSchedules = useCallback((trainSchedules: TimetableItem[]) => {
+  const projectTrainSchedules = useCallback((trainSchedules: TrainScheduleResponse[]) => {
     for (const trainSchedule of trainSchedules) {
       trainSchedulesByIdRef.current.set(trainSchedule.id, trainSchedule);
     }

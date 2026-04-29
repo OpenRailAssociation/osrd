@@ -2,13 +2,12 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 
 import { useSelector } from 'react-redux';
 
-import type { Conflict } from 'common/api/osrdEditoastApi';
+import type { Conflict, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import computeOccurrenceName from 'modules/trainSchedule/helpers/computeOccurrenceName';
 import {
   findExceptionWithOccurrenceId,
   isPacedTrain,
 } from 'modules/trainSchedule/helpers/pacedTrain';
-import type { TimetableItem } from 'reducers/osrdconf/types';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import {
   extractPacedTrainIdFromOccurrenceId,
@@ -25,7 +24,7 @@ import addTrainNamesToConflicts, {
 } from '../utils';
 
 const useConflictsFilter = (
-  timetableItems: TimetableItem[],
+  timetableItems: TrainScheduleResponse[],
   conflicts: Conflict[],
   isConflictsLoading: boolean
 ) => {
@@ -37,7 +36,7 @@ const useConflictsFilter = (
     setShowOnlySelectedTrain(!showOnlySelectedTrain);
   }, [showOnlySelectedTrain]);
 
-  const timetableItemById = useMemo<Map<number, TimetableItem>>(
+  const timetableItemById = useMemo<Map<number, TrainScheduleResponse>>(
     () => new Map(timetableItems.map((item) => [item.id, item])),
     [timetableItems]
   );

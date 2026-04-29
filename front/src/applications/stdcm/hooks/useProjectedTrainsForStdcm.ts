@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 
 import useLazySimulateTrains from 'applications/operationalStudies/hooks/useLazySimulateTrains';
 import type { StdcmSuccessResponse } from 'applications/stdcm/types';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChartWrapper/useLazyProjectTrains';
 import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
@@ -13,7 +13,6 @@ import {
   getStdcmInfraID,
   getStdcmTimetableID,
 } from 'reducers/osrdconf/stdcmConf/selectors';
-import type { TimetableItem } from 'reducers/osrdconf/types';
 import { Duration, addDurationToDate } from 'utils/duration';
 import { mapBy } from 'utils/types';
 
@@ -73,7 +72,7 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
   const { data: { results: rollingStocks } = { results: null } } =
     osrdEditoastApi.endpoints.getLightRollingStock.useQuery({ pageSize: 1000 });
 
-  const trainSchedulesById: Map<number, TimetableItem> = useMemo(
+  const trainSchedulesById: Map<number, TrainScheduleResponse> = useMemo(
     () => mapBy(trainSchedules, 'id'),
     [trainSchedules]
   );

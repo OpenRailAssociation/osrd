@@ -11,9 +11,9 @@ import {
   type PathfindingResult,
   type PathProperties,
   type OperationalPointReference,
+  type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import { getExceptionFromOccurrenceId } from 'modules/trainSchedule/helpers/pacedTrain';
-import type { TimetableItem } from 'reducers/osrdconf/types';
 import { updateProjectionType } from 'reducers/simulationResults';
 import {
   getProjectionType,
@@ -102,7 +102,7 @@ const pathfindingResultsDiffer = (
 
 const usePathProjection = (
   infraId: number,
-  timetableItemsById: Map<number, TimetableItem>
+  timetableItemsById: Map<number, TrainScheduleResponse>
 ): PathProjectionResult | undefined => {
   const { t } = useTranslation('operational-studies');
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);

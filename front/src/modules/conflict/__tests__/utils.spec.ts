@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import type { TimetableItem } from 'reducers/osrdconf/types';
+import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 
 import type { ConflictWithTrainNames } from '../types';
 import addTrainNamesToConflicts, { filterAndReorderConflict } from '../utils';
@@ -8,18 +8,18 @@ import { pacedId, occurrenceId, conflictBase } from './sampleData';
 
 describe('addTrainNamesToConflicts', () => {
   it('combines schedule and occurrence names', () => {
-    const trains: TimetableItem[] = [
+    const trains: TrainScheduleResponse[] = [
       {
         id: 10,
         train_name: 'TS 1234',
         category: null,
-      } as TimetableItem,
+      } as TrainScheduleResponse,
       {
         id: 20,
         train_name: 'PT 4567',
         category: null,
         paced: { exceptions: [{ key: '1', id: 1, train_name: { value: 'ABC' } }] },
-      } as TimetableItem,
+      } as TrainScheduleResponse,
     ];
 
     const conflict = conflictBase({

@@ -1,4 +1,4 @@
-import type { TimetableItem } from 'reducers/osrdconf/types';
+import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import type { AppDispatch } from 'store';
 
 import type { NetzgrafikDto, NGEEvent, NodeDto } from '../../NGE/types';
@@ -54,7 +54,7 @@ export const handleNodeOperation = async ({
   dispatch: AppDispatch;
   infraId: number;
   trainScheduleSetId: number;
-  addUpsertedTrainSchedules: (trainSchedules: TimetableItem[]) => void;
+  addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   addDeletedTrainScheduleIds: (trainScheduleIds: number[]) => void;
 }): Promise<void> => {
   const indexNode = state.getNodeByNgeId(node.id);

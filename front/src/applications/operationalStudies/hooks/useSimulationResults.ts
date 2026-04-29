@@ -4,7 +4,7 @@ import { skipToken } from '@reduxjs/toolkit/query';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import formatPowerRestrictionRangesWithHandled from 'modules/powerRestriction/helpers/formatPowerRestrictionRangesWithHandled';
 import {
   extractOccurrenceDetailsFromPacedTrain,
@@ -13,7 +13,7 @@ import {
   getOccurrenceTrainName,
 } from 'modules/trainSchedule/helpers/pacedTrain';
 import useSelectedTrainSchedule from 'modules/trainSchedule/hooks/useSelectedTrainSchedule';
-import type { TimetableItem, Train } from 'reducers/osrdconf/types';
+import type { Train } from 'reducers/osrdconf/types';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { Duration } from 'utils/duration';
 import {
@@ -30,7 +30,7 @@ import { useScenarioContext } from './useScenarioContext';
  * Prepare data to be used in simulation results
  */
 const useSimulationResults = (
-  timetableItems: TimetableItem[] | undefined
+  timetableItems: TrainScheduleResponse[] | undefined
 ): {
   results: SimulationResults | undefined;
   isSimulationDataLoading: boolean;

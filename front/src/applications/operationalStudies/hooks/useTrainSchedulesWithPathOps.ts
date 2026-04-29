@@ -2,14 +2,14 @@ import { useMemo } from 'react';
 
 import { skipToken } from '@reduxjs/toolkit/query';
 
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { TimetableItem, TrainScheduleWithPathOps } from 'reducers/osrdconf/types';
+import { osrdEditoastApi, type TrainScheduleResponse } from 'common/api/osrdEditoastApi';
+import type { TrainScheduleWithPathOps } from 'reducers/osrdconf/types';
 
 import { addPathOpsToTrainSchedules, getUniqueOpRefsFromTrainSchedules } from '../utils';
 
 const useTrainSchedulesWithPathOps = (
   infraId: number,
-  trainSchedules: TimetableItem[] | undefined
+  trainSchedules: TrainScheduleResponse[] | undefined
 ): TrainScheduleWithPathOps[] => {
   // Extract all unique PathItemLocation from trainSchedules.path
   const trainScheduleOpRefs = useMemo(

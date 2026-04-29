@@ -13,6 +13,7 @@ import {
   type CoreEtcsCurves,
   osrdEditoastApi,
   type SimulationResponseSuccess,
+  type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import { formatSpeedCurve } from 'modules/simulationResult/components/SpeedDistanceDiagram/helpers';
 import {
@@ -20,7 +21,6 @@ import {
   isPacedTrain,
 } from 'modules/trainSchedule/helpers/pacedTrain';
 import useSelectedTrainSchedule from 'modules/trainSchedule/hooks/useSelectedTrainSchedule';
-import type { TimetableItem } from 'reducers/osrdconf/types';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { isOccurrenceId, isPacedTrainId } from 'utils/trainId';
 
@@ -54,7 +54,7 @@ const formatEtcsCurves = (etcsBrakingCurves: CoreEtcsBrakingCurvesResponse): Etc
 const useEtcsBrakingCurves = (
   isEtcs: boolean,
   simulation: SimulationResponseSuccess | undefined,
-  timetableItems: TimetableItem[] | undefined
+  timetableItems: TrainScheduleResponse[] | undefined
 ): {
   etcsBrakingCurves: EtcsBrakingCurves | undefined;
   fetchEtcsBrakingCurves: (() => Promise<void>) | undefined;

@@ -7,13 +7,13 @@ import type {
   LightRollingStockWithLiveries,
   SimulationSummaryResult,
   TrainScheduleSimulationSummaryResult,
+  TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import type {
   SimulatedException,
   SimulationSummary,
   TrainScheduleWithDetails,
 } from 'modules/trainSchedule/types';
-import type { TimetableItem } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 import { jouleToKwh } from 'utils/physics';
 import { formatKmValue } from 'utils/strings';
@@ -59,7 +59,7 @@ const formatSummary = (summary?: SimulationSummaryResult): SimulationSummary | u
     : { isValid: false, invalidReason: extractInvalidReason(summary) };
 };
 
-const extractBaseTimetableItemProps = (timetableItem: TimetableItem) => ({
+const extractBaseTimetableItemProps = (timetableItem: TrainScheduleResponse) => ({
   name: timetableItem.train_name,
   startTime: new Date(timetableItem.start_time),
   stopsCount: intermediateStopsCount(timetableItem),
@@ -69,7 +69,7 @@ const extractBaseTimetableItemProps = (timetableItem: TimetableItem) => ({
 });
 
 export const formatPacedTrainWithDetails = (
-  pacedTrain: TimetableItem,
+  pacedTrain: TrainScheduleResponse,
   rollingStock?: LightRollingStockWithLiveries,
   pacedTrainSummary?: TrainScheduleSimulationSummaryResult
 ): TrainScheduleWithDetails => {

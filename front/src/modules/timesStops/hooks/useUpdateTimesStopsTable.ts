@@ -14,6 +14,7 @@ import {
   type PathItem,
   type ReceptionSignal,
   type ScheduleItem,
+  type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import computeBasePathStep from 'modules/trainSchedule/helpers/computeBasePathStep';
 import {
@@ -23,7 +24,7 @@ import {
 } from 'modules/trainSchedule/helpers/pacedTrain';
 import { syncOccurrenceException } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
-import type { OccurrenceId, PacedTrainId, TimetableItem, Train } from 'reducers/osrdconf/types';
+import type { OccurrenceId, PacedTrainId, Train } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { removeElementAtIndex, replaceElementAtIndex } from 'utils/array';
 import { Duration } from 'utils/duration';
@@ -80,7 +81,7 @@ const useUpdateTimesStopsTable = (
   selectedTrain: Train,
   allRows: TimesStopsRowNew[],
   trainSchedulesWithDetails: TrainScheduleWithDetails[],
-  upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void
+  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void
 ) => {
   const dispatch = useAppDispatch();
   const { timetableId } = useScenarioContext();
@@ -107,7 +108,7 @@ const useUpdateTimesStopsTable = (
     [selectedTrain]
   );
 
-  const persistTrain = async (train: TimetableItem): Promise<'updated'> => {
+  const persistTrain = async (train: TrainScheduleResponse): Promise<'updated'> => {
     await updateTrainSchedule({
       id: train.id,
       trainSchedule: train,

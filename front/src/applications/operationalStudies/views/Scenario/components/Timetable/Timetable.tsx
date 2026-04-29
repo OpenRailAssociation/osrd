@@ -4,10 +4,10 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import useScenarioTrainScheduleSet from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi , type TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure } from 'reducers/main';
-import type { TimetableItem, TrainScheduleToEditData } from 'reducers/osrdconf/types';
+import type { TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
@@ -20,13 +20,13 @@ import useFilterTrainSchedules from './useFilterTimetableItems';
 
 type TimetableProps = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
-  upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void;
+  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
   setSelectedTrainScheduleIds: React.Dispatch<React.SetStateAction<number[]>>;
   removeAndUnselectTrains: (trainIds: number[]) => void;
   handleDeleteTrainSchedules: () => void;
   trainScheduleToEditData?: TrainScheduleToEditData;
-  timetableItems?: TimetableItem[];
+  timetableItems?: TrainScheduleResponse[];
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
   refreshNge: () => Promise<void>;
   selectedTrainScheduleIds: number[];

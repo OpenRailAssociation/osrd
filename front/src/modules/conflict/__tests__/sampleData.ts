@@ -1,5 +1,5 @@
-import type { Conflict, TrainCategory } from 'common/api/osrdEditoastApi';
-import type { TimetableItem, PacedTrainId, OccurrenceId } from 'reducers/osrdconf/types';
+import type { Conflict, TrainCategory, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
+import type { PacedTrainId, OccurrenceId } from 'reducers/osrdconf/types';
 
 export const pacedId = (n: number) => `paced_${n}` as PacedTrainId;
 export const occurrenceId = (paced: number, index = 0) =>
@@ -13,12 +13,12 @@ export const uniqueTrain = ({
   id: number;
   train_name: string;
   category?: TrainCategory | null;
-}): TimetableItem =>
+}): TrainScheduleResponse =>
   ({
     id,
     train_name,
     category: category ?? null,
-  }) as TimetableItem;
+  }) as TrainScheduleResponse;
 
 export const pacedTrain = ({
   id,
@@ -30,13 +30,13 @@ export const pacedTrain = ({
   train_name: string;
   category?: TrainCategory | null;
   exceptions?: Array<{ key?: string; occurrence_index?: number; train_name?: { value: string } }>;
-}): TimetableItem =>
+}): TrainScheduleResponse =>
   ({
     id,
     train_name,
     category: category ?? null,
     paced: { exceptions },
-  }) as TimetableItem;
+  }) as TrainScheduleResponse;
 
 export const conflictBase = (partial: Partial<Conflict> = {}): Conflict => ({
   conflict_type: 'Spacing',

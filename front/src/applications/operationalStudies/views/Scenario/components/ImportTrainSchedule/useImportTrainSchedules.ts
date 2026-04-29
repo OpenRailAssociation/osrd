@@ -4,11 +4,11 @@ import { useSelector } from 'react-redux';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { TimetableJsonPayload } from 'applications/operationalStudies/types';
+import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import { osrdRailwayManagerApi } from 'common/api/osrdRailwayManagerApi';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { setFailure, setSuccess } from 'reducers/main';
 import { getRailwayManagerInterfaceUrl } from 'reducers/main/mainSelector';
-import type { TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
@@ -17,7 +17,7 @@ import locallyProcessXmlFile from './helpers/parseXML';
 import { postFullImportPayload } from './helpers/postPayloads';
 
 type ImportTrainSchedulesProps = {
-  upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void;
+  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
 };
 
 const useImportTrainSchedules = ({ upsertTrainSchedules }: ImportTrainSchedulesProps) => {

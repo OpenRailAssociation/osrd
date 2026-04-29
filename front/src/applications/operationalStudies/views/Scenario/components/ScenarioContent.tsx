@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 
 import { useTranslation } from 'react-i18next';
 
@@ -13,7 +14,7 @@ import Conflicts from 'modules/conflict/components/Conflicts';
 import useConflictsFilter from 'modules/conflict/hooks/useConflictsFilter';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
 import { setFailure } from 'reducers/main';
-import type { TimetableItem, TrainScheduleToEditData } from 'reducers/osrdconf/types';
+import type { TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { usePrevious } from 'utils/hooks/state';
@@ -92,7 +93,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
   }, [dispatch, infraId, scenario.id, scenario.timetable_id, activeBoards.has('macro')]);
 
   const upsertTrainSchedulesWithNge = useCallback(
-    (updatedTrainSchedules: TimetableItem[]) => {
+    (updatedTrainSchedules: TrainScheduleResponse[]) => {
       upsertTrainSchedules(updatedTrainSchedules);
       refreshNge();
     },

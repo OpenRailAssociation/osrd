@@ -30,7 +30,7 @@ import {
 } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import type { PacedTrainWithPacedWithDetails } from 'modules/trainSchedule/types';
 import { setFailure, setSuccess } from 'reducers/main';
-import type { TimetableItem, TrainId, OccurrenceId } from 'reducers/osrdconf/types';
+import type { TrainId, OccurrenceId } from 'reducers/osrdconf/types';
 import {
   updateHoveredTrainId,
   updateProjectionType,
@@ -69,7 +69,7 @@ type PacedTrainItemProps = {
     originalPacedTrain?: PacedTrainWithPacedWithDetails,
     occurrenceId?: OccurrenceId
   ) => void;
-  upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void;
+  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   removePacedTrains: (pacedTrainIdsToRemove: number[]) => void;
   setSelectedTrainScheduleIds: React.Dispatch<React.SetStateAction<number[]>>;
   subCategories: SubCategory[];
@@ -242,7 +242,7 @@ const PacedTrainItem = ({
       return changeGroups;
     });
 
-    const formattedPacedTrainResponse: TimetableItem = (
+    const formattedPacedTrainResponse: TrainScheduleResponse = (
       await createPacedTrains(dispatch, pacedTrainDetail.train_schedule_set_id, [newPacedTrain])
     )[0];
     dispatch(

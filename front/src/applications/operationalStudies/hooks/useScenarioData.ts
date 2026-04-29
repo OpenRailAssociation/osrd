@@ -3,11 +3,10 @@ import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { skipToken } from '@reduxjs/toolkit/query';
 import { keyBy, sortBy } from 'lodash';
 
-import { osrdEditoastApi, type ScenarioWithDetails } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type ScenarioWithDetails , type TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import { useRollingStockContext } from 'common/RollingStockContext';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChartWrapper/useLazyProjectTrains';
 import { formatPacedTrainWithDetails } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
-import type { TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { mapBy } from 'utils/types';
 
@@ -17,14 +16,14 @@ import usePathProjection from './usePathProjection';
 import { useScenarioContext } from './useScenarioContext';
 
 type ScenarioBroadcastMessage =
-  | { type: 'upsertTrainSchedules'; trainSchedules: TimetableItem[] }
+  | { type: 'upsertTrainSchedules'; trainSchedules: TrainScheduleResponse[] }
   | { type: 'removeTrainSchedules'; trainScheduleIds: number[] }
   | { type: 'setTrainScheduleDepartureTime'; trainScheduleId: number; newDeparture: Date };
 
 const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetableId: number) => {
   const dispatch = useAppDispatch();
 
-  const [timetableItems, setTimetableItems] = useState<TimetableItem[]>();
+  const [timetableItems, setTimetableItems] = useState<TrainScheduleResponse[]>();
   const timetableItemsById = useMemo(() => mapBy(timetableItems, 'id'), [timetableItems]);
   const [selectedTrainScheduleIds, setSelectedTrainScheduleIds] = useState<number[]>([]);
 
@@ -132,7 +131,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     broadcastChannel.current?.postMessage(msg);
   };
 
-  const upsertTrainSchedules = useCallback((trainSchedulesToUpsert: TimetableItem[]) => {
+  const upsertTrainSchedules = useCallback((trainSchedulesToUpsert: TrainScheduleResponse[]) => {
     setTimetableItems((prev) =>
       sortBy(
         Object.values({ ...keyBy(prev, 'id'), ...keyBy(trainSchedulesToUpsert, 'id') }),
@@ -208,7 +207,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
   );
 
   const upsertTrainSchedulesWithBroadcast = useCallback(
-    (trainSchedulesToUpsert: TimetableItem[]) => {
+    (trainSchedulesToUpsert: TrainScheduleResponse[]) => {
       upsertTrainSchedules(trainSchedulesToUpsert);
       broadcastScenarioMessage({
         type: 'upsertTrainSchedules',

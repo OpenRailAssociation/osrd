@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux';
 
 import { EditedElementContainerContext } from 'applications/operationalStudies/views/Scenario/components/EditedElementContainerContext';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/views/Scenario/consts';
+import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import { ConfirmModal, useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import DotsLoader from 'common/DotsLoader';
@@ -14,7 +15,7 @@ import {
   getEditingTrainType,
   getOperationalStudiesConf,
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import type { TimetableItem, TrainScheduleToEditData } from 'reducers/osrdconf/types';
+import type { TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 
 import CreateTrainScheduleButton from './CreateTrainScheduleButton';
@@ -26,7 +27,7 @@ export type ManageTrainScheduleLeftPanelProps = {
   displayTrainScheduleManagement: string;
   trainScheduleToEditData?: TrainScheduleToEditData;
   setDisplayTrainScheduleManagement: (type: string) => void;
-  upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void;
+  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
 };
 

@@ -7,10 +7,10 @@ import {
   type CatalogEntry,
   type TrainSchedule,
   type TrainScheduleSet,
+  type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import { createPacedTrains } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import type { PacedTrainWithDetails, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
-import type { TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 
 import type { TrainScheduleSetImportType } from '../views/Scenario/components/ImportTrainScheduleSets/types';
@@ -43,8 +43,8 @@ export type TrainScheduleSetManager = {
 
 export default function useScenarioTrainScheduleSet(
   trainSchedulesWithDetails: TrainScheduleWithDetails[],
-  timetableItems: TimetableItem[],
-  upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void
+  timetableItems: TrainScheduleResponse[],
+  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void
 ) {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'main.timetable.trainScheduleSets.error',

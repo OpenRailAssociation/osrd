@@ -7,7 +7,7 @@ import {
   updatePacedTrainExceptionsList,
 } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/buildPacedTrainException';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/views/Scenario/consts';
-import type { PacedTrainException } from 'common/api/osrdEditoastApi';
+import type { PacedTrainException, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import { findExceptionWithOccurrenceId } from 'modules/trainSchedule/helpers/pacedTrain';
 import {
@@ -26,7 +26,7 @@ import {
   getOperationalStudiesConf,
   getAddedExceptions,
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import type { TimetableItem, TrainScheduleToEditData } from 'reducers/osrdconf/types';
+import type { TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import { updateSelectedTrain, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
@@ -42,7 +42,7 @@ import {
 const useUpdateTrainSchedule = (
   setIsWorking: (isWorking: boolean) => void,
   setDisplayTrainScheduleManagement: (type: string) => void,
-  upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void,
+  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void,
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void,
   trainScheduleToEditData?: TrainScheduleToEditData
 ) => {

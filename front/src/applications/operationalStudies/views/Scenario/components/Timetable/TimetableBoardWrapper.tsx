@@ -5,13 +5,14 @@ import { useSelector } from 'react-redux';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import BoardWrapper from 'applications/operationalStudies/views/Scenario/components/BoardWrapper';
+import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { deleteTrainSchedules } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure, setSuccess } from 'reducers/main';
-import type { TimetableItem, TrainScheduleToEditData, TrainId } from 'reducers/osrdconf/types';
+import type { TrainScheduleToEditData, TrainId } from 'reducers/osrdconf/types';
 import { updateSelectedTrain } from 'reducers/simulationResults';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
@@ -25,11 +26,11 @@ import { copyTimetableItemsToClipboard } from './utils';
 
 type TimetableBoardWrapperProps = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
-  upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void;
+  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
   removeTrainSchedules: (trainScheduleIdsToRemove: number[]) => void;
   trainScheduleToEditData?: TrainScheduleToEditData;
-  timetableItems?: TimetableItem[];
+  timetableItems?: TrainScheduleResponse[];
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
   refreshNge: () => Promise<void>;
   projectingOnSimulatedPathException: boolean | undefined;

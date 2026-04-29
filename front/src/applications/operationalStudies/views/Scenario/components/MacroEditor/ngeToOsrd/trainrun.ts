@@ -11,7 +11,6 @@ import {
   fetchTrainSchedule,
   storePacedTrain,
 } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
-import type { TimetableItem } from 'reducers/osrdconf/types';
 import { updateSelectedTrain } from 'reducers/simulationResults';
 import type { AppDispatch } from 'store';
 import { Duration } from 'utils/duration';
@@ -394,7 +393,7 @@ const handleCreateTrainSchedule = async (
   infraId: number,
   state: MacroEditorState,
   dispatch: AppDispatch,
-  addUpsertedTrainSchedules: (trainSchedules: TimetableItem[]) => void
+  addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void
 ) => {
   const trainrunSections = getContinuousTrainrunSectionsByTrainrunId(netzgrafikDto, trainrun.id);
   const labels = getTrainrunLabels(netzgrafikDto, trainrun);
@@ -441,7 +440,7 @@ const handleCreateTrainSchedule = async (
 
   const timetableItemsToCreate = returnTrip ? [forwardTrip, returnTrip] : [forwardTrip];
 
-  const newTrainSchedules: TimetableItem[] = await createPacedTrains(
+  const newTrainSchedules: TrainScheduleResponse[] = await createPacedTrains(
     dispatch,
     trainScheduleSetId,
     timetableItemsToCreate
@@ -514,7 +513,7 @@ export const handleUpdateTrainSchedule = async ({
   trainScheduleSetId: number;
   state: MacroEditorState;
   dispatch: AppDispatch;
-  addUpsertedTrainSchedules: (trainSchedules: TimetableItem[]) => void;
+  addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   addDeletedTrainScheduleIds: (trainScheduleIds: number[]) => void;
 }) => {
   const timetableItemIds = state.timetableItemIdByNgeId.get(trainrun.id);
@@ -590,7 +589,7 @@ export const handleUpdateTrainSchedule = async ({
 
   await populateSecondaryCodesInPath(returnPathAndSchedule.path, infraId, dispatch);
 
-  let newReturnTrainSchedule: TimetableItem;
+  let newReturnTrainSchedule: TrainScheduleResponse;
   const returnPaced: TrainSchedule['paced'] = paced ? { ...paced, exceptions: [] } : null;
 
   if (timetableItemIds[1]) {
@@ -671,7 +670,7 @@ export const handleTrainrunOperation = async ({
   infraId: number;
   state: MacroEditorState;
   dispatch: AppDispatch;
-  addUpsertedTrainSchedules: (trainSchedules: TimetableItem[]) => void;
+  addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   addDeletedTrainScheduleIds: (trainScheduleIds: number[]) => void;
 }) => {
   const trainrun = netzgrafikDto.trainruns.find((tr) => tr.id === trainrunId);
@@ -725,7 +724,7 @@ export const updateTrainrunsByNode = async ({
   dispatch: AppDispatch;
   infraId: number;
   trainScheduleSetId: number;
-  addUpsertedTrainSchedules: (trainSchedules: TimetableItem[]) => void;
+  addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   addDeletedTrainScheduleIds: (trainScheduleIds: number[]) => void;
   node: NodeDto;
 }) => {
