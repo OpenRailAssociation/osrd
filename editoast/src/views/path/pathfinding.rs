@@ -243,8 +243,8 @@ pub(in crate::views) async fn post(
 
     use core_task::Task as _;
     let valkey_conn = valkey_client.get_connection().await?;
-    let path_items = path_input.path_items.iter().collect::<Vec<_>>();
-    let op_cache = OperationalPointCache::load_path_items(conn, infra.id, &path_items).await?;
+    let op_cache =
+        OperationalPointCache::load_path_items(conn, infra.id, &path_input.path_items).await?;
     let request = match build_pathfinding_request(&path_input, &infra, &op_cache) {
         Ok(request) => request,
         Err(result) => return Ok(Json(result)),
