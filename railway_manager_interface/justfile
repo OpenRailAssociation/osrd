@@ -1,0 +1,31 @@
+#!/usr/bin/env just --justfile
+
+# Display available recipes
+help:
+    @just --list --unsorted
+
+run:
+    @echo "This component doesn't have a binary"
+
+# Install required dependencies
+install:
+    uv sync --all-extras
+
+# Run the tests
+test:
+    @echo "This component doesn't have tests"
+
+# Format the source code
+format:
+    uv run ruff format
+
+# Verify code lints without applying any fix
+lint:
+    uv run ruff check
+    uv run pyright
+    uv run ruff format --check
+
+# Fix all the lints that can be automatically applied
+fix-lint:
+    uv run ruff check --fix
+    @just format
