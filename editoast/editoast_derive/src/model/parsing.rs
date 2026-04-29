@@ -364,11 +364,11 @@ impl Errors {
 impl Default for Errors {
     fn default() -> Self {
         Self {
-            create: syn::parse_quote! { editoast_models::Error },
-            retrieve: syn::parse_quote! { editoast_models::Error },
-            update: syn::parse_quote! { editoast_models::Error },
-            delete: syn::parse_quote! { editoast_models::Error },
-            list: syn::parse_quote! { editoast_models::Error },
+            create: syn::parse_quote! { crate::Error },
+            retrieve: syn::parse_quote! { crate::Error },
+            update: syn::parse_quote! { crate::Error },
+            delete: syn::parse_quote! { crate::Error },
+            list: syn::parse_quote! { crate::Error },
         }
     }
 }

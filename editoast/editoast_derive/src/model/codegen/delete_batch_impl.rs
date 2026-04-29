@@ -45,7 +45,7 @@ impl ToTokens for DeleteBatchImpl {
                 query
                     .execute(conn.write().await.deref_mut())
                     .await
-                    .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
+                    .map_err(|e| Self::Error::from(crate::Error::from(e)))?
             },
         };
 
