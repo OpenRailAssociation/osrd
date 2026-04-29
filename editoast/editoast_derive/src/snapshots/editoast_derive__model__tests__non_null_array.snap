@@ -78,7 +78,7 @@ impl From<Timetable> for TimetableChangeset {
 }
 #[automatically_derived]
 impl crate::prelude::Exists<(i64)> for Timetable {
-    type Error = editoast_models::Error;
+    type Error = crate::Error;
     #[tracing::instrument(
         name = "model:exists<Timetable>",
         skip_all,
@@ -98,12 +98,12 @@ impl crate::prelude::Exists<(i64)> for Timetable {
         diesel::select(diesel::dsl::exists(dsl::timetable.filter(dsl::id.eq(id))))
             .get_result(conn.write().await.deref_mut())
             .await
-            .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
+            .map_err(|e| Self::Error::from(crate::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::prelude::Retrieve<(i64)> for Timetable {
-    type Error = editoast_models::Error;
+    type Error = crate::Error;
     #[tracing::instrument(
         name = "model:retrieve<Timetable>",
         skip_all,
@@ -127,6 +127,6 @@ impl crate::prelude::Retrieve<(i64)> for Timetable {
             .await
             .map(Timetable::from)
             .optional()
-            .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
+            .map_err(|e| Self::Error::from(crate::Error::from(e)))
     }
 }

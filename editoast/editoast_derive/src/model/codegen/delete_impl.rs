@@ -37,7 +37,7 @@ impl ToTokens for DeleteImpl {
                         .execute(conn.write().await.deref_mut())
                         .await
                         .map(|n| n == 1)
-                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
+                        .map_err(|e| Self::Error::from(crate::Error::from(e)))
                 }
             }
         });

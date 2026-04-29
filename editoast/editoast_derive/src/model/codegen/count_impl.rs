@@ -58,7 +58,7 @@ impl ToTokens for CountImpl {
                     query.get_result::<i64>(conn.write().await.deref_mut())
                         .await
                         .map(|count| count as u64)
-                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
+                        .map_err(|e| Self::Error::from(crate::Error::from(e)))
                 }
             }
 

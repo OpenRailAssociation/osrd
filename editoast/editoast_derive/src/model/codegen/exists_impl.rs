@@ -44,7 +44,7 @@ impl ToTokens for ExistsImpl {
                     diesel::select(diesel::dsl::exists(dsl::#table_name.#(filter(#eqs)).*))
                         .get_result(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
+                        .map_err(|e| Self::Error::from(crate::Error::from(e)))
                 }
             }
         });

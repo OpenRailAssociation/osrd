@@ -115,11 +115,11 @@ impl ToTokens for ListImpl {
                         .select(#row::as_select())
                         .load_stream::<#row>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?;
+                        .map_err(|e| Self::Error::from(crate::Error::from(e)))?;
                     futures_util::TryStreamExt::map_ok(stream, <#model as crate::prelude::Model>::from_row)
                         .try_collect::<Vec<_>>()
                         .await
-                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
+                        .map_err(|e| Self::Error::from(crate::Error::from(e)))
                 }
             }
 

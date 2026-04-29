@@ -55,7 +55,7 @@ impl ToTokens for UpdateImpl {
                         .await
                         .map(Into::into)
                         .optional()
-                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
+                        .map_err(|e| Self::Error::from(crate::Error::from(e)))
                 }
             }
         });
