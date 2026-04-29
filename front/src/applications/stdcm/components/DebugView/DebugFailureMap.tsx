@@ -77,61 +77,63 @@ const DebugFailureMap = ({ failureData }: DebugFailureMapProps) => {
 
   return (
     <div className="debug-failure-map">
-      <ReactMapGL
-        ref={mapRef}
-        initialViewState={initialViewState}
-        style={{ width: '100%', height: '100%' }}
-        mapStyle={mapBlankStyle}
-        interactiveLayerIds={['conflicts-largest', 'conflicts-closest']}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={() => setHovered(null)}
-      >
-        <VirtualLayers />
-        <OpenStreetMapSource />
-        {genOSMLayerProps(
-          'normal',
-          { showOSM3dBuildings: false },
-          LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]
-        )
-          .filter((layer): layer is typeof layer & { id: string } => layer.id !== undefined)
-          .map(({ id, ...props }) => (
-            <OrderedLayer key={id} id={id} {...props} />
-          ))}
-        <Source id="conflicts" type="geojson" data={geojson}>
-          <OrderedLayer
-            id="conflicts-largest"
-            type="circle"
-            layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
-            filter={['==', ['get', 'category'], 'largest']}
-            paint={{
-              'circle-radius': 8,
-              'circle-color': 'rgba(220, 50, 50, 0.85)',
-              'circle-stroke-width': 1.5,
-              'circle-stroke-color': '#fff',
-            }}
-          />
-          <OrderedLayer
-            id="conflicts-closest"
-            type="circle"
-            layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
-            filter={['==', ['get', 'category'], 'closest']}
-            paint={{
-              'circle-radius': 8,
-              'circle-color': 'rgba(50, 120, 220, 0.85)',
-              'circle-stroke-width': 1.5,
-              'circle-stroke-color': '#fff',
-            }}
-          />
-        </Source>
-      </ReactMapGL>
+      <div className="debug-failure-map__map">
+        <ReactMapGL
+          ref={mapRef}
+          initialViewState={initialViewState}
+          style={{ width: '100%', height: '100%' }}
+          mapStyle={mapBlankStyle}
+          interactiveLayerIds={['conflicts-largest', 'conflicts-closest']}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={() => setHovered(null)}
+        >
+          <VirtualLayers />
+          <OpenStreetMapSource />
+          {genOSMLayerProps(
+            'normal',
+            { showOSM3dBuildings: false },
+            LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]
+          )
+            .filter((layer): layer is typeof layer & { id: string } => layer.id !== undefined)
+            .map(({ id, ...props }) => (
+              <OrderedLayer key={id} id={id} {...props} />
+            ))}
+          <Source id="conflicts" type="geojson" data={geojson}>
+            <OrderedLayer
+              id="conflicts-largest"
+              type="circle"
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
+              filter={['==', ['get', 'category'], 'largest']}
+              paint={{
+                'circle-radius': 8,
+                'circle-color': 'rgba(220, 50, 50, 0.85)',
+                'circle-stroke-width': 1.5,
+                'circle-stroke-color': '#fff',
+              }}
+            />
+            <OrderedLayer
+              id="conflicts-closest"
+              type="circle"
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
+              filter={['==', ['get', 'category'], 'closest']}
+              paint={{
+                'circle-radius': 8,
+                'circle-color': 'rgba(50, 120, 220, 0.85)',
+                'circle-stroke-width': 1.5,
+                'circle-stroke-color': '#fff',
+              }}
+            />
+          </Source>
+        </ReactMapGL>
+      </div>
 
       <div className="debug-failure-map__legend">
         <span>
-          <span className="debug-failure-map__legend-dot largest" />
+          <span className="debug-failure-map__legend-dot debug-failure-map__legend-dot--largest" />
           Largest conflicts
         </span>
         <span>
-          <span className="debug-failure-map__legend-dot closest" />
+          <span className="debug-failure-map__legend-dot debug-failure-map__legend-dot--closest" />
           Closest conflicts
         </span>
       </div>

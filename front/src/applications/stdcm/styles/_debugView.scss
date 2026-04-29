@@ -2,6 +2,12 @@
   position: relative;
   width: 100%;
   height: 500px;
+
+  &__map {
+    width: 100%;
+    height: 100%;
+  }
+
   &__legend {
     position: absolute;
     top: 8px;
@@ -21,11 +27,11 @@
     border-radius: 50%;
     margin-right: 4px;
 
-    &.largest {
+    &--largest {
       background: rgba(220, 50, 50, 0.85);
     }
 
-    &.closest {
+    &--closest {
       background: rgba(50, 120, 220, 0.85);
     }
   }
