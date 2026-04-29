@@ -5,7 +5,7 @@ import type {
   PacedTrainWithDetails,
   SuggestedOP,
   TrainScheduleWithSummaries,
-} from 'modules/timetableItem/types';
+} from 'modules/trainSchedule/types';
 import {
   operationalStudiesConfSlice,
   operationalStudiesInitialConf,

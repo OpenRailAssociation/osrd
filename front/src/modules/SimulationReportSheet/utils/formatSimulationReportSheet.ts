@@ -10,7 +10,7 @@ import {
 import type { SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
 import type { RequestedStep, StepType } from 'common/api/osrdRailwayManagerApi';
 import { interpolateValue } from 'modules/simulationResult/helpers/utils';
-import type { SuggestedOP } from 'modules/timetableItem/types';
+import type { SuggestedOP } from 'modules/trainSchedule/types';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 import { capitalizeFirstLetter } from 'utils/strings';

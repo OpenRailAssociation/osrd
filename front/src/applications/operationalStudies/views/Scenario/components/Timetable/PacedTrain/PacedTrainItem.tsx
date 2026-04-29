@@ -21,14 +21,14 @@ import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { useRollingStockContext } from 'common/RollingStockContext';
 import isMainCategory from 'modules/rollingStock/helpers/category';
-import { getOccurrencesWorstStatus } from 'modules/timetableItem/helpers/pacedTrain';
+import { getOccurrencesWorstStatus } from 'modules/trainSchedule/helpers/pacedTrain';
 import {
   createExceptions,
   createPacedTrains,
   deleteExceptions,
   deleteTrainSchedules,
-} from 'modules/timetableItem/helpers/updateTrainScheduleHelpers';
-import type { PacedTrainWithPacedWithDetails } from 'modules/timetableItem/types';
+} from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
+import type { PacedTrainWithPacedWithDetails } from 'modules/trainSchedule/types';
 import { setFailure, setSuccess } from 'reducers/main';
 import type { TimetableItem, TrainId, OccurrenceId } from 'reducers/osrdconf/types';
 import {

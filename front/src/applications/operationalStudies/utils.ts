@@ -16,8 +16,8 @@ import type {
   PathItem,
 } from 'common/api/osrdEditoastApi';
 import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
-import { isPacedTrain } from 'modules/timetableItem/helpers/pacedTrain';
-import type { SimulationSummary } from 'modules/timetableItem/types';
+import { isPacedTrain } from 'modules/trainSchedule/helpers/pacedTrain';
+import type { SimulationSummary } from 'modules/trainSchedule/types';
 import type { TimetableItem, TrainScheduleWithPathOps } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 import { mmToM } from 'utils/physics';

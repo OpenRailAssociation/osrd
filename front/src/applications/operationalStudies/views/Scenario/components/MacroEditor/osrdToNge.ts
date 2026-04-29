@@ -14,7 +14,7 @@ import {
   type SubCategory,
   type MacroNoteResponse,
 } from 'common/api/osrdEditoastApi';
-import { isPacedTrain } from 'modules/timetableItem/helpers/pacedTrain';
+import { isPacedTrain } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TimetableItem, TrainScheduleWithPathOps } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration, addDurationToDate } from 'utils/duration';

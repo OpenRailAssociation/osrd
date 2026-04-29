@@ -1,6 +1,6 @@
 import type { Conflict, TrainCategory } from 'common/api/osrdEditoastApi';
-import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
-import { isPacedTrainBase } from 'modules/timetableItem/helpers/pacedTrain';
+import computeOccurrenceName from 'modules/trainSchedule/helpers/computeOccurrenceName';
+import { isPacedTrainBase } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TimetableItem, TrainId } from 'reducers/osrdconf/types';
 
 import type { ConflictWithTrainNames } from './types';

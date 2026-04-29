@@ -7,7 +7,7 @@ import type { StdcmSuccessResponse } from 'applications/stdcm/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChartWrapper/useLazyProjectTrains';
 import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
-import type { TrainScheduleWithDetails } from 'modules/timetableItem/types';
+import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import {
   getStdcmElectricalProfileSetId,
   getStdcmInfraID,

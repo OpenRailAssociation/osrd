@@ -8,9 +8,9 @@ import { useSelector } from 'react-redux';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { type OperationalPointReference, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
-import { computeIndexedOccurrenceStartTime } from 'modules/timetableItem/helpers/pacedTrain';
-import type { SimulatedException } from 'modules/timetableItem/types';
+import computeOccurrenceName from 'modules/trainSchedule/helpers/computeOccurrenceName';
+import { computeIndexedOccurrenceStartTime } from 'modules/trainSchedule/helpers/pacedTrain';
+import type { SimulatedException } from 'modules/trainSchedule/types';
 import type { TrainId } from 'reducers/osrdconf/types';
 import { getIsSimulationEnabled } from 'reducers/simulationResults/selectors';
 import {

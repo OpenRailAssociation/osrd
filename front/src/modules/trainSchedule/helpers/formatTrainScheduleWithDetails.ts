@@ -12,7 +12,7 @@ import type {
   SimulatedException,
   SimulationSummary,
   TrainScheduleWithDetails,
-} from 'modules/timetableItem/types';
+} from 'modules/trainSchedule/types';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 import { jouleToKwh } from 'utils/physics';

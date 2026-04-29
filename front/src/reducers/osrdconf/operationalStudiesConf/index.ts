@@ -1,8 +1,8 @@
 import { createSlice, type Draft, type PayloadAction } from '@reduxjs/toolkit';
 
-import computeBasePathStep from 'modules/timetableItem/helpers/computeBasePathStep';
-import { isPacedTrainWithDetails } from 'modules/timetableItem/helpers/pacedTrain';
-import type { SuggestedOP, TrainScheduleWithDetails } from 'modules/timetableItem/types';
+import computeBasePathStep from 'modules/trainSchedule/helpers/computeBasePathStep';
+import { isPacedTrainWithDetails } from 'modules/trainSchedule/helpers/pacedTrain';
+import type { SuggestedOP, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { buildMapStateReducer } from 'reducers/commonMap';
 import { defaultCommonConf, buildCommonConfReducers } from 'reducers/osrdconf/osrdConfCommon';
 import type { OperationalStudiesConfState } from 'reducers/osrdconf/types';

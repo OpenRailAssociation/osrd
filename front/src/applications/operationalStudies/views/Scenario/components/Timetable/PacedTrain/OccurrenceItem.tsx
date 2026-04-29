@@ -24,7 +24,7 @@ import type { SubCategory } from 'common/api/osrdEditoastApi';
 import { SkeletonLoader } from 'common/Loaders';
 import OSRDMenu, { type OSRDMenuItem } from 'common/OSRDMenu';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
-import type { InvalidReason, Occurrence } from 'modules/timetableItem/types';
+import type { InvalidReason, Occurrence } from 'modules/trainSchedule/types';
 import { updateHoveredTrainId } from 'reducers/simulationResults';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';

@@ -9,17 +9,17 @@ import {
   findExceptionWithOccurrenceId,
   extractOccurrenceDetailsFromPacedTrain,
   hasChangeGroups,
-} from 'modules/timetableItem/helpers/pacedTrain';
+} from 'modules/trainSchedule/helpers/pacedTrain';
 import {
   createExceptions,
   deleteExceptions,
   updateExceptions,
-} from 'modules/timetableItem/helpers/updateTrainScheduleHelpers';
+} from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import type {
   Occurrence,
   PacedTrainWithPacedWithDetails,
   SimulatedException,
-} from 'modules/timetableItem/types';
+} from 'modules/trainSchedule/types';
 import type { OccurrenceId, TimetableItem } from 'reducers/osrdconf/types';
 import { updateSelectedTrain, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';

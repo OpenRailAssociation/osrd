@@ -10,7 +10,7 @@ import {
   deleteTrainSchedules,
   fetchTrainSchedule,
   storePacedTrain,
-} from 'modules/timetableItem/helpers/updateTrainScheduleHelpers';
+} from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { updateSelectedTrain } from 'reducers/simulationResults';
 import type { AppDispatch } from 'store';

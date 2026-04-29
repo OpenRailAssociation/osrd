@@ -21,7 +21,7 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import MenuTriggerButton from 'common/MenuTriggerButton';
 import UploadFileModal from 'common/uploadFileModal';
-import type { TrainScheduleWithDetails } from 'modules/timetableItem/types';
+import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../../consts';

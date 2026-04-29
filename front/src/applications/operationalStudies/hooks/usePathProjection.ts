@@ -12,7 +12,7 @@ import {
   type PathProperties,
   type OperationalPointReference,
 } from 'common/api/osrdEditoastApi';
-import { getExceptionFromOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
+import { getExceptionFromOccurrenceId } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { updateProjectionType } from 'reducers/simulationResults';
 import {

@@ -2,8 +2,8 @@ import type {
   LightRollingStockWithLiveries,
   TrainScheduleSimulationSummaryResult,
 } from 'common/api/osrdEditoastApi';
-import { formatPacedTrainWithDetails } from 'modules/timetableItem/helpers/formatTrainScheduleWithDetails';
-import type { TrainScheduleWithDetails } from 'modules/timetableItem/types';
+import { formatPacedTrainWithDetails } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
+import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { mapBy } from 'utils/types';
 

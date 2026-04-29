@@ -1,8 +1,8 @@
 import { isEmpty } from 'lodash';
 
 import type { PacedTrainException } from 'common/api/osrdEditoastApi';
-import { isOccurrencePresentInPacedTrain } from 'modules/timetableItem/helpers/pacedTrain';
-import type { Occurrence, TrainScheduleWithDetails } from 'modules/timetableItem/types';
+import { isOccurrencePresentInPacedTrain } from 'modules/trainSchedule/helpers/pacedTrain';
+import type { Occurrence, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type {
   AddedExceptionId,
   IndexedOccurrenceId,

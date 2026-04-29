@@ -1,6 +1,6 @@
 import type { PathItemLocation, ReceptionSignal } from 'common/api/osrdEditoastApi';
 import type { TimeString } from 'common/types';
-import type { SuggestedOP } from 'modules/timetableItem/types';
+import type { SuggestedOP } from 'modules/trainSchedule/types';
 import type { Duration } from 'utils/duration';
 
 import type { MarginUnit } from './consts';

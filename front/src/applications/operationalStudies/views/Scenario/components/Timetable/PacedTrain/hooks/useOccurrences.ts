@@ -4,13 +4,13 @@ import { omit, sortBy } from 'lodash';
 
 import { intermediateStopsCount } from 'applications/operationalStudies/utils';
 import { type LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
-import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
+import computeOccurrenceName from 'modules/trainSchedule/helpers/computeOccurrenceName';
 import {
   findExceptionWithOccurrenceId,
   getOccurrencesNb,
   computeIndexedOccurrenceStartTime,
-} from 'modules/timetableItem/helpers/pacedTrain';
-import type { Occurrence, PacedTrainWithPacedWithDetails } from 'modules/timetableItem/types';
+} from 'modules/trainSchedule/helpers/pacedTrain';
+import type { Occurrence, PacedTrainWithPacedWithDetails } from 'modules/trainSchedule/types';
 import {
   formatEditoastIdToPacedTrainId,
   formatPacedTrainIdToExceptionId,

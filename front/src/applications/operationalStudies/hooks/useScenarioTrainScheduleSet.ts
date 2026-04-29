@@ -8,8 +8,8 @@ import {
   type TrainSchedule,
   type TrainScheduleSet,
 } from 'common/api/osrdEditoastApi';
-import { createPacedTrains } from 'modules/timetableItem/helpers/updateTrainScheduleHelpers';
-import type { PacedTrainWithDetails, TrainScheduleWithDetails } from 'modules/timetableItem/types';
+import { createPacedTrains } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
+import type { PacedTrainWithDetails, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 

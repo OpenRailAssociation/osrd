@@ -12,7 +12,7 @@ import type {
   ReceptionSignal,
 } from 'common/api/osrdEditoastApi';
 import type { TimeString } from 'common/types';
-import type { SuggestedOP } from 'modules/timetableItem/types';
+import type { SuggestedOP } from 'modules/trainSchedule/types';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 import { msToS } from 'utils/physics';

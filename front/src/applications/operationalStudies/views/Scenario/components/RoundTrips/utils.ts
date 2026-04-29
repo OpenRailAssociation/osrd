@@ -7,7 +7,7 @@ import {
   getStationFromOps,
 } from 'applications/operationalStudies/utils';
 import type { OperationalPoint, TrainSchedule, RoundTrips } from 'common/api/osrdEditoastApi';
-import { isPacedTrain } from 'modules/timetableItem/helpers/pacedTrain';
+import { isPacedTrain } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithPathOps } from 'reducers/osrdconf/types';
 import { addDurationToDate, Duration } from 'utils/duration';
 
