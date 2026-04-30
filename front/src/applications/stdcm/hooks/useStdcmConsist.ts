@@ -24,7 +24,8 @@ const useStdcmConsist = (
   consist: ConsistData,
   onConsistChange: (consist: ConsistData) => void,
   selectedRollingStock: LightRollingStockWithLiveries | undefined,
-  selectedTowedRollingStock: TowedRollingStock | undefined
+  selectedTowedRollingStock: TowedRollingStock | undefined,
+  onConsistErrorsChange: (errors: ConsistErrors) => void
 ) => {
   const { t } = useTranslation('stdcm');
   const speedLimitTags = useSelector(getStdcmSpeedLimitsByTag);
@@ -53,19 +54,19 @@ const useStdcmConsist = (
   const updateConsistErrors = (
     errors: Partial<Record<keyof ConsistErrors, string | undefined>>
   ) => {
-    setConsistErrors((prev) =>
-      (Object.entries(errors) as [keyof ConsistErrors, string | undefined][]).reduce(
-        (acc, [field, error]) => ({
-          ...acc,
-          [field]: {
-            message: error,
-            display: !!error,
-            type: error === missingValueMessage ? 'missing' : 'invalid',
-          },
-        }),
-        prev
-      )
+    const next = (Object.entries(errors) as [keyof ConsistErrors, string | undefined][]).reduce(
+      (acc, [field, error]) => ({
+        ...acc,
+        [field]: {
+          message: error,
+          display: !!error,
+          type: error === missingValueMessage ? 'missing' : 'invalid',
+        },
+      }),
+      consistErrors
     );
+    setConsistErrors(next);
+    onConsistErrorsChange(next);
   };
 
   const onTotalMassChange = (e: React.ChangeEvent<HTMLInputElement>) => {
