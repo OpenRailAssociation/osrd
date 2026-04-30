@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import cx from 'classnames';
 
-import AlertBox from 'common/AlertBox';
+import Banner from 'common/Banner';
 
 type TabComponentProps = {
   label: string;
@@ -46,7 +46,7 @@ const Tabs = ({
 
   return (
     <div className={cx('tabs-container', { 'full-width': fullWidth, 'full-height': fullHeight })}>
-      {warning && <AlertBox message={warning} />}
+      {warning && <Banner message={warning} />}
       <div className={cx('tabs', pills && 'pills')}>
         {tabs.map((tab, index) => (
           <div
