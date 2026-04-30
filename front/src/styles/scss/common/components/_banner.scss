@@ -1,4 +1,4 @@
-.alert-box {
+.banner {
   width: 100%;
   min-height: 56px;
   display: flex;
@@ -18,7 +18,7 @@
     background-color: var(--error5);
   }
 
-  .alert-box-icon {
+  .banner-icon {
     margin-right: 12px;
     width: 24px;
     height: 24px;
@@ -32,7 +32,7 @@
     }
   }
 
-  .alert-box-text {
+  .banner-text {
     font-family: 'IBM Plex Sans';
     font-size: 16px;
     font-weight: 400;
@@ -46,7 +46,7 @@
     }
   }
 
-  .alert-box-close-button {
+  .banner-close-button {
     margin-left: auto;
 
     &.warning {

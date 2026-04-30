@@ -12,7 +12,7 @@ import useCategoryColors from 'applications/operationalStudies/hooks/useCategory
 import { useManageTimetableItemContext } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
 import { useOperationalPointSearch } from 'applications/operationalStudies/hooks/useOperationalPointSearch';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
-import AlertBox from 'common/AlertBox';
+import Banner from 'common/Banner';
 import type {
   OperationalPointReference,
   PathProperties,
@@ -105,7 +105,7 @@ const ItineraryModal = ({
 
   const [pathSteps, setPathSteps] = useState<PathStepV2[]>([]);
   const [categoryWarning, setCategoryWarning] = useState<string | undefined>(undefined);
-  const [alertBoxWiggle, setAlertBoxWiggle] = useState(0);
+  const [BannerWiggle, setBannerWiggle] = useState(0);
 
   const [hoveredGapIndex, setHoveredGapIndex] = useState<number | null>(null);
   const [mapSelectionStepId, setMapSelectionStepId] = useState<string | null>(null);
@@ -464,7 +464,7 @@ const ItineraryModal = ({
   };
   const submitItinerary = () => {
     setSubmitAttempted(true);
-    setAlertBoxWiggle((c) => c + 1);
+    setBannerWiggle((c) => c + 1);
     if (isNameEmpty) return;
 
     const stepsWithLocationOrInput = pathSteps.filter(
@@ -535,22 +535,22 @@ const ItineraryModal = ({
           />
         </div>
         <div className="itinerary-modal-form-body">
-          {categoryWarning && <AlertBox message={categoryWarning} closeable />}
+          {categoryWarning && <Banner message={categoryWarning} closeable />}
           {hasInvalidPathStepDisplay && (
-            <div key={`invalid-op-${alertBoxWiggle}`}>
-              <AlertBox type="error" message={t('alertInvalidOP')} />
+            <div key={`invalid-op-${BannerWiggle}`}>
+              <Banner type="error" message={t('alertInvalidOP')} />
             </div>
           )}
           {!hasInvalidPathStepDisplay && pathfindingError && (
-            <div key={`pathfinding-${alertBoxWiggle}`}>
-              <AlertBox type="error" message={pathfindingError} />
+            <div key={`pathfinding-${BannerWiggle}`}>
+              <Banner type="error" message={pathfindingError} />
             </div>
           )}
           {submitAttempted &&
             !hasInvalidPathStepDisplay &&
             (!pathSteps[0]?.location || locatedStepsCount < 2) && (
-              <div key={`missing-step-${alertBoxWiggle}`}>
-                <AlertBox
+              <div key={`missing-step-${BannerWiggle}`}>
+                <Banner
                   type="error"
                   message={t(
                     locatedStepsCount === 0

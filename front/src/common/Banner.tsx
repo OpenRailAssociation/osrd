@@ -2,32 +2,32 @@ import { useState } from 'react';
 
 import { Alert, Blocked, X } from '@osrd-project/ui-icons';
 
-type AlertType = 'warning' | 'error';
+type BannerType = 'warning' | 'error';
 
-type AlertBoxProps = {
-  type?: AlertType;
+type BannerProps = {
+  type?: BannerType;
   message?: string;
   closeable?: boolean;
 };
 
 const iconByType = {
-  warning: <Alert variant="fill" size="lg" className="alert-box-icon warning" />,
+  warning: <Alert variant="fill" size="lg" className="banner-icon warning" />,
   error: <Blocked size="lg" variant="fill" className="alert-box-icon error" />,
 };
 
-const AlertBox = ({ type = 'warning', message, closeable }: AlertBoxProps) => {
+const Banner = ({ type = 'warning', message, closeable }: BannerProps) => {
   const [visible, setVisible] = useState(true);
   const icon = iconByType[type];
 
   if (!visible) return null;
 
   return (
-    <div className={`alert-box ${type}`}>
+    <div className={`banner ${type}`}>
       {icon}
-      <span className={`alert-box-text ${type}`}>{message}</span>
+      <span className={`banner-text ${type}`}>{message}</span>
       {closeable && (
         <button
-          className={`alert-box-close-button ${type}`}
+          className={`banner-close-button ${type}`}
           onClick={() => setVisible(false)}
           type="button"
         >
@@ -38,4 +38,4 @@ const AlertBox = ({ type = 'warning', message, closeable }: AlertBoxProps) => {
   );
 };
 
-export default AlertBox;
+export default Banner;
