@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { compact, isEqual } from 'lodash';
+import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { stdcmPathStepToPathItemLocation } from 'applications/stdcm/utils';
@@ -38,9 +39,12 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
   const loadingGauge = useSelector(getLoadingGauge);
 
   const [pathfinding, setPathfinding] = useState<PathfindingResult>();
+  const [showPathfindingStatusMessage, setShowPathfindingStatusMessage] = useState(false);
 
   const [postPathfindingBlocks, { isFetching }] =
     osrdEditoastApi.endpoints.postInfraByInfraIdPathfindingBlocks.useLazyQuery();
+
+  const { t } = useTranslation('stdcm');
 
   // When pathSteps changed
   // => update the pathStepsLocations (if needed by doing a deep comparison).
@@ -82,15 +86,33 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
         return;
       }
 
+      setShowPathfindingStatusMessage(true);
+
       const pathfindingResult = await postPathfindingBlocks(payload).unwrap();
 
       setPathfinding(pathfindingResult);
+
+      if (pathfindingResult.status === 'failure') {
+        setShowPathfindingStatusMessage(false);
+      }
     };
 
     launchPathfinding();
   }, [pathStepsLocations, rollingStock, speedLimitByTag, loadingGauge, infra, workerStatus]);
 
-  return { pathfinding, isPathFindingLoading: isFetching };
+  const pathfindingStatusMessage = useMemo(() => {
+    if (isFetching) {
+      return t('pathfindingStatus.calculating');
+    }
+    return t('pathfindingStatus.success');
+  }, [isFetching]);
+
+  return {
+    pathfinding,
+    pathfindingStatusMessage,
+    showPathfindingStatusMessage,
+    setShowPathfindingStatusMessage,
+  };
 };
 
 export default useStaticPathfinding;

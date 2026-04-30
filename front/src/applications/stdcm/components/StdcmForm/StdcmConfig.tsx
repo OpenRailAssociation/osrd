@@ -174,12 +174,12 @@ const StdcmConfig = ({
     [dispatch]
   );
 
-  const [showMessage, setShowMessage] = useState(false);
-
-  const { pathfinding, isPathFindingLoading } = useStaticPathfinding(
-    pathfindingWorkerStatus,
-    infra
-  );
+  const {
+    pathfinding,
+    pathfindingStatusMessage,
+    showPathfindingStatusMessage,
+    setShowPathfindingStatusMessage,
+  } = useStaticPathfinding(pathfindingWorkerStatus, infra);
 
   const formRef = useRef<HTMLDivElement>(null);
   const pathfindingBannerRef = useRef<HTMLDivElement>(null);
@@ -241,15 +241,7 @@ const StdcmConfig = ({
 
   const onItineraryChange = () => setSkipPathfindingStatusMessage(false);
 
-  const getStatusMessage = () => {
-    if (isPathFindingLoading) {
-      return t('pathfindingStatus.calculating');
-    }
-    return t('pathfindingStatus.success');
-  };
-
-  // Checks for live warnings regarding pathSteps
-  useEffect(() => {
+  const updatedFormErrors = useMemo((): StdcmConfigErrors | undefined => {
     if (pathfindingWorkerStatus !== 'READY' || stdcmWorkerStatus !== 'READY') {
       setFormErrors({ errorType: StdcmConfigErrorTypes.INFRA_NOT_LOADED });
       return;
@@ -278,24 +270,14 @@ const StdcmConfig = ({
     }
   }, []);
 
-  useEffect(() => {
-    if (!skipPathfindingStatusMessage && isPathFindingLoading) {
-      setShowMessage(true);
-    }
-
-    if (pathfinding?.status === 'failure') {
-      setShowMessage(false);
-    }
-  }, [isPathFindingLoading, pathfinding?.status, skipPathfindingStatusMessage]);
-
   useLayoutEffect(() => {
     const bannerElement = pathfindingBannerRef.current;
-    if (!showMessage || !bannerElement) {
+    if (!showPathfindingStatusMessage || !bannerElement) {
       return undefined;
     }
 
     const handleAnimationEnd = () => {
-      setShowMessage(false);
+      setShowPathfindingStatusMessage(false);
     };
 
     bannerElement.addEventListener('animationend', handleAnimationEnd);
@@ -303,7 +285,7 @@ const StdcmConfig = ({
     return () => {
       bannerElement.removeEventListener('animationend', handleAnimationEnd);
     };
-  }, [showMessage]);
+  }, [showPathfindingStatusMessage]);
 
   useEffect(() => {
     const updatedErrors = checkStdcmConfigErrors({
@@ -413,7 +395,7 @@ const StdcmConfig = ({
               }
             />
           </div>
-          {showMessage && (
+          {showPathfindingStatusMessage && !skipPathfindingStatusMessage && (
             <div className="simulation-status-banner">
               <div className="banner-content">
                 <div
@@ -423,7 +405,7 @@ const StdcmConfig = ({
                     'pathfinding-status-success': pathfinding?.status === 'success',
                   })}
                 >
-                  {getStatusMessage()}
+                  {pathfindingStatusMessage}
                 </div>
               </div>
             </div>

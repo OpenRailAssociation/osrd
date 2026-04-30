@@ -31,7 +31,7 @@ const StdcmWarningBox = ({
   const hasMissingFields = (errorDetails?.missingFields?.length ?? 0) > 0;
   const hasRouteErrors = (errorDetails?.routeErrors?.length ?? 0) > 0;
 
-  const { pathfinding, isPathFindingLoading: _ } = useStaticPathfinding(workerStatus, infra);
+  const { pathfinding } = useStaticPathfinding(workerStatus, infra);
   const hasIncompatibleConstraints =
     pathfinding?.status === 'failure' &&
     pathfinding.failed_status === 'pathfinding_not_found' &&
