@@ -213,6 +213,22 @@ infra_model!(
     schemas::infra::LevelCrossing
 );
 
+// Used to re-export all models in a single module for easier imports
+pub mod models {
+    pub use super::BufferStopModel;
+    pub use super::DetectorModel;
+    pub use super::ElectrificationModel;
+    pub use super::LevelCrossingModel;
+    pub use super::NeutralSectionModel;
+    pub use super::OperationalPointModel;
+    pub use super::RouteModel;
+    pub use super::SignalModel;
+    pub use super::SpeedSectionModel;
+    pub use super::SwitchModel;
+    pub use super::SwitchTypeModel;
+    pub use super::TrackSectionModel;
+}
+
 pub fn get_table(object_type: &ObjectType) -> &'static str {
     match object_type {
         ObjectType::TrackSection => TrackSectionModel::TABLE,
