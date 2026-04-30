@@ -50,6 +50,9 @@ test.describe(
   'Paced train occurrence edition',
   { tag: ['@op', '@paced-trains', '@exceptions'] },
   () => {
+    //TODO: remove ignorePageErrors when issue #13066 is resolved
+    test.use({ ignorePageErrors: true });
+
     let project: Project;
     let study: Study;
     let infra: Infra;
