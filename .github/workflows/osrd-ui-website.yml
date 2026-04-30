@@ -64,7 +64,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: OpenRailAssociation/web-deployment-action@v1.2.0
+      - uses: OpenRailAssociation/web-deployment-action@v1.3.0
         with:
           artifact_name: ${{ env.artifact_name }}
           condition_production: ${{ startsWith(github.ref, 'refs/tags/ui-v') }}
