@@ -1,8 +1,8 @@
 import { useState } from 'react';
 
-import { Alert, Blocked, X } from '@osrd-project/ui-icons';
+import { Alert, Info, Blocked, X } from '@osrd-project/ui-icons';
 
-type BannerType = 'warning' | 'error';
+type BannerType = 'warning' | 'error' | 'info';
 
 type BannerProps = {
   type?: BannerType;
@@ -12,7 +12,8 @@ type BannerProps = {
 
 const iconByType = {
   warning: <Alert variant="fill" size="lg" className="banner-icon warning" />,
-  error: <Blocked size="lg" variant="fill" className="alert-box-icon error" />,
+  error: <Blocked size="lg" variant="fill" className="banner-icon error" />,
+  info: <Info variant="fill" size="lg" className="banner-icon info" />,
 };
 
 const Banner = ({ type = 'warning', message, closeable }: BannerProps) => {

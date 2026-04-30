@@ -12,13 +12,13 @@ import useCategoryColors from 'applications/operationalStudies/hooks/useCategory
 import { useManageTimetableItemContext } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
 import { useOperationalPointSearch } from 'applications/operationalStudies/hooks/useOperationalPointSearch';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
-import Banner from 'common/Banner';
 import type {
   OperationalPointReference,
   PathProperties,
   PathItemLocation,
   TrainCategory,
 } from 'common/api/osrdEditoastApi';
+import Banner from 'common/Banner';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
 import IncompatibleConstraints from 'modules/pathfinding/components/IncompatibleConstraints';
@@ -33,6 +33,7 @@ import {
   getOperationalStudiesRollingStockID,
   getOperationalStudiesSpeedLimitByTag,
   getPathSteps,
+  getRollingStockName,
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { PathStep, PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
@@ -65,6 +66,7 @@ type ItineraryModalProps = {
 export type ItineraryModalFormState = {
   name?: string;
   rollingStockId?: number;
+  rollingStockName: string;
   speedLimitTag?: string;
   category?: TrainCategory;
 };
@@ -81,6 +83,7 @@ const ItineraryModal = ({
   const category = useSelector(getCategory);
   const { workerStatus } = useScenarioContext();
   const rollingStockId = useSelector(getOperationalStudiesRollingStockID);
+  const rollingStockName = useSelector(getRollingStockName);
   const name = useSelector(getName);
   const speedLimitTag = useSelector(getOperationalStudiesSpeedLimitByTag);
   const mapSettings = useMapSettings();
@@ -91,6 +94,7 @@ const ItineraryModal = ({
   const [modalFormState, setModalFormState] = useState<ItineraryModalFormState>({
     name,
     rollingStockId,
+    rollingStockName: rollingStockName ?? '',
     speedLimitTag,
     category: category ?? undefined,
   });
@@ -105,7 +109,8 @@ const ItineraryModal = ({
 
   const [pathSteps, setPathSteps] = useState<PathStepV2[]>([]);
   const [categoryWarning, setCategoryWarning] = useState<string | undefined>(undefined);
-  const [BannerWiggle, setBannerWiggle] = useState(0);
+  const [rollingStockMessage, setRollingStockMessage] = useState<string | undefined>(undefined);
+  const [bannerWiggle, setBannerWiggle] = useState(0);
 
   const [hoveredGapIndex, setHoveredGapIndex] = useState<number | null>(null);
   const [mapSelectionStepId, setMapSelectionStepId] = useState<string | null>(null);
@@ -487,6 +492,7 @@ const ItineraryModal = ({
         name: modalFormState.name ?? '',
         category: modalFormState.category ?? null,
         rollingStockId: modalFormState.rollingStockId,
+        rollingStockName: modalFormState.rollingStockName,
         speedLimitTag: modalFormState.speedLimitTag,
         pathSteps: pathStepsFromV2,
       })
@@ -528,6 +534,7 @@ const ItineraryModal = ({
             modalFormState={modalFormState}
             onModalFormStateChange={setModalFormState}
             onCategoryWarningChange={setCategoryWarning}
+            onRollingStockMessageChange={setRollingStockMessage}
             currentSubCategory={currentSubCategory}
             categoryColors={categoryColors}
             submitAttempted={submitAttempted}
@@ -536,20 +543,21 @@ const ItineraryModal = ({
         </div>
         <div className="itinerary-modal-form-body">
           {categoryWarning && <Banner message={categoryWarning} closeable />}
+          {rollingStockMessage && <Banner type="info" message={rollingStockMessage} />}
           {hasInvalidPathStepDisplay && (
-            <div key={`invalid-op-${BannerWiggle}`}>
+            <div key={`invalid-op-${bannerWiggle}`}>
               <Banner type="error" message={t('alertInvalidOP')} />
             </div>
           )}
           {!hasInvalidPathStepDisplay && pathfindingError && (
-            <div key={`pathfinding-${BannerWiggle}`}>
+            <div key={`pathfinding-${bannerWiggle}`}>
               <Banner type="error" message={pathfindingError} />
             </div>
           )}
           {submitAttempted &&
             !hasInvalidPathStepDisplay &&
             (!pathSteps[0]?.location || locatedStepsCount < 2) && (
-              <div key={`missing-step-${BannerWiggle}`}>
+              <div key={`missing-step-${bannerWiggle}`}>
                 <Banner
                   type="error"
                   message={t(

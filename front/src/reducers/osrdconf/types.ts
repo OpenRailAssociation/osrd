@@ -45,6 +45,7 @@ export type ItineraryForm = {
   name: string;
   category: TrainCategory | null;
   rollingStockId?: number;
+  rollingStockName: string;
   speedLimitTag?: string;
   pathSteps: (PathStep | null)[];
 };

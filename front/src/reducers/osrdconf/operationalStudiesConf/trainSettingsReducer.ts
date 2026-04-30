@@ -71,6 +71,7 @@ const trainSettingsReducer = {
     state.name = action.payload.name;
     state.category = action.payload.category;
     state.rollingStockID = action.payload.rollingStockId;
+    state.rollingStockName = action.payload.rollingStockName;
     state.speedLimitByTag = action.payload.speedLimitTag;
     state.pathSteps = action.payload.pathSteps;
   },

@@ -18,6 +18,10 @@
     background-color: var(--error5);
   }
 
+  &.info {
+    background-color: var(--info5);
+  }
+
   .banner-icon {
     margin-right: 12px;
     width: 24px;
@@ -29,6 +33,10 @@
 
     &.error {
       color: var(--error60);
+    }
+
+    &.info {
+      color: var(--info30);
     }
   }
 
@@ -43,6 +51,10 @@
 
     &.error {
       color: var(--error60);
+    }
+
+    &.info {
+      color: var(--info60);
     }
   }
 
