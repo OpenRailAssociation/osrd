@@ -919,8 +919,7 @@ jobs:
       - name: Run Playwright tests
         run: |
           # Determine the Playwright projects to run
-          if [[ "${{ github.event_name }}" == "merge_group"  ||
-                "${{ github.ref }}" == "refs/heads/dev" ||
+          if [[ "${{ github.ref }}" == "refs/heads/dev" ||
                 "${{ github.ref }}" == "refs/heads/staging" ]]; then
             TEST_PROJECT="" # Run all browsers
             echo "Running Playwright tests on both Chromium and Firefox"
