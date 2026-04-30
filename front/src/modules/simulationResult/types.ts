@@ -24,10 +24,11 @@ export type EditoastPathOperationalPoint = NonNullable<
   PathProperties['operational_points']
 >[number];
 
-// This type refers to an operational point, modified to carry its own unique ID (waypointId), and
+// 1. This type refers to an operational point, modified to carry its own unique ID (waypointId), and
 // optionally an actual opId, which can be repeated along a path when a train crosses multiple time
-// the same operational point:
-export type PathOperationalPoint = Omit<EditoastPathOperationalPoint, 'id'> & {
+// the same operational point
+// 2. Remove the part field as it won't be used anywhere in the app. This avoid us to have to add hardcoded data in it.
+export type PathOperationalPoint = Omit<EditoastPathOperationalPoint, 'id' | 'part'> & {
   waypointId: string;
   opId: string | null;
 };

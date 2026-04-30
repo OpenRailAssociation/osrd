@@ -58,10 +58,6 @@ function getOperationalPointReference(
   op: PathOperationalPoint | undefined
 ): OperationalPointReference | undefined {
   if (!op) return undefined;
-  // Only use the opId when it refers to a real infra OP. Virtual OPs (unrecognised, created
-  // by usePathProjection when pathfinding fails) have a synthetic id like "virtual_op_Zürich"
-  // and an empty part.track — they must be matched by trigram/uic instead.
-  if (op.opId && op.part?.track) return { type: 'id', operational_point: op.opId };
   // Normalize empty string ch to null — virtual OPs store ch as '' when the original
   // secondary_code was null (see usePathProjection createVirtualOp), and passing ''
   // to the backend would filter for OPs with an empty secondary_code rather than any.
@@ -69,7 +65,11 @@ function getOperationalPointReference(
   const trigram = op.extensions?.sncf?.trigram;
   if (trigram) return { type: 'trigram', trigram, secondary_code: ch };
   const uic = op.extensions?.identifier?.uic;
-  if (uic != null) return { type: 'uic', uic, secondary_code: ch };
+  if (uic) return { type: 'uic', uic, secondary_code: ch }; // uic is defaulted to 0
+  // Only use the opId when it refers to a real infra OP. Virtual OPs (unrecognised, created
+  // by usePathProjection when pathfinding fails) have a synthetic id like "virtual_op_Zürich"
+  if (op.opId && !op.opId.startsWith('virtual_op'))
+    return { type: 'id', operational_point: op.opId };
   return undefined;
 }
 

@@ -176,9 +176,17 @@ export type ItineraryPathProperties = PathProperties & {
   length: number;
   incompatibleConstraints?: CoreIncompatibleConstraints;
 };
+
+export type PathProjectionResultOperationalPoint = Omit<
+  PathProperties['operational_points'][number],
+  'part'
+>;
+
 export type PathProjectionResult = {
   path: PathItem[];
-  operationalPoints: PathProperties['operational_points'];
+  // Remove the part field as it won't be used anywhere in the app.
+  // This avoid us to have to add hardcoded data in it.
+  operationalPoints: PathProjectionResultOperationalPoint[];
   operationalPointDistances: number[];
   operationalPointReferences: OperationalPointReference[];
 } & (
