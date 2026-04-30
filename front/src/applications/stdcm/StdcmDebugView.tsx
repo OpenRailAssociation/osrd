@@ -1,5 +1,7 @@
 import { useState } from 'react';
 
+import { Button, Input } from '@osrd-project/ui-core';
+import { Search } from '@osrd-project/ui-icons';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import DebugFailureMap from 'applications/stdcm/components/DebugView/DebugFailureMap';
@@ -20,34 +22,54 @@ const StdcmDebugView = () => {
   const simulationData = data?.simulation_data;
   const failureData = data?.failure;
 
-  const inputForm = (
+  const handleSubmit = () => {
+    if (inputId.trim()) {
+      navigate(`/stdcm/debug?traceId=${encodeURIComponent(inputId.trim())}`);
+    }
+  };
+
+  const form = (
     <form
-      onSubmit={(event) => {
-        event.preventDefault();
-        if (inputId.trim()) navigate(`/stdcm/debug?traceId=${encodeURIComponent(inputId.trim())}`);
+      className="stdcm-debug-view__form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleSubmit();
       }}
     >
-      <input
+      <Input
         id="trace-id-input"
+        type="text"
         value={inputId}
-        onChange={(event) => setInputId(event.target.value)}
+        onChange={(e) => setInputId(e.target.value)}
         placeholder="Enter trace ID"
+        narrow
       />
-      <button type="submit">Open</button>
+      <Button label="Open" onClick={handleSubmit} />
     </form>
   );
 
   if (!traceId) {
-    return <div>{inputForm}</div>;
+    return (
+      <div className="stdcm-debug-view">
+        <div className="stdcm-debug-view__empty">
+          <span className="stdcm-debug-view__empty-icon">
+            <Search size="lg" />
+          </span>
+          <h2>Debug view</h2>
+          <p>Enter a trace ID to view debug data for a simulation.</p>
+          {form}
+        </div>
+      </div>
+    );
   }
 
   let result;
   if (isLoading) {
-    result = <div>Loading...</div>;
+    result = <div className="stdcm-debug-view__status">Loading...</div>;
   } else if (error) {
-    result = <div>Error: {JSON.stringify(error)}</div>;
+    result = <div className="stdcm-debug-view__status">Failed to load debug data.</div>;
   } else if (!simulationData && !failureData) {
-    result = <div>No data available</div>;
+    result = <div className="stdcm-debug-view__status">No data available for this trace.</div>;
   } else {
     result = (
       <>
@@ -57,9 +79,10 @@ const StdcmDebugView = () => {
       </>
     );
   }
+
   return (
-    <div>
-      {inputForm}
+    <div className="stdcm-debug-view">
+      <div className="stdcm-debug-view__form-bar">{form}</div>
       {result}
     </div>
   );

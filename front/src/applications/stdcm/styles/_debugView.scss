@@ -1,3 +1,61 @@
+.stdcm-debug-view {
+  min-height: 100vh;
+
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+
+    h2 {
+      color: rgba(0, 0, 0, 1);
+      font-size: 1.5rem;
+      font-weight: 600;
+      text-align: center;
+      margin: 0 0 12px;
+    }
+
+    p {
+      color: var(--grey80);
+      font-size: 1rem;
+      font-weight: 400;
+      text-align: center;
+      margin: 0 0 24px;
+    }
+  }
+
+  &__empty-icon {
+    padding: 0.5em;
+    border-radius: 50%;
+    background-color: var(--white100);
+    color: var(--primary60);
+    border: 2px solid var(--primary60);
+    margin-bottom: 32px;
+  }
+
+  &__form {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+  }
+
+  &__form-bar {
+    padding: 8px 32px;
+    background: var(--ambientA10);
+    border-bottom: 1px solid var(--grey20);
+    display: flex;
+    justify-content: center;
+  }
+
+  &__status {
+    text-align: center;
+    padding: 48px 0;
+    color: var(--grey50);
+    font-size: 1rem;
+  }
+}
+
 .debug-failure-map {
   position: relative;
   width: 100%;
