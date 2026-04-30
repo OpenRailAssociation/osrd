@@ -19,6 +19,7 @@ members = [
   "fga_derive",
   "fga_migrations",
   "osm_to_railjson",
+  "profile_connection_scan",
   "schemas",
   "search",
 ]
