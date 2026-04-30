@@ -25,6 +25,7 @@ type ItineraryModalFormHeaderProps = {
   modalFormState: ItineraryModalFormState;
   onModalFormStateChange: (context: ItineraryModalFormState) => void;
   onCategoryWarningChange: (categoryWarning?: string) => void;
+  onRollingStockMessageChange: (message?: string) => void;
   currentSubCategory?: SubCategory;
   categoryColors: CategoryColors;
   submitAttempted?: boolean;
@@ -35,6 +36,7 @@ const ItineraryModalFormHeader = ({
   modalFormState,
   onModalFormStateChange,
   onCategoryWarningChange,
+  onRollingStockMessageChange,
   currentSubCategory,
   categoryColors,
   submitAttempted,
@@ -72,21 +74,40 @@ const ItineraryModalFormHeader = ({
     getRollingStockLabel
   );
 
-  const handleRollingStockSelect = (rs?: LightRollingStockWithLiveries) => {
-    if (!rs) {
-      onModalFormStateChange({
-        ...modalFormState,
-        category: undefined,
-        rollingStockId: undefined,
-      });
-      return;
-    }
+  // Rolling stock value for ComboBox
+  const rollingStockValue = rollingStock
+    ? getRollingStockLabel(rollingStock)
+    : modalFormState.rollingStockName;
 
+  // When user types or clears input
+  const handleRollingStockInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    rollingStockComboBoxDefaultProps.onChange(e);
     onModalFormStateChange({
       ...modalFormState,
-      category: rs.primary_category ? { main_category: rs.primary_category } : undefined,
-      rollingStockId: rs.id,
+      rollingStockId: undefined,
+      rollingStockName: e.target.value,
     });
+  };
+
+  // When user selects a suggestion
+  const handleRollingStockSelect = (label?: string) => {
+    const rs = filteredRollingStockList.find((r) => getRollingStockLabel(r) === label);
+    if (rs) {
+      onModalFormStateChange({
+        ...modalFormState,
+        category: rs.primary_category ? { main_category: rs.primary_category } : undefined,
+        rollingStockId: rs.id,
+        rollingStockName: getRollingStockLabel(rs),
+      });
+    } else {
+      // Custom value or empty
+      onModalFormStateChange({
+        ...modalFormState,
+        rollingStockId: undefined,
+        rollingStockName: label ?? '',
+        category: undefined,
+      });
+    }
   };
 
   // Composition code/speed limit by tag
@@ -117,9 +138,23 @@ const ItineraryModalFormHeader = ({
     return isMismatch ? t('categoryMismatch') : undefined;
   }, [rollingStock, modalFormState.category, currentSubCategory, t]);
 
+  const rollingStockMessage = useMemo(() => {
+    if (!rollingStockValue) {
+      return t('noRollingStock');
+    }
+    const isValid = filteredRollingStockList.some(
+      (rs) => getRollingStockLabel(rs) === rollingStockValue
+    );
+    return isValid ? undefined : t('unknownRollingStock');
+  }, [rollingStockValue, filteredRollingStockList, t]);
+
   useEffect(() => {
     onCategoryWarningChange(categoryWarningMessage);
   }, [categoryWarningMessage]);
+
+  useEffect(() => {
+    onRollingStockMessageChange(rollingStockMessage);
+  }, [rollingStockMessage]);
 
   return (
     <>
@@ -153,10 +188,12 @@ const ItineraryModalFormHeader = ({
             narrow
             small
             autoComplete="off"
-            value={rollingStock}
-            getSuggestionLabel={getRollingStockLabel}
+            value={rollingStockValue || undefined}
+            suggestions={filteredRollingStockList.map(getRollingStockLabel)}
+            getSuggestionLabel={(s) => s}
             onSelectSuggestion={handleRollingStockSelect}
-            {...rollingStockComboBoxDefaultProps}
+            resetSuggestions={rollingStockComboBoxDefaultProps.resetSuggestions}
+            onChange={handleRollingStockInputChange}
           />
         </div>
         <div className="composition-code-select">

@@ -81,6 +81,7 @@ describe('simulationConfReducer', () => {
           main_category: 'INTERCITY_TRAIN',
         },
         rollingStockId: 1,
+        rollingStockName: '',
         speedLimitTag: 'MA100',
         pathSteps: [],
       })
