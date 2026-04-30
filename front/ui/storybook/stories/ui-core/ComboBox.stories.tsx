@@ -22,24 +22,59 @@ const suggestions = [
   { id: '12', label: 'Miguel' },
 ] as Suggestion[];
 
-const ComboBoxStory = (props: { small?: boolean; disabled?: boolean; readOnly?: boolean }) => {
+type ComboBoxStoryProps = { small?: boolean; disabled?: boolean; readOnly?: boolean };
+
+const useComboBoxStory = (initialSuggestions: Suggestion[]) => {
+  const [allSuggestions, setAllSuggestions] = useState<Suggestion[]>(initialSuggestions);
   const [value, setValue] = useState<Suggestion>();
 
   const getSuggestionLabel = (suggestion: Suggestion) => suggestion.label;
+  const comboBoxDefaultProps = useDefaultComboBox(allSuggestions, getSuggestionLabel);
 
-  const onSelectSuggestion = (suggestion?: Suggestion) => {
-    setValue(suggestion);
+  const onAddCustomValue = (customLabel: string) => {
+    const newSuggestion: Suggestion = {
+      id: (allSuggestions.length + 1).toString(),
+      label: customLabel,
+    };
+    setAllSuggestions((prev) => [...prev, newSuggestion]);
+    setValue(newSuggestion);
   };
 
-  const comboBoxDefaultProps = useDefaultComboBox(suggestions, getSuggestionLabel);
+  return { value, setValue, getSuggestionLabel, comboBoxDefaultProps, onAddCustomValue };
+};
+
+const ComboBoxStory = (props: ComboBoxStoryProps) => {
+  const { value, setValue, getSuggestionLabel, comboBoxDefaultProps } =
+    useComboBoxStory(suggestions);
 
   return (
     <div style={{ maxWidth: '20rem' }}>
       <ComboBox
-        id="combo-box-custom"
+        id="combo-box-default"
         value={value}
         getSuggestionLabel={getSuggestionLabel}
-        onSelectSuggestion={onSelectSuggestion}
+        onSelectSuggestion={setValue}
+        {...comboBoxDefaultProps}
+        {...props}
+      />
+    </div>
+  );
+};
+
+const ComboBoxWithCustomValueStory = (props: ComboBoxStoryProps) => {
+  const { value, setValue, getSuggestionLabel, comboBoxDefaultProps, onAddCustomValue } =
+    useComboBoxStory(suggestions);
+
+  return (
+    <div style={{ maxWidth: '20rem' }}>
+      <ComboBox
+        id="combo-box-custom-value"
+        value={value}
+        getSuggestionLabel={getSuggestionLabel}
+        onSelectSuggestion={setValue}
+        allowCustomValue
+        onAddCustomValue={onAddCustomValue}
+        addCustomValueLabel="Add this value"
         {...comboBoxDefaultProps}
         {...props}
       />
@@ -140,4 +175,8 @@ export const SmallInput: Story = {
     required: true,
     small: true,
   },
+};
+
+export const WithCustomValue: StoryObj<typeof ComboBoxWithCustomValueStory> = {
+  render: (props) => <ComboBoxWithCustomValueStory {...props} />,
 };
