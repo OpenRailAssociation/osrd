@@ -9,7 +9,6 @@ import { useSelector } from 'react-redux';
 import {
   osrdEditoastApi,
   type PathfindingResult,
-  type PathProperties,
   type OperationalPointReference,
   type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
@@ -28,7 +27,7 @@ import {
   isPacedTrainId,
 } from 'utils/trainId';
 
-import type { PathProjectionResult } from '../types';
+import type { PathProjectionResult, PathProjectionResultOperationalPoint } from '../types';
 
 /**
  * Generates a display name for a virtual operational point based on available reference data.
@@ -61,7 +60,7 @@ const createVirtualOp = (
   position: number,
   weight: number,
   t: TFunction<'operational-studies'>
-): PathProperties['operational_points'][0] => {
+): PathProjectionResultOperationalPoint => {
   const virtualName = getVirtualOpName(opRef, index, totalCount, t);
   const virtualId = `virtual_op_${virtualName}`;
 
@@ -80,7 +79,6 @@ const createVirtualOp = (
         trigram: opRef.type === 'trigram' ? opRef.trigram : '',
       },
     },
-    part: { track: '', position: 0, local_track_name: 'V1' },
     position,
     weight,
   };
@@ -230,7 +228,7 @@ const usePathProjection = (
     // 1. For each point in the path, try to match with infrastructure data
     // 2. If a point is matched → use matched data with full extensions
     // 3. If a point is not matched (e.g., NGE) → create a virtual point from the reference
-    const normalizedOps: PathProperties['operational_points'] = [];
+    const normalizedOps: PathProjectionResultOperationalPoint[] = [];
 
     opRefs.forEach((opRef, index) => {
       const matchedOp = matchedOperationalPoints?.related_operational_points[index];
@@ -245,18 +243,13 @@ const usePathProjection = (
         normalizedOps.push({
           id: matchedOp.id,
           extensions: matchedOp.extensions,
-          part: matchedOp.parts.at(0) || {
-            track: '',
-            position: 0,
-            local_track_name: 'V1',
-            extensions: undefined,
-          },
           position,
           weight,
         });
       } else {
         // NOT MATCHED: Point doesn't exist in infrastructure (e.g., NGE point)
         // Create virtual point from the reference
+        // TODO : change this logic when implementing the non computation creation feature with the new opRef format
         normalizedOps.push(createVirtualOp(opRef, index, opRefs.length, position, weight, t));
       }
     });
