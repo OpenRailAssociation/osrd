@@ -32,6 +32,10 @@ export type ComboBoxProps<T> = Omit<InputProps, 'value'> & {
     isSelected: boolean;
   }) => ReactNode;
   renderFooterItem?: () => ReactNode;
+
+  allowCustomValue?: boolean;
+  onAddCustomValue?: (value: string) => void;
+  addCustomValueLabel?: string;
 };
 
 /**
@@ -39,6 +43,10 @@ export type ComboBoxProps<T> = Omit<InputProps, 'value'> & {
  *
  * You can use the hook useDefaultComboBox to get the default behavior.
  * See the stories.
+ *
+ * When `allowCustomValue` is true, an option appears at the bottom of the dropdown
+ * when the typed value doesn't match any existing suggestion.
+ * Defocusing without selecting cancels the input.
  */
 const ComboBox = <T,>({
   suggestions,
@@ -53,6 +61,9 @@ const ComboBox = <T,>({
   testIdPrefix,
   renderListElementComponent,
   renderFooterItem,
+  allowCustomValue = false,
+  onAddCustomValue,
+  addCustomValueLabel,
   ...inputProps
 }: ComboBoxProps<T>) => {
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
@@ -90,9 +101,16 @@ const ComboBox = <T,>({
     }
   }, [value]);
 
+  const showAddCustomValue = useMemo(() => {
+    if (!allowCustomValue || !inputValue.trim()) return false;
+    return !suggestions.some(
+      (s) => getSuggestionLabel(s).toLowerCase() === inputValue.trim().toLowerCase()
+    );
+  }, [allowCustomValue, inputValue, suggestions, getSuggestionLabel]);
+
   const showSuggestions = useMemo(
-    () => isInputFocused && suggestions.length > 0 && !inputProps.disabled,
-    [isInputFocused, suggestions.length, inputProps.disabled]
+    () => isInputFocused && (suggestions.length > 0 || showAddCustomValue) && !inputProps.disabled,
+    [isInputFocused, suggestions.length, showAddCustomValue, inputProps.disabled]
   );
 
   // behavior
@@ -108,16 +126,26 @@ const ComboBox = <T,>({
     removeFocus();
   };
 
+  const confirmCustomValue = () => {
+    const trimmed = inputValue.trim();
+    if (!trimmed) return;
+    onAddCustomValue?.(trimmed);
+    removeFocus();
+  };
+
   const closeSuggestions = () => {
     setInputValue(value ? getSuggestionLabel(value) : '');
     removeFocus();
   };
 
+  const totalItems = suggestions.length + (showAddCustomValue ? 1 : 0);
+  const customValueIndex = showAddCustomValue ? suggestions.length : -1;
+
   const handleKeyDown: KeyboardEventHandler<HTMLInputElement> = (e) => {
     switch (e.key) {
       case 'ArrowDown': {
         setActiveSuggestionIndex((prev) => {
-          const newIndex = prev < suggestions.length - 1 ? prev + 1 : prev;
+          const newIndex = prev < totalItems - 1 ? prev + 1 : prev;
           suggestionRefs.current[newIndex]?.scrollIntoView({ block: 'nearest' });
           return newIndex;
         });
@@ -133,7 +161,9 @@ const ComboBox = <T,>({
       }
       case 'Enter': {
         e.preventDefault();
-        if (activeSuggestionIndex >= 0) {
+        if (activeSuggestionIndex === customValueIndex) {
+          confirmCustomValue();
+        } else if (activeSuggestionIndex >= 0) {
           selectSuggestion(activeSuggestionIndex);
         } else if (suggestions.length === 1) {
           selectSuggestion(0);
@@ -141,7 +171,9 @@ const ComboBox = <T,>({
         break;
       }
       case 'Tab': {
-        if (activeSuggestionIndex >= 0) {
+        if (activeSuggestionIndex === customValueIndex) {
+          confirmCustomValue();
+        } else if (activeSuggestionIndex >= 0) {
           selectSuggestion(activeSuggestionIndex);
         }
         break;
@@ -259,6 +291,23 @@ const ComboBox = <T,>({
                 : getSuggestionLabel(suggestion)}
             </li>
           ))}
+
+          {showAddCustomValue && (
+            <li
+              ref={(el) => {
+                suggestionRefs.current[suggestions.length] = el;
+              }}
+              className={cx('suggestion-item', 'suggestion-item--add-custom', {
+                active: activeSuggestionIndex === customValueIndex,
+                small,
+              })}
+              onClick={confirmCustomValue}
+              onMouseEnter={() => setActiveSuggestionIndex(customValueIndex)}
+              data-testid={testIdPrefix ? `${testIdPrefix}-add-custom` : undefined}
+            >
+              {addCustomValueLabel ?? `Add "${inputValue.trim()}"`}
+            </li>
+          )}
 
           {renderFooterItem && renderFooterItem()}
         </ul>
