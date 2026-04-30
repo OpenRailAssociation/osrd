@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { Input, ComboBox, useDefaultComboBox, Select } from '@osrd-project/ui-core';
 import { skipToken } from '@reduxjs/toolkit/query';
@@ -120,7 +120,13 @@ const StdcmConsist = ({
     totalMassError,
     totalLengthError,
     maxSpeedError,
-  } = useStdcmConsist(consist, onConsistChange, rollingStock, towedRollingStock);
+  } = useStdcmConsist(
+    consist,
+    onConsistChange,
+    rollingStock,
+    towedRollingStock,
+    onConsistErrorsChange
+  );
 
   const useFieldStatus = (field: 'totalMass' | 'totalLength' | 'maxSpeed') =>
     useConsistFieldStatus(
@@ -184,11 +190,6 @@ const StdcmConsist = ({
   const handleCloseStatusMessage = (key: 'mass' | 'length' | 'speed') => {
     setStatusMessagesVisible((prevState) => ({ ...prevState, [key]: false }));
   };
-
-  // Propagate consist errors to parent component
-  useEffect(() => {
-    onConsistErrorsChange(consistErrors);
-  }, [consistErrors]);
 
   return (
     <>
