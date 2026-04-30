@@ -88,13 +88,15 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
   });
 
   // TODO Paced trains : adapt this to handle paced trains in the conflicts issue
+  // TODO: investigate why RTK Query returns undefined here despite isFetching and isUninitialized being false and the API always returning a list
   const {
-    data: conflicts,
+    data: conflictsData,
     isUninitialized,
     isFetching,
   } = osrdEditoastApi.endpoints.getTimetableByIdConflicts.useQuery(
     allTrainsSimulated ? { id: scenario.timetable_id, infraId: scenario.infra_id } : skipToken
   );
+  const conflicts = useMemo(() => conflictsData ?? [], [conflictsData]);
 
   const isConflictsLoading = isUninitialized || isFetching;
 
