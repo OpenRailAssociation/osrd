@@ -22,7 +22,6 @@ import useWorkerStatus from 'modules/pathfinding/hooks/useWorkerStatus';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 import {
-  resetMargins,
   restoreStdcmConfig,
   updateInitialConsist,
   updateStdcmPathStep,
@@ -271,12 +270,6 @@ const StdcmConfig = ({
     });
     setFormErrors(formErrorsStatus);
   }, [pathfinding, pathSteps, t, consistErrors, pathfindingWorkerStatus, stdcmWorkerStatus]);
-
-  useEffect(() => {
-    if (!isDebugMode) {
-      dispatch(resetMargins());
-    }
-  }, [isDebugMode]);
 
   useEffect(() => {
     const state = window.osrdStdcmConfState;

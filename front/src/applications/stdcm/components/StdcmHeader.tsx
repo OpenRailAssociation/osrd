@@ -21,7 +21,7 @@ const LogoSTDCM = () => {
 
 type StdcmHeaderProps = {
   isDebugMode: boolean;
-  onDebugModeToggle: React.Dispatch<React.SetStateAction<boolean>>;
+  onDebugModeToggle: () => void;
   toggleHelpModule: () => void;
   showHelpModule: boolean;
 };
@@ -47,7 +47,7 @@ const StdcmHeader = ({
             type="button"
             aria-label="stdcm-debug"
             className={cx('debug', { selected: isDebugMode, 'impersonated-bg': impersonatedUser })}
-            onClick={() => onDebugModeToggle(!isDebugMode)}
+            onClick={() => onDebugModeToggle()}
           >
             <Bug />
           </button>

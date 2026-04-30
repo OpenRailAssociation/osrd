@@ -13,7 +13,7 @@ import { isEqual, isNil } from 'lodash';
 import { useSelector } from 'react-redux';
 
 import { LoaderFill } from 'common/Loaders';
-import { selectSimulation } from 'reducers/osrdconf/stdcmConf';
+import { resetMargins, selectSimulation } from 'reducers/osrdconf/stdcmConf';
 import {
   getRetainedSimulationIndex,
   getSelectedSimulationIndex,
@@ -211,6 +211,7 @@ const StdcmView = () => {
   const { loading, error, loadStdcmEnvironment } = useStdcmEnvironment();
   const stdcmConf = useSelector(getStdcmConf);
 
+  const dispatch = useAppDispatch();
   const [isDebugMode, setIsDebugMode] = useState(false);
   const [showStatusBanner, setShowStatusBanner] = useState(false);
   const [showHelpModule, setShowHelpModule] = useState(false);
@@ -224,6 +225,13 @@ const StdcmView = () => {
     () => setShowHelpModule((show) => !show),
     [setShowHelpModule]
   );
+
+  const handleDebugModeToggle = () => {
+    if (isDebugMode) {
+      dispatch(resetMargins());
+    }
+    setIsDebugMode(!isDebugMode);
+  };
 
   useEffect(() => {
     if (!isDebugMode) {
@@ -242,7 +250,7 @@ const StdcmView = () => {
       <div role="button" tabIndex={0} className="stdcm" onClick={() => setShowStatusBanner(false)}>
         <StdcmHeader
           isDebugMode={isDebugMode}
-          onDebugModeToggle={setIsDebugMode}
+          onDebugModeToggle={handleDebugModeToggle}
           toggleHelpModule={toggleHelpModule}
           showHelpModule={showHelpModule}
         />
@@ -255,7 +263,7 @@ const StdcmView = () => {
     <div role="button" tabIndex={0} className="stdcm" onClick={() => setShowStatusBanner(false)}>
       <StdcmHeader
         isDebugMode={isDebugMode}
-        onDebugModeToggle={setIsDebugMode}
+        onDebugModeToggle={handleDebugModeToggle}
         toggleHelpModule={toggleHelpModule}
         showHelpModule={showHelpModule}
       />
