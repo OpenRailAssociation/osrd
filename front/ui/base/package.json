@@ -34,6 +34,6 @@
     "rollup-plugin-postcss": "^4.0.2",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.58.2",
-    "vitest": "^4.1.4"
+    "vitest": "^4.1.5"
   }
 }
