@@ -11,7 +11,7 @@ testing = []
 derive_more.workspace = true
 diesel.workspace = true
 diesel-async.workspace = true
-diesel_migrations = { version = "2.3.1" }
+diesel_migrations = { version = "2.3.2" }
 futures.workspace = true
 futures-util.workspace = true
 openssl.workspace = true
