@@ -52,7 +52,7 @@
     "@turf/nearest-point": "^7.3.5",
     "@turf/simplify": "^7.3.5",
     "@turf/transform-translate": "^7.3.5",
-    "ajv": "^8.18.0",
+    "ajv": "^8.20.0",
     "ajv-errors": "^3.0.0",
     "ajv-formats": "^3.0.1",
     "ajv-i18n": "^4.2.0",
