@@ -31,7 +31,7 @@ describe('simulationResultsReducer', () => {
     store.dispatch(updateSelectedTrainId('paced_1' as PacedTrainId));
 
     const state = store.getState()[simulationResultsSlice.name];
-    expect(state.selectedTrainId).toBe('paced_1');
+    expect(state.selectedTrain).toEqual({ id: 'paced_1', by: 'timetable' });
   });
 
   it('should handle updateSelectedTrainId with a paced train occurrence', () => {
@@ -39,7 +39,7 @@ describe('simulationResultsReducer', () => {
     store.dispatch(updateSelectedTrainId('paced-1-occurrence-2' as OccurrenceId));
 
     const state = store.getState()[simulationResultsSlice.name];
-    expect(state.selectedTrainId).toBe('paced-1-occurrence-2');
+    expect(state.selectedTrain).toEqual({ id: 'paced-1-occurrence-2', by: 'timetable' });
   });
 
   it('should handle updateTrainIdUsedForProjection with a paced train', () => {

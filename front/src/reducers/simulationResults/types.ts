@@ -30,9 +30,16 @@ export type SpeedRanges = {
 
 export type ProjectionType = 'trackProjection' | 'operationalPointProjection';
 
+export type SelectionSource = 'std' | 'tod' | 'timetable';
+
+export type SelectedTrain = {
+  id: TrainId;
+  by: SelectionSource;
+};
+
 export type SimulationResultsState = {
   chart?: Chart;
-  selectedTrainId?: TrainId;
+  selectedTrain?: SelectedTrain;
   trainIdUsedForProjection?: TrainId;
   projectionType: ProjectionType;
   displayOnlyPathSteps: boolean;

@@ -2,12 +2,16 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { Draft } from 'immer';
 
 import type { OccurrenceId, PacedTrainId, TrainId } from 'reducers/osrdconf/types';
-import type { ProjectionType, SimulationResultsState } from 'reducers/simulationResults/types';
+import type {
+  ProjectionType,
+  SelectedTrain,
+  SimulationResultsState,
+} from 'reducers/simulationResults/types';
 import { extractPacedTrainIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
 
 export const simulationResultsInitialState: SimulationResultsState = {
   chart: undefined,
-  selectedTrainId: undefined,
+  selectedTrain: undefined,
   hoveredTrainId: undefined,
   trainIdUsedForProjection: undefined,
   projectionType: 'trackProjection',
@@ -22,11 +26,21 @@ export const simulationResultsSlice = createSlice({
     toggleDisplayOnlyPathSteps(state: Draft<SimulationResultsState>) {
       state.displayOnlyPathSteps = !state.displayOnlyPathSteps;
     },
+    updateSelectedTrain(
+      state: Draft<SimulationResultsState>,
+      action: PayloadAction<SelectedTrain | undefined>
+    ) {
+      state.selectedTrain = action.payload;
+    },
+    /**
+     * @deprecated Use `updateSelectedTrain` with an explicit `by` source instead.
+     * Kept as a transition wrapper that defaults `by` to `'timetable'`.
+     */
     updateSelectedTrainId(
       state: Draft<SimulationResultsState>,
       action: PayloadAction<TrainId | undefined>
     ) {
-      state.selectedTrainId = action.payload;
+      state.selectedTrain = action.payload ? { id: action.payload, by: 'timetable' } : undefined;
     },
     updateHoveredTrainId(
       state: Draft<SimulationResultsState>,
@@ -65,8 +79,11 @@ export const simulationResultsSlice = createSlice({
       ) {
         state.trainIdUsedForProjection = undefined;
       }
-      if (state.selectedTrainId === idToUnset || isIdMatchingOccurrence(state.selectedTrainId)) {
-        state.selectedTrainId = undefined;
+      if (
+        state.selectedTrain?.id === idToUnset ||
+        isIdMatchingOccurrence(state.selectedTrain?.id)
+      ) {
+        state.selectedTrain = undefined;
       }
       if (state.hoveredTrainId === idToUnset || isIdMatchingOccurrence(state.hoveredTrainId)) {
         state.hoveredTrainId = undefined;
@@ -87,8 +104,8 @@ export const simulationResultsSlice = createSlice({
       if (isIdMatchingMissingOccurrence(state.trainIdUsedForProjection)) {
         state.trainIdUsedForProjection = undefined;
       }
-      if (isIdMatchingMissingOccurrence(state.selectedTrainId)) {
-        state.selectedTrainId = undefined;
+      if (isIdMatchingMissingOccurrence(state.selectedTrain?.id)) {
+        state.selectedTrain = undefined;
       }
       if (isIdMatchingMissingOccurrence(state.hoveredTrainId)) {
         state.hoveredTrainId = undefined;
@@ -100,6 +117,7 @@ export const simulationResultsSlice = createSlice({
 export const {
   toggleDisplayOnlyPathSteps,
   toggleSimulationEnabled,
+  updateSelectedTrain,
   updateSelectedTrainId,
   updateHoveredTrainId,
   updateTrainIdUsedForProjection,
