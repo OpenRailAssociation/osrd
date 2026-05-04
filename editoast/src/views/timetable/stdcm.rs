@@ -178,6 +178,8 @@ pub(in crate::views) struct StdcmQueryParams {
         timetable_id = id,
         infra_id = query.infra,
         path_found,
+        user_identity,
+        user_roles,
     )
 )]
 #[editoast_derive::route(authz::Role::Stdcm)]
@@ -252,6 +254,14 @@ pub(in crate::views) async fn stdcm_handler(
         infra_id,
     })
     .await?;
+
+    let span = Span::current();
+    if let Ok(Some(user_name)) = auth.user_name() {
+        span.record("user_identity", user_name);
+    }
+    if let Ok(user_roles) = auth.user_roles().await {
+        span.record("user_roles", user_roles.iter().join(", "));
+    }
 
     // Check user privilege on infra
     auth.clone()
@@ -435,8 +445,6 @@ pub(in crate::views) async fn stdcm_handler(
         // 6. Handle STDCM Core Response
         let result_stream = stream_stdcm_response.map(move |response| {
             let response = response.map_err(InternalError::from);
-
-            let span = Span::current();
 
             match response {
                 Ok(result) => match result {
