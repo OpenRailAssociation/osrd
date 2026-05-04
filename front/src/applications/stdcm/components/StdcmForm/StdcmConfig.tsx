@@ -10,7 +10,6 @@ import {
 
 import { Button } from '@osrd-project/ui-core';
 import cx from 'classnames';
-import { isEqual } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -184,7 +183,7 @@ const StdcmConfig = ({
   const formRef = useRef<HTMLDivElement>(null);
   const pathfindingBannerRef = useRef<HTMLDivElement>(null);
 
-  const [formErrors, setFormErrors] = useState<StdcmConfigErrors>();
+  const [submittedFormErrors, setSubmittedFormErrors] = useState<StdcmConfigErrors>();
 
   const [initialConsistErrors, setInitialConsistErrors] = useState<ConsistErrors>({
     totalMass: { message: undefined, display: false, type: 'missing' },
@@ -199,6 +198,18 @@ const StdcmConfig = ({
     [initialConsistErrors, viaConsistErrors]
   );
 
+  const formErrors = useMemo(() => {
+    if (!submittedFormErrors) return undefined;
+    return checkStdcmConfigErrors({
+      t,
+      dateTimeLocale,
+      stdcmConf,
+      prevFormErrors: submittedFormErrors,
+      consistErrors,
+      shouldCheckMandatoryFields: false,
+    });
+  }, [t, dateTimeLocale, stdcmConf, consistErrors, submittedFormErrors]);
+
   const disabled =
     requestStatus === STDCM_REQUEST_STATUS.in_progress ||
     requestStatus === STDCM_REQUEST_STATUS.pending ||
@@ -212,12 +223,12 @@ const StdcmConfig = ({
       dateTimeLocale,
       pathfindingStatus: pathfinding?.status,
       stdcmConf,
-      prevFormErrors: formErrors,
+      prevFormErrors: submittedFormErrors,
       consistErrors,
       shouldCheckMandatoryFields: true,
     });
 
-    setFormErrors(formErrorsStatus);
+    setSubmittedFormErrors(formErrorsStatus);
 
     if (pathfinding?.status === 'success' && !formErrorsStatus) {
       launchStdcmRequest();
@@ -289,21 +300,6 @@ const StdcmConfig = ({
       bannerElement.removeEventListener('animationend', handleAnimationEnd);
     };
   }, [showPathfindingStatusMessage]);
-
-  useEffect(() => {
-    const updatedErrors = checkStdcmConfigErrors({
-      t,
-      dateTimeLocale,
-      stdcmConf,
-      prevFormErrors: formErrors,
-      consistErrors,
-      shouldCheckMandatoryFields: false,
-    });
-
-    if (!isEqual(updatedErrors, formErrors)) {
-      setFormErrors(updatedErrors);
-    }
-  }, [t, formErrors, consistErrors, rollingStockID, stdcmConf]);
 
   const isLoading = useMemo(
     () =>
