@@ -22,7 +22,7 @@
     "eslint-plugin-react-hooks": "^7.0.0",
     "eslint-plugin-storybook": "^10.3.5",
     "oxfmt": "^0.46.0",
-    "postcss": "^8.5.10",
+    "postcss": "^8.5.12",
     "postcss-assets": "^6.0.0",
     "postcss-import": "^16.0.0",
     "postcss-preset-env": "^11.2.1",
@@ -34,6 +34,6 @@
     "rollup-plugin-postcss": "^4.0.2",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.58.2",
-    "vitest": "^4.1.4"
+    "vitest": "^4.1.5"
   }
 }
