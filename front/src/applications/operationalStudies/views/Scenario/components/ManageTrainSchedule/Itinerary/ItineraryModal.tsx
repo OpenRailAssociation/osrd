@@ -693,8 +693,13 @@ const ItineraryModal = ({
                         return;
                       }
 
+                      if (valueOnBlur === undefined) {
+                        unmarkEditing(pathStep.id);
+                        return;
+                      }
+
                       const normalizedOnFocus = valueOnFocus ?? '';
-                      const normalizedOnBlur = valueOnBlur ?? '';
+                      const normalizedOnBlur = valueOnBlur;
 
                       if (normalizedOnBlur === '' && normalizedOnFocus === '') {
                         unmarkEditing(pathStep.id);
