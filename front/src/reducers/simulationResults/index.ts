@@ -32,16 +32,6 @@ export const simulationResultsSlice = createSlice({
     ) {
       state.selectedTrain = action.payload;
     },
-    /**
-     * @deprecated Use `updateSelectedTrain` with an explicit `by` source instead.
-     * Kept as a transition wrapper that defaults `by` to `'timetable'`.
-     */
-    updateSelectedTrainId(
-      state: Draft<SimulationResultsState>,
-      action: PayloadAction<TrainId | undefined>
-    ) {
-      state.selectedTrain = action.payload ? { id: action.payload, by: 'timetable' } : undefined;
-    },
     updateHoveredTrainId(
       state: Draft<SimulationResultsState>,
       action: PayloadAction<TrainId | undefined>
@@ -118,7 +108,6 @@ export const {
   toggleDisplayOnlyPathSteps,
   toggleSimulationEnabled,
   updateSelectedTrain,
-  updateSelectedTrainId,
   updateHoveredTrainId,
   updateTrainIdUsedForProjection,
   updateProjectionType,
