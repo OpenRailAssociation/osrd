@@ -145,7 +145,7 @@
     .itinerary-modal-form-body {
       flex: 1 1 auto;
       min-height: 0;
-      overflow: hidden;
+      overflow-y: auto;
       display: flex;
       flex-direction: column;
       background-color: var(--ambientB10);
@@ -158,7 +158,6 @@
 
       .path-step-list {
         position: relative;
-        overflow-y: auto;
         background-color: var(--ambientB15);
         border-radius: 8px;
         margin-top: 12px;
