@@ -11801,6 +11801,11 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/OperationalPointPart'
+        plc:
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/NonBlankString'
+            description: 'Primary Location Code : https://rne.eu/it/products/ccs/crd/'
         weight:
           type:
           - integer

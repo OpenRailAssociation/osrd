@@ -16,7 +16,7 @@ use super::Switch;
 use super::SwitchType;
 use super::TrackSection;
 
-pub const RAILJSON_VERSION: &str = "3.5.1";
+pub const RAILJSON_VERSION: &str = "3.5.2";
 
 /// An infrastructure description in the RailJson format
 #[derive(Deserialize, Educe, Serialize, Clone, Debug, ToSchema)]

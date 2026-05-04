@@ -490,6 +490,7 @@ mod tests {
             parts: vec![],
             extensions,
             weight: None,
+            plc: None,
         }
     }
 

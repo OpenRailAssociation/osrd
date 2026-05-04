@@ -916,6 +916,19 @@
                     "title": "Parts",
                     "type": "array"
                 },
+                "plc": {
+                    "anyOf": [
+                        {
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Primary Location Code : https://rne.eu/it/products/ccs/crd/",
+                    "title": "Plc"
+                },
                 "weight": {
                     "anyOf": [
                         {
@@ -933,7 +946,8 @@
             },
             "required": [
                 "id",
-                "parts"
+                "parts",
+                "plc"
             ],
             "title": "OperationalPoint",
             "type": "object"
@@ -2153,8 +2167,8 @@
             "type": "array"
         },
         "version": {
-            "const": "3.5.1",
-            "default": "3.5.1",
+            "const": "3.5.2",
+            "default": "3.5.2",
             "description": "Version of the schema",
             "title": "Version",
             "type": "string"

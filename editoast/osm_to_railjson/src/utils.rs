@@ -557,6 +557,7 @@ pub fn operational_points(
                         }),
                     },
                     weight: None,
+                    plc: None,
                 })
             }
         })

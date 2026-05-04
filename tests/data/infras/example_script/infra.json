@@ -1,5 +1,5 @@
 {
-    "version": "3.5.1",
+    "version": "3.5.2",
     "operational_points": [
         {
             "id": "my-op",
@@ -16,6 +16,7 @@
                 }
             ],
             "weight": null,
+            "plc": null,
             "extensions": {
                 "sncf": {
                     "ci": 0,
