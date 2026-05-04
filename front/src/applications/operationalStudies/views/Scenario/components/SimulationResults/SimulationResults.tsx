@@ -25,7 +25,7 @@ import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
 import { findExceptionWithOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItem } from 'reducers/osrdconf/types';
-import { toggleDisplayOnlyPathSteps, updateSelectedTrainId } from 'reducers/simulationResults';
+import { toggleDisplayOnlyPathSteps, updateSelectedTrain } from 'reducers/simulationResults';
 import {
   getDisplayOnlyPathSteps,
   getTrainIdUsedForProjection,
@@ -257,7 +257,7 @@ const SimulationResults = ({
                   height={manchetteWithSpaceTimeChartHeight - HIDDEN_CHART_TOP_HEIGHT}
                   handleTrainDrag={handleTrainDrag}
                   onTrainClick={(trainId) => {
-                    dispatch(updateSelectedTrainId(trainId));
+                    dispatch(updateSelectedTrain({ id: trainId, by: 'std' }));
                   }}
                   selectedProjectionId={trainIdUsedForProjection}
                   waypointsPanelIsOpen={waypointsPanelIsOpen}
