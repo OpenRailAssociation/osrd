@@ -29,6 +29,7 @@ class ScenarioPage extends CommonPage {
   readonly macroEditorButton: Locator;
   readonly stdButton: Locator;
   readonly sddButton: Locator;
+  readonly chronogramButton: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -55,6 +56,7 @@ class ScenarioPage extends CommonPage {
     this.macroEditorButton = page.getByTestId('macro-button');
     this.stdButton = page.getByTestId('std-button');
     this.sddButton = page.getByTestId('sdd-button');
+    this.chronogramButton = page.getByTestId('chronogram-button');
   }
 
   private getScenarioByName(scenarioName: string): Locator {

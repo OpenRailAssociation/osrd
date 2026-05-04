@@ -17,6 +17,7 @@ class OpSimulationResultPage extends ScenarioPage {
   private readonly timeStopsOutputs: Locator;
   private readonly macroEditor: Locator;
   private readonly conflictsList: Locator;
+  private readonly chronogram: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -34,6 +35,7 @@ class OpSimulationResultPage extends ScenarioPage {
     this.simulationMap = page.getByTestId('simulation-map');
     this.timeStopsOutputs = page.getByTestId('time-stop-outputs');
     this.macroEditor = page.getByTestId('macro-editor');
+    this.chronogram = page.getByTestId('chronogram');
   }
 
   private async openSettingsPanel(): Promise<void> {
@@ -51,6 +53,7 @@ class OpSimulationResultPage extends ScenarioPage {
       expect(this.spaceTimeChart).toBeVisible(),
       expect(this.simulationMap).toBeVisible(),
       expect(this.timesStopsDataSheet).toBeVisible(),
+      expect(this.chronogram).toBeVisible(),
     ]);
   }
 
@@ -61,6 +64,7 @@ class OpSimulationResultPage extends ScenarioPage {
       expect(this.timesStopsDataSheet).toBeVisible(),
       expect(this.speedSpaceChart).toBeHidden(),
       expect(this.simulationMap).toBeVisible(),
+      expect(this.chronogram).toBeVisible(),
     ]);
   }
 
@@ -99,6 +103,10 @@ class OpSimulationResultPage extends ScenarioPage {
     await toggleByState(this.sddButton, this.speedSpaceChart, isVisible);
   }
 
+  async setChronogramVisible(isVisible = true) {
+    await toggleByState(this.chronogramButton, this.chronogram, isVisible);
+  }
+
   async setMapVisible(isVisible = true) {
     await toggleByState(this.simulationMapButton, this.simulationMap, isVisible);
   }
@@ -116,6 +124,7 @@ class OpSimulationResultPage extends ScenarioPage {
     await this.setMapVisible();
     await this.setSddVisible();
     await this.setTableOutputVisible();
+    await this.setChronogramVisible();
     await this.setMacroVisible();
     await this.waitForLoaderToDisappear({ timeout: 15_000 });
   }
