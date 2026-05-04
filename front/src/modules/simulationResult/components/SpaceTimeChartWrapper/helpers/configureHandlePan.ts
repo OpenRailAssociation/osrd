@@ -6,7 +6,7 @@ import {
 } from '@osrd-project/ui-charts';
 
 import type { TrainId } from 'reducers/osrdconf/types';
-import { updateSelectedTrainId } from 'reducers/simulationResults';
+import { updateSelectedTrain } from 'reducers/simulationResults';
 import type { AppDispatch } from 'store';
 import { Duration, subtractDurationFromDate } from 'utils/duration';
 import {
@@ -74,7 +74,7 @@ export function configureHandlePan({
       const { draggedTrain, initialDepartureTime } = draggingState;
 
       if (draggedTrain.id !== selectedTrainId) {
-        dispatch(updateSelectedTrainId(draggedTrain.id));
+        dispatch(updateSelectedTrain({ id: draggedTrain.id, by: 'std' }));
       }
 
       const timeDiff = payload.data.time - payload.initialData.time;
