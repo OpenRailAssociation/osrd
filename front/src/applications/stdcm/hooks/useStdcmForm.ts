@@ -12,6 +12,7 @@ import {
   getStdcmSpeedLimitByTag,
   getTotalLength,
   getTotalMass,
+  getLinkedTrainsSearchState,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 
 import type { StdcmSimulationInputs } from '../types';
@@ -26,6 +27,7 @@ const useStdcmForm = (): StdcmSimulationInputs => {
   const maxSpeed = useSelector(getMaxSpeed);
   const loadingGauge = useSelector(getLoadingGauge);
   const linkedTrains = useSelector(getLinkedTrains);
+  const linkedTrainsSearchState = useSelector(getLinkedTrainsSearchState);
   const origin = useSelector(getStdcmOrigin);
   const rollingStock = useStdcmLightRollingStock();
   const towedRollingStock = useStdcmTowedRollingStock();
@@ -47,6 +49,7 @@ const useStdcmForm = (): StdcmSimulationInputs => {
         speedLimitByTag,
       },
       linkedTrains,
+      linkedTrainsSearch: linkedTrainsSearchState,
     };
   }, [
     pathSteps,
@@ -58,6 +61,7 @@ const useStdcmForm = (): StdcmSimulationInputs => {
     maxSpeed,
     loadingGauge,
     linkedTrains,
+    linkedTrainsSearchState,
   ]);
 
   return currentSimulationInputs;

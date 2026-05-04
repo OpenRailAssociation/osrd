@@ -1,21 +1,21 @@
 import { RadioButton } from '@osrd-project/ui-core';
 import cx from 'classnames';
-import { useDispatch } from 'react-redux';
 
-import { updateLinkedTrainExtremity } from 'reducers/osrdconf/stdcmConf';
-
-import type { StdcmLinkedTrainResult, ExtremityPathStepType } from '../../types';
+import type { LinkedTrainType, StdcmLinkedTrainResult } from '../../types';
 
 type StdcmLinkedTrainResultsProps = {
+  linkedTrainType: LinkedTrainType;
   linkedTrainResults: StdcmLinkedTrainResult[];
-  linkedOp: { extremityType: ExtremityPathStepType; id: string };
+  selectLinkedTrain: (selectedIndex: number) => void;
+  selectedLinkedTrainIndex: number | undefined;
 };
 
 const StdcmLinkedTrainResults = ({
+  linkedTrainType,
   linkedTrainResults,
-  linkedOp: { extremityType, id },
+  selectLinkedTrain,
+  selectedLinkedTrainIndex,
 }: StdcmLinkedTrainResultsProps) => {
-  const dispatch = useDispatch();
   return (
     <div className="stdcm-linked-train-results">
       {linkedTrainResults.map(({ trainName, origin, destination }, index) => (
@@ -26,34 +26,16 @@ const StdcmLinkedTrainResults = ({
           className="linked-train-result-infos"
           data-testid="linked-train-result-infos"
           onClick={() => {
-            if (linkedTrainResults.length === 1)
-              dispatch(
-                updateLinkedTrainExtremity({
-                  linkedTrainExtremity: extremityType,
-                  trainName,
-                  pathStep: linkedTrainResults[0][extremityType],
-                  pathStepId: id,
-                })
-              );
+            selectLinkedTrain(index);
           }}
         >
           {linkedTrainResults.length > 1 ? (
             <RadioButton
               label={trainName}
-              id={`${extremityType}-${index}`}
+              id={`${linkedTrainType}-${index}`}
               value={`${index}`}
-              name={`linked-train-radio-buttons-${extremityType}`}
-              onClick={({ target }) => {
-                const resultIndex = Number((target as HTMLInputElement).value);
-                dispatch(
-                  updateLinkedTrainExtremity({
-                    linkedTrainExtremity: extremityType,
-                    trainName,
-                    pathStep: linkedTrainResults[resultIndex][extremityType],
-                    pathStepId: id,
-                  })
-                );
-              }}
+              name={`linked-train-radio-buttons-${linkedTrainType}`}
+              defaultChecked={index === selectedLinkedTrainIndex}
             />
           ) : (
             <p className="train-name grey80">{trainName}</p>

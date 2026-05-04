@@ -64,6 +64,7 @@ const buildStdcmConfSelectors = () => {
       return destination!;
     },
     getLinkedTrains: makeOsrdConfSelector('linkedTrains'),
+    getLinkedTrainsSearchState: makeOsrdConfSelector('linkedTrainsSearch'),
 
     getStdcmSimulations,
     getStdcmCompletedSimulations,
@@ -112,6 +113,7 @@ export const {
   getStdcmOrigin,
   getStdcmDestination,
   getLinkedTrains,
+  getLinkedTrainsSearchState,
   getStdcmSimulations,
   getStdcmCompletedSimulations,
   getSelectedSimulationIndex,

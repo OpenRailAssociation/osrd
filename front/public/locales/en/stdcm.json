@@ -53,8 +53,8 @@
   "infrastructure": "Infra",
   "leaveAt": "Leave at {{ time }}",
   "linkedTrainDefaultCard": {
-    "anterior": "Indicate anterior train",
-    "posterior": "Indicate posterior train"
+    "anteriorTrain": "Indicate anterior train",
+    "posteriorTrain": "Indicate posterior train"
   },
   "mailFeedback": {
     "body": "We invite you to send us a message.\nAs soon as you have a concern or a remark,\neven if it's not perfectly worded.\n\nThank you in advance,\nThe {{stdcmName}} project team\n\n(you may delete this message)",
@@ -273,10 +273,10 @@
     "date": "Date",
     "destination": "Destination",
     "linkedTrain": {
-      "anterior": "Anterior train",
+      "anteriorTrain": "Anterior train",
       "error": "Linked trains error",
       "noTrainScheduleSetFound": "No train schedule sets found for the timetable",
-      "posterior": "Posterior train"
+      "posteriorTrain": "Posterior train"
     },
     "origin": "Origin",
     "preciseTime": "precise time",

@@ -7,6 +7,7 @@ import {
   type ConsistData,
   type LinkedTrains,
   type StdcmSimulation,
+  type StdcmSimulationInputs,
 } from 'applications/stdcm/types';
 import type { LoadingGaugeType } from 'common/api/osrdEditoastApi';
 import {
@@ -359,9 +360,13 @@ describe('stdcmConfReducers', () => {
   });
 
   describe('StdcmResults updates', () => {
-    const simulationInputs = {
+    const simulationInputs: StdcmSimulationInputs = {
       pathSteps: stdcmPathSteps,
       linkedTrains: { anteriorTrain: undefined, posteriorTrain: undefined },
+      linkedTrainsSearch: {
+        anteriorTrain: { results: [], searchTerm: '' },
+        posteriorTrain: { results: [], searchTerm: '' },
+      },
       consist: {
         totalMass: 100,
         totalLength: 50,
@@ -371,7 +376,7 @@ describe('stdcmConfReducers', () => {
       },
     };
 
-    const simulation = {
+    const simulation: StdcmSimulation = {
       index: 0,
       creationDate: new Date(),
       inputs: simulationInputs,
