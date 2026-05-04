@@ -15,7 +15,7 @@ import {
   getAddedExceptions,
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { TimetableItem } from 'reducers/osrdconf/types';
-import { updateSelectedTrainId } from 'reducers/simulationResults';
+import { updateSelectedTrain } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
@@ -66,7 +66,12 @@ const CreateTimetableItemButton = ({
       const formattedNewTrainSchedule: TimetableItem = (
         await createPacedTrains(dispatch, sandboxId, [newTrainSchedulePayload])
       )[0];
-      dispatch(updateSelectedTrainId(formatEditoastIdToPacedTrainId(formattedNewTrainSchedule.id)));
+      dispatch(
+        updateSelectedTrain({
+          id: formatEditoastIdToPacedTrainId(formattedNewTrainSchedule.id),
+          by: 'timetable',
+        })
+      );
 
       let timetableItemToUpsert = formattedNewTrainSchedule;
 

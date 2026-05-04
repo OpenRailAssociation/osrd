@@ -21,7 +21,7 @@ import type {
   SimulatedException,
 } from 'modules/timetableItem/types';
 import type { OccurrenceId, TimetableItem } from 'reducers/osrdconf/types';
-import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
+import { updateSelectedTrain, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { extractExceptionIdFromOccurrenceId, isIndexedOccurrenceId } from 'utils/trainId';
@@ -68,7 +68,7 @@ const useOccurrenceActions = ({
   );
 
   const selectOccurrence = useCallback((occurrenceId: OccurrenceId) => {
-    dispatch(updateSelectedTrainId(occurrenceId));
+    dispatch(updateSelectedTrain({ id: occurrenceId, by: 'timetable' }));
   }, []);
 
   const selectOccurrenceForProjection = useCallback((occurrenceId: OccurrenceId) => {
@@ -177,7 +177,12 @@ const useOccurrenceActions = ({
           (occ) => occ.id !== occurrence.id && !occ.disabled
         );
 
-        dispatch(updateSelectedTrainId(firstEnabledOccurrence?.id));
+        dispatch(
+          updateSelectedTrain(
+            firstEnabledOccurrence ? { id: firstEnabledOccurrence.id, by: 'timetable' } : undefined
+          )
+        );
+        // TODO exceptions : update projected occurrence id in issue https://github.com/OpenRailAssociation/osrd/issues/11476
       }
     },
     [pacedTrain, occurrences, selectedTrainId, timetableId]
@@ -248,7 +253,11 @@ const useOccurrenceActions = ({
         const firstEnabledOccurrence = occurrences.find(
           (occ) => occ.id !== occurrenceId && !occ.disabled
         );
-        dispatch(updateSelectedTrainId(firstEnabledOccurrence?.id));
+        dispatch(
+          updateSelectedTrain(
+            firstEnabledOccurrence ? { id: firstEnabledOccurrence.id, by: 'timetable' } : undefined
+          )
+        );
       }
     },
     [pacedTrain.paced.exceptions, occurrences, selectedTrainId]

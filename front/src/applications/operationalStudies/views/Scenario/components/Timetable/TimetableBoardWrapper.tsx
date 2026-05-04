@@ -12,7 +12,7 @@ import { deleteTrainSchedules } from 'modules/timetableItem/helpers/updateTimeta
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import { setFailure, setSuccess } from 'reducers/main';
 import type { TimetableItem, TimetableItemToEditData, TrainId } from 'reducers/osrdconf/types';
-import { updateSelectedTrainId } from 'reducers/simulationResults';
+import { updateSelectedTrain } from 'reducers/simulationResults';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
@@ -157,9 +157,9 @@ const TimetableBoardWrapper = ({
       );
 
     if (isSelectedTimetableItemInSelection) {
-      // we need to set selectedTrainId to undefined, otherwise just after the delete,
+      // we need to clear the selected train, otherwise just after the delete,
       // some unvalid rtk calls are dispatched (see rollingstock request in SimulationResults)
-      dispatch(updateSelectedTrainId(undefined));
+      dispatch(updateSelectedTrain(undefined));
     }
 
     try {
@@ -179,7 +179,7 @@ const TimetableBoardWrapper = ({
       }
     } catch (e) {
       if (isSelectedTimetableItemInSelection) {
-        dispatch(updateSelectedTrainId(currentSelectedTrainId));
+        dispatch(updateSelectedTrain({ id: currentSelectedTrainId, by: 'timetable' }));
       } else {
         dispatch(setFailure(castErrorToFailure(e)));
       }

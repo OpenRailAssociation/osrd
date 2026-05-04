@@ -22,7 +22,7 @@ import type { TimetableItem, TrainId } from 'reducers/osrdconf/types';
 import {
   updateHoveredTrainId,
   updateTrainIdUsedForProjection,
-  updateSelectedTrainId,
+  updateSelectedTrain,
   updateProjectionType,
 } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
@@ -79,7 +79,7 @@ const UniqueTrainItem = ({
   const formattedTrainId = formatEditoastIdToPacedTrainId(train.id);
 
   const changeSelectedTrainId = (trainId: TrainId) => {
-    dispatch(updateSelectedTrainId(trainId));
+    dispatch(updateSelectedTrain({ id: trainId, by: 'timetable' }));
   };
 
   const deleteTrain = async () => {
@@ -97,7 +97,7 @@ const UniqueTrainItem = ({
       .catch((e) => {
         dispatch(setFailure(castErrorToFailure(e)));
         if (isSelected) {
-          dispatch(updateSelectedTrainId(formattedTrainId));
+          dispatch(updateSelectedTrain({ id: formattedTrainId, by: 'timetable' }));
         }
       });
   };
@@ -126,7 +126,12 @@ const UniqueTrainItem = ({
           newUniqueTrainPayload,
         ])
       )[0];
-      dispatch(updateSelectedTrainId(formatEditoastIdToPacedTrainId(newUniqueTrain.id)));
+      dispatch(
+        updateSelectedTrain({
+          id: formatEditoastIdToPacedTrainId(newUniqueTrain.id),
+          by: 'timetable',
+        })
+      );
       upsertUniqueTrains([newUniqueTrain]);
       dispatch(
         setSuccess({
