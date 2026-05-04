@@ -4,10 +4,22 @@ fullnameOverride: ""
 
 # Common parameters. Will be applied everywhere can be
 # overriden within the "services" section.
+# @schema
+# additionalProperties: true
+# @schema
 annotations: {}
+# @schema
+# additionalProperties: true
+# @schema
 labels: {}
+# @schema
+# additionalProperties: true
+# @schema
 nodeSelector: {}
 tolerations: []
+# @schema
+# additionalProperties: true
+# @schema
 affinity: {}
 
 # Endpoints used by the application.
@@ -74,11 +86,26 @@ services:
       initialDelaySeconds: 5
       periodSeconds: 10
       timeoutSeconds: 3
+    # @schema
+    # additionalProperties: true
+    # @schema
     annotations: {}
+    # @schema
+    # additionalProperties: true
+    # @schema
     labels: {}
+    # @schema
+    # additionalProperties: true
+    # @schema
     nodeSelector: {}
     tolerations: []
+    # @schema
+    # additionalProperties: true
+    # @schema
     affinity: {}
+    # @schema
+    # additionalProperties: true
+    # @schema
     resources: {}
     env: []
 
@@ -96,17 +123,50 @@ services:
       timeoutSeconds: 3
     readinessProbe:
       disabled: false
+    # @schema
+    # type: object
+    # description: osrdyne configuration
+    # properties:
+    #   pool_id:
+    #     type: string
+    #   api_address:
+    #     type: string
+    #   default_message_ttl:
+    #     type: [integer, null]
+    #     required: false
+    #   max_length:
+    #     type: [integer, null]
+    #     required: false
+    #   max_length_bytes:
+    #     type: [integer, null]
+    #     required: false
+    # @schema
     config:
       pool_id: "core"
       api_address: "0.0.0.0:80"
       default_message_ttl:
       max_length:
       max_length_bytes:
+    # @schema
+    # additionalProperties: true
+    # @schema
     annotations: {}
+    # @schema
+    # additionalProperties: true
+    # @schema
     labels: {}
+    # @schema
+    # additionalProperties: true
+    # @schema
     nodeSelector: {}
     tolerations: []
+    # @schema
+    # additionalProperties: true
+    # @schema
     affinity: {}
+    # @schema
+    # additionalProperties: true
+    # @schema
     resources: {}
     env: []
 
@@ -117,20 +177,50 @@ services:
       type: ClusterIP
       port: 80
       targetPort: 80
+    # @schema
+    # additionalProperties: true
+    # @schema
     annotations: {}
+    # @schema
+    # additionalProperties: true
+    # @schema
     labels: {}
+    # @schema
+    # additionalProperties: true
+    # @schema
     nodeSelector: {}
     tolerations: []
+    # @schema
+    # additionalProperties: true
+    # @schema
     affinity: {}
+    # @schema
+    # additionalProperties: true
+    # @schema
     resources: {}
     env: []
 
   core:
+    # @schema
+    # additionalProperties: true
+    # @schema
     annotations: {}
+    # @schema
+    # additionalProperties: true
+    # @schema
     labels: {}
+    # @schema
+    # additionalProperties: true
+    # @schema
     nodeSelector: {}
     tolerations: []
+    # @schema
+    # additionalProperties: true
+    # @schema
     affinity: {}
+    # @schema
+    # additionalProperties: true
+    # @schema
     resources: {}
     # @schema
     # required: false
@@ -140,12 +230,35 @@ services:
     service_account_name: null
     env: []
     config:
+      # @schema
+      # type: [null, string]
+      # @schema
       telemetry: null
+    # @schema
+    # properties:
+    #  activation_value:
+    #    type: [string, integer]
+    #  cooldown_period:
+    #    type: integer
+    #  min_replicas:
+    #    type: integer
+    #  max_replicas:
+    #    type: integer
+    #  mode:
+    #    type: string
+    #  polling_interval:
+    #    type: integer
+    #  use_cached_metrics:
+    #    type: boolean
+    #  value:
+    #    type: [string, integer]
+    #  metric_type:
+    #    type: string
+    #  type:
+    #    enum: [NoScaling, Keda, Hpa]
+    # @schema
     # -- (object) autoscaling configuration of osrdyne KubernetesDriver detail in https://github.com/OpenRailAssociation/osrd/blob/dev/osrdyne/src/drivers/kubernetes.rs
     autoscaling:
-      # @schema
-      # enum: [NoScaling, Keda, Hpa]
-      # @schema
       # -- (string) Type of autoscaling
       type: NoScaling
 
@@ -165,11 +278,38 @@ services:
         - osrd.local
       # -- (string) Secret containing the tls certificates can be null
       secretName: osrd-gateway-tls
+    # @schema
+    # additionalProperties: true
+    # @schema
       annotations: {}
       tls: []
     # -- (object) gateway authentication configuration see https://github.com/OpenRailAssociation/osrd/blob/dev/gateway/README.md
     config:
+      # @schema
+      # properties:
+      #   providers:
+      #     type: array
+      #   default_provider:
+      #     type: [string, null]
+      #     description: default provider
+      #   session_namespace:
+      #     type: [string, null]
+      #     description: namespace for sesson
+      # @schema
       auth:
+        # @schema
+        # items:
+        #   type: object
+        #   properties:
+        #     type:
+        #       type: string
+        #       enum: [Mocked, Oidc]
+        #     username:
+        #       type: string
+        #       required: false
+        #   additionalProperties: true
+        # @schema
+        # -- (array) List of authentication providers
         providers:
           - type: "Mocked"
             provider_id: "mocked"
@@ -183,6 +323,9 @@ services:
       tracing:
         enabled: false
         type: ""
+        # @schema
+        # additionalProperties: true
+        # @schema
         config: {}
       trusted_proxies:
         - "10.0.0.0/8"
@@ -192,11 +335,26 @@ services:
       disabled: false
     readinessProbe:
       disabled: false
+    # @schema
+    # additionalProperties: true
+    # @schema
     annotations: {}
+    # @schema
+    # additionalProperties: true
+    # @schema
     labels: {}
+    # @schema
+    # additionalProperties: true
+    # @schema
     nodeSelector: {}
     tolerations: []
+    # @schema
+    # additionalProperties: true
+    # @schema
     affinity: {}
+    # @schema
+    # additionalProperties: true
+    # @schema
     resources: {}
     env: []
     volumes: []
@@ -224,12 +382,31 @@ services:
       minReplicas: 2
       maxReplicas: 10
       targetCPUUtilizationPercentage: 80
+      # @schema
+      # additionalProperties: true
+      # @schema
       annotations: {}
+      # @schema
+      # additionalProperties: true
+      # @schema
       labels: {}
+    # @schema
+    # additionalProperties: true
+    # @schema
     annotations: {}
+    # -- (object) Init job configuration
     init:
+      # -- (bool) Wheter to run editoast init pod for diesel migration
       enabled: true
+      # -- (string) Command to run after diesel migration
       extend: ""
+      # @schema
+      # type: [object]
+      # required: false
+      # additionalProperties: true
+      # @schema
+      # -- (object) Labels for init pod
+      labels: {}
     # -- (object) cronjob configuration. Runs editoast gc
     cronjob:
       # @schema
@@ -254,10 +431,22 @@ services:
     # @schema
     # -- (string, null) storage class for permanent storage
     permanent_storage_class: null
+    # @schema
+    # additionalProperties: true
+    # @schema
     labels: {}
+    # @schema
+    # additionalProperties: true
+    # @schema
     nodeSelector: {}
     tolerations: []
+    # @schema
+    # additionalProperties: true
+    # @schema
     affinity: {}
+    # @schema
+    # additionalProperties: true
+    # @schema
     resources: {}
     env: []
 
@@ -278,10 +467,25 @@ services:
       initialDelaySeconds: 5
       periodSeconds: 10
       timeoutSeconds: 3
+    # @schema
+    # additionalProperties: true
+    # @schema
     annotations: {}
+    # @schema
+    # additionalProperties: true
+    # @schema
     labels: {}
+    # @schema
+    # additionalProperties: true
+    # @schema
     nodeSelector: {}
     tolerations: []
+    # @schema
+    # additionalProperties: true
+    # @schema
     affinity: {}
+    # @schema
+    # additionalProperties: true
+    # @schema
     resources: {}
     env: []
