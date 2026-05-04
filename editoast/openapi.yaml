@@ -3337,6 +3337,63 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Conflict'
+  /timetable/{id}/path_steps/local_track_names:
+    post:
+      tags:
+      - timetable
+      summary: |-
+        Retrieve list of local track names for each path step of each train schedule
+        that match the given operational point references list
+      description: |-
+        TODO: this endpoint uses a HashMap for both its
+        request and response, instead of the ordered list convention used by our other
+        endpoints. This is an intentional experiment and depending on whether
+        this proves easier to work with on the frontend and in editoast, we'll either
+        migrate the other endpoints to this format for consistency or change back the current one to the previous convention.
+      parameters:
+      - name: id
+        in: path
+        description: A timetable ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        description: The list of operational point references to match
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - operational_point_references
+              - infra_id
+              properties:
+                infra_id:
+                  type: integer
+                  format: int64
+                operational_point_references:
+                  type: object
+                  description: A list of key/operational point reference pairs for which local track names should be retrieved from the timetable train schedules paths. The key is an arbitrary string chosen by the client, that will be used in the response to return the corresponding local track names set.
+                  additionalProperties:
+                    $ref: '#/components/schemas/OperationalPointReference'
+                  propertyNames:
+                    type: string
+                    minLength: 1
+        required: true
+      responses:
+        '200':
+          description: For each requested operational point reference, returns under its client-provided key the set of local track names found in the timetable's train schedules path step inputs
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    type: string
+                  uniqueItems: true
+                propertyNames:
+                  type: string
   /timetable/{id}/requirements:
     get:
       tags:
@@ -6988,6 +7045,7 @@ components:
       - $ref: '#/components/schemas/EditoastTimetableErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastTimetableErrorNotFound'
       - $ref: '#/components/schemas/EditoastTimetableErrorParseError'
+      - $ref: '#/components/schemas/EditoastTimetableErrorTimeout'
       - $ref: '#/components/schemas/EditoastTimetableErrorTrainScheduleSetsNotFound'
       - $ref: '#/components/schemas/EditoastTowedRollingStockErrorDatabase'
       - $ref: '#/components/schemas/EditoastTowedRollingStockErrorIdNotFound'
@@ -9165,6 +9223,26 @@ components:
           type: string
           enum:
           - editoast:timetable:ParseError
+    EditoastTimetableErrorTimeout:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastTimetableErrorTimeoutContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 504
+        type:
+          type: string
+          enum:
+          - editoast:timetable:Timeout
     EditoastTimetableErrorTrainScheduleSetsNotFound:
       type: object
       required:

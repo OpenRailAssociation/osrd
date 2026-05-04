@@ -1103,6 +1103,17 @@ const injectedRtkApi = api
         }),
         providesTags: ['timetable'],
       }),
+      postTimetableByIdPathStepsLocalTrackNames: build.mutation<
+        PostTimetableByIdPathStepsLocalTrackNamesApiResponse,
+        PostTimetableByIdPathStepsLocalTrackNamesApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/timetable/${queryArg.id}/path_steps/local_track_names`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['timetable'],
+      }),
       getTimetableByIdRequirements: build.query<
         GetTimetableByIdRequirementsApiResponse,
         GetTimetableByIdRequirementsApiArg
@@ -2424,6 +2435,22 @@ export type GetTimetableByIdConflictsApiArg = {
   id: number;
   infraId: number;
   electricalProfileSetId?: number;
+};
+export type PostTimetableByIdPathStepsLocalTrackNamesApiResponse =
+  /** status 200 For each requested operational point reference, returns under its client-provided key the set of local track names found in the timetable's train schedules path step inputs */ {
+    [key: string]: string[];
+  };
+export type PostTimetableByIdPathStepsLocalTrackNamesApiArg = {
+  /** A timetable ID */
+  id: number;
+  /** The list of operational point references to match */
+  body: {
+    infra_id: number;
+    /** A list of key/operational point reference pairs for which local track names should be retrieved from the timetable train schedules paths. The key is an arbitrary string chosen by the client, that will be used in the response to return the corresponding local track names set. */
+    operational_point_references: {
+      [key: string]: OperationalPointReference;
+    };
+  };
 };
 export type GetTimetableByIdRequirementsApiResponse =
   /** status 200 The paginated list of timetable requirements */ PaginationStats & {
