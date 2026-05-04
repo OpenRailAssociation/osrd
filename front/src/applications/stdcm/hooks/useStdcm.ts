@@ -27,7 +27,7 @@ import { setFailure } from 'reducers/main';
 import { addStdcmSimulations } from 'reducers/osrdconf/stdcmConf';
 import { getStdcmConf, getStdcmInfraID } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { TimetableItem } from 'reducers/osrdconf/types';
-import { updateSelectedTrainId } from 'reducers/simulationResults';
+import { updateSelectedTrain } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { useDateTimeLocale } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
@@ -149,7 +149,7 @@ const useStdcm = ({
     payload: PostTimetableByIdStdcmApiArg
   ) => {
     setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.success);
-    dispatch(updateSelectedTrainId(STDCM_TRAIN_TIMETABLE_ID));
+    dispatch(updateSelectedTrain({ id: STDCM_TRAIN_TIMETABLE_ID, by: 'timetable' }));
 
     const simulation = await createSimulation(currentSimulationInputs, payload, response);
     dispatch(addStdcmSimulations([simulation]));
@@ -188,7 +188,7 @@ const useStdcm = ({
       )
         throw new Error('Error in response');
 
-      dispatch(updateSelectedTrainId(STDCM_TRAIN_TIMETABLE_ID));
+      dispatch(updateSelectedTrain({ id: STDCM_TRAIN_TIMETABLE_ID, by: 'timetable' }));
 
       if (!isCancelledRef.current) {
         const upstreamInputs = adjustInputByDirection(currentSimulationInputs, 'upstream');

@@ -34,7 +34,7 @@ import type { TimetableItem, TrainId, OccurrenceId } from 'reducers/osrdconf/typ
 import {
   updateHoveredTrainId,
   updateProjectionType,
-  updateSelectedTrainId,
+  updateSelectedTrain,
   updateTrainIdUsedForProjection,
 } from 'reducers/simulationResults';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
@@ -182,7 +182,7 @@ const PacedTrainItem = ({
   };
 
   const selectPacedTrainId = () => {
-    dispatch(updateSelectedTrainId(formattedPacedTrainId));
+    dispatch(updateSelectedTrain({ id: formattedPacedTrainId, by: 'timetable' }));
   };
 
   const deleteAllExceptions = async () => {
@@ -245,7 +245,12 @@ const PacedTrainItem = ({
     const formattedPacedTrainResponse: TimetableItem = (
       await createPacedTrains(dispatch, pacedTrainDetail.train_schedule_set_id, [newPacedTrain])
     )[0];
-    dispatch(updateSelectedTrainId(formatEditoastIdToPacedTrainId(formattedPacedTrainResponse.id)));
+    dispatch(
+      updateSelectedTrain({
+        id: formatEditoastIdToPacedTrainId(formattedPacedTrainResponse.id),
+        by: 'timetable',
+      })
+    );
     upsertTimetableItems([formattedPacedTrainResponse]);
 
     const newExceptions =

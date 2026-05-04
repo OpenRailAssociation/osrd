@@ -27,7 +27,7 @@ import {
   getAddedExceptions,
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { TimetableItem, TimetableItemToEditData } from 'reducers/osrdconf/types';
-import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
+import { updateSelectedTrain, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { formatEditoastIdToPacedTrainId, isOccurrenceId } from 'utils/trainId';
@@ -76,7 +76,7 @@ const useUpdateTimetableItem = (
         text: `${confName}: ${startTime.toLocaleString()}`,
       })
     );
-    dispatch(updateSelectedTrainId(editedTrainId));
+    dispatch(updateSelectedTrain({ id: editedTrainId, by: 'timetable' }));
 
     // if the updated train was just transformed from pacedTrain to uniqueTrain
     // and one of the occurrences was used for the projection, update the projectedTrainId
