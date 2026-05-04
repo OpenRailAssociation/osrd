@@ -38,15 +38,6 @@
       background-color: var(--grey10);
       color: var(--primary50);
       border-radius: 6px;
-
-      &.white {
-        background-color: var(--white);
-      }
-
-      .stdcm-linked-train-loading {
-        color: var(--primary90);
-        align-self: center;
-      }
     }
 
     .stdcm-linked-train-button[disabled] {

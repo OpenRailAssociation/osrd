@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 import { DatePicker, Input } from '@osrd-project/ui-core';
-import { ArrowDown, ArrowUp, Gear } from '@osrd-project/ui-icons';
+import { ArrowDown, ArrowUp } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 import useLinkedTrainSearch from 'applications/stdcm/hooks/useLinkedTrainSearch';
@@ -22,8 +22,7 @@ const StdcmLinkedTrainSearch = ({ disabled, linkedTrainType }: StdcmLinkedTrainS
   const [isLinkedTrainDateValid, setIsLinkedTrainDateValid] = useState(true);
 
   const {
-    displaySearchButton,
-    setDisplaySearchButton,
+    loading,
     searchTerm,
     setSearchTerm,
     selectableDateSlot,
@@ -80,7 +79,6 @@ const StdcmLinkedTrainSearch = ({ disabled, linkedTrainType }: StdcmLinkedTrainS
               type="text"
               value={searchTerm}
               onChange={(e) => {
-                setDisplaySearchButton(true);
                 setSearchTerm(e.target.value);
               }}
               label="N°"
@@ -97,7 +95,6 @@ const StdcmLinkedTrainSearch = ({ disabled, linkedTrainType }: StdcmLinkedTrainS
               selectableSlot={selectableDateSlot}
               value={searchDate}
               onDateChange={(date) => {
-                setDisplaySearchButton(true);
                 setIsLinkedTrainDateValid(date !== undefined);
                 if (date) {
                   setSearchDate(date);
@@ -105,7 +102,7 @@ const StdcmLinkedTrainSearch = ({ disabled, linkedTrainType }: StdcmLinkedTrainS
               }}
             />
           </div>
-          {displaySearchButton && (
+          {!loading && searchTerm && searchDate && (
             <button
               data-testid="linked-train-search-button"
               className="stdcm-linked-train-button"
@@ -116,22 +113,15 @@ const StdcmLinkedTrainSearch = ({ disabled, linkedTrainType }: StdcmLinkedTrainS
               {t('find')}
             </button>
           )}
-          {!displaySearchButton && !searchedLinkedTrains && (
-            <div className="stdcm-linked-train-button white">
-              <Gear size="lg" className="stdcm-linked-train-loading" />
-            </div>
+          {(searchedLinkedTrains || loading) && (
+            <StdcmLinkedTrainResults
+              linkedTrainType={linkedTrainType}
+              linkedTrainResults={searchedLinkedTrains}
+              selectLinkedTrain={selectLinkedTrain}
+              selectedLinkedTrainIndex={selectedLinkedTrainIndex}
+              loading={loading}
+            />
           )}
-          {searchedLinkedTrains &&
-            (searchedLinkedTrains.length > 0 ? (
-              <StdcmLinkedTrainResults
-                linkedTrainType={linkedTrainType}
-                linkedTrainResults={searchedLinkedTrains}
-                selectLinkedTrain={selectLinkedTrain}
-                selectedLinkedTrainIndex={selectedLinkedTrainIndex}
-              />
-            ) : (
-              <p className="text-center mb-0">{t('noCorrespondingResults')}</p>
-            ))}
         </StdcmCard>
       )}
     </div>

@@ -55,7 +55,7 @@ const useLinkedTrainSearch = (linkedTrainType: LinkedTrainType) => {
     };
   }, [searchDatetimeWindow]);
 
-  const [displaySearchButton, setDisplaySearchButton] = useState(true);
+  const [loading, setLoading] = useState(false);
   const {
     searchTerm,
     date: searchDate,
@@ -123,7 +123,7 @@ const useLinkedTrainSearch = (linkedTrainType: LinkedTrainType) => {
   const launchSearch = useCallback(async () => {
     dispatch(updateLinkedTrainSearchResults({ linkedTrainType, results: [] }));
     if (!searchTerm || !searchDate) return;
-    setDisplaySearchButton(false);
+    setLoading(true);
 
     try {
       // Fetch the train schedule sets linked to the timetable to search among them
@@ -147,7 +147,6 @@ const useLinkedTrainSearch = (linkedTrainType: LinkedTrainType) => {
       );
 
       if (!filteredResults.length) {
-        setDisplaySearchButton(true);
         dispatch(updateLinkedTrainSearchResults({ linkedTrainType, results: [] }));
         return;
       }
@@ -186,13 +185,13 @@ const useLinkedTrainSearch = (linkedTrainType: LinkedTrainType) => {
       );
     } catch (error) {
       dispatch(setFailure(castErrorToFailure(error)));
-      setDisplaySearchButton(true);
+    } finally {
+      setLoading(false);
     }
   }, [postSearch, searchTerm, timetableId, getTrainScheduleSets, searchDate, getExtremityDetails]);
 
   return {
-    displaySearchButton,
-    setDisplaySearchButton,
+    loading,
     // TODECIDE: Should we bother exposing pass through values + setters, with the hook acting as a single store entrypoint for the component,
     // or should we instead use the store selectors and reducers directly in the component instead?
     // Or perhaps should we move launchSearch in the store as a reducer too? -> currently we don't tend to put rtkqueries in the store, so I think not

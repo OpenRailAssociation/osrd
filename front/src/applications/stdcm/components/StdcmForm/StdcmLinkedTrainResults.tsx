@@ -1,13 +1,17 @@
 import { RadioButton } from '@osrd-project/ui-core';
 import cx from 'classnames';
+import { useTranslation } from 'react-i18next';
+
+import { Loader } from 'common/Loaders';
 
 import type { LinkedTrainType, StdcmLinkedTrainResult } from '../../types';
 
 type StdcmLinkedTrainResultsProps = {
   linkedTrainType: LinkedTrainType;
-  linkedTrainResults: StdcmLinkedTrainResult[];
+  linkedTrainResults: StdcmLinkedTrainResult[] | undefined;
   selectLinkedTrain: (selectedIndex: number) => void;
   selectedLinkedTrainIndex: number | undefined;
+  loading: boolean;
 };
 
 const StdcmLinkedTrainResults = ({
@@ -15,7 +19,15 @@ const StdcmLinkedTrainResults = ({
   linkedTrainResults,
   selectLinkedTrain,
   selectedLinkedTrainIndex,
+  loading,
 }: StdcmLinkedTrainResultsProps) => {
+  const { t } = useTranslation('stdcm');
+
+  if (loading) return <Loader />;
+
+  if (!linkedTrainResults?.length)
+    return <p className="text-center mb-0">{t('noCorrespondingResults')}</p>;
+
   return (
     <div className="stdcm-linked-train-results">
       {linkedTrainResults.map(({ trainName, origin, destination }, index) => (
