@@ -17,9 +17,10 @@ export const isEmptyStep = (step: PathStepV2, input?: string) => {
 };
 
 export const ensureTrailingEmptyStep = (steps: PathStepV2[]): PathStepV2[] => {
-  const last = steps.at(-1);
-  if (!last || !isEmptyStep(last, '')) return [...steps, createEmptyPathStep()];
-  return steps;
+  const lastWithLocation = steps.findLastIndex((step) => step.location !== null);
+  const trimmed = steps.slice(0, lastWithLocation + 1);
+  const existingEmpty = steps.slice(lastWithLocation + 1).find((s) => s.location === null);
+  return [...trimmed, existingEmpty ?? createEmptyPathStep()];
 };
 
 export const deletePathStep = (steps: PathStepV2[], stepId: string): PathStepV2[] =>

@@ -438,7 +438,9 @@ const ItineraryModal = ({
     resetOpSuggestions();
 
     setPathSteps((prev) =>
-      prev.map((step) => (step.id === stepId ? { ...step, location: null } : step))
+      ensureTrailingEmptyStep(
+        prev.map((step) => (step.id === stepId ? { ...step, location: null } : step))
+      )
     );
   };
 
