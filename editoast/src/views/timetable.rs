@@ -10,6 +10,7 @@ use std::collections::BTreeMap;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;
+use std::time::Duration;
 
 use authz;
 use axum::Extension;
@@ -37,21 +38,27 @@ use core_client::simulation::PhysicsConsist;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
+use editoast_models::TrainScheduleException;
 use editoast_models::prelude::*;
 use editoast_models::timetable::Timetable;
 use editoast_models::timetable::TimetableWithTrains;
 use itertools::Itertools;
 use itertools::izip;
+use schemas::primitives::NonBlankString;
 use schemas::rolling_stock::EtcsBrakeParams;
 use schemas::rolling_stock::LoadingGaugeType;
 use schemas::rolling_stock::RollingResistance;
 use schemas::rolling_stock::RollingStock;
 use schemas::rolling_stock::TowedRollingStock;
+use schemas::train_schedule::OperationalPointPartReference;
+use schemas::train_schedule::OperationalPointReference;
+use schemas::train_schedule::PathItemLocation;
 use schemas::train_schedule::TrainScheduleLike;
 use serde::Deserialize;
 use serde::Serialize;
 use simulation::train_simulation_ordered_batch;
 use thiserror::Error;
+use tokio::time::timeout;
 use train_schedule::TrainScheduleResponse;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
@@ -65,6 +72,7 @@ use super::path::pathfinding::PathfindingResult;
 use crate::AppState;
 use crate::error::Result;
 use crate::views::AuthenticationExt;
+use crate::views::path::operational_point_cache::OperationalPointCache;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 use editoast_models::Infra;
 use editoast_models::TrainScheduleSet;
@@ -90,6 +98,9 @@ enum TimetableError {
     #[error("{:?} train schedule set(s) could not be found", .ids)]
     #[editoast_error(status = 404)]
     TrainScheduleSetsNotFound { ids: HashSet<i64> },
+    #[error("Request timed out")]
+    #[editoast_error(status = 504)]
+    Timeout,
 }
 
 /// Creation result for a Timetable
@@ -610,6 +621,156 @@ fn build_trains_requirements(
     )
 }
 
+#[derive(Deserialize, ToSchema)]
+#[cfg_attr(test, derive(Serialize))]
+pub(in crate::views) struct LocalTrackNamesForm {
+    /// A map of user-friendly keys to operational point references, for which the local track names should be retrieved.
+    ///  The keys will be used in the output to reference the corresponding operational point references.
+    pub operational_point_references: HashMap<NonBlankString, OperationalPointReference>,
+    pub infra_id: i64,
+}
+
+/// Retrieve list of local track names for each path step of each train schedule
+/// that match the given operational point references list
+#[editoast_derive::route]
+#[utoipa::path(
+    post, path = "",
+    tag = "timetable",  
+    params(TimetableIdParam),
+    request_body(
+        content = inline(LocalTrackNamesForm),
+        description = "The list of operational point references to match",
+    ),
+    responses(
+        (status = 200, description = "For each operational point in the input list, returns in the same order, the set of local track names found in the timetable's train schedules path step inputs", body = inline(Vec<HashMap<String, HashSet<String>>>)),
+    ),
+)]
+pub(in crate::views) async fn get_local_track_names(
+    State(AppState { db_pool, .. }): State<AppState>,
+    Extension(auth): AuthenticationExt,
+    Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
+    Json(LocalTrackNamesForm {
+        operational_point_references,
+        infra_id,
+    }): Json<LocalTrackNamesForm>,
+) -> Result<Json<HashMap<NonBlankString, HashSet<NonBlankString>>>> {
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
+            .await
+    })
+    .await?;
+
+    timeout(Duration::from_secs(240), async move {
+        let conn = &mut db_pool.get().await?;
+
+        Timetable::exists_or_fail(conn, timetable_id, || TimetableError::NotFound {
+            timetable_id,
+        })
+        .await?;
+
+        let train_schedule_set_ids =
+            Timetable::get_train_schedule_set_ids_from_timetable(timetable_id, conn).await?;
+
+        let train_schedules = editoast_models::TrainSchedule::list(
+            conn,
+            SelectionSettings::new().filter(move || {
+                editoast_models::TrainSchedule::TRAIN_SCHEDULE_SET_ID
+                    .eq_any(train_schedule_set_ids.clone())
+            }),
+        )
+        .await?;
+
+        let train_ids = train_schedules.iter().map(|ts| ts.id).collect_vec();
+
+        let mut exceptions = TrainScheduleException::retrieve_exceptions_by_train_schedules(
+            conn,
+            timetable_id,
+            &train_ids,
+        )
+        .await?
+        .into_iter()
+        .map_into::<schemas::TrainScheduleException>()
+        .into_group_map_by(|e| e.train_schedule_id);
+
+        // Collect all occurrences from all trains
+        let train_occurrences = train_schedules.into_iter().flat_map(|train| {
+            train
+                .iter_occurrences(&exceptions.remove(&train.id).unwrap_or_default())
+                .collect_vec()
+        });
+
+        // Collect local_track_names and deduplicated path locations from train occurrences.
+        let mut local_track_names: HashMap<OperationalPointReference, HashSet<NonBlankString>> =
+            HashMap::new();
+        let mut unique_locations: HashSet<PathItemLocation> = HashSet::new();
+
+        train_occurrences
+            .flat_map(|(_, occurrence)| occurrence.path)
+            .filter_map(|path_item| match path_item.location {
+                PathItemLocation::OperationalPointPartReference(op_ref) => Some(op_ref),
+                // We ignore track offsets as they don't have local track names assiociated
+                PathItemLocation::TrackOffset(_) => None,
+            })
+            .for_each(|op_ref| {
+                if let Some(name) = &op_ref.local_track_name {
+                    local_track_names
+                        .entry(op_ref.operational_point.clone())
+                        .or_default()
+                        .insert(name.clone());
+                }
+
+                unique_locations.insert(PathItemLocation::OperationalPointPartReference(op_ref));
+            });
+        // Also include the requested op_refs so the cache resolves them even if no train uses them.
+        unique_locations.extend(operational_point_references.values().map(|op_ref| {
+            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
+                operational_point: op_ref.clone(),
+                local_track_name: None,
+            })
+        }));
+
+        let path_items: Vec<&PathItemLocation> = unique_locations.iter().collect();
+        let op_cache =
+            OperationalPointCache::load_path_items(db_pool.get().await?, infra_id, &path_items)
+                .await?;
+
+        // Resolve op_ref to op id, merging sets when multiple refs point to the same OP.
+        let op_id_to_local_track_names: HashMap<NonBlankString, HashSet<NonBlankString>> =
+            local_track_names
+                .iter()
+                .filter_map(|(op_ref, names)| {
+                    let op = op_cache.get_reference(op_ref.clone())?;
+                    Some((op.id.0.clone(), names))
+                })
+                .fold(HashMap::new(), |mut map, (id, names)| {
+                    map.entry(id.into())
+                        .or_default()
+                        .extend(names.iter().cloned());
+                    map
+                });
+
+        let result: HashMap<NonBlankString, HashSet<NonBlankString>> = operational_point_references
+            .into_iter()
+            .map(|(key, op_ref)| {
+                let track_names = match op_cache.get_reference(op_ref.clone()) {
+                    Some(op) => op_id_to_local_track_names
+                        .get(&op.id.0)
+                        .cloned()
+                        .unwrap_or_default(),
+                    None => local_track_names.get(&op_ref).cloned().unwrap_or_default(),
+                };
+                (key, track_names)
+            })
+            .collect();
+
+        Ok::<_, crate::error::InternalError>(Json(result))
+    })
+    .await
+    .map_err(|_| TimetableError::Timeout)?
+}
+
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
 pub(in crate::views) struct TrainRequirementsPage {
@@ -946,11 +1107,16 @@ mod tests {
     use pretty_assertions::assert_eq;
     use schemas::fixtures::simple_rolling_stock;
     use schemas::fixtures::towed_rolling_stock;
+
     use schemas::rolling_stock::RollingResistance;
+    use schemas::train_schedule::PathItem;
+    use schemas::train_schedule::ScheduleItem;
 
     use super::*;
     use crate::error::InternalError;
+    use crate::fixtures::create_small_infra;
     use crate::fixtures::create_timetable;
+    use crate::fixtures::create_timetable_with_simple_paced_train;
     use crate::fixtures::create_timetable_with_train_schedule_set;
     use crate::fixtures::create_train_schedule_exception;
     use crate::fixtures::create_train_schedule_set;
@@ -1496,5 +1662,100 @@ mod tests {
             .assert_status(StatusCode::OK)
             .json_into();
         assert_eq!(train_schedule_sets, vec![train_schedule_set]);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn test_get_local_track_names_simple_train_schedule() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+
+        let (timetable, train_schedule) =
+            create_timetable_with_simple_paced_train(&mut db_pool.get().await.unwrap()).await;
+
+        let mut train_schedule_base_2 = simple_paced_train_base();
+        train_schedule_base_2.train_occurrence.path = vec![
+            PathItem {
+                id: "Mid_West_station".into(),
+                location: PathItemLocation::OperationalPointPartReference(
+                    OperationalPointPartReference {
+                        operational_point: OperationalPointReference::Id {
+                            operational_point: "Mid_West_station".into(),
+                        },
+                        local_track_name: Some("West_1".into()),
+                    },
+                ),
+            },
+            PathItem {
+                id: "Mid_East_station".into(),
+                location: PathItemLocation::OperationalPointPartReference(
+                    OperationalPointPartReference {
+                        operational_point: OperationalPointReference::Id {
+                            operational_point: "Mid_East_station".into(),
+                        },
+                        local_track_name: Some("East_1".into()),
+                    },
+                ),
+            },
+        ];
+        train_schedule_base_2.train_occurrence.schedule = vec![ScheduleItem::new_with_stop(
+            "Mid_West_station",
+            Duration::seconds(0),
+        )];
+
+        Changeset::<editoast_models::TrainSchedule>::from(train_schedule_base_2)
+            .train_schedule_set_id(train_schedule.train_schedule_set_id)
+            .create(&mut db_pool.get().await.unwrap())
+            .await
+            .expect("Failed to create paced train");
+
+        let form = LocalTrackNamesForm {
+            operational_point_references: HashMap::from([
+                (
+                    "Mid_West_station".into(),
+                    // MWS is the trigram of Mid_West_station — tests cross-reference resolution
+                    OperationalPointReference::Trigram {
+                        trigram: "MWS".into(),
+                        secondary_code: Some("BV".into()),
+                    },
+                ),
+                (
+                    "8711".into(),
+                    // MES is the trigram of Mid_East_station
+                    OperationalPointReference::Uic {
+                        uic: 8711,
+                        secondary_code: Some("BV".into()),
+                    },
+                ),
+                (
+                    "Mid_East_station".into(),
+                    OperationalPointReference::Id {
+                        operational_point: "Mid_East_station".into(),
+                    },
+                ),
+            ]),
+            infra_id: small_infra.id,
+        };
+
+        let request = app
+            .post(format!("/timetable/{}/path_steps/local_track_names", timetable.id).as_str())
+            .json(&form);
+
+        let response: HashMap<String, HashSet<String>> = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
+
+        assert_eq!(
+            response.get("Mid_West_station"),
+            Some(&HashSet::from(["West_1".to_string()]))
+        );
+        assert_eq!(response.get("8711"), Some(&HashSet::new()));
+        assert_eq!(
+            response.get("Mid_East_station"),
+            Some(&HashSet::from(["East_1".to_string()]))
+        );
     }
 }

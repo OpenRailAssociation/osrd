@@ -271,6 +271,7 @@
       "InfraNotLoaded": "Infrastructure '{{infra_id}}' is not loaded",
       "NotFound": "Timetable '{{timetable_id}}' could not be found",
       "ParseError": "Failed to parse train_id: '{{train_id}}'",
+      "Timeout": "Request timed out",
       "TrainScheduleSetsNotFound": "'{{ids}}' train schedule sets not found",
       "similar_trains": {
         "Database": "Internal error (database)",
