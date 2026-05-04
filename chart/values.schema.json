@@ -3,14 +3,14 @@
   "additionalProperties": false,
   "properties": {
     "affinity": {
-      "additionalProperties": false,
+      "additionalProperties": true,
+      "description": " additionalProperties: true @schema",
       "required": [],
-      "title": "affinity",
-      "type": "object"
+      "title": "affinity"
     },
     "annotations": {
-      "additionalProperties": false,
-      "description": " overriden within the \"services\" section.",
+      "additionalProperties": true,
+      "description": " overriden within the \"services\" section. @schema additionalProperties: true @schema",
       "required": [],
       "title": "annotations"
     },
@@ -156,10 +156,10 @@
       "type": "object"
     },
     "labels": {
-      "additionalProperties": false,
+      "additionalProperties": true,
+      "description": " additionalProperties: true @schema",
       "required": [],
-      "title": "labels",
-      "type": "object"
+      "title": "labels"
     },
     "nameOverride": {
       "default": "",
@@ -168,10 +168,10 @@
       "type": "string"
     },
     "nodeSelector": {
-      "additionalProperties": false,
+      "additionalProperties": true,
+      "description": " additionalProperties: true @schema",
       "required": [],
-      "title": "nodeSelector",
-      "type": "object"
+      "title": "nodeSelector"
     },
     "pullPolicy": {
       "default": "IfNotPresent",
@@ -186,31 +186,63 @@
           "additionalProperties": false,
           "properties": {
             "affinity": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "affinity",
-              "type": "object"
+              "title": "affinity"
             },
             "annotations": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "annotations",
-              "type": "object"
+              "title": "annotations"
             },
             "autoscaling": {
               "additionalProperties": false,
               "description": "autoscaling configuration of osrdyne KubernetesDriver detail in https://github.com/OpenRailAssociation/osrd/blob/dev/osrdyne/src/drivers/kubernetes.rs",
               "properties": {
+                "activation_value": {
+                  "required": [],
+                  "type": [
+                    "string",
+                    "integer"
+                  ]
+                },
+                "cooldown_period": {
+                  "type": "integer"
+                },
+                "max_replicas": {
+                  "type": "integer"
+                },
+                "metric_type": {
+                  "type": "string"
+                },
+                "min_replicas": {
+                  "type": "integer"
+                },
+                "mode": {
+                  "type": "string"
+                },
+                "polling_interval": {
+                  "type": "integer"
+                },
                 "type": {
-                  "default": "NoScaling",
-                  "description": "Type of autoscaling",
                   "enum": [
                     "NoScaling",
                     "Keda",
                     "Hpa"
                   ],
-                  "title": "type",
-                  "type": "string"
+                  "required": []
+                },
+                "use_cached_metrics": {
+                  "type": "boolean"
+                },
+                "value": {
+                  "required": [],
+                  "type": [
+                    "string",
+                    "integer"
+                  ]
                 }
               },
               "required": [],
@@ -222,13 +254,16 @@
               "properties": {
                 "telemetry": {
                   "default": "null",
+                  "description": " type: [null, string] @schema",
+                  "required": [],
                   "title": "telemetry",
-                  "type": "null"
+                  "type": [
+                    "null",
+                    "string"
+                  ]
                 }
               },
-              "required": [
-                "telemetry"
-              ],
+              "required": [],
               "title": "config",
               "type": "object"
             },
@@ -240,22 +275,22 @@
               "type": "array"
             },
             "labels": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "labels",
-              "type": "object"
+              "title": "labels"
             },
             "nodeSelector": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "nodeSelector",
-              "type": "object"
+              "title": "nodeSelector"
             },
             "resources": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "resources",
-              "type": "object"
+              "title": "resources"
             },
             "service_account_name": {
               "default": "null",
@@ -276,12 +311,7 @@
             }
           },
           "required": [
-            "annotations",
-            "labels",
-            "nodeSelector",
             "tolerations",
-            "affinity",
-            "resources",
             "env",
             "config"
           ],
@@ -292,16 +322,16 @@
           "additionalProperties": false,
           "properties": {
             "affinity": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "affinity",
-              "type": "object"
+              "title": "affinity"
             },
             "annotations": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "annotations",
-              "type": "object"
+              "title": "annotations"
             },
             "cronjob": {
               "additionalProperties": false,
@@ -356,10 +386,10 @@
               "additionalProperties": false,
               "properties": {
                 "annotations": {
-                  "additionalProperties": false,
+                  "additionalProperties": true,
+                  "description": " additionalProperties: true @schema",
                   "required": [],
-                  "title": "annotations",
-                  "type": "object"
+                  "title": "annotations"
                 },
                 "enabled": {
                   "default": true,
@@ -367,10 +397,10 @@
                   "type": "boolean"
                 },
                 "labels": {
-                  "additionalProperties": false,
+                  "additionalProperties": true,
+                  "description": " additionalProperties: true @schema",
                   "required": [],
-                  "title": "labels",
-                  "type": "object"
+                  "title": "labels"
                 },
                 "maxReplicas": {
                   "default": 10,
@@ -392,39 +422,44 @@
                 "enabled",
                 "minReplicas",
                 "maxReplicas",
-                "targetCPUUtilizationPercentage",
-                "annotations",
-                "labels"
+                "targetCPUUtilizationPercentage"
               ],
               "title": "hpa",
               "type": "object"
             },
             "init": {
               "additionalProperties": false,
+              "description": "Init job configuration",
               "properties": {
                 "enabled": {
                   "default": true,
+                  "description": "Wheter to run editoast init pod for diesel migration",
                   "title": "enabled",
                   "type": "boolean"
                 },
                 "extend": {
                   "default": "",
+                  "description": "Command to run after diesel migration",
                   "title": "extend",
                   "type": "string"
+                },
+                "labels": {
+                  "additionalProperties": true,
+                  "description": "Labels for init pod",
+                  "required": [],
+                  "title": "labels",
+                  "type": "object"
                 }
               },
-              "required": [
-                "enabled",
-                "extend"
-              ],
+              "required": [],
               "title": "init",
               "type": "object"
             },
             "labels": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "labels",
-              "type": "object"
+              "title": "labels"
             },
             "livenessProbe": {
               "additionalProperties": false,
@@ -460,10 +495,10 @@
               "type": "object"
             },
             "nodeSelector": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "nodeSelector",
-              "type": "object"
+              "title": "nodeSelector"
             },
             "permanent_storage_class": {
               "default": "null",
@@ -524,10 +559,10 @@
               "type": "integer"
             },
             "resources": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "resources",
-              "type": "object"
+              "title": "resources"
             },
             "service": {
               "additionalProperties": false,
@@ -571,13 +606,7 @@
             "livenessProbe",
             "readinessProbe",
             "hpa",
-            "annotations",
-            "init",
-            "labels",
-            "nodeSelector",
             "tolerations",
-            "affinity",
-            "resources",
             "env"
           ],
           "title": "editoast",
@@ -587,16 +616,16 @@
           "additionalProperties": false,
           "properties": {
             "affinity": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "affinity",
-              "type": "object"
+              "title": "affinity"
             },
             "annotations": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "annotations",
-              "type": "object"
+              "title": "annotations"
             },
             "config": {
               "additionalProperties": false,
@@ -604,48 +633,30 @@
               "properties": {
                 "auth": {
                   "additionalProperties": false,
+                  "description": " properties:   providers:     type: array   default_provider:     type: [string, null]     description: default provider   session_namespace:     type: [string, null]     description: namespace for sesson @schema",
                   "properties": {
+                    "default_provider": {
+                      "description": "default provider",
+                      "required": [],
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
                     "providers": {
-                      "items": {
-                        "anyOf": [
-                          {
-                            "additionalProperties": false,
-                            "properties": {
-                              "provider_id": {
-                                "default": "mocked",
-                                "title": "provider_id",
-                                "type": "string"
-                              },
-                              "type": {
-                                "default": "Mocked",
-                                "title": "type",
-                                "type": "string"
-                              },
-                              "username": {
-                                "default": "osrd-admin",
-                                "title": "username",
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "type",
-                              "provider_id",
-                              "username"
-                            ],
-                            "type": "object"
-                          }
-                        ],
-                        "required": []
-                      },
-                      "title": "providers",
                       "type": "array"
+                    },
+                    "session_namespace": {
+                      "description": "namespace for sesson",
+                      "required": [],
+                      "type": [
+                        "string",
+                        "null"
+                      ]
                     }
                   },
-                  "required": [
-                    "providers"
-                  ],
-                  "title": "auth",
-                  "type": "object"
+                  "required": [],
+                  "title": "auth"
                 },
                 "railway_manager_interface": {
                   "additionalProperties": false,
@@ -679,10 +690,10 @@
                   "description": " See https://github.com/OpenRailAssociation/osrd/blob/dev/gateway/README.md#config",
                   "properties": {
                     "config": {
-                      "additionalProperties": false,
+                      "additionalProperties": true,
+                      "description": " additionalProperties: true @schema",
                       "required": [],
-                      "title": "config",
-                      "type": "object"
+                      "title": "config"
                     },
                     "enabled": {
                       "default": false,
@@ -697,8 +708,7 @@
                   },
                   "required": [
                     "enabled",
-                    "type",
-                    "config"
+                    "type"
                   ],
                   "title": "tracing"
                 },
@@ -722,7 +732,6 @@
                 }
               },
               "required": [
-                "auth",
                 "railway_manager_interface",
                 "trusted_proxies"
               ],
@@ -746,10 +755,10 @@
               "description": "Gateway ingress configuration",
               "properties": {
                 "annotations": {
-                  "additionalProperties": false,
+                  "additionalProperties": true,
+                  "description": " additionalProperties: true @schema",
                   "required": [],
-                  "title": "annotations",
-                  "type": "object"
+                  "title": "annotations"
                 },
                 "className": {
                   "default": "",
@@ -791,17 +800,16 @@
               "required": [
                 "enabled",
                 "className",
-                "annotations",
                 "tls"
               ],
               "title": "ingress",
               "type": "object"
             },
             "labels": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "labels",
-              "type": "object"
+              "title": "labels"
             },
             "livenessProbe": {
               "additionalProperties": false,
@@ -819,10 +827,10 @@
               "type": "object"
             },
             "nodeSelector": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "nodeSelector",
-              "type": "object"
+              "title": "nodeSelector"
             },
             "readinessProbe": {
               "additionalProperties": false,
@@ -845,10 +853,10 @@
               "type": "integer"
             },
             "resources": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "resources",
-              "type": "object"
+              "title": "resources"
             },
             "service": {
               "additionalProperties": false,
@@ -905,12 +913,7 @@
             "service",
             "livenessProbe",
             "readinessProbe",
-            "annotations",
-            "labels",
-            "nodeSelector",
             "tolerations",
-            "affinity",
-            "resources",
             "env",
             "volumes",
             "volumeMounts"
@@ -922,16 +925,16 @@
           "additionalProperties": false,
           "properties": {
             "affinity": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "affinity",
-              "type": "object"
+              "title": "affinity"
             },
             "annotations": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "annotations",
-              "type": "object"
+              "title": "annotations"
             },
             "enabled": {
               "default": true,
@@ -946,16 +949,16 @@
               "type": "array"
             },
             "labels": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "labels",
-              "type": "object"
+              "title": "labels"
             },
             "nodeSelector": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "nodeSelector",
-              "type": "object"
+              "title": "nodeSelector"
             },
             "replicaCount": {
               "default": 1,
@@ -963,10 +966,10 @@
               "type": "integer"
             },
             "resources": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "resources",
-              "type": "object"
+              "title": "resources"
             },
             "service": {
               "additionalProperties": false,
@@ -1007,12 +1010,7 @@
             "replicaCount",
             "enabled",
             "service",
-            "annotations",
-            "labels",
-            "nodeSelector",
             "tolerations",
-            "affinity",
-            "resources",
             "env"
           ],
           "title": "images",
@@ -1022,16 +1020,16 @@
           "additionalProperties": false,
           "properties": {
             "affinity": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "affinity",
-              "type": "object"
+              "title": "affinity"
             },
             "annotations": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "annotations",
-              "type": "object"
+              "title": "annotations"
             },
             "enabled": {
               "default": false,
@@ -1046,16 +1044,16 @@
               "type": "array"
             },
             "labels": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "labels",
-              "type": "object"
+              "title": "labels"
             },
             "nodeSelector": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "nodeSelector",
-              "type": "object"
+              "title": "nodeSelector"
             },
             "readinessProbe": {
               "additionalProperties": false,
@@ -1096,10 +1094,10 @@
               "type": "integer"
             },
             "resources": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "resources",
-              "type": "object"
+              "title": "resources"
             },
             "service": {
               "additionalProperties": false,
@@ -1141,12 +1139,7 @@
             "replicaCount",
             "service",
             "readinessProbe",
-            "annotations",
-            "labels",
-            "nodeSelector",
             "tolerations",
-            "affinity",
-            "resources",
             "env"
           ],
           "title": "openfga",
@@ -1156,53 +1149,50 @@
           "additionalProperties": false,
           "properties": {
             "affinity": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "affinity",
-              "type": "object"
+              "title": "affinity"
             },
             "annotations": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "annotations",
-              "type": "object"
+              "title": "annotations"
             },
             "config": {
               "additionalProperties": false,
+              "description": " type: object description: osrdyne configuration properties:   pool_id:     type: string   api_address:     type: string   default_message_ttl:     type: [integer, null]     required: false   max_length:     type: [integer, null]     required: false   max_length_bytes:     type: [integer, null]     required: false @schema",
               "properties": {
                 "api_address": {
-                  "default": "0.0.0.0:80",
-                  "title": "api_address",
                   "type": "string"
                 },
                 "default_message_ttl": {
-                  "default": "",
-                  "title": "default_message_ttl",
-                  "type": "null"
+                  "required": [],
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
                 },
                 "max_length": {
-                  "default": "",
-                  "title": "max_length",
-                  "type": "null"
+                  "required": [],
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
                 },
                 "max_length_bytes": {
-                  "default": "",
-                  "title": "max_length_bytes",
-                  "type": "null"
+                  "required": [],
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
                 },
                 "pool_id": {
-                  "default": "core",
-                  "title": "pool_id",
                   "type": "string"
                 }
               },
-              "required": [
-                "pool_id",
-                "api_address",
-                "default_message_ttl",
-                "max_length",
-                "max_length_bytes"
-              ],
+              "required": [],
               "title": "config",
               "type": "object"
             },
@@ -1219,10 +1209,10 @@
               "type": "array"
             },
             "labels": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "labels",
-              "type": "object"
+              "title": "labels"
             },
             "livenessProbe": {
               "additionalProperties": false,
@@ -1258,10 +1248,10 @@
               "type": "object"
             },
             "nodeSelector": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "nodeSelector",
-              "type": "object"
+              "title": "nodeSelector"
             },
             "readinessProbe": {
               "additionalProperties": false,
@@ -1284,10 +1274,10 @@
               "type": "integer"
             },
             "resources": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "resources",
-              "type": "object"
+              "title": "resources"
             },
             "service": {
               "additionalProperties": false,
@@ -1330,13 +1320,7 @@
             "service",
             "livenessProbe",
             "readinessProbe",
-            "config",
-            "annotations",
-            "labels",
-            "nodeSelector",
             "tolerations",
-            "affinity",
-            "resources",
             "env"
           ],
           "title": "osrdyne",
@@ -1346,16 +1330,16 @@
           "additionalProperties": false,
           "properties": {
             "affinity": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "affinity",
-              "type": "object"
+              "title": "affinity"
             },
             "annotations": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "annotations",
-              "type": "object"
+              "title": "annotations"
             },
             "enabled": {
               "default": true,
@@ -1370,10 +1354,10 @@
               "type": "array"
             },
             "labels": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "labels",
-              "type": "object"
+              "title": "labels"
             },
             "livenessProbe": {
               "additionalProperties": false,
@@ -1409,10 +1393,10 @@
               "type": "object"
             },
             "nodeSelector": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "nodeSelector",
-              "type": "object"
+              "title": "nodeSelector"
             },
             "readinessProbe": {
               "additionalProperties": false,
@@ -1453,10 +1437,10 @@
               "type": "integer"
             },
             "resources": {
-              "additionalProperties": false,
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
               "required": [],
-              "title": "resources",
-              "type": "object"
+              "title": "resources"
             },
             "service": {
               "additionalProperties": false,
@@ -1499,12 +1483,7 @@
             "service",
             "livenessProbe",
             "readinessProbe",
-            "annotations",
-            "labels",
-            "nodeSelector",
             "tolerations",
-            "affinity",
-            "resources",
             "env"
           ],
           "title": "statefulEditoast",
@@ -1534,10 +1513,7 @@
   "required": [
     "nameOverride",
     "fullnameOverride",
-    "labels",
-    "nodeSelector",
     "tolerations",
-    "affinity",
     "pullPolicy",
     "images"
   ],
