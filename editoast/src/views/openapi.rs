@@ -100,6 +100,7 @@ pub struct OpenApiRoot;
 impl OpenApiRoot {
     fn error_context_to_openapi_object(error_def: &ErrorDefinition) -> utoipa::openapi::Object {
         let mut context = utoipa::openapi::Object::new();
+        context.title = Some(format!("{}Context", error_def.get_schema_name()));
         // We write openapi properties by alpha order, to keep the same yml file
         for prop_name in error_def.get_context().keys().sorted() {
             let prop_type = &error_def.get_context()[prop_name];
