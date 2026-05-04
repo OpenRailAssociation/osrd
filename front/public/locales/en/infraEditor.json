@@ -418,6 +418,10 @@
       "parts": {
         "title": "Parts"
       },
+      "plc": {
+        "description": "Primary Location Code : https://rne.eu/it/products/ccs/crd/",
+        "title": "Plc"
+      },
       "weight": {
         "description": "represents the significance of a PR",
         "title": "Weight"

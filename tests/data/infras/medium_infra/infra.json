@@ -1,5 +1,5 @@
 {
-    "version": "3.5.1",
+    "version": "3.5.2",
     "operational_points": [
         {
             "id": "North_West_station",
@@ -11,6 +11,7 @@
                 }
             ],
             "weight": null,
+            "plc": null,
             "extensions": {
                 "sncf": {
                     "ci": 99,
@@ -35,6 +36,7 @@
                 }
             ],
             "weight": null,
+            "plc": null,
             "extensions": {
                 "sncf": {
                     "ci": 99,
@@ -69,6 +71,7 @@
                 }
             ],
             "weight": null,
+            "plc": null,
             "extensions": {
                 "sncf": {
                     "ci": 22,
@@ -93,6 +96,7 @@
                 }
             ],
             "weight": null,
+            "plc": null,
             "extensions": {
                 "sncf": {
                     "ci": 11,
@@ -132,6 +136,7 @@
                 }
             ],
             "weight": 4,
+            "plc": null,
             "extensions": {
                 "sncf": {
                     "ci": 33,
@@ -161,6 +166,7 @@
                 }
             ],
             "weight": 10,
+            "plc": null,
             "extensions": {
                 "sncf": {
                     "ci": 44,
@@ -190,6 +196,7 @@
                 }
             ],
             "weight": 3,
+            "plc": null,
             "extensions": {
                 "sncf": {
                     "ci": 55,
@@ -214,6 +221,7 @@
                 }
             ],
             "weight": null,
+            "plc": null,
             "extensions": {
                 "sncf": {
                     "ci": 66,
@@ -243,6 +251,7 @@
                 }
             ],
             "weight": null,
+            "plc": null,
             "extensions": {
                 "sncf": {
                     "ci": 77,
@@ -267,6 +276,7 @@
                 }
             ],
             "weight": null,
+            "plc": null,
             "extensions": {
                 "sncf": {
                     "ci": 88,

@@ -21,6 +21,8 @@ pub struct OperationalPoint {
     pub extensions: OperationalPointExtensions,
     #[serde(default)]
     pub weight: Option<u8>,
+    /// Primary Location Code : https://rne.eu/it/products/ccs/crd/
+    pub plc: Option<NonBlankString>,
 }
 
 #[derive(Debug, Educe, Clone, PartialEq, Serialize, Deserialize, ToSchema)]

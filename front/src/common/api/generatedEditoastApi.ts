@@ -3021,6 +3021,7 @@ export type OperationalPoint = {
   };
   id: string;
   parts: OperationalPointPart[];
+  plc?: null | NonBlankString;
   weight?: number | null;
 };
 export type Waypoint =

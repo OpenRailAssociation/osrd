@@ -26,7 +26,7 @@ class Infra:
     electrifications: List[Electrification] = field(default_factory=list)
     neutral_sections: List[NeutralSection] = field(default_factory=list)
 
-    VERSION = "3.5.1"
+    VERSION = "3.5.2"
 
     def add_route(self, *args, **kwargs):
         self.routes.append(Route(*args, **kwargs))
@@ -95,10 +95,12 @@ class Infra:
                         trigram=op.trigram,
                     ),
                     "identifier": infra.OperationalPointIdentifierExtension(
-                        uic=op.uic, name=op.label
+                        uic=op.uic,
+                        name=op.label,
                     ),
                 },
                 weight=op.weight,
+                plc=op.plc,
             )
             ops.append(new_op)
         return ops

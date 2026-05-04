@@ -2732,6 +2732,10 @@ class NewDocumentResponse(BaseModel):
     document_key: int
 
 
+class NonBlankString(RootModel[str]):
+    root: Annotated[str, Field(min_length=1)]
+
+
 class ObjectType(Enum):
     TrackSection = "TrackSection"
     Signal = "Signal"
@@ -5105,6 +5109,7 @@ class OperationalPoint(BaseModel):
     extensions: Extensions3 | None = None
     id: Annotated[str, Field(max_length=255, min_length=1)]
     parts: list[OperationalPointPart]
+    plc: NonBlankString | None = None
     weight: Annotated[int | None, Field(ge=0)] = None
 
 

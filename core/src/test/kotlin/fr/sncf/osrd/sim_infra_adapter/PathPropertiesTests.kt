@@ -106,12 +106,14 @@ class PathPropertiesTests {
                 listOf(RJSOperationalPointPart("ne.micro.foo_a", 200.0, "V1", null)),
                 null,
                 null,
+                null,
             )
         )
         rjsInfra.operationalPoints.add(
             RJSOperationalPoint(
                 "new_op_2",
                 listOf(RJSOperationalPointPart("ne.micro.bar_a", 0.0, "V1", null)),
+                null,
                 null,
                 null,
             )
@@ -175,6 +177,7 @@ class PathPropertiesTests {
                         null,
                     ),
                     null,
+                    null,
                 ),
                 RJSOperationalPoint(
                     "point2",
@@ -189,6 +192,7 @@ class PathPropertiesTests {
                         ),
                         RJSOperationalPointPart("TA1", 1_950.0, "V1", null),
                     ),
+                    null,
                     null,
                     null,
                 ),
