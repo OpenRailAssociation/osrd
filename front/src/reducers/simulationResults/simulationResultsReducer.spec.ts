@@ -6,7 +6,7 @@ import { createStoreWithoutMiddleware } from 'store';
 import {
   simulationResultsInitialState,
   simulationResultsSlice,
-  updateSelectedTrainId,
+  updateSelectedTrain,
   updateTrainIdUsedForProjection,
 } from '.';
 import type { SimulationResultsState } from './types';
@@ -26,20 +26,20 @@ describe('simulationResultsReducer', () => {
     expect(state).toEqual(simulationResultsInitialState);
   });
 
-  it('should handle updateSelectedTrainId with a paced train', () => {
+  it('should handle updateSelectedTrain with a paced train', () => {
     const store = createStore();
-    store.dispatch(updateSelectedTrainId('paced_1' as PacedTrainId));
+    store.dispatch(updateSelectedTrain({ id: 'paced_1' as PacedTrainId, by: 'timetable' }));
 
     const state = store.getState()[simulationResultsSlice.name];
     expect(state.selectedTrain).toEqual({ id: 'paced_1', by: 'timetable' });
   });
 
-  it('should handle updateSelectedTrainId with a paced train occurrence', () => {
+  it('should handle updateSelectedTrain with a paced train occurrence on the space time diagram (STD)', () => {
     const store = createStore();
-    store.dispatch(updateSelectedTrainId('paced-1-occurrence-2' as OccurrenceId));
+    store.dispatch(updateSelectedTrain({ id: 'paced-1-occurrence-2' as OccurrenceId, by: 'std' }));
 
     const state = store.getState()[simulationResultsSlice.name];
-    expect(state.selectedTrain).toEqual({ id: 'paced-1-occurrence-2', by: 'timetable' });
+    expect(state.selectedTrain).toEqual({ id: 'paced-1-occurrence-2', by: 'std' });
   });
 
   it('should handle updateTrainIdUsedForProjection with a paced train', () => {
