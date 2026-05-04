@@ -41,17 +41,13 @@ const StdcmLinkedTrainResults = ({
             selectLinkedTrain(index);
           }}
         >
-          {linkedTrainResults.length > 1 ? (
-            <RadioButton
-              label={trainName}
-              id={`${linkedTrainType}-${index}`}
-              value={`${index}`}
-              name={`linked-train-radio-buttons-${linkedTrainType}`}
-              defaultChecked={index === selectedLinkedTrainIndex}
-            />
-          ) : (
-            <p className="train-name grey80">{trainName}</p>
-          )}
+          <RadioButton
+            label={trainName}
+            id={`${linkedTrainType}-${index}`}
+            value={`${index}`}
+            name={`linked-train-radio-buttons-${linkedTrainType}`}
+            defaultChecked={index === selectedLinkedTrainIndex}
+          />
           {[origin, destination].map((opPoint) => (
             <div
               key={`linked-op-${opPoint.obj_id}-${index}`}
