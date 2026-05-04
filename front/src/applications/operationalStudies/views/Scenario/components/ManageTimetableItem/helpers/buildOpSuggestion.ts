@@ -32,6 +32,7 @@ export const buildOpSuggestion = (
       map.set(key, {
         id: key,
         trigram: r.trigram,
+        uic: r.uic,
         name: r.name,
         secondaryCodeList,
       });

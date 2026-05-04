@@ -13,7 +13,12 @@ import { useManageTimetableItemContext } from 'applications/operationalStudies/h
 import { useOperationalPointSearch } from 'applications/operationalStudies/hooks/useOperationalPointSearch';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import AlertBox from 'common/AlertBox';
-import type { PathProperties, PathItemLocation, TrainCategory } from 'common/api/osrdEditoastApi';
+import type {
+  OperationalPointReference,
+  PathProperties,
+  PathItemLocation,
+  TrainCategory,
+} from 'common/api/osrdEditoastApi';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
 import IncompatibleConstraints from 'modules/pathfinding/components/IncompatibleConstraints';
@@ -152,13 +157,18 @@ const ItineraryModal = ({
     if (!chosenCh) return;
     pendingStepIdRef.current = stepId;
     confirmedStepIdRef.current = stepId;
+    let opRef: OperationalPointReference;
+    if (suggestion.trigram) {
+      opRef = { type: 'trigram', trigram: suggestion.trigram, secondary_code: chosenCh };
+    } else if (suggestion.uic) {
+      opRef = { type: 'uic', uic: suggestion.uic, secondary_code: chosenCh };
+    } else {
+      const chosenOpId = suggestion.secondaryCodeList.find((c) => c.code === chosenCh)?.opId;
+      opRef = { type: 'id', operational_point: chosenOpId! };
+    }
     const newLocation: PathItemLocation = {
       type: 'operational_point_part_reference',
-      operational_point: {
-        type: 'trigram',
-        trigram: suggestion.trigram,
-        secondary_code: chosenCh,
-      },
+      operational_point: opRef,
     };
 
     setPathSteps((prev) => {

@@ -14,6 +14,7 @@ export type OpSecondaryCode = {
 export type OperationalPointSuggestion = {
   id: string;
   trigram: string;
+  uic: number;
   name: string;
   secondaryCodeList: OpSecondaryCode[];
 };
