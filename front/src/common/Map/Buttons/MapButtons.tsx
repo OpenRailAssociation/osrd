@@ -226,7 +226,11 @@ export default function MapButtons({
         )}
         {withToggleLayersButton && (
           <MapButton
-            onClick={openMapSettingsModal}
+            onClick={
+              layersModalContainer
+                ? () => setShowLayersModal((prev) => !prev)
+                : openMapSettingsModal
+            }
             isNewButton={isNewButtons}
             icon={<Sliders />}
             tooltip={t('map.layers-modal.toggle-layers')}
