@@ -216,6 +216,11 @@ const useUpdateTimetableItem = (
 
     // ========== user is converting a paced train to a unique train ==========
     if (!trainSchedule.paced) {
+      // TODO_EXCEPTION: remove `!` when using TrainScheduleException type
+      const exceptionsToDelete = (originalPacedTrain.paced?.exceptions ?? []).map((e) => e.id!);
+      if (exceptionsToDelete.length > 0) {
+        await deleteExceptions(dispatch, exceptionsToDelete);
+      }
       await storePacedTrain(
         timetableItemId,
         {
