@@ -46,19 +46,24 @@
       cursor: not-allowed;
     }
 
-    .stdcm-linked-train-results {
-      margin-top: 21px;
-
+    .stdcm-linked-train-results-wrapper {
+      margin: 21px -24px 0;
       &::before {
         content: '';
         display: block;
         width: 450px;
         height: 1px;
         background-color: var(--grey20);
-        margin-left: -24px;
       }
+    }
+
+    .stdcm-linked-train-results {
+      padding: 0 24px;
+      max-height: 250px;
+      overflow-y: auto;
 
       .linked-train-result-infos {
+        position: relative;
         width: 100%;
         margin-bottom: 7px;
         padding-top: 12px;
