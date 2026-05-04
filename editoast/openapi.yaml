@@ -5333,6 +5333,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastAppHealthErrorCoreContext
         message:
           type: string
         status:
@@ -5352,6 +5353,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastAppHealthErrorDatabaseContext
         message:
           type: string
         status:
@@ -5371,6 +5373,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastAppHealthErrorOpenfgaContext
         message:
           type: string
         status:
@@ -5390,6 +5393,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastAppHealthErrorTimeoutContext
         message:
           type: string
         status:
@@ -5409,6 +5413,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastAppHealthErrorValkeyContext
         message:
           type: string
         status:
@@ -5428,6 +5433,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastAttachedErrorTrackNotFoundContext
           required:
           - track_id
           properties:
@@ -5452,6 +5458,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastAuthorizationErrorAuthErrorContext
         message:
           type: string
         status:
@@ -5471,6 +5478,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastAuthorizationErrorDbErrorContext
         message:
           type: string
         status:
@@ -5490,6 +5498,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastAuthorizationErrorForbiddenContext
         message:
           type: string
         status:
@@ -5509,6 +5518,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastAuthorizationErrorForbiddenImpersonationContext
         message:
           type: string
         status:
@@ -5528,6 +5538,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastAuthorizationErrorImpersonatedUserNotFoundContext
           required:
           - identity
           properties:
@@ -5552,6 +5563,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastAuthorizationErrorUnauthorizedContext
         message:
           type: string
         status:
@@ -5571,6 +5583,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastAuthzErrorAuthorizerContext
         message:
           type: string
         status:
@@ -5590,6 +5603,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastAuthzErrorDatabaseContext
         message:
           type: string
         status:
@@ -5609,6 +5623,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastAuthzErrorUnknownIdentityContext
           required:
           - identity
           properties:
@@ -5633,6 +5648,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastAuthzErrorUnknownResourceContext
           required:
           - resource_id
           properties:
@@ -5657,6 +5673,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastAuthzErrorUnknownSubjectContext
           required:
           - subject_id
           properties:
@@ -5681,6 +5698,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastAuthzErrorUnknownUserContext
           required:
           - id
           properties:
@@ -5705,6 +5723,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastAutoFixesEditoastErrorConflictingFixesOnSameObjectContext
           required:
           - fixes
           - object
@@ -5732,6 +5751,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastAutoFixesEditoastErrorFixTrialFailureContext
           required:
           - source
           properties:
@@ -5756,6 +5776,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastAutoFixesEditoastErrorMaximumIterationReachedContext
         message:
           type: string
         status:
@@ -5775,6 +5796,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastAutoFixesEditoastErrorMissingErrorObjectContext
           required:
           - source
           properties:
@@ -5799,6 +5821,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastCacheOperationErrorDuplicateIdsProvidedContext
           required:
           - obj_id
           - obj_type
@@ -5826,6 +5849,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastCacheOperationErrorObjectNotFoundContext
           required:
           - obj_id
           - obj_type
@@ -5853,6 +5877,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastCatalogEntryErrorDatabaseContext
         message:
           type: string
         status:
@@ -5872,6 +5897,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastCatalogEntryErrorNotFoundContext
           required:
           - catalog_entry_id
           properties:
@@ -5896,6 +5922,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastCoreErrorBrokenPipeContext
         message:
           type: string
         status:
@@ -5915,6 +5942,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastCoreErrorCoreResponseFormatErrorContext
           required:
           - msg
           properties:
@@ -5939,6 +5967,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastCoreErrorMqClientErrorContext
         message:
           type: string
         status:
@@ -5958,6 +5987,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastCoreErrorUnparsableErrorOutputContext
         message:
           type: string
         status:
@@ -5977,6 +6007,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastDatabaseAccessErrorDatabaseAccessErrorContext
         message:
           type: string
         status:
@@ -5996,6 +6027,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastDelimitedAreaErrorInvalidLocationsContext
           required:
           - invalid_locations
           properties:
@@ -6020,6 +6052,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastDocumentErrorsDatabaseContext
         message:
           type: string
         status:
@@ -6039,6 +6072,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastDocumentErrorsNotFoundContext
           required:
           - document_key
           properties:
@@ -6063,6 +6097,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastEditionErrorInfraIsLockedContext
           required:
           - infra_id
           properties:
@@ -6087,6 +6122,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastEditionErrorSplitTrackSectionBadOffsetContext
           required:
           - infra_id
           - tracksection_id
@@ -6117,6 +6153,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastElectricalProfilesErrorDatabaseContext
         message:
           type: string
         status:
@@ -6136,6 +6173,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastElectricalProfilesErrorNotFoundContext
           required:
           - electrical_profile_set_id
           properties:
@@ -6318,6 +6356,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastFontErrorsFileNotFoundContext
           required:
           - file
           properties:
@@ -6342,6 +6381,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastGeometryErrorUnexpectedGeometryContext
           required:
           - actual
           - expected
@@ -6369,6 +6409,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastGetObjectsErrorsDuplicateIdsProvidedContext
         message:
           type: string
         status:
@@ -6388,6 +6429,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastGetObjectsErrorsObjectIdNotFoundContext
           required:
           - object_id
           properties:
@@ -6412,6 +6454,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastInfraApiErrorDatabaseContext
         message:
           type: string
         status:
@@ -6431,6 +6474,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastInfraApiErrorNotFoundContext
           required:
           - infra_id
           properties:
@@ -6455,6 +6499,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastInfraCacheEditoastErrorObjectNotFoundContext
           required:
           - obj_id
           - obj_type
@@ -6482,6 +6527,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastLayersErrorLayerNotFoundContext
           required:
           - expected_names
           - layer_name
@@ -6509,6 +6555,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastLayersErrorViewNotFoundContext
           required:
           - expected_names
           - view_name
@@ -6536,6 +6583,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastLevelCrossingErrorDatabaseContext
         message:
           type: string
         status:
@@ -6555,6 +6603,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastLevelCrossingErrorInfraNotFoundContext
           required:
           - infra_id
           properties:
@@ -6579,6 +6628,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastLevelCrossingErrorLevelCrossingBatchNotFoundContext
           required:
           - count
           properties:
@@ -6603,6 +6653,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastLevelCrossingErrorTrainBatchNotFoundContext
           required:
           - count
           properties:
@@ -6627,6 +6678,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastLinesErrorsLineNotFoundContext
           required:
           - line_code
           properties:
@@ -6651,6 +6703,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastListErrorsErrorsWrongErrorTypeProvidedContext
         message:
           type: string
         status:
@@ -6670,6 +6723,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastMacroNodeErrorDatabaseContext
         message:
           type: string
         status:
@@ -6689,6 +6743,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastMacroNodeErrorNotFoundContext
           required:
           - node_id
           properties:
@@ -6713,6 +6768,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastMacroNodeErrorScenarioNotFoundContext
           required:
           - scenario_id
           properties:
@@ -6737,6 +6793,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastMacroNoteErrorDatabaseContext
         message:
           type: string
         status:
@@ -6756,6 +6813,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastMacroNoteErrorNotFoundContext
           required:
           - note_id
           properties:
@@ -6780,6 +6838,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastMacroNoteErrorScenarioNotFoundContext
           required:
           - scenario_id
           properties:
@@ -6804,6 +6863,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastModelErrorContext
         message:
           type: string
         status:
@@ -6823,6 +6883,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastOperationErrorEmptyIdContext
         message:
           type: string
         status:
@@ -6842,6 +6903,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastOperationErrorInvalidPatchContext
           required:
           - error
           properties:
@@ -6866,6 +6928,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastOperationErrorModifyIdContext
         message:
           type: string
         status:
@@ -6885,6 +6948,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastOperationErrorObjectNotFoundContext
           required:
           - infra_id
           - obj_id
@@ -6912,6 +6976,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastOperationalPointProjectionErrorInvalidNumberOfDistancesContext
           required:
           - expected
           - found
@@ -6939,6 +7004,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastOperationalPointProjectionErrorInvalidNumberOfRefsContext
         message:
           type: string
         status:
@@ -6958,6 +7024,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastPathfindingErrorDatabaseContext
         message:
           type: string
         status:
@@ -6977,6 +7044,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastPathfindingErrorInfraNotFoundContext
           required:
           - infra_id
           properties:
@@ -7001,6 +7069,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastPathfindingViewErrorsEndingTrackLocationNotFoundContext
         message:
           type: string
         status:
@@ -7020,6 +7089,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastPathfindingViewErrorsInvalidNumberOfPathsContext
           required:
           - max_number
           - path_number
@@ -7047,6 +7117,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastPathfindingViewErrorsStartingTrackLocationNotFoundContext
         message:
           type: string
         status:
@@ -7066,6 +7137,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastProjectErrorDatabaseContext
         message:
           type: string
         status:
@@ -7085,6 +7157,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastProjectErrorImageErrorContext
           required:
           - error
           properties:
@@ -7109,6 +7182,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastProjectErrorImageNotFoundContext
           required:
           - document_key
           properties:
@@ -7133,6 +7207,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastProjectErrorNotFoundContext
           required:
           - project_id
           properties:
@@ -7157,6 +7232,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastRailJsonErrorUnsupportedVersionContext
           required:
           - actual
           - expected
@@ -7184,6 +7260,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastRollingStockErrorBasePowerClassEmptyContext
         message:
           type: string
         status:
@@ -7203,6 +7280,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastRollingStockErrorCannotCreateCompoundImageContext
         message:
           type: string
         status:
@@ -7222,6 +7300,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastRollingStockErrorCannotReadImageContext
         message:
           type: string
         status:
@@ -7241,6 +7320,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastRollingStockErrorDatabaseContext
         message:
           type: string
         status:
@@ -7260,6 +7340,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastRollingStockErrorIsLockedContext
           required:
           - rolling_stock_id
           properties:
@@ -7284,6 +7365,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastRollingStockErrorIsUsedContext
           required:
           - rolling_stock_id
           - usage
@@ -7311,6 +7393,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastRollingStockErrorKeyNotFoundContext
           required:
           - rolling_stock_key
           properties:
@@ -7335,6 +7418,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastRollingStockErrorLiveryMultipartErrorContext
         message:
           type: string
         status:
@@ -7354,6 +7438,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastRollingStockErrorNameAlreadyUsedContext
           required:
           - name
           properties:
@@ -7378,6 +7463,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastRoundTripsErrorDatabaseContext
         message:
           type: string
         status:
@@ -7397,6 +7483,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastRoundTripsErrorDuplicateTrainIdsContext
         message:
           type: string
         status:
@@ -7416,6 +7503,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastRoundTripsErrorTimetableNotFoundContext
           required:
           - timetable_id
           properties:
@@ -7440,6 +7528,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastScenarioErrorDatabaseContext
         message:
           type: string
         status:
@@ -7459,6 +7548,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastScenarioErrorInfraNotFoundContext
           required:
           - infra_id
           properties:
@@ -7483,6 +7573,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastScenarioErrorNotFoundContext
           required:
           - scenario_id
           properties:
@@ -7507,6 +7598,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastScenarioErrorStudyNotFoundContext
           required:
           - study_id
           properties:
@@ -7531,6 +7623,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastScenarioErrorTimetableNotFoundContext
           required:
           - timetable_id
           properties:
@@ -7555,6 +7648,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastSearchApiErrorObjectTypeContext
           required:
           - object_type
           properties:
@@ -7579,6 +7673,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastSearchApiErrorSearchEngineErrorContext
         message:
           type: string
         status:
@@ -7598,6 +7693,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastSimilarTrainsErrorDatabaseContext
         message:
           type: string
         status:
@@ -7617,6 +7713,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastSimilarTrainsErrorEmptyTrainsTrafficContext
         message:
           type: string
         status:
@@ -7636,6 +7733,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastSimilarTrainsErrorInvalidPathContext
         message:
           type: string
         status:
@@ -7655,6 +7753,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastSimilarTrainsErrorRollingStockNotFoundContext
           required:
           - rolling_stock_name
           properties:
@@ -7679,6 +7778,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastSimilarTrainsErrorSpeedLimitNotFoundContext
           required:
           - speed_limit_tag
           properties:
@@ -7703,6 +7803,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastSpriteErrorsFileNotFoundContext
           required:
           - file
           properties:
@@ -7727,6 +7828,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastSpriteErrorsUnknownSignalingSystemContext
           required:
           - signaling_system
           properties:
@@ -7751,6 +7853,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastStdcmErrorBatchRollingStockNotFoundContext
           required:
           - ids
           properties:
@@ -7775,6 +7878,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastStdcmErrorDatabaseContext
         message:
           type: string
         status:
@@ -7794,6 +7898,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastStdcmErrorInfraNotFoundContext
           required:
           - infra_id
           properties:
@@ -7818,6 +7923,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastStdcmErrorInvalidConsistLengthContext
           required:
           - expected_min
           - provided_consist_length
@@ -7845,6 +7951,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastStdcmErrorInvalidConsistMassContext
           required:
           - expected_min
           - provided_consist_mass
@@ -7872,6 +7979,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastStdcmErrorInvalidPathItemsContext
           required:
           - items
           properties:
@@ -7896,6 +8004,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastStdcmErrorTimetableNotFoundContext
           required:
           - timetable_id
           properties:
@@ -7920,6 +8029,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastStdcmErrorTowedRollingStockNotFoundContext
           required:
           - towed_rolling_stock_id
           properties:
@@ -7944,6 +8054,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastStdcmErrorTrainSimulationFailContext
         message:
           type: string
         status:
@@ -7963,6 +8074,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastStdcmSearchEnvErrorDatabaseContext
         message:
           type: string
         status:
@@ -7982,6 +8094,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastStdcmSearchEnvErrorNotFoundContext
           required:
           - env_id
           properties:
@@ -8006,6 +8119,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastStudyErrorDatabaseContext
         message:
           type: string
         status:
@@ -8025,6 +8139,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastStudyErrorNotFoundContext
           required:
           - study_id
           properties:
@@ -8049,6 +8164,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastStudyErrorProjectNotFoundContext
           required:
           - project_id
           properties:
@@ -8073,6 +8189,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastSubCategoryErrorCodeAlreadyUsedContext
           required:
           - code
           properties:
@@ -8097,6 +8214,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastSubCategoryErrorDatabaseContext
         message:
           type: string
         status:
@@ -8116,6 +8234,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastSubCategoryErrorNotFoundContext
           required:
           - code
           properties:
@@ -8140,6 +8259,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastTemporarySpeedLimitErrorDatabaseContext
         message:
           type: string
         status:
@@ -8159,6 +8279,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastTemporarySpeedLimitErrorNameAlreadyUsedContext
           required:
           - name
           properties:
@@ -8183,6 +8304,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastTimetableErrorDatabaseContext
         message:
           type: string
         status:
@@ -8202,6 +8324,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastTimetableErrorInfraNotFoundContext
           required:
           - infra_id
           properties:
@@ -8226,6 +8349,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastTimetableErrorNotFoundContext
           required:
           - timetable_id
           properties:
@@ -8250,6 +8374,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastTimetableErrorParseErrorContext
           required:
           - train_id
           properties:
@@ -8274,6 +8399,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastTimetableErrorTrainScheduleSetsNotFoundContext
           required:
           - ids
           properties:
@@ -8298,6 +8424,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastTowedRollingStockErrorDatabaseContext
         message:
           type: string
         status:
@@ -8317,6 +8444,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastTowedRollingStockErrorIdNotFoundContext
           required:
           - towed_rolling_stock_id
           properties:
@@ -8341,6 +8469,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastTowedRollingStockErrorIsLockedContext
           required:
           - towed_rolling_stock_id
           properties:
@@ -8365,6 +8494,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastTrainScheduleErrorBatchNotFoundContext
           required:
           - count
           properties:
@@ -8389,6 +8519,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastTrainScheduleErrorDatabaseContext
         message:
           type: string
         status:
@@ -8408,6 +8539,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastTrainScheduleErrorExceptionNotFoundContext
           required:
           - exception_key
           properties:
@@ -8432,6 +8564,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastTrainScheduleErrorInfraNotFoundContext
           required:
           - infra_id
           properties:
@@ -8456,6 +8589,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastTrainScheduleErrorNotFoundContext
           required:
           - train_schedule_id
           properties:
@@ -8480,6 +8614,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastTrainScheduleErrorPathfindingFailedContext
           required:
           - train_schedule_id
           properties:
@@ -8504,6 +8639,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastTrainScheduleErrorRollingStockNotFoundContext
           required:
           - rolling_stock_name
           properties:
@@ -8528,6 +8664,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastTrainScheduleErrorSimulationFailedContext
           required:
           - train_schedule_id
           properties:
@@ -8552,6 +8689,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastTrainScheduleErrorTrainScheduleSetNotFoundContext
           required:
           - train_schedule_set_id
           properties:
@@ -8576,6 +8714,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastTrainScheduleExceptionErrorBatchNotFoundContext
           required:
           - count
           properties:
@@ -8600,6 +8739,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastTrainScheduleExceptionErrorDatabaseContext
         message:
           type: string
         status:
@@ -8619,6 +8759,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastTrainScheduleExceptionErrorNotFoundContext
           required:
           - exception_id
           properties:
@@ -8643,6 +8784,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastTrainScheduleExceptionErrorNotPacedTrainContext
           required:
           - train_schedule_id
           properties:
@@ -8667,6 +8809,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastTrainScheduleExceptionErrorTimetableNotFoundContext
           required:
           - timetable_id
           properties:
@@ -8691,6 +8834,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastTrainScheduleExceptionErrorTrainScheduleNotFoundContext
           required:
           - train_schedule_id
           properties:
@@ -8715,6 +8859,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastTrainScheduleSetErrorDatabaseContext
         message:
           type: string
         status:
@@ -8734,6 +8879,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastTrainScheduleSetErrorNotFoundContext
           required:
           - train_schedule_set_id
           properties:
@@ -8758,6 +8904,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastWorkScheduleErrorDatabaseContext
         message:
           type: string
         status:
@@ -8777,6 +8924,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastWorkScheduleErrorNameAlreadyUsedContext
           required:
           - name
           properties:
@@ -8801,6 +8949,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastWorkScheduleErrorWorkScheduleGroupNotFoundContext
           required:
           - id
           properties:
@@ -8825,6 +8974,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastWorkerLoadErrorDatabaseContext
         message:
           type: string
         status:
@@ -8844,6 +8994,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastWorkerLoadErrorFetchStatusErrorContext
         message:
           type: string
         status:
@@ -8863,6 +9014,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastWorkerLoadErrorInfraNotFoundContext
           required:
           - infra_id
           properties:
@@ -8887,6 +9039,7 @@ components:
       properties:
         context:
           type: object
+          title: EditoastWorkerLoadErrorTimetableNotFoundContext
           required:
           - timetable_id
           properties:
