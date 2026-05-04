@@ -243,25 +243,28 @@ const StdcmConfig = ({
 
   const updatedFormErrors = useMemo((): StdcmConfigErrors | undefined => {
     if (pathfindingWorkerStatus !== 'READY' || stdcmWorkerStatus !== 'READY') {
-      setFormErrors({ errorType: StdcmConfigErrorTypes.INFRA_NOT_LOADED });
-      return;
-    } else {
-      setFormErrors(undefined);
+      return { errorType: StdcmConfigErrorTypes.INFRA_NOT_LOADED };
     }
-
-    if (!origin.operationalPoint || !destination.operationalPoint) return;
-
-    const formErrorsStatus = checkStdcmConfigErrors({
+    if (!origin.operationalPoint || !destination.operationalPoint) return undefined;
+    return checkStdcmConfigErrors({
       t,
       dateTimeLocale,
       pathfindingStatus: pathfinding?.status,
       stdcmConf,
-      prevFormErrors: formErrors,
       consistErrors,
       shouldCheckMandatoryFields: false,
     });
-    setFormErrors(formErrorsStatus);
-  }, [pathfinding, pathSteps, t, consistErrors, pathfindingWorkerStatus, stdcmWorkerStatus]);
+  }, [
+    pathfindingWorkerStatus,
+    stdcmWorkerStatus,
+    origin,
+    destination,
+    pathfinding,
+    t,
+    dateTimeLocale,
+    stdcmConf,
+    consistErrors,
+  ]);
 
   useEffect(() => {
     const state = window.osrdStdcmConfState;
@@ -297,15 +300,6 @@ const StdcmConfig = ({
       shouldCheckMandatoryFields: false,
     });
 
-    // Prevent clearing formErrors if pathfindingFailed is still active
-    if (
-      (formErrors?.errorType === StdcmConfigErrorTypes.PATHFINDING_FAILED ||
-        formErrors?.errorType === StdcmConfigErrorTypes.INFRA_NOT_LOADED) &&
-      !updatedErrors
-    ) {
-      return;
-    }
-
     if (!isEqual(updatedErrors, formErrors)) {
       setFormErrors(updatedErrors);
     }
@@ -318,6 +312,8 @@ const StdcmConfig = ({
       requestStatus === STDCM_REQUEST_STATUS.pending_additional,
     [requestStatus]
   );
+
+  const effectiveFormErrors = updatedFormErrors ?? formErrors;
 
   return (
     <div className="stdcm__body">
@@ -368,15 +364,15 @@ const StdcmConfig = ({
 
           <div
             className={cx('stdcm-launch-request', {
-              'wizz-effect': pathfinding?.status !== 'success' || formErrors,
+              'wizz-effect': pathfinding?.status !== 'success' || effectiveFormErrors,
             })}
             ref={launchButtonRef}
           >
-            {formErrors && (
+            {effectiveFormErrors && (
               <StdcmWarningBox
                 infra={infra}
                 workerStatus={pathfindingWorkerStatus}
-                errorInfos={formErrors}
+                errorInfos={effectiveFormErrors}
                 removeOriginArrivalTime={removeOriginArrivalTime}
                 removeDestinationArrivalTime={removeDestinationArrivalTime}
               />
@@ -391,7 +387,7 @@ const StdcmConfig = ({
               isDisabled={
                 disabled ||
                 (!isDebugMode && !showBtnToLaunchSimulation) ||
-                formErrors?.errorType === StdcmConfigErrorTypes.INFRA_NOT_LOADED
+                effectiveFormErrors?.errorType === StdcmConfigErrorTypes.INFRA_NOT_LOADED
               }
             />
           </div>
