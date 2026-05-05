@@ -231,20 +231,34 @@ const useUpdateTimetableItem = (
 
     // ========== user is editing an existing paced train ==========
 
-    // Reconcile existing exceptions with the new paced train settings and newly added ones
-    // Note: exceptions are reset by the backend when cadence/interval changes
-    const {
-      exceptions: reconciledExceptions,
-      modifiedExceptions: exceptionsToUpdate,
-      exceptionsToDeleteIds,
-    } = checkChangeGroups(trainSchedule, trainSchedule.paced, originalPacedExceptions);
+    const cadenceChanged =
+      trainSchedule.paced.interval !== originalPacedTrain.paced.interval.toISOString() ||
+      trainSchedule.paced.time_window !== originalPacedTrain.paced.timeWindow.toISOString();
+
+    let reconciledExceptions: PacedTrainException[];
+    let exceptionsToDeleteIds: number[];
+
+    if (cadenceChanged) {
+      // All existing exceptions are invalid when the cadence or time window changes
+      reconciledExceptions = [];
+      exceptionsToDeleteIds = originalPacedExceptions.filter((e) => e.id != null).map((e) => e.id!);
+    } else {
+      // Reconcile existing exceptions with the new paced train settings
+      const {
+        exceptions,
+        modifiedExceptions,
+        exceptionsToDeleteIds: toDelete,
+      } = checkChangeGroups(trainSchedule, trainSchedule.paced, originalPacedExceptions);
+      reconciledExceptions = exceptions;
+      exceptionsToDeleteIds = toDelete;
+
+      if (modifiedExceptions.length > 0) {
+        await updateExceptions(dispatch, modifiedExceptions, timetableItemId);
+      }
+    }
 
     if (exceptionsToDeleteIds.length > 0) {
       await deleteExceptions(dispatch, exceptionsToDeleteIds);
-    }
-
-    if (exceptionsToUpdate.length > 0) {
-      await updateExceptions(dispatch, exceptionsToUpdate, timetableItemId);
     }
 
     const finalExceptions = [...reconciledExceptions, ...createdExceptions];
