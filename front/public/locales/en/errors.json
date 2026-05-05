@@ -13,6 +13,11 @@
   "default": "An error has occurred.",
   "editoast": {
     "DatabaseAccessError": "Database access fatal error",
+    "JoinError": {
+      "cancelled": "Aborted work",
+      "panic": "Panic",
+      "unhandled_add_case_here": "Unexpected JoinError case"
+    },
     "app_health": {
       "Core": "Core is in error",
       "Database": "Database is in error",
@@ -217,6 +222,11 @@
       "UnexpectedColumn": "Unexpected column",
       "UnexpectedErsatz": "Expected value of type {{expected}}, but got ersatz '{{value}}'",
       "VariadicArgTypeMismatch": "Expected variadic argument of type {{expected}}, but got {{actual}}"
+    },
+    "search_journeys": {
+      "Database": "database error",
+      "InfraNotFound": "Infrastructure '{{infra_id}}' does not exist",
+      "InvalidInput": "invalid input: {{message}}"
     },
     "single_simulation": {
       "ElectricalProfileSetNotFound": "Electrical Profile Set '{{electrical_profile_set_id}}' could not be found",

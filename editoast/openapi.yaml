@@ -2802,6 +2802,23 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/SearchResultItem'
+  /search_journeys:
+    post:
+      tags:
+      - search_journeys
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JourneySearchQuery'
+        required: true
+      responses:
+        '200':
+          description: A list of journey proposals that match the input search query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JourneyProposals'
   /similar_trains:
     post:
       tags:
@@ -6918,6 +6935,9 @@ components:
       - $ref: '#/components/schemas/EditoastEditionErrorSplitTrackSectionBadOffset'
       - $ref: '#/components/schemas/EditoastElectricalProfilesErrorDatabase'
       - $ref: '#/components/schemas/EditoastElectricalProfilesErrorNotFound'
+      - $ref: '#/components/schemas/EditoastErrorDatabase'
+      - $ref: '#/components/schemas/EditoastErrorInfraNotFound'
+      - $ref: '#/components/schemas/EditoastErrorInvalidInput'
       - $ref: '#/components/schemas/EditoastFontErrorsFileNotFound'
       - $ref: '#/components/schemas/EditoastGeometryErrorUnexpectedGeometry'
       - $ref: '#/components/schemas/EditoastGetObjectsErrorsDuplicateIdsProvided'
@@ -7044,6 +7064,76 @@ components:
       description: Generated error type for Editoast
       discriminator:
         propertyName: type
+    EditoastErrorDatabase:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastErrorDatabaseContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:search_journeys:Database
+    EditoastErrorInfraNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastErrorInfraNotFoundContext
+          required:
+          - infra_id
+          properties:
+            infra_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:search_journeys:InfraNotFound
+    EditoastErrorInvalidInput:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastErrorInvalidInputContext
+          required:
+          - message
+          properties:
+            message:
+              type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:search_journeys:InvalidInput
     EditoastFontErrorsFileNotFound:
       type: object
       required:
@@ -10888,6 +10978,53 @@ components:
           format: int64
           description: Distance of the beginning of the intersection relative to the beginning of the path
           minimum: 0
+    JourneyProposals:
+      type: object
+      required:
+      - journeys
+      properties:
+        journeys:
+          type: array
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/TrainSchedulePart'
+          description: Each journey is a list of train schedule parts.
+    JourneySearchQuery:
+      type: object
+      required:
+      - infra_id
+      - timetable_ids
+      - start_sec
+      - start_tolerance
+      - path_items
+      properties:
+        infra_id:
+          type: integer
+          format: int64
+        path_items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PathItemLocation'
+          description: |-
+            Currently two and only two path items are expected: the departure and
+            the destination.
+        start_sec:
+          type: integer
+          format: int32
+          description: Amount of seconds from midnight to the center of the start window.
+          minimum: 0
+        start_tolerance:
+          type: integer
+          format: int32
+          description: Half the time of the start window.
+          minimum: 0
+        timetable_ids:
+          type: array
+          items:
+            type: integer
+            format: int64
+          uniqueItems: true
     LabelsChangeGroup:
       type: object
       required:
@@ -15822,6 +15959,38 @@ components:
         use_speed_limits_for_simulation:
           type: boolean
       additionalProperties: false
+    TrainSchedulePart:
+      type: object
+      description: A part of a train schedule, from one location to another.
+      required:
+      - train_schedule_id
+      - from
+      - to
+      properties:
+        from:
+          $ref: '#/components/schemas/TrainSchedulePartBound'
+        to:
+          $ref: '#/components/schemas/TrainSchedulePartBound'
+        train_schedule_id:
+          type: integer
+          format: int64
+    TrainSchedulePartBound:
+      type: object
+      required:
+      - location
+      - time_ms
+      properties:
+        location:
+          $ref: '#/components/schemas/PathItemLocation'
+          description: This location is part of the train schedule's path.
+        time_ms:
+          type: integer
+          format: int32
+          description: |-
+            Time since the start of the train schedule in milliseconds.
+
+            Used to differentiate locations in case of backtracks.
+          minimum: 0
     TrainScheduleResponse:
       allOf:
       - $ref: '#/components/schemas/TrainSchedule'

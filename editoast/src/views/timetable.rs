@@ -426,7 +426,7 @@ pub(in crate::views) async fn conflicts(
     Ok(Json(conflicts_response?))
 }
 
-async fn retrieve_trains(
+pub(in crate::views) async fn retrieve_trains(
     mut conn: DbConnection,
     timetable_id: i64,
 ) -> Result<Vec<editoast_models::TrainSchedule>> {

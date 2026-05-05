@@ -16,6 +16,7 @@ pub mod projection;
 pub mod rolling_stock;
 pub mod round_trips;
 pub mod search;
+mod search_journeys;
 mod server;
 pub mod sprites;
 pub mod stdcm_debug;
@@ -313,6 +314,7 @@ fn service_router() -> server::router::DocumentedRouter {
                             .route("/level_order", get!(electrical_profiles::get_level_order))
                     })
             })
+            .route("/search_journeys", post!(search_journeys::search_journeys))
             //
             // operational studies
             //

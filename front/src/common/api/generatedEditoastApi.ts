@@ -18,6 +18,7 @@ export const addTagTypes = [
   'rolling_stock_livery',
   'round_trips',
   'search',
+  'search_journeys',
   'similar_trains',
   'stdcm',
   'sncf',
@@ -919,6 +920,14 @@ const injectedRtkApi = api
           },
         }),
         providesTags: ['search'],
+      }),
+      postSearchJourneys: build.mutation<PostSearchJourneysApiResponse, PostSearchJourneysApiArg>({
+        query: (queryArg) => ({
+          url: `/search_journeys`,
+          method: 'POST',
+          body: queryArg.journeySearchQuery,
+        }),
+        invalidatesTags: ['search_journeys'],
       }),
       postSimilarTrains: build.mutation<PostSimilarTrainsApiResponse, PostSimilarTrainsApiArg>({
         query: (queryArg) => ({
@@ -2283,6 +2292,11 @@ export type PostSearchApiArg = {
   page?: number;
   pageSize?: number;
   searchPayload: SearchPayload;
+};
+export type PostSearchJourneysApiResponse =
+  /** status 200 A list of journey proposals that match the input search query */ JourneyProposals;
+export type PostSearchJourneysApiArg = {
+  journeySearchQuery: JourneySearchQuery;
 };
 export type PostSimilarTrainsApiResponse =
   /** status 200 A combination of reference train identifiers similar to the provided train */ {
@@ -4349,6 +4363,34 @@ export type SearchPayload = {
   object: string;
   /** The query to run */
   query: SearchQuery;
+};
+export type TrainSchedulePartBound = {
+  /** This location is part of the train schedule's path. */
+  location: PathItemLocation;
+  /** Time since the start of the train schedule in milliseconds.
+    
+    Used to differentiate locations in case of backtracks. */
+  time_ms: number;
+};
+export type TrainSchedulePart = {
+  from: TrainSchedulePartBound;
+  to: TrainSchedulePartBound;
+  train_schedule_id: number;
+};
+export type JourneyProposals = {
+  /** Each journey is a list of train schedule parts. */
+  journeys: TrainSchedulePart[][];
+};
+export type JourneySearchQuery = {
+  infra_id: number;
+  /** Currently two and only two path items are expected: the departure and
+    the destination. */
+  path_items: PathItemLocation[];
+  /** Amount of seconds from midnight to the center of the start window. */
+  start_sec: number;
+  /** Half the time of the start window. */
+  start_tolerance: number;
+  timetable_ids: number[];
 };
 export type SimilarTrainWaypoint = {
   id: string;

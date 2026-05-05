@@ -1398,6 +1398,7 @@ dependencies = [
  "petgraph",
  "postgis_diesel",
  "pretty_assertions",
+ "profile_connection_scan",
  "rand 0.10.1",
  "rangemap",
  "reqwest 0.13.3",

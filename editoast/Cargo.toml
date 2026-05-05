@@ -218,6 +218,7 @@ ordered-float.workspace = true
 pathfinding = "4.14.0"
 petgraph = "0.8.2"
 postgis_diesel.workspace = true
+profile_connection_scan = { path = "./profile_connection_scan" }
 rand.workspace = true
 rangemap.workspace = true
 reqwest.workspace = true
