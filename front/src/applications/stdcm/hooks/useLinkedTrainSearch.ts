@@ -64,7 +64,7 @@ const useLinkedTrainSearch = (linkedTrainType: LinkedTrainType) => {
   } = useSelector(getLinkedTrainsSearchState)[linkedTrainType];
 
   const setSearchTerm = (term: string) =>
-    dispatch(updateLinkedTrainSearchTerm({ linkedTrainType, term }));
+    dispatch(updateLinkedTrainSearchTerm({ linkedTrainType, searchTerm: term }));
   const setSearchDate = (date: Date) =>
     dispatch(updateLinkedTrainSearchDate({ linkedTrainType, date }));
   const resetSearch = () => dispatch(resetLinkedTrainSearch({ linkedTrainType }));
