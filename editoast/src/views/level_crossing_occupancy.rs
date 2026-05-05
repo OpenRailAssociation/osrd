@@ -7,7 +7,7 @@ use crate::views::projection::interpolate_arrival_time;
 use crate::views::rolling_stock::RollingStockError;
 use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
-use crate::views::timetable::simulation::train_simulation_batch;
+use crate::views::timetable::simulation::train_simulation_ordered_batch;
 use editoast_models::Infra;
 use editoast_models::LevelCrossingModel;
 use editoast_models::TrainSchedule;
@@ -164,7 +164,7 @@ pub(in crate::views) async fn occupancy(
         .map(|(_, train_schedule)| train_schedule.clone())
         .collect_vec();
 
-    let simulations_result = train_simulation_batch(
+    let simulations_result = train_simulation_ordered_batch(
         conn,
         valkey_client,
         core_client,

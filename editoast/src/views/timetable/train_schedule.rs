@@ -70,7 +70,7 @@ use crate::views::timetable::simulation::SummaryResponse;
 use crate::views::timetable::simulation::build_path_items_to_position;
 use crate::views::timetable::simulation::build_sim_power_restriction_items;
 use crate::views::timetable::simulation::build_sim_schedule_items;
-use crate::views::timetable::simulation::train_simulation_batch;
+use crate::views::timetable::simulation::train_simulation_ordered_batch;
 use crate::views::timetable::track_occupancy;
 use editoast_models::Infra;
 use editoast_models::TrainScheduleSet;
@@ -738,7 +738,7 @@ pub(in crate::views) async fn simulation(
     };
 
     // Compute simulation of a train schedule
-    let (simulation, _) = train_simulation_batch(
+    let (simulation, _) = train_simulation_ordered_batch(
         &mut db_pool.get().await?,
         valkey_client,
         core_client,
@@ -822,7 +822,7 @@ pub(in crate::views) async fn etcs_braking_curves(
     };
 
     // Compute simulation of a train schedule
-    let (simulation_result, pathfinding_result) = train_simulation_batch(
+    let (simulation_result, pathfinding_result) = train_simulation_ordered_batch(
         &mut db_pool.get().await?,
         valkey_client,
         core_client.clone(),
@@ -1553,7 +1553,7 @@ async fn find_track_occupancy_for_known_operational_point_with_simulation(
         app_version,
     } = simulation_params;
 
-    let simulations_result = train_simulation_batch(
+    let simulations_result = train_simulation_ordered_batch(
         conn,
         valkey_client,
         core_client,
