@@ -221,6 +221,16 @@ class OperationalPoint(BaseObjectTrait):
     weight: Optional[int] = Field(
         description="represents the significance of a PR", ge=0, default=None
     )
+    name: str
+    
+    uic: Optional[int]
+    plc: Optional[str]
+    
+    country_code: str
+    main_code: str
+    secondary_code: Optional[str]
+    is_passenger_station: bool
+    secondary_name: Optional[str]
 
 
 class LevelCrossingPart(TrackLocationTrait):
