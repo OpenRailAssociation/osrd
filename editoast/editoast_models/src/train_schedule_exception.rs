@@ -7,9 +7,7 @@ use itertools::Itertools;
 use schemas::paced_train::PacedTrainException;
 use schemas::train_schedule_exception::TrainScheduleExceptionChangeGroups;
 
-use crate as editoast_models;
-use crate::prelude::List;
-use crate::prelude::SelectionSettings;
+use crate::prelude::*;
 
 #[derive(Debug, Clone, Model)]
 #[cfg_attr(test, derive(serde::Deserialize))]
@@ -71,13 +69,13 @@ impl TrainScheduleException {
     pub async fn retrieve_exceptions_by_train_schedules(
         conn: &mut DbConnection,
         timetable_id: i64,
-        train_schedules_ids: Vec<i64>,
-    ) -> Result<Vec<TrainScheduleException>, editoast_models::Error> {
+        train_schedules_ids: &Vec<i64>,
+    ) -> Result<Vec<TrainScheduleException>, crate::Error> {
         let train_schedules_ids_for_settings = train_schedules_ids.clone();
         let exceptions_settings = SelectionSettings::new()
-            .filter(move || editoast_models::TrainScheduleException::TIMETABLE_ID.eq(timetable_id))
+            .filter(move || TrainScheduleException::TIMETABLE_ID.eq(timetable_id))
             .filter(move || {
-                editoast_models::TrainScheduleException::TRAIN_SCHEDULE_ID
+                TrainScheduleException::TRAIN_SCHEDULE_ID
                     .eq_any(train_schedules_ids_for_settings.clone())
             });
 
@@ -98,7 +96,7 @@ impl TrainScheduleException {
     pub async fn delete_exceptions_for_train_schedule(
         conn: &mut DbConnection,
         train_schedule_id: i64,
-    ) -> Result<usize, editoast_models::Error> {
+    ) -> Result<usize, crate::Error> {
         use database::tables::train_schedule_exception::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;

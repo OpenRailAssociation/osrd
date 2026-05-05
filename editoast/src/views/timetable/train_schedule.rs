@@ -193,7 +193,7 @@ pub(in crate::views) async fn update_train_schedule(
             )
             .await?;
 
-            if !train_schedule.has_same_pace(&train_schedule_base.paced) {
+            if !train_schedule.has_same_pace(train_schedule_base.clone().paced.as_ref()) {
                 TrainScheduleException::delete_exceptions_for_train_schedule(
                     &mut tx.clone(),
                     train_schedule.id,
@@ -367,7 +367,7 @@ pub(in crate::views) async fn simulation_summary(
     let mut exceptions = TrainScheduleException::retrieve_exceptions_by_train_schedules(
         conn,
         timetable_id,
-        train_schedule_ids.into_iter().collect(),
+        &train_schedule_ids.into_iter().collect(),
     )
     .await?
     .into_iter()
@@ -971,7 +971,7 @@ pub(in crate::views) async fn project_path(
     let mut exceptions = TrainScheduleException::retrieve_exceptions_by_train_schedules(
         conn,
         timetable_id,
-        train_schedule_ids,
+        &train_schedule_ids,
     )
     .await?
     .into_iter()
@@ -1098,7 +1098,7 @@ pub(in crate::views) async fn project_path_op(
     let mut exceptions = TrainScheduleException::retrieve_exceptions_by_train_schedules(
         conn,
         timetable_id,
-        train_ids.into_iter().collect(),
+        &train_ids.into_iter().collect(),
     )
     .await?
     .into_iter()
@@ -1281,7 +1281,7 @@ pub(in crate::views) async fn occupancy_blocks(
         editoast_models::TrainScheduleException::retrieve_exceptions_by_train_schedules(
             conn,
             timetable_id,
-            train_schedules.iter().map(|t| t.id).collect::<Vec<_>>(),
+            &train_schedules.iter().map(|t| t.id).collect::<Vec<_>>(),
         )
         .await?
         .into_iter()
@@ -1444,7 +1444,7 @@ pub(in crate::views) async fn track_occupancy(
     let mut exceptions = TrainScheduleException::retrieve_exceptions_by_train_schedules(
         conn,
         timetable_id,
-        train_schedule_ids,
+        &train_schedule_ids,
     )
     .await?
     .into_iter()
@@ -1993,7 +1993,7 @@ mod tests {
         let exceptions_before = TrainScheduleException::retrieve_exceptions_by_train_schedules(
             &mut pool.get_ok(),
             timetable.id,
-            vec![train_schedule.id],
+            &vec![train_schedule.id],
         )
         .await
         .expect("Failed to retrieve exceptions before update");
@@ -2017,7 +2017,7 @@ mod tests {
         let exceptions_after = TrainScheduleException::retrieve_exceptions_by_train_schedules(
             &mut pool.get_ok(),
             timetable.id,
-            vec![train_schedule.id],
+            &vec![train_schedule.id],
         )
         .await
         .expect("Failed to retrieve exceptions after update");

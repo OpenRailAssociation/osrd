@@ -130,23 +130,23 @@ pub(in crate::views) async fn occupancy(
         })
         .await?;
 
-    let trains: Vec<TrainSchedule> =
-        TrainSchedule::retrieve_batch_or_fail(conn, train_ids.clone(), |missing| {
-            LevelCrossingError::TrainBatchNotFound {
-                count: missing.len(),
-            }
-        })
-        .await?;
-
     let mut exceptions = TrainScheduleException::retrieve_exceptions_by_train_schedules(
         conn,
         timetable_id,
-        train_ids,
+        &train_ids,
     )
     .await?
     .into_iter()
     .map_into::<schemas::TrainScheduleException>()
     .into_group_map_by(|e| e.train_schedule_id);
+
+    let trains: Vec<TrainSchedule> =
+        TrainSchedule::retrieve_batch_or_fail(conn, train_ids, |missing| {
+            LevelCrossingError::TrainBatchNotFound {
+                count: missing.len(),
+            }
+        })
+        .await?;
 
     // Collect all occurrences from all trains
     let train_occurrences = trains

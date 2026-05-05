@@ -11,7 +11,6 @@ use utoipa::ToSchema;
 use utoipa::openapi::ObjectBuilder;
 use utoipa::openapi::RefOr;
 use utoipa::openapi::schema::Schema;
-
 use crate::TrainScheduleExceptionChangeGroups;
 use crate::primitives::NonBlankString;
 use crate::primitives::PositiveDuration;

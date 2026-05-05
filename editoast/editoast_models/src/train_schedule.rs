@@ -295,7 +295,7 @@ impl TrainSchedule {
     }
 
     /// Determines whether the pace (time window and interval) of the train schedule is the same as the given pace.
-    pub fn has_same_pace(&self, paced: &Option<Paced>) -> bool {
+    pub fn has_same_pace(&self, paced: Option<&Paced>) -> bool {
         self.interval == paced.as_ref().map(|p| p.interval.into())
             && self.time_window == paced.as_ref().map(|p| p.time_window.into())
     }
@@ -414,12 +414,14 @@ mod tests {
     use std::str::FromStr;
 
     use crate::SubCategory;
-    use crate::timetable::Timetable;
+    use crate::Tags;
+use crate::Timetable;
+use crate::TrainScheduleException;
+use crate::rolling_stock::TrainMainCategory;
+use crate::train_schedule::train_schedule_schema_from_model;
 
     use super::OccurrenceId;
     use super::TrainSchedule;
-    use crate::rolling_stock::TrainMainCategory;
-    use crate::tags::Tags;
     use chrono::DateTime;
     use chrono::Utc;
     use database::DbConnectionPoolV2;
@@ -427,71 +429,38 @@ mod tests {
     use rstest::rstest;
     use schemas::TrainScheduleExceptionChangeGroups;
 
-    use crate::models::fixtures::create_timetable;
-    use crate::models::fixtures::simple_paced_train_changeset;
-    use crate::models::fixtures::simple_sub_category;
-    use crate::prelude::*;
-    use chrono::DateTime;
-    use chrono::Utc;
-    use database::DbConnectionPoolV2;
-    use editoast_models::TrainScheduleException;
-    use editoast_models::prelude::*;
-    use editoast_models::rolling_stock::TrainMainCategory;
-    use editoast_models::tags::Tags;
-    use pretty_assertions::assert_eq;
-    use rstest::rstest;
-    use schemas::TrainScheduleExceptionChangeGroups;
-    use schemas::infra::TrackOffset;
-    use schemas::paced_train::ConstraintDistributionChangeGroup;
-    use schemas::paced_train::ExceptionType;
-    use schemas::paced_train::InitialSpeedChangeGroup;
-    use schemas::paced_train::LabelsChangeGroup;
-    use schemas::paced_train::OptionsChangeGroup;
-    use schemas::paced_train::Paced;
-    use schemas::paced_train::PacedTrainException;
-    use schemas::paced_train::PathAndScheduleChangeGroup;
     use schemas::paced_train::RollingStockCategoryChangeGroup;
-    use schemas::paced_train::RollingStockChangeGroup;
-    use schemas::paced_train::SpeedLimitTagChangeGroup;
     use schemas::paced_train::StartTimeChangeGroup;
-    use schemas::paced_train::TrainNameChangeGroup;
-    use schemas::primitives::Identifier;
-    use schemas::primitives::NonBlankString;
 
-    use schemas::rolling_stock::SubCategoryColor;
     use schemas::train_schedule::Comfort;
     use schemas::train_schedule::Distribution;
-    use schemas::train_schedule::MarginValue;
     use schemas::train_schedule::Margins;
-    use schemas::train_schedule::OperationalPointPartReference;
-    use schemas::train_schedule::OperationalPointReference;
-    use schemas::train_schedule::PathItem;
-    use schemas::train_schedule::PathItemLocation;
-    use schemas::train_schedule::ScheduleItem;
     use schemas::train_schedule::TrainScheduleOptions;
-
-    fn simple_paced_train_base() -> schemas::paced_train::TrainSchedule {
-        schemas::paced_train::TrainSchedule {
-            train_occurrence: schemas::TrainOccurrence::fake(),
-            paced: Some(Paced {
-                time_window: chrono::Duration::hours(2).try_into().unwrap(),
-                interval: chrono::Duration::minutes(15).try_into().unwrap(),
-                exceptions: vec![
-                    schemas::fixtures::simple_created_exception_with_change_groups(
-                        "exception_key_1",
-                    ),
-                    schemas::fixtures::simple_modified_exception_with_change_groups(
-                        "exception_key_2",
-                        0,
-                    ),
-                ],
-            }),
-        }
-    }
+    use crate::prelude::*;
 
     fn simple_paced_train_changeset(train_schedule_set_id: i64) -> Changeset<TrainSchedule> {
-        Changeset::<TrainSchedule>::from(simple_paced_train_base())
-            .train_schedule_set_id(train_schedule_set_id)
+        Changeset::<TrainSchedule>::from(schemas::paced_train::TrainSchedule {
+            train_occurrence: schemas::train_schedule::TrainOccurrence::fake(),
+            paced: Some(schemas::paced_train::Paced {
+                time_window: chrono::Duration::try_hours(2).unwrap().try_into().unwrap(),
+                interval: chrono::Duration::try_minutes(15).unwrap().try_into().unwrap(),
+                exceptions: vec![],
+            }),
+        })
+        .train_schedule_set_id(train_schedule_set_id)
+    }
+
+    fn simple_sub_category(
+        code: &str,
+        main_category: crate::rolling_stock::TrainMainCategory,
+    ) -> Changeset<SubCategory> {
+        SubCategory::changeset()
+            .code(code.to_string())
+            .name(code.to_uppercase())
+            .main_category(main_category)
+            .color("#ff0000".parse::<schemas::rolling_stock::SubCategoryColor>().unwrap())
+            .background_color("#ff2200".parse::<schemas::rolling_stock::SubCategoryColor>().unwrap())
+            .hovered_color("#ff4400".parse::<schemas::rolling_stock::SubCategoryColor>().unwrap())
     }
 
     pub fn create_paced_train() -> TrainSchedule {
@@ -593,7 +562,7 @@ mod tests {
         let train_schedule = create_paced_train();
         let train_schedule_update: schemas::paced_train::TrainSchedule =
             train_schedule_schema_from_model(create_paced_train(), vec![]);
-        assert!(train_schedule.has_same_pace(&train_schedule_update.paced));
+        assert!(train_schedule.has_same_pace(train_schedule_update.paced.as_ref()));
     }
 
     #[test]
@@ -603,7 +572,7 @@ mod tests {
             train_schedule_schema_from_model(create_paced_train(), vec![]);
         train_schedule_update.paced.as_mut().unwrap().interval =
             chrono::Duration::minutes(60).try_into().unwrap();
-        assert!(!train_schedule.has_same_pace(&train_schedule_update.paced));
+        assert!(!train_schedule.has_same_pace(train_schedule_update.paced.as_ref()));
     }
 
     #[test]
@@ -613,7 +582,7 @@ mod tests {
             train_schedule_schema_from_model(create_paced_train(), vec![]);
         train_schedule_update.paced.as_mut().unwrap().time_window =
             chrono::Duration::hours(4).try_into().unwrap();
-        assert!(!train_schedule.has_same_pace(&train_schedule_update.paced));
+        assert!(!train_schedule.has_same_pace(train_schedule_update.paced.as_ref()));
     }
 
     #[tokio::test]

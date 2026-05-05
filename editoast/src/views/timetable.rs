@@ -350,7 +350,7 @@ pub(in crate::views) async fn conflicts(
         editoast_models::TrainScheduleException::retrieve_exceptions_by_train_schedules(
             &mut conn.clone(),
             timetable_id,
-            train_schedules_ids,
+            &train_schedules_ids,
         )
         .await?
         .into_iter()
@@ -535,7 +535,7 @@ pub(in crate::views) async fn requirements(
         editoast_models::TrainScheduleException::retrieve_exceptions_by_train_schedules(
             conn,
             timetable_id,
-            paced_trains.iter().map(|pt| pt.id).collect(),
+            &paced_trains.iter().map(|pt| pt.id).collect(),
         )
         .await?
         .into_iter()
