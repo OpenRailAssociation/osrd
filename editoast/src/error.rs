@@ -210,6 +210,31 @@ impl EditoastError for serde_json::Error {
     }
 }
 
+inventory::submit! {
+    crate::error::ErrorDefinition::new("editoast:JoinError:panic", "JoinError", "Panic", 500u16, r#"{}"#)
+}
+inventory::submit! {
+    crate::error::ErrorDefinition::new("editoast:JoinError:cancelled", "JoinError", "Abort", 500u16, r#"{}"#)
+}
+inventory::submit! {
+    crate::error::ErrorDefinition::new("editoast:JoinError:unhandled_add_case_here", "JoinError", "Unexpected", 500u16, r#"{}"#)
+}
+impl EditoastError for tokio::task::JoinError {
+    fn get_status(&self) -> StatusCode {
+        StatusCode::INTERNAL_SERVER_ERROR
+    }
+
+    fn get_type(&self) -> &str {
+        if self.is_panic() {
+            "editoast:JoinError:panic"
+        } else if self.is_cancelled() {
+            "editoast:JoinError:cancelled"
+        } else {
+            "editoast:JoinError:unhandled_add_case_here"
+        }
+    }
+}
+
 impl EditoastError for json_patch::PatchError {
     fn get_status(&self) -> StatusCode {
         StatusCode::INTERNAL_SERVER_ERROR
