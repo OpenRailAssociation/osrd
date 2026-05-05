@@ -444,7 +444,16 @@ pub async fn consist_train_simulation_batch<T: TrainScheduleLike>(
         train_schedules,
         &consists
             .iter()
-            .map(|consist| consist.traction_engine.clone())
+            .map(|consist| {
+                // TODO: make a consist the input of the pathfinding endpoint so we don't need to overwrite the rolling stock's values.
+                // If the corresponding consist fields are not None, use them in the rolling_stock.
+                let mut rolling_stock = consist.traction_engine.clone();
+                rolling_stock.loading_gauge = consist.compute_loading_gauge();
+                rolling_stock.max_speed = consist.compute_max_speed();
+                rolling_stock.length = consist.compute_length();
+                rolling_stock.mass = consist.compute_mass();
+                rolling_stock
+            })
             .collect::<Vec<_>>(),
         app_version,
     )

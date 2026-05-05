@@ -685,6 +685,11 @@ impl PhysicsConsistParameters {
         );
         etcs_brake_params
     }
+
+    pub fn compute_loading_gauge(&self) -> LoadingGaugeType {
+        self.loading_gauge_type
+            .unwrap_or(self.traction_engine.loading_gauge)
+    }
 }
 
 impl From<PhysicsConsistParameters> for PhysicsConsist {
