@@ -37,6 +37,7 @@ use crate::error::Result;
 use crate::views::AuthenticationExt;
 use crate::views::path::PathfindingError;
 use crate::views::path::operational_point_cache::OperationalPointCache;
+use crate::views::timetable::PhysicsConsistParameters;
 use editoast_models::Infra;
 use editoast_models::prelude::*;
 use editoast_models::rolling_stock::RollingStock;
@@ -75,20 +76,23 @@ pub(in crate::views) struct PathfindingInput {
 
 impl PathfindingInput {
     pub fn from(
-        rolling_stock: &schemas::RollingStock,
+        consist: &PhysicsConsistParameters,
         train_schedule: &impl TrainScheduleLike,
     ) -> Self {
         Self {
-            rolling_stock_loading_gauge: rolling_stock.loading_gauge,
-            rolling_stock_is_thermal: rolling_stock.effort_curves.has_thermal_curves(),
-            rolling_stock_supported_electrifications: rolling_stock
+            rolling_stock_loading_gauge: consist.compute_loading_gauge(),
+            rolling_stock_is_thermal: consist.traction_engine.effort_curves.has_thermal_curves(),
+            rolling_stock_supported_electrifications: consist
+                .traction_engine
                 .effort_curves
                 .supported_electrification(),
-            rolling_stock_supported_signaling_systems: rolling_stock.supported_signaling_systems(),
+            rolling_stock_supported_signaling_systems: consist
+                .traction_engine
+                .supported_signaling_systems(),
             rolling_stock_maximum_speed: OrderedFloat(units::meter_per_second::from(
-                rolling_stock.max_speed,
+                consist.compute_max_speed(),
             )),
-            rolling_stock_length: OrderedFloat(units::meter::from(rolling_stock.length)),
+            rolling_stock_length: OrderedFloat(units::meter::from(consist.compute_length())),
             path_items: train_schedule
                 .path()
                 .iter()
@@ -434,6 +438,7 @@ pub async fn pathfinding_from_train<T: TrainScheduleLike>(
             .await?
             .into_iter()
             .map_into()
+            .map(PhysicsConsistParameters::from_traction_engine)
             .collect();
 
     Ok(Arc::unwrap_or_clone(
@@ -459,7 +464,7 @@ pub async fn pathfinding_from_train_batch<T: TrainScheduleLike>(
     core: Arc<CoreClient>,
     infra: &Infra,
     train_schedules: &[T],
-    rolling_stocks: &[schemas::RollingStock],
+    consists: &[PhysicsConsistParameters],
     app_version: Option<&str>,
 ) -> Result<Vec<Arc<PathfindingResult>>> {
     let initial_value = Arc::new(PathfindingResult::Failure(
@@ -467,9 +472,9 @@ pub async fn pathfinding_from_train_batch<T: TrainScheduleLike>(
     ));
     let mut results = vec![initial_value; train_schedules.len()];
 
-    let rolling_stocks: HashMap<_, _> = rolling_stocks
+    let rolling_stocks: HashMap<_, _> = consists
         .iter()
-        .map(|rs| (rs.name.as_str(), rs))
+        .map(|consist| (consist.traction_engine.name.as_str(), consist))
         .collect();
 
     let mut to_compute = vec![];
@@ -477,8 +482,8 @@ pub async fn pathfinding_from_train_batch<T: TrainScheduleLike>(
     for (index, train_schedule) in train_schedules.iter().enumerate() {
         // Retrieve rolling stock
         let rolling_stock_name = train_schedule.rolling_stock_name();
-        let Some(rolling_stock) = rolling_stocks.get(rolling_stock_name) else {
-            let rolling_stock_name = rolling_stock_name.into();
+        let Some(consist) = rolling_stocks.get(rolling_stock_name) else {
+            let rolling_stock_name = rolling_stock_name.to_string();
             results[index] = Arc::new(PathfindingResult::Failure(
                 PathfindingFailure::PathfindingInputError(
                     PathfindingInputError::RollingStockNotFound { rolling_stock_name },
@@ -488,7 +493,7 @@ pub async fn pathfinding_from_train_batch<T: TrainScheduleLike>(
         };
 
         // Create the path input
-        let path_input = PathfindingInput::from(rolling_stock, train_schedule);
+        let path_input = PathfindingInput::from(consist, train_schedule);
         to_compute.push(path_input);
         to_compute_index.push(index);
     }
