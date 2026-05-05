@@ -6137,6 +6137,26 @@ components:
       enum:
       - STANDARD
       - MARECO
+    EditoastAbortJoinError:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastAbortJoinErrorContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:JoinError:cancelled
     EditoastAppHealthErrorCore:
       type: object
       required:
@@ -6994,6 +7014,7 @@ components:
           - editoast:electrical_profiles:NotFound
     EditoastError:
       oneOf:
+      - $ref: '#/components/schemas/EditoastAbortJoinError'
       - $ref: '#/components/schemas/EditoastAppHealthErrorCore'
       - $ref: '#/components/schemas/EditoastAppHealthErrorDatabase'
       - $ref: '#/components/schemas/EditoastAppHealthErrorOpenfga'
@@ -7062,6 +7083,7 @@ components:
       - $ref: '#/components/schemas/EditoastOperationErrorObjectNotFound'
       - $ref: '#/components/schemas/EditoastOperationalPointProjectionErrorInvalidNumberOfDistances'
       - $ref: '#/components/schemas/EditoastOperationalPointProjectionErrorInvalidNumberOfRefs'
+      - $ref: '#/components/schemas/EditoastPanicJoinError'
       - $ref: '#/components/schemas/EditoastPathfindingErrorDatabase'
       - $ref: '#/components/schemas/EditoastPathfindingErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastPathfindingViewErrorsEndingTrackLocationNotFound'
@@ -7150,6 +7172,7 @@ components:
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorTrainScheduleNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleSetErrorDatabase'
       - $ref: '#/components/schemas/EditoastTrainScheduleSetErrorNotFound'
+      - $ref: '#/components/schemas/EditoastUnexpectedJoinError'
       - $ref: '#/components/schemas/EditoastWorkScheduleErrorDatabase'
       - $ref: '#/components/schemas/EditoastWorkScheduleErrorNameAlreadyUsed'
       - $ref: '#/components/schemas/EditoastWorkScheduleErrorWorkScheduleGroupNotFound'
@@ -7870,6 +7893,26 @@ components:
           type: string
           enum:
           - editoast:operationalPointProjection:InvalidNumberOfRefs
+    EditoastPanicJoinError:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastPanicJoinErrorContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:JoinError:panic
     EditoastPathfindingErrorDatabase:
       type: object
       required:
@@ -9958,6 +10001,26 @@ components:
           type: string
           enum:
           - editoast:train_schedule_set:NotFound
+    EditoastUnexpectedJoinError:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastUnexpectedJoinErrorContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:JoinError:unhandled_add_case_here
     EditoastWorkScheduleErrorDatabase:
       type: object
       required:
