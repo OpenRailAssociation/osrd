@@ -18,6 +18,7 @@ export const addTagTypes = [
   'rolling_stock_livery',
   'round_trips',
   'search',
+  'search_journeys',
   'similar_trains',
   'stdcm',
   'sncf',
@@ -916,6 +917,14 @@ const injectedRtkApi = api
           },
         }),
         providesTags: ['search'],
+      }),
+      postSearchJourneys: build.mutation<PostSearchJourneysApiResponse, PostSearchJourneysApiArg>({
+        query: (queryArg) => ({
+          url: `/search_journeys`,
+          method: 'POST',
+          body: queryArg.journeySearchQuery,
+        }),
+        invalidatesTags: ['search_journeys'],
       }),
       postSimilarTrains: build.mutation<PostSimilarTrainsApiResponse, PostSimilarTrainsApiArg>({
         query: (queryArg) => ({
@@ -2296,6 +2305,11 @@ export type PostSearchApiArg = {
   page?: number;
   pageSize?: number;
   searchPayload: SearchPayload;
+};
+export type PostSearchJourneysApiResponse =
+  /** status 200 A list of journey proposals that match the input search query */ JourneyProposals;
+export type PostSearchJourneysApiArg = {
+  journeySearchQuery: JourneySearchQuery;
 };
 export type PostSimilarTrainsApiResponse =
   /** status 200 A combination of reference train identifiers similar to the provided train */ {
@@ -4395,6 +4409,44 @@ export type SearchPayload = {
   object: SearchObjectType;
   /** The query to run */
   query: SearchQuery;
+};
+export type TrainSchedulePartBound = {
+  /** This location is part of the train schedule's path. */
+  location: PathItemLocation;
+  /** Scheduled time since the start of the train schedule in milliseconds.
+    
+    Used to differentiate locations in case of backtracks. */
+  time_ms: number;
+};
+export type TrainSchedulePart = {
+  from: TrainSchedulePartBound;
+  to: TrainSchedulePartBound;
+  train_schedule_id: number;
+};
+export type JourneyProposals = {
+  /** Each journey is a list of train schedule parts. */
+  journeys: TrainSchedulePart[][];
+};
+export type JourneySearchQuery = {
+  destination: OperationalPointPartReference;
+  infra_id: number;
+  origin: OperationalPointPartReference;
+  /** Amount of milliseconds from midnight UTC to the center of the start window.
+    
+    The start window is defined as the time between
+    `start_sec - start_tolerance` and `start_sec + start_tolerance`. */
+  start_ms: number;
+  /** Half the time of the start window in milliseconds.
+    
+    The start window is defined as the time between
+    `start_sec - start_tolerance` and `start_sec + start_tolerance`. */
+  start_tolerance: number;
+  timetable_ids: number[];
+  /** Constant time for a transfer/footpath in the same stop in milliseconds.
+    
+    The algorithm assumes that changing from one train to another in a stop
+    always take this constant time. */
+  transfer_ms: number;
 };
 export type SimilarTrainWaypoint = {
   id: string;

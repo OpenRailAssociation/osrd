@@ -92,7 +92,7 @@ impl Conflict {
 
 type Interval = (u64, u64);
 
-pub(super) async fn retrieve_trains(
+pub(in crate::views) async fn retrieve_trains(
     mut conn: DbConnection,
     timetable_id: i64,
 ) -> Result<(TimetableType, Vec<editoast_models::TrainSchedule>)> {
