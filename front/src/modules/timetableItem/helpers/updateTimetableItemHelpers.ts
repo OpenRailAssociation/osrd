@@ -220,12 +220,10 @@ export async function storePacedTrain(
   dispatch: AppDispatch,
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void
 ): Promise<TimetableItem> {
-  const updatedPacedTrain = await syncAndUpdatePacedTrain(
-    timetableItemIdToUpdate,
-    pacedTrain,
-    dispatch
-  );
-
+  const updatedPacedTrain = { ...pacedTrain, id: timetableItemIdToUpdate };
   upsertTimetableItems([updatedPacedTrain]);
+
+  await syncAndUpdatePacedTrain(timetableItemIdToUpdate, pacedTrain, dispatch);
+
   return updatedPacedTrain;
 }
