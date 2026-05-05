@@ -418,6 +418,15 @@ class Distribution(Enum):
     MARECO = "MARECO"
 
 
+class EditoastAbortJoinError(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None, Field(title="EditoastAbortJoinErrorContext")
+    ] = None
+    message: str
+    status: Literal[500]
+    type: Literal["editoast:JoinError:cancelled"]
+
+
 class EditoastAppHealthErrorCore(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastAppHealthErrorCoreContext")
@@ -864,6 +873,43 @@ class EditoastElectricalProfilesErrorNotFound(BaseModel):
     type: Literal["editoast:electrical_profiles:NotFound"]
 
 
+class EditoastErrorDatabase(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None, Field(title="EditoastErrorDatabaseContext")
+    ] = None
+    message: str
+    status: Literal[500]
+    type: Literal["editoast:search_journeys:Database"]
+
+
+class EditoastErrorInfraNotFoundContext(BaseModel):
+    infra_id: int
+
+
+class EditoastErrorInfraNotFound(BaseModel):
+    context: Annotated[
+        EditoastErrorInfraNotFoundContext | None,
+        Field(title="EditoastErrorInfraNotFoundContext"),
+    ] = None
+    message: str
+    status: Literal[404]
+    type: Literal["editoast:search_journeys:InfraNotFound"]
+
+
+class EditoastErrorInvalidInputContext(BaseModel):
+    message: dict[str, Any]
+
+
+class EditoastErrorInvalidInput(BaseModel):
+    context: Annotated[
+        EditoastErrorInvalidInputContext | None,
+        Field(title="EditoastErrorInvalidInputContext"),
+    ] = None
+    message: str
+    status: Literal[400]
+    type: Literal["editoast:search_journeys:InvalidInput"]
+
+
 class EditoastFontErrorsFileNotFoundContext(BaseModel):
     file: str
 
@@ -1240,6 +1286,15 @@ class EditoastOperationalPointProjectionErrorInvalidNumberOfRefs(BaseModel):
     message: str
     status: Literal[422]
     type: Literal["editoast:operationalPointProjection:InvalidNumberOfRefs"]
+
+
+class EditoastPanicJoinError(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None, Field(title="EditoastPanicJoinErrorContext")
+    ] = None
+    message: str
+    status: Literal[500]
+    type: Literal["editoast:JoinError:panic"]
 
 
 class EditoastPathfindingErrorDatabase(BaseModel):
@@ -2358,6 +2413,15 @@ class EditoastTrainScheduleSetErrorNotFound(BaseModel):
     message: str
     status: Literal[404]
     type: Literal["editoast:train_schedule_set:NotFound"]
+
+
+class EditoastUnexpectedJoinError(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None, Field(title="EditoastUnexpectedJoinErrorContext")
+    ] = None
+    message: str
+    status: Literal[500]
+    type: Literal["editoast:JoinError:unhandled_add_case_here"]
 
 
 class EditoastWorkScheduleErrorDatabase(BaseModel):
@@ -4467,7 +4531,8 @@ class DetectorExtension(BaseModel):
 
 class EditoastError(
     RootModel[
-        EditoastAppHealthErrorCore
+        EditoastAbortJoinError
+        | EditoastAppHealthErrorCore
         | EditoastAppHealthErrorDatabase
         | EditoastAppHealthErrorOpenfga
         | EditoastAppHealthErrorTimeout
@@ -4506,6 +4571,9 @@ class EditoastError(
         | EditoastEditionErrorSplitTrackSectionBadOffset
         | EditoastElectricalProfilesErrorDatabase
         | EditoastElectricalProfilesErrorNotFound
+        | EditoastErrorDatabase
+        | EditoastErrorInfraNotFound
+        | EditoastErrorInvalidInput
         | EditoastFontErrorsFileNotFound
         | EditoastGeometryErrorUnexpectedGeometry
         | EditoastGetObjectsErrorsDuplicateIdsProvided
@@ -4536,6 +4604,7 @@ class EditoastError(
         | EditoastOperationErrorObjectNotFound
         | EditoastOperationalPointProjectionErrorInvalidNumberOfDistances
         | EditoastOperationalPointProjectionErrorInvalidNumberOfRefs
+        | EditoastPanicJoinError
         | EditoastPathfindingErrorDatabase
         | EditoastPathfindingErrorInfraNotFound
         | EditoastPathfindingViewErrorsEndingTrackLocationNotFound
@@ -4624,6 +4693,7 @@ class EditoastError(
         | EditoastTrainScheduleExceptionErrorTrainScheduleNotFound
         | EditoastTrainScheduleSetErrorDatabase
         | EditoastTrainScheduleSetErrorNotFound
+        | EditoastUnexpectedJoinError
         | EditoastWorkScheduleErrorDatabase
         | EditoastWorkScheduleErrorNameAlreadyUsed
         | EditoastWorkScheduleErrorWorkScheduleGroupNotFound
@@ -4634,7 +4704,8 @@ class EditoastError(
     ]
 ):
     root: Annotated[
-        EditoastAppHealthErrorCore
+        EditoastAbortJoinError
+        | EditoastAppHealthErrorCore
         | EditoastAppHealthErrorDatabase
         | EditoastAppHealthErrorOpenfga
         | EditoastAppHealthErrorTimeout
@@ -4673,6 +4744,9 @@ class EditoastError(
         | EditoastEditionErrorSplitTrackSectionBadOffset
         | EditoastElectricalProfilesErrorDatabase
         | EditoastElectricalProfilesErrorNotFound
+        | EditoastErrorDatabase
+        | EditoastErrorInfraNotFound
+        | EditoastErrorInvalidInput
         | EditoastFontErrorsFileNotFound
         | EditoastGeometryErrorUnexpectedGeometry
         | EditoastGetObjectsErrorsDuplicateIdsProvided
@@ -4703,6 +4777,7 @@ class EditoastError(
         | EditoastOperationErrorObjectNotFound
         | EditoastOperationalPointProjectionErrorInvalidNumberOfDistances
         | EditoastOperationalPointProjectionErrorInvalidNumberOfRefs
+        | EditoastPanicJoinError
         | EditoastPathfindingErrorDatabase
         | EditoastPathfindingErrorInfraNotFound
         | EditoastPathfindingViewErrorsEndingTrackLocationNotFound
@@ -4791,6 +4866,7 @@ class EditoastError(
         | EditoastTrainScheduleExceptionErrorTrainScheduleNotFound
         | EditoastTrainScheduleSetErrorDatabase
         | EditoastTrainScheduleSetErrorNotFound
+        | EditoastUnexpectedJoinError
         | EditoastWorkScheduleErrorDatabase
         | EditoastWorkScheduleErrorNameAlreadyUsed
         | EditoastWorkScheduleErrorWorkScheduleGroupNotFound
@@ -5731,6 +5807,21 @@ class TrainCategoryMain(BaseModel):
     main_category: TrainMainCategory
 
 
+class TrainSchedulePartBound(BaseModel):
+    location: (
+        PathItemLocationTrackOffset | PathItemLocationOperationalPointPartReference
+    )
+    """
+    This location is part of the train schedule's path.
+    """
+    time_ms: Annotated[int, Field(ge=0)]
+    """
+    Scheduled time since the start of the train schedule in milliseconds.
+
+    Used to differentiate locations in case of backtracks.
+    """
+
+
 class WorkSchedule(BaseModel):
     end_date_time: AwareDatetime
     id: int
@@ -5954,6 +6045,34 @@ class InfraObjectRoute(BaseModel):
 class InfraObjectLevelCrossing(BaseModel):
     obj_type: Literal["LevelCrossing"]
     railjson: LevelCrossing
+
+
+class JourneySearchQuery(BaseModel):
+    destination: OperationalPointPartReference
+    infra_id: int
+    origin: OperationalPointPartReference
+    start_ms: Annotated[int, Field(ge=0)]
+    """
+    Amount of milliseconds from midnight UTC to the center of the start window.
+
+    The start window is defined as the time between
+    `start_sec - start_tolerance` and `start_sec + start_tolerance`.
+    """
+    start_tolerance: Annotated[int, Field(ge=0)]
+    """
+    Half the time of the start window in milliseconds.
+
+    The start window is defined as the time between
+    `start_sec - start_tolerance` and `start_sec + start_tolerance`.
+    """
+    timetable_ids: list[int]
+    transfer_ms: Annotated[int, Field(ge=0)]
+    """
+    Constant time for a transfer/footpath in the same stop in milliseconds.
+
+    The algorithm assumes that changing from one train to another in a stop
+    always take this constant time.
+    """
 
 
 class LightRollingStock(BaseModel):
@@ -6468,6 +6587,16 @@ class TrackSectionModel(BaseModel):
     slopes: list[Slope]
 
 
+class TrainSchedulePart(BaseModel):
+    """
+    A part of a train schedule, from one location to another.
+    """
+
+    from_: Annotated[TrainSchedulePartBound, Field(alias="from")]
+    to: TrainSchedulePartBound
+    train_schedule_id: int
+
+
 class TrainScheduleSimulationSummaryResult(BaseModel):
     exceptions: dict[
         str,
@@ -6602,6 +6731,13 @@ class InfraObjectSpeedSection(BaseModel):
 class InfraObjectSwitch(BaseModel):
     obj_type: Literal["Switch"]
     railjson: Switch
+
+
+class JourneyProposals(BaseModel):
+    journeys: list[list[TrainSchedulePart]]
+    """
+    Each journey is a list of train schedule parts.
+    """
 
 
 class NeutralSection(BaseModel):
