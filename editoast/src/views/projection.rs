@@ -29,7 +29,7 @@ use crate::views::path::projection::PathProjection;
 use crate::views::path::projection::TrackLocationFromPath;
 use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
-use crate::views::timetable::simulation::train_simulation_batch;
+use crate::views::timetable::simulation::train_simulation_ordered_batch;
 use editoast_models::Infra;
 
 #[derive(Debug, Deserialize, ToSchema)]
@@ -352,7 +352,7 @@ pub async fn compute_projected_train_paths<T: TrainScheduleLike>(
     let mut valkey_conn = valkey_client.get_connection().await?;
 
     // 1. Get train simulations
-    let simulations = train_simulation_batch(
+    let simulations = train_simulation_ordered_batch(
         conn,
         valkey_client.clone(),
         core_client.clone(),
@@ -720,7 +720,7 @@ pub async fn compute_projected_train_path_op<T: TrainScheduleLike>(
     electrical_profile_set_id: Option<i64>,
     app_version: Option<&str>,
 ) -> Result<Vec<Arc<Vec<SpaceTimeCurve>>>> {
-    let simulations = train_simulation_batch(
+    let simulations = train_simulation_ordered_batch(
         conn,
         valkey_client.clone(),
         core_client.clone(),

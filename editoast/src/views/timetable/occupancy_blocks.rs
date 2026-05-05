@@ -19,7 +19,7 @@ use utoipa::ToSchema;
 
 use crate::error::Result;
 use crate::views::timetable::simulation;
-use crate::views::timetable::simulation::train_simulation_batch;
+use crate::views::timetable::simulation::train_simulation_ordered_batch;
 use editoast_models::Infra;
 
 /// Occupancy block output is described by time-space points and blocks
@@ -137,7 +137,7 @@ pub(super) async fn compute_occupancy_blocks<T: TrainScheduleLike>(
     let mut valkey_conn = valkey_client.get_connection().await?;
 
     // 1. Get train simulations
-    let simulations = train_simulation_batch(
+    let simulations = train_simulation_ordered_batch(
         conn,
         valkey_client.clone(),
         core_client.clone(),

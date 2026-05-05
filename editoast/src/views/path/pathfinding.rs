@@ -20,7 +20,6 @@ use core_client::pathfinding::PathfindingRequest;
 use core_client::pathfinding::PathfindingResultSuccess;
 use database::DbConnection;
 use educe::Educe;
-use itertools::Itertools;
 use ordered_float::OrderedFloat;
 use schemas::rolling_stock::LoadingGaugeType;
 use schemas::train_schedule::PathItemLocation;
@@ -37,6 +36,7 @@ use crate::error::Result;
 use crate::views::AuthenticationExt;
 use crate::views::path::PathfindingError;
 use crate::views::path::operational_point_cache::OperationalPointCache;
+use crate::views::timetable::PhysicsConsistParameters;
 use editoast_models::Infra;
 use editoast_models::prelude::*;
 use editoast_models::rolling_stock::RollingStock;
@@ -72,20 +72,23 @@ pub(in crate::views) struct PathfindingInput {
 
 impl PathfindingInput {
     pub fn from(
-        rolling_stock: &schemas::RollingStock,
+        consist: &PhysicsConsistParameters,
         train_schedule: &impl TrainScheduleLike,
     ) -> Self {
         Self {
-            rolling_stock_loading_gauge: rolling_stock.loading_gauge,
-            rolling_stock_is_thermal: rolling_stock.effort_curves.has_thermal_curves(),
-            rolling_stock_supported_electrifications: rolling_stock
+            rolling_stock_loading_gauge: consist.compute_loading_gauge(),
+            rolling_stock_is_thermal: consist.traction_engine.effort_curves.has_thermal_curves(),
+            rolling_stock_supported_electrifications: consist
+                .traction_engine
                 .effort_curves
                 .supported_electrification(),
-            rolling_stock_supported_signaling_systems: rolling_stock.supported_signaling_systems(),
+            rolling_stock_supported_signaling_systems: consist
+                .traction_engine
+                .supported_signaling_systems(),
             rolling_stock_maximum_speed: OrderedFloat(units::meter_per_second::from(
-                rolling_stock.max_speed,
+                consist.compute_max_speed(),
             )),
-            rolling_stock_length: OrderedFloat(units::meter::from(rolling_stock.length)),
+            rolling_stock_length: OrderedFloat(units::meter::from(consist.compute_length())),
             path_items: train_schedule
                 .path()
                 .iter()
@@ -432,12 +435,20 @@ pub async fn pathfinding_from_train<T: TrainScheduleLike>(
     train_schedule: T,
     app_version: Option<&str>,
 ) -> Result<PathfindingResult> {
-    let rolling_stock: Vec<_> =
+    let Some(consist) =
         RollingStock::retrieve(conn.clone(), train_schedule.rolling_stock_name().to_owned())
             .await?
-            .into_iter()
-            .map_into()
-            .collect();
+            .map(schemas::RollingStock::from)
+            .map(PhysicsConsistParameters::from_traction_engine)
+    else {
+        return Ok(PathfindingResult::Failure(
+            PathfindingFailure::PathfindingInputError(
+                PathfindingInputError::RollingStockNotFound {
+                    rolling_stock_name: train_schedule.rolling_stock_name().to_owned(),
+                },
+            ),
+        ));
+    };
 
     Ok(Arc::unwrap_or_clone(
         pathfinding_from_train_batch(
@@ -445,8 +456,10 @@ pub async fn pathfinding_from_train<T: TrainScheduleLike>(
             valkey,
             core,
             infra,
-            &[train_schedule],
-            &rolling_stock,
+            &[TrainScheduleWithConsist {
+                train_schedule,
+                consist,
+            }],
             app_version,
         )
         .await?
@@ -455,43 +468,38 @@ pub async fn pathfinding_from_train<T: TrainScheduleLike>(
     ))
 }
 
+#[derive(Debug, Clone)]
+pub struct TrainScheduleWithConsist<T: TrainScheduleLike> {
+    pub train_schedule: T,
+    pub consist: PhysicsConsistParameters,
+}
+
 /// Compute a path given a batch of trainschedule and an infrastructure.
 pub async fn pathfinding_from_train_batch<T: TrainScheduleLike>(
     conn: DbConnection,
     valkey: &mut cache::Connection,
     core: Arc<CoreClient>,
     infra: &Infra,
-    train_schedules: &[T],
-    rolling_stocks: &[schemas::RollingStock],
+    train_schedules_with_consists: &[TrainScheduleWithConsist<T>],
     app_version: Option<&str>,
 ) -> Result<Vec<Arc<PathfindingResult>>> {
     let initial_value = Arc::new(PathfindingResult::Failure(
         PathfindingFailure::PathfindingInputError(PathfindingInputError::NotEnoughPathItems),
     ));
-    let mut results = vec![initial_value; train_schedules.len()];
-
-    let rolling_stocks: HashMap<_, _> = rolling_stocks
-        .iter()
-        .map(|rs| (rs.name.as_str(), rs))
-        .collect();
+    let mut results = vec![initial_value; train_schedules_with_consists.len()];
 
     let mut to_compute = vec![];
     let mut to_compute_index = vec![];
-    for (index, train_schedule) in train_schedules.iter().enumerate() {
-        // Retrieve rolling stock
-        let rolling_stock_name = train_schedule.rolling_stock_name();
-        let Some(rolling_stock) = rolling_stocks.get(rolling_stock_name) else {
-            let rolling_stock_name = rolling_stock_name.into();
-            results[index] = Arc::new(PathfindingResult::Failure(
-                PathfindingFailure::PathfindingInputError(
-                    PathfindingInputError::RollingStockNotFound { rolling_stock_name },
-                ),
-            ));
-            continue;
-        };
-
+    for (
+        index,
+        TrainScheduleWithConsist {
+            train_schedule,
+            consist,
+        },
+    ) in train_schedules_with_consists.iter().enumerate()
+    {
         // Create the path input
-        let path_input = PathfindingInput::from(rolling_stock, train_schedule);
+        let path_input = PathfindingInput::from(consist, train_schedule);
         to_compute.push(path_input);
         to_compute_index.push(index);
     }

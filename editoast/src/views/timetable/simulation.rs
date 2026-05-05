@@ -19,6 +19,7 @@ use core_task::SimulationTrain;
 use core_task::SimulationTrainParameters;
 use core_task::SimulationWaypoint;
 use database::DbConnection;
+use itertools::Either;
 use itertools::Itertools;
 use ordered_float::OrderedFloat;
 use schemas::TrainOccurrence;
@@ -45,6 +46,7 @@ use crate::error::Result;
 use crate::views::CoreClient;
 use crate::views::path::operational_point_cache::OperationalPointCache;
 use crate::views::path::pathfinding::PathfindingFailure;
+use crate::views::path::pathfinding::TrainScheduleWithConsist;
 use crate::views::path::pathfinding_from_train_batch;
 use crate::views::rolling_stock::RollingStockError;
 use crate::views::timetable::Infra;
@@ -360,7 +362,7 @@ impl From<PathfindingFailure> for SummaryResponse {
 ///
 /// Note: The order of the returned simulations is the same as the order of the train schedules.
 #[allow(clippy::too_many_arguments)]
-pub async fn train_simulation_batch<T: TrainScheduleLike>(
+pub async fn train_simulation_ordered_batch<T: TrainScheduleLike + Clone>(
     conn: &mut DbConnection,
     valkey_client: Arc<cache::Client>,
     core: Arc<CoreClient>,
@@ -369,32 +371,47 @@ pub async fn train_simulation_batch<T: TrainScheduleLike>(
     electrical_profile_set_id: Option<i64>,
     app_version: Option<&str>,
 ) -> Result<Vec<(Arc<simulation::Response>, Arc<PathfindingResult>)>> {
-    // Compute path
-
-    let train_batches = train_schedules.chunks(TRAIN_SIZE_BATCH);
-
     let rolling_stocks_names = train_schedules
         .iter()
         .map::<String, _>(|t| t.rolling_stock_name().to_string());
 
-    let rolling_stocks: Vec<_> =
-        RollingStock::retrieve_batch_unchecked(&mut conn.clone(), rolling_stocks_names)
-            .await
-            .map_err(RollingStockError::from)?;
+    let rolling_stocks: HashMap<_, _> = RollingStock::retrieve_batch_with_key_unchecked::<_, _>(
+        &mut conn.clone(),
+        rolling_stocks_names,
+    )
+    .await
+    .map_err(RollingStockError::from)?;
+    let (train_schedules_with_consists, rolling_stock_errors): (Vec<_>, Vec<_>) = train_schedules
+        .iter()
+        .enumerate()
+        // train_schedule_idx is the position of the train schedule in the original input list.
+        .partition_map(|(train_schedule_idx, train_schedule)| {
+            match rolling_stocks.get(train_schedule.rolling_stock_name()) {
+                Some(traction_engine) => Either::Left((
+                    train_schedule_idx,
+                    TrainScheduleWithConsist {
+                        train_schedule: train_schedule.clone(),
+                        consist: PhysicsConsistParameters::from_traction_engine(
+                            schemas::RollingStock::from(traction_engine.clone()),
+                        ),
+                    },
+                )),
+                None => Either::Right((
+                    train_schedule_idx,
+                    train_schedule.rolling_stock_name().to_owned(),
+                )),
+            }
+        });
 
-    let consists: Vec<PhysicsConsistParameters> = rolling_stocks
-        .into_iter()
-        .map(|rs| PhysicsConsistParameters::from_traction_engine(rs.into()))
-        .collect();
+    let train_batches = train_schedules_with_consists.chunks(TRAIN_SIZE_BATCH);
 
     let futures: Vec<_> = train_batches
         .zip(iter::repeat(conn.clone()))
         .map(|(chunk, conn)| {
             let valkey_client = valkey_client.clone();
             let core = core.clone();
-            let consists = consists.clone();
             let infra = <Infra as Clone>::clone(infra);
-            let chunk = chunk.to_vec(); // TODO: avoid cloning the chunk
+            let (train_schedule_idxs, chunk): (Vec<_>, Vec<_>) = chunk.iter().cloned().unzip(); // TODO: avoid cloning the chunk
             let app_version = app_version.map(String::from);
             tokio::spawn(
                 async move {
@@ -404,11 +421,16 @@ pub async fn train_simulation_batch<T: TrainScheduleLike>(
                         core.clone(),
                         &infra,
                         &chunk,
-                        &consists,
                         electrical_profile_set_id,
                         app_version.as_deref(),
                     )
                     .await
+                    .map(|v| {
+                        v.into_iter()
+                            .zip(train_schedule_idxs)
+                            .map(|((sim, path), index)| (index, sim, path))
+                            .collect_vec()
+                    })
                 }
                 .in_current_span(),
             )
@@ -416,21 +438,43 @@ pub async fn train_simulation_batch<T: TrainScheduleLike>(
         .collect();
 
     let results = futures::future::try_join_all(futures).await.unwrap();
-    results
+    let mut results =
+        results
+            .into_iter()
+            .flatten_ok()
+            .chain(rolling_stock_errors.into_iter().map(
+                |(train_schedule_idx, rolling_stock_name)| {
+                    let pathfinding_failure = PathfindingFailure::PathfindingInputError(
+                        PathfindingInputError::RollingStockNotFound { rolling_stock_name },
+                    );
+                    Ok((
+                        train_schedule_idx,
+                        Arc::new(simulation::Response::PathfindingFailed {
+                            pathfinding_failed: pathfinding_failure.clone(),
+                        }),
+                        Arc::new(PathfindingResult::Failure(pathfinding_failure)),
+                    ))
+                },
+            ))
+            .try_collect::<_, Vec<_>, _>()?;
+    // Since train_schedule_idx is the position of the train schedule in the original input list,
+    // sorting the results by train_schedule_idx here will guarantee that the results have the same
+    // order as the input list of train schedules.
+    results.sort_by_key(|(train_schedule_idx, _simulation, _path)| *train_schedule_idx);
+    let results = results
         .into_iter()
-        .flatten_ok()
-        .collect::<Result<Vec<_>, _>>()
+        .map(|(_train_schedule_idx, simulation, path)| (simulation, path))
+        .collect_vec();
+    Ok(results)
 }
 
-#[tracing::instrument(skip_all, fields(nb_trains = train_schedules.len()))]
-#[allow(clippy::too_many_arguments)]
+#[tracing::instrument(skip_all, fields(nb_trains = train_schedules_with_consists.len()))]
 pub async fn consist_train_simulation_batch<T: TrainScheduleLike>(
     conn: &mut DbConnection,
     valkey_client: Arc<cache::Client>,
     core: Arc<CoreClient>,
     infra: &Infra,
-    train_schedules: &[T],
-    consists: &[PhysicsConsistParameters],
+    train_schedules_with_consists: &[TrainScheduleWithConsist<T>],
     electrical_profile_set_id: Option<i64>,
     app_version: Option<&str>,
 ) -> Result<Vec<(Arc<simulation::Response>, Arc<PathfindingResult>)>> {
@@ -441,26 +485,24 @@ pub async fn consist_train_simulation_batch<T: TrainScheduleLike>(
         &mut valkey_conn,
         core.clone(),
         infra,
-        train_schedules,
-        &consists
-            .iter()
-            .map(|consist| consist.traction_engine.clone())
-            .collect::<Vec<_>>(),
+        train_schedules_with_consists,
         app_version,
     )
     .await?;
 
-    let consists: HashMap<_, _> = consists
-        .iter()
-        .map(|consist| (consist.traction_engine.name.as_str(), consist))
-        .collect();
-
-    let mut simulation_results = vec![None::<Arc<simulation::Response>>; train_schedules.len()];
+    let mut simulation_results =
+        vec![None::<Arc<simulation::Response>>; train_schedules_with_consists.len()];
     let mut to_sim: HashMap<String, Vec<usize>> = HashMap::default();
     let mut sim_request_map: HashMap<String, core_client::simulation::Request> = HashMap::default();
-    for (index, (pathfinding, train_schedule)) in
-        pathfinding_results.iter().zip(train_schedules).enumerate()
+    for (index, (pathfinding, train_schedule_with_consist)) in pathfinding_results
+        .iter()
+        .zip(train_schedules_with_consists)
+        .enumerate()
     {
+        let TrainScheduleWithConsist {
+            train_schedule,
+            consist,
+        } = train_schedule_with_consist;
         let (path, path_item_positions) = match pathfinding.as_ref() {
             PathfindingResult::Success(PathfindingResultSuccess {
                 path,
@@ -477,15 +519,13 @@ pub async fn consist_train_simulation_batch<T: TrainScheduleLike>(
         };
 
         // Build simulation request
-        let physics_consist_parameters = consists[train_schedule.rolling_stock_name()].clone();
-
         let simulation_request = build_simulation_request(
             infra,
             train_schedule,
             path_item_positions,
             path,
             electrical_profile_set_id,
-            physics_consist_parameters.into(),
+            PhysicsConsist::from(consist.clone()),
         );
 
         // Compute unique hash of the simulation input
@@ -504,7 +544,7 @@ pub async fn consist_train_simulation_batch<T: TrainScheduleLike>(
             .or_insert(simulation_request);
     }
     info!(
-        nb_train_schedules = train_schedules.len(),
+        nb_train_schedules = train_schedules_with_consists.len(),
         nb_unique_sim = to_sim.len()
     );
     let cached_simulation_hash = to_sim.keys().collect::<Vec<_>>();

@@ -6,6 +6,7 @@ mod track_occupancy;
 pub mod train_schedule;
 pub mod train_schedule_exceptions;
 
+use std::collections::BTreeMap;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;
@@ -49,7 +50,7 @@ use schemas::rolling_stock::TowedRollingStock;
 use schemas::train_schedule::TrainScheduleLike;
 use serde::Deserialize;
 use serde::Serialize;
-use simulation::train_simulation_batch;
+use simulation::train_simulation_ordered_batch;
 use thiserror::Error;
 use train_schedule::TrainScheduleResponse;
 use utoipa::IntoParams;
@@ -374,7 +375,7 @@ pub(in crate::views) async fn conflicts(
         .flat_map(|(ts, exceptions)| ts.iter_occurrences(exceptions))
         .unzip();
 
-    let occurrence_simulations: Vec<_> = train_simulation_batch(
+    let occurrence_simulations: Vec<_> = train_simulation_ordered_batch(
         &mut db_pool.get().await?,
         valkey_client.clone(),
         core_client.clone(),
@@ -554,7 +555,7 @@ pub(in crate::views) async fn requirements(
         })
         .unzip();
 
-    let simulations = train_simulation_batch(
+    let simulations = train_simulation_ordered_batch(
         conn,
         valkey_client.clone(),
         core_client.clone(),
@@ -765,6 +766,11 @@ impl PhysicsConsistParameters {
         );
         etcs_brake_params
     }
+
+    pub fn compute_loading_gauge(&self) -> LoadingGaugeType {
+        self.loading_gauge_type
+            .unwrap_or(self.traction_engine.loading_gauge)
+    }
 }
 
 impl From<PhysicsConsistParameters> for PhysicsConsist {
@@ -794,7 +800,7 @@ impl From<PhysicsConsistParameters> for PhysicsConsist {
             etcs_brake_params,
             inertia_coefficient,
             rolling_resistance,
-            power_restrictions: traction_engine.power_restrictions.into_iter().collect(),
+            power_restrictions: BTreeMap::from_iter(traction_engine.power_restrictions),
             electrical_power_startup_time: traction_engine.electrical_power_startup_time,
             raise_pantograph_time: traction_engine.raise_pantograph_time,
         }
@@ -1094,7 +1100,7 @@ mod tests {
         // Check if the timetable has the two train schedules
         assert_eq!(list.results.len(), 2);
 
-        // Check if the first train schedule containe only his own exception
+        // Check if the first train schedule contains only his own exception
         assert_eq!(
             list.results
                 .first()

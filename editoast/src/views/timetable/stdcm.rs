@@ -54,6 +54,7 @@ use crate::AppState;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::views::AuthenticationExt;
+use crate::views::path::pathfinding::TrainScheduleWithConsist;
 use crate::views::timetable::PhysicsConsistParameters;
 use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
@@ -509,23 +510,21 @@ impl VirtualTrainRun {
     ) -> Result<Vec<Self>> {
         // Doesn't matter for now, but eventually it will affect tmp speed limits
         let approx_start_time = stdcm_request.get_earliest_step_time();
-        let mut train_schedules = vec![];
-
-        for ((start, end), consist_parameters) in itertools::chain!(
+        let train_schedules_with_consists = itertools::chain!(
             std::iter::once(0),
             stdcm_request.consist_schedule.boundaries.clone(),
             std::iter::once(stdcm_request.steps.len() - 1)
         )
         .tuple_windows()
-        .zip(consists_parameters.iter())
-        {
+        .zip(consists_parameters)
+        .map(|((start, end), consist)| {
             let path = convert_steps(&stdcm_request.steps[start..=end]);
             let last_step = path.last().expect("empty step list");
 
-            train_schedules.push(TrainOccurrence {
+            let train_occurrence = TrainOccurrence {
                 train_name: "".to_string(),
                 labels: vec![],
-                rolling_stock_name: consist_parameters.traction_engine.name.clone(),
+                rolling_stock_name: consist.traction_engine.name.clone(),
                 start_time: approx_start_time,
                 schedule: vec![ScheduleItem {
                     // Make the train stop at the end
@@ -539,15 +538,20 @@ impl VirtualTrainRun {
                 comfort: stdcm_request.comfort,
                 path,
                 constraint_distribution: Default::default(),
-                speed_limit_tag: consist_parameters
+                speed_limit_tag: consist
                     .speed_limit_tag
                     .clone()
                     .map(schemas::primitives::NonBlankString::from),
                 power_restrictions: vec![],
                 options: Default::default(),
                 category: None,
-            });
-        }
+            };
+            TrainScheduleWithConsist {
+                train_schedule: train_occurrence,
+                consist: consist.clone(),
+            }
+        })
+        .collect_vec();
 
         // Compute simulation of a train schedule
         let simulations: Vec<Self> = consist_train_simulation_batch(
@@ -555,8 +559,7 @@ impl VirtualTrainRun {
             valkey_client,
             core_client,
             infra,
-            &train_schedules,
-            consists_parameters,
+            &train_schedules_with_consists,
             None,
             app_version,
         )
@@ -567,7 +570,7 @@ impl VirtualTrainRun {
         })
         .collect();
 
-        if simulations.len() != train_schedules.len() {
+        if simulations.len() != train_schedules_with_consists.len() {
             return Err(StdcmError::TrainSimulationFail.into());
         }
 
@@ -644,13 +647,16 @@ mod tests {
     use schemas::train_schedule::OperationalPointPartReference;
     use schemas::train_schedule::OperationalPointReference;
     use schemas::train_schedule::PathItemLocation;
+    use serde_json::json;
     use std::str::FromStr;
+    use uom::si::SI;
     use uom::si::length::Length;
     use uom::si::length::meter;
     use uom::si::mass::kilogram;
     use uom::si::quantities::Mass;
     use uom::si::velocity::Velocity;
     use uom::si::velocity::kilometer_per_hour;
+    use uom::si::velocity::meter_per_second;
     use uuid::Uuid;
 
     use crate::error::InternalError;
@@ -971,18 +977,72 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn stdcm_return_success() {
-        let mut core = core_mocking_client();
-        core.stub("/stdcm")
-            .response(StatusCode::OK)
-            .json(core_client::stdcm::ProgressStatus::Done {
-                result: core_client::stdcm::Response::Success {
-                    simulation: simulation_empty_response().success().unwrap(),
-                    path: pathfinding_result_success(),
-                    departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
-                        .expect("Failed to parse datetime"),
-                },
-            })
-            .finish();
+        let core = {
+            let mut core = MockingClient::new();
+            core.stub("/pathfinding/blocks")
+                .body(
+                    json!({
+                        "infra": 1,
+                        "expected_version": 0,
+                        "path_items": [
+                            {
+                                "locations": [
+                                    { "track": "TA0", "offset": 700000 },
+                                    { "track": "TA1", "offset": 500000 },
+                                    { "track": "TA2", "offset": 500000 }
+                                ],
+                                "can_backtrack": false,
+                            },
+                            {
+                                "locations": [
+                                    { "track": "TC0", "offset": 550000 },
+                                    { "track": "TC1", "offset": 550000 },
+                                    { "track": "TC2", "offset": 450000 },
+                                    { "track": "TC3", "offset": 450000 }
+                                ],
+                                "can_backtrack": false,
+                            },
+                        ],
+                        // We check the value of the consist is present, instead of the value of the traction engine
+                        "rolling_stock_loading_gauge": "GLOTT",
+                        "rolling_stock_is_thermal": true,
+                        "rolling_stock_supported_electrifications": ["25000V"],
+                        "rolling_stock_supported_signaling_systems": ["BAL", "BAPR", "TVM300", "TVM430"],
+                        // We check the value of the consist is present, instead of the value of the traction engine
+                        "rolling_stock_maximum_speed": Velocity::<SI<_>, f64>::new::<kilometer_per_hour>(30.0)
+                .get::<meter_per_second>(),
+                        // We check the value of the consist is present, instead of the value of the traction engine
+                        "rolling_stock_length": Length::<SI<_>, f64>::new::<meter>(400.0)
+                .get::<meter>(),
+                        "speed_limit_tag": "AR120",
+                        "stops_at_end_of_block": false
+                    })
+                    .to_string(),
+                )
+                .response(StatusCode::OK)
+                .json(PathfindingResult::Success(pathfinding_result_success()))
+                .finish();
+            core.stub("/standalone_simulation")
+                // TODO: it would be nice to assert on the input request value
+                // but the current `MockingClient` framework impose the entire payload which is noisy
+                .response(StatusCode::OK)
+                .json(simulation_empty_response())
+                .finish();
+            core.stub("/stdcm")
+                // TODO: it would be nice to assert on the input request value
+                // but the current `MockingClient` framework impose the entire payload which is noisy
+                .response(StatusCode::OK)
+                .json(core_client::stdcm::ProgressStatus::Done {
+                    result: core_client::stdcm::Response::Success {
+                        simulation: simulation_empty_response().success().unwrap(),
+                        path: pathfinding_result_success(),
+                        departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
+                            .expect("Failed to parse datetime"),
+                    },
+                })
+                .finish();
+            core
+        };
 
         let app = TestAppBuilder::new().core_client(core.into()).build();
         let db_pool = app.db_pool();
@@ -992,10 +1052,10 @@ mod tests {
             create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
         let consist_schedule = build_single_consist(build_consist_config(
             rolling_stock.id,
-            None,
+            Some(1000000.0),
             Some(400.0),
-            None,
-            None,
+            Some(30.0),
+            Some(LoadingGaugeType::Glott),
         ));
 
         let request = app
