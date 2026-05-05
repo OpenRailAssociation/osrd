@@ -1,5 +1,8 @@
 package fr.sncf.osrd.api
 
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.JsonDataException
+import com.squareup.moshi.JsonEncodingException
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -9,10 +12,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
+import okio.buffer
+import okio.source
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.S3Configuration
+import software.amazon.awssdk.services.s3.model.GetObjectRequest
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
@@ -55,6 +61,25 @@ data class S3Context(
         val traceId = Span.current().spanContext.traceId
         val path = "stdcm/requests/$traceId/$fileName"
         writeFile(path, requestBody)
+    }
+
+    /**
+     * Read a json file and deserialize it using the given moshi adapter. Return null if the file is
+     * missing or couldn't be parsed.
+     */
+    fun <T> readJsonFile(path: String, adapter: JsonAdapter<T>): T? {
+        val request = GetObjectRequest.builder().bucket(bucketName).key(path).build()
+
+        return try {
+            s3Client.getObject(request).use { stream -> adapter.fromJson(stream.source().buffer()) }
+        } catch (e: Exception) {
+            when (e) {
+                is NoSuchKeyException,
+                is JsonDataException,
+                is JsonEncodingException -> null
+                else -> throw e
+            }
+        }
     }
 
     /**

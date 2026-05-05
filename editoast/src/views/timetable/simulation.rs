@@ -74,9 +74,7 @@ pub struct SimulationResponseSuccess {
     /// Simulation that takes into account the regularity margins and the schedule item times
     #[schema(inline)]
     pub final_output: CompleteReportTrain,
-    #[schema(inline)]
     pub mrsp: SpeedLimitProperties,
-    #[schema(inline)]
     pub electrical_profiles: ElectricalProfiles,
 }
 

@@ -90,7 +90,6 @@ itertools = "0.14.0"
 lapin = { version = "4.5.0", default-features = false, features = ["tokio"] }
 linkme = "0.3.36"
 mvt = "0.13.0"
-object_store = { version = "0.13", features = ["aws"] }
 openssl = "0.10.78"
 opentelemetry = { version = "0.31.0", default-features = false, features = [
   "trace",
@@ -208,7 +207,6 @@ json-patch = { version = "4.1.0", default-features = false, features = [
   "utoipa",
 ] }
 linkme.workspace = true
-object_store.workspace = true
 opentelemetry-otlp.workspace = true
 opentelemetry_sdk.workspace = true
 ordered-float.workspace = true

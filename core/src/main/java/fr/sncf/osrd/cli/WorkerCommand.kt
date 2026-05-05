@@ -160,6 +160,7 @@ class WorkerCommand : CliCommand {
                     ETCSBrakingCurvesEndpoint(infraManager, electricalProfileSetManager),
                 "/stdcm" to STDCMEndpoint(infraManager, timetableCache, s3Context),
                 "/worker_load" to WorkerLoadEndpoint(infraManager, timetableCache),
+                "/stdcm_logged_data" to STDCMLoggedData(s3Context),
             )
 
         val executor =

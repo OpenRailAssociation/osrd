@@ -1,100 +1,16 @@
-use ::authz::Role;
-use axum::Extension;
-use axum::extract::Json;
-use axum::extract::Path;
-use axum::extract::State;
-use chrono::DateTime;
-use chrono::Utc;
-use editoast_derive::EditoastError;
-use object_store::GetOptions;
-use object_store::ObjectStore as _;
-use object_store::aws::AmazonS3;
-use object_store::path::Path as OsPath;
-use serde::Deserialize;
-use serde::Serialize;
-use thiserror::Error;
-use utoipa::ToSchema;
-
 use crate::AppState;
 use crate::error::Result;
 use crate::views::Authentication;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::path::properties::PathProperties;
-use crate::views::timetable::simulation::SimulationResponseSuccess;
-
-#[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "stdcm_debug")]
-enum StdcmDebugError {
-    #[error("S3 is not configured")]
-    #[editoast_error(status = 503)]
-    S3NotConfigured,
-    #[error("S3 error fetching '{path}': {message}")]
-    #[editoast_error(status = 500)]
-    S3Error { path: String, message: String },
-    #[error("Failed to parse JSON from S3 object '{path}': {message}")]
-    #[editoast_error(status = 500)]
-    JsonParseError { path: String, message: String },
-}
-
-#[derive(Serialize, Deserialize, ToSchema)]
-pub(in crate::views) struct SimDebugConflictReport {
-    at: DateTime<Utc>,
-    time_lost: f64,
-    best_remaining_time: f64,
-    current_travel_time: f64,
-    caused_by: String,
-    lat: f64,
-    lon: f64,
-    #[serde(rename = "lastOPName")]
-    last_op_name: Option<String>,
-}
-
-#[derive(Serialize, Deserialize, ToSchema)]
-pub(in crate::views) struct SimDebugFailureReport {
-    largest_conflicts: Vec<SimDebugConflictReport>,
-    closest_conflicts: Vec<SimDebugConflictReport>,
-}
-
-#[derive(Serialize, Deserialize, ToSchema)]
-pub(in crate::views) struct SimDebugTrainZoneRequirement {
-    zone_name: String,
-    begin_time: f64,
-    end_time: f64,
-    train_name: Option<String>,
-}
-
-#[derive(Serialize, Deserialize, ToSchema)]
-pub(in crate::views) struct SimDebugZoneLocation {
-    name: String,
-    from: f64,
-    to: f64,
-}
-
-#[derive(Serialize, Deserialize, ToSchema)]
-pub(in crate::views) struct SimDebugEngineeringAllowanceRange {
-    from: f64,
-    to: f64,
-    added_duration: f64,
-}
-
-#[derive(Serialize, Deserialize, ToSchema)]
-pub(in crate::views) struct SimDebugData {
-    sim_output: Option<SimulationResponseSuccess>,
-    path_properties: PathProperties,
-    other_requirements: Vec<SimDebugTrainZoneRequirement>,
-    departure_time: DateTime<Utc>,
-    engineering_allowances_ranges: Vec<SimDebugEngineeringAllowanceRange>,
-    zone_locations: Vec<SimDebugZoneLocation>,
-    train_times: Vec<f64>,
-    train_positions: Vec<f64>,
-}
-
-#[derive(Serialize, Deserialize, ToSchema)]
-pub(in crate::views) struct StdcmDebugDataResponse {
-    failure: Option<SimDebugFailureReport>,
-    simulation_data: Option<SimDebugData>,
-}
+use ::authz::Role;
+use axum::Extension;
+use axum::extract::Json;
+use axum::extract::Path;
+use axum::extract::State;
+use core_client::AsCoreRequest;
+use core_client::stdcm_logged_data::StdcmLoggedDataRequest;
+use core_client::stdcm_logged_data::StdcmLoggedDataResponse;
 
 #[editoast_derive::route]
 #[utoipa::path(
@@ -104,14 +20,14 @@ pub(in crate::views) struct StdcmDebugDataResponse {
         ("trace_id" = String, Path, description = "OpenTelemetry trace ID of the STDCM request")
     ),
     responses(
-        (status = 200, body = inline(StdcmDebugDataResponse)),
+        (status = 200, body = inline(StdcmLoggedDataResponse)),
     )
 )]
 pub(in crate::views) async fn get_debug_data(
     Extension(auth): AuthenticationExt,
-    State(AppState { s3_client, .. }): State<AppState>,
+    State(AppState { core_client, .. }): State<AppState>,
     Path(trace_id): Path<String>,
-) -> Result<Json<StdcmDebugDataResponse>> {
+) -> Result<Json<StdcmLoggedDataResponse>> {
     let authorized = match auth {
         Authentication::SkipAuthorization { .. } => true,
         other => other
@@ -124,48 +40,11 @@ pub(in crate::views) async fn get_debug_data(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let s3 = s3_client.as_ref().ok_or(StdcmDebugError::S3NotConfigured)?;
+    let core_request = StdcmLoggedDataRequest { trace_id };
 
-    let prefix = OsPath::from("stdcm/requests/").join(trace_id);
-    let failure = fetch_optional_json::<SimDebugFailureReport>(
-        s3.as_ref(),
-        &prefix.clone().join("failure.json"),
-    )
-    .await?;
-    let simulation_data = fetch_optional_json::<SimDebugData>(
-        s3.as_ref(),
-        &prefix.join("output_simulation_data.json"),
-    )
-    .await?;
-
-    let response = StdcmDebugDataResponse {
-        failure,
-        simulation_data,
-    };
-    Ok(Json(response))
-}
-
-async fn fetch_optional_json<T: serde::de::DeserializeOwned>(
-    s3: &AmazonS3,
-    path: &OsPath,
-) -> Result<Option<T>, StdcmDebugError> {
-    match s3.get_opts(path, GetOptions::default()).await {
-        Ok(result) => {
-            let bytes = result.bytes().await.map_err(|e| StdcmDebugError::S3Error {
-                path: path.to_string(),
-                message: e.to_string(),
-            })?;
-            let value =
-                serde_json::from_slice(&bytes).map_err(|e| StdcmDebugError::JsonParseError {
-                    path: path.to_string(),
-                    message: e.to_string(),
-                })?;
-            Ok(Some(value))
-        }
-        Err(object_store::Error::NotFound { .. }) => Ok(None),
-        Err(e) => Err(StdcmDebugError::S3Error {
-            path: path.to_string(),
-            message: e.to_string(),
-        }),
+    let response = core_request.fetch(core_client.as_ref()).await;
+    match response {
+        Ok(data) => Ok(Json(data)),
+        Err(e) => Err(e.into()),
     }
 }

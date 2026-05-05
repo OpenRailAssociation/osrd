@@ -7,6 +7,7 @@ pub mod pathfinding;
 pub mod signal_projection;
 pub mod simulation;
 pub mod stdcm;
+pub mod stdcm_logged_data;
 pub mod worker_load;
 
 use futures::Stream;

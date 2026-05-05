@@ -2903,6 +2903,7 @@ paths:
             application/json:
               schema:
                 type: object
+                description: A Core stdcm logged data response
                 properties:
                   failure:
                     oneOf:
@@ -6282,9 +6283,6 @@ components:
       - $ref: '#/components/schemas/EditoastSimilarTrainsErrorSpeedLimitNotFound'
       - $ref: '#/components/schemas/EditoastSpriteErrorsFileNotFound'
       - $ref: '#/components/schemas/EditoastSpriteErrorsUnknownSignalingSystem'
-      - $ref: '#/components/schemas/EditoastStdcmDebugErrorJsonParseError'
-      - $ref: '#/components/schemas/EditoastStdcmDebugErrorS3Error'
-      - $ref: '#/components/schemas/EditoastStdcmDebugErrorS3NotConfigured'
       - $ref: '#/components/schemas/EditoastStdcmErrorBatchRollingStockNotFound'
       - $ref: '#/components/schemas/EditoastStdcmErrorDatabase'
       - $ref: '#/components/schemas/EditoastStdcmErrorInfraNotFound'
@@ -7772,79 +7770,6 @@ components:
           type: string
           enum:
           - editoast:sprites:UnknownSignalingSystem
-    EditoastStdcmDebugErrorJsonParseError:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - message
-          - path
-          properties:
-            message:
-              type: string
-            path:
-              type: string
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:stdcm_debug:JsonParseError
-    EditoastStdcmDebugErrorS3Error:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - message
-          - path
-          properties:
-            message:
-              type: string
-            path:
-              type: string
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:stdcm_debug:S3Error
-    EditoastStdcmDebugErrorS3NotConfigured:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 503
-        type:
-          type: string
-          enum:
-          - editoast:stdcm_debug:S3NotConfigured
     EditoastStdcmErrorBatchRollingStockNotFound:
       type: object
       required:
@@ -11090,63 +11015,7 @@ components:
                 description: List of `n+1` values associated to the ranges
           description: Curves along the path
         electrifications:
-          oneOf:
-          - type: object
-            description: Electrification property along a path. Each value is associated to a range of the path.
-            required:
-            - boundaries
-            - values
-            properties:
-              boundaries:
-                type: array
-                items:
-                  type: integer
-                  format: int64
-                  minimum: 0
-                description: |-
-                  List of `n` boundaries of the ranges.
-                  A boundary is a distance from the beginning of the path in mm.
-              values:
-                type: array
-                items:
-                  oneOf:
-                  - type: object
-                    title: PropertyElectrificationValueElectrification
-                    description: Electrified section with a given voltage
-                    required:
-                    - voltage
-                    - type
-                    properties:
-                      type:
-                        type: string
-                        enum:
-                        - electrification
-                      voltage:
-                        type: string
-                  - type: object
-                    title: PropertyElectrificationValueNeutralSection
-                    description: Neutral section with a lower pantograph instruction or just a dead section
-                    required:
-                    - lower_pantograph
-                    - type
-                    properties:
-                      lower_pantograph:
-                        type: boolean
-                      type:
-                        type: string
-                        enum:
-                        - neutral_section
-                  - type: object
-                    title: PropertyElectrificationValueNonElectrified
-                    description: Non electrified section
-                    required:
-                    - type
-                    properties:
-                      type:
-                        type: string
-                        enum:
-                        - non_electrified
-                description: List of `n+1` values associated to the ranges
+          $ref: '#/components/schemas/core.PropertyElectrificationValues'
           description: Electrification modes and neutral section along the path
         geometry:
           $ref: '#/components/schemas/GeoJsonLineString'
@@ -11245,6 +11114,37 @@ components:
           items:
             $ref: '#/components/schemas/core.TrackRange'
           description: List of track sections
+    PathPropertiesResponse:
+      type: object
+      description: Properties along a path.
+      required:
+      - slopes
+      - curves
+      - electrifications
+      - geometry
+      - operational_points
+      - zones
+      properties:
+        curves:
+          $ref: '#/components/schemas/core.PropertyValuesF64'
+          description: Curves along the path
+        electrifications:
+          $ref: '#/components/schemas/core.PropertyElectrificationValues'
+          description: Electrification modes and neutral section along the path
+        geometry:
+          $ref: '#/components/schemas/GeoJsonLineString'
+          description: Geometry of the path
+        operational_points:
+          type: array
+          items:
+            $ref: '#/components/schemas/core.OperationalPointOnPath'
+          description: Operational points along the path
+        slopes:
+          $ref: '#/components/schemas/core.PropertyValuesF64'
+          description: Slopes along the path
+        zones:
+          $ref: '#/components/schemas/core.PropertyZoneValues'
+          description: Zones along the path
     PathfindingFailure:
       oneOf:
       - allOf:
@@ -13191,11 +13091,11 @@ components:
           items:
             $ref: '#/components/schemas/SimDebugTrainZoneRequirement'
         path_properties:
-          $ref: '#/components/schemas/PathProperties'
+          $ref: '#/components/schemas/PathPropertiesResponse'
         sim_output:
           oneOf:
           - type: 'null'
-          - $ref: '#/components/schemas/SimulationResponseSuccess'
+          - $ref: '#/components/schemas/SimulationSuccess'
         train_positions:
           type: array
           items:
@@ -13334,50 +13234,7 @@ components:
           $ref: '#/components/schemas/core.ReportTrain'
           description: Simulation without any regularity margins
         electrical_profiles:
-          type: object
-          required:
-          - boundaries
-          - values
-          properties:
-            boundaries:
-              type: array
-              items:
-                type: integer
-                format: int64
-                minimum: 0
-              description: |-
-                List of `n` boundaries of the ranges (block path).
-                A boundary is a distance from the beginning of the path in mm.
-            values:
-              type: array
-              items:
-                oneOf:
-                - type: object
-                  title: ElectricalProfileValueNoProfile
-                  required:
-                  - electrical_profile_type
-                  properties:
-                    electrical_profile_type:
-                      type: string
-                      enum:
-                      - no_profile
-                - type: object
-                  title: ElectricalProfileValueProfile
-                  required:
-                  - handled
-                  - electrical_profile_type
-                  properties:
-                    electrical_profile_type:
-                      type: string
-                      enum:
-                      - profile
-                    handled:
-                      type: boolean
-                    profile:
-                      type:
-                      - string
-                      - 'null'
-              description: List of `n+1` values associated to the ranges
+          $ref: '#/components/schemas/core.ElectricalProfiles'
         final_output:
           oneOf:
           - allOf:
@@ -13407,71 +13264,29 @@ components:
                     $ref: '#/components/schemas/core.ZoneUpdate'
           description: Simulation that takes into account the regularity margins and the schedule item times
         mrsp:
-          type: object
-          description: A MRSP computation result (Most Restrictive Speed Profile)
-          required:
-          - boundaries
-          - values
-          properties:
-            boundaries:
-              type: array
-              items:
-                type: integer
-                format: int64
-                minimum: 0
-              description: |-
-                List of `n` boundaries of the ranges (block path).
-                A boundary is a distance from the beginning of the path in mm.
-            values:
-              type: array
-              items:
-                type: object
-                required:
-                - speed
-                properties:
-                  source:
-                    oneOf:
-                    - type: 'null'
-                    - oneOf:
-                      - type: object
-                        title: SpeedLimitSourceGivenTrainTag
-                        required:
-                        - tag
-                        - speed_limit_source_type
-                        properties:
-                          speed_limit_source_type:
-                            type: string
-                            enum:
-                            - given_train_tag
-                          tag:
-                            type: string
-                      - type: object
-                        title: SpeedLimitSourceFallbackTag
-                        required:
-                        - tag
-                        - speed_limit_source_type
-                        properties:
-                          speed_limit_source_type:
-                            type: string
-                            enum:
-                            - fallback_tag
-                          tag:
-                            type: string
-                      - type: object
-                        title: SpeedLimitSourceUnknownTag
-                        required:
-                        - speed_limit_source_type
-                        properties:
-                          speed_limit_source_type:
-                            type: string
-                            enum:
-                            - unknown_tag
-                    description: source of the speed-limit if relevant (tag used)
-                  speed:
-                    type: number
-                    format: double
-                    description: in meters per second
-              description: List of `n+1` values associated to the ranges
+          $ref: '#/components/schemas/core.SpeedLimitProperties'
+        provisional:
+          $ref: '#/components/schemas/core.ReportTrain'
+          description: Simulation that takes into account the regularity margins
+    SimulationSuccess:
+      type: object
+      required:
+      - base
+      - provisional
+      - final_output
+      - mrsp
+      - electrical_profiles
+      properties:
+        base:
+          $ref: '#/components/schemas/core.ReportTrain'
+          description: Simulation without any regularity margins
+        electrical_profiles:
+          $ref: '#/components/schemas/core.ElectricalProfiles'
+        final_output:
+          $ref: '#/components/schemas/core.CompleteReportTrain'
+          description: Simulation that takes into account the regularity margins and the schedule item times
+        mrsp:
+          $ref: '#/components/schemas/core.SpeedLimitProperties'
         provisional:
           $ref: '#/components/schemas/core.ReportTrain'
           description: Simulation that takes into account the regularity margins
@@ -15143,6 +14958,32 @@ components:
       - LOADING
       - READY
       - ERROR
+    core.CompleteReportTrain:
+      allOf:
+      - $ref: '#/components/schemas/core.ReportTrain'
+      - type: object
+        required:
+        - signal_critical_positions
+        - zone_updates
+        - spacing_requirements
+        - routing_requirements
+        properties:
+          routing_requirements:
+            type: array
+            items:
+              $ref: '#/components/schemas/core.RoutingRequirement'
+          signal_critical_positions:
+            type: array
+            items:
+              $ref: '#/components/schemas/core.SignalCriticalPosition'
+          spacing_requirements:
+            type: array
+            items:
+              $ref: '#/components/schemas/core.SpacingRequirement'
+          zone_updates:
+            type: array
+            items:
+              $ref: '#/components/schemas/core.ZoneUpdate'
     core.ConflictRequirement:
       type: object
       description: |-
@@ -15490,6 +15331,51 @@ components:
                 format: int64
                 minimum: 0
               description: List of times (in ms) associated to a position
+    core.ElectricalProfiles:
+      type: object
+      required:
+      - boundaries
+      - values
+      properties:
+        boundaries:
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 0
+          description: |-
+            List of `n` boundaries of the ranges (block path).
+            A boundary is a distance from the beginning of the path in mm.
+        values:
+          type: array
+          items:
+            oneOf:
+            - type: object
+              title: ElectricalProfileValueNoProfile
+              required:
+              - electrical_profile_type
+              properties:
+                electrical_profile_type:
+                  type: string
+                  enum:
+                  - no_profile
+            - type: object
+              title: ElectricalProfileValueProfile
+              required:
+              - handled
+              - electrical_profile_type
+              properties:
+                electrical_profile_type:
+                  type: string
+                  enum:
+                  - profile
+                handled:
+                  type: boolean
+                profile:
+                  type:
+                  - string
+                  - 'null'
+          description: List of `n+1` values associated to the ranges
     core.IncompatibleConstraints:
       type: object
       required:
@@ -15563,6 +15449,40 @@ components:
         start:
           type: integer
           format: int64
+          minimum: 0
+    core.OperationalPointOnPath:
+      type: object
+      description: Operational point along a path.
+      required:
+      - id
+      - part
+      - position
+      - weight
+      properties:
+        extensions:
+          $ref: '#/components/schemas/OperationalPointExtensions'
+          description: Extensions associated to the operational point
+        id:
+          oneOf:
+          - type: string
+            maxLength: 255
+            minLength: 1
+          description: Id of the operational point
+        part:
+          $ref: '#/components/schemas/OperationalPointPart'
+          description: The part along the path
+        position:
+          type: integer
+          format: int64
+          description: Distance from the beginning of the path in mm
+          minimum: 0
+        weight:
+          type:
+          - integer
+          - 'null'
+          format: int32
+          description: Importance of the operational point
+          maximum: 100
           minimum: 0
     core.PathItem:
       type: object
@@ -15730,6 +15650,106 @@ components:
           description: |-
             The path offset in mm of each path item given as input of the pathfinding
             The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm
+    core.PropertyElectrificationValues:
+      type: object
+      description: Electrification property along a path. Each value is associated to a range of the path.
+      required:
+      - boundaries
+      - values
+      properties:
+        boundaries:
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 0
+          description: |-
+            List of `n` boundaries of the ranges.
+            A boundary is a distance from the beginning of the path in mm.
+        values:
+          type: array
+          items:
+            oneOf:
+            - type: object
+              title: PropertyElectrificationValueElectrification
+              description: Electrified section with a given voltage
+              required:
+              - voltage
+              - type
+              properties:
+                type:
+                  type: string
+                  enum:
+                  - electrification
+                voltage:
+                  type: string
+            - type: object
+              title: PropertyElectrificationValueNeutralSection
+              description: Neutral section with a lower pantograph instruction or just a dead section
+              required:
+              - lower_pantograph
+              - type
+              properties:
+                lower_pantograph:
+                  type: boolean
+                type:
+                  type: string
+                  enum:
+                  - neutral_section
+            - type: object
+              title: PropertyElectrificationValueNonElectrified
+              description: Non electrified section
+              required:
+              - type
+              properties:
+                type:
+                  type: string
+                  enum:
+                  - non_electrified
+          description: List of `n+1` values associated to the ranges
+    core.PropertyValuesF64:
+      type: object
+      description: Property f64 values along a path. Each value is associated to a range of the path.
+      required:
+      - boundaries
+      - values
+      properties:
+        boundaries:
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 0
+          description: |-
+            List of `n` boundaries of the ranges.
+            A boundary is a distance from the beginning of the path in mm.
+        values:
+          type: array
+          items:
+            type: number
+            format: double
+          description: List of `n+1` values associated to the ranges
+    core.PropertyZoneValues:
+      type: object
+      description: Zones along a path. Each value is associated to a range of the path.
+      required:
+      - boundaries
+      - values
+      properties:
+        boundaries:
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 0
+          description: |-
+            List of `n` boundaries of the ranges.
+            A boundary is a distance from the beginning of the path in mm.
+        values:
+          type: array
+          items:
+            type: string
+          description: List of `n+1` values associated to the ranges
     core.ReportTrain:
       type: object
       required:
@@ -15910,6 +15930,72 @@ components:
           minimum: 0
         zone:
           type: string
+    core.SpeedLimitProperties:
+      type: object
+      description: A MRSP computation result (Most Restrictive Speed Profile)
+      required:
+      - boundaries
+      - values
+      properties:
+        boundaries:
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 0
+          description: |-
+            List of `n` boundaries of the ranges (block path).
+            A boundary is a distance from the beginning of the path in mm.
+        values:
+          type: array
+          items:
+            type: object
+            required:
+            - speed
+            properties:
+              source:
+                oneOf:
+                - type: 'null'
+                - oneOf:
+                  - type: object
+                    title: SpeedLimitSourceGivenTrainTag
+                    required:
+                    - tag
+                    - speed_limit_source_type
+                    properties:
+                      speed_limit_source_type:
+                        type: string
+                        enum:
+                        - given_train_tag
+                      tag:
+                        type: string
+                  - type: object
+                    title: SpeedLimitSourceFallbackTag
+                    required:
+                    - tag
+                    - speed_limit_source_type
+                    properties:
+                      speed_limit_source_type:
+                        type: string
+                        enum:
+                        - fallback_tag
+                      tag:
+                        type: string
+                  - type: object
+                    title: SpeedLimitSourceUnknownTag
+                    required:
+                    - speed_limit_source_type
+                    properties:
+                      speed_limit_source_type:
+                        type: string
+                        enum:
+                        - unknown_tag
+                description: source of the speed-limit if relevant (tag used)
+              speed:
+                type: number
+                format: double
+                description: in meters per second
+          description: List of `n+1` values associated to the ranges
     core.StdcmRequest:
       type: object
       required:

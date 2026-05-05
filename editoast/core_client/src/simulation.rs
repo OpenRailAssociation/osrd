@@ -284,7 +284,7 @@ pub struct Request {
     pub path_item_positions: Vec<u64>,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
 pub struct SimulationSuccess {
     /// Simulation without any regularity margins
     pub base: ReportTrain,

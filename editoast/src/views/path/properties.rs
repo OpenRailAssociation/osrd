@@ -45,7 +45,6 @@ pub(in crate::views) struct PathProperties {
     /// Curves along the path
     curves: PropertyValuesF64,
     /// Electrification modes and neutral section along the path
-    #[schema(inline)]
     electrifications: PropertyElectrificationValues,
     /// Geometry of the path
     #[schema(value_type = GeoJsonLineString)]

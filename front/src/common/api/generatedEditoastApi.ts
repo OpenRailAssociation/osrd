@@ -3512,6 +3512,25 @@ export type InfraObjectWithGeometry = {
   obj_id: string;
   railjson: object;
 };
+export type CorePropertyElectrificationValues = {
+  /** List of `n` boundaries of the ranges.
+    A boundary is a distance from the beginning of the path in mm. */
+  boundaries: number[];
+  /** List of `n+1` values associated to the ranges */
+  values: (
+    | {
+        type: 'electrification';
+        voltage: string;
+      }
+    | {
+        lower_pantograph: boolean;
+        type: 'neutral_section';
+      }
+    | {
+        type: 'non_electrified';
+      }
+  )[];
+};
 export type OperationalPointExtensions = {
   identifier?: null | {
     name: string;
@@ -3535,25 +3554,7 @@ export type PathProperties = {
     values: number[];
   };
   /** Electrification modes and neutral section along the path */
-  electrifications: {
-    /** List of `n` boundaries of the ranges.
-        A boundary is a distance from the beginning of the path in mm. */
-    boundaries: number[];
-    /** List of `n+1` values associated to the ranges */
-    values: (
-      | {
-          type: 'electrification';
-          voltage: string;
-        }
-      | {
-          lower_pantograph: boolean;
-          type: 'neutral_section';
-        }
-      | {
-          type: 'non_electrified';
-        }
-    )[];
-  };
+  electrifications: CorePropertyElectrificationValues;
   /** Geometry of the path */
   geometry: GeoJsonLineString;
   /** Operational points along the path */
@@ -4376,6 +4377,46 @@ export type SimDebugTrainZoneRequirement = {
   train_name?: string | null;
   zone_name: string;
 };
+export type CorePropertyValuesF64 = {
+  /** List of `n` boundaries of the ranges.
+    A boundary is a distance from the beginning of the path in mm. */
+  boundaries: number[];
+  /** List of `n+1` values associated to the ranges */
+  values: number[];
+};
+export type CoreOperationalPointOnPath = {
+  /** Extensions associated to the operational point */
+  extensions?: OperationalPointExtensions;
+  /** Id of the operational point */
+  id: string;
+  /** The part along the path */
+  part: OperationalPointPart;
+  /** Distance from the beginning of the path in mm */
+  position: number;
+  /** Importance of the operational point */
+  weight: number | null;
+};
+export type CorePropertyZoneValues = {
+  /** List of `n` boundaries of the ranges.
+    A boundary is a distance from the beginning of the path in mm. */
+  boundaries: number[];
+  /** List of `n+1` values associated to the ranges */
+  values: string[];
+};
+export type PathPropertiesResponse = {
+  /** Curves along the path */
+  curves: CorePropertyValuesF64;
+  /** Electrification modes and neutral section along the path */
+  electrifications: CorePropertyElectrificationValues;
+  /** Geometry of the path */
+  geometry: GeoJsonLineString;
+  /** Operational points along the path */
+  operational_points: CoreOperationalPointOnPath[];
+  /** Slopes along the path */
+  slopes: CorePropertyValuesF64;
+  /** Zones along the path */
+  zones: CorePropertyZoneValues;
+};
 export type CoreReportTrain = {
   /** Total energy consumption */
   energy_consumption: number;
@@ -4388,6 +4429,22 @@ export type CoreReportTrain = {
   /** List of speeds associated to a position */
   speeds: number[];
   times: number[];
+};
+export type CoreElectricalProfiles = {
+  /** List of `n` boundaries of the ranges (block path).
+    A boundary is a distance from the beginning of the path in mm. */
+  boundaries: number[];
+  /** List of `n+1` values associated to the ranges */
+  values: (
+    | {
+        electrical_profile_type: 'no_profile';
+      }
+    | {
+        electrical_profile_type: 'profile';
+        handled: boolean;
+        profile?: string | null;
+      }
+  )[];
 };
 export type CoreRoutingZoneRequirement = {
   /** Time in ms */
@@ -4424,59 +4481,45 @@ export type CoreZoneUpdate = {
   time: number;
   zone: string;
 };
-export type SimulationResponseSuccess = {
+export type CoreCompleteReportTrain = CoreReportTrain & {
+  routing_requirements: CoreRoutingRequirement[];
+  signal_critical_positions: CoreSignalCriticalPosition[];
+  spacing_requirements: CoreSpacingRequirement[];
+  zone_updates: CoreZoneUpdate[];
+};
+export type CoreSpeedLimitProperties = {
+  /** List of `n` boundaries of the ranges (block path).
+    A boundary is a distance from the beginning of the path in mm. */
+  boundaries: number[];
+  /** List of `n+1` values associated to the ranges */
+  values: {
+    /** source of the speed-limit if relevant (tag used) */
+    source?:
+      | null
+      | (
+          | {
+              speed_limit_source_type: 'given_train_tag';
+              tag: string;
+            }
+          | {
+              speed_limit_source_type: 'fallback_tag';
+              tag: string;
+            }
+          | {
+              speed_limit_source_type: 'unknown_tag';
+            }
+        );
+    /** in meters per second */
+    speed: number;
+  }[];
+};
+export type SimulationSuccess = {
   /** Simulation without any regularity margins */
   base: CoreReportTrain;
-  electrical_profiles: {
-    /** List of `n` boundaries of the ranges (block path).
-        A boundary is a distance from the beginning of the path in mm. */
-    boundaries: number[];
-    /** List of `n+1` values associated to the ranges */
-    values: (
-      | {
-          electrical_profile_type: 'no_profile';
-        }
-      | {
-          electrical_profile_type: 'profile';
-          handled: boolean;
-          profile?: string | null;
-        }
-    )[];
-  };
+  electrical_profiles: CoreElectricalProfiles;
   /** Simulation that takes into account the regularity margins and the schedule item times */
-  final_output: CoreReportTrain & {
-    routing_requirements: CoreRoutingRequirement[];
-    signal_critical_positions: CoreSignalCriticalPosition[];
-    spacing_requirements: CoreSpacingRequirement[];
-    zone_updates: CoreZoneUpdate[];
-  };
-  /** A MRSP computation result (Most Restrictive Speed Profile) */
-  mrsp: {
-    /** List of `n` boundaries of the ranges (block path).
-        A boundary is a distance from the beginning of the path in mm. */
-    boundaries: number[];
-    /** List of `n+1` values associated to the ranges */
-    values: {
-      /** source of the speed-limit if relevant (tag used) */
-      source?:
-        | null
-        | (
-            | {
-                speed_limit_source_type: 'given_train_tag';
-                tag: string;
-              }
-            | {
-                speed_limit_source_type: 'fallback_tag';
-                tag: string;
-              }
-            | {
-                speed_limit_source_type: 'unknown_tag';
-              }
-          );
-      /** in meters per second */
-      speed: number;
-    }[];
-  };
+  final_output: CoreCompleteReportTrain;
+  mrsp: CoreSpeedLimitProperties;
   /** Simulation that takes into account the regularity margins */
   provisional: CoreReportTrain;
 };
@@ -4489,8 +4532,8 @@ export type SimDebugData = {
   departure_time: string;
   engineering_allowances_ranges: SimDebugEngineeringAllowanceRange[];
   other_requirements: SimDebugTrainZoneRequirement[];
-  path_properties: PathProperties;
-  sim_output?: null | SimulationResponseSuccess;
+  path_properties: PathPropertiesResponse;
+  sim_output?: null | SimulationSuccess;
   train_positions: number[];
   train_times: number[];
   zone_locations: SimDebugZoneLocation[];
@@ -4772,6 +4815,21 @@ export type CoreStdcmRequest = {
   timetable_id: number;
   /** List of planned work schedules */
   work_schedules: CoreWorkSchedule[];
+};
+export type SimulationResponseSuccess = {
+  /** Simulation without any regularity margins */
+  base: CoreReportTrain;
+  electrical_profiles: CoreElectricalProfiles;
+  /** Simulation that takes into account the regularity margins and the schedule item times */
+  final_output: CoreReportTrain & {
+    routing_requirements: CoreRoutingRequirement[];
+    signal_critical_positions: CoreSignalCriticalPosition[];
+    spacing_requirements: CoreSpacingRequirement[];
+    zone_updates: CoreZoneUpdate[];
+  };
+  mrsp: CoreSpeedLimitProperties;
+  /** Simulation that takes into account the regularity margins */
+  provisional: CoreReportTrain;
 };
 export type SimulationResponse =
   | (SimulationResponseSuccess & {
