@@ -35,6 +35,13 @@ class SimulationRequest(
     @Json(name = "path_item_positions") val pathItemPositions: List<Offset<PhysicsPath>>,
     @Json(name = "backtrack_positions") val backtrackPositions: List<Offset<PhysicsPath>>,
 ) {
+    init {
+        backtrackPositions.forEach { position ->
+            require(pathItemPositions.contains(position))
+            require(schedule.first { it.pathOffset == position }.stopFor != null)
+        }
+    }
+
     companion object {
         val adapter: JsonAdapter<SimulationRequest> =
             Moshi.Builder()

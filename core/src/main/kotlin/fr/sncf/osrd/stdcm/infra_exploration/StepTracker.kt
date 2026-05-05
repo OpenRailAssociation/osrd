@@ -76,8 +76,19 @@ class StepTracker(
 
             val isBacktrackingStep =
                 isBacktrackingAtEnd && location.offset == rangeEnd && step.canBacktrack
+            val explorerStep =
+                ExplorerStep(
+                    step.locations,
+                    // If the step is a backtracking location, it has to mark a stop.
+                    duration =
+                        if (isBacktrackingStep && step.duration == null) 0.0 else step.duration,
+                    stop = step.stop || isBacktrackingStep,
+                    step.canBacktrack,
+                    step.plannedTimingData,
+                )
 
-            val newStep = LocatedStep(currentPathOffset, location, step, true, isBacktrackingStep)
+            val newStep =
+                LocatedStep(currentPathOffset, location, explorerStep, true, isBacktrackingStep)
             res.add(newStep)
             seenSteps.add(newStep)
             if (isBacktrackingStep) break
@@ -141,5 +152,7 @@ data class LocatedStep(
 ) {
     init {
         assert(originalStep.locations.contains(location))
+        // If the step is a backtracking location, it has to mark a stop.
+        assert(!isBacktracking || (originalStep.stop && originalStep.duration != null))
     }
 }
