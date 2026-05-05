@@ -553,7 +553,7 @@ async fn authentication_extraction_middleware(
 /// - the impersonator must be an admin
 /// - the impersonated user must already exist in the database, we do not create it if it does not
 /// - push the roles of the origin user in the request extensions
-#[tracing::instrument(skip_all)]
+#[tracing::instrument(skip_all, fields(user.id, user.name, user.roles))]
 async fn authentication_validation_middleware(
     Extension(authn): Extension<crate::authentication::Authentication>,
     State(AppState {
@@ -667,6 +667,14 @@ async fn authentication_validation_middleware(
             tracing::info!("impersonation enabled");
         }
     }
+
+    let span = Span::current();
+    if let Some(user) = &user {
+        span.record("user.id", user.id);
+        span.record("user.name", tracing::field::display(&user.name));
+    }
+    span.record("user.roles", tracing::field::debug(&roles));
+    span.record("user.is_admin", roles.contains(&Role::Admin));
 
     let user_id = user.as_ref().map(|editoast_models::User { id, .. }| *id);
     req.extensions_mut().insert(roles);
