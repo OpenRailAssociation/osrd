@@ -8,6 +8,7 @@ export type CheckboxProps = React.PropsWithChildren<
     small?: boolean;
     hint?: string;
     isIndeterminate?: boolean;
+    ref?: React.RefObject<HTMLInputElement | null>;
   }
 >;
 
@@ -21,6 +22,7 @@ const Checkbox = ({
   isIndeterminate = false,
   onClick,
   children,
+  ref,
   ...rest
 }: CheckboxProps) => {
   const handleClick = (e: MouseEvent<HTMLInputElement>) => {
@@ -44,6 +46,9 @@ const Checkbox = ({
         ref={(input) => {
           if (input) {
             input.indeterminate = isIndeterminate;
+          }
+          if (ref) {
+            ref.current = input;
           }
         }}
         onClick={handleClick}
