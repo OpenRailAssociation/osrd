@@ -1,4 +1,4 @@
-import { useMemo, useState, type PropsWithChildren } from 'react';
+import { useMemo, useRef, useState, type MouseEvent, type PropsWithChildren } from 'react';
 
 import { Checkbox } from '@osrd-project/ui-core';
 import {
@@ -148,6 +148,8 @@ const TrainScheduleSetTab = ({
     ? t('sandbox')
     : computeTrainScheduleSetName(trainScheduleSet.name!, catalogName);
 
+  const checkboxRef: React.RefObject<HTMLInputElement | null> = useRef(null);
+
   return (
     <>
       <div
@@ -157,8 +159,9 @@ const TrainScheduleSetTab = ({
           className="train-schedule-set-tab"
           role="button"
           tabIndex={0}
-          onClick={() => {
+          onClick={(event: MouseEvent<HTMLDivElement>) => {
             if (isCheckboxDisabled && isSelectMode) return;
+            if (event.target === checkboxRef.current) return; // Don't toggle visibility on checkbox clicks
             handleClickTrainScheduleSet(trainScheduleSet.id);
           }}
         >
@@ -170,6 +173,7 @@ const TrainScheduleSetTab = ({
               disabled={isCheckboxDisabled}
               onChange={handleSelectTrainScheduleSet}
               small
+              ref={checkboxRef}
             />
           )}
           {isTrainListOpen ? (
