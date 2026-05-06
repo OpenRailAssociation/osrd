@@ -263,18 +263,16 @@ def test_start_ws_v1_path(session: Session, small_infra: Infra):
                         "sncf": None,
                     },
                 },
-                "extensions": {
-                    "sncf": {
-                        "ci": 22,
-                        "ch": "BV",
-                        "ch_short_label": "BV",
-                        "ch_long_label": "0",
-                        "trigram": "WS",
-                    },
-                    "identifier": {"name": "West_station", "uic": 8722},
-                },
-                "position": 0,
                 "weight": None,
+                "name": "West_station",
+                "uic": 8722,
+                "plc": None,
+                "country_code": "FR",
+                "main_code": "WS",
+                "secondary_code": "BV",
+                "is_passenger_station": True,
+                "secondary_name": "0",
+                "position": 0,
             }
         ],
         "zones": {

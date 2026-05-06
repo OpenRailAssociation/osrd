@@ -17,10 +17,11 @@ export type SuggestedOP = {
   pathStepId: string | undefined;
   opId: string | undefined;
   name: string | undefined;
-  uic?: number;
-  ch?: string;
+  uic?: number | null;
+  secondaryCode?: string | null;
   kp?: string;
-  trigram?: string;
+  mainCode?: string;
+  isPassengerStation?: boolean;
   offsetOnTrack: number;
   track: string;
   trackName?: string;

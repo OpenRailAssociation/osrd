@@ -19,7 +19,7 @@
       cursor: pointer;
       line-height: 20px;
 
-      .trigram {
+      .main-code {
         color: var(--coolgray9);
         font-family: monospace;
         font-size: 0.8rem;
@@ -31,7 +31,7 @@
         padding: 4px 0 0 8px;
         flex-grow: 1;
         flex-shrink: 1;
-        .ch {
+        .secondary-code {
           margin-left: 4px;
           font-size: 0.9rem;
         }

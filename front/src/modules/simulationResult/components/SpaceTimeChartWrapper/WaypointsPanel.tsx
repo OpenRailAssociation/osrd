@@ -171,10 +171,10 @@ const WaypointsPanel = ({
               </span>
             )}
             <span className="name" data-testid="waypoint-name">
-              {waypoint.extensions?.identifier?.name}
+              {waypoint.name}
             </span>
-            <span className="ch" data-testid="waypoint-ch">
-              {waypoint.extensions?.sncf?.ch}
+            <span className="secondary-code" data-testid="waypoint-secondary-code">
+              {waypoint.secondary_code}
             </span>
           </div>
         ))}

@@ -182,6 +182,21 @@ class CoreOffsetRange(BaseModel):
     start: Annotated[int, Field(ge=0)]
 
 
+class Plc(RootModel[str]):
+    root: Annotated[str, Field(min_length=1)]
+    """
+    Primary Location Code : https://rne.eu/it/products/ccs/crd/
+    """
+
+
+class SecondaryCode(RootModel[str]):
+    root: Annotated[str, Field(min_length=1)]
+
+
+class SecondaryName(RootModel[str]):
+    root: Annotated[str, Field(min_length=1)]
+
+
 class PathfindingInputErrorNotEnoughPathItems(BaseModel):
     error_type: Literal["not_enough_path_items"]
 
@@ -2591,14 +2606,6 @@ class OperationDelete(BaseModel):
     operation_type: Literal["DELETE"]
 
 
-class OperationalPointIdentifierExtension(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    name: Annotated[str, Field(min_length=1)]
-    uic: Annotated[int, Field(ge=0)]
-
-
 class LocalTrackName(RootModel[str]):
     root: Annotated[str, Field(min_length=1)]
 
@@ -2618,8 +2625,15 @@ class OperationalPointReferenceId(BaseModel):
     type: Literal["id"]
 
 
+class SecondaryCode2(RootModel[str]):
+    root: Annotated[str, Field(min_length=1)]
+    """
+    An optional secondary code to identify a more specific location
+    """
+
+
 class OperationalPointReferenceTrigram(BaseModel):
-    secondary_code: str | None = None
+    secondary_code: SecondaryCode2 | None = None
     """
     An optional secondary code to identify a more specific location
     """
@@ -2631,7 +2645,7 @@ class OperationalPointReferenceTrigram(BaseModel):
 
 
 class OperationalPointReferenceUic(BaseModel):
-    secondary_code: str | None = None
+    secondary_code: SecondaryCode2 | None = None
     """
     An optional secondary code to identify a more specific location
     """
@@ -2640,17 +2654,6 @@ class OperationalPointReferenceUic(BaseModel):
     """
     The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
     """
-
-
-class OperationalPointSncfExtension(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    ch: str
-    ch_long_label: Annotated[str, Field(min_length=1)]
-    ch_short_label: Annotated[str, Field(min_length=1)]
-    ci: int
-    trigram: str
 
 
 class PaginationStats(BaseModel):
@@ -2903,6 +2906,14 @@ class RefillLaw(BaseModel):
     )
     soc_ref: Annotated[float, Field(ge=0.0, le=1.0)]
     tau: Annotated[float, Field(ge=0.0)]
+
+
+class Plc2(RootModel[str]):
+    root: Annotated[str, Field(min_length=1)]
+
+
+class SecondaryCode4(RootModel[str]):
+    root: Annotated[str, Field(min_length=1)]
 
 
 class RemoveOperation(BaseModel):
@@ -4837,14 +4848,6 @@ class OccupancyBlockForm(BaseModel):
     timetable_id: int
 
 
-class OperationalPointExtensions(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    identifier: OperationalPointIdentifierExtension | None = None
-    sncf: OperationalPointSncfExtension | None = None
-
-
 class OperationalPointPartExtension(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -5139,15 +5142,16 @@ class SearchResultItemOperationalPoint(BaseModel):
 
     """
 
-    ch: str
-    ci: Annotated[int, Field(ge=0)]
     geographic: GeoJsonPoint
     infra_id: int
+    is_passenger_station: bool
+    main_code: str
     name: str
     obj_id: str
+    secondary_code: str | None = None
+    secondary_name: str | None = None
     track_sections: list[SearchResultItemOperationalPointTrackSections]
-    trigram: str
-    uic: int
+    uic: int | None = None
 
 
 class SearchResultItemSignal(BaseModel):
@@ -6047,22 +6051,29 @@ class CoreOperationalPointOnPath(BaseModel):
     Operational point along a path.
     """
 
-    extensions: OperationalPointExtensions | None = None
-    """
-    Extensions associated to the operational point
-    """
+    country_code: Annotated[str, Field(min_length=1)]
     id: str
     """
     Id of the operational point
     """
+    is_passenger_station: bool
+    main_code: Annotated[str, Field(min_length=1)]
+    name: Annotated[str, Field(min_length=1)]
     part: OperationalPointPart
     """
     The part along the path
+    """
+    plc: Plc | None = None
+    """
+    Primary Location Code : https://rne.eu/it/products/ccs/crd/
     """
     position: Annotated[int, Field(ge=0)]
     """
     Distance from the beginning of the path in mm
     """
+    secondary_code: SecondaryCode | None = None
+    secondary_name: SecondaryName | None = None
+    uic: Annotated[int | None, Field(ge=0)] = None
     weight: Annotated[int | None, Field(ge=0, le=100)] = None
     """
     Importance of the operational point
@@ -6150,10 +6161,19 @@ class OperationalPoint(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    extensions: OperationalPointExtensions | None = None
+    country_code: Annotated[str, Field(min_length=1)]
     id: Annotated[str, Field(max_length=255, min_length=1)]
+    is_passenger_station: bool
+    main_code: Annotated[str, Field(min_length=1)]
+    name: Annotated[str, Field(min_length=1)]
     parts: list[OperationalPointPart]
-    plc: NonBlankString | None = None
+    plc: Plc | None = None
+    """
+    Primary Location Code : https://rne.eu/it/products/ccs/crd/
+    """
+    secondary_code: SecondaryCode | None = None
+    secondary_name: SecondaryName | None = None
+    uic: Annotated[int | None, Field(ge=0)] = None
     weight: Annotated[int | None, Field(ge=0)] = None
 
 
@@ -6270,10 +6290,17 @@ class RailJson(BaseModel):
 
 
 class RelatedOperationalPoint(BaseModel):
-    extensions: OperationalPointExtensions | None = None
+    country_code: Annotated[str, Field(min_length=1)]
     geo: GeoJsonPoint | None = None
     id: Annotated[str, Field(max_length=255, min_length=1)]
+    is_passenger_station: bool
+    main_code: Annotated[str, Field(min_length=1)]
+    name: Annotated[str, Field(min_length=1)]
     parts: list[RelatedOperationalPointPart]
+    plc: Plc2 | None = None
+    secondary_code: SecondaryCode4 | None = None
+    secondary_name: SecondaryName | None = None
+    uic: Annotated[int | None, Field(ge=0)] = None
     weight: Annotated[int | None, Field(ge=0)] = None
 
 

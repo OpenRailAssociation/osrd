@@ -99,12 +99,12 @@ const formatMrsp = (mrsp: SimulationResponseSuccess['mrsp']) => ({
 });
 
 export const formatStops = (operationalPoints: PathPropertiesFormatted['operationalPoints']) =>
-  operationalPoints.map(({ position, weight, extensions: { identifier, sncf } = {} }) => ({
+  operationalPoints.map(({ position, weight, name, secondary_code }) => ({
     position: {
       start: mmToKm(position),
     },
     value: {
-      name: identifier ? `${identifier.name} ${sncf ? sncf.ch : ''}` : '',
+      name: `${name} ${secondary_code ?? ''}`,
       weight: weight!,
     },
   }));

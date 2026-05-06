@@ -151,11 +151,11 @@ const StdcmResults = ({
           return;
         }
 
-        const key = (trigram: string, ch: string) => `${trigram}-${ch}`;
+        const key = (mainCode: string, secondaryCode: string) => `${mainCode}-${secondaryCode}`;
 
         const isStopByOpKey = pathSteps.reduce((acc, ps) => {
           const k = key(
-            ps.operationalPoint?.trigram ?? '',
+            ps.operationalPoint?.mainCode ?? '',
             ps.operationalPoint?.secondaryCode ?? ''
           );
           acc.set(k, !ps.isVia || ps.stopFor !== undefined);
@@ -166,7 +166,7 @@ const StdcmResults = ({
           (selectedSimulation.outputs as StdcmResultsOutput).pathProperties
             .manchetteOperationalPoints ?? []
         ).map((op) => {
-          const k = key(op.extensions?.sncf?.trigram ?? '', op.extensions?.sncf?.ch ?? '');
+          const k = key(op.main_code, op.secondary_code ?? '');
           return {
             id: op.opId!,
             stop: isStopByOpKey.get(k) ?? false,

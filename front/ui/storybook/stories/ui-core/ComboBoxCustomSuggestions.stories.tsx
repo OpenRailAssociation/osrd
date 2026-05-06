@@ -16,7 +16,7 @@ type OpCh = {
 
 type Suggestion = {
   id: string;
-  trigram: string;
+  mainCode: string;
   name: string;
   chList: OpCh[];
 };
@@ -25,7 +25,7 @@ const ALL_SUGGESTIONS: Suggestion[] = [
   {
     id: '1',
     name: 'Le Havre',
-    trigram: 'LHV',
+    mainCode: 'LHV',
     chList: [
       { code: 'BV' },
       { code: 'BR' },
@@ -40,67 +40,67 @@ const ALL_SUGGESTIONS: Suggestion[] = [
   {
     id: '2',
     name: 'Le Havre Graville',
-    trigram: 'LHG',
+    mainCode: 'LHG',
     chList: [{ code: 'BV' }, { code: 'BQ' }],
   },
   {
     id: '3',
     name: 'Bordeaux',
-    trigram: 'BDX',
+    mainCode: 'BDX',
     chList: [{ code: 'BV' }, { code: 'BR' }, { code: 'BB' }],
   },
   {
     id: '4',
     name: 'Bruxelles Midi',
-    trigram: 'BRM',
+    mainCode: 'BRM',
     chList: [{ code: 'BM' }, { code: 'BR' }],
   },
   {
     id: '5',
     name: 'Auber',
-    trigram: 'AUB',
+    mainCode: 'AUB',
     chList: [{ code: '00' }, { code: 'BV' }],
   },
   {
     id: '6',
     name: 'Fontenay aux roses',
-    trigram: 'FAR',
+    mainCode: 'FAR',
     chList: [{ code: '00' }, { code: 'BV' }],
   },
   {
     id: '7',
     name: 'Sceaux',
-    trigram: 'SCX',
+    mainCode: 'SCX',
     chList: [{ code: '00' }, { code: 'BV' }],
   },
   {
     id: '8',
     name: 'Robinson',
-    trigram: 'ROB',
+    mainCode: 'ROB',
     chList: [{ code: '00' }, { code: 'BV' }],
   },
   {
     id: '9',
     name: 'Port-Royal',
-    trigram: 'PRY',
+    mainCode: 'PRY',
     chList: [{ code: '00' }, { code: 'BV' }],
   },
   {
     id: '10',
     name: 'Denfert-Rochereau',
-    trigram: 'DFR',
+    mainCode: 'DFR',
     chList: [{ code: '00' }, { code: 'BV' }],
   },
   {
     id: '11',
     name: 'Lille Europe',
-    trigram: 'LEW',
+    mainCode: 'LEW',
     chList: [{ code: '00' }, { code: 'BV' }],
   },
   {
     id: '12',
     name: 'Lille Flandres',
-    trigram: 'LE',
+    mainCode: 'LE',
     chList: [{ code: '00' }, { code: 'BV' }],
   },
 ];
@@ -108,7 +108,7 @@ const normalize = (value: string) => value.normalize('NFD').toLowerCase();
 
 const getBaseScore = (suggestion: Suggestion, trigram: string, name: string) => {
   const nameNorm = normalize(suggestion.name);
-  const trigramUpper = suggestion.trigram.toUpperCase();
+  const trigramUpper = suggestion.mainCode.toUpperCase();
   if (trigramUpper === trigram) return 0;
   else if (trigramUpper.startsWith(trigram)) return 1;
   else if (trigramUpper.includes(trigram)) return 2;
@@ -146,7 +146,7 @@ function filterAndMarkSuggestions(allSuggestions: Suggestion[], rawQuery: string
   if (endsWithSpace && isSingleToken) {
     const tokenUpper = tokens[0].toUpperCase();
     const exactTrigramMatches = allSuggestions.filter(
-      (s) => s.trigram.toUpperCase() === tokenUpper
+      (s) => s.mainCode.toUpperCase() === tokenUpper
     );
 
     if (exactTrigramMatches.length > 0) {
@@ -165,7 +165,7 @@ function filterAndMarkSuggestions(allSuggestions: Suggestion[], rawQuery: string
     const exactTrigramAndChMatches = allSuggestions
       .filter(
         (s) =>
-          s.trigram.toUpperCase() === baseUpper &&
+          s.mainCode.toUpperCase() === baseUpper &&
           s.chList.some((ch) => ch.code.toUpperCase() === lastTokenUpper)
       )
       .map((s) => ({
@@ -186,7 +186,7 @@ function filterAndMarkSuggestions(allSuggestions: Suggestion[], rawQuery: string
   const scored = allSuggestions
     .map((suggestion) => {
       const nameNorm = normalize(suggestion.name);
-      const trigramUpper = suggestion.trigram.toUpperCase();
+      const trigramUpper = suggestion.mainCode.toUpperCase();
 
       // chPrefixMatch should be false if there is no lastToken
       const chPrefixMatch = lastToken

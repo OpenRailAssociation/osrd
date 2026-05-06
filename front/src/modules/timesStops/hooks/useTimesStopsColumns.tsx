@@ -144,8 +144,8 @@ export const useTimesStopsColumns = <T extends TimesStopsRow>(
         minWidth: isOutputTable ? undefined : 300,
       },
       {
-        ...keyColumn('ch', createTextColumn()),
-        title: t('ch'),
+        ...keyColumn('secondaryCode', createTextColumn()),
+        title: t('secondaryCode'),
         disabled: true,
         ...fixedWidth(45),
       },

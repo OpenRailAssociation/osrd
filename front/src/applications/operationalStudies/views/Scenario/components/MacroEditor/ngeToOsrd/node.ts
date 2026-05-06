@@ -62,26 +62,26 @@ export const handleNodeOperation = async ({
     case 'update': {
       if (indexNode) {
         if (indexNode.dbId) {
-          // Update the key if trigram has changed and key is based on it
+          // Update the key if mainCode has changed and key is based on it
           let nodeKey = indexNode.path_item_key;
-          let trigram = node.betriebspunktName;
-          if (nodeKey.startsWith('trigram:') && indexNode.trigram !== trigram) {
-            if (!trigram.includes('/')) {
+          let mainCode = node.betriebspunktName;
+          if (nodeKey.startsWith('trigram:') && indexNode.trigram !== mainCode) {
+            if (!mainCode.includes('/')) {
               const secondaryCode = await fetchStationSecondaryCode(
-                trigram,
+                mainCode,
                 state.infraId,
                 dispatch
               );
               if (secondaryCode) {
-                trigram = `${trigram}/${secondaryCode}`;
+                mainCode = `${mainCode}/${secondaryCode}`;
               }
             }
-            nodeKey = `trigram:${trigram}`;
+            nodeKey = `trigram:${mainCode}`;
           }
           await updateMacroNode(state, dispatch, {
             ...indexNode,
             ...castNgeNode(node, netzgrafikDto.labels),
-            trigram,
+            trigram: mainCode,
             dbId: indexNode.dbId,
             path_item_key: nodeKey,
           });

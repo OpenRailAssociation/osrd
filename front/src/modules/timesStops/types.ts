@@ -39,7 +39,7 @@ export type TimesStopsRowNew = {
 
   // Stop information
   name: string;
-  secondaryCode: string;
+  secondaryCode?: string | null;
   track: string;
 
   // Path information
@@ -78,7 +78,7 @@ export type TimesStopsRow = {
   pathStepId: string | undefined;
   opId: string | undefined;
   name: string | undefined;
-  ch?: string;
+  secondaryCode?: string | null;
   trackName?: string;
 
   arrival?: TimeExtraDays; // value asked by user

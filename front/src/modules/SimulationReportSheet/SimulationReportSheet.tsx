@@ -54,7 +54,7 @@ const SimulationReportSheet = ({
 
       rows.push({
         name: step.name || t('reportSheet.unknown'),
-        secondaryCode: step.ch ?? '',
+        secondaryCode: step.secondary_code ?? '',
         arrivesAt: isLast ? timeToLocaleStringRounded(step.time, dateTimeLocale) : '',
         leavesAt: isFirst ? timeToLocaleStringRounded(step.time, dateTimeLocale) : '',
       });
@@ -69,7 +69,6 @@ const SimulationReportSheet = ({
         operationalPointsList,
         path.path_item_positions,
         rollingStock,
-        t,
         dateTimeLocale
       ),
     [operationalPointsList, path, rollingStock]

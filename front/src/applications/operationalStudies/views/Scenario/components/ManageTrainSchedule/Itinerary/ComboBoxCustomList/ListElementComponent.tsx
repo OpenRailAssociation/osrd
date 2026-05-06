@@ -13,7 +13,7 @@ export type OpSecondaryCode = {
 
 export type OperationalPointSuggestion = {
   id: string;
-  trigram: string;
+  mainCode: string;
   uic: number;
   name: string;
   secondaryCodeList: OpSecondaryCode[];
@@ -51,7 +51,7 @@ export const ListElementComponent = ({
         onSelect?.(suggestion, defaultSecondaryCode);
       }}
     >
-      <span className="op-suggestion-trigram">{suggestion.trigram}</span>
+      <span className="op-suggestion-main-code">{suggestion.mainCode}</span>
 
       <span
         className="op-suggestion-name"

@@ -7,7 +7,7 @@ import {
   secondaryCodeStarts,
   secondaryCodeIncludes,
   lastTokenMatchesIncludes,
-  shouldKeepTrigramLock,
+  shouldKeepMainCodeLock,
   tokenMatchesStartNoCh,
   tokenMatchesIncludesNoCh,
   lastTokenMatchesStarts,
@@ -15,7 +15,7 @@ import {
 
 /**
  * ranks and filters suggestions based on a single search token.
- * returns suggestions ordered by match quality: exact name > exact trigram > starts with > includes > secondary code matches
+ * returns suggestions ordered by match quality: exact name > exact mainCode > starts with > includes > secondary code matches
  */
 export const rankSingleTokenSuggestions = (
   suggestions: OperationalPointSuggestion[],
@@ -28,12 +28,12 @@ export const rankSingleTokenSuggestions = (
 
   const exactNames = suggestions.filter((s) => normalizeName(s.name) === tokenNormalized);
 
-  const trigramExact = suggestions.filter((s) => toUpper(s.trigram) === tokenUpper);
-  if (trigramExact.length && endWithSpace) return uniqBy(trigramExact, 'id');
+  const mainCodeExact = suggestions.filter((s) => toUpper(s.mainCode) === tokenUpper);
+  if (mainCodeExact.length && endWithSpace) return uniqBy(mainCodeExact, 'id');
 
-  const trigramStarts: OperationalPointSuggestion[] = [];
+  const mainCodeStarts: OperationalPointSuggestion[] = [];
   const nameStarts: OperationalPointSuggestion[] = [];
-  const trigramIncludes: OperationalPointSuggestion[] = [];
+  const mainCodeIncludes: OperationalPointSuggestion[] = [];
   const nameIncludes: OperationalPointSuggestion[] = [];
 
   const secondaryCodePrefixMatches: OperationalPointSuggestion[] = [];
@@ -41,10 +41,10 @@ export const rankSingleTokenSuggestions = (
 
   for (const s of suggestions) {
     const nameNorm = normalizeName(s.name);
-    const trigramUpper = toUpper(s.trigram);
-    if (trigramUpper.startsWith(tokenUpper)) trigramStarts.push(s);
+    const mainCodeUpper = toUpper(s.mainCode);
+    if (mainCodeUpper.startsWith(tokenUpper)) mainCodeStarts.push(s);
     if (nameNorm.startsWith(tokenNormalized)) nameStarts.push(s);
-    if (trigramUpper.includes(tokenUpper)) trigramIncludes.push(s);
+    if (mainCodeUpper.includes(tokenUpper)) mainCodeIncludes.push(s);
     if (nameNorm.includes(tokenNormalized)) nameIncludes.push(s);
     if (secondaryCodeStarts(s, tokenUpper)) secondaryCodePrefixMatches.push(s);
     if (secondaryCodeIncludes(s, tokenUpper)) secondaryCodeSubstringMatches.push(s);
@@ -53,10 +53,10 @@ export const rankSingleTokenSuggestions = (
   return uniqBy(
     [
       ...exactNames,
-      ...trigramExact,
-      ...trigramStarts,
+      ...mainCodeExact,
+      ...mainCodeStarts,
       ...nameStarts,
-      ...trigramIncludes,
+      ...mainCodeIncludes,
       ...nameIncludes,
       ...secondaryCodePrefixMatches,
       ...secondaryCodeSubstringMatches,
@@ -67,7 +67,7 @@ export const rankSingleTokenSuggestions = (
 
 /**
  * Ranks suggestions when the user input contains multiple tokens.
- * Prioritizes: trigram lock --> full phrase match --> base phrase + secondary code --> all tokens match.
+ * Prioritizes: mainCode lock --> full phrase match --> base phrase + secondary code --> all tokens match.
  */
 export const rankMultiTokenSuggestions = (
   suggestions: OperationalPointSuggestion[],
@@ -96,7 +96,7 @@ export const rankMultiTokenSuggestions = (
   const sortingBase = strictMatches.length ? strictMatches : suggestions;
 
   // Buckets grouped by match type
-  const trigramPinned: OperationalPointSuggestion[] = [];
+  const mainCodePinned: OperationalPointSuggestion[] = [];
   const allTokensStart: OperationalPointSuggestion[] = [];
   const fullPhraseMatches = {
     starts: [] as OperationalPointSuggestion[],
@@ -111,12 +111,12 @@ export const rankMultiTokenSuggestions = (
 
   for (const s of sortingBase) {
     const nameNorm = normalizeName(s.name);
-    const trigramUpper = toUpper(s.trigram);
+    const mainCodeUpper = toUpper(s.mainCode);
     const hasSecondaryCodePrefix = secondaryCodeStarts(s, lastTokenUpper);
 
-    // Trigram pinned
-    if (firstTokenUpper && trigramUpper === firstTokenUpper && shouldKeepTrigramLock(s, tokens)) {
-      trigramPinned.push(s);
+    // Main code pinned
+    if (firstTokenUpper && mainCodeUpper === firstTokenUpper && shouldKeepMainCodeLock(s, tokens)) {
+      mainCodePinned.push(s);
     }
 
     // Full phrase matching
@@ -148,7 +148,7 @@ export const rankMultiTokenSuggestions = (
 
   return uniqBy(
     [
-      ...trigramPinned,
+      ...mainCodePinned,
       ...fullPhraseMatches.starts,
       ...fullPhraseMatches.includes,
       ...basePhraseMatches.startsWithSecondaryCode,

@@ -827,20 +827,11 @@
     ],
     "operational_points": [
         {
-            "extensions": {
-                "identifier": {
-                    "name": "West_station",
-                    "uic": 8722
-                },
-                "sncf": {
-                    "ch": "BV",
-                    "ch_long_label": "0",
-                    "ch_short_label": "BV",
-                    "ci": 22,
-                    "trigram": "WS"
-                }
-            },
+            "country_code": "FR",
             "id": "West_station",
+            "is_passenger_station": true,
+            "main_code": "WS",
+            "name": "West_station",
             "parts": [
                 {
                     "local_track_name": "V1",
@@ -859,23 +850,17 @@
                 }
             ],
             "plc": null,
+            "secondary_code": "BV",
+            "secondary_name": "0",
+            "uic": 8722,
             "weight": null
         },
         {
-            "extensions": {
-                "identifier": {
-                    "name": "South_West_station",
-                    "uic": 8711
-                },
-                "sncf": {
-                    "ch": "BV",
-                    "ch_long_label": "0",
-                    "ch_short_label": "BV",
-                    "ci": 11,
-                    "trigram": "SWS"
-                }
-            },
+            "country_code": "FR",
             "id": "South_West_station",
+            "is_passenger_station": true,
+            "main_code": "SWS",
+            "name": "South_West_station",
             "parts": [
                 {
                     "local_track_name": "V1",
@@ -884,23 +869,17 @@
                 }
             ],
             "plc": null,
+            "secondary_code": "BV",
+            "secondary_name": "0",
+            "uic": 8711,
             "weight": null
         },
         {
-            "extensions": {
-                "identifier": {
-                    "name": "Mid_West_station",
-                    "uic": 8733
-                },
-                "sncf": {
-                    "ch": "BV",
-                    "ch_long_label": "0",
-                    "ch_short_label": "BV",
-                    "ci": 33,
-                    "trigram": "MWS"
-                }
-            },
+            "country_code": "FR",
             "id": "Mid_West_station",
+            "is_passenger_station": true,
+            "main_code": "MWS",
+            "name": "Mid_West_station",
             "parts": [
                 {
                     "local_track_name": "V1",
@@ -924,23 +903,17 @@
                 }
             ],
             "plc": null,
+            "secondary_code": "BV",
+            "secondary_name": "0",
+            "uic": 8733,
             "weight": null
         },
         {
-            "extensions": {
-                "identifier": {
-                    "name": "Mid_East_station",
-                    "uic": 8744
-                },
-                "sncf": {
-                    "ch": "BV",
-                    "ch_long_label": "0",
-                    "ch_short_label": "BV",
-                    "ci": 44,
-                    "trigram": "MES"
-                }
-            },
+            "country_code": "FR",
             "id": "Mid_East_station",
+            "is_passenger_station": true,
+            "main_code": "MES",
+            "name": "Mid_East_station",
             "parts": [
                 {
                     "local_track_name": "V1",
@@ -954,23 +927,17 @@
                 }
             ],
             "plc": null,
+            "secondary_code": "BV",
+            "secondary_name": "0",
+            "uic": 8744,
             "weight": null
         },
         {
-            "extensions": {
-                "identifier": {
-                    "name": "North_station",
-                    "uic": 8755
-                },
-                "sncf": {
-                    "ch": "BV",
-                    "ch_long_label": "0",
-                    "ch_short_label": "BV",
-                    "ci": 55,
-                    "trigram": "NS"
-                }
-            },
+            "country_code": "FR",
             "id": "North_station",
+            "is_passenger_station": true,
+            "main_code": "NS",
+            "name": "North_station",
             "parts": [
                 {
                     "local_track_name": "V1",
@@ -984,23 +951,17 @@
                 }
             ],
             "plc": null,
+            "secondary_code": "BV",
+            "secondary_name": "0",
+            "uic": 8755,
             "weight": null
         },
         {
-            "extensions": {
-                "identifier": {
-                    "name": "South_station",
-                    "uic": 8766
-                },
-                "sncf": {
-                    "ch": "BV",
-                    "ch_long_label": "0",
-                    "ch_short_label": "BV",
-                    "ci": 66,
-                    "trigram": "SS"
-                }
-            },
+            "country_code": "FR",
             "id": "South_station",
+            "is_passenger_station": true,
+            "main_code": "SS",
+            "name": "South_station",
             "parts": [
                 {
                     "local_track_name": "V1",
@@ -1009,23 +970,17 @@
                 }
             ],
             "plc": null,
+            "secondary_code": "BV",
+            "secondary_name": "0",
+            "uic": 8766,
             "weight": null
         },
         {
-            "extensions": {
-                "identifier": {
-                    "name": "North_East_station",
-                    "uic": 8777
-                },
-                "sncf": {
-                    "ch": "BV",
-                    "ch_long_label": "0",
-                    "ch_short_label": "BV",
-                    "ci": 77,
-                    "trigram": "NES"
-                }
-            },
+            "country_code": "FR",
             "id": "North_East_station",
+            "is_passenger_station": true,
+            "main_code": "NES",
+            "name": "North_East_station",
             "parts": [
                 {
                     "local_track_name": "V1",
@@ -1039,23 +994,17 @@
                 }
             ],
             "plc": null,
+            "secondary_code": "BV",
+            "secondary_name": "0",
+            "uic": 8777,
             "weight": null
         },
         {
-            "extensions": {
-                "identifier": {
-                    "name": "South_East_station",
-                    "uic": 8788
-                },
-                "sncf": {
-                    "ch": "BV",
-                    "ch_long_label": "0",
-                    "ch_short_label": "BV",
-                    "ci": 88,
-                    "trigram": "SES"
-                }
-            },
+            "country_code": "FR",
             "id": "South_East_station",
+            "is_passenger_station": true,
+            "main_code": "SES",
+            "name": "South_East_station",
             "parts": [
                 {
                     "local_track_name": "V1",
@@ -1064,6 +1013,9 @@
                 }
             ],
             "plc": null,
+            "secondary_code": "BV",
+            "secondary_name": "0",
+            "uic": 8788,
             "weight": null
         }
     ],
@@ -6878,5 +6830,5 @@
             "slopes": []
         }
     ],
-    "version": "3.5.2"
+    "version": "3.5.3"
 }

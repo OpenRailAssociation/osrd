@@ -52,7 +52,7 @@ type BuildTableRowParams = {
   pathStepId: string | null;
   opOnPathIndex: number;
   name?: string;
-  secondaryCode?: string;
+  secondaryCode?: string | null;
   trackName?: string;
   hasRequestedTrack?: boolean;
   startDate: Date;
@@ -261,7 +261,7 @@ const useTimesStopsTableData = (
             : undefined);
 
         const name =
-          matchingOp?.extensions?.identifier?.name ??
+          matchingOp?.name ??
           getOperationalPointName(
             pathStepOp,
             pathStep.location,
@@ -316,7 +316,7 @@ const useTimesStopsTableData = (
           // opOnPathIndex is a placeholder here (-1), it will be replaced by opIndex when matching with operationalPointsOnPath
           opOnPathIndex: -1,
           name,
-          secondaryCode: matchingOp?.extensions?.sncf?.ch,
+          secondaryCode: matchingOp?.secondary_code,
           trackName,
           hasRequestedTrack,
           startDate,
@@ -380,13 +380,18 @@ const useTimesStopsTableData = (
           const { shortSlipDistance, onStopSignal } =
             receptionSignalToSignalBooleans(receptionSignal);
 
+          // TODO: remove this error once we migrate the location to trigram/domestic
+          if (op.uic === undefined || op.uic === null) {
+            throw new Error('No valid UIC found to build operational_point_part_reference');
+          }
+
           formattedRows.push({
             ...buildTableRow({
               id: `op-${op.id}-${op.position}`,
               pathStepId: null,
               opOnPathIndex: opIndex,
-              name: op.extensions?.identifier?.name,
-              secondaryCode: op.extensions?.sncf?.ch,
+              name: op.name,
+              secondaryCode: op.secondary_code,
               trackName,
               startDate,
               computedArrival,
@@ -398,8 +403,8 @@ const useTimesStopsTableData = (
                 type: 'operational_point_part_reference',
                 operational_point: {
                   type: 'uic',
-                  uic: op.extensions!.identifier!.uic,
-                  secondary_code: op.extensions?.sncf?.ch ?? null,
+                  uic: op.uic,
+                  secondary_code: op.secondary_code ?? null,
                 },
               },
             }),

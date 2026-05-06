@@ -17,11 +17,22 @@ pub struct OperationalPoint {
     pub id: Identifier,
     pub parts: Vec<OperationalPointPart>,
     #[serde(default)]
-    pub extensions: OperationalPointExtensions,
-    #[serde(default)]
     pub weight: Option<u8>,
+    #[schema(inline)]
+    pub name: NonBlankString,
+    pub uic: Option<u32>,
     /// Primary Location Code : https://rne.eu/it/products/ccs/crd/
+    #[schema(inline)]
     pub plc: Option<NonBlankString>,
+    #[schema(inline)]
+    pub country_code: NonBlankString,
+    #[schema(inline)]
+    pub main_code: NonBlankString,
+    #[schema(inline)]
+    pub secondary_code: Option<NonBlankString>,
+    pub is_passenger_station: bool,
+    #[schema(inline)]
+    pub secondary_name: Option<NonBlankString>,
 }
 
 #[derive(Debug, Educe, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
@@ -48,45 +59,6 @@ pub struct OperationalPointPartExtension {
 #[serde(deny_unknown_fields)]
 pub struct OperationalPointPartSncfExtension {
     pub kp: String,
-}
-
-#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
-#[serde(deny_unknown_fields)]
-pub struct OperationalPointExtensions {
-    pub sncf: Option<OperationalPointSncfExtension>,
-    pub identifier: Option<OperationalPointIdentifierExtension>,
-}
-
-#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
-#[serde(deny_unknown_fields)]
-pub struct OperationalPointSncfExtension {
-    pub ci: i64,
-    pub ch: String,
-    #[schema(inline)]
-    pub ch_short_label: NonBlankString,
-    #[schema(inline)]
-    pub ch_long_label: NonBlankString,
-    pub trigram: String,
-}
-
-impl OperationalPointSncfExtension {
-    pub fn new(ci: i64, ch: &str, trigram: &str) -> Self {
-        Self {
-            ci,
-            ch: ch.into(),
-            ch_short_label: ch.into(),
-            ch_long_label: ch.into(),
-            trigram: trigram.into(),
-        }
-    }
-}
-
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
-#[serde(deny_unknown_fields)]
-pub struct OperationalPointIdentifierExtension {
-    #[schema(inline)]
-    pub name: NonBlankString,
-    pub uic: u32,
 }
 
 impl OSRDTyped for OperationalPoint {
@@ -121,17 +93,5 @@ impl OperationalPoint {
                 offset: (part.position * 1000.0).round() as u64,
             })
             .collect()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use serde_json::from_str;
-
-    use super::OperationalPointExtensions;
-
-    #[test]
-    fn test_op_extensions_deserialization() {
-        from_str::<OperationalPointExtensions>(r#"{}"#).unwrap();
     }
 }

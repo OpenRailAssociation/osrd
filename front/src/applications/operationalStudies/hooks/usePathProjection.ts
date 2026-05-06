@@ -19,7 +19,6 @@ import {
   getTrainIdUsedForProjection,
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
-import { formatUicToCi } from 'utils/strings';
 import {
   extractEditoastIdFromPacedTrainId,
   extractPacedTrainIdFromOccurrenceId,
@@ -66,21 +65,14 @@ const createVirtualOp = (
 
   return {
     id: virtualId,
-    extensions: {
-      identifier: {
-        name: virtualName,
-        uic: opRef.type === 'uic' ? opRef.uic : 0,
-      },
-      sncf: {
-        ch: (opRef.type !== 'id' && opRef.secondary_code) || '',
-        ch_long_label: '',
-        ch_short_label: '',
-        ci: opRef.type === 'uic' ? Number(formatUicToCi(opRef.uic)) : 0,
-        trigram: opRef.type === 'trigram' ? opRef.trigram : '',
-      },
-    },
+    name: virtualName,
+    uic: opRef.type === 'uic' ? opRef.uic : 0,
+    secondary_code: (opRef.type !== 'id' && opRef.secondary_code) || '',
+    main_code: opRef.type === 'trigram' ? opRef.trigram : '',
     position,
     weight,
+    country_code: '??',
+    is_passenger_station: false,
   };
 };
 
@@ -241,9 +233,14 @@ const usePathProjection = (
       if (matchedOp) {
         // MATCHED: Point exists in infrastructure
         normalizedOps.push({
+          country_code: matchedOp.country_code,
           id: matchedOp.id,
-          extensions: matchedOp.extensions,
+          is_passenger_station: matchedOp.is_passenger_station,
+          main_code: matchedOp.main_code,
+          name: matchedOp.name,
           position,
+          secondary_code: matchedOp.secondary_code,
+          uic: matchedOp.uic,
           weight,
         });
       } else {

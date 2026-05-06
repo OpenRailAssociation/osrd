@@ -2,10 +2,10 @@ import { toUpper } from 'utils/strings';
 
 export const tokenClause = (token: string) => [
   'or',
-  ['=', ['trigram'], toUpper(token)],
+  ['=', ['main_code'], toUpper(token)],
   ['search', ['name'], token],
-  ['search', ['trigram'], token],
-  ['search', ['ch'], token],
+  ['search', ['main_code'], token],
+  ['search', ['secondary_code'], token],
 ];
 
 export const buildMultiTokenQuery = (tokens: string[]) => ['and', ...tokens.map(tokenClause)];
@@ -13,8 +13,8 @@ export const buildMultiTokenQuery = (tokens: string[]) => ['and', ...tokens.map(
 export const searchQuery = (debouncedTrimmedInput: string) => [
   'or',
   ['search', ['name'], debouncedTrimmedInput],
-  ['search', ['trigram'], debouncedTrimmedInput],
-  ['search', ['ch'], debouncedTrimmedInput],
+  ['search', ['main_code'], debouncedTrimmedInput],
+  ['search', ['secondary_code'], debouncedTrimmedInput],
 ];
 
 export const largePayload = (infraId: number | undefined, debouncedTrimmedInput: string) => ({
@@ -30,7 +30,7 @@ export const exactTrigramPayload = (infraId: number | undefined, firstTokenUpper
   object: 'operationalpoint',
   query: [
     'and',
-    ['=', ['trigram'], firstTokenUpper],
+    ['=', ['main_code'], firstTokenUpper],
     infraId !== undefined ? ['=', ['infra_id'], infraId] : true,
   ],
 });

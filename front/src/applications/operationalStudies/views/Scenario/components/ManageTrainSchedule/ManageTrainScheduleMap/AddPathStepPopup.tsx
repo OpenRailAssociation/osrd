@@ -120,16 +120,16 @@ const AddPathStepPopup = ({
       });
 
       let opRef: OperationalPointReference;
-      const uic = operationalPoint.extensions?.identifier?.uic;
+      const uic = operationalPoint.uic;
       if (uic) {
-        opRef = { type: 'uic', uic, secondary_code: operationalPoint.extensions?.sncf?.ch };
+        opRef = { type: 'uic', uic, secondary_code: operationalPoint.secondary_code };
       } else {
         opRef = { type: 'id', operational_point: operationalPoint.id };
       }
 
       setClickedOp({
         id: uuidV4(),
-        name: operationalPoint.extensions?.identifier?.name,
+        name: operationalPoint.name,
         location: { type: 'operational_point_part_reference', operational_point: opRef },
         tracks: trackPartCoordinates,
       });

@@ -631,7 +631,7 @@ mod tests {
                         OperationalPointPartReference {
                             operational_point: OperationalPointReference::Trigram {
                                 trigram: "WS".into(),
-                                secondary_code: Some("BV".to_string()),
+                                secondary_code: Some("BV".into()),
                             },
                             local_track_name: None,
                         },
@@ -649,7 +649,7 @@ mod tests {
                         OperationalPointPartReference {
                             operational_point: OperationalPointReference::Trigram {
                                 trigram: "MWS".into(),
-                                secondary_code: Some("BV".to_string()),
+                                secondary_code: Some("BV".into()),
                             },
                             local_track_name: None,
                         },
@@ -704,7 +704,7 @@ mod tests {
                 OperationalPointPartReference {
                     operational_point: OperationalPointReference::Trigram {
                         trigram: trigram.into(),
-                        secondary_code: Some("BV".to_string()),
+                        secondary_code: Some("BV".into()),
                     },
                     local_track_name: None,
                 },

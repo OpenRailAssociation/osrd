@@ -8,7 +8,7 @@ from pydantic.fields import FieldInfo
 
 ALL_OBJECT_TYPES = []
 
-RAILJSON_INFRA_VERSION_TYPE = Literal["3.5.2"]
+RAILJSON_INFRA_VERSION_TYPE = Literal["3.5.3"]
 RAILJSON_INFRA_VERSION = get_args(RAILJSON_INFRA_VERSION_TYPE)[0]
 
 # Traits
@@ -221,8 +221,31 @@ class OperationalPoint(BaseObjectTrait):
     weight: Optional[int] = Field(
         description="represents the significance of a PR", ge=0, default=None
     )
+    name: NonBlankStr = Field(description="Name of the operational point")
+    uic: Optional[int] = Field(
+        description="International Union of Railways code of the operational point"
+    )
     plc: Optional[NonBlankStr] = Field(
         description="Primary Location Code : https://rne.eu/it/products/ccs/crd/"
+    )
+    country_code: NonBlankStr = Field(
+        description="Country code of the operational point (e.g. FR for France)"
+    )
+    main_code: NonBlankStr = Field(
+        description="Code identifying the operational point locality (e.g. trigram for SNCF)",
+        min_length=1,
+        max_length=255,
+    )
+    secondary_code: Optional[NonBlankStr] = Field(
+        description="Optional additional code identifying a more precise location (e.g. code chantier for SNCF)",
+        min_length=1,
+        max_length=255,
+    )
+    is_passenger_station: bool = Field(
+        description="Whether or not the operational point is a passenger station"
+    )
+    secondary_name: Optional[NonBlankStr] = Field(
+        description="Human-readable name describing the secondary code"
     )
 
 
@@ -701,38 +724,9 @@ class TrackSectionSourceExtension(BaseModel):
     id: str = Field(description="ID used for the line in the source")
 
 
-@register_extension(object=OperationalPoint, name="sncf")
-class OperationalPointSncfExtension(BaseModel):
-    ci: int = Field(description="THOR immutable code of the operational point")
-    ch: str = Field(
-        description="THOR site code of the operational point",
-        min_length=1,
-        max_length=2,
-    )
-    ch_short_label: NonBlankStr = Field(
-        description="THOR site code short label of the operational point"
-    )
-    ch_long_label: NonBlankStr = Field(
-        description="THOR site code long label of the operational point"
-    )
-    trigram: str = Field(
-        description="Unique SNCF trigram of the operational point",
-        min_length=1,
-        max_length=3,
-    )
-
-
 @register_extension(object=OperationalPointPart, name="sncf")
 class OperationalPointPartSncfExtension(BaseModel):
     kp: str = Field(description="Kilometric point of the operational point part")
-
-
-@register_extension(object=OperationalPoint, name="identifier")
-class OperationalPointIdentifierExtension(BaseModel):
-    name: NonBlankStr = Field(description="Name of the operational point")
-    uic: int = Field(
-        description="International Union of Railways code of the operational point"
-    )
 
 
 @register_extension(object=Switch, name="sncf")

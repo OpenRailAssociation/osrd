@@ -182,7 +182,7 @@ function formatOperationalPointWithTimesAndWeight(
   return {
     ...partiallyFormattedOp,
     name: suggestedOp.name,
-    ch: suggestedOp.ch,
+    secondaryCode: suggestedOp.secondaryCode,
     trackName: suggestedOp.metadata?.trackName,
     stopType,
     stopRequested,

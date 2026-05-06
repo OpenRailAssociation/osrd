@@ -13,7 +13,7 @@ import {
   exactTrigramPayload,
   multiPayloadFromTokens,
 } from '../helpers/searchPayload';
-import { selectSecondaryCode, shouldKeepTrigramLock } from '../helpers/suggestionMatchers';
+import { selectSecondaryCode, shouldKeepMainCodeLock } from '../helpers/suggestionMatchers';
 import { buildOpSuggestion } from '../views/Scenario/components/ManageTrainSchedule/helpers/buildOpSuggestion';
 import type { OperationalPointSuggestion } from '../views/Scenario/components/ManageTrainSchedule/Itinerary/ComboBoxCustomList/ListElementComponent';
 
@@ -137,7 +137,7 @@ export const useOperationalPointSearch = ({
         // 2) We try to lock trigram from the "large" call
         if (firstTokenUpper) {
           const keptFromLarge = suggestionsLarge.filter(
-            (s) => toUpper(s.trigram) === firstTokenUpper && shouldKeepTrigramLock(s, tokens)
+            (s) => toUpper(s.mainCode) === firstTokenUpper && shouldKeepMainCodeLock(s, tokens)
           );
 
           if (keptFromLarge.length > 0) {
@@ -158,7 +158,7 @@ export const useOperationalPointSearch = ({
 
           if (exactRes.length > 0) {
             const suggestionsExact = buildOpSuggestion(exactRes);
-            const keptExact = suggestionsExact.filter((s) => shouldKeepTrigramLock(s, tokens));
+            const keptExact = suggestionsExact.filter((s) => shouldKeepMainCodeLock(s, tokens));
 
             if (keptExact.length > 0) {
               apply(uniqBy([...keptExact, ...suggestionsExact, ...suggestionsLarge], 'id'));

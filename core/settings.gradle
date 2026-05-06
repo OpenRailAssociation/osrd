@@ -1,7 +1,7 @@
 pluginManagement {
     repositories {
         gradlePluginPortal()
-        maven { url "https://maven-central.storage-download.googleapis.com/maven2/" }
+        maven { url = "https://maven-central.storage-download.googleapis.com/maven2/" }
         mavenCentral()
     }
 }
@@ -30,7 +30,7 @@ dependencyResolutionManagement {
     versionCatalogs
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        maven { url "https://maven-central-eu.storage-download.googleapis.com/maven2/" }
+        maven { url = "https://maven-central-eu.storage-download.googleapis.com/maven2/" }
         mavenCentral()
     }
 }

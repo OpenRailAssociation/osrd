@@ -408,8 +408,8 @@
       "title_on": "{{count}} on {{total}} incompatible constraints"
     },
     "infraLoading": "Infrastructure is loading…",
-    "inputOPTrigrams": "Enter the trigrams of operational points you want to the path to go through, separated by a space.",
-    "inputOPTrigramsExample": "E.g., LSN CIG CCS",
+    "inputOPMainCodes": "Enter the trigrams of operational points you want to the path to go through, separated by a space.",
+    "inputOPMainCodesExample": "E.g., LSN CIG CCS",
     "invalidTrainScheduleStep": "At least one of the waypoints could not be recognized",
     "inverseOD": "Reverse itinerary",
     "itineraryModal": {

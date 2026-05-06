@@ -9,7 +9,6 @@ import type {
   CorePathfindingResultSuccess,
   TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
-import { isStation } from 'modules/pathfinding/utils';
 import type { PathOperationalPoint, ProjectionData } from 'modules/simulationResult/types';
 import { getProjectionType } from 'reducers/simulationResults/selectors';
 
@@ -72,9 +71,9 @@ const useGetProjectedTrainOperationalPoints = ({
         operationalPointsWithUniqueIds = operationalPointsWithUniqueIds.filter((op, i) => {
           if (i === 0 || i === lastIndex) return true;
           // handle waypoints added from the map
-          if (!op.extensions?.sncf) return true;
+          if (!op.opId) return true;
           // handle waypoints added from the pathfinding or operational points on path
-          return isStation(op.extensions.sncf.ch) || op.weight === 100;
+          return op.is_passenger_station || op.weight === 100;
         });
       }
 

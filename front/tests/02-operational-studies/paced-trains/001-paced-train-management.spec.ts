@@ -145,9 +145,9 @@ test.describe('Paced train management', { tag: ['@op', '@paced-trains'] }, () =>
 
       await test.step('Select itinerary and verify distance', async () => {
         await operationalStudiesPage.openRouteTab();
-        await routeTab.performPathfindingByTrigram({
-          originTrigram: 'WS',
-          destinationTrigram: 'NES',
+        await routeTab.performPathfindingByMainCode({
+          originMainCode: 'WS',
+          destinationMainCode: 'NES',
         });
         await operationalStudiesPage.checkPathfindingDistance('46.050 km');
       });

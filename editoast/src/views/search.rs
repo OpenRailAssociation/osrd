@@ -445,28 +445,33 @@ pub(super) struct SearchResultItemTrack {
     column(
         name = "uic",
         data_type = "integer",
-        sql = "(infra_object_operational_point.data->'extensions'->'identifier'->>'uic')::integer",
+        sql = "(infra_object_operational_point.data->>'uic')::integer",
     ),
     column(
-        name = "trigram",
-        data_type = "varchar(3)",
-        sql = "infra_object_operational_point.data->'extensions'->'sncf'->>'trigram'",
+        name = "main_code",
+        data_type = "varchar(255)",
+        sql = "infra_object_operational_point.data->>'main_code'",
     ),
     column(
-        name = "ci",
-        data_type = "integer",
-        sql = "(infra_object_operational_point.data->'extensions'->'sncf'->>'ci')::integer",
-    ),
-    column(
-        name = "ch",
+        name = "secondary_code",
         data_type = "text",
-        sql = "infra_object_operational_point.data->'extensions'->'sncf'->>'ch'",
+        sql = "infra_object_operational_point.data->>'secondary_code'",
     ),
     column(
         name = "name",
         data_type = "text",
-        sql = "infra_object_operational_point.data->'extensions'->'identifier'->>'name'",
+        sql = "infra_object_operational_point.data->>'name'",
         textual_search,
+    ),
+    column(
+        name = "is_passenger_station",
+        data_type = "boolean",
+        sql = "(infra_object_operational_point.data->>'is_passenger_station')::boolean",
+    ),
+    column(
+        name = "secondary_name",
+        data_type = "text",
+        sql = "infra_object_operational_point.data->>'secondary_name'",
     )
 )]
 /// A search result item for a query with `object = "operationalpoint"`
@@ -477,16 +482,18 @@ pub(super) struct SearchResultItemOperationalPoint {
     obj_id: String,
     #[search(sql = "OP.infra_id")]
     infra_id: i64,
-    #[search(sql = "OP.data->'extensions'->'identifier'->'uic'")]
-    uic: i64,
-    #[search(sql = "OP.data#>>'{extensions,identifier,name}'")]
+    #[search(sql = "OP.data->'uic'")]
+    uic: Option<i64>,
+    #[search(sql = "OP.data#>>'{main_code}'")]
+    main_code: String,
+    #[search(sql = "OP.data#>>'{secondary_code}'")]
+    secondary_code: Option<String>,
+    #[search(sql = "OP.data#>>'{name}'")]
     name: String,
-    #[search(sql = "OP.data#>>'{extensions,sncf,trigram}'")]
-    trigram: String,
-    #[search(sql = "OP.data#>>'{extensions,sncf,ch}'")]
-    ch: String,
-    #[search(sql = "OP.data#>>'{extensions,sncf,ci}'")]
-    ci: u64,
+    #[search(sql = "OP.data->'is_passenger_station'")]
+    is_passenger_station: bool,
+    #[search(sql = "OP.data#>>'{secondary_name}'")]
+    secondary_name: Option<String>,
     #[search(sql = "ST_AsGeoJSON(ST_Transform(lay.geographic, 4326))::json")]
     #[schema(value_type = GeoJsonPoint)]
     geographic: Geometry,

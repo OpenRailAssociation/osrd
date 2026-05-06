@@ -66,7 +66,7 @@ const StdcmLinkedTrainResults = ({
               <p className="opDetails grey50">{opPoint.date}</p>
               <p className="opDetails info60">{opPoint.time}</p>
               <p className="opDetails grey80">{opPoint.name}</p>
-              {'trigram' in opPoint && <p className="opDetails grey80">{opPoint.trigram}</p>}
+              <p className="opDetails grey80">{opPoint.main_code}</p>
             </div>
           ))}
         </button>

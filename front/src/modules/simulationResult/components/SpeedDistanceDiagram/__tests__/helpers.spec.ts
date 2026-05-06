@@ -36,23 +36,19 @@ describe('formatStops', () => {
   it('should format stops', () => {
     const operationalPoints: PathPropertiesFormatted['operationalPoints'] = [
       {
-        position: 0,
-        extensions: {
-          identifier: { name: 'name', uic: 0 },
-          sncf: {
-            ch: 'ch',
-            ch_long_label: 'ch_long_label',
-            ch_short_label: 'ch_short_label',
-            ci: 0,
-            trigram: 'trigram',
-          },
-        },
+        country_code: 'country_code',
         id: 'id',
+        is_passenger_station: false,
+        main_code: 'main_code',
+        name: 'name',
         part: {
           position: 0,
           track: 'track',
           local_track_name: '',
         },
+        position: 0,
+        secondary_code: 'secondary_code',
+        uic: 0,
         weight: null,
       },
     ];
@@ -60,7 +56,7 @@ describe('formatStops', () => {
       {
         position: { start: 0 },
         value: {
-          name: 'name ch',
+          name: 'name secondary_code',
           weight: null,
         },
       },

@@ -151,11 +151,11 @@ export type PathStepMetadata =
       isInvalid: false;
       name: string;
       /** Store the UIC for cases where we modify a step that was defined by an op id / trigram */
-      uic?: number;
+      uic?: number | null;
       /** Required when the corresponding path step is an operational_point since it won't
        * be in the path step location
        */
-      secondaryCode?: string;
+      secondaryCode?: string | null;
       /** Required when the corresponding path step has a track_reference with track_id since
        * we won't have access to the corresponding track name in the path step location
        */
@@ -175,9 +175,9 @@ export type StdcmPathStep = {
   id: string;
   operationalPoint?: {
     id: string;
-    trigram: string;
+    mainCode: string;
     uic: number;
-    secondaryCode?: string;
+    secondaryCode?: string | null;
     name: string;
     coordinates: [number, number];
   };

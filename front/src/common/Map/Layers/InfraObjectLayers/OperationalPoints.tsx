@@ -85,7 +85,7 @@ const OperationalPointsLayer = ({
         highlightedOperationalPoints,
         inColor: [
           'case',
-          ['in', ['get', 'extensions_sncf_ch'], ['literal', ['BV', '00']]],
+          ['in', ['get', 'secondary_code'], ['literal', ['BV', '00']]],
           colors.op.circleBV,
           colors.op.circle,
         ],
@@ -122,13 +122,13 @@ const OperationalPointsLayer = ({
       textFormat: [
         [
           'concat',
-          ['get', 'extensions_sncf_trigram'],
+          ['get', 'main_code'],
           ' ',
           [
             'case',
-            ['in', ['get', 'extensions_sncf_ch'], ['literal', ['BV', '00']]],
+            ['in', ['get', 'secondary_code'], ['literal', ['BV', '00']]],
             '',
-            ['get', 'extensions_sncf_ch'],
+            ['get', 'secondary_code'],
           ],
           '\n',
         ],
@@ -141,7 +141,7 @@ const OperationalPointsLayer = ({
     {
       id: 'name',
       textFormat: [
-        ['concat', ['get', 'extensions_identifier_name'], '\n'],
+        ['concat', ['get', 'name'], '\n'],
         {
           'font-scale': 1.1,
           'text-color': colors.op.textName,
@@ -163,9 +163,9 @@ const OperationalPointsLayer = ({
       textFormat: [
         [
           'case',
-          ['in', ['get', 'extensions_sncf_ch'], ['literal', ['BV', '00']]],
+          ['in', ['get', 'secondary_code'], ['literal', ['BV', '00']]],
           '',
-          ['concat', ' ', ['get', 'extensions_sncf_ch_long_label']],
+          ['concat', ' ', ['get', 'secondary_name']],
         ],
         {
           'font-scale': 1,

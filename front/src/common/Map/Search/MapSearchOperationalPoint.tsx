@@ -10,7 +10,6 @@ import { computeCoordinatesOnClick } from 'common/Map/utils';
 import { useMapSettingsActions } from 'reducers/commonMap';
 import { useAppDispatch } from 'store';
 
-import { MAIN_OP_CH_CODES } from './consts';
 import useSearchOperationalPoint from './useSearchOperationalPoint';
 
 const MAX_DISPLAYABLE_RESULTS = 100;
@@ -22,12 +21,12 @@ type MapSearchOperationalPointProps = {
 const MapSearchOperationalPoint = ({ closeMapSearchPopUp }: MapSearchOperationalPointProps) => {
   const {
     searchTerm,
-    chCodeFilter,
+    secondaryCodeFilter,
     searchResults,
-    searchResultsFilteredByCh,
+    searchResultsFilteredBySecondaryCode,
     mainOperationalPointsOnly,
     setSearchTerm,
-    setChCodeFilter,
+    setSecondaryCodeFilter,
     setMainOperationalPointsOnly,
   } = useSearchOperationalPoint({ pageSize: MAX_DISPLAYABLE_RESULTS + 1 });
 
@@ -106,10 +105,10 @@ const MapSearchOperationalPoint = ({ closeMapSearchPopUp }: MapSearchOperational
             type="text"
             placeholder={t('mapSearch.placeholder-ch-code')}
             onChange={(e) => {
-              setChCodeFilter(e.target.value || undefined);
+              setSecondaryCodeFilter(e.target.value || undefined);
             }}
-            onClear={() => setChCodeFilter(undefined)}
-            value={chCodeFilter}
+            onClear={() => setSecondaryCodeFilter(undefined)}
+            value={secondaryCodeFilter ?? undefined}
             disabled={mainOperationalPointsOnly}
             clearButton
             noMargin
@@ -130,32 +129,32 @@ const MapSearchOperationalPoint = ({ closeMapSearchPopUp }: MapSearchOperational
         {searchResults.length > MAX_DISPLAYABLE_RESULTS
           ? t('mapSearch.too-many-results')
           : t('mapSearch.results-count', {
-              count: searchResultsFilteredByCh.length,
+              count: searchResultsFilteredBySecondaryCode.length,
             })}
       </h2>
       <div className="search-results">
         {searchResults.length > 0 &&
           searchResults.length <= MAX_DISPLAYABLE_RESULTS &&
-          searchResultsFilteredByCh.map((searchResult, index) => (
+          searchResultsFilteredBySecondaryCode.map((searchResult, index) => (
             <button
               id={`result-${index}`}
               type="button"
               className={cx('search-result-item', {
-                main: MAIN_OP_CH_CODES.includes(searchResult.ch),
+                main: searchResult.is_passenger_station,
                 selected: index === selectedResultIndex,
               })}
               key={`mapSearchOperationalPoint-${searchResult.obj_id}`}
               onClick={() => onResultClick(searchResult)}
               tabIndex={-1}
             >
-              <span className="trigram">{searchResult.trigram}</span>
+              <span className="main-code">{searchResult.main_code}</span>
               <span className="name">
                 {searchResult.name}
-                {!MAIN_OP_CH_CODES.includes(searchResult.ch) && (
-                  <span className="ch">{searchResult.ch ?? ''}</span>
+                {!searchResult.is_passenger_station && (
+                  <span className="secondary-code">{searchResult.secondary_code ?? ''}</span>
                 )}
               </span>
-              <span className="uic">{searchResult.ci}</span>
+              <span className="uic">{searchResult.uic}</span>
             </button>
           ))}
       </div>

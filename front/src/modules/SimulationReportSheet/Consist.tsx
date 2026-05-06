@@ -139,7 +139,7 @@ const Consist = ({
                 <Text
                   style={styles.consistAndRoute.consistInfoData}
                   key={`consist-change-name-${index}`}
-                >{`\u2022 ${truncateText(consistChange.name, 10)} ${consistChange.ch}`}</Text>
+                >{`\u2022 ${truncateText(consistChange.name, 10)} ${consistChange.secondaryCode}`}</Text>
               ))}
             </View>
           </View>

@@ -193,8 +193,8 @@ const ItineraryModal = ({
     pendingStepIdRef.current = stepId;
     confirmedStepIdRef.current = stepId;
     let opRef: OperationalPointReference;
-    if (suggestion.trigram) {
-      opRef = { type: 'trigram', trigram: suggestion.trigram, secondary_code: chosenCh };
+    if (suggestion.mainCode) {
+      opRef = { type: 'trigram', trigram: suggestion.mainCode, secondary_code: chosenCh };
     } else if (suggestion.uic) {
       opRef = { type: 'uic', uic: suggestion.uic, secondary_code: chosenCh };
     } else {

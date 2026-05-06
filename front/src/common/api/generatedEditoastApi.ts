@@ -2700,14 +2700,14 @@ export type PostTrainSchedulesProjectPathOpApiArg = {
         }
       | {
           /** An optional secondary code to identify a more specific location */
-          secondary_code?: string | null;
+          secondary_code?: null | string;
           /** The operational point trigram */
           trigram: string;
           type: 'trigram';
         }
       | {
           /** An optional secondary code to identify a more specific location */
-          secondary_code?: string | null;
+          secondary_code?: null | string;
           type: 'uic';
           /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
           uic: number;
@@ -3057,21 +3057,6 @@ export type NeutralSection = {
   lower_pantograph: boolean;
   track_ranges: DirectionalTrackRange[];
 };
-export type OperationalPointIdentifierExtension = {
-  name: string;
-  uic: number;
-};
-export type OperationalPointSncfExtension = {
-  ch: string;
-  ch_long_label: string;
-  ch_short_label: string;
-  ci: number;
-  trigram: string;
-};
-export type OperationalPointExtensions = {
-  identifier?: null | OperationalPointIdentifierExtension;
-  sncf?: null | OperationalPointSncfExtension;
-};
 export type OperationalPointPartSncfExtension = {
   kp: string;
 };
@@ -3087,10 +3072,17 @@ export type OperationalPointPart = {
   track: string;
 };
 export type OperationalPoint = {
-  extensions?: OperationalPointExtensions;
+  country_code: string;
   id: string;
+  is_passenger_station: boolean;
+  main_code: string;
+  name: string;
   parts: OperationalPointPart[];
-  plc?: null | NonBlankString;
+  /** Primary Location Code : https://rne.eu/it/products/ccs/crd/ */
+  plc?: null | string;
+  secondary_code?: null | string;
+  secondary_name?: null | string;
+  uic?: number | null;
   weight?: number | null;
 };
 export type Waypoint =
@@ -3494,10 +3486,17 @@ export type RelatedOperationalPointPart = OperationalPointPart & {
   geo?: null | GeoJsonPoint;
 };
 export type RelatedOperationalPoint = {
-  extensions?: OperationalPointExtensions;
+  country_code: string;
   geo?: null | GeoJsonPoint;
   id: string;
+  is_passenger_station: boolean;
+  main_code: string;
+  name: string;
   parts: RelatedOperationalPointPart[];
+  plc?: null | string;
+  secondary_code?: null | string;
+  secondary_name?: null | string;
+  uic?: number | null;
   weight?: number | null;
 };
 export type OperationalPointReference =
@@ -3508,14 +3507,14 @@ export type OperationalPointReference =
     }
   | {
       /** An optional secondary code to identify a more specific location */
-      secondary_code?: string | null;
+      secondary_code?: null | string;
       /** The operational point trigram */
       trigram: string;
       type: 'trigram';
     }
   | {
       /** An optional secondary code to identify a more specific location */
-      secondary_code?: string | null;
+      secondary_code?: null | string;
       type: 'uic';
       /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
       uic: number;
@@ -3553,14 +3552,21 @@ export type InfraObjectWithGeometry = {
   railjson: object;
 };
 export type CoreOperationalPointOnPath = {
-  /** Extensions associated to the operational point */
-  extensions?: OperationalPointExtensions;
+  country_code: string;
   /** Id of the operational point */
   id: string;
+  is_passenger_station: boolean;
+  main_code: string;
+  name: string;
   /** The part along the path */
   part: OperationalPointPart;
+  /** Primary Location Code : https://rne.eu/it/products/ccs/crd/ */
+  plc?: null | string;
   /** Distance from the beginning of the path in mm */
   position: number;
+  secondary_code?: null | string;
+  secondary_name?: null | string;
+  uic?: number | null;
   /** Importance of the operational point */
   weight: number | null;
 };
@@ -4250,15 +4256,16 @@ export type SearchResultItemOperationalPointTrackSections = {
   track: string;
 };
 export type SearchResultItemOperationalPoint = {
-  ch: string;
-  ci: number;
   geographic: GeoJsonPoint;
   infra_id: number;
+  is_passenger_station: boolean;
+  main_code: string;
   name: string;
   obj_id: string;
+  secondary_code?: string | null;
+  secondary_name?: string | null;
   track_sections: SearchResultItemOperationalPointTrackSections[];
-  trigram: string;
-  uic: number;
+  uic?: number | null;
 };
 export type SearchResultItemSignal = {
   geographic: GeoJsonPoint;

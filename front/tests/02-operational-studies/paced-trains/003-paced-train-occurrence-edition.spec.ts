@@ -192,9 +192,9 @@ test.describe(
         });
 
         await operationalStudiesPage.openRouteTab();
-        await routeTab.performPathfindingByTrigram({
-          originTrigram: 'WS',
-          destinationTrigram: 'NES',
+        await routeTab.performPathfindingByMainCode({
+          originMainCode: 'WS',
+          destinationMainCode: 'NES',
         });
 
         await operationalStudiesPage.setTrainScheduleStartTime('02:40', '2024-10-16');

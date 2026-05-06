@@ -17,12 +17,17 @@ const makeStep = (id: string, uic: number, ch = 'BV'): PathStepV2 => ({
   receptionSignal: null,
 });
 
-const makeOp = (id: string, uic: number, ch = 'BV', positionOnPath = 0): SuggestedOP => ({
+const makeOp = (
+  id: string,
+  uic: number,
+  secondaryCode = 'BV',
+  positionOnPath = 0
+): SuggestedOP => ({
   opId: id,
   pathStepId: undefined,
   name: `op-${id}`,
   uic,
-  ch,
+  secondaryCode,
   offsetOnTrack: 0,
   track: 'track-1',
   positionOnPath,

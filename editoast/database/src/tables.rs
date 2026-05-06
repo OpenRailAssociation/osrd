@@ -597,10 +597,11 @@ diesel::table! {
         infra_id -> Nullable<Int4>,
         uic -> Nullable<Int4>,
         #[max_length = 255]
-        trigram -> Nullable<Varchar>,
-        ci -> Nullable<Int4>,
-        ch -> Nullable<Text>,
+        main_code -> Nullable<Varchar>,
+        secondary_code -> Nullable<Text>,
         name -> Nullable<Text>,
+        is_passenger_station -> Nullable<Bool>,
+        secondary_name -> Nullable<Text>,
     }
 }
 

@@ -17,8 +17,8 @@ export const addSecondaryCodesToSimilarTrains = (
   const getOpInfo = (id: string) => {
     const op = opById.get(id);
     return {
-      name: op?.extensions?.identifier?.name ?? id,
-      secondary_code: op?.extensions?.sncf?.ch ?? '—',
+      name: op?.name ?? id,
+      secondary_code: op?.secondary_code ?? '—',
     };
   };
 

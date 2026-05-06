@@ -142,8 +142,8 @@ const DebugSpaceTimeChart = ({ simData }: DebugSpaceTimeChartProps) => {
     const manchetteWaypoints: Waypoint[] = simData.path_properties.operational_points.map((op) => ({
       id: `${op.id}-${op.position}`,
       position: op.position,
-      name: op.extensions?.identifier?.name ?? '',
-      secondaryCode: op.extensions?.sncf?.ch ?? '',
+      name: op.name,
+      secondaryCode: op.secondary_code ?? '',
       weight: op.weight ?? 0,
     }));
 

@@ -14,13 +14,13 @@ import { useDebounce } from 'utils/hooks/useDebounce';
 import { MAIN_OP_CH_CODES } from './consts';
 import {
   sortOperationalPointsFromNameAndUicSearch,
-  sortOperationalPointsFromTrigramSearch,
+  sortOperationalPointsFromMainCodeSearch,
 } from './sortOperationalPoints';
 
 type SearchOperationalPoint = {
   debounceDelay?: number;
   initialSearchTerm?: string;
-  initialChCodeFilter?: string;
+  initialSecondaryCodeFilter?: string | null;
   isStdcm?: boolean;
   pageSize?: number;
 };
@@ -28,13 +28,13 @@ type SearchOperationalPoint = {
 export default function useSearchOperationalPoint({
   debounceDelay = 150,
   initialSearchTerm = '',
-  initialChCodeFilter,
+  initialSecondaryCodeFilter,
   isStdcm = false,
   pageSize = 1000,
 }: SearchOperationalPoint = {}) {
   const infraID = useInfraID();
   const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
-  const [chCodeFilter, setChCodeFilter] = useState(initialChCodeFilter);
+  const [secondaryCodeFilter, setSecondaryCodeFilter] = useState(initialSecondaryCodeFilter);
   const [mainOperationalPointsOnly, setMainOperationalPointsOnly] = useState(false);
   const stdcmOperationalPoints = useSelector(getOperationalPoints);
   const isSuperUser = useSelector(getIsSuperUser);
@@ -49,8 +49,8 @@ export default function useSearchOperationalPoint({
     return true;
   }, [stdcmOperationalPoints, isSuperUser, isStdcm]);
 
-  /* Lazily search for operational whose trigrams exactly match the search query */
-  const lazySearchByExactTrigram = useCallback(
+  /* Lazily search for operational whose main code exactly match the search query */
+  const lazySearchByExactMainCode = useCallback(
     async (searchQuery: string) => {
       if (!infraID) return [];
 
@@ -58,7 +58,7 @@ export default function useSearchOperationalPoint({
         object: 'operationalpoint',
         query: [
           'and',
-          ['=', ['trigram'], `${searchQuery}`],
+          ['=', ['main_code'], `${searchQuery}`],
           ['=', ['infra_id'], infraID],
           stdcmPerimeterOperationalpointsFilter,
         ],
@@ -69,7 +69,7 @@ export default function useSearchOperationalPoint({
           pageSize,
         }).unwrap()) as SearchResultItemOperationalPoint[];
         const sortedResults = [...results];
-        sortedResults.sort(sortOperationalPointsFromTrigramSearch);
+        sortedResults.sort(sortOperationalPointsFromMainCodeSearch);
         return sortedResults;
       } catch (error) {
         setFailure(castErrorToFailure(error));
@@ -79,21 +79,21 @@ export default function useSearchOperationalPoint({
     [infraID, stdcmPerimeterOperationalpointsFilter]
   );
 
-  const shouldSearchByTrigram =
+  const shouldSearchByMainCode =
     infraID &&
     debouncedSearchTerm &&
     !Number.isInteger(+debouncedSearchTerm) &&
     debouncedSearchTerm.length < 4;
 
   /* Operational points whose trigrams start with the search query */
-  const { data: rawTrigramResults } = osrdEditoastApi.endpoints.postSearch.useQuery(
-    shouldSearchByTrigram
+  const { data: rawMainCodeResults } = osrdEditoastApi.endpoints.postSearch.useQuery(
+    shouldSearchByMainCode
       ? {
           searchPayload: {
             object: 'operationalpoint',
             query: [
               'and',
-              ['ilike', ['trigram'], `${debouncedSearchTerm}%`],
+              ['ilike', ['main_code'], `${debouncedSearchTerm}%`],
               ['=', ['infra_id'], infraID],
               stdcmPerimeterOperationalpointsFilter,
             ],
@@ -128,9 +128,9 @@ export default function useSearchOperationalPoint({
   const searchResults = useMemo(() => {
     if (!debouncedSearchTerm) return [];
 
-    const trigramResults = [...((rawTrigramResults ?? []) as SearchResultItemOperationalPoint[])];
-    trigramResults.sort(sortOperationalPointsFromTrigramSearch);
-    const trigramResultsIds = new Set(trigramResults.map((op) => op.obj_id));
+    const mainCodeResults = [...((rawMainCodeResults ?? []) as SearchResultItemOperationalPoint[])];
+    mainCodeResults.sort(sortOperationalPointsFromMainCodeSearch);
+    const trigramResultsIds = new Set(mainCodeResults.map((op) => op.obj_id));
 
     const nameAndUicResults = [
       ...((rawNameAndUicResults ?? []) as SearchResultItemOperationalPoint[]),
@@ -140,33 +140,37 @@ export default function useSearchOperationalPoint({
     );
     dedupNameAndUicResults.sort(sortOperationalPointsFromNameAndUicSearch(debouncedSearchTerm));
 
-    const allResults = [...trigramResults, ...dedupNameAndUicResults];
+    const allResults = [...mainCodeResults, ...dedupNameAndUicResults];
     return allResults;
-  }, [debouncedSearchTerm, rawTrigramResults, rawNameAndUicResults]);
+  }, [debouncedSearchTerm, rawMainCodeResults, rawNameAndUicResults]);
 
-  /** Filter operational points on secondary code (ch), if provided */
-  const searchResultsFilteredByCh = useMemo(() => {
+  /** Filter operational points on secondary code, if provided */
+  const searchResultsFilteredBySecondaryCode = useMemo(() => {
     if (
       mainOperationalPointsOnly ||
-      (chCodeFilter !== undefined && MAIN_OP_CH_CODES.includes(chCodeFilter))
+      (secondaryCodeFilter && MAIN_OP_CH_CODES.includes(secondaryCodeFilter))
     )
-      return searchResults.filter((result) => MAIN_OP_CH_CODES.includes(result.ch));
+      return searchResults.filter((result) => result.is_passenger_station);
 
-    if (!chCodeFilter) return searchResults;
+    if (!secondaryCodeFilter) return searchResults;
 
-    const chFilter = chCodeFilter.trim().toLowerCase();
-    return searchResults.filter((result) => result.ch.toLocaleLowerCase().includes(chFilter));
-  }, [searchResults, chCodeFilter, mainOperationalPointsOnly]);
+    const normalizedSecondaryCodeFilter = secondaryCodeFilter.trim().toLowerCase();
+    return searchResults.filter(
+      (result) =>
+        result.secondary_code &&
+        result.secondary_code.toLocaleLowerCase().includes(normalizedSecondaryCodeFilter)
+    );
+  }, [searchResults, secondaryCodeFilter, mainOperationalPointsOnly]);
 
   return {
     searchTerm,
-    chCodeFilter,
-    searchResultsFilteredByCh,
+    secondaryCodeFilter,
+    searchResultsFilteredBySecondaryCode,
     mainOperationalPointsOnly,
     searchResults,
-    searchOperationalPointsByTrigram: lazySearchByExactTrigram,
+    searchOperationalPointsByMainCode: lazySearchByExactMainCode,
     setSearchTerm,
-    setChCodeFilter,
+    setSecondaryCodeFilter,
     setMainOperationalPointsOnly,
   };
 }

@@ -242,7 +242,7 @@ impl TrainOccurrence {
                         OperationalPointPartReference {
                             operational_point: OperationalPointReference::Uic {
                                 uic: 8711,
-                                secondary_code: Some("BV".to_string()),
+                                secondary_code: Some("BV".into()),
                             },
                             local_track_name: None,
                         },
@@ -261,7 +261,7 @@ impl TrainOccurrence {
                         OperationalPointPartReference {
                             operational_point: OperationalPointReference::Trigram {
                                 trigram: NonBlankString::from("MWS"),
-                                secondary_code: Some("BV".to_string()),
+                                secondary_code: Some("BV".into()),
                             },
                             local_track_name: None,
                         },

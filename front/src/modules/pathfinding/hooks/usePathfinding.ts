@@ -109,14 +109,14 @@ const usePathfinding = ({
 
         return {
           ...step,
-          ...(op.extensions?.identifier?.name && { name: op.extensions.identifier.name }),
-          ...(op.extensions?.identifier?.uic && {
+          ...(op.name && { name: op.name }),
+          ...(op.uic && {
             location: {
               local_track_name: step.location.local_track_name,
               type: 'operational_point_part_reference',
               operational_point: {
-                uic: op.extensions.identifier.uic,
-                secondary_code: op.extensions?.sncf?.ch,
+                uic: op.uic,
+                secondary_code: op.secondary_code,
                 type: 'uic',
               },
             },
@@ -220,7 +220,7 @@ const usePathfinding = ({
         name: correspondingOp?.name || step.name,
         ...(correspondingOp && {
           uic: correspondingOp.uic,
-          secondary_code: correspondingOp.ch,
+          secondary_code: correspondingOp.secondaryCode,
           kp: correspondingOp.kp,
         }),
       };

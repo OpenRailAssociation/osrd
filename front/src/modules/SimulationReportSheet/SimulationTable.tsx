@@ -105,7 +105,7 @@ const SimulationTable = ({
                   <TD style={row.stylesByColumn.name}>{row.name}</TD>
                 </View>
                 <View style={styles.simulation.chWidth}>
-                  <TD style={row.stylesByColumn.ch}>{row.ch}</TD>
+                  <TD style={row.stylesByColumn.secondaryCode}>{row.secondaryCode}</TD>
                 </View>
                 {!isStdcm && (
                   <View style={styles.simulation.trackWidth}>

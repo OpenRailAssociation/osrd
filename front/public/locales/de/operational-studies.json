@@ -413,8 +413,8 @@
       "title_on": "{{count}} von {{total}} verletzten Beschränkungen"
     },
     "infraLoading": "Infrastruktur wird geladen…",
-    "inputOPTrigrams": "Geben Sie die Kürzel der zu durchfahrenden Betriebsstellen ein, getrennt durch Leerzeichen.",
-    "inputOPTrigramsExample": "Bsp.: HHA HGÖ FKS",
+    "inputOPMainCodes": "Geben Sie die Kürzel der zu durchfahrenden Betriebsstellen ein, getrennt durch Leerzeichen.",
+    "inputOPMainCodesExample": "Bsp.: HHA HGÖ FKS",
     "invalidTrainScheduleStep": "Mindestens ein Wegepunkt konnte nicht erkannt werden.",
     "inverseOD": "Route umkehren",
     "itineraryModal": {
