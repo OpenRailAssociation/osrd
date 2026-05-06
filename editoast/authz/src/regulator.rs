@@ -230,6 +230,11 @@ impl<S: StorageDriver> Regulator<S> {
                     .check(model::Infra::can_share_ownership().check(user, infra))
                     .await?
             }
+            InfraPrivilege::CanRevoke => {
+                self.openfga
+                    .check(model::Infra::can_revoke().check(user, infra))
+                    .await?
+            }
         };
         Ok(Authorization::from_privilege_check(check))
     }
@@ -395,60 +400,52 @@ impl<S: StorageDriver> Regulator<S> {
         subject: &Subject,
         infra: &Infra,
     ) -> Result<Authorization<()>, Error<S::Error>> {
-        // TODO: add a can_revoke privilege in the authorization model
-
         // Revoking rules:
         // 1. Only owners (and admins) can fully revoke grants
         // 2. The last owner of a resource cannot be revoked, even by admins
         // 3. An owner cannot revoke another owner
 
-        let is_subject_owner = match subject {
-            Subject::User(user) => {
-                self.openfga
-                    .check(Infra::owner().check(user, infra))
-                    .await?
-            }
-            Subject::Group(group) => {
-                self.openfga
-                    .check(Infra::owner().check(Group::member().userset(group), infra))
-                    .await?
-            }
-        };
+        let authz_revoke = self
+            .authorize_infra(issuer, infra, InfraPrivilege::CanRevoke)
+            .await?;
+        authz_revoke
+            .allowed_then_try(async || {
+                let is_subject_owner = match subject {
+                    Subject::User(user) => {
+                        self.openfga
+                            .check(Infra::owner().check(user, infra))
+                            .await?
+                    }
+                    Subject::Group(group) => {
+                        self.openfga
+                            .check(Infra::owner().check(Group::member().userset(group), infra))
+                            .await?
+                    }
+                };
 
-        if is_subject_owner {
-            let authorize = crate::v2::special_authorizers::Authorize(&self.openfga);
-            let current_owners = authorize
-                .access_value(crate::v2::infra_granted_subjects(*infra, InfraGrant::Owner))
-                .await?;
-            if current_owners.len() == 1 && current_owners.contains(subject) {
-                return Ok(Authorization::Denied {
-                    reason: "cannot remove the last owner from infrastructure",
-                });
-            }
-        }
+                if is_subject_owner {
+                    let authorize = crate::v2::special_authorizers::Authorize(&self.openfga);
+                    let current_owners = authorize
+                        .access_value(crate::v2::infra_granted_subjects(*infra, InfraGrant::Owner))
+                        .await?;
+                    // Rule 2: The last owner of a resource cannot be revoked, even by admins
+                    if current_owners.len() == 1 && current_owners.contains(subject) {
+                        return Ok(Authorization::Denied {
+                            reason: "cannot remove the last owner from infrastructure",
+                        });
+                    }
+                    // Rule 3: An owner cannot revoke another owner (only admins can)
+                    if !self.is_admin(issuer).await? {
+                        return Ok(Authorization::Denied {
+                            reason: "owner cannot revoke another owner",
+                        });
+                    }
+                }
 
-        if !self.is_admin(issuer).await? {
-            let is_issuer_owner = self
-                .openfga
-                .check(Infra::owner().check(issuer, infra))
-                .await?;
-
-            if !is_issuer_owner {
-                return Ok(Authorization::Denied {
-                    reason: "only owners can revoke grants",
-                });
-            }
-
-            // Rule 3: An owner cannot revoke another owner (only admins can)
-            if is_issuer_owner && is_subject_owner {
-                return Ok(Authorization::Denied {
-                    reason: "owner cannot revoke another owner",
-                });
-            }
-        }
-
-        self.revoke_infra_grants_unchecked(subject, infra).await?;
-        Ok(Authorization::Granted(()))
+                self.revoke_infra_grants_unchecked(subject, infra).await?;
+                Ok(Authorization::Granted(()))
+            })
+            .await
     }
 
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]

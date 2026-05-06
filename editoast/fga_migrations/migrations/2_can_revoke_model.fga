@@ -17,7 +17,6 @@ type group
 
 type infra
   relations
-    # attributions (grants)
     define reader: [user, group#member, group#manager, user#manager]
     define writer: [user, group#member, group#manager, user#manager]
     define owner: [user, group#member, group#manager, user#manager]
@@ -29,6 +28,7 @@ type infra
     define can_share_read: can_read
     define can_share_write: can_write
     define can_share_ownership: owner
+    define can_revoke: owner
 
 type rolling_stock
     relations
