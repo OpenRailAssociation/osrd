@@ -2872,7 +2872,8 @@ export type InfraPrivilege =
   | 'can_write'
   | 'can_share_write'
   | 'can_delete'
-  | 'can_share_ownership';
+  | 'can_share_ownership'
+  | 'can_revoke';
 export type SubjectType = 'User' | 'Group';
 export type PaginationStats = {
   /** The total number of items */

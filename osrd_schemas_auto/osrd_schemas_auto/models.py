@@ -2467,6 +2467,7 @@ class InfraPrivilege(Enum):
     can_share_write = "can_share_write"
     can_delete = "can_delete"
     can_share_ownership = "can_share_ownership"
+    can_revoke = "can_revoke"
 
 
 class InitialSpeedChangeGroup(BaseModel):

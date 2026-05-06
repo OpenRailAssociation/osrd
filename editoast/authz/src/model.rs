@@ -125,6 +125,7 @@ pub enum InfraPrivilege {
     CanShareWrite,
     CanDelete,
     CanShareOwnership,
+    CanRevoke,
 }
 
 #[derive(
@@ -194,6 +195,7 @@ pub enum RollingStockPrivilege {
     CanShareWrite,
     CanDelete,
     CanShareOwnership,
+    CanRevoke,
 }
 
 #[derive(
@@ -272,7 +274,8 @@ fga::relations! {
         can_delete: User,
         can_share_read: User,
         can_share_write: User,
-        can_share_ownership: User
+        can_share_ownership: User,
+        can_revoke: User
     },
     RollingStock {
         reader: User,
@@ -284,7 +287,8 @@ fga::relations! {
         can_delete: User,
         can_share_read: User,
         can_share_write: User,
-        can_share_ownership: User
+        can_share_ownership: User,
+        can_revoke: User
     }
 }
 
