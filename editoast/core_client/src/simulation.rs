@@ -31,7 +31,7 @@ use crate::WorkerKey;
 #[editoast_derive::annotate_units]
 #[derive(Debug, Clone, Serialize, Deserialize, Educe, ToSchema)]
 #[educe(Hash, PartialEq, Eq)]
-#[schema(as = core::PhysicsConsist)]
+#[schema(as = CorePhysicsConsist)]
 pub struct PhysicsConsist {
     pub effort_curves: EffortCurves,
     pub base_power_class: Option<String>,
@@ -101,7 +101,7 @@ pub struct PhysicsConsist {
 }
 
 #[derive(Debug, Clone, Hash, PartialEq, Serialize, Deserialize, ToSchema)]
-#[schema(as = core::ZoneUpdate)]
+#[schema(as = CoreZoneUpdate)]
 pub struct ZoneUpdate {
     pub zone: String,
     // Time in ms
@@ -139,7 +139,7 @@ pub struct SimulationPowerRestrictionItem {
 }
 
 #[derive(Deserialize, Default, PartialEq, Serialize, Clone, Debug, ToSchema)]
-#[schema(as = core::ReportTrain)]
+#[schema(as = CoreReportTrain)]
 pub struct ReportTrain {
     /// List of positions of a train
     /// Both positions (in mm) and times (in ms) must have the same length
@@ -155,7 +155,7 @@ pub struct ReportTrain {
 }
 
 #[derive(Deserialize, Default, PartialEq, Serialize, Clone, Debug, ToSchema)]
-#[schema(as = core::CompleteReportTrain)]
+#[schema(as = CoreCompleteReportTrain)]
 pub struct CompleteReportTrain {
     #[serde(flatten)]
     pub report_train: ReportTrain,
@@ -166,7 +166,7 @@ pub struct CompleteReportTrain {
 }
 
 #[derive(Debug, Clone, PartialEq, Hash, Serialize, Deserialize, ToSchema)]
-#[schema(as = core::SignalCriticalPosition)]
+#[schema(as = CoreSignalCriticalPosition)]
 /// First position (space and time) along the path where given signal must
 /// be free (sighting time or closed-signal stop ending)
 pub struct SignalCriticalPosition {
@@ -179,7 +179,7 @@ pub struct SignalCriticalPosition {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
-#[schema(as = core::SpacingRequirement)]
+#[schema(as = CoreSpacingRequirement)]
 pub struct SpacingRequirement {
     pub zone: String,
     // Time in ms
@@ -189,7 +189,7 @@ pub struct SpacingRequirement {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
-#[schema(as = core::RoutingRequirement)]
+#[schema(as = CoreRoutingRequirement)]
 pub struct RoutingRequirement {
     pub route: String,
     /// Time in ms
@@ -198,7 +198,7 @@ pub struct RoutingRequirement {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
-#[schema(as = core::RoutingZoneRequirement)]
+#[schema(as = CoreRoutingZoneRequirement)]
 pub struct RoutingZoneRequirement {
     pub zone: String,
     pub entry_detector: String,
@@ -209,7 +209,7 @@ pub struct RoutingZoneRequirement {
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
-#[schema(as = core::ElectricalProfiles)]
+#[schema(as = CoreElectricalProfiles)]
 pub struct ElectricalProfiles {
     /// List of `n` boundaries of the ranges (block path).
     /// A boundary is a distance from the beginning of the path in mm.
@@ -220,7 +220,7 @@ pub struct ElectricalProfiles {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
-#[schema(as = core::ElectricalProfileValue, title_variants)]
+#[schema(as = CoreElectricalProfileValue, title_variants)]
 #[serde(tag = "electrical_profile_type", rename_all = "snake_case")]
 pub enum ElectricalProfileValue {
     NoProfile,
@@ -231,7 +231,7 @@ pub enum ElectricalProfileValue {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
-#[schema(as = core::SpeedLimitSource, title_variants)]
+#[schema(as = CoreSpeedLimitSource, title_variants)]
 #[serde(tag = "speed_limit_source_type", rename_all = "snake_case")]
 #[allow(clippy::enum_variant_names)]
 pub enum SpeedLimitSource {
@@ -241,7 +241,7 @@ pub enum SpeedLimitSource {
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
-#[schema(as = core::SpeedLimitProperty)]
+#[schema(as = CoreSpeedLimitProperty)]
 pub struct SpeedLimitProperty {
     /// in meters per second
     pub speed: f64,
@@ -253,7 +253,7 @@ pub struct SpeedLimitProperty {
 /// A MRSP computation result (Most Restrictive Speed Profile)
 
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
-#[schema(as = core::SpeedLimitProperties)]
+#[schema(as = CoreSpeedLimitProperties)]
 pub struct SpeedLimitProperties {
     /// List of `n` boundaries of the ranges (block path).
     /// A boundary is a distance from the beginning of the path in mm.

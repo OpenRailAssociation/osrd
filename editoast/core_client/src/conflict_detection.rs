@@ -34,7 +34,7 @@ pub struct TrainRequirements {
 
 // TODO: use struct in conflict detection instead of a Map<String, TrainRequirements>.
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
-#[schema(as = core::TrainRequirementsById)]
+#[schema(as = CoreTrainRequirementsById)]
 pub struct TrainRequirementsById {
     pub train_id: String,
     /// ID that can be used to find the train in tools other than OSRD. Used in debug traces.
@@ -77,7 +77,7 @@ pub struct Conflict {
 /// The start and end time describe the conflicting time span (not the full
 /// requirement's time span).
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
-#[schema(as = core::ConflictRequirement)]
+#[schema(as = CoreConflictRequirement)]
 pub struct ConflictRequirement {
     pub zone: String,
     pub start_time: DateTime<Utc>,
@@ -85,7 +85,7 @@ pub struct ConflictRequirement {
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, ToSchema, PartialEq)]
-#[schema(as = core::ConflictType)]
+#[schema(as = CoreConflictType)]
 pub enum ConflictType {
     /// Conflict caused by two trains being too close to each other, or between a train and a work schedule
     Spacing,
