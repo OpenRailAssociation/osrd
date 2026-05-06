@@ -293,6 +293,23 @@ const ItineraryModal = ({
     [mapSelectionStepId, pathSteps, convertFeatureClickToLocation, setInputForStep]
   );
 
+  const handleOpSelectionConfirm = useCallback(
+    (location: PathItemLocation, _coordinates: number[], displayName: string) => {
+      if (!mapSelectionStepId) return;
+      const stepId = mapSelectionStepId;
+      setPathSteps((prev) =>
+        ensureTrailingEmptyStep(prev.map((s) => (s.id === stepId ? { ...s, location } : s)))
+      );
+      if (displayName) {
+        commitSelectionForStep(stepId, displayName);
+      } else {
+        setInputForStep(stepId, '');
+      }
+      setMapSelectionStepId(null);
+    },
+    [mapSelectionStepId, commitSelectionForStep, setInputForStep]
+  );
+
   const handlePathStepDragEnd = useCallback(
     async (stepId: string, featureInfoClick: FeatureInfoClick) => {
       const location = await convertFeatureClickToLocation(featureInfoClick);
@@ -755,6 +772,8 @@ const ItineraryModal = ({
           isMapSelectionMode={mapSelectionStepId !== null}
           onMapSelectionClick={handleMapSelectionClick}
           onPathStepDragEnd={handlePathStepDragEnd}
+          onOpSelectionConfirm={handleOpSelectionConfirm}
+          getStepName={getInputForStep}
         >
           <IncompatibleConstraints
             geometry={pathProperties?.geometry}
