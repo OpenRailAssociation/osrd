@@ -61,11 +61,11 @@ function getOperationalPointReference(
   // Normalize empty string ch to null — virtual OPs store ch as '' when the original
   // secondary_code was null (see usePathProjection createVirtualOp), and passing ''
   // to the backend would filter for OPs with an empty secondary_code rather than any.
-  const ch = op.extensions?.sncf?.ch || null;
-  const trigram = op.extensions?.sncf?.trigram;
-  if (trigram) return { type: 'trigram', trigram, secondary_code: ch };
-  const uic = op.extensions?.identifier?.uic;
-  if (uic) return { type: 'uic', uic, secondary_code: ch }; // uic is defaulted to 0
+  const secondaryCode = op.secondary_code || null;
+  const mainCode = op.main_code;
+  if (mainCode) return { type: 'trigram', trigram: mainCode, secondary_code: secondaryCode };
+  const uic = op.uic;
+  if (uic) return { type: 'uic', uic, secondary_code: secondaryCode };
   // Only use the opId when it refers to a real infra OP. Virtual OPs (unrecognised, created
   // by usePathProjection when pathfinding fails) have a synthetic id like "virtual_op_Zürich"
   if (op.opId && !op.opId.startsWith('virtual_op'))
@@ -345,7 +345,7 @@ const useTrackOccupancy = ({
           waypointId,
           operationalPointId: op.opId ?? waypointId,
           operationalPointPosition: op.position,
-          operationalPointName: op.extensions?.identifier?.name || undefined,
+          operationalPointName: op.name,
           zones: resolvedZones,
           loading: opState.zones.type === 'loading',
           tracks: sortTracks(infraTracks, virtualTracks),
@@ -793,7 +793,7 @@ const useTrackOccupancy = ({
             ...trainsStationLabels[trainScheduleId],
             [side]: {
               type: 'label',
-              label: op?.extensions?.sncf?.trigram || op?.extensions?.identifier?.name || undefined,
+              label: op?.main_code,
             },
           };
         });

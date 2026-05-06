@@ -1,7 +1,6 @@
 import { Dot, Plus } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 
-import { isStation } from 'modules/pathfinding/utils';
 import type { SuggestedOP } from 'modules/trainSchedule/types';
 
 type WaypointRowProps = {
@@ -15,7 +14,7 @@ type WaypointRowProps = {
 };
 
 const WaypointRow = ({ op, isRequested }: WaypointRowProps) => {
-  const station = !!op && isStation(op.ch ?? '');
+  const station = !!op && op.isPassengerStation;
 
   return (
     <div
@@ -29,7 +28,7 @@ const WaypointRow = ({ op, isRequested }: WaypointRowProps) => {
         {/* TODO: Replace this with the train-station icon from ui-icons once it's been added */}
         {station && <i className="icons-itinerary-train-station" />}
       </span>
-      <span className="intermediate-waypoints-panel__row-ch">{op?.ch ?? ''}</span>
+      <span className="intermediate-waypoints-panel__row-ch">{op?.secondaryCode ?? ''}</span>
       {isRequested ? (
         <span className="intermediate-waypoints-panel__row-status" aria-hidden>
           <Dot variant="fill" />

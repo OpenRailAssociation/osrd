@@ -12,7 +12,7 @@ export type secondaryCodeSuggestion = {
 
 export type OperationalPointSuggestion = {
   id: string;
-  trigram: string;
+  mainCode: string;
   name: string;
   chList: secondaryCodeSuggestion[];
 };
@@ -37,7 +37,7 @@ export const ListElementComponent = ({
       'op-suggestion--selected': isSelected,
     })}
   >
-    <span className="op-suggestion-trigram">{suggestion.trigram}</span>
+    <span className="op-suggestion-main-code">{suggestion.mainCode}</span>
     <span className="op-suggestion-name">{suggestion.name}</span>
 
     <div className="op-suggestion-secondary-code-list">

@@ -26,7 +26,7 @@ class Infra:
     electrifications: List[Electrification] = field(default_factory=list)
     neutral_sections: List[NeutralSection] = field(default_factory=list)
 
-    VERSION = "3.5.2"
+    VERSION = "3.5.3"
 
     def add_route(self, *args, **kwargs):
         self.routes.append(Route(*args, **kwargs))
@@ -86,21 +86,17 @@ class Infra:
             new_op = models.OperationalPoint(
                 id=op.id,
                 parts=parts_per_op[op.id],
-                extensions=models.OperationalPointExtensions(
-                    sncf=models.OperationalPointSncfExtension(
-                        ci=int(str(op.uic)[2:]),  # remove two first digits of UIC code
-                        ch_short_label=op.ch,
-                        ch=op.ch,
-                        ch_long_label="0",
-                        trigram=op.trigram,
-                    ),
-                    identifier=models.OperationalPointIdentifierExtension(
-                        uic=op.uic,
-                        name=op.label,
-                    ),
-                ),
                 weight=op.weight,
-                plc=models.NonBlankString(op.plc) if op.plc is not None else None,
+                name=op.label,
+                uic=op.uic,
+                plc=models.Plc(op.plc) if op.plc is not None else None,
+                country_code=op.country_code,
+                main_code=op.main_code,
+                secondary_code=models.SecondaryCode(op.secondary_code)
+                if op.secondary_code is not None
+                else None,
+                is_passenger_station=op.is_passenger_station,
+                secondary_name=models.SecondaryName("0"),
             )
             ops.append(new_op)
         return ops

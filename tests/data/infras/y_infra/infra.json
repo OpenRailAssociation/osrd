@@ -79,20 +79,11 @@
     "neutral_sections": [],
     "operational_points": [
         {
-            "extensions": {
-                "identifier": {
-                    "name": "op.a",
-                    "uic": 8700
-                },
-                "sncf": {
-                    "ch": "BV",
-                    "ch_long_label": "0",
-                    "ch_short_label": "BV",
-                    "ci": 0,
-                    "trigram": "OP."
-                }
-            },
+            "country_code": "FR",
             "id": "op.a",
+            "is_passenger_station": true,
+            "main_code": "OP.",
+            "name": "op.a",
             "parts": [
                 {
                     "local_track_name": "V1",
@@ -101,23 +92,17 @@
                 }
             ],
             "plc": null,
+            "secondary_code": "BV",
+            "secondary_name": "0",
+            "uic": 8700,
             "weight": null
         },
         {
-            "extensions": {
-                "identifier": {
-                    "name": "op.b",
-                    "uic": 8700
-                },
-                "sncf": {
-                    "ch": "BV",
-                    "ch_long_label": "0",
-                    "ch_short_label": "BV",
-                    "ci": 0,
-                    "trigram": "OP."
-                }
-            },
+            "country_code": "FR",
             "id": "op.b",
+            "is_passenger_station": true,
+            "main_code": "OP.",
+            "name": "op.b",
             "parts": [
                 {
                     "local_track_name": "V1",
@@ -126,23 +111,17 @@
                 }
             ],
             "plc": null,
+            "secondary_code": "BV",
+            "secondary_name": "0",
+            "uic": 8700,
             "weight": null
         },
         {
-            "extensions": {
-                "identifier": {
-                    "name": "op.c",
-                    "uic": 8700
-                },
-                "sncf": {
-                    "ch": "BV",
-                    "ch_long_label": "0",
-                    "ch_short_label": "BV",
-                    "ci": 0,
-                    "trigram": "OP."
-                }
-            },
+            "country_code": "FR",
             "id": "op.c",
+            "is_passenger_station": true,
+            "main_code": "OP.",
+            "name": "op.c",
             "parts": [
                 {
                     "local_track_name": "V1",
@@ -151,6 +130,9 @@
                 }
             ],
             "plc": null,
+            "secondary_code": "BV",
+            "secondary_name": "0",
+            "uic": 8700,
             "weight": null
         }
     ],
@@ -813,5 +795,5 @@
             "slopes": []
         }
     ],
-    "version": "3.5.2"
+    "version": "3.5.3"
 }

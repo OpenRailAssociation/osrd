@@ -82,10 +82,10 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
       await operationalStudiesPage.setTrainScheduleStartTime(TRAIN_START_TIME);
       await operationalStudiesPage.selectCategory(FREIGHT_TRAIN.category);
       await operationalStudiesPage.openRouteTab();
-      await routeTab.performPathfindingByTrigram({
-        originTrigram: 'WS',
-        destinationTrigram: 'SES',
-        viaTrigram: 'MWS',
+      await routeTab.performPathfindingByMainCode({
+        originMainCode: 'WS',
+        destinationMainCode: 'SES',
+        viaMainCode: 'MWS',
       });
       await operationalStudiesPage.openTimesAndStopsTab();
     });

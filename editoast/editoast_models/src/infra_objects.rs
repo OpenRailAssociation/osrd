@@ -282,10 +282,7 @@ impl OperationalPointModel {
 
         Ok(dsl::infra_object_operational_point
             .filter(dsl::infra_id.eq(infra_id))
-            .filter(
-                sql::<Nullable<BigInt>>("(data->'extensions'->'identifier'->'uic')::int")
-                    .eq_any(uic),
-            )
+            .filter(sql::<Nullable<BigInt>>("(data->'uic')::int").eq_any(uic))
             .load(&mut conn.write().await)
             .await?
             .into_iter()
@@ -306,9 +303,7 @@ impl OperationalPointModel {
 
         Ok(dsl::infra_object_operational_point
             .filter(dsl::infra_id.eq(infra_id))
-            .filter(
-                sql::<Nullable<Text>>("data->'extensions'->'sncf'->>'trigram'").eq_any(trigrams),
-            )
+            .filter(sql::<Nullable<Text>>("data->>'main_code'").eq_any(trigrams))
             .load(&mut conn.write().await)
             .await?
             .into_iter()

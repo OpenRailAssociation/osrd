@@ -1,7 +1,7 @@
 use geos::geojson::Geometry;
-use schemas::infra::OperationalPointExtensions;
 use schemas::infra::OperationalPointPart;
 use schemas::primitives::Identifier;
+use schemas::primitives::NonBlankString;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -12,7 +12,6 @@ use crate::WorkerKey;
 use crate::pathfinding::TrackRange;
 
 use schemas::infra::OperationalPointPartExtension;
-use schemas::infra::OperationalPointSncfExtension;
 
 #[derive(Debug, Hash, Serialize)]
 pub struct PathPropertiesRequest<'a> {
@@ -100,18 +99,30 @@ pub struct OperationalPointOnPath {
     pub id: Identifier,
     /// The part along the path
     pub part: OperationalPointPart,
-    /// Extensions associated to the operational point
-    #[serde(default)]
-    pub extensions: OperationalPointExtensions,
     /// Distance from the beginning of the path in mm
     pub position: u64,
     /// Importance of the operational point
     #[schema(required, minimum = 0, maximum = 100)]
     pub weight: Option<u8>,
+    #[schema(inline)]
+    pub name: NonBlankString,
+    pub uic: Option<u32>,
+    /// Primary Location Code : https://rne.eu/it/products/ccs/crd/
+    #[schema(inline)]
+    pub plc: Option<NonBlankString>,
+    #[schema(inline)]
+    pub country_code: NonBlankString,
+    #[schema(inline)]
+    pub main_code: NonBlankString,
+    #[schema(inline)]
+    pub secondary_code: Option<NonBlankString>,
+    pub is_passenger_station: bool,
+    #[schema(inline)]
+    pub secondary_name: Option<NonBlankString>,
 }
 
 impl OperationalPointOnPath {
-    pub fn new_test(id: &str, ci: i64, trigram: &str) -> Self {
+    pub fn new_test(id: &str, uic: u32, main_code: &str) -> Self {
         OperationalPointOnPath {
             id: Identifier(id.into()),
             part: OperationalPointPart {
@@ -120,12 +131,16 @@ impl OperationalPointOnPath {
                 local_track_name: "V1".into(),
                 extensions: OperationalPointPartExtension { sncf: None },
             },
-            extensions: OperationalPointExtensions {
-                sncf: Some(OperationalPointSncfExtension::new(ci, "BV", trigram)),
-                identifier: None,
-            },
             position: 0,
             weight: None,
+            name: "TEST OP".into(),
+            uic: Some(uic),
+            plc: None,
+            country_code: "FR".into(),
+            main_code: main_code.into(),
+            secondary_code: Some("BV".into()),
+            is_passenger_station: true,
+            secondary_name: Some("Test OP".into()),
         }
     }
 }

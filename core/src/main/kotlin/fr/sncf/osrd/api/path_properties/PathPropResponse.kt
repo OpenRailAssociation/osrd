@@ -31,9 +31,16 @@ class NonElectrified : Electrification
 data class OperationalPointResponse(
     val id: String,
     val part: OperationalPointPartResponse,
-    val extensions: OperationalPointExtensions?,
     val position: Offset<PhysicsPath>,
     val weight: Long?,
+    val name: String,
+    val uic: Long?,
+    val plc: String?,
+    @Json(name = "country_code") val countryCode: String,
+    @Json(name = "main_code") val mainCode: String,
+    @Json(name = "secondary_code") val secondaryCode: String?,
+    @Json(name = "is_passenger_station") val isPassengerStation: Boolean,
+    @Json(name = "secondary_name") val secondaryName: String?,
 )
 
 data class OperationalPointPartResponse(
@@ -42,21 +49,6 @@ data class OperationalPointPartResponse(
     @Json(name = "local_track_name") val localTrackName: String,
     val extensions: OperationalPointPartExtension?,
 )
-
-data class OperationalPointExtensions(
-    val sncf: OperationalPointSncfExtension?,
-    val identifier: OperationalPointIdentifierExtension?,
-)
-
-data class OperationalPointSncfExtension(
-    val ci: Long,
-    val ch: String,
-    @Json(name = "ch_short_label") val chShortLabel: String,
-    @Json(name = "ch_long_label") val chLongLabel: String,
-    val trigram: String,
-)
-
-data class OperationalPointIdentifierExtension(val name: String, val uic: Long)
 
 data class OperationalPointPartExtension(val sncf: OperationalPointPartSncfExtension?)
 

@@ -1147,7 +1147,7 @@ mod tests {
     fn create_path_item_from_trigram(trigram: &str) -> OperationalPointReference {
         OperationalPointReference::Trigram {
             trigram: trigram.into(),
-            secondary_code: Some("BV".to_string()),
+            secondary_code: Some("BV".into()),
         }
     }
 

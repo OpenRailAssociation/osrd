@@ -131,7 +131,7 @@ export const formatStdcmDataForSimulationTable = (
         !isPathStep && step.name === previousStep.name
           ? '='
           : step.name || t('reportSheet.unknown'),
-      ch: step.ch,
+      ch: step.secondaryCode,
       trackName,
       endTime,
       passageStop,

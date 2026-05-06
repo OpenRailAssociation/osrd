@@ -132,9 +132,9 @@ export const usePathStepsMetadata = (
         newPathStepsMetadataById.set(pathStep.id, {
           type: 'opRef',
           isInvalid: false,
-          name: matchedOp.extensions?.identifier?.name ?? '',
-          uic: matchedOp.extensions?.identifier?.uic,
-          secondaryCode: matchedOp.extensions?.sncf?.ch,
+          name: matchedOp.name,
+          uic: matchedOp.uic,
+          secondaryCode: matchedOp.secondary_code,
           trackName: local_track_name ?? undefined,
           isValidLocalTrackName,
           parts,

@@ -13,7 +13,6 @@ java {
 
 dependencies {
     // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
-
     implementation project(':osrd-mp')
 
     // fast primitive collections

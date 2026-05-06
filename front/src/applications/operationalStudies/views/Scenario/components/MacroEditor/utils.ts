@@ -270,7 +270,7 @@ export const fetchStationSecondaryCode = async (
 ) => {
   const searchPayload = {
     object: 'operationalpoint',
-    query: ['and', ['=', ['infra_id'], infraId], ['=', ['trigram'], trigram]],
+    query: ['and', ['=', ['infra_id'], infraId], ['=', ['main_code'], trigram]],
   };
   const searchResults = (await dispatch(
     osrdEditoastApi.endpoints.postSearch.initiate({
@@ -278,6 +278,6 @@ export const fetchStationSecondaryCode = async (
     })
   ).unwrap()) as SearchResultItemOperationalPoint[];
 
-  const stationOp = searchResults.find((op) => op.ch === 'BV' || op.ch === '00');
-  return stationOp?.ch;
+  const stationOp = searchResults.find((op) => op.is_passenger_station);
+  return stationOp?.secondary_code;
 };

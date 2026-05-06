@@ -325,11 +325,11 @@ export const loadAndIndexNge = async (
     .flatMap((trainSchedule) => trainSchedule.pathOps)
     .filter((op) => op !== null);
   for (const op of pathOps) {
-    const { trigram, ch } = op.extensions?.sncf ?? {};
+    const { main_code, secondary_code } = op ?? {};
     for (const pathKey of MacroEditorState.getPathKeys(op)) {
       state.updateNodeDataByKey(pathKey, {
-        full_name: op.extensions?.identifier?.name,
-        trigram: trigram ? trigram + (ch ? `/${ch}` : '') : null,
+        full_name: op.name,
+        trigram: main_code ? main_code + (secondary_code ? `/${secondary_code}` : '') : null,
         geocoord: op.geo ? { lng: op.geo.coordinates[0], lat: op.geo.coordinates[1] } : undefined,
       });
     }

@@ -48,10 +48,10 @@ test.describe('Route tab', { tag: ['@op', '@route-tab'] }, () => {
       });
 
       await test.step('Perform pathfinding by trigrams (WS → NES via MES)', async () => {
-        await routeTab.performPathfindingByTrigram({
-          originTrigram: 'WS',
-          destinationTrigram: 'NES',
-          viaTrigram: 'MES',
+        await routeTab.performPathfindingByMainCode({
+          originMainCode: 'WS',
+          destinationMainCode: 'NES',
+          viaMainCode: 'MES',
         });
       });
 
@@ -79,9 +79,9 @@ test.describe('Route tab', { tag: ['@op', '@route-tab'] }, () => {
     operationalStudiesPage,
   }) => {
     await test.step('Perform pathfinding by trigrams (WS → NES)', async () => {
-      await routeTab.performPathfindingByTrigram({
-        originTrigram: 'WS',
-        destinationTrigram: 'NES',
+      await routeTab.performPathfindingByMainCode({
+        originMainCode: 'WS',
+        destinationMainCode: 'NES',
       });
     });
 
@@ -119,10 +119,10 @@ test.describe('Route tab', { tag: ['@op', '@route-tab'] }, () => {
     const expectedMapMarkersValues = ['West_station', 'South_East_station', 'Mid_West_station'];
 
     await test.step('Perform pathfinding WS → SES via MWS and verify markers', async () => {
-      await routeTab.performPathfindingByTrigram({
-        originTrigram: 'WS',
-        destinationTrigram: 'SES',
-        viaTrigram: 'MWS',
+      await routeTab.performPathfindingByMainCode({
+        originMainCode: 'WS',
+        destinationMainCode: 'SES',
+        viaMainCode: 'MWS',
       });
 
       if (browserName === 'chromium') {
@@ -144,10 +144,10 @@ test.describe('Route tab', { tag: ['@op', '@route-tab'] }, () => {
     });
 
     await test.step('Perform pathfinding again and verify markers (Chromium only)', async () => {
-      await routeTab.performPathfindingByTrigram({
-        originTrigram: 'WS',
-        destinationTrigram: 'SES',
-        viaTrigram: 'MWS',
+      await routeTab.performPathfindingByMainCode({
+        originMainCode: 'WS',
+        destinationMainCode: 'SES',
+        viaMainCode: 'MWS',
       });
       if (browserName === 'chromium') {
         await routeTab.verifyMapMarkers(...expectedMapMarkersValues);

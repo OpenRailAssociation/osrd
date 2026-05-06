@@ -13,10 +13,7 @@ use schemas::infra::Electrification;
 use schemas::infra::Endpoint;
 use schemas::infra::LogicalSignal;
 use schemas::infra::OperationalPoint;
-use schemas::infra::OperationalPointExtensions;
-use schemas::infra::OperationalPointIdentifierExtension;
 use schemas::infra::OperationalPointPart;
-use schemas::infra::OperationalPointSncfExtension;
 use schemas::infra::Side;
 use schemas::infra::Signal;
 use schemas::infra::SignalExtensions;
@@ -531,7 +528,7 @@ pub(crate) fn operational_points(
                 .collect();
             // Get operational point trigram
             // Look through the nodes member of the relation and find one that has a "railway:ref" tag
-            let trigram = rel
+            let main_code = rel
                 .refs
                 .iter()
                 .filter_map(|r| match r.member {
@@ -547,22 +544,21 @@ pub(crate) fn operational_points(
             if parts.is_empty() {
                 None
             } else {
+                let (identifier_name, identifier_uic) = identifier(&rel.tags);
                 Some(OperationalPoint {
                     id: rel.id.0.to_string().into(),
                     parts,
-                    extensions: OperationalPointExtensions {
-                        identifier: identifier(&rel.tags),
-                        sncf: Some(OperationalPointSncfExtension {
-                            ci: 0,
-                            ch: String::from("BV"),
-                            ch_short_label: NonBlankString::from("BV"),
-                            ch_long_label: NonBlankString::from("BV"),
-                            trigram
-                        }),
-                    },
                     weight: None,
+                    name: identifier_name,
+                    uic: Some(identifier_uic),
                     plc: None,
+                    country_code: "FR".into(),
+                    main_code: main_code.into(),
+                    secondary_code: Some("BV".into()),
+                    is_passenger_station: true,
+                    secondary_name: Some("BV".into()),
                 })
+
             }
         })
         .collect()
@@ -572,9 +568,7 @@ pub(crate) fn operational_points(
 // The front crashes when this function return None.
 // This function will probably be changed when the data model will change.
 // The necessity of a fake UIC and name should be re-evaluated at that time.
-fn identifier(
-    tags: &osm4routing::osmpbfreader::Tags,
-) -> Option<OperationalPointIdentifierExtension> {
+fn identifier(tags: &osm4routing::osmpbfreader::Tags) -> (NonBlankString, u32) {
     let uic = tags
         .get("uic_ref")
         .and_then(|uic| match u32::from_str(uic.as_str()) {
@@ -590,16 +584,11 @@ fn identifier(
             11_00000 + UIC_COUNTER.fetch_add(1, Ordering::Relaxed)
         });
 
-    tags.get("name")
-        .map(|name| OperationalPointIdentifierExtension {
-            name: name.as_str().into(),
-            uic,
-        })
-        .or(Some(OperationalPointIdentifierExtension {
-            // Generate a fake name from the UIC
-            name: format!("op_{}", uic).into(),
-            uic,
-        }))
+    tags.get("name").map_or(
+        // Generate a fake name from the UIC
+        (format!("op_{}", uic).into(), uic),
+        |name| (name.as_str().into(), uic),
+    )
 }
 
 pub(crate) fn track_sections(edges: &[Edge]) -> Vec<TrackSection> {

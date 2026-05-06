@@ -1,9 +1,7 @@
 import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
 
-import { MAIN_OP_CH_CODES } from './consts';
-
-/** Sort two operational points alphabetically first by name, then by ch (prioritizing main ch) */
-const sortOperationalPointsByNameAndCh = (
+/** Sort two operational points alphabetically first by name, then by secondary code (prioritizing passenger station) */
+const sortOperationalPointsByNameAndSecondaryCode = (
   a: SearchResultItemOperationalPoint,
   b: SearchResultItemOperationalPoint
 ) => {
@@ -12,32 +10,32 @@ const sortOperationalPointsByNameAndCh = (
     return nameComparison;
   }
 
-  const chA = a.ch ?? '';
-  const chB = b.ch ?? '';
+  const secondaryCodeA = a.secondary_code ?? '';
+  const secondaryCodeB = b.secondary_code ?? '';
 
-  if (MAIN_OP_CH_CODES.includes(chA)) {
+  if (a.is_passenger_station) {
     return -1;
   }
-  if (MAIN_OP_CH_CODES.includes(chB)) {
+  if (b.is_passenger_station) {
     return 1;
   }
-  return chA.localeCompare(chB);
+  return secondaryCodeA.localeCompare(secondaryCodeB);
 };
 
-/** Sort two operational points alphabetically first by trigram, then by name, then by ch (prioritizing main ch) */
-export const sortOperationalPointsFromTrigramSearch = (
+/** Sort two operational points alphabetically first by main code, then by name, then by secondary code (prioritizing passenger station) */
+export const sortOperationalPointsFromMainCodeSearch = (
   a: SearchResultItemOperationalPoint,
   b: SearchResultItemOperationalPoint
 ) => {
-  const trigramComparison = a.trigram.localeCompare(b.trigram);
-  if (trigramComparison !== 0) {
-    return trigramComparison;
+  const mainCodeComparison = a.main_code.localeCompare(b.main_code);
+  if (mainCodeComparison !== 0) {
+    return mainCodeComparison;
   }
 
-  return sortOperationalPointsByNameAndCh(a, b);
+  return sortOperationalPointsByNameAndSecondaryCode(a, b);
 };
 
-/** Sort two operational points prioritizing those starting with the search query, then alphabetically using name and ch */
+/** Sort two operational points prioritizing those starting with the search query, then alphabetically using name and secondary code */
 export const sortOperationalPointsFromNameAndUicSearch =
   (searchQuery: string) =>
   (a: SearchResultItemOperationalPoint, b: SearchResultItemOperationalPoint) => {
@@ -52,5 +50,5 @@ export const sortOperationalPointsFromNameAndUicSearch =
       return 1;
     }
 
-    return sortOperationalPointsByNameAndCh(a, b);
+    return sortOperationalPointsByNameAndSecondaryCode(a, b);
   };

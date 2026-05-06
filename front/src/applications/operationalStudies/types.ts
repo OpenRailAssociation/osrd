@@ -158,7 +158,7 @@ export type OperationalPointWithTimeAndSpeed = {
   track_number: number | null;
   line_name: string | null;
   track_name: string | null;
-  ch?: string | null;
+  secondary_code?: string | null;
 };
 
 export type TrainScheduleRoundTripGroups = {

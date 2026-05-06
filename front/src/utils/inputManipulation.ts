@@ -33,7 +33,7 @@ export const replaceCurrentWord = (
   let newText;
 
   if (currentWord.length > 0) {
-    newText = `${inputText.substring(0, cursorPosition - currentWord.length)}${result.trigram}${inputText.substring(cursorPosition)}`;
+    newText = `${inputText.substring(0, cursorPosition - currentWord.length)}${result.main_code}${inputText.substring(cursorPosition)}`;
   } else {
     newText = inputText;
   }

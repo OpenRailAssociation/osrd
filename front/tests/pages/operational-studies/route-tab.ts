@@ -39,7 +39,7 @@ class RouteTab {
     this.searchByTrigramButton = page.getByTestId('rocket-button');
     this.searchByTrigramContainer = page.getByTestId('type-and-path-container');
     this.searchByTrigramInput = page.getByTestId('type-and-path-input');
-    this.searchByTrigramSubmit = page.getByTestId('submit-search-by-trigram');
+    this.searchByTrigramSubmit = page.getByTestId('submit-search-by-main-code');
     this.resultPathfindingDone = page.getByTestId('result-pathfinding-done');
     this.originInfo = page.getByTestId('origin-op-info');
     this.destinationInfo = page.getByTestId('destination-op-info');
@@ -93,19 +93,19 @@ class RouteTab {
     return droppedWaypoint.getByTestId('via-dropped-uic');
   }
 
-  // Get the locator of the origin by trigram.
-  private getOriginLocatorByTrigram(trigram: string): Locator {
-    return this.page.getByTestId(`typeandpath-op-${trigram}`);
+  // Get the locator of the origin by mainCode.
+  private getOriginLocatorByMainCode(mainCode: string): Locator {
+    return this.page.getByTestId(`typeandpath-op-${mainCode}`);
   }
 
-  // Get the locator of the destination by trigram.
-  private getDestinationLocatorByTrigram(trigram: string): Locator {
-    return this.page.getByTestId(`typeandpath-op-${trigram}`);
+  // Get the locator of the destination by mainCode.
+  private getDestinationLocatorByMainCode(mainCode: string): Locator {
+    return this.page.getByTestId(`typeandpath-op-${mainCode}`);
   }
 
-  // Get the locator of the via by trigram.
-  private getViaLocatorByTrigram(trigram: string): Locator {
-    return this.page.getByTestId(`typeandpath-op-${trigram}`);
+  // Get the locator of the via by mainCode.
+  private getViaLocatorByMainCode(mainCode: string): Locator {
+    return this.page.getByTestId(`typeandpath-op-${mainCode}`);
   }
 
   // Get the add button locator by via name.
@@ -144,33 +144,33 @@ class RouteTab {
     }
   }
 
-  // Perform pathfinding by entering origin, destination, and optionally via trigrams.
+  // Perform pathfinding by entering origin, destination, and optionally via mainCodes.
   async performPathfindingByTrigram({
-    originTrigram,
-    destinationTrigram,
-    viaTrigram,
+    originMainCode,
+    destinationMainCode,
+    viaMainCode,
   }: {
-    originTrigram: string;
-    destinationTrigram: string;
-    viaTrigram?: string;
+    originMainCode: string;
+    destinationMainCode: string;
+    viaMainCode?: string;
   }): Promise<void> {
     await this.searchByTrigramButton.click();
     await expect(this.searchByTrigramContainer).toBeVisible();
 
-    const inputTrigramText = viaTrigram
-      ? `${originTrigram} ${viaTrigram} ${destinationTrigram}`
-      : `${originTrigram} ${destinationTrigram}`;
+    const inputTrigramText = viaMainCode
+      ? `${originMainCode} ${viaMainCode} ${destinationMainCode}`
+      : `${originMainCode} ${destinationMainCode}`;
 
     await this.searchByTrigramInput.fill(inputTrigramText);
 
-    const originLocator = this.getOriginLocatorByTrigram(originTrigram);
-    const destinationLocator = this.getDestinationLocatorByTrigram(destinationTrigram);
+    const originLocator = this.getOriginLocatorByMainCode(originMainCode);
+    const destinationLocator = this.getDestinationLocatorByMainCode(destinationMainCode);
 
     await expect(originLocator).toBeVisible();
     await expect(destinationLocator).toBeVisible();
 
-    if (viaTrigram) {
-      const viaLocator = this.getViaLocatorByTrigram(viaTrigram);
+    if (viaMainCode) {
+      const viaLocator = this.getViaLocatorByMainCode(viaMainCode);
       await expect(viaLocator).toBeVisible();
     }
 

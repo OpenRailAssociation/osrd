@@ -60,9 +60,9 @@ const ModalSuggestedVias = ({ suggestedVias, launchPathfinding }: ModalSuggested
         >
           {op.name || ''}
         </span>
-        {op.ch && (
-          <span className="suggested-via-ch" data-testid="suggested-via-ch">
-            {op.ch}
+        {op.secondaryCode && (
+          <span className="suggested-via-secondary-code" data-testid="suggested-via-secondary-code">
+            {op.secondaryCode}
           </span>
         )}
         {op.uic && (

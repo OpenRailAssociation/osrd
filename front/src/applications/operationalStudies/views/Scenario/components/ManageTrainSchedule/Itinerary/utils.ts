@@ -33,15 +33,15 @@ export const computePathStepCoordinates = (pathStepMetadata: PathStepMetadata) =
 };
 
 export const buildOpRef = (op: OperationalPoint): OperationalPointReference => {
-  const ch = op.extensions?.sncf?.ch;
-  const uic = op.extensions?.identifier?.uic;
-  if (uic !== undefined)
+  const ch = op.secondary_code;
+  const uic = op.uic;
+  if (uic)
     return {
       type: 'uic',
       uic,
       secondary_code: ch,
     };
-  const trigram = op.extensions?.sncf?.trigram;
+  const trigram = op.main_code;
   if (trigram)
     return {
       type: 'trigram',
@@ -55,9 +55,9 @@ export const buildOpRef = (op: OperationalPoint): OperationalPointReference => {
 };
 
 export const buildOpDisplayName = (op: OperationalPoint): string => {
-  const name = op.extensions?.identifier?.name ?? op.extensions?.sncf?.trigram ?? '';
-  const ch = op.extensions?.sncf?.ch;
-  return ch ? `${name} ${ch}` : name;
+  const name = op.name;
+  const secondaryCode = op.secondary_code;
+  return secondaryCode ? `${name} ${secondaryCode}` : name;
 };
 
 export const getOpKey = (location: PathItemLocation | null): string | null => {

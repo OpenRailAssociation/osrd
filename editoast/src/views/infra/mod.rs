@@ -27,6 +27,7 @@ use geos::Geom;
 use itertools::Itertools;
 use schemas::infra::SwitchType;
 use schemas::primitives::Identifier;
+use schemas::primitives::NonBlankString;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashSet;
@@ -53,7 +54,6 @@ use authz::Role;
 use editoast_models::Infra;
 use editoast_models::SwitchTypeModel;
 use schemas::infra::OperationalPoint;
-use schemas::infra::OperationalPointExtensions;
 use schemas::infra::OperationalPointPart;
 use schemas::infra::builtin_node_types_list;
 use schemas::train_schedule::OperationalPointReference;
@@ -681,11 +681,23 @@ struct RelatedOperationalPoint {
     id: Identifier,
     parts: Vec<RelatedOperationalPointPart>,
     #[serde(default)]
-    extensions: OperationalPointExtensions,
-    #[serde(default)]
     weight: Option<u8>,
     #[schema(value_type = Option<GeoJsonPoint>)]
     geo: Option<geos::geojson::Geometry>,
+    #[schema(inline)]
+    pub name: NonBlankString,
+    pub uic: Option<u32>,
+    #[schema(inline)]
+    pub plc: Option<NonBlankString>,
+    #[schema(inline)]
+    pub country_code: NonBlankString,
+    #[schema(inline)]
+    pub main_code: NonBlankString,
+    #[schema(inline)]
+    pub secondary_code: Option<NonBlankString>,
+    pub is_passenger_station: bool,
+    #[schema(inline)]
+    pub secondary_name: Option<NonBlankString>,
 }
 
 #[derive(Serialize, ToSchema)]
@@ -782,9 +794,16 @@ fn build_related_operational_point(
                 geo: geo_points.and_then(|points| points.get(i).cloned()),
             })
             .collect(),
-        extensions: op.extensions.clone(),
         weight: op.weight,
         geo: geo_points.and_then(|points| compute_operational_point_geo(points)),
+        name: op.name.clone(),
+        uic: op.uic,
+        plc: op.plc.clone(),
+        country_code: op.country_code.clone(),
+        main_code: op.main_code.clone(),
+        secondary_code: op.secondary_code.clone(),
+        is_passenger_station: op.is_passenger_station,
+        secondary_name: op.secondary_name.clone(),
     }
 }
 

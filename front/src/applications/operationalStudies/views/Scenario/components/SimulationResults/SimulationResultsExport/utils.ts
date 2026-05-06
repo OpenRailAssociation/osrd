@@ -96,9 +96,9 @@ export const formatOperationalPoints = (
     const correspondingStep = trainSchedule.path.find((step) =>
       matchPathStepAndOp(step.location, {
         opId: op.id,
-        uic: op.extensions?.identifier?.uic,
-        ch: op.extensions?.sncf?.ch,
-        trigram: op.extensions?.sncf?.trigram,
+        uic: op.uic,
+        secondaryCode: op.secondary_code,
+        mainCode: op.main_code,
         track: op.part.track,
         offsetOnTrack: op.part.position,
       })
@@ -121,14 +121,14 @@ export const formatOperationalPoints = (
 
     const opCommonProp = {
       id: op.id,
-      name: op.extensions?.identifier?.name || null,
+      name: op.name,
       duration: stepDuration,
       position: mmToM(op.position),
       line_code: metadata?.line_code || null,
       track_number: metadata?.track_number || null,
       line_name: metadata?.line_name || null,
       track_name: op.part.local_track_name,
-      ch: op.extensions?.sncf?.ch || null,
+      secondary_code: op.secondary_code || null,
     };
 
     formattedStops.push({

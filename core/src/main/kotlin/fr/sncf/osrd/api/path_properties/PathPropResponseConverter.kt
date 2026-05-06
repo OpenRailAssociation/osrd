@@ -84,31 +84,22 @@ private fun makeOperationalPoints(
                         OperationalPointPartSncfExtension(opPartProps["kp"]!!)
                     ),
             )
-        // If ci is null, then all its other values and the entire op sncf extension are null
-        val opSncfExtension =
-            if (opPartProps["ci"] == null) null
-            else
-                OperationalPointSncfExtension(
-                    opPartProps["ci"]!!.toLong(),
-                    opPartProps["ch"]!!,
-                    opPartProps["chShortLabel"]!!,
-                    opPartProps["chLongLabel"]!!,
-                    opPartProps["trigram"]!!,
-                )
-        // if name is null, uic and the op id extension are null
-        val opIdExtension =
-            if (opPartProps["identifier"] == null) null
-            else
-                OperationalPointIdentifierExtension(
-                    opPartProps["identifier"]!!,
-                    opPartProps["uic"]!!.toLong(),
-                )
-        val opExtensions =
-            if (opSncfExtension == null && opIdExtension == null) null
-            else OperationalPointExtensions(opSncfExtension, opIdExtension)
         val weight = if (opPartProps["weight"] == null) null else opPartProps["weight"]!!.toLong()
         val opResult =
-            OperationalPointResponse(operationalPointId, opPartResult, opExtensions, offset, weight)
+            OperationalPointResponse(
+                operationalPointId,
+                opPartResult,
+                offset,
+                weight,
+                opPartProps["name"]!!,
+                opPartProps["uic"]?.toLong(),
+                opPartProps["plc"],
+                opPartProps["countryCode"]!!,
+                opPartProps["mainCode"]!!,
+                opPartProps["secondaryCode"],
+                opPartProps["isPassengerStation"] == "true",
+                opPartProps["secondaryName"],
+            )
         res.add(opResult)
     }
     return res

@@ -382,7 +382,7 @@ export const getOperationalPointName = (
   t: TFunction<'operational-studies'>
 ) => {
   // We have a matching operational point
-  if (op) return op.extensions?.identifier?.name;
+  if (op) return op.name;
 
   // TrackOffset
   if (step.type === 'track_offset') {
@@ -404,9 +404,9 @@ export const buildOpMatchParams = (
   op: ArrayElement<PathPropertiesFormatted['operationalPoints']>
 ) => ({
   opId: op.id,
-  uic: op.extensions?.identifier?.uic,
-  ch: op.extensions?.sncf?.ch,
-  trigram: op.extensions?.sncf?.trigram,
+  uic: op.uic,
+  secondaryCode: op.secondary_code,
+  mainCode: op.main_code,
   track: op.part.track,
   offsetOnTrack: op.part.position,
 });

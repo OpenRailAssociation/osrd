@@ -22,8 +22,17 @@ import { isArrivalDateInSearchTimeWindow, isEqualDate } from 'utils/date';
 import { Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
 
-import type { StdcmLinkedTrainResult } from '../types';
+import type { StdcmLinkedTrainExtremity, StdcmLinkedTrainResult } from '../types';
 import computeOpSchedules from '../utils/computeOpSchedules';
+
+const toLinkedTrainExtremity = (
+  op: SearchResultItemOperationalPoint,
+  schedule: { date: string; time: string; arrivalDate: Date }
+): StdcmLinkedTrainExtremity => {
+  if (!op.uic) throw new Error(`Operational point ${op.obj_id} has no UIC`);
+  if (!op.secondary_code) throw new Error(`Operational point ${op.obj_id} has no secondary code`);
+  return { ...op, uic: op.uic, secondary_code: op.secondary_code, ...schedule };
+};
 
 const useLinkedTrainSearch = () => {
   const { t } = useTranslation('stdcm', { keyPrefix: 'trainPath.linkedTrain' });
@@ -67,7 +76,7 @@ const useLinkedTrainSearch = () => {
           : ([
               'and',
               ['=', ['uic'], pathItem.location.operational_point.uic],
-              ['=', ['ch'], pathItem.location.operational_point.secondary_code],
+              ['=', ['secondary_code'], pathItem.location.operational_point.secondary_code],
             ] as SearchQuery);
 
       try {
@@ -156,11 +165,11 @@ const useLinkedTrainSearch = () => {
           if (!originDetails || !destinationDetails) return undefined;
           return {
             trainName: result.train_name,
-            origin: { ...originDetails, ...computedOpSchedules.origin },
-            destination: {
-              ...destinationDetails,
-              ...computedOpSchedules.destination,
-            },
+            origin: toLinkedTrainExtremity(originDetails, computedOpSchedules.origin),
+            destination: toLinkedTrainExtremity(
+              destinationDetails,
+              computedOpSchedules.destination
+            ),
           };
         })
       );

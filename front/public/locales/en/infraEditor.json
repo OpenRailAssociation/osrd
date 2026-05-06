@@ -411,9 +411,25 @@
   "OperationalPoint": {
     "description": "This class describes the operational points of the corresponding infra.",
     "properties": {
+      "country_code": {
+        "description": "Country code of the operational point (e.g. FR for France)",
+        "title": "Country code"
+      },
       "id": {
         "description": "Unique identifier of the object",
         "title": "Id"
+      },
+      "is_passenger_station": {
+        "description": "Whether or not the operational point is a passenger station",
+        "title": "Is passenger station"
+      },
+      "main_code": {
+        "description": "Code identifying the operational point locality (e.g. trigram for SNCF)",
+        "title": "Main code"
+      },
+      "name": {
+        "description": "Name of the operational point",
+        "title": "Name"
       },
       "parts": {
         "title": "Parts"
@@ -422,28 +438,24 @@
         "description": "Primary Location Code : https://rne.eu/it/products/ccs/crd/",
         "title": "Plc"
       },
+      "secondary_code": {
+        "description": "Optional additional code identifying a more precise location (e.g. code chantier for SNCF)",
+        "title": "Secondary code"
+      },
+      "secondary_name": {
+        "description": "Human-readable name describing the secondary code",
+        "title": "Secondary name"
+      },
+      "uic": {
+        "description": "International Union of Railways code of the operational point",
+        "title": "Uic"
+      },
       "weight": {
         "description": "represents the significance of a PR",
         "title": "Weight"
       }
     },
     "title": "Operational point"
-  },
-  "OperationalPointExtensions": {
-    "title": "Operational point extensions"
-  },
-  "OperationalPointIdentifierExtension": {
-    "properties": {
-      "name": {
-        "description": "Name of the operational point",
-        "title": "Name"
-      },
-      "uic": {
-        "description": "International Union of Railways code of the operational point",
-        "title": "Uic"
-      }
-    },
-    "title": "Operational point identifier extension"
   },
   "OperationalPointPart": {
     "description": "Operational point part is a single point on the infrastructure. It's linked to an operational point.",
@@ -474,31 +486,6 @@
       }
     },
     "title": "Operational point part sncf extension"
-  },
-  "OperationalPointSncfExtension": {
-    "properties": {
-      "ch": {
-        "description": "THOR site code of the operational point",
-        "title": "Ch"
-      },
-      "ch_long_label": {
-        "description": "THOR site code long label of the operational point",
-        "title": "Ch long label"
-      },
-      "ch_short_label": {
-        "description": "THOR site code short label of the operational point",
-        "title": "Ch short label"
-      },
-      "ci": {
-        "description": "THOR immutable code of the operational point",
-        "title": "Ci"
-      },
-      "trigram": {
-        "description": "Unique SNCF trigram of the operational point",
-        "title": "Trigram"
-      }
-    },
-    "title": "Operational point sncf extension"
   },
   "Route": {
     "description": "This class is used to describe routes on the infrastructure.",

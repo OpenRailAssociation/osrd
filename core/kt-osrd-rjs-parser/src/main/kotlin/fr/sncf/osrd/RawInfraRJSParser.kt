@@ -747,19 +747,16 @@ fun parseRJSInfra(rjsInfra: RJSInfra): RawInfra {
             val trackSectionName = opPart.track
             val trackSectionOffset = Offset<TrackSection>(opPart.position.meters)
             val props = mutableMapOf<String, String>()
-            if (operationalPoint.extensions?.identifier != null) {
-                val identifier = operationalPoint.extensions!!.identifier!!
-                props["identifier"] = identifier.name
-                props["uic"] = identifier.uic.toString()
-            }
-            if (operationalPoint.extensions?.sncf != null) {
-                val sncf = operationalPoint.extensions!!.sncf!!
-                props["ci"] = sncf.ci.toString()
-                props["ch"] = sncf.ch
-                props["chShortLabel"] = sncf.chShortLabel
-                props["chLongLabel"] = sncf.chLongLabel
-                props["trigram"] = sncf.trigram
-            }
+            props["name"] = operationalPoint.name
+            props["uic"] = operationalPoint.uic.toString()
+            props["mainCode"] = operationalPoint.mainCode
+            props["countryCode"] = operationalPoint.countryCode
+            props["isPassengerStation"] = operationalPoint.isPassengerStation.toString()
+            if (operationalPoint.plc != null) props["plc"] = operationalPoint.plc!!
+            if (operationalPoint.secondaryCode != null)
+                props["secondaryCode"] = operationalPoint.secondaryCode!!
+            if (operationalPoint.secondaryName != null)
+                props["secondaryName"] = operationalPoint.secondaryName!!
             val weight = operationalPoint.weight
             if (weight != null) {
                 props["weight"] = weight

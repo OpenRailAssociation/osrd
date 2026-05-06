@@ -29,7 +29,7 @@ pub struct OperationalPointCache {
     /// Maps UIC code to indices in the ops Vec
     uic_to_indices: HashMap<u32, Vec<usize>>,
     /// Maps trigram to indices in the ops Vec
-    trigram_to_indices: HashMap<String, Vec<usize>>,
+    trigram_to_indices: HashMap<NonBlankString, Vec<usize>>,
     /// Maps obj_id to index in the ops Vec
     obj_id_to_index: HashMap<String, usize>,
     track_ids: HashSet<String>,
@@ -138,7 +138,7 @@ impl OperationalPointCache {
         // Step 3: Build index maps from the ops vector
         let mut obj_id_to_index: HashMap<String, usize> = HashMap::new();
         let mut uic_to_indices: HashMap<u32, Vec<usize>> = HashMap::new();
-        let mut trigram_to_indices: HashMap<String, Vec<usize>> = HashMap::new();
+        let mut trigram_to_indices: HashMap<NonBlankString, Vec<usize>> = HashMap::new();
         let track_ids_to_local_track_name: HashMap<String, NonBlankString> = HashMap::new();
         let track_ids: HashSet<String> = HashSet::new();
 
@@ -147,20 +147,15 @@ impl OperationalPointCache {
             obj_id_to_index.insert(op.obj_id.clone(), index);
 
             // Build UIC index if present
-            if let Some(identifier) = &op.extensions.identifier {
-                uic_to_indices
-                    .entry(identifier.uic)
-                    .or_default()
-                    .push(index);
+            if let Some(op_uic) = op.uic {
+                uic_to_indices.entry(op_uic).or_default().push(index);
             }
 
             // Build trigram index if present
-            if let Some(sncf) = &op.extensions.sncf {
-                trigram_to_indices
-                    .entry(sncf.trigram.clone())
-                    .or_default()
-                    .push(index);
-            }
+            trigram_to_indices
+                .entry(op.main_code.clone())
+                .or_default()
+                .push(index);
         }
 
         Ok(OperationalPointCache {
@@ -347,7 +342,7 @@ impl OperationalPointCache {
     pub(crate) fn new(
         ops: Vec<OperationalPointModel>,
         uic_to_indices: HashMap<u32, Vec<usize>>,
-        trigram_to_indices: HashMap<String, Vec<usize>>,
+        trigram_to_indices: HashMap<NonBlankString, Vec<usize>>,
         obj_id_to_index: HashMap<String, usize>,
         track_ids: HashSet<String>,
         track_ids_to_local_track_name: HashMap<String, NonBlankString>,
@@ -453,47 +448,36 @@ async fn retrieve_op_from_ids(
 /// If secondary_code is None, searches for an OP without sncf extension.
 /// If secondary_code is Some, searches for an OP whose sncf extension matches the given code.
 fn find_op_by_secondary_code<'a>(
-    secondary_code: Option<&String>,
+    secondary_code: Option<&NonBlankString>,
     ops: Vec<&'a OperationalPointModel>,
 ) -> Option<&'a OperationalPointModel> {
     ops.into_iter()
-        .find(|op| secondary_code == op.extensions.sncf.as_ref().map(|sncf| &sncf.ch))
+        .find(|op| secondary_code == op.secondary_code.as_ref())
 }
 
 #[cfg(test)]
 mod tests {
     use database::DbConnectionPoolV2;
     use schemas::infra::OperationalPoint;
-    use schemas::infra::OperationalPointExtensions;
-    use schemas::infra::OperationalPointIdentifierExtension;
-    use schemas::infra::OperationalPointSncfExtension;
     use schemas::primitives::Identifier;
 
     use super::*;
     use crate::fixtures::create_empty_infra;
     use crate::fixtures::create_infra_object;
 
-    fn create_op(obj_id: &str, trigram: Option<&str>, uic: Option<u32>) -> OperationalPoint {
-        let extensions = OperationalPointExtensions {
-            sncf: trigram.map(|t| OperationalPointSncfExtension {
-                ci: 0,
-                ch: "00".to_string(),
-                ch_short_label: "Test".into(),
-                ch_long_label: "Test OP".into(),
-                trigram: t.to_string(),
-            }),
-            identifier: uic.map(|u| OperationalPointIdentifierExtension {
-                name: "Test OP".into(),
-                uic: u,
-            }),
-        };
-
+    fn create_op(obj_id: &str, main_code: &str, uic: u32) -> OperationalPoint {
         OperationalPoint {
             id: Identifier::from(obj_id),
             parts: vec![],
-            extensions,
             weight: None,
+            name: "Test OP".into(),
+            uic: Some(uic),
             plc: None,
+            country_code: "FR".into(),
+            main_code: main_code.into(),
+            secondary_code: Some("00".into()),
+            is_passenger_station: false,
+            secondary_name: Some("Test OP".into()),
         }
     }
 
@@ -504,9 +488,9 @@ mod tests {
         let infra = create_empty_infra(&mut conn).await;
 
         // Create three operational points with different identifier combinations
-        let op1 = create_op("op_1", Some("ABC"), Some(1234));
-        let op2 = create_op("op_2", Some("DEF"), None); // No UIC
-        let op3 = create_op("op_3", None, Some(5678)); // No trigram
+        let op1 = create_op("op_1", "ABC", 1234);
+        let op2 = create_op("op_2", "DEF", 91011); // UIC not revelant
+        let op3 = create_op("op_3", "HIJ", 5678); // trigram not revelant
 
         // Insert OPs into the database
         create_infra_object(&mut conn, infra.id, op1).await;

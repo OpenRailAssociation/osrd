@@ -23,21 +23,27 @@ export const buildOpSuggestion = (
   const map = new Map<string, OperationalPointSuggestion>();
 
   for (const r of results) {
-    const key = `${r.trigram}||${r.name}`;
+    const key = `${r.main_code}||${r.name}`;
     const existing = map.get(key);
 
     if (!existing) {
-      const secondaryCodeList = r.ch ? [{ code: r.ch, opId: r.obj_id }] : [];
+      if (!r.uic) throw new Error(`Operational point ${r.obj_id} has no UIC`);
+      const secondaryCodeList = r.secondary_code
+        ? [{ code: r.secondary_code, opId: r.obj_id }]
+        : [];
 
       map.set(key, {
         id: key,
-        trigram: r.trigram,
+        mainCode: r.main_code,
         uic: r.uic,
         name: r.name,
         secondaryCodeList,
       });
-    } else if (r.ch && !existing.secondaryCodeList.some((c) => c.code === r.ch)) {
-      existing.secondaryCodeList.push({ code: r.ch, opId: r.obj_id });
+    } else if (
+      r.secondary_code &&
+      !existing.secondaryCodeList.some((c) => c.code === r.secondary_code)
+    ) {
+      existing.secondaryCodeList.push({ code: r.secondary_code, opId: r.obj_id });
     }
   }
 

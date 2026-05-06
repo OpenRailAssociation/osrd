@@ -101,14 +101,14 @@ export type Items = {
             }
           | {
               /** An optional secondary code to identify a more specific location */
-              secondary_code?: string | null;
+              secondary_code?: null | string;
               /** The operational point trigram */
               trigram: string;
               type: 'trigram';
             }
           | {
               /** An optional secondary code to identify a more specific location */
-              secondary_code?: string | null;
+              secondary_code?: null | string;
               type: 'uic';
               /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
               uic: number;
@@ -206,14 +206,14 @@ export type TransformTimetableResponse = {
                 }
               | {
                   /** An optional secondary code to identify a more specific location */
-                  secondary_code?: string | null;
+                  secondary_code?: null | string;
                   /** The operational point trigram */
                   trigram: string;
                   type: 'trigram';
                 }
               | {
                   /** An optional secondary code to identify a more specific location */
-                  secondary_code?: string | null;
+                  secondary_code?: null | string;
                   type: 'uic';
                   /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
                   uic: number;

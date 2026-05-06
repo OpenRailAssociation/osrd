@@ -32,8 +32,8 @@ const updatedCellData: JSON = readJsonFile(
 );
 
 const expectedViaValues = [
-  { name: 'Mid_West_station', ch: 'BV', uic: '33', km: 'KM 12.050' },
-  { name: 'Mid_East_station', ch: 'BV', uic: '44', km: 'KM 26.500' },
+  { name: 'Mid_West_station', secondaryCode: 'BV', uic: '33', km: 'KM 12.050' },
+  { name: 'Mid_East_station', secondaryCode: 'BV', uic: '44', km: 'KM 26.500' },
 ];
 
 test.describe('Times and Stops tab', { tag: ['@op', '@times-stops-tab'] }, () => {
@@ -64,9 +64,9 @@ test.describe('Times and Stops tab', { tag: ['@op', '@times-stops-tab'] }, () =>
     });
     await test.step('Perform pathfinding then navigate to Times and Stops tab', async () => {
       await operationalStudiesPage.openRouteTab();
-      await routeTab.performPathfindingByTrigram({
-        originTrigram: 'WS',
-        destinationTrigram: 'NES',
+      await routeTab.performPathfindingByMainCode({
+        originMainCode: 'WS',
+        destinationMainCode: 'NES',
       });
       await operationalStudiesPage.openTimesAndStopsTab();
     });
@@ -89,7 +89,7 @@ test.describe('Times and Stops tab', { tag: ['@op', '@times-stops-tab'] }, () =>
       await test.step('Verify table headers', async () => {
         const expectedColumnNames = cleanWhitespaceInArray([
           frTranslations.name,
-          frTranslations.ch,
+          frTranslations.secondaryCode,
           frTranslations.trackName,
           frTranslations.arrivalTime,
           frTranslations.stopTime,
@@ -130,7 +130,7 @@ test.describe('Times and Stops tab', { tag: ['@op', '@times-stops-tab'] }, () =>
           await routeTab.validateAddedWaypoint(
             droppedWaypoint,
             expectedValue.name,
-            expectedValue.ch,
+            expectedValue.secondaryCode,
             expectedValue.uic
           );
         }
@@ -193,7 +193,7 @@ test.describe('Times and Stops tab', { tag: ['@op', '@times-stops-tab'] }, () =>
           await routeTab.validateAddedWaypoint(
             droppedWaypoint,
             expectedValue.name,
-            expectedValue.ch,
+            expectedValue.secondaryCode,
             expectedValue.uic
           );
         }

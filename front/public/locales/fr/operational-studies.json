@@ -408,8 +408,8 @@
       "title_on": "{{count}} sur {{total}} contraintes incompatibles"
     },
     "infraLoading": "Infra en cours de chargement…",
-    "inputOPTrigrams": "Entrez la liste des trigrammes des points remarquables composant l'itinéraire souhaité.",
-    "inputOPTrigramsExample": "Ex : LSN CIG CCS",
+    "inputOPMainCodes": "Entrez la liste des trigrammes des points remarquables composant l'itinéraire souhaité.",
+    "inputOPMainCodesExample": "Ex : LSN CIG CCS",
     "invalidTrainScheduleStep": "Au moins un des points de passage n'a pas été reconnu",
     "inverseOD": "Inverser l'itinéraire",
     "itineraryModal": {

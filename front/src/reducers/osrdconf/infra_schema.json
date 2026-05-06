@@ -898,15 +898,35 @@
         "OperationalPoint": {
             "description": "This class describes the operational points of the corresponding infra.",
             "properties": {
-                "extensions": {
-                    "$ref": "#/$defs/OperationalPointExtensions",
-                    "default": null
+                "country_code": {
+                    "description": "Country code of the operational point (e.g. FR for France)",
+                    "minLength": 1,
+                    "title": "Country Code",
+                    "type": "string"
                 },
                 "id": {
                     "description": "Unique identifier of the object",
                     "maxLength": 255,
                     "minLength": 1,
                     "title": "Id",
+                    "type": "string"
+                },
+                "is_passenger_station": {
+                    "description": "Whether or not the operational point is a passenger station",
+                    "title": "Is Passenger Station",
+                    "type": "boolean"
+                },
+                "main_code": {
+                    "description": "Code identifying the operational point locality (e.g. trigram for SNCF)",
+                    "maxLength": 255,
+                    "minLength": 1,
+                    "title": "Main Code",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Name of the operational point",
+                    "minLength": 1,
+                    "title": "Name",
                     "type": "string"
                 },
                 "parts": {
@@ -929,6 +949,45 @@
                     "description": "Primary Location Code : https://rne.eu/it/products/ccs/crd/",
                     "title": "Plc"
                 },
+                "secondary_code": {
+                    "anyOf": [
+                        {
+                            "maxLength": 255,
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Optional additional code identifying a more precise location (e.g. code chantier for SNCF)",
+                    "title": "Secondary Code"
+                },
+                "secondary_name": {
+                    "anyOf": [
+                        {
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Human-readable name describing the secondary code",
+                    "title": "Secondary Name"
+                },
+                "uic": {
+                    "anyOf": [
+                        {
+                            "type": "integer"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "International Union of Railways code of the operational point",
+                    "title": "Uic"
+                },
                 "weight": {
                     "anyOf": [
                         {
@@ -947,44 +1006,16 @@
             "required": [
                 "id",
                 "parts",
-                "plc"
+                "name",
+                "uic",
+                "plc",
+                "country_code",
+                "main_code",
+                "secondary_code",
+                "is_passenger_station",
+                "secondary_name"
             ],
             "title": "OperationalPoint",
-            "type": "object"
-        },
-        "OperationalPointExtensions": {
-            "properties": {
-                "identifier": {
-                    "$ref": "#/$defs/OperationalPointIdentifierExtension",
-                    "default": null
-                },
-                "sncf": {
-                    "$ref": "#/$defs/OperationalPointSncfExtension",
-                    "default": null
-                }
-            },
-            "title": "OperationalPointExtensions",
-            "type": "object"
-        },
-        "OperationalPointIdentifierExtension": {
-            "properties": {
-                "name": {
-                    "description": "Name of the operational point",
-                    "minLength": 1,
-                    "title": "Name",
-                    "type": "string"
-                },
-                "uic": {
-                    "description": "International Union of Railways code of the operational point",
-                    "title": "Uic",
-                    "type": "integer"
-                }
-            },
-            "required": [
-                "name",
-                "uic"
-            ],
-            "title": "OperationalPointIdentifierExtension",
             "type": "object"
         },
         "OperationalPointPart": {
@@ -1044,50 +1075,6 @@
                 "kp"
             ],
             "title": "OperationalPointPartSncfExtension",
-            "type": "object"
-        },
-        "OperationalPointSncfExtension": {
-            "properties": {
-                "ch": {
-                    "description": "THOR site code of the operational point",
-                    "maxLength": 2,
-                    "minLength": 1,
-                    "title": "Ch",
-                    "type": "string"
-                },
-                "ch_long_label": {
-                    "description": "THOR site code long label of the operational point",
-                    "minLength": 1,
-                    "title": "Ch Long Label",
-                    "type": "string"
-                },
-                "ch_short_label": {
-                    "description": "THOR site code short label of the operational point",
-                    "minLength": 1,
-                    "title": "Ch Short Label",
-                    "type": "string"
-                },
-                "ci": {
-                    "description": "THOR immutable code of the operational point",
-                    "title": "Ci",
-                    "type": "integer"
-                },
-                "trigram": {
-                    "description": "Unique SNCF trigram of the operational point",
-                    "maxLength": 3,
-                    "minLength": 1,
-                    "title": "Trigram",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "ci",
-                "ch",
-                "ch_short_label",
-                "ch_long_label",
-                "trigram"
-            ],
-            "title": "OperationalPointSncfExtension",
             "type": "object"
         },
         "Route": {
@@ -2167,8 +2154,8 @@
             "type": "array"
         },
         "version": {
-            "const": "3.5.2",
-            "default": "3.5.2",
+            "const": "3.5.3",
+            "default": "3.5.3",
             "description": "Version of the schema",
             "title": "Version",
             "type": "string"

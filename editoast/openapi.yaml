@@ -4345,9 +4345,10 @@ paths:
                       - type
                       properties:
                         secondary_code:
-                          type:
-                          - string
-                          - 'null'
+                          oneOf:
+                          - type: 'null'
+                          - type: string
+                            minLength: 1
                           description: An optional secondary code to identify a more specific location
                         trigram:
                           oneOf:
@@ -4365,9 +4366,10 @@ paths:
                       - type
                       properties:
                         secondary_code:
-                          type:
-                          - string
-                          - 'null'
+                          oneOf:
+                          - type: 'null'
+                          - type: string
+                            minLength: 1
                           description: An optional secondary code to identify a more specific location
                         type:
                           type: string
@@ -5486,23 +5488,57 @@ components:
       - part
       - position
       - weight
+      - name
+      - country_code
+      - main_code
+      - is_passenger_station
       properties:
-        extensions:
-          $ref: '#/components/schemas/OperationalPointExtensions'
-          description: Extensions associated to the operational point
+        country_code:
+          type: string
+          minLength: 1
         id:
           oneOf:
           - type: string
             maxLength: 255
             minLength: 1
           description: Id of the operational point
+        is_passenger_station:
+          type: boolean
+        main_code:
+          type: string
+          minLength: 1
+        name:
+          type: string
+          minLength: 1
         part:
           $ref: '#/components/schemas/OperationalPointPart'
           description: The part along the path
+        plc:
+          oneOf:
+          - type: 'null'
+          - type: string
+            minLength: 1
+          description: 'Primary Location Code : https://rne.eu/it/products/ccs/crd/'
         position:
           type: integer
           format: int64
           description: Distance from the beginning of the path in mm
+          minimum: 0
+        secondary_code:
+          oneOf:
+          - type: 'null'
+          - type: string
+            minLength: 1
+        secondary_name:
+          oneOf:
+          - type: 'null'
+          - type: string
+            minLength: 1
+        uic:
+          type:
+          - integer
+          - 'null'
+          format: int32
           minimum: 0
         weight:
           type:
@@ -11538,12 +11574,25 @@ components:
       required:
       - id
       - parts
+      - name
+      - country_code
+      - main_code
+      - is_passenger_station
       properties:
-        extensions:
-          $ref: '#/components/schemas/OperationalPointExtensions'
+        country_code:
+          type: string
+          minLength: 1
         id:
           type: string
           maxLength: 255
+          minLength: 1
+        is_passenger_station:
+          type: boolean
+        main_code:
+          type: string
+          minLength: 1
+        name:
+          type: string
           minLength: 1
         parts:
           type: array
@@ -11552,38 +11601,29 @@ components:
         plc:
           oneOf:
           - type: 'null'
-          - $ref: '#/components/schemas/NonBlankString'
-            description: 'Primary Location Code : https://rne.eu/it/products/ccs/crd/'
-        weight:
+          - type: string
+            minLength: 1
+          description: 'Primary Location Code : https://rne.eu/it/products/ccs/crd/'
+        secondary_code:
+          oneOf:
+          - type: 'null'
+          - type: string
+            minLength: 1
+        secondary_name:
+          oneOf:
+          - type: 'null'
+          - type: string
+            minLength: 1
+        uic:
           type:
           - integer
           - 'null'
           format: int32
           minimum: 0
-      additionalProperties: false
-    OperationalPointExtensions:
-      type: object
-      properties:
-        identifier:
-          oneOf:
-          - type: 'null'
-          - $ref: '#/components/schemas/OperationalPointIdentifierExtension'
-        sncf:
-          oneOf:
-          - type: 'null'
-          - $ref: '#/components/schemas/OperationalPointSncfExtension'
-      additionalProperties: false
-    OperationalPointIdentifierExtension:
-      type: object
-      required:
-      - name
-      - uic
-      properties:
-        name:
-          type: string
-          minLength: 1
-        uic:
-          type: integer
+        weight:
+          type:
+          - integer
+          - 'null'
           format: int32
           minimum: 0
       additionalProperties: false
@@ -11660,9 +11700,10 @@ components:
         - type
         properties:
           secondary_code:
-            type:
-            - string
-            - 'null'
+            oneOf:
+            - type: 'null'
+            - type: string
+              minLength: 1
             description: An optional secondary code to identify a more specific location
           trigram:
             oneOf:
@@ -11680,9 +11721,10 @@ components:
         - type
         properties:
           secondary_code:
-            type:
-            - string
-            - 'null'
+            oneOf:
+            - type: 'null'
+            - type: string
+              minLength: 1
             description: An optional secondary code to identify a more specific location
           type:
             type: string
@@ -11693,29 +11735,6 @@ components:
             format: int32
             description: The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
             minimum: 0
-    OperationalPointSncfExtension:
-      type: object
-      required:
-      - ci
-      - ch
-      - ch_short_label
-      - ch_long_label
-      - trigram
-      properties:
-        ch:
-          type: string
-        ch_long_label:
-          type: string
-          minLength: 1
-        ch_short_label:
-          type: string
-          minLength: 1
-        ci:
-          type: integer
-          format: int64
-        trigram:
-          type: string
-      additionalProperties: false
     OptionsChangeGroup:
       type: object
       required:
@@ -12670,9 +12689,14 @@ components:
       required:
       - id
       - parts
+      - name
+      - country_code
+      - main_code
+      - is_passenger_station
       properties:
-        extensions:
-          $ref: '#/components/schemas/OperationalPointExtensions'
+        country_code:
+          type: string
+          minLength: 1
         geo:
           oneOf:
           - type: 'null'
@@ -12681,10 +12705,39 @@ components:
           type: string
           maxLength: 255
           minLength: 1
+        is_passenger_station:
+          type: boolean
+        main_code:
+          type: string
+          minLength: 1
+        name:
+          type: string
+          minLength: 1
         parts:
           type: array
           items:
             $ref: '#/components/schemas/RelatedOperationalPointPart'
+        plc:
+          oneOf:
+          - type: 'null'
+          - type: string
+            minLength: 1
+        secondary_code:
+          oneOf:
+          - type: 'null'
+          - type: string
+            minLength: 1
+        secondary_name:
+          oneOf:
+          - type: 'null'
+          - type: string
+            minLength: 1
+        uic:
+          type:
+          - integer
+          - 'null'
+          format: int32
+          minimum: 0
         weight:
           type:
           - integer
@@ -13529,37 +13582,41 @@ components:
       required:
       - obj_id
       - infra_id
-      - uic
+      - main_code
       - name
-      - trigram
-      - ch
-      - ci
+      - is_passenger_station
       - geographic
       - track_sections
       properties:
-        ch:
-          type: string
-        ci:
-          type: integer
-          format: int64
-          minimum: 0
         geographic:
           $ref: '#/components/schemas/GeoJsonPoint'
         infra_id:
           type: integer
           format: int64
+        is_passenger_station:
+          type: boolean
+        main_code:
+          type: string
         name:
           type: string
         obj_id:
           type: string
+        secondary_code:
+          type:
+          - string
+          - 'null'
+        secondary_name:
+          type:
+          - string
+          - 'null'
         track_sections:
           type: array
           items:
             $ref: '#/components/schemas/SearchResultItemOperationalPointTrackSections'
-        trigram:
-          type: string
         uic:
-          type: integer
+          type:
+          - integer
+          - 'null'
           format: int64
     SearchResultItemOperationalPointTrackSections:
       type: object

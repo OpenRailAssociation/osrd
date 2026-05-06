@@ -34,14 +34,16 @@ export const hasChPrefix = (s: OperationalPointSuggestion, chTokenUpper: string)
 export const tokenMatchesIncludesNoCh = (s: OperationalPointSuggestion, token: string) => {
   const tokenNormalized = normalizeName(token);
   const tokenUpper = toUpper(token);
-  return normalizeName(s.name).includes(tokenNormalized) || toUpper(s.trigram).includes(tokenUpper);
+  return (
+    normalizeName(s.name).includes(tokenNormalized) || toUpper(s.mainCode).includes(tokenUpper)
+  );
 };
 
 export const tokenMatchesStartNoCh = (s: OperationalPointSuggestion, token: string) => {
   const tokenNormalized = normalizeName(token);
   const tokenUpper = toUpper(token);
   return (
-    normalizeName(s.name).startsWith(tokenNormalized) || toUpper(s.trigram).startsWith(tokenUpper)
+    normalizeName(s.name).startsWith(tokenNormalized) || toUpper(s.mainCode).startsWith(tokenUpper)
   );
 };
 
@@ -52,8 +54,8 @@ export const lastTokenMatchesIncludes = (s: OperationalPointSuggestion, lastToke
 export const lastTokenMatchesStarts = (s: OperationalPointSuggestion, lastToken: string) =>
   tokenMatchesStartNoCh(s, lastToken) || secondaryCodeStarts(s, toUpper(lastToken));
 
-// Trigram helpers //
-export const shouldKeepTrigramLock = (s: OperationalPointSuggestion, tokens: string[]) => {
+// Main code helpers //
+export const shouldKeepMainCodeLock = (s: OperationalPointSuggestion, tokens: string[]) => {
   if (tokens.length <= 1) return true;
 
   const nameNorm = normalizeName(s.name);

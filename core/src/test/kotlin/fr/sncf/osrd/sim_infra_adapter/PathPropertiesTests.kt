@@ -7,8 +7,6 @@ import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
 import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection
 import fr.sncf.osrd.railjson.schema.geom.RJSLineString
 import fr.sncf.osrd.railjson.schema.infra.RJSOperationalPoint
-import fr.sncf.osrd.railjson.schema.infra.RJSOperationalPointExtensions
-import fr.sncf.osrd.railjson.schema.infra.RJSOperationalPointSncfExtension
 import fr.sncf.osrd.railjson.schema.infra.trackranges.*
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.sim_infra.api.BlockId
@@ -119,14 +117,26 @@ class PathPropertiesTests {
                     "new_op_1",
                     listOf(RJSOperationalPointPart("ne.micro.foo_a", 200.0, "V1", null)),
                     null,
+                    "new_op_1",
+                    0,
                     null,
+                    "FR",
+                    "TRI",
+                    null,
+                    false,
                     null,
                 ),
                 RJSOperationalPoint(
                     "new_op_2",
                     listOf(RJSOperationalPointPart("ne.micro.bar_a", 0.0, "V1", null)),
                     null,
+                    "new_op_2",
+                    0,
                     null,
+                    "FR",
+                    "TRI",
+                    null,
+                    false,
                     null,
                 ),
             )
@@ -186,12 +196,15 @@ class PathPropertiesTests {
                             ),
                         ),
                     ),
-                    RJSOperationalPointExtensions(
-                        RJSOperationalPointSncfExtension(0, "BV", "B", "0", "TRI"),
-                        null,
-                    ),
                     null,
+                    "point1",
+                    0,
                     null,
+                    "FR",
+                    "TRI",
+                    "0",
+                    false,
+                    "0",
                 ),
                 RJSOperationalPoint(
                     "point2",
@@ -207,8 +220,14 @@ class PathPropertiesTests {
                         RJSOperationalPointPart("TA1", 1_950.0, "V1", null),
                     ),
                     null,
+                    "point2",
+                    0,
                     null,
-                    null,
+                    "FR",
+                    "TRI",
+                    "0",
+                    false,
+                    "0",
                 ),
             )
 

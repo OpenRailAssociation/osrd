@@ -72,7 +72,7 @@ class GetManchetteComponent extends OpSimulationResultPage {
   }
 
   private getWaypointChListLocator(index: number): Locator {
-    return this.waypointsList.nth(index).getByTestId('waypoint-ch');
+    return this.waypointsList.nth(index).getByTestId('waypoint-secondary-code');
   }
 
   private getWaypointOffsetListLocator(index: number): Locator {
@@ -84,7 +84,7 @@ class GetManchetteComponent extends OpSimulationResultPage {
   }
 
   private getWaypointChPanelLocator(index: number): Locator {
-    return this.waypointItems.nth(index).getByTestId('waypoint-ch');
+    return this.waypointItems.nth(index).getByTestId('waypoint-secondary-code');
   }
 
   private getWaypointOffsetPanelLocator(index: number): Locator {

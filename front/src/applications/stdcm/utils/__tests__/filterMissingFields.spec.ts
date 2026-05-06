@@ -15,7 +15,7 @@ describe('filterMissingFields', () => {
     ...(hasOP && {
       operationalPoint: {
         id: 'op1',
-        trigram: 'ABC',
+        mainCode: 'ABC',
         uic: 12345,
         secondaryCode: '00',
         name: 'Station A',
@@ -32,7 +32,7 @@ describe('filterMissingFields', () => {
     ...(hasOP && {
       operationalPoint: {
         id: 'op2',
-        trigram: 'DEF',
+        mainCode: 'DEF',
         uic: 67890,
         secondaryCode: '00',
         name: 'Station B',

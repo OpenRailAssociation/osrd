@@ -579,12 +579,12 @@ const styles = {
       borderBottomLeftRadius: '4',
       boxSizing: 'border-box',
     },
-    chColumn: {
+    secondaryCodeColumn: {
       fontSize: '16',
       fontWeight: 'semibold',
       marginLeft: '16',
     },
-    chColumnPassageStop: {
+    secondaryCodeColumnPassageStop: {
       fontSize: '16',
       fontWeight: 'semibold',
       marginRight: '56',

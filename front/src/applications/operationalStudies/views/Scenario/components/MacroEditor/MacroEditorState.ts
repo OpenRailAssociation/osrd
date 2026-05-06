@@ -258,13 +258,12 @@ export default class MacroEditorState {
    * Given a search result item, returns all possible pathKeys, ordered by weight.
    */
   static getPathKeys(op: OperationalPoint): string[] {
-    const { uic } = op.extensions?.identifier ?? {};
-    const { trigram, ch } = op.extensions?.sncf ?? {};
+    const { main_code, secondary_code, uic } = op ?? {};
 
     const result = [];
     result.push(`op_id:${op.id}`);
-    if (trigram) result.push(`trigram:${trigram}${ch ? `/${ch}` : ''}`);
-    if (uic) result.push(`uic:${uic}${ch ? `/${ch}` : ''}`);
+    if (main_code) result.push(`trigram:${main_code}${secondary_code ? `/${secondary_code}` : ''}`);
+    if (uic) result.push(`uic:${uic}${secondary_code ? `/${secondary_code}` : ''}`);
     for (const opPart of op.parts) {
       result.push(`track_offset:${opPart.track}+${opPart.position}`);
     }

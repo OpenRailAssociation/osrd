@@ -237,8 +237,8 @@ const SpaceTimeChartWrapper = ({
     return rawWaypoints.map((waypoint) => ({
       id: waypoint.waypointId,
       position: waypoint.position,
-      name: waypoint.extensions?.identifier?.name,
-      secondaryCode: waypoint.extensions?.sncf?.ch,
+      name: waypoint.name,
+      secondaryCode: waypoint.secondary_code,
       weight: waypoint.weight ?? 0,
     }));
   }, [waypointsPanelData, operationalPoints]);

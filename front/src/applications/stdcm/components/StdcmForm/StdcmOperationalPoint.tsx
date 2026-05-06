@@ -19,16 +19,19 @@ type StdcmOperationalPointProps = {
   onItineraryChange: () => void;
 };
 
-const formatChCode = (chCode?: string) => chCode || 'BV';
+const formatSecondaryCode = (secondaryCode?: string | null) => secondaryCode || 'BV';
 
-const stdcmOpFromSearchResult = (searchResult: SearchResultItemOperationalPoint): StdcmOp => ({
-  id: searchResult.obj_id,
-  uic: searchResult.uic,
-  trigram: searchResult.trigram,
-  secondaryCode: searchResult.ch,
-  name: searchResult.name,
-  coordinates: searchResult.geographic.coordinates as [number, number],
-});
+const stdcmOpFromSearchResult = (searchResult: SearchResultItemOperationalPoint): StdcmOp => {
+  if (!searchResult.uic) throw new Error(`Operational point ${searchResult.obj_id} has no UIC`);
+  return {
+    id: searchResult.obj_id,
+    uic: searchResult.uic,
+    mainCode: searchResult.main_code,
+    secondaryCode: searchResult.secondary_code,
+    name: searchResult.name,
+    coordinates: searchResult.geographic.coordinates as [number, number],
+  };
+};
 
 const extractChCodes = (searchResults: SearchResultItemOperationalPoint[], selectedCI: StdcmOp) =>
   searchResults
@@ -49,10 +52,10 @@ const StdcmOperationalPoint = ({
   const { t } = useTranslation('stdcm');
   const dispatch = useAppDispatch();
 
-  const { searchTerm, setSearchTerm, searchResults, searchOperationalPointsByTrigram } =
+  const { searchTerm, setSearchTerm, searchResults, searchOperationalPointsByMainCode } =
     useSearchOperationalPoint({
       initialSearchTerm: operationalPoint?.name,
-      initialChCodeFilter: operationalPoint?.secondaryCode,
+      initialSecondaryCodeFilter: operationalPoint?.secondaryCode,
       isStdcm: true,
     });
 
@@ -65,14 +68,14 @@ const StdcmOperationalPoint = ({
         .filter(
           (op) =>
             (normalized(op.name).includes(normalized(searchTerm)) ||
-              op.trigram.includes(searchTerm.toUpperCase())) &&
+              op.main_code.includes(searchTerm.toUpperCase())) &&
             // TODO: Replace this temporary implementation with a permanent solution
             !normalized(op.name).includes(normalized('OVERTAKE'))
         )
         .reduce<StdcmOp[]>((acc, p) => {
           const newObject = stdcmOpFromSearchResult(p);
           const isDuplicate = acc.some(
-            (pr) => pr.name === newObject.name && pr.trigram === newObject.trigram
+            (pr) => pr.name === newObject.name && pr.mainCode === newObject.mainCode
           );
           if (!isDuplicate) acc.push(newObject);
           return acc;
@@ -93,8 +96,8 @@ const StdcmOperationalPoint = ({
       setChSuggestions([]);
       return;
     }
-    const operationalPointParts = await searchOperationalPointsByTrigram(
-      selectedSuggestion.trigram
+    const operationalPointParts = await searchOperationalPointsByMainCode(
+      selectedSuggestion.mainCode
     );
     setChSuggestions(extractChCodes(operationalPointParts, selectedSuggestion));
   };
@@ -161,7 +164,7 @@ const StdcmOperationalPoint = ({
           value={operationalPoint}
           suggestions={ciSuggestions}
           onChange={handleCiInputChange}
-          getSuggestionLabel={(option) => [option.trigram, option.name].join(' ')}
+          getSuggestionLabel={(option) => [option.mainCode, option.name].join(' ')}
           onSelectSuggestion={handleCiSelect}
           resetSuggestions={resetSuggestions}
           disabled={disabled}
@@ -177,7 +180,7 @@ const StdcmOperationalPoint = ({
           value={operationalPoint?.secondaryCode ? operationalPoint : undefined}
           onChange={handleChSelect}
           options={chSuggestions}
-          getOptionLabel={(option) => formatChCode(option.secondaryCode)}
+          getOptionLabel={(option) => formatSecondaryCode(option.secondaryCode)}
           getOptionValue={(option) => option.secondaryCode ?? ''}
           disabled={disabled}
           narrow

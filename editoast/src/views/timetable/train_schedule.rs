@@ -1885,7 +1885,7 @@ mod tests {
     pub fn new_op_with_trigram_and_local_track_name(
         id: &str,
         trigram: &str,
-        secondary_code: Option<String>,
+        secondary_code: Option<NonBlankString>,
         local_track_name: Option<NonBlankString>,
     ) -> PathItem {
         PathItem {

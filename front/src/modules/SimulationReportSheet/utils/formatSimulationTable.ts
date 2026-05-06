@@ -1,5 +1,4 @@
 import type { Style } from '@react-pdf/types';
-import type { TFunction } from 'i18next';
 
 import type { OperationalPointWithTimeAndSpeed } from 'applications/operationalStudies/types';
 import type { CorePathfindingResultSuccess } from 'common/api/osrdEditoastApi';
@@ -41,13 +40,13 @@ export const getRowStyle = (
         ? {
             index: styles.simulation.indexColumnPassageStop,
             name: styles.simulation.opColumnPassageStop,
-            ch: styles.simulation.chColumnPassageStop,
+            secondaryCode: styles.simulation.secondaryCodeColumnPassageStop,
             others: { ...styles.simulation.td, paddingLeft: '' },
           }
         : {
             index: styles.simulation.indexColumn,
             name: isStop ? styles.simulation.opStop : styles.simulation.td,
-            ch: styles.simulation.chColumn,
+            secondaryCode: styles.simulation.secondaryCodeColumn,
             others: styles.simulation.td,
           }),
       trackName: styles.simulation.td,
@@ -60,7 +59,6 @@ export const formatOperationalStudiesDataForSimulationTable = (
   operationalPointsList: OperationalPointWithTimeAndSpeed[],
   pathItemPositions: CorePathfindingResultSuccess['path_item_positions'],
   rollingStock: { mass: number; name: string },
-  t: TFunction<'stdcm'>,
   dateTimeLocale: Intl.Locale
 ) =>
   operationalPointsList.map((step, index) => {
@@ -91,11 +89,8 @@ export const formatOperationalStudiesDataForSimulationTable = (
         : '';
 
     return {
-      name:
-        !isPathStep && step.name === previousStep.name
-          ? '='
-          : step.name || t('reportSheet.unknown'),
-      ch: step.ch,
+      name: !isPathStep && step.name === previousStep.name ? '=' : step.name,
+      secondaryCode: step.secondary_code,
       trackName: step.track_name || '-',
       endTime,
       passageStop,

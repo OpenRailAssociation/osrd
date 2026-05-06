@@ -36,7 +36,7 @@ export const extractMarkersInfo = (pathSteps: StdcmPathStep[]): ExtractedMarkerI
       location: {
         type: 'operational_point_part_reference',
         operational_point: {
-          trigram: step.operationalPoint.trigram,
+          trigram: step.operationalPoint.mainCode,
           secondary_code: step.operationalPoint.secondaryCode!,
           type: 'trigram',
         },

@@ -55,7 +55,7 @@ export type StdcmResultsOperationalPoint = {
   positionOnPath: number;
   time: string | null;
   name?: string;
-  ch?: string;
+  secondaryCode?: string | null;
   duration: Duration | null;
   stopEndTime: string;
   trackName?: string;
@@ -232,14 +232,14 @@ export enum StdcmStopTypes {
 }
 
 export type StdcmLinkedTrainExtremity = {
-  ch: string;
+  secondary_code: string;
   date: string;
   geographic: GeoJsonPoint;
   arrivalDate: Date;
   name: string;
   obj_id: string;
   time: string;
-  trigram: string;
+  main_code: string;
   uic: number;
 };
 

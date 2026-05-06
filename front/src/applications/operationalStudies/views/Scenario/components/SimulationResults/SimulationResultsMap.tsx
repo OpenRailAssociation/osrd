@@ -154,7 +154,7 @@ const SimulationResultMap = ({
           return {
             id: step.id,
             markerIndicator,
-            name: matchedOp.extensions?.identifier?.name || '',
+            name: matchedOp.name,
             coordinates,
           };
         } else {
@@ -174,7 +174,7 @@ const SimulationResultMap = ({
           return {
             id: step.id,
             markerIndicator,
-            name: matchedOp.extensions?.identifier?.name || '',
+            name: matchedOp.name,
             coordinates,
           };
         }

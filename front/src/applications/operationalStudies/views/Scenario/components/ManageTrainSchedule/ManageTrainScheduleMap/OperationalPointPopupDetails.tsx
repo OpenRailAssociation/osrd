@@ -40,9 +40,9 @@ const OperationalPointPopupDetails = ({
           <small>{operationalPoint.feature.properties!.extensions_sncf_line_code}</small>
         </div>
         <div className="details-line">
-          {operationalPoint.feature.properties!.extensions_identifier_name} <br />
-          {operationalPoint.feature.properties!.extensions_sncf_trigram}{' '}
-          {operationalPoint.feature.properties!.extensions_sncf_ch}
+          {operationalPoint.feature.properties!.name} <br />
+          {operationalPoint.feature.properties!.main_code}{' '}
+          {operationalPoint.feature.properties!.secondary_code}
         </div>
       </div>
       <Select

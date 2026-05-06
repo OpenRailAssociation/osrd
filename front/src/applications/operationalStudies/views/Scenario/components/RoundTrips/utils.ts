@@ -39,14 +39,14 @@ const getStepLabels = (
       return acc;
     }
 
-    const stationName = pathOp.extensions?.identifier?.name ?? '';
+    const stationName = pathOp.name ?? '';
 
     if (!isExtremity) {
       acc.push(stationName);
       return acc;
     }
 
-    acc.push(`${stationName} ${pathOp.extensions?.sncf?.ch ?? ''}`);
+    acc.push(`${stationName} ${pathOp.secondary_code ?? ''}`);
     return acc;
   }, []);
 

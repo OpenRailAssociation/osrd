@@ -13,7 +13,6 @@ import type {
   SearchResultItemOperationalPoint,
 } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { MAIN_OP_CH_CODES } from 'common/Map/Search/consts';
 import { useInfraID } from 'common/osrdContext';
 import { useDebounce } from 'utils/hooks/useDebounce';
 import {
@@ -35,18 +34,18 @@ function OpTooltips({ opList }: { opList: SearchResultItemOperationalPoint[] }) 
   return (
     <div className="op-tooltips">
       {opList.map((op, idx) => {
-        const leftMargin = calcLeftMargin(charsFromLeft, op.trigram.length);
+        const leftMargin = calcLeftMargin(charsFromLeft, op.main_code.length);
         // TODO: fix this lint
         // eslint-disable-next-line react-hooks-js/immutability
-        charsFromLeft = charsFromLeft + op.trigram.length + 1;
+        charsFromLeft = charsFromLeft + op.main_code.length + 1;
         return (
-          op.trigram !== '' && (
+          op.main_code !== '' && (
             <div
               className={cx('op', { wrong: !op.name })}
-              key={`typeandpath-op-${idx}-${op.trigram}`}
+              key={`typeandpath-op-${idx}-${op.main_code}`}
               style={{ left: `${leftMargin}rem` }}
               title={op.name}
-              data-testid={`typeandpath-op-${op.trigram}`}
+              data-testid={`typeandpath-op-${op.main_code}`}
             >
               {op.name ? op.name : <Alert />}
             </div>
@@ -82,7 +81,7 @@ const TypeAndPath = ({ setDisplayTypeAndPath, isInNewModal = false }: TypeAndPat
   const cursorIndex = activeElement.selectionStart || 0;
   const sortedSearchResults = [...searchResults].sort((a, b) => a.name.localeCompare(b.name));
   const [initialCursorPositionRem, setInitialCursorPositionRem] = useState(0);
-  const [trigramCount, setTrigramCount] = useState(0);
+  const [mainCodeCount, setMainCodeCount] = useState(0);
   const [cursorPosition, setCursorPosition] = useState(0);
 
   const handleInput = (text: string, newCursorPosition: number) => {
@@ -115,7 +114,7 @@ const TypeAndPath = ({ setDisplayTypeAndPath, isInNewModal = false }: TypeAndPat
         const filteredResults = results.filter((result) => {
           const searchResult = result as SearchResultItemOperationalPoint;
           // We need to ensure the name is not null since we sort the results depending on it.
-          return searchResult.name && MAIN_OP_CH_CODES.includes(searchResult.ch);
+          return searchResult.name && searchResult.is_passenger_station;
         });
         setSearchResults(filteredResults as SearchResultItemOperationalPoint[]);
       })
@@ -126,23 +125,20 @@ const TypeAndPath = ({ setDisplayTypeAndPath, isInNewModal = false }: TypeAndPat
 
   function getOpNames() {
     if (infraId !== undefined) {
-      const opTrigrams = inputText.toUpperCase().trimEnd().split(' ');
-      const constraint = opTrigrams.reduce(
-        (res, trigram) => [...res, ['=', ['trigram'], trigram]],
+      const opMainCodes = inputText.toUpperCase().trimEnd().split(' ');
+      const constraint = opMainCodes.reduce(
+        (res, mainCode) => [...res, ['=', ['main_code'], mainCode]],
         ['or'] as (string | SearchConstraintType)[]
       );
-      // SNCF trigrams come with a yard name, for main station it could be nothing '',
-      // 'BV' (as Bâtiment Voyageurs) or '00', all are the same signification: this is the main station.
-      const limitToMainStationConstraint = [
-        'or',
-        ['=', ['ch'], ''],
-        ['=', ['ch'], 'BV'],
-        ['=', ['ch'], '00'],
-      ];
       const payload: PostSearchApiArg = {
         searchPayload: {
           object: 'operationalpoint',
-          query: ['and', constraint, ['=', ['infra_id'], infraId], limitToMainStationConstraint],
+          query: [
+            'and',
+            constraint,
+            ['=', ['infra_id'], infraId],
+            ['=', ['is_passenger_station'], true],
+          ],
         },
         pageSize: 100,
       };
@@ -151,27 +147,30 @@ const TypeAndPath = ({ setDisplayTypeAndPath, isInNewModal = false }: TypeAndPat
         .then((results) => {
           const operationalPoints = [...results] as SearchResultItemOperationalPoint[];
           setOpList(
-            opTrigrams.map(
-              (trigram) => operationalPoints.find((op) => op.trigram === trigram) || { trigram }
+            opMainCodes.map(
+              (mainCode) =>
+                operationalPoints.find((op) => op.main_code === mainCode) || {
+                  main_code: mainCode,
+                }
             ) as SearchResultItemOperationalPoint[]
           );
         });
     }
   }
 
-  const isInvalid = useMemo(() => opList.some((op) => !op.name && op.trigram !== ''), [opList]);
+  const isInvalid = useMemo(() => opList.some((op) => !op.name && op.main_code !== ''), [opList]);
 
   const handleSubmit = async () => {
     if (infraId && opList.length > 0) {
       const pathSteps: PathItem[] = opList
-        .filter((op) => op.trigram !== '')
-        .map(({ trigram, ch }) => ({
+        .filter((op) => op.main_code !== '')
+        .map(({ main_code, secondary_code }) => ({
           id: uuidV4(),
           location: {
             type: 'operational_point_part_reference',
             operational_point: {
-              trigram,
-              secondary_code: ch,
+              trigram: main_code,
+              secondary_code,
               type: 'trigram',
             },
           },
@@ -189,7 +188,7 @@ const TypeAndPath = ({ setDisplayTypeAndPath, isInNewModal = false }: TypeAndPat
 
     setInputText(newText);
     setSearch('');
-    setTrigramCount((prev) => prev + 1);
+    setMainCodeCount((prev) => prev + 1);
 
     setTimeout(() => {
       if (inputRef.current) {
@@ -199,7 +198,7 @@ const TypeAndPath = ({ setDisplayTypeAndPath, isInNewModal = false }: TypeAndPat
         inputRef.current.selectionEnd = newCursorPosition;
         const adjustedCursorPositionRem = calculateAdjustedCursorPositionRem(
           initialCursorPositionRem,
-          trigramCount,
+          mainCodeCount,
           monospaceOneCharREMWidth
         );
         document.documentElement.style.setProperty(
@@ -237,9 +236,9 @@ const TypeAndPath = ({ setDisplayTypeAndPath, isInNewModal = false }: TypeAndPat
   }, []);
 
   const isSortedSearchResultsDisplayed = useMemo(() => {
-    const trigrams = debouncedInputText.split(' ');
+    const mainCodes = debouncedInputText.split(' ');
     const opListFiltered = opList.filter((op) => op.name !== undefined);
-    return trigrams.length !== opListFiltered.length;
+    return mainCodes.length !== opListFiltered.length;
   }, [debouncedInputText, opList]);
 
   return (
@@ -248,7 +247,7 @@ const TypeAndPath = ({ setDisplayTypeAndPath, isInNewModal = false }: TypeAndPat
       style={{ minWidth: `${monospaceOneCharREMWidth * inputText.length + 5.5}rem` }}
       data-testid="type-and-path-container"
     >
-      {!isInNewModal && <div className="help">{opList.length === 0 && t('inputOPTrigrams')}</div>}
+      {!isInNewModal && <div className="help">{opList.length === 0 && t('inputOPMainCodes')}</div>}
       <div className="input-wrapper">
         {!isInNewModal && <OpTooltips opList={opList} />}
         <div className="d-flex align-items-center">
@@ -266,7 +265,7 @@ const TypeAndPath = ({ setDisplayTypeAndPath, isInNewModal = false }: TypeAndPat
               type="text"
               value={inputText}
               onChange={(e) => handleInput(e.target.value, e.target.selectionStart!)}
-              placeholder={t('inputOPTrigramsExample')}
+              placeholder={t('inputOPMainCodesExample')}
               autoFocus
               data-testid="type-and-path-input"
             />
@@ -279,7 +278,7 @@ const TypeAndPath = ({ setDisplayTypeAndPath, isInNewModal = false }: TypeAndPat
             title={t('launchPathFinding')}
             onClick={handleSubmit}
             disabled={isInvalid || opList.length < 2}
-            data-testid="submit-search-by-trigram"
+            data-testid="submit-search-by-main-code"
           >
             {isInNewModal ? <Rocket /> : <TriangleRight />}
           </button>
@@ -292,7 +291,7 @@ const TypeAndPath = ({ setDisplayTypeAndPath, isInNewModal = false }: TypeAndPat
             <div className={cx('station-results p-2', { 'quick-entry-visual': isInNewModal })}>
               {sortedSearchResults.map((result) => (
                 <button
-                  id={`trigram-button-${result.name}`}
+                  id={`main-code-button-${result.name}`}
                   type="button"
                   onClick={() => onResultClick(result)}
                   key={result.obj_id}
@@ -300,9 +299,11 @@ const TypeAndPath = ({ setDisplayTypeAndPath, isInNewModal = false }: TypeAndPat
                     station: !isInNewModal,
                     'op-suggestion': isInNewModal,
                   })}
-                  title={`${result.name} ${result.ch}`}
+                  title={`${result.name} ${result.secondary_code}`}
                 >
-                  {isInNewModal && <span className="op-suggestion-trigram">{result.trigram}</span>}
+                  {isInNewModal && (
+                    <span className="op-suggestion-main-code">{result.main_code}</span>
+                  )}
                   <span
                     className={cx({
                       'station-text text-secondary': !isInNewModal,

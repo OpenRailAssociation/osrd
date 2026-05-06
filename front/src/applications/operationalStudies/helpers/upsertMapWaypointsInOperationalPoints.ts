@@ -48,12 +48,11 @@ export function upsertMapWaypointsInOperationalPoints(
         }
 
         const baseFormattedStep = {
-          extensions: {
-            identifier: {
-              name: stepName,
-              uic: 0,
-            },
-          },
+          name: stepName,
+          uic: 0,
+          country_code: '??',
+          is_passenger_station: false,
+          main_code: '',
           part: { track: location.track, position: location.offset, local_track_name: 'V1' },
           position: positionOnPath,
           weight: HIGHEST_PRIORITY_WEIGHT,
@@ -84,8 +83,8 @@ export function upsertMapWaypointsInOperationalPoints(
         const matchedIndex = operationalPointsWithAllWaypoints.findIndex(
           (op) =>
             location.operational_point.type === 'uic' &&
-            location.operational_point.uic === op.extensions?.identifier?.uic &&
-            location.operational_point.secondary_code === op.extensions?.sncf?.ch
+            location.operational_point.uic === op.uic &&
+            location.operational_point.secondary_code === op.secondary_code
         );
 
         if (matchedIndex !== -1) {

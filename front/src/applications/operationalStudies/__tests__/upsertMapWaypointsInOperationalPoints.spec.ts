@@ -22,16 +22,15 @@ type Op = {
 const getOperationalPoints = (inputs: Op[]): NonNullable<PathProperties['operational_points']> =>
   inputs.map((op) => ({
     id: op.name,
+    name: op.name,
+    uic: op.uic,
+    country_code: '??',
+    is_passenger_station: true,
+    main_code: '',
     part: {
       track: op.track,
       position: op.positionOnTrack,
       local_track_name: 'V1',
-    },
-    extensions: {
-      identifier: {
-        name: op.name,
-        uic: op.uic,
-      },
     },
     position: op.positionOnPath,
     weight: null,
@@ -108,28 +107,26 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
     expect(operationalPointsWithAllWaypoints).toEqual([
       {
         id: 'West_station',
+        name: 'West_station',
+        uic: 2,
+        country_code: '??',
+        is_passenger_station: true,
+        main_code: '',
         part: {
           track: 'TA1',
           position: 500,
           local_track_name: 'V1',
-        },
-        extensions: {
-          identifier: {
-            name: 'West_station',
-            uic: 2,
-          },
         },
         position: 0,
         weight: null,
       },
       {
         id: '2',
-        extensions: {
-          identifier: {
-            name: 't_requestedPoint',
-            uic: 0,
-          },
-        },
+        name: 't_requestedPoint',
+        uic: 0,
+        country_code: '??',
+        is_passenger_station: false,
+        main_code: '',
         part: {
           track: 'TA6',
           position: 7746000,
@@ -140,32 +137,30 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
       },
       {
         id: 'Mid_West_station',
+        name: 'Mid_West_station',
+        uic: 3,
+        country_code: '??',
+        is_passenger_station: true,
+        main_code: '',
         part: {
           track: 'TC1',
           position: 550,
           local_track_name: 'V1',
-        },
-        extensions: {
-          identifier: {
-            name: 'Mid_West_station',
-            uic: 3,
-          },
         },
         position: 12050000,
         weight: null,
       },
       {
         id: 'Mid_East_station',
+        name: 'Mid_East_station',
+        uic: 4,
+        country_code: '??',
+        is_passenger_station: true,
+        main_code: '',
         part: {
           track: 'TD0',
           position: 14000,
           local_track_name: 'V1',
-        },
-        extensions: {
-          identifier: {
-            name: 'Mid_East_station',
-            uic: 4,
-          },
         },
         position: 26500000,
         weight: null,
@@ -221,12 +216,11 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
     expect(operationalPointsWithAllWaypoints).toEqual([
       {
         id: '1',
-        extensions: {
-          identifier: {
-            name: 't_requestedOrigin',
-            uic: 0,
-          },
-        },
+        name: 't_requestedOrigin',
+        uic: 0,
+        country_code: '??',
+        is_passenger_station: false,
+        main_code: '',
         part: {
           track: 'TA6',
           position: 6481000,
@@ -237,28 +231,26 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
       },
       {
         id: 'Mid_West_station',
+        name: 'Mid_West_station',
+        uic: 3,
+        country_code: '??',
+        is_passenger_station: true,
+        main_code: '',
         part: {
           track: 'TC0',
           position: 550,
           local_track_name: 'V1',
-        },
-        extensions: {
-          identifier: {
-            name: 'Mid_West_station',
-            uic: 3,
-          },
         },
         position: 4069000,
         weight: null,
       },
       {
         id: '2',
-        extensions: {
-          identifier: {
-            name: 't_requestedPoint',
-            uic: 0,
-          },
-        },
+        name: 't_requestedPoint',
+        uic: 0,
+        country_code: '??',
+        is_passenger_station: false,
+        main_code: '',
         part: {
           track: 'TC0',
           position: 679000,
@@ -269,12 +261,11 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
       },
       {
         id: '3',
-        extensions: {
-          identifier: {
-            name: 't_requestedDestination',
-            uic: 0,
-          },
-        },
+        name: 't_requestedDestination',
+        uic: 0,
+        country_code: '??',
+        is_passenger_station: false,
+        main_code: '',
         part: {
           track: 'TC0',
           position: 883000,
@@ -318,12 +309,11 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
     expect(operationalPointsWithAllWaypoints).toEqual([
       {
         id: '1',
-        extensions: {
-          identifier: {
-            name: 't_requestedOrigin',
-            uic: 0,
-          },
-        },
+        name: 't_requestedOrigin',
+        uic: 0,
+        country_code: '??',
+        is_passenger_station: false,
+        main_code: '',
         part: {
           track: 'TA6',
           position: 6481000,
@@ -334,12 +324,11 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
       },
       {
         id: '2',
-        extensions: {
-          identifier: {
-            name: 't_requestedDestination',
-            uic: 0,
-          },
-        },
+        name: 't_requestedDestination',
+        uic: 0,
+        country_code: '??',
+        is_passenger_station: false,
+        main_code: '',
         part: {
           track: 'TA6',
           position: 4733000,
@@ -400,48 +389,45 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
     expect(operationalPointsWithAllWaypoints).toEqual([
       {
         id: 'West_station',
+        name: 'West_station',
+        uic: 2,
+        country_code: '??',
+        is_passenger_station: true,
+        main_code: '',
         part: {
           track: 'TA1',
           position: 500,
           local_track_name: 'V1',
-        },
-        extensions: {
-          identifier: {
-            name: 'West_station',
-            uic: 2,
-          },
         },
         position: 0,
         weight: null,
       },
       {
         id: 'Mid_West_station',
+        name: 'Mid_West_station',
+        uic: 3,
+        country_code: '??',
+        is_passenger_station: true,
+        main_code: '',
         part: {
           track: 'TC1',
           position: 550,
           local_track_name: 'V1',
-        },
-        extensions: {
-          identifier: {
-            name: 'Mid_West_station',
-            uic: 3,
-          },
         },
         position: 12050000,
         weight: null,
       },
       {
         id: 'Mid_East_station',
+        name: 'Mid_East_station',
+        uic: 4,
+        country_code: '??',
+        is_passenger_station: true,
+        main_code: '',
         part: {
           track: 'TD0',
           position: 14000,
           local_track_name: 'V1',
-        },
-        extensions: {
-          identifier: {
-            name: 'Mid_East_station',
-            uic: 4,
-          },
         },
         position: 26500000,
         weight: null,

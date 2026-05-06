@@ -197,7 +197,7 @@ def create_small_infra(signaling_system: str) -> ScenarioData:
         ta7, "A7", signaling_system, Direction.STOP_TO_START, 200.0, -200.0
     )
     # Station
-    west = builder.add_operational_point(label="West_station", trigram="WS", uic=8722)
+    west = builder.add_operational_point(label="West_station", main_code="WS", uic=8722)
     west.add_part(ta0, 699.99959, "V1")  # To be rounded to 700
     west.add_part(ta1, 500, "V2")
     west.add_part(ta2, 500, "V3")
@@ -224,7 +224,7 @@ def create_small_infra(signaling_system: str) -> ScenarioData:
     tb0.set_remaining_coords([(-0.4, 49.49), (-0.373, 49.49), (-0.37, 49.492)])
     south_west = builder.add_operational_point(
         label="South_West_station",
-        trigram="SWS",
+        main_code="SWS",
         uic=8711,
     )
     south_west.add_part(tb0, 500, "V1")
@@ -328,7 +328,7 @@ def create_small_infra(signaling_system: str) -> ScenarioData:
     )
     # Station
     mid_west = builder.add_operational_point(
-        label="Mid_West_station", trigram="MWS", uic=8733
+        label="Mid_West_station", main_code="MWS", uic=8733
     )
     mid_west.add_part(tc0, 550, "V1")
     mid_west.add_part(tc1, 550, "V2")
@@ -390,7 +390,7 @@ def create_small_infra(signaling_system: str) -> ScenarioData:
     )
     # Station
     mid_east = builder.add_operational_point(
-        label="Mid_East_station", trigram="MES", uic=8744
+        label="Mid_East_station", main_code="MES", uic=8744
     )
     mid_east.add_part(td0, 14000, "V1")
     mid_east.add_part(td1, 14000, "V2")
@@ -483,7 +483,9 @@ def create_small_infra(signaling_system: str) -> ScenarioData:
     )
     te3.set_remaining_coords([(-0.145, LAT_0 + 0.002), (-0.145, LAT_3 - 0.002)])
     # Station
-    north = builder.add_operational_point(label="North_station", trigram="NS", uic=8755)
+    north = builder.add_operational_point(
+        label="North_station", main_code="NS", uic=8755
+    )
     north.add_part(te1, 1000, "V1")
     north.add_part(te2, 1025, "V2")
     # Curves
@@ -499,7 +501,9 @@ def create_small_infra(signaling_system: str) -> ScenarioData:
     #  Around station F: South
     # ================================
     tf1.set_remaining_coords([(-0.172, 49.47), (-0.167, 49.466), (-0.135, 49.466)])
-    south = builder.add_operational_point(label="South_station", trigram="SS", uic=8766)
+    south = builder.add_operational_point(
+        label="South_station", main_code="SS", uic=8766
+    )
     south.add_part(tf1, 4300, "V1")
     place_regular_signals_detectors(
         tf1, "F1", signaling_system, min_offset=200.0, max_offset=4300.0
@@ -545,7 +549,7 @@ def create_small_infra(signaling_system: str) -> ScenarioData:
     tg5.set_remaining_coords([(-0.09, LAT_4 - LAT_LINE_SPACE)])
     tg3.add_detector(label="DG7", position=tg3.length / 2)
     north_east = builder.add_operational_point(
-        label="North_East_station", trigram="NES", uic=8777
+        label="North_East_station", main_code="NES", uic=8777
     )
     north_east.add_part(tg4, 1550, "V1")
     north_east.add_part(tg5, 1500, "V2")
@@ -621,7 +625,7 @@ def create_small_infra(signaling_system: str) -> ScenarioData:
     )
     # Station
     south_east = builder.add_operational_point(
-        label="South_East_station", trigram="SES", uic=8788
+        label="South_East_station", main_code="SES", uic=8788
     )
     south_east.add_part(th1, 4400, "V1")
     # ================================

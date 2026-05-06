@@ -416,12 +416,12 @@ export const matchOpRefAndOp = (
   }
   if (location.operational_point.type === 'uic') {
     return (
-      location.operational_point.uic === op.extensions?.identifier?.uic &&
-      location.operational_point.secondary_code === op.extensions?.sncf?.ch
+      location.operational_point.uic === op.uic &&
+      location.operational_point.secondary_code === op.secondary_code
     );
   }
   return (
-    location.operational_point.trigram === op.extensions?.sncf?.trigram &&
-    location.operational_point.secondary_code === op.extensions?.sncf?.ch
+    location.operational_point.trigram === op.main_code &&
+    location.operational_point.secondary_code === op.secondary_code
   );
 };

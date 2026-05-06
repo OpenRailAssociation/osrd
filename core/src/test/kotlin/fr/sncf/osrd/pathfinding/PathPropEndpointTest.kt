@@ -59,22 +59,30 @@ class PathPropEndpointTest : ApiTest() {
                 OperationalPointResponse(
                     "West_station",
                     OperationalPointPartResponse("TA0", 700.0, "V1", null),
-                    OperationalPointExtensions(
-                        OperationalPointSncfExtension(22, "BV", "BV", "0", "WS"),
-                        OperationalPointIdentifierExtension("West_station", 8722),
-                    ),
                     Offset(650.meters),
                     null,
+                    "West_station",
+                    8722,
+                    null,
+                    "FR",
+                    "WS",
+                    "BV",
+                    true,
+                    "0",
                 ),
                 OperationalPointResponse(
                     "West_station",
                     OperationalPointPartResponse("TA1", 500.0, "V2", null),
-                    OperationalPointExtensions(
-                        OperationalPointSncfExtension(22, "BV", "BV", "0", "WS"),
-                        OperationalPointIdentifierExtension("West_station", 8722),
-                    ),
                     Offset(2450.meters),
                     null,
+                    "West_station",
+                    8722,
+                    null,
+                    "FR",
+                    "WS",
+                    "BV",
+                    true,
+                    "0",
                 ),
             )
         assertEquals(parsed.operationalPoints, oPs)

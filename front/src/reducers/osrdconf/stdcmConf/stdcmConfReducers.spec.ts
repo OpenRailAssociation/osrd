@@ -81,7 +81,7 @@ const stdcmPathSteps: StdcmPathStep[] = [
     operationalPoint: {
       id: '0',
       uic: 1,
-      trigram: 'A',
+      mainCode: 'A',
       secondaryCode: 'BV',
       name: 'Brest',
       coordinates: [48.38819835024553, -4.478289762812405],
@@ -98,7 +98,7 @@ const stdcmPathSteps: StdcmPathStep[] = [
     operationalPoint: {
       id: '1',
       uic: 2,
-      trigram: 'B',
+      mainCode: 'B',
       secondaryCode: 'BV',
       name: 'Rennes',
       coordinates: [48.10326700633057, -1.6719908615098822],
@@ -112,7 +112,7 @@ const stdcmPathSteps: StdcmPathStep[] = [
     operationalPoint: {
       id: '2',
       uic: 3,
-      trigram: 'C',
+      mainCode: 'C',
       secondaryCode: 'BV',
       name: 'Lemans',
       coordinates: [47.99542250806296, 0.1918181738752042],
@@ -126,7 +126,7 @@ const stdcmPathSteps: StdcmPathStep[] = [
     operationalPoint: {
       id: '3',
       uic: 4,
-      trigram: 'D',
+      mainCode: 'D',
       secondaryCode: 'BV',
       name: 'Paris',
       coordinates: [48.904852473668086, 2.4369545094357736],
@@ -140,7 +140,7 @@ const stdcmPathSteps: StdcmPathStep[] = [
     operationalPoint: {
       id: '4',
       uic: 5,
-      trigram: 'E',
+      mainCode: 'E',
       secondaryCode: 'BV',
       name: 'Strasbourg',
       coordinates: [48.58505541984412, 7.73387081978364],

@@ -21,7 +21,7 @@ import { getActualVmaxs } from './utils';
 
 enum CSVKeys {
   op = 'op',
-  ch = 'ch',
+  secondaryCode = 'secondaryCode',
   trackName = 'trackName',
   time = 'time',
   seconds = 'seconds',
@@ -41,7 +41,7 @@ type CSVData = {
 type PositionSpeedTimeOP = PositionSpeedTime & {
   speedLimit?: number;
   op?: string;
-  ch?: string;
+  secondaryCode?: string;
   lineCode?: string;
   trackName?: string;
   electrificationType?: string;
@@ -66,7 +66,7 @@ const overloadSteps = (
     speed: op.speed,
     time: op.time.getTime(),
     op: op.name,
-    ch: op.ch,
+    secondaryCode: op.secondary_code,
     lineCode: op.line_code,
     trackName: op.track_name,
   }));
@@ -216,7 +216,7 @@ export default function exportTrainCSV(
     const actualVmaxs = getActualVmaxs(speed.position, formattedMrsp);
     const newStep = {
       op: speed.op || '',
-      ch: speed.ch || '',
+      secondaryCode: speed.secondaryCode || '',
       trackName: speed.trackName,
       time: formatLocalTime(new Date(speed.time)),
       seconds: pointToComma(+ms2sec(speed.time).toFixed(1)),

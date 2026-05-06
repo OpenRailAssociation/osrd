@@ -44,20 +44,11 @@
     "neutral_sections": [],
     "operational_points": [
         {
-            "extensions": {
-                "identifier": {
-                    "name": "op.station_foo",
-                    "uic": 8700
-                },
-                "sncf": {
-                    "ch": "BV",
-                    "ch_long_label": "0",
-                    "ch_short_label": "BV",
-                    "ci": 0,
-                    "trigram": "OP."
-                }
-            },
+            "country_code": "FR",
             "id": "op.station_foo",
+            "is_passenger_station": true,
+            "main_code": "OP.",
+            "name": "op.station_foo",
             "parts": [
                 {
                     "local_track_name": "V1",
@@ -71,23 +62,17 @@
                 }
             ],
             "plc": null,
+            "secondary_code": "BV",
+            "secondary_name": "0",
+            "uic": 8700,
             "weight": null
         },
         {
-            "extensions": {
-                "identifier": {
-                    "name": "op.station_bar",
-                    "uic": 8700
-                },
-                "sncf": {
-                    "ch": "BV",
-                    "ch_long_label": "0",
-                    "ch_short_label": "BV",
-                    "ci": 0,
-                    "trigram": "OP."
-                }
-            },
+            "country_code": "FR",
             "id": "op.station_bar",
+            "is_passenger_station": true,
+            "main_code": "OP.",
+            "name": "op.station_bar",
             "parts": [
                 {
                     "local_track_name": "V1",
@@ -96,6 +81,9 @@
                 }
             ],
             "plc": null,
+            "secondary_code": "BV",
+            "secondary_name": "0",
+            "uic": 8700,
             "weight": null
         }
     ],
@@ -577,5 +565,5 @@
             ]
         }
     ],
-    "version": "3.5.2"
+    "version": "3.5.3"
 }

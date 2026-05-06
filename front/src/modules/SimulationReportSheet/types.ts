@@ -29,7 +29,7 @@ export type RouteTableRow = {
 
 export type ConsistChangeData = {
   name: string;
-  ch: string;
+  secondaryCode: string;
   totalMass: string;
   totalLength: string;
   rollingStockName: string;
@@ -37,8 +37,8 @@ export type ConsistChangeData = {
 };
 
 export type SimulationTableRow = {
-  name: string;
-  ch?: string | null;
+  name: string | null;
+  secondaryCode?: string | null;
   trackName?: string;
   endTime: string | Date | null;
   passageStop: string | Date | null;
@@ -64,7 +64,7 @@ export type SimulationTableRow = {
   stylesByColumn: {
     index: Style;
     name: Style;
-    ch: Style;
+    secondaryCode: Style;
     trackName?: Style;
     passageStop: Style;
     others: Style;
