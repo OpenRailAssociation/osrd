@@ -19,7 +19,7 @@ use crate::Json;
 use crate::WorkerKey;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
-#[schema(as = core::StdcmRequest)]
+#[schema(as = CoreStdcmRequest)]
 pub struct Request {
     /// Infrastructure id
     pub infra: i64,
@@ -62,7 +62,7 @@ pub struct Request {
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Deserialize, ToSchema)]
-#[schema(as = core::PathItem)]
+#[schema(as = CorePathItem)]
 pub struct PathItem {
     /// The track offsets of the path item
     pub locations: Vec<TrackOffset>,
@@ -74,7 +74,7 @@ pub struct PathItem {
 
 /// Contains the data of a step timing, when it is specified
 #[derive(Debug, Clone, Serialize, PartialEq, Deserialize, ToSchema)]
-#[schema(as = core::StepTimingData)]
+#[schema(as = CoreStepTimingData)]
 pub struct StepTimingData {
     /// Time the train should arrive at this point
     pub arrival_time: DateTime<Utc>,
@@ -86,7 +86,7 @@ pub struct StepTimingData {
 
 /// Lighter description of a work schedule, with only the relevant information for core
 #[derive(Debug, Clone, Serialize, PartialEq, Deserialize, ToSchema)]
-#[schema(as = core::WorkSchedule)]
+#[schema(as = CoreWorkSchedule)]
 pub struct WorkSchedule {
     /// Start time as a time delta from the stdcm start time in ms
     pub start_time: u64,
@@ -98,7 +98,7 @@ pub struct WorkSchedule {
 
 /// Lighter description of a work schedule with only the relevant information for core
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
-#[schema(as = core::TemporarySpeedLimit)]
+#[schema(as = CoreTemporarySpeedLimit)]
 pub struct TemporarySpeedLimit {
     /// Speed limitation in m/s
     pub speed_limit: f64,
@@ -109,7 +109,7 @@ pub struct TemporarySpeedLimit {
 /// A range on a track section.
 /// `begin` is always less than `end`.
 #[derive(Serialize, Deserialize, Clone, Debug, ToSchema, Hash, PartialEq, Eq)]
-#[schema(as = core::UndirectedTrackRange)]
+#[schema(as = CoreUndirectedTrackRange)]
 pub struct UndirectedTrackRange {
     /// The track section identifier.
     pub track_section: String,
@@ -121,7 +121,7 @@ pub struct UndirectedTrackRange {
 
 /// Represents a physics consist.
 #[derive(Serialize, Deserialize, Clone, Debug, ToSchema, educe::Educe, PartialEq, Eq)]
-#[schema(as = core::ConsistConfiguration)]
+#[schema(as = CoreConsistConfiguration)]
 #[educe(Hash)]
 pub struct ConsistConfiguration {
     /// List of supported signaling systems

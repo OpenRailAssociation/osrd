@@ -3347,7 +3347,7 @@ paths:
                     results:
                       type: array
                       items:
-                        $ref: '#/components/schemas/core.TrainRequirementsById'
+                        $ref: '#/components/schemas/CoreTrainRequirementsById'
   /timetable/{id}/round_trips/train_schedules:
     get:
       tags:
@@ -4558,7 +4558,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/core.ETCSBrakingCurvesResponse'
+                $ref: '#/components/schemas/CoreETCSBrakingCurvesResponse'
   /train_schedules/{id}/path:
     get:
       tags:
@@ -4835,7 +4835,7 @@ paths:
                 path_track_ranges:
                   type: array
                   items:
-                    $ref: '#/components/schemas/core.TrackRange'
+                    $ref: '#/components/schemas/CoreTrackRange'
                 work_schedule_group_id:
                   type: integer
                   format: int64
@@ -5069,7 +5069,7 @@ components:
         requirements:
           type: array
           items:
-            $ref: '#/components/schemas/core.ConflictRequirement'
+            $ref: '#/components/schemas/CoreConflictRequirement'
           description: List of requirements causing the conflict
         start_time:
           type: string
@@ -5227,6 +5227,1063 @@ components:
           description: |-
             JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
             within the target document where the operation is performed.
+    CoreConflictRequirement:
+      type: object
+      description: |-
+        Unmet requirement causing a conflict.
+
+        The start and end time describe the conflicting time span (not the full
+        requirement's time span).
+      required:
+      - zone
+      - start_time
+      - end_time
+      properties:
+        end_time:
+          type: string
+          format: date-time
+        start_time:
+          type: string
+          format: date-time
+        zone:
+          type: string
+    CoreConsistConfiguration:
+      type: object
+      description: Represents a physics consist.
+      required:
+      - supported_signaling_systems
+      - loading_gauge_type
+      - physics_consist
+      properties:
+        loading_gauge_type:
+          $ref: '#/components/schemas/LoadingGaugeType'
+          description: The loading gauge of the rolling stock
+        physics_consist:
+          type: object
+          required:
+          - effort_curves
+          - length
+          - max_speed
+          - startup_time
+          - startup_acceleration
+          - comfort_acceleration
+          - const_gamma
+          - inertia_coefficient
+          - mass
+          - rolling_resistance
+          properties:
+            base_power_class:
+              type:
+              - string
+              - 'null'
+            comfort_acceleration:
+              type: number
+              format: double
+              description: Acceleration in m·s⁻²
+            const_gamma:
+              type: number
+              format: double
+              description: |2-
+                 The constant gamma braking coefficient used when NOT circulating
+                 under ETCS/ERTMS signaling system
+                Acceleration in m·s⁻²
+            effort_curves:
+              $ref: '#/components/schemas/EffortCurves'
+            electrical_power_startup_time:
+              type:
+              - integer
+              - 'null'
+              format: int64
+              description: |-
+                The time the train takes before actually using electrical power.
+                Is null if the train is not electric or the value not specified.
+              minimum: 0
+            etcs_brake_params:
+              oneOf:
+              - type: 'null'
+              - $ref: '#/components/schemas/EtcsBrakeParams'
+            inertia_coefficient:
+              type: number
+              format: double
+            length:
+              type: integer
+              format: int64
+              minimum: 0
+            mass:
+              type: integer
+              format: int64
+              minimum: 0
+            max_speed:
+              type: number
+              format: double
+              description: Velocity in m·s⁻¹
+            power_restrictions:
+              type: object
+              description: Mapping of power restriction code to power class
+              additionalProperties:
+                type: string
+              propertyNames:
+                type: string
+            raise_pantograph_time:
+              type:
+              - integer
+              - 'null'
+              format: int64
+              description: |-
+                The time it takes to raise this train's pantograph.
+                Is null if the train is not electric or the value not specified.
+              minimum: 0
+            rolling_resistance:
+              $ref: '#/components/schemas/RollingResistance'
+            startup_acceleration:
+              type: number
+              format: double
+              description: Acceleration in m·s⁻²
+            startup_time:
+              type: integer
+              format: int64
+              minimum: 0
+        speed_limit_tag:
+          type:
+          - string
+          - 'null'
+        supported_signaling_systems:
+          type: array
+          items:
+            type: string
+          description: List of supported signaling systems
+          uniqueItems: true
+    CoreETCSBrakingCurvesResponse:
+      type: object
+      required:
+      - slowdowns
+      - stops
+      - conflicts
+      properties:
+        conflicts:
+          type: array
+          items:
+            $ref: '#/components/schemas/CoreETCSConflictCurves'
+          description: |-
+            List of ETCS conflict braking curves associated to the train schedule's ETCS signals.
+            For each non-route delimiter (F) signal, the associated spacing conflict curve is returned.
+            For each route delimiter (Nf) signal, 2 sets of curves are returned, associated to the
+            corresponding potential spacing or routing conflict.
+        slowdowns:
+          type: array
+          items:
+            $ref: '#/components/schemas/CoreETCSCurves'
+          description: List of ETCS braking curves associated to the train schedule's ETCS slowdowns
+        stops:
+          type: array
+          items:
+            $ref: '#/components/schemas/CoreETCSCurves'
+          description: List of ETCS braking curves associated to the train schedule's ETCS stops
+    CoreETCSConflictCurves:
+      type: object
+      required:
+      - indication
+      - permitted_speed
+      - guidance
+      - conflict_type
+      properties:
+        conflict_type:
+          type: string
+          enum:
+          - Spacing
+          - Routing
+        guidance:
+          type: object
+          required:
+          - positions
+          - times
+          - speeds
+          properties:
+            positions:
+              type: array
+              items:
+                type: integer
+                format: int64
+                minimum: 0
+              description: |-
+                List of positions of a train
+                Both positions (in mm) and times (in ms) must have the same length
+            speeds:
+              type: array
+              items:
+                type: number
+                format: double
+              description: List of speeds (in m/s) associated to a position
+            times:
+              type: array
+              items:
+                type: integer
+                format: int64
+                minimum: 0
+              description: List of times (in ms) associated to a position
+        indication:
+          type: object
+          required:
+          - positions
+          - times
+          - speeds
+          properties:
+            positions:
+              type: array
+              items:
+                type: integer
+                format: int64
+                minimum: 0
+              description: |-
+                List of positions of a train
+                Both positions (in mm) and times (in ms) must have the same length
+            speeds:
+              type: array
+              items:
+                type: number
+                format: double
+              description: List of speeds (in m/s) associated to a position
+            times:
+              type: array
+              items:
+                type: integer
+                format: int64
+                minimum: 0
+              description: List of times (in ms) associated to a position
+        permitted_speed:
+          type: object
+          required:
+          - positions
+          - times
+          - speeds
+          properties:
+            positions:
+              type: array
+              items:
+                type: integer
+                format: int64
+                minimum: 0
+              description: |-
+                List of positions of a train
+                Both positions (in mm) and times (in ms) must have the same length
+            speeds:
+              type: array
+              items:
+                type: number
+                format: double
+              description: List of speeds (in m/s) associated to a position
+            times:
+              type: array
+              items:
+                type: integer
+                format: int64
+                minimum: 0
+              description: List of times (in ms) associated to a position
+    CoreETCSCurves:
+      type: object
+      required:
+      - permitted_speed
+      - guidance
+      properties:
+        guidance:
+          type: object
+          required:
+          - positions
+          - times
+          - speeds
+          properties:
+            positions:
+              type: array
+              items:
+                type: integer
+                format: int64
+                minimum: 0
+              description: |-
+                List of positions of a train
+                Both positions (in mm) and times (in ms) must have the same length
+            speeds:
+              type: array
+              items:
+                type: number
+                format: double
+              description: List of speeds (in m/s) associated to a position
+            times:
+              type: array
+              items:
+                type: integer
+                format: int64
+                minimum: 0
+              description: List of times (in ms) associated to a position
+        indication:
+          oneOf:
+          - type: 'null'
+          - type: object
+            required:
+            - positions
+            - times
+            - speeds
+            properties:
+              positions:
+                type: array
+                items:
+                  type: integer
+                  format: int64
+                  minimum: 0
+                description: |-
+                  List of positions of a train
+                  Both positions (in mm) and times (in ms) must have the same length
+              speeds:
+                type: array
+                items:
+                  type: number
+                  format: double
+                description: List of speeds (in m/s) associated to a position
+              times:
+                type: array
+                items:
+                  type: integer
+                  format: int64
+                  minimum: 0
+                description: List of times (in ms) associated to a position
+        permitted_speed:
+          type: object
+          required:
+          - positions
+          - times
+          - speeds
+          properties:
+            positions:
+              type: array
+              items:
+                type: integer
+                format: int64
+                minimum: 0
+              description: |-
+                List of positions of a train
+                Both positions (in mm) and times (in ms) must have the same length
+            speeds:
+              type: array
+              items:
+                type: number
+                format: double
+              description: List of speeds (in m/s) associated to a position
+            times:
+              type: array
+              items:
+                type: integer
+                format: int64
+                minimum: 0
+              description: List of times (in ms) associated to a position
+    CoreIncompatibleConstraints:
+      type: object
+      required:
+      - incompatible_electrification_ranges
+      - incompatible_gauge_ranges
+      - incompatible_signaling_system_ranges
+      properties:
+        incompatible_electrification_ranges:
+          type: array
+          items:
+            $ref: '#/components/schemas/CoreIncompatibleOffsetRangeWithValue'
+        incompatible_gauge_ranges:
+          type: array
+          items:
+            $ref: '#/components/schemas/CoreIncompatibleOffsetRange'
+        incompatible_signaling_system_ranges:
+          type: array
+          items:
+            $ref: '#/components/schemas/CoreIncompatibleOffsetRangeWithValue'
+    CoreIncompatibleOffsetRange:
+      type: object
+      required:
+      - range
+      properties:
+        range:
+          $ref: '#/components/schemas/CoreOffsetRange'
+    CoreIncompatibleOffsetRangeWithValue:
+      type: object
+      required:
+      - range
+      - value
+      properties:
+        range:
+          $ref: '#/components/schemas/CoreOffsetRange'
+        value:
+          type: string
+    CoreObjectRange:
+      type: object
+      description: A range on a linear object (usually block or route)
+      required:
+      - id
+      - begin
+      - end
+      properties:
+        begin:
+          type: integer
+          format: int64
+          description: The beginning of the range in mm.
+          minimum: 0
+        end:
+          type: integer
+          format: int64
+          description: The end of the range in mm.
+          minimum: 0
+        id:
+          oneOf:
+          - type: string
+            maxLength: 255
+            minLength: 1
+          description: The object identifier.
+    CoreOffsetRange:
+      type: object
+      required:
+      - start
+      - end
+      properties:
+        end:
+          type: integer
+          format: int64
+          minimum: 0
+        start:
+          type: integer
+          format: int64
+          minimum: 0
+    CorePathItem:
+      type: object
+      required:
+      - locations
+      properties:
+        locations:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrackOffset'
+          description: The track offsets of the path item
+        step_timing_data:
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/CoreStepTimingData'
+            description: If specified, describes when the train may arrive at the location
+        stop_duration:
+          type:
+          - integer
+          - 'null'
+          format: int64
+          description: Stop duration in milliseconds. None if the train does not stop at this path item.
+          minimum: 0
+    CorePathfindingInputError:
+      oneOf:
+      - type: object
+        title: PathfindingInputErrorInvalidPathItems
+        required:
+        - items
+        - error_type
+        properties:
+          error_type:
+            type: string
+            enum:
+            - invalid_path_items
+          items:
+            type: array
+            items:
+              type: object
+              required:
+              - index
+              - path_item
+              properties:
+                index:
+                  type: integer
+                  minimum: 0
+                path_item:
+                  $ref: '#/components/schemas/PathItemLocation'
+      - type: object
+        title: PathfindingInputErrorNotEnoughPathItems
+        required:
+        - error_type
+        properties:
+          error_type:
+            type: string
+            enum:
+            - not_enough_path_items
+      - type: object
+        title: PathfindingInputErrorRollingStockNotFound
+        required:
+        - rolling_stock_name
+        - error_type
+        properties:
+          error_type:
+            type: string
+            enum:
+            - rolling_stock_not_found
+          rolling_stock_name:
+            type: string
+      - type: object
+        title: PathfindingInputErrorZeroLengthPath
+        required:
+        - error_type
+        properties:
+          error_type:
+            type: string
+            enum:
+            - zero_length_path
+    CorePathfindingNotFound:
+      oneOf:
+      - type: object
+        title: PathfindingNotFoundNotFoundInBlocks
+        required:
+        - track_section_ranges
+        - length
+        - error_type
+        properties:
+          error_type:
+            type: string
+            enum:
+            - not_found_in_blocks
+          length:
+            type: integer
+            format: int64
+            minimum: 0
+          track_section_ranges:
+            type: array
+            items:
+              $ref: '#/components/schemas/CoreTrackRange'
+      - type: object
+        title: PathfindingNotFoundNotFoundInRoutes
+        required:
+        - track_section_ranges
+        - length
+        - error_type
+        properties:
+          error_type:
+            type: string
+            enum:
+            - not_found_in_routes
+          length:
+            type: integer
+            format: int64
+            minimum: 0
+          track_section_ranges:
+            type: array
+            items:
+              $ref: '#/components/schemas/CoreTrackRange'
+      - type: object
+        title: PathfindingNotFoundNotFoundInTracks
+        required:
+        - error_type
+        properties:
+          error_type:
+            type: string
+            enum:
+            - not_found_in_tracks
+      - type: object
+        title: PathfindingNotFoundIncompatibleConstraints
+        required:
+        - relaxed_constraints_path
+        - incompatible_constraints
+        - error_type
+        properties:
+          error_type:
+            type: string
+            enum:
+            - incompatible_constraints
+          incompatible_constraints:
+            $ref: '#/components/schemas/CoreIncompatibleConstraints'
+          relaxed_constraints_path:
+            $ref: '#/components/schemas/CorePathfindingResultSuccess'
+    CorePathfindingResultSuccess:
+      type: object
+      description: A successful pathfinding result. This is also used for STDCM response.
+      required:
+      - path
+      - length
+      - path_item_positions
+      properties:
+        length:
+          type: integer
+          format: int64
+          description: Length of the path in mm
+          minimum: 0
+        path:
+          $ref: '#/components/schemas/CoreTrainPath'
+          description: Full description of the path data
+        path_item_positions:
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 0
+          description: |-
+            The path offset in mm of each path item given as input of the pathfinding
+            The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm
+    CoreReportTrain:
+      type: object
+      required:
+      - positions
+      - times
+      - speeds
+      - energy_consumption
+      - path_item_times
+      properties:
+        energy_consumption:
+          type: number
+          format: double
+          description: Total energy consumption
+        path_item_times:
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 0
+          description: |-
+            Time in ms of each path item given as input of the pathfinding
+            The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
+        positions:
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 0
+          description: |-
+            List of positions of a train
+            Both positions (in mm) and times (in ms) must have the same length
+        speeds:
+          type: array
+          items:
+            type: number
+            format: double
+          description: List of speeds associated to a position
+        times:
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 0
+    CoreRoutingRequirement:
+      type: object
+      required:
+      - route
+      - begin_time
+      - zones
+      properties:
+        begin_time:
+          type: integer
+          format: int64
+          description: Time in ms
+          minimum: 0
+        route:
+          type: string
+        zones:
+          type: array
+          items:
+            $ref: '#/components/schemas/CoreRoutingZoneRequirement'
+    CoreRoutingZoneRequirement:
+      type: object
+      required:
+      - zone
+      - entry_detector
+      - exit_detector
+      - switches
+      - end_time
+      properties:
+        end_time:
+          type: integer
+          format: int64
+          description: Time in ms
+          minimum: 0
+        entry_detector:
+          type: string
+        exit_detector:
+          type: string
+        switches:
+          type: object
+          additionalProperties:
+            type: string
+          propertyNames:
+            type: string
+        zone:
+          type: string
+    CoreSignalCriticalPosition:
+      type: object
+      description: |-
+        First position (space and time) along the path where given signal must
+        be free (sighting time or closed-signal stop ending)
+      required:
+      - signal
+      - time
+      - position
+      - state
+      properties:
+        position:
+          type: integer
+          format: int64
+          description: Position in mm
+          minimum: 0
+        signal:
+          type: string
+        state:
+          type: string
+        time:
+          type: integer
+          format: int64
+          description: Time in ms
+          minimum: 0
+    CoreSignalUpdate:
+      type: object
+      required:
+      - signal_id
+      - signaling_system
+      - time_start
+      - time_end
+      - position_start
+      - position_end
+      - color
+      - blinking
+      - aspect_label
+      properties:
+        aspect_label:
+          type: string
+          description: The labels of the new aspect
+        blinking:
+          type: boolean
+          description: Whether the signal is blinking
+        color:
+          type: integer
+          format: int32
+          description: |-
+            The color of the aspect
+            (Bits 24-31 are alpha, 16-23 are red, 8-15 are green, 0-7 are blue)
+        position_end:
+          type: integer
+          format: int64
+          description: The route ends at this position in mm on the train path
+          minimum: 0
+        position_start:
+          type: integer
+          format: int64
+          description: The route starts at this position in mm on the train path
+          minimum: 0
+        signal_id:
+          type: string
+          description: The id of the updated signal
+        signaling_system:
+          type: string
+          description: The name of the signaling system of the signal
+        time_end:
+          type: integer
+          format: int64
+          description: The aspects stop being displayed at this time (number of ms since `departure_time`)
+          minimum: 0
+        time_start:
+          type: integer
+          format: int64
+          description: The aspects start being displayed at this time (number of ms since `departure_time`)
+          minimum: 0
+    CoreSpacingRequirement:
+      type: object
+      required:
+      - zone
+      - begin_time
+      - end_time
+      properties:
+        begin_time:
+          type: integer
+          format: int64
+          minimum: 0
+        end_time:
+          type: integer
+          format: int64
+          minimum: 0
+        zone:
+          type: string
+    CoreStdcmRequest:
+      type: object
+      required:
+      - infra
+      - expected_version
+      - timetable_id
+      - path_items
+      - comfort
+      - consist_schedule
+      - start_time
+      - maximum_departure_delay
+      - maximum_run_time
+      - time_gap_before
+      - time_gap_after
+      - work_schedules
+      - temporary_speed_limits
+      properties:
+        allowed_track_sections:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Set of authorized track section ids for the current request
+          uniqueItems: true
+        comfort:
+          $ref: '#/components/schemas/Comfort'
+          description: The comfort of the train
+        consist_schedule:
+          $ref: '#/components/schemas/ConsistSchedule'
+        expected_version:
+          type: integer
+          format: int64
+          description: Infrastructure expected version
+        infra:
+          type: integer
+          format: int64
+          description: Infrastructure id
+        margin:
+          oneOf:
+          - type: 'null'
+          - oneOf:
+            - type: object
+              title: MarginValuePercentage
+              required:
+              - Percentage
+              properties:
+                Percentage:
+                  type: number
+                  format: double
+            - type: object
+              title: MarginValueMinPer100Km
+              required:
+              - MinPer100Km
+              properties:
+                MinPer100Km:
+                  type: number
+                  format: double
+          description: Margin to apply to the whole train
+        maximum_departure_delay:
+          type: integer
+          format: int64
+          description: Maximum departure delay in milliseconds.
+          minimum: 0
+        maximum_run_time:
+          type: integer
+          format: int64
+          description: Maximum run time of the simulation in milliseconds
+          minimum: 0
+        path_items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CorePathItem'
+          description: List of waypoints. Each waypoint is a list of track offset.
+        start_time:
+          type: string
+          format: date-time
+        temporary_speed_limits:
+          type: array
+          items:
+            type: object
+            description: Lighter description of a work schedule with only the relevant information for core
+            required:
+            - speed_limit
+            - track_ranges
+            properties:
+              speed_limit:
+                type: number
+                format: double
+                description: Speed limitation in m/s
+              track_ranges:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CoreTrackRange'
+                description: Track ranges on which the speed limitation applies
+          description: List of applicable temporary speed limits between the train departure and arrival
+        time_gap_after:
+          type: integer
+          format: int64
+          description: Gap between the created train and following trains in milliseconds
+          minimum: 0
+        time_gap_before:
+          type: integer
+          format: int64
+          description: Gap between the created train and previous trains in milliseconds
+          minimum: 0
+        time_step:
+          type:
+          - integer
+          - 'null'
+          format: int64
+          description: Numerical integration time step in milliseconds. Use default value if not specified.
+          minimum: 0
+        timetable_id:
+          type: integer
+          format: int64
+          description: Timetable id
+        work_schedules:
+          type: array
+          items:
+            $ref: '#/components/schemas/CoreWorkSchedule'
+          description: List of planned work schedules
+    CoreStepTimingData:
+      type: object
+      description: Contains the data of a step timing, when it is specified
+      required:
+      - arrival_time
+      - arrival_time_tolerance_before
+      - arrival_time_tolerance_after
+      properties:
+        arrival_time:
+          type: string
+          format: date-time
+          description: Time the train should arrive at this point
+        arrival_time_tolerance_after:
+          type: integer
+          format: int64
+          description: Tolerance for the arrival time, when it arrives after the expected time, in ms
+          minimum: 0
+        arrival_time_tolerance_before:
+          type: integer
+          format: int64
+          description: Tolerance for the arrival time, when it arrives before the expected time, in ms
+          minimum: 0
+    CoreTrackRange:
+      type: object
+      description: |-
+        An oriented range on a track section.
+        `begin` is always less than `end`.
+      required:
+      - track_section
+      - begin
+      - end
+      - direction
+      properties:
+        begin:
+          type: integer
+          format: int64
+          description: The beginning of the range in mm.
+          minimum: 0
+        direction:
+          $ref: '#/components/schemas/Direction'
+          description: The direction of the range.
+        end:
+          type: integer
+          format: int64
+          description: The end of the range in mm.
+          minimum: 0
+        track_section:
+          oneOf:
+          - type: string
+            maxLength: 255
+            minLength: 1
+          description: The track section identifier.
+    CoreTrainPath:
+      type: object
+      description: |-
+        A valid train path, as returned from the pathfinding.
+        Can be used as-is as input for other endpoints.
+      required:
+      - blocks
+      - routes
+      - track_section_ranges
+      properties:
+        blocks:
+          type: array
+          items:
+            $ref: '#/components/schemas/CoreObjectRange'
+          description: Block ranges, in order.
+        routes:
+          type: array
+          items:
+            $ref: '#/components/schemas/CoreObjectRange'
+          description: Route ranges, in order.
+        track_section_ranges:
+          type: array
+          items:
+            $ref: '#/components/schemas/CoreTrackRange'
+          description: Track section ranges, in order.
+    CoreTrainRequirementsById:
+      type: object
+      required:
+      - train_id
+      - train_name
+      - start_time
+      - spacing_requirements
+      - routing_requirements
+      properties:
+        routing_requirements:
+          type: array
+          items:
+            $ref: '#/components/schemas/CoreRoutingRequirement'
+        spacing_requirements:
+          type: array
+          items:
+            $ref: '#/components/schemas/CoreSpacingRequirement'
+        start_time:
+          type: string
+          format: date-time
+        train_id:
+          type: string
+        train_name:
+          type: string
+          description: ID that can be used to find the train in tools other than OSRD. Used in debug traces.
+    CoreUndirectedTrackRange:
+      type: object
+      description: |-
+        A range on a track section.
+        `begin` is always less than `end`.
+      required:
+      - track_section
+      - begin
+      - end
+      properties:
+        begin:
+          type: integer
+          format: int64
+          description: The beginning of the range in mm.
+          minimum: 0
+        end:
+          type: integer
+          format: int64
+          description: The end of the range in mm.
+          minimum: 0
+        track_section:
+          type: string
+          description: The track section identifier.
+    CoreWorkSchedule:
+      type: object
+      description: Lighter description of a work schedule, with only the relevant information for core
+      required:
+      - start_time
+      - end_time
+      - track_ranges
+      properties:
+        end_time:
+          type: integer
+          format: int64
+          description: End time as a time delta from the stdcm start time in ms
+          minimum: 0
+        start_time:
+          type: integer
+          format: int64
+          description: Start time as a time delta from the stdcm start time in ms
+          minimum: 0
+        track_ranges:
+          type: array
+          items:
+            $ref: '#/components/schemas/CoreUndirectedTrackRange'
+          description: List of unavailable track ranges
+    CoreZoneUpdate:
+      type: object
+      required:
+      - zone
+      - time
+      - position
+      - is_entry
+      properties:
+        is_entry:
+          type: boolean
+        position:
+          type: integer
+          format: int64
+          minimum: 0
+        time:
+          type: integer
+          format: int64
+          minimum: 0
+        zone:
+          type: string
     Curve:
       type: object
       required:
@@ -10617,7 +11674,7 @@ components:
           type: integer
           format: int64
         path:
-          $ref: '#/components/schemas/core.TrainPath'
+          $ref: '#/components/schemas/CoreTrainPath'
         timetable_id:
           type: integer
           format: int64
@@ -10634,13 +11691,13 @@ components:
           additionalProperties:
             type: array
             items:
-              $ref: '#/components/schemas/core.SignalUpdate'
+              $ref: '#/components/schemas/CoreSignalUpdate'
           propertyNames:
             type: string
         train_schedule:
           type: array
           items:
-            $ref: '#/components/schemas/core.SignalUpdate'
+            $ref: '#/components/schemas/CoreSignalUpdate'
           description: Train schedule
     Operation:
       oneOf:
@@ -11377,12 +12434,12 @@ components:
         track_section_ranges:
           type: array
           items:
-            $ref: '#/components/schemas/core.TrackRange'
+            $ref: '#/components/schemas/CoreTrackRange'
           description: List of track sections
     PathfindingFailure:
       oneOf:
       - allOf:
-        - $ref: '#/components/schemas/core.PathfindingInputError'
+        - $ref: '#/components/schemas/CorePathfindingInputError'
         - type: object
           required:
           - failed_status
@@ -11393,7 +12450,7 @@ components:
               - pathfinding_input_error
         title: PathfindingFailurePathfindingInputError
       - allOf:
-        - $ref: '#/components/schemas/core.PathfindingNotFound'
+        - $ref: '#/components/schemas/CorePathfindingNotFound'
         - type: object
           required:
           - failed_status
@@ -11543,7 +12600,7 @@ components:
     PathfindingResult:
       oneOf:
       - allOf:
-        - $ref: '#/components/schemas/core.PathfindingResultSuccess'
+        - $ref: '#/components/schemas/CorePathfindingResultSuccess'
         - type: object
           required:
           - status
@@ -13328,7 +14385,7 @@ components:
       - electrical_profiles
       properties:
         base:
-          $ref: '#/components/schemas/core.ReportTrain'
+          $ref: '#/components/schemas/CoreReportTrain'
           description: Simulation without any regularity margins
         electrical_profiles:
           type: object
@@ -13378,7 +14435,7 @@ components:
         final_output:
           oneOf:
           - allOf:
-            - $ref: '#/components/schemas/core.ReportTrain'
+            - $ref: '#/components/schemas/CoreReportTrain'
             - type: object
               required:
               - signal_critical_positions
@@ -13389,19 +14446,19 @@ components:
                 routing_requirements:
                   type: array
                   items:
-                    $ref: '#/components/schemas/core.RoutingRequirement'
+                    $ref: '#/components/schemas/CoreRoutingRequirement'
                 signal_critical_positions:
                   type: array
                   items:
-                    $ref: '#/components/schemas/core.SignalCriticalPosition'
+                    $ref: '#/components/schemas/CoreSignalCriticalPosition'
                 spacing_requirements:
                   type: array
                   items:
-                    $ref: '#/components/schemas/core.SpacingRequirement'
+                    $ref: '#/components/schemas/CoreSpacingRequirement'
                 zone_updates:
                   type: array
                   items:
-                    $ref: '#/components/schemas/core.ZoneUpdate'
+                    $ref: '#/components/schemas/CoreZoneUpdate'
           description: Simulation that takes into account the regularity margins and the schedule item times
         mrsp:
           type: object
@@ -13470,7 +14527,7 @@ components:
                     description: in meters per second
               description: List of `n+1` values associated to the ranges
         provisional:
-          $ref: '#/components/schemas/core.ReportTrain'
+          $ref: '#/components/schemas/CoreReportTrain'
           description: Simulation that takes into account the regularity margins
     SimulationSummaryResult:
       oneOf:
@@ -13553,7 +14610,7 @@ components:
             description: Travel time in ms
             minimum: 0
       - allOf:
-        - $ref: '#/components/schemas/core.PathfindingNotFound'
+        - $ref: '#/components/schemas/CorePathfindingNotFound'
           description: Pathfinding not found
         - type: object
           required:
@@ -13592,7 +14649,7 @@ components:
             enum:
             - simulation_failed
       - allOf:
-        - $ref: '#/components/schemas/core.PathfindingInputError'
+        - $ref: '#/components/schemas/CorePathfindingInputError'
           description: InputError
         - type: object
           required:
@@ -13813,12 +14870,12 @@ components:
           core_payload:
             oneOf:
             - type: 'null'
-            - $ref: '#/components/schemas/core.StdcmRequest'
+            - $ref: '#/components/schemas/CoreStdcmRequest'
           departure_time:
             type: string
             format: date-time
           pathfinding_result:
-            $ref: '#/components/schemas/core.PathfindingResultSuccess'
+            $ref: '#/components/schemas/CorePathfindingResultSuccess'
           simulation:
             $ref: '#/components/schemas/SimulationResponseSuccess'
           status:
@@ -13833,7 +14890,7 @@ components:
           core_payload:
             oneOf:
             - type: 'null'
-            - $ref: '#/components/schemas/core.StdcmRequest'
+            - $ref: '#/components/schemas/CoreStdcmRequest'
           status:
             type: string
             enum:
@@ -13847,7 +14904,7 @@ components:
           core_payload:
             oneOf:
             - type: 'null'
-            - $ref: '#/components/schemas/core.StdcmRequest'
+            - $ref: '#/components/schemas/CoreStdcmRequest'
           error:
             $ref: '#/components/schemas/SimulationResponse'
           status:
@@ -13863,7 +14920,7 @@ components:
           core_payload:
             oneOf:
             - type: 'null'
-            - $ref: '#/components/schemas/core.StdcmRequest'
+            - $ref: '#/components/schemas/CoreStdcmRequest'
           error:
             $ref: '#/components/schemas/InternalError'
           status:
@@ -15140,1060 +16197,3 @@ components:
       - LOADING
       - READY
       - ERROR
-    core.ConflictRequirement:
-      type: object
-      description: |-
-        Unmet requirement causing a conflict.
-
-        The start and end time describe the conflicting time span (not the full
-        requirement's time span).
-      required:
-      - zone
-      - start_time
-      - end_time
-      properties:
-        end_time:
-          type: string
-          format: date-time
-        start_time:
-          type: string
-          format: date-time
-        zone:
-          type: string
-    core.ConsistConfiguration:
-      type: object
-      description: Represents a physics consist.
-      required:
-      - supported_signaling_systems
-      - loading_gauge_type
-      - physics_consist
-      properties:
-        loading_gauge_type:
-          $ref: '#/components/schemas/LoadingGaugeType'
-          description: The loading gauge of the rolling stock
-        physics_consist:
-          type: object
-          required:
-          - effort_curves
-          - length
-          - max_speed
-          - startup_time
-          - startup_acceleration
-          - comfort_acceleration
-          - const_gamma
-          - inertia_coefficient
-          - mass
-          - rolling_resistance
-          properties:
-            base_power_class:
-              type:
-              - string
-              - 'null'
-            comfort_acceleration:
-              type: number
-              format: double
-              description: Acceleration in m·s⁻²
-            const_gamma:
-              type: number
-              format: double
-              description: |2-
-                 The constant gamma braking coefficient used when NOT circulating
-                 under ETCS/ERTMS signaling system
-                Acceleration in m·s⁻²
-            effort_curves:
-              $ref: '#/components/schemas/EffortCurves'
-            electrical_power_startup_time:
-              type:
-              - integer
-              - 'null'
-              format: int64
-              description: |-
-                The time the train takes before actually using electrical power.
-                Is null if the train is not electric or the value not specified.
-              minimum: 0
-            etcs_brake_params:
-              oneOf:
-              - type: 'null'
-              - $ref: '#/components/schemas/EtcsBrakeParams'
-            inertia_coefficient:
-              type: number
-              format: double
-            length:
-              type: integer
-              format: int64
-              minimum: 0
-            mass:
-              type: integer
-              format: int64
-              minimum: 0
-            max_speed:
-              type: number
-              format: double
-              description: Velocity in m·s⁻¹
-            power_restrictions:
-              type: object
-              description: Mapping of power restriction code to power class
-              additionalProperties:
-                type: string
-              propertyNames:
-                type: string
-            raise_pantograph_time:
-              type:
-              - integer
-              - 'null'
-              format: int64
-              description: |-
-                The time it takes to raise this train's pantograph.
-                Is null if the train is not electric or the value not specified.
-              minimum: 0
-            rolling_resistance:
-              $ref: '#/components/schemas/RollingResistance'
-            startup_acceleration:
-              type: number
-              format: double
-              description: Acceleration in m·s⁻²
-            startup_time:
-              type: integer
-              format: int64
-              minimum: 0
-        speed_limit_tag:
-          type:
-          - string
-          - 'null'
-        supported_signaling_systems:
-          type: array
-          items:
-            type: string
-          description: List of supported signaling systems
-          uniqueItems: true
-    core.ETCSBrakingCurvesResponse:
-      type: object
-      required:
-      - slowdowns
-      - stops
-      - conflicts
-      properties:
-        conflicts:
-          type: array
-          items:
-            $ref: '#/components/schemas/core.ETCSConflictCurves'
-          description: |-
-            List of ETCS conflict braking curves associated to the train schedule's ETCS signals.
-            For each non-route delimiter (F) signal, the associated spacing conflict curve is returned.
-            For each route delimiter (Nf) signal, 2 sets of curves are returned, associated to the
-            corresponding potential spacing or routing conflict.
-        slowdowns:
-          type: array
-          items:
-            $ref: '#/components/schemas/core.ETCSCurves'
-          description: List of ETCS braking curves associated to the train schedule's ETCS slowdowns
-        stops:
-          type: array
-          items:
-            $ref: '#/components/schemas/core.ETCSCurves'
-          description: List of ETCS braking curves associated to the train schedule's ETCS stops
-    core.ETCSConflictCurves:
-      type: object
-      required:
-      - indication
-      - permitted_speed
-      - guidance
-      - conflict_type
-      properties:
-        conflict_type:
-          type: string
-          enum:
-          - Spacing
-          - Routing
-        guidance:
-          type: object
-          required:
-          - positions
-          - times
-          - speeds
-          properties:
-            positions:
-              type: array
-              items:
-                type: integer
-                format: int64
-                minimum: 0
-              description: |-
-                List of positions of a train
-                Both positions (in mm) and times (in ms) must have the same length
-            speeds:
-              type: array
-              items:
-                type: number
-                format: double
-              description: List of speeds (in m/s) associated to a position
-            times:
-              type: array
-              items:
-                type: integer
-                format: int64
-                minimum: 0
-              description: List of times (in ms) associated to a position
-        indication:
-          type: object
-          required:
-          - positions
-          - times
-          - speeds
-          properties:
-            positions:
-              type: array
-              items:
-                type: integer
-                format: int64
-                minimum: 0
-              description: |-
-                List of positions of a train
-                Both positions (in mm) and times (in ms) must have the same length
-            speeds:
-              type: array
-              items:
-                type: number
-                format: double
-              description: List of speeds (in m/s) associated to a position
-            times:
-              type: array
-              items:
-                type: integer
-                format: int64
-                minimum: 0
-              description: List of times (in ms) associated to a position
-        permitted_speed:
-          type: object
-          required:
-          - positions
-          - times
-          - speeds
-          properties:
-            positions:
-              type: array
-              items:
-                type: integer
-                format: int64
-                minimum: 0
-              description: |-
-                List of positions of a train
-                Both positions (in mm) and times (in ms) must have the same length
-            speeds:
-              type: array
-              items:
-                type: number
-                format: double
-              description: List of speeds (in m/s) associated to a position
-            times:
-              type: array
-              items:
-                type: integer
-                format: int64
-                minimum: 0
-              description: List of times (in ms) associated to a position
-    core.ETCSCurves:
-      type: object
-      required:
-      - permitted_speed
-      - guidance
-      properties:
-        guidance:
-          type: object
-          required:
-          - positions
-          - times
-          - speeds
-          properties:
-            positions:
-              type: array
-              items:
-                type: integer
-                format: int64
-                minimum: 0
-              description: |-
-                List of positions of a train
-                Both positions (in mm) and times (in ms) must have the same length
-            speeds:
-              type: array
-              items:
-                type: number
-                format: double
-              description: List of speeds (in m/s) associated to a position
-            times:
-              type: array
-              items:
-                type: integer
-                format: int64
-                minimum: 0
-              description: List of times (in ms) associated to a position
-        indication:
-          oneOf:
-          - type: 'null'
-          - type: object
-            required:
-            - positions
-            - times
-            - speeds
-            properties:
-              positions:
-                type: array
-                items:
-                  type: integer
-                  format: int64
-                  minimum: 0
-                description: |-
-                  List of positions of a train
-                  Both positions (in mm) and times (in ms) must have the same length
-              speeds:
-                type: array
-                items:
-                  type: number
-                  format: double
-                description: List of speeds (in m/s) associated to a position
-              times:
-                type: array
-                items:
-                  type: integer
-                  format: int64
-                  minimum: 0
-                description: List of times (in ms) associated to a position
-        permitted_speed:
-          type: object
-          required:
-          - positions
-          - times
-          - speeds
-          properties:
-            positions:
-              type: array
-              items:
-                type: integer
-                format: int64
-                minimum: 0
-              description: |-
-                List of positions of a train
-                Both positions (in mm) and times (in ms) must have the same length
-            speeds:
-              type: array
-              items:
-                type: number
-                format: double
-              description: List of speeds (in m/s) associated to a position
-            times:
-              type: array
-              items:
-                type: integer
-                format: int64
-                minimum: 0
-              description: List of times (in ms) associated to a position
-    core.IncompatibleConstraints:
-      type: object
-      required:
-      - incompatible_electrification_ranges
-      - incompatible_gauge_ranges
-      - incompatible_signaling_system_ranges
-      properties:
-        incompatible_electrification_ranges:
-          type: array
-          items:
-            $ref: '#/components/schemas/core.IncompatibleOffsetRangeWithValue'
-        incompatible_gauge_ranges:
-          type: array
-          items:
-            $ref: '#/components/schemas/core.IncompatibleOffsetRange'
-        incompatible_signaling_system_ranges:
-          type: array
-          items:
-            $ref: '#/components/schemas/core.IncompatibleOffsetRangeWithValue'
-    core.IncompatibleOffsetRange:
-      type: object
-      required:
-      - range
-      properties:
-        range:
-          $ref: '#/components/schemas/core.OffsetRange'
-    core.IncompatibleOffsetRangeWithValue:
-      type: object
-      required:
-      - range
-      - value
-      properties:
-        range:
-          $ref: '#/components/schemas/core.OffsetRange'
-        value:
-          type: string
-    core.ObjectRange:
-      type: object
-      description: A range on a linear object (usually block or route)
-      required:
-      - id
-      - begin
-      - end
-      properties:
-        begin:
-          type: integer
-          format: int64
-          description: The beginning of the range in mm.
-          minimum: 0
-        end:
-          type: integer
-          format: int64
-          description: The end of the range in mm.
-          minimum: 0
-        id:
-          oneOf:
-          - type: string
-            maxLength: 255
-            minLength: 1
-          description: The object identifier.
-    core.OffsetRange:
-      type: object
-      required:
-      - start
-      - end
-      properties:
-        end:
-          type: integer
-          format: int64
-          minimum: 0
-        start:
-          type: integer
-          format: int64
-          minimum: 0
-    core.PathItem:
-      type: object
-      required:
-      - locations
-      properties:
-        locations:
-          type: array
-          items:
-            $ref: '#/components/schemas/TrackOffset'
-          description: The track offsets of the path item
-        step_timing_data:
-          oneOf:
-          - type: 'null'
-          - $ref: '#/components/schemas/core.StepTimingData'
-            description: If specified, describes when the train may arrive at the location
-        stop_duration:
-          type:
-          - integer
-          - 'null'
-          format: int64
-          description: Stop duration in milliseconds. None if the train does not stop at this path item.
-          minimum: 0
-    core.PathfindingInputError:
-      oneOf:
-      - type: object
-        title: PathfindingInputErrorInvalidPathItems
-        required:
-        - items
-        - error_type
-        properties:
-          error_type:
-            type: string
-            enum:
-            - invalid_path_items
-          items:
-            type: array
-            items:
-              type: object
-              required:
-              - index
-              - path_item
-              properties:
-                index:
-                  type: integer
-                  minimum: 0
-                path_item:
-                  $ref: '#/components/schemas/PathItemLocation'
-      - type: object
-        title: PathfindingInputErrorNotEnoughPathItems
-        required:
-        - error_type
-        properties:
-          error_type:
-            type: string
-            enum:
-            - not_enough_path_items
-      - type: object
-        title: PathfindingInputErrorRollingStockNotFound
-        required:
-        - rolling_stock_name
-        - error_type
-        properties:
-          error_type:
-            type: string
-            enum:
-            - rolling_stock_not_found
-          rolling_stock_name:
-            type: string
-      - type: object
-        title: PathfindingInputErrorZeroLengthPath
-        required:
-        - error_type
-        properties:
-          error_type:
-            type: string
-            enum:
-            - zero_length_path
-    core.PathfindingNotFound:
-      oneOf:
-      - type: object
-        title: PathfindingNotFoundNotFoundInBlocks
-        required:
-        - track_section_ranges
-        - length
-        - error_type
-        properties:
-          error_type:
-            type: string
-            enum:
-            - not_found_in_blocks
-          length:
-            type: integer
-            format: int64
-            minimum: 0
-          track_section_ranges:
-            type: array
-            items:
-              $ref: '#/components/schemas/core.TrackRange'
-      - type: object
-        title: PathfindingNotFoundNotFoundInRoutes
-        required:
-        - track_section_ranges
-        - length
-        - error_type
-        properties:
-          error_type:
-            type: string
-            enum:
-            - not_found_in_routes
-          length:
-            type: integer
-            format: int64
-            minimum: 0
-          track_section_ranges:
-            type: array
-            items:
-              $ref: '#/components/schemas/core.TrackRange'
-      - type: object
-        title: PathfindingNotFoundNotFoundInTracks
-        required:
-        - error_type
-        properties:
-          error_type:
-            type: string
-            enum:
-            - not_found_in_tracks
-      - type: object
-        title: PathfindingNotFoundIncompatibleConstraints
-        required:
-        - relaxed_constraints_path
-        - incompatible_constraints
-        - error_type
-        properties:
-          error_type:
-            type: string
-            enum:
-            - incompatible_constraints
-          incompatible_constraints:
-            $ref: '#/components/schemas/core.IncompatibleConstraints'
-          relaxed_constraints_path:
-            $ref: '#/components/schemas/core.PathfindingResultSuccess'
-    core.PathfindingResultSuccess:
-      type: object
-      description: A successful pathfinding result. This is also used for STDCM response.
-      required:
-      - path
-      - length
-      - path_item_positions
-      properties:
-        length:
-          type: integer
-          format: int64
-          description: Length of the path in mm
-          minimum: 0
-        path:
-          $ref: '#/components/schemas/core.TrainPath'
-          description: Full description of the path data
-        path_item_positions:
-          type: array
-          items:
-            type: integer
-            format: int64
-            minimum: 0
-          description: |-
-            The path offset in mm of each path item given as input of the pathfinding
-            The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm
-    core.ReportTrain:
-      type: object
-      required:
-      - positions
-      - times
-      - speeds
-      - energy_consumption
-      - path_item_times
-      properties:
-        energy_consumption:
-          type: number
-          format: double
-          description: Total energy consumption
-        path_item_times:
-          type: array
-          items:
-            type: integer
-            format: int64
-            minimum: 0
-          description: |-
-            Time in ms of each path item given as input of the pathfinding
-            The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
-        positions:
-          type: array
-          items:
-            type: integer
-            format: int64
-            minimum: 0
-          description: |-
-            List of positions of a train
-            Both positions (in mm) and times (in ms) must have the same length
-        speeds:
-          type: array
-          items:
-            type: number
-            format: double
-          description: List of speeds associated to a position
-        times:
-          type: array
-          items:
-            type: integer
-            format: int64
-            minimum: 0
-    core.RoutingRequirement:
-      type: object
-      required:
-      - route
-      - begin_time
-      - zones
-      properties:
-        begin_time:
-          type: integer
-          format: int64
-          description: Time in ms
-          minimum: 0
-        route:
-          type: string
-        zones:
-          type: array
-          items:
-            $ref: '#/components/schemas/core.RoutingZoneRequirement'
-    core.RoutingZoneRequirement:
-      type: object
-      required:
-      - zone
-      - entry_detector
-      - exit_detector
-      - switches
-      - end_time
-      properties:
-        end_time:
-          type: integer
-          format: int64
-          description: Time in ms
-          minimum: 0
-        entry_detector:
-          type: string
-        exit_detector:
-          type: string
-        switches:
-          type: object
-          additionalProperties:
-            type: string
-          propertyNames:
-            type: string
-        zone:
-          type: string
-    core.SignalCriticalPosition:
-      type: object
-      description: |-
-        First position (space and time) along the path where given signal must
-        be free (sighting time or closed-signal stop ending)
-      required:
-      - signal
-      - time
-      - position
-      - state
-      properties:
-        position:
-          type: integer
-          format: int64
-          description: Position in mm
-          minimum: 0
-        signal:
-          type: string
-        state:
-          type: string
-        time:
-          type: integer
-          format: int64
-          description: Time in ms
-          minimum: 0
-    core.SignalUpdate:
-      type: object
-      required:
-      - signal_id
-      - signaling_system
-      - time_start
-      - time_end
-      - position_start
-      - position_end
-      - color
-      - blinking
-      - aspect_label
-      properties:
-        aspect_label:
-          type: string
-          description: The labels of the new aspect
-        blinking:
-          type: boolean
-          description: Whether the signal is blinking
-        color:
-          type: integer
-          format: int32
-          description: |-
-            The color of the aspect
-            (Bits 24-31 are alpha, 16-23 are red, 8-15 are green, 0-7 are blue)
-        position_end:
-          type: integer
-          format: int64
-          description: The route ends at this position in mm on the train path
-          minimum: 0
-        position_start:
-          type: integer
-          format: int64
-          description: The route starts at this position in mm on the train path
-          minimum: 0
-        signal_id:
-          type: string
-          description: The id of the updated signal
-        signaling_system:
-          type: string
-          description: The name of the signaling system of the signal
-        time_end:
-          type: integer
-          format: int64
-          description: The aspects stop being displayed at this time (number of ms since `departure_time`)
-          minimum: 0
-        time_start:
-          type: integer
-          format: int64
-          description: The aspects start being displayed at this time (number of ms since `departure_time`)
-          minimum: 0
-    core.SpacingRequirement:
-      type: object
-      required:
-      - zone
-      - begin_time
-      - end_time
-      properties:
-        begin_time:
-          type: integer
-          format: int64
-          minimum: 0
-        end_time:
-          type: integer
-          format: int64
-          minimum: 0
-        zone:
-          type: string
-    core.StdcmRequest:
-      type: object
-      required:
-      - infra
-      - expected_version
-      - timetable_id
-      - path_items
-      - comfort
-      - consist_schedule
-      - start_time
-      - maximum_departure_delay
-      - maximum_run_time
-      - time_gap_before
-      - time_gap_after
-      - work_schedules
-      - temporary_speed_limits
-      properties:
-        allowed_track_sections:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: Set of authorized track section ids for the current request
-          uniqueItems: true
-        comfort:
-          $ref: '#/components/schemas/Comfort'
-          description: The comfort of the train
-        consist_schedule:
-          $ref: '#/components/schemas/ConsistSchedule'
-        expected_version:
-          type: integer
-          format: int64
-          description: Infrastructure expected version
-        infra:
-          type: integer
-          format: int64
-          description: Infrastructure id
-        margin:
-          oneOf:
-          - type: 'null'
-          - oneOf:
-            - type: object
-              title: MarginValuePercentage
-              required:
-              - Percentage
-              properties:
-                Percentage:
-                  type: number
-                  format: double
-            - type: object
-              title: MarginValueMinPer100Km
-              required:
-              - MinPer100Km
-              properties:
-                MinPer100Km:
-                  type: number
-                  format: double
-          description: Margin to apply to the whole train
-        maximum_departure_delay:
-          type: integer
-          format: int64
-          description: Maximum departure delay in milliseconds.
-          minimum: 0
-        maximum_run_time:
-          type: integer
-          format: int64
-          description: Maximum run time of the simulation in milliseconds
-          minimum: 0
-        path_items:
-          type: array
-          items:
-            $ref: '#/components/schemas/core.PathItem'
-          description: List of waypoints. Each waypoint is a list of track offset.
-        start_time:
-          type: string
-          format: date-time
-        temporary_speed_limits:
-          type: array
-          items:
-            type: object
-            description: Lighter description of a work schedule with only the relevant information for core
-            required:
-            - speed_limit
-            - track_ranges
-            properties:
-              speed_limit:
-                type: number
-                format: double
-                description: Speed limitation in m/s
-              track_ranges:
-                type: array
-                items:
-                  $ref: '#/components/schemas/core.TrackRange'
-                description: Track ranges on which the speed limitation applies
-          description: List of applicable temporary speed limits between the train departure and arrival
-        time_gap_after:
-          type: integer
-          format: int64
-          description: Gap between the created train and following trains in milliseconds
-          minimum: 0
-        time_gap_before:
-          type: integer
-          format: int64
-          description: Gap between the created train and previous trains in milliseconds
-          minimum: 0
-        time_step:
-          type:
-          - integer
-          - 'null'
-          format: int64
-          description: Numerical integration time step in milliseconds. Use default value if not specified.
-          minimum: 0
-        timetable_id:
-          type: integer
-          format: int64
-          description: Timetable id
-        work_schedules:
-          type: array
-          items:
-            $ref: '#/components/schemas/core.WorkSchedule'
-          description: List of planned work schedules
-    core.StepTimingData:
-      type: object
-      description: Contains the data of a step timing, when it is specified
-      required:
-      - arrival_time
-      - arrival_time_tolerance_before
-      - arrival_time_tolerance_after
-      properties:
-        arrival_time:
-          type: string
-          format: date-time
-          description: Time the train should arrive at this point
-        arrival_time_tolerance_after:
-          type: integer
-          format: int64
-          description: Tolerance for the arrival time, when it arrives after the expected time, in ms
-          minimum: 0
-        arrival_time_tolerance_before:
-          type: integer
-          format: int64
-          description: Tolerance for the arrival time, when it arrives before the expected time, in ms
-          minimum: 0
-    core.TrackRange:
-      type: object
-      description: |-
-        An oriented range on a track section.
-        `begin` is always less than `end`.
-      required:
-      - track_section
-      - begin
-      - end
-      - direction
-      properties:
-        begin:
-          type: integer
-          format: int64
-          description: The beginning of the range in mm.
-          minimum: 0
-        direction:
-          $ref: '#/components/schemas/Direction'
-          description: The direction of the range.
-        end:
-          type: integer
-          format: int64
-          description: The end of the range in mm.
-          minimum: 0
-        track_section:
-          oneOf:
-          - type: string
-            maxLength: 255
-            minLength: 1
-          description: The track section identifier.
-    core.TrainPath:
-      type: object
-      description: |-
-        A valid train path, as returned from the pathfinding.
-        Can be used as-is as input for other endpoints.
-      required:
-      - blocks
-      - routes
-      - track_section_ranges
-      properties:
-        blocks:
-          type: array
-          items:
-            $ref: '#/components/schemas/core.ObjectRange'
-          description: Block ranges, in order.
-        routes:
-          type: array
-          items:
-            $ref: '#/components/schemas/core.ObjectRange'
-          description: Route ranges, in order.
-        track_section_ranges:
-          type: array
-          items:
-            $ref: '#/components/schemas/core.TrackRange'
-          description: Track section ranges, in order.
-    core.TrainRequirementsById:
-      type: object
-      required:
-      - train_id
-      - train_name
-      - start_time
-      - spacing_requirements
-      - routing_requirements
-      properties:
-        routing_requirements:
-          type: array
-          items:
-            $ref: '#/components/schemas/core.RoutingRequirement'
-        spacing_requirements:
-          type: array
-          items:
-            $ref: '#/components/schemas/core.SpacingRequirement'
-        start_time:
-          type: string
-          format: date-time
-        train_id:
-          type: string
-        train_name:
-          type: string
-          description: ID that can be used to find the train in tools other than OSRD. Used in debug traces.
-    core.UndirectedTrackRange:
-      type: object
-      description: |-
-        A range on a track section.
-        `begin` is always less than `end`.
-      required:
-      - track_section
-      - begin
-      - end
-      properties:
-        begin:
-          type: integer
-          format: int64
-          description: The beginning of the range in mm.
-          minimum: 0
-        end:
-          type: integer
-          format: int64
-          description: The end of the range in mm.
-          minimum: 0
-        track_section:
-          type: string
-          description: The track section identifier.
-    core.WorkSchedule:
-      type: object
-      description: Lighter description of a work schedule, with only the relevant information for core
-      required:
-      - start_time
-      - end_time
-      - track_ranges
-      properties:
-        end_time:
-          type: integer
-          format: int64
-          description: End time as a time delta from the stdcm start time in ms
-          minimum: 0
-        start_time:
-          type: integer
-          format: int64
-          description: Start time as a time delta from the stdcm start time in ms
-          minimum: 0
-        track_ranges:
-          type: array
-          items:
-            $ref: '#/components/schemas/core.UndirectedTrackRange'
-          description: List of unavailable track ranges
-    core.ZoneUpdate:
-      type: object
-      required:
-      - zone
-      - time
-      - position
-      - is_entry
-      properties:
-        is_entry:
-          type: boolean
-        position:
-          type: integer
-          format: int64
-          minimum: 0
-        time:
-          type: integer
-          format: int64
-          minimum: 0
-        zone:
-          type: string

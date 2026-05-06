@@ -23,7 +23,7 @@ pub struct SignalUpdatesRequest<'a> {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
-#[schema(as = core::SignalUpdate)]
+#[schema(as = CoreSignalUpdate)]
 pub struct SignalUpdate {
     /// The id of the updated signal
     pub signal_id: String,
