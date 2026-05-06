@@ -5,7 +5,12 @@ import { useTranslation } from 'react-i18next';
 import type { MapLayerMouseEvent, MapRef } from 'react-map-gl/maplibre';
 
 import { matchOpRefAndOp } from 'applications/operationalStudies/utils';
-import type { PathProperties } from 'common/api/osrdEditoastApi';
+import {
+  osrdEditoastApi,
+  type OperationalPoint,
+  type PathItemLocation,
+  type PathProperties,
+} from 'common/api/osrdEditoastApi';
 import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import PathStepMarker, { PATH_STEP_MARKER_STATE } from 'common/Map/components/PathStepMarker';
@@ -22,7 +27,13 @@ import { getBarycenter, nearestPointOnLine } from 'utils/geometry';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
 import type { FeatureInfoClick } from '../types';
-import { computeOpRefMarkerName, computePathStepCoordinates } from './utils';
+import OpTrackSelectionPopup, { type PendingOpClick } from './OpTrackSelectionPopup';
+import {
+  buildOpDisplayName,
+  buildOpRef,
+  computeOpRefMarkerName,
+  computePathStepCoordinates,
+} from './utils';
 
 const OPERATIONAL_POINT_LAYERS = [
   'chartis/osrd_operational_point/geo',
@@ -37,6 +48,12 @@ type ItineraryModalMapProps = {
   isMapSelectionMode?: boolean;
   onMapSelectionClick?: (featureInfoClick: FeatureInfoClick) => void;
   onPathStepDragEnd?: (stepId: string, featureInfoClick: FeatureInfoClick) => void;
+  onOpSelectionConfirm?: (
+    location: PathItemLocation,
+    coordinates: number[],
+    displayName: string
+  ) => void;
+  getStepName?: (stepId: string) => string | undefined;
 };
 
 const ItineraryModalMap = ({
@@ -47,6 +64,8 @@ const ItineraryModalMap = ({
   isMapSelectionMode,
   onMapSelectionClick,
   onPathStepDragEnd,
+  onOpSelectionConfirm,
+  getStepName,
   children,
 }: PropsWithChildren<ItineraryModalMapProps>) => {
   const { t } = useTranslation('operational-studies', {
@@ -77,6 +96,11 @@ const ItineraryModalMap = ({
     coordinates: Position;
     onTrack: boolean;
   } | null>(null);
+  const [pendingOpClick, setPendingOpClick] = useState<PendingOpClick | null>(null);
+  const [selectedTrackName, setSelectedTrackName] = useState<string | null>(null);
+
+  const [getInfraObjectEntity] =
+    osrdEditoastApi.endpoints.postInfraByInfraIdObjectsAndObjectType.useLazyQuery();
 
   const lastStepHasLocation = !!pathSteps?.at(-1)?.location;
   const lastRealStepIndex = pathSteps ? pathSteps.length - (lastStepHasLocation ? 1 : 2) : -1;
@@ -88,6 +112,7 @@ const ItineraryModalMap = ({
     if (!isMapSelectionMode) {
       setCursorMarker(null);
       mapRef.current?.getMap().getCanvas().style.removeProperty('cursor');
+      setPendingOpClick(null);
     }
   }, [isMapSelectionMode]);
 
@@ -181,22 +206,59 @@ const ItineraryModalMap = ({
     });
   };
 
+  const handleOpClick = useCallback(
+    async (feature: Feature, coordinates: number[]) => {
+      const objectId = feature.properties?.id;
+      if (!objectId || !infraID) return;
+
+      try {
+        const result = await getInfraObjectEntity({
+          infraId: infraID,
+          objectType: 'OperationalPoint',
+          body: [objectId],
+        }).unwrap();
+
+        if (!result.length) return;
+
+        const op = result[0].railjson as OperationalPoint;
+        const clickedTrackName = feature.properties?.extensions_sncf_track_name ?? null;
+
+        setPendingOpClick({
+          coordinates,
+          opRef: buildOpRef(op),
+          parts: op.parts,
+          clickedTrackName,
+          displayName: buildOpDisplayName(op),
+        });
+        setSelectedTrackName(clickedTrackName);
+      } catch {
+        console.error('Failed to fetch operational point for selection');
+      }
+    },
+    [infraID, getInfraObjectEntity]
+  );
+
   const onFeatureClick = (e: MapLayerMouseEvent) => {
     const result = getMapMouseEventNearestFeature(e, {
       layersId: [
         'chartis/tracks-geo/main',
-        ...(layersSettings.operational_points ? OPERATIONAL_POINT_LAYERS : []),
+        ...(layersSettings.operational_points || isMapSelectionMode
+          ? OPERATIONAL_POINT_LAYERS
+          : []),
       ],
     });
 
     if (isMapSelectionMode) {
       if (result?.feature.properties?.id) {
-        onMapSelectionClick?.({
-          feature: result.feature,
-          coordinates: result.nearest,
-          // TODO: we can use isOperationalPoint for OP selection on map
-          isOperationalPoint: result.feature.sourceLayer === 'operational_points',
-        });
+        if (result.feature.sourceLayer === 'operational_points') {
+          handleOpClick(result.feature, result.nearest);
+        } else {
+          onMapSelectionClick?.({
+            feature: result.feature,
+            coordinates: result.nearest,
+            isOperationalPoint: false,
+          });
+        }
       }
       return;
     }
@@ -217,7 +279,7 @@ const ItineraryModalMap = ({
     const result = getMapMouseEventNearestFeature(e, {
       layersId: [
         'chartis/tracks-geo/main',
-        ...(layersSettings.operational_points ? OPERATIONAL_POINT_LAYERS : []),
+        ...(layersSettings.operational_points || isNewPlacement ? OPERATIONAL_POINT_LAYERS : []),
       ],
     });
     if (isNewPlacement) {
@@ -236,6 +298,8 @@ const ItineraryModalMap = ({
     if (isNewPlacement && !isDraggingMarker) {
       if (result && result.feature.geometry.type === 'LineString') {
         setCursorMarker({ coordinates: result.nearest, onTrack: true });
+      } else if (result && result.feature.geometry.type === 'Point') {
+        setCursorMarker({ coordinates: result.nearest, onTrack: true });
       } else {
         setCursorMarker({ coordinates: e.lngLat.toArray(), onTrack: false });
       }
@@ -246,14 +310,14 @@ const ItineraryModalMap = ({
   const interactiveLayerIds = useMemo(() => {
     const result: Array<string> = [];
     result.push('chartis/tracks-geo/main');
-    if (layersSettings.operational_points) {
+    if (layersSettings.operational_points || isMapSelectionMode) {
       result.push('chartis/osrd_operational_point/geo');
     }
     if (layersSettings.track_sections) {
       result.push('chartis/osrd_tvd_section/geo');
     }
     return result;
-  }, [layersSettings]);
+  }, [layersSettings, isMapSelectionMode]);
 
   return (
     <MapContextProvider
@@ -321,7 +385,10 @@ const ItineraryModalMap = ({
 
             let name = '';
             if (pathStepMetadata.type === 'trackOffset') {
-              if (pathStepMetadata.label) {
+              const stepName = getStepName?.(step.id);
+              if (stepName) {
+                name = stepName;
+              } else if (pathStepMetadata.label) {
                 name = pathStepMetadata.label;
               } else if (index === 0) {
                 name = t('requestedOrigin');
@@ -368,6 +435,22 @@ const ItineraryModalMap = ({
               type: 'Feature',
               geometry: { type: 'Point', coordinates: snapDragPosition.coordinates },
               properties: {},
+            }}
+          />
+        )}
+        {pendingOpClick && (
+          <OpTrackSelectionPopup
+            pendingOpClick={pendingOpClick}
+            selectedTrackName={selectedTrackName}
+            onTrackChange={setSelectedTrackName}
+            onCancel={() => setPendingOpClick(null)}
+            onConfirm={(location) => {
+              onOpSelectionConfirm?.(
+                location,
+                pendingOpClick.coordinates,
+                pendingOpClick.displayName
+              );
+              setPendingOpClick(null);
             }}
           />
         )}

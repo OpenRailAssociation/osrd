@@ -1,3 +1,4 @@
+import type { OperationalPoint, OperationalPointReference } from 'common/api/osrdEditoastApi';
 import type { PathStepMetadata } from 'reducers/osrdconf/types';
 
 export const isOpRefMetadata = (pathStepMetadata: PathStepMetadata | undefined) =>
@@ -24,4 +25,32 @@ export const computePathStepCoordinates = (pathStepMetadata: PathStepMetadata) =
   }
   // If the path step has no secondary code, don't display its marker on the map
   return [];
+};
+
+export const buildOpRef = (op: OperationalPoint): OperationalPointReference => {
+  const ch = op.extensions?.sncf?.ch;
+  const uic = op.extensions?.identifier?.uic;
+  if (uic != null)
+    return {
+      type: 'uic',
+      uic,
+      secondary_code: ch,
+    };
+  const trigram = op.extensions?.sncf?.trigram;
+  if (trigram)
+    return {
+      type: 'trigram',
+      trigram,
+      secondary_code: ch,
+    };
+  return {
+    type: 'id',
+    operational_point: op.id,
+  };
+};
+
+export const buildOpDisplayName = (op: OperationalPoint): string => {
+  const name = op.extensions?.identifier?.name ?? op.extensions?.sncf?.trigram ?? '';
+  const ch = op.extensions?.sncf?.ch;
+  return ch ? `${name} ${ch}` : name;
 };
