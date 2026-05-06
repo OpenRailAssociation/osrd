@@ -73,7 +73,7 @@
     grid-template-columns: 4fr 1fr;
     gap: 32px;
 
-    ul {
+    .requested-route-content {
       background-color: var(--ambientA15);
       padding: 14px 16px 14px 40px;
       min-height: 144px;
@@ -87,6 +87,10 @@
         line-height: 0px;
         padding-bottom: 6px;
         padding-right: 5px;
+      }
+
+      .consist-change {
+        padding-left: 32px;
       }
 
       .linked-train-infos {

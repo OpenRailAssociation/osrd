@@ -151,6 +151,12 @@
         "close": "Close",
         "comment": "Observations",
         "compositionCode": "composition code",
+        "consistChange": {
+          "length": "Length: → {{length}}m",
+          "mass": "Mass: → {{mass}}t",
+          "rsEngine": "Traction engine: → {{rsEngine}}",
+          "towedRs": "Towed rolling stock: → {{towedRs}}"
+        },
         "convoy": "CONVOY",
         "createRailManagerRequest": "Create the GESICO request",
         "csCode": "CS code",
@@ -176,7 +182,14 @@
         "retainedSimulation": "RETAINED SIMULATION",
         "rollingStock": "towed rolling stock",
         "selectPathType": "Select",
-        "stop": "Stop of {{minutes}} at {{stopAt}}",
+        "stop": "Stop at {{stopAt}} for {{stopType}} — {{minutes}}",
+        "stopType": {
+          "consistChange": "a consist change",
+          "driverSwitch": "a driver switch",
+          "overtake": "an overtake",
+          "passageTime": "passage time",
+          "serviceStop": "a service stop"
+        },
         "successMessage": "Request <requestNumber/> received by GESICO",
         "toleranceAfter": "Future tolerance",
         "toleranceBefore": "Past tolerance",

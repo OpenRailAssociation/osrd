@@ -151,6 +151,12 @@
         "close": "Fermer",
         "comment": "Commentaire",
         "compositionCode": "code de composition",
+        "consistChange": {
+          "length": "Longueur : → {{length}}m",
+          "mass": "Masse : → {{mass}}t",
+          "rsEngine": "Engin de traction : → {{rsEngine}}",
+          "towedRs": "Matériel remorqué : → {{towedRs}}"
+        },
         "convoy": "CONVOI",
         "createRailManagerRequest": "Créer la demande GESICO",
         "csCode": "Code CS",
@@ -176,7 +182,14 @@
         "retainedSimulation": "SIMULATION RETENUE",
         "rollingStock": "matériel remorqué",
         "selectPathType": "Choisir",
-        "stop": "Arrêt de {{minutes}} à {{stopAt}}",
+        "stop": "Arrêt {{stopAt}} pour {{stopType}} — {{minutes}}",
+        "stopType": {
+          "consistChange": "changement de convoi",
+          "driverSwitch": "relève conducteur",
+          "overtake": "dépassement",
+          "passageTime": "passage",
+          "serviceStop": "arrêt de service"
+        },
         "successMessage": "Demande <requestNumber/> reçue par GESICO",
         "toleranceAfter": "Tolérance aval",
         "toleranceBefore": "Tolérance amont",

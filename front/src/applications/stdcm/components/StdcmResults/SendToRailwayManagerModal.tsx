@@ -5,10 +5,11 @@ import { Download, CheckCircle } from '@osrd-project/ui-icons';
 import { Trans, useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import type {
-  StdcmSimulationInputs,
-  StdcmSuccessResponse,
-  SimilarTrainWithSecondaryCode,
+import {
+  type StdcmSimulationInputs,
+  type StdcmSuccessResponse,
+  type SimilarTrainWithSecondaryCode,
+  StdcmStopTypes,
 } from 'applications/stdcm/types';
 import {
   osrdRailwayManagerApi,
@@ -328,7 +329,7 @@ const SendToRailwayManagerModal = ({
         <div className="route-and-simulation">
           <section className="requested-route">
             <h3>{t('modal.requestedRoute')}</h3>
-            <ul>
+            <ul className="requested-route-content">
               <li>
                 {`${t('modal.date')} : ${realDepartureTime.toLocaleDateString(dateTimeLocale, {
                   day: '2-digit',
@@ -351,17 +352,43 @@ const SendToRailwayManagerModal = ({
                 </li>
               )}
 
-              {intermediatePoints.map(
-                (step) =>
-                  step.isVia && (
-                    <li key={step.id}>
-                      {t('modal.stop', {
-                        minutes: getStopDurationTime(step.stopFor),
-                        stopAt: `${step.operationalPoint?.name} ${step.operationalPoint?.secondaryCode}`,
-                      })}
-                    </li>
-                  )
-              )}
+              {intermediatePoints.map((step) => {
+                if (!step.isVia) return null;
+                const stopType = step.consistChange ? StdcmStopTypes.CONSIST_CHANGE : step.stopType;
+                return (
+                  <li key={step.id}>
+                    {t('modal.stop', {
+                      minutes: getStopDurationTime(step.stopFor),
+                      stopAt: `${step.operationalPoint?.name} ${step.operationalPoint?.secondaryCode}`,
+                      stopType: t(`modal.stopType.${stopType}`),
+                    })}
+                    {step.consistChange && (
+                      <ul className="consist-change">
+                        <li>
+                          {t('modal.consistChange.rsEngine', {
+                            rsEngine: step.consistChange?.rollingStockName,
+                          })}
+                        </li>
+                        <li>
+                          {t('modal.consistChange.towedRs', {
+                            towedRs: step.consistChange?.towedRollingStockName,
+                          })}
+                        </li>
+                        <li>
+                          {t('modal.consistChange.mass', {
+                            mass: step.consistChange?.totalMass,
+                          })}
+                        </li>
+                        <li>
+                          {t('modal.consistChange.length', {
+                            length: step.consistChange?.totalLength,
+                          })}
+                        </li>
+                      </ul>
+                    )}
+                  </li>
+                );
+              })}
 
               {lastStep && (
                 <li>
