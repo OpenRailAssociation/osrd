@@ -215,6 +215,7 @@ private class InfraExplorerImpl(
     private var stepTracker: StepTracker,
     private var constraints: List<PathfindingConstraint>?,
     override var isPathComplete: Boolean = false,
+    private var currentBlockRange: BlockRange? = null,
 ) : InfraExplorer {
     override fun getCurrentEdgePathProperties(offset: Offset<Block>, length: Distance?): TrainPath {
         // We re-compute the routes of the current path since the cache may be incorrect
@@ -265,6 +266,7 @@ private class InfraExplorerImpl(
             "Infra Explorer: Current edge is already the last edge: can't move forward."
         }
         currentIndex += 1
+        currentBlockRange = null
         return this
     }
 
@@ -273,10 +275,13 @@ private class InfraExplorerImpl(
     }
 
     override fun getCurrentBlockRange(): BlockRange {
+        currentBlockRange?.let {
+            return it
+        }
         assert(currentIndex < blockRanges.size) {
             "InfraExplorer: currentBlockIndex is out of bounds."
         }
-        return blockRanges[currentIndex]
+        return blockRanges[currentIndex].also { currentBlockRange = it }
     }
 
     override fun isLookaheadEmpty(): Boolean {
@@ -317,6 +322,7 @@ private class InfraExplorerImpl(
             this.stepTracker.clone(),
             this.constraints,
             this.isPathComplete,
+            this.currentBlockRange,
         )
     }
 
