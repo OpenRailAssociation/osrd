@@ -426,6 +426,7 @@
       "moveLocationOnMap": "Déplacer le point remarquable sur la carte",
       "movePointOnMap": "Déplacez ce point en utilisant la carte",
       "next": "Suivant",
+      "noComputation": "il n'y aura pas de calcul pour ce train",
       "opId": "Identifiant de point",
       "opName": "Nom du point remarquable",
       "opType": "Type",

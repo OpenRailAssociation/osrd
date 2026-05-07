@@ -17,7 +17,8 @@ export const computePathStepCoordinates = (pathStepMetadata: PathStepMetadata) =
     const foundPart = pathStepMetadata.parts.find(
       (part) => part.trackName === pathStepMetadata.trackName
     );
-    return foundPart ? [foundPart.coordinates] : [];
+    // If the track name is unknown (not matching any part), fall back to all parts coordinates
+    return foundPart ? [foundPart.coordinates] : pathStepMetadata.parts.map((p) => p.coordinates);
   }
   if (pathStepMetadata.secondaryCode) {
     return pathStepMetadata.parts.map((part) => part.coordinates);

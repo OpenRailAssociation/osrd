@@ -105,19 +105,22 @@ export const usePathStepsMetadata = (
         const matchedOp = pathStepsOperationalPoints.get(pathStep.id)?.at(0);
 
         const { local_track_name } = location;
-        const isValidLocalTrackName = local_track_name
-          ? matchedOp?.parts.some((part) => {
+
+        if (!matchedOp) {
+          newPathStepsMetadataById.set(pathStep.id, {
+            isInvalid: true,
+            localTrackName: local_track_name ?? undefined,
+          });
+          return;
+        }
+
+        const isTrackNameUnknown = local_track_name
+          ? !matchedOp.parts.some((part) => {
               const track = trackSectionsById[part.track];
               if (!track) return false;
               return local_track_name === part.local_track_name;
             })
-          : true;
-
-        // If no op is found or if its local_track_name is invalid, it means the path step is invalid
-        if (!isValidLocalTrackName || !matchedOp) {
-          newPathStepsMetadataById.set(pathStep.id, { isInvalid: true });
-          return;
-        }
+          : false;
 
         const parts: Extract<PathStepMetadata, { isInvalid: false; type: 'opRef' }>['parts'] =
           matchedOp.parts.map((part) => ({
@@ -133,6 +136,7 @@ export const usePathStepsMetadata = (
           uic: matchedOp.extensions?.identifier?.uic,
           secondaryCode: matchedOp.extensions?.sncf?.ch,
           trackName: local_track_name ?? undefined,
+          isTrackNameUnknown,
           parts,
         });
       });

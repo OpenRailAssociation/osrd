@@ -426,6 +426,7 @@
       "moveLocationOnMap": "Move location on the map",
       "movePointOnMap": "Move this waypoint using the map",
       "next": "Next",
+      "noComputation": "there will be no computation for this train",
       "opId": "Operational point identifier",
       "opName": "Operational point name",
       "opType": "Type",

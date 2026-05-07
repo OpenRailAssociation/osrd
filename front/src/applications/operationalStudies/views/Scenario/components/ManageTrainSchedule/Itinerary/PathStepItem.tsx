@@ -1,6 +1,6 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-import { ComboBox, Select, SegmentedControl } from '@osrd-project/ui-core';
+import { ComboBox, SegmentedControl } from '@osrd-project/ui-core';
 import {
   AddedLocation,
   AddLocation,
@@ -110,11 +110,8 @@ const PathStepItem = ({
       return (message += t('requestedPoint'));
     }
 
-    const trackInfo =
-      location && location.local_track_name ? `, ${t('track')} ${location.local_track_name}` : '';
-
     if (location?.operational_point.type === 'id') {
-      return (message += t('opId') + trackInfo);
+      return (message += t('opId'));
     }
 
     const secondaryCodeInfo =
@@ -130,7 +127,7 @@ const PathStepItem = ({
       message += t('uic') + ' ' + location.operational_point.uic;
     }
 
-    return message + secondaryCodeInfo + trackInfo;
+    return message + secondaryCodeInfo;
   };
 
   const selectedSecondaryCodeOption = useMemo(() => {
@@ -169,17 +166,29 @@ const PathStepItem = ({
     return [{ label: '', id: '' }, ...sortedSuggestions];
   }, [pathStepMetadata, selectedSecondaryCodeOption.id]);
 
+  const [filteredTrackSuggestions, setFilteredTrackSuggestions] = useState(trackNameSuggestions);
+
+  useEffect(() => {
+    setFilteredTrackSuggestions(trackNameSuggestions);
+  }, [trackNameSuggestions]);
+
   const selectedTrackNameOption = useMemo(() => {
+    // When OP is invalid but has a local_track_name, show it
+    if (pathStepMetadata?.isInvalid && pathStepMetadata.localTrackName) {
+      return { label: pathStepMetadata.localTrackName, id: pathStepMetadata.localTrackName };
+    }
+
     // No track should be selected if the path step is invalid or has no secondary code
     // or is a step added by map click
-
     if (!isOpRefMetadata(pathStepMetadata) || !pathStepMetadata.trackName) {
       return EMPTY_OPTION;
     }
 
     return (
-      trackNameSuggestions.find((track) => track.label === pathStepMetadata.trackName) ||
-      EMPTY_OPTION
+      trackNameSuggestions.find((track) => track.label === pathStepMetadata.trackName) || {
+        label: pathStepMetadata.trackName,
+        id: pathStepMetadata.trackName,
+      }
     );
   }, [pathStepMetadata, trackNameSuggestions]);
 
@@ -293,6 +302,7 @@ const PathStepItem = ({
       className={cx('path-step-wrapper', {
         'is-placeholder': isTrailingPlaceHolder,
         'map-selection-active': isMapSelectionMode,
+        'is-invalid': isInvalidAndIsEditing,
       })}
     >
       <div
@@ -455,15 +465,25 @@ const PathStepItem = ({
               <div
                 className={cx('track-name', {
                   invalid: isInvalidAndIsEditing,
+                  'track-name-unknown':
+                    isOpRefMetadata(pathStepMetadata) && pathStepMetadata.isTrackNameUnknown,
                 })}
               >
-                <Select
+                <ComboBox
                   id={`pathStep-status-${pathStep.id}`}
                   value={selectedTrackNameOption}
-                  options={trackNameSuggestions}
-                  getOptionLabel={(option) => option.label}
-                  getOptionValue={(option) => option.id}
-                  onChange={(option) => onTrackNameChange(option?.label ?? '')}
+                  suggestions={filteredTrackSuggestions}
+                  getSuggestionLabel={(option) => option.label}
+                  onChange={(e) => {
+                    const input = e.target.value.toLowerCase();
+                    setFilteredTrackSuggestions(
+                      trackNameSuggestions.filter((s) => s.label.toLowerCase().includes(input))
+                    );
+                  }}
+                  onSelectSuggestion={(option) => onTrackNameChange(option?.label ?? '')}
+                  resetSuggestions={() => setFilteredTrackSuggestions(trackNameSuggestions)}
+                  allowCustomValue
+                  onAddCustomValue={(value) => onTrackNameChange(value)}
                   small
                   narrow
                 />

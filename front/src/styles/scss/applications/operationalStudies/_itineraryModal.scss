@@ -293,6 +293,11 @@
             }
           }
 
+          &.is-invalid {
+            // blackAlpha10
+            background-color: rgba(0, 0, 0, 0.1);
+          }
+
           .path-step-counter:not(.is-trailing-placeholder):not(.is-only-step):hover {
             opacity: 1;
             background-color: var(--error60) !important;
@@ -407,8 +412,7 @@
               }
 
               &.invalid {
-                background-color: var(--error60);
-                border-color: var(--error30);
+                background-color: var(--info60);
               }
               &.is-only-step {
                 pointer-events: none;
@@ -423,7 +427,6 @@
 
               &.invalid {
                 border-radius: 3px;
-                box-shadow: 0 0 0 1.5px rgba(255, 104, 104, 1);
               }
             }
 
@@ -431,6 +434,11 @@
               height: 28px;
               background-color: var(--ambientB5);
               border-radius: 4px;
+            }
+
+            .track-name-unknown .ui-combo-box {
+              border-radius: 3px;
+              box-shadow: 0 0 0 1.5px var(--grey50);
             }
 
             .map-interactions {
@@ -481,7 +489,7 @@
           }
 
           .invalid-step-message {
-            color: var(--error60);
+            color: var(--grey60);
             padding-left: calc(51px - var(--path-step-wrapper-padding-left));
           }
         }
