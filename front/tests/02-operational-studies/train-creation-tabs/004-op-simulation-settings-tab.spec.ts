@@ -9,6 +9,13 @@ import type {
 } from 'common/api/osrdEditoastApi';
 
 import { improbableRollingStockName } from '../../assets/constants/project-const';
+import { allSettingsData } from '../../assets/operation-studies/simulation-settings/all-settings';
+import { electricalProfileOffData } from '../../assets/operation-studies/simulation-settings/electrical-profiles/electrical-profile-off';
+import { electricalProfileOnData } from '../../assets/operation-studies/simulation-settings/electrical-profiles/electrical-profile-on';
+import { linearMarginData } from '../../assets/operation-studies/simulation-settings/margin/linear-margin';
+import { marecoMarginData } from '../../assets/operation-studies/simulation-settings/margin/mareco-margin';
+import { speedLimitTagOffData } from '../../assets/operation-studies/simulation-settings/speed-limit-tag/speed-limit-tag-off';
+import { speedLimitTagOnData } from '../../assets/operation-studies/simulation-settings/speed-limit-tag/speed-limit-tag-on';
 import {
   FREIGHT_TRAIN,
   TRAIN_NAME,
@@ -21,35 +28,11 @@ import { cleanWhitespace } from '../../utils/data-normalizer';
 import { readJsonFile } from '../../utils/file-utils';
 import createScenario from '../../utils/scenario';
 import { deleteScenario } from '../../utils/teardown-utils';
-import type { FlatTranslations, StationData } from '../../utils/types';
+import type { FlatTranslations } from '../../utils/types';
 
 const frTranslations: FlatTranslations = readJsonFile<Record<string, FlatTranslations>>(
   'public/locales/fr/translation.json'
 ).timeStopTable;
-
-const expectedCellDataElectricalProfileON: StationData[] = readJsonFile(
-  './tests/assets/operation-studies/simulation-settings/electrical-profiles/electrical-profile-on.json'
-);
-const expectedCellDataElectricalProfileOFF: StationData[] = readJsonFile(
-  './tests/assets/operation-studies/simulation-settings/electrical-profiles/electrical-profile-off.json'
-);
-
-const expectedCellDataCodeCompoON: StationData[] = readJsonFile(
-  './tests/assets/operation-studies/simulation-settings/speed-limit-tag/speed-limit-tag-on.json'
-);
-const expectedCellDataCodeCompoOFF: StationData[] = readJsonFile(
-  './tests/assets/operation-studies/simulation-settings/speed-limit-tag/speed-limit-tag-off.json'
-);
-
-const expectedCellDataLinearMargin: StationData[] = readJsonFile(
-  './tests/assets/operation-studies/simulation-settings/margin/linear-margin.json'
-);
-const expectedCellDataMarecoMargin: StationData[] = readJsonFile(
-  './tests/assets/operation-studies/simulation-settings/margin/mareco-margin.json'
-);
-const expectedCellDataForAllSettings: StationData[] = readJsonFile(
-  './tests/assets/operation-studies/simulation-settings/all-settings.json'
-);
 
 test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-tab'] }, () => {
   let electricalProfileSet: ElectricalProfileSet;
@@ -153,7 +136,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
           'SpeedSpaceChart-ElectricalProfileActivated.png'
         );
       }
-      await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataElectricalProfileON);
+      await timeAndStopSimulationOutputs.getOutputTableData(electricalProfileOnData);
       await opSimulationResultPage.setTrainListVisible(false);
     });
 
@@ -171,7 +154,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
           'SpeedSpaceChart-ElectricalProfileDisabled.png'
         );
       }
-      await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataElectricalProfileOFF);
+      await timeAndStopSimulationOutputs.getOutputTableData(electricalProfileOffData);
       await opSimulationResultPage.setTrainListVisible(false);
       await scenarioTimetableSection.getTrainScheduleArrivalTime('11:48');
     });
@@ -219,7 +202,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
           'SpeedSpaceChart-SpeedLimitTagActivated.png'
         );
       }
-      await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataCodeCompoON);
+      await timeAndStopSimulationOutputs.getOutputTableData(speedLimitTagOnData);
       await opSimulationResultPage.setTrainListVisible(false);
     });
 
@@ -237,7 +220,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
           'SpeedSpaceChart-SpeedLimitTagDisabled.png'
         );
       }
-      await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataCodeCompoOFF);
+      await timeAndStopSimulationOutputs.getOutputTableData(speedLimitTagOffData);
       await opSimulationResultPage.setTrainListVisible(false);
       await scenarioTimetableSection.getTrainScheduleArrivalTime('11:48');
     });
@@ -295,7 +278,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
           'SpeedSpaceChart-LinearMargin.png'
         );
       }
-      await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataLinearMargin);
+      await timeAndStopSimulationOutputs.getOutputTableData(linearMarginData);
       await opSimulationResultPage.setTrainListVisible(false);
     });
 
@@ -313,7 +296,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
           'SpeedSpaceChart-MarecoMargin.png'
         );
       }
-      await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataMarecoMargin);
+      await timeAndStopSimulationOutputs.getOutputTableData(marecoMarginData);
       await opSimulationResultPage.setTrainListVisible(false);
       await scenarioTimetableSection.getTrainScheduleArrivalTime('11:51');
     });
@@ -374,7 +357,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
             'SpeedSpaceChart-AllSettingsEnabled.png'
           );
         }
-        await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataForAllSettings);
+        await timeAndStopSimulationOutputs.getOutputTableData(allSettingsData);
         await opSimulationResultPage.setTrainListVisible(false);
         await scenarioTimetableSection.getTrainScheduleArrivalTime('11:50');
       });

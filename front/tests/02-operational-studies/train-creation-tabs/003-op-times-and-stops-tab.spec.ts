@@ -3,6 +3,7 @@ import { expect } from '@playwright/test';
 import type { Infra, Project, Scenario, Study } from 'common/api/osrdEditoastApi';
 
 import { dualModeRollingStockName } from '../../assets/constants/project-const';
+import { expectedOutputsCellsData } from '../../assets/operation-studies/times-and-stops/expected-outputs-cells-data';
 import { TRAIN_NAME, TRAIN_START_TIME } from '../../assets/operation-studies/train-const';
 import test from '../../page-object-fixture';
 import { waitForInfraStateToBeCached } from '../../utils';
@@ -11,7 +12,7 @@ import { cleanWhitespace, cleanWhitespaceInArray } from '../../utils/data-normal
 import { readJsonFile } from '../../utils/file-utils';
 import createScenario from '../../utils/scenario';
 import { deleteScenario } from '../../utils/teardown-utils';
-import type { CellData, FlatTranslations, StationData } from '../../utils/types';
+import type { CellData, FlatTranslations } from '../../utils/types';
 
 const frTranslations: FlatTranslations = readJsonFile<Record<string, FlatTranslations>>(
   'public/locales/fr/translation.json'
@@ -22,9 +23,6 @@ const initialInputsData: CellData[] = readJsonFile(
 );
 const updatedInputsData: CellData[] = readJsonFile(
   './tests/assets/operation-studies/times-and-stops/updated-inputs.json'
-);
-const outputExpectedCellData: StationData[] = readJsonFile(
-  './tests/assets/operation-studies/times-and-stops/expected-outputs-cells-data.json'
 );
 const inputExpectedData: JSON = readJsonFile(
   './tests/assets/operation-studies/times-and-stops/expected-inputs-cells-data.json'
@@ -142,7 +140,8 @@ test.describe('Times and Stops tab', { tag: ['@op', '@times-stops-tab'] }, () =>
         await operationalStudiesPage.closeToastNotification();
         await operationalStudiesPage.returnSimulationResult();
         await operationalStudiesPage.verifyTimesStopsDataSheetVisibility();
-        await timeAndStopSimulationOutputs.getOutputTableData(outputExpectedCellData);
+        await timeAndStopSimulationOutputs.setTrainListVisible();
+        await timeAndStopSimulationOutputs.getOutputTableData(expectedOutputsCellsData);
       });
     }
   );

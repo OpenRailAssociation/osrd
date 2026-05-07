@@ -22,6 +22,7 @@ import {
   TOTAL_PACED_TRAINS_WITH_DUPLICATE,
 } from '../../assets/constants/train-schedules-count';
 import { FREIGHT_TRAIN, HIGH_SPEED_TRAIN_COLOR } from '../../assets/operation-studies/train-const';
+import { pacedTrainOutputData } from '../../assets/paced-train/output-table-data';
 import test from '../../page-object-fixture';
 import { waitForInfraStateToBeCached } from '../../utils';
 import { getInfra } from '../../utils/api-utils';
@@ -35,7 +36,6 @@ import type {
   CommonTranslations,
   FlatTranslations,
   ManageTrainScheduleTranslations,
-  StationData,
   TimetableFilterTranslations,
 } from '../../utils/types';
 
@@ -64,10 +64,7 @@ const initialInputsData: CellData[] = readJsonFile(
   './tests/assets/operation-studies/times-and-stops/initial-inputs.json'
 );
 
-const expectedOutputData: { pacedTrain: StationData[]; secondOccurrence: StationData[] } =
-  readJsonFile('./tests/assets/paced-train/output-table-data.json');
-
-const trains: [TrainSchedule] = readJsonFile('./tests/assets/trains/trains.json');
+const trains: TrainSchedule[] = readJsonFile('./tests/assets/trains/trains.json');
 
 test.describe('Paced train management', { tag: ['@op', '@paced-trains'] }, () => {
   let project: Project;
@@ -184,10 +181,12 @@ test.describe('Paced train management', { tag: ['@op', '@paced-trains'] }, () =>
       });
 
       await test.step('Verify result in output table is paced train result', async () => {
-        await timeAndStopSimulationOutputs.getOutputTableData(expectedOutputData.pacedTrain);
+        await opSimulationResultPage.setTrainListVisible();
+        await timeAndStopSimulationOutputs.getOutputTableData(pacedTrainOutputData.pacedTrain);
       });
 
       await test.step('Verify paced train card and first occurrence details', async () => {
+        await scenarioTimetableSection.setTrainListVisible(false);
         await pacedTrainSection.verifyPacedTrainItemDetails(NEW_PACED_TRAIN_SETTINGS, 0, {
           occurrenceData: ADD_PACED_TRAIN_OCCURRENCES_DETAILS[0],
           occurrenceColor: FREIGHT_TRAIN.color,
@@ -202,7 +201,9 @@ test.describe('Paced train management', { tag: ['@op', '@paced-trains'] }, () =>
             'SpeedSpaceChart-InitialInputs.png'
           );
         }
-        await timeAndStopSimulationOutputs.getOutputTableData(expectedOutputData.secondOccurrence);
+        await timeAndStopSimulationOutputs.getOutputTableData(
+          pacedTrainOutputData.secondOccurrence
+        );
       });
     }
   );
