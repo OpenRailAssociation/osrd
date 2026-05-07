@@ -1,6 +1,6 @@
 [project]
 name = "osrd-railway-manager-interface"
-version = "0.2.6"
+version = "0.2.7"
 description = "Railway manager interface"
 authors = [{ name = "OSRD Contributors", email = "contact@osrd.fr" }]
 requires-python = ">=3.11"

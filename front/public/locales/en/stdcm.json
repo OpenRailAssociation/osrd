@@ -208,8 +208,7 @@
         "errorMessage": "We are sorry that we could not process your request. The LMR team has been notified and will be aware of the situation as soon as possible.",
         "failed": "A technical issue has occurred"
       },
-      "transferSheetToRailManager": "Send to GESICO",
-      "transferSheetToRailManagerDisabledForConsistChange": "Send to GESICO with consist changes will be available in a next version"
+      "transferSheetToRailManager": "Send to GESICO"
     },
     "stopCalculation": "Stop"
   },

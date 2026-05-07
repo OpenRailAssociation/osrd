@@ -127,11 +127,6 @@ const StdcmResults = ({
     return extractMarkersInfo(outputs.results.simulationPathSteps);
   }, [hasSimulationResults, outputs]);
 
-  const hasConsistChange = useMemo(() => {
-    if (!hasSimulationResults) return false;
-    return outputs.results.simulationPathSteps.some((p) => p.isVia && p.consistChange);
-  }, [hasSimulationResults, outputs]);
-
   const [similarTrains, setSimilarTrains] = useState<SimilarTrainWithSecondaryCode[]>([]);
   const [areSegmentsLoading, setAreSegmentsLoading] = useState(true);
 
@@ -353,12 +348,7 @@ const StdcmResults = ({
                         (!isRailwayRequestSuccessful ? (
                           <Button
                             label={t('transferSheetToRailManager')}
-                            title={
-                              hasConsistChange
-                                ? t('transferSheetToRailManagerDisabledForConsistChange')
-                                : undefined
-                            }
-                            isDisabled={hasConsistChange || pdfInstance.loading}
+                            isDisabled={pdfInstance.loading}
                             isLoading={pdfInstance.loading}
                             onClick={() => {
                               openModal(

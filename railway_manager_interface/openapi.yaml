@@ -114,6 +114,31 @@ components:
           description: Error message describing what went wrong
       required:
         - detail
+    ConsistChange:
+      properties:
+        rolling_stock:
+          type: string
+          title: Rolling Stock
+        towed_rolling_stock:
+          type:
+          - string
+          - 'null'
+          title: Towed Rolling Stock
+        total_mass:
+          type: integer
+          title: Total Mass
+          description: Total mass of the train in kg
+        total_length:
+          type: integer
+          title: Total Length
+          description: Total length of the train in m
+      type: object
+      required:
+      - rolling_stock
+      - total_mass
+      - total_length
+      title: ConsistChange
+      description: New consist to use from a request step onward.
     LoadingGaugeType:
       type: string
       enum:
@@ -165,6 +190,9 @@ components:
       description: Describes the type of step.
     RequestedStep:
       properties:
+        consist_change:
+          $ref: '#/components/schemas/ConsistChange'
+          description: New consist to use from this step onward. Not included for the first step.
         duration:
           type: integer
           title: Duration
