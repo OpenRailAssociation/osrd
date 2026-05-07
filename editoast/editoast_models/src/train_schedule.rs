@@ -11,7 +11,6 @@ use schemas;
 use schemas::TrainScheduleException;
 use schemas::paced_train;
 use schemas::paced_train::Paced;
-use schemas::paced_train::PacedTrainException;
 use schemas::rolling_stock::TrainCategory;
 use schemas::train_schedule::Comfort;
 use schemas::train_schedule::Distribution;
@@ -69,7 +68,7 @@ pub struct TrainSchedule {
 /// Transforms the TrainSchedule database type into a paced_train::TrainSchedule schema with exceptions.
 pub fn train_schedule_schema_from_model(
     train_schedule: TrainSchedule,
-    exceptions: Vec<PacedTrainException>,
+    exceptions: Vec<TrainScheduleException>,
 ) -> paced_train::TrainSchedule {
     paced_train::TrainSchedule {
         train_occurrence: TrainOccurrence {
