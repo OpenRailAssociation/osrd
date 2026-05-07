@@ -139,7 +139,7 @@ export type PathStepV2 = {
 };
 
 export type PathStepMetadata =
-  | { isInvalid: true }
+  | { isInvalid: true; localTrackName?: string }
   | {
       type: 'trackOffset';
       isInvalid: false;
@@ -160,6 +160,11 @@ export type PathStepMetadata =
        * we won't have access to the corresponding track name in the path step location
        */
       trackName?: string;
+      /**
+       * True when no local_track_name is provided, or when it matches one of the parts of the
+       * matched OP. False only when a local_track_name is provided but does not match any part.
+       */
+      isValidLocalTrackName?: boolean;
       /**
        * Data of all parts (tracks) of the path step (name + ch)
        */

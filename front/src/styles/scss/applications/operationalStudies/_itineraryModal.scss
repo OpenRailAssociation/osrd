@@ -164,6 +164,11 @@
         margin-inline: 8px;
         padding-top: 16px;
         padding-bottom: 46px;
+
+        &.with-invalid-step {
+          border: 8px solid var(--black10);
+        }
+
         .path-step-gap {
           position: relative;
           height: 28px;
@@ -274,7 +279,10 @@
         .path-step-wrapper {
           padding-inline: var(--path-step-wrapper-padding-left)
             var(--path-step-wrapper-padding-right);
-          border-radius: 6px;
+
+          &.unknown-track {
+            background-color: var(--black10);
+          }
 
           &.map-selection-active {
             position: relative;
@@ -291,6 +299,10 @@
             .path-step {
               flex: 1;
             }
+          }
+
+          &.is-invalid {
+            background-color: var(--black10);
           }
 
           .path-step-counter:not(.is-trailing-placeholder):not(.is-only-step):hover {
@@ -407,8 +419,7 @@
               }
 
               &.invalid {
-                background-color: var(--error60);
-                border-color: var(--error30);
+                background-color: var(--info60);
               }
               &.is-only-step {
                 pointer-events: none;
@@ -423,7 +434,6 @@
 
               &.invalid {
                 border-radius: 3px;
-                box-shadow: 0 0 0 1.5px rgba(255, 104, 104, 1);
               }
             }
 
@@ -431,6 +441,11 @@
               height: 28px;
               background-color: var(--ambientB5);
               border-radius: 4px;
+            }
+
+            .track-name.unknown-track {
+              border-radius: 3px;
+              box-shadow: 0 0 0 1.5px var(--grey50);
             }
 
             .map-interactions {
@@ -481,7 +496,7 @@
           }
 
           .invalid-step-message {
-            color: var(--error60);
+            color: var(--grey60);
             padding-left: calc(51px - var(--path-step-wrapper-padding-left));
           }
         }

@@ -563,12 +563,12 @@ const ItineraryModal = ({
           {rollingStockMessage && <Banner type="info" message={rollingStockMessage} />}
           {hasInvalidPathStepDisplay && (
             <div key={`invalid-op-${bannerWiggle}`}>
-              <Banner type="error" message={t('alertInvalidOP')} />
+              <Banner type="info" message={`${t('alertInvalidOP')} ${t('noComputation')}`} />
             </div>
           )}
           {!hasInvalidPathStepDisplay && pathfindingError && (
             <div key={`pathfinding-${bannerWiggle}`}>
-              <Banner type="error" message={pathfindingError} />
+              <Banner type="info" message={`${pathfindingError} ${t('noComputation')}`} />
             </div>
           )}
           {submitAttempted &&

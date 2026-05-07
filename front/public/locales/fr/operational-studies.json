@@ -428,6 +428,7 @@
       "moveLocationOnMap": "Déplacer le point remarquable sur la carte",
       "movePointOnMap": "Déplacez ce point en utilisant la carte",
       "next": "Suivant",
+      "noComputation": "Il n'y aura pas de calcul pour ce train",
       "opId": "Identifiant de point",
       "opName": "Nom du point remarquable",
       "opType": "Type",
@@ -438,7 +439,8 @@
       "track": "Voie",
       "trainName": "Nom du train",
       "trigram": "Trigramme",
-      "uic": "UIC"
+      "uic": "UIC",
+      "unknownTrack": "Voie inconnue à {{names}}"
     },
     "launchPathFinding": "Lancer la recherche d'itinéraire",
     "manageVias": "Gestion des étapes",
