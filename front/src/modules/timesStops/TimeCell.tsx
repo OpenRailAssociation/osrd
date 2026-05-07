@@ -692,6 +692,9 @@ const TimeCell = ({
           ref={inputRef}
           value={state.empty ? 'hh:mm:ss' : formatDisplay(state)}
           className="time-cell__input"
+          data-testid={
+            column?.id === 'requestedArrival' ? 'requested-arrival' : 'requested-departure'
+          }
           style={{ pointerEvents: state.empty ? 'none' : 'auto' }}
           onChange={(e) => e.preventDefault()}
           onKeyDown={handleKeyDown}
