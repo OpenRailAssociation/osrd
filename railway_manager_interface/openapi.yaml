@@ -201,13 +201,33 @@ components:
           $ref: '#/components/schemas/Location'
         timing_data:
           $ref: '#/components/schemas/TimingData'
-        type:  
+        type:
           $ref: '#/components/schemas/StepType'
       type: object
       required:
       - duration
       - location
       title: RequestedStep
+    SimulatedStep:
+      properties:
+        path_item_time:
+          type: integer
+          title: Path Item Time
+          description: The offset in ms from the beginning of the simulation at which the step is reached.
+        op_id:
+          type: string
+          title: Operational Point Identifier
+          description: The identifier of the operational point reached at this step
+        stop_for:
+          anyOf:
+            - type: integer
+            - type: 'null'
+          title: Stop For
+          description: The duration in ms if a stop occurs at this operational point
+      title: Simulated Step
+      required:
+        - path_item_time
+        - op_id
     SimilarTrain:
       properties:
         path_date:
@@ -248,7 +268,7 @@ components:
           type: string
           title: Rolling Stock
         towed_rolling_stock:
-          type: 
+          type:
           - string
           - 'null'
           title: Towed Rolling Stock
@@ -269,6 +289,12 @@ components:
           type: integer
           title: Total Length
           description: Total length of the train in m
+        simulated_steps:
+          items:
+            $ref: '#/components/schemas/SimulatedStep'
+          type: array
+          minItems: 2
+          title: Simulated Steps
         requested_steps:
           items:
             $ref: '#/components/schemas/RequestedStep'
@@ -323,6 +349,7 @@ components:
       - total_mass
       - max_speed
       - total_length
+      - simulated_steps
       - requested_steps
       - departure_time
       - course_type

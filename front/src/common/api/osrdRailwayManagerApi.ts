@@ -308,6 +308,14 @@ export type SendLastMinuteRequestResponse = {
   created_request_url: string | null;
 };
 export type RmiLoadingGaugeType = 'GA' | 'GB';
+export type SimulatedStep = {
+  /** The offset in ms from the beginning of the simulation at which the step is reached. */
+  path_item_time: number;
+  /** The identifier of the operational point reached at this step */
+  op_id: string;
+  /** The duration in ms if a stop occurs at this operational point */
+  stop_for?: number | null;
+};
 export type ConsistChange = {
   rolling_stock: string;
   towed_rolling_stock?: string | null;
@@ -359,6 +367,7 @@ export type SimulationReport = {
   max_speed: number;
   /** Total length of the train in m */
   total_length: number;
+  simulated_steps: SimulatedStep[];
   requested_steps: RequestedStep[];
   departure_time: string;
   user_message?: string | null;

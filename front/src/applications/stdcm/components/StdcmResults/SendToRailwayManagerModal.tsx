@@ -262,6 +262,7 @@ const SendToRailwayManagerModal = ({
       total_mass: tToKg(consist.totalMass),
       max_speed: kmhToMs(consist.maxSpeed),
       total_length: consist.totalLength,
+      simulated_steps: [],
       requested_steps: transformStepsToApiFormat(steps, timingContext),
       departure_time: normalizedDate.toISOString(),
       user_message: comment,
