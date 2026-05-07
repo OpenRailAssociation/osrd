@@ -477,6 +477,7 @@ const DurationCell = ({
         ref={containerRef}
         tabIndex={0}
         className="duration-cell"
+        data-testid="duration-cell"
         onKeyDown={handleKeyDown}
         onFocus={() => {
           if (!mouseDownRef.current && !state.isEditing) startEditing('m');

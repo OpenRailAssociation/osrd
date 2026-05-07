@@ -33,6 +33,7 @@ declare module '@tanstack/react-table' {
     className: string;
     tabbable?: boolean;
     title?: string;
+    'data-testid'?: string;
   }
   // eslint-disable-next-line @typescript-eslint/consistent-type-definitions, @typescript-eslint/no-unused-vars
   interface TableMeta<TData extends RowData> {
@@ -190,7 +191,7 @@ const TimesStopsTable = ({
       columnHelper.display({
         id: 'opOnPathIndex',
         header: '',
-        cell: (info) => <span>{info.row.original.opOnPathIndex + 1}</span>,
+        cell: (info) => <span data-testid="row-index">{info.row.original.opOnPathIndex + 1}</span>,
         meta: {
           className: 'col-index computed',
         },
@@ -200,7 +201,7 @@ const TimesStopsTable = ({
         header: '',
         cell: (info) => {
           if (info.table.options.meta!.isComputedDataPending) {
-            return <span>&nbsp;</span>;
+            return <span data-testid="step-status">&nbsp;</span>;
           }
 
           const { stepStatus, computedArrival, requestedArrival, pathStepId } = info.row.original;
@@ -219,7 +220,11 @@ const TimesStopsTable = ({
             'invalid-path-step': stepStatus === 'invalidPathStep',
           });
 
-          return <span className={className}>&nbsp;</span>;
+          return (
+            <span data-testid="step-status" className={className}>
+              &nbsp;
+            </span>
+          );
         },
         meta: {
           className: 'col-step-status computed',
@@ -234,11 +239,16 @@ const TimesStopsTable = ({
               {pathStepId && <span className="requested-point-dot" />}
               <span
                 className="op-full-name"
+                data-testid="op-full-name"
                 title={`${name}${secondaryCode ? ` ${secondaryCode}` : ''}`}
               >
                 {name}
               </span>
-              {secondaryCode && <span className="secondary-code">{secondaryCode}</span>}
+              {secondaryCode && (
+                <span className="secondary-code" data-testid="secondary-code">
+                  {secondaryCode}
+                </span>
+              )}
             </>
           );
         },
@@ -254,7 +264,9 @@ const TimesStopsTable = ({
           return (
             <>
               {pathStepId && hasRequestedTrack && <span className="requested-point-dot" />}
-              <span title={info.getValue()}>{info.getValue() ?? ''}</span>
+              <span data-testid="track-name" title={info.getValue()}>
+                {info.getValue() ?? ''}
+              </span>
             </>
           );
         },
@@ -296,7 +308,7 @@ const TimesStopsTable = ({
             return <SkeletonLoader className="cell-loading-placeholder" />;
           }
           const value = info.getValue();
-          return <span>{value ? formatLocalTime(value) : ''}</span>;
+          return <span data-testid="computed-arrival">{value ? formatLocalTime(value) : ''}</span>;
         },
         meta: {
           className: 'col-computed-arrival col-with-clock-time computed',
@@ -355,7 +367,7 @@ const TimesStopsTable = ({
           const value = info.getValue();
           const isEmpty = !value;
           return (
-            <span className={cx({ 'cell-empty-dot': isEmpty })}>
+            <span data-testid="computed-departure" className={cx({ 'cell-empty-dot': isEmpty })}>
               {isEmpty ? '•' : formatLocalTime(value)}
             </span>
           );
@@ -374,6 +386,7 @@ const TimesStopsTable = ({
           return (
             <Checkbox
               id={`closedSignal-${info.row.id}`}
+              data-testid="signal-reception-closed"
               small
               checked={!!closedSignal}
               disabled={isDisabled}
@@ -405,6 +418,7 @@ const TimesStopsTable = ({
           return (
             <Checkbox
               id={`shortSlipDistance-${info.row.id}`}
+              data-testid="short-slip-distance"
               small
               checked={!!shortSlipDistance}
               disabled={isDisabled}
@@ -487,7 +501,7 @@ const TimesStopsTable = ({
           const isInherited = !row.isTheoreticalMarginBoundary || !row.requestedTheoreticalMargin;
 
           return (
-            <div>
+            <div data-testid="requested-theoretical-margin">
               <MarginCell
                 marginValue={marginValue ?? null}
                 editable={!isLastRow}
@@ -512,7 +526,13 @@ const TimesStopsTable = ({
             return <SkeletonLoader className="cell-loading-placeholder" />;
           }
           const marginValue = info.getValue() ?? null;
-          return <MarginCell marginValue={marginValue} editable={false} />;
+          return (
+            <MarginCell
+              data-testid="computed-theoretical-margin"
+              marginValue={marginValue}
+              editable={false}
+            />
+          );
         },
         meta: {
           className: 'col-computed-theoretical-margin computed computed-margin',
@@ -528,7 +548,9 @@ const TimesStopsTable = ({
             return <SkeletonLoader className="cell-loading-placeholder" />;
           }
           const marginValue = info.getValue() ?? null;
-          return <MarginCell marginValue={marginValue} editable={false} />;
+          return (
+            <MarginCell data-testid="real-margin" marginValue={marginValue} editable={false} />
+          );
         },
         meta: {
           className: 'col-real-margin computed computed-margin',
@@ -544,7 +566,14 @@ const TimesStopsTable = ({
             return <SkeletonLoader className="cell-loading-placeholder" />;
           }
           const marginValue = info.getValue() ?? null;
-          return <MarginCell marginValue={marginValue} showPolarity editable={false} />;
+          return (
+            <MarginCell
+              data-testid="margins-difference"
+              marginValue={marginValue}
+              showPolarity
+              editable={false}
+            />
+          );
         },
         meta: {
           className: 'col-margins-difference computed computed-margin',
@@ -555,12 +584,14 @@ const TimesStopsTable = ({
         header: () => t('timeFromPreviousOp'),
         meta: {
           className: 'col-time-from-previous-op col-with-duration computed',
+          'data-testid': 'time-from-previous-op',
         },
       }),
       columnHelper.accessor('totalTravelTime', {
         header: () => t('totalTravelTime'),
         meta: {
           className: 'col-total-travel-time col-with-duration computed',
+          'data-testid': 'total-travel-time',
         },
       }),
     ],
@@ -744,6 +775,7 @@ const TimesStopsTable = ({
                     transform: `translateY(${translateY}px)`,
                   }}
                   data-index={rowIndex}
+                  data-testid="times-stops-data-row"
                   ref={!hasDayChanged ? virtualizer.measureElement : undefined}
                 >
                   {row.getVisibleCells().map((cell) => (
@@ -755,6 +787,7 @@ const TimesStopsTable = ({
                           table.options.meta!.powerRestrictionBlocks.get(row.original.id)
                             ?.hasWarning,
                       })}
+                      data-testid={cell.column.columnDef.meta?.['data-testid']}
                     >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>

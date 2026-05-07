@@ -25,6 +25,7 @@ const ModalHeaderSNCF = ({
             type="button"
             className="close"
             aria-label="Close"
+            data-testid="close-modal"
             onClick={closePortalModal ?? closeModal}
           >
             <span aria-hidden="true">&times;</span>

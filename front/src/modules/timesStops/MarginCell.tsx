@@ -79,11 +79,13 @@ const MarginCellEditable = ({
   isInherited = false,
   isFirstRow = false,
   onCommit,
+  'data-testid': dataTestId,
 }: {
   initialValue: MarginValue | null;
   isInherited: boolean;
   isFirstRow: boolean;
   onCommit?: (value: MarginValue | null) => void;
+  'data-testid'?: string;
 }) => {
   const [unit, setUnit] = useState<MarginUnitType>(initialValue?.unit ?? MarginUnit.percent);
   const [raw, setRaw] = useState<string | null>(initialValue?.value?.toString() ?? null);
@@ -131,6 +133,7 @@ const MarginCellEditable = ({
           'hover-switch': !!raw && isInherited,
           inherited: isInherited,
         })}
+        data-testid={dataTestId}
         onClick={!isInherited ? () => startEditing() : undefined}
       >
         {displayValue && <MarginDisplayLabel margin={displayValue} />}
@@ -140,7 +143,7 @@ const MarginCellEditable = ({
   }
 
   return (
-    <div className="margin-cell edit">
+    <div className="margin-cell edit" data-testid={dataTestId}>
       {isEmpty && <CellPlaceholder onClick={() => inputRef.current?.focus()} />}
       <input
         type="text"
@@ -194,9 +197,11 @@ const MarginCellEditable = ({
 const MarginCellReadOnly = ({
   showPolarity = false,
   marginValue,
+  'data-testid': dataTestId,
 }: {
   showPolarity?: boolean;
   marginValue: MarginValue | null;
+  'data-testid'?: string;
 }) => {
   if (!marginValue) return;
   const marginInSeconds = marginValue.value ?? 0;
@@ -207,7 +212,7 @@ const MarginCellReadOnly = ({
   const seconds = String(Math.floor(abs % 60)).padStart(2, '0');
 
   return (
-    <div className="mono margin-cell">
+    <div className="mono margin-cell" data-testid={dataTestId}>
       {showPolarity && <span>{!isZero && polarity}</span>}
       <span>{minutes}</span>
       <span className="unit-letter">m</span>
@@ -224,6 +229,7 @@ const MarginCell = ({
   isInherited = false,
   isFirstRow = false,
   onCommit,
+  'data-testid': dataTestId,
 }: {
   marginValue: MarginValue | null;
   editable?: boolean;
@@ -231,6 +237,7 @@ const MarginCell = ({
   isInherited?: boolean;
   isFirstRow?: boolean;
   onCommit?: (value: MarginValue | null) => void;
+  'data-testid'?: string;
 }) =>
   editable ? (
     <MarginCellEditable
@@ -238,8 +245,13 @@ const MarginCell = ({
       isInherited={isInherited}
       isFirstRow={isFirstRow}
       onCommit={onCommit}
+      data-testid={dataTestId}
     />
   ) : (
-    <MarginCellReadOnly showPolarity={showPolarity} marginValue={marginValue} />
+    <MarginCellReadOnly
+      showPolarity={showPolarity}
+      marginValue={marginValue}
+      data-testid={dataTestId}
+    />
   );
 export default MarginCell;
