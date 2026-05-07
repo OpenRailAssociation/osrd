@@ -3964,6 +3964,21 @@ class RequestedStep(BaseModel):
     type: StepType | None = None
 
 
+class SimulatedStep(BaseModel):
+    path_item_time: Annotated[int, Field(title="Path Item Time")]
+    """
+    The offset in ms from the beginning of the simulation at which the step is reached.
+    """
+    op_id: Annotated[str, Field(title="Operational Point Identifier")]
+    """
+    The identifier of the operational point reached at this step
+    """
+    stop_for: Annotated[int | None, Field(title="Stop For")] = None
+    """
+    The duration in ms if a stop occurs at this operational point
+    """
+
+
 class SimilarTrain(BaseModel):
     """
     Similar train to duplicate.
@@ -4007,6 +4022,9 @@ class SimulationReport(BaseModel):
     """
     Total length of the train in m
     """
+    simulated_steps: Annotated[
+        list[SimulatedStep], Field(min_length=2, title="Simulated Steps")
+    ]
     requested_steps: Annotated[
         list[RequestedStep], Field(min_length=2, title="Requested Steps")
     ]
