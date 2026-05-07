@@ -427,6 +427,7 @@
       "moveLocationOnMap": "Move location on the map",
       "movePointOnMap": "Move this waypoint using the map",
       "next": "Next",
+      "noComputation": "There will be no computation for this train",
       "opId": "Operational point identifier",
       "opName": "Operational point name",
       "opType": "Type",
@@ -437,7 +438,8 @@
       "track": "Track",
       "trainName": "Train name",
       "trigram": "Trigram",
-      "uic": "UIC"
+      "uic": "UIC",
+      "unknownTrack": "Unknown track at {{names}}"
     },
     "launchPathFinding": "Launch pathfinding",
     "manageVias": "Steps management",
