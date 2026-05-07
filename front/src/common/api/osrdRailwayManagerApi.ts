@@ -308,6 +308,14 @@ export type SendLastMinuteRequestResponse = {
   created_request_url: string | null;
 };
 export type LoadingGaugeType = 'GA' | 'GB';
+export type ConsistChange = {
+  rolling_stock: string;
+  towed_rolling_stock?: string | null;
+  /** Total mass of the train in kg */
+  total_mass: number;
+  /** Total length of the train in m */
+  total_length: number;
+};
 export type Location = {
   uic: number;
   secondary_code: string;
@@ -321,6 +329,8 @@ export type TimingData = {
 };
 export type StepType = 'VIA' | 'DRIVER_SWITCH' | 'STOP';
 export type RequestedStep = {
+  /** New consist to use from this step onward. Not included for the first step. */
+  consist_change?: ConsistChange;
   /** Duration in ms */
   duration: number;
   location: Location;

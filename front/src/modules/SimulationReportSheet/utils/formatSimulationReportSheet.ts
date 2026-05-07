@@ -8,11 +8,12 @@ import {
   StdcmStopTypes,
 } from 'applications/stdcm/types';
 import type { SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
-import type { RequestedStep, StepType } from 'common/api/osrdRailwayManagerApi';
+import type { ConsistChange, RequestedStep, StepType } from 'common/api/osrdRailwayManagerApi';
 import { interpolateValue } from 'modules/simulationResult/helpers/utils';
 import type { SuggestedOP } from 'modules/trainSchedule/types';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
+import { tToKg } from 'utils/physics';
 import { capitalizeFirstLetter } from 'utils/strings';
 
 export const MAX_TOLERANCE = new Duration({ minutes: 240 });
@@ -383,10 +384,19 @@ export const transformStepsToApiFormat = (
     };
 
     if (step.isVia) {
+      const formatedConsistChange: ConsistChange | undefined = step.consistChange
+        ? {
+            rolling_stock: step.consistChange.rollingStockName!,
+            towed_rolling_stock: step.consistChange.towedRollingStockName,
+            total_mass: tToKg(step.consistChange.totalMass!),
+            total_length: step.consistChange.totalLength!,
+          }
+        : undefined;
       return {
         ...baseStep,
         duration: step.stopFor?.ms || 0,
         type: STOP_TYPE_MAPPING[step.stopType],
+        consist_change: formatedConsistChange,
       };
     }
 
