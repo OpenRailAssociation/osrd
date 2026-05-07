@@ -654,7 +654,7 @@ mod tests {
 
     #[tokio::test]
     async fn paced_train_main_category_apply_exception() {
-        let mut exception = TrainScheduleException::fixture_created("key_1", None);
+        let mut exception = TrainScheduleException::fixture_created(None);
         exception.change_groups = TrainScheduleExceptionChangeGroups {
             rolling_stock_category: Some(RollingStockCategoryChangeGroup {
                 value: Some(schemas::rolling_stock::TrainCategory::Main {
@@ -679,8 +679,8 @@ mod tests {
     }
 
     #[rstest]
-    #[case::created(TrainScheduleException::fixture_created("key_1", None))]
-    #[case::modified(TrainScheduleException::fixture_created("key_2", Some(0)))]
+    #[case::created(TrainScheduleException::fixture_created(None))]
+    #[case::modified(TrainScheduleException::fixture_created(Some(0)))]
     #[tokio::test]
     async fn paced_train_apply_exception(#[case] exception: TrainScheduleException) {
         let exception: schemas::TrainScheduleException = exception.into();
@@ -786,7 +786,6 @@ mod tests {
             id: 1,
             timetable_id: 1,
             train_schedule_id: 1,
-            key: Some("key_1".into()),
             occurrence_index: Some(1),
             disabled: false,
             change_groups: TrainScheduleExceptionChangeGroups::fixture_modified(),
@@ -797,7 +796,6 @@ mod tests {
             id: 2,
             timetable_id: 1,
             train_schedule_id: 1,
-            key: Some("key_2".into()),
             occurrence_index: None,
             disabled: false,
             change_groups: TrainScheduleExceptionChangeGroups::fixture_created(),
@@ -807,7 +805,6 @@ mod tests {
             id: 3,
             timetable_id: 1,
             train_schedule_id: 1,
-            key: Some("key_3".into()),
             occurrence_index: Some(0),
             disabled: true,
             change_groups: TrainScheduleExceptionChangeGroups::fixture_modified(),
@@ -865,7 +862,7 @@ mod tests {
 
     #[tokio::test]
     async fn iter_occurrences_with_modified_start_time_exception() {
-        let mut exception_1 = TrainScheduleException::fixture_modified("key_1", 1);
+        let mut exception_1 = TrainScheduleException::fixture_modified(1);
         exception_1.change_groups.start_time = Some(StartTimeChangeGroup {
             value: ms_since_epoch("2025-05-15T12:31:00Z"),
         });
@@ -873,7 +870,6 @@ mod tests {
             id: 1,
             timetable_id: 1,
             train_schedule_id: 1,
-            key: Some("key_1".into()),
             occurrence_index: Some(1),
             disabled: false,
             change_groups: exception_1.change_groups,

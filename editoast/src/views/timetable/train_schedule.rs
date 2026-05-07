@@ -1961,7 +1961,6 @@ mod tests {
             timetable.id,
             train_schedule.id,
             None,
-            Some("exception_1".to_string()),
             None,
         )
         .await;
@@ -1971,7 +1970,6 @@ mod tests {
             timetable.id,
             train_schedule.id,
             Some(0),
-            Some("exception_2".to_string()),
             None,
         )
         .await;
@@ -2119,7 +2117,7 @@ mod tests {
             create_fast_rolling_stock(&mut db_pool.get_ok(), "simulation_rolling_stock").await;
         let (timetable, train_schedule_set) =
             create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
-        let exception = TrainScheduleException::fixture_created("created_exception_key", None);
+        let exception = TrainScheduleException::fixture_created(None);
 
         let train_schedule_base = TrainSchedule {
             train_occurrence: TrainOccurrence {
@@ -2144,7 +2142,6 @@ mod tests {
             timetable.id,
             train_schedule.id,
             None,
-            Some("created_exception_key".to_string()),
             Some(exception.change_groups),
         )
         .await;
@@ -2358,7 +2355,6 @@ mod tests {
             timetable.id,
             train_schedule.id,
             None,
-            Some("change_train_name".to_string()),
             Some(TrainScheduleExceptionChangeGroups {
                 train_name: Some(TrainNameChangeGroup {
                     value: "exception_name_but_same_simulation".into(),
@@ -2374,7 +2370,6 @@ mod tests {
             timetable.id,
             train_schedule.id,
             None,
-            Some("change_initial_speed".to_string()),
             Some(TrainScheduleExceptionChangeGroups {
                 initial_speed: Some(InitialSpeedChangeGroup { value: 1.23 }),
                 ..Default::default()
@@ -2388,7 +2383,6 @@ mod tests {
             timetable.id,
             train_schedule.id,
             Some(2),
-            Some("change_rolling_stock".to_string()),
             Some(TrainScheduleExceptionChangeGroups {
                 rolling_stock: Some(RollingStockChangeGroup {
                     rolling_stock_name: "exception_rolling_stock".to_string(),
@@ -2407,7 +2401,6 @@ mod tests {
             timetable.id,
             train_schedule.id,
             None,
-            Some("unknown_path_item".to_string()),
             Some(TrainScheduleExceptionChangeGroups {
                 path_and_schedule: Some(PathAndScheduleChangeGroup {
                     path: vec![
@@ -2552,7 +2545,6 @@ mod tests {
                 .timetable_id(timetable.id)
                 .train_schedule_id(train_schedule.id)
                 .occurrence_index(Some(i))
-                .key(Some(format!("disabled_occurrence_{}", i)))
                 .disabled(true)
                 .change_groups(TrainScheduleExceptionChangeGroups {
                     initial_speed: Some(InitialSpeedChangeGroup { value: 1.23 }),
@@ -2749,7 +2741,6 @@ mod tests {
             timetable.id,
             train_schedule.id,
             None,
-            Some("exception_for_get_path".to_string()),
             Some(TrainScheduleExceptionChangeGroups {
                 train_name: Some(TrainNameChangeGroup {
                     value: "exception_name_for_get_path".into(),
@@ -2817,7 +2808,6 @@ mod tests {
             timetable.id,
             train_schedule.id,
             None,
-            Some("exception_for_get_path".to_string()),
             Some(TrainScheduleExceptionChangeGroups {
                 train_name: Some(TrainNameChangeGroup {
                     value: "exception_name_for_get_path".into(),
@@ -2921,7 +2911,6 @@ mod tests {
             timetable.id,
             train_schedule.id,
             None,
-            Some("change_train_name".to_string()),
             Some(TrainScheduleExceptionChangeGroups {
                 train_name: Some(TrainNameChangeGroup {
                     value: "exception_name_but_same_simulation".into(),
@@ -2937,7 +2926,6 @@ mod tests {
             timetable.id,
             train_schedule.id,
             None,
-            Some("change_initial_speed".to_string()),
             Some(TrainScheduleExceptionChangeGroups {
                 initial_speed: Some(InitialSpeedChangeGroup { value: 1.23 }),
                 ..Default::default()

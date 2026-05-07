@@ -4870,7 +4870,6 @@ export type TrainScheduleException = {
   change_groups: TrainScheduleExceptionChangeGroups;
   disabled: boolean;
   id: number;
-  key?: string | null;
   /** If None the exception is created, otherwise it is a modified exception */
   occurrence_index?: number;
   timetable_id: number;

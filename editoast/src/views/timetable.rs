@@ -1233,7 +1233,6 @@ mod tests {
             train_schedules_t1.first().unwrap().id,
             None,
             None,
-            None,
         )
         .await;
 
@@ -1241,7 +1240,6 @@ mod tests {
             &mut pool.get_ok(),
             timetable1.id,
             train_schedules_t1.get(1).unwrap().id,
-            None,
             None,
             None,
         )
@@ -1272,7 +1270,6 @@ mod tests {
             &mut pool.get_ok(),
             timetable2.id,
             train_schedules_t2.first().unwrap().id,
-            None,
             None,
             None,
         )

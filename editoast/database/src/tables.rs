@@ -874,7 +874,6 @@ diesel::table! {
 
     train_schedule_exception (id) {
         id -> Int8,
-        key -> Nullable<Text>,
         occurrence_index -> Nullable<Int8>,
         disabled -> Bool,
         change_groups -> Jsonb,

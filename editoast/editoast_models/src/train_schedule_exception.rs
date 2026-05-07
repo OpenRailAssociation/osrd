@@ -14,7 +14,6 @@ use crate::prelude::*;
 #[model(gen(ops = crud, batch_ops = cd, list))]
 pub struct TrainScheduleException {
     pub id: i64,
-    pub key: Option<String>,
     pub timetable_id: i64,
     pub train_schedule_id: i64,
     pub occurrence_index: Option<i64>,
@@ -25,11 +24,10 @@ pub struct TrainScheduleException {
 
 #[cfg(any(test, feature = "testing"))]
 impl TrainScheduleException {
-    pub fn fixture_created(key: &str, occurrence_index: Option<i64>) -> Self {
+    pub fn fixture_created(occurrence_index: Option<i64>) -> Self {
         Self {
             id: 1,
             disabled: false,
-            key: Some(key.into()),
             occurrence_index,
             timetable_id: 1,
             train_schedule_id: 1,
@@ -37,11 +35,10 @@ impl TrainScheduleException {
         }
     }
 
-    pub fn fixture_modified(key: &str, occurrence_index: i64) -> Self {
+    pub fn fixture_modified(occurrence_index: i64) -> Self {
         Self {
             id: 1,
             disabled: false,
-            key: Some(key.into()),
             occurrence_index: Some(occurrence_index),
             timetable_id: 1,
             train_schedule_id: 1,
@@ -54,7 +51,6 @@ impl From<TrainScheduleException> for schemas::TrainScheduleException {
     fn from(train_schedule_exception: TrainScheduleException) -> Self {
         Self {
             id: train_schedule_exception.id,
-            key: train_schedule_exception.key,
             timetable_id: train_schedule_exception.timetable_id,
             train_schedule_id: train_schedule_exception.train_schedule_id,
             occurrence_index: train_schedule_exception.occurrence_index,

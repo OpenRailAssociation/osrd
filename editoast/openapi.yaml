@@ -15837,10 +15837,6 @@ components:
         id:
           type: integer
           format: int64
-        key:
-          type:
-          - string
-          - 'null'
         occurrence_index:
           type: integer
           format: int64

@@ -6501,7 +6501,6 @@ class TrainScheduleException(BaseModel):
     change_groups: TrainScheduleExceptionChangeGroups
     disabled: bool
     id: int
-    key: str | None = None
     occurrence_index: int | None = None
     """
     If None the exception is created, otherwise it is a modified exception
