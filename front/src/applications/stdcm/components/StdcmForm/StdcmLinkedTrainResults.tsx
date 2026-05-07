@@ -47,7 +47,8 @@ const StdcmLinkedTrainResults = ({
               id={`${linkedTrainType}-${index}`}
               value={`${index}`}
               name={`linked-train-radio-buttons-${linkedTrainType}`}
-              defaultChecked={index === selectedLinkedTrainIndex}
+              checked={index === selectedLinkedTrainIndex}
+              onChange={() => {}}
             />
             {[origin, destination].map((opPoint) => (
               <div
