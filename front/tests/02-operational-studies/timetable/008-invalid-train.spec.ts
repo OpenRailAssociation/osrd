@@ -31,7 +31,7 @@ test.describe(
       infra = await getInfra();
     });
 
-    test.beforeEach('Setup scenario with invalid trains', async ({ page }) => {
+    test.beforeEach('Setup scenario with invalid trains', async ({ homePage, page }) => {
       scenarioItems = (
         await createScenario(
           generateUniqueName('invalid-train-scenario'),
@@ -47,6 +47,8 @@ test.describe(
       await page.goto(
         `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
       );
+      // TODO: remove when the new times-stops table is displayed by default in simulation results
+      await homePage.activateNewTimesStopsTable();
       await waitForInfraStateToBeCached(infra.id);
     });
 
@@ -64,7 +66,9 @@ test.describe(
           await scenarioTimetableSection.verifyInvalidTrainSimulationResultsVisibility();
         });
         await scenarioTimetableSection.setTrainListVisible();
-        await timeAndStopSimulationOutputs.getOutputTableData(invalidPacedTrainTimetableOutput);
+        await timeAndStopSimulationOutputs.verifyTimesStopsTableContent(
+          invalidPacedTrainTimetableOutput
+        );
       }
     );
 
@@ -77,7 +81,9 @@ test.describe(
           await scenarioTimetableSection.projectTrain(1);
           await scenarioTimetableSection.verifyInvalidTrainSimulationResultsVisibility();
           await scenarioTimetableSection.setTrainListVisible();
-          await timeAndStopSimulationOutputs.getOutputTableData(invalidUniqueTrainTimetableOutput);
+          await timeAndStopSimulationOutputs.verifyTimesStopsTableContent(
+            invalidUniqueTrainTimetableOutput
+          );
         });
       }
     );

@@ -79,11 +79,13 @@ test.describe('Paced train management', { tag: ['@op', '@paced-trains'] }, () =>
 
   test.beforeEach(
     'Navigate to scenario page and wait for infrastructure to be loaded',
-    async ({ page }) => {
+    async ({ homePage, page }) => {
       ({ project, study, scenario, trainScheduleSet } = await createScenario());
       await page.goto(
         `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
       );
+      // TODO: remove when the new times-stops table is displayed by default in simulation results
+      await homePage.activateNewTimesStopsTable();
       await waitForInfraStateToBeCached(infra.id);
     }
   );
@@ -182,7 +184,9 @@ test.describe('Paced train management', { tag: ['@op', '@paced-trains'] }, () =>
 
       await test.step('Verify result in output table is paced train result', async () => {
         await opSimulationResultPage.setTrainListVisible();
-        await timeAndStopSimulationOutputs.getOutputTableData(pacedTrainOutputData.pacedTrain);
+        await timeAndStopSimulationOutputs.verifyTimesStopsTableContent(
+          pacedTrainOutputData.pacedTrain
+        );
       });
 
       await test.step('Verify paced train card and first occurrence details', async () => {
@@ -201,7 +205,7 @@ test.describe('Paced train management', { tag: ['@op', '@paced-trains'] }, () =>
             'SpeedSpaceChart-InitialInputs.png'
           );
         }
-        await timeAndStopSimulationOutputs.getOutputTableData(
+        await timeAndStopSimulationOutputs.verifyTimesStopsTableContent(
           pacedTrainOutputData.secondOccurrence
         );
       });

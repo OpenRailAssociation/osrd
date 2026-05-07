@@ -25,7 +25,7 @@ class OpSimulationResultPage extends ScenarioPage {
     this.manchetteSpaceTimeChart = page.getByTestId('manchette-space-time-chart');
     this.speedSpaceChart = page.getByTestId('speed-space-chart');
     this.spaceTimeChart = page.getByTestId('space-time-chart-container');
-    this.timesStopsDataSheet = page.locator('.time-stops-datasheet');
+    this.timesStopsDataSheet = page.getByTestId('time-stop-outputs');
     this.simulationMap = page.getByTestId('simulation-map');
     this.speedSpaceChartSettingsButton = page.getByTestId('interaction-settings');
     this.speedSpaceChartCloseSettingsButton = page.getByTestId('settings-panel-close');

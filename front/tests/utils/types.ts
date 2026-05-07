@@ -78,28 +78,6 @@ export type PdfConsistChangeContent = {
   towedRollingStockList: string[];
 };
 
-type Margin = {
-  theoretical: string;
-  theoreticalS: string;
-  actual: string;
-  difference: string;
-};
-
-// STDCM simulation table type
-export type StationData = {
-  stationName: string;
-  stationCh: string;
-  trackName: string;
-  requestedArrival: string;
-  requestedDeparture: string;
-  stopTime: string;
-  signalReceptionClosed: boolean;
-  shortSlipDistance: boolean;
-  margin: Margin;
-  calculatedArrival: string;
-  calculatedDeparture: string;
-};
-
 export type RollingStockDetails = {
   inputs: { id: string; value: string | number; isNumeric?: boolean }[];
   updatedInputs: { id: string; value: string | number; isNumeric?: boolean }[];

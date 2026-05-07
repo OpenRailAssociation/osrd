@@ -60,35 +60,39 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
       await deleteApiRequest(`/api/electrical_profile_set/${electricalProfileSet.id}/`);
   });
 
-  test.beforeEach(async ({ page, operationalStudiesPage, rollingStockSelector, routeTab }) => {
-    await test.step('Create then navigate to scenario page', async () => {
-      ({ project, study, scenario } = await createScenario(
-        undefined,
-        null,
-        null,
-        null,
-        electricalProfileSet.id
-      ));
-      await page.goto(
-        `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
-      );
-      await waitForInfraStateToBeCached(infra.id);
-    });
-    await test.step('Add a new unique train, set its properties and perform pathfinding', async () => {
-      await operationalStudiesPage.openTrainScheduleForm();
-      await operationalStudiesPage.setTrainScheduleName(TRAIN_NAME);
-      await rollingStockSelector.selectRollingStock(improbableRollingStockName);
-      await operationalStudiesPage.setTrainScheduleStartTime(TRAIN_START_TIME);
-      await operationalStudiesPage.selectCategory(FREIGHT_TRAIN.category);
-      await operationalStudiesPage.openRouteTab();
-      await routeTab.performPathfindingByTrigram({
-        originTrigram: 'WS',
-        destinationTrigram: 'SES',
-        viaTrigram: 'MWS',
+  test.beforeEach(
+    async ({ page, homePage, operationalStudiesPage, rollingStockSelector, routeTab }) => {
+      await test.step('Create then navigate to scenario page', async () => {
+        ({ project, study, scenario } = await createScenario(
+          undefined,
+          null,
+          null,
+          null,
+          electricalProfileSet.id
+        ));
+        await page.goto(
+          `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
+        );
+        // TODO: remove when the new times-stops table is displayed by default in simulation results
+        await homePage.activateNewTimesStopsTable();
+        await waitForInfraStateToBeCached(infra.id);
       });
-      await operationalStudiesPage.openTimesAndStopsTab();
-    });
-  });
+      await test.step('Add a new unique train, set its properties and perform pathfinding', async () => {
+        await operationalStudiesPage.openTrainScheduleForm();
+        await operationalStudiesPage.setTrainScheduleName(TRAIN_NAME);
+        await rollingStockSelector.selectRollingStock(improbableRollingStockName);
+        await operationalStudiesPage.setTrainScheduleStartTime(TRAIN_START_TIME);
+        await operationalStudiesPage.selectCategory(FREIGHT_TRAIN.category);
+        await operationalStudiesPage.openRouteTab();
+        await routeTab.performPathfindingByTrigram({
+          originTrigram: 'WS',
+          destinationTrigram: 'SES',
+          viaTrigram: 'MWS',
+        });
+        await operationalStudiesPage.openTimesAndStopsTab();
+      });
+    }
+  );
 
   test.afterEach('Delete the created scenario', async () => {
     await deleteScenario(study.id, scenario.name);
@@ -136,7 +140,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
           'SpeedSpaceChart-ElectricalProfileActivated.png'
         );
       }
-      await timeAndStopSimulationOutputs.getOutputTableData(electricalProfileOnData);
+      await timeAndStopSimulationOutputs.verifyTimesStopsTableContent(electricalProfileOnData);
       await opSimulationResultPage.setTrainListVisible(false);
     });
 
@@ -154,7 +158,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
           'SpeedSpaceChart-ElectricalProfileDisabled.png'
         );
       }
-      await timeAndStopSimulationOutputs.getOutputTableData(electricalProfileOffData);
+      await timeAndStopSimulationOutputs.verifyTimesStopsTableContent(electricalProfileOffData);
       await opSimulationResultPage.setTrainListVisible(false);
       await scenarioTimetableSection.getTrainScheduleArrivalTime('11:48');
     });
@@ -202,7 +206,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
           'SpeedSpaceChart-SpeedLimitTagActivated.png'
         );
       }
-      await timeAndStopSimulationOutputs.getOutputTableData(speedLimitTagOnData);
+      await timeAndStopSimulationOutputs.verifyTimesStopsTableContent(speedLimitTagOnData);
       await opSimulationResultPage.setTrainListVisible(false);
     });
 
@@ -220,7 +224,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
           'SpeedSpaceChart-SpeedLimitTagDisabled.png'
         );
       }
-      await timeAndStopSimulationOutputs.getOutputTableData(speedLimitTagOffData);
+      await timeAndStopSimulationOutputs.verifyTimesStopsTableContent(speedLimitTagOffData);
       await opSimulationResultPage.setTrainListVisible(false);
       await scenarioTimetableSection.getTrainScheduleArrivalTime('11:48');
     });
@@ -278,7 +282,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
           'SpeedSpaceChart-LinearMargin.png'
         );
       }
-      await timeAndStopSimulationOutputs.getOutputTableData(linearMarginData);
+      await timeAndStopSimulationOutputs.verifyTimesStopsTableContent(linearMarginData);
       await opSimulationResultPage.setTrainListVisible(false);
     });
 
@@ -296,7 +300,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
           'SpeedSpaceChart-MarecoMargin.png'
         );
       }
-      await timeAndStopSimulationOutputs.getOutputTableData(marecoMarginData);
+      await timeAndStopSimulationOutputs.verifyTimesStopsTableContent(marecoMarginData);
       await opSimulationResultPage.setTrainListVisible(false);
       await scenarioTimetableSection.getTrainScheduleArrivalTime('11:51');
     });
@@ -357,7 +361,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
             'SpeedSpaceChart-AllSettingsEnabled.png'
           );
         }
-        await timeAndStopSimulationOutputs.getOutputTableData(allSettingsData);
+        await timeAndStopSimulationOutputs.verifyTimesStopsTableContent(allSettingsData);
         await opSimulationResultPage.setTrainListVisible(false);
         await scenarioTimetableSection.getTrainScheduleArrivalTime('11:50');
       });
