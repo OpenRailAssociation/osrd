@@ -46,30 +46,34 @@ test.describe('Times and Stops tab', { tag: ['@op', '@times-stops-tab'] }, () =>
     infra = await getInfra();
   });
 
-  test.beforeEach(async ({ page, operationalStudiesPage, rollingStockSelector, routeTab }) => {
-    await test.step('Create then navigate to scenario page', async () => {
-      ({ project, study, scenario } = await createScenario());
+  test.beforeEach(
+    async ({ page, homePage, operationalStudiesPage, rollingStockSelector, routeTab }) => {
+      await test.step('Create then navigate to scenario page', async () => {
+        ({ project, study, scenario } = await createScenario());
 
-      await page.goto(
-        `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
-      );
-      await waitForInfraStateToBeCached(infra.id);
-    });
-    await test.step('Add a new unique train and set its properties', async () => {
-      await operationalStudiesPage.openTrainScheduleForm();
-      await operationalStudiesPage.setTrainScheduleStartTime(TRAIN_START_TIME);
-      await rollingStockSelector.selectRollingStock(dualModeRollingStockName);
-      await operationalStudiesPage.setTrainScheduleName(TRAIN_NAME);
-    });
-    await test.step('Perform pathfinding then navigate to Times and Stops tab', async () => {
-      await operationalStudiesPage.openRouteTab();
-      await routeTab.performPathfindingByTrigram({
-        originTrigram: 'WS',
-        destinationTrigram: 'NES',
+        await page.goto(
+          `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
+        );
+        // TODO: remove when the new times-stops table is displayed by default in simulation results
+        await homePage.activateNewTimesStopsTable();
+        await waitForInfraStateToBeCached(infra.id);
       });
-      await operationalStudiesPage.openTimesAndStopsTab();
-    });
-  });
+      await test.step('Add a new unique train and set its properties', async () => {
+        await operationalStudiesPage.openTrainScheduleForm();
+        await operationalStudiesPage.setTrainScheduleStartTime(TRAIN_START_TIME);
+        await rollingStockSelector.selectRollingStock(dualModeRollingStockName);
+        await operationalStudiesPage.setTrainScheduleName(TRAIN_NAME);
+      });
+      await test.step('Perform pathfinding then navigate to Times and Stops tab', async () => {
+        await operationalStudiesPage.openRouteTab();
+        await routeTab.performPathfindingByTrigram({
+          originTrigram: 'WS',
+          destinationTrigram: 'NES',
+        });
+        await operationalStudiesPage.openTimesAndStopsTab();
+      });
+    }
+  );
 
   test.afterEach('Delete the created scenario', async () => {
     await deleteScenario(study.id, scenario.name);
@@ -141,7 +145,7 @@ test.describe('Times and Stops tab', { tag: ['@op', '@times-stops-tab'] }, () =>
         await operationalStudiesPage.returnSimulationResult();
         await operationalStudiesPage.verifyTimesStopsDataSheetVisibility();
         await timeAndStopSimulationOutputs.setTrainListVisible();
-        await timeAndStopSimulationOutputs.getOutputTableData(expectedOutputsCellsData);
+        await timeAndStopSimulationOutputs.verifyTimesStopsTableContent(expectedOutputsCellsData);
       });
     }
   );

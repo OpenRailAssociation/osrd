@@ -14,6 +14,9 @@ class HomePage extends CommonPage {
   private readonly backHomeLogo: Locator;
   private readonly dropDown: Locator;
   private readonly OSRDLanguage: Locator;
+  private readonly userSettingsBtn: Locator;
+  private readonly useNewTimesStopsTable: Locator;
+  private readonly closeBtn: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -26,6 +29,9 @@ class HomePage extends CommonPage {
     this.backHomeLogo = page.getByTestId('osrd-logo');
     this.dropDown = page.getByTestId('dropdown-sncf');
     this.OSRDLanguage = page.getByTestId('language-info');
+    this.userSettingsBtn = page.getByTestId('user-settings-btn');
+    this.useNewTimesStopsTable = page.getByTestId('useNewTimesStopsTable');
+    this.closeBtn = page.getByTestId('close-modal');
   }
 
   async goToHomePage(): Promise<void> {
@@ -67,6 +73,13 @@ class HomePage extends CommonPage {
   async getOSRDLanguage(): Promise<string> {
     await this.dropDown.click();
     return this.OSRDLanguage.innerText();
+  }
+
+  async activateNewTimesStopsTable(): Promise<void> {
+    await this.dropDown.click();
+    await this.userSettingsBtn.click();
+    await this.useNewTimesStopsTable.click();
+    await this.closeBtn.click();
   }
 }
 

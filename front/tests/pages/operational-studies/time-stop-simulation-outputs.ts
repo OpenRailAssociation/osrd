@@ -1,148 +1,193 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
-import { normalizeStationData } from '../../utils/data-normalizer';
-import { readJsonFile } from '../../utils/file-utils';
-import type { FlatTranslations, StationData } from '../../utils/types';
+import { cleanTimeInput, cleanWhitespace, removeWhitespace } from '../../utils/data-normalizer';
+import type { TimesStopsTableRow } from '../../utils/times-stops-table-types';
+import OpSimulationResultPage from './simulation-results-page';
 
-const frTranslations = readJsonFile<Record<string, FlatTranslations>>(
-  'public/locales/fr/translation.json'
-).timeStopTable;
-
-class TimeAndStopSimulationOutputs {
-  readonly page: Page;
-  private readonly columnHeaders: Locator;
-  private readonly tableRows: Locator;
+class TimeAndStopSimulationOutputs extends OpSimulationResultPage {
+  private readonly dataRows: Locator;
 
   constructor(page: Page) {
-    this.page = page;
-    this.columnHeaders = page.locator(
-      '.dsg-cell.dsg-cell-header:not(.dsg-cell-gutter) .dsg-cell-header-container'
+    super(page);
+    this.dataRows = this.timesStopsDataSheet.getByTestId('times-stops-data-row');
+  }
+
+  private rowIndex(row: Locator): Locator {
+    return row.getByTestId('row-index');
+  }
+
+  private stepStatus(row: Locator): Locator {
+    return row.getByTestId('step-status');
+  }
+
+  private opFullName(row: Locator): Locator {
+    return row.getByTestId('op-full-name');
+  }
+
+  private secondaryCode(row: Locator): Locator {
+    return row.getByTestId('secondary-code');
+  }
+
+  private trackName(row: Locator): Locator {
+    return row.getByTestId('track-name');
+  }
+
+  private requestedArrival(row: Locator): Locator {
+    return row.getByTestId('requested-arrival');
+  }
+
+  private computedArrival(row: Locator): Locator {
+    return row.getByTestId('computed-arrival');
+  }
+
+  private durationCell(row: Locator): Locator {
+    return row.getByTestId('duration-cell');
+  }
+
+  private requestedDeparture(row: Locator): Locator {
+    return row.getByTestId('requested-departure');
+  }
+
+  private computedDeparture(row: Locator): Locator {
+    return row.getByTestId('computed-departure');
+  }
+
+  private signalReceptionClosed(row: Locator): Locator {
+    return row.getByTestId('signal-reception-closed');
+  }
+
+  private shortSlipDistance(row: Locator): Locator {
+    return row.getByTestId('short-slip-distance');
+  }
+
+  private powerRestrictionCombobox(row: Locator): Locator {
+    return row.getByRole('combobox');
+  }
+
+  private requestedTheoreticalMargin(row: Locator): Locator {
+    return row.getByTestId('requested-theoretical-margin');
+  }
+
+  private computedTheoreticalMargin(row: Locator): Locator {
+    return row.getByTestId('computed-theoretical-margin');
+  }
+
+  private realMargin(row: Locator): Locator {
+    return row.getByTestId('real-margin');
+  }
+
+  private marginsDifference(row: Locator): Locator {
+    return row.getByTestId('margins-difference');
+  }
+
+  private timeFromPreviousOp(row: Locator): Locator {
+    return row.getByTestId('time-from-previous-op');
+  }
+
+  private totalTravelTime(row: Locator): Locator {
+    return row.getByTestId('total-travel-time');
+  }
+
+  private async extractRow(row: Locator): Promise<TimesStopsTableRow> {
+    await expect(row).toBeVisible();
+
+    await Promise.all([
+      expect(this.rowIndex(row)).toBeVisible(),
+      expect(this.stepStatus(row)).toBeVisible(),
+      expect(this.opFullName(row)).toBeVisible(),
+      expect(this.trackName(row)).toBeAttached(),
+      expect(this.computedArrival(row)).toBeAttached(),
+      expect(this.durationCell(row)).toBeAttached(),
+      expect(this.computedDeparture(row)).toBeAttached(),
+      expect(this.signalReceptionClosed(row)).toBeVisible(),
+      expect(this.shortSlipDistance(row)).toBeVisible(),
+      expect(this.powerRestrictionCombobox(row)).toBeVisible(),
+      expect(this.timeFromPreviousOp(row)).toBeAttached(),
+      expect(this.totalTravelTime(row)).toBeAttached(),
+    ]);
+
+    const [
+      indexText,
+      statusClass,
+      stationName,
+      stationCh,
+      trackName,
+      reqArrivalValue,
+      calculatedArrival,
+      stopDurationText,
+      reqDepartureValue,
+      calculatedDeparture,
+      signalReceptionClosed,
+      shortSlipDistance,
+      powerRestriction,
+      reqTheoreticalText,
+      computedTheoreticalText,
+      realMarginText,
+      differenceText,
+      timeFromAboveWaypointText,
+      totalArrivalTimeText,
+    ] = await Promise.all([
+      this.rowIndex(row).textContent(),
+      this.stepStatus(row).getAttribute('class'),
+      this.opFullName(row).textContent(),
+      this.secondaryCode(row)
+        .textContent()
+        .catch(() => ''),
+      this.trackName(row).textContent(),
+      this.requestedArrival(row).getAttribute('value'),
+      this.computedArrival(row).textContent(),
+      this.durationCell(row).textContent(),
+      this.requestedDeparture(row).getAttribute('value'),
+      this.computedDeparture(row).textContent(),
+      this.signalReceptionClosed(row).isChecked(),
+      this.shortSlipDistance(row).isChecked(),
+      this.powerRestrictionCombobox(row).inputValue(),
+      this.requestedTheoreticalMargin(row)
+        .textContent()
+        .catch(() => ''),
+      this.computedTheoreticalMargin(row)
+        .textContent()
+        .catch(() => ''),
+      this.realMargin(row)
+        .textContent()
+        .catch(() => ''),
+      this.marginsDifference(row)
+        .textContent()
+        .catch(() => ''),
+      this.timeFromPreviousOp(row).textContent(),
+      this.totalTravelTime(row).textContent(),
+    ]);
+
+    return {
+      index: parseInt(indexText ?? '0'),
+      status: cleanWhitespace(statusClass) as TimesStopsTableRow['status'],
+      stationName: cleanWhitespace(stationName),
+      stationCh: cleanWhitespace(stationCh),
+      trackName: cleanWhitespace(trackName),
+      requestedArrival: cleanTimeInput(reqArrivalValue),
+      calculatedArrival: cleanWhitespace(calculatedArrival),
+      stopTime: removeWhitespace(stopDurationText),
+      requestedDeparture: cleanTimeInput(reqDepartureValue),
+      calculatedDeparture: cleanWhitespace(calculatedDeparture),
+      signalReceptionClosed,
+      shortSlipDistance,
+      powerRestriction,
+      margin: {
+        requestedTheoretical: cleanWhitespace(reqTheoreticalText),
+        computedTheoretical: removeWhitespace(computedTheoreticalText),
+        real: removeWhitespace(realMarginText),
+        difference: removeWhitespace(differenceText),
+      },
+      timeFromAboveWaypoint: cleanWhitespace(timeFromAboveWaypointText),
+      totalArrivalTime: cleanWhitespace(totalArrivalTimeText),
+    };
+  }
+
+  async verifyTimesStopsTableContent(expectedRows: TimesStopsTableRow[]): Promise<void> {
+    const actualRows = await Promise.all(
+      (await this.dataRows.all()).map((row) => this.extractRow(row))
     );
-    this.tableRows = page.locator('.time-stops-datasheet .dsg-row');
-  }
-
-  // Retrieve the cell value based on the locator type
-  private static async getCellValue(cell: Locator, isInput: boolean = true): Promise<string> {
-    return isInput
-      ? (await cell.locator('input').getAttribute('value'))?.trim() || ''
-      : (await cell.textContent())?.trim() || '';
-  }
-
-  // Extract the column index for each header name
-  private async getHeaderIndexMap(): Promise<Record<string, number>> {
-    const headers = await this.columnHeaders.allTextContents();
-    const headerMap: Record<string, number> = {};
-    headers.forEach((header, index) => {
-      const cleanedHeader = header.trim();
-      headerMap[cleanedHeader] = index;
-    });
-    return headerMap;
-  }
-
-  async getOutputTableData(expectedTableData: StationData[]) {
-    const actualTableData: StationData[] = [];
-
-    const headerIndexMap = await this.getHeaderIndexMap();
-    const rowCount = await this.tableRows.count();
-
-    // Iterate through each active row and extract data based on header mappings
-    for (let rowIndex = 1; rowIndex < rowCount; rowIndex += 1) {
-      const row = this.tableRows.nth(rowIndex);
-      await expect(row).toBeVisible();
-
-      // Extract cells from the current row
-      const cells = row.locator('.dsg-cell.dsg-cell-disabled');
-
-      const [
-        stationName,
-        stationCh,
-        trackName,
-        requestedArrival,
-        requestedDeparture,
-        stopTime,
-        signalReceptionClosed,
-        shortSlipDistance,
-        theoreticalMargin,
-        theoreticalMarginS,
-        actualMargin,
-        marginDifference,
-        calculatedArrival,
-        calculatedDeparture,
-      ] = await Promise.all([
-        TimeAndStopSimulationOutputs.getCellValue(
-          cells.nth(headerIndexMap[frTranslations.name]),
-          false
-        ),
-        TimeAndStopSimulationOutputs.getCellValue(cells.nth(headerIndexMap[frTranslations.ch])),
-        TimeAndStopSimulationOutputs.getCellValue(
-          cells.nth(headerIndexMap[frTranslations.trackName]),
-          false
-        ),
-        TimeAndStopSimulationOutputs.getCellValue(
-          cells.nth(headerIndexMap[frTranslations.arrivalTime]),
-          false
-        ),
-        TimeAndStopSimulationOutputs.getCellValue(
-          cells.nth(headerIndexMap[frTranslations.departureTime]),
-          false
-        ),
-        TimeAndStopSimulationOutputs.getCellValue(
-          cells.nth(headerIndexMap[frTranslations.stopTime])
-        ),
-        cells
-          .nth(headerIndexMap[frTranslations.receptionOnClosedSignal])
-          .locator('input.dsg-checkbox')
-          .isChecked(),
-        cells
-          .nth(headerIndexMap[frTranslations.shortSlipDistance])
-          .locator('input.dsg-checkbox')
-          .isChecked(),
-        TimeAndStopSimulationOutputs.getCellValue(
-          cells.nth(headerIndexMap[frTranslations.theoreticalMargin]),
-          false
-        ),
-        TimeAndStopSimulationOutputs.getCellValue(
-          cells.nth(headerIndexMap[frTranslations.theoreticalMarginSeconds])
-        ),
-        TimeAndStopSimulationOutputs.getCellValue(
-          cells.nth(headerIndexMap[frTranslations.realMargin])
-        ),
-        TimeAndStopSimulationOutputs.getCellValue(
-          cells.nth(headerIndexMap[frTranslations.diffMargins])
-        ),
-        TimeAndStopSimulationOutputs.getCellValue(
-          cells.nth(headerIndexMap[frTranslations.calculatedArrivalTime])
-        ),
-        TimeAndStopSimulationOutputs.getCellValue(
-          cells.nth(headerIndexMap[frTranslations.calculatedDepartureTime])
-        ),
-      ]);
-
-      // Push the row data into the actual table data array
-      actualTableData.push({
-        stationName,
-        stationCh,
-        trackName,
-        requestedArrival,
-        requestedDeparture,
-        stopTime,
-        signalReceptionClosed,
-        shortSlipDistance,
-        margin: {
-          theoretical: theoreticalMargin,
-          theoreticalS: theoreticalMarginS,
-          actual: actualMargin,
-          difference: marginDifference,
-        },
-        calculatedArrival,
-        calculatedDeparture,
-      });
-    }
-
-    // // Normalize and compare data
-    const normalizedActualData = normalizeStationData(actualTableData);
-    const normalizedExpectedData = normalizeStationData(expectedTableData);
-    expect(normalizedActualData).toEqual(normalizedExpectedData);
+    expect(actualRows).toEqual(expectedRows);
   }
 }
 

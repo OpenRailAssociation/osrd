@@ -1,13 +1,11 @@
-import type { StationData } from './types';
-
 /**
  * Trim leading/trailing whitespace and replaces multiple spaces with a single space.
  *
  * @param text - The input string to clean.
  * @returns {string} - The cleaned string with normalized whitespace.
  */
-export function cleanWhitespace(text: string = ''): string {
-  return text.trim().replace(/\s+/g, ' '); // Replace multiple spaces with a single space
+export function cleanWhitespace(text: string | null | undefined): string {
+  return (text ?? '').trim().replace(/\s+/g, ' ');
 }
 
 /**
@@ -31,28 +29,19 @@ export function cleanText(text: string | null): string {
 }
 
 /**
- * Normalize the StationData array by cleaning whitespace in all string fields.
+ * Remove all whitespace characters from a string.
  *
- * @param data - The array of station data objects to normalize.
- * @returns {StationData[]} - The normalized array of station data with cleaned fields.
+ * @param text - The input string to clean.
+ * @returns {string} - The string with all whitespace removed.
  */
-export function normalizeStationData(data: StationData[]): StationData[] {
-  return data.map((item) => ({
-    stationName: cleanWhitespace(item.stationName),
-    stationCh: cleanWhitespace(item.stationCh),
-    trackName: cleanWhitespace(item.trackName),
-    requestedArrival: cleanWhitespace(item.requestedArrival),
-    requestedDeparture: cleanWhitespace(item.requestedDeparture),
-    stopTime: cleanWhitespace(item.stopTime),
-    signalReceptionClosed: item.signalReceptionClosed,
-    shortSlipDistance: item.shortSlipDistance !== undefined ? item.shortSlipDistance : false,
-    margin: {
-      theoretical: cleanWhitespace(item.margin.theoretical),
-      theoreticalS: cleanWhitespace(item.margin.theoreticalS),
-      actual: cleanWhitespace(item.margin.actual),
-      difference: cleanWhitespace(item.margin.difference),
-    },
-    calculatedArrival: cleanWhitespace(item.calculatedArrival),
-    calculatedDeparture: cleanWhitespace(item.calculatedDeparture),
-  }));
+export function removeWhitespace(text: string | null | undefined): string {
+  return (text ?? '').replace(/\s+/g, '');
+}
+
+/**
+ * Return empty string for time input placeholder values ('hh:mm:ss'), otherwise trim.
+ */
+export function cleanTimeInput(value: string | null | undefined): string {
+  if (!value || value === 'hh:mm:ss') return '';
+  return value.trim();
 }
