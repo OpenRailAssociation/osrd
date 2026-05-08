@@ -115,7 +115,7 @@ quote = "1.0"
 rand = "0.10.1"
 rangemap = "1.7.1"
 regex = "1.12"
-reqwest = { version = "0.13.2", default-features = false, features = ["json"] }
+reqwest = { version = "0.13.3", default-features = false, features = ["json"] }
 rstest = { version = "0.26.1", default-features = false }
 schemas = { path = "./schemas" }
 search = { path = "./search" }
