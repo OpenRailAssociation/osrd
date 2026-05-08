@@ -68,7 +68,7 @@ diesel = { version = "2.3", default-features = false, features = [
   "serde_json",
   "uuid",
 ] }
-diesel-async = { version = "0.8", default-features = false, features = [
+diesel-async = { version = "0.9", default-features = false, features = [
   "deadpool",
   "migrations",
   "postgres",
