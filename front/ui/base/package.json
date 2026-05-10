@@ -20,7 +20,7 @@
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-react": "^7.35.0",
     "eslint-plugin-react-hooks": "^7.0.0",
-    "eslint-plugin-storybook": "^10.3.5",
+    "eslint-plugin-storybook": "^10.3.6",
     "oxfmt": "^0.48.0",
     "postcss": "^8.5.13",
     "postcss-assets": "^6.0.0",
