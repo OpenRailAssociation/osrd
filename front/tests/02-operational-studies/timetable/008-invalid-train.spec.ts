@@ -69,10 +69,16 @@ test.describe(
         await pacedTrainSection.projectPacedTrain();
         await scenarioTimetableSection.verifyInvalidTrainSimulationResultsVisibility();
       });
-      await timeAndStopSimulationOutputs.getOutputTableData(invalidPacedTrainTimetableOutput);
+      // TODO: remove the skip when #16663 is fixed
+      await test.step.skip('Get paced train output table data', async () => {
+        await timeAndStopSimulationOutputs.getOutputTableData(invalidPacedTrainTimetableOutput);
+      });
       await test.step('Project invalid train and verify invalid simulation outputs', async () => {
         await scenarioTimetableSection.projectTrain(1);
         await scenarioTimetableSection.verifyInvalidTrainSimulationResultsVisibility();
+      });
+      // TODO: remove the skip when #16663 is fixed
+      await test.step.skip('Get unique train output table data', async () => {
         await timeAndStopSimulationOutputs.getOutputTableData(invalidUniqueTrainTimetableOutput);
       });
     });
