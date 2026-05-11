@@ -80,6 +80,7 @@ educe = "0.6.0"
 enum-map = "2.7.3"
 fga = { path = "./fga", features = ["test_utilities"] }
 fga_migrations = { path = "./fga_migrations" }
+flate2 = "1.1.9"
 futures = "0.3.32"
 futures-util = "0.3.30"
 geos = { version = "11.1.1", features = ["json"] }
@@ -189,6 +190,7 @@ educe.workspace = true
 enum-map.workspace = true
 fga.workspace = true
 fga_migrations.workspace = true
+flate2.workspace = true
 futures.workspace = true
 futures-util.workspace = true
 geos.workspace = true

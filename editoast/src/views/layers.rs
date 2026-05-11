@@ -4,12 +4,16 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
+use axum::http::header::CONTENT_ENCODING;
 use axum::http::header::CONTENT_TYPE;
 use axum::response::IntoResponse;
 use deadpool_redis::redis::AsyncCommands;
 use editoast_derive::EditoastError;
+use flate2::Compression;
+use flate2::write::GzEncoder;
 use serde::Deserialize;
 use serde::Serialize;
+use std::io::Write;
 use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
@@ -185,11 +189,19 @@ pub(in crate::views) async fn cache_and_get_mvt_tile(
         (x, y, z),
     );
 
-    let mut valkey = valkey_client.get_connection().await?;
-    let cached_value: Option<Vec<u8>> = valkey.get(&cache_key).await?;
+    let cached_value: Option<Vec<u8>> = {
+        let mut valkey = valkey_client.get_connection().await?;
+        valkey.get(&cache_key).await?
+    };
 
     if let Some(value) = cached_value {
-        return Ok(([(CONTENT_TYPE, "application/x-protobuf")], value));
+        return Ok((
+            [
+                (CONTENT_TYPE, "application/x-protobuf"),
+                (CONTENT_ENCODING, "gzip"),
+            ],
+            value,
+        ));
     }
 
     let conn = &mut db_pool.get().await?;
@@ -198,12 +210,25 @@ pub(in crate::views) async fn cache_and_get_mvt_tile(
     let mvt_bytes: Vec<u8> = create_and_fill_mvt_tile(layer_slug, records)
         .to_bytes()
         .unwrap();
+    let mut encoder = GzEncoder::new(Vec::new(), Compression::best());
+    encoder
+        .write_all(&mvt_bytes)
+        .expect("Failed to write MVT bytes to GzEncoder");
+    let compressed_mvt = encoder.finish().unwrap();
+
+    let mut valkey = valkey_client.get_connection().await?;
     valkey
-        .set::<_, _, ()>(&cache_key, mvt_bytes.clone())
+        .set::<_, _, ()>(&cache_key, compressed_mvt.clone())
         .await
         .unwrap_or_else(|_| panic!("Failed to set value in valkey with key {cache_key}"));
 
-    Ok(([(CONTENT_TYPE, "application/x-protobuf")], mvt_bytes))
+    Ok((
+        [
+            (CONTENT_TYPE, "application/x-protobuf"),
+            (CONTENT_ENCODING, "gzip"),
+        ],
+        compressed_mvt,
+    ))
 }
 
 #[cfg(test)]

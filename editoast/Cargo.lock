@@ -1310,6 +1310,7 @@ dependencies = [
  "enum-map",
  "fga",
  "fga_migrations",
+ "flate2",
  "futures 0.3.32",
  "futures-util",
  "geos",
