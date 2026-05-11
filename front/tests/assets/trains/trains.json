@@ -50,7 +50,8 @@
     },
     "paced": {
       "time_window": "PT2H",
-      "interval": "PT1H"
+      "interval": "PT1H",
+      "exceptions": []
     },
     "category": {
       "main_category": "HIGH_SPEED_TRAIN"
@@ -339,123 +340,126 @@
           }
         },
         {
-          "key": "1ed321cd-984a-4b3e-9764-ca70fcc95bbc",
           "occurrence_index": 2,
           "disabled": false,
-          "rolling_stock": {
-            "rolling_stock_name": "IME_RS_E2E",
-            "comfort": "STANDARD"
-          },
-          "labels": {
-            "value": []
-          },
-          "start_time": {
-            "value": 1729001442000
-          },
-          "path_and_schedule": {
-            "path": [
-              {
-                "id": "id2458",
-                "location": {
-                  "type": "track_offset",
-                  "track": "TG4",
-                  "offset": 1549000
-                }
-              },
-              {
-                "id": "id2659",
-                "location": {
-                  "type": "operational_point_part_reference",
-                  "operational_point": {
-                    "uic": 8744,
-                    "secondary_code": "BV",
-                    "type": "uic"
-                  },
-                  "track_reference": null
-                }
-              },
-              {
-                "id": "id2492",
-                "location": {
-                  "type": "track_offset",
-                  "track": "TD0",
-                  "offset": 11080000
-                }
-              },
-              {
-                "id": "id2570",
-                "location": {
-                  "type": "operational_point_part_reference",
-                  "operational_point": {
-                    "uic": 8733,
-                    "secondary_code": "BV",
-                    "type": "uic"
-                  },
-                  "track_reference": null
-                }
-              },
-              {
-                "id": "b174dfa7-f6e7-45d9-9545-469a64e675b9",
-                "location": {
-                  "operational_point": {
-                    "uic": 8799,
-                    "secondary_code": "BC",
-                    "type": "uic"
-                  },
-                  "track_reference": null,
-                  "type": "operational_point_part_reference"
-                }
-              }
-            ],
-            "schedule": [
-              {
-                "at": "id2659",
-                "arrival": null,
-                "stop_for": "PT124S",
-                "reception_signal": "SHORT_SLIP_STOP"
-              },
-              {
-                "at": "id2570",
-                "arrival": "PT10554S",
-                "stop_for": "PT600S",
-                "reception_signal": "OPEN"
-              },
-              {
-                "at": "b174dfa7-f6e7-45d9-9545-469a64e675b9",
-                "arrival": null,
-                "stop_for": "P0D",
-                "reception_signal": "OPEN"
-              }
-            ],
-            "margins": {
-              "boundaries": [],
-              "values": ["0%"]
+          "change_groups": {
+            "rolling_stock": {
+              "rolling_stock_name": "IME_RS_E2E",
+              "comfort": "STANDARD"
             },
-            "power_restrictions": []
+            "labels": {
+              "value": []
+            },
+            "start_time": {
+              "value": 1729001442000
+            },
+            "path_and_schedule": {
+              "path": [
+                {
+                  "id": "id2458",
+                  "location": {
+                    "type": "track_offset",
+                    "track": "TG4",
+                    "offset": 1549000
+                  }
+                },
+                {
+                  "id": "id2659",
+                  "location": {
+                    "type": "operational_point_part_reference",
+                    "operational_point": {
+                      "uic": 8744,
+                      "secondary_code": "BV",
+                      "type": "uic"
+                    },
+                    "track_reference": null
+                  }
+                },
+                {
+                  "id": "id2492",
+                  "location": {
+                    "type": "track_offset",
+                    "track": "TD0",
+                    "offset": 11080000
+                  }
+                },
+                {
+                  "id": "id2570",
+                  "location": {
+                    "type": "operational_point_part_reference",
+                    "operational_point": {
+                      "uic": 8733,
+                      "secondary_code": "BV",
+                      "type": "uic"
+                    },
+                    "track_reference": null
+                  }
+                },
+                {
+                  "id": "b174dfa7-f6e7-45d9-9545-469a64e675b9",
+                  "location": {
+                    "operational_point": {
+                      "uic": 8799,
+                      "secondary_code": "BC",
+                      "type": "uic"
+                    },
+                    "track_reference": null,
+                    "type": "operational_point_part_reference"
+                  }
+                }
+              ],
+              "schedule": [
+                {
+                  "at": "id2659",
+                  "arrival": null,
+                  "stop_for": "PT124S",
+                  "reception_signal": "SHORT_SLIP_STOP"
+                },
+                {
+                  "at": "id2570",
+                  "arrival": "PT10554S",
+                  "stop_for": "PT600S",
+                  "reception_signal": "OPEN"
+                },
+                {
+                  "at": "b174dfa7-f6e7-45d9-9545-469a64e675b9",
+                  "arrival": null,
+                  "stop_for": "P0D",
+                  "reception_signal": "OPEN"
+                }
+              ],
+              "margins": {
+                "boundaries": [],
+                "values": ["0%"]
+              },
+              "power_restrictions": []
+            }
           }
         },
         {
-          "key": "c929f87a-7872-44c8-ae07-17f9872e0e94",
           "occurrence_index": 3,
           "disabled": false,
-          "rolling_stock_category": {
-            "value": null
-          },
-          "start_time": {
-            "value": 1729016531000
-          },
-          "initial_speed": {
-            "value": 41.666666666666664
+          "change_groups": {
+            "rolling_stock_category": {
+              "value": null
+            },
+            "start_time": {
+              "value": 1729016531000
+            },
+            "initial_speed": {
+              "value": 41.666666666666664
+            }
           }
         },
         {
-          "key": "1cadb9cb-645f-47c0-88b1-2715d4b469ed",
           "disabled": false,
-          "speed_limit_tag": {
-            "value": "MA100"
-          },
-          "start_time": {
-            "value": 1729024216000
+          "change_groups": {
+            "speed_limit_tag": {
+              "value": "MA100"
+            },
+            "start_time": {
+              "value": 1729024216000
+            }
           }
         }
       ]
@@ -529,49 +533,50 @@
           }
         },
         {
-          "key": "3c1cc3f2-6944-4bfa-9d48-26f50f2048ea",
           "occurrence_index": 0,
           "disabled": false,
-          "path_and_schedule": {
-            "path": [
-              {
-                "id": "id227",
-                "location": {
-                  "type": "operational_point_part_reference",
-                  "operational_point": {
-                    "uic": 8766,
-                    "secondary_code": "BV",
-                    "type": "uic"
-                  },
-                  "track_reference": null
+          "change_groups": {
+            "path_and_schedule": {
+              "path": [
+                {
+                  "id": "id227",
+                  "location": {
+                    "type": "operational_point_part_reference",
+                    "operational_point": {
+                      "uic": 8766,
+                      "secondary_code": "BV",
+                      "type": "uic"
+                    },
+                    "track_reference": null
+                  }
+                },
+                {
+                  "id": "id228",
+                  "location": {
+                    "type": "operational_point_part_reference",
+                    "operational_point": {
+                      "uic": 8755,
+                      "secondary_code": "BV",
+                      "type": "uic"
+                    },
+                    "track_reference": null
+                  }
                 }
+              ],
+              "schedule": [
+                {
+                  "at": "id228",
+                  "arrival": "PT432S",
+                  "stop_for": "P0D",
+                  "reception_signal": "OPEN"
+                }
+              ],
+              "margins": {
+                "boundaries": [],
+                "values": ["0%"]
               },
-              {
-                "id": "id228",
-                "location": {
-                  "type": "operational_point_part_reference",
-                  "operational_point": {
-                    "uic": 8755,
-                    "secondary_code": "BV",
-                    "type": "uic"
-                  },
-                  "track_reference": null
-                }
-              }
-            ],
-            "schedule": [
-              {
-                "at": "id228",
-                "arrival": "PT432S",
-                "stop_for": "P0D",
-                "reception_signal": "OPEN"
-              }
-            ],
-            "margins": {
-              "boundaries": [],
-              "values": ["0%"]
-            },
-            "power_restrictions": []
+              "power_restrictions": []
+            }
           }
         }
       ]
@@ -642,9 +647,10 @@
         },
         {
           "disabled": false,
-          "key": "e0573b22-d222-47ac-9a96-224d44ab842b",
-          "start_time": {
-            "value": 1729191600000
+          "change_groups": {
+            "start_time": {
+              "value": 1729191600000
+            }
           }
         }
       ]
@@ -781,123 +787,126 @@
           }
         },
         {
-          "key": "1ed321cd-984a-4b3e-9764-ca70fcc95bbc",
           "occurrence_index": 2,
           "disabled": false,
-          "rolling_stock": {
-            "rolling_stock_name": "IMPROBABLE_RS_E2E",
-            "comfort": "STANDARD"
-          },
-          "labels": {
-            "value": []
-          },
-          "start_time": {
-            "value": 1729210242000
-          },
-          "path_and_schedule": {
-            "path": [
-              {
-                "id": "id2458",
-                "location": {
-                  "type": "track_offset",
-                  "track": "TG4",
-                  "offset": 1549000
-                }
-              },
-              {
-                "id": "id2659",
-                "location": {
-                  "type": "operational_point_part_reference",
-                  "operational_point": {
-                    "uic": 8744,
-                    "secondary_code": "BV",
-                    "type": "uic"
-                  },
-                  "track_reference": null
-                }
-              },
-              {
-                "id": "id2492",
-                "location": {
-                  "type": "track_offset",
-                  "track": "TD0",
-                  "offset": 11080000
-                }
-              },
-              {
-                "id": "id2570",
-                "location": {
-                  "type": "operational_point_part_reference",
-                  "operational_point": {
-                    "uic": 8733,
-                    "secondary_code": "BV",
-                    "type": "uic"
-                  },
-                  "track_reference": null
-                }
-              },
-              {
-                "id": "b174dfa7-f6e7-45d9-9545-469a64e675b9",
-                "location": {
-                  "type": "operational_point_part_reference",
-                  "operational_point": {
-                    "uic": 8799,
-                    "secondary_code": "BC",
-                    "type": "uic"
-                  },
-                  "track_reference": null
-                }
-              }
-            ],
-            "schedule": [
-              {
-                "at": "id2659",
-                "arrival": null,
-                "stop_for": "PT124S",
-                "reception_signal": "SHORT_SLIP_STOP"
-              },
-              {
-                "at": "id2570",
-                "arrival": "PT10554S",
-                "stop_for": "PT600S",
-                "reception_signal": "OPEN"
-              },
-              {
-                "at": "b174dfa7-f6e7-45d9-9545-469a64e675b9",
-                "arrival": null,
-                "stop_for": "P0D",
-                "reception_signal": "OPEN"
-              }
-            ],
-            "margins": {
-              "boundaries": [],
-              "values": ["0%"]
+          "change_groups": {
+            "rolling_stock": {
+              "rolling_stock_name": "IMPROBABLE_RS_E2E",
+              "comfort": "STANDARD"
             },
-            "power_restrictions": []
+            "labels": {
+              "value": []
+            },
+            "start_time": {
+              "value": 1729210242000
+            },
+            "path_and_schedule": {
+              "path": [
+                {
+                  "id": "id2458",
+                  "location": {
+                    "type": "track_offset",
+                    "track": "TG4",
+                    "offset": 1549000
+                  }
+                },
+                {
+                  "id": "id2659",
+                  "location": {
+                    "type": "operational_point_part_reference",
+                    "operational_point": {
+                      "uic": 8744,
+                      "secondary_code": "BV",
+                      "type": "uic"
+                    },
+                    "track_reference": null
+                  }
+                },
+                {
+                  "id": "id2492",
+                  "location": {
+                    "type": "track_offset",
+                    "track": "TD0",
+                    "offset": 11080000
+                  }
+                },
+                {
+                  "id": "id2570",
+                  "location": {
+                    "type": "operational_point_part_reference",
+                    "operational_point": {
+                      "uic": 8733,
+                      "secondary_code": "BV",
+                      "type": "uic"
+                    },
+                    "track_reference": null
+                  }
+                },
+                {
+                  "id": "b174dfa7-f6e7-45d9-9545-469a64e675b9",
+                  "location": {
+                    "type": "operational_point_part_reference",
+                    "operational_point": {
+                      "uic": 8799,
+                      "secondary_code": "BC",
+                      "type": "uic"
+                    },
+                    "track_reference": null
+                  }
+                }
+              ],
+              "schedule": [
+                {
+                  "at": "id2659",
+                  "arrival": null,
+                  "stop_for": "PT124S",
+                  "reception_signal": "SHORT_SLIP_STOP"
+                },
+                {
+                  "at": "id2570",
+                  "arrival": "PT10554S",
+                  "stop_for": "PT600S",
+                  "reception_signal": "OPEN"
+                },
+                {
+                  "at": "b174dfa7-f6e7-45d9-9545-469a64e675b9",
+                  "arrival": null,
+                  "stop_for": "P0D",
+                  "reception_signal": "OPEN"
+                }
+              ],
+              "margins": {
+                "boundaries": [],
+                "values": ["0%"]
+              },
+              "power_restrictions": []
+            }
           }
         },
         {
-          "key": "c929f87a-7872-44c8-ae07-17f9872e0e94",
           "occurrence_index": 3,
           "disabled": false,
-          "rolling_stock_category": {
-            "value": null
-          },
-          "start_time": {
-            "value": 1729224011000
-          },
-          "initial_speed": {
-            "value": 41.666666666666664
+          "change_groups": {
+            "rolling_stock_category": {
+              "value": null
+            },
+            "start_time": {
+              "value": 1729224011000
+            },
+            "initial_speed": {
+              "value": 41.666666666666664
+            }
           }
         },
         {
-          "key": "1cadb9cb-645f-47c0-88b1-2715d4b469ed",
           "disabled": false,
-          "speed_limit_tag": {
-            "value": "MA100"
-          },
-          "start_time": {
-            "value": 1729222216000
+          "change_groups": {
+            "speed_limit_tag": {
+              "value": "MA100"
+            },
+            "start_time": {
+              "value": 1729222216000
+            }
           }
         }
       ]

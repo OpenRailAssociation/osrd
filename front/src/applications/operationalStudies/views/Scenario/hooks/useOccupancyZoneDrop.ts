@@ -128,7 +128,8 @@ export default function useOccupancyZoneDrop({
       // If the exception already has a path_and_schedule change group, update
       // it. Otherwise create it (copying over the base train schedule's path
       // and schedule).
-      const pathAndSchedule: PathAndScheduleChangeGroup = changeGroups.path_and_schedule ?? {
+      const pathAndSchedule: PathAndScheduleChangeGroup = changeGroups.change_groups
+        .path_and_schedule ?? {
         path: trainSchedule.path,
         schedule: trainSchedule.schedule ?? [],
         margins: trainSchedule.margins ?? {
@@ -146,8 +147,7 @@ export default function useOccupancyZoneDrop({
       };
 
       await putException({
-        // TODO: remove this null assertion once exception migration is done
-        id: id!,
+        id: id,
         body: {
           occurrence_index,
           disabled: disabled ?? false,
@@ -186,7 +186,7 @@ export default function useOccupancyZoneDrop({
 
       const operationalPoint = pathOperationalPoints.find((op) => op.waypointId === waypointId)!;
 
-      const path = exception?.path_and_schedule?.path ?? trainSchedule.path;
+      const path = exception?.change_groups.path_and_schedule?.path ?? trainSchedule.path;
       const simulationSummary = exception?.summary ?? trainSchedule.summary;
       const occupancyZoneStartOffset = Duration.subtractDate(
         occupancyZoneStartTime,

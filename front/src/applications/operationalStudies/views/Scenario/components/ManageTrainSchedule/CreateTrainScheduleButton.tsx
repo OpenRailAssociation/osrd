@@ -79,8 +79,10 @@ const CreateTrainScheduleButton = ({
       let trainScheduleToUpsert = formattedNewTrainSchedule;
 
       const newAddedExceptions = addedExceptions.map(({ startTime: exStartTime }) => ({
-        key: '', // TODO : remove this when the key will be removed from the model
-        start_time: { value: exStartTime.getTime() },
+        change_groups: {
+          start_time: { value: exStartTime.getTime() },
+        },
+        disabled: false,
       }));
 
       if (newAddedExceptions.length > 0) {
@@ -91,29 +93,13 @@ const CreateTrainScheduleButton = ({
           timetableId
         );
 
-        // TODO : remove this part when the back will be done inserting the new exception format in TrainSchedule
-        const formattedExceptions = newExceptions.map((exceptionNewModel) => {
-          const {
-            change_groups,
-            train_schedule_id: _train_schedule_id,
-            timetable_id: _timetable_id,
-            ...restExceptions
-          } = exceptionNewModel;
-          return {
-            ...change_groups,
-            ...restExceptions,
-            // TODO_EXCEPTION: remove this when drop key in the model
-            key: '',
-          };
-        });
-
         // Add the new exceptions to the train schedule so they contain their new exception ids
         trainScheduleToUpsert = {
           ...formattedNewTrainSchedule,
           ...(formattedNewTrainSchedule.paced && {
             paced: {
               ...formattedNewTrainSchedule.paced,
-              exceptions: formattedExceptions,
+              exceptions: newExceptions,
             },
           }),
         };

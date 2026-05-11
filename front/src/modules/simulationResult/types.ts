@@ -7,7 +7,8 @@ import type {
   PathPropertiesFormatted,
 } from 'applications/operationalStudies/types';
 import type {
-  PacedTrainException,
+  TrainScheduleException,
+  TrainScheduleExceptionChangeGroups,
   CoreSignalUpdate,
   PathProperties,
   RollingStockWithLiveries,
@@ -77,7 +78,7 @@ export type IndividualTrainProjection = {
     | {
         id: OccurrenceId;
         type: 'exception';
-        exception: PacedTrainException;
+        exception?: TrainScheduleException;
       }
   );
 
@@ -156,11 +157,10 @@ export type CurveVisualClassification = {
 };
 
 /**
- * Exception types that influence the curve visual state. The values match
- * the keys of `PacedTrainException` so callers can pass them directly.
+ * Exception change groups that influence the curve visual state.
  */
 export type CurveStyleExceptionType = keyof Pick<
-  PacedTrainException,
+  TrainScheduleExceptionChangeGroups,
   'start_time' | 'path_and_schedule'
 >;
 

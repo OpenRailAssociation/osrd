@@ -4,10 +4,10 @@ import cx from 'classnames';
 import { isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
-import type { SubCategory } from 'common/api/osrdEditoastApi';
+import type { SubCategory, TrainScheduleExceptionChangeGroups } from 'common/api/osrdEditoastApi';
 import OSRDTooltip from 'common/OSRDTooltip';
 import isMainCategory from 'modules/rollingStock/helpers/category';
-import type { Occurrence, ExceptionChangeGroups } from 'modules/trainSchedule/types';
+import type { Occurrence } from 'modules/trainSchedule/types';
 import { getExceptionType } from 'utils/trainId';
 
 import { getTrainCategoryClassName } from '../utils';
@@ -46,9 +46,8 @@ const OccurrenceIndicator = ({ occurrence, subCategories }: OccurrenceIndicatorP
 
   const displayedChangeGroups =
     exceptionChangeGroups &&
-    Object.entries(exceptionChangeGroups)
-      .filter(([_, isPresent]) => isPresent !== null)
-      .map(([changeGroup]) => changeGroup as keyof ExceptionChangeGroups)
+    (Object.keys(exceptionChangeGroups) as (keyof TrainScheduleExceptionChangeGroups)[])
+      .filter((changeGroup) => exceptionChangeGroups[changeGroup] !== null)
       .map((changeGroup) => {
         let occurrenceCategory;
 

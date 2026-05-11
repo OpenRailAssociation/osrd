@@ -95,13 +95,17 @@ describe('generatePacedTrainException', () => {
   describe('indexed occurrence', () => {
     describe('when unmodified (occurrence matches the base paced train)', () => {
       it('should return an empty diff for an occurrence identical to the base', () => {
-        const exception = generatePacedTrainException(baseUpdatedOccurrence, originalPacedTrain, 0);
-        expect(exception).toEqual({});
+        const { change_groups } = generatePacedTrainException(
+          baseUpdatedOccurrence,
+          originalPacedTrain,
+          0
+        );
+        expect(change_groups).toEqual({});
       });
 
       it('should not include start_time when it matches base + index x interval', () => {
         // occurrence 2 -> 12:45 + 2x1h = 14:45
-        const exception = generatePacedTrainException(
+        const { change_groups } = generatePacedTrainException(
           {
             ...baseUpdatedOccurrence,
             start_time: new Date('2025-06-02T14:45:00.000Z').getTime(),
@@ -110,8 +114,8 @@ describe('generatePacedTrainException', () => {
           originalPacedTrain,
           2
         );
-        expect(exception).not.toHaveProperty('start_time');
-        expect(exception).not.toHaveProperty('train_name');
+        expect(change_groups).not.toHaveProperty('start_time');
+        expect(change_groups).not.toHaveProperty('train_name');
       });
     });
 
@@ -121,7 +125,7 @@ describe('generatePacedTrainException', () => {
 
     describe('when all changes are reverted to base values', () => {
       it('should return an empty diff when every field matches the base for occurrence 1', () => {
-        const exception = generatePacedTrainException(
+        const { change_groups } = generatePacedTrainException(
           {
             ...baseUpdatedOccurrence,
             start_time: new Date('2025-06-02T13:45:00.000Z').getTime(), // base + 1x1h
@@ -130,7 +134,7 @@ describe('generatePacedTrainException', () => {
           originalPacedTrain,
           1
         );
-        expect(exception).toEqual({});
+        expect(change_groups).toEqual({});
       });
     });
 
@@ -140,7 +144,7 @@ describe('generatePacedTrainException', () => {
 
     describe('modifying all simple change groups at once', () => {
       it('should detect every simple change group in a single diff', () => {
-        const exception = generatePacedTrainException(
+        const { change_groups } = generatePacedTrainException(
           {
             ...baseUpdatedOccurrence,
             category: { main_category: 'HIGH_SPEED_TRAIN' },
@@ -161,7 +165,7 @@ describe('generatePacedTrainException', () => {
           originalPacedTrain,
           0
         );
-        expect(exception).toMatchObject({
+        expect(change_groups).toMatchObject({
           rolling_stock_category: { value: { main_category: 'HIGH_SPEED_TRAIN' } },
           labels: { value: ['express'] },
           speed_limit_tag: { value: 'V160' },
@@ -179,7 +183,7 @@ describe('generatePacedTrainException', () => {
           train_name: { value: 'express 42' },
         });
         // path_and_schedule should not appear since path was not modified
-        expect(exception).not.toHaveProperty('path_and_schedule');
+        expect(change_groups).not.toHaveProperty('path_and_schedule');
       });
     });
 
@@ -202,7 +206,7 @@ describe('generatePacedTrainException', () => {
           },
         };
 
-        const exception = generatePacedTrainException(
+        const { change_groups } = generatePacedTrainException(
           {
             ...baseUpdatedOccurrence,
             path: [westStationPathStep, modifiedSouthPathStep],
@@ -211,8 +215,8 @@ describe('generatePacedTrainException', () => {
           originalPacedTrain,
           0
         );
-        expect(exception).toHaveProperty('path_and_schedule');
-        expect(exception.path_and_schedule).toMatchObject({
+        expect(change_groups).toHaveProperty('path_and_schedule');
+        expect(change_groups.path_and_schedule).toMatchObject({
           path: expect.arrayContaining([
             expect.objectContaining({
               location: expect.objectContaining({
@@ -225,8 +229,8 @@ describe('generatePacedTrainException', () => {
           schedule: [{ at: '1-1', stop_for: 'PT30S' }],
         });
         // Other simple change groups should not appear
-        expect(exception).not.toHaveProperty('rolling_stock_category');
-        expect(exception).not.toHaveProperty('labels');
+        expect(change_groups).not.toHaveProperty('rolling_stock_category');
+        expect(change_groups).not.toHaveProperty('labels');
       });
     });
 
@@ -236,7 +240,7 @@ describe('generatePacedTrainException', () => {
 
     describe('modifying multiple fields at once', () => {
       it('should include all changed fields and none of the unchanged ones', () => {
-        const exception = generatePacedTrainException(
+        const { change_groups } = generatePacedTrainException(
           {
             ...baseUpdatedOccurrence,
             category: { main_category: 'HIGH_SPEED_TRAIN' },
@@ -249,13 +253,13 @@ describe('generatePacedTrainException', () => {
           1
         );
 
-        expect(exception).toMatchObject({
+        expect(change_groups).toMatchObject({
           rolling_stock_category: { value: { main_category: 'HIGH_SPEED_TRAIN' } },
           labels: { value: ['vip'] },
         });
-        expect(exception).not.toHaveProperty('start_time');
-        expect(exception).not.toHaveProperty('train_name');
-        expect(exception).not.toHaveProperty('speed_limit_tag');
+        expect(change_groups).not.toHaveProperty('start_time');
+        expect(change_groups).not.toHaveProperty('train_name');
+        expect(change_groups).not.toHaveProperty('speed_limit_tag');
       });
     });
   });
@@ -274,7 +278,7 @@ describe('generatePacedTrainException', () => {
 
     describe('start_time (always present)', () => {
       it('should always include start_time even when no other field is changed', () => {
-        const exception = generatePacedTrainException(
+        const { change_groups } = generatePacedTrainException(
           {
             ...baseUpdatedOccurrence,
             start_time: new Date('2025-06-02T16:00:00.000Z').getTime(),
@@ -283,19 +287,19 @@ describe('generatePacedTrainException', () => {
           originalPacedTrain,
           null
         );
-        expect(exception).toMatchObject({
+        expect(change_groups).toMatchObject({
           start_time: { value: new Date('2025-06-02T16:00:00.000Z').getTime() },
         });
       });
 
       it('should include start_time even when it coincides with the base paced train start time', () => {
         // 12:45 is also the base start time, but an added exception always carries it
-        const exception = generatePacedTrainException(
+        const { change_groups } = generatePacedTrainException(
           { ...baseUpdatedOccurrence, train_name: 'test/+' },
           originalPacedTrain,
           null
         );
-        expect(exception).toHaveProperty('start_time');
+        expect(change_groups).toHaveProperty('start_time');
       });
     });
 
@@ -305,7 +309,7 @@ describe('generatePacedTrainException', () => {
 
     describe('train_name', () => {
       it('should not include train_name when it matches the default "baseName/+" pattern', () => {
-        const exception = generatePacedTrainException(
+        const { change_groups } = generatePacedTrainException(
           {
             ...baseUpdatedOccurrence,
             start_time: new Date('2025-06-02T16:00:00.000Z').getTime(),
@@ -314,11 +318,11 @@ describe('generatePacedTrainException', () => {
           originalPacedTrain,
           null
         );
-        expect(exception).not.toHaveProperty('train_name');
+        expect(change_groups).not.toHaveProperty('train_name');
       });
 
       it('should include train_name when the user gives a custom name', () => {
-        const exception = generatePacedTrainException(
+        const { change_groups } = generatePacedTrainException(
           {
             ...baseUpdatedOccurrence,
             start_time: new Date('2025-06-02T16:00:00.000Z').getTime(),
@@ -327,7 +331,7 @@ describe('generatePacedTrainException', () => {
           originalPacedTrain,
           null
         );
-        expect(exception).toMatchObject({
+        expect(change_groups).toMatchObject({
           train_name: { value: 'special departure' },
         });
       });
@@ -339,7 +343,7 @@ describe('generatePacedTrainException', () => {
 
     describe('modifying fields', () => {
       it('should detect all simple change groups alongside the mandatory start_time', () => {
-        const exception = generatePacedTrainException(
+        const { change_groups } = generatePacedTrainException(
           {
             ...baseUpdatedOccurrence,
             start_time: new Date('2025-06-02T17:30:00.000Z').getTime(),
@@ -352,7 +356,7 @@ describe('generatePacedTrainException', () => {
           originalPacedTrain,
           null
         );
-        expect(exception).toMatchObject({
+        expect(change_groups).toMatchObject({
           start_time: { value: new Date('2025-06-02T17:30:00.000Z').getTime() },
           train_name: { value: 'extra train' },
           rolling_stock_category: { value: { main_category: 'HIGH_SPEED_TRAIN' } },

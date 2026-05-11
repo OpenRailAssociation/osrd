@@ -1,11 +1,8 @@
-import { isEmpty } from 'lodash';
-
 import {
   osrdEditoastApi,
   type TrainSchedule,
   type TrainScheduleException,
   type TrainScheduleResponse,
-  type PacedTrainException,
 } from 'common/api/osrdEditoastApi';
 import {
   unsetTrainIdsMatching,
@@ -14,7 +11,7 @@ import {
 import type { AppDispatch } from 'store';
 import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
-import { getOcurrencesIds, isPacedTrainBase } from './pacedTrain';
+import { getOcurrencesIds, hasChangeGroups, isPacedTrainBase } from './pacedTrain';
 
 export async function fetchTrainSchedule(
   id: number,
@@ -62,16 +59,14 @@ async function updatePacedTrain(dispatch: AppDispatch, id: number, trainSchedule
 
 export async function createExceptions(
   dispatch: AppDispatch,
-  exceptions: PacedTrainException[],
+  exceptions: Pick<TrainScheduleException, 'change_groups' | 'disabled' | 'occurrence_index'>[],
   pacedTrainId: number,
   timetableId: number
 ): Promise<TrainScheduleException[]> {
   // TODO: use batch when it will be possible to batch post exceptions
   return await Promise.all(
-    exceptions.map((exception) => {
-      // TODO_EXCEPTION: remove key from the model and this destructuration when it will be done
-      const { key: _key, occurrence_index, disabled, ...change_groups } = exception;
-      return dispatch(
+    exceptions.map(({ occurrence_index, disabled, change_groups }) =>
+      dispatch(
         osrdEditoastApi.endpoints.postTimetableByIdTrainScheduleException.initiate({
           id: timetableId,
           body: {
@@ -81,34 +76,31 @@ export async function createExceptions(
             train_schedule_id: pacedTrainId,
           },
         })
-      ).unwrap();
-    })
+      ).unwrap()
+    )
   );
 }
 
 export async function updateExceptions(
   dispatch: AppDispatch,
-  exceptions: PacedTrainException[],
+  exceptions: TrainScheduleException[],
   pacedTrainId: number
 ) {
   // TODO: use batch when it will be possible to batch put exceptions
   await Promise.all(
-    exceptions.map((exception) => {
-      const { key: _key, occurrence_index, disabled, id, ...change_groups } = exception;
-
-      return dispatch(
+    exceptions.map(({ occurrence_index, disabled, id, change_groups }) =>
+      dispatch(
         osrdEditoastApi.endpoints.putTrainScheduleExceptionById.initiate({
-          // TODO_EXCEPTION: remove `!` when using TrainScheduleException type
-          id: id!,
+          id,
           body: {
             change_groups,
-            disabled: disabled ?? false,
+            disabled,
             occurrence_index,
             train_schedule_id: pacedTrainId,
           },
         })
-      ).unwrap();
-    })
+      ).unwrap()
+    )
   );
 }
 
@@ -135,40 +127,36 @@ export async function deleteExceptions(dispatch: AppDispatch, ids: number[]) {
  */
 export async function syncOccurrenceException(
   dispatch: AppDispatch,
-  generatedException: Omit<PacedTrainException, 'key' | 'occurrence_index'>,
-  existingException: PacedTrainException | undefined,
+  generatedException: Omit<TrainScheduleException, 'occurrence_index'>,
+  existingException: TrainScheduleException | undefined,
   occurrenceIndex: number | undefined,
   pacedTrainId: number,
   timetableId: number
-): Promise<PacedTrainException> {
+): Promise<TrainScheduleException> {
   if (existingException) {
-    if (isEmpty(generatedException) && !existingException.disabled) {
+    if (!hasChangeGroups(generatedException) && !existingException.disabled) {
       // No changes vs paced train anymore — delete the exception
-      // TODO_EXCEPTION: remove `!` when using TrainScheduleException type
-      await deleteExceptions(dispatch, [existingException.id!]);
+      await deleteExceptions(dispatch, [existingException.id]);
       // Return the empty exception so updatePacedTrainExceptionsList removes it from local state
       return {
         ...generatedException,
-        // TODO_EXCEPTION: remove this when key is dropped from the model
-        key: '',
         occurrence_index: occurrenceIndex,
       };
     }
-    const toUpdate: PacedTrainException = {
+    const toUpdate: TrainScheduleException = {
       ...generatedException,
       id: existingException.id,
-      // TODO_EXCEPTION: remove this when key is dropped from the model
-      key: '',
+      timetable_id: existingException.timetable_id,
+      train_schedule_id: existingException.train_schedule_id,
+      disabled: existingException.disabled,
       occurrence_index: occurrenceIndex,
     };
     await updateExceptions(dispatch, [toUpdate], pacedTrainId);
     return toUpdate;
   }
 
-  const exceptionToCreate: PacedTrainException = {
+  const exceptionToCreate: TrainScheduleException = {
     ...generatedException,
-    // TODO_EXCEPTION: remove this when key is dropped from the model
-    key: '',
     occurrence_index: occurrenceIndex,
   };
   const [created] = await createExceptions(
@@ -177,7 +165,7 @@ export async function syncOccurrenceException(
     pacedTrainId,
     timetableId
   );
-  return { ...exceptionToCreate, id: created.id };
+  return created;
 }
 
 export async function syncAndUpdatePacedTrain(

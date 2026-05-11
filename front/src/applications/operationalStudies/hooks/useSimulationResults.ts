@@ -55,8 +55,8 @@ const useSimulationResults = (
     );
 
     let startTime: number;
-    if (exception?.start_time) {
-      startTime = exception.start_time.value;
+    if (exception?.change_groups.start_time) {
+      startTime = exception.change_groups.start_time.value;
     } else {
       const selectedOccurrenceIndex = extractOccurrenceIndexFromOccurrenceId(selectedTrainId);
       startTime = computeIndexedOccurrenceStartTime(
@@ -68,7 +68,9 @@ const useSimulationResults = (
 
     return {
       ...trainSchedule,
-      ...(exception ? extractOccurrenceDetailsFromPacedTrain(trainSchedule, exception) : {}),
+      ...(exception
+        ? extractOccurrenceDetailsFromPacedTrain(trainSchedule, exception.change_groups)
+        : {}),
       // overwrite start_time from extractOccurrenceDetailsFromPacedTrain
       start_time: startTime,
       // overwrite train_name to reflect the occurrence name

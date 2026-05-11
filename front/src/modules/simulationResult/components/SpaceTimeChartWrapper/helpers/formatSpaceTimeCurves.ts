@@ -39,7 +39,7 @@ const getTrainCategory = (
     return trainSchedule?.category;
 
   const exception = findExceptionWithOccurrenceId(trainSchedule.paced.exceptions, trainId);
-  return exception?.rolling_stock_category?.value ?? trainSchedule.category;
+  return exception?.change_groups.rolling_stock_category?.value ?? trainSchedule.category;
 };
 
 const formatSpaceTimeCurves = (
