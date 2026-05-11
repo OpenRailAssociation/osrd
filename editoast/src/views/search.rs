@@ -431,7 +431,7 @@ pub(super) struct SearchResultItemTrack {
     migration(src_table = "infra_object_operational_point"),
     joins = "
         INNER JOIN infra_object_operational_point AS OP ON OP.id = search_operational_point.id
-        INNER JOIN infra_layer_operational_point AS lay ON OP.obj_id = lay.obj_id AND OP.infra_id = lay.infra_id",
+        LEFT JOIN infra_layer_operational_point AS lay ON OP.obj_id = lay.obj_id AND OP.infra_id = lay.infra_id",
     column(
         name = "obj_id",
         data_type = "varchar(255)",
@@ -495,8 +495,8 @@ pub(super) struct SearchResultItemOperationalPoint {
     #[search(sql = "OP.data#>>'{secondary_name}'")]
     secondary_name: Option<String>,
     #[search(sql = "ST_AsGeoJSON(ST_Transform(lay.geographic, 4326))::json")]
-    #[schema(value_type = GeoJsonPoint)]
-    geographic: Geometry,
+    #[schema(value_type = Option<GeoJsonPoint>)]
+    geographic: Option<Geometry>,
     #[search(sql = "OP.data->'parts'")]
     track_sections: Vec<SearchResultItemOperationalPointTrackSections>,
 }

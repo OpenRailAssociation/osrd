@@ -29,7 +29,7 @@ const stdcmOpFromSearchResult = (searchResult: SearchResultItemOperationalPoint)
     mainCode: searchResult.main_code,
     secondaryCode: searchResult.secondary_code,
     name: searchResult.name,
-    coordinates: searchResult.geographic.coordinates as [number, number],
+    coordinates: searchResult.geographic!.coordinates as [number, number],
   };
 };
 

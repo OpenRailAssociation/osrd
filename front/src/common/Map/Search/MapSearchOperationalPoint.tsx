@@ -135,28 +135,38 @@ const MapSearchOperationalPoint = ({ closeMapSearchPopUp }: MapSearchOperational
       <div className="search-results">
         {searchResults.length > 0 &&
           searchResults.length <= MAX_DISPLAYABLE_RESULTS &&
-          searchResultsFilteredBySecondaryCode.map((searchResult, index) => (
-            <button
-              id={`result-${index}`}
-              type="button"
-              className={cx('search-result-item', {
-                main: searchResult.is_passenger_station,
-                selected: index === selectedResultIndex,
-              })}
-              key={`mapSearchOperationalPoint-${searchResult.obj_id}`}
-              onClick={() => onResultClick(searchResult)}
-              tabIndex={-1}
-            >
-              <span className="main-code">{searchResult.main_code}</span>
-              <span className="name">
-                {searchResult.name}
-                {!searchResult.is_passenger_station && (
-                  <span className="secondary-code">{searchResult.secondary_code ?? ''}</span>
+          searchResultsFilteredBySecondaryCode.map((searchResult, index) => {
+            const hasNoGeo = searchResult.geographic === null;
+            return (
+              <button
+                id={`result-${index}`}
+                type="button"
+                className={cx('search-result-item', {
+                  main: searchResult.is_passenger_station,
+                  selected: index === selectedResultIndex,
+                })}
+                key={`mapSearchOperationalPoint-${searchResult.obj_id}`}
+                onClick={() => onResultClick(searchResult)}
+                tabIndex={-1}
+                disabled={hasNoGeo}
+              >
+                <span className="main-code">{searchResult.main_code}</span>
+                <span className="name">
+                  {searchResult.name}
+                  {!searchResult.is_passenger_station && (
+                    <span className="secondary-code">{searchResult.secondary_code ?? ''}</span>
+                  )}
+                </span>
+                <span className="uic">{searchResult.uic}</span>
+                {hasNoGeo && (
+                  <div className="error-line">
+                    <i className="icons-warning" />
+                    <span>Geographical position unavailable</span>
+                  </div>
                 )}
-              </span>
-              <span className="uic">{searchResult.uic}</span>
-            </button>
-          ))}
+              </button>
+            );
+          })}
       </div>
     </div>
   );

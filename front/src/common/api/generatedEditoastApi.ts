@@ -4257,7 +4257,7 @@ export type SearchResultItemOperationalPointTrackSections = {
   track: string;
 };
 export type SearchResultItemOperationalPoint = {
-  geographic: GeoJsonPoint;
+  geographic?: null | GeoJsonPoint;
   infra_id: number;
   is_passenger_station: boolean;
   main_code: string;

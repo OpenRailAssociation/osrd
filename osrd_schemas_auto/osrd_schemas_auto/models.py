@@ -5168,7 +5168,7 @@ class SearchResultItemOperationalPoint(BaseModel):
 
     """
 
-    geographic: GeoJsonPoint
+    geographic: GeoJsonPoint | None = None
     infra_id: int
     is_passenger_station: bool
     main_code: str
