@@ -5,18 +5,21 @@ import { Download, CheckCircle } from '@osrd-project/ui-icons';
 import { Trans, useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import {
-  type StdcmSimulationInputs,
-  type StdcmSuccessResponse,
-  type SimilarTrainWithSecondaryCode,
-  StdcmStopTypes,
+import type {
+  StdcmSimulationInputs,
+  SimilarTrainWithSecondaryCode,
+  StdcmResultsOutput,
+  StdcmPathProperties,
 } from 'applications/stdcm/types';
+import { StdcmStopTypes } from 'applications/stdcm/types';
+import type { SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
 import {
   osrdRailwayManagerApi,
   type RmiLoadingGaugeType,
   type PostSendLastMinuteRequestApiArg,
   type SimulationReport,
   type SendLastMinuteRequestResponse,
+  type SimulatedStep,
 } from 'common/api/osrdRailwayManagerApi';
 import {
   createSimilarTrainPayload,
@@ -24,6 +27,7 @@ import {
   transformStepsToApiFormat,
   validateTolerance,
 } from 'modules/SimulationReportSheet/utils/formatSimulationReportSheet';
+import { interpolateValue } from 'modules/simulationResult/helpers/utils';
 import { setFailure } from 'reducers/main';
 import { getRailwayManagerInterfaceUrl } from 'reducers/main/mainSelector';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
@@ -42,7 +46,7 @@ type SendToRailwayManagerModalProps = {
   onSuccess: (isSuccessful: boolean, data: SendLastMinuteRequestResponse) => void;
   onClose: () => void;
   consist: StdcmSimulationInputs['consist'];
-  stdcmData: StdcmSuccessResponse;
+  stdcmResults: StdcmResultsOutput;
   linkedTrains: StdcmSimulationInputs['linkedTrains'];
   simulationReportSheetNumber: string;
   similarTrains: SimilarTrainWithSecondaryCode[];
@@ -62,11 +66,48 @@ export type TimingContext = {
   afterTolerance: Duration;
 };
 
+function simulatedStepsFromPathProperties(
+  pathProperties: StdcmPathProperties,
+  pathSteps: StdcmPathStep[],
+  simulation: SimulationResponseSuccess
+): SimulatedStep[] {
+  const interp = (position: number): number =>
+    Math.trunc(interpolateValue(simulation.final_output, position, 'times'));
+  let remainingViaSteps = pathSteps
+    .map((ps) =>
+      ps.operationalPoint && ps.isVia ? { opId: ps.operationalPoint.id, stopFor: ps.stopFor } : null
+    )
+    .filter((ps) => ps !== null);
+  const result = pathProperties.operational_points.map((op) => {
+    const index = remainingViaSteps.findIndex((ps) => ps.opId === op.id);
+    let stopFor: number | undefined;
+    if (index >= 0) {
+      if (index !== 0) {
+        console.error(
+          'Could not match via path steps to operational points:',
+          remainingViaSteps.slice(0, index)
+        );
+      }
+      stopFor = remainingViaSteps[index].stopFor?.ms;
+      remainingViaSteps = remainingViaSteps.slice(index + 1);
+    }
+    return {
+      op_id: op.id,
+      path_item_time: interp(op.position),
+      stop_for: stopFor,
+    };
+  });
+  if (remainingViaSteps.length > 0) {
+    console.error('Could not match via path steps to operational points:', remainingViaSteps);
+  }
+  return result;
+}
+
 const SendToRailwayManagerModal = ({
   consist,
   onSuccess,
   onClose,
-  stdcmData,
+  stdcmResults,
   linkedTrains,
   simulationReportSheetNumber,
   similarTrains,
@@ -79,6 +120,7 @@ const SendToRailwayManagerModal = ({
   const dispatch = useAppDispatch();
 
   const DEFAULT_TRAIN_CATEGORY = { value: '', label: t('modal.noCategory') };
+  const stdcmData = stdcmResults.results;
 
   const [pathType, setPathType] = useState<Option>();
   const [trainCategory, setTrainCategory] = useState<Option>(DEFAULT_TRAIN_CATEGORY);
@@ -138,13 +180,22 @@ const SendToRailwayManagerModal = ({
 
   const convoyDetails = useMemo(
     () => [
-      { label: t('modal.compositionCode'), value: consist.speedLimitByTag ?? '-' },
+      {
+        label: t('modal.compositionCode'),
+        value: consist.speedLimitByTag ?? '-',
+      },
       {
         label: t('modal.totalTonnage'),
         value: consist.totalMass ? `${consist.totalMass} t` : '-',
       },
-      { label: t('modal.rollingStock'), value: consist.towedRollingStock?.name },
-      { label: t('modal.referenceEngine'), value: stdcmData.rollingStock.name ?? '-' },
+      {
+        label: t('modal.rollingStock'),
+        value: consist.towedRollingStock?.name,
+      },
+      {
+        label: t('modal.referenceEngine'),
+        value: stdcmData.rollingStock.name ?? '-',
+      },
       {
         label: t('modal.maxSpeed'),
         value: consist.maxSpeed != null ? `${consist.maxSpeed} km/h` : '-',
@@ -262,7 +313,11 @@ const SendToRailwayManagerModal = ({
       total_mass: tToKg(consist.totalMass),
       max_speed: kmhToMs(consist.maxSpeed),
       total_length: consist.totalLength,
-      simulated_steps: [],
+      simulated_steps: simulatedStepsFromPathProperties(
+        stdcmResults.pathProperties,
+        stdcmResults.results.simulationPathSteps,
+        stdcmData.simulation
+      ),
       requested_steps: transformStepsToApiFormat(steps, timingContext),
       departure_time: normalizedDate.toISOString(),
       user_message: comment,
@@ -526,7 +581,10 @@ const SendToRailwayManagerModal = ({
                 id="train-to-be-substituted"
                 value={substituteTrain?.trainName}
                 onChange={(e) =>
-                  setSubstituteTrain({ ...substituteTrain, trainName: e.target.value })
+                  setSubstituteTrain({
+                    ...substituteTrain,
+                    trainName: e.target.value,
+                  })
                 }
                 label={t('modal.trainToBeSubstituted')}
               />
@@ -540,7 +598,10 @@ const SendToRailwayManagerModal = ({
                 value={new Date(substituteTrain.date)}
                 onDateChange={(date) => {
                   if (date) {
-                    setSubstituteTrain({ ...substituteTrain, date: date.toISOString() });
+                    setSubstituteTrain({
+                      ...substituteTrain,
+                      date: date.toISOString(),
+                    });
                   }
                 }}
               />

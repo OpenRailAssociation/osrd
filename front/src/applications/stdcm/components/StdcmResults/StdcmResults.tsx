@@ -354,7 +354,7 @@ const StdcmResults = ({
                               openModal(
                                 <SendToRailwayManagerModal
                                   consist={selectedSimulation.inputs.consist}
-                                  stdcmData={outputs.results}
+                                  stdcmResults={outputs}
                                   linkedTrains={selectedSimulation.inputs.linkedTrains}
                                   simulationReportSheetNumber={simulationReportSheetNumber}
                                   similarTrains={similarTrains}
