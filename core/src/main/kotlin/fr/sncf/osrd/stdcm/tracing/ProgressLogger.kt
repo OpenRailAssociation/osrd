@@ -4,10 +4,10 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
 import fr.sncf.osrd.stdcm.graph.STDCMGraph
 import fr.sncf.osrd.stdcm.graph.STDCMNode
 import fr.sncf.osrd.stdcm.graph.logger
+import fr.sncf.osrd.utils.toGeoPoint
 import fr.sncf.osrd.utils.units.Duration
 import fr.sncf.osrd.utils.units.seconds
 import io.opentelemetry.api.common.Attributes
@@ -51,11 +51,7 @@ data class ProgressLogger(
             return
         }
         if (progress >= thresholdDistance * nSamplesReached) {
-            val block = node.infraExplorer.getCurrentBlock()
-            val geo =
-                buildTrainPathFromBlock(graph.rawInfra, graph.blockInfra, block)
-                    .getGeo()
-                    .getPoints()[0]
+            val geo = node.toGeoPoint(graph.rawInfra, graph.blockInfra)
             val str =
                 "node sample for progress $nSamplesReached/$nStepsProgress: " +
                     "time=${node.timeData.earliestReachableTime.toInt()}s, " +
@@ -97,9 +93,7 @@ data class ProgressLogger(
     }
 
     fun logNode(node: STDCMNode): STDCMProgress {
-        val block = node.infraExplorer.getCurrentBlock()
-        val geo =
-            buildTrainPathFromBlock(graph.rawInfra, graph.blockInfra, block).getGeo().getPoints()[0]
+        val geo = node.toGeoPoint(graph.rawInfra, graph.blockInfra)
         val bestTravelTime =
             (node.timeData.earliestReachableTime + node.remainingTimeEstimation).toLong()
         val data =

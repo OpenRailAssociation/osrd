@@ -5,7 +5,6 @@ import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
 import fr.sncf.osrd.sim_infra.api.BlockInfra
 import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.stdcm.graph.STDCMNode
-import fr.sncf.osrd.utils.units.Offset
 import java.io.BufferedWriter
 import java.io.File
 
@@ -50,11 +49,11 @@ class CSVLogger(filename: String, private val keys: List<String>) {
 
 /** Return the geo coordinates of a node. */
 fun STDCMNode.toGeoPoint(rawInfra: RawInfra, blockInfra: BlockInfra): Point {
-    val block = infraExplorer.getCurrentBlock()
-    val geo = buildTrainPathFromBlock(rawInfra, blockInfra, block).getGeo()
-    val blockLength = blockInfra.getBlockLength(block)
-    val offset = locationOnEdge ?: Offset.zero()
-    var p = geo.interpolateNormalized(offset.meters / blockLength.meters)
+    val blockRange = infraExplorer.getCurrentBlockRange()
+    val geo = buildTrainPathFromBlock(rawInfra, blockInfra, blockRange.value).getGeo()
+    val blockLength = blockInfra.getBlockLength(blockRange.value)
+    val blockOffset = blockRange.offsetFromTrainPath(infraExplorer.getSimulatedLength())
+    var p = geo.interpolateNormalized(blockOffset.meters / blockLength.meters)
     if (p.lat.isNaN() || p.lon.isNaN()) p = geo.getPoints().first()
     return p
 }
