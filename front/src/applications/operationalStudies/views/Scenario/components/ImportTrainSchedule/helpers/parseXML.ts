@@ -1,12 +1,11 @@
 import { omit } from 'lodash';
-import { v4 as uuidV4 } from 'uuid';
 
 import type {
   CichDictValue,
   PacedTrainWithPaced,
   TimetableJsonPayload,
 } from 'applications/operationalStudies/types';
-import type { TrainSchedule, PacedTrainException } from 'common/api/osrdEditoastApi';
+import type { TrainSchedule, TrainScheduleException } from 'common/api/osrdEditoastApi';
 import { addDurationToDate, Duration } from 'utils/duration';
 
 import { generatePacedTrainException } from '../../ManageTrainSchedule/helpers/buildPacedTrainException';
@@ -154,7 +153,7 @@ const reconcilePacedTrainOccurrences = (
 
   const matchedImportedScheduleKeys = new Set<string>();
   const getScheduleKey = (s: TrainSchedule) => `${s.start_time}`;
-  const exceptions: PacedTrainException[] = [];
+  const exceptions: TrainScheduleException[] = [];
 
   // Match OSRD Default Occurrences to imported Trains
   osrdDefaultOccurrences.forEach((osrdOccurrence, index) => {
@@ -189,7 +188,6 @@ const reconcilePacedTrainOccurrences = (
       if (Object.keys(cleanException).length > 0) {
         exceptions.push({
           ...cleanException,
-          key: uuidV4(),
           occurrence_index: index,
         });
       }
@@ -197,10 +195,10 @@ const reconcilePacedTrainOccurrences = (
       // Case 2: OSRD default occurrence has no match in the imported file
       // Create a disabled exception
       exceptions.push({
-        key: uuidV4(),
+        change_groups: {},
         occurrence_index: index,
         disabled: true,
-      });
+      } as TrainScheduleException);
     }
   });
 
@@ -212,9 +210,8 @@ const reconcilePacedTrainOccurrences = (
 
     const baseException = generatePacedTrainException(importedSchedule, originalPacedTrain, null);
 
-    const exception: PacedTrainException = {
+    const exception: TrainScheduleException = {
       ...baseException,
-      key: uuidV4(),
     };
 
     const cleanException = omit(exception, 'train_name');

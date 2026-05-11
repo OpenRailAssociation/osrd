@@ -4,7 +4,7 @@ import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 
 import { mockOsrdEditoastEndpoints } from 'common/api/__mocks__/osrdEditoastApi';
 import type {
-  PacedTrainException,
+  TrainScheduleException,
   PathfindingResult,
   PathProperties,
   RollingStockWithLiveries,
@@ -16,7 +16,7 @@ import useSimulationResults from '../useSimulationResults';
 const INFRA_ID = 12;
 const ELECTRICAL_PROFILE_SET_ID = 34;
 const PACED_TRAIN_ID = 'paced_1';
-const EXCEPTION_KEY = 'exc_1';
+
 const OCCURRENCE_ID = 'indexedoccurrence_1_1';
 const ADDED_EXCEPTION_ID = 'exception_1_99';
 const ROLLING_STOCK_NAME = 'fast-rs';
@@ -71,7 +71,7 @@ describe('useSimulationResults', () => {
     ...baseTrain,
     paced: {
       interval: PACED_INTERVAL,
-      exceptions: [] as PacedTrainException[],
+      exceptions: [] as TrainScheduleException[],
     },
   };
 
@@ -143,7 +143,7 @@ describe('useSimulationResults', () => {
   const renderUseSimulationResults = () =>
     renderHookWithStore(() => useSimulationResults(undefined));
 
-  const pacedScheduleWith = (exceptions: PacedTrainException[]) => ({
+  const pacedScheduleWith = (exceptions: Partial<TrainScheduleException>[]) => ({
     ...pacedTrainSchedule,
     paced: { interval: PACED_INTERVAL, exceptions },
   });
@@ -271,7 +271,7 @@ describe('useSimulationResults', () => {
 
     it('should return no results when the selected occurrence is disabled', async () => {
       mockUseSelectedTrainSchedule.mockReturnValue(
-        pacedScheduleWith([{ key: EXCEPTION_KEY, occurrence_index: 1, disabled: true }])
+        pacedScheduleWith([{ occurrence_index: 1, disabled: true, change_groups: {} }])
       );
 
       const { result } = renderUseSimulationResults();
@@ -298,11 +298,10 @@ describe('useSimulationResults', () => {
       mockUseSelectedTrainSchedule.mockReturnValue(
         pacedScheduleWith([
           {
-            key: EXCEPTION_KEY,
             id: exceptionId,
             occurrence_index: 1,
             disabled: false,
-            start_time: { value: 32_400_000 },
+            change_groups: { start_time: { value: 32_400_000 } },
           },
         ])
       );
@@ -342,19 +341,19 @@ describe('useSimulationResults', () => {
         pacedScheduleWith([
           // an indexed occurrence the hook must NOT pick
           {
-            key: 'exc_indexed',
             id: 1,
             occurrence_index: 1,
             disabled: false,
-            start_time: { value: 1_000 },
-            train_name: { value: 'Indexed occurrence' },
+            change_groups: {
+              start_time: { value: 1_000 },
+              train_name: { value: 'Indexed occurrence' },
+            },
           },
           // the added exception the hook must resolve
           {
-            key: EXCEPTION_KEY,
             id: exceptionId,
             disabled: false,
-            start_time: { value: 32_400_000 },
+            change_groups: { start_time: { value: 32_400_000 } },
           },
         ])
       );
@@ -389,13 +388,13 @@ describe('useSimulationResults', () => {
       {
         case: 'the exception does not define one',
         selectedId: 'indexedoccurrence_1_42',
-        exception: { key: EXCEPTION_KEY, occurrence_index: 42, disabled: false },
+        exception: { occurrence_index: 42, disabled: false, change_groups: {} },
         expectedStartTime: 1773685800000,
       },
       {
         case: 'no exception matches the occurrence id',
         selectedId: 'indexedoccurrence_1_5',
-        exception: { key: EXCEPTION_KEY, occurrence_index: 1 },
+        exception: { occurrence_index: 1, change_groups: {} },
         expectedStartTime: 1773652500000,
       },
     ])(

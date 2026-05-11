@@ -4,7 +4,7 @@ import type {
   SubCategory,
   TrainCategory,
   TrainMainCategory,
-  PacedTrainException,
+  TrainScheduleException,
 } from 'common/api/osrdEditoastApi';
 import { TrainMainCategoryDict } from 'modules/rollingStock/consts';
 import isMainCategory from 'modules/rollingStock/helpers/category';
@@ -91,9 +91,9 @@ const buildLabels = (
 export function generateTrainPayloads(
   parsedPacedTrains: PacedTrainFromJson[],
   allowedSubCategories: SubCategory[]
-): { trainSchedules: TrainSchedule[]; exceptions: PacedTrainException[][] } {
+): { trainSchedules: TrainSchedule[]; exceptions: TrainScheduleException[][] } {
   const trainSchedules: TrainSchedule[] = [];
-  const exceptions: PacedTrainException[][] = [];
+  const exceptions: TrainScheduleException[][] = [];
 
   for (const pacedTrain of parsedPacedTrains) {
     const { paced, ...trainScheduleBase } = pacedTrain;

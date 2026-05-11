@@ -7,7 +7,7 @@ import { Duration } from 'utils/duration';
 import getPanelOccurrenceCounts from '../getPanelOccurrenceCounts';
 
 const exception = (
-  partial: { key: string } & Partial<Record<keyof SimulatedException, unknown>>
+  partial: Partial<Record<keyof SimulatedException, unknown>>
 ): SimulatedException => partial as SimulatedException;
 
 const paced = (exceptions: SimulatedException[] = []) => ({
@@ -31,7 +31,7 @@ describe('getPanelOccurrenceCounts', () => {
     'should subtract a $label non-compliant override from the compliant count',
     ({ exceptionType, field }) => {
       const result = getPanelOccurrenceCounts(
-        paced([exception({ key: 'e1', occurrence_index: 2, [field]: { value: 1000 } })]),
+        paced([exception({ occurrence_index: 2, change_groups: { [field]: { value: 1000 } } })]),
         exceptionType
       );
       expect(result).toEqual({ compliant: 5, all: 6 });
@@ -40,7 +40,7 @@ describe('getPanelOccurrenceCounts', () => {
 
   it('should remove a disabled indexed occurrence from both counts', () => {
     const result = getPanelOccurrenceCounts(
-      paced([exception({ key: 'e1', occurrence_index: 1, disabled: true })]),
+      paced([exception({ occurrence_index: 1, disabled: true })]),
       STD
     );
     expect(result).toEqual({ compliant: 5, all: 5 });
@@ -48,7 +48,7 @@ describe('getPanelOccurrenceCounts', () => {
 
   it('should add an active added exception to the total but not to compliant on the STD', () => {
     const result = getPanelOccurrenceCounts(
-      paced([exception({ key: 'e1', start_time: { value: 5000 } })]),
+      paced([exception({ change_groups: { start_time: { value: 5000 } } })]),
       STD
     );
     expect(result).toEqual({ compliant: 6, all: 7 });
@@ -56,7 +56,7 @@ describe('getPanelOccurrenceCounts', () => {
 
   it('should count an added exception as compliant on the TOD when it does not override path_and_schedule', () => {
     const result = getPanelOccurrenceCounts(
-      paced([exception({ key: 'e1', start_time: { value: 5000 } })]),
+      paced([exception({ change_groups: { start_time: { value: 5000 } } })]),
       TOD
     );
     expect(result).toEqual({ compliant: 7, all: 7 });
@@ -64,7 +64,9 @@ describe('getPanelOccurrenceCounts', () => {
 
   it('should ignore an indexed exception that does not override the relevant field', () => {
     const result = getPanelOccurrenceCounts(
-      paced([exception({ key: 'e1', occurrence_index: 1, path_and_schedule: { value: 'foo' } })]),
+      paced([
+        exception({ occurrence_index: 1, change_groups: { path_and_schedule: { value: 'foo' } } }),
+      ]),
       STD
     );
     expect(result).toEqual({ compliant: 6, all: 6 });
@@ -73,9 +75,9 @@ describe('getPanelOccurrenceCounts', () => {
   it('should handle a mix of exception types', () => {
     const result = getPanelOccurrenceCounts(
       paced([
-        exception({ key: 'e1', occurrence_index: 0, disabled: true }),
-        exception({ key: 'e2', occurrence_index: 2, start_time: { value: 1000 } }),
-        exception({ key: 'e3', start_time: { value: 5000 } }),
+        exception({ occurrence_index: 0, disabled: true }),
+        exception({ occurrence_index: 2, change_groups: { start_time: { value: 1000 } } }),
+        exception({ change_groups: { start_time: { value: 5000 } } }),
       ]),
       STD
     );

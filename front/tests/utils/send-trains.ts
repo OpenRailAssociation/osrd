@@ -1,68 +1,13 @@
 import type { APIRequestContext, APIResponse } from '@playwright/test';
 
 import type {
-  PacedTrainException,
   TrainSchedule,
   TrainScheduleException,
-  TrainScheduleExceptionChangeGroups,
   TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 
 import { getApiContext, handleErrorResponse, postApiRequest } from './api-utils';
 import type { ExceptionFormat } from './types';
-
-const CHANGE_GROUP_KEYS: ReadonlyArray<keyof TrainScheduleExceptionChangeGroups> = [
-  'constraint_distribution',
-  'initial_speed',
-  'labels',
-  'options',
-  'path_and_schedule',
-  'rolling_stock',
-  'rolling_stock_category',
-  'speed_limit_tag',
-  'start_time',
-  'train_name',
-];
-
-/**
- * Convert TrainScheduleException (API format with nested change_groups)
- * to PacedTrainException (frontend format with flat change groups)
- */
-const convertToPacedTrainException = (
-  apiException: TrainScheduleException
-): PacedTrainException => {
-  const { change_groups, disabled, id, key, occurrence_index } = apiException;
-
-  return {
-    ...change_groups,
-    disabled,
-    id,
-    key: key ?? '',
-    occurrence_index,
-  };
-};
-
-/**
- * Extract change groups from an exception.
- * Handles both formats:
- * - Direct properties (matching PacedTrainException type)
- * - Nested in 'change_groups' object (legacy format from JSON files)
- */
-const extractChangeGroups = (exception: ExceptionFormat): TrainScheduleExceptionChangeGroups => {
-  // Check if exception has change_groups property (legacy JSON format)
-  if ('change_groups' in exception && exception.change_groups) {
-    return exception.change_groups;
-  }
-
-  // Otherwise, extract from direct properties (standard format)
-  const pacedException = exception as PacedTrainException;
-  return Object.fromEntries(
-    CHANGE_GROUP_KEYS.filter((key) => pacedException[key] !== undefined).map((key) => [
-      key,
-      pacedException[key],
-    ])
-  );
-};
 
 /**
  * Send trains to the API for a specific train_schedule_set and returns the result.
@@ -134,25 +79,19 @@ async function sendTrains(
         }
 
         return exceptions.map(async (exception) => {
-          const changeGroups = extractChangeGroups(exception);
-
           const createdExceptionResponse: TrainScheduleException = await postApiRequest(
             `/api/timetable/${timetableId}/train_schedule_exception`,
             {
               train_schedule_id: trainScheduleId,
               disabled: exception.disabled ?? false,
               occurrence_index: exception.occurrence_index ?? null,
-              change_groups: changeGroups,
+              change_groups: exception.change_groups,
             },
             undefined,
             `Failed to create exception for train_schedule_id ${trainScheduleId}`
           );
 
-          // Convert API format (TrainScheduleException with nested change_groups)
-          // to frontend format (PacedTrainException with flat change groups)
-          const createdException = convertToPacedTrainException(createdExceptionResponse);
-
-          return { trainIndex, exception: createdException };
+          return { trainIndex, exception: createdExceptionResponse };
         });
       })
     );

@@ -64,10 +64,13 @@ async function handleSingleOccurrenceDrag({
     : undefined;
 
   // Live feedback: show the occurrence at the dragged position (keep its other overrides).
-  const previewException: SimulatedException = {
-    ...(existingException ?? { key: '', occurrence_index: occurrenceIndex }),
-    start_time: { value: newDepartureTime.getTime() },
-  };
+  const previewException = {
+    ...(existingException ?? { occurrence_index: occurrenceIndex }),
+    change_groups: {
+      ...existingException?.change_groups,
+      start_time: { value: newDepartureTime.getTime() },
+    },
+  } as SimulatedException;
   const previewTrain: TrainSpaceTimeData = {
     ...draggedTrain,
     paced: {

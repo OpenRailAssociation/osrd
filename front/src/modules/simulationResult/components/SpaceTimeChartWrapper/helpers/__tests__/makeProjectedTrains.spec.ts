@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import { describe, expect, test } from 'vitest';
 
-import type { PacedTrainException } from 'common/api/osrdEditoastApi';
+import type { TrainScheduleException } from 'common/api/osrdEditoastApi';
 import { type TrainSpaceTimeData } from 'modules/simulationResult/types';
 import { Duration } from 'utils/duration';
 
@@ -10,50 +10,53 @@ import makeProjectedTrains from '../makeProjectedTrains';
 describe('makeProjectedTrains', () => {
   describe('paced train with indexed 2 occurrences, 2nd’s is a path exception', () => {
     const exceptionId = 1;
-    const exception: PacedTrainException = {
-      key: exceptionId.toString(),
+    const exception: TrainScheduleException = {
       id: exceptionId,
+      timetable_id: 1,
+      train_schedule_id: 1,
       occurrence_index: 1,
       disabled: false,
-      train_name: {
-        value: 'GE brg 3',
-      },
-      path_and_schedule: {
-        path: [
-          {
-            id: 'a496f3a6-4eea-45f8-a83c-5472d9adcd6d',
-            location: {
-              type: 'operational_point_part_reference',
-              operational_point: {
-                uic: 11,
-                secondary_code: 'BV',
-                type: 'uic',
-              },
-            },
-          },
-          {
-            id: 'e18f50f3-2b40-451e-9726-e4dd29459bf0',
-            location: {
-              type: 'operational_point_part_reference',
-              operational_point: {
-                uic: 12,
-                secondary_code: 'BV',
-                type: 'uic',
-              },
-            },
-          },
-        ],
-        schedule: [
-          {
-            at: 'e18f50f3-2b40-451e-9726-e4dd29459bf0',
-            stop_for: 'P0D',
-          },
-        ],
-        margins: {
-          boundaries: [],
-          values: ['0%'],
+      change_groups: {
+        train_name: {
+          value: 'GE brg 3',
         },
-        power_restrictions: [],
+        path_and_schedule: {
+          path: [
+            {
+              id: 'a496f3a6-4eea-45f8-a83c-5472d9adcd6d',
+              location: {
+                type: 'operational_point_part_reference',
+                operational_point: {
+                  uic: 11,
+                  secondary_code: 'BV',
+                  type: 'uic',
+                },
+              },
+            },
+            {
+              id: 'e18f50f3-2b40-451e-9726-e4dd29459bf0',
+              location: {
+                type: 'operational_point_part_reference',
+                operational_point: {
+                  uic: 12,
+                  secondary_code: 'BV',
+                  type: 'uic',
+                },
+              },
+            },
+          ],
+          schedule: [
+            {
+              at: 'e18f50f3-2b40-451e-9726-e4dd29459bf0',
+              stop_for: 'P0D',
+            },
+          ],
+          margins: {
+            boundaries: [],
+            values: ['0%'],
+          },
+          power_restrictions: [],
+        },
       },
     };
 
@@ -133,7 +136,7 @@ describe('makeProjectedTrains', () => {
       });
       expect(result[1]).toEqual({
         id: 'indexedoccurrence_2562_1',
-        name: `${exception.train_name!.value}≠`,
+        name: `${exception.change_groups.train_name!.value}≠`,
         departureTime: new Date('2025-07-09T06:30:00.000Z'),
         type: 'exception',
         exception,
@@ -144,51 +147,55 @@ describe('makeProjectedTrains', () => {
 
   describe('paced train with 1 ADDED path exception', () => {
     const exceptionId = 2;
-    const exception: PacedTrainException = {
-      key: exceptionId.toString(),
+    const exception: TrainScheduleException = {
       id: exceptionId,
-      path_and_schedule: {
-        margins: {
-          boundaries: [],
-          values: ['0%'],
+      timetable_id: 1,
+      train_schedule_id: 1,
+      disabled: false,
+      change_groups: {
+        path_and_schedule: {
+          margins: {
+            boundaries: [],
+            values: ['0%'],
+          },
+          path: [
+            {
+              id: '3e6c78c6-89a9-462f-a0b3-1e4253cb6386',
+              location: {
+                type: 'operational_point_part_reference',
+                operational_point: {
+                  uic: 11,
+                  secondary_code: 'BV',
+                  type: 'uic',
+                },
+              },
+            },
+            {
+              id: '00fd1b82-32ca-43fd-a46e-24b5bc6f0fd3',
+              location: {
+                type: 'operational_point_part_reference',
+                operational_point: {
+                  uic: 14,
+                  secondary_code: 'BV',
+                  type: 'uic',
+                },
+              },
+            },
+          ],
+          power_restrictions: [],
+          schedule: [
+            {
+              at: '00fd1b82-32ca-43fd-a46e-24b5bc6f0fd3',
+              stop_for: 'P0D',
+            },
+          ],
         },
-        path: [
-          {
-            id: '3e6c78c6-89a9-462f-a0b3-1e4253cb6386',
-            location: {
-              type: 'operational_point_part_reference',
-              operational_point: {
-                uic: 11,
-                secondary_code: 'BV',
-                type: 'uic',
-              },
-            },
-          },
-          {
-            id: '00fd1b82-32ca-43fd-a46e-24b5bc6f0fd3',
-            location: {
-              type: 'operational_point_part_reference',
-              operational_point: {
-                uic: 14,
-                secondary_code: 'BV',
-                type: 'uic',
-              },
-            },
-          },
-        ],
-        power_restrictions: [],
-        schedule: [
-          {
-            at: '00fd1b82-32ca-43fd-a46e-24b5bc6f0fd3',
-            stop_for: 'P0D',
-          },
-        ],
-      },
-      start_time: {
-        value: new Date('2025-07-30T14:00:00.000Z').getTime(),
-      },
-      train_name: {
-        value: 'GE VPE +',
+        start_time: {
+          value: new Date('2025-07-30T14:00:00.000Z').getTime(),
+        },
+        train_name: {
+          value: 'GE VPE +',
+        },
       },
     };
 
@@ -273,8 +280,8 @@ describe('makeProjectedTrains', () => {
       });
       expect(result[3]).toEqual({
         id: 'exception_2564_2',
-        name: `${exception.train_name!.value}≠`,
-        departureTime: new Date(exception.start_time!.value),
+        name: `${exception.change_groups.train_name!.value}≠`,
+        departureTime: new Date(exception.change_groups.start_time!.value),
         type: 'exception',
         exception,
         ...exceptionProjection,

@@ -2,7 +2,7 @@ import { useRef, useEffect, useCallback, useState } from 'react';
 
 import type {
   LightRollingStockWithLiveries,
-  PacedTrainException,
+  TrainScheduleException,
   TrainScheduleSimulationSummaryResult,
   TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
@@ -109,7 +109,7 @@ export default function useLazySimulateTrains({
   }, []);
 
   const updateSimulatedTrainScheduleDepartureTime = useCallback(
-    (id: number, newDeparture: Date, shiftedExceptions?: PacedTrainException[]) => {
+    (id: number, newDeparture: Date, shiftedExceptions?: TrainScheduleException[]) => {
       setSimulatedTrainsById((prev) => {
         const result = prev.get(id);
         if (!result) {
@@ -127,7 +127,7 @@ export default function useLazySimulateTrains({
   );
 
   const updateSimulatedTrainExceptions = useCallback(
-    (trainScheduleId: number, updatedExceptions: PacedTrainException[]) => {
+    (trainScheduleId: number, updatedExceptions: TrainScheduleException[]) => {
       setSimulatedTrainsById((prev) => {
         const existing = prev.get(trainScheduleId);
         if (!existing?.paced) return prev;

@@ -27,7 +27,7 @@ const getStdExceptionType = (
   const trainSchedule = trainSchedulesWithDetailsById.get(trainScheduleId);
   if (!trainSchedule || !isPacedTrainWithDetails(trainSchedule)) return undefined;
   const exception = findExceptionWithOccurrenceId(trainSchedule.paced.exceptions, trainId);
-  return exception?.start_time ? 'start_time' : undefined;
+  return exception?.change_groups.start_time ? 'start_time' : undefined;
 };
 
 export default getStdExceptionType;

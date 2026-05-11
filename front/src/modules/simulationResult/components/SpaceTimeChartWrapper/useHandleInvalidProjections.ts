@@ -40,11 +40,9 @@ const useHandleInvalidProjections = ({
         const updatedExceptions = new Map(projection.paced.exceptionProjections);
 
         trainSchedule.paced.exceptions.forEach((exception) => {
-          // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
-          const existingException = updatedExceptions.get(exception.id!);
+          const existingException = updatedExceptions.get(exception.id);
           if (existingException) {
-            // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
-            updatedExceptions.set(exception.id!, {
+            updatedExceptions.set(exception.id, {
               ...existingException,
               isSimulated: isSimulated(exception.summary),
             });

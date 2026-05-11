@@ -3,12 +3,13 @@ import type { Position } from 'geojson';
 import type {
   TrainCategory,
   LightRollingStockWithLiveries,
-  PacedTrainException,
+  TrainScheduleException,
   CorePathfindingInputError,
   CorePathfindingNotFound,
   ReceptionSignal,
   SimulationSummaryResult,
   TrainScheduleResponse,
+  TrainScheduleExceptionChangeGroups,
 } from 'common/api/osrdEditoastApi';
 import type { OccurrenceId } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
@@ -85,7 +86,7 @@ export type InvalidReason =
   | CorePathfindingNotFound['error_type']
   | CorePathfindingInputError['error_type'];
 
-export type SimulatedException = PacedTrainException & { summary?: SimulationSummary };
+export type SimulatedException = TrainScheduleException & { summary?: SimulationSummary };
 
 export type PacedTrainWithDetails = TrainScheduleWithSummaries & {
   paced?: {
@@ -108,11 +109,6 @@ export type PacedDetails = PacedTrainWithPacedWithDetails['paced'];
 
 export type TrainScheduleWithDetails = PacedTrainWithDetails;
 
-export type ExceptionChangeGroups = Omit<
-  PacedTrainException,
-  'key' | 'occurrence_index' | 'disabled' | 'id'
->;
-
 export type Occurrence = {
   id: OccurrenceId;
   /**
@@ -126,8 +122,8 @@ export type Occurrence = {
   rollingStock?: LightRollingStockWithLiveries;
   startTime: Date;
   stopsCount: number;
-  exception?: { id: number; exceptionChangeGroups: ExceptionChangeGroups };
+  exception?: { id: number; exceptionChangeGroups: TrainScheduleExceptionChangeGroups };
   summary?: SimulationSummary;
 };
 
-export type ExceptionChangeGroupName = keyof ExceptionChangeGroups;
+export type ExceptionChangeGroupName = keyof TrainScheduleExceptionChangeGroups;

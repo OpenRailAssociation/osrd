@@ -41,7 +41,10 @@ export function applyOccurrenceOnPacedTrain(
     speed_limit_tag,
     rolling_stock_name: rollingStockName,
     ...occurrenceProps
-  } = extractOccurrenceDetailsFromPacedTrain(rawPacedTrain, occurrenceToUpdateException);
+  } = extractOccurrenceDetailsFromPacedTrain(
+    rawPacedTrain,
+    occurrenceToUpdateException?.change_groups
+  );
 
   return {
     ...originalPacedTrain,

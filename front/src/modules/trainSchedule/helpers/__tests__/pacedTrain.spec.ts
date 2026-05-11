@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import type { TrainSchedule, PacedTrainException } from 'common/api/osrdEditoastApi';
+import type { TrainSchedule, TrainScheduleExceptionChangeGroups } from 'common/api/osrdEditoastApi';
 import type {
   PacedTrainWithPacedWithDetails,
   SimulatedException,
@@ -94,11 +94,10 @@ describe('extractOccurrenceDetailsFromPacedTrain', () => {
   };
 
   it('should properly update a standard property', () => {
-    const exception: PacedTrainException = {
-      key: '123123',
+    const changeGroups: TrainScheduleExceptionChangeGroups = {
       train_name: { value: '8608 updated' },
     };
-    const updatedPacedTrain = extractOccurrenceDetailsFromPacedTrain(pacedTrain, exception);
+    const updatedPacedTrain = extractOccurrenceDetailsFromPacedTrain(pacedTrain, changeGroups);
     expect(updatedPacedTrain).toEqual({
       ...pacedTrain,
       train_name: '8608 updated',
@@ -106,11 +105,10 @@ describe('extractOccurrenceDetailsFromPacedTrain', () => {
   });
 
   it('should properly update speed limit tag with a null value', () => {
-    const exception: PacedTrainException = {
-      key: '123123',
+    const changeGroups: TrainScheduleExceptionChangeGroups = {
       speed_limit_tag: { value: null },
     };
-    const updatedPacedTrain = extractOccurrenceDetailsFromPacedTrain(pacedTrain, exception);
+    const updatedPacedTrain = extractOccurrenceDetailsFromPacedTrain(pacedTrain, changeGroups);
     expect(updatedPacedTrain).toEqual({
       ...pacedTrain,
       speed_limit_tag: null,
@@ -118,11 +116,10 @@ describe('extractOccurrenceDetailsFromPacedTrain', () => {
   });
 
   it('should properly update a property containing multiple ones', () => {
-    const exception: PacedTrainException = {
-      key: '123123',
+    const changeGroups: TrainScheduleExceptionChangeGroups = {
       options: { value: { use_electrical_profiles: true } },
     };
-    const updatedPacedTrain = extractOccurrenceDetailsFromPacedTrain(pacedTrain, exception);
+    const updatedPacedTrain = extractOccurrenceDetailsFromPacedTrain(pacedTrain, changeGroups);
     expect(updatedPacedTrain).toEqual({
       ...pacedTrain,
       options: {
@@ -132,8 +129,7 @@ describe('extractOccurrenceDetailsFromPacedTrain', () => {
   });
 
   it('should properly update path and schedule change group', () => {
-    const exception: PacedTrainException = {
-      key: '123123',
+    const changeGroups: TrainScheduleExceptionChangeGroups = {
       path_and_schedule: {
         path: [
           {
@@ -163,13 +159,13 @@ describe('extractOccurrenceDetailsFromPacedTrain', () => {
         power_restrictions: [],
       },
     };
-    const updatedPacedTrain = extractOccurrenceDetailsFromPacedTrain(pacedTrain, exception);
+    const updatedPacedTrain = extractOccurrenceDetailsFromPacedTrain(pacedTrain, changeGroups);
     expect(updatedPacedTrain).toEqual({
       ...pacedTrain,
-      path: exception.path_and_schedule!.path,
-      margins: exception.path_and_schedule!.margins,
-      power_restrictions: exception.path_and_schedule!.power_restrictions,
-      schedule: exception.path_and_schedule!.schedule,
+      path: changeGroups.path_and_schedule!.path,
+      margins: changeGroups.path_and_schedule!.margins,
+      power_restrictions: changeGroups.path_and_schedule!.power_restrictions,
+      schedule: changeGroups.path_and_schedule!.schedule,
     });
   });
 });
@@ -340,10 +336,14 @@ describe('isOccurrencePresentInPacedTrain', () => {
     timeWindow: Duration.parse('PT2H'),
     interval: Duration.parse('PT30M'),
     exceptions: [
-      // TODO_EXCEPTION: delete `key`
-      { id: 0, key: '0' },
-      { id: 1, key: '1', occurrence_index: 1, disabled: true },
-      { id: 2, key: '2', occurrence_index: 2, disabled: false },
+      {
+        id: 1,
+        occurrence_index: 1,
+        disabled: true,
+        change_groups: {},
+        timetable_id: trainScheduleId,
+        train_schedule_id: trainScheduleId,
+      },
     ],
   };
   const trainSchedule = { paced, id: trainScheduleId };
@@ -408,7 +408,7 @@ describe('isOccurrencePresentInPacedTrain', () => {
   it('should return true if the occurrence is an added exception present in the paced train', () => {
     expect(
       isOccurrencePresentInPacedTrain(
-        formatPacedTrainIdToExceptionId(pacedTrainId, 0),
+        formatPacedTrainIdToExceptionId(pacedTrainId, 1),
         trainSchedule
       )
     ).toEqual(true);
@@ -430,7 +430,7 @@ describe('getFirstActiveOccurrenceId', () => {
   const INTERVAL_MS = 10 * 60 * 1000;
 
   const exception = (
-    partial: { key: string } & Partial<Record<keyof SimulatedException, unknown>>
+    partial: Partial<Record<keyof SimulatedException, unknown>>
   ): SimulatedException => partial as SimulatedException;
 
   const schedule = (exceptions: SimulatedException[] = []) =>
@@ -449,7 +449,7 @@ describe('getFirstActiveOccurrenceId', () => {
 
   it('should skip a disabled slot and return the next one', () => {
     const result = getFirstActiveOccurrenceId(
-      schedule([exception({ key: 'e1', occurrence_index: 0, disabled: true })]),
+      schedule([exception({ occurrence_index: 0, disabled: true })]),
       PACED_ID
     );
     expect(result).toBe('indexedoccurrence_1_1');
@@ -458,9 +458,9 @@ describe('getFirstActiveOccurrenceId', () => {
   it('should skip multiple consecutive disabled slots', () => {
     const result = getFirstActiveOccurrenceId(
       schedule([
-        exception({ key: 'e1', occurrence_index: 0, disabled: true }),
-        exception({ key: 'e2', occurrence_index: 1, disabled: true }),
-        exception({ key: 'e3', occurrence_index: 2, disabled: true }),
+        exception({ occurrence_index: 0, disabled: true }),
+        exception({ occurrence_index: 1, disabled: true }),
+        exception({ occurrence_index: 2, disabled: true }),
       ]),
       PACED_ID
     );
@@ -472,9 +472,8 @@ describe('getFirstActiveOccurrenceId', () => {
       schedule([
         // Slot 2 is moved before slot 0 by its start_time override
         exception({
-          key: 'e1',
           occurrence_index: 2,
-          start_time: { value: PACED_START_MS - INTERVAL_MS },
+          change_groups: { start_time: { value: PACED_START_MS - INTERVAL_MS } },
         }),
       ]),
       PACED_ID
@@ -486,9 +485,8 @@ describe('getFirstActiveOccurrenceId', () => {
     const result = getFirstActiveOccurrenceId(
       schedule([
         exception({
-          key: 'e1',
           id: 42,
-          start_time: { value: PACED_START_MS - INTERVAL_MS },
+          change_groups: { start_time: { value: PACED_START_MS - INTERVAL_MS } },
         }),
       ]),
       PACED_ID
@@ -500,9 +498,8 @@ describe('getFirstActiveOccurrenceId', () => {
     const result = getFirstActiveOccurrenceId(
       schedule([
         exception({
-          key: 'e1',
           id: 42,
-          start_time: { value: PACED_START_MS + 5 * INTERVAL_MS },
+          change_groups: { start_time: { value: PACED_START_MS + 5 * INTERVAL_MS } },
         }),
       ]),
       PACED_ID
@@ -513,7 +510,7 @@ describe('getFirstActiveOccurrenceId', () => {
   it('should return undefined when every slot is disabled and no added exception exists', () => {
     const exceptions: SimulatedException[] = [];
     for (let i = 0; i < 6; i += 1) {
-      exceptions.push(exception({ key: `e${i}`, occurrence_index: i, disabled: true }));
+      exceptions.push(exception({ occurrence_index: i, disabled: true }));
     }
     expect(getFirstActiveOccurrenceId(schedule(exceptions), PACED_ID)).toBeUndefined();
   });

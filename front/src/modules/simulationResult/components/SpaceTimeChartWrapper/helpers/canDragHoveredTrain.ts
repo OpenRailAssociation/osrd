@@ -34,7 +34,7 @@ export default function canDragHoveredTrain({
       // shifts the model departure.
       return (
         belongsToSelectedTrain &&
-        !('exception' in hoveredTrain && hoveredTrain.exception?.start_time)
+        !('exception' in hoveredTrain && hoveredTrain.exception?.change_groups.start_time)
       );
 
     case 'single':

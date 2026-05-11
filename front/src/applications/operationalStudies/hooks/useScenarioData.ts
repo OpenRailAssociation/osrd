@@ -9,7 +9,7 @@ import {
 } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/buildPacedTrainException';
 import {
   osrdEditoastApi,
-  type PacedTrainException,
+  type TrainScheduleException,
   type ScenarioWithDetails,
   type TrainSchedule,
   type TrainScheduleResponse,
@@ -65,7 +65,7 @@ function computeShiftedExceptions(
   trainSchedule: TrainScheduleResponse,
   newDeparture: Date,
   panelSelectionMode?: PanelSelectionMode
-): PacedTrainException[] | undefined {
+): TrainScheduleException[] | undefined {
   if (panelSelectionMode !== 'all' || !trainSchedule.paced) return undefined;
   const offset = newDeparture.getTime() - trainSchedule.start_time;
   return shiftPacedExceptions(trainSchedule.paced.exceptions, offset);
@@ -243,7 +243,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
 
   /** Update paced train exceptions in local state without re-simulating. Used after drag-created exceptions. */
   const upsertTrainScheduleExceptions = useCallback(
-    (trainScheduleId: number, updatedExceptions: PacedTrainException[]) => {
+    (trainScheduleId: number, updatedExceptions: TrainScheduleException[]) => {
       setTrainSchedules((prev) => {
         const train = prev?.find((t) => t.id === trainScheduleId);
         if (!train?.paced) return prev;
@@ -295,7 +295,10 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
         );
         const { paced: _paced, ...occurrenceBaseTrain } = trainSchedule;
         const updatedOccurrence: TrainSchedule = {
-          ...extractOccurrenceDetailsFromPacedTrain(occurrenceBaseTrain, existingException),
+          ...extractOccurrenceDetailsFromPacedTrain(
+            occurrenceBaseTrain,
+            existingException?.change_groups
+          ),
           train_name: getOccurrenceTrainName(trainSchedule, draggedTrainId),
           start_time: newDeparture.getTime(),
         };
@@ -339,7 +342,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       if (shiftedExceptions) {
         const exceptionsToShift = shiftedExceptions.filter(
           // filter out null/undefined ids, which can happen if the exception is deleted because it was re-aligned on the model.
-          (exc) => exc.start_time && exc.id !== null && exc.id !== undefined
+          (exc) => exc.change_groups.start_time && exc.id !== null && exc.id !== undefined
         );
         await updateExceptions(dispatch, exceptionsToShift, trainSchedule.id);
       }

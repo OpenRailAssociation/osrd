@@ -8,10 +8,10 @@ import type {
 import {
   osrdEditoastApi,
   type MacroNodeForm,
-  type PacedTrainException,
   type SubCategory,
   type TrainSchedule,
   type TrainScheduleResponse,
+  type TrainScheduleException,
 } from 'common/api/osrdEditoastApi';
 import {
   createPacedTrains,
@@ -87,7 +87,7 @@ export const postFullImportPayload = async (
     const {
       trainSchedules,
       exceptions,
-    }: { trainSchedules: TrainSchedule[]; exceptions: PacedTrainException[][] } =
+    }: { trainSchedules: TrainSchedule[]; exceptions: TrainScheduleException[][] } =
       generateTrainPayloads(timetableJsonPayload.paced_trains, subCategories);
 
     const newtrainschedules: TrainScheduleResponse[] = [];
@@ -107,16 +107,6 @@ export const postFullImportPayload = async (
     for (const { trainExceptions, pacedTrainId } of exceptionsWithTrainIds) {
       const created = await createExceptions(dispatch, trainExceptions, pacedTrainId, timetableId);
 
-      // TODO: remove this part when the back will be done inserting the new exception format in TrainSchedule
-      const createdExceptions = created.map(
-        ({ change_groups, train_schedule_id: _, timetable_id: __, ...rest }) => ({
-          ...change_groups,
-          ...rest,
-          // TODO_EXCEPTION: remove this when drop key in the model
-          key: '',
-        })
-      );
-
       // Update the trainSchedule with its exceptions
       const trainIndex = newtrainschedules.findIndex(
         (trainSchedule) => trainSchedule.id === pacedTrainId
@@ -128,7 +118,7 @@ export const postFullImportPayload = async (
           ...currentTrain,
           paced: {
             ...currentTrain.paced,
-            exceptions: createdExceptions,
+            exceptions: created,
           },
         };
       }
