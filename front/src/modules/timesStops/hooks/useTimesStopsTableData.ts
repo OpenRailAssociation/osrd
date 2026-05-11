@@ -278,8 +278,7 @@ const useTimesStopsTableData = (
         // the stableOPs fallback never applies for those since it requires 'operational_point' in location.
         const trackName =
           pathStepLocation.type === 'track_offset'
-            ? pathStepOp?.parts.find((part) => part.track === pathStepLocation.track)
-                ?.local_track_name
+            ? trackSections[pathStepLocation.track]?.extensions?.sncf?.track_name
             : (pathStepLocation.local_track_name ?? undefined);
 
         const hasRequestedTrack =
