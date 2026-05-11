@@ -276,6 +276,10 @@ export const stdcmConfSlice = createSlice({
       const { name, secondary_code, geographic, arrivalDate, date, time, main_code, uic, obj_id } =
         pathStep;
 
+      if (!geographic) {
+        throw new Error('Path step does not have geographic position');
+      }
+
       const coordinates: [number, number] = [geographic.coordinates[0], geographic.coordinates[1]];
 
       const newPathStep = {

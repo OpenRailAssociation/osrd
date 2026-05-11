@@ -228,7 +228,7 @@ export enum StdcmStopTypes {
 export type StdcmLinkedTrainExtremity = {
   secondary_code: string;
   date: string;
-  geographic: GeoJsonPoint;
+  geographic?: GeoJsonPoint | null;
   arrivalDate: Date;
   name: string;
   obj_id: string;

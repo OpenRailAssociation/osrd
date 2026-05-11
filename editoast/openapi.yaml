@@ -13615,11 +13615,12 @@ components:
       - main_code
       - name
       - is_passenger_station
-      - geographic
       - track_sections
       properties:
         geographic:
-          $ref: '#/components/schemas/GeoJsonPoint'
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/GeoJsonPoint'
         infra_id:
           type: integer
           format: int64
