@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 
+import type { SpriteSpecification } from 'maplibre-gl';
 import type { MapProps } from 'react-map-gl/maplibre';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -57,8 +58,8 @@ const useMapBlankStyle = (): MapProps['mapStyle'] => {
     fetchData();
   }, [signalingSystems]);
 
-  const props = useMemo(() => {
-    const sprite = validSprites;
+  const props: MapProps['mapStyle'] = useMemo(() => {
+    const sprite: SpriteSpecification = validSprites;
     return {
       version: 8,
       name: 'Blank',
@@ -74,7 +75,7 @@ const useMapBlankStyle = (): MapProps['mapStyle'] => {
           },
         },
       ],
-    } as MapProps['mapStyle'];
+    };
   }, [validSprites]);
 
   return props;

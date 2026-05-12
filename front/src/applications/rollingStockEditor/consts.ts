@@ -56,7 +56,7 @@ export const newRollingStockValues: RollingStockParametersValues = {
     unit: 'kN/(km/h)²',
     value: 0,
   },
-  loadingGauge: 'G1' as RollingStockParametersValues['loadingGauge'],
+  loadingGauge: 'G1',
   electricalPowerStartupTime: null,
   raisePantographTime: null,
   basePowerClass: null,

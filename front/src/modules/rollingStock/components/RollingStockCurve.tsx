@@ -125,7 +125,7 @@ export default function RollingStockCurve({
             isOnEditionMode
           );
           transformedCurves[curveName] = {
-            ...(curve.curve as { speeds: number[]; max_efforts: number[] }),
+            ...curve.curve,
             mode: name,
             comfort,
             electricalProfile: electrical_profile_level,

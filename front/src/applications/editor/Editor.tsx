@@ -365,7 +365,7 @@ const Editor = () => {
   }, [infra]);
 
   return (
-    <EditorContext.Provider value={extendedContext as EditorContextType<unknown>}>
+    <EditorContext.Provider value={extendedContext}>
       <main
         className={cx('editor-root mastcontainer mastcontainer-map', infraID && 'infra-selected')}
       >

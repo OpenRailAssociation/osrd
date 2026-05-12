@@ -374,9 +374,8 @@ const TrackEditionTool: Tool<TrackEditionState> = {
 
     if (editionState.type === 'movePoint' && typeof editionState.draggedPointIndex === 'number') {
       const newTrack = cloneDeep(track);
-      newTrack.geometry.coordinates[editionState.draggedPointIndex] = (
-        anchorLinePoints && nearestPoint ? nearestPoint.geometry.coordinates : e.lngLat.toArray()
-      ) as [number, number];
+      newTrack.geometry.coordinates[editionState.draggedPointIndex] =
+        anchorLinePoints && nearestPoint ? nearestPoint.geometry.coordinates : e.lngLat.toArray();
 
       newState.track = entityDoUpdate(newTrack, track.geometry);
     }

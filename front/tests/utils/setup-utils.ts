@@ -5,11 +5,9 @@ import type {
   TrainSchedule,
   PostInfraRailjsonApiResponse,
   Project,
-  ProjectCreateForm,
   RailJson,
   StdcmSearchEnvironmentCreateForm,
   Study,
-  StudyCreateForm,
 } from 'common/api/osrdEditoastApi';
 
 import {
@@ -119,7 +117,7 @@ export async function createProject(projectName = globalProjectName): Promise<Pr
       ...PROJECT_DATA,
       name: projectName,
       budget: 1234567890,
-    } as ProjectCreateForm,
+    },
     undefined,
     'Failed to create project'
   );
@@ -142,7 +140,7 @@ export async function createStudy(projectId: number, studyName = globalStudyName
       project_id: projectId,
       name: studyName,
       budget: 1234567890,
-    } as StudyCreateForm,
+    },
     undefined,
     'Failed to create study'
   );

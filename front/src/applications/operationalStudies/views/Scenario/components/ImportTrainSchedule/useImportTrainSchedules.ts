@@ -39,7 +39,7 @@ const useImportTrainSchedules = ({ upsertTrainSchedules }: ImportTrainSchedulesP
       return await locallyProcessXmlFile(fileContent);
     }
     try {
-      return (await postTransformTimetable({ body: file }).unwrap()) as TimetableJsonPayload;
+      return await postTransformTimetable({ body: file }).unwrap();
     } catch (error: unknown) {
       if (isObject(error) && 'status' in error && error.status === '415')
         return await locallyProcessXmlFile(fileContent);

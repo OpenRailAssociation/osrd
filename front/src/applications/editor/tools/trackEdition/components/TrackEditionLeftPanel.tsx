@@ -149,7 +149,7 @@ const TrackEditionLeftPanel = () => {
           }
           setState({
             ...state,
-            track: checkedTrack as TrackSectionEntity,
+            track: checkedTrack,
           });
         }}
       >

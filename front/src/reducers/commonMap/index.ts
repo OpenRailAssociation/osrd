@@ -3,7 +3,6 @@ import type { Position } from 'geojson';
 import { useSelector } from 'react-redux';
 
 import { useOsrdContext } from 'common/osrdContext';
-import type { RootState } from 'reducers';
 
 import type { LayersSettings, MapSettings, Viewport } from './types';
 
@@ -109,7 +108,7 @@ export const useMapSettings = (): MapSettings => {
     throw new Error('getMapSettings selector is not available in this context');
   }
 
-  return useSelector(selectors.getMapSettings as (state: RootState) => MapSettings);
+  return useSelector(selectors.getMapSettings);
 };
 
 export const useMapSettingsActions = () => {

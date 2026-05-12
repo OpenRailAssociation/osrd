@@ -17,7 +17,6 @@ import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { save } from 'reducers/editor/thunkActions';
 import { getNearestPoint } from 'utils/mapHelper';
 
-import type { OptionsStateType } from '../routeEdition/types';
 import type {
   HoveredExtremityState,
   HoveredSignState,
@@ -29,7 +28,6 @@ import type {
   SpeedSectionPslEntity,
   SpeedSectionEntity,
   ElectrificationEntity,
-  InteractionState,
 } from './types';
 import {
   getPslSignNewPosition,
@@ -74,9 +72,9 @@ function getRangeEditionTool<T extends EditorRange>({
       entity,
       initialEntity: entity,
       hoveredItem: null,
-      interactionState: { type: 'idle' } as InteractionState,
+      interactionState: { type: 'idle' },
       trackSectionsCache: {},
-      optionsState: { type: 'idle' } as OptionsStateType,
+      optionsState: { type: 'idle' },
       selectedSwitches: {},
       highlightedRoutes: [],
       routeElements: {},

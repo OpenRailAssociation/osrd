@@ -21,7 +21,7 @@ import {
   speedSectionIsPsl,
   speedSectionIsSpeedRestriction,
 } from 'applications/editor/tools/rangeEdition/utils';
-import type { ExtendedEditorContextType, PartialOrReducer } from 'applications/editor/types';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import { useInfraID } from 'common/osrdContext';
@@ -274,11 +274,7 @@ const SpeedSectionEditionLeftPanel = () => {
         {!isSpeedRestriction && isPermanentSpeedLimit && (
           <EditPSLSection
             entity={entity as SpeedSectionPslEntity}
-            setState={
-              setState as (
-                stateOrReducer: PartialOrReducer<RangeEditionState<SpeedSectionEntity>>
-              ) => void
-            }
+            setState={setState}
             trackSectionsCache={trackSectionsCache}
           />
         )}

@@ -31,7 +31,7 @@ import {
 import { colors } from 'common/Map/theme';
 import { useInfraID } from 'common/osrdContext';
 import { useAppDispatch } from 'store';
-import { NULL_GEOMETRY, type OmitLayer, type NullGeometry } from 'types';
+import { NULL_GEOMETRY, type NullGeometry } from 'types';
 
 const RouteEditionLayers = () => {
   const {
@@ -79,16 +79,18 @@ const RouteEditionLayers = () => {
    */
   const lineProps = useMemo(() => {
     const layer = getRoutesLineLayerProps({ colors: colors[mapStyle] });
+    const linePaint: LineLayerSpecification['paint'] = {
+      ...layer.paint,
+      'line-color': ['get', 'color'],
+      'line-width': 2,
+      'line-dasharray': [2, 1],
+      'line-offset': ['get', 'offset'],
+    };
+
     return {
       ...layer,
-      paint: {
-        ...layer.paint,
-        'line-color': ['get', 'color'],
-        'line-width': 2,
-        'line-dasharray': [2, 1],
-        'line-offset': ['get', 'offset'],
-      },
-    } as OmitLayer<LineLayerSpecification>;
+      paint: linePaint,
+    };
   }, [mapStyle]);
 
   /**

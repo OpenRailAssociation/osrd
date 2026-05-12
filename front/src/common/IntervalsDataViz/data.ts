@@ -739,7 +739,7 @@ export function getFieldJsonSchema(
           },
         },
         definitions: rootSchema.definitions,
-      } as JSONSchema7;
+      };
     }
   }
   return result;
