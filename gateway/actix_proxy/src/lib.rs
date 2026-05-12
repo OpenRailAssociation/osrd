@@ -463,6 +463,8 @@ impl InnerProxyService {
             modifier.modify_http_request(req, &mut back_request)?;
         }
 
+        back_request = back_request.no_decompress();
+
         {
             // forward request headers
             let header_classifier = HeaderClassifier::from_headermap(req.headers());
