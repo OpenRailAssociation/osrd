@@ -32,7 +32,7 @@ export default function useCachedTrackSections(infraId: number) {
         }
       }
 
-      return trackSectionsRef.current;
+      return { ...trackSectionsRef.current };
     },
     [infraId]
   );
