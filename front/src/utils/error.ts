@@ -34,9 +34,20 @@ export function getErrorMessage(error: unknown, defaultValue?: string): string {
         const i18nId = type.split(':').join('.');
         return i18n.t(i18nId, i18nMsg, { ...context, ns: 'errors' });
       }
+
       if ('message' in error.data) return `${error.data.message}`;
-      if ('detail' in error.data) return `${error.data.detail}`; // Format used by some implems of railway-manager-interface
+
+      // Format used by some implems of railway-manager-interface
+      if ('detail' in error.data) {
+        const detail = error.data.detail;
+        if (!isObject(detail)) return `${detail}`;
+
+        const message = 'error' in detail ? detail.error : defaultMessage;
+        if ('status_code' in detail) return `${message} (${detail.status_code})`; // Forwarded status, differs from the main error status
+        return `${message}`;
+      }
     }
+
     if (typeof error.data === 'string') {
       // API returned a plaintext error instead of a JSON payload
       return error.data;
