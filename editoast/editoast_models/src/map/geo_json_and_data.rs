@@ -245,7 +245,7 @@ mod tests {
         )
         SELECT
             matches.geo_json as geo_json,
-            track_section.data - 'geo' AS data
+            track_section.data - 'curves' - 'loading_gauge_limits' - 'slopes' - 'geo' AS data
         FROM matches
         INNER JOIN infra_layer_track_section layer on matches.id = layer.id
         inner join infra_object_track_section track_section on track_section.obj_id = layer.obj_id and track_section.infra_id = layer.infra_id
@@ -266,7 +266,7 @@ mod tests {
         )
         SELECT
             matches.geo_json as geo_json,
-            speed_section.data  AS data
+            speed_section.data - 'track_ranges' AS data
         FROM matches
         INNER JOIN infra_layer_speed_section layer on matches.id = layer.id
         inner join infra_object_speed_section speed_section on speed_section.obj_id = layer.obj_id and speed_section.infra_id = layer.infra_id
