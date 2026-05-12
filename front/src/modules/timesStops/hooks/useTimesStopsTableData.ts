@@ -358,7 +358,7 @@ const useTimesStopsTableData = (
         if (matchingPathStepRow) {
           formattedRows.push({
             ...matchingPathStepRow,
-            track: trackName,
+            track: trackName ?? matchingPathStepRow.track,
             opOnPathIndex: opIndex,
           });
         } else {
