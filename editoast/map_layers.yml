@@ -6,7 +6,7 @@ layers:
       geo:
         on_field: geographic
         data_expr: track_section.data
-        exclude_fields: [geo]
+        exclude_fields: [curves, loading_gauge_limits, slopes, geo]
         joins:
           - inner join infra_object_track_section track_section on track_section.obj_id = layer.obj_id and track_section.infra_id = layer.infra_id
 
@@ -16,7 +16,9 @@ layers:
     views:
       geo:
         on_field: geographic
-        data_expr: signal.data - 'logical_signals' || jsonb_build_object('angle', layer.angle_geo, 'signaling_system', layer.signaling_system, 'sprite', layer.sprite)
+        data_expr: signal.data || jsonb_build_object('angle', layer.angle_geo, 'signaling_system', layer.signaling_system, 'sprite', layer.sprite)
+        exclude_fields:
+          [logical_signals, direction, track, position, sight_distance]
         joins:
           - inner join infra_object_signal signal on signal.obj_id = layer.obj_id and signal.infra_id = layer.infra_id
 
@@ -27,6 +29,7 @@ layers:
       geo:
         on_field: geographic
         data_expr: speed_section.data
+        exclude_fields: [track_ranges]
         joins:
           - inner join infra_object_speed_section speed_section on speed_section.obj_id = layer.obj_id and speed_section.infra_id = layer.infra_id
         where:
@@ -39,6 +42,7 @@ layers:
       geo:
         on_field: geographic
         data_expr: speed_section.data
+        exclude_fields: [track_ranges, "extensions"]
         joins:
           - inner join infra_object_speed_section speed_section on speed_section.obj_id = layer.obj_id and speed_section.infra_id = layer.infra_id
         where:
@@ -51,6 +55,7 @@ layers:
       geo:
         on_field: geographic
         data_expr: switch.data
+        exclude_fields: [ports, switch_type, group_change_delay]
         joins:
           - inner join infra_object_switch switch on switch.obj_id = layer.obj_id and switch.infra_id = layer.infra_id
 
@@ -61,6 +66,7 @@ layers:
       geo:
         on_field: geographic
         data_expr: detector.data
+        exclude_fields: [track, position]
         joins:
           - inner join infra_object_detector detector on detector.obj_id = layer.obj_id and detector.infra_id = layer.infra_id
 
@@ -71,6 +77,7 @@ layers:
       geo:
         on_field: geographic
         data_expr: buffer_stop.data
+        exclude_fields: [track, position]
         joins:
           - inner join infra_object_buffer_stop buffer_stop on buffer_stop.obj_id = layer.obj_id and buffer_stop.infra_id = layer.infra_id
 
@@ -80,7 +87,8 @@ layers:
     views:
       geo:
         on_field: geographic
-        data_expr: operational_point.data - 'parts' || jsonb_build_object('kp', layer.kp, 'track_id', layer.track_section, 'track_name', track_section.data->'extensions'->'sncf'->'track_name', 'local_track_name', (SELECT elem->>'local_track_name' FROM jsonb_array_elements(operational_point.data->'parts') elem WHERE elem->>'track' = layer.track_section::text limit 1))
+        data_expr: operational_point.data || jsonb_build_object('kp', layer.kp, 'track_name', track_section.data->'extensions'->'sncf'->'track_name', 'local_track_name', (SELECT elem->>'local_track_name' FROM jsonb_array_elements(operational_point.data->'parts') elem WHERE elem->>'track' = layer.track_section::text limit 1))
+        exclude_fields: [parts]
         joins:
           - inner join infra_object_operational_point operational_point on operational_point.obj_id = layer.obj_id and operational_point.infra_id = layer.infra_id
           - inner join infra_object_track_section track_section on track_section.obj_id = layer.track_section and track_section.infra_id = layer.infra_id
@@ -92,6 +100,7 @@ layers:
       geo:
         on_field: geographic
         data_expr: electrification.data
+        exclude_fields: [track_ranges]
         joins:
           - inner join infra_object_electrification electrification on electrification.obj_id = layer.obj_id and electrification.infra_id = layer.infra_id
 
@@ -116,7 +125,8 @@ layers:
     views:
       geo:
         on_field: geographic
-        data_expr: layer.data - 'value' || jsonb_build_object('angle', layer.angle_geo)
+        data_expr: layer.data || jsonb_build_object('angle', layer.angle_geo)
+        exclude_fields: [value]
 
   neutral_sections:
     table_name: infra_layer_neutral_section
@@ -125,6 +135,7 @@ layers:
       geo:
         on_field: geographic
         data_expr: neutral_section.data
+        exclude_fields: [extensions, track_ranges, announcement_track_ranges]
         joins:
           - inner join infra_object_neutral_section neutral_section on neutral_section.obj_id = layer.obj_id and neutral_section.infra_id = layer.infra_id
 
@@ -134,7 +145,8 @@ layers:
     views:
       geo:
         on_field: geographic
-        data_expr: level_crossing.data - 'parts'
+        data_expr: level_crossing.data
+        exclude_fields: [parts]
         joins:
           - inner join infra_object_level_crossing level_crossing on level_crossing.obj_id = layer.obj_id and level_crossing.infra_id = layer.infra_id
 
@@ -145,3 +157,4 @@ layers:
       geo:
         on_field: geographic
         data_expr: layer.information
+        exclude_fields: [short_zone_length]
