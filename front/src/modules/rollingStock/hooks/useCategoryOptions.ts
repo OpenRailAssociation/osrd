@@ -5,6 +5,13 @@ import { TrainMainCategoryDict } from 'modules/rollingStock/consts';
 
 import type { CategoryOptionWithId } from '../types';
 
+/**
+ * Custom hook to generate category options for a dropdown or selection component.
+ * It combines main categories and their corresponding subcategories into a single list of options.
+ *
+ * @param withPlaceholder - A boolean indicating whether to include a placeholder option at the beginning of the list. Default is true.
+ * @returns An array of category options, each with an id, label, and associated category information.
+ */
 export default function useCategoryOptions(withPlaceholder = true) {
   const { t } = useTranslation();
 
