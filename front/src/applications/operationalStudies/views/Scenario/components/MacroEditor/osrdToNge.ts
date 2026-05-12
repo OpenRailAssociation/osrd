@@ -31,6 +31,7 @@ import {
   type LabelDto,
   type TrainrunCategory,
   type FreeFloatingTextDto,
+  type TrafficSide,
 } from '../NGE/types';
 import {
   TRAINRUN_CATEGORY_HALTEZEITEN,
@@ -669,6 +670,8 @@ export const getNgeDto = (
       trainrunCategories: state.trainrunCategories,
       trainrunFrequencies: state.trainrunFrequencies,
       trainrunTimeCategories: DEFAULT_TRAINRUN_TIME_CATEGORIES,
+      trafficSide:
+        (localStorage.getItem('trafficSideNetworkGraph') as TrafficSide | undefined) ?? 'leftHand',
     },
     freeFloatingTexts,
     labels,

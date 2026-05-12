@@ -67,6 +67,24 @@ const handleLabelOperation = async ({
   }
 };
 
+const handleMetadataOperation = async ({
+  type,
+  netzgrafikDto,
+}: {
+  type: NGEEvent['type'];
+  netzgrafikDto: NetzgrafikDto;
+}) => {
+  switch (type) {
+    case 'update': {
+      localStorage.setItem('trafficSideNetworkGraph', netzgrafikDto.metadata.trafficSide!);
+      break;
+    }
+    default: {
+      break;
+    }
+  }
+};
+
 export const handleOperation = async ({
   event,
   netzgrafikDto,
@@ -135,6 +153,12 @@ export const handleOperation = async ({
         note: event.note,
         state,
         dispatch,
+      });
+      break;
+    case 'metadata':
+      await handleMetadataOperation({
+        type,
+        netzgrafikDto,
       });
       break;
     default:
