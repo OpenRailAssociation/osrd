@@ -45,6 +45,7 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.metersPerSecond
 import fr.sncf.osrd.utils.values
+import kotlin.math.abs
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -290,6 +291,12 @@ fun buildFinalEnvelope(
             getEnvelopeTimeAt(point.pathOffset) - getEnvelopeTimeAt(prevFixedPointOffset)
         val arrivalTime = prevFixedPointDepartureTime + sectionTime
         val extraTime = point.arrival.seconds - arrivalTime
+        if (abs(extraTime) < context.timeStep) {
+            // The time diff is already within the margin computation tolerance,
+            // adding a margin for this can increase the difference
+            prevFixedPointDepartureTime += point.stopFor?.seconds ?: 0.0
+            continue
+        }
         if (extraTime >= 0.0) {
             marginRanges.addAll(
                 distributeAllowance(
