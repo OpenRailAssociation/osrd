@@ -17,12 +17,14 @@ import fr.sncf.osrd.reporting.exceptions.OSRDError
 import io.lettuce.core.RedisClient
 import io.lettuce.core.codec.ByteArrayCodec
 import io.opentelemetry.api.GlobalOpenTelemetry
+import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.context.Context
 import io.opentelemetry.context.propagation.TextMapGetter
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import kotlin.system.exitProcess
+import kotlin.use
 import kotlinx.serialization.ExperimentalSerializationApi
 import okhttp3.OkHttpClient
 import org.slf4j.Logger
@@ -59,6 +61,9 @@ class WorkerCommand : CliCommand {
     val DISABLE_ALL_TIMETABLE_CACHE: Boolean
     val VALKEY_URL: String?
     val OSRD_GIT_DESCRIBE: String
+    val TELEMETRY_TRACER: Tracer
+
+    lateinit var endpoints: Map<String, Take>
 
     init {
         LOCAL_TIMETABLE_CACHE = System.getenv("LOCAL_TIMETABLE_CACHE")
@@ -90,6 +95,7 @@ class WorkerCommand : CliCommand {
                 System.getenv("WORKER_ID")
             }
         OSRD_GIT_DESCRIBE = System.getenv("OSRD_GIT_DESCRIBE") ?: "development"
+        TELEMETRY_TRACER = GlobalOpenTelemetry.getTracerProvider().get("WorkerCommand")
     }
 
     private fun getBooleanEnvvar(name: String): Boolean {
@@ -146,9 +152,7 @@ class WorkerCommand : CliCommand {
             // TODO: implement monitoring
         }
 
-        val tracer = GlobalOpenTelemetry.getTracerProvider().get("WorkerCommand")
-
-        val endpoints =
+        endpoints =
             mapOf(
                 "/pathfinding/blocks" to PathfindingBlocksEndpoint(infraManager),
                 "/path_properties" to PathPropEndpoint(infraManager),
@@ -162,6 +166,8 @@ class WorkerCommand : CliCommand {
                 "/worker_load" to WorkerLoadEndpoint(infraManager, timetableCache),
             )
 
+        loadInfraAndTimetable(infraManager, timetableCache, infraId, timetableId)
+
         val executor =
             ThreadPoolExecutor(
                 WORKER_THREADS,
@@ -170,6 +176,161 @@ class WorkerCommand : CliCommand {
                 TimeUnit.MILLISECONDS,
                 LinkedBlockingQueue(),
             )
+        return consume(executor)
+    }
+
+    /** Load the given infra and timetable this worker is specialized on, if set. */
+    private fun loadInfraAndTimetable(
+        infraManager: InfraManager,
+        timetableCache: TimetableCacheManager,
+        infraId: String,
+        timetableId: Int?,
+    ) {
+        if (!ALL_INFRA) {
+            try {
+                val infra = infraManager.load(infraId, null)
+                if (timetableId != null) timetableCache.load(infra, timetableId)
+            } catch (e: OSRDError) {
+                val isInfraLoadError =
+                    setOf(ErrorType.InfraHardLoadingError, ErrorType.InfraSoftLoadingError)
+                        .contains(e.osrdErrorType)
+                if (isInfraLoadError) {
+                    if (e.osrdErrorType.isRecoverable) {
+                        logger.warn("Failed to load infra $infraId with a perennial error: $e")
+                        // go on and future requests will be consumed and rejected
+                    } else {
+                        logger.error("Failed to load infra $infraId with a temporary error: $e")
+                        // Stop worker and let another worker spawn eventually
+                        throw e
+                    }
+                } else {
+                    logger.error("Failed to load infra $infraId with an unexpected OSRD Error: $e")
+                    throw e
+                }
+            } catch (t: Throwable) {
+                logger.error("Failed to load infra $infraId with an unexpected exception: $t")
+                throw t
+            }
+        }
+        if (ALL_INFRA && timetableId != null)
+            logger.warn("Timetables can't be preloaded when not specialized on an infra")
+    }
+
+    /**
+     * Callback function called on any received message. One instance per queue messsage, the class
+     * attribute contains message-local data.
+     */
+    private inner class MessageCallback(
+        val activityChannel: Channel,
+        val channel: Channel,
+        val connection: Connection,
+    ) {
+        operator fun invoke(message: Delivery) {
+            val startTimeMS = System.currentTimeMillis()
+            reportActivity(activityChannel, "request-received")
+
+            val replyTo = message.properties.replyTo
+            val correlationId = message.properties.correlationId
+            val body = message.body
+            val path =
+                if (message.properties.headers["x-rpc-path"] is LongString) {
+                    message.properties.headers["x-rpc-path"].toString()
+                } else {
+                    (message.properties.headers["x-rpc-path"] as? ByteArray?)?.decodeToString()
+                }
+            if (path == null) {
+                logger.error("missing x-rpc-path header")
+                channel.basicReject(message.envelope.deliveryTag, false)
+                if (replyTo != null) {
+                    // TODO: response format to handle protocol error
+                    channel.basicPublish(
+                        "",
+                        replyTo,
+                        null,
+                        "missing x-rpc-path header".toByteArray(),
+                    )
+                }
+
+                return
+            }
+            logger.info("received request for path {}", path)
+
+            val endpoint = endpoints[path]
+            if (endpoint == null) {
+                logger.error("unknown path {}", path)
+                channel.basicReject(message.envelope.deliveryTag, false)
+                if (replyTo != null) {
+                    // TODO: response format to handle protocol error
+                    channel.basicPublish("", replyTo, null, "unknown path $path".toByteArray())
+                }
+
+                return
+            }
+
+            val context =
+                GlobalOpenTelemetry.getPropagators()
+                    .textMapPropagator
+                    .extract(Context.current(), message.properties.headers, RabbitMQTextMapGetter())
+            val span = TELEMETRY_TRACER.spanBuilder(path).setParent(context).startSpan()
+
+            var payload: ByteArray
+            var status: ByteArray
+            try {
+                span.makeCurrent().use { scope ->
+                    val response =
+                        // Only the STDCMEndpoint requires access to the queue for now.
+                        // This avoids systematically creating a channel that will almost
+                        // always be unused.
+                        if (endpoint.requiresQueueCtx()) {
+                            connection.createChannel().use { chan ->
+                                endpoint.act(
+                                    MQRequest(body),
+                                    Take.QueueContext(chan, replyTo, correlationId),
+                                )
+                            }
+                        } else {
+                            endpoint.act(MQRequest(body))
+                        }
+                    payload = response.body().toByteArray()
+                    val statusCode = response.statusCode()
+                    status = (if (statusCode / 100 == 2) "ok" else "core_error").encodeToByteArray()
+                }
+            } catch (t: Throwable) {
+                span.recordException(t)
+                logger.error("Unexpected error: ", t)
+                payload =
+                    "ERROR, exception received"
+                        .toByteArray() // TODO: have a valid payload for uncaught exceptions
+                status = "core_error".encodeToByteArray()
+                // Stop worker and let another worker spawn eventually
+                if (t is OSRDError && !t.osrdErrorType.isRecoverable) {
+                    throw t
+                }
+            } finally {
+                span.end()
+            }
+
+            if (replyTo != null) {
+                val properties =
+                    AMQP.BasicProperties()
+                        .builder()
+                        .correlationId(correlationId)
+                        .headers(mapOf("x-status" to status, "x-non-terminating-response" to false))
+                        .build()
+                channel.basicPublish("", replyTo, properties, payload)
+            }
+
+            channel.basicAck(message.envelope.deliveryTag, false)
+            val executionTimeMS = System.currentTimeMillis() - startTimeMS
+            logger.info("request for path {} processed in {}s", path, executionTimeMS / 1_000.0)
+        }
+    }
+
+    /**
+     * Set up the queue consumer. Blocks until the channel is closed or some other queue error
+     * happens.
+     */
+    private fun consume(executor: ThreadPoolExecutor): Int {
         val factory = ConnectionFactory()
         factory.setUri(WORKER_AMQP_URI)
         factory.setSharedExecutor(executor)
@@ -177,38 +338,7 @@ class WorkerCommand : CliCommand {
         val connection = factory.newConnection()
 
         connection.use {
-            it.createChannel().use { channel -> reportActivity(channel, "started") }
-
-            if (!ALL_INFRA) {
-                try {
-                    val infra = infraManager.load(infraId, null)
-                    if (timetableId != null) timetableCache.load(infra, timetableId)
-                } catch (e: OSRDError) {
-                    val isInfraLoadError =
-                        setOf(ErrorType.InfraHardLoadingError, ErrorType.InfraSoftLoadingError)
-                            .contains(e.osrdErrorType)
-                    if (isInfraLoadError) {
-                        if (e.osrdErrorType.isRecoverable) {
-                            logger.warn("Failed to load infra $infraId with a perennial error: $e")
-                            // go on and future requests will be consumed and rejected
-                        } else {
-                            logger.error("Failed to load infra $infraId with a temporary error: $e")
-                            // Stop worker and let another worker spawn eventually
-                            throw e
-                        }
-                    } else {
-                        logger.error(
-                            "Failed to load infra $infraId with an unexpected OSRD Error: $e"
-                        )
-                        throw e
-                    }
-                } catch (t: Throwable) {
-                    logger.error("Failed to load infra $infraId with an unexpected exception: $t")
-                    throw t
-                }
-            }
-            if (ALL_INFRA && timetableId != null)
-                logger.warn("Timetables can't be preloaded when not specialized on an infra")
+            connection.createChannel().use { channel -> reportActivity(channel, "started") }
 
             connection.createChannel().use { channel -> reportActivity(channel, "ready") }
 
@@ -218,145 +348,12 @@ class WorkerCommand : CliCommand {
             // The default would be unlimited, which is very good for high throughput
             // queues, but that's not our usecase here.
             channel.basicQos(WORKER_THREADS)
-            val callback =
-                fun(message: Delivery) {
-                    val startTimeMS = System.currentTimeMillis()
-                    reportActivity(activityChannel, "request-received")
-
-                    val replyTo = message.properties.replyTo
-                    val correlationId = message.properties.correlationId
-                    val body = message.body
-                    val path =
-                        if (message.properties.headers["x-rpc-path"] is LongString) {
-                            message.properties.headers["x-rpc-path"].toString()
-                        } else {
-                            (message.properties.headers["x-rpc-path"] as? ByteArray?)
-                                ?.decodeToString()
-                        }
-                    if (path == null) {
-                        logger.error("missing x-rpc-path header")
-                        channel.basicReject(message.envelope.deliveryTag, false)
-                        if (replyTo != null) {
-                            // TODO: response format to handle protocol error
-                            channel.basicPublish(
-                                "",
-                                replyTo,
-                                null,
-                                "missing x-rpc-path header".toByteArray(),
-                            )
-                        }
-
-                        return
-                    }
-                    logger.info("received request for path {}", path)
-
-                    val endpoint = endpoints[path]
-                    if (endpoint == null) {
-                        logger.error("unknown path {}", path)
-                        channel.basicReject(message.envelope.deliveryTag, false)
-                        if (replyTo != null) {
-                            // TODO: response format to handle protocol error
-                            channel.basicPublish(
-                                "",
-                                replyTo,
-                                null,
-                                "unknown path $path".toByteArray(),
-                            )
-                        }
-
-                        return
-                    }
-
-                    class RabbitMQTextMapGetter : TextMapGetter<Map<String, Any>> {
-                        override fun keys(carrier: Map<String, Any>): Iterable<String> {
-                            return carrier.keys
-                        }
-
-                        override fun get(carrier: Map<String, Any>?, key: String): String? {
-                            return (carrier?.get(key) as ByteArray?)?.decodeToString()
-                        }
-                    }
-
-                    val context =
-                        GlobalOpenTelemetry.getPropagators()
-                            .textMapPropagator
-                            .extract(
-                                Context.current(),
-                                message.properties.headers,
-                                RabbitMQTextMapGetter(),
-                            )
-                    val span = tracer.spanBuilder(path).setParent(context).startSpan()
-
-                    var payload: ByteArray
-                    var status: ByteArray
-                    try {
-                        span.makeCurrent().use { scope ->
-                            val getResponse = {
-                                // Only the STDCMEndpoint requires access to the queue for now.
-                                // This avoids systematically creating a channel that will almost
-                                // always be unused.
-                                if (endpoint.requiresQueueCtx()) {
-                                    it.createChannel().use { chan ->
-                                        endpoint.act(
-                                            MQRequest(body),
-                                            Take.QueueContext(chan, replyTo, correlationId),
-                                        )
-                                    }
-                                } else {
-                                    endpoint.act(MQRequest(body))
-                                }
-                            }
-
-                            val response = getResponse()
-                            payload = response.body().toByteArray()
-                            val statusCode = response.statusCode()
-                            status =
-                                (if (statusCode / 100 == 2) "ok" else "core_error")
-                                    .encodeToByteArray()
-                        }
-                    } catch (t: Throwable) {
-                        span.recordException(t)
-                        logger.error("Unexpected error: ", t)
-                        payload =
-                            "ERROR, exception received"
-                                .toByteArray() // TODO: have a valid payload for uncaught exceptions
-                        status = "core_error".encodeToByteArray()
-                        // Stop worker and let another worker spawn eventually
-                        if (t is OSRDError && !t.osrdErrorType.isRecoverable) {
-                            throw t
-                        }
-                    } finally {
-                        span.end()
-                    }
-
-                    if (replyTo != null) {
-                        val properties =
-                            AMQP.BasicProperties()
-                                .builder()
-                                .correlationId(correlationId)
-                                .headers(
-                                    mapOf(
-                                        "x-status" to status,
-                                        "x-non-terminating-response" to false,
-                                    )
-                                )
-                                .build()
-                        channel.basicPublish("", replyTo, properties, payload)
-                    }
-
-                    channel.basicAck(message.envelope.deliveryTag, false)
-                    val executionTimeMS = System.currentTimeMillis() - startTimeMS
-                    logger.info(
-                        "request for path {} processed in {}s",
-                        path,
-                        executionTimeMS / 1_000.0,
-                    )
-                }
+            val messageCallback = MessageCallback(activityChannel, channel, connection)
 
             val terminatorCallback =
                 fun(message: Delivery) {
                     try {
-                        callback(message)
+                        messageCallback(message)
                     } catch (t: Throwable) {
                         t.printStackTrace(System.err)
                         exitProcess(1)
@@ -388,7 +385,7 @@ class WorkerCommand : CliCommand {
 
             while (true) {
                 Thread.sleep(100)
-                if (!channel.isOpen()) break
+                if (!channel.isOpen) break
             }
 
             logger.info("consume ended")
@@ -490,5 +487,15 @@ class RsWithStatus(private val response: Response, private val statusCode: Int) 
 class RqFake(private val body: String) : Request {
     override fun body(): String {
         return body
+    }
+}
+
+class RabbitMQTextMapGetter : TextMapGetter<Map<String, Any>> {
+    override fun keys(carrier: Map<String, Any>): Iterable<String> {
+        return carrier.keys
+    }
+
+    override fun get(carrier: Map<String, Any>?, key: String): String? {
+        return (carrier?.get(key) as ByteArray?)?.decodeToString()
     }
 }
