@@ -1,20 +1,20 @@
 mod group;
 mod infra;
 mod roles;
+mod test_client_ext;
 
 pub use group::*;
 pub use infra::*;
 pub use roles::*;
+pub use test_client_ext::TestClientExt;
 
 use std::collections::HashSet;
 
-use fga::model::Relation as _;
 use futures::FutureExt;
 use futures::future::BoxFuture;
 
 use crate::Group;
 use crate::Infra;
-use crate::InfraGrant;
 use crate::InfraPrivilege;
 use crate::Role;
 use crate::Subject;
@@ -313,66 +313,5 @@ pub mod special_authorizers {
             let Ok::<_, Infallible>(value) = access.access().await?;
             Ok(value)
         }
-    }
-}
-
-pub trait TestClientExt {
-    async fn subject_roles(&self, subject: &Subject) -> HashSet<Role>;
-    async fn group_members(&self, group: &Group) -> HashSet<User>;
-    async fn infra_effective_grant(&self, subject: Subject, infra: Infra) -> Option<InfraGrant>;
-    async fn infra_direct_grant(
-        &self,
-        subject: impl Into<Subject>,
-        infra: Infra,
-    ) -> Option<InfraGrant>;
-    async fn infra_privileges(&self, user: User, infra: Infra) -> HashSet<InfraPrivilege>;
-}
-
-impl TestClientExt for fga::Client {
-    async fn subject_roles(&self, subject: &Subject) -> HashSet<Role> {
-        match subject {
-            Subject::User(user) => Role::list_roles(self, User::role(), user).await,
-            Subject::Group(group) => Role::list_roles(self, Group::role(), group).await,
-        }
-        .unwrap()
-        .into_iter()
-        .collect()
-    }
-
-    async fn group_members(&self, group: &Group) -> HashSet<User> {
-        self.list_users(Group::member().query_users(group))
-            .await
-            .unwrap()
-            .users
-            .into_iter()
-            .collect()
-    }
-
-    async fn infra_effective_grant(&self, subject: Subject, infra: Infra) -> Option<InfraGrant> {
-        let authorize = special_authorizers::Authorize(self);
-        authorize
-            .access_value(infra_effective_grant(subject, infra))
-            .await
-            .unwrap()
-    }
-
-    async fn infra_direct_grant(
-        &self,
-        subject: impl Into<Subject>,
-        infra: Infra,
-    ) -> Option<InfraGrant> {
-        let authorize = special_authorizers::Authorize(self);
-        authorize
-            .access_value(infra_direct_grant(subject.into(), infra))
-            .await
-            .unwrap()
-    }
-
-    async fn infra_privileges(&self, user: User, infra: Infra) -> HashSet<InfraPrivilege> {
-        let authorize = special_authorizers::Authorize(self);
-        authorize
-            .access_value(infra_privileges(user, infra))
-            .await
-            .unwrap()
     }
 }
