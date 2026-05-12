@@ -103,13 +103,13 @@ jobs:
           cache-suffix: ${{ github.job }}
       - name: Install dependencies
         run: |
-          uv --directory railway_manager_interface/ sync --locked
+          uv --directory osrd_schemas_auto/ sync --locked
       - name: Generate models.py
         run: |
-          cd railway_manager_interface
+          cd osrd_schemas_auto
           ./generate-types.sh > /tmp/generated_models.py
       - name: Ensure models.py is up to date
-        run: diff -u railway_manager_interface/osrd_railway_manager_interface/models.py /tmp/generated_models.py
+        run: diff -u osrd_schemas_auto/osrd_schemas_auto/models.py /tmp/generated_models.py
   check_scripts:
     runs-on: ubuntu-latest
     name: Check scripts
@@ -993,9 +993,9 @@ jobs:
       - name: REUSE Compliance Check
         uses: fsfe/reuse-action@v6
 
-  check_railway_manager_interface:
+  check_osrd_schemas_auto:
     runs-on: ubuntu-latest
-    name: Check railway manager interface
+    name: Check osrd_schemas_auto
     steps:
       - uses: actions/checkout@v6
       - name: Set up 'uv'
@@ -1004,15 +1004,15 @@ jobs:
           python-version: "3.11"
           enable-cache: true
           cache-suffix: ${{ github.job }}
-      - name: Install railway_manager_interface dependencies
+      - name: Install osrd_schemas_auto dependencies
         run: |
-          uv --directory railway_manager_interface/ sync --all-extras --locked
+          uv --directory osrd_schemas_auto/ sync --all-extras --locked
       - name: Pyright
         run: |
-          uv --directory railway_manager_interface/ run pyright
+          uv --directory osrd_schemas_auto/ run pyright
       - name: Ruff check
         run: |
-          uv --directory railway_manager_interface/ run ruff check --output-format github
+          uv --directory osrd_schemas_auto/ run ruff check --output-format github
       - name: Ruff format
         run: |
-          uv --directory railway_manager_interface/ run ruff format --check
+          uv --directory osrd_schemas_auto/ run ruff format --check

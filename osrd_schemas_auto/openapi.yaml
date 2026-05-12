@@ -1,0 +1,329 @@
+openapi: 3.1.0
+info:
+  title: Railway manager interface
+  description: All HTTP endpoints of Railway manager interface
+  license:
+    name: LGPL
+    url: https://www.gnu.org/licenses/lgpl-3.0.html
+  version: 0.1.0
+paths:
+  /transform_timetable:
+    post:
+      tags:
+        - timetable
+      summary: Transform an arbitrary timetable file into standard OSRD format
+      description: |
+        Accepts a timetable file in various formats and transforms it into a standard OSRD timetable JSON.
+        Supports compressed payloads (gzip or zip) via the Content-Encoding header.
+      parameters:
+        - name: content-encoding
+          in: header
+          required: false
+          description: Compression method used for the request body
+          schema:
+            type: string
+            enum:
+              - gzip
+              - zip
+      requestBody:
+        description: Arbitrary file to transform into a standard OSRD timetable json file
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: Timetable successfully transformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransformTimetableResponse'
+        '400':
+          description: Bad request - Failed to decompress or parse the payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /send_last_minute_request/authorized:
+    get:
+      tags:
+        - lmr
+      summary: Check whether the user is authenticated and authorized to send last-minute requests.
+      responses:
+        '200':
+          description: Authorization result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  authorized:
+                    type: boolean
+                    description: Whether the user is authenticated and authorized to send last-minute requests
+                required:
+                  - authorized
+  /send_last_minute_request:
+    post:
+      tags:
+        - lmr
+      summary: Format and transfer the simulation to the web service that processes last-minute requests.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                simulation_report:
+                  $ref: "#/components/schemas/SimulationReport"
+                simulation_report_sheet:
+                  type: string
+                  format: binary
+              required:
+                - simulation_report
+                - simulation_report_sheet
+      responses:
+        '200':
+          description: User successfully identified, the last-minute request has been formatted and transferred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendLastMinuteRequestResponse'
+        '403':
+          description: User is not authorized to send last minute requests.
+components:
+  schemas:
+    TransformTimetableResponse:
+      type: object
+      description: Standard OSRD timetable format
+      required:
+      - paced_trains
+      properties:
+        paced_trains:
+          type: array
+          description: List of paced trains
+          items:
+            $ref: '../editoast/openapi.yaml#/components/schemas/TrainSchedule'
+    ErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: Error message describing what went wrong
+      required:
+        - detail
+    LoadingGaugeType:
+      type: string
+      enum:
+      - GA
+      - GB
+      title: LoadingGaugeType
+    Location:
+      properties:
+        uic:
+          type: integer
+          title: Uic
+        secondary_code:
+          type: string
+          title: Secondary Code
+      type: object
+      required:
+      - uic
+      - secondary_code
+      title: Location
+      description: Information on the operational point.
+    TimingData:
+      properties:
+        arrival_time:
+          type: string
+          format: date-time
+          title: Arrival Time
+        arrival_time_tolerance_before:
+          type: integer
+          title: Arrival Time Tolerance Before
+          description: Tolerance in ms
+        arrival_time_tolerance_after:
+          type: integer
+          title: Arrival Time Tolerance After
+          description: Tolerance in ms
+      type: object
+      required:
+      - arrival_time
+      - arrival_time_tolerance_before
+      - arrival_time_tolerance_after
+      title: TimingData
+      description: Indicates the departure or arrival time as well as the tolerances.
+    StepType:
+      type: string
+      enum:
+      - VIA
+      - DRIVER_SWITCH
+      - STOP
+      title: StepType
+      description: Describes the type of step.
+    RequestedStep:
+      properties:
+        duration:
+          type: integer
+          title: Duration
+          description: Duration in ms
+        location:
+          $ref: '#/components/schemas/Location'
+        timing_data:
+          $ref: '#/components/schemas/TimingData'
+        type:  
+          $ref: '#/components/schemas/StepType'
+      type: object
+      required:
+      - duration
+      - location
+      title: RequestedStep
+    SimilarTrain:
+      properties:
+        path_date:
+          type: string
+          format: date-time
+          title: Path Date
+        name:
+          type: string
+          title: Name
+          description: Train name
+      type: object
+      required:
+      - path_date
+      - name
+      title: SimilarTrain
+      description: Similar train to duplicate.
+    SubstituteTrain:
+      properties:
+        path_date:
+          type: string
+          format: date-time
+          title: Path Date
+        name:
+          type: string
+          title: Name
+          description: Train name
+      type: object
+      required:
+      - path_date
+      - name
+      title: SubstituteTrain
+    CourseType:
+      type: string
+      title: CourseType
+    SimulationReport:
+      properties:
+        rolling_stock:
+          type: string
+          title: Rolling Stock
+        towed_rolling_stock:
+          type: 
+          - string
+          - 'null'
+          title: Towed Rolling Stock
+        loading_gauge_type:
+          $ref: '#/components/schemas/LoadingGaugeType'
+        speed_limit_tags:
+          type: string
+          title: Speed Limit Tags
+        total_mass:
+          type: integer
+          title: Total Mass
+          description: Total mass of the train in kg
+        max_speed:
+          type: number
+          title: Max Speed
+          description: Maximum speed in m/s
+        total_length:
+          type: integer
+          title: Total Length
+          description: Total length of the train in m
+        requested_steps:
+          items:
+            $ref: '#/components/schemas/RequestedStep'
+          type: array
+          minItems: 2
+          title: Requested Steps
+        departure_time:
+          type: string
+          format: date-time
+          title: Departure Time
+        user_message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: User Message
+        similar_train:
+          anyOf:
+          - $ref: '#/components/schemas/SimilarTrain'
+          - type: 'null'
+        anterior_train_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Anterior Train Name
+        posterior_train_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Posterior Train Name
+        substitute_train:
+          anyOf:
+          - $ref: '#/components/schemas/SubstituteTrain'
+          - type: 'null'
+        course_type:
+          $ref: '#/components/schemas/CourseType'
+        statistical_category:
+          type: string
+          title: Statistical Category
+        hazardous_materials:
+          type: boolean
+          title: Hazardous Materials
+        demand_category:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Demand Category
+      type: object
+      required:
+      - rolling_stock
+      - loading_gauge_type
+      - speed_limit_tags
+      - total_mass
+      - max_speed
+      - total_length
+      - requested_steps
+      - departure_time
+      - course_type
+      - statistical_category
+      title: SimulationReport
+      description: 'Gather information from the LMR request and data input by the
+        user.'
+    SendLastMinuteRequestResponse:
+      properties:
+        status:
+          type: string
+          title: Status
+        message:
+          type: string
+          title: Message
+        request_identifier:
+          type: string
+          title: Request Identifier
+        created_request_url:
+          type:
+          - string
+          - 'null'
+          title: Created Request URL
+      type: object
+      required:
+      - status
+      - message
+      - request_identifier
+      - created_request_url
+      title: SendLastMinuteRequestResponse
+      description: Response model to validate and return when a last-minute request
+        has been successfully sent.
