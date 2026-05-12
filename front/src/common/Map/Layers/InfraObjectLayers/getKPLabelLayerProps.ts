@@ -28,7 +28,7 @@ export default function getKPLabelLayerProps(params: {
   } = params;
 
   // Will have to be removed when backend will be updated with consistent fieldnames
-  const testSideExpression = (side: 'LEFT' | 'RIGHT' | 'CENTER') => [
+  const testSideExpression = (side: 'LEFT' | 'RIGHT' | 'CENTER'): ExpressionFilterSpecification => [
     'any',
     ['==', ['get', 'extensions_sncf_side'], side],
     ['==', ['get', 'side'], side],
@@ -41,17 +41,17 @@ export default function getKPLabelLayerProps(params: {
         'text-rotate': ['get', 'angle'],
         'text-anchor': [
           'case',
-          testSideExpression('LEFT') as ExpressionFilterSpecification,
+          testSideExpression('LEFT'),
           'right',
-          testSideExpression('RIGHT') as ExpressionFilterSpecification,
+          testSideExpression('RIGHT'),
           'left',
           'center',
         ],
         'text-offset': [
           'case',
-          testSideExpression('LEFT') as ExpressionFilterSpecification,
+          testSideExpression('LEFT'),
           ['literal', [-2.75, 0.2]],
-          testSideExpression('RIGHT') as ExpressionFilterSpecification,
+          testSideExpression('RIGHT'),
           ['literal', [2.75, 0.2]],
           ['literal', [0, bottomOffset]],
         ],

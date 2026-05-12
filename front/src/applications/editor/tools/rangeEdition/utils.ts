@@ -14,10 +14,7 @@ import {
   getTrackSectionEntityFromNearestPoint,
 } from 'applications/editor/tools/utils';
 import type { PartialOrReducer } from 'applications/editor/types';
-import type {
-  ApplicableDirections,
-  GetInfraByInfraIdRoutesTrackRangesApiResponse,
-} from 'common/api/osrdEditoastApi';
+import type { GetInfraByInfraIdRoutesTrackRangesApiResponse } from 'common/api/osrdEditoastApi';
 import { getNearestPoint } from 'utils/mapHelper';
 
 import type {
@@ -109,13 +106,11 @@ export function getNewSpeedSection(): SpeedSectionEntity {
 /** return the PSL sign type and its index (if the sign is not a Z sign) */
 export function getSignInformationFromInteractionState(
   interactionState: { type: 'moveSign' } & PslSignInformation
-) {
+): PslSignInformation {
   const { signType } = interactionState;
-  return (
-    signType === PSL_SIGN_TYPES.Z
-      ? { signType: PSL_SIGN_TYPES.Z }
-      : { signType, signIndex: interactionState.signIndex }
-  ) as PslSignInformation;
+  return signType === PSL_SIGN_TYPES.Z
+    ? { signType: PSL_SIGN_TYPES.Z }
+    : { signType, signIndex: interactionState.signIndex };
 }
 
 function getNewPslExtension(
@@ -383,7 +378,7 @@ export const makeSpeedRestrictionTrackRanges = (
   }
   const trackRangesWithBothDirections = zoneTrackRanges.map<ApplicableTrackRange>((tr) => ({
     ...tr,
-    applicable_directions: 'BOTH' as ApplicableDirections,
+    applicable_directions: 'BOTH',
   }));
   return { trackRangesWithBothDirections, returnedExtra };
 };

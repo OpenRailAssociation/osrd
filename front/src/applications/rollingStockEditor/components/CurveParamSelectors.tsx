@@ -6,7 +6,7 @@ import { compact, isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { ConditionalEffortCurve, RollingStock, Comfort } from 'common/api/osrdEditoastApi';
+import type { RollingStock, Comfort } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import Selector from 'common/Selector';
 import {
@@ -198,7 +198,7 @@ const CurveParamSelectors = ({
     value: string | Comfort
   ) => {
     if (!effortCurves) return;
-    const condKey = title as keyof ConditionalEffortCurve['cond'];
+    const condKey = title;
 
     const updatedModesCurves = Object.keys(effortCurves).reduce((acc, mode) => {
       const cleanedList = effortCurves[mode].curves.filter(

@@ -6,13 +6,7 @@ import length from '@turf/length';
 import type { Feature, LineString, Position } from 'geojson';
 import { clamp, cloneDeep, keyBy, meanBy } from 'lodash';
 
-import type {
-  GridFeature,
-  GridIndex,
-  Grids,
-  PointsGrid,
-  Triangle,
-} from 'common/Map/WarpedMap/core/helpers';
+import type { GridFeature, GridIndex, Grids, PointsGrid } from 'common/Map/WarpedMap/core/helpers';
 import vec, { type Vec2 } from 'common/Map/WarpedMap/core/vec-lib';
 import type { PolygonZone } from 'types';
 
@@ -53,7 +47,7 @@ export function featureToPointsGrid(grid: GridFeature, stepsCount: number): Poin
   return points;
 }
 function pointsGridToFeature(points: PointsGrid): GridFeature {
-  const grid = featureCollection([]) as GridFeature;
+  const grid: GridFeature = featureCollection([]);
   const steps = points.length - 1;
   const stripsPerSide = (Object.keys(points[0]).length - 1) / 2;
 
@@ -67,12 +61,12 @@ function pointsGridToFeature(points: PointsGrid): GridFeature {
         grid.features.push(
           polygon([[p00, p10, p01, p00]], {
             triangleId: `step:${i}/strip:${direction * (j + 1)}/inside`,
-          }) as Triangle
+          })
         );
         grid.features.push(
           polygon([[p11, p10, p01, p11]], {
             triangleId: `step:${i}/strip:${direction * (j + 1)}/outside`,
-          }) as Triangle
+          })
         );
       }
     }
@@ -130,7 +124,7 @@ export function getGrids(line: Feature<LineString>): Grids {
   const totalLength = length(line);
   const step = totalLength / (pointsCount - 1);
   const c = center(line);
-  const flatGrid = featureCollection([]) as GridFeature;
+  const flatGrid: GridFeature = featureCollection([]);
 
   /*
    * Generate flat line:

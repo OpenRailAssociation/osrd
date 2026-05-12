@@ -61,7 +61,7 @@ const extractChangeGroups = (exception: ExceptionFormat): TrainScheduleException
       key,
       pacedException[key],
     ])
-  ) as TrainScheduleExceptionChangeGroups;
+  );
 };
 
 /**
@@ -95,7 +95,7 @@ async function sendTrains(
       if (train.paced?.exceptions) {
         exceptionsToCreate.push({
           trainIndex: index,
-          exceptions: train.paced.exceptions as ExceptionFormat[],
+          exceptions: train.paced.exceptions,
         });
       }
     });

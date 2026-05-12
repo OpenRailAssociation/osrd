@@ -11,7 +11,7 @@ import {
   entityToUpdateOperation,
   entityToDeleteOperation,
 } from 'applications/editor/data/utils';
-import type { EditorEntity, EditorSchema } from 'applications/editor/typesEditorEntity';
+import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 import type { Operation } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { setLoading, setSuccess, setFailure, setSuccessWithoutMessage } from 'reducers/main';
@@ -61,7 +61,7 @@ export function loadDataModel() {
                 ...refTarget,
                 [ref[1]]: schemaResponse[ref[1]],
               },
-            } as EditorSchema[0];
+            };
           });
         dispatch(setSuccessWithoutMessage());
         dispatch(loadDataModelAction(schema));

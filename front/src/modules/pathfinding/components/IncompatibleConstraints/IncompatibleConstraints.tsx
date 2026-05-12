@@ -190,7 +190,7 @@ const IncompatibleConstraints = ({
   const filteredGeojson = useMemo(() => {
     if (!geometry || filteredConstraints.length === 0)
       return featureCollection<LineString, { ids: string[] }>([]);
-    return getSegmentsConstraints(geometry as LineString, filteredConstraints);
+    return getSegmentsConstraints(geometry, filteredConstraints);
   }, [geometry, filteredConstraints]);
 
   if (total === 0) return null;

@@ -15,7 +15,6 @@ import type {
   PslSignFeature,
   RangeEditionState,
   SpeedSectionEntity,
-  TrackState,
 } from 'applications/editor/tools/rangeEdition/types';
 import {
   generatePslSignFeatures,
@@ -167,7 +166,7 @@ export const SpeedSectionEditionLayers = () => {
             ...s,
             trackSectionsCache: {
               ...s.trackSectionsCache,
-              ...mapValues(res, (track) => ({ type: 'success', track }) as TrackState),
+              ...mapValues(res, (track) => ({ type: 'success' as const, track })),
             },
           }));
         }

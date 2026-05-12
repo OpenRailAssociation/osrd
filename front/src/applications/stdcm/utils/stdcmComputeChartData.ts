@@ -37,7 +37,7 @@ const computeChartData = (
     formattedPowerRestrictions,
     simulation,
     formattedPathProperties,
-  } as SpeedDistanceDiagramData;
+  };
 };
 
 export default computeChartData;

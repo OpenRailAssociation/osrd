@@ -13,7 +13,6 @@ import { flattenEntity } from 'applications/editor/data/utils';
 import type {
   ElectrificationEntity,
   RangeEditionState,
-  TrackState,
 } from 'applications/editor/tools/rangeEdition/types';
 import { getTrackRangeFeatures, isOnModeMove } from 'applications/editor/tools/rangeEdition/utils';
 import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
@@ -96,7 +95,7 @@ export const ElectrificationEditionLayers = () => {
             ...s,
             trackSectionsCache: {
               ...s.trackSectionsCache,
-              ...mapValues(res, (track) => ({ type: 'success', track }) as TrackState),
+              ...mapValues(res, (track) => ({ type: 'success' as const, track })),
             },
           }));
         }

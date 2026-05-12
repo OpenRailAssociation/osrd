@@ -37,7 +37,7 @@ const IntervalsEditorMarginForm = ({
             setData(result);
           }
         }}
-        value={(interval.value as number) || 0}
+        value={Number(interval.value) || 0}
         noMargin
         sm
         textRight
