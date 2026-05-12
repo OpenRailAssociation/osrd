@@ -1,5 +1,5 @@
-use chrono::DateTime;
-use chrono::Utc;
+use common::units::millisecond;
+use common::units::quantities::Offset;
 use database::DatabaseError;
 use diesel::prelude::*;
 use diesel::sql_query;
@@ -68,11 +68,11 @@ impl Timetable {
     pub async fn gather_start_times(
         timetable_id: i64,
         conn: &mut DbConnection,
-    ) -> Result<Vec<DateTime<Utc>>, database::DatabaseError> {
+    ) -> Result<Vec<Offset>, database::DatabaseError> {
         use database::tables::timetable_train_schedule_set;
         use database::tables::train_schedule;
 
-        train_schedule::dsl::train_schedule
+        let start_times_milliseconds = train_schedule::dsl::train_schedule
             .select(train_schedule::dsl::start_time)
             .filter(
                 train_schedule::dsl::train_schedule_set_id.eq_any(
@@ -83,7 +83,11 @@ impl Timetable {
             )
             .load(conn.write().await.deref_mut())
             .await
-            .map_err(Into::into)
+            .map_err(database::DatabaseError::from)?;
+        Ok(start_times_milliseconds
+            .into_iter()
+            .map(|s| millisecond::i64::new(s))
+            .collect())
     }
 
     pub async fn set_links_train_schedule_set(

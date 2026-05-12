@@ -48,6 +48,7 @@ pub mod quantities {
     pub type AerodynamicDrag = uom::si::f64::LinearMassDensity;
     pub type AerodynamicDragPerWeight = uom::si::f64::LinearNumberDensity;
     pub type Deceleration = uom::si::f64::Acceleration;
+    pub type Offset = uom::si::f64::Time;
 }
 
 macro_rules! quantity_to_path {
@@ -197,6 +198,59 @@ macro_rules! define_unit {
                     {
                         value
                             .map(|value| value.get::<Unit>() as u64)
+                            .serialize(serializer)
+                    }
+
+                    pub fn deserialize<'de, D>(
+                        deserializer: D,
+                    ) -> Result<Option<$quantity>, D::Error>
+                    where
+                        D: Deserializer<'de>,
+                    {
+                        super::super::option::deserialize(deserializer)
+                    }
+                }
+            }
+
+            pub mod i64 {
+                use super::*;
+                pub type ReprType = i64;
+
+                pub fn serialize<S>(value: &$quantity, serializer: S) -> Result<S::Ok, S::Error>
+                where
+                    S: Serializer,
+                {
+                    (value.get::<Unit>() as i64).serialize(serializer)
+                }
+
+                pub fn deserialize<'de, D>(deserializer: D) -> Result<$quantity, D::Error>
+                where
+                    D: Deserializer<'de>,
+                {
+                    super::deserialize(deserializer)
+                }
+
+                pub fn new(value: ReprType) -> $quantity {
+                    $quantity::new::<Unit>(value as f64)
+                }
+
+                pub fn from(qty: $quantity) -> ReprType {
+                    qty.get::<Unit>() as i64
+                }
+
+                pub mod option {
+                    use super::*;
+                    pub type ReprType = Option<super::ReprType>;
+
+                    pub fn serialize<S>(
+                        value: &Option<$quantity>,
+                        serializer: S,
+                    ) -> Result<S::Ok, S::Error>
+                    where
+                        S: Serializer,
+                    {
+                        value
+                            .map(|value| value.get::<Unit>() as i64)
                             .serialize(serializer)
                     }
 

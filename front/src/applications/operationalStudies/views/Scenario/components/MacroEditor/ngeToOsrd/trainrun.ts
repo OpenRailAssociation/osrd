@@ -336,7 +336,7 @@ export const generatePathAndSchedule = (
   const startDate = calculateStartDate(sections, baseDate ?? new Date(), trainrunDirection);
   const path = generatePath(sections, nodes, trainrunDirection, state);
   const schedule = generateSchedule(sections, nodes, startDate, trainrunDirection);
-  return { start_time: startDate.toISOString(), path, schedule };
+  return { start_time: startDate.getTime(), path, schedule };
 };
 
 // TODO: drop this function once this PR is merged:

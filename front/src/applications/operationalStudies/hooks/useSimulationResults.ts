@@ -54,7 +54,7 @@ const useSimulationResults = (
       selectedTrainId
     );
 
-    let startTime: string;
+    let startTime: number;
     if (exception?.start_time) {
       startTime = exception.start_time.value;
     } else {
@@ -63,7 +63,7 @@ const useSimulationResults = (
         new Date(trainSchedule.start_time),
         Duration.parse(trainSchedule.paced.interval),
         selectedOccurrenceIndex
-      ).toISOString();
+      ).getTime();
     }
 
     return {

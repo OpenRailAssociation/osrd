@@ -141,7 +141,7 @@ const useLazyProjectTrains = ({
       // when the projection type changes
       const trainSchedule = trainSchedulesByIdRef.current.get(id);
       if (trainSchedule) {
-        trainSchedule.start_time = newDeparture.toISOString();
+        trainSchedule.start_time = newDeparture.getTime();
       }
     },
     []

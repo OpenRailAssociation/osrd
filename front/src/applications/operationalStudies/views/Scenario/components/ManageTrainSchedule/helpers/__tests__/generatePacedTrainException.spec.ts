@@ -38,7 +38,7 @@ describe('generatePacedTrainException', () => {
    */
   const originalPacedTrain: Omit<PacedTrainWithPaced, 'train_schedule_set_id'> = {
     train_name: 'test',
-    start_time: '2025-06-02T12:45:00.000Z',
+    start_time: new Date('2025-06-02T12:45:00.000Z').getTime(),
     category: { main_category: 'FREIGHT_TRAIN' },
     comfort: 'STANDARD',
     constraint_distribution: 'MARECO',
@@ -69,7 +69,7 @@ describe('generatePacedTrainException', () => {
    */
   const baseUpdatedOccurrence: TrainSchedule = {
     train_name: 'test 1',
-    start_time: '2025-06-02T12:45:00.000Z',
+    start_time: new Date('2025-06-02T12:45:00.000Z').getTime(),
     category: { main_category: 'FREIGHT_TRAIN' },
     comfort: 'STANDARD',
     constraint_distribution: 'MARECO',
@@ -104,7 +104,7 @@ describe('generatePacedTrainException', () => {
         const exception = generatePacedTrainException(
           {
             ...baseUpdatedOccurrence,
-            start_time: '2025-06-02T14:45:00.000Z',
+            start_time: new Date('2025-06-02T14:45:00.000Z').getTime(),
             train_name: 'test 5', // computeOccurrenceName('test', 2)
           },
           originalPacedTrain,
@@ -124,7 +124,7 @@ describe('generatePacedTrainException', () => {
         const exception = generatePacedTrainException(
           {
             ...baseUpdatedOccurrence,
-            start_time: '2025-06-02T13:45:00.000Z', // base + 1x1h
+            start_time: new Date('2025-06-02T13:45:00.000Z').getTime(), // base + 1x1h
             train_name: 'test 3', // computeOccurrenceName('test', 1)
           },
           originalPacedTrain,
@@ -155,7 +155,7 @@ describe('generatePacedTrainException', () => {
               use_speed_limits_for_simulation: true,
               stops_at_end_of_block: false,
             },
-            start_time: '2025-06-02T13:00:00.000Z',
+            start_time: new Date('2025-06-02T13:00:00.000Z').getTime(),
             train_name: 'express 42',
           },
           originalPacedTrain,
@@ -175,7 +175,7 @@ describe('generatePacedTrainException', () => {
               stops_at_end_of_block: false,
             },
           },
-          start_time: { value: '2025-06-02T13:00:00.000Z' },
+          start_time: { value: new Date('2025-06-02T13:00:00.000Z').getTime() },
           train_name: { value: 'express 42' },
         });
         // path_and_schedule should not appear since path was not modified
@@ -242,7 +242,7 @@ describe('generatePacedTrainException', () => {
             category: { main_category: 'HIGH_SPEED_TRAIN' },
             labels: ['vip'],
             // startTime and name match occurrence 1 -> no diff for those
-            start_time: '2025-06-02T13:45:00.000Z',
+            start_time: new Date('2025-06-02T13:45:00.000Z').getTime(),
             train_name: 'test 3', // computeOccurrenceName('test', 1)
           },
           originalPacedTrain,
@@ -277,14 +277,14 @@ describe('generatePacedTrainException', () => {
         const exception = generatePacedTrainException(
           {
             ...baseUpdatedOccurrence,
-            start_time: '2025-06-02T16:00:00.000Z',
+            start_time: new Date('2025-06-02T16:00:00.000Z').getTime(),
             train_name: 'test/+',
           },
           originalPacedTrain,
           null
         );
         expect(exception).toMatchObject({
-          start_time: { value: '2025-06-02T16:00:00.000Z' },
+          start_time: { value: new Date('2025-06-02T16:00:00.000Z').getTime() },
         });
       });
 
@@ -308,7 +308,7 @@ describe('generatePacedTrainException', () => {
         const exception = generatePacedTrainException(
           {
             ...baseUpdatedOccurrence,
-            start_time: '2025-06-02T16:00:00.000Z',
+            start_time: new Date('2025-06-02T16:00:00.000Z').getTime(),
             train_name: 'test/+',
           },
           originalPacedTrain,
@@ -321,7 +321,7 @@ describe('generatePacedTrainException', () => {
         const exception = generatePacedTrainException(
           {
             ...baseUpdatedOccurrence,
-            start_time: '2025-06-02T16:00:00.000Z',
+            start_time: new Date('2025-06-02T16:00:00.000Z').getTime(),
             train_name: 'special departure',
           },
           originalPacedTrain,
@@ -342,7 +342,7 @@ describe('generatePacedTrainException', () => {
         const exception = generatePacedTrainException(
           {
             ...baseUpdatedOccurrence,
-            start_time: '2025-06-02T17:30:00.000Z',
+            start_time: new Date('2025-06-02T17:30:00.000Z').getTime(),
             train_name: 'extra train',
             category: { main_category: 'HIGH_SPEED_TRAIN' },
             labels: ['priority'],
@@ -353,7 +353,7 @@ describe('generatePacedTrainException', () => {
           null
         );
         expect(exception).toMatchObject({
-          start_time: { value: '2025-06-02T17:30:00.000Z' },
+          start_time: { value: new Date('2025-06-02T17:30:00.000Z').getTime() },
           train_name: { value: 'extra train' },
           rolling_stock_category: { value: { main_category: 'HIGH_SPEED_TRAIN' } },
           labels: { value: ['priority'] },

@@ -307,7 +307,7 @@ const useUpdateTimesStopsTable = (
             updatedSchedule: result.updatedSchedule,
             trainName: occurrenceTrainName,
           }),
-          start_time: result.updatedStartTime?.toISOString() ?? selectedTrain.start_time,
+          start_time: result.updatedStartTime?.getTime() ?? selectedTrain.start_time,
         };
       }
 
@@ -365,7 +365,7 @@ const useUpdateTimesStopsTable = (
         path: result.updatedPath,
         schedule: result.updatedSchedule,
         margins: result.updatedMargins,
-        start_time: result.updatedStartTime?.toISOString() ?? selectedTrain.start_time,
+        start_time: result.updatedStartTime?.getTime() ?? selectedTrain.start_time,
       });
     },
     [selectedTrain, computeUpdatedPathAndSchedule, updateTrainSchedule]

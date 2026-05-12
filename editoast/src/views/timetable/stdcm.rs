@@ -13,6 +13,7 @@ use axum_streams::StreamBodyAs;
 use chrono::DateTime;
 use chrono::Duration;
 use chrono::Utc;
+use common::units::millisecond;
 use core_client::AsCoreRequest;
 use core_client::CoreClient;
 use core_client::pathfinding::InvalidPathItem;
@@ -466,7 +467,7 @@ impl VirtualTrainRun {
                 train_name: "".to_string(),
                 labels: vec![],
                 rolling_stock_name: consist.traction_engine.name.clone(),
-                start_time: approx_start_time,
+                start_time: millisecond::i64::new(approx_start_time.timestamp_millis()),
                 schedule: vec![ScheduleItem {
                     // Make the train stop at the end
                     at: last_step.id.clone(),

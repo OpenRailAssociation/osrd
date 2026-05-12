@@ -106,7 +106,7 @@
                     "rolling_stock_name": "fast_rolling_stock",
                     "schedule": [],
                     "speed_limit_tag": null,
-                    "start_time": "2024-01-01T08:40:52+00:00",
+                    "start_time": 1704098452000,
                     "train_name": "fuzzer_train"
                 }
             ]
@@ -155,7 +155,7 @@
                     "rolling_stock_name": "fast_rolling_stock",
                     "schedule": [],
                     "speed_limit_tag": null,
-                    "start_time": "2024-01-01T02:57:09+00:00",
+                    "start_time": 1704077829000,
                     "train_name": "fuzzer_train"
                 }
             ]
@@ -191,7 +191,7 @@
                     "rolling_stock_name": "fast_rolling_stock",
                     "schedule": [],
                     "speed_limit_tag": null,
-                    "start_time": "2024-01-01T12:56:33+00:00",
+                    "start_time": 1704113793000,
                     "train_name": "fuzzer_train"
                 }
             ]
@@ -223,7 +223,7 @@
                     "rolling_stock_name": "fast_rolling_stock",
                     "schedule": [],
                     "speed_limit_tag": null,
-                    "start_time": "2024-01-01T17:22:14+00:00",
+                    "start_time": 1704129734000,
                     "train_name": "fuzzer_train"
                 }
             ]
@@ -272,7 +272,7 @@
                     "rolling_stock_name": "fast_rolling_stock",
                     "schedule": [],
                     "speed_limit_tag": null,
-                    "start_time": "2024-01-01T05:09:30+00:00",
+                    "start_time": 1704085770000,
                     "train_name": "fuzzer_train"
                 }
             ]

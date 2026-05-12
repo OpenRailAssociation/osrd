@@ -841,7 +841,7 @@ diesel::table! {
         labels -> Array<Nullable<Text>>,
         #[max_length = 128]
         rolling_stock_name -> Varchar,
-        start_time -> Timestamptz,
+        start_time -> Int8,
         schedule -> Jsonb,
         margins -> Jsonb,
         initial_speed -> Float8,

@@ -3,6 +3,7 @@ use chrono::Duration;
 use chrono::Utc;
 use clap::Args;
 use clap::Subcommand;
+use common::units::millisecond;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_models::ElectricalProfileSet;
@@ -264,14 +265,26 @@ async fn resolve_search_window(
     } else {
         let start_times = Timetable::gather_start_times(timetable_id, conn).await?;
 
-        let (Some(min), Some(max)) = (start_times.iter().min(), start_times.iter().max()) else {
+        let (Some(min), Some(max)) = (
+            start_times
+                .iter()
+                .min_by_key(|t| millisecond::i64::from(**t)),
+            start_times
+                .iter()
+                .max_by_key(|t| millisecond::i64::from(**t)),
+        ) else {
             let error_msg =
                 "Timetable specified contains no train. Please fully specify search window.";
             anyhow::bail!("{error_msg}");
         };
 
-        let begin = search_window_begin.unwrap_or(*min);
-        let end = search_window_end.unwrap_or(*max + Duration::days(1));
+        let begin = search_window_begin.unwrap_or(
+            DateTime::<Utc>::from_timestamp_millis(millisecond::i64::from(*min)).unwrap(),
+        );
+        let end = search_window_end.unwrap_or(
+            DateTime::<Utc>::from_timestamp_millis(millisecond::i64::from(*max)).unwrap()
+                + Duration::days(1),
+        );
         (begin, end)
     };
 
@@ -311,9 +324,11 @@ mod tests {
     use super::*;
     use chrono::DateTime;
     use chrono::Utc;
+    use common::units::quantities::Offset;
     use database::DbConnection;
     use database::DbConnectionPoolV2;
     use rstest::rstest;
+    use schemas::fixtures::ms_since_epoch;
     use serde_json::json;
 
     fn make_datetime(s: &str) -> DateTime<Utc> {
@@ -321,7 +336,7 @@ mod tests {
     }
 
     async fn create_trains_from_start_times(
-        start_times: Vec<DateTime<Utc>>,
+        start_times: Vec<Offset>,
         train_schedule_set_id: i64,
         conn: &mut DbConnection,
     ) {
@@ -372,12 +387,12 @@ mod tests {
         let (timetable, train_schedule_set) = create_timetable_with_train_schedule_set(conn).await;
 
         let start_times = vec![
-            make_datetime("2000-01-01 12:00:00Z"),
-            make_datetime("2000-02-02 00:00:00Z"),
-            make_datetime("2000-01-01 11:59:59Z"), // earliest
-            make_datetime("2000-01-15 08:59:59Z"),
-            make_datetime("2000-02-02 00:00:01Z"), // latest
-            make_datetime("2000-01-19 17:00:00Z"),
+            ms_since_epoch("2000-01-01T12:00:00Z"),
+            ms_since_epoch("2000-02-02T00:00:00Z"),
+            ms_since_epoch("2000-01-01T11:59:59Z"), // earliest
+            ms_since_epoch("2000-01-15T08:59:59Z"),
+            ms_since_epoch("2000-02-02T00:00:01Z"), // latest
+            ms_since_epoch("2000-01-19T17:00:00Z"),
         ];
 
         create_trains_from_start_times(start_times, train_schedule_set.id, conn).await;
@@ -423,8 +438,8 @@ mod tests {
         let (timetable, train_schedule_set) = create_timetable_with_train_schedule_set(conn).await;
 
         let start_times = vec![
-            make_datetime("2000-01-01 12:00:00Z"),
-            make_datetime("2000-02-02 00:00:01Z"),
+            ms_since_epoch("2000-01-01T12:00:00Z"),
+            ms_since_epoch("2000-02-02T00:00:01Z"),
         ];
 
         create_trains_from_start_times(start_times, train_schedule_set.id, conn).await;
@@ -447,8 +462,8 @@ mod tests {
         let work_schedule_group = create_work_schedule_group(conn).await;
 
         let start_times = vec![
-            make_datetime("2000-01-01 12:00:00Z"),
-            make_datetime("2000-02-02 08:00:00Z"),
+            ms_since_epoch("2000-01-01T12:00:00Z"),
+            ms_since_epoch("2000-02-02T08:00:00Z"),
         ];
 
         create_trains_from_start_times(
@@ -531,8 +546,8 @@ mod tests {
         let electrical_profile_set = create_electrical_profile_set(conn).await;
 
         let start_times = vec![
-            make_datetime("2000-01-01 12:00:00Z"),
-            make_datetime("2000-02-02 08:00:00Z"),
+            ms_since_epoch("2000-01-01T12:00:00Z"),
+            ms_since_epoch("2000-02-02T08:00:00Z"),
         ];
 
         create_trains_from_start_times(start_times, train_schedule_set.id, conn).await;

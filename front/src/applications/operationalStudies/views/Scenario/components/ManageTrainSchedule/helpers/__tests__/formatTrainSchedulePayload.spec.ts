@@ -110,7 +110,7 @@ describe('formatTrainSchedulePayload', () => {
         rolling_stock_name: 'DUAL-MODE_RS_E2Ee',
         schedule: [],
         speed_limit_tag: undefined,
-        start_time: '2025-06-02T12:45:00.000Z',
+        start_time: new Date('2025-06-02T12:45:00.000Z').getTime(),
         train_name: 'test',
         paced: {
           time_window: 'PT3H',

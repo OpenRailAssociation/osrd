@@ -192,7 +192,7 @@ const useOutputTableData = (
             matchingReportTrainIndex === -1
               ? interpolateValue(simulatedTrain, op.position, 'times')
               : simulatedTrain.times[matchingReportTrainIndex];
-          const calculatedArrival = new Date(new Date(selectedTrain.start_time).getTime() + time);
+          const calculatedArrival = new Date(selectedTrain.start_time + time);
 
           formattedRows.push({
             opId: op.id,

@@ -10,9 +10,8 @@ use crate::train_schedule::PowerRestrictionItem;
 use crate::train_schedule::ScheduleItem;
 use crate::train_schedule::TrainOccurrence;
 use crate::train_schedule::TrainScheduleOptions;
-use chrono::DateTime;
 use chrono::Duration;
-use chrono::Utc;
+use common::units::quantities::Offset;
 use serde::Deserialize;
 use serde::Deserializer;
 use serde::Serialize;
@@ -176,7 +175,11 @@ pub struct SpeedLimitTagChangeGroup {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct StartTimeChangeGroup {
-    pub value: DateTime<Utc>,
+    /// For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
+    /// For hourly timetables: elapsed ms since the timetable start.
+    #[serde(with = "common::units::millisecond::i64")]
+    #[schema(value_type = i64)]
+    pub value: Offset,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]

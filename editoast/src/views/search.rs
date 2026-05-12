@@ -747,8 +747,10 @@ pub(super) struct SearchResultItemTrainSchedule {
     rolling_stock_name: String,
     #[search(sql = "train_schedule.train_schedule_set_id")]
     train_schedule_set_id: i64,
+    /// For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
+    /// For hourly timetables: elapsed ms since the timetable start.
     #[search(sql = "train_schedule.start_time")]
-    start_time: DateTime<Utc>,
+    start_time: i64,
     #[search(sql = "train_schedule.schedule")]
     schedule: Vec<ScheduleItem>,
     #[search(sql = "train_schedule.margins")]

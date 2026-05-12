@@ -3,7 +3,7 @@
     "train_name": "8608",
     "labels": ["Paced-Train-Tag-1", "SS-NS", "Valid"],
     "rolling_stock_name": "SLOW_RS_E2E",
-    "start_time": "2024-10-15T03:00:00Z",
+    "start_time": 1728961200000,
     "path": [
       {
         "id": "id227",
@@ -60,7 +60,7 @@
     "train_name": "Paced Train - Updated exception (Train name)",
     "labels": ["Paced-Train-Tag-2", "SS-NS", "Valid"],
     "rolling_stock_name": "SLOW_RS_E2E",
-    "start_time": "2024-10-15T04:00:00Z",
+    "start_time": 1728964800000,
     "path": [
       {
         "id": "id227",
@@ -128,7 +128,7 @@
     "train_name": "Paced Train - Updated exception (RS)",
     "labels": ["Paced-Train-Tag-2", "MWS-NES", "Not-honored", "Valid"],
     "rolling_stock_name": "DUAL-MODE_RS_E2E",
-    "start_time": "2024-10-15T05:00:00Z",
+    "start_time": 1728968400000,
     "path": [
       {
         "id": "id744",
@@ -212,7 +212,7 @@
     "train_name": "Paced Train - All exceptions",
     "labels": ["NWS-NES", "Invalid"],
     "rolling_stock_name": "",
-    "start_time": "2024-10-15T09:45:43Z",
+    "start_time": 1728985543000,
     "path": [
       {
         "id": "8bf52569-50a5-46a5-8e62-b5626460cfba",
@@ -350,7 +350,7 @@
             "value": []
           },
           "start_time": {
-            "value": "2024-10-15T14:10:42Z"
+            "value": 1729001442000
           },
           "path_and_schedule": {
             "path": [
@@ -442,7 +442,7 @@
             "value": null
           },
           "start_time": {
-            "value": "2024-10-15T18:22:11Z"
+            "value": 1729016531000
           },
           "initial_speed": {
             "value": 41.666666666666664
@@ -455,7 +455,7 @@
             "value": "MA100"
           },
           "start_time": {
-            "value": "2024-10-15T20:30:16Z"
+            "value": 1729024216000
           }
         }
       ]
@@ -465,7 +465,7 @@
     "train_name": "Paced Train - Added exception",
     "labels": ["Valid"],
     "rolling_stock_name": "SLOW_RS_E2E",
-    "start_time": "2024-10-16T00:00:00Z",
+    "start_time": 1729036800000,
     "path": [
       {
         "id": "id227",
@@ -524,7 +524,7 @@
           "disabled": false,
           "change_groups": {
             "start_time": {
-              "value": "2024-10-16T00:30:00Z"
+              "value": 1729038600000
             }
           }
         },
@@ -581,7 +581,7 @@
     "train_name": "Paced Train - Updated and added exception (RS)",
     "labels": ["Paced-Train-Tag-5", "SS-NS", "Valid"],
     "rolling_stock_name": "DUAL-MODE_RS_E2E",
-    "start_time": "2024-10-17T11:00:00Z",
+    "start_time": 1729162800000,
     "path": [
       {
         "id": "id227",
@@ -644,7 +644,7 @@
           "disabled": false,
           "key": "e0573b22-d222-47ac-9a96-224d44ab842b",
           "start_time": {
-            "value": "2024-10-17T19:00:00Z"
+            "value": 1729191600000
           }
         }
       ]
@@ -654,7 +654,7 @@
     "train_name": "Paced Train - All exceptions",
     "labels": ["NWS-NES", "Valid"],
     "rolling_stock_name": "FAST_RS_E2E",
-    "start_time": "2024-10-17T22:48:42Z",
+    "start_time": 1729205322000,
     "path": [
       {
         "id": "8bf52569-50a5-46a5-8e62-b5626460cfba",
@@ -792,7 +792,7 @@
             "value": []
           },
           "start_time": {
-            "value": "2024-10-18T00:10:42Z"
+            "value": 1729210242000
           },
           "path_and_schedule": {
             "path": [
@@ -884,7 +884,7 @@
             "value": null
           },
           "start_time": {
-            "value": "2024-10-18T04:00:11Z"
+            "value": 1729224011000
           },
           "initial_speed": {
             "value": 41.666666666666664
@@ -897,7 +897,7 @@
             "value": "MA100"
           },
           "start_time": {
-            "value": "2024-10-18T03:30:16Z"
+            "value": 1729222216000
           }
         }
       ]
@@ -907,7 +907,7 @@
     "train_name": "Train1",
     "labels": ["Tag-1", "SS-NS"],
     "rolling_stock_name": "SLOW_RS_E2E",
-    "start_time": "2024-10-17T03:00:00Z",
+    "start_time": 1729134000000,
     "path": [
       {
         "id": "id227",
@@ -957,7 +957,7 @@
     "train_name": "Train2",
     "labels": ["Tag-2", "WS-SES"],
     "rolling_stock_name": "ELECTRIC_RS_E2E",
-    "start_time": "2024-10-17T03:15:00Z",
+    "start_time": 1729134900000,
     "path": [
       {
         "id": "id477",
@@ -1032,7 +1032,7 @@
     "train_name": "Train3",
     "labels": ["Tag-3", "MWS-NES"],
     "rolling_stock_name": "DUAL-MODE_RS_E2E",
-    "start_time": "2024-10-17T05:00:00Z",
+    "start_time": 1729141200000,
     "path": [
       {
         "id": "id744",
@@ -1099,7 +1099,7 @@
     "train_name": "Train4",
     "labels": ["Tag-4", "WS-SES"],
     "rolling_stock_name": "ELECTRIC_RS_E2E",
-    "start_time": "2024-10-17T05:15:00Z",
+    "start_time": 1729142100000,
     "path": [
       {
         "id": "id938",
@@ -1197,7 +1197,7 @@
     "train_name": "Train5",
     "labels": ["Tag-5", "SWE-MES"],
     "rolling_stock_name": "SLOW_RS_E2E",
-    "start_time": "2024-10-17T07:30:00Z",
+    "start_time": 1729150200000,
     "path": [
       {
         "id": "id1306",
@@ -1264,7 +1264,7 @@
     "train_name": "Train6",
     "labels": ["Tag-6", "WS-NS"],
     "rolling_stock_name": "DUAL-MODE_RS_E2E",
-    "start_time": "2024-10-17T07:45:00Z",
+    "start_time": 1729151100000,
     "path": [
       {
         "id": "id1700",
@@ -1331,7 +1331,7 @@
     "train_name": "Train7",
     "labels": ["Tag-7", "WS-NES"],
     "rolling_stock_name": "FAST_RS_E2E",
-    "start_time": "2024-10-17T08:37:00Z",
+    "start_time": 1729154220000,
     "path": [
       {
         "id": "id2121",
@@ -1392,7 +1392,7 @@
     "train_name": "Train8",
     "labels": ["Tag-8", "SS-MES"],
     "rolling_stock_name": "SLOW_RS_E2E",
-    "start_time": "2024-10-17T08:56:01Z",
+    "start_time": 1729155361000,
     "path": [
       {
         "id": "id2532",
@@ -1459,7 +1459,7 @@
     "train_name": "Train9",
     "labels": ["Tag-9", "MWS-NES"],
     "rolling_stock_name": "ELECTRIC_RS_E2E",
-    "start_time": "2024-10-17T09:35:59Z",
+    "start_time": 1729157759000,
     "path": [
       {
         "id": "id2854",
@@ -1509,7 +1509,7 @@
     "train_name": "Train10",
     "labels": ["Tag-10", "SES-MES"],
     "rolling_stock_name": "DUAL-MODE_RS_E2E",
-    "start_time": "2024-10-17T09:45:31Z",
+    "start_time": 1729158331000,
     "path": [
       {
         "id": "id3088",
@@ -1573,7 +1573,7 @@
     "train_name": "Train11",
     "labels": ["Tag-11", "NWS-NES"],
     "rolling_stock_name": "DUAL-MODE_RS_E2E",
-    "start_time": "2024-10-17T09:45:43.000Z",
+    "start_time": 1729158343000,
     "path": [
       {
         "id": "b4df37d0-ffe2-4166-b7b6-8c0c5a47e9b0",
@@ -1688,7 +1688,7 @@
     "train_name": "Train12",
     "labels": ["Tag-12"],
     "rolling_stock_name": "",
-    "start_time": "2024-10-17T10:16:03Z",
+    "start_time": 1729160163000,
     "path": [
       {
         "id": "id130",
@@ -1748,7 +1748,7 @@
     "train_name": "Train13",
     "labels": ["Tag-13", "SES-SWS"],
     "rolling_stock_name": "SLOW_RS_E2E",
-    "start_time": "2024-10-17T10:48:00Z",
+    "start_time": 1729162080000,
     "path": [
       {
         "id": "id354",
@@ -1815,7 +1815,7 @@
     "train_name": "Train14",
     "labels": ["Tag-14", "NES-MES"],
     "rolling_stock_name": "ELECTRIC_RS_E2E",
-    "start_time": "2024-10-17T12:10:00Z",
+    "start_time": 1729167000000,
     "path": [
       {
         "id": "id803",
@@ -1871,7 +1871,7 @@
     "train_name": "Train15",
     "labels": ["Tag-15"],
     "rolling_stock_name": "IMPROBABLE_RS_E2E",
-    "start_time": "2024-10-17T12:30:00Z",
+    "start_time": 1729168200000,
     "path": [
       {
         "id": "id1073",
@@ -1923,7 +1923,7 @@
     "train_name": "Train16",
     "labels": ["Tag-16", "SES-WS"],
     "rolling_stock_name": "DUAL-MODE_RS_E2E",
-    "start_time": "2024-10-17T13:00:00Z",
+    "start_time": 1729170000000,
     "path": [
       {
         "id": "id1353",
@@ -1991,7 +1991,7 @@
     "train_name": "Train17",
     "labels": ["Tag-17", "WS-SES"],
     "rolling_stock_name": "ELECTRIC_RS_E2E",
-    "start_time": "2024-10-17T14:05:00Z",
+    "start_time": 1729173900000,
     "path": [
       {
         "id": "id1572",
@@ -2075,7 +2075,7 @@
     "train_name": "Train18",
     "labels": ["Tag-18", "SWS-MWS"],
     "rolling_stock_name": "SLOW_RS_E2E",
-    "start_time": "2024-10-17T14:15:08Z",
+    "start_time": 1729174508000,
     "path": [
       {
         "id": "id1948",
@@ -2125,7 +2125,7 @@
     "train_name": "Train19",
     "labels": ["Tag-19"],
     "rolling_stock_name": "",
-    "start_time": "2024-10-17T15:55:00Z",
+    "start_time": 1729180500000,
     "path": [
       {
         "id": "id3049",
@@ -2169,7 +2169,7 @@
     "train_name": "Train20",
     "labels": ["Tag-20", "SS-WS"],
     "rolling_stock_name": "ELECTRIC_RS_E2E",
-    "start_time": "2024-10-17T15:59:29Z",
+    "start_time": 1729180769000,
     "path": [
       {
         "id": "id2078",
@@ -2252,7 +2252,7 @@
     "train_name": "Train21",
     "labels": ["Tag-21", "NWS-NES"],
     "rolling_stock_name": "ELECTRIC_RS_E2E",
-    "start_time": "2024-10-17T19:05:00Z",
+    "start_time": 1729191900000,
     "path": [
       {
         "id": "b4df37d0-ffe2-4166-b7b6-8c0c5a47e9b0",

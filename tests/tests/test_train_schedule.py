@@ -10,6 +10,7 @@ from tests.infra import Infra
 
 from .scenario import Scenario
 from .services import EDITOAST_URL
+from .utils.timetable import ms_since_epoch
 
 
 def kph2ms(kmh_speed: float) -> float:
@@ -127,7 +128,7 @@ def test_etcs_schedule_stop_brakes_result_never_reach_mrsp(
                 "train_name": "nearby EoAs + brake uphill/downhill grade + no LoA",
                 "labels": [],
                 "rolling_stock_name": etcs_rolling_stock_name,
-                "start_time": "2024-01-01T07:00:00Z",
+                "start_time": ms_since_epoch("2024-01-01T07:00:00Z"),
                 "path": [
                     {
                         "id": "zero",
@@ -335,7 +336,7 @@ def test_etcs_schedule_result_stop_brake_from_mrsp(
                 "train_name": "brake from MRSP: max_speed + after slowdown of the MRSP",
                 "labels": [],
                 "rolling_stock_name": etcs_rolling_stock_name,
-                "start_time": "2024-01-01T07:00:00Z",
+                "start_time": ms_since_epoch("2024-01-01T07:00:00Z"),
                 "path": [
                     {
                         "id": "zero",
@@ -478,7 +479,7 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_same_location(
                 "train_name": "brake from MRSP: max_speed + EoA and SvL at same location",
                 "labels": [],
                 "rolling_stock_name": etcs_rolling_stock_name,
-                "start_time": "2024-01-01T07:00:00Z",
+                "start_time": ms_since_epoch("2024-01-01T07:00:00Z"),
                 "path": [
                     {
                         "id": "zero",
@@ -616,7 +617,7 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_different_locations(
                 "train_name": "brake from MRSP: max_speed + EoA and SvL 100m after EoA",
                 "labels": [],
                 "rolling_stock_name": etcs_rolling_stock_name,
-                "start_time": "2024-01-01T07:00:00Z",
+                "start_time": ms_since_epoch("2024-01-01T07:00:00Z"),
                 "path": [
                     {
                         "id": "zero",
@@ -780,7 +781,7 @@ def test_etcs_schedule_result_stop_on_open_signal(
                 ),
                 "labels": [],
                 "rolling_stock_name": etcs_rolling_stock_name,
-                "start_time": "2024-01-01T07:00:00Z",
+                "start_time": ms_since_epoch("2024-01-01T07:00:00Z"),
                 "path": [
                     {
                         "id": "zero",
@@ -928,7 +929,7 @@ def test_etcs_schedule_result_slowdowns(
                 "train_name": "slowdowns to respect MRSP and ETCS",
                 "labels": [],
                 "rolling_stock_name": etcs_rolling_stock_name,
-                "start_time": "2024-01-01T07:00:00Z",
+                "start_time": ms_since_epoch("2024-01-01T07:00:00Z"),
                 "path": [
                     {
                         "id": "zero",
@@ -1141,7 +1142,7 @@ def test_etcs_schedule_result_slowdowns_with_stop(
                 "train_name": "slowdowns to respect MRSP and ETCS with intermediate stop",
                 "labels": [],
                 "rolling_stock_name": etcs_rolling_stock_name,
-                "start_time": "2024-01-01T07:00:00Z",
+                "start_time": ms_since_epoch("2024-01-01T07:00:00Z"),
                 "path": [
                     {
                         "id": "zero",
@@ -1280,7 +1281,7 @@ def test_etcs_spacing_req(
                 "train_name": "slowdowns to respect MRSP and ETCS with intermediate stop",
                 "labels": [],
                 "rolling_stock_name": etcs_rolling_stock_name,
-                "start_time": "2024-01-01T07:00:00Z",
+                "start_time": ms_since_epoch("2024-01-01T07:00:00Z"),
                 "path": [
                     {
                         "id": "zero",
@@ -1409,7 +1410,7 @@ def test_etcs_routing_req(
                 "train_name": "slowdowns to respect MRSP and ETCS with intermediate stop",
                 "labels": [],
                 "rolling_stock_name": etcs_rolling_stock_name,
-                "start_time": "2024-01-01T07:00:00Z",
+                "start_time": ms_since_epoch("2024-01-01T07:00:00Z"),
                 "path": [
                     {
                         "id": "zero",
@@ -1548,7 +1549,7 @@ def test_etcs_stop_at_requirements_eoa(
                 "train_name": "stop exactly at EoA from requirements",
                 "labels": [],
                 "rolling_stock_name": etcs_rolling_stock_name,
-                "start_time": "2024-01-01T07:00:00Z",
+                "start_time": ms_since_epoch("2024-01-01T07:00:00Z"),
                 "path": [
                     {
                         "id": "zero",
@@ -1664,7 +1665,7 @@ def test_etcs_train_schedule_with_margins(
                 "train_name": "etcs train with margins",
                 "labels": [],
                 "rolling_stock_name": etcs_rolling_stock_name,
-                "start_time": "2024-01-01T07:00:00Z",
+                "start_time": ms_since_epoch("2024-01-01T07:00:00Z"),
                 "path": [
                     {
                         "id": "10a15119-eb4c-4b77-bbaa-f7960fe4e985",
@@ -1748,7 +1749,7 @@ def _get_etcs_braking_curves_train_data(rolling_stock_name: str) -> dict[str, An
         "train_name": "3 brakes + 2 slowdowns + 29 signals",
         "labels": [],
         "rolling_stock_name": rolling_stock_name,
-        "start_time": "2024-01-01T07:00:00Z",
+        "start_time": ms_since_epoch("2024-01-01T07:00:00Z"),
         "path": [
             {
                 "id": "zero",

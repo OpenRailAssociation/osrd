@@ -183,7 +183,7 @@ describe('makeProjectedTrains', () => {
         ],
       },
       start_time: {
-        value: '2025-07-30T14:00:00.000Z',
+        value: new Date('2025-07-30T14:00:00.000Z').getTime(),
       },
       train_name: {
         value: 'GE VPE +',

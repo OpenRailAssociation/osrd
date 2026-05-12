@@ -273,7 +273,7 @@ pub(in crate::views) async fn update(
 
 #[cfg(test)]
 mod tests {
-    use chrono::DateTime;
+    use common::units::millisecond;
     use editoast_models;
     use editoast_models::TrainScheduleException;
     use editoast_models::prelude::Retrieve;
@@ -305,7 +305,7 @@ mod tests {
                 value: "Created".to_string(),
             }),
             start_time: Some(StartTimeChangeGroup {
-                value: DateTime::from_timestamp(0, 0).unwrap(),
+                value: millisecond::i64::new(0),
             }),
             ..Default::default()
         };

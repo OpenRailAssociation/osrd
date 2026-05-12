@@ -1,5 +1,6 @@
 import json
 
+from datetime import datetime
 from requests import Session
 
 
@@ -58,3 +59,7 @@ def create_scenario(
     )
     r.raise_for_status()
     return r.json()["id"], timetable_id, train_schedule_set_id
+
+
+def ms_since_epoch(s: str) -> int:
+    return int(datetime.fromisoformat(s).timestamp() * 1000)

@@ -3497,7 +3497,11 @@ class SpeedSectionPslSncfExtension(BaseModel):
 
 
 class StartTimeChangeGroup(BaseModel):
-    value: AwareDatetime
+    value: int
+    """
+    For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
+    For hourly timetables: elapsed ms since the timetable start.
+    """
 
 
 class StdcmResponsePathNotFound(BaseModel):
@@ -5928,7 +5932,11 @@ class SearchResultItemTrainSchedule(BaseModel):
     rolling_stock_name: str
     schedule: list[ScheduleItem]
     speed_limit_tag: str | None = None
-    start_time: AwareDatetime
+    start_time: int
+    """
+    For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
+    For hourly timetables: elapsed ms since the timetable start.
+    """
     train_name: str
     train_schedule_set_id: int
 
@@ -6500,7 +6508,11 @@ class TrainSchedule(BaseModel):
     rolling_stock_name: str
     schedule: list[ScheduleItem] | None = None
     speed_limit_tag: SpeedLimitTag | None = None
-    start_time: AwareDatetime
+    start_time: int
+    """
+    For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
+    For hourly timetables: elapsed ms since the timetable start.
+    """
     train_name: str
     paced: Paced | None = None
 

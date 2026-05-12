@@ -95,7 +95,7 @@ const useOccurrenceActions = ({
         train_name: editedOccurrence.trainName,
         speed_limit_tag: pacedTrain.speedLimitTag,
         rolling_stock_name: editedOccurrence.rollingStock?.name || '',
-        start_time: editedOccurrence.startTime.toISOString(),
+        start_time: editedOccurrence.startTime.getTime(),
       };
 
       const {

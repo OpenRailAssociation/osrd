@@ -156,7 +156,7 @@ const useUpdateTrainSchedule = (
     const newAddedExceptions: PacedTrainException[] = addedExceptions.map(
       ({ startTime: exStartTime }) => ({
         key: '', // TODO : remove this when the key will be removed from the model
-        start_time: { value: exStartTime.toISOString() },
+        start_time: { value: exStartTime.getTime() },
       })
     );
 

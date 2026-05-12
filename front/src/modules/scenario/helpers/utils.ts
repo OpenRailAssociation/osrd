@@ -17,13 +17,11 @@ export const getScenarioDatetimeWindow = (trainsDetails: TrainScheduleResponse[]
     };
   }
 
-  const sortedDateList = trainsDetails
-    .map((train) => new Date(train.start_time))
-    .sort((a, b) => a.getTime() - b.getTime());
+  const startTimeList = trainsDetails.map((train) => train.start_time);
 
   return {
-    begin: sortedDateList[0],
-    end: sortedDateList[sortedDateList.length - 1],
+    begin: new Date(Math.min(...startTimeList)),
+    end: new Date(Math.max(...startTimeList)),
   };
 };
 

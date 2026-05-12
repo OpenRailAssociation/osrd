@@ -12,7 +12,7 @@ from tests.infra import Infra
 from tests.path import Path as TrainPath
 from tests.scenario import Scenario
 from tests.services import EDITOAST_URL
-from tests.utils.timetable import create_scenario
+from tests.utils.timetable import create_scenario, ms_since_epoch
 
 
 def _load_generated_infra(session: Session, name: str) -> int:
@@ -312,7 +312,7 @@ def west_to_south_east_simulation(
                 "rolling_stock_name": fast_rolling_stock_name,
                 "train_name": "foo",
                 "speed_limit_tag": "foo",
-                "start_time": "2024-01-01T07:19:54+00:00",
+                "start_time": ms_since_epoch("2024-01-01T07:19:54Z"),
             }
         ],
     )
@@ -354,7 +354,7 @@ def west_to_south_east_paced_train(
                 "rolling_stock_name": fast_rolling_stock_name,
                 "train_name": "foo",
                 "speed_limit_tag": "foo",
-                "start_time": "2024-01-01T07:19:54+00:00",
+                "start_time": ms_since_epoch("2024-01-01T07:19:54Z"),
                 "paced": {
                     "time_window": "PT2H",
                     "interval": "PT15M",
@@ -396,7 +396,7 @@ def west_to_south_east_paced_trains(
         json=[
             {
                 **base,
-                "start_time": "2024-01-01T07:19:54+00:00",
+                "start_time": ms_since_epoch("2024-01-01T07:19:54Z"),
                 "paced": {
                     "time_window": "PT2H",
                     "interval": "PT15M",
@@ -404,7 +404,7 @@ def west_to_south_east_paced_trains(
             },
             {
                 **base,
-                "start_time": "2024-01-01T10:29:54+00:00",
+                "start_time": ms_since_epoch("2024-01-01T10:29:54Z"),
                 "paced": {
                     "time_window": "PT2H",
                     "interval": "PT15M",
@@ -412,7 +412,7 @@ def west_to_south_east_paced_trains(
             },
             {
                 **base,
-                "start_time": "2024-01-01T13:39:59+00:00",
+                "start_time": ms_since_epoch("2024-01-01T13:39:59Z"),
                 "paced": {
                     "time_window": "PT2H",
                     "interval": "PT15M",
@@ -459,7 +459,7 @@ def west_to_south_east_etcs_simulation(
                 "schedule": [{"at": "b", "stop_for": "PT0S"}],
                 "rolling_stock_name": etcs_rolling_stock_name,
                 "train_name": "foo",
-                "start_time": "2024-01-01T07:19:54+00:00",
+                "start_time": ms_since_epoch("2024-01-01T07:19:54Z"),
             }
         ],
     )
@@ -497,15 +497,15 @@ def west_to_south_east_simulations(
         json=[
             {
                 **base,
-                "start_time": "2024-01-01T07:19:54+00:00",
+                "start_time": ms_since_epoch("2024-01-01T07:19:54Z"),
             },
             {
                 **base,
-                "start_time": "2024-01-01T07:29:54+00:00",
+                "start_time": ms_since_epoch("2024-01-01T07:29:54Z"),
             },
             {
                 **base,
-                "start_time": "2024-01-01T07:39:59+00:00",
+                "start_time": ms_since_epoch("2024-01-01T07:39:59Z"),
             },
         ],
     )

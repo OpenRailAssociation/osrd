@@ -38,8 +38,7 @@ pub use rjs_power_restriction_range::RjsPowerRestrictionRange;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
-use chrono::DateTime;
-use chrono::Utc;
+use common::units::quantities::Offset;
 use serde::Deserialize;
 use serde::Serialize;
 use serde::de::Error as SerdeError;
@@ -59,7 +58,11 @@ pub struct TrainOccurrence {
     #[serde_as(as = "DefaultOnNull")]
     pub labels: Vec<String>,
     pub rolling_stock_name: String,
-    pub start_time: DateTime<Utc>,
+    /// For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
+    /// For hourly timetables: elapsed ms since the timetable start.
+    #[serde(with = "common::units::millisecond::i64")]
+    #[schema(value_type = i64)]
+    pub start_time: Offset,
     pub path: Vec<PathItem>,
     #[serde(default)]
     #[serde_as(as = "DefaultOnNull")]
@@ -89,7 +92,7 @@ pub struct TrainOccurrence {
 
 pub trait TrainScheduleLike: Clone + Send + Sync + 'static {
     fn rolling_stock_name(&self) -> &str;
-    fn start_time(&self) -> DateTime<Utc>;
+    fn start_time(&self) -> Offset;
     fn path(&self) -> &[PathItem];
     fn schedule(&self) -> &[ScheduleItem];
     fn margins(&self) -> &Margins;
@@ -106,7 +109,7 @@ impl TrainScheduleLike for TrainOccurrence {
         &self.rolling_stock_name
     }
 
-    fn start_time(&self) -> DateTime<Utc> {
+    fn start_time(&self) -> Offset {
         self.start_time
     }
 
@@ -223,6 +226,7 @@ impl Serialize for TrainOccurrence {
 #[cfg(any(test, feature = "testing"))]
 impl TrainOccurrence {
     pub fn fake() -> Self {
+        use crate::fixtures::ms_since_epoch;
         use crate::infra::TrackOffset;
         use crate::primitives::Identifier;
 
@@ -230,9 +234,7 @@ impl TrainOccurrence {
             train_name: "ABC3615".to_string(),
             labels: vec!["choo-choo".to_string(), "tchou-tchou".to_string()],
             rolling_stock_name: "R2D2".to_string(),
-            start_time: chrono::DateTime::parse_from_rfc3339("2023-12-21T08:51:30+00:00")
-                .unwrap()
-                .with_timezone(&Utc),
+            start_time: ms_since_epoch("2023-12-21T08:51:30Z"),
             path: vec![
                 PathItem {
                     id: NonBlankString::from("a"),
