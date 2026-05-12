@@ -1,4 +1,8 @@
-import type { OperationalPoint, OperationalPointReference } from 'common/api/osrdEditoastApi';
+import type {
+  OperationalPoint,
+  OperationalPointReference,
+  PathItemLocation,
+} from 'common/api/osrdEditoastApi';
 import type { PathStepMetadata } from 'reducers/osrdconf/types';
 
 export const isOpRefMetadata = (pathStepMetadata: PathStepMetadata | undefined) =>
@@ -54,4 +58,13 @@ export const buildOpDisplayName = (op: OperationalPoint): string => {
   const name = op.extensions?.identifier?.name ?? op.extensions?.sncf?.trigram ?? '';
   const ch = op.extensions?.sncf?.ch;
   return ch ? `${name} ${ch}` : name;
+};
+
+export const getOpKey = (location: PathItemLocation | null): string | null => {
+  if (!location || location.type === 'track_offset') return null;
+  const op = location.operational_point;
+  if (op.type === 'trigram') return `${op.trigram} ${op.secondary_code}`;
+  if (op.type === 'uic') return `${op.uic} ${op.secondary_code}`;
+  if (op.type === 'id') return `${op.operational_point}`;
+  return null;
 };
