@@ -20,13 +20,6 @@ fun TrackNetworkInfra.getNextTrackSections(
     return nextTrackSections
 }
 
-/** Returns the list of dir chunk id on the given block list */
-fun BlockInfra.chunksOnBlocks(blockIds: List<BlockId>): List<DirTrackChunkId> {
-    val res = mutableDirStaticIdxArrayListOf<TrackChunk>()
-    for (block in blockIds) for (chunk in getTrackChunksFromBlock(block)) res.add(chunk)
-    return res
-}
-
 /** Returns all routes that cover the given block */
 fun BlockInfra.routesOnBlock(rawInfra: RawInfra, block: BlockId): List<RouteId> {
     val chunks = getTrackChunksFromBlock(block)
