@@ -45,6 +45,13 @@ npx playwright install --with-deps
 
 ℹ️ If you use nix and the `flake.nix` of the current repository, you won’t need to `npm playwright install`.
 
+> [!WARNING]
+> When using `nix shell env`, you must ensure that the browser’s drivers are in
+> the matching version of the `playwright` dependency as documented
+> [here](https://wiki.nixos.org/wiki/Playwright). If it doesn’t work, you may
+> try to update the flake with `nix flake update`. If the `flake.lock` changes,
+> then you can test that it fixes your problem, and create a Pull Request.
+
 ## Run E2E tests
 
 ```bash
@@ -337,7 +344,7 @@ Open a trace locally with:
 ```bash
 npx playwright show-trace path/to/trace.zip
 ```
-You can also inspect traces in the browser by following [this url](https://trace.playwright.dev/)  
+You can also inspect traces in the browser by following [this url](https://trace.playwright.dev/)
 
 In the CI those files are available as artifacts. You can view them in the Github summary.
 
