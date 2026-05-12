@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { ComboBox, SegmentedControl } from '@osrd-project/ui-core';
 import {
@@ -37,6 +37,8 @@ type PathStepProps = {
   hidePathfindingLine: boolean;
   categoryColors: CategoryColors;
   onOpInputChange: (value: string) => void;
+  customTracks: { trackId: string; trackName: string }[];
+  onAddCustomTrack: (track: { trackId: string; trackName: string }) => void;
   onTrackNameChange: (trackName: string) => void;
   onOpFocus: () => void;
   onOpBlur: () => void;
@@ -65,6 +67,8 @@ const PathStepItem = ({
   hidePathfindingLine,
   categoryColors,
   onOpInputChange,
+  customTracks,
+  onAddCustomTrack,
   onTrackNameChange,
   onOpFocus,
   onOpBlur,
@@ -91,6 +95,8 @@ const PathStepItem = ({
   const dispatch = useAppDispatch();
   const mapSettings = useMapSettings();
   const { updateViewport } = useMapSettingsActions();
+
+  const [trackNameQuery, setTrackNameQuery] = useState('');
 
   const blurActiveElement = () => {
     requestAnimationFrame(() => {
@@ -143,7 +149,8 @@ const PathStepItem = ({
     const selectedSecondaryCode = selectedSecondaryCodeOption.id;
     if (!selectedSecondaryCode || !isOpRefMetadata(pathStepMetadata)) return [];
 
-    const sortedSuggestions = (pathStepMetadata?.parts || [])
+    const sortedSuggestions = [...pathStepMetadata.parts, ...customTracks]
+
       .map((part, i) => ({
         label: part.trackName,
         id: `${part.trackId}-${i}`,
@@ -166,11 +173,11 @@ const PathStepItem = ({
     return [{ label: '', id: '' }, ...sortedSuggestions];
   }, [pathStepMetadata, selectedSecondaryCodeOption.id]);
 
-  const [filteredTrackSuggestions, setFilteredTrackSuggestions] = useState(trackNameSuggestions);
-
-  useEffect(() => {
-    setFilteredTrackSuggestions(trackNameSuggestions);
-  }, [trackNameSuggestions]);
+  const filteredTrackSuggestions = useMemo(() => {
+    const input = trackNameQuery.toLowerCase();
+    if (!input) return trackNameSuggestions;
+    return trackNameSuggestions.filter((s) => s.label.toLowerCase().includes(input));
+  }, [trackNameSuggestions, trackNameQuery]);
 
   const selectedTrackNameOption = useMemo(() => {
     // When OP is invalid but has a local_track_name, show it
@@ -479,16 +486,14 @@ const PathStepItem = ({
                   value={selectedTrackNameOption}
                   suggestions={filteredTrackSuggestions}
                   getSuggestionLabel={(option) => option.label}
-                  onChange={(e) => {
-                    const input = e.target.value.toLowerCase();
-                    setFilteredTrackSuggestions(
-                      trackNameSuggestions.filter((s) => s.label.toLowerCase().includes(input))
-                    );
-                  }}
+                  onChange={(e) => setTrackNameQuery(e.target.value)}
                   onSelectSuggestion={(option) => onTrackNameChange(option?.label ?? '')}
-                  resetSuggestions={() => setFilteredTrackSuggestions(trackNameSuggestions)}
+                  resetSuggestions={() => setTrackNameQuery('')}
                   allowCustomValue
-                  onAddCustomValue={(value) => onTrackNameChange(value)}
+                  onAddCustomValue={(value) => {
+                    onTrackNameChange(value);
+                    onAddCustomTrack({ trackId: value, trackName: value });
+                  }}
                   small
                   narrow
                 />

@@ -50,12 +50,12 @@ import {
 } from '../helpers/pathStepsActions';
 import useMapTrackSelection from '../hooks/useMapTrackSelection';
 import type { FeatureInfoClick } from '../types';
-import { type OperationalPointSuggestion } from './ComboBoxCustomList/ListElementComponent';
+import type { OperationalPointSuggestion } from './ComboBoxCustomList/ListElementComponent';
 import { usePathStepsMetadata } from './hooks/usePathStepsMetadata';
 import ItineraryModalFormHeader from './ItineraryModalFormHeader';
 import ItineraryModalMap from './ItineraryModalMap';
 import PathStepItem from './PathStepItem';
-import { computePathStepCoordinates } from './utils';
+import { computePathStepCoordinates, getOpKey, isOpRefMetadata } from './utils';
 
 type ItineraryModalProps = {
   itineraryModalIsOpen: boolean;
@@ -114,6 +114,9 @@ const ItineraryModal = ({
 
   const [hoveredGapIndex, setHoveredGapIndex] = useState<number | null>(null);
   const [mapSelectionStepId, setMapSelectionStepId] = useState<string | null>(null);
+  const [customTracksByOpKey, setCustomTracksByOpKey] = useState<
+    Map<string, { trackId: string; trackName: string }[]>
+  >(new Map());
 
   const closeModal = () => {
     modalRef.current?.close();
@@ -153,6 +156,26 @@ const ItineraryModal = ({
   const { launchPathfindingV2, pathProperties, pathfindingError } = usePathfindingV2();
   const { convertFeatureClickToLocation } = useMapTrackSelection(infraId);
 
+  const invalidTrackSteps = useMemo(
+    () =>
+      pathSteps.flatMap((step) => {
+        if (isEmptyStep(step, getInputForStep(step.id))) return [];
+        const metadata = pathStepsMetadataById.get(step.id);
+        if (isOpRefMetadata(metadata) && metadata.trackName && !metadata.isValidLocalTrackName) {
+          return [`${metadata.name} ${metadata.secondaryCode}`];
+        }
+        return [];
+      }),
+    [pathSteps, pathStepsMetadataById]
+  );
+
+  const initCustomTracksEntry = (location: PathItemLocation | null) => {
+    const opKey = getOpKey(location);
+    if (opKey && !customTracksByOpKey.has(opKey)) {
+      setCustomTracksByOpKey((prev) => new Map(prev).set(opKey, []));
+    }
+  };
+
   const applyOperationalPointToStep = (
     stepId: string,
     suggestion: OperationalPointSuggestion,
@@ -182,7 +205,7 @@ const ItineraryModal = ({
       );
       return ensureTrailingEmptyStep(next);
     });
-
+    initCustomTracksEntry(newLocation);
     commitSelectionForStep(stepId, formatChosenValue(suggestion, chosenCh));
     resetOpSuggestions();
   };
@@ -372,7 +395,9 @@ const ItineraryModal = ({
           theoreticalMargin: pathStep.theoreticalMargin ?? null,
           receptionSignal: pathStep.receptionSignal ?? null,
         }));
-
+      formattedPathSteps.forEach((step) => {
+        initCustomTracksEntry(step.location);
+      });
       setPathSteps(ensureTrailingEmptyStep(formattedPathSteps));
     }
   }, [storePathSteps, displayTrainScheduleManagement]);
@@ -561,14 +586,23 @@ const ItineraryModal = ({
         <div className="itinerary-modal-form-body">
           {categoryWarning && <Banner message={categoryWarning} closeable />}
           {rollingStockMessage && <Banner type="info" message={rollingStockMessage} />}
-          {hasInvalidPathStepDisplay && (
+          {(hasInvalidPathStepDisplay || invalidTrackSteps.length > 0) && (
             <div key={`invalid-op-${bannerWiggle}`}>
-              <Banner type="info" message={`${t('alertInvalidOP')} ${t('noComputation')}`} />
+              <Banner
+                type="info"
+                message={
+                  invalidTrackSteps.length > 0
+                    ? `${t('unknownTrack', {
+                        names: invalidTrackSteps.join(', '),
+                      })}. ${t('noComputation')}.`
+                    : `${t('alertInvalidOP')}. ${t('noComputation')}.`
+                }
+              />
             </div>
           )}
-          {!hasInvalidPathStepDisplay && pathfindingError && (
+          {!hasInvalidPathStepDisplay && invalidTrackSteps.length === 0 && pathfindingError && (
             <div key={`pathfinding-${bannerWiggle}`}>
-              <Banner type="info" message={`${pathfindingError} ${t('noComputation')}`} />
+              <Banner type="info" message={`${pathfindingError} ${t('noComputation')}.`} />
             </div>
           )}
           {submitAttempted &&
@@ -588,7 +622,11 @@ const ItineraryModal = ({
               </div>
             )}
           <TypeAndPath isInNewModal />
-          <div className="path-step-list">
+          <div
+            className={cx('path-step-list', {
+              'with-invalid-step': hasInvalidPathStepDisplay || invalidTrackSteps.length > 0,
+            })}
+          >
             <button
               data-testid="reverse-itinerary-button"
               className="reverse-itinerary-button"
@@ -608,6 +646,7 @@ const ItineraryModal = ({
               <span>{t('opType')}</span>
             </div>
             {pathSteps.map((pathStep, i) => {
+              const opKey = getOpKey(pathStep.location);
               const pathStepMetadata = pathStepsMetadataById.get(pathStep.id);
               const isInvalid = isStepInvalidAndIsEditing(pathStep, pathStepMetadata);
               const isMapSelecting = mapSelectionStepId === pathStep.id;
@@ -679,6 +718,16 @@ const ItineraryModal = ({
                         return;
                       }
                       setInputForStep(pathStep.id, value);
+                    }}
+                    customTracks={customTracksByOpKey.get(opKey ?? '') ?? []}
+                    onAddCustomTrack={(track) => {
+                      if (!opKey) return;
+                      setCustomTracksByOpKey((prev) => {
+                        const next = new Map(prev);
+                        const existing = next.get(opKey) ?? [];
+                        next.set(opKey, [...existing, track]);
+                        return next;
+                      });
                     }}
                     onTrackNameChange={(trackName) => {
                       setPathSteps((prev) =>
