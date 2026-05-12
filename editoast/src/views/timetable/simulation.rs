@@ -373,12 +373,12 @@ pub async fn train_simulation_batch<T: TrainScheduleLike>(
 
     let train_batches = train_schedules.chunks(TRAIN_SIZE_BATCH);
 
-    let rolling_stocks_ids = train_schedules
+    let rolling_stocks_names = train_schedules
         .iter()
         .map::<String, _>(|t| t.rolling_stock_name().to_string());
 
     let rolling_stocks: Vec<_> =
-        RollingStock::retrieve_batch_unchecked(&mut conn.clone(), rolling_stocks_ids)
+        RollingStock::retrieve_batch_unchecked(&mut conn.clone(), rolling_stocks_names)
             .await
             .map_err(RollingStockError::from)?;
 
