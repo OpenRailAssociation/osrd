@@ -215,6 +215,7 @@ export type NetzgrafikDto = {
     trainrunCategories: TrainrunCategory[];
     trainrunFrequencies: TrainrunFrequency[];
     trainrunTimeCategories: TrainrunTimeCategory[];
+    trafficSide?: TrafficSide;
   };
   freeFloatingTexts: FreeFloatingTextDto[];
   labels: LabelDto[];
@@ -234,6 +235,7 @@ export type NGEEvent = {
   | { objectType: 'node'; node: NodeDto }
   | { objectType: 'label'; label: LabelDto }
   | { objectType: 'note'; note: FreeFloatingTextDto }
+  | { objectType: 'metadata'; metadata: Partial<NetzgrafikDto['metadata']> }
 );
 
 export type LabelDto = {
@@ -261,3 +263,5 @@ export type FreeFloatingTextDto = {
   textColor: string;
   labelIds: number[];
 };
+
+export type TrafficSide = 'leftHand' | 'rightHand';
