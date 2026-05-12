@@ -13,6 +13,9 @@ pub use model::Infra;
 pub use model::InfraGrant;
 pub use model::InfraPrivilege;
 pub use model::Role;
+pub use model::RollingStock;
+pub use model::RollingStockGrant;
+pub use model::RollingStockPrivilege;
 pub use model::Subject;
 pub use model::User;
 
