@@ -27,6 +27,28 @@
   font-weight: 900;
 }
 
+/* ITALIC */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  src: inline('./fonts/IBMPlexSans-Italic.ttf') format('truetype');
+  font-style: italic;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: 'IBM Plex Sans';
+  src: inline('./fonts/IBMPlexSans-SemiBoldItalic.ttf') format('truetype');
+  font-style: italic;
+  font-weight: 600;
+}
+
+@font-face {
+  font-family: 'IBM Plex Sans';
+  src: inline('./fonts/IBMPlexSans-BoldItalic.ttf') format('truetype');
+  font-style: italic;
+  font-weight: 900;
+}
+
 /* SERIF */
 @font-face {
   font-family: 'IBM Plex Serif', serif;
