@@ -84,7 +84,6 @@ class PostProcessingSimulationTests {
                 envelopeSimPath = physicsPath,
                 rollingStocks = rollingStocks,
                 fixedPoints = TreeSet(fixedPoints),
-                isMareco = true,
                 timeStep = DEFAULT_TIME_STEP.seconds,
                 comfort = null,
             )

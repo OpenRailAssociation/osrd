@@ -1,6 +1,7 @@
 package fr.sncf.osrd.stdcm
 
 import com.google.common.collect.ImmutableMultimap
+import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.BlockLocation
@@ -8,6 +9,8 @@ import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
+import kotlin.math.roundToInt
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -532,6 +535,52 @@ class StandardAllowanceTests {
 
         // We need a high tolerance because there are several binary searches
         checkAllowanceResult(res, allowance, 4 * TIME_STEP)
+    }
+
+    /**
+     * Test that the 5% standard allowance is properly distributed over the entire path: for any
+     * pair of points on the path, the added time must be within 3 and 7 extra percents (5 +- 2).
+     * These are magic number, but fit the French rules.
+     */
+    @Test
+    fun testStandardAllowanceDistribution() {
+        val infra = DummyInfra()
+        val blocks =
+            listOf(
+                // Large changes in the MRSP, with blocks long enough to speed up and slow down
+                infra.addBlock("a", "b", length = 10_000.meters, allowedSpeed = 20.0),
+                infra.addBlock("b", "c", length = 10_000.meters, allowedSpeed = 50.0),
+                infra.addBlock("c", "d", length = 10_000.meters, allowedSpeed = 30.0),
+                infra.addBlock("d", "e", length = 10_000.meters, allowedSpeed = 50.0),
+                infra.addBlock("e", "f", length = 10_000.meters, allowedSpeed = 20.0),
+            )
+        val builder =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .setStartLocations(setOf(BlockLocation(blocks[0], Offset(0.meters))))
+                .setEndLocations(setOf(BlockLocation(blocks.last(), Offset(10_000.meters))))
+                .setStandardAllowance(AllowanceValue.Percentage(5.0))
+        val res = runWithAndWithoutAllowance(builder)
+        val step = 1_000
+        val envelopeWithAllowances = res.withAllowance!!.envelope
+        val fastestEnvelope = res.withoutAllowance!!.envelope
+        for (start in 0..envelopeWithAllowances.endPos.roundToInt() step step) {
+            for (end in (start + step)..envelopeWithAllowances.endPos.roundToInt() step step) {
+                fun getTime(envelope: Envelope): Double {
+                    return envelope.interpolateArrivalAtClamp(end.toDouble()) -
+                        envelope.interpolateArrivalAtClamp(start.toDouble())
+                }
+                val baseTime = getTime(fastestEnvelope)
+                val withAllowance = getTime(envelopeWithAllowances)
+
+                // between 3% and 7% for a target of 5%,
+                // these are standard values
+                val minAllowedTime = baseTime * 1.03
+                val maxAllowedTime = baseTime * 1.07
+                assertTrue { withAllowance >= minAllowedTime }
+                assertTrue { withAllowance <= maxAllowedTime }
+            }
+        }
     }
 
     companion object {

@@ -10,7 +10,6 @@ import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceRange
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance
-import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance
 import fr.sncf.osrd.envelope_sim.pipelines.SimStop
 import fr.sncf.osrd.envelope_sim.pipelines.maxEffortEnvelopeFrom
 import fr.sncf.osrd.envelope_sim.pipelines.maxSpeedEnvelopeFrom
@@ -85,7 +84,6 @@ fun buildFinalEnvelope(
     blockAvailability: BlockAvailabilityInterface,
     stops: List<TrainStop>,
     updatedTimeData: TimeData,
-    isMareco: Boolean = true,
     attempt: Int = 0,
 ): FinalEnvelopeResult {
     val fullInfraExplorer = edges.last().infraExplorerWithNewEnvelope
@@ -129,7 +127,6 @@ fun buildFinalEnvelope(
                         envelopeSimPath,
                         consistChanges.map { it.rollingStock },
                         fixedPoints,
-                        isMareco,
                         timeStep,
                         comfort,
                     )
@@ -157,7 +154,6 @@ fun buildFinalEnvelope(
                     updatedTimeData,
                     fixedPoints,
                     conflictOffset,
-                    isMareco,
                     allowanceRanges,
                     attempt,
                 )
@@ -200,28 +196,7 @@ fun buildFinalEnvelope(
             } else throw e
         }
     }
-    if (!isMareco) {
-        throw RuntimeException(
-            "Failed to compute a standard allowance that wouldn't cause conflicts"
-        )
-    } else {
-        postProcessingLogger.warn(
-            "Failed to compute a mareco standard allowance, fallback to linear allowance"
-        )
-        return buildFinalEnvelope(
-            graph,
-            edges,
-            standardAllowance,
-            envelopeSimPath,
-            consistChanges,
-            timeStep,
-            comfort,
-            blockAvailability,
-            stops,
-            updatedTimeData,
-            false,
-        )
-    }
+    throw RuntimeException("Failed to compute a standard allowance that wouldn't cause conflicts")
 }
 
 /** Initialize all fixed points at stop locations, including stop durations. */
@@ -448,7 +423,6 @@ fun runSimulationWithFixedPoints(
     envelopeSimPath: PhysicsPath,
     rollingStocks: List<RollingStock>,
     fixedPoints: TreeSet<FixedTimePoint>,
-    isMareco: Boolean,
     timeStep: Double,
     comfort: Comfort?,
 ): List<Envelope> {
@@ -473,15 +447,7 @@ fun runSimulationWithFixedPoints(
         require(ranges.isNotEmpty()) {
             "There should be at least one allowance range, even if it's just a 0 allowance"
         }
-        val allowance =
-            if (isMareco)
-                MarecoAllowance(
-                    0.0,
-                    envelope.endPos,
-                    1.0, // Needs to be >0 to avoid problems when simulating low speeds
-                    ranges,
-                )
-            else LinearAllowance(0.0, envelope.endPos, 0.0, ranges)
+        val allowance = LinearAllowance(0.0, envelope.endPos, 0.0, ranges)
         val newEnvelope = allowance.apply(envelope, context)
         finalEnvelopes.add(newEnvelope)
         currentOffset += newEnvelope.endPos.meters
@@ -541,7 +507,6 @@ private fun handlePostProcessingConflict(
     updatedTimeData: TimeData,
     fixedPoints: TreeSet<FixedTimePoint>,
     conflictOffset: Offset<PhysicsPath>,
-    isMareco: Boolean,
     allowanceRanges: List<EngineeringAllowanceRange>,
     attempt: Int,
 ): FinalEnvelopeResult {
@@ -611,8 +576,7 @@ private fun handlePostProcessingConflict(
             "attempt $attempt: retrying after adding traction to rolling stock..."
         )
         postProcessingLogger.info("(reset of fixed time points)")
-        // First retry by removing mareco, then by increasing rolling stock traction
-        val scaleFactor = if (isMareco) 1.0 else 1.2
+        val scaleFactor = 1.2
         val newRollingStock =
             consistChanges.map { it.copy(rollingStock = it.rollingStock.scalePower(scaleFactor)) }
         return buildFinalEnvelope(
@@ -626,7 +590,6 @@ private fun handlePostProcessingConflict(
             blockAvailability,
             stops,
             updatedTimeData,
-            isMareco = false,
             attempt = attempt + 1,
         )
     } else {
