@@ -77,7 +77,7 @@ const simulationSheetDetails = (): PdfSimulationContent => ({
         name: '3 Mid_East_station',
         ch: 'BV',
         track: 'V1',
-        passageTime: '20:38',
+        passageTime: '20:40',
         tonnage: '=',
         length: '=',
       },
