@@ -17,8 +17,12 @@ use crate::Group;
 use crate::Infra;
 use crate::InfraPrivilege;
 use crate::Role;
+use crate::RollingStock;
 use crate::Subject;
 use crate::User;
+use crate::model::RollingStockPrivilege;
+
+pub mod rolling_stock;
 
 pub type OpenFgaError = fga::client::RequestFailure;
 type ValueFut<'a, T> = BoxFuture<'a, Result<T, OpenFgaError>>;
@@ -51,6 +55,7 @@ pub struct Protected<T> {
 pub enum Guardrail {
     IssuerHasRole(Role),
     IssuerHasInfraPrivilege(InfraPrivilege, Infra),
+    IssuerHasRollingStockPrivilege(RollingStockPrivilege, RollingStock),
 }
 
 /// A check to ensure the consistency of the data in OpenFGA and PostgreSQL
@@ -62,6 +67,7 @@ pub enum Guardrail {
 pub enum SanityCheck {
     SubjectExists(Subject),
     InfraExists(Infra),
+    RollingStockExists(RollingStock),
 }
 
 impl SanityCheck {
@@ -149,20 +155,26 @@ impl<T> Protected<T> {
         Access::Authorized((self.op)(openfga))
     }
 
-    fn with_guardrail(self, guardrail: Guardrail) -> Self {
+    pub(crate) fn with_guardrail(self, guardrail: Guardrail) -> Self {
         self.with_guardrail_iter([guardrail])
     }
 
-    fn with_guardrail_iter(mut self, guardrails: impl IntoIterator<Item = Guardrail>) -> Self {
+    pub(crate) fn with_guardrail_iter(
+        mut self,
+        guardrails: impl IntoIterator<Item = Guardrail>,
+    ) -> Self {
         self.guardrails.extend(guardrails);
         self
     }
 
-    fn with_check(self, sanity_check: SanityCheck) -> Self {
+    pub(crate) fn with_check(self, sanity_check: SanityCheck) -> Self {
         self.with_check_iter([sanity_check])
     }
 
-    fn with_check_iter(mut self, sanity_checks: impl IntoIterator<Item = SanityCheck>) -> Self {
+    pub(crate) fn with_check_iter(
+        mut self,
+        sanity_checks: impl IntoIterator<Item = SanityCheck>,
+    ) -> Self {
         self.sanity_checks.extend(sanity_checks);
         self
     }
