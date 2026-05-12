@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::str::FromStr;
 
+use chrono::DateTime;
+use chrono::Utc;
 use common::units;
 
 use crate::RollingStock;
@@ -90,4 +93,8 @@ pub fn small_infra() -> crate::infra::RailJson {
         "../../../tests/data/infras/small_infra/infra.json"
     ))
     .expect("Unable to parse small infra RailJson")
+}
+
+pub fn ms_since_epoch(s: &str) -> units::quantities::Time {
+    units::millisecond::i64::new(DateTime::<Utc>::from_str(s).unwrap().timestamp_millis())
 }

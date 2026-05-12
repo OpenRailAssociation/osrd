@@ -179,7 +179,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
         }
         const updatedTrainSchedule = {
           ...trainSchedule,
-          start_time: newDeparture.toISOString(),
+          start_time: newDeparture.getTime(),
         };
         const newTrainSchedulesById = {
           ...keyBy(prev, 'id'),
@@ -206,7 +206,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
         id: trainSchedule.id,
         trainSchedule: {
           ...trainSchedule,
-          start_time: newDeparture.toISOString(),
+          start_time: newDeparture.getTime(),
         },
       }).unwrap();
 

@@ -3,7 +3,7 @@
     "train_name": "tooFastOnInterval",
     "labels": [],
     "rolling_stock_name": "rs-fictive",
-    "start_time": "2026-12-13T07:25:00Z",
+    "start_time": 1797146700000,
     "path": [
         {
             "id": "idA",

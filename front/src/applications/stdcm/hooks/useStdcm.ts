@@ -107,7 +107,7 @@ const useStdcm = ({
           id: uuidV4(),
         })),
         rolling_stock_name: stdcmRollingStock!.name,
-        start_time: formattedResponse.departure_time,
+        start_time: new Date(formattedResponse.departure_time).getTime(),
         train_name: 'stdcm',
       };
       const chartData = computeChartData(

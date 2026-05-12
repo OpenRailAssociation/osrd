@@ -121,7 +121,7 @@ const UniqueTrainItem = ({
 
       const newUniqueTrainPayload: TrainSchedule = {
         ...omit(trainDetail, ['id', 'train_schedule_set_id']),
-        start_time: startTime.toISOString(),
+        start_time: startTime.getTime(),
         train_name: trainName,
       };
 

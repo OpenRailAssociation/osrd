@@ -13763,8 +13763,11 @@ components:
           - string
           - 'null'
         start_time:
-          type: string
-          format: date-time
+          type: integer
+          format: int64
+          description: |-
+            For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
+            For hourly timetables: elapsed ms since the timetable start.
         train_name:
           type: string
         train_schedule_set_id:
@@ -14582,8 +14585,11 @@ components:
       - value
       properties:
         value:
-          type: string
-          format: date-time
+          type: integer
+          format: int64
+          description: |-
+            For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
+            For hourly timetables: elapsed ms since the timetable start.
     StdcmProgressionEvent:
       type: object
       required:
@@ -15671,8 +15677,11 @@ components:
             - type: string
               minLength: 1
           start_time:
-            type: string
-            format: date-time
+            type: integer
+            format: int64
+            description: |-
+              For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
+              For hourly timetables: elapsed ms since the timetable start.
           train_name:
             type: string
       - type: object

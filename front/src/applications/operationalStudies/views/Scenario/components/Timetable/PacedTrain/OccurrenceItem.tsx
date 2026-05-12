@@ -104,7 +104,7 @@ const OccurrenceItem = ({
   }
   const isNextAfterMidnight =
     !!nextOccurrence && dayjs(nextOccurrence.startTime).isAfter(startTime, 'day');
-  const isStartTimeException = !!exceptionChangeGroups?.start_time?.value;
+  const isStartTimeException = !!exceptionChangeGroups?.start_time;
 
   const closeMenu = () => {
     setIsMenuOpen(false);

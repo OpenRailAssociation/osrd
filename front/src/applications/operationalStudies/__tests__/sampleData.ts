@@ -355,7 +355,7 @@ export const uniqueTrainHonored: TrainScheduleResponse = {
   train_name: 'normal',
   labels: [],
   rolling_stock_name: 'TC64700',
-  start_time: '2024-08-02T12:00:00Z',
+  start_time: new Date('2024-08-02T12:00:00Z').getTime(),
   path: [
     {
       id: 'id440',

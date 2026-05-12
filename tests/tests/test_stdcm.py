@@ -4,7 +4,7 @@ from typing import Any
 
 from requests import Session
 
-from tests.utils.timetable import create_op_study, create_scenario
+from tests.utils.timetable import create_op_study, create_scenario, ms_since_epoch
 
 from .infra import Infra
 from .scenario import Scenario
@@ -19,7 +19,7 @@ def _add_train(
     editoast_url: str,
     scenario: Scenario,
     rolling_stock_name: str,
-    start_time: str,
+    start_time: int,
     session: Session,
 ):
     schedule_payload = [
@@ -139,14 +139,14 @@ def test_between_trains(
         EDITOAST_URL,
         small_scenario,
         fast_rolling_stock_name,
-        "2024-08-13T22:31:36.377Z",
+        ms_since_epoch("2024-08-13T22:31:36.377Z"),
         session,
     )
     _add_train(
         EDITOAST_URL,
         small_scenario,
         fast_rolling_stock_name,
-        "2024-08-13T23:31:36.377Z",
+        ms_since_epoch("2024-08-13T23:31:36.377Z"),
         session,
     )
     payload = {

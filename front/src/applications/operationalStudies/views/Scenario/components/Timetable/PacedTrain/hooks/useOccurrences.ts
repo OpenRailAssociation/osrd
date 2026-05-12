@@ -50,7 +50,7 @@ const useOccurrences = (
         occurrenceRollingStock = rollingStockList.find((rs) => rs.name === rollingStockName);
       }
 
-      const startTime = correspondingException?.start_time?.value
+      const startTime = correspondingException?.start_time
         ? new Date(correspondingException.start_time.value)
         : computeIndexedOccurrenceStartTime(pacedTrain.startTime, paced.interval, i);
 

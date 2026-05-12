@@ -4,7 +4,7 @@
       "train_name": "Train1",
       "labels": ["Tag-1", "SS-NS"],
       "rolling_stock_name": "SLOW_RS_E2E",
-      "start_time": "2024-10-17T03:00:00Z",
+      "start_time": 1729134000000,
       "path": [
         {
           "id": "id227",
@@ -52,7 +52,7 @@
       "train_name": "Train2",
       "labels": ["Tag-2", "WS-SES"],
       "rolling_stock_name": "ELECTRIC_RS_E2E",
-      "start_time": "2024-10-17T03:15:00.000Z",
+      "start_time": 1729134900000,
       "path": [
         {
           "id": "id477",
@@ -116,7 +116,7 @@
       "train_name": "Train3",
       "labels": ["Tag-3", "MWS-NES"],
       "rolling_stock_name": "ELECTRIC_RS_E2E",
-      "start_time": "2024-10-17T05:00:00Z",
+      "start_time": 1729141200000,
       "path": [
         {
           "id": "e04980e3-6c2b-47a2-8aa2-7afc4c405ef0",
@@ -174,7 +174,7 @@
       "train_name": "Train4",
       "labels": ["MWS-NES", "Tag-4"],
       "rolling_stock_name": "ELECTRIC_RS_E2E",
-      "start_time": "2024-10-17T09:35:59.000Z",
+      "start_time": 1729157759000,
       "path": [
         {
           "id": "id2854",
@@ -223,7 +223,7 @@
       "train_name": "Train5",
       "labels": ["Tag-5"],
       "rolling_stock_name": "",
-      "start_time": "2024-10-17T10:16:03Z",
+      "start_time": 1729160163000,
       "path": [
         {
           "id": "id130",
@@ -269,7 +269,7 @@
       "train_name": "Train6",
       "labels": ["Tag-6"],
       "rolling_stock_name": "IMPROBABLE_RS_E2E",
-      "start_time": "2024-10-17T12:30:00.000Z",
+      "start_time": 1729168200000,
       "path": [
         {
           "id": "id1073",
@@ -309,7 +309,7 @@
       "train_name": "Train7",
       "labels": ["NWS-NES", "Tag-7"],
       "rolling_stock_name": "ELECTRIC_RS_E2E",
-      "start_time": "2024-10-17T19:05:00.000Z",
+      "start_time": 1729191900000,
       "path": [
         {
           "id": "b4df37d0-ffe2-4166-b7b6-8c0c5a47e9b0",
@@ -387,7 +387,7 @@
       "train_name": "Paced Train - Updated exception (RS)",
       "labels": ["Paced-Train-Tag-2", "MWS-NES", "Not-honored", "Valid"],
       "rolling_stock_name": "DUAL-MODE_RS_E2E",
-      "start_time": "2024-10-15T05:00:00Z",
+      "start_time": 1728968400000,
       "path": [
         {
           "id": "id744",
@@ -464,7 +464,7 @@
       "train_name": "Paced Train - Updated exception (Speed limit tag)",
       "labels": ["Invalid"],
       "rolling_stock_name": "",
-      "start_time": "2024-10-15T09:45:43Z",
+      "start_time": 1728985543000,
       "path": [
         {
           "id": "id3807",
@@ -520,7 +520,7 @@
       "train_name": "Paced Train - Updated and added exception (RS)",
       "labels": ["Paced-Train-Tag-5", "SS-NS", "Valid"],
       "rolling_stock_name": "IMPROBABLE_RS_E2E",
-      "start_time": "2024-10-17T11:00:00Z",
+      "start_time": 1729162800000,
       "path": [
         {
           "id": "a414e7d1-32a5-4f41-94b1-feb7f8876d2d",
@@ -580,7 +580,7 @@
             "key": "e0573b22-d222-47ac-9a96-224d44ab842b",
             "disabled": false,
             "start_time": {
-              "value": "2024-10-17T19:00:00Z"
+              "value": 1729191600000
             }
           }
         ]
@@ -590,7 +590,7 @@
       "train_name": "Paced Train - All exceptions",
       "labels": ["NWS-NES", "Valid"],
       "rolling_stock_name": "FAST_RS_E2E",
-      "start_time": "2024-10-17T22:48:42Z",
+      "start_time": 1729205322000,
       "path": [
         {
           "id": "8bf52569-50a5-46a5-8e62-b5626460cfba",
@@ -703,7 +703,7 @@
               "value": []
             },
             "start_time": {
-              "value": "2024-10-18T00:10:42Z"
+              "value": 1729210242000
             },
             "path_and_schedule": {
               "path": [
@@ -775,7 +775,7 @@
               "value": null
             },
             "start_time": {
-              "value": "2024-10-18T04:00:11Z"
+              "value": 1729224011000
             },
             "initial_speed": {
               "value": 41.666666666666664
@@ -788,7 +788,7 @@
               "value": "MA100"
             },
             "start_time": {
-              "value": "2024-10-18T03:30:16Z"
+              "value": 1729222216000
             }
           }
         ]

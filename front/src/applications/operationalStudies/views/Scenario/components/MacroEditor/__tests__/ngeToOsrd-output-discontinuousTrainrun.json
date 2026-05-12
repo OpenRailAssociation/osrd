@@ -92,7 +92,7 @@
           "id": "6-2"
         }
       ],
-      "start_time": "2025-06-25T13:00:00.000Z",
+      "start_time": 1750856400000,
       "schedule": [
         {
           "at": "8-1",
@@ -143,7 +143,7 @@
           "id": "7-2"
         }
       ],
-      "start_time": "2025-06-25T13:56:00.000Z",
+      "start_time": 1750859760000,
       "schedule": [
         {
           "at": "8-1",
@@ -198,7 +198,7 @@
           "stop_for": "P0D"
         }
       ],
-      "start_time": "2025-06-25T13:05:00.000Z",
+      "start_time": 1750856700000,
       "train_name": "Carotte-2"
     },
     {
@@ -239,7 +239,7 @@
           "stop_for": "P0D"
         }
       ],
-      "start_time": "2025-06-25T13:54:00.000Z",
+      "start_time": 1750859640000,
       "train_name": "Carotte-2"
     }
   ],

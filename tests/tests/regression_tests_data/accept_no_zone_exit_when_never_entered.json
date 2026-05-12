@@ -47,7 +47,7 @@
             "rolling_stock_name": "fast_rolling_stock",
             "schedule": [],
             "speed_limit_tag": null,
-            "start_time": "2024-01-01T14:57:28+00:00",
+            "start_time": 1704121048000,
             "train_name": "fuzzer_train"
         }
     ]

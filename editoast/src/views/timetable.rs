@@ -21,6 +21,7 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use chrono::DateTime;
 use chrono::Utc;
+use common::units::millisecond;
 use common::units::quantities::Acceleration;
 use common::units::quantities::Length;
 use common::units::quantities::Mass;
@@ -406,7 +407,10 @@ pub(in crate::views) async fn conflicts(
             Some((
                 train_id,
                 TrainRequirements {
-                    start_time: train_schedule.start_time(),
+                    start_time: DateTime::<Utc>::from_timestamp_millis(millisecond::i64::from(
+                        train_schedule.start_time(),
+                    ))
+                    .unwrap(),
                     spacing_requirements: simulation.final_output.spacing_requirements.clone(),
                     routing_requirements: simulation.final_output.routing_requirements.clone(),
                 },
@@ -568,7 +572,9 @@ pub(in crate::views) async fn requirements(
     .into_iter()
     .map(|(sim, _)| Arc::unwrap_or_clone(sim));
 
-    let start_times = occurrences.iter().map(|ts| ts.start_time());
+    let start_times = occurrences.iter().map(|ts| {
+        DateTime::<Utc>::from_timestamp_millis(millisecond::i64::from(ts.start_time())).unwrap()
+    });
     let train_names = occurrences.iter().map(|ts| ts.train_name.clone());
     let results = build_trains_requirements(
         occurrence_ids.into_iter(),
@@ -1021,7 +1027,7 @@ mod tests {
 
         let train_schedule_t1_1 = simple_paced_train_base();
         let mut train_schedule_t1_2 = simple_paced_train_base();
-        train_schedule_t1_2.train_occurrence.start_time += Duration::minutes(200);
+        train_schedule_t1_2.train_occurrence.start_time += millisecond::i64::new(12_000_000);
         train_schedule_t1_2.paced.as_mut().unwrap().time_window =
             Duration::minutes(120).try_into().unwrap();
         train_schedule_t1_2.paced.as_mut().unwrap().interval =
@@ -1063,7 +1069,7 @@ mod tests {
         let (timetable2, train_schedule_set2) =
             create_timetable_with_train_schedule_set(&mut pool.get_ok()).await;
         let mut train_schedule_t2_1 = simple_paced_train_base();
-        train_schedule_t2_1.train_occurrence.start_time += Duration::minutes(200);
+        train_schedule_t2_1.train_occurrence.start_time += millisecond::i64::new(12_000_000);
         train_schedule_t2_1.paced.as_mut().unwrap().time_window =
             Duration::minutes(120).try_into().unwrap();
         train_schedule_t2_1.paced.as_mut().unwrap().interval =

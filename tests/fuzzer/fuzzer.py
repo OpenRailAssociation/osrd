@@ -335,7 +335,9 @@ def _make_stdcm_payload(path: list[tuple[str, float]], rolling_stock: int) -> di
     Creates a payload for an STDCM request
     """
     res = {
-        "start_time": _make_random_time(),
+        "start_time": datetime.datetime.fromtimestamp(
+            _make_random_time() / 1000, tz=datetime.timezone.utc
+        ).isoformat(),
         "maximum_departure_delay": random.randint(0, 3_600_000 * 4),
         "maximum_run_time": random.randint(3_600_000 * 5, 3_600_000 * 10),
         "time_gap_before": random.randint(0, 600_000),
@@ -619,13 +621,13 @@ def _make_payload_schedule(
 
 def _make_random_time():
     """
-    Generate a random datetime. All values will be within the same 24h
+    Generate a random offset from epoch in ms. All values will be within the same 24h
     """
     start = datetime.datetime(
         year=2024, month=1, day=1, tzinfo=datetime.timezone.utc
     )  # Arbitrary date
     date = start + datetime.timedelta(seconds=(random.randint(0, 3600 * 24)))
-    return date.isoformat()
+    return int(date.timestamp() * 1000)
 
 
 def _delete_with_timeout(session: Session, *args, **kwargs) -> Response:

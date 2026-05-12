@@ -1,9 +1,9 @@
 use crate::prelude::*;
 use crate::rolling_stock::TrainMainCategory;
 use crate::tags::Tags;
-use chrono::DateTime;
 use chrono::Duration as ChronoDuration;
-use chrono::Utc;
+use common::units::millisecond;
+use common::units::quantities::Offset;
 use editoast_derive::Model;
 use itertools::Itertools;
 use schemas;
@@ -36,7 +36,10 @@ pub struct TrainSchedule {
     pub labels: Tags,
     pub rolling_stock_name: String,
     pub train_schedule_set_id: i64,
-    pub start_time: DateTime<Utc>,
+    #[model(uom_unit = "common::units::millisecond::i64")]
+    /// For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
+    /// For hourly timetables: elapsed ms since the timetable start.
+    pub start_time: Offset,
     #[model(json)]
     pub schedule: Vec<ScheduleItem>,
     #[model(json)]
@@ -177,9 +180,10 @@ impl TrainSchedule {
     }
 
     /// Returns the start time of the occurrence at the given index.
-    fn get_occurrence_start_time(&self, occurrence_index: usize) -> DateTime<Utc> {
+    fn get_occurrence_start_time(&self, occurrence_index: usize) -> Offset {
         if let Some(interval) = self.interval {
-            self.start_time + interval * occurrence_index as i32
+            self.start_time
+                + millisecond::i64::new((interval * occurrence_index as i32).num_milliseconds())
         } else {
             self.start_time
         }
@@ -291,7 +295,7 @@ impl TrainSchedule {
         occurrences
             .into_iter()
             .chain(self.get_created_occurrences_exceptions(exceptions))
-            .sorted_by_key(|(_, ts)| ts.start_time)
+            .sorted_by_key(|(_, ts)| millisecond::i64::from(ts.start_time))
     }
 
     /// Determines whether the pace (time window and interval) of the train schedule is the same as the given pace.
@@ -411,8 +415,6 @@ impl Display for OccurrenceId {
 
 #[cfg(test)]
 mod tests {
-    use std::str::FromStr;
-
     use crate::SubCategory;
     use crate::Tags;
     use crate::Timetable;
@@ -422,13 +424,12 @@ mod tests {
 
     use super::OccurrenceId;
     use super::TrainSchedule;
-    use chrono::DateTime;
-    use chrono::Utc;
+    use common::units::quantities::Offset;
     use database::DbConnectionPoolV2;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use schemas::TrainScheduleExceptionChangeGroups;
-
+    use schemas::fixtures::ms_since_epoch;
     use schemas::paced_train::RollingStockCategoryChangeGroup;
     use schemas::paced_train::StartTimeChangeGroup;
 
@@ -500,7 +501,7 @@ mod tests {
             schedule: vec![],
             speed_limit_tag: None,
             options: TrainScheduleOptions::default(),
-            start_time: DateTime::<Utc>::from_str("2025-05-15T14:00:00+02:00").unwrap(),
+            start_time: ms_since_epoch("2025-05-15T12:00:00Z"),
             time_window: chrono::Duration::try_hours(2),
             interval: chrono::Duration::try_minutes(30),
             sub_category: None,
@@ -773,8 +774,7 @@ mod tests {
 
         assert_eq!(occurrences.len(), 4);
 
-        let start_times: Vec<DateTime<Utc>> =
-            occurrences.iter().map(|(_, o)| o.start_time).collect();
+        let start_times: Vec<Offset> = occurrences.iter().map(|(_, o)| o.start_time).collect();
         let train_names: Vec<String> = occurrences
             .iter()
             .map(|(_, o)| o.train_name.clone())
@@ -784,10 +784,10 @@ mod tests {
         assert_eq!(
             start_times,
             vec![
-                DateTime::<Utc>::from_str("2025-05-15T14:30:00+02:00").unwrap(),
-                DateTime::<Utc>::from_str("2025-05-15T15:00:00+02:00").unwrap(),
-                DateTime::<Utc>::from_str("2025-05-15T15:10:00+02:00").unwrap(),
-                DateTime::<Utc>::from_str("2025-05-15T15:30:00+02:00").unwrap(),
+                ms_since_epoch("2025-05-15T12:30:00Z"),
+                ms_since_epoch("2025-05-15T13:00:00Z"),
+                ms_since_epoch("2025-05-15T13:10:00Z"),
+                ms_since_epoch("2025-05-15T13:30:00Z"),
             ]
         );
 
@@ -816,7 +816,7 @@ mod tests {
     async fn iter_occurrences_with_modified_start_time_exception() {
         let mut exception_1 = TrainScheduleException::fixture_modified("key_1", 1);
         exception_1.change_groups.start_time = Some(StartTimeChangeGroup {
-            value: DateTime::<Utc>::from_str("2025-05-15T14:31:00+02:00").unwrap(),
+            value: ms_since_epoch("2025-05-15T12:31:00Z"),
         });
         let exception_1: schemas::TrainScheduleException = TrainScheduleException {
             id: 1,
@@ -836,8 +836,7 @@ mod tests {
 
         assert_eq!(occurrences.len(), 4);
 
-        let start_times: Vec<DateTime<Utc>> =
-            occurrences.iter().map(|(_, o)| o.start_time).collect();
+        let start_times: Vec<Offset> = occurrences.iter().map(|(_, o)| o.start_time).collect();
         let train_names: Vec<String> = occurrences
             .iter()
             .map(|(_, o)| o.train_name.clone())
@@ -847,10 +846,10 @@ mod tests {
         assert_eq!(
             start_times,
             vec![
-                DateTime::<Utc>::from_str("2025-05-15T14:00:00+02:00").unwrap(),
-                DateTime::<Utc>::from_str("2025-05-15T14:31:00+02:00").unwrap(),
-                DateTime::<Utc>::from_str("2025-05-15T15:00:00+02:00").unwrap(),
-                DateTime::<Utc>::from_str("2025-05-15T15:30:00+02:00").unwrap(),
+                ms_since_epoch("2025-05-15T12:00:00Z"),
+                ms_since_epoch("2025-05-15T12:31:00Z"),
+                ms_since_epoch("2025-05-15T13:00:00Z"),
+                ms_since_epoch("2025-05-15T13:30:00Z"),
             ]
         );
 

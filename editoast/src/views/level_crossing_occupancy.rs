@@ -19,6 +19,7 @@ use axum::extract::State;
 use chrono::DateTime;
 use chrono::Duration;
 use chrono::Utc;
+use common::units::millisecond;
 use core_client::pathfinding::TrackRange;
 use core_client::simulation::ReportTrain;
 use database::DbConnection;
@@ -207,7 +208,10 @@ pub(in crate::views) async fn occupancy(
                 occurrence_id,
                 simulation,
                 pathfinding,
-                train_schedule.start_time,
+                DateTime::<Utc>::from_timestamp_millis(millisecond::i64::from(
+                    train_schedule.start_time,
+                ))
+                .unwrap(),
                 rolling_stock_length,
             ) {
                 level_crossing_occupancies.push(occupancy);
@@ -616,7 +620,9 @@ mod tests {
         assert_eq!(occupancy.direction, Direction::StartToStop);
         assert_eq!(
             occupancy.time_window.time_begin,
-            train.start_time + Duration::milliseconds(10)
+            DateTime::<Utc>::from_timestamp_millis(millisecond::i64::from(train.start_time))
+                .unwrap()
+                + Duration::milliseconds(10)
         );
         assert_eq!(occupancy.time_window.duration.num_milliseconds(), 55);
     }

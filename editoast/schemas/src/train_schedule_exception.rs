@@ -59,11 +59,7 @@ pub struct TrainScheduleExceptionChangeGroups {
 #[cfg(any(test, feature = "testing"))]
 impl TrainScheduleExceptionChangeGroups {
     pub fn fixture_created() -> Self {
-        use std::str::FromStr;
-
-        use chrono::DateTime;
-        use chrono::Utc;
-
+        use crate::fixtures::ms_since_epoch;
         use crate::infra::TrackOffset;
         use crate::primitives::Identifier;
         use crate::primitives::NonBlankString;
@@ -160,7 +156,7 @@ impl TrainScheduleExceptionChangeGroups {
                 value: Some(NonBlankString("GB".into())),
             }),
             start_time: Some(StartTimeChangeGroup {
-                value: DateTime::<Utc>::from_str("2025-05-15T15:10:00+02:00").unwrap(),
+                value: ms_since_epoch("2025-05-15T13:10:00Z"),
             }),
         }
     }

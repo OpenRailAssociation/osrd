@@ -4322,7 +4322,9 @@ export type SearchResultItemTrainSchedule = {
   rolling_stock_name: string;
   schedule: ScheduleItem[];
   speed_limit_tag?: string | null;
-  start_time: string;
+  /** For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
+    For hourly timetables: elapsed ms since the timetable start. */
+  start_time: number;
   train_name: string;
   train_schedule_set_id: number;
 };
@@ -4784,7 +4786,9 @@ export type SpeedLimitTagChangeGroup = {
   value?: null | string;
 };
 export type StartTimeChangeGroup = {
-  value: string;
+  /** For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
+    For hourly timetables: elapsed ms since the timetable start. */
+  value: number;
 };
 export type TrainNameChangeGroup = {
   value: string;
@@ -4848,7 +4852,9 @@ export type TrainSchedule = {
   rolling_stock_name: string;
   schedule?: ScheduleItem[];
   speed_limit_tag?: null | string;
-  start_time: string;
+  /** For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
+    For hourly timetables: elapsed ms since the timetable start. */
+  start_time: number;
   train_name: string;
 } & {
   paced?: null | {

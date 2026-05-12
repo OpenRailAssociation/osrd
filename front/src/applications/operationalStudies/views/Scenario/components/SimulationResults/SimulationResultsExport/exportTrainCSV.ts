@@ -196,9 +196,7 @@ export default function exportTrainCSV(
 ) {
   const trainRegimeWithAccurateTime: CoreReportTrain = {
     ...simulatedTrain.final_output,
-    times: simulatedTrain.final_output.times.map(
-      (time) => new Date(train.start_time).getTime() + time
-    ),
+    times: simulatedTrain.final_output.times.map((time) => train.start_time + time),
   };
 
   const formattedMrsp: SpeedRanges = {

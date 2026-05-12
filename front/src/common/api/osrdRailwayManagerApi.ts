@@ -238,7 +238,9 @@ export type TransformTimetableResponse = {
       stop_for?: null | Interval;
     }[];
     speed_limit_tag?: null | string;
-    start_time: string;
+    /** For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
+        For hourly timetables: elapsed ms since the timetable start. */
+    start_time: number;
     train_name: string;
   } & {
     paced?: null | {
@@ -278,7 +280,9 @@ export type TransformTimetableResponse = {
           value?: null | string;
         };
         start_time?: {
-          value: string;
+          /** For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
+                    For hourly timetables: elapsed ms since the timetable start. */
+          value: number;
         };
         train_name?: {
           value: string;

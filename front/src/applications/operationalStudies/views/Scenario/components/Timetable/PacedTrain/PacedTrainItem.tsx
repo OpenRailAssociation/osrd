@@ -232,7 +232,7 @@ const PacedTrainItem = ({
     );
     const newPacedTrain: TrainSchedule = {
       ...omit(pacedTrainDetail, ['id', 'train_schedule_set_id']),
-      start_time: startTime.toISOString(),
+      start_time: startTime.getTime(),
       train_name: pacedTrainName,
     };
 

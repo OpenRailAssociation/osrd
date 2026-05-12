@@ -6,6 +6,7 @@ from requests import Session
 
 from .infra import Infra
 from .services import EDITOAST_URL
+from .utils.timetable import ms_since_epoch
 
 
 def test_get_timetable(timetable_id: int, session: Session):
@@ -23,9 +24,9 @@ def test_get_timetable(timetable_id: int, session: Session):
 @pytest.mark.parametrize(
     ["paced_start_time", "expected_conflict_types"],
     [
-        ("2024-05-22T08:00:01.000Z", {"Spacing", "Routing"}),
-        ("2024-05-22T08:10:00.000Z", set()),
-        ("2024-05-22T07:44:59.000Z", {"Spacing", "Routing"}),
+        (ms_since_epoch("2024-05-22T08:00:01Z"), {"Spacing", "Routing"}),
+        (ms_since_epoch("2024-05-22T08:10:00Z"), set()),
+        (ms_since_epoch("2024-05-22T07:44:59Z"), {"Spacing", "Routing"}),
     ],
 )
 def test_conflicts_with_paced_trains(
@@ -33,7 +34,7 @@ def test_conflicts_with_paced_trains(
     timetable_id: int,
     train_schedule_set_id: int,
     fast_rolling_stock: int,
-    paced_start_time: str,
+    paced_start_time: int,
     expected_conflict_types: set[str],
     session: Session,
 ):
@@ -81,7 +82,7 @@ def test_conflicts_with_paced_trains(
                 },
             ],
             "speed_limit_tag": "MA100",
-            "start_time": "2024-05-22T08:00:00.000Z",
+            "start_time": ms_since_epoch("2024-05-22T08:00:00Z"),
             "train_name": "with_stop",
         }
     ]
@@ -200,7 +201,7 @@ def test_conflicts_with_reception_on_closed_signal(
                 },
             ],
             "speed_limit_tag": "MA100",
-            "start_time": "2024-05-22T08:00:00.000Z",
+            "start_time": ms_since_epoch("2024-05-22T08:00:00Z"),
             "train_name": "with_stop",
         }
     ]
@@ -247,7 +248,7 @@ def test_conflicts_with_reception_on_closed_signal(
                 },
             ],
             "speed_limit_tag": "MA100",
-            "start_time": "2024-05-22T08:00:01.000Z",
+            "start_time": ms_since_epoch("2024-05-22T08:00:01Z"),
             "train_name": "pass",
         }
     ]
@@ -348,7 +349,7 @@ def test_paced_train_conflicts(
             },
         ],
         "speed_limit_tag": "MA100",
-        "start_time": "2024-05-22T08:00:00.000Z",
+        "start_time": ms_since_epoch("2024-05-22T08:00:00Z"),
         "train_name": "paced train",
         "paced": {
             "time_window": "PT1H",
@@ -428,7 +429,7 @@ def test_paced_train_with_exceptions_conflicts(
             },
         ],
         "speed_limit_tag": "MA100",
-        "start_time": "2024-05-22T08:00:00.000Z",
+        "start_time": ms_since_epoch("2024-05-22T08:00:00Z"),
         "train_name": "paced train",
         "paced": {
             "time_window": "PT1H",
@@ -450,7 +451,7 @@ def test_paced_train_with_exceptions_conflicts(
         "disabled": False,
         "change_groups": {
             "start_time": {
-                "value": "2024-05-22T08:01:00.000Z",
+                "value": ms_since_epoch("2024-05-22T08:01:00Z"),
             },
             "train_name": {"value": "created_exception_train_name"},
         },
@@ -480,7 +481,7 @@ def test_paced_train_with_exceptions_conflicts(
         "disabled": False,
         "change_groups": {
             "start_time": {
-                "value": "2024-05-22T08:30:00.000Z",
+                "value": ms_since_epoch("2024-05-22T08:30:00Z"),
             },
             "train_name": {"value": "exception_train_name"},
         },
@@ -580,7 +581,7 @@ def test_scheduled_points_with_incompatible_margins(
             ],
             "margins": {"boundaries": [], "values": ["100%"]},
             "speed_limit_tag": "MA100",
-            "start_time": "2024-05-22T08:00:00.000Z",
+            "start_time": ms_since_epoch("2024-05-22T08:00:00Z"),
             "train_name": "name",
         }
     ]
@@ -645,7 +646,7 @@ def test_mrsp_sources(
             ],
             "margins": {"boundaries": [], "values": ["3%"]},
             "speed_limit_tag": "E32C",
-            "start_time": "2024-05-22T08:00:00.000Z",
+            "start_time": ms_since_epoch("2024-05-22T08:00:00Z"),
             "train_name": "name",
         }
     ]

@@ -53,7 +53,7 @@ describe('extractOccurrenceDetailsFromPacedTrain', () => {
     train_name: '8608',
     labels: ['Paced-Train-Tag-1', 'SS-NS', 'Valid'],
     rolling_stock_name: '',
-    start_time: '2024-10-15T03:00:00Z',
+    start_time: new Date('2024-10-15T03:00:00Z').getTime(),
     path: [
       {
         id: 'id227',

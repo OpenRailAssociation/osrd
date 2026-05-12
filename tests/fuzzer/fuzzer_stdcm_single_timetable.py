@@ -134,9 +134,7 @@ def _build_timetable_range(
     for train_id in train_ids:
         r = session.get(f"{editoast_url}/train_schedules/{train_id}")
         r.raise_for_status()
-        start_time = datetime.datetime.strptime(
-            r.json()["start_time"], "%Y-%m-%dT%H:%M:%SZ"
-        )
+        start_time = datetime.datetime.fromtimestamp(r.json()["start_time"] / 1000)
         start_time = start_time.astimezone(datetime.timezone.utc)
         train_times.append(start_time)
     if not train_times:

@@ -10,7 +10,10 @@ use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use axum::response::IntoResponse;
+use chrono::DateTime;
 use chrono::Duration;
+use chrono::Utc;
+use common::units::millisecond;
 use core_client::AsCoreRequest;
 use core_client::CoreClient;
 use core_client::pathfinding::PathfindingInputError;
@@ -1665,8 +1668,11 @@ fn find_track_occupancy_unknown_operational_point(
                             } else {
                                 schedule_item.arrival?.num_milliseconds()
                             };
-                            let time_begin =
-                                train_schedule.start_time + Duration::milliseconds(arrival_time);
+                            let time_begin = DateTime::<Utc>::from_timestamp_millis(
+                                millisecond::i64::from(train_schedule.start_time),
+                            )
+                            .unwrap()
+                                + Duration::milliseconds(arrival_time);
                             Some(TimeWindow {
                                 time_begin,
                                 duration,
@@ -1675,7 +1681,10 @@ fn find_track_occupancy_unknown_operational_point(
                         // No schedule item for the first path item: use start_time directly.
                         .or_else(|| {
                             is_first_path_item.then_some(TimeWindow {
-                                time_begin: train_schedule.start_time,
+                                time_begin: DateTime::<Utc>::from_timestamp_millis(
+                                    millisecond::i64::from(train_schedule.start_time),
+                                )
+                                .unwrap(),
                                 duration: Default::default(),
                             })
                         })?;
@@ -1803,6 +1812,7 @@ mod tests {
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use schemas::TrainScheduleExceptionChangeGroups;
+    use schemas::fixtures::ms_since_epoch;
     use schemas::infra::Direction;
     use schemas::paced_train::InitialSpeedChangeGroup;
     use schemas::paced_train::Paced;
@@ -2850,7 +2860,7 @@ mod tests {
             create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.id).await;
         let paced_train_fail = simple_paced_train_changeset(train_schedule_set.id)
             .rolling_stock_name("fail".to_string())
-            .start_time(DateTime::from_timestamp(0, 0).unwrap())
+            .start_time(millisecond::i64::new(0))
             .create(&mut db_pool.get_ok())
             .await
             .expect("Failed to create paced train");
@@ -3355,7 +3365,7 @@ mod tests {
             trigram: "UNKNOWN".into(),
             secondary_code: None,
         };
-        let start_time: DateTime<Utc> = "2026-01-01T00:00:00Z".parse().unwrap();
+        let start_time = ms_since_epoch("2026-01-01T00:00:00Z");
         let train_schedule = schemas::TrainOccurrence {
             start_time,
             path: vec![
@@ -3386,7 +3396,10 @@ mod tests {
         );
 
         assert_eq!(result.len(), 1);
-        assert_eq!(result[0].1.time_window.time_begin, start_time);
+        assert_eq!(
+            result[0].1.time_window.time_begin,
+            DateTime::<Utc>::from_timestamp_millis(millisecond::i64::from(start_time)).unwrap()
+        );
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

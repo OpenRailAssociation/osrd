@@ -57,14 +57,12 @@ const mapTrainNames = (uniqueTrains: TrainSchedule[], trains: Element[]): TrainS
 };
 
 export const getMostFrequentInterval = (schedules: TrainSchedule[]): Duration => {
-  const departureTimes = schedules
-    .map((s) => new Date(s.start_time))
-    .sort((a, b) => a.getTime() - b.getTime());
+  const departureTimes = schedules.map((s) => s.start_time).sort((a, b) => a - b);
 
   const intervalsCount = new Map<number, number>();
 
   for (let i = 1; i < departureTimes.length; i += 1) {
-    const interval = Duration.subtractDate(departureTimes[i], departureTimes[i - 1]);
+    const interval = new Duration({ milliseconds: departureTimes[i] - departureTimes[i - 1] });
     const rawMin = interval.total('minute');
 
     let roundedMin: number;
@@ -107,7 +105,7 @@ const reconcilePacedTrainOccurrences = (
   }
 
   const sortedImportedSchedules = [...importedTrainSchedules].sort(
-    (a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
+    (a, b) => a.start_time - b.start_time
   );
 
   const firstImportedDepartureTime = new Date(sortedImportedSchedules[0].start_time);
@@ -293,7 +291,7 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
     const uniqueTrain: TrainSchedule = {
       train_name: trainNumber,
       rolling_stock_name: rollingStockName || formationRef || '', // RollingStocks in xml files rarely have the correct format
-      start_time: new Date(`${startDate} ${firstDepartureTimeformatted}`).toISOString(),
+      start_time: new Date(`${startDate} ${firstDepartureTimeformatted}`).getTime(),
       constraint_distribution: 'STANDARD',
       path,
       schedule,

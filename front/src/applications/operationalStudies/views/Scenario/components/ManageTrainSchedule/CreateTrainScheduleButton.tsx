@@ -77,7 +77,7 @@ const CreateTrainScheduleButton = ({
 
       const newAddedExceptions = addedExceptions.map(({ startTime: exStartTime }) => ({
         key: '', // TODO : remove this when the key will be removed from the model
-        start_time: { value: exStartTime.toISOString() },
+        start_time: { value: exStartTime.getTime() },
       }));
 
       if (newAddedExceptions.length > 0) {

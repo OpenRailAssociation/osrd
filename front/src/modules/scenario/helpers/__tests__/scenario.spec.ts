@@ -16,9 +16,9 @@ describe('getScenarioDatetimeWindow', () => {
 
   it('should return the correct begin and end dates', () => {
     const trainsDetails = [
-      { start_time: '2023-10-01T10:00:00Z' },
-      { start_time: '2023-10-01T12:00:00Z' },
-      { start_time: '2023-10-01T08:00:00Z' },
+      { start_time: new Date('2023-10-01T10:00:00Z').getTime() },
+      { start_time: new Date('2023-10-01T12:00:00Z').getTime() },
+      { start_time: new Date('2023-10-01T08:00:00Z').getTime() },
     ];
 
     const result = getScenarioDatetimeWindow(trainsDetails as TrainScheduleResponse[]);
@@ -30,7 +30,7 @@ describe('getScenarioDatetimeWindow', () => {
   });
 
   it('should handle a single train detail correctly', () => {
-    const trainsDetails = [{ start_time: '2023-10-01T10:00:00Z' }];
+    const trainsDetails = [{ start_time: new Date('2023-10-01T10:00:00Z').getTime() }];
 
     const result = getScenarioDatetimeWindow(trainsDetails as TrainScheduleResponse[]);
 

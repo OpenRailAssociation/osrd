@@ -79,7 +79,7 @@ function buildSchedule(id: string, timeOffsetSeconds: number = 0): TrainSchedule
   return {
     train_name: id,
     rolling_stock_name: '27000US',
-    start_time: departureDate.toISOString(),
+    start_time: departureDate.getTime(),
     constraint_distribution: 'STANDARD',
     path: [
       {

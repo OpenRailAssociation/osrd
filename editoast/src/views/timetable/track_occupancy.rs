@@ -1,4 +1,7 @@
+use chrono::DateTime;
 use chrono::Duration;
+use chrono::Utc;
+use common::units::millisecond;
 use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::simulation::ReportTrain;
 use schemas::infra::TrackOffset;
@@ -235,7 +238,11 @@ fn find_track_occupancy_for_operational_point_with_context<'a>(
             train_schedule,
         ),
         time_window: TimeWindow {
-            time_begin: train_schedule.start_time + Duration::milliseconds(arrival_time),
+            time_begin: DateTime::<Utc>::from_timestamp_millis(millisecond::i64::from(
+                train_schedule.start_time,
+            ))
+            .unwrap()
+                + Duration::milliseconds(arrival_time),
             duration: stop_duration,
         },
     }]
@@ -246,8 +253,7 @@ pub mod tests {
     use crate::error::InternalError;
     use crate::views::path::pathfinding::PathfindingFailure;
     use crate::views::timetable::simulation::SimulationResponseSuccess;
-    use chrono::DateTime;
-    use chrono::Utc;
+    use common::units::millisecond;
     use core_client::pathfinding::PathfindingNotFound;
     use core_client::pathfinding::TrackRange;
     use core_client::simulation::CompleteReportTrain;
@@ -255,6 +261,7 @@ pub mod tests {
     use pretty_assertions::assert_eq;
     use reqwest::StatusCode;
     use rstest::rstest;
+    use schemas::fixtures::ms_since_epoch;
     use schemas::infra::Direction;
     use schemas::infra::TrackOffset;
     use schemas::primitives::Identifier;
@@ -264,7 +271,6 @@ pub mod tests {
     use schemas::train_schedule::ReceptionSignal;
     use std::collections::HashMap;
     use std::collections::HashSet;
-    use std::str::FromStr;
 
     use super::*;
 
@@ -351,7 +357,7 @@ pub mod tests {
         }];
 
         // Create a train schedule with path items and schedule items
-        let start_time = DateTime::from_timestamp(1000000000, 0).unwrap();
+        let start_time = ms_since_epoch("2001-09-09T01:46:40Z");
         let train_schedule = schemas::TrainOccurrence {
             start_time,
             path: vec![
@@ -460,7 +466,8 @@ pub mod tests {
 
             assert_eq!(
                 *time_begin,
-                start_time + Duration::milliseconds(expected_time as i64)
+                DateTime::<Utc>::from_timestamp_millis(millisecond::i64::from(start_time)).unwrap()
+                    + Duration::milliseconds(expected_time as i64)
             );
             assert_eq!(
                 *duration,
@@ -516,8 +523,7 @@ pub mod tests {
 
     #[test]
     fn test_schedule_arrival_used_when_simulation_does_not_honor_times() {
-        let start_time =
-            DateTime::<Utc>::from_str("2026-02-01T00:00:00Z").expect("Date should be valid");
+        let start_time = ms_since_epoch("2026-02-01T00:00:00Z");
 
         let train_schedule = schemas::TrainOccurrence {
             start_time,
@@ -571,7 +577,8 @@ pub mod tests {
         );
         assert_eq!(
             results[0].time_window.time_begin,
-            start_time + Duration::minutes(5)
+            DateTime::<Utc>::from_timestamp_millis(millisecond::i64::from(start_time)).unwrap()
+                + Duration::minutes(5)
         );
     }
 }

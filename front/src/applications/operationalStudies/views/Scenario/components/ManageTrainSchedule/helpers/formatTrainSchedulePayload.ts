@@ -38,7 +38,7 @@ export function formatTrainSchedulePayload(
     rolling_stock_name: rollingStockName,
     schedule: formatSchedule(compact(osrdconf.pathSteps)),
     speed_limit_tag: osrdconf.speedLimitByTag,
-    start_time: osrdconf.startTime.toISOString(),
+    start_time: osrdconf.startTime.getTime(),
     train_name: osrdconf.name,
   };
 }
@@ -71,7 +71,7 @@ export function formatPacedTrainWithDetailsToPacedTrainPayload(
     rolling_stock_name: pacedTrainWithDetails.rollingStock?.name ?? '',
     schedule: pacedTrainWithDetails.schedule,
     speed_limit_tag: pacedTrainWithDetails.speed_limit_tag,
-    start_time: pacedTrainWithDetails.startTime.toISOString(),
+    start_time: pacedTrainWithDetails.startTime.getTime(),
     train_name: pacedTrainWithDetails.name,
   };
 }
