@@ -10,7 +10,7 @@ anyhow = "1.0.102"
 axum = "0.8.9"
 axum-extra = { version = "0.12.6", features = ["query"] }
 axum-tracing-opentelemetry = "0.33.1"
-bollard = "0.20"
+bollard = "0.21"
 figment = { version = "0.10.19", features = ["env", "yaml"] }
 futures-lite = "2.6.1"
 hex = "0.4.3"
