@@ -46,6 +46,7 @@ export const computeRowPowerRestrictionStatus = (
   const result = new Map<string, PowerRestrictionBlockInfo>();
 
   let activeRestriction: string | null = null;
+  let prevActiveRestriction: string | null = null;
   let prevHadWarning = false;
   // Row that opened a block not yet confirmed (waiting for the next row to
   // know if the block has 2+ rows or is just a single isolated row).
@@ -79,8 +80,13 @@ export const computeRowPowerRestrictionStatus = (
       rowPosition !== undefined &&
       warningRanges.some((w) => rowPosition >= w.begin && rowPosition < w.end);
 
-    // 3. Detect block boundaries.
-    const isBlockStart = hasWarning && !prevHadWarning;
+    // 3. Detect block boundaries. A block represents a contiguous run of rows
+    //    where the *same* active restriction is incompatible. So a new block
+    //    starts either when entering a warning from a compatible row, or when
+    //    the active restriction changes while still in a warning state (two
+    //    adjacent blocks of different restrictions).
+    const restrictionChanged = activeRestriction !== prevActiveRestriction;
+    const isBlockStart = hasWarning && (!prevHadWarning || restrictionChanged);
 
     result.set(row.id, {
       propagatedValue: activeRestriction,
@@ -92,6 +98,9 @@ export const computeRowPowerRestrictionStatus = (
     //    transition zone (voltage = ""). A single row in a real incompatibility
     //    zone is a legitimate warning and should be kept.
     if (isBlockStart) {
+      // A previous candidate may still be pending (1-row block ended by a
+      // restriction change), so handle its dismissal before opening the new one.
+      ignoreCandidateIfInTransitionZone();
       candidateBlockStart = { id: row.id, position: rowPosition };
     } else if (hasWarning) {
       // Block has 2+ rows → confirmed, stop tracking.
@@ -101,6 +110,7 @@ export const computeRowPowerRestrictionStatus = (
     }
 
     prevHadWarning = hasWarning;
+    prevActiveRestriction = activeRestriction;
   }
 
   // Handle a single-row block at the very end of the table.

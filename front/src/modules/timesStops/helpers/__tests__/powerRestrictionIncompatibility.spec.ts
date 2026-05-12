@@ -235,4 +235,69 @@ describe('computeRowPowerRestrictionStatus', () => {
     expect(result.get('c')?.hasWarning).toBe(true); // 300 >= 200 && < 400
     expect(result.get('d')?.hasWarning).toBe(false); // 400 not < 400
   });
+
+  it('splits a visually contiguous warning into two blocks when the active restriction changes', () => {
+    const rows = [
+      row('a', 0, { pathStepId: 'ps-a', powerRestriction: 'M1US' }),
+      row('b', 1),
+      row('c', 2, { pathStepId: 'ps-c', powerRestriction: 'C1US' }),
+      row('d', 3),
+    ];
+    const positions = new Map([
+      [0, 100],
+      [1, 200],
+      [2, 300],
+      [3, 400],
+    ]);
+    // Single warning range covering all four rows: visually one contiguous
+    // block, but it crosses a restriction boundary at row c.
+    const warningRanges = [{ begin: 50, end: 500 }];
+
+    const result = computeRowPowerRestrictionStatus(rows, positions, warningRanges, []);
+
+    // M1US block (rows a-b)
+    expect(result.get('a')?.hasWarning).toBe(true);
+    expect(result.get('a')?.isBlockStart).toBe(true);
+    expect(result.get('a')?.propagatedValue).toBe('M1US');
+    expect(result.get('b')?.hasWarning).toBe(true);
+    expect(result.get('b')?.isBlockStart).toBe(false);
+
+    // C1US block (rows c-d), adjacent but distinct
+    expect(result.get('c')?.hasWarning).toBe(true);
+    expect(result.get('c')?.isBlockStart).toBe(true);
+    expect(result.get('c')?.propagatedValue).toBe('C1US');
+    expect(result.get('d')?.hasWarning).toBe(true);
+    expect(result.get('d')?.isBlockStart).toBe(false);
+  });
+
+  it('dismisses a single-row block in a transition zone even when followed by another block', () => {
+    const rows = [
+      row('a', 0, { pathStepId: 'ps-a', powerRestriction: 'M1US' }),
+      row('b', 1, { pathStepId: 'ps-b', powerRestriction: 'C1US' }),
+      row('c', 2),
+    ];
+    const positions = new Map([
+      [0, 100],
+      [1, 200],
+      [2, 300],
+    ]);
+    // Warning covers all three rows; row a is in a voltage transition zone.
+    const warningRanges = [{ begin: 50, end: 400 }];
+    const voltages = [
+      { begin: 0, end: 150, value: '' },
+      { begin: 150, end: 400, value: '1500V' },
+    ];
+
+    const result = computeRowPowerRestrictionStatus(rows, positions, warningRanges, voltages);
+
+    // Row a was a single-row M1US block in a transition zone → dismissed.
+    expect(result.get('a')?.hasWarning).toBe(false);
+    expect(result.get('a')?.isBlockStart).toBe(false);
+
+    // The C1US block (b-c) is preserved.
+    expect(result.get('b')?.hasWarning).toBe(true);
+    expect(result.get('b')?.isBlockStart).toBe(true);
+    expect(result.get('c')?.hasWarning).toBe(true);
+    expect(result.get('c')?.isBlockStart).toBe(false);
+  });
 });
