@@ -148,6 +148,57 @@ pub enum InfraGrant {
 }
 
 #[derive(
+    fga::Type,
+    fga::User,
+    fga::Object,
+    derive_more::From,
+    derive_more::FromStr,
+    derive_more::Deref,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+)]
+pub struct RollingStock(pub i64);
+
+#[derive(Debug, Clone, Copy, Display, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "snake_case")]
+#[strum(serialize_all = "snake_case")]
+#[allow(clippy::enum_variant_names)]
+pub enum RollingStockPrivilege {
+    CanRead,
+    CanShareRead,
+    CanWrite,
+    CanShareWrite,
+    CanDelete,
+    CanShareOwnership,
+}
+
+#[derive(
+    Debug,
+    Display,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Serialize,
+    Deserialize,
+    ToSchema,
+)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
+pub enum RollingStockGrant {
+    Reader,
+    Writer,
+    Owner,
+}
+
+#[derive(
     fga::User,
     Debug,
     Clone,
@@ -194,6 +245,18 @@ fga::relations! {
     Infra {
         reader: User,
         writer:User,
+        owner: User,
+        // Computed
+        can_read: User,
+        can_write: User,
+        can_delete: User,
+        can_share_read: User,
+        can_share_write: User,
+        can_share_ownership: User
+    },
+    RollingStock {
+        reader: User,
+        writer: User,
         owner: User,
         // Computed
         can_read: User,
