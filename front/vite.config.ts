@@ -50,11 +50,13 @@ export default defineConfig(({ mode }) => {
       viteStaticCopy({
         targets: [
           {
-            src: [
-              path.join(ngeBase, 'node_modules_angular_common_locales_*_mjs.js'),
-              path.join(ngeBase, 'src_assets_i18n_*_json.js'),
-            ],
+            src: [path.join(ngeBase, '*')],
             dest: 'netzgrafik-frontend/',
+            rename: { stripBase: true },
+          },
+          {
+            src: [path.join(ngeBase, 'assets/i18n/*')],
+            dest: 'netzgrafik-frontend/assets/i18n/',
             rename: { stripBase: true },
           },
         ],
