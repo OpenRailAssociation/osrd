@@ -18,6 +18,7 @@ import type {
   PathItemLocation,
   TrainCategory,
 } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import Banner from 'common/Banner';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
@@ -35,7 +36,7 @@ import {
   getPathSteps,
   getRollingStockName,
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import type { PathStep, PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
+import type { PathStep, PathStepMetadata, PathStepV2, TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { addElementAtIndex } from 'utils/array';
 import { Duration } from 'utils/duration';
@@ -61,6 +62,7 @@ type ItineraryModalProps = {
   itineraryModalIsOpen: boolean;
   setItineraryModalIsOpen: (isOpen: boolean) => void;
   displayTrainScheduleManagement: string;
+  trainScheduleToEditData?: TrainScheduleToEditData;
 };
 
 export type ItineraryModalFormState = {
@@ -75,6 +77,7 @@ const ItineraryModal = ({
   itineraryModalIsOpen,
   setItineraryModalIsOpen,
   displayTrainScheduleManagement,
+  trainScheduleToEditData,
 }: ItineraryModalProps) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTrainSchedule.itineraryModal',
@@ -152,6 +155,42 @@ const ItineraryModal = ({
   const { pathStepsMetadataById } = usePathStepsMetadata(pathSteps, pendingStepIdRef);
   const { launchPathfindingV2, pathProperties, pathfindingError } = usePathfindingV2();
   const { convertFeatureClickToLocation } = useMapTrackSelection(infraId);
+
+  /**
+   * When a custom track name is added (one that doesn't exist in the OP parts),
+   * immediately update the train schedule's path via API to persist the local_track_name.  
+   */
+  const updateTrainSchedulePathTrackName = useCallback(
+    async (stepId: string, trackName: string) => {
+      if (!trainScheduleToEditData) return;
+
+      const { trainScheduleId } = trainScheduleToEditData;
+
+      // GET the current train schedule fresh from the DB to avoid overwriting anything
+      const { id: _, train_schedule_set_id: __, ...currentData } = await dispatch(
+        osrdEditoastApi.endpoints.getTrainSchedulesById.initiate(
+          { id: trainScheduleId },
+          { subscribe: false }
+        )
+      ).unwrap();
+
+      // Only update the local_track_name on the matching path step
+      await dispatch(
+        osrdEditoastApi.endpoints.putTrainSchedulesById.initiate({
+          id: trainScheduleId,
+          trainSchedule: {
+            ...currentData,
+            path: currentData.path.map((item) =>
+              item.id === stepId && item.location.type !== 'track_offset'
+                ? { ...item, location: { ...item.location, local_track_name: trackName || undefined } }
+                : item
+            ),
+          },
+        })
+      ).unwrap();
+    },
+    [dispatch, trainScheduleToEditData]
+  );
 
   const applyOperationalPointToStep = (
     stepId: string,
@@ -677,6 +716,9 @@ const ItineraryModal = ({
                           };
                         })
                       );
+                    }}
+                    onAddCustomTrackName={(trackName) => {
+                      updateTrainSchedulePathTrackName(pathStep.id, trackName);
                     }}
                     onOpBlur={() => {
                       // If the user focuses out on an input with a valid op, we display the last valid op of this input (or empty)

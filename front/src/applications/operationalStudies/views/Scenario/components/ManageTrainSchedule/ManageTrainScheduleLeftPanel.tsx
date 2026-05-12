@@ -193,6 +193,7 @@ const ManageTrainScheduleLeftPanel = ({
           itineraryModalIsOpen={itineraryModalIsOpen}
           setItineraryModalIsOpen={setItineraryModalIsOpen}
           displayTrainScheduleManagement={displayTrainScheduleManagement}
+          trainScheduleToEditData={trainScheduleToEditData}
         />
       )}
       <div

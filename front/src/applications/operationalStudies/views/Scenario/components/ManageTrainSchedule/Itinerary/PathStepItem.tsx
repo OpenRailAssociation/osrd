@@ -38,6 +38,7 @@ type PathStepProps = {
   categoryColors: CategoryColors;
   onOpInputChange: (value: string) => void;
   onTrackNameChange: (trackName: string) => void;
+  onAddCustomTrackName?: (trackName: string) => void;
   onOpFocus: () => void;
   onOpBlur: () => void;
   inputValue: string | undefined;
@@ -66,6 +67,7 @@ const PathStepItem = ({
   categoryColors,
   onOpInputChange,
   onTrackNameChange,
+  onAddCustomTrackName,
   onOpFocus,
   onOpBlur,
   inputValue,
@@ -483,7 +485,10 @@ const PathStepItem = ({
                   onSelectSuggestion={(option) => onTrackNameChange(option?.label ?? '')}
                   resetSuggestions={() => setFilteredTrackSuggestions(trackNameSuggestions)}
                   allowCustomValue
-                  onAddCustomValue={(value) => onTrackNameChange(value)}
+                  onAddCustomValue={(value) => {
+                    onTrackNameChange(value);
+                    onAddCustomTrackName?.(value);
+                  }}
                   small
                   narrow
                 />
