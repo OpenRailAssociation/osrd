@@ -198,6 +198,7 @@ pub trait List: Model {
 ///
 /// You can implement this type manually but it is recommended to use the `Model`
 /// derive macro instead.
+#[deprecated = "List, Count, SelectionSettings and related definitions will be removed at some point"]
 pub trait Count: Model {
     type Error: std::error::Error + From<crate::Error> + Send;
 
@@ -211,6 +212,10 @@ pub trait Count: Model {
 /// A trait that combines [List] and [Count] into a single function [ListAndCount::list_and_count]
 ///
 /// This trait is automatically implemented for any type that implements both [List] and [Count].
+#[expect(
+    deprecated,
+    reason = "trait Count is allowed as an implementation detail in prelude"
+)]
 pub trait ListAndCount: Model + List + Count
 where
     // in practice, they're the same when generated using derive(Model)
@@ -234,6 +239,10 @@ where
     ) -> Result<(Vec<Self>, u64), <Self as List>::Error>;
 }
 
+#[expect(
+    deprecated,
+    reason = "trait Count is allowed as an implementation detail in prelude"
+)]
 impl<M: Model + List + Count> ListAndCount for M
 where
     <M as List>::Error: From<<M as Count>::Error>,
