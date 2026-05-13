@@ -497,6 +497,30 @@
     },
     "toggleTrigramSearch": "Toggle trigram search",
     "trainAdded": "Train added",
+    "trainHeader": {
+      "allowances": {
+        "linear": "Linear margin",
+        "mareco": "Mareco margin"
+      },
+      "form": {
+        "comfort": "Comfort",
+        "compositionCode": "Composition code",
+        "departureDate": "Departure date",
+        "electricalProfiles": "Electrical profiles",
+        "initialVelocity": "Initial velocity",
+        "manageExtraOccurrences": "Manage extra occurrences",
+        "recoveryMargin": "Recovery margin",
+        "rollingStock": "Rolling stock",
+        "serviceCadence": "Service cadence",
+        "serviceWindow": "Service window",
+        "tags": "Tags",
+        "trainCategory": "Train category",
+        "trainName": "Train name"
+      },
+      "itinerary": "Itinerary",
+      "serviceModelTrain": "Service model train",
+      "serviceOccurrence": "Service occurrence"
+    },
     "trainLabels": "Tags",
     "trainScheduleDepartureTime": "Departure time",
     "trainScheduleInitialSpeed": "Initial velocity",

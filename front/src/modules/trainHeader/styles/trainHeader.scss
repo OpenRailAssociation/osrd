@@ -1,0 +1,32 @@
+@use './collapsed.scss';
+@use './expanded.scss';
+
+.train-header {
+  .header-toggle {
+    width: 24px;
+    height: 24px;
+    display: grid;
+    place-content: center;
+    border-radius: 4px;
+    outline: none;
+    color: var(--grey50);
+    z-index: 1;
+  }
+
+  .header-toggle:hover,
+  .header-toggle:focus-visible {
+    color: var(--color-grey-80);
+    background-color: var(--white100);
+    box-shadow:
+      0 1px 2px 0 rgba(0, 0, 0, 0.16),
+      0 2px 2px -1px rgba(255, 171, 88, 0.27);
+  }
+
+  .header-toggle:focus-visible {
+    outline: auto;
+  }
+
+  .header-toggle span {
+    display: contents;
+  }
+}

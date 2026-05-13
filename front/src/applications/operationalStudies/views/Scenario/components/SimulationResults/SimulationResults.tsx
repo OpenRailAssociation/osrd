@@ -22,6 +22,7 @@ import useTrackOccupancy from 'modules/simulationResult/components/SpaceTimeChar
 import SpeedDistanceDiagramWrapper from 'modules/simulationResult/components/SpeedDistanceDiagram/SpeedDistanceDiagramWrapper';
 import type { ProjectionData, TrainSpaceTimeData } from 'modules/simulationResult/types';
 import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
+import TrainHeader from 'modules/trainHeader/TrainHeader';
 import { findExceptionWithOccurrenceId } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { toggleDisplayOnlyPathSteps, updateSelectedTrain } from 'reducers/simulationResults';
@@ -350,6 +351,7 @@ const SimulationResults = ({
                 },
               },
             ]}
+            customHeader={<TrainHeader train={simulationResults.train} />}
             customFooter={
               simulationResults?.isValid && (
                 <div className="time-stop-outputs">

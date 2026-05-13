@@ -1,0 +1,127 @@
+.expanded-train-form {
+  background-color: var(--white100);
+  border-bottom: 1px solid var(--black25);
+  font-size: 14px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(200px, 1fr)) 1fr [end-column];
+
+  :where(& > *) {
+    grid-column: 1 / end-column;
+  }
+
+  .toggle-band {
+    display: grid;
+    place-items: start end;
+    padding-top: 3px;
+    margin-right: 8px;
+    margin-bottom: -28px;
+  }
+
+  .train-form {
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-auto-flow: column;
+    padding: 24px 16px 16px 16px;
+
+    :where(& > *) {
+      margin-top: -8px;
+    }
+
+    label {
+      margin-bottom: unset;
+    }
+
+    .loose-field {
+      align-content: center;
+      padding: 32px 16px 16px 16px;
+    }
+
+    .actions {
+      place-self: end end;
+      margin-bottom: 16px;
+      margin-right: 8px;
+      grid-row: 3;
+      grid-column: end-column;
+    }
+  }
+
+  .train-service {
+    background-color: var(--ambientB10);
+    display: grid;
+    grid-template-columns: subgrid;
+    padding-inline: 16px;
+    border-bottom: 1px solid var(--black10);
+
+    .toggle-band {
+      justify-self: end;
+      z-index: 1;
+      margin-right: -8px;
+    }
+
+    :where(& > *) {
+      grid-column: 1 / end-column;
+    }
+  }
+
+  .train-paced-kind {
+    background-color: var(--black5);
+    color: var(--info60);
+    font-weight: 600;
+    margin: 16px 14px 0 16px;
+    align-self: center;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-style: italic;
+    border-radius: 3px;
+    white-space: nowrap;
+    padding-inline: 16px;
+  }
+
+  .train-occurrence {
+    display: grid;
+    grid-template-columns: subgrid;
+    padding-bottom: 16px;
+
+    .train-paced-kind {
+      background-color: var(--white50);
+    }
+  }
+
+  .train-service-form {
+    display: grid;
+    grid-template-columns: subgrid;
+
+    label {
+      margin-bottom: unset;
+    }
+
+    .actions {
+      align-self: end;
+      margin-left: 16px;
+      margin-bottom: 18px;
+    }
+  }
+}
+
+@container board-wrapper (width < 800px) {
+  .expanded-train-form {
+    overflow-x: auto;
+    grid-template-columns: repeat(3, minmax(200px, 1fr)) [end-column];
+    justify-content: space-between;
+
+    .train-form {
+      .train-tags {
+        grid-row: 4;
+        grid-column: 1 / 3;
+      }
+
+      .actions {
+        grid-row: 4;
+        grid-column: end-column;
+      }
+    }
+  }
+}

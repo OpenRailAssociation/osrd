@@ -14,6 +14,7 @@ type ResizableProps = {
 
 type BoardWrapperProps = {
   children: React.ReactNode;
+  customHeader?: React.ReactNode;
   customFooter?: React.ReactNode;
   hidden?: boolean;
   name: string;
@@ -34,6 +35,7 @@ const BoardWrapper = ({
   withFooter = false,
   footerClass,
   dataTestId,
+  customHeader,
   customFooter,
   resizable,
 }: BoardWrapperProps) => {
@@ -55,6 +57,7 @@ const BoardWrapper = ({
           menuProps={{ items }}
         />
       </div>
+      {customHeader}
       <div
         className={cx('board-body', {
           'with-rounded-corners': !withFooter,

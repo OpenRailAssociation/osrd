@@ -799,6 +799,18 @@
     "rollingResistanceFormula": "R(v) = a + bv + cv²",
     "rollingstockChoice": "Choose a rolling stock",
     "selectRollingStock": "Select",
+    "shortCategoriesOptions": {
+      "COMMUTER_TRAIN": "Commuter",
+      "FAST_FREIGHT_TRAIN": "Fast Freight",
+      "FREIGHT_TRAIN": "Freight",
+      "HIGH_SPEED_TRAIN": "High-Speed",
+      "INTERCITY_TRAIN": "Intercity",
+      "NIGHT_TRAIN": "Night",
+      "REGIONAL_TRAIN": "Regional",
+      "TOURISTIC_TRAIN": "Touristic",
+      "TRAM_TRAIN": "Tram-Train",
+      "WORK_TRAIN": "Work"
+    },
     "speed": "Velocity (km/h)",
     "startupAcceleration": "Startup acceleration",
     "startupTime": "Startup duration",
