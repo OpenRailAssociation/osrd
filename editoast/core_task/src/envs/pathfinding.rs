@@ -230,7 +230,7 @@ impl<Train> PathfindingEnvInputs<Train>
 where
     Train: TrainKey + 'static,
 {
-    fn iter(&self) -> impl Iterator<Item = Correlated<Train, Input>> {
+    fn iter(&self) -> impl Iterator<Item = Correlated<Train, PathfindingKey>> {
         self.consists.keys().map(|train| {
             let pf_key = self
                 .train_input(train)
@@ -239,10 +239,10 @@ where
         })
     }
 
-    pub(in crate::envs) fn train_input(&self, train: &Train) -> Option<Input> {
+    pub(in crate::envs) fn train_input(&self, train: &Train) -> Option<PathfindingKey> {
         let consist = self.consists.get(train)?;
         let constraints = self.constraints.get(train)?;
-        Some(Input(consist.clone(), constraints.clone()))
+        Some(PathfindingKey(consist.clone(), constraints.clone()))
     }
 }
 
@@ -258,11 +258,11 @@ where
 {
     core_env: CoreEnv,
     pub(in crate::envs) pathfinding_inputs: Arc<PathfindingEnvInputs<Train>>,
-    input_index: DashMap<Input, TrainSet<Train>>,
+    input_index: DashMap<PathfindingKey, TrainSet<Train>>,
 }
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub(in crate::envs) struct Input(
+pub(in crate::envs) struct PathfindingKey(
     pub(in crate::envs) Arc<PathfindingConsist>,
     pub(in crate::envs) Arc<PathfindingConstraints>,
 );
@@ -272,7 +272,7 @@ where
     Train: TrainKey + 'static,
 {
     pub(in crate::envs) fn new(PathfindingEnv { core_env, inputs }: PathfindingEnv<Train>) -> Self {
-        let input_index = DashMap::<Input, TrainSet<Train>>::new();
+        let input_index = DashMap::<PathfindingKey, TrainSet<Train>>::new();
         for Correlated {
             correlation_key: train,
             data: input,
@@ -287,11 +287,14 @@ where
         }
     }
 
-    pub(in crate::envs) fn input_train_set(&self, input: &Input) -> Option<TrainSet<Train>> {
+    pub(in crate::envs) fn input_train_set(
+        &self,
+        input: &PathfindingKey,
+    ) -> Option<TrainSet<Train>> {
         self.input_index.get(input).as_deref().cloned()
     }
 
-    fn iter_inputs(&self) -> impl Iterator<Item = Input> {
+    fn iter_keys(&self) -> impl Iterator<Item = PathfindingKey> {
         self.input_index.iter().map(|set| set.key().clone())
     }
 
@@ -300,14 +303,14 @@ where
         vkconn: Arc<Mutex<cache::Connection>>,
     ) -> impl stream::Stream<
         Item = Correlated<
-            Input,
+            PathfindingKey,
             Result<core_client::pathfinding::PathfindingCoreResult, core_client::Error>,
         >,
     > {
         use crate::TaskStreamExt as _;
 
         let requests = self
-            .iter_inputs()
+            .iter_keys()
             .map(|input| {
                 let request = build_request(&self.core_env, &input);
                 Correlated::new(input, request)
@@ -334,7 +337,7 @@ where
 {
     inputs: Arc<PathfindingEnvInputs<Train>>,
     // optionally deduplicate similar outputs of different inputs
-    paths: Arc<DashMap<Input, PendingPathfindingResult>>,
+    paths: Arc<DashMap<PathfindingKey, PendingPathfindingResult>>,
 }
 
 /// Ready when the pathfinding result is available and stored in [PathfindingRun], pending if the task is not yet completed
@@ -348,7 +351,7 @@ where
     fn new(runner: &Runner<Train>) -> Self {
         let paths = DashMap::from_iter(
             runner
-                .iter_inputs()
+                .iter_keys()
                 .zip(std::iter::repeat_with(|| Poll::Pending)),
         );
         Self {
@@ -375,7 +378,7 @@ where
 
 fn build_request(
     core_env: &CoreEnv,
-    Input(consist, constraints): &Input,
+    PathfindingKey(consist, constraints): &PathfindingKey,
 ) -> core_client::pathfinding::PathfindingRequest {
     core_client::pathfinding::PathfindingRequest {
         infra: core_env.infra_id as i64,

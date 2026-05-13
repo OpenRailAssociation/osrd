@@ -15,7 +15,7 @@ use super::SimulationWaypoint;
 pub(super) fn build_request(
     core_env: &CoreEnv,
     electrical_profile_set_id: Option<u64>,
-    SimulationKey(sim_consist, params, pathfinding::Input(pf_consist, constraints)): &SimulationKey,
+    SimulationKey(sim_consist, params, pathfinding::PathfindingKey(pf_consist, constraints)): &SimulationKey,
     core_client::pathfinding::PathfindingResultSuccess {
         path,
         path_item_positions,
@@ -179,7 +179,7 @@ mod tests {
             PathWaypointAlternatives::from_iter([]),
             PathWaypointAlternatives::from_iter([]),
         ];
-        let pf_input = pathfinding::Input(
+        let pf_input = pathfinding::PathfindingKey(
             Arc::new(pathfinding::test_data::consist(1)),
             Arc::new(crate::PathfindingConstraints {
                 path_items: path_items.clone(),
@@ -274,7 +274,7 @@ mod tests {
             PathWaypointAlternatives::from_iter([]),
             PathWaypointAlternatives::from_iter([]),
         ];
-        let pf_input = pathfinding::Input(
+        let pf_input = pathfinding::PathfindingKey(
             Arc::new(pathfinding::test_data::consist(1)),
             Arc::new(crate::PathfindingConstraints {
                 path_items: path_items.clone(),
@@ -414,7 +414,7 @@ mod tests {
         };
 
         let core_env = CoreEnv::new_mock(MockingClient::new());
-        let pf_input = pathfinding::Input(
+        let pf_input = pathfinding::PathfindingKey(
             Arc::new(pathfinding::test_data::consist(1)),
             Arc::new(crate::PathfindingConstraints { path_items: vec![] }),
         );

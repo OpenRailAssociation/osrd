@@ -135,7 +135,7 @@ where
 pub(in crate::envs) struct SimulationKey(
     Arc<SimulationConsist>,
     Arc<SimulationTrainParameters>,
-    pathfinding::Input,
+    pathfinding::PathfindingKey,
 );
 
 impl<Train> Runner<Train>
@@ -178,7 +178,7 @@ where
     /// do not necessarily share the same simulation key (simulation inputs differ).
     fn simulation_keys_of_pathfinding_key(
         &self,
-        pathfinding_key: &pathfinding::Input,
+        pathfinding_key: &pathfinding::PathfindingKey,
     ) -> impl Iterator<Item = SimulationKey> {
         self.pathfinding_runner
             .input_train_set(pathfinding_key)
