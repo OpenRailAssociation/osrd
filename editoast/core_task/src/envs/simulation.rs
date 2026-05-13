@@ -430,12 +430,12 @@ pub(crate) mod test_data {
             ),
         );
         builder.push_waypoint(
-            pathfinding::PathWaypointAlternatives::from_iter([TrackOffset::new("id", id as u64)]),
+            pathfinding::PathItemAlternatives::from_iter([TrackOffset::new("id", id as u64)]),
             NonBlankString::from("start"),
             SimulationWaypoint::PathItem,
         );
         builder.push_waypoint(
-            pathfinding::PathWaypointAlternatives::from_iter([TrackOffset::new("a", 42)]),
+            pathfinding::PathItemAlternatives::from_iter([TrackOffset::new("a", 42)]),
             NonBlankString::from("a"),
             SimulationWaypoint::ScheduleItem {
                 arrival_at: Some(1200),
@@ -444,7 +444,7 @@ pub(crate) mod test_data {
             },
         );
         builder.push_waypoint(
-            pathfinding::PathWaypointAlternatives::from_iter([
+            pathfinding::PathItemAlternatives::from_iter([
                 TrackOffset::new("b", 43),
                 TrackOffset::new("bis", 34),
             ]),
@@ -456,7 +456,7 @@ pub(crate) mod test_data {
             },
         );
         builder.push_waypoint(
-            pathfinding::PathWaypointAlternatives::from_iter([TrackOffset::new("finish", 44)]),
+            pathfinding::PathItemAlternatives::from_iter([TrackOffset::new("finish", 44)]),
             NonBlankString::from("finish"),
             SimulationWaypoint::ScheduleItem {
                 arrival_at: Some(2400),

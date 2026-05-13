@@ -18,7 +18,7 @@ use crate::PathfindingConsist;
 use crate::PathfindingConstraints;
 use crate::PathfindingTrain;
 use crate::TrainKey;
-use crate::envs::pathfinding::PathWaypointAlternatives;
+use crate::envs::pathfinding::PathItemAlternatives;
 
 #[derive(Debug)]
 pub(crate) struct SimulationInputs<Train>
@@ -215,7 +215,7 @@ impl SimulationTrain {
     /// The label can be reused for [Self::set_power_restriction] and [Self::set_margin].
     pub fn push_waypoint(
         &mut self,
-        path_constraint: PathWaypointAlternatives,
+        path_constraint: PathItemAlternatives,
         label: NonBlankString,
         point: SimulationWaypoint,
     ) {

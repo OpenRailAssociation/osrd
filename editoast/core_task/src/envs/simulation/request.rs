@@ -152,7 +152,7 @@ mod tests {
 
     use super::*;
     use crate::envs::pathfinding;
-    use crate::envs::pathfinding::PathWaypointAlternatives;
+    use crate::envs::pathfinding::PathItemAlternatives;
     use crate::envs::simulation;
     use crate::envs::simulation::SimulationTrain;
     use crate::envs::simulation::SimulationTrainParameters;
@@ -176,8 +176,8 @@ mod tests {
 
         let core_env = CoreEnv::new_mock(MockingClient::new());
         let path_items = vec![
-            PathWaypointAlternatives::from_iter([]),
-            PathWaypointAlternatives::from_iter([]),
+            PathItemAlternatives::from_iter([]),
+            PathItemAlternatives::from_iter([]),
         ];
         let pf_input = pathfinding::PathfindingKey(
             Arc::new(pathfinding::test_data::consist(1)),
@@ -268,11 +268,11 @@ mod tests {
 
         let core_env = CoreEnv::new_mock(MockingClient::new());
         let path_items = vec![
-            PathWaypointAlternatives::from_iter([]),
-            PathWaypointAlternatives::from_iter([]),
-            PathWaypointAlternatives::from_iter([]),
-            PathWaypointAlternatives::from_iter([]),
-            PathWaypointAlternatives::from_iter([]),
+            PathItemAlternatives::from_iter([]),
+            PathItemAlternatives::from_iter([]),
+            PathItemAlternatives::from_iter([]),
+            PathItemAlternatives::from_iter([]),
+            PathItemAlternatives::from_iter([]),
         ];
         let pf_input = pathfinding::PathfindingKey(
             Arc::new(pathfinding::test_data::consist(1)),
@@ -431,12 +431,12 @@ mod tests {
             ),
         );
         builder.push_waypoint(
-            PathWaypointAlternatives::from_iter([]),
+            PathItemAlternatives::from_iter([]),
             NonBlankString::from("a"),
             SimulationWaypoint::PathItem,
         );
         builder.push_waypoint(
-            PathWaypointAlternatives::from_iter([]),
+            PathItemAlternatives::from_iter([]),
             NonBlankString::from("b"),
             SimulationWaypoint::ScheduleItem {
                 arrival_at: Some(300),

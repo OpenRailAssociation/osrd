@@ -176,7 +176,7 @@ pub struct PathfindingConsist {
 #[cfg_attr(test, derive(Clone))]
 pub struct PathfindingConstraints {
     /// An ordered list of waypoints the resulting path must pass through
-    pub path_items: Vec<PathWaypointAlternatives>,
+    pub path_items: Vec<PathItemAlternatives>,
 }
 
 /// A set of [TrackOffset]
@@ -184,15 +184,15 @@ pub struct PathfindingConstraints {
 /// The resulting path can cross any of these.
 #[derive(Debug, Hash, PartialEq, Eq)]
 #[cfg_attr(test, derive(Clone))]
-pub struct PathWaypointAlternatives(Vec<TrackOffset>);
+pub struct PathItemAlternatives(Vec<TrackOffset>);
 
-impl FromIterator<TrackOffset> for PathWaypointAlternatives {
+impl FromIterator<TrackOffset> for PathItemAlternatives {
     fn from_iter<T: IntoIterator<Item = TrackOffset>>(iter: T) -> Self {
         Self(iter.into_iter().collect())
     }
 }
 
-impl IntoIterator for PathWaypointAlternatives {
+impl IntoIterator for PathItemAlternatives {
     type Item = TrackOffset;
     type IntoIter = <Vec<TrackOffset> as IntoIterator>::IntoIter;
 
@@ -386,12 +386,12 @@ fn build_request(
         path_items: constraints
             .path_items
             .iter()
-            .map(|PathWaypointAlternatives(track_alternatives)| {
-                core_client::pathfinding::PathItem {
+            .map(
+                |PathItemAlternatives(track_alternatives)| core_client::pathfinding::PathItem {
                     locations: track_alternatives.clone(),
                     can_backtrack: Some(false),
-                }
-            })
+                },
+            )
             .collect(),
         rolling_stock_loading_gauge: consist.loading_gauge,
         rolling_stock_is_thermal: consist.thermal,
@@ -448,12 +448,12 @@ pub(crate) mod test_data {
     pub(crate) fn constraints(id: usize) -> PathfindingConstraints {
         PathfindingConstraints {
             path_items: vec![
-                PathWaypointAlternatives::from_iter([TrackOffset::new("id", id as u64)]),
-                PathWaypointAlternatives::from_iter([
+                PathItemAlternatives::from_iter([TrackOffset::new("id", id as u64)]),
+                PathItemAlternatives::from_iter([
                     TrackOffset::new("tr1", 100),
                     TrackOffset::new("tr1bis", 100),
                 ]),
-                PathWaypointAlternatives::from_iter([TrackOffset::new("tr2", 200)]),
+                PathItemAlternatives::from_iter([TrackOffset::new("tr2", 200)]),
             ],
         }
     }
