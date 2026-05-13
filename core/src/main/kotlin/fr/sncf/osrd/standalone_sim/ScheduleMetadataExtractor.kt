@@ -604,7 +604,7 @@ private fun findLimitingSignal(
         for (curSignalIndex in (signalIndexStart until blockSignals.size).reversed()) {
             val signal = blockSignals[curSignalIndex]
 
-            // ignore unseen signals before the start of the travelled path
+            // ignore unseen signals before the start of the traveled path
             val signalTravelledOffset =
                 blockRange.offsetToTrainPath(blockSignalOffsets[curSignalIndex])
             if (signalTravelledOffset < Offset.zero()) break

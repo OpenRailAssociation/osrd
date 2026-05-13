@@ -5,6 +5,7 @@ import fr.sncf.osrd.api.pathfinding.pathfindingLogger
 import fr.sncf.osrd.graph.AStarHeuristic
 import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.path.interfaces.BlockRange
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.pathfinding.constraints.CachedBlockConstraintCombiner
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
@@ -19,6 +20,7 @@ import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
 import fr.sncf.osrd.utils.arePositionsEqual
 import fr.sncf.osrd.utils.areTimesEqual
 import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.time.Duration
@@ -168,7 +170,13 @@ class Pathfinding(
                 CachedBlockConstraintCombiner.getCachedConstraintCombiner(fullInfra, it)
             }
         val startTime = Instant.now()
-        val seenBlocks = HashMap<BlockId, Int>()
+
+        // When exploring a block (last block range of the route here), the decision to try to
+        // backtrack (and where) later on the considered route is already made.
+        // So we have to discriminate blocks used to go to backtracking (and the different
+        // backtracking) and blocks used fully to go straight to the end of the route.
+        data class VisitedKey(val block: BlockId, val nextBacktracking: Offset<PhysicsPath>?)
+        val seenBlocks = HashMap<VisitedKey, Int>()
 
         val startInfraExplorers =
             getStartInfraExplorers(
@@ -217,13 +225,23 @@ class Pathfinding(
             maxSeenTarget = max(nbSeenTargets, maxSeenTarget)
 
             val currentBlock = step.infraExplorer.getCurrentBlock()
-            if (seenBlocks.getOrDefault(currentBlock, -1) >= nbSeenTargets) {
+            val backtrackingOffsetOnBlock =
+                step.infraExplorer
+                    .getStepTracker()
+                    .iterateSeenStepsBackwards()
+                    .takeWhile { it.location.edge == currentBlock }
+                    .firstOrNull { it.isBacktracking }
+                    ?.travelledPathOffset
+            if (
+                seenBlocks.getOrDefault(VisitedKey(currentBlock, backtrackingOffsetOnBlock), -1) >=
+                    nbSeenTargets
+            ) {
                 pathfindingLogger.trace(
-                    "Dropping current search as a more promising search on the same block is already done"
+                    "Dropping current search as a more promising search on the same block and targeting the same backtracking is already done"
                 )
                 continue
             }
-            seenBlocks[currentBlock] = nbSeenTargets
+            seenBlocks[VisitedKey(currentBlock, backtrackingOffsetOnBlock)] = nbSeenTargets
 
             step.infraExplorer.cloneAndExtendLookahead().forEach {
                 registerStep(it, step.establishedCost, step.establishedLength)
