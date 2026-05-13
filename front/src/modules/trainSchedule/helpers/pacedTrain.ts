@@ -224,6 +224,20 @@ export const getOccurrenceTrainName = (
   return `${pacedTrain.train_name}/+`;
 };
 
+export const isExceptionStartTimeException = (
+  exception: PacedTrainException | undefined
+): boolean => exception?.start_time !== undefined;
+
+/**
+ * Returns true if the occurrence identified by occurrenceId is a startTime exception.
+ * Returns false for occurrences with no exception at all (they are startTime-compliant).
+ */
+export const isOccurrenceStartTimeException = (
+  occurrenceId: OccurrenceId,
+  exceptions: PacedTrainException[]
+): boolean =>
+  isExceptionStartTimeException(findExceptionWithOccurrenceId(exceptions, occurrenceId));
+
 /**
  * Return true if the exception has at least one change group defined (excluding disabled).
  */
