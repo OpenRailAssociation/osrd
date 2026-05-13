@@ -42,9 +42,9 @@ pub struct SimulationConsist(pub PhysicsConsist);
 #[derive(Debug, educe::Educe)]
 #[educe(Hash, PartialEq, Eq)]
 pub struct SimulationTrainParameters {
-    path_items: Vec<SimulationWaypoint>,
-    power_restrictions: rangemap::RangeMap<PathWaypointIndex, String>,
-    margins: rangemap::RangeMap<PathWaypointIndex, MarginValue>,
+    schedule_items: Vec<ScheduleItem>,
+    power_restrictions: rangemap::RangeMap<ScheduleItemIndex, String>,
+    margins: rangemap::RangeMap<ScheduleItemIndex, MarginValue>,
 
     #[educe(Hash(method(common::units::meter_per_second::hash)))]
     #[educe(Eq(method(common::units::meter_per_second::eq)))]
@@ -55,12 +55,12 @@ pub struct SimulationTrainParameters {
     options: TrainScheduleOptions,
 }
 
-/// Schedule information for a path waypoint
+/// Schedule information attached to a path item
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum SimulationWaypoint {
+pub enum ScheduleItem {
     /// No specific requirement
     PathItem,
-    /// The train must stop at this waypoint
+    /// The train must stop at this item
     ScheduleItem {
         stop_for: Option<u64>,
         arrival_at: Option<u64>,
@@ -77,7 +77,7 @@ impl SimulationTrainParameters {
         options: TrainScheduleOptions,
     ) -> Self {
         Self {
-            path_items: Default::default(),
+            schedule_items: Default::default(),
             power_restrictions: Default::default(),
             margins: Default::default(),
             initial_speed,
@@ -88,15 +88,15 @@ impl SimulationTrainParameters {
         }
     }
 
-    pub fn schedule(&self) -> &[SimulationWaypoint] {
-        &self.path_items
+    pub fn schedule_items(&self) -> &[ScheduleItem] {
+        &self.schedule_items
     }
 
-    pub fn power_restrictions(&self) -> &rangemap::RangeMap<PathWaypointIndex, String> {
+    pub fn power_restrictions(&self) -> &rangemap::RangeMap<ScheduleItemIndex, String> {
         &self.power_restrictions
     }
 
-    pub fn margins(&self) -> &rangemap::RangeMap<PathWaypointIndex, MarginValue> {
+    pub fn margins(&self) -> &rangemap::RangeMap<ScheduleItemIndex, MarginValue> {
         &self.margins
     }
 
@@ -121,7 +121,9 @@ impl SimulationTrainParameters {
     }
 
     fn is_empty(&self) -> bool {
-        self.path_items.is_empty() && self.power_restrictions.is_empty() && self.margins.is_empty()
+        self.schedule_items.is_empty()
+            && self.power_restrictions.is_empty()
+            && self.margins.is_empty()
     }
 }
 
@@ -158,7 +160,7 @@ where
 /// The way to provide simulation and pathfinding inputs to a [SimulationEnv]
 ///
 /// This builder is useful to ensure the following things are consistent:
-/// - pathfinding waypoints and schedule information ([SimulationWaypointSchedule])
+/// - pathfinding path items and simulation schedule items ([ScheduleItem])
 /// - power restrictions ranges
 /// - margin ranges
 ///
@@ -169,10 +171,10 @@ pub struct SimulationTrain {
     pub(super) pathfinding_consist: PathfindingConsist,
     pub(super) parameters: SimulationTrainParameters,
     pub(super) path_constraints: PathfindingConstraints,
-    path_item_to_index: HashMap<NonBlankString, PathWaypointIndex>,
+    schedule_item_to_index: HashMap<NonBlankString, ScheduleItemIndex>,
 }
 
-type PathWaypointIndex = usize;
+type ScheduleItemIndex = usize;
 
 impl SimulationTrain {
     pub fn new(
@@ -191,13 +193,13 @@ impl SimulationTrain {
             path_constraints: PathfindingConstraints {
                 path_items: Vec::new(),
             },
-            path_item_to_index: HashMap::default(),
+            schedule_item_to_index: HashMap::default(),
         }
     }
 
-    fn waypoints(&self) -> usize {
+    fn schedule_items(&self) -> usize {
         let n = self.path_constraints.path_items.len();
-        debug_assert_eq!(n, self.parameters.path_items.len());
+        debug_assert_eq!(n, self.parameters.schedule_items.len());
         debug_assert!(
             self.parameters
                 .power_restrictions
@@ -210,46 +212,46 @@ impl SimulationTrain {
         n
     }
 
-    /// Adds a waypoint to the train's path with simulation schedule information
+    /// Adds a schedule item to the train's path with simulation schedule information
     ///
     /// The label can be reused for [Self::set_power_restriction] and [Self::set_margin].
-    pub fn push_waypoint(
+    pub fn push_schedule_item(
         &mut self,
         path_constraint: PathItemAlternatives,
         label: NonBlankString,
-        point: SimulationWaypoint,
+        schedule_item: ScheduleItem,
     ) {
-        let index = self.parameters.path_items.len();
-        self.parameters.path_items.push(point);
+        let index = self.parameters.schedule_items.len();
+        self.parameters.schedule_items.push(schedule_item);
         self.path_constraints.path_items.push(path_constraint);
-        self.path_item_to_index.insert(label, index);
+        self.schedule_item_to_index.insert(label, index);
     }
 
-    /// Sets a power restriction for a range of waypoints.
+    /// Sets a power restriction for a range of schedule
     ///
     /// Labels are used to define the range: they can be &NonBlankString, &String or &str.
     ///
     /// # Panics
     ///
-    /// Panics if `begin_label` or `end_label` has not been used to push a waypoint.
+    /// Panics if `begin_label` or `end_label` has not been used to push a schedule item.
     pub fn set_power_restriction<Q>(&mut self, begin_label: &Q, end_label: &Q, restriction: String)
     where
         NonBlankString: Borrow<Q>,
         Q: Hash + Eq + ?Sized,
     {
         let begin_index = self
-            .path_item_to_index
+            .schedule_item_to_index
             .get(begin_label)
             .copied()
-            .expect("only names already inserted through “push_waypoint” can be used");
+            .expect("only names already inserted through “push_schedule_item” can be used");
         let end_index = self
-            .path_item_to_index
+            .schedule_item_to_index
             .get(end_label)
             .copied()
-            .expect("only names already inserted through “push_waypoint” can be used");
-        let n = self.waypoints();
+            .expect("only names already inserted through “push_schedule_item” can be used");
+        let n = self.schedule_items();
         if begin_index >= n || end_index >= n {
-            panic!("path waypoint index out of bounds");
+            panic!("schedule item index out of bounds");
         }
         match begin_index.cmp(&end_index) {
             Ordering::Less => self
@@ -263,31 +265,31 @@ impl SimulationTrain {
         }
     }
 
-    /// Sets a margin for a range of waypoints.
+    /// Sets a margin for a range of schedule items
     ///
     /// Labels are used to define the range: they can be &NonBlankString, &String or &str.
     ///
     /// # Panics
     ///
-    /// Panics if `begin_label` or `end_label` has not been used to push a waypoint.
+    /// Panics if `begin_label` or `end_label` has not been used to push a schedule item.
     pub fn set_margin<Q>(&mut self, begin_label: &Q, end_label: &Q, margin: MarginValue)
     where
         NonBlankString: Borrow<Q>,
         Q: Hash + Eq + ?Sized,
     {
         let begin_index = self
-            .path_item_to_index
+            .schedule_item_to_index
             .get(begin_label)
             .copied()
-            .expect("only names already inserted through “push_waypoint” can be used");
+            .expect("only names already inserted through “push_schedule_item” can be used");
         let end_index = self
-            .path_item_to_index
+            .schedule_item_to_index
             .get(end_label)
             .copied()
-            .expect("only names already inserted through “push_waypoint” can be used");
-        let n = self.waypoints();
+            .expect("only names already inserted through “push_schedule_item” can be used");
+        let n = self.schedule_items();
         if begin_index >= n || end_index >= n {
-            panic!("path waypoint index out of bounds");
+            panic!("path schedule item index out of bounds");
         }
         match begin_index.cmp(&end_index) {
             Ordering::Less => self
@@ -317,7 +319,7 @@ where
                             pathfinding_consist,
                             parameters,
                             path_constraints,
-                            path_item_to_index: _,
+                            schedule_item_to_index: _,
                         },
                     )| {
                         (
