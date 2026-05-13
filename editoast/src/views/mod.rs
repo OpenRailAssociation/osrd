@@ -80,6 +80,7 @@ use editoast_derive::EditoastError;
 use thiserror::Error;
 use tokio::time::timeout;
 use tower::Layer as _;
+use tower_http::compression::CompressionLayer;
 use tower_http::cors::Any;
 use tower_http::cors::CorsLayer;
 use tower_http::decompression::RequestDecompressionLayer;
@@ -1248,6 +1249,7 @@ impl Server {
             .layer(OtelInResponseLayer)
             .layer(OtelAxumLayer::default())
             .layer(RequestDecompressionLayer::new())
+            .layer(CompressionLayer::new())
             .layer(DefaultBodyLimit::disable())
             .layer(request_payload_limit)
             .layer(cors)

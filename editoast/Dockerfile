@@ -18,8 +18,9 @@ RUN cargo chef prepare --recipe-path recipe.json
 # Cargo chef : build #
 ######################
 FROM chef AS base_builder
-RUN apk add --no-cache build-base curl openssl openssl-dev openssl-libs-static mold libpq-dev geos-dev
+RUN apk add --no-cache build-base curl openssl openssl-dev openssl-libs-static mold libpq-dev geos-dev zstd-dev
 ENV RUSTFLAGS="-C target-feature=-crt-static -C link-arg=-fuse-ld=mold"
+ENV ZSTD_SYS_USE_PKG_CONFIG=1
 RUN set -eux; \
     arch="$(uname -m)"; \
     mkdir -p /cargo_editoast/bin; \
