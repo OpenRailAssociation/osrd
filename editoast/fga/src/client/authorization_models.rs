@@ -3,7 +3,7 @@ use tracing::Instrument;
 
 use super::Client;
 use super::Continuation;
-use super::RequestFailure;
+use super::Error;
 
 pub use super::api::authorization_models::AuthorizationModel;
 pub use super::api::authorization_models::StoreAuthorizationModel;
@@ -11,7 +11,7 @@ pub use super::api::authorization_models::StoreAuthorizationModel;
 impl Client {
     pub fn authorization_models(
         &self,
-    ) -> impl stream::TryStream<Ok = StoreAuthorizationModel, Error = RequestFailure> + '_ {
+    ) -> impl stream::TryStream<Ok = StoreAuthorizationModel, Error = Error> + '_ {
         Continuation::stream(move |continuation| {
             async move {
                 let (models, continuation_str) = self
@@ -25,7 +25,7 @@ impl Client {
 
     pub async fn latest_authorization_model(
         &self,
-    ) -> Result<Option<StoreAuthorizationModel>, RequestFailure> {
+    ) -> Result<Option<StoreAuthorizationModel>, Error> {
         let models = &mut self
             .get_stores_authorization_models(&self.store.id, Some(1), None)
             .await?
@@ -35,7 +35,7 @@ impl Client {
     }
 
     #[tracing::instrument(skip(self), err)]
-    pub async fn actualize_authorization_model(&mut self) -> Result<(), RequestFailure> {
+    pub async fn actualize_authorization_model(&mut self) -> Result<(), Error> {
         self.authorization_model_id = self
             .latest_authorization_model()
             .await?
@@ -51,7 +51,7 @@ impl Client {
     pub async fn update_authorization_model(
         &mut self,
         authorization_model: &AuthorizationModel,
-    ) -> Result<String, RequestFailure> {
+    ) -> Result<String, Error> {
         let model_id = self
             .post_stores_authorization_models(&self.store.id, authorization_model)
             .await?;

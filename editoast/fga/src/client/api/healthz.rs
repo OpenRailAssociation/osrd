@@ -1,5 +1,6 @@
 use super::super::Client;
-use super::super::RequestFailure;
+use super::super::Error;
+use super::Message;
 
 #[derive(Debug, serde::Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -12,14 +13,15 @@ pub(in crate::client) enum Health {
 
 impl Client {
     #[tracing::instrument(skip(self), ret(level = "debug"), err)]
-    pub(in crate::client) async fn get_healthz(&self) -> Result<Health, RequestFailure> {
+    pub(in crate::client) async fn get_healthz(&self) -> Result<Health, Error> {
         #[derive(serde::Deserialize)]
         struct Response {
             status: Health,
         }
 
         let url = self.base_url().join("healthz").unwrap();
-        let Response { status } = self.inner.get(url).send().await?.json().await?;
+        let response = self.inner.get(url).send().await?;
+        let Response { status } = response.json::<Message<_>>().await?.try_success()?;
         Ok(status)
     }
 }

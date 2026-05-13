@@ -1,11 +1,18 @@
 mod api;
 mod authorization_models;
+mod error;
 mod queries;
 mod stores;
 mod tuples;
 
 pub use authorization_models::AuthorizationModel;
 pub use authorization_models::StoreAuthorizationModel;
+pub use error::AuthErrorCode;
+pub use error::Error;
+pub use error::ErrorCode;
+pub use error::InternalErrorCode;
+pub use error::NotFoundErrorCode;
+pub use error::UnprocessableContentErrorCode;
 pub use queries::UserList;
 pub use stores::Store;
 pub use tuples::UntypedTuple;
@@ -91,64 +98,15 @@ pub enum Consistency {
 }
 
 #[derive(Debug, thiserror::Error)]
-#[error("HTTP request to OpenFGA failed: {0}")]
-pub struct RequestFailure(#[source] reqwest::Error);
-
-#[derive(Debug, thiserror::Error)]
 pub enum InitializationError {
     #[error("Store not found: {0}")]
     NotFound(String),
     #[error(transparent)]
-    Request(#[from] RequestFailure),
-}
-
-#[derive(Debug, thiserror::Error)]
-#[error("Too many tuples provided ({provided_count}): hard limit set to {max}")]
-pub struct TooManyTuples {
-    max: usize,
-    provided_count: usize,
-}
-
-#[derive(Debug, thiserror::Error)]
-pub enum QueryError {
-    #[error("Cannot parse OpenFGA value identifier as '{expected_type}': '{ident}'")]
-    Parsing {
-        ident: String,
-        expected_type: &'static str,
-    },
-    #[error(transparent)]
-    Request(#[from] RequestFailure),
-}
-
-impl QueryError {
-    pub fn parsing_ok(self) -> RequestFailure {
-        match self {
-            QueryError::Parsing {
-                ident,
-                expected_type,
-            } => {
-                tracing::error!(ident, expected_type, "failed to parse OpenFGA value");
-                panic!(
-                    "failed to parse OpenFGA value '{ident}' as '{expected_type}': a migration is probably missing",
-                );
-            }
-            QueryError::Request(request_failure) => request_failure,
-        }
-    }
-}
-
-impl From<reqwest::Error> for RequestFailure {
-    fn from(error: reqwest::Error) -> Self {
-        #[cfg(any(debug_assertions, test))]
-        let err = RequestFailure(error);
-        #[cfg(all(not(debug_assertions), not(test)))]
-        let err = RequestFailure(error.without_url());
-        err
-    }
+    Error(#[from] Error),
 }
 
 impl Client {
-    pub async fn is_healthy(&self) -> Result<bool, RequestFailure> {
+    pub async fn is_healthy(&self) -> Result<bool, Error> {
         Ok(matches!(self.get_healthz().await?, Health::Serving))
     }
 
@@ -251,15 +209,15 @@ impl Continuation {
     /// ```
     ///
     // TODO: rewrite that using async closures once rust 1.85 lands :pepoparty:
-    fn stream<F, Fut, T>(f: F) -> impl stream::TryStream<Ok = T, Error = RequestFailure>
+    fn stream<F, Fut, T>(f: F) -> impl stream::TryStream<Ok = T, Error = Error>
     where
         F: Fn(Continuation) -> Fut + Copy,
-        Fut: Future<Output = Result<(Vec<T>, Continuation), RequestFailure>>,
+        Fut: Future<Output = Result<(Vec<T>, Continuation), Error>>,
     {
         let stream = stream::try_unfold(Continuation::None, move |continuation| {
             Box::pin(async move {
                 if let Continuation::Stop = continuation {
-                    return Ok::<_, RequestFailure>(None);
+                    return Ok::<_, Error>(None);
                 }
                 let (items, continuation) = f(continuation).await?;
                 Ok(Some((items, continuation)))
