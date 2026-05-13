@@ -56,7 +56,6 @@ body:
         - Custom (Docker compose)
         - Custom (Using K8s Helm Chart)
         - Other
-      default: 2
 
   - type: dropdown
     id: Browser
@@ -70,7 +69,6 @@ body:
         - Safari
         - Opera
         - Other
-      default: 0
 
   - type: input
     id: osrdVersion
