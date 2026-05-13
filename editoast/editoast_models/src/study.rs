@@ -53,7 +53,7 @@ impl Study {
         Ok(())
     }
 
-    pub async fn scenarios_count(&self, conn: &mut DbConnection) -> Result<u64, crate::Error> {
+    pub async fn scenarios_count(&self, conn: DbConnection) -> Result<u64, crate::Error> {
         use database::tables::scenario::dsl;
         use diesel::dsl::*;
         use diesel::prelude::*;

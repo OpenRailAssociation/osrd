@@ -79,7 +79,7 @@ impl Project {
         Ok(())
     }
 
-    pub async fn studies_count(&self, conn: &mut DbConnection) -> Result<u64, crate::Error> {
+    pub async fn studies_count(&self, conn: DbConnection) -> Result<u64, crate::Error> {
         use database::tables::study::dsl;
         use diesel::dsl::*;
         use diesel::prelude::*;

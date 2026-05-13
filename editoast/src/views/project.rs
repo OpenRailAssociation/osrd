@@ -118,7 +118,7 @@ pub struct ProjectWithStudyCount {
 
 impl ProjectWithStudyCount {
     async fn try_fetch(
-        conn: &mut DbConnection,
+        conn: DbConnection,
         project: Project,
     ) -> Result<Self, editoast_models::Error> {
         let studies_count = project.studies_count(conn).await?;
@@ -143,12 +143,15 @@ pub(in crate::views) async fn create(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Json(project_create_form): Json<ProjectCreateForm>,
 ) -> Result<impl IntoResponse> {
-    let conn = &mut db_pool.get().await?;
+    let mut conn = db_pool.get().await?;
     if let Some(image) = project_create_form.image {
-        check_image_content(conn, image).await?;
+        check_image_content(&mut conn, image).await?;
     }
     let project: Changeset<Project> = project_create_form.into_changeset();
-    let project = project.create(conn).await.map_err(ProjectError::from)?;
+    let project = project
+        .create(&mut conn)
+        .await
+        .map_err(ProjectError::from)?;
     let project_with_studies = ProjectWithStudyCount::try_fetch(conn, project).await?;
 
     Ok((StatusCode::CREATED, Json(project_with_studies)))
@@ -190,7 +193,7 @@ pub(in crate::views) async fn list(
         .into_iter()
         .zip(db_pool.iter_conn())
         .map(|(project, conn)| async move {
-            ProjectWithStudyCount::try_fetch(&mut conn.await?, project)
+            ProjectWithStudyCount::try_fetch(conn.await?, project)
                 .await
                 .map_err(InternalError::from)
         });
@@ -220,14 +223,12 @@ pub(in crate::views) async fn get(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Path(project_id): Path<i64>,
 ) -> Result<Json<ProjectWithStudyCount>> {
-    let mut conn = db_pool.get().await?;
+    let conn = db_pool.get().await?;
     let project = Project::retrieve_or_fail(conn.clone(), project_id, || ProjectError::NotFound {
         project_id,
     })
     .await?;
-    Ok(Json(
-        ProjectWithStudyCount::try_fetch(&mut conn, project).await?,
-    ))
+    Ok(Json(ProjectWithStudyCount::try_fetch(conn, project).await?))
 }
 
 /// Delete a project
@@ -354,9 +355,7 @@ pub(in crate::views) async fn patch(
     .await
     .map_err(ProjectError::from)??;
 
-    Ok(Json(
-        ProjectWithStudyCount::try_fetch(&mut conn, project).await?,
-    ))
+    Ok(Json(ProjectWithStudyCount::try_fetch(conn, project).await?))
 }
 
 #[cfg(test)]
