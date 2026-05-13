@@ -17,6 +17,7 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.utils.getRouteBlocks
 import fr.sncf.osrd.sim_infra.utils.routesOnBlock
+import fr.sncf.osrd.stdcm.graph.logger
 import fr.sncf.osrd.utils.AppendOnlyLinkedList
 import fr.sncf.osrd.utils.AppendOnlyMap
 import fr.sncf.osrd.utils.appendOnlyLinkedListOf
@@ -563,10 +564,23 @@ private class InfraExplorerImpl(
                 .map { it.last() } // only the last route is useful
                 .toSet()
 
-        return routesOnHeadRestart.associateWith { headRestartRoute ->
-            val lastRouteBlocks = blockInfra.getRouteBlocks(rawInfra, headRestartRoute)
-            headRestartBlockLocations.first { it.edge in lastRouteBlocks }
-        }
+        return routesOnHeadRestart
+            .associateWith { headRestartRoute ->
+                val lastRouteBlocks = blockInfra.getRouteBlocks(rawInfra, headRestartRoute)
+                if (lastRouteBlocks.isEmpty()) {
+                    logger.warn("Route ${rawInfra.getRouteName(headRestartRoute)} has no block")
+                    return@associateWith null
+                }
+                val headRestartBlockLocation =
+                    headRestartBlockLocations.firstOrNull { it.edge in lastRouteBlocks }
+                if (headRestartBlockLocation == null) {
+                    logger.warn(
+                        "Route ${rawInfra.getRouteName(headRestartRoute)} has no block listed in restart locations"
+                    )
+                }
+                headRestartBlockLocation
+            }
+            .filter { it.value != null } as Map<RouteId, BlockLocation>
     }
 
     /**
