@@ -5,6 +5,7 @@ export { usePicking, useDraw } from './hooks/useCanvas';
 export { getCrispLineCoordinate } from './helpers/time';
 
 export type {
+  CurveStyle,
   HoveredItem,
   DrawingFunction,
   PickingDrawingFunction,

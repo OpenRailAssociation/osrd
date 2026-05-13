@@ -1,6 +1,6 @@
 import { type HTMLProps } from 'react';
 
-import { type SpaceTimeChartTheme } from '../spaceTimeChart';
+import type { PathLevel, SpaceTimeChartTheme } from '../spaceTimeChart';
 import type { DataPoint, Handler, PointToData, DataToPoint } from '../spaceTimeChart/lib/types';
 import type { LAYERS, PICKING_LAYERS } from './consts';
 
@@ -23,6 +23,32 @@ export type RGBAColor = [number, number, number, number];
 // CANVAS SPECIFIC TYPES:
 export type PickingLayerType = (typeof PICKING_LAYERS)[number];
 export type LayerType = (typeof LAYERS)[number];
+
+/**
+ * Visual style of a curve, computed by the shared curve-style helper
+ * and used by STD (PathLayer) and TOD (OccupancyBlockLayer).
+ *
+ * TODO: reuse this type in PathLayerProps when integrating drag and drop in STD/TOD.
+ */
+export type CurveStyle = {
+  color: string;
+  opacity: number;
+  level?: PathLevel;
+  outline?: {
+    /** Offset compared to the curve */
+    offset: number;
+    /** Color of the outline */
+    color: string;
+    /** Thickness of the outline */
+    width?: number;
+    /** Won't be used most of the time, color will be used */
+    backgroundColor?: string;
+  };
+  label?: {
+    border?: { color: string; width: number };
+    fontWeight?: number;
+  };
+};
 
 // PICKING SPECIFIC TYPES:
 export type PickingElement = { type: string };
