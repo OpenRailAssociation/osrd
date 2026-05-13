@@ -99,6 +99,10 @@ pub async fn group_info(
 ) -> anyhow::Result<()> {
     let regulator = openfga_config.into_regulator(pool.clone()).await?;
     let driver = regulator.driver();
+    let system = SystemAuthorizer {
+        openfga: regulator.openfga(),
+        conn: pool.get().await?,
+    };
     let Some(group_id) = driver.get_group_id(&name).await? else {
         tracing::error!(name, "No such group");
         return Ok(());
@@ -107,7 +111,16 @@ pub async fn group_info(
         tracing::error!(group.id = group_id, "No such group");
         return Ok(());
     };
-    let user_ids = regulator.group_members(&authz::Group(group_id)).await?;
+    let user_ids = match system
+        .authorize(authz::v2::group_members(authz::Group(group_id)))
+        .await?
+        .access()
+        .await?
+    {
+        Ok(user_ids) => user_ids,
+        Err(Rejection::NoSuchGroup(_)) => unreachable!("tested above"),
+        Err(rejection) => impossible!(rejection),
+    };
 
     println!("id     : {group_id}");
     println!("name   : {}", group.name);
@@ -228,7 +241,16 @@ pub async fn delete_group(
     let group = Group(group_id);
 
     // Delete the relationships between the group to be deleted and its members
-    let users_in_group = regulator.group_members(&group).await?;
+    let users_in_group = match system
+        .authorize(authz::v2::group_members(group))
+        .await?
+        .access()
+        .await?
+    {
+        Ok(user_ids) => HashSet::from_iter(user_ids),
+        Err(Rejection::NoSuchGroup(_)) => unreachable!("tested above"),
+        Err(rejection) => impossible!(rejection),
+    };
     let remove_member = authz::v2::remove_members(group, users_in_group);
     match system.authorize(remove_member).await?.access().await? {
         Ok(()) => {}

@@ -12,9 +12,12 @@ use editoast_models::authn::user::AddIdentitiesError;
 use editoast_models::authn::user::UserWithIdentities;
 use editoast_models::prelude::*;
 use futures::TryStreamExt as _;
-use futures::future::try_join_all;
 use std::collections::HashSet;
 use std::sync::Arc;
+
+use crate::authorizers::Rejection;
+use crate::authorizers::SystemAuthorizer;
+use crate::authorizers::impossible;
 
 use super::openfga_config::OpenfgaConfig;
 
@@ -81,7 +84,11 @@ pub async fn list_user(
     openfga_config: OpenfgaConfig,
     pool: Arc<DbConnectionPoolV2>,
 ) -> anyhow::Result<()> {
-    let regulator = openfga_config.into_regulator(pool.clone()).await?;
+    let openfga = openfga_config.into_client().await?;
+    let system = SystemAuthorizer {
+        openfga: &openfga,
+        conn: pool.get().await?,
+    };
 
     let (users, groups) = tokio::join!(
         async {
@@ -99,16 +106,20 @@ pub async fn list_user(
         }
     );
     let users = if without_groups {
-        let group_members =
-            try_join_all(groups?.into_iter().zip(std::iter::repeat(regulator)).map(
-                |(group, regulator)| async move {
-                    regulator.group_members(&authz::Group(group.id)).await
-                },
-            ))
-            .await?
-            .into_iter()
-            .flatten()
-            .collect::<HashSet<_>>();
+        let group_member_access = authz::v2::Protected::from_iter(
+            groups?
+                .into_iter()
+                .map(|group| authz::v2::group_members(authz::Group(group.id))),
+        )
+        .authorize(&system)
+        .await?;
+        let group_members = match group_member_access.access().await? {
+            Ok(users) => users.into_iter().flatten().collect::<HashSet<_>>(),
+            Err(Rejection::NoSuchGroup(_)) => {
+                unreachable!("groups were listed from the database")
+            }
+            Err(rejection) => impossible!(rejection),
+        };
         users?
             .into_iter()
             .filter(|user| !group_members.contains(&authz::User(user.user.id)))
