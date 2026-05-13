@@ -181,7 +181,7 @@ where
         pathfinding_key: &pathfinding::PathfindingKey,
     ) -> impl Iterator<Item = SimulationKey> {
         self.pathfinding_runner
-            .input_train_set(pathfinding_key)
+            .train_set(pathfinding_key)
             .into_iter()
             .flatten()
             .filter_map(|train| {
@@ -213,7 +213,7 @@ where
                         correlation_key: pf_key,
                         data: Ok(core_client::pathfinding::PathfindingCoreResult::Success(path)),
                     } => {
-                        let trains = runner.pathfinding_runner.input_train_set(&pf_key).expect("input provided by the runner should be valid");
+                        let trains = runner.pathfinding_runner.train_set(&pf_key).expect("input provided by the runner should be valid");
                         (trains, path)
                     }
                     Correlated {
