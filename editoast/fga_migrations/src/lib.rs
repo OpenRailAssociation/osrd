@@ -2,14 +2,13 @@ use std::str::FromStr;
 use std::sync::LazyLock;
 
 use fga::client::Client;
+use fga::client::Error;
 use fga::client::InitializationError;
-use fga::client::RequestFailure;
 use fga::compile_model;
 use fga::model::Relation;
 use fga::model::Type;
 use indexmap::IndexMap;
 use indexmap::indexmap;
-use itertools::Either;
 use sha1::Digest;
 use sha1::Sha1;
 use tracing::info;
@@ -101,7 +100,7 @@ pub enum MigrationError {
     #[error(transparent)]
     InitializationError(#[from] InitializationError),
     #[error(transparent)]
-    RequestFailure(#[from] RequestFailure),
+    RequestFailure(#[from] Error),
     #[error("Inconsistent migrations store state")]
     InconsistantMigrationStore,
 }
@@ -145,8 +144,7 @@ pub async fn run_migrations(
     let migration = Migration(migration_number, new_model_hash.clone());
     match client_migrations
         .list_objects(Migration::apply().query_objects(&Editoast))
-        .await
-        .map_err(|err| err.parsing_ok())?
+        .await?
         .as_slice()
     {
         [current_migration] => {
@@ -160,13 +158,7 @@ pub async fn run_migrations(
             info!("Deleting existing migration tuple");
             client_migrations
                 .delete_tuples(&[Migration::apply().tuple(&Editoast, current_migration)])
-                .await
-                .map_err(|err| match err {
-                    Either::Left(request_failure) => request_failure,
-                    Either::Right(_) => {
-                        unreachable!("Removing a single tuple, it should be fine")
-                    }
-                })?;
+                .await?;
         }
         [_, _, ..] => return Err(MigrationError::InconsistantMigrationStore),
         [] => info!("No previous migration tuple found"),
@@ -181,11 +173,7 @@ pub async fn run_migrations(
 
     client_migrations
         .write_tuples(&[Migration::apply().tuple(&Editoast, &migration)])
-        .await
-        .map_err(|err| match err {
-            Either::Left(request_failure) => request_failure,
-            Either::Right(_) => unreachable!("Writing a single tuple, it should be fine"),
-        })?;
+        .await?;
     info!(
         tuple.migration.number = migration.0,
         tuple.migration.hash = migration.1,

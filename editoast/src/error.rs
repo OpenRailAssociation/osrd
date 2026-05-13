@@ -321,8 +321,8 @@ impl From<crate::views::AuthorizerError> for InternalError {
     }
 }
 
-impl From<fga::client::RequestFailure> for InternalError {
-    fn from(value: fga::client::RequestFailure) -> Self {
+impl From<fga::client::Error> for InternalError {
+    fn from(value: fga::client::Error) -> Self {
         crate::views::AuthorizationError::from(value).into()
     }
 }

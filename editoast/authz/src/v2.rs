@@ -20,7 +20,7 @@ use crate::Role;
 use crate::Subject;
 use crate::User;
 
-pub type OpenFgaError = fga::client::RequestFailure;
+pub type OpenFgaError = fga::client::Error;
 type ValueFut<'a, T> = BoxFuture<'a, Result<T, OpenFgaError>>;
 /// An alias for the type of a protected operation
 ///

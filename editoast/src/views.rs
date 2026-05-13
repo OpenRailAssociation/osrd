@@ -560,7 +560,7 @@ pub enum AuthorizationError {
     ImpersonatedUserNotFound { identity: String },
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    #[from(AuthorizerError, fga::client::RequestFailure)]
+    #[from(AuthorizerError, fga::client::Error)]
     AuthError(AuthorizerError),
     #[error(transparent)]
     #[editoast_error(status = 500)]

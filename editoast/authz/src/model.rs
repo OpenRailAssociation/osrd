@@ -282,18 +282,14 @@ impl Role {
         openfga: &fga::Client,
         relation: R,
         object: &R::Object,
-    ) -> Result<Vec<Self>, fga::client::RequestFailure>
+    ) -> Result<Vec<Self>, fga::client::Error>
     where
         O: fga::model::Object,
         R: fga::model::Relation<User = Self, Object = O>,
     {
         use fga::client::Request as _;
 
-        let roles = relation
-            .query_users(object)
-            .fetch(openfga)
-            .await
-            .map_err(fga::client::QueryError::parsing_ok)?;
+        let roles = relation.query_users(object).fetch(openfga).await?;
         debug_assert!(
             roles.public_access.is_none(),
             "we don't write public accesses for roles"

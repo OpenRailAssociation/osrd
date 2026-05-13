@@ -1,6 +1,5 @@
 use std::collections::HashSet;
 
-use fga::client::QueryError;
 use fga::client::UserList;
 use fga::model::Relation as _;
 use futures::FutureExt as _;
@@ -20,8 +19,7 @@ pub fn group_members(group: Group) -> Protected<Vec<User>> {
                 public_access,
             } = openfga
                 .list_users(Group::member().query_users(&group))
-                .await
-                .map_err(QueryError::parsing_ok)?;
+                .await?;
             debug_assert!(
                 public_access.is_none(),
                 "we don't write public accesses for groups"

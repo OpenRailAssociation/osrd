@@ -1,8 +1,7 @@
 use std::collections::HashSet;
 use std::future::Future;
 
-use fga::client::QueryError;
-use fga::model::Relation;
+use fga::model::Relation as _;
 use tracing::Level;
 
 use crate::Authorization;
@@ -128,8 +127,7 @@ impl<S: StorageDriver> Regulator<S> {
         let groups = self
             .openfga
             .list_users(User::group().query_users(user))
-            .await
-            .map_err(QueryError::parsing_ok)?;
+            .await?;
         Ok(groups.users.into_iter().collect())
     }
 
@@ -249,8 +247,7 @@ impl<S: StorageDriver> Regulator<S> {
         let infra_list = self
             .openfga
             .list_objects(Infra::can_read().query_objects(user))
-            .await
-            .map_err(QueryError::parsing_ok)?;
+            .await?;
 
         Ok(Authorization::Granted(infra_list))
     }
