@@ -250,7 +250,7 @@ pub(in crate::views) async fn get(
     let (study_scenarios, project) = db_pool
         .get()
         .await?
-        .transaction(async move |mut conn| {
+        .transaction(async move |conn| {
             let study = Study::retrieve_or_fail(conn.clone(), study_id, || StudyError::NotFound {
                 study_id,
             })
@@ -262,7 +262,7 @@ pub(in crate::views) async fn get(
             })
             .await?;
 
-            let study_scenarios = StudyWithScenarioCount::try_fetch(&mut conn, study).await?;
+            let study_scenarios = StudyWithScenarioCount::try_fetch(conn, study).await?;
             Ok::<_, InternalError>((study_scenarios, project))
         })
         .await?;
@@ -357,7 +357,7 @@ pub(in crate::views) async fn patch(
                 .into_study_changeset()?
                 .update_or_fail(&mut conn, study_id, || StudyError::NotFound { study_id })
                 .await?;
-            let study_scenarios = StudyWithScenarioCount::try_fetch(&mut conn, study).await?;
+            let study_scenarios = StudyWithScenarioCount::try_fetch(conn, study).await?;
             Ok::<_, InternalError>(study_scenarios)
         },
     )
@@ -376,7 +376,7 @@ pub struct StudyWithScenarioCount {
 }
 
 impl StudyWithScenarioCount {
-    pub async fn try_fetch(conn: &mut DbConnection, study: Study) -> Result<Self> {
+    pub async fn try_fetch(conn: DbConnection, study: Study) -> Result<Self> {
         let scenarios_count = study
             .scenarios_count(conn)
             .await
@@ -436,7 +436,7 @@ pub(in crate::views) async fn list(
         .into_iter()
         .zip(db_pool.iter_conn())
         .map(|(project, conn)| async move {
-            StudyWithScenarioCount::try_fetch(&mut conn.await?, project).await
+            StudyWithScenarioCount::try_fetch(conn.await?, project).await
         });
     let results = futures::future::try_join_all(results).await?;
 
