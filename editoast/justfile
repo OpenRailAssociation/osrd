@@ -11,7 +11,7 @@ run:
     diesel migration run --locked-schema
     cargo run --package fga_migrations -- apply
     @echo 'Authorizing "mock/mocked" user. Make sure the gateway user matches.'
-    cargo run -- user add "Example User" "mock/mocked"
+    cargo run -- user add --skip-if-exists "Example User" "mock/mocked"
     cargo run -- roles add "mock/mocked" Admin
     @echo 'Starting editoast in single worker mode. If you use osrd-compose add the `sw` flag'
     EDITOAST_CORE_SINGLE_WORKER=true cargo run -- runserver

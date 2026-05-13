@@ -196,7 +196,7 @@ If your client has a direct access to editoast, an other possibility is to add t
 You can create a new user with `Admin` role by using the following commands :
 
 ```sh
-cargo run user add 'Example User' 'mock/mocked'
+cargo run user add --skip-if-exists 'Example User' 'mock/mocked'
 cargo run roles add 'mock/mocked' Admin
 ```
 
@@ -206,7 +206,7 @@ In development, the default user `mock/mocked` which is given by the gateway.
 If you run the stack with docker, you can use:
 
 ```sh
-docker exec osrd-editoast editoast user add 'Example User' 'mock/mocked'
+docker exec osrd-editoast editoast user add --skip-if-exists 'Example User' 'mock/mocked'
 docker exec osrd-editoast editoast roles add 'mock/mocked' Admin
 ```
 

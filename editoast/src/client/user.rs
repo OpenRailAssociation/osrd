@@ -59,6 +59,9 @@ pub struct AddArgs {
     name: Option<String>,
     /// Identities of the user
     identities: Vec<String>,
+    /// Skip if one of the identities already exists
+    #[arg(long)]
+    skip_if_exists: bool,
 }
 
 #[derive(Debug, Args)]
@@ -130,12 +133,26 @@ pub async fn list_user(
 
 /// Add a user
 pub async fn add_user(
-    AddArgs { name, identities }: AddArgs,
+    AddArgs {
+        name,
+        identities,
+        skip_if_exists,
+    }: AddArgs,
     pool: Arc<DbConnectionPoolV2>,
 ) -> anyhow::Result<()> {
     if identities.is_empty() {
         println!("No identities provided.");
         return Ok(());
+    }
+    if skip_if_exists {
+        for identity in &identities {
+            let conn = pool.get().await?;
+            let user = editoast_models::User::retrieve_by_identity(identity, conn).await?;
+            if user.is_some() {
+                println!("Skipped: Identity '{identity}' already exists");
+                return Ok(());
+            }
+        }
     }
     let conn = pool.get().await?;
     let created_user =
